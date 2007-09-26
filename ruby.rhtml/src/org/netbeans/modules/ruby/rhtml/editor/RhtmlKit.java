@@ -41,6 +41,7 @@ import org.openide.util.Exceptions;
  * @todo Automatic bracket matching for RHTML files should probably split Ruby blocks up,
  *  e.g. pressing enter here:  <% if true| %> should take you -outside- of the current
  *  block and insert a matching <% end %> outside!
+ * @todo Add in a toggle comment action that -works- !
  * 
  * @author Marek Fukala
  * @author Tor Norbye
@@ -184,12 +185,24 @@ public class RhtmlKit extends HTMLKit {
 
         @Override
         protected Object beforeBreak(JTextComponent target, BaseDocument doc, Caret caret) {
-            if (shouldDelegateToHtml(doc, caret.getDot())) {
+            int dotPos = caret.getDot();
+            if (shouldDelegateToHtml(doc, dotPos)) {
                 return super.beforeBreak(target, doc, caret);
             }
 
             try {
-                int newOffset = rubyCompletion.beforeBreak(doc, caret.getDot(), target);
+                // First see if we're -right- before a %>, if so, just enter out
+                // of it
+                if (dotPos < doc.getLength()-3) {
+                    String text = doc.getText(dotPos, 3);
+                    if (text.equals(" %>") || text.startsWith("%>")) {
+                        // TODO - double check at the lexical level!
+                        caret.setDot(dotPos + text.indexOf('>')+1);
+                        return super.beforeBreak(target, doc, caret);
+                    }
+                }
+                
+                int newOffset = rubyCompletion.beforeBreak(doc, dotPos, target);
 
                 if (newOffset >= 0) {
                     return new Integer(newOffset);
