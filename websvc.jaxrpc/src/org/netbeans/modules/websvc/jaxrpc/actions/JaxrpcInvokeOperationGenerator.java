@@ -67,7 +67,6 @@ import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.api.client.WsCompileClientEditorSupport;
-import org.netbeans.modules.websvc.core.webservices.action.InvokeOperationAction;
 import org.netbeans.modules.websvc.jaxrpc.ServiceInformation;
 import org.netbeans.modules.websvc.jaxrpc.client.wizard.ClientBuilder;
 import org.netbeans.modules.websvc.wsdl.config.PortInformationHandler;
@@ -341,7 +340,7 @@ public class JaxrpcInvokeOperationGenerator {
             
         } catch (NullPointerException npe) {
             // !PW notify failure to extract service information.
-            String message = NbBundle.getMessage(InvokeOperationAction.class, "ERR_FailedUnexpectedWebServiceDescriptionPattern"); // NOI18N
+            String message = NbBundle.getMessage(JaxrpcInvokeOperationGenerator.class, "ERR_FailedUnexpectedWebServiceDescriptionPattern"); // NOI18N
             NotifyDescriptor desc = new NotifyDescriptor.Message(message, NotifyDescriptor.Message.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(desc);
             return;
@@ -419,12 +418,12 @@ public class JaxrpcInvokeOperationGenerator {
             }
             if (servicePortTypeName == null) {
                 servicePortTypeName = servicePortJaxRpcName + "UnknownType"; // NOI18N
-                errors.add(NbBundle.getMessage(InvokeOperationAction.class, "ERR_CannotDetermineWebServicePortTypeName")); // NOI18N
+                errors.add(NbBundle.getMessage(JaxrpcInvokeOperationGenerator.class, "ERR_CannotDetermineWebServicePortTypeName")); // NOI18N
             }
         } else {
             servicePackageName = "unknown.service.package"; // NOI18N
             servicePortTypeName = servicePortJaxRpcName + "UnknownType"; // NOI18N
-            errors.add(NbBundle.getMessage(InvokeOperationAction.class, "ERR_CannotLocateWebServiceInterfaces")); // NOI18N
+            errors.add(NbBundle.getMessage(JaxrpcInvokeOperationGenerator.class, "ERR_CannotLocateWebServiceInterfaces")); // NOI18N
         }
         
         String fqServiceClassName = servicePackageName + "." + serviceClassName;
@@ -440,9 +439,9 @@ public class JaxrpcInvokeOperationGenerator {
             if (stubType == null) {
                 //errors.add(NbBundle.getMessage(InvokeOperationAction.class, "ERR_CannotDeterminedStubType", serviceName)); // NOI1N
                 StringBuffer buf = new StringBuffer();
-                buf.append(NbBundle.getMessage(InvokeOperationAction.class, "ERR_FailedWebServiceInvocationCreation")); // NOI18N
+                buf.append(NbBundle.getMessage(JaxrpcInvokeOperationGenerator.class, "ERR_FailedWebServiceInvocationCreation")); // NOI18N
                 buf.append("\n"); // NOI18N
-                buf.append(NbBundle.getMessage(InvokeOperationAction.class, "ERR_CannotDeterminedStubType", serviceName));
+                buf.append(NbBundle.getMessage(JaxrpcInvokeOperationGenerator.class, "ERR_CannotDeterminedStubType", serviceName));
                 NotifyDescriptor desc = new NotifyDescriptor.Message(buf.toString(), NotifyDescriptor.Message.ERROR_MESSAGE);
                 DialogDisplayer.getDefault().notify(desc);
                 return;
@@ -606,7 +605,7 @@ public class JaxrpcInvokeOperationGenerator {
                     ClassTree javaClass = genUtils.getClassTree();
                     
                     if (stubType == null) {
-                        errors.add(NbBundle.getMessage(InvokeOperationAction.class, "ERR_CannotDeterminedStubType", serviceName)); // NOI18N
+                        errors.add(NbBundle.getMessage(JaxrpcInvokeOperationGenerator.class, "ERR_CannotDeterminedStubType", serviceName)); // NOI18N
                     } else if (ClientStubDescriptor.JSR109_CLIENT_STUB.equals(stubType.getName())) {        // add service and port delegate methods
                         boolean createServiceDelegate = true;
                         boolean createPortDelegate = true;
@@ -696,7 +695,7 @@ public class JaxrpcInvokeOperationGenerator {
                     if (errors.size() > 0) {
                         // At least one error was encountered during code insertion.  Display the list of messages.
                         StringBuffer buf = new StringBuffer(errors.size() * 100);
-                        buf.append(NbBundle.getMessage(InvokeOperationAction.class, "ERR_FailedWebServiceInvocationCreation")); // NOI18N
+                        buf.append(NbBundle.getMessage(JaxrpcInvokeOperationGenerator.class, "ERR_FailedWebServiceInvocationCreation")); // NOI18N
                         buf.append("\n"); // NOI18N
                         for(Iterator iter = errors.iterator(); iter.hasNext(); ) {
                             buf.append(iter.next().toString());

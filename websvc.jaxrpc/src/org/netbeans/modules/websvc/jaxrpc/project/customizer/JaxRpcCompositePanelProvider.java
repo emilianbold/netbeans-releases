@@ -81,7 +81,7 @@ public class JaxRpcCompositePanelProvider implements ProjectCustomizer.Composite
                 serviceClientsSettings = clientSupport.getServiceClients();
             }
             if(serviceClientsSettings != null && serviceClientsSettings.size() > 0) {
-                return new CustomizerWSClientHost(serviceClientsSettings );
+                return new CustomizerWSClientHost(project, serviceClientsSettings );
             } else {
                 return new NoWebServiceClientsPanel();
             }
