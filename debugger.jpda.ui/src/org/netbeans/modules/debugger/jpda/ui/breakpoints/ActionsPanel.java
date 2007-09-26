@@ -72,17 +72,16 @@ public class ActionsPanel extends javax.swing.JPanel {
         cbSuspend = new javax.swing.JComboBox();
         jLabel2 = new javax.swing.JLabel();
 
-        setLayout(new java.awt.GridBagLayout());
-
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle"); // NOI18N
         setBorder(javax.swing.BorderFactory.createTitledBorder(bundle.getString("L_Actions_Panel_BorderTitle"))); // NOI18N
+        setLayout(new java.awt.GridBagLayout());
+
         tfPrintText.setToolTipText(bundle.getString("TTT_TF_Actions_Panel_Print_Text")); // NOI18N
         tfPrintText.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 tfPrintTextActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -107,7 +106,6 @@ public class ActionsPanel extends javax.swing.JPanel {
                 cbSuspendActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
@@ -121,7 +119,6 @@ public class ActionsPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         add(jLabel2, gridBagConstraints);
-
     }// </editor-fold>//GEN-END:initComponents
 
     private void tfPrintTextActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_tfPrintTextActionPerformed

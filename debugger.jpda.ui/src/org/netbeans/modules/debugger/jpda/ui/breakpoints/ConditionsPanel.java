@@ -41,6 +41,7 @@ public class ConditionsPanel extends javax.swing.JPanel {
         initComponents();
         tfConditionFieldForUI = new javax.swing.JTextField();
         tfConditionFieldForUI.setEnabled(false);
+        tfConditionFieldForUI.setToolTipText(tfCondition.getToolTipText());
         java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
@@ -277,15 +278,15 @@ public class ConditionsPanel extends javax.swing.JPanel {
         tfHitCountFilter = new javax.swing.JTextField();
         cbHitStyle = new javax.swing.JComboBox();
         cbWhenHitCount = new javax.swing.JCheckBox();
-        spCondition = null;
+        spCondition = new javax.swing.JScrollPane();
         tfCondition = new javax.swing.JEditorPane();
 
         setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(ConditionsPanel.class, "L_Conditions_Breakpoint_BorderTitle"))); // NOI18N
         setLayout(new java.awt.GridBagLayout());
 
-        classFilterCheckBox.setText(org.openide.util.NbBundle.getMessage(ConditionsPanel.class, "ConditionsPanel.classFilterCheckBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(classFilterCheckBox, org.openide.util.NbBundle.getMessage(ConditionsPanel.class, "ConditionsPanel.classFilterCheckBox.text")); // NOI18N
+        classFilterCheckBox.setToolTipText(org.openide.util.NbBundle.getMessage(ConditionsPanel.class, "TTT_CB_Classes_Filter_Throwing")); // NOI18N
         classFilterCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        classFilterCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         classFilterCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 classFilterCheckBoxActionPerformed(evt);
@@ -298,12 +299,15 @@ public class ConditionsPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         add(classFilterCheckBox, gridBagConstraints);
 
-        classIncludeFilterLabel.setText(org.openide.util.NbBundle.getMessage(ConditionsPanel.class, "ConditionsPanel.classIncludeFilterLabel.text")); // NOI18N
+        classIncludeFilterLabel.setLabelFor(classIncludeFilterTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(classIncludeFilterLabel, org.openide.util.NbBundle.getMessage(ConditionsPanel.class, "ConditionsPanel.classIncludeFilterLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 18, 3, 3);
         add(classIncludeFilterLabel, gridBagConstraints);
+
+        classIncludeFilterTextField.setToolTipText(org.openide.util.NbBundle.getMessage(ConditionsPanel.class, "TTT_CB_Classes_Matched")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -311,16 +315,17 @@ public class ConditionsPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         add(classIncludeFilterTextField, gridBagConstraints);
 
-        classExcludeFilterLabel.setText(org.openide.util.NbBundle.getMessage(ConditionsPanel.class, "ConditionsPanel.classExcludeFilterLabel.text")); // NOI18N
+        classExcludeFilterLabel.setLabelFor(classExcludeFilterTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(classExcludeFilterLabel, org.openide.util.NbBundle.getMessage(ConditionsPanel.class, "ConditionsPanel.classExcludeFilterLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 18, 3, 3);
         add(classExcludeFilterLabel, gridBagConstraints);
 
-        classExcludeFilterCheckBox.setText(org.openide.util.NbBundle.getMessage(ConditionsPanel.class, "ConditionsPanel.classExcludeFilterLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(classExcludeFilterCheckBox, org.openide.util.NbBundle.getMessage(ConditionsPanel.class, "ConditionsPanel.classExcludeFilterLabel.text")); // NOI18N
+        classExcludeFilterCheckBox.setToolTipText(org.openide.util.NbBundle.getMessage(ConditionsPanel.class, "TTT_CB_Classes_Excluded")); // NOI18N
         classExcludeFilterCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        classExcludeFilterCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         classExcludeFilterCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 classExcludeFilterCheckBoxActionPerformed(evt);
@@ -332,6 +337,8 @@ public class ConditionsPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         add(classExcludeFilterCheckBox, gridBagConstraints);
+
+        classExcludeFilterTextField.setToolTipText(org.openide.util.NbBundle.getMessage(ConditionsPanel.class, "TTT_CB_Classes_Excluded")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -339,9 +346,9 @@ public class ConditionsPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         add(classExcludeFilterTextField, gridBagConstraints);
 
-        conditionCheckBox.setText(org.openide.util.NbBundle.getMessage(ConditionsPanel.class, "ConditionsPanel.conditionCheckBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(conditionCheckBox, org.openide.util.NbBundle.getMessage(ConditionsPanel.class, "ConditionsPanel.conditionCheckBox.text")); // NOI18N
+        conditionCheckBox.setToolTipText(org.openide.util.NbBundle.getMessage(ConditionsPanel.class, "TTT_TF_Line_Breakpoint_Condition")); // NOI18N
         conditionCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        conditionCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         conditionCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 conditionCheckBoxActionPerformed(evt);
@@ -355,6 +362,8 @@ public class ConditionsPanel extends javax.swing.JPanel {
         add(conditionCheckBox, gridBagConstraints);
 
         panelHitCountFilter.setLayout(new java.awt.GridBagLayout());
+
+        tfHitCountFilter.setToolTipText(org.openide.util.NbBundle.getMessage(ConditionsPanel.class, "TTT_TF_Hit_Count")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
@@ -371,9 +380,9 @@ public class ConditionsPanel extends javax.swing.JPanel {
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.RELATIVE;
         panelHitCountFilter.add(cbHitStyle, gridBagConstraints);
 
-        cbWhenHitCount.setText(org.openide.util.NbBundle.getMessage(ConditionsPanel.class, "ConditionsPanel.cbWhenHitCount.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(cbWhenHitCount, org.openide.util.NbBundle.getMessage(ConditionsPanel.class, "ConditionsPanel.cbWhenHitCount.text")); // NOI18N
+        cbWhenHitCount.setToolTipText(org.openide.util.NbBundle.getMessage(ConditionsPanel.class, "TTT_TF_Hit_Count")); // NOI18N
         cbWhenHitCount.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        cbWhenHitCount.setMargin(new java.awt.Insets(0, 0, 0, 0));
         cbWhenHitCount.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cbWhenHitCountActionPerformed(evt);
