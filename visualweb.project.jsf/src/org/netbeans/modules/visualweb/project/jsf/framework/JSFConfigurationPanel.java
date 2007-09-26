@@ -27,6 +27,7 @@ import java.util.Iterator;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -40,6 +41,7 @@ import org.openide.util.HelpCtx;
 public class JSFConfigurationPanel extends WebModuleExtender {
 
     private final JSFFrameworkProvider framework;
+    private final Project project;
     private final ExtenderController controller;
     private JSFConfigurationPanelVisual component;
 
@@ -50,7 +52,8 @@ public class JSFConfigurationPanel extends WebModuleExtender {
     private File installedFolder;
 
     /** Creates a new instance of JSFConfigurationPanel */
-    public JSFConfigurationPanel(JSFFrameworkProvider framework, ExtenderController controller, boolean customizer) {
+    public JSFConfigurationPanel(JSFFrameworkProvider framework, Project project, ExtenderController controller, boolean customizer) {
+        this.project = project;
         this.framework = framework;
         this.controller = controller;
         this.customizer = customizer;
@@ -61,7 +64,7 @@ public class JSFConfigurationPanel extends WebModuleExtender {
 
     public JSFConfigurationPanelVisual getComponent() {
         if (component == null)
-            component = new JSFConfigurationPanelVisual(this, customizer);
+            component = new JSFConfigurationPanelVisual(this, project, customizer);
 
         return component;
     }

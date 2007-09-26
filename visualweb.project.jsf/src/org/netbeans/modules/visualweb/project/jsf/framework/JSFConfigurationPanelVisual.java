@@ -32,6 +32,7 @@ import java.util.Vector;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.common.Util;
@@ -51,6 +52,7 @@ import org.openide.util.NbBundle;
  */
 public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements HelpCtx.Provider, DocumentListener  {
 
+    private Project project;
     private JSFConfigurationPanel panel;
     private boolean customizer;
     
@@ -65,7 +67,8 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
     // </RAVE>
     
     /** Creates new form JSFConfigurationPanelVisual */
-    public JSFConfigurationPanelVisual(JSFConfigurationPanel panel, boolean customizer) {
+    public JSFConfigurationPanelVisual(JSFConfigurationPanel panel, Project project, boolean customizer) {
+        this.project = project;
         this.panel = panel;
         this.customizer = customizer;
         
@@ -650,8 +653,12 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
     // <RAVE>
     private void initRowsetSettings() {
         addRowset = false;
-        Properties properties = panel.getController().getProperties();
-        String setSrcLevel = (String) properties.getProperty("setSourceLevel"); //NOI18N
+        String setSrcLevel = (project == null) ? null : JsfProjectUtils.getSourceLevel(project);
+        if (setSrcLevel == null) {
+            Properties properties = panel.getController().getProperties();
+            setSrcLevel = (String) properties.getProperty("setSourceLevel"); //NOI18N
+        }
+
         if ("1.4".equals(setSrcLevel)) { // NOI18N
             // It's a J2SE 1.4 project
             Library libRowset = LibraryManager.getDefault().getLibrary("rowset-ri"); // NOI18N
