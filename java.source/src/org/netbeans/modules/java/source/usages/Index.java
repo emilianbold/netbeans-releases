@@ -71,8 +71,8 @@ public abstract class Index {
     public abstract List<String> getUsagesFQN (String resourceName, Set<ClassIndexImpl.UsageType> mask, BooleanOperator operator) throws IOException, InterruptedException;
     public abstract <T> void getDeclaredTypes (String simpleName, ClassIndex.NameKind kind, ResultConvertor<T> convertor, Set<? super T> result) throws IOException, InterruptedException;
     public abstract void getPackageNames (String prefix, boolean directOnly, Set<String> result) throws IOException, InterruptedException;
-    public abstract void store (Map<String,Pair<String,List<String>>> refs, Set<String> toDelete) throws IOException;
-    public abstract void store (Map<String,Pair<String,List<String>>> refs, List<String> topLevels) throws IOException;
+    public abstract void store (Map<Pair<String,String>,List<String>> refs, Set<String> toDelete) throws IOException;
+    public abstract void store (Map<Pair<String,String>,List<String>> refs, List<String> topLevels) throws IOException;
     public abstract boolean isUpToDate (String resourceName, long timeStamp) throws IOException;
     public abstract String getSourceName (String binaryName) throws IOException;
     public abstract void clear () throws IOException;

@@ -83,14 +83,14 @@ import org.openide.util.Exceptions;
 public class SourceAnalyser {    
     
     private final Index index;
-    private final Map<String, Pair<String,List<String>>> references;
+    private final Map<Pair<String, String>, List<String>> references;
     private final Set<String> toDelete;
     
     /** Creates a new instance of SourceAnalyser */
     public SourceAnalyser (final Index index) {
         assert index != null;
         this.index = index;
-        this.references = new HashMap<String, Pair<String,List<String>>> ();
+        this.references = new HashMap<Pair<String,String>, List<String>> ();
         this.toDelete = new HashSet<String> ();
     }
     
@@ -108,7 +108,7 @@ public class SourceAnalyser {
     }
 
     public void analyse (final Iterable<? extends CompilationUnitTree> data, JavacTaskImpl jt, JavaFileManager manager, javax.tools.JavaFileObject sibling, Set<? super ElementHandle<TypeElement>> newTypes) throws IOException {
-        final Map<String,Pair<String,Map<String,Set<ClassIndexImpl.UsageType>>>> usages = new HashMap<String,Pair<String,Map<String,Set<ClassIndexImpl.UsageType>>>>();
+        final Map<Pair<String, String>,Map<String,Set<ClassIndexImpl.UsageType>>> usages = new HashMap<Pair<String,String>,Map<String,Set<ClassIndexImpl.UsageType>>>();
         for (CompilationUnitTree cu : data) {
             UsagesVisitor uv = new UsagesVisitor (jt, cu, manager, sibling, newTypes);
             uv.scan(cu,usages);
@@ -137,10 +137,10 @@ public class SourceAnalyser {
                 }
             }
         }
-        for (Map.Entry<String,Pair<String,Map<String,Set<ClassIndexImpl.UsageType>>>> oe : usages.entrySet()) {            
-            Pair<String,Map<String,Set<ClassIndexImpl.UsageType>>> pair = oe.getValue();
-            Map<String,Set<ClassIndexImpl.UsageType>> oeValue = pair.second;
-            List<String> ru = getClassReferences (oe.getKey(), pair.first);
+        for (Map.Entry<Pair<String,String>,Map<String,Set<ClassIndexImpl.UsageType>>> oe : usages.entrySet()) {
+            Pair<String,String> key = oe.getKey();
+            Map<String,Set<ClassIndexImpl.UsageType>> oeValue = oe.getValue();            
+            List<String> ru = getClassReferences (key);
             for (Map.Entry<String,Set<ClassIndexImpl.UsageType>> ue : oeValue.entrySet()) {
                 ru.add (DocumentUtil.encodeUsage(ue.getKey(),ue.getValue()));
             }
@@ -149,15 +149,14 @@ public class SourceAnalyser {
     
     void analyseUnitAndStore (final CompilationUnitTree cu, final JavacTaskImpl jt, final JavaFileManager manager) throws IOException {
         try {
-            final Map<String,Pair<String,Map<String,Set<ClassIndexImpl.UsageType>>>> usages = new HashMap<String,Pair<String,Map<String,Set<ClassIndexImpl.UsageType>>>> ();
+            final Map<Pair<String,String>,Map<String,Set<ClassIndexImpl.UsageType>>> usages = new HashMap<Pair<String,String>,Map<String,Set<ClassIndexImpl.UsageType>>> ();
             List<String> topLevels = new ArrayList<String>();
             UsagesVisitor uv = new UsagesVisitor (jt, cu, manager, cu.getSourceFile(), topLevels);
             uv.scan(cu,usages);
-            for (Map.Entry<String,Pair<String,Map<String,Set<ClassIndexImpl.UsageType>>>> oe : usages.entrySet()) {            
-                String className = oe.getKey();
-                Pair<String,Map<String,Set<ClassIndexImpl.UsageType>>> pair = oe.getValue();
-                Map<String,Set<ClassIndexImpl.UsageType>> oeValue = pair.second;
-                List<String> ru = getClassReferences (className, pair.first);
+            for (Map.Entry<Pair<String,String>,Map<String,Set<ClassIndexImpl.UsageType>>> oe : usages.entrySet()) {            
+                Pair<String,String> key = oe.getKey();
+                Map<String,Set<ClassIndexImpl.UsageType>> oeValue = oe.getValue();
+                List<String> ru = getClassReferences (key);
                 for (Map.Entry<String,Set<ClassIndexImpl.UsageType>> ue : oeValue.entrySet()) {
                     ru.add (DocumentUtil.encodeUsage(ue.getKey(),ue.getValue()));
                 }            
@@ -178,35 +177,32 @@ public class SourceAnalyser {
     }
     
     
-    private List<String> getClassReferences (final String className, final String sourceName) {
-        assert className != null;
-        Pair<String,List<String>> result = this.references.get (className);
+    private List<String> getClassReferences (final Pair<String,String> name) {
+        assert name != null;
+        List<String> result = this.references.get (name);
         if (result == null) {
-            result = Pair.<String,List<String>>of(sourceName, new LinkedList<String>());
-            this.references.put(className,result);
-        }
-        else {
-            assert sourceName == null;
-        }
-        return result.second;
+            result = new LinkedList<String>();
+            this.references.put(name,result);
+        }        
+        return result;
     }    
     
     
-    private static void dumpUsages(final Map<String,Pair<String,Map<String,Set<ClassIndexImpl.UsageType>>>> usages) throws IOException {
+    private static void dumpUsages(final Map<Pair<String,String>, Map<String,Set<ClassIndexImpl.UsageType>>> usages) throws IOException {
         assert usages != null;
-        for (Map.Entry<String,Pair<String,Map<String,Set<ClassIndexImpl.UsageType>>>> oe : usages.entrySet()) {
+        for (Map.Entry<Pair<String,String>,Map<String,Set<ClassIndexImpl.UsageType>>> oe : usages.entrySet()) {
             System.out.println("Usages in class: " + oe.getKey());      // NOI18N
-            for (Map.Entry<String,Set<ClassIndexImpl.UsageType>> ue : oe.getValue().second.entrySet()) {
+            for (Map.Entry<String,Set<ClassIndexImpl.UsageType>> ue : oe.getValue().entrySet()) {
                 System.out.println("\t"+ue.getKey()+"\t: "+ue.getValue().toString());   // NOI18N
             }
         }
     }
 
-    static class UsagesVisitor extends TreeScanner<Void,Map<String,Pair<String,Map<String, Set<ClassIndexImpl.UsageType>>>>> {
+    static class UsagesVisitor extends TreeScanner<Void,Map<Pair<String,String>,Map<String, Set<ClassIndexImpl.UsageType>>>> {
         
         enum State {EXTENDS, IMPLEMENTS, GT, OTHER};
         
-        private final Stack<String> activeClass;
+        private final Stack<Pair<String,String>> activeClass;
         private JavaFileManager manager;
         private final JavacTaskImpl jt;
         private final Name errorName;
@@ -229,7 +225,7 @@ public class SourceAnalyser {
             assert cu != null;
             assert manager != null;
             assert sibling != null;
-            this.activeClass = new Stack<String> ();
+            this.activeClass = new Stack<Pair<String,String>> ();
             this.imports = new HashSet<String> ();
             this.jt = jt;
             this.errorName = Name.Table.instance(jt.getContext()).error;
@@ -250,7 +246,7 @@ public class SourceAnalyser {
             assert manager != null;
             assert sibling != null;
             
-            this.activeClass = new Stack<String> ();
+            this.activeClass = new Stack<Pair<String,String>> ();
             this.imports = new HashSet<String> ();
             this.jt = jt;
             this.errorName = Name.Table.instance(jt.getContext()).error;
@@ -269,7 +265,7 @@ public class SourceAnalyser {
             return types;
         }
         
-        public @Override Void scan(Tree node, Map<String,Pair<String,Map<String, Set<ClassIndexImpl.UsageType>>>> p) {
+        public @Override Void scan(Tree node, Map<Pair<String,String>, Map<String, Set<ClassIndexImpl.UsageType>>> p) {
             if (node == null) {
                 return null;
             }
@@ -278,15 +274,16 @@ public class SourceAnalyser {
         }
 
         @Override
-        public Void visitCompilationUnit(CompilationUnitTree node, Map<String, Pair<String,Map<String, Set<UsageType>>>> p) {
+        public Void visitCompilationUnit(CompilationUnitTree node, Map<Pair<String,String>, Map<String, Set<UsageType>>> p) {
             super.visitCompilationUnit(node, p);
             if (!imports.isEmpty()) {
                 //Empty file
                 String className = getResourceName(node);
                 if (className != null) {
                     final String classNameType = className + DocumentUtil.encodeKind(ElementKind.CLASS);                            
+                    final Pair<String,String> name = Pair.<String,String>of(classNameType, null);
                     for (String s : imports) {
-                        addUsage(classNameType, s, p, ClassIndexImpl.UsageType.TYPE_REFERENCE);
+                        addUsage(name, s, p, ClassIndexImpl.UsageType.TYPE_REFERENCE);
                     }
                     imports.clear();
                 }
@@ -294,7 +291,7 @@ public class SourceAnalyser {
             return null;
         }
         
-        public @Override Void visitMemberSelect(final MemberSelectTree node,  final Map<String,Pair<String,Map<String, Set<ClassIndexImpl.UsageType>>>> p) {
+        public @Override Void visitMemberSelect(final MemberSelectTree node,  final Map<Pair<String,String>,Map<String, Set<ClassIndexImpl.UsageType>>> p) {
             handleVisitIdentSelect (((JCTree.JCFieldAccess)node).sym, p);
             State oldState = this.state;
             this.state = State.OTHER;
@@ -303,12 +300,12 @@ public class SourceAnalyser {
             return ret;
         }
 
-        public @Override Void visitIdentifier(final IdentifierTree node, final Map<String,Pair<String,Map<String, Set<ClassIndexImpl.UsageType>>>> p) {
+        public @Override Void visitIdentifier(final IdentifierTree node, final Map<Pair<String,String>,Map<String, Set<ClassIndexImpl.UsageType>>> p) {
             handleVisitIdentSelect (((JCTree.JCIdent)node).sym, p);
             return super.visitIdentifier(node, p);
         }
         
-        private void handleVisitIdentSelect (Symbol sym, final Map<String,Pair<String,Map<String, Set<ClassIndexImpl.UsageType>>>> p) {
+        private void handleVisitIdentSelect (Symbol sym, final Map<Pair<String,String>,Map<String, Set<ClassIndexImpl.UsageType>>> p) {
             if (!activeClass.empty()) {               
                 if (sym != null) {
                     if (sym.getKind().isClass() || sym.getKind().isInterface()) {
@@ -352,7 +349,7 @@ public class SourceAnalyser {
             }
         }
         
-        public @Override Void visitParameterizedType(ParameterizedTypeTree node, final Map<String,Pair<String,Map<String, Set<ClassIndexImpl.UsageType>>>> p) {
+        public @Override Void visitParameterizedType(ParameterizedTypeTree node, final Map<Pair<String,String>,Map<String, Set<ClassIndexImpl.UsageType>>> p) {
             scan(node.getType(), p);
             State currState = this.state;
             this.state = State.GT;
@@ -401,7 +398,7 @@ public class SourceAnalyser {
             return false;
     }
         
-        public @Override Void visitClass (final ClassTree node, final Map<String,Pair<String,Map<String, Set<ClassIndexImpl.UsageType>>>> p) {
+        public @Override Void visitClass (final ClassTree node, final Map<Pair<String,String>,Map<String, Set<ClassIndexImpl.UsageType>>> p) {
             final ClassSymbol sym = ((JCTree.JCClassDecl)node).sym;            
             boolean errorInDecl = false;
             boolean errorIgnorSubtree = true;
@@ -417,25 +414,25 @@ public class SourceAnalyser {
                         className = getResourceName (this.cu);                   
                         if (className != null) {
                             final String classNameType = className + DocumentUtil.encodeKind(ElementKind.CLASS);
-                            
+                            final Pair<String,String> name = Pair.<String,String>of(classNameType, null);
                             if (activeClass.isEmpty()) {
                                 if (topLevels != null) {
                                     topLevels.add (className);
                                 }
                                 for (String s : imports) {
-                                    addUsage(classNameType, s, p, ClassIndexImpl.UsageType.TYPE_REFERENCE);
+                                    addUsage(name, s, p, ClassIndexImpl.UsageType.TYPE_REFERENCE);
                                 }
                                 imports.clear();
                             }
-                            activeClass.push (classNameType);
+                            activeClass.push (name);
                             errorIgnorSubtree = false;
-                            addUsage (classNameType,className, p, ClassIndexImpl.UsageType.TYPE_REFERENCE);
+                            addUsage (name,className, p, ClassIndexImpl.UsageType.TYPE_REFERENCE);
                             if (newTypes !=null) {
                                 newTypes.add ((ElementHandle<TypeElement>)ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS,className));
                             }
                         }
                         else {
-                            Logger.getLogger("global").warning(String.format("Cannot resolve %s, ignoring whole subtree.\n",sym.toString()));    //NOI18N
+                            Logger.getLogger(SourceAnalyser.class.getName()).warning(String.format("Cannot resolve %s, ignoring whole subtree.\n",sym.toString()));    //NOI18N
                         }
                     }
                 }
@@ -445,38 +442,42 @@ public class SourceAnalyser {
                     className = classNameBuilder.toString();
                     ElementKind kind = sym.getKind();
                     classNameBuilder.append(DocumentUtil.encodeKind(kind));
-                    final String classNameType = classNameBuilder.toString();                                        
-                    if (activeClass.isEmpty() && !className.equals(sourceName)) {
-                        if (signatureFiles) {
-                            rsList = new HashSet<String>();
-                        }
-                        try {
-                            FileObject fo = URLMapper.findFileObject(this.sibling.toUri().toURL());
-                            if (fo != null) {
-                                ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
-                                if (cp != null) {
-                                    String resourceName = cp.getResourceName(fo, '/', true);
-                                    if (resourceName != null) {
-                                        setSource (classNameType,resourceName, p);
+                    final String classNameType = classNameBuilder.toString();
+                    String resourceName = null;
+                    if (activeClass.isEmpty()) {
+                        if (!className.equals(sourceName)) {
+                            if (signatureFiles) {
+                                rsList = new HashSet<String>();
+                            }
+                            try {
+                                FileObject fo = URLMapper.findFileObject(this.sibling.toUri().toURL());
+                                if (fo != null) {
+                                    ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+                                    if (cp != null) {
+                                        resourceName = cp.getResourceName(fo, '/', true);                                    
                                     }
                                 }
+                            } catch (MalformedURLException e) {
+                                Exceptions.printStackTrace(e);
                             }
-                        } catch (MalformedURLException e) {
-                            Exceptions.printStackTrace(e);
                         }
                     }
+                    else {
+                        resourceName = activeClass.peek().second;
+                    }
+                    final Pair<String,String> name = Pair.<String,String>of(classNameType, resourceName);
                     if (activeClass.isEmpty()) {
                         if (topLevels != null) {
                             topLevels.add (className);
                         }
                         for (String s : imports) {
-                            addUsage(classNameType, s, p, ClassIndexImpl.UsageType.TYPE_REFERENCE);
+                            addUsage(name, s, p, ClassIndexImpl.UsageType.TYPE_REFERENCE);
                         }
                         imports.clear();
                     }
-                    activeClass.push (classNameType);                    
+                    activeClass.push (name);                    
                     errorIgnorSubtree = false;
-                    addUsage (classNameType,className, p, ClassIndexImpl.UsageType.TYPE_REFERENCE);
+                    addUsage (name,className, p, ClassIndexImpl.UsageType.TYPE_REFERENCE);
                     if (newTypes !=null) {
                         newTypes.add ((ElementHandle<TypeElement>)ElementHandleAccessor.INSTANCE.create(kind, className));
                     }
@@ -505,7 +506,7 @@ public class SourceAnalyser {
             return null;
         }
         
-        public @Override Void visitNewClass(NewClassTree node, Map<String,Pair<String,Map<String, Set<ClassIndexImpl.UsageType>>>> p) {
+        public @Override Void visitNewClass(NewClassTree node, Map<Pair<String,String>,Map<String, Set<ClassIndexImpl.UsageType>>> p) {
             final Symbol sym = ((JCTree.JCNewClass)node).constructor;                        
             if (sym != null) {
                 final Symbol owner = sym.getEnclosingElement();
@@ -519,7 +520,7 @@ public class SourceAnalyser {
             return super.visitNewClass (node,p);
         }       
         
-        public @Override Void visitErroneous(final  ErroneousTree tree, Map<String,Pair<String,Map<String, Set<ClassIndexImpl.UsageType>>>> p) {
+        public @Override Void visitErroneous(final  ErroneousTree tree, Map<Pair<String,String>,Map<String, Set<ClassIndexImpl.UsageType>>> p) {
             List<? extends Tree> trees = tree.getErrorTrees();
             for (Tree t : trees) {
                 this.scan(t,p);
@@ -528,7 +529,7 @@ public class SourceAnalyser {
         }
 
         @Override
-        public Void visitMethod(MethodTree node, Map<String, Pair<String,Map<String, Set<ClassIndexImpl.UsageType>>>> p) {
+        public Void visitMethod(MethodTree node, Map<Pair<String,String>, Map<String, Set<ClassIndexImpl.UsageType>>> p) {
             Element old = enclosingElement;
             try {
                 enclosingElement = ((JCMethodDecl) node).sym;
@@ -538,31 +539,22 @@ public class SourceAnalyser {
             }
         }
         
-        private void addUsage (final String ownerName, final String className, final Map<String,Pair<String,Map<String,Set<ClassIndexImpl.UsageType>>>> map, final ClassIndexImpl.UsageType type) {
+        private void addUsage (final Pair<String,String>owner, final String className, final Map<Pair<String,String>,Map<String,Set<ClassIndexImpl.UsageType>>> map, final ClassIndexImpl.UsageType type) {
             assert className != null;
             assert map != null;
             assert type != null;
-            Pair<String,Map<String,Set<ClassIndexImpl.UsageType>>> tUsages = map.get(ownerName);
+            Map<String,Set<ClassIndexImpl.UsageType>> tUsages = map.get(owner);
             if (tUsages == null) {
-                tUsages = Pair.<String,Map<String,Set<ClassIndexImpl.UsageType>>>of(null,new HashMap<String,Set<ClassIndexImpl.UsageType>> ());
-                map.put(ownerName,tUsages);
+                tUsages = new HashMap<String,Set<ClassIndexImpl.UsageType>> ();
+                map.put(owner,tUsages);
             }
-            Set<ClassIndexImpl.UsageType> usageType = tUsages.second.get (className);
+            Set<ClassIndexImpl.UsageType> usageType = tUsages.get (className);
             if (usageType == null) {
                 usageType = EnumSet.noneOf(ClassIndexImpl.UsageType.class);
-                tUsages.second.put (className, usageType);
+                tUsages.put (className, usageType);
             }
             usageType.add (type);        
-        }
-        
-        private void setSource (final String binaryName, final String sourceName, final Map<String,Pair<String,Map<String,Set<ClassIndexImpl.UsageType>>>> map) {
-            assert map != null;
-            Pair<String,Map<String,Set<ClassIndexImpl.UsageType>>> tUsages = map.get(binaryName);
-            if (tUsages == null) {
-                tUsages = Pair.<String,Map<String,Set<ClassIndexImpl.UsageType>>>of(sourceName,new HashMap<String,Set<ClassIndexImpl.UsageType>> ());
-                map.put(binaryName,tUsages);
-            }
-        }
+        }                
         
         private boolean hasErrorName (Symbol cs) {
             while (cs != null) {

@@ -100,7 +100,7 @@ public class BinaryAnalyser implements LowMemoryListener {
     private static boolean FULL_INDEX = Boolean.getBoolean("org.netbeans.modules.java.source.usages.BinaryAnalyser.fullIndex");     //NOI18N
     
     private final Index index;
-    private final Map<String,Pair<String,List<String>>> refs = new HashMap<String,Pair<String,List<String>>>();
+    private final Map<Pair<String,String>,List<String>> refs = new HashMap<Pair<String,String>,List<String>>();
     private final Set<String> toDelete = new HashSet<String> ();
     private final AtomicBoolean lowMemory;
     private Continuation cont;
@@ -384,7 +384,8 @@ public class BinaryAnalyser implements LowMemoryListener {
             kind = ElementKind.INTERFACE;
         }
         final String classNameType = classNameStr + DocumentUtil.encodeKind(kind);
-        final List <String> references = getClassReferences (classNameType);
+        final Pair<String,String> pair = Pair.<String,String>of(classNameType, null);
+        final List <String> references = getClassReferences (pair);
         for (Map.Entry<ClassName,Set<ClassIndexImpl.UsageType>> entry : usages.entrySet()) {
             ClassName name = entry.getKey();
             Set<ClassIndexImpl.UsageType> usage = entry.getValue();
@@ -559,14 +560,14 @@ public class BinaryAnalyser implements LowMemoryListener {
         return usages;
     }        
     
-    private List<String> getClassReferences (final String className) {
-        assert className != null;
-        Pair<String,List<String>> cr = this.refs.get (className);
+    private List<String> getClassReferences (final Pair<String,String> name) {
+        assert name != null;
+        List<String> cr = this.refs.get (name);
         if (cr == null) {
-            cr = Pair.<String,List<String>>of(null,new ArrayList<String> ());
-            this.refs.put (className, cr);
+            cr = new ArrayList<String> ();
+            this.refs.put (name, cr);
         }
-        return cr.second;
+        return cr;
     }            
     
                 

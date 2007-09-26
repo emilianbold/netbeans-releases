@@ -30,7 +30,10 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.UiUtils;
+import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.modules.java.ui.Icons;
 import org.netbeans.spi.jumpto.type.TypeDescriptor;
 import org.openide.awt.StatusDisplayer;
@@ -65,21 +68,18 @@ public class JavaTypeDescription extends TypeDescriptor {
        init();
     }
     
-    public void open() {
-        if ( cacheItem.isBinary() ) {
-            final ClasspathInfo ci = ClasspathInfo.create(cacheItem.getRoot());
-            JavaSource js = JavaSource.create( ci );
+    public void open() {        
+        final ClasspathInfo ci = ClasspathInfo.create(cacheItem.getRoot());
+        if ( cacheItem.isBinary() ) {            
+            final JavaSource js = JavaSource.create( ci );
             final ElementHandle<TypeElement> eh = handle;
             final Element[] el = new Element[1];
             try {
-                js.runUserActionTask(new CancellableTask<CompilationController>() {
-
-                    public void cancel() {
-                    }
+                js.runUserActionTask(new Task<CompilationController>() {
 
                     public void run(CompilationController info) {
                         el[0] = eh.resolve (info);
-                        if (!UiUtils.open(ci, el[0])) {
+                        if (!ElementOpen.open(ci, el[0])) {
                             final String message = NbBundle.getMessage(JavaTypeDescription.class, "LBL_JavaTypeDescription_nosource",eh.getQualifiedName());
                             StatusDisplayer.getDefault().setStatusText(message);
                             Toolkit.getDefaultToolkit().beep();
@@ -94,25 +94,10 @@ public class JavaTypeDescription extends TypeDescriptor {
             }                    
         }
         else {
-            //XXX: Why is this different? Why not UiUtils.open () is used?
-            FileObject folder = packageName != null ? cacheItem.getRoot().getFileObject(packageName.replace(".", "/")) : cacheItem.getRoot(); // NOI18N
+            final FileObject file = SourceUtils.getFile(handle, ci);
             boolean opened = false;
-            if (folder != null) {
-                FileObject[] ch = folder.getChildren();
-                String name = outerName == null ? simpleName : outerName; // NOI18N
-                int lastDot = name.indexOf('.'); //NOI18N
-                if ( lastDot != -1 ) {
-                    name = name.substring(0, lastDot );
-                }
-                for (FileObject fileObject : ch) {
-                    if ( name.equals( fileObject.getName() ) && 
-                         "java".equals( fileObject.getExt().toLowerCase() ) ) {
-                        opened = UiUtils.open(fileObject, handle);
-                    }
-                }
-            }
-            else {
-                Logger.getLogger(JavaTypeDescription.class.getName()).info("Package " + packageName +" doesn't exist in root: " + FileUtil.getFileDisplayName(cacheItem.getRoot()));
+            if (file != null) {
+                opened = ElementOpen.open(file, handle);
             }
             if (!opened) {
                 StringBuilder name = new StringBuilder ();
