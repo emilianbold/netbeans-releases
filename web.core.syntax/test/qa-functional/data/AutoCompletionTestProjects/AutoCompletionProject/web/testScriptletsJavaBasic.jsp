@@ -12,9 +12,9 @@
 
 <%-- Java completion for TestBean class --%>
 <%--CC
-<% LinkedLi|
+<% appli|
 ...
-<% LinkedList
+<% application
 --%>
 
 <% TESTBean tBean; %>
