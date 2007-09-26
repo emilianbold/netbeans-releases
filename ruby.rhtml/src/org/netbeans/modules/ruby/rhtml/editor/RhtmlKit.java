@@ -27,6 +27,10 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.TextAction;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.ext.ExtKit.ToggleCommentAction;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction;
 import org.netbeans.modules.editor.html.HTMLKit;
 import org.netbeans.modules.ruby.BracketCompleter;
@@ -94,7 +98,8 @@ public class RhtmlKit extends HTMLKit {
         
         return TextAction.augmentList(superActions, new Action[] {
                     new RhtmlInsertBreakAction(), 
-                    new RhtmlDeleteCharAction(deletePrevCharAction, false)
+                    new RhtmlDeleteCharAction(deletePrevCharAction, false),
+                    new RhtmlToggleCommentAction(),
                  });
     }
 
@@ -274,6 +279,171 @@ public class RhtmlKit extends HTMLKit {
         
         /** Attach error listener */
         new BackgroundParser(doc);
+    }
+    
+    /**
+     * Toggle comment action. Doesn't actually reuse much of the implementation
+     * but subclasses to inherit the icon and description
+     */
+    public static class RhtmlToggleCommentAction extends ToggleCommentAction  {
+        static final long serialVersionUID = -1L;
+
+        private static final String ERB_PREFIX = "<%"; // NOI18N
+        private static final String ERB_COMMENT = "<%#"; // NOI18N
+        private static final String ERB_TEXT = "<%#*"; // NOI18N
+        private static final String ERB_SUFFIX = "%>"; // NOI18N
+        private static final int ERB_PREFIX_LEN = ERB_PREFIX.length();
+        private static final int ERB_SUFFIX_LEN = ERB_SUFFIX.length();
+        private static final int ERB_COMMENT_LEN = ERB_COMMENT.length();
+        private static final int ERB_TEXT_LEN = ERB_TEXT.length();
+        
+        public RhtmlToggleCommentAction() {
+            super(ERB_COMMENT);
+            // "Rebind" the action name here since Schliemann has bound the
+            // toggle-comment keybinding to an action named "comment"
+            putValue(Action.NAME, "comment");
+            
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent evt, JTextComponent target) {
+            commentUncomment(evt, target, null);
+        }
+
+        /** See if this line looks commented */
+        private static boolean isLineCommented(BaseDocument doc, int textBegin) throws BadLocationException  {
+            assert textBegin != -1;
+            //int start = Utilities.getRowFirstNonWhite(doc, start);
+            //if (start == -1) { 
+            int textEnd = Utilities.getRowLastNonWhite(doc, textBegin)+1;
+            
+            if (textEnd - textBegin < ERB_COMMENT_LEN) {
+                return false;
+            }
+            
+            CharSequence maybeLineComment = DocumentUtilities.getText(doc, textBegin, ERB_COMMENT_LEN);
+            if (!CharSequenceUtilities.textEquals(maybeLineComment, ERB_COMMENT)) {
+                return false;
+            }
+
+            return true;
+        }
+        
+        private void commentUncomment(ActionEvent evt, JTextComponent target, Boolean forceComment) {
+            if (target != null) {
+                if (!target.isEditable() || !target.isEnabled()) {
+                    target.getToolkit().beep();
+                    return;
+                }
+                Caret caret = target.getCaret();
+                BaseDocument doc = (BaseDocument)target.getDocument();
+                try {
+                    doc.atomicLock();
+                    try {
+                        int startPos;
+                        int endPos;
+                        
+                        if (caret.isSelectionVisible()) {
+                            startPos = Utilities.getRowStart(doc, target.getSelectionStart());
+                            endPos = target.getSelectionEnd();
+                            if (endPos > 0 && Utilities.getRowStart(doc, endPos) == endPos) {
+                                endPos--;
+                            }
+                            endPos = Utilities.getRowEnd(doc, endPos);
+                        } else { // selection not visible
+                            startPos = Utilities.getRowStart(doc, caret.getDot());
+                            endPos = Utilities.getRowEnd(doc, caret.getDot());
+                        }
+                        
+                        int lineCount = Utilities.getRowCount(doc, startPos, endPos);
+                        boolean comment = forceComment != null ? forceComment : !allComments(doc, startPos, lineCount);
+                        
+                        if (comment) {
+                            comment(doc, startPos, lineCount);
+                        } else {
+                            uncomment(doc, startPos, lineCount);
+                        }
+                    } finally {
+                        doc.atomicUnlock();
+                    }
+                } catch (BadLocationException e) {
+                    target.getToolkit().beep();
+                }
+            }
+        }
+        
+        private boolean allComments(BaseDocument doc, int startOffset, int lineCount) throws BadLocationException {
+            for (int offset = startOffset; lineCount > 0; lineCount--) {
+                int firstNonWhitePos = Utilities.getRowFirstNonWhite(doc, offset);
+                if (firstNonWhitePos != -1) { // Ignore empty lines
+                    if (!isLineCommented(doc, firstNonWhitePos)) {
+                        return false;
+                    }
+                }
+                
+                offset = Utilities.getRowStart(doc, offset, +1);
+            }
+            return true;
+        }
+        
+        private void comment(BaseDocument doc, int startOffset, int lineCount) throws BadLocationException {
+            for (int offset = startOffset; lineCount > 0; lineCount--, offset = Utilities.getRowStart(doc, offset, +1)) {
+                // TODO - if the line starts with "<%", put the "#" inside!
+                if (Utilities.isRowEmpty(doc, offset) || Utilities.isRowWhite(doc, offset)) {
+                    continue;
+                }
+                
+                int textBegin = Utilities.getRowFirstNonWhite(doc, offset);
+                int textEnd = Utilities.getRowEnd(doc, offset);
+                if (textEnd-offset >= ERB_PREFIX_LEN) {
+                    // See if it's a <% prefix
+                    // TODO - handle nested <%# applications!
+                    CharSequence maybeLineComment = DocumentUtilities.getText(doc, textBegin, ERB_PREFIX_LEN);
+                    if (CharSequenceUtilities.textEquals(maybeLineComment, ERB_PREFIX)) {
+                        doc.insertString(textBegin+ERB_PREFIX_LEN, "#", null); // NOI18N
+                        continue;
+                    }
+                }
+                doc.insertString(textBegin, ERB_TEXT, null); // NOI18N
+                doc.insertString(Utilities.getRowLastNonWhite(doc, offset)+1, ERB_SUFFIX, null); // NOI18N
+            }
+        }
+        
+        private void uncomment(BaseDocument doc, int startOffset, int lineCount) throws BadLocationException {
+            for (int offset = startOffset; lineCount > 0; lineCount--, offset = Utilities.getRowStart(doc, offset, +1)) {
+                if (Utilities.isRowEmpty(doc, offset) || Utilities.isRowWhite(doc, offset)) {
+                    continue;
+                }
+
+                // Get the first non-whitespace char on the current line
+                int firstNonWhitePos = Utilities.getRowFirstNonWhite(doc, offset);
+
+                // Is this a "text" line, or a Ruby line?
+                // Text lines have an additional "*" in them
+                int textEnd = Utilities.getRowLastNonWhite(doc, firstNonWhitePos)+1;
+                if (textEnd-firstNonWhitePos >= ERB_TEXT_LEN) {
+                    CharSequence maybeLineComment = DocumentUtilities.getText(doc, firstNonWhitePos, ERB_TEXT_LEN);
+                    CharSequence maybeLineEnd = DocumentUtilities.getText(doc, textEnd-ERB_SUFFIX_LEN, ERB_SUFFIX_LEN);
+                    if (CharSequenceUtilities.textEquals(maybeLineComment, ERB_TEXT)) {
+                        doc.remove(firstNonWhitePos, ERB_TEXT_LEN);
+                        if (CharSequenceUtilities.textEquals(maybeLineEnd, ERB_SUFFIX)) {
+                            doc.remove(textEnd-ERB_SUFFIX_LEN-ERB_TEXT_LEN, ERB_SUFFIX_LEN);
+                        }
+                        continue;
+                    }
+                }
+                
+                // Else it is probably a regular Ruby expression; we remove ONLY the "#" inside
+                if (textEnd-firstNonWhitePos >= ERB_COMMENT_LEN) {
+                    CharSequence maybeLineComment = DocumentUtilities.getText(doc, firstNonWhitePos, ERB_COMMENT_LEN);
+                    if (CharSequenceUtilities.textEquals(maybeLineComment, ERB_COMMENT)) {
+                        // Remove just the #
+                        doc.remove(firstNonWhitePos+2, 1);
+                        continue;
+                    }
+                }
+            }
+        }
     }
 }
 
