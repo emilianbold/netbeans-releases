@@ -25,6 +25,7 @@ import java.util.logging.Logger;
 import org.netbeans.modules.derby.DerbyOptions;
 import org.netbeans.modules.derby.JDKDerbyHelper;
 import org.netbeans.modules.derby.RegisterDerby;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -88,7 +89,7 @@ public class DerbySupport {
         }
 
         String userHome = System.getProperty("user.home"); // NOI18N
-        return new File(userHome, NbBundle.getMessage(DerbySupport.class, "LBL_DerbyDatabaseDirectory")).getAbsolutePath();
+        return FileUtil.normalizeFile(new File(userHome, NbBundle.getMessage(DerbySupport.class, "LBL_DerbyDatabaseDirectory"))).getAbsolutePath();
     }
     
     /**
