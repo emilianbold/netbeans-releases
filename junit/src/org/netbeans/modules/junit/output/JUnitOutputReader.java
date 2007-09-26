@@ -172,8 +172,6 @@ final class JUnitOutputReader {
     /** */
     private boolean waitingForIssueStatus;
     /** */
-    private final Manager manager = Manager.getInstance();
-    /** */
     private String classpath;
     /** */
     private ClassPath platformSources;
