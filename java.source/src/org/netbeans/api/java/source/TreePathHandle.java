@@ -360,7 +360,8 @@ public final class TreePathHandle {
             }
             @SuppressWarnings("deprecation")
             EditorSupport es = dob.getCookie(EditorSupport.class);
-            return es.createPositionRef(position, bias);
+            if (es!=null)
+                return es.createPositionRef(position, bias);
         } catch (DataObjectNotFoundException ex) {
             ex.printStackTrace();
         }
