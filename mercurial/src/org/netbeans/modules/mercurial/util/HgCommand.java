@@ -197,7 +197,7 @@ public class HgCommand {
              command.add(revStr);
         env.add(HG_MERGE_ENV);
         
-        List<String> list = exec(command);
+        List<String> list = execEnv(command, env);
         if (!list.isEmpty()) {
             if (isErrorOutStandingUncommittedMerges(list.get(0))) {
                 throw new HgException(org.openide.util.NbBundle.getMessage(HgCommand.class, "MSG_WARN_MERGE_COMMIT_TEXT"));
@@ -1625,7 +1625,7 @@ public class HgCommand {
         return msg.indexOf(HG_UPDATE_SPAN_BRANCHES_ERR) > -1; // NOI18N
     }
 
-    private static boolean isErrorOutStandingUncommittedMerges(String msg) {
+    public static boolean isErrorOutStandingUncommittedMerges(String msg) {
         return msg.indexOf(HG_OUTSTANDING_UNCOMMITTED_MERGES_ERR) > -1; // NOI18N
     }
     
