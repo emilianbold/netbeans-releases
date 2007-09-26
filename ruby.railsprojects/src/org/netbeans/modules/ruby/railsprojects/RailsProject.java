@@ -85,6 +85,7 @@ public class RailsProject implements Project, RakeProjectListener {
 //    private MainClassUpdater mainClassUpdater;
     protected SourceRoots sourceRoots;
     protected SourceRoots testRoots;
+    private RailsSources sources;
     
     protected RailsProject(RakeProjectHelper helper) throws IOException {
         this.helper = helper;
@@ -179,6 +180,7 @@ public class RailsProject implements Project, RakeProjectListener {
     
     protected Lookup createLookup(AuxiliaryConfiguration aux) {
         SubprojectProvider spp = refHelper.createSubprojectProvider();
+        sources = new RailsSources (this.helper, evaluator(), getSourceRoots(), getTestSourceRoots());
         Lookup base = Lookups.fixed(new Object[] {
             new Info(),
             aux,
@@ -191,7 +193,7 @@ public class RailsProject implements Project, RakeProjectListener {
             new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper, this.genFilesHelper),        
             new ProjectXmlSavedHookImpl(),
             new ProjectOpenedHookImpl(),
-            new RailsSources (this.helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
+            sources,
             new RailsSharabilityQuery (this.helper, evaluator(), getSourceRoots(), getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
             new RailsFileBuiltQuery (this.helper, evaluator(),getSourceRoots(),getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
             new RecommendedTemplatesImpl (this.updateHelper),
@@ -320,7 +322,12 @@ public class RailsProject implements Project, RakeProjectListener {
         }
         
     }
-    
+
+    public void notifyDeleting() {
+        helper.removeRakeProjectListener(this);
+        sources.notifyDeleting();
+    }
+
     protected final class ProjectXmlSavedHookImpl extends ProjectXmlSavedHook {
         
         public ProjectXmlSavedHookImpl() {}
@@ -350,55 +357,7 @@ public class RailsProject implements Project, RakeProjectListener {
         public ProjectOpenedHookImpl() {}
         
         protected void projectOpened() {
-            // Check up on build scripts.
-/*
-            try {
-                if (updateHelper.isCurrent()) {
-                    //Refresh build-impl.xml only for j2seproject/2
-                    genFilesHelper.refreshBuildScript(
-                        GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                        RailsProject.class.getResource("resources/build-impl.xsl"),
-                        true);
-                    genFilesHelper.refreshBuildScript(
-                        GeneratedFilesHelper.BUILD_XML_PATH,
-                        RailsProject.class.getResource("resources/build.xsl"),
-                        true);
-                }                
-            } catch (IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-            }
-*/
-            // register project's classpaths to GlobalPathRegistry
-            ClassPathProviderImpl cpProvider = lookup.lookup(ClassPathProviderImpl.class);
-            GlobalPathRegistry.getDefault().register(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
-            GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
-            //GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
-            
-            //register updater of main.class
-            //the updater is active only on the opened projects
-
-/*
-            // Make it easier to run headless builds on the same machine at least.
-            ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
-                public Void run() {
-                    EditableProperties ep = updateHelper.getProperties(RakeProjectHelper.PRIVATE_PROPERTIES_PATH);
-                    File buildProperties = new File(System.getProperty("netbeans.user"), "build.properties"); // NOI18N
-                    ep.setProperty("user.properties.file", buildProperties.getAbsolutePath()); //NOI18N                    
-                    updateHelper.putProperties(RakeProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
-                    try {
-                        ProjectManager.getDefault().saveProject(RailsProject.this);
-                    } catch (IOException e) {
-                        ErrorManager.getDefault().notify(e);
-                    }
-                    return null;
-                }
-            });
-            RailsLogicalViewProvider physicalViewProvider = (RailsLogicalViewProvider)
-                RailsProject.this.getLookup().lookup (RailsLogicalViewProvider.class);
-            if (physicalViewProvider != null &&  physicalViewProvider.hasBrokenLinks()) {   
-                BrokenReferencesSupport.showAlert();
-            }
-*/
+            open();
         }
         
         protected void projectClosed() {
@@ -423,6 +382,62 @@ public class RailsProject implements Project, RakeProjectListener {
             
         }
         
+    }
+
+    /*
+     * Run the open hook.
+     * For use from unit tests.
+     */
+    void open() {
+        // Check up on build scripts.
+/*
+        try {
+            if (updateHelper.isCurrent()) {
+                //Refresh build-impl.xml only for j2seproject/2
+                genFilesHelper.refreshBuildScript(
+                    GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
+                    RailsProject.class.getResource("resources/build-impl.xsl"),
+                    true);
+                genFilesHelper.refreshBuildScript(
+                    GeneratedFilesHelper.BUILD_XML_PATH,
+                    RailsProject.class.getResource("resources/build.xsl"),
+                    true);
+            }                
+        } catch (IOException e) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+        }
+*/
+        // register project's classpaths to GlobalPathRegistry
+        ClassPathProviderImpl cpProvider = lookup.lookup(ClassPathProviderImpl.class);
+        GlobalPathRegistry.getDefault().register(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
+        GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
+        //GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
+        
+        //register updater of main.class
+        //the updater is active only on the opened projects
+
+/*
+        // Make it easier to run headless builds on the same machine at least.
+        ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
+            public Void run() {
+                EditableProperties ep = updateHelper.getProperties(RakeProjectHelper.PRIVATE_PROPERTIES_PATH);
+                File buildProperties = new File(System.getProperty("netbeans.user"), "build.properties"); // NOI18N
+                ep.setProperty("user.properties.file", buildProperties.getAbsolutePath()); //NOI18N                    
+                updateHelper.putProperties(RakeProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
+                try {
+                    ProjectManager.getDefault().saveProject(RailsProject.this);
+                } catch (IOException e) {
+                    ErrorManager.getDefault().notify(e);
+                }
+                return null;
+            }
+        });
+        RailsLogicalViewProvider physicalViewProvider = (RailsLogicalViewProvider)
+            RailsProject.this.getLookup().lookup (RailsLogicalViewProvider.class);
+        if (physicalViewProvider != null &&  physicalViewProvider.hasBrokenLinks()) {   
+            BrokenReferencesSupport.showAlert();
+        }
+*/
     }
         
     private static final class RecommendedTemplatesImpl implements RecommendedTemplates, PrivilegedTemplates {

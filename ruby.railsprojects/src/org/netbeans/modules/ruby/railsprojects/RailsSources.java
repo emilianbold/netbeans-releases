@@ -98,6 +98,13 @@ public class RailsSources implements Sources, PropertyChangeListener, ChangeList
             }
         });
     }
+    
+    void notifyDeleting() {
+        delegate.removeChangeListener(this);
+        sourceRoots.removePropertyChangeListener(this);
+        testRoots.removePropertyChangeListener(this);
+        evaluator.removePropertyChangeListener(this);
+    }
 
     private Sources initSources() {        
         this.sourcesHelper = new SourcesHelper(helper, evaluator);   //Safe to pass APH        

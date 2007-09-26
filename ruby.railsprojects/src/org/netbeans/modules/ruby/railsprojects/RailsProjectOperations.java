@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -24,27 +24,23 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Properties;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.CopyOperationImplementation;
 import org.netbeans.spi.project.DeleteOperationImplementation;
 import org.netbeans.spi.project.MoveOperationImplementation;
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
 import org.netbeans.modules.ruby.spi.project.support.rake.EditableProperties;
-import org.netbeans.modules.ruby.spi.project.support.rake.GeneratedFilesHelper;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyUtils;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
- *
  * @author Jan Lahoda
  */
 public class RailsProjectOperations implements DeleteOperationImplementation, CopyOperationImplementation, MoveOperationImplementation {
+    
     private RailsProject project;
     
     public RailsProjectOperations(RailsProject project) {
@@ -67,7 +63,7 @@ public class RailsProjectOperations implements DeleteOperationImplementation, Co
         addFile(projectDirectory, "build.xml", files); // NOI18N
         addFile(projectDirectory, "xml-resources", files); //NOI18N
         addFile(projectDirectory, "catalog.xml", files); //NOI18N
-        
+
         return files;
     }
     
@@ -80,10 +76,11 @@ public class RailsProjectOperations implements DeleteOperationImplementation, Co
     }
     
     public void notifyDeleting() throws IOException {
-        RailsActionProvider ap = project.getLookup().lookup(RailsActionProvider.class);
-        
-        assert ap != null;
-        
+        project.notifyDeleting();
+//        RailsActionProvider ap = project.getLookup().lookup(RailsActionProvider.class);
+//        
+//        assert ap != null;
+//        
         // TODO: Clean
 //        Properties p = new Properties();
 //        String[] targetNames = ap.getTargetNames(ActionProvider.COMMAND_CLEAN, Lookup.EMPTY, p);
