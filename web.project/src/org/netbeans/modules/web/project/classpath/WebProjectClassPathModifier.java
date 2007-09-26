@@ -58,8 +58,8 @@ import org.openide.util.WeakListeners;
  */
 public class WebProjectClassPathModifier extends ProjectClassPathModifierImplementation implements PropertyChangeListener {
     
-    static final int ADD = 1;
-    static final int REMOVE = 2;
+    public static final int ADD = 1;
+    public static final int REMOVE = 2;
     
     private static final String DEFAULT_WEB_MODULE_ELEMENT_NAME = ClassPathSupport.TAG_WEB_MODULE_LIBRARIES;
 
@@ -242,57 +242,70 @@ public class WebProjectClassPathModifier extends ProjectClassPathModifierImpleme
     }
     
     boolean handleLibraries (final Library[] libraries, final String classPathProperty, final String webModuleElementName, final int operation) throws IOException, UnsupportedOperationException {
-        assert libraries != null : "Libraries cannot be null";  //NOI18N
+        List<ClassPathSupport.Item> items = new ArrayList<ClassPathSupport.Item>(libraries.length);
+        for (int i = 0; i < libraries.length; i++) {
+            items.add(ClassPathSupport.Item.create(libraries[i], null, ClassPathSupport.Item.PATH_IN_WAR_LIB));
+        }
+        return handleLibraryClassPathItems(items, classPathProperty, webModuleElementName, operation, true);
+    }
+    
+    public boolean handleLibraryClassPathItems (final List<ClassPathSupport.Item> items, final String classPathProperty, final String webModuleElementName, final int operation, final boolean saveProject) throws IOException {
+        assert items != null : "Libraries cannot be null";  //NOI18N
         assert classPathProperty != null;
+        // if the caller doesn't wish to save the project, it is expected to do it later,
+        // in which case it must have PM.mutex() write access to avoid race conditions
+        assert saveProject || ProjectManager.mutex().isWriteAccess();
         try {
             dontFireChange = true;
             unregisterLibraryListeners();
             return ProjectManager.mutex().writeAccess(
-                    new Mutex.ExceptionAction<Boolean>() {
-                        public Boolean run() throws IOException {
-                            EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                            String raw = props.getProperty(classPathProperty);
-                            List<ClassPathSupport.Item> resources = cs.itemsList(raw, webModuleElementName);
-                            List<ClassPathSupport.Item> changed = new ArrayList<ClassPathSupport.Item>(libraries.length);
-                            for (int i=0; i< libraries.length; i++) {
-                                assert libraries[i] != null;
-                                ClassPathSupport.Item item = ClassPathSupport.Item.create( libraries[i], null, ClassPathSupport.Item.PATH_IN_WAR_LIB);
-                                if (operation == ADD && !resources.contains(item)) {
-                                    resources.add (item);                                
-                                    changed.add(item);
-                                }
-                                else if (operation == REMOVE && resources.contains(item)) {
-                                    resources.remove(item);
-                                    changed.add(item);
-                                }
+                new Mutex.ExceptionAction<Boolean>() {
+                    public Boolean run() throws IOException {
+                        EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                        String raw = props.getProperty(classPathProperty);
+                        List<ClassPathSupport.Item> resources = cs.itemsList(raw, webModuleElementName);
+                        List<ClassPathSupport.Item> changed = new ArrayList<ClassPathSupport.Item>(items.size());
+                        for (ClassPathSupport.Item item : items) {
+                            assert item != null;
+                            assert item.getType() == ClassPathSupport.Item.TYPE_LIBRARY;
+                            if (operation == ADD && !resources.contains(item)) {
+                                resources.add (item);                                
+                                changed.add(item);
                             }
-                            if (!changed.isEmpty()) {
-                                String itemRefs[] = cs.encodeToStrings( resources.iterator(), webModuleElementName);
-                                props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //PathParser may change the EditableProperties                                
-                                props.setProperty(classPathProperty, itemRefs);                                
-                                if (operation == ADD) {
-                                    for (ClassPathSupport.Item item : changed) {
-                                        String prop = cs.getLibraryReference(item);
-                                        prop = prop.substring(2, prop.length()-1); // XXX make a PropertyUtils method for this!
-                                        ClassPathSupport.relativizeLibraryClassPath(props, helper.getAntProjectHelper(), prop);
-                                    }
-                                }
-                                helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
-                                //update lib references in private properties
-                                EditableProperties privateProps = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-                                ArrayList l = new ArrayList ();
-                                l.addAll(resources);
-                                l.addAll(cs.itemsList(props.getProperty(WebProjectProperties.WAR_CONTENT_ADDITIONAL),  WebProjectProperties.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES));
-                                WebProjectProperties.storeLibrariesLocations(l.iterator(), privateProps);
-                                helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProps);
-                                ProjectManager.getDefault().saveProject(project);
-                                registerLibraryListeners(props);
-                                dontFireChange = false;
-                                return true;
+                            else if (operation == REMOVE && resources.contains(item)) {
+                                resources.remove(item);
+                                changed.add(item);
                             }
-                            return false;
                         }
+                        if (!changed.isEmpty()) {
+                            String itemRefs[] = cs.encodeToStrings( resources.iterator(), webModuleElementName);
+                            props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //PathParser may change the EditableProperties                                
+                            props.setProperty(classPathProperty, itemRefs);                                
+                            if (operation == ADD) {
+                                for (ClassPathSupport.Item item : changed) {
+                                    String prop = cs.getLibraryReference(item);
+                                    prop = prop.substring(2, prop.length()-1); // XXX make a PropertyUtils method for this!
+                                    ClassPathSupport.relativizeLibraryClassPath(props, helper.getAntProjectHelper(), prop);
+                                }
+                            }
+                            helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+                            //update lib references in private properties
+                            EditableProperties privateProps = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+                            ArrayList l = new ArrayList ();
+                            l.addAll(resources);
+                            l.addAll(cs.itemsList(props.getProperty(WebProjectProperties.WAR_CONTENT_ADDITIONAL),  WebProjectProperties.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES));
+                            WebProjectProperties.storeLibrariesLocations(l.iterator(), privateProps);
+                            helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProps);
+                            if (saveProject) {
+                                ProjectManager.getDefault().saveProject(project);
+                            }
+                            registerLibraryListeners(props);
+                            dontFireChange = false;
+                            return true;
+                        }
+                        return false;
                     }
+                }
             );
         } catch (MutexException e) {
             throw (IOException) e.getException();

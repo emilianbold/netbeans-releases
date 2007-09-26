@@ -48,8 +48,8 @@ public class WebProjectLibrariesModifierImpl implements WebProjectLibrariesModif
     private final UpdateHelper helper;
     private final ClassPathSupport cs;    
 
-    static final int ADD = 1;
-    static final int REMOVE = 2;
+    public static final int ADD = 1;
+    public static final int REMOVE = 2;
 
     /** Creates a new instance of WebProjectLibrariesModifierImpl */
     public WebProjectLibrariesModifierImpl(final Project project, final UpdateHelper helper, final PropertyEvaluator eval, final ReferenceHelper refHelper) {
@@ -73,19 +73,30 @@ public class WebProjectLibrariesModifierImpl implements WebProjectLibrariesModif
     public boolean removePackageLibraries(final Library[] libraries, final String path) throws IOException {
         return handlePackageLibraries(libraries, path, REMOVE);
     }
-
+    
     private boolean handlePackageLibraries(final Library[] libraries, final String path, final int operation) throws IOException {
-        assert libraries != null : "Libraries cannot be null";  //NOI18N
+        List<ClassPathSupport.Item> items = new ArrayList<ClassPathSupport.Item>(libraries.length);
+        for (int i = 0; i < libraries.length; i++) {
+            items.add(ClassPathSupport.Item.create(libraries[i], null, path));
+        }
+        return handlePackageLibraryClassPathItems(items, operation, true);
+    }
+
+    public boolean handlePackageLibraryClassPathItems(final List<ClassPathSupport.Item> items, final int operation, final boolean saveProject) throws IOException {
+        assert items != null : "Libraries cannot be null";  //NOI18N
+        // if the caller doesn't wish to save the project, it is expected to do it later,
+        // in which case it must have PM.mutex() write access to avoid race conditions
+        assert saveProject || ProjectManager.mutex().isWriteAccess();
         try {
             return ProjectManager.mutex().writeAccess(
                 new Mutex.ExceptionAction<Boolean>() {
                     public Boolean run() throws IOException {
                         EditableProperties projectProperties = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
                         List<ClassPathSupport.Item> resources = cs.itemsList((String)projectProperties.getProperty(WebProjectProperties.WAR_CONTENT_ADDITIONAL), ClassPathSupport.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES);
-                        List<ClassPathSupport.Item> changed = new ArrayList<ClassPathSupport.Item>(libraries.length);
-                        for (int i=0; i< libraries.length; i++) {
-                            assert libraries[i] != null;
-                            ClassPathSupport.Item item = ClassPathSupport.Item.create(libraries[i], null, path);
+                        List<ClassPathSupport.Item> changed = new ArrayList<ClassPathSupport.Item>(items.size());
+                        for (ClassPathSupport.Item item : items) {
+                            assert item != null;
+                            assert item.getType() == ClassPathSupport.Item.TYPE_LIBRARY;
                             if (operation == ADD && !resources.contains(item)) {
                                 resources.add(item);
                                 changed.add(item);
@@ -114,7 +125,9 @@ public class WebProjectLibrariesModifierImpl implements WebProjectLibrariesModif
                             l.addAll(resources);
                             WebProjectProperties.storeLibrariesLocations(l.iterator(), privateProperties);
                             helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties);
-                            ProjectManager.getDefault().saveProject(project);
+                            if (saveProject) {
+                                ProjectManager.getDefault().saveProject(project);
+                            }
                             return true;
                         }
                         return false;
@@ -457,4 +470,7 @@ public class WebProjectLibrariesModifierImpl implements WebProjectLibrariesModif
         }
     }
 
+    public ClassPathSupport getClassPathSupport() {
+        return cs;
+    }
 }

@@ -182,6 +182,8 @@ Microsystems, Inc. All Rights Reserved.
             
             <folder name="Lookup"/>
             
+            <folder name="BrokenLibraryRefFilterProviders"/>
+            
         </folder>
     </folder>
 

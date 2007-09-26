@@ -27,6 +27,7 @@ import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -36,6 +37,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.web.project.api.WebPropertyEvaluator;
 import org.netbeans.modules.web.project.jaxws.WebProjectJAXWSClientSupport;
 import org.netbeans.modules.web.project.jaxws.WebProjectJAXWSSupport;
+import org.netbeans.modules.web.project.spi.BrokenLibraryRefFilterProvider;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.modules.websvc.jaxws.spi.JAXWSSupportFactory;
@@ -97,9 +99,11 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
+import org.netbeans.modules.web.project.classpath.ClassPathSupport;
 import org.netbeans.modules.web.project.classpath.WebProjectClassPathModifier;
 import org.netbeans.modules.web.project.classpath.WebProjectLibrariesModifierImpl;
 import org.netbeans.modules.web.project.jaxws.WebProjectJAXWSVersionProvider;
+import org.netbeans.modules.web.project.spi.BrokenLibraryRefFilter;
 import org.netbeans.modules.web.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.web.spi.webmodule.WebPrivilegedTemplates;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
@@ -108,7 +112,6 @@ import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesSupportFactory;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -118,6 +121,9 @@ import org.openide.util.RequestProcessor;
  * @author Jesse Glick, et al., Pavel Buzek
  */
 public final class WebProject implements Project, AntProjectListener, FileChangeListener, PropertyChangeListener {
+    
+    private static final Logger LOGGER = Logger.getLogger(WebProject.class.getName());
+    
     private static final Icon WEB_PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif")); // NOI18
     
     private final AntProjectHelper helper;
@@ -143,6 +149,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
     private final AuxiliaryConfiguration aux;
     private final WebProjectClassPathExtender classPathExtender;
     private final WebProjectClassPathModifier cpMod;
+    private final WebProjectLibrariesModifierImpl libMod;
     private PropertyChangeListener evalListener;
     private final ClassPathProviderImpl cpProvider;
     
@@ -280,6 +287,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
         apiJAXWSClientSupport = JAXWSClientSupportFactory.createJAXWSClientSupport(jaxWsClientSupport);
         enterpriseResourceSupport = new WebContainerImpl(this, refHelper, helper);
         cpMod = new WebProjectClassPathModifier(this, this.updateHelper, eval, refHelper);
+        libMod = new WebProjectLibrariesModifierImpl(this, this.updateHelper, eval, refHelper);
         classPathExtender = new WebProjectClassPathExtender(cpMod);
         lookup = createLookup(aux, cpProvider);
         helper.addAntProjectListener(this);
@@ -368,7 +376,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
             new WebPropertyEvaluatorImpl(evaluator()),
             WebProject.this, // never cast an externally obtained Project to WebProject - use lookup instead
             new WebProjectRestSupport(this, helper),
-            new WebProjectLibrariesModifierImpl(this, this.updateHelper, eval, refHelper),
+            libMod,
             new WebProjectEncodingQueryImpl(evaluator()),
             new WebTemplateAttributesProvider(this.helper),
         });
@@ -804,8 +812,11 @@ public final class WebProject implements Project, AntProjectListener, FileChange
 
             // set jaxws.endorsed.dir property (for endorsed mechanism to be used with wsimport, wsgen)
             WSUtils.setJaxWsEndorsedDirProperty(ep);
+            
+            filterBrokenLibraryRefs();
 
             EditableProperties props = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
+
             //update lib references in private properties
             ArrayList l = new ArrayList();
             l.addAll(cpMod.getClassPathSupport().itemsList(props.getProperty(WebProjectProperties.JAVAC_CLASSPATH),  WebProjectProperties.TAG_WEB_MODULE_LIBRARIES));
@@ -857,6 +868,77 @@ public final class WebProject implements Project, AntProjectListener, FileChange
             } catch (IOException e) {
                 Exceptions.printStackTrace(e);
             }
+        }
+        
+        /**
+         * Filters the broken library references (see issue 110040).
+         */
+        private void filterBrokenLibraryRefs() {
+            // filter the compilation CP
+            EditableProperties props = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+            List<ClassPathSupport.Item> toRemove = filterBrokenLibraryItems(cpMod.getClassPathSupport().itemsList(props.getProperty(WebProjectProperties.JAVAC_CLASSPATH), WebProjectProperties.TAG_WEB_MODULE_LIBRARIES));
+            if (!toRemove.isEmpty()) {
+                LOGGER.log(Level.FINE, "Will remove broken classpath library references: " + toRemove);
+                try {
+                    cpMod.handleLibraryClassPathItems(toRemove, WebProjectProperties.JAVAC_CLASSPATH, WebProjectProperties.TAG_WEB_MODULE_LIBRARIES, WebProjectClassPathModifier.REMOVE, false);
+                } catch (IOException e) {
+                    // should only occur when passing true as the saveProject parameter which we are not doing here
+                    Exceptions.printStackTrace(e);
+                }
+            }
+            // filter the additional (packaged) items
+            // need to re-read the properites as the handleLibraryClassPathItems() might have changed them
+            props = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+            toRemove = filterBrokenLibraryItems(libMod.getClassPathSupport().itemsList(props.getProperty(WebProjectProperties.WAR_CONTENT_ADDITIONAL), WebProjectProperties.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES));
+            if (!toRemove.isEmpty()) {
+                LOGGER.log(Level.FINE, "Will remove broken additional library references: " + toRemove);
+                try {
+                    libMod.handlePackageLibraryClassPathItems(toRemove, WebProjectLibrariesModifierImpl.REMOVE, false);
+                } catch (IOException e) {
+                    // should only occur when passing true as the saveProject parameter which we are not doing here
+                    Exceptions.printStackTrace(e);
+                }
+            }
+        }
+        
+        private List<ClassPathSupport.Item> filterBrokenLibraryItems(List<ClassPathSupport.Item> items) {
+            List<ClassPathSupport.Item> toRemove = new LinkedList<ClassPathSupport.Item>();
+            Collection<? extends BrokenLibraryRefFilter> filters = null;
+            for (ClassPathSupport.Item item : items) {
+                if (!item.isBroken() || item.getType() != ClassPathSupport.Item.TYPE_LIBRARY) {
+                    continue;
+                }
+                String libraryName = item.getReference();
+                if (libraryName.startsWith(WebProjectProperties.LIBRARY_PREFIX)) {
+                    // remove the "${libs." prefix and ".classpath}" suffix
+                    libraryName = libraryName.substring(WebProjectProperties.LIBRARY_PREFIX.length(), libraryName.lastIndexOf('.'));
+                }
+                LOGGER.log(Level.FINE, "Broken reference to library: " + libraryName);
+                if (filters == null) {
+                    // initializing the filters lazily because usually they will not be needed anyway
+                    // (most projects have no broken references)
+                    filters = createFilters(WebProject.this);
+                }
+                for (BrokenLibraryRefFilter filter : filters) {
+                    if (filter.removeLibraryReference(libraryName)) {
+                        LOGGER.log(Level.FINE, "Will remove broken reference to library " + libraryName + " because of filter " + filter.getClass().getName());
+                        toRemove.add(item);
+                        break;
+                    }
+                }
+            }
+            return toRemove;
+        }
+        
+        private List<BrokenLibraryRefFilter> createFilters(Project project) {
+            List<BrokenLibraryRefFilter> filters = new LinkedList<BrokenLibraryRefFilter>();
+            for (BrokenLibraryRefFilterProvider provider : Lookups.forPath("Projects/org-netbeans-modules-web-project/BrokenLibraryRefFilterProviders").lookupAll(BrokenLibraryRefFilterProvider.class)) { // NOI18N
+                BrokenLibraryRefFilter filter = provider.createFilter(project);
+                if (filter != null) {
+                    filters.add(filter);
+                }
+            }
+            return filters;
         }
         
         protected void projectClosed() {
