@@ -1,4 +1,4 @@
-#!/bin/sh -x
+#!/bin/sh
 
 # The contents of this file are subject to the terms of the Common Development
 # and Distribution License (the License). You may not use this file except in
@@ -19,18 +19,6 @@
 
 set -e
 
-basename=`dirname "$0"`
-if [ -z "$basename" ]
-then
-    basename=.
+if [ -d "/Library/Receipts/openesb.pkg" ] ; then
+    rm -rf "/Library/Receipts/openesb.pkg"
 fi
-. "$basename"/env.sh
-
-if [ -d "/Applications/Netbeans/$NETBEANS_INSTALL_DIR" ] ; then
-    rm -rf "/Applications/Netbeans/$NETBEANS_INSTALL_DIR"
-fi
-
-if [ -d "/Library/Receipts/NetBeans.pkg" ] ; then
-    rm -rf "/Library/Receipts/NetBeans.pkg"
-fi
-
