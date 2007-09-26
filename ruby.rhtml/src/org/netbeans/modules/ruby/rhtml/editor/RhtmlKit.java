@@ -26,6 +26,10 @@ import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.TextAction;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.ext.ExtKit.ToggleCommentAction;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
@@ -35,6 +39,7 @@ import org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction;
 import org.netbeans.modules.editor.html.HTMLKit;
 import org.netbeans.modules.ruby.BracketCompleter;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
+import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
 import org.netbeans.modules.ruby.rhtml.loaders.BackgroundParser;
 import org.openide.util.Exceptions;
@@ -45,7 +50,6 @@ import org.openide.util.Exceptions;
  * @todo Automatic bracket matching for RHTML files should probably split Ruby blocks up,
  *  e.g. pressing enter here:  <% if true| %> should take you -outside- of the current
  *  block and insert a matching <% end %> outside!
- * @todo Add in a toggle comment action that -works- !
  * 
  * @author Marek Fukala
  * @author Tor Norbye
@@ -310,11 +314,59 @@ public class RhtmlKit extends HTMLKit {
             commentUncomment(evt, target, null);
         }
 
+        private static Token<? extends TokenId> getToken(BaseDocument doc, int offset, boolean checkEmbedded) {
+            TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
+            TokenSequence<?extends TokenId> ts = th.tokenSequence();
+            ts.move(offset);
+            if (!ts.moveNext()) {
+                return null;
+            }
+
+            if (checkEmbedded) {
+                TokenSequence<? extends TokenId> es = ts.embedded();
+                if (es != null) {
+                    es.move(offset);
+                    if (es.moveNext()) {
+                        return es.token();
+                    }
+                }
+            }
+            return ts.token();
+        }
+        
         /** See if this line looks commented */
         private static boolean isLineCommented(BaseDocument doc, int textBegin) throws BadLocationException  {
             assert textBegin != -1;
-            //int start = Utilities.getRowFirstNonWhite(doc, start);
-            //if (start == -1) { 
+            
+            Token<? extends TokenId> token = getToken(doc, textBegin, false);
+            if (token != null) {
+                TokenId id = token.id();
+                if (id == RhtmlTokenId.DELIMITER) {
+                    // Could be either <% or <%# or even <% #
+                    if (token.text().toString().endsWith("#")) {
+                        return true;
+                    }
+                    // Handle "<% #" etc.
+                    int first = Utilities.getFirstNonWhiteFwd(doc, textBegin+token.length(), 
+                            Utilities.getRowEnd(doc, textBegin));
+                    if (first == -1) {
+                        return false;
+                    } else {
+                        char c = DocumentUtilities.getText(doc, first, 1).charAt(0);
+                        return c == '#';
+                    }
+                } else if (id == RhtmlTokenId.RUBY || id == RhtmlTokenId.RUBY_EXPR) {
+                    // We're in the middle of some Ruby - check it
+                    token = getToken(doc, textBegin, true);
+                    return token.id() == RubyTokenId.LINE_COMMENT;
+                } else if (id == RhtmlTokenId.RUBYCOMMENT) {
+                    return true;
+                } else {
+                    // We don't consider HTML comments commented out - want RHTML commenting
+                    return false;
+                }
+            } 
+
             int textEnd = Utilities.getRowLastNonWhite(doc, textBegin)+1;
             
             if (textEnd - textBegin < ERB_COMMENT_LEN) {
@@ -394,6 +446,28 @@ public class RhtmlKit extends HTMLKit {
                 }
                 
                 int textBegin = Utilities.getRowFirstNonWhite(doc, offset);
+
+                Token<? extends TokenId> token = getToken(doc, textBegin, false);
+                if (token != null) {
+                    TokenId id = token.id();
+                    if (id == RhtmlTokenId.DELIMITER) {
+                        if (!token.text().toString().endsWith("#")) {
+                            doc.insertString(textBegin+ERB_PREFIX_LEN, "#", null); // NOI18N
+                        }
+                    } else if (id == RhtmlTokenId.RUBY || id == RhtmlTokenId.RUBY_EXPR) {
+                        // We're in the middle of some Ruby - check it
+                        token = getToken(doc, textBegin, true);
+                        doc.insertString(textBegin, "#", null); // NOI18N
+                    } else if (id == RhtmlTokenId.RUBYCOMMENT) {
+                        //return true;
+                    } else {
+                        // Plain text or HTML
+                        doc.insertString(textBegin, ERB_TEXT, null); // NOI18N
+                        doc.insertString(Utilities.getRowLastNonWhite(doc, offset)+1, ERB_SUFFIX, null); // NOI18N
+                    }
+                    continue;
+                } 
+                
                 int textEnd = Utilities.getRowEnd(doc, offset);
                 if (textEnd-offset >= ERB_PREFIX_LEN) {
                     // See if it's a <% prefix
@@ -416,16 +490,67 @@ public class RhtmlKit extends HTMLKit {
                 }
 
                 // Get the first non-whitespace char on the current line
-                int firstNonWhitePos = Utilities.getRowFirstNonWhite(doc, offset);
+                int textBegin = Utilities.getRowFirstNonWhite(doc, offset);
 
+                Token<? extends TokenId> token = getToken(doc, textBegin, false);
+                if (token != null) {
+                    TokenId id = token.id();
+                    if (id == RhtmlTokenId.DELIMITER) {
+                        // Perhaps something like - todo <% #"
+                        // TODO!
+                        if (token.text().toString().endsWith("#")) {
+                            int textEnd = Utilities.getRowLastNonWhite(doc, textBegin)+1;
+                            if (textEnd-textBegin >= ERB_TEXT_LEN) {
+                                CharSequence maybeLineComment = DocumentUtilities.getText(doc, textBegin, ERB_TEXT_LEN);
+                                CharSequence maybeLineEnd = DocumentUtilities.getText(doc, textEnd-ERB_SUFFIX_LEN, ERB_SUFFIX_LEN);
+                                if (CharSequenceUtilities.textEquals(maybeLineComment, ERB_TEXT)) {
+                                    doc.remove(textBegin, ERB_TEXT_LEN);
+                                    if (CharSequenceUtilities.textEquals(maybeLineEnd, ERB_SUFFIX)) {
+                                        doc.remove(textEnd-ERB_SUFFIX_LEN-ERB_TEXT_LEN, ERB_SUFFIX_LEN);
+                                    }
+                                    continue;
+                                }
+                            }
+
+                            // Else it is probably a regular Ruby expression; we remove ONLY the "#" inside
+                            if (textEnd-textBegin >= ERB_COMMENT_LEN) {
+                                CharSequence maybeLineComment = DocumentUtilities.getText(doc, textBegin, ERB_COMMENT_LEN);
+                                if (CharSequenceUtilities.textEquals(maybeLineComment, ERB_COMMENT)) {
+                                    // Remove just the #
+                                    doc.remove(textBegin+2, 1);
+                                    continue;
+                                }
+                            }
+                        } else {
+                            int first = Utilities.getFirstNonWhiteFwd(doc, textBegin+token.length(), 
+                                    Utilities.getRowEnd(doc, textBegin));
+                            if (first != -1) {
+                                char c = DocumentUtilities.getText(doc, first, 1).charAt(0);
+                                if (c == '#') {
+                                    doc.remove(first, 1);
+                                }
+                            }
+                            
+                        }
+                    } else if (id == RhtmlTokenId.RUBY || id == RhtmlTokenId.RUBY_EXPR) {
+                        // We're in the middle of some Ruby - check it
+                        token = getToken(doc, textBegin, true);
+                        if (token.id() == RubyTokenId.LINE_COMMENT) {
+                            doc.remove(textBegin, 1);
+                        }
+                    //} else if (id == RhtmlTokenId.RUBYCOMMENT) {
+                    }
+                    continue;
+                } 
+                
                 // Is this a "text" line, or a Ruby line?
                 // Text lines have an additional "*" in them
-                int textEnd = Utilities.getRowLastNonWhite(doc, firstNonWhitePos)+1;
-                if (textEnd-firstNonWhitePos >= ERB_TEXT_LEN) {
-                    CharSequence maybeLineComment = DocumentUtilities.getText(doc, firstNonWhitePos, ERB_TEXT_LEN);
+                int textEnd = Utilities.getRowLastNonWhite(doc, textBegin)+1;
+                if (textEnd-textBegin >= ERB_TEXT_LEN) {
+                    CharSequence maybeLineComment = DocumentUtilities.getText(doc, textBegin, ERB_TEXT_LEN);
                     CharSequence maybeLineEnd = DocumentUtilities.getText(doc, textEnd-ERB_SUFFIX_LEN, ERB_SUFFIX_LEN);
                     if (CharSequenceUtilities.textEquals(maybeLineComment, ERB_TEXT)) {
-                        doc.remove(firstNonWhitePos, ERB_TEXT_LEN);
+                        doc.remove(textBegin, ERB_TEXT_LEN);
                         if (CharSequenceUtilities.textEquals(maybeLineEnd, ERB_SUFFIX)) {
                             doc.remove(textEnd-ERB_SUFFIX_LEN-ERB_TEXT_LEN, ERB_SUFFIX_LEN);
                         }
@@ -434,11 +559,11 @@ public class RhtmlKit extends HTMLKit {
                 }
                 
                 // Else it is probably a regular Ruby expression; we remove ONLY the "#" inside
-                if (textEnd-firstNonWhitePos >= ERB_COMMENT_LEN) {
-                    CharSequence maybeLineComment = DocumentUtilities.getText(doc, firstNonWhitePos, ERB_COMMENT_LEN);
+                if (textEnd-textBegin >= ERB_COMMENT_LEN) {
+                    CharSequence maybeLineComment = DocumentUtilities.getText(doc, textBegin, ERB_COMMENT_LEN);
                     if (CharSequenceUtilities.textEquals(maybeLineComment, ERB_COMMENT)) {
                         // Remove just the #
-                        doc.remove(firstNonWhitePos+2, 1);
+                        doc.remove(textBegin+2, 1);
                         continue;
                     }
                 }

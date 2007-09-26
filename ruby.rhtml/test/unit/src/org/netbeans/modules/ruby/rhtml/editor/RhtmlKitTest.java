@@ -80,6 +80,30 @@ public class RhtmlKitTest extends RhtmlTestBase {
                      "foo\n<div>\n  <span></span>  \n  \n  <%= rubyexp %> \n");
     }
 
+    public void testToggleComment9() throws Exception {
+        toggleComment("<div>\n  <% ruby1\n  ru^by2\n  ruby3 %> \n</div>\n",
+                      "<div>\n  <% ruby1\n  #ruby2\n  ruby3 %> \n</div>\n");
+    }
+    
+    public void testToggleComment10() throws Exception {
+        toggleComment("<div>\n  <% ruby1\n  #ru^by2\n  ruby3 %> \n</div>\n",
+                      "<div>\n  <% ruby1\n  ruby2\n  ruby3 %> \n</div>\n");
+    }
+
+    public void testToggleComment11() throws Exception {
+        toggleComment("$start$<div>\n  <% ruby1\n  ruby2\n  ruby3 %> \n</div>\n$end$",
+                             "<%#*<div>%>\n  <%# ruby1\n  ruby2\n  ruby3 %> \n<%#*</div>%>\n");
+    }
+    
+    public void testToggleComment12() throws Exception {
+        toggleComment("$start$<%#*<div>%>\n  <%# ruby1\n  ruby2\n  ruby3 %> \n<%#*</div>%>\n$end$", 
+                             "<div>\n  <% ruby1\n  ruby2\n  ruby3 %> \n</div>\n");
+    }
+    
+    public void testToggleComment13() throws Exception {
+        toggleComment("<% #ruby^ %>", "<% ruby %>");
+    }
+    
     @Override
     protected boolean runInEQ() {
         // Must run in AWT thread (BaseKit.install() checks for that)
