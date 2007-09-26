@@ -38,6 +38,14 @@ rescue ${Exception} => ${unusedlocal defaults="ex,boom,bang,var"}
   ${code}
 end]]></code>
   </codetemplate>
+  <codetemplate abbreviation="doc" descriptionId="ct_doc">
+    <code>
+<![CDATA[=begin
+${selection line allowSurround}
+=end
+${cursor}]]>
+    </code>
+  </codetemplate>
 
 
  <!-- The following templates were imported from TextMate -->
