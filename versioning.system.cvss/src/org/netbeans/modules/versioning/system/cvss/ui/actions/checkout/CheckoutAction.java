@@ -290,7 +290,7 @@ public final class CheckoutAction extends SystemAction {
                     JFileChooser chooser = ProjectChooser.projectChooser();
                     chooser.setCurrentDirectory(workingFolder);
                     chooser.setMultiSelectionEnabled(true);
-                    chooser.showOpenDialog(null);
+                    chooser.showOpenDialog(dialog);
                     File [] projectDirs = chooser.getSelectedFiles();
                     for (int i = 0; i < projectDirs.length; i++) {
                         File projectDir = projectDirs[i];
