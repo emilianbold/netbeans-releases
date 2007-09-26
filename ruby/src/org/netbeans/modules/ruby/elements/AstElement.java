@@ -39,6 +39,7 @@ import org.jruby.ast.MethodDefNode;
 import org.jruby.ast.ModuleNode;
 import org.jruby.ast.Node;
 import org.jruby.ast.Node;
+import org.jruby.ast.NodeTypes;
 import org.jruby.ast.SClassNode;
 import org.jruby.ast.SymbolNode;
 import org.netbeans.api.gsf.Element;
@@ -113,24 +114,27 @@ public abstract class AstElement extends RubyElement {
     }
 
     public static AstElement create(Node node) {
-        if (node instanceof MethodDefNode) {
+        switch (node.nodeId) {
+        case NodeTypes.DEFNNODE:
+        case NodeTypes.DEFSNODE:
             return new AstMethodElement(node);
-        } else if (node instanceof ClassNode || node instanceof SClassNode) {
+        case NodeTypes.CLASSNODE:
+        case NodeTypes.SCLASSNODE:
             return new AstClassElement(node);
-        } else if (node instanceof ModuleNode) {
+        case NodeTypes.MODULENODE:
             return new AstModuleElement(node);
-        } else if (node instanceof ConstDeclNode || node instanceof ClassVarDeclNode) {
-            return new AstFieldElement(node);
-        } else if (node instanceof ConstNode) {
+        case NodeTypes.CONSTNODE:
             return new AstVariableElement(node, ((ConstNode)node).getName());
-        } else if (node instanceof ClassVarNode || node instanceof ClassVarDeclNode ||
-                node instanceof InstVarNode || node instanceof InstAsgnNode) {
+        case NodeTypes.CLASSVARNODE:
+        case NodeTypes.CLASSVARDECLNODE:
+        case NodeTypes.INSTASGNNODE:
+        case NodeTypes.INSTVARNODE:
             return new AstFieldElement(node);
-        } else if (node instanceof ConstDeclNode) {
+        case NodeTypes.CONSTDECLNODE:
             return new AstConstantElement((ConstDeclNode)node);
-        } else if (node instanceof SymbolNode) {
+        case NodeTypes.SYMBOLNODE:
             return new AstAttributeElement((SymbolNode)node, null);
-        } else {
+        default:
             return null;
         }
     }
