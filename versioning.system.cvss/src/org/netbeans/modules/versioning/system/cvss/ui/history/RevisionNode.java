@@ -113,6 +113,7 @@ class RevisionNode extends AbstractNode {
         if (revision == null || revision.getRevision().getNumber() == VersionsCache.REVISION_CURRENT) {
             return new Action [0];
         } else {
+            if (!revision.isBranchRoot()) {
             return new Action [] {
                 new RollbackAction(),
                 new RollbackChangeAction(),
@@ -120,7 +121,10 @@ class RevisionNode extends AbstractNode {
                 new FindCommitAction(false),
                 new FindCommitAction(true),
             };
+            } else {
+                return new Action [0];
         }
+    }
     }
     
     private void initProperties() {
