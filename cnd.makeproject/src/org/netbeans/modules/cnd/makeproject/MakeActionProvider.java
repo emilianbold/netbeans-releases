@@ -437,7 +437,7 @@ public class MakeActionProvider implements ActionProvider {
                 }
                 if (validateBuildSystem(pd, conf, validated)) {
                     MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
-                    String buildCommand = makeArtifact.getBuildCommand(CppSettings.getDefault().getMakePath(), "");
+                    String buildCommand = makeArtifact.getBuildCommand(CppSettings.getDefault().getMakeCommand(), "");
                     String args = "";
                     int index = buildCommand.indexOf(' ');
                     if (index > 0) {
@@ -463,7 +463,7 @@ public class MakeActionProvider implements ActionProvider {
 //                }
                 if (validateBuildSystem(pd, conf, validated)) {
                     MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
-                    String buildCommand = makeArtifact.getCleanCommand(CppSettings.getDefault().getMakePath(), ""); // NOI18N
+                    String buildCommand = makeArtifact.getCleanCommand(CppSettings.getDefault().getMakeCommand(), ""); // NOI18N
                     String args = ""; // NOI18N
                     int index = buildCommand.indexOf(' '); // NOI18N
                     if (index > 0) {
@@ -533,7 +533,7 @@ public class MakeActionProvider implements ActionProvider {
                                     true);
                             actionEvents.add(projectActionEvent);
                             // Build commandLine
-                            commandLine = CppSettings.getDefault().getMakePath() + " -f nbproject" + '/' + "Makefile-" + conf.getName() + ".mk " + outputFile; // Unix path // NOI18N
+                            commandLine = CppSettings.getDefault().getMakeCommand() + " -f nbproject" + '/' + "Makefile-" + conf.getName() + ".mk " + outputFile; // Unix path // NOI18N
                             args = ""; // NOI18N
                             index = commandLine.indexOf(' '); // NOI18N
                             if (index > 0) {

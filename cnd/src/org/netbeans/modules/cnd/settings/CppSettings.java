@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
+import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.Path;
 import org.openide.ErrorManager;
 import org.openide.options.SystemOption;
@@ -188,6 +189,19 @@ public class CppSettings extends SystemOption {
         if (!p.equals(path)) {
             putProperty(PROP_MAKE_PATH, path, true);
         }
+    }
+    
+    /*
+     * Returns full path if no spaces otherwise return just base name.
+     * See IZ 116463 for details
+     */
+    public String getMakeCommand() {
+        String makeCommand = getMakePath();
+        if (makeCommand.indexOf(' ') >= 0) {
+            // Strip path
+            makeCommand = IpeUtils.getBaseName(makeCommand);
+        }
+        return makeCommand;
     }
     
     public String getGdbName() {
