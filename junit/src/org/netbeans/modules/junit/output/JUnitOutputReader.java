@@ -75,7 +75,7 @@ final class JUnitOutputReader {
     
     private static final int MAX_REPORT_FILE_SIZE = 1 << 19;    //512 kBytes
     /** number of progress bar workunits */
-    private static final int PROGRESS_WORKUNITS = 1 << 15;   //sqrt(Integer.MAX)
+    private static final int PROGRESS_WORKUNITS = (1 << 15) / 100 * 100;    //sqrt(Integer.MAX), rounded down to hundreds
     /** */
     private static final int INITIAL_PROGRESS = PROGRESS_WORKUNITS / 100;
     /** */
