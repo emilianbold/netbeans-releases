@@ -45,10 +45,12 @@ public class CCFormatter extends ExtFormatter {
         super(kitClass);
     }
 
+    @Override
     protected boolean acceptSyntax(Syntax syntax) {
         return (syntax instanceof CCSyntax);
     }
 
+    @Override
     public int[] getReformatBlock(JTextComponent target, String typedText) {
         int[] ret = null;
 	BaseDocument doc = Utilities.getDocument(target);
@@ -101,6 +103,7 @@ public class CCFormatter extends ExtFormatter {
         return fnw >= 0 && fnw + what.length() <= doc.getLength() && what.equals(doc.getText(fnw, what.length()));
     }
     
+    @Override
     protected void initFormatLayers() {
         addFormatLayer(new StripEndWhitespaceLayer());
         addFormatLayer(new CCLayer());
@@ -116,6 +119,7 @@ public class CCFormatter extends ExtFormatter {
             super("cc-strip-whitespace-at-line-end"); // NOI18N
         }
 
+        @Override
         protected FormatSupport createFormatSupport(FormatWriter fw) {
             return new CCFormatSupport(fw);
         }
@@ -144,6 +148,7 @@ public class CCFormatter extends ExtFormatter {
             super("cc-layer"); // NOI18N
         }
 
+        @Override
         protected FormatSupport createFormatSupport(FormatWriter fw) {
             return new CCFormatSupport(fw);
         }

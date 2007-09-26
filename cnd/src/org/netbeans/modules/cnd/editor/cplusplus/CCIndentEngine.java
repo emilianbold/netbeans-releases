@@ -59,6 +59,7 @@ public class CCIndentEngine extends FormatterIndentEngine {
 	return (CCFormatter) Formatter.getFormatter(CCKit.class);
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx("Welcome_opt_indent_cpp"); // NOI18N
     }

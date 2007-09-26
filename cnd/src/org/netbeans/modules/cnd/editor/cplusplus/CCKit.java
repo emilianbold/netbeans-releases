@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.editor.spi.cplusplus.GotoDeclarationProvider;
 /** C++ editor kit with appropriate document */
 public class CCKit extends NbEditorKit {
 
+    @Override
     public String getContentType() {
         return MIMENames.CPLUSPLUS_MIME_TYPE;
     }
@@ -67,6 +68,7 @@ public class CCKit extends NbEditorKit {
 //        return new HelpCtx("org.netbeans.modules.editor.java.JavaKit");
 //    }
     
+    @Override
     public Document createDefaultDocument() {
         BaseDocument doc = new NbEditorDocument(this.getClass());
         // Force '\n' as write line separator // !!! move to initDocument()
@@ -78,11 +80,13 @@ public class CCKit extends NbEditorKit {
      * @param doc document to operate on. It can be null in the cases the syntax
      *   creation is not related to the particular document
      */
+    @Override
     public Syntax createSyntax(Document doc) {
         return new CCSyntax();
     }
 
     /** Create syntax support */
+    @Override
     public SyntaxSupport createSyntaxSupport(BaseDocument doc) {
 	SyntaxSupportProvider ss = (SyntaxSupportProvider) Lookup.getDefault().lookup(SyntaxSupportProvider.class);
 	SyntaxSupport sup = null;
@@ -96,6 +100,7 @@ public class CCKit extends NbEditorKit {
     }
 
     /** Create the formatter appropriate for this kit */
+    @Override
     public Formatter createFormatter() {
         return new CCFormatter(this.getClass());
     }
@@ -163,6 +168,7 @@ public class CCKit extends NbEditorKit {
         kit on startup.
     */
 
+    @Override
     protected void updateActions() {
  	super.updateActions();
 	addSystemActionMapping(formatAction, CCFormatAction.class);
@@ -231,6 +237,7 @@ public class CCKit extends NbEditorKit {
     
     public static class CCDefaultKeyTypedAction extends ExtDefaultKeyTypedAction {
       
+        @Override
 	protected void checkIndentHotChars(JTextComponent target, String typedText) {
 	    boolean reindent = false;
 	
@@ -251,6 +258,7 @@ public class CCKit extends NbEditorKit {
 	    super.checkIndentHotChars(target, typedText);
 	}
         
+        @Override
         protected void insertString(BaseDocument doc, int dotPos,
                                     Caret caret, String str,
                                     boolean overwrite) throws BadLocationException {
@@ -265,6 +273,7 @@ public class CCKit extends NbEditorKit {
         static final long serialVersionUID = -1506173310438326380L;
         static final boolean DEBUG = false;
 
+        @Override
         protected Object beforeBreak(JTextComponent target, BaseDocument doc, Caret caret) {
             int dotPos = caret.getDot();
             if (BracketCompletion.posWithinString(doc, dotPos)) { 
@@ -325,6 +334,7 @@ public class CCKit extends NbEditorKit {
             return null;
         } 
 
+        @Override
         protected void afterBreak(JTextComponent target, BaseDocument doc, Caret caret, Object cookie) {
             if (cookie != null) {
                 if (cookie instanceof Integer) {
@@ -344,6 +354,7 @@ public class CCKit extends NbEditorKit {
             super(nm, nextChar);
         }
 
+        @Override
         protected void charBackspaced(BaseDocument doc, int dotPos, Caret caret, char ch)
         throws BadLocationException {
             BracketCompletion.charBackspaced(doc, dotPos, caret, ch);
