@@ -117,12 +117,14 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
                 TableColumnModel colModel = table.getColumnModel();
                 int columnModelIndex = colModel.getColumnIndexAtX(e.getX());
                 // No column was clicked.
-                if(columnModelIndex < 0)
+                if (columnModelIndex < 0) {
                     return;
+                }
                 int modelIndex = colModel.getColumn(columnModelIndex).getModelIndex();
                 // not detected column
-                if (modelIndex < 0)
+                if (modelIndex < 0) {
                     return;
+                }
                 obj.getBundleStructure().sort(modelIndex);
             }
         });
@@ -143,10 +145,13 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
     
     /** Stops editing if editing is in run. */
     protected void stopEditing() {
-        if (!table.isEditing()) return;
+        if (!table.isEditing()) {
+            return;
+        }
         TableCellEditor cellEdit = table.getCellEditor();
-        if (cellEdit != null)
+        if (cellEdit != null) {
             cellEdit.stopCellEditing();
+        }
     }
     
     /** Updates the enabled status of the fields */
@@ -173,7 +178,9 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
             final Element.ItemElem ex = lastSelectedBundleKey;
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    if (ex == null) return; 
+                    if (ex == null) {
+                        return;
+                    } 
                     String [] keys = obj.getBundleStructure().getKeys();
                     int idx;
                     for (idx = 0; idx < keys.length; idx++) {
@@ -423,24 +430,27 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
     }// </editor-fold>//GEN-END:initComponents
     
     private void autoResizeCheckActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_autoResizeCheckActionPerformed
-        if(autoResizeCheck.isSelected())
+        if (autoResizeCheck.isSelected()) {
             table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-        else
+        } else {
             table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-    }//GEN-LAST:event_autoResizeCheckActionPerformed
+        }//GEN-LAST:event_autoResizeCheckActionPerformed
+    }                                               
     
     private void removeButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
         int selectedRow = table.getSelectedRow();
         
-        if(selectedRow == -1)
+        if (selectedRow == -1) {
             return;
+        }
         
         stopEditing();
         String key = ((PropertiesTableModel.StringPair)table.getModel().getValueAt(selectedRow, 0)).getValue();
         
         // Don't remove elemnt with key == null ( this is only case -> when there is an empty file with comment only)
-        if(key == null)
+        if (key == null) {
             return;
+        }
         
         NotifyDescriptor.Confirmation msg = new NotifyDescriptor.Confirmation(
         MessageFormat.format(
@@ -675,33 +685,37 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
                 // Draw bevel border.
                 // Draw shadow outer color.
                 g.setColor(bevelUI.getShadowOuterColor(this));
-                if(ascending)
+                if (ascending) {
                     g.drawLine(x1, y1, x2, y2);
-                else
+                } else {
                     g.drawPolyline(new int[] {x2, x1, x3}, new int[] {y2, y1, y3}, 3);
-                    
-                    // Draw shadow inner color.
-                    g.setColor(bevelUI.getShadowInnerColor(this));
-                    if(ascending)
-                        g.drawLine(x1, y1+1, x2+1, y2-1);
-                    else
-                        g.drawPolyline(new int[] {x2-1, x1+1, x3}, new int[] {y2+1, y1+1, y3-1}, 3);
-                        
-                        // Draw highlihght outer color.
-                        g.setColor(bevelUI.getHighlightOuterColor(this));
-                        if(ascending)
-                            g.drawPolyline(new int[] {x1, x3, x2}, new int[] {y1, y3, y2}, 3);
-                        else
-                            g.drawLine(x2, y2, x3, y3);
-                        
-                        // Draw highlight inner color.
-                        g.setColor(bevelUI.getHighlightInnerColor(this));
-                        if(ascending)
-                            g.drawPolyline(new int[] {x1, x3-1, x2+1}, new int[] {y1+1, y3-1, y2-1}, 3);
-                        else
-                            g.drawLine(x2-1, y2+1, x3, y3-1);
-                        
-                        g.setColor(oldColor);
+                }
+                
+                // Draw shadow inner color.
+                g.setColor(bevelUI.getShadowInnerColor(this));
+                if (ascending) {
+                    g.drawLine(x1, y1+1, x2+1, y2-1);
+                } else {
+                    g.drawPolyline(new int[] {x2-1, x1+1, x3}, new int[] {y2+1, y1+1, y3-1}, 3);
+                }
+                
+                // Draw highlihght outer color.
+                g.setColor(bevelUI.getHighlightOuterColor(this));
+                if (ascending) {
+                    g.drawPolyline(new int[] {x1, x3, x2}, new int[] {y1, y3, y2}, 3);
+                } else {
+                    g.drawLine(x2, y2, x3, y3);
+                }
+                
+                // Draw highlight inner color.
+                g.setColor(bevelUI.getHighlightInnerColor(this));
+                if (ascending) {
+                    g.drawPolyline(new int[] {x1, x3-1, x2+1}, new int[] {y1+1, y3-1, y2-1}, 3);
+                } else {
+                    g.drawLine(x2-1, y2+1, x3, y3-1);
+                }
+                
+                g.setColor(oldColor);
             }
         }
     } // End of inner class TableViewHeaderRenderer.
@@ -831,7 +845,9 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
         public Component getTableCellRendererComponent(JTable table,
         Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             
-            if(value==null) return this;
+            if (value == null) {
+                return this;
+            }
             
             PropertiesTableModel.StringPair sp = (PropertiesTableModel.StringPair)value;                        
             
@@ -857,20 +873,22 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
             setValue(text == null ? "" : text); // NOI18N
             
             // Set background color.
-            if(sp.isKeyType())
+            if (sp.isKeyType()) {
                 setBackground(settings.getKeyBackground());
-            else {
-                if( sp.getValue() != null)
+            } else {
+                if (sp.getValue() != null) {
                     setBackground(settings.getValueBackground());
-                else
+                } else {
                     setBackground(settings.getShadowColor());
+                }
             }
             
             // Set foregound color.
-            if(sp.isKeyType())
+            if (sp.isKeyType()) {
                 setForeground(settings.getKeyColor());
-            else
+            } else {
                 setForeground(settings.getValueColor());
+            }
             
             // Optimization to avoid painting background if is the same like table's.
             Color back = getBackground();
