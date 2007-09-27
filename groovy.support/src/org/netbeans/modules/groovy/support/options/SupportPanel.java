@@ -20,11 +20,17 @@
 package org.netbeans.modules.groovy.support.options;
 
 import java.awt.Cursor;
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import javax.swing.JFileChooser;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.groovy.support.api.GroovySettings;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  * Groovy settings
@@ -53,6 +59,7 @@ final class SupportPanel extends javax.swing.JPanel {
         groovyHomeTextField = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
         linkLabel = new javax.swing.JLabel();
+        jButton1 = new javax.swing.JButton();
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(SupportPanel.class, "SupportPanel.jLabel1.text")); // NOI18N
 
@@ -73,34 +80,42 @@ final class SupportPanel extends javax.swing.JPanel {
             }
         });
 
+        org.openide.awt.Mnemonics.setLocalizedText(jButton1, org.openide.util.NbBundle.getMessage(SupportPanel.class, "SupportPanel.jButton1.text")); // NOI18N
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
                 .add(jLabel1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
                         .add(jLabel2)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(linkLabel))
-                    .add(groovyHomeTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 391, Short.MAX_VALUE))
-                .addContainerGap())
+                        .add(linkLabel)
+                        .add(165, 165, 165))
+                    .add(layout.createSequentialGroup()
+                        .add(groovyHomeTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 338, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(jButton1))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel1)
+                    .add(jButton1)
                     .add(groovyHomeTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel2)
-                    .add(linkLabel))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .add(linkLabel)))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -120,6 +135,25 @@ final class SupportPanel extends javax.swing.JPanel {
         setCursor(Cursor.getDefaultCursor());
     }//GEN-LAST:event_linkLabelMouseExited
 
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        JFileChooser chooser = new JFileChooser(groovyHomeTextField.getText());
+        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        int r = chooser.showDialog(
+            SwingUtilities.getWindowAncestor (this), NbBundle.getMessage(SupportPanel.class, "LBL_Select_Directory"));
+        if (r == JFileChooser.APPROVE_OPTION) {
+            File file = chooser.getSelectedFile ();
+            if (!new File (new File (file, "bin"), "groovy").isFile ()) {
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                    NbBundle.getMessage(SupportPanel.class, "LBL_Not_groovy_home"),
+                    NotifyDescriptor.Message.WARNING_MESSAGE
+                ));
+                return;
+            }
+            groovyHomeTextField.setText(file.getAbsolutePath());
+
+        }
+    }//GEN-LAST:event_jButton1ActionPerformed
+
     void load() {
         GroovySettings groovyOption = new GroovySettings();
         groovyHomeTextField.setText(groovyOption.getGroovyHome());
@@ -137,6 +171,7 @@ final class SupportPanel extends javax.swing.JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField groovyHomeTextField;
+    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel linkLabel;

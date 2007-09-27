@@ -11,6 +11,7 @@ import java.net.URL;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 final class GrailsRuntimePanel extends javax.swing.JPanel {
 
@@ -33,20 +34,17 @@ final class GrailsRuntimePanel extends javax.swing.JPanel {
     private void initComponents() {
 
         grailsHomeLocation = new javax.swing.JTextField();
-        jLabel1 = new javax.swing.JLabel();
         chooseDir = new javax.swing.JButton();
         jLabel2 = new javax.swing.JLabel();
         linkLabel = new javax.swing.JLabel();
-        jSeparator1 = new javax.swing.JSeparator();
         jLabel3 = new javax.swing.JLabel();
         jTextField1 = new javax.swing.JTextField();
         jCheckBox1 = new javax.swing.JCheckBox();
         jLabel4 = new javax.swing.JLabel();
         jTextField2 = new javax.swing.JTextField();
+        jLabel5 = new javax.swing.JLabel();
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, "GRAILS_HOME:");
-
-        org.openide.awt.Mnemonics.setLocalizedText(chooseDir, "choose");
+        org.openide.awt.Mnemonics.setLocalizedText(chooseDir, org.openide.util.NbBundle.getMessage(GrailsRuntimePanel.class, "LBL_Choose")); // NOI18N
         chooseDir.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 chooseDirActionPerformed(evt);
@@ -57,22 +55,24 @@ final class GrailsRuntimePanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(linkLabel, "<html><a href=\"http://www.grails.org\">http://www.grails.org</a></html>"); // NOI18N
         linkLabel.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                linkLabelMouseEntered(evt);
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                linkLabelMousePressed(evt);
             }
             public void mouseExited(java.awt.event.MouseEvent evt) {
                 linkLabelMouseExited(evt);
             }
-            public void mousePressed(java.awt.event.MouseEvent evt) {
-                linkLabelMousePressed(evt);
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                linkLabelMouseEntered(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, "Port");
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(GrailsRuntimePanel.class, "GrailsRuntimePanel.jLabel3.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jCheckBox1, "SSL");
+        jTextField1.setText(org.openide.util.NbBundle.getMessage(GrailsRuntimePanel.class, "GrailsRuntimePanel.jTextField1.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, "Hostname");
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBox1, org.openide.util.NbBundle.getMessage(GrailsRuntimePanel.class, "GrailsRuntimePanel.jCheckBox1.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(GrailsRuntimePanel.class, "GrailsRuntimePanel.jLabel4.text")); // NOI18N
 
         jTextField2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -80,65 +80,56 @@ final class GrailsRuntimePanel extends javax.swing.JPanel {
             }
         });
 
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(GrailsRuntimePanel.class, "GrailsRuntimePanel.jLabel5.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 474, Short.MAX_VALUE)
+                    .add(jLabel5)
+                    .add(jLabel4))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(jLabel1)
+                        .add(jLabel2)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                        .add(linkLabel)
+                        .addContainerGap())
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                             .add(layout.createSequentialGroup()
-                                .add(jLabel2)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                                .add(linkLabel))
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, grailsHomeLocation))
-                        .add(28, 28, 28)
-                        .add(chooseDir))
-                    .add(layout.createSequentialGroup()
-                        .add(93, 93, 93)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                            .add(layout.createSequentialGroup()
-                                .add(jLabel4)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                                .add(jTextField2))
-                            .add(layout.createSequentialGroup()
-                                .add(jLabel3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 60, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .add(jTextField2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 235, Short.MAX_VALUE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(jTextField1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 99, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(jCheckBox1)
-                        .add(105, 105, 105)))
-                .addContainerGap())
+                                .add(jLabel3)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(jTextField1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 47, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                            .add(grailsHomeLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 331, Short.MAX_VALUE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(chooseDir)
+                            .add(jCheckBox1)))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel1)
+                    .add(jLabel5)
                     .add(chooseDir)
                     .add(grailsHomeLocation, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel2)
                     .add(linkLabel))
-                .add(18, 18, 18)
-                .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel3)
-                    .add(jTextField1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jCheckBox1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(16, 16, 16)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel4)
-                    .add(jTextField2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(138, Short.MAX_VALUE))
+                    .add(jTextField1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel3)
+                    .add(jTextField2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jCheckBox1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(56, 56, 56))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -147,12 +138,12 @@ final class GrailsRuntimePanel extends javax.swing.JPanel {
             JFileChooser chooser = new JFileChooser (grailsHomeLocation.getText ());
             chooser.setFileSelectionMode (JFileChooser.DIRECTORIES_ONLY);
             int r = chooser.showDialog (
-                SwingUtilities.getWindowAncestor (this),"Select_Directory");
+                SwingUtilities.getWindowAncestor (this), NbBundle.getMessage(GrailsRuntimePanel.class, "LBL_Select_Directory"));
             if (r == JFileChooser.APPROVE_OPTION) {
                 File file = chooser.getSelectedFile ();
                 if (!new File (new File (file, "bin"), "grails").isFile ()) {
                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                        "Not_grails_home",
+                        NbBundle.getMessage(GrailsRuntimePanel.class, "LBL_Not_grails_home"),
                         NotifyDescriptor.Message.WARNING_MESSAGE
                     ));
                     return;
@@ -204,11 +195,10 @@ final class GrailsRuntimePanel extends javax.swing.JPanel {
     private javax.swing.JButton chooseDir;
     private javax.swing.JTextField grailsHomeLocation;
     private javax.swing.JCheckBox jCheckBox1;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
-    private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JTextField jTextField1;
     private javax.swing.JTextField jTextField2;
     private javax.swing.JLabel linkLabel;
