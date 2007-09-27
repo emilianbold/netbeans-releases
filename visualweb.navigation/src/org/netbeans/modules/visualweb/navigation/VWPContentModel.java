@@ -130,7 +130,14 @@ public class VWPContentModel extends PageContentModel {
         if (dcl == null) {
             /* So you can see changes on the individual design contexts */
             dcl = new VWPDesignContextListener(this);
-            facesModel.getLiveUnit().addDesignContextListener(dcl);
+            LiveUnit liveUnit = facesModel.getLiveUnit();
+            if( liveUnit == null ){
+                facesModel.sync();
+                liveUnit = facesModel.getLiveUnit();
+            } 
+            if( liveUnit != null ){
+                liveUnit.addDesignContextListener(dcl);
+            }
         }
         LOGGER.exiting("VWPContentModel", "initListeners()");
     }
@@ -145,8 +152,11 @@ public class VWPContentModel extends PageContentModel {
                 set.removeModelSetListener(msl);
                 msl = null;
             }
-            if (dcl != null) {
-                facesModel.getLiveUnit().removeDesignContextListener(dcl);
+            if (dcl != null && facesModel != null ) {
+                LiveUnit liveUnit = facesModel.getLiveUnit();
+                if( liveUnit != null){
+                    liveUnit.removeDesignContextListener(dcl);
+                }
                 dcl = null;
             }
         }
