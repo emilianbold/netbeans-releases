@@ -89,7 +89,7 @@ public class MessageNode extends AbstractNode implements OpenCookie {
             content.add(beanClassHandle);
         }
         if (controller.getBeanDo() != null) {
-            content.add(controller.getBeanDo());
+            content.add(controller.getBeanDo().getPrimaryFile());
         }
     }
     
