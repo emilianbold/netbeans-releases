@@ -98,7 +98,7 @@ public final class NamingFactory {
         remove(fNaming, null);
         retVal = fNaming.rename(newName, handler);
         all.add(fNaming);
-        NamingFactory.registerInstanceOfFileNaming(fNaming.getParent(), fNaming.getFile(), fNaming);
+        NamingFactory.registerInstanceOfFileNaming(fNaming.getParent(), fNaming.getFile(), fNaming,true);
         renameChildren(all);
         return (retVal) ? ((FileNaming[])all.toArray(new FileNaming[all.size()])) : null;
     }
@@ -138,7 +138,7 @@ public final class NamingFactory {
             all.add(fN);    
             remove(fN, id);
             fN.getId(true);
-            NamingFactory.registerInstanceOfFileNaming(fN.getParent(), fN.getFile(), fN);            
+            NamingFactory.registerInstanceOfFileNaming(fN.getParent(), fN.getFile(), fN,false);            
         }
     }
 
@@ -159,10 +159,10 @@ public final class NamingFactory {
         return new Integer(file.hashCode());
     }
     private static FileNaming registerInstanceOfFileNaming(final FileNaming parentName, final File file) {
-        return NamingFactory.registerInstanceOfFileNaming(parentName, file, null);       
+        return NamingFactory.registerInstanceOfFileNaming(parentName, file, null,false);       
     }
 
-    private static FileNaming registerInstanceOfFileNaming(final FileNaming parentName, final File file, final FileNaming newValue) {
+    private static FileNaming registerInstanceOfFileNaming(final FileNaming parentName, final File file, final FileNaming newValue,boolean ignoreCache) {
         FileNaming retVal;
         
         final Object value = NamingFactory.nameMap.get(new Integer(file.hashCode()));
@@ -170,15 +170,15 @@ public final class NamingFactory {
         ref = (ref == null && value instanceof List ? NamingFactory.getReference((List) value, file) : ref);
 
         final FileNaming cachedElement = (ref != null) ? (FileNaming) ref.get() : null;
-
-        if (cachedElement != null && cachedElement.getFile().compareTo(file) == 0) {
+        
+        if (!ignoreCache && cachedElement != null && cachedElement.getFile().compareTo(file) == 0) {
             retVal = cachedElement;
         } else {
             retVal = (newValue == null) ? NamingFactory.createFileNaming(file, parentName) : newValue;
             final WeakReference refRetVal = new WeakReference(retVal);
 
             final boolean isList = (value instanceof List);
-            if (cachedElement != null || isList) {
+            if ((!ignoreCache && cachedElement != null) || isList) {
                 // List impl.                
                 if (isList) {
                     ((List) value).add(refRetVal);
@@ -190,7 +190,16 @@ public final class NamingFactory {
             } else {
                 // Reference impl.                
                 Reference r = (Reference)NamingFactory.nameMap.put(retVal.getId(), refRetVal);
-                assert r == null || r.get() == null;
+                if (ignoreCache && r != null) {
+                    FileName original = (FileName)r.get();
+                    if (original != null) {
+                        List children = collectChildren(original);
+                        for (Iterator childrenIt = children.iterator(); childrenIt.hasNext();) {
+                            FileNaming child = (FileNaming) childrenIt.next();
+                            remove(child, null);
+                        }                        
+                    }
+                }                
             }
         }
 
@@ -199,6 +208,30 @@ public final class NamingFactory {
         return retVal;
     }
 
+    private static List collectChildren(FileName parent) {
+        Collection c = nameMap.values();
+        List ratval = new ArrayList();
+        for (Iterator it = c.iterator(); it.hasNext();) {
+            Reference ref = (Reference) it.next();
+            FileNaming naming = (FileNaming) ref.get();
+            if (isChild(parent, naming)) {
+                ratval.add(naming);
+            }
+        }
+        return ratval;
+    }
+    
+    private static boolean isChild(FileName parent, FileNaming naming) {
+        FileNaming temp = naming;
+        while (temp != null) {
+            if (temp == parent) {
+                return true;
+            }
+            temp = temp.getParent();
+        }
+        return false;
+    }
+    
     private static Reference getReference(final List list, final File f) {
         Reference retVal = null;
         for (int i = 0; retVal == null && i < list.size(); i++) {
@@ -246,4 +279,4 @@ public final class NamingFactory {
         return retVal;
     }
 
-}
+                }

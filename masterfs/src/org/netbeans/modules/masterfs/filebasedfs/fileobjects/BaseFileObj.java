@@ -198,30 +198,30 @@ public abstract class BaseFileObj extends FileObject {
         final String originalExt = getExt();
         
         //TODO: no lock used
-        FileNaming[] allRenamed = NamingFactory.rename(getFileName(),file2Rename.getName(),handler);
-        if (allRenamed == null) {
-            FileObject parentFo = getExistingParent();
-            String parentPath = (parentFo != null) ? parentFo.getPath() : file.getParentFile().getAbsolutePath();
-            FSException.io("EXC_CannotRename", file.getName(), parentPath, file2Rename.getName());// NOI18N            
-        }
-        FileBasedFileSystem fs = getLocalFileSystem();
-        fs.getFactory().rename(); 
-        BaseFileObj.attribs.renameAttributes(file.getAbsolutePath().replace('\\', '/'), file2Rename.getAbsolutePath().replace('\\', '/'));//NOI18N
-        for (int i = 0; i < allRenamed.length; i++) {
-            FolderObj par = (allRenamed[i].getParent() != null) ? 
-                (FolderObj)fs.getFactory().get(allRenamed[i].getParent().getFile()) : null;
-            if (par != null) {
-                ChildrenCache childrenCache = par.getChildrenCache();
-                final Mutex.Privileged mutexPrivileged = (childrenCache != null) ? childrenCache.getMutexPrivileged() : null;
-                if (mutexPrivileged != null) mutexPrivileged.enterWriteAccess();
-                try {
-                    childrenCache.removeChild(allRenamed[i]);
-                    childrenCache.getChild(allRenamed[i].getName(), true);
-                } finally {
-                    if (mutexPrivileged != null) mutexPrivileged.exitWriteAccess();
-                }                
+            FileNaming[] allRenamed = NamingFactory.rename(getFileName(),file2Rename.getName(),handler);
+            if (allRenamed == null) {
+                FileObject parentFo = getExistingParent();
+                String parentPath = (parentFo != null) ? parentFo.getPath() : file.getParentFile().getAbsolutePath();
+                FSException.io("EXC_CannotRename", file.getName(), parentPath, file2Rename.getName());// NOI18N            
             }
-        }
+            FileBasedFileSystem fs = getLocalFileSystem();
+            fs.getFactory().rename(); 
+            BaseFileObj.attribs.renameAttributes(file.getAbsolutePath().replace('\\', '/'), file2Rename.getAbsolutePath().replace('\\', '/'));//NOI18N
+            for (int i = 0; i < allRenamed.length; i++) {
+                FolderObj par = (allRenamed[i].getParent() != null) ? 
+                    (FolderObj)fs.getFactory().get(allRenamed[i].getParent().getFile()) : null;
+                if (par != null) {
+                    ChildrenCache childrenCache = par.getChildrenCache();
+                    final Mutex.Privileged mutexPrivileged = (childrenCache != null) ? childrenCache.getMutexPrivileged() : null;
+                    if (mutexPrivileged != null) mutexPrivileged.enterWriteAccess();
+                    try {
+                        childrenCache.removeChild(allRenamed[i]);
+                        childrenCache.getChild(allRenamed[i].getName(), true);
+                    } finally {
+                        if (mutexPrivileged != null) mutexPrivileged.exitWriteAccess();
+                    }                
+                }
+            }
         WriteLock.relock(file,file2Rename);
         fireFileRenamedEvent(originalName, originalExt);
     }

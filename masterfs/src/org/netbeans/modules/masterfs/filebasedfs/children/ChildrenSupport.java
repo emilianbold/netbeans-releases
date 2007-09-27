@@ -130,9 +130,7 @@ public final class ChildrenSupport {
                 FileNaming fnRescanned = rescanChild(folderName, fnToCheck.getName());
                 if (fnRescanned == null) {
                     retVal.put(fnToCheck, ChildrenCache.REMOVED_CHILD);
-                } else {
-                    assert fnToCheck.equals(fnRescanned);
-                }
+                } 
             }
             
             Set notExistingToCheck = new HashSet(nE);
