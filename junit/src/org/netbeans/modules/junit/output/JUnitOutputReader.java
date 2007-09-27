@@ -236,6 +236,9 @@ final class JUnitOutputReader {
                         || !Character.isLetterOrDigit(restOfMsg.charAt(0))) {
                     progressLogger.finest("test finished");             //NOI18N
                     executedOneSuiteTests++;
+                    if (expectedOneSuiteTests < executedOneSuiteTests) {
+                        expectedOneSuiteTests = executedOneSuiteTests;
+                    }
                     updateProgress();
                 }
                 return;
@@ -668,12 +671,18 @@ final class JUnitOutputReader {
                 progressHandle.switchToDeterminate(PROGRESS_WORKUNITS);
             }
             if (progressLogger.isLoggable(FINER)) {
-                progressLogger.finer(" !!! Updating expected # of suites: "
-                                     + this.expectedSuitesCount
-                                     + " -> "
+                progressLogger.finer("                    - total # of suites: "
                                      + (this.expectedSuitesCount + expectedSuitesCount));
             }
             this.expectedSuitesCount += expectedSuitesCount;
+
+            /*
+             * This is necessary in order to ensure that the subsequent
+             * progress update computes the correct value:
+             */
+            expectedOneSuiteTests = 0;
+            executedOneSuiteTests = 0;
+
             updateProgress();
         } else if (isDeterminateProgress /* and will be indeterminate */ ) {
             progressHandle.switchToIndeterminate();
@@ -689,6 +698,13 @@ final class JUnitOutputReader {
     /**
      */
     void testTaskFinished() {
+        if (waitingForIssueStatus) {
+            assert testcase != null;
+            
+            report.reportTest(testcase);
+        }
+        closePreviousReport();
+
         progressLogger.finer("ACTUAL # OF SUITES: " + executedSuitesCount);
 
         expectedSuitesCount = executedSuitesCount;
@@ -708,6 +724,10 @@ final class JUnitOutputReader {
      * {@link #executedSuitesCount} and {@link #expectedSuitesCount}.
      */
     private void updateProgress() {
+        updateProgress(null);
+    }
+
+    private void updateProgress(String message) {
         assert progressHandle != null;
         
         int progress = getProcessedWorkunits();
@@ -718,7 +738,13 @@ final class JUnitOutputReader {
                                 100 * progress / PROGRESS_WORKUNITS));  //NOI18N
         }
         if (progress > INITIAL_PROGRESS) {
-            progressHandle.progress(progress);
+            if (message != null) {
+                progressHandle.progress(message, progress);
+            } else {
+                progressHandle.progress(progress);
+            }
+        } else if (message != null) {
+            progressHandle.progress(message);
         }
     }
     
@@ -788,7 +814,7 @@ final class JUnitOutputReader {
      */
     void buildFinished(final AntEvent event) {
         try {
-            finishReport(event.getException());
+            buildFinished(event.getException());
             Manager.getInstance().sessionFinished(session,
                                                   sessionType);
         } finally {
@@ -813,10 +839,7 @@ final class JUnitOutputReader {
             expectedSuitesCount = executedSuitesCount + 1;
         }
         if (executedSuitesCount != 0) {
-            int progress = getProcessedWorkunits();
-            if (progress > INITIAL_PROGRESS) {
-                progressHandle.progress(stepMessage, progress);
-            }
+            updateProgress(stepMessage);
         } else {
             progressHandle.progress(stepMessage);
         }
@@ -838,16 +861,7 @@ final class JUnitOutputReader {
         Manager.getInstance().displayReport(session, sessionType, report);
     }
     
-    /**
-     */
-    void finishReport(final Throwable exception) {
-        if (waitingForIssueStatus) {
-            assert testcase != null;
-            
-            report.reportTest(testcase);
-        }
-        closePreviousReport();
-        
+    private void buildFinished(final Throwable exception) {
         //<editor-fold defaultstate="collapsed" desc="disabled code">
         //PENDING:
         /*
