@@ -115,8 +115,10 @@ public class JBJ2eePlatformFactory extends J2eePlatformFactory {
             if (properties.supportsJavaEE5ejb3() && properties.supportsJavaEE5web() && !J2eeModule.CLIENT.equals(moduleType)) {
                 return SPEC_VERSIONS_5;
             }
-            // JavaEE5 web and app client modules are not supported for JBoss 4.x
-            if (properties.supportsJavaEE5ejb3() && !(J2eeModule.WAR.equals(moduleType) || J2eeModule.CLIENT.equals(moduleType))) {
+            // JavaEE5 ear, web and app client modules are not supported for JBoss 4.x
+            if (properties.supportsJavaEE5ejb3()
+                    && !(J2eeModule.EAR.equals(moduleType)
+                        || J2eeModule.WAR.equals(moduleType) || J2eeModule.CLIENT.equals(moduleType))) {
                 return SPEC_VERSIONS_5;
             } else {
                 return SPEC_VERSIONS;
