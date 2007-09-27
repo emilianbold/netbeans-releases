@@ -351,6 +351,7 @@
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.ruby.rhtml</friend>
+                <friend>org.netbeans.modules.javafx.dataloader</friend>
                 <package>org.netbeans.api.retouche.source</package>
                 <package>org.netbeans.modules.retouche.editor.completion.api</package>
             </friend-packages>
