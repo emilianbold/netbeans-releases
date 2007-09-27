@@ -107,22 +107,22 @@ type CDATA #REQUIRED
     <component_type_group name="Model" icon="" title="IEP.Model.title" description="IEP.Model.description">
         <property_group name="Entity">
             <property transient="true" category="IEP.Category.main" name="propertyEditor" title="IEP.Model.Entity.propertyEditor.title" description="IEP.Model.Entity.propertyEditor.description" required="false" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="" renderer="string" access="&RW;" multiple="false"/>
-            <property transient="false" category="IEP.Category.main" name="id" title="IEP.Model.Entity.id.title" description="IEP.Model.Entity.id.description" required="true" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="" renderer="string" access="&R;" multiple="false"/>
+            <property transient="false" category="IEP.Category.main" name="id" title="IEP.Model.Entity.id.title" description="IEP.Model.Entity.id.description" required="true" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="" renderer="string" access="" multiple="false"/>
             <property transient="false" category="IEP.Category.main" name="name" title="IEP.Model.Entity.name.title" description="IEP.Model.Entity.name.description" required="true" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.AlphaNumericNamePropertyEditor" default="" renderer="string" access="&RW;" multiple="false"/>
             <property transient="true" category="IEP.Category.main" name="type" title="IEP.Model.Entity.type.title" description="IEP.Model.Entity.type.description" required="false" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="Entity" renderer="string" access="&R;" multiple="false"/>
             <property transient="false" category="IEP.Category.schema" name="inputSchemaIdList" title="IEP.Model.Entity.inputSchemaIdList.title" description="IEP.Model.Entity.inputSchemaIdList.description" required="false" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="" renderer="string" access="&R;" multiple="true"/>
             <property transient="false" category="IEP.Category.schema" name="outputSchemaId" title="IEP.Model.Entity.outputSchemaId.title" description="IEP.Model.Entity.outputSchemaId.description" required="true" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="" renderer="string" access="&R;" multiple="false"/>
-            <property transient="false" category="IEP.Category.entity" name="description" title="IEP.Model.Entity.description.title" description="IEP.Model.Entity.description.description" required="false" type="string" editor="default" default="" renderer="string" access="&RW;" multiple="false"/>
-            <property transient="false" category="IEP.Category.entity" name="topoScore" title="IEP.Model.Entity.topoScore.title" description="IEP.Model.Entity.topoScore.description" required="false" type="integer" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="0" renderer="string" access="&R;" multiple="false"/>
+            <property transient="false" category="IEP.Category.entity" name="description" title="IEP.Model.Entity.description.title" description="IEP.Model.Entity.description.description" required="false" type="string" editor="default" default="" renderer="string" access="" multiple="false"/>
+            <property transient="false" category="IEP.Category.entity" name="topoScore" title="IEP.Model.Entity.topoScore.title" description="IEP.Model.Entity.topoScore.description" required="false" type="integer" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="0" renderer="string" access="" multiple="false"/>
             <property transient="false" category="IEP.Category.entity" name="inputType" title="IEP.Model.Entity.inputType.title" description="IEP.Model.Entity.inputType.description" required="false" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="i18n.IEP.IOType.none" renderer="string" access="&R;" multiple="false"/>
             <property transient="true" category="IEP.Category.entity" name="inputMaxCount" title="IEP.Model.Entity.inputMaxCount.title" description="IEP.Model.Entity.inputMaxCount.description" required="false" type="integer" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="1" renderer="string" access="&R;" multiple="false"/>
             <property transient="false" category="IEP.Category.entity" name="inputIdList" title="IEP.Model.Entity.inputIdList.title" description="IEP.Model.Entity.inputIdList.description" required="false" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="" renderer="string" access="&R;" multiple="true"/>
-            <property transient="true" category="IEP.Category.entity" name="staticInputMaxCount" title="IEP.Model.Entity.staticInputMaxCount.title" description="IEP.Model.Entity.staticInputMaxCount.description" required="false" type="integer" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="0" renderer="string" access="&R;" multiple="false"/>
-            <property transient="false" category="IEP.Category.entity" name="staticInputIdList" title="IEP.Model.Entity.staticInputIdList.title" description="IEP.Model.Entity.staticInputIdList.description" required="false" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="" renderer="string" access="&R;" multiple="true"/>
+            <property transient="true" category="IEP.Category.entity" name="staticInputMaxCount" title="IEP.Model.Entity.staticInputMaxCount.title" description="IEP.Model.Entity.staticInputMaxCount.description" required="false" type="integer" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="0" renderer="string" access="" multiple="false"/>
+            <property transient="false" category="IEP.Category.entity" name="staticInputIdList" title="IEP.Model.Entity.staticInputIdList.title" description="IEP.Model.Entity.staticInputIdList.description" required="false" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="" renderer="string" access="" multiple="true"/>
             <property transient="false" category="IEP.Category.entity" name="outputType" title="IEP.Model.Entity.outputType.title" description="IEP.Model.Entity.outputType.description" required="false" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="i18n.IEP.IOType.none" renderer="string" access="&R;" multiple="false"/>
-            <property transient="true" category="IEP.Category.entity" name="isSchemaOwner" title="IEP.Model.Entity.isSchemaOwner.title" description="IEP.Model.Entity.isSchemaOwner.description" required="false" type="boolean" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="false" renderer="string" access="&R;" multiple="false"/>
-            <property transient="false" category="IEP.Category.entity" name="isGlobal" title="IEP.Model.Entity.isGlobal.title" description="IEP.Model.Entity.isGlobal.description" required="false" type="boolean" editor="default" default="false" renderer="string" access="&R;" multiple="false"/>
-            <property transient="false" category="IEP.Category.entity" name="globalId" title="IEP.Model.Entity.globalId.title" description="IEP.Model.Entity.globalId.description" required="false" type="string" editor="default" default="" renderer="string" access="&R;" multiple="false"/>
+            <property transient="true" category="IEP.Category.entity" name="isSchemaOwner" title="IEP.Model.Entity.isSchemaOwner.title" description="IEP.Model.Entity.isSchemaOwner.description" required="false" type="boolean" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="false" renderer="string" access="" multiple="false"/>
+            <property transient="false" category="IEP.Category.entity" name="isGlobal" title="IEP.Model.Entity.isGlobal.title" description="IEP.Model.Entity.isGlobal.description" required="false" type="boolean" editor="default" default="false" renderer="string" access="" multiple="false"/>
+            <property transient="false" category="IEP.Category.entity" name="globalId" title="IEP.Model.Entity.globalId.title" description="IEP.Model.Entity.globalId.description" required="false" type="string" editor="default" default="" renderer="string" access="" multiple="false"/>
             <property transient="true" category="IEP.Category.entity" name="wsInput" title="IEP.Model.Entity.wsInput.title" description="IEP.Model.Entity.wsInput.description" required="false" type="boolean" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="false" renderer="string" access="" multiple="false"/>
             <property transient="true" category="IEP.Category.entity" name="wsOutput" title="IEP.Model.Entity.wsOutput.title" description="IEP.Model.Entity.wsOutput.description" required="false" type="boolean" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="false" renderer="string" access="" multiple="false"/>
             <property transient="false" category="IEP.Category.entity" name="batchMode" title="IEP.Model.Entity.batchMode.title" description="IEP.Model.Entity.batchMode.description" required="false" type="boolean" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="false" renderer="string" access="" multiple="false"/>
@@ -184,6 +184,12 @@ type CDATA #REQUIRED
             <property_group ref="/IEP/View/Node"/>
             <property_group ref="/IEP/Model/Entity">
                 <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.DefaultCustomEditor"/>
+                <property name="inputSchemaIdList" access="" />
+                <property name="inputType" access="" />
+                <property name="inputMaxCount" access="" />
+	            <property name="inputIdList" access="" />
+	            <property name="staticInputMaxCount" access="" />
+    	        <property name="staticInputIdList" access="" />
                 <property name="type" default="i18n.IEP.Input.StreamInput.title"/>
                 <property name="outputType" default="i18n.IEP.IOType.stream"/>
                 <property name="outputSchemaId" required="true"/>
@@ -198,11 +204,16 @@ type CDATA #REQUIRED
             <property_group ref="/IEP/View/Node"/>
             <property_group ref="/IEP/Model/Entity">
                 <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.TableInputCustomEditor"/>
+                <property name="inputSchemaIdList" access="" />
+                <property name="inputType" access="" />
+                <property name="inputMaxCount" access="" />
+	            <property name="inputIdList" access="" />
+	            <property name="staticInputMaxCount" access="" />
+    	        <property name="staticInputIdList" access="" />
                 <property name="type" default="i18n.IEP.Input.TableInput.title"/>
                 <property name="outputType" default="i18n.IEP.IOType.table"/>
                 <property name="outputSchemaId" required="true"/>
                 <property name="isSchemaOwner" default="true"/>
-                <property name="isGlobal" default="true" access="&R;"/>
                 <property name="globalId" default="" access="&RW;"/>
                 <property name="palette" default="input"/>
             </property_group>
@@ -277,7 +288,8 @@ type CDATA #REQUIRED
                 <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.DefaultCustomEditor"/>
                 <property name="type" default="i18n.IEP.Operator.StreamProjectionAndFilter.title"/>
                 <property name="inputType" default="i18n.IEP.IOType.stream"/>
-                <property name="staticInputMaxCount" default="1000000"/>
+                <property name="staticInputMaxCount" default="1000000"  access="&R;" />
+                <property name="staticInputIdList" access="&R;" />
                 <property name="outputType" default="i18n.IEP.IOType.stream"/>
                 <property name="isSchemaOwner" default="true"/>
                 <property name="palette" default="correlationAndFilter"/>
@@ -312,7 +324,8 @@ type CDATA #REQUIRED
                 <property name="type" default="i18n.IEP.Operator.RelationMap.title"/>
                 <property name="inputType" default="i18n.IEP.IOType.relation"/>
                 <property name="inputMaxCount" default="1000000"/>
-                <property name="staticInputMaxCount" default="1000000"/>
+                <property name="staticInputMaxCount" default="1000000"  access="&R;" />
+                <property name="staticInputIdList" access="&R;" />
                 <property name="outputType" default="i18n.IEP.IOType.relation"/>
                 <property name="isSchemaOwner" default="true"/>
                 <property name="palette" default="correlationAndFilter"/>
@@ -331,7 +344,8 @@ type CDATA #REQUIRED
                 <property name="type" default="i18n.IEP.Operator.TupleBasedAggregator.title"/>
                 <property  name="inputType" default="i18n.IEP.IOType.stream"/>
                 <property  name="inputSchemaIdList" required="true" default=""/>
-                <property name="staticInputMaxCount" default="1000000"/>
+                <property name="staticInputMaxCount" default="1000000"  access="&R;" />
+                <property name="staticInputIdList" access="&R;" />
                 <property name="outputType" default="i18n.IEP.IOType.stream"/>
                 <property name="isSchemaOwner" default="true"/>
                 <property name="palette" default="aggregator"/>
@@ -353,7 +367,8 @@ type CDATA #REQUIRED
                 <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.TimeBasedAggregatorCustomEditor"/>
                 <property name="type" default="i18n.IEP.Operator.TimeBasedAggregator.title"/>
                 <property name="inputType" default="i18n.IEP.IOType.stream"/>
-                <property name="staticInputMaxCount" default="1000000"/>
+                <property name="staticInputMaxCount" default="1000000" access="&R;"/>
+                <property name="staticInputIdList" access="&R;" />
                 <property name="outputType" default="i18n.IEP.IOType.stream"/>
                 <property name="isSchemaOwner" default="true"/>
                 <property name="palette" default="aggregator"/>
