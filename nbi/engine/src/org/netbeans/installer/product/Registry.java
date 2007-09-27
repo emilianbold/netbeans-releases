@@ -376,7 +376,7 @@ public class Registry {
         if (!localRegistryFile.exists()) {
             try {
                 FileUtils.copyFile(
-                        FileProxy.getInstance().getFile(localRegistryStubUri),
+                        FileProxy.getInstance().getFile(localRegistryStubUri,true),
                         localRegistryFile);
             } catch (DownloadException e) {
                 throw new InitializationException(
@@ -960,7 +960,7 @@ public class Registry {
             final String uri) throws XMLException {
         try {
             final File schemaFile =
-                    FileProxy.getInstance().getFile(registrySchemaUri);
+                    FileProxy.getInstance().getFile(registrySchemaUri,true);
             final File registryFile =
                     FileProxy.getInstance().getFile(uri, true);
             
@@ -1363,7 +1363,7 @@ public class Registry {
             
             LogManager.log("parsing xml file...");
             final File schemaFile =
-                    FileProxy.getInstance().getFile(stateFileSchemaUri);
+                    FileProxy.getInstance().getFile(stateFileSchemaUri,true);
             
             final Schema schema = SchemaFactory.
                     newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI).
@@ -1495,9 +1495,9 @@ public class Registry {
     public void saveStateFile(final File stateFile, final Progress progress) throws FinalizationException {
         try {
             final File schemaFile =
-                    FileProxy.getInstance().getFile(stateFileSchemaUri);
+                    FileProxy.getInstance().getFile(stateFileSchemaUri,true);
             final File stubFile =
-                    FileProxy.getInstance().getFile(stateFileStubUri);
+                    FileProxy.getInstance().getFile(stateFileStubUri,true);
             
             final Schema schema = SchemaFactory.
                     newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI).

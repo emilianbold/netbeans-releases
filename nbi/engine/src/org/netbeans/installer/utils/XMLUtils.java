@@ -132,7 +132,7 @@ public abstract class XMLUtils {
                     output);
 	    LogManager.log("... StreamResult created");
             final Source xslt = new StreamSource(
-                    FileProxy.getInstance().getFile(XSLT_REFORMAT_URI));
+                    FileProxy.getInstance().getFile(XSLT_REFORMAT_URI,true));
 	    LogManager.log("... XSLT loaded");
             TransformerFactory tf = TransformerFactory.
                     newInstance();
