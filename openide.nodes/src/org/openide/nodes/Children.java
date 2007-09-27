@@ -522,12 +522,15 @@ public abstract class Children extends Object {
     protected void addNotify() {
     }
 
-    /** Called when the list of nodes for this children
-     * object is no longer needed.
-     * Typical implementations at this time remove all
-     * children to save memory (or clear the keys for
-     * {@link Children.Keys} etc.).
-    */
+    /** Called when all the children Nodes are freed from memory.
+     * Typical implementations at this time clear all the keys
+     * (in case of {@link Children.Keys}) etc.
+     *
+     * Note that this is usually not the best place for unregistering
+     * listeners, etc., as listeners usually keep the child nodes
+     * in memory, preventing them from being collected, thus preventing
+     * this method to be called in the first place.
+     */
     protected void removeNotify() {
     }
 
