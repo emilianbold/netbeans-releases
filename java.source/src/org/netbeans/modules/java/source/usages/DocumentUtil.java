@@ -171,7 +171,7 @@ class DocumentUtil {
     
     //Term and query factories
     public static Query binaryNameQuery (final String resourceName) {
-        BooleanQuery query = new BooleanQuery ();
+        final BooleanQuery query = new BooleanQuery ();
         int index = resourceName.lastIndexOf(PKG_SEPARATOR);  // NOI18N
         String pkgName, sName;
         if (index < 0) {
@@ -188,7 +188,22 @@ class DocumentUtil {
         return query;
     }
     
-    public static Query binaryContentNameQuery (final String resourceName) {        
+    public static Query binaryNameSourceNamePairQuery (final Pair<String,String> binaryNameSourceNamePair) {
+        assert binaryNameSourceNamePair != null;
+        final String binaryName = binaryNameSourceNamePair.first;
+        final String sourceName = binaryNameSourceNamePair.second;
+        final Query query = binaryNameQuery(binaryName);
+        if (sourceName != null) {
+            assert query instanceof BooleanQuery : "The DocumentUtil.binaryNameQuery was incompatibly changed!";        //NOI18N
+            final BooleanQuery bq = (BooleanQuery) query;
+            bq.add(new TermQuery(new Term (FIELD_SOURCE,sourceName)), BooleanClause.Occur.MUST);
+        }
+        return query;
+    }
+    
+    public static Query binaryContentNameQuery (final Pair<String,String> binaryNameSourceNamePair) {
+        final String resourceName = binaryNameSourceNamePair.first;
+        final String sourceName = binaryNameSourceNamePair.second;
         int index = resourceName.lastIndexOf(PKG_SEPARATOR);  // NOI18N
         String pkgName, sName;
         if (index < 0) {
@@ -205,6 +220,9 @@ class DocumentUtil {
         subQuery.add (new PrefixQuery (new Term (FIELD_BINARY_NAME, sName + '$')),BooleanClause.Occur.SHOULD);
         query.add (new TermQuery (new Term (FIELD_PACKAGE_NAME, pkgName)),BooleanClause.Occur.MUST);
         query.add (subQuery,BooleanClause.Occur.MUST);
+        if (sourceName != null) {
+            query.add (new TermQuery(new Term (FIELD_SOURCE,sourceName)), BooleanClause.Occur.MUST);
+        }
         return query;
     }
     

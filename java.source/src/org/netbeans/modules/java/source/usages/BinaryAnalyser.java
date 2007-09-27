@@ -101,7 +101,7 @@ public class BinaryAnalyser implements LowMemoryListener {
     
     private final Index index;
     private final Map<Pair<String,String>,List<String>> refs = new HashMap<Pair<String,String>,List<String>>();
-    private final Set<String> toDelete = new HashSet<String> ();
+    private final Set<Pair<String,String>> toDelete = new HashSet<Pair<String,String>> ();
     private final AtomicBoolean lowMemory;
     private Continuation cont;
 
@@ -257,7 +257,7 @@ public class BinaryAnalyser implements LowMemoryListener {
                 }
                 String relativePath = FileObjects.convertFolder2Package (filePath.substring(rootPath.length(), endPos));
                 if (this.accepts(file.getName()) && !isUpToDate (relativePath, fileMTime)) {
-                    this.toDelete.add(relativePath);
+                    this.toDelete.add(Pair.<String,String>of (relativePath,null));
                     InputStream in = new BufferedInputStream (new FileInputStream (file));
                     try {
                         analyse (in);
@@ -350,7 +350,7 @@ public class BinaryAnalyser implements LowMemoryListener {
         if (!this.index.isValid(false)) {
             return;
         }
-        this.toDelete.add(className);
+        this.toDelete.add(Pair.<String,String>of(className,null));
     }
     
     public void lowMemory (final LowMemoryEvent event) {

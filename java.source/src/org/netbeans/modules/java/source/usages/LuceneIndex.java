@@ -551,7 +551,7 @@ class LuceneIndex extends Index {
         }
     }
     
-    public void store (final Map<Pair<String,String>, List<String>> refs, final List<String> topLevels) throws IOException {
+    public void store (final Map<Pair<String,String>, List<String>> refs, final List<Pair<String,String>> topLevels) throws IOException {
         this.rootPkgCache = null;
         boolean create = !isValid (false);
         long timeStamp = System.currentTimeMillis();
@@ -559,9 +559,9 @@ class LuceneIndex extends Index {
             IndexReader in = getReader();
             final Searcher searcher = new IndexSearcher (in);
             try {
-                for (String topLevel : topLevels) {            
+                for (Pair<String,String> topLevel : topLevels) {
                     Hits hits = searcher.search(DocumentUtil.binaryContentNameQuery(topLevel));
-                    for (int i=0; i<hits.length(); i++) {
+                    for (int i=0; i<hits.length(); i++) {                        
                         in.deleteDocument (hits.id(i));                    
                     }
                 }
@@ -573,7 +573,7 @@ class LuceneIndex extends Index {
         storeData(refs, create, timeStamp);
     }
 
-    public void store(final Map<Pair<String,String>, List<String>> refs, final Set<String> toDelete) throws IOException {
+    public void store(final Map<Pair<String,String>, List<String>> refs, final Set<Pair<String,String>> toDelete) throws IOException {
         this.rootPkgCache = null;
         boolean create = !isValid (false);        
         long timeStamp = System.currentTimeMillis();
@@ -581,15 +581,34 @@ class LuceneIndex extends Index {
             IndexReader in = getReader();
             final Searcher searcher = new IndexSearcher (in);
             try {
-                for (String toDeleteItem : toDelete) {
-                    Hits hits = searcher.search(DocumentUtil.binaryNameQuery(toDeleteItem));
-//                    Disabled assertion until the signature file links are integrated
-//                    assert hits.length() <=1 : "Multiple index entries for binaryName: " + toDeleteItem;    //NOI18N
-                    if (hits.length()>1) {
-                        LOGGER.warning("Multiple index entries for binaryName: " + toDeleteItem); //NOI18N
+                for (Pair<String,String> toDeleteItem : toDelete) {
+                    Hits hits = searcher.search(DocumentUtil.binaryNameSourceNamePairQuery(toDeleteItem));
+                    int[] dindx = new int[hits.length()];                    
+                    int dindxLength = 0;
+                    if (dindx.length == 1) {
+                        dindx[0]=hits.id(0);
+                        dindxLength = 1;
                     }
-                    for (int i=0; i<hits.length(); i++) {
-                        in.deleteDocument (hits.id(i));
+                    else if (dindx.length > 1) {
+                        final boolean hasSrcName = toDeleteItem.second != null;
+                        for (int i=0; i<dindx.length; i++) {
+                            if (!hasSrcName) {                                
+                                Document doc = hits.doc(i);
+                                if (DocumentUtil.getSourceName(doc)==null) {
+                                    dindx[dindxLength++] = hits.id(i);
+                                }
+                            }
+                            else {
+                                dindx[dindxLength++] = hits.id(i);
+                            }
+                        }
+                        if (dindxLength > 1) {                            
+                            LOGGER.warning("Multiple index entries for binaryName: " + toDeleteItem); //NOI18N
+                        }
+                    }
+                    
+                    for (int i=0; i<dindxLength; i++) {
+                        in.deleteDocument (dindx[i]);
                     }
                 }
                 in.deleteDocuments (DocumentUtil.rootDocumentTerm());
@@ -632,7 +651,7 @@ class LuceneIndex extends Index {
                     final Pair<String,String> pair = refsEntry.getKey();
                     final String cn = pair.first;
                     final String srcName = pair.second;
-                    List<String> cr = refsEntry.getValue();
+                    List<String> cr = refsEntry.getValue();                    
                     Document newDoc = DocumentUtil.createDocument(cn,timeStamp,cr,srcName);
                     activeOut.addDocument(newDoc);
                     if (memDir != null && lmListener.lowMemory.getAndSet(false)) {                       

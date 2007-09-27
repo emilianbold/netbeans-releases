@@ -84,14 +84,14 @@ public class SourceAnalyser {
     
     private final Index index;
     private final Map<Pair<String, String>, List<String>> references;
-    private final Set<String> toDelete;
+    private final Set<Pair<String,String>> toDelete;
     
     /** Creates a new instance of SourceAnalyser */
     public SourceAnalyser (final Index index) {
         assert index != null;
         this.index = index;
         this.references = new HashMap<Pair<String,String>, List<String>> ();
-        this.toDelete = new HashSet<String> ();
+        this.toDelete = new HashSet<Pair<String,String>> ();
     }
     
     
@@ -150,7 +150,7 @@ public class SourceAnalyser {
     void analyseUnitAndStore (final CompilationUnitTree cu, final JavacTaskImpl jt, final JavaFileManager manager) throws IOException {
         try {
             final Map<Pair<String,String>,Map<String,Set<ClassIndexImpl.UsageType>>> usages = new HashMap<Pair<String,String>,Map<String,Set<ClassIndexImpl.UsageType>>> ();
-            List<String> topLevels = new ArrayList<String>();
+            final List<Pair<String,String>> topLevels = new ArrayList<Pair<String,String>>();
             UsagesVisitor uv = new UsagesVisitor (jt, cu, manager, cu.getSourceFile(), topLevels);
             uv.scan(cu,usages);
             for (Map.Entry<Pair<String,String>,Map<String,Set<ClassIndexImpl.UsageType>>> oe : usages.entrySet()) {            
@@ -169,11 +169,15 @@ public class SourceAnalyser {
         }
     }
     
-    public void delete (final String className) throws IOException {
+    public void delete (final Pair<String,String>name) throws IOException {
         if (!this.index.isValid(false)) {
             return;
         }
-        this.toDelete.add(className);
+        this.toDelete.add(name);
+    }
+    
+    public void delete (final String binaryName, final String sourceName) throws IOException {
+        this.delete(Pair.<String,String>of(binaryName, sourceName));
     }
     
     
@@ -211,7 +215,7 @@ public class SourceAnalyser {
         private final javax.tools.JavaFileObject sibling;
         private final String sourceName;
         private final boolean signatureFiles;
-        private final List<? super String> topLevels;
+        private final List<? super Pair<String,String>> topLevels;
         private final Set<? super ElementHandle<TypeElement>> newTypes;
         private final Set<String> imports;
         private State state;        
@@ -240,7 +244,7 @@ public class SourceAnalyser {
             this.newTypes = newTypes;            
         }
                 
-        protected UsagesVisitor (JavacTaskImpl jt, CompilationUnitTree cu, JavaFileManager manager, javax.tools.JavaFileObject sibling, List<? super String> topLevels) {
+        protected UsagesVisitor (JavacTaskImpl jt, CompilationUnitTree cu, JavaFileManager manager, javax.tools.JavaFileObject sibling, List<? super Pair<String,String>> topLevels) {
             assert jt != null;
             assert cu != null;
             assert manager != null;
@@ -417,7 +421,7 @@ public class SourceAnalyser {
                             final Pair<String,String> name = Pair.<String,String>of(classNameType, null);
                             if (activeClass.isEmpty()) {
                                 if (topLevels != null) {
-                                    topLevels.add (className);
+                                    topLevels.add (Pair.<String,String>of(className, null));
                                 }
                                 for (String s : imports) {
                                     addUsage(name, s, p, ClassIndexImpl.UsageType.TYPE_REFERENCE);
@@ -468,7 +472,7 @@ public class SourceAnalyser {
                     final Pair<String,String> name = Pair.<String,String>of(classNameType, resourceName);
                     if (activeClass.isEmpty()) {
                         if (topLevels != null) {
-                            topLevels.add (className);
+                            topLevels.add (Pair.<String,String>of(className, resourceName));
                         }
                         for (String s : imports) {
                             addUsage(name, s, p, ClassIndexImpl.UsageType.TYPE_REFERENCE);

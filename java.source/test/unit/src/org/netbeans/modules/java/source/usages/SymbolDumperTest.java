@@ -1405,7 +1405,7 @@ public class SymbolDumperTest extends NbTestCase {
         private Map<String, String> class2Sig = new TreeMap<String, String>();
         
         public SourceAnalyserImpl(JavacTaskImpl jt, CompilationUnitTree cu, JavaFileManager manager, JavaFileObject sibling) {
-            super(jt, cu, manager, sibling, (List<String>)null);
+            super(jt, cu, manager, sibling, (List<Pair<String,String>>)null);
         }
         
         @Override void dump(TypeElement clazz, String className, Element enclosingMethod) {

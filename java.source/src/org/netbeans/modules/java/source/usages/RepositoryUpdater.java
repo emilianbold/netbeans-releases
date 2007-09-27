@@ -1553,8 +1553,8 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     }
                     continue;
                 }
-                String offset = FileObjects.getRelativePath(rootFile,child);
-                if (entry == null || entry.includes(offset.replace(File.separatorChar,'/'))) {
+                final String relativePath = FileObjects.getRelativePath(rootFile,child);
+                if (entry == null || entry.includes(relativePath.replace(File.separatorChar,'/'))) {
                     if (invalidIndex || clean || dirtyCrossFiles.remove(child.toURI())) {
                         if (LOGGER.isLoggable(Level.FINEST)) {
                             String message = "Compiling " + child.getPath() + " due to ";       //NOI18N
@@ -1570,11 +1570,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             LOGGER.finest(message);
                         }
                         toCompile.add(new Pair(FileObjects.fileFileObject(child, rootFile, filter, encoding), child));
-                    } else {
-                        final int index = offset.lastIndexOf('.');  //NOI18N
-                        if (index > -1) {
-                            offset = offset.substring(0,index);
-                        }
+                    } else {                        
+                        final int index = relativePath.lastIndexOf('.');  //NOI18N
+                        final String offset = (index > -1) ? relativePath.substring(0,index) : relativePath;
                         List<File> files = resources.remove(offset);
                         if  (files==null) {
                             if (LOGGER.isLoggable(Level.FINEST)) {
@@ -1583,18 +1581,27 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             toCompile.add(new Pair(FileObjects.fileFileObject(child, rootFile, filter, encoding), child));
                         } else {
                             boolean rsf = files.get(0).getName().endsWith(FileObjects.RS);
+                            String sourceName = null;
                             if (files.get(0).lastModified() < child.lastModified()) {
                                 if (LOGGER.isLoggable(Level.FINEST)) {
                                     LOGGER.finest("Compiling " + child.getPath()+ " timestamp (cache: "+files.get(0).lastModified()+" source: "+child.lastModified()+")" ); //NOI18N
                                 }
                                 toCompile.add(new Pair(FileObjects.fileFileObject(child, rootFile, filter, encoding), child));
+                                String rsFileBinaryName = null;
                                 for (File toDelete : files) {
                                     toDelete.delete();
                                     if (rsf) {
+                                        sourceName = relativePath;
+                                        rsFileBinaryName = FileObjects.getBinaryName(toDelete,classCache);
                                         rsf = false;
                                     } else {
                                         String className = FileObjects.getBinaryName(toDelete,classCache);
-                                        sa.delete(className);
+                                        if (sourceName != null &&  !rsFileBinaryName.equals(className)) {
+                                            sa.delete(className,sourceName);
+                                        }
+                                        else {
+                                            sa.delete(className,null);
+                                        }
                                         if (removed != null) {
                                             removed.add(ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, className));
                                         }
@@ -1619,7 +1626,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         toDelete.delete();
                         if (toDelete.getName().endsWith(FileObjects.SIG)) {
                             String className = FileObjects.getBinaryName(toDelete,classCache);
-                            sa.delete(className);
+                            sa.delete(className,null);
                             if (removed != null) {
                                 removed.add(ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, className));
                             }
@@ -1753,29 +1760,40 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     final File fileFile = FileUtil.toFile(fo);
                     final File classCache = Index.getClassFolder (rootFile);
                     final Map <String,List<File>> resources = getAllClassFiles (classCache, FileObjects.getRelativePath(rootFile, fileFile.getParentFile()),false);
-                    String offset = FileObjects.getRelativePath (rootFile,fileFile);
-                    final int index = offset.lastIndexOf('.');  //NOI18N
-                    if (index > -1) {
-                        offset = offset.substring(0,index);
-                    }
+                    final String relativePath = FileObjects.getRelativePath (rootFile,fileFile);
+                    final int index = relativePath.lastIndexOf('.');  //NOI18N
+                    final String offset = (index > -1) ? relativePath.substring(0,index) : relativePath;                    
                     List<File> files = resources.remove (offset);                
                     SourceAnalyser sa = uqImpl.getSourceAnalyser();
                     assert sa != null;
-                    Set<String> classNamesToDelete = new HashSet<String>();
+                    //XXX: Keep single Pair type, I will resolve this but in separate commit.
+                    Set<org.netbeans.modules.java.source.usages.Pair<String,String>> classNamesToDelete = new HashSet<org.netbeans.modules.java.source.usages.Pair<String,String>>();
                     final Set<ElementHandle<TypeElement>> added = new HashSet<ElementHandle<TypeElement>>();
                     final Set<ElementHandle<TypeElement>> removed = new HashSet <ElementHandle<TypeElement>> ();
                     if (files != null) {
+                        String sourceName = null;
+                        String rsFileBinaryName = null;
                         for (File toDelete : files) {
                             toDelete.delete();
                             if (toDelete.getName().endsWith(FileObjects.SIG)) {
                                 String className = FileObjects.getBinaryName (toDelete,classCache);
-                                classNamesToDelete.add(className);
+                                if (sourceName != null && !rsFileBinaryName.equals(className)) {
+                                    classNamesToDelete.add(org.netbeans.modules.java.source.usages.Pair.<String,String>of(className,sourceName));
+                                }
+                                else {
+                                    classNamesToDelete.add(org.netbeans.modules.java.source.usages.Pair.<String,String>of(className,null));
+                                }                                
                                 removed.add (ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, className));
+                            }
+                            else if (toDelete.getName().endsWith(FileObjects.RS)) {
+                                //The RS files comes as first in toDelete
+                                sourceName = relativePath;
+                                rsFileBinaryName = FileObjects.getBinaryName (toDelete,classCache);
                             }
                         }
                     }
                     else {
-                        classNamesToDelete.add(FileObjects.convertFolder2Package(offset, '/'));  //NOI18N
+                        classNamesToDelete.add(org.netbeans.modules.java.source.usages.Pair.<String,String>of (FileObjects.convertFolder2Package(offset, '/'),null));  //NOI18N
                     }
                     ClassPath.Entry entry = getClassPathEntry (cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE),root);
                     if (entry == null || entry.includes(fo)) {
@@ -1795,7 +1813,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                 com.sun.tools.javac.util.Name.Table.instance(jt.getContext()));
                         sa.analyse(trees, jt, fm, active, added);
 
-                        for (String s : classNamesToDelete) {
+                        for (org.netbeans.modules.java.source.usages.Pair<String,String> s : classNamesToDelete) {
                             sa.delete(s);
                         }
 
@@ -1832,7 +1850,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
 
                         listener.cleanDiagnostics();
                     } else {
-                        for (String s : classNamesToDelete) {
+                        for (org.netbeans.modules.java.source.usages.Pair<String,String> s : classNamesToDelete) {
                             sa.delete(s);
                         }
                     }
@@ -1901,15 +1919,15 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 assert uqImpl != null;                
                 final SourceAnalyser sa = uqImpl.getSourceAnalyser();
                 assert sa != null;
-                List<String> classNames = new ArrayList<String>();
-                getFiles (affectedFiles, classCache, classNames, removed);
+                List<org.netbeans.modules.java.source.usages.Pair<String,String>> names = new ArrayList<org.netbeans.modules.java.source.usages.Pair<String,String>>();
+                getFiles (affectedFiles, classCache, names, removed);
                 //find dependent files:
                 FileObject rootFO = FileUtil.toFileObject(rootFile);
                 final JavaFileFilterImplementation filter = JavaFileFilterQuery.getFilter(rootFO);
                 ClasspathInfo cpInfo = ClasspathInfoAccessor.INSTANCE.create (rootFO, filter, true, false);
                 toReparse = RebuildOraculum.findAllDependent(rootFile, null, cpInfo.getClassIndex(), removed);
                 //actually delete the sig files:
-                for (String s : classNames) {
+                for (org.netbeans.modules.java.source.usages.Pair<String,String> s : names) {
                     sa.delete(s);
                 }
                 sa.store();
@@ -1921,24 +1939,32 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             return toReparse;
         }
         
-        private void getFiles (final File[] affectedFiles, final File classCache, final List<? super String> classNames, Set<ElementHandle<TypeElement>> removed) throws IOException {
+        private void getFiles (final File[] affectedFiles, final File classCache, final List<? super org.netbeans.modules.java.source.usages.Pair<String,String>> names, Set<ElementHandle<TypeElement>> removed) throws IOException {
             for (File f : affectedFiles) {
                 if (f.isDirectory()) {
-                    getFiles (f.listFiles(),classCache, classNames, removed);
+                    getFiles (f.listFiles(),classCache, names, removed);
                 }
                 else if (f.getName().endsWith(FileObjects.RS)) {
                     List<File> rsFiles = new LinkedList<File>();
                     readRSFile(f, classCache, rsFiles);
+                    final String relativePath = FileObjects.getRelativePath (classCache,f);
+                    final String rsFileBinaryName = FileObjects.getBinaryName(f, classCache);
+                    final String sourceName = relativePath.substring(0, relativePath.length() - FileObjects.RS.length()) + FileObjects.JAVA;
                     for (File rsf : rsFiles) {
-                        String className = FileObjects.getBinaryName (rsf,classCache);                                                                        
-                        classNames.add(className);
+                        String className = FileObjects.getBinaryName (rsf,classCache);
+                        if (!rsFileBinaryName.equals(className)) {
+                            names.add(org.netbeans.modules.java.source.usages.Pair.<String,String>of (className,sourceName));
+                        }
+                        else {
+                            names.add(org.netbeans.modules.java.source.usages.Pair.<String,String>of (className,null));
+                        }
                         removed.add(ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, className));
                         rsf.delete();
                     }
                 }
                 else {
                     String className = FileObjects.getBinaryName (f,classCache);                                                                        
-                    classNames.add(className);
+                    names.add(org.netbeans.modules.java.source.usages.Pair.<String,String>of (className,null));
                     removed.add(ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, className));
                 }
                 f.delete();                    
