@@ -188,6 +188,10 @@ public class UnitTab extends javax.swing.JPanel {
         return table;
     }
     
+    public String getHelpId () {
+        return UnitTab.class.getName () + '.' + model.getType (); // NOI18N
+    }
+    
     void setWaitingState (boolean waitingState) {
         boolean enabled = !waitingState;
         Component[] all = getComponents ();
