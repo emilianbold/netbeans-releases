@@ -378,6 +378,7 @@ public class DetailPanel implements WizardDescriptor.Panel {
 
     private void fieldsChoiceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fieldsChoiceActionPerformed
         if (fieldsChoice.isSelected()) {
+            tableCombo.setEnabled(false);
             availableLabel.setText(NbBundle.getMessage(DetailPanel.class, "LBL_DetailAvailableFields")); // NOI18N
             includeLabel.setText(NbBundle.getMessage(DetailPanel.class, "LBL_DetailFieldsToInclude")); // NOI18N
             fillLists(masterTable);
