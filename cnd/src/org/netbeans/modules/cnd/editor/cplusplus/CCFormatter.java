@@ -233,7 +233,8 @@ public class CCFormatter extends ExtFormatter {
             // check that previous line does not end with "{" or line comment
             ftp = ccfs.findNonWhitespace(endOfPreviousLine, null, true, true);
             if (ftp.getToken().getTokenID() == CCTokenContext.LINE_COMMENT ||
-                ftp.getToken().getTokenID() == CCTokenContext.LBRACE){
+                ftp.getToken().getTokenID() == CCTokenContext.LBRACE ||
+                ccfs.isPreprocessorAtLineStart(ftp.getToken())){
                 return;
             }
 
@@ -301,6 +302,18 @@ public class CCFormatter extends ExtFormatter {
                                         case CCTokenContext.LINE_COMMENT_ID:
                                             break; // comments are ignored
 
+                                        case CCTokenContext.RBRACKET_ID:
+                                            break; // array initializtion "ttt [] {...}"
+                                            
+                                        case CCTokenContext.COMMA_ID:
+                                        case CCTokenContext.EQ_ID:
+                                        case CCTokenContext.LBRACE_ID:
+                                            // multi array initialization
+                                            //        static int[][] CONVERT_TABLE= { {3,5},
+                                            //            {1,2}, {2,3}, ...
+                                            break;
+                                            
+
                                         default:
                                             // Check whether it isn't a "{ }" case
                                             FormatTokenPosition next = ccfs.findImportant(
@@ -347,7 +360,8 @@ public class CCFormatter extends ExtFormatter {
                                 // check that previous line does not end with "{" or line comment
                                 ftp = ccfs.findNonWhitespace(endOfPreviousLine, null, true, true);
                                 if (ftp.getToken().getTokenID() == CCTokenContext.LINE_COMMENT ||
-                                    ftp.getToken().getTokenID() == CCTokenContext.LBRACE)
+                                    ftp.getToken().getTokenID() == CCTokenContext.LBRACE ||
+                                    ccfs.isPreprocessorAtLineStart(ftp.getToken()))
                                     break;
 
                                 // now move the "{" to the end of previous line

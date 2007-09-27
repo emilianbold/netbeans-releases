@@ -61,8 +61,14 @@ public class CCFormatSupport extends ExtFormatSupport {
          if( getSettingBoolean(CCSettingsNames.CC_FORMAT_PREPROCESSOR_AT_LINE_START, 
                     CCSettingsDefaults.defaulCCtFormatPreprocessorAtLineStart) ) 
              return false;
-         return (token != null && token.getImage().startsWith("#") && // NOI18N
-		    getVisualColumnOffset(getPosition(token,0)) == 0);
+         if (token != null){
+            FormatTokenPosition ft = findLineFirstNonWhitespace(getPosition(token, 0));
+            if (ft != null) {
+                token = ft.getToken();
+            }
+         }
+         return (token != null && token.getImage().startsWith("#")); // NOI18N
+                 //&& getVisualColumnOffset(getPosition(token,0)) == 0);
      }
     
 
@@ -118,6 +124,7 @@ public class CCFormatSupport extends ExtFormatSupport {
      */
     public TokenItem findStatement(TokenItem token) {
         TokenItem lit = null; // last important token
+        boolean firstColon = true;
         TokenItem t = getPreviousToken(token);
 
         while (t != null) {
@@ -131,11 +138,34 @@ public class CCFormatSupport extends ExtFormatSupport {
                         break;
 
                     case CCTokenContext.LBRACE_ID:
-                    case CCTokenContext.RBRACE_ID:
-                    case CCTokenContext.COLON_ID:
                     case CCTokenContext.ELSE_ID:
                         return (lit != null) ? lit : t;
 
+                    case CCTokenContext.RBRACE_ID:
+                        // Check whether this is an array initialization block
+                        if (!isArrayInitializationBraceBlock(t, null)) {
+                            return (lit != null) ? lit : t;
+                        } else { // skip the array initialization block
+                            t = findMatchingToken(t, null, CCTokenContext.LBRACE, true);
+                        }
+                        break;
+
+                    case CCTokenContext.COLON_ID:
+                        TokenItem tt = findAnyToken(t, null, new TokenID[] {CCTokenContext.CASE, CCTokenContext.DEFAULT, CCTokenContext.QUESTION}, t.getTokenContextPath(), true);
+                        if (tt != null) {
+                            switch (tt.getTokenID().getNumericID()) {
+                                case CCTokenContext.CASE_ID:
+                                case CCTokenContext.DEFAULT_ID:
+                                    return (lit != null) ? lit : t;
+                            }
+                        }
+                        if (lit != null && firstColon){
+                            return lit;
+                        }
+                        firstColon = false;
+                        break;
+
+                    case CCTokenContext.ENUM_ID:
                     case CCTokenContext.DO_ID:
                     case CCTokenContext.SWITCH_ID:
                     case CCTokenContext.CASE_ID:
@@ -155,7 +185,7 @@ public class CCFormatSupport extends ExtFormatSupport {
                             TokenItem mt = findMatchingToken(lit, token,
                                     CCTokenContext.RPAREN, false);
                             if (mt != null && mt.getNext() != null) {
-                                mt = findImportantToken(mt.getNext(), token, false);
+                                mt = findImportantToken(mt.getNext(), token, false, true);
                                 if (mt != null) {
                                     return mt;
                                 }
@@ -297,6 +327,8 @@ public class CCFormatSupport extends ExtFormatSupport {
                             switch (classifierToken.getTokenID().getNumericID()) {
                                 case CCTokenContext.CLASS_ID:
                                 case CCTokenContext.STRUCT_ID:
+                                case CCTokenContext.ENUM_ID:
+                                case CCTokenContext.UNION_ID:
                                     return classifierToken;
                             }
                         }
@@ -352,6 +384,7 @@ public class CCFormatSupport extends ExtFormatSupport {
         }
     }
 
+    
     /** Find the start of the statement.
      * @param token token from which to start. It searches
      *  backward using <code>findStatement()</code> so it ignores
@@ -362,6 +395,15 @@ public class CCFormatSupport extends ExtFormatSupport {
      *  the given token.
      */
     public TokenItem findStatementStart(TokenItem token) {
+        TokenItem t = findStatementStart(token, true);
+        // preprocessor tokens are not important (bug#22570)
+        while (t != null && isPreprocessorAtLineStart(t)) {
+            t = findStatementStart(t.getPrevious());
+        }
+        return t;
+    }
+
+    public TokenItem findStatementStart(TokenItem token, boolean outermost) {
         TokenItem t = findStatement(token);
         if (t != null) {
             switch (t.getTokenID().getNumericID()) {
@@ -379,17 +421,21 @@ public class CCFormatSupport extends ExtFormatSupport {
                         case CCTokenContext.SEMICOLON_ID: // ';' then ';'
                             return t; // return ';'
 
+                        case CCTokenContext.PRIVATE_ID:
+                        case CCTokenContext.PROTECTED_ID:
+                        case CCTokenContext.PUBLIC_ID:
+
                         case CCTokenContext.DO_ID:
                         case CCTokenContext.FOR_ID:
                         case CCTokenContext.IF_ID:
                         case CCTokenContext.WHILE_ID:
-                            return findStatementStart(t);
+                            return findStatementStart(t, outermost);
 
                         case CCTokenContext.ELSE_ID: // 'else' then ';'
                             // Find the corresponding 'if'
                             TokenItem ifss = findIf(scss);
                             if (ifss != null) { // 'if' ... 'else' then ';'
-                                return findStatementStart(ifss);
+                                return findStatementStart(ifss, outermost);
                             } else { // no valid starting 'if'
                                 return scss; // return 'else'
                             }
@@ -408,13 +454,13 @@ public class CCFormatSupport extends ExtFormatSupport {
                                 case CCTokenContext.FOR_ID:
                                 case CCTokenContext.IF_ID:
                                 case CCTokenContext.WHILE_ID:
-                                    return findStatementStart(bscss);
+                                    return findStatementStart(bscss, outermost);
 
                                 case CCTokenContext.ELSE_ID:
                                     // Find the corresponding 'if'
                                     ifss = findIf(bscss);
                                     if (ifss != null) { // 'if' ... 'else' ... ';'
-                                        return findStatementStart(ifss);
+                                        return findStatementStart(ifss, outermost);
                                     } else { // no valid starting 'if'
                                         return bscss; // return 'else'
                                     }
@@ -438,7 +484,7 @@ public class CCFormatSupport extends ExtFormatSupport {
                                     // Find the corresponding 'if'
                                     TokenItem ifss = findIf(lbss);
                                     if (ifss != null) { // valid 'if'
-                                        return findStatementStart(ifss);
+                                        return findStatementStart(ifss, outermost);
                                     } else {
                                         return lbss; // return 'else'
                                     }
@@ -448,7 +494,7 @@ public class CCFormatSupport extends ExtFormatSupport {
                                     // Find the corresponding 'try'
                                     TokenItem tryss = findTry(lbss);
                                     if (tryss != null) { // valid 'try'
-                                        return findStatementStart(tryss);
+                                        return findStatementStart(tryss, outermost);
                                     } else {
                                         return lbss; // return 'catch'
                                     }
@@ -457,7 +503,7 @@ public class CCFormatSupport extends ExtFormatSupport {
                                 case CCTokenContext.FOR_ID:
                                 case CCTokenContext.IF_ID:
                                 case CCTokenContext.WHILE_ID:
-                                    return findStatementStart(lbss);
+                                    return findStatementStart(lbss, outermost);
                             }
                             // I copied the next if from JavaFormatSupport. But I'm not 100% certain it
                             // applies...
@@ -477,13 +523,17 @@ public class CCFormatSupport extends ExtFormatSupport {
                 case CCTokenContext.ELSE_ID:
                     // Find the corresponding 'if'
                     TokenItem ifss = findIf(t);
-                    return (ifss != null) ? findStatementStart(ifss) : t;
+                    return (ifss != null) ? findStatementStart(ifss, outermost) : t;
 
                 case CCTokenContext.DO_ID:
                 case CCTokenContext.FOR_ID:
                 case CCTokenContext.IF_ID:
                 case CCTokenContext.WHILE_ID:
-                    return findStatementStart(t);
+                    if (!outermost) {
+                        return t;
+                    } else {
+                        return findStatementStart(t, outermost);
+                    }
 
                 case CCTokenContext.IDENTIFIER_ID:
                     return t;
@@ -620,18 +670,19 @@ public class CCFormatSupport extends ExtFormatSupport {
                         indent = getTokenIndent(cls);
                     }
                     break;
+                case CCTokenContext.CLASS_ID:
+                case CCTokenContext.STRUCT_ID:
+                    TokenItem clsTemplate = findClassifierStart(token);
+                    if (clsTemplate != null) {
+                        indent = getTokenIndent(clsTemplate);
+                    }
+                    break;
             }
         }
 
         // If indent not found, search back for the first important token
         if (indent < 0) { // if not yet resolved
-            TokenItem t = findImportantToken(token, null, true);
-            // preprocessor tokens are not important (bug#22570)
-            while (t != null && getPosition(t, 0) != null && 
-		    findLineFirstNonWhitespace(getPosition(t, 0)) != null &&
-		    isPreprocessorAtLineStart(findLineFirstNonWhitespace(getPosition(t, 0)).getToken())) {
-                t = findImportantToken(t, null, true);
-            }
+            TokenItem t = findImportantToken(token, null, true, true);
             if (t != null) { // valid important token
                 switch (t.getTokenID().getNumericID()) {
                     case CCTokenContext.SEMICOLON_ID: // semicolon found
@@ -641,11 +692,24 @@ public class CCFormatSupport extends ExtFormatSupport {
 				    tt.getImage().startsWith("\n"))) { // NOI18N
 			    tt = findStatementStart(tt.getPrevious());
                         }
-                        indent = getTokenIndent(tt);
+                        if (tt !=null){
+                            switch (tt.getTokenID().getNumericID()) {
+                                case CCTokenContext.PUBLIC_ID:
+                                case CCTokenContext.PRIVATE_ID:
+                                case CCTokenContext.PROTECTED_ID:
+                                    indent = getTokenIndent(tt) + getShiftWidth();
+                                    break;
+                                default:
+                                    indent = getTokenIndent(tt);
+                                    break;
+                            }
+                        } else {
+                            indent = getTokenIndent(tt);
+                        }
                         break;
 
                     case CCTokenContext.LBRACE_ID:
-                        TokenItem lbss = findStatementStart(t);
+                        TokenItem lbss = findStatementStart(t, false);
                         if (lbss == null) {
                             lbss = t;
                         }
@@ -657,11 +721,38 @@ public class CCFormatSupport extends ExtFormatSupport {
 			indent = getTokenIndent(t3);
 			break;
 
+                    case CCTokenContext.COLON_ID:
+                        TokenItem ttt = getVisibility(t);
+                        if (ttt != null){
+                            indent = getTokenIndent(ttt) + getShiftWidth();
+                        } else {
+                            ttt = findAnyToken(t, null,
+                                    new TokenID[] {CCTokenContext.CASE,
+                                    CCTokenContext.DEFAULT,
+                                    CCTokenContext.QUESTION,
+                                    CCTokenContext.PRIVATE,
+                                    CCTokenContext.PROTECTED,
+                                    CCTokenContext.PUBLIC}, t.getTokenContextPath(), true);
+                            if (ttt != null && ttt.getTokenID().getNumericID() == CCTokenContext.QUESTION_ID){
+                                indent = getTokenIndent(ttt) + getShiftWidth();
+                            } else {
+                                // Indent of line with ':' plus one indent level
+                                indent = getTokenIndent(t);// + getShiftWidth();
+                            }
+                        }
+			break;
+
+                    case CCTokenContext.QUESTION_ID:
+                    case CCTokenContext.DO_ID:
+                    case CCTokenContext.ELSE_ID:
+                        indent = getTokenIndent(t) + getShiftWidth();
+                        break;
+
                     case CCTokenContext.RPAREN_ID:
                         // Try to find the matching left paren
                         TokenItem rpmt = findMatchingToken(t, null, CCTokenContext.LPAREN, true);
                         if (rpmt != null) {
-                            rpmt = findImportantToken(rpmt, null, true);
+                            rpmt = findImportantToken(rpmt, null, true, true);
                             // Check whether there are the indent changing kwds
                             if (rpmt != null && rpmt.getTokenContextPath() == tokenContextPath) {
                                 switch (rpmt.getTokenID().getNumericID()) {
@@ -674,25 +765,9 @@ public class CCFormatSupport extends ExtFormatSupport {
                                 }
                             }
                         }
-                        break;
-
-                    case CCTokenContext.COLON_ID:
-                        TokenItem ttt = findAnyToken(t, null, new TokenID[] {
-                                CCTokenContext.CASE,  CCTokenContext.DEFAULT, 
-                                CCTokenContext.FOR, CCTokenContext.QUESTION
-                            }, t.getTokenContextPath(), true);
-                        if (ttt != null && ttt.getTokenID().getNumericID() == CCTokenContext.QUESTION_ID) {
-                            indent = getTokenIndent(ttt) + getShiftWidth();
-                        } else {
-                            // Indent of line with ':' plus one indent level
-                            indent = getTokenIndent(t) + getShiftWidth();
+                        if (indent < 0) {
+                            indent = computeStatementIndent(t);
                         }
-			break;
-
-                    case CCTokenContext.QUESTION_ID:
-                    case CCTokenContext.DO_ID:
-                    case CCTokenContext.ELSE_ID:
-                        indent = getTokenIndent(t) + getShiftWidth();
                         break;
 
                     case CCTokenContext.COMMA_ID:
@@ -702,23 +777,7 @@ public class CCFormatSupport extends ExtFormatSupport {
                         } // else continue to default
 
                     default:
-                        // Find stmt start and add continuation indent
-                        TokenItem stmtStart = findStatementStart(t);
-                        indent = getTokenIndent(stmtStart);
-                        if (stmtStart != null) {
-                            // Check whether there is a comma on the previous line end
-                            // and if so then also check whether the present
-                            // statement is inside array initialization statement
-                            // and not inside parens and if so then do not indent
-                            // statement continuation
-                            if (t != null && tokenEquals(t, CCTokenContext.COMMA, tokenContextPath)) {
-                                if (isArrayInitializationBraceBlock(t, null) && !isInsideParens(t, stmtStart)) {
-                                    // Eliminate the later effect of statement continuation shifting
-                                    indent -= getFormatStatementContinuationIndent();
-                                }
-                            }
-                            indent += getFormatStatementContinuationIndent();
-                        }
+                        indent = computeStatementIndent(t);
                         break;
                 }
 
@@ -734,6 +793,50 @@ public class CCFormatSupport extends ExtFormatSupport {
         return indent;
     }
 
+    private int computeStatementIndent(final TokenItem t) {
+        int indent;
+        // Find stmt start and add continuation indent
+        TokenItem stmtStart = findStatementStart(t);
+        indent = getTokenIndent(stmtStart);
+        int tindent = getTokenIndent(t);
+        if (tindent > indent)
+            return tindent;
+        
+        if (stmtStart != null) {
+            // Check whether there is a comma on the previous line end
+            // and if so then also check whether the present
+            // statement is inside array initialization statement
+            // and not inside parents and if so then do not indent
+            // statement continuation
+            if (t != null && tokenEquals(t, CCTokenContext.COMMA, tokenContextPath)) {
+                if (isArrayInitializationBraceBlock(t, null) && !isInsideParens(t, stmtStart)) {
+                    // Eliminate the later effect of statement continuation shifting
+                    indent -= getFormatStatementContinuationIndent();
+                }
+            } else if (!isStatement(stmtStart)){
+                indent -= getFormatStatementContinuationIndent();
+            }
+            indent += getFormatStatementContinuationIndent();
+        }
+        return indent;
+    }
+
+    private boolean isStatement(TokenItem t){
+        t = t.getNext();
+        while (t != null) {
+            if (t.getTokenContextPath() == tokenContextPath) {
+                switch (t.getTokenID().getNumericID()) {
+                    case CCTokenContext.SEMICOLON_ID:
+                        return true;
+                    case CCTokenContext.LBRACE_ID:
+                        return false;
+                }
+            }
+            t = t.getNext();
+        }
+        return true;
+    }
+    
     public FormatTokenPosition indentLine(FormatTokenPosition pos) {
         int indent = 0; // Desired indent
 
@@ -864,7 +967,44 @@ public class CCFormatSupport extends ExtFormatSupport {
 
         return false;
     }
+
+    private TokenItem findClassifierStart(TokenItem token) {
+        while (true) {
+            token = findStatement(token);
+            if (token == null) {
+                return null;
+            }
+            switch (token.getTokenID().getNumericID()) {
+                case CCTokenContext.LBRACE_ID:
+                case CCTokenContext.RBRACE_ID:
+                case CCTokenContext.SEMICOLON_ID:
+                    return null;
+                case CCTokenContext.TEMPLATE_ID:
+                    return findStatementStart(token);
+            }
+        }
+    }
     
+    private TokenItem getVisibility(TokenItem token) {
+        TokenItem t = getPreviousToken(token);
+        while (t != null) {
+            if (t.getTokenContextPath() == tokenContextPath) {
+                switch (t.getTokenID().getNumericID()) {
+                    case CCTokenContext.SEMICOLON_ID:
+                    case CCTokenContext.LBRACE_ID:
+                    case CCTokenContext.RBRACE_ID:
+                        return null;
+                    case CCTokenContext.PRIVATE_ID:
+                    case CCTokenContext.PROTECTED_ID:
+                    case CCTokenContext.PUBLIC_ID:
+                        return t;
+                }
+            }
+            t = t.getPrevious();
+        }
+        return null;
+    }
+
     /**
      * Check whether there are left parenthesis before the given token
      * until the limit token.
@@ -915,7 +1055,7 @@ public class CCFormatSupport extends ExtFormatSupport {
                 case CCTokenContext.LBRACE_ID:
                     depth--;
                     if (depth < 0) {
-                        TokenItem prev = findImportantToken(token, limitToken, true);
+                        TokenItem prev = findImportantToken(token, limitToken, true, true);
                         // Array initialization left brace should be preceded
                         // by either '=' or ']' i.e.
                         // either "String array = { "a", "b", ... }"
@@ -950,7 +1090,7 @@ public class CCFormatSupport extends ExtFormatSupport {
             token = itm;
         }
         if (token != null && tokenEquals(token, CCTokenContext.IDENTIFIER, tokenContextPath)) {
-            TokenItem itm = findImportantToken(token, null, true);
+            TokenItem itm = findImportantToken(token, null, true, true);
             if (itm != null && tokenEquals(itm, CCTokenContext.LBRACE, tokenContextPath)) {
                 TokenItem startItem = findStatementStart(itm);
                 if (startItem != null && findToken(startItem, itm, CCTokenContext.ENUM, tokenContextPath, null, false) != null)
@@ -1029,4 +1169,22 @@ public class CCFormatSupport extends ExtFormatSupport {
             return ftp;
     }
 
+    public TokenItem findImportantToken(TokenItem startToken, TokenItem limitToken, boolean backward, boolean ignorePreprocessor) {
+        TokenItem t = findImportantToken(startToken, limitToken, backward);
+        if (ignorePreprocessor) {
+            // preprocessor tokens are not important (bug#22570)
+            while (t != null && getPosition(t, 0) != null){
+                 FormatTokenPosition ft = findLineFirstNonWhitespace(getPosition(t, 0));
+                 if (ft == null) {
+                     return null;
+                 }
+                 if (isPreprocessorAtLineStart(ft.getToken())) {
+                    t = findImportantToken(t, limitToken, backward);
+                 } else {
+                     break;
+                 }
+            }
+        }
+        return t;
+    }
 }
