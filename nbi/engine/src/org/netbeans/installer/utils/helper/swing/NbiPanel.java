@@ -39,8 +39,8 @@ public class NbiPanel extends JPanel {
     private HashMap<Integer, Image> imagesMap ;
     public static final int ANCHOR_TOP_LEFT  = 1;
     public static final int ANCHOR_TOP_RIGHT = 2;
-    public static final int ANCHOR_BOTTON_LEFT = 3;
-    public static final int ANCHOR_BOTTON_RIGHT = 4;
+    public static final int ANCHOR_BOTTOM_LEFT = 3;
+    public static final int ANCHOR_BOTTOM_RIGHT = 4;
     
     public NbiPanel() {
         super();
@@ -80,13 +80,13 @@ public class NbiPanel extends JPanel {
                                 0,
                                 this);
                         break;
-                    case ANCHOR_BOTTON_LEFT:
+                    case ANCHOR_BOTTOM_LEFT:
                         graphics.drawImage(backgroundImage,
                                 0,
                                 this.getHeight() - backgroundImage.getHeight(this),
                                 this);
                         break;
-                    case ANCHOR_BOTTON_RIGHT:
+                    case ANCHOR_BOTTOM_RIGHT:
                         graphics.drawImage(backgroundImage,
                                 this.getWidth() - backgroundImage.getWidth(this),
                                 this.getHeight() - backgroundImage.getHeight(this),

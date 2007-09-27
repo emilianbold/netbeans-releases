@@ -37,6 +37,7 @@ import org.netbeans.installer.product.filters.OrFilter;
 import org.netbeans.installer.product.filters.ProductFilter;
 import org.netbeans.installer.product.filters.RegistryFilter;
 import org.netbeans.installer.utils.ErrorManager;
+import org.netbeans.installer.utils.FileProxy;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
@@ -45,6 +46,7 @@ import org.netbeans.installer.utils.exceptions.NativeException;
 import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.helper.swing.NbiButton;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
+import org.netbeans.installer.utils.helper.swing.NbiPanel;
 import org.netbeans.installer.utils.helper.swing.NbiTextPane;
 import org.netbeans.installer.wizard.components.panels.ErrorMessagePanel;
 import org.netbeans.installer.wizard.components.panels.ErrorMessagePanel.ErrorMessagePanelSwingUi;
@@ -247,6 +249,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
         private NbiLabel installationSizeLabel;
         
         private NbCustomizeSelectionDialog customizeDialog;
+        private NbiPanel leftImagePanel;
         
         private List<RegistryNode> registryNodes;
         
@@ -421,17 +424,32 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             // installationSizeLabel ////////////////////////////////////////////////
             installationSizeLabel = new NbiLabel();
             
+            
+            leftImagePanel = new NbiPanel();
+            leftImagePanel.setBackgroundImage(WELCOME_PAGE_LEFT_IMAGE_RESOURCE,
+                    ANCHOR_BOTTOM_LEFT);
+            leftImagePanel.setOpaque(false);
+            
             // this /////////////////////////////////////////////////////////////////
-            add(textPane, new GridBagConstraints(
+            add(leftImagePanel, new GridBagConstraints(
                     0, 0,                             // x, y
-                    2, 1,                             // width, height
+                    1, 100,                           // width, height
+                    2.0, 1.0,                         // weight-x, weight-y
+                    GridBagConstraints.SOUTHWEST,     // anchor
+                    GridBagConstraints.BOTH,          // fill
+                    new Insets(0, 0, 0, 0),           // padding
+                    0, 0));                           // padx, pady - ???
+            
+            add(textPane, new GridBagConstraints(
+                    1, 0,                             // x, y
+                    1, 1,                             // width, height
                     1.0, 1.0,                         // weight-x, weight-y
                     GridBagConstraints.CENTER,        // anchor
                     GridBagConstraints.BOTH,          // fill
                     new Insets(11, 11, 0, 11),        // padding
                     0, 0));                           // padx, pady - ???
             add(customizeButton, new GridBagConstraints(
-                    0, 1,                             // x, y
+                    1, 1,                             // x, y
                     1, 1,                             // width, height
                     1.0, 0.0,                         // weight-x, weight-y
                     GridBagConstraints.LINE_START,    // anchor
@@ -439,7 +457,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                     new Insets(7, 11, 11, 0),         // padding
                     0, 0));                           // padx, pady - ???
             add(installationSizeLabel, new GridBagConstraints(
-                    1, 1,                             // x, y
+                    2, 1,                             // x, y
                     1, 1,                             // width, height
                     0.0, 0.0,                         // weight-x, weight-y
                     GridBagConstraints.CENTER,        // anchor
@@ -625,7 +643,9 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             "cancel.button.text"; // NOI18N
     public static final String DEFAULT_COMPONENT_DESCRIPTION_PROPERTY =
             "default.component.description";
-    
+    public static final String WELCOME_PAGE_LEFT_IMAGE_RESOURCE =
+            FileProxy.RESOURCE_SCHEME_PREFIX + 
+            "org/netbeans/installer/wizard/wizard-welcome-left.png";
     public static final String DEFAULT_CUSTOMIZE_TITLE =
             ResourceUtils.getString(NbWelcomePanel.class,
             "NWP.customize.title"); // NOI18N

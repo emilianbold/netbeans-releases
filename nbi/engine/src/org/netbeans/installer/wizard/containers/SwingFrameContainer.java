@@ -513,7 +513,7 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
             
             String imageUri = System.getProperty(WIZARD_FRAME_HEAD_IMAGE_URI_PROPERTY);
             if(imageUri!=null) {
-                titlePanel.setBackgroundImage(imageUri, titlePanel.ANCHOR_BOTTON_RIGHT);
+                titlePanel.setBackgroundImage(imageUri, titlePanel.ANCHOR_BOTTOM_RIGHT);
                 
             }
             
