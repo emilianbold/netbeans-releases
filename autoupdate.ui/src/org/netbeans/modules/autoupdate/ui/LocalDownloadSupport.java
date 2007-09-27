@@ -50,6 +50,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -59,6 +60,7 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
+import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
 import org.netbeans.api.autoupdate.UpdateUnit;
@@ -122,21 +124,45 @@ public class LocalDownloadSupport {
             Set<File> files = fileList.getSelectedFiles();
             File [] nbms = files.toArray(new File[files.size()]);        
             UpdateUnitProviderFactory factory = UpdateUnitProviderFactory.getDefault();
-            for (File file : nbms) {
-                UpdateUnitProvider provider = factory.create(file.getName(), new File[] {file});
+            for (File file1 : nbms) {
+                UpdateUnitProvider provider = factory.create(file1.getName(), new File[] {file1});
                 List<UpdateUnit> units = Collections.emptyList ();
                 try {
                     units = provider.getUpdateUnits (UpdateManager.TYPE.MODULE);
                 } catch (RuntimeException re) {
                     err.log (Level.WARNING, re.getMessage (), re);
-                    DialogDisplayer.getDefault().notifyLater (new NotifyDescriptor.Exception (re, getBundle ("LocalDownloadSupport_BrokenNBM_Exception", file.getName ())));
-                    fileList.removeFile (file);
+                    DialogDisplayer.getDefault().notifyLater (new NotifyDescriptor.Exception (re, getBundle ("LocalDownloadSupport_BrokenNBM_Exception", file1.getName ())));
+                    fileList.removeFile (file1);
                 }
-                synchronized(LocalDownloadSupport.class) {                
+                synchronized (LocalDownloadSupport.class) {
                     updateUnits.addAll(units);
-                }
-                for (UpdateUnit updateUnit : units) {
-                    units2file.put(updateUnit.getCodeName(), file);
+                }                                                            
+                for (Iterator<UpdateUnit> it = units.iterator(); it.hasNext();) {   
+                    UpdateUnit updateUnit = it.next();
+                    File file2 = units2file.put(updateUnit.getCodeName(), file1);
+                    //do not allow to put in two updates for the same plugin - choose the one with higher spec.version
+                    if (file2 != null && !file2.equals(file1)) {                        
+                        for (Iterator<UpdateUnit> it2 = updateUnits.iterator(); it2.hasNext();) {   
+                            UpdateUnit updateUnit2 = it2.next();
+                            if (updateUnit2 != updateUnit && updateUnit2.getCodeName().equals(updateUnit.getCodeName())) {
+                                List<UpdateElement> updateElements2 = updateUnit2.getAvailableUpdates();
+                                List<UpdateElement> updateElements = updateUnit.getAvailableUpdates();
+                                UpdateElement uE2 = (updateElements2.size() > 0) ? updateElements2.get(0) : null;
+                                UpdateElement uE1 = (updateElements.size() > 0) ? updateElements.get(0) : null;
+                                if (uE2 != null && uE1 != null) {
+                                    if (uE1.getSpecificationVersion().compareTo(uE2.getSpecificationVersion()) >= 0) {
+                                        units2file.put(updateUnit.getCodeName(), file1);
+                                        fileList.removeFile(file2);
+                                        it2.remove();
+                                    } else {
+                                        units2file.put(updateUnit.getCodeName(), file2);
+                                        fileList.removeFile(file1);
+                                        it.remove();
+                                    }
+                                }
+                            }
+                        }
+                    } 
                 }
             }
         }
