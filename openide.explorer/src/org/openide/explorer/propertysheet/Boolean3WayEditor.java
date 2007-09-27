@@ -58,6 +58,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.*;
+import javax.swing.event.ChangeListener;
+import javax.swing.plaf.ActionMapUIResource;
 
 
 /** A property editor for Boolean values which can also be null to
@@ -193,26 +195,78 @@ final class Boolean3WayEditor implements ExPropertyEditor, InplaceEditor.Factory
         }
     }
 
-    /** Implementation of InplaceEditor.Factory to create an inplace editor on demand.
-     *   With the current implementation, this will actually never be called, because
-     *   edit requests for boolean properties automatically toggle the value.  This may,
-     *   however, be desirable for the reimplementation of PropertyPanel. */
+    /** Implementation of InplaceEditor.Factory to create an inplace editor on demand. */
     public InplaceEditor getInplaceEditor() {
         return new Boolean3Inplace();
     }
 
     class Boolean3Inplace extends JCheckBox implements InplaceEditor {
+
         private PropertyModel propertyModel = null;
+        private final int NOT_SELECTED = 0;
+        private final int SELECTED = 1;
+        private final int DONT_CARE = 2;
+        private final ButtonModel3Way model3way;
 
         Boolean3Inplace() {
-            setModel(new ButtonModel3Way());
             setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+            // Add a listener for when the mouse is pressed
+            super.addMouseListener(new MouseAdapter() {
+
+                @Override
+                public void mousePressed(MouseEvent e) {
+                    grabFocus();
+                    model3way.nextState();
+                }
+            });
+            // Reset the keyboard action map
+            ActionMap map = new ActionMapUIResource();
+            map.put("pressed", new AbstractAction() {
+
+                public void actionPerformed(ActionEvent e) {
+                    grabFocus();
+                    model3way.nextState();
+                }
+            });
+            map.put("released", null);
+            SwingUtilities.replaceUIActionMap(this, map);
+            // set the model to the adapted model
+            model3way = new ButtonModel3Way(getModel());
+            setModel(model3way);
+            setState(null == v ? DONT_CARE : (v.booleanValue() ? SELECTED : NOT_SELECTED));
         }
 
+        /** No one may add mouse listeners, not even Swing! */
+        @Override
+        public void addMouseListener(MouseListener l) {
+        }
+
+        /**
+         * Set the new state to either SELECTED, NOT_SELECTED or
+         * DONT_CARE.  If state == null, it is treated as DONT_CARE.
+         */
+        public void setState(int state) {
+            model3way.setState(state);
+        }
+
+        /** Return the current state, which is determined by the
+         * selection status of the model. */
+        public int getState() {
+            return model3way.getState();
+        }
+
+        @Override
+        public void setSelected(boolean b) {
+            if (b) {
+                setState(SELECTED);
+            } else {
+                setState(NOT_SELECTED);
+            }
+        }
+
+        @Override
         public String getText() {
-            return PropUtils.noCheckboxCaption ? "" : NbBundle.getMessage(
-                Boolean3WayEditor.class, "CTL_Different_Values"
-            ); //NOI18N
+            return PropUtils.noCheckboxCaption ? "" : NbBundle.getMessage(Boolean3WayEditor.class, "CTL_Different_Values"); //NOI18N
         }
 
         public void clear() {
@@ -236,15 +290,21 @@ final class Boolean3WayEditor implements ExPropertyEditor, InplaceEditor.Factory
         }
 
         public Object getValue() {
-            return Boolean3WayEditor.this.getValue();
+            return getState() == DONT_CARE 
+                    ? null 
+                    : (getState() == SELECTED ? Boolean.TRUE : Boolean.FALSE);
         }
 
         public void reset() {
-            //do nothing
+            setState(null == v 
+                    ? DONT_CARE 
+                    : (v.booleanValue() ? SELECTED : NOT_SELECTED));
         }
 
         public void setValue(Object o) {
-            //do nothing
+            setState(null == o 
+                    ? DONT_CARE 
+                    : (((Boolean) o).booleanValue() ? SELECTED : NOT_SELECTED));
         }
 
         public boolean supportsTextEntry() {
@@ -262,23 +322,158 @@ final class Boolean3WayEditor implements ExPropertyEditor, InplaceEditor.Factory
         public boolean isKnownComponent(Component c) {
             return false;
         }
-    }
 
-    private class ButtonModel3Way extends DefaultButtonModel {
-        public boolean isPressed() {
-            return Boolean3WayEditor.this.v == null;
-        }
+        private class ButtonModel3Way implements ButtonModel {
 
-        public boolean isArmed() {
-            return true;
-        }
+            private final ButtonModel other;
 
-        public boolean isSelected() {
-            if (v == null) {
-                return true;
+            private ButtonModel3Way(ButtonModel other) {
+                this.other = other;
             }
 
-            return super.isSelected();
+            private void setState(int state) {
+                if (state == NOT_SELECTED) {
+                    other.setArmed(false);
+                    setPressed(false);
+                    setSelected(false);
+                } else if (state == SELECTED) {
+                    other.setArmed(false);
+                    setPressed(false);
+                    setSelected(true);
+                } else {
+                    // either "null" or DONT_CARE
+                    other.setArmed(true);
+                    setPressed(true);
+                    setSelected(true);
+                }
+            }
+
+            /**
+             * The current state is embedded in the selection / armed
+             * state of the model.
+             *
+             * We return the SELECTED state when the checkbox is selected
+             * but not armed, DONT_CARE state when the checkbox is
+             * selected and armed (grey) and NOT_SELECTED when the
+             * checkbox is deselected.
+             */
+            private int getState() {
+                if (isSelected() && !isArmed()) {
+                    // normal black tick
+                    return SELECTED;
+                } else if (isSelected() && isArmed()) {
+                    // don't care grey tick
+                    return DONT_CARE;
+                } else {
+                    // normal deselected
+                    return NOT_SELECTED;
+                }
+            }
+
+            /** We rotate between NOT_SELECTED, SELECTED and DONT_CARE.*/
+            private void nextState() {
+                int current = getState();
+                if (current == NOT_SELECTED) {
+                    setState(SELECTED);
+                } else if (current == SELECTED) {
+                    setState(DONT_CARE);
+                } else if (current == DONT_CARE) {
+                    setState(NOT_SELECTED);
+                }
+            }
+
+            /** Filter: No one may change the armed status except us. */
+            public void setArmed(boolean b) {
+            }
+
+            /** We disable focusing on the component when it is not
+             * enabled. */
+            public void setEnabled(boolean b) {
+                setFocusable(b);
+                other.setEnabled(b);
+            }
+
+            /** All these methods simply delegate to the "other" model
+             * that is being decorated. */
+            public boolean isArmed() {
+                return other.isArmed();
+            }
+
+            public boolean isSelected() {
+                return other.isSelected();
+            }
+
+            public boolean isEnabled() {
+                return other.isEnabled();
+            }
+
+            public boolean isPressed() {
+                return other.isPressed();
+            }
+
+            public boolean isRollover() {
+                return other.isRollover();
+            }
+
+            public void setSelected(boolean b) {
+                other.setSelected(b);
+            }
+
+            public void setPressed(boolean b) {
+                other.setPressed(b);
+            }
+
+            public void setRollover(boolean b) {
+                other.setRollover(b);
+            }
+
+            public void setMnemonic(int key) {
+                other.setMnemonic(key);
+            }
+
+            public int getMnemonic() {
+                return other.getMnemonic();
+            }
+
+            public void setActionCommand(String s) {
+                other.setActionCommand(s);
+            }
+
+            public String getActionCommand() {
+                return other.getActionCommand();
+            }
+
+            public void setGroup(ButtonGroup group) {
+                other.setGroup(group);
+            }
+
+            public void addActionListener(ActionListener l) {
+                other.addActionListener(l);
+            }
+
+            public void removeActionListener(ActionListener l) {
+                other.removeActionListener(l);
+            }
+
+            public void addItemListener(ItemListener l) {
+                other.addItemListener(l);
+            }
+
+            public void removeItemListener(ItemListener l) {
+                other.removeItemListener(l);
+            }
+
+            public void addChangeListener(ChangeListener l) {
+                other.addChangeListener(l);
+            }
+
+            public void removeChangeListener(ChangeListener l) {
+                other.removeChangeListener(l);
+            }
+
+            public Object[] getSelectedObjects() {
+                return other.getSelectedObjects();
+            }
         }
     }
 }
