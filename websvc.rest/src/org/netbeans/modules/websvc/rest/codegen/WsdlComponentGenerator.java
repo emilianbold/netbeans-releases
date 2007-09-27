@@ -65,17 +65,9 @@ import static com.sun.source.tree.Tree.Kind.*;
 public class WsdlComponentGenerator extends RestComponentGenerator {
 
     public static final String SET_HEADER_PARAMS = "setHeaderParameters";
-    
+
     public WsdlComponentGenerator(FileObject targetFile, RestComponentData data) {
         super(targetFile, new WsdlComponentBean(data, FileOwnerQuery.getOwner(targetFile)));
-    }
-
-    @Override
-    protected void preGenerate() {
-        for (JaxwsOperationInfo info : ((WsdlComponentBean) bean).getOperationInfos()) {
-            info.setupWebServiceClient();
-            info.setupSoapHandler(destDir);
-        }
     }
 
     @Override
@@ -86,7 +78,7 @@ public class WsdlComponentGenerator extends RestComponentGenerator {
     public static final String QNAME = "javax.xml.namespace.QName";
     public static final String WS_BINDING_PROVIDER = "com.sun.xml.ws.developer.WSBindingProvider";
     public static final String HEADERS = "com.sun.xml.ws.api.message.Headers";
-    
+
     @Override
     public void addSupportingMethods() throws IOException {
         if (! getBean().needsHtmlRepresentation()) {
@@ -103,7 +95,7 @@ public class WsdlComponentGenerator extends RestComponentGenerator {
         );
         result.commit();
     }
-    
+
     protected String getCustomMethodBody() throws IOException {
         String methodBody = "try { ";
         String converterName = getConverterName();
@@ -115,7 +107,7 @@ public class WsdlComponentGenerator extends RestComponentGenerator {
         for (JaxwsOperationInfo info : operations) {
             methodBody += getWSInvocationCode(info);
         }
-    
+
         if (getBean().needsHtmlRepresentation()) {
             methodBody += "return result;"; //NOI18N
         } else {
@@ -219,7 +211,7 @@ public class WsdlComponentGenerator extends RestComponentGenerator {
                 ClassTree classTree = JavaSourceHelper.findPublicTopLevelClass(controller);
                 generateWsRefInjection[0] = JavaSourceHelper.isInjectionTarget(controller);
                 insertServiceDef[0] = !generateWsRefInjection[0];
-          
+
                 // compute the service field name
                 if (generateWsRefInjection[0]) {
                     Set<String> serviceFieldNames = new HashSet<String>();
@@ -259,12 +251,9 @@ public class WsdlComponentGenerator extends RestComponentGenerator {
         // create the inserted text
         wrapperResourceJS.runUserActionTask(task, true);
 
-        String invocationBody = getJavaInvocationBody(info.getOperation(), insertServiceDef[0],
-                serviceJavaName, portJavaName, portGetterMethod, argumentInitPart[0], 
-                returnTypeName, operationJavaName, argumentDeclPart[0], serviceFName[0], 
-                printerName[0], responseType);
-        
-        if (! getBean().needsHtmlRepresentation()) {
+        String invocationBody = getJavaInvocationBody(info.getOperation(), insertServiceDef[0], serviceJavaName, portJavaName, portGetterMethod, argumentInitPart[0], returnTypeName, operationJavaName, argumentDeclPart[0], serviceFName[0], printerName[0], responseType);
+
+        if (!getBean().needsHtmlRepresentation()) {
             List<WsdlParameter> outParams = info.getOutputParameters();
             String outputClassName = SourceGroupSupport.getClassName(info.getOutputType());
             invocationBody += "representation.set" + outputClassName + "(";
@@ -276,7 +265,7 @@ public class WsdlComponentGenerator extends RestComponentGenerator {
                 throw new IllegalArgumentException("Unsupported return type " + returnTypeName);
             }
         }
-        
+
         if (generateWsRefInjection[0]) {
             insertServiceRef(wrapperResourceJS, info, serviceFieldName);
         }
@@ -289,7 +278,7 @@ public class WsdlComponentGenerator extends RestComponentGenerator {
 
         if (wsdlUrl.startsWith("file:")) {
             //NOI18N
-            wsdlUrl = info.getWsdlLocation().toString();
+            wsdlUrl = info.getWsdlLocation();
         }
         final String localWsdlUrl = wsdlUrl;
         CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
@@ -359,13 +348,13 @@ public class WsdlComponentGenerator extends RestComponentGenerator {
     }
     
     public static final String HTML_REPRESENTATION = SET_HEADER_PARAMS + "(port); \n";
-    
+
     private String getJavaInvocationBody(WsdlOperation operation, 
             boolean insertServiceDef, String serviceJavaName, String portJavaName, 
             String portGetterMethod, String argumentInitializationPart, 
             String returnTypeName, String operationJavaName, String argumentDeclarationPart, 
             String serviceFieldName, String printerName, String responseType) {
-        
+
         String invocationBody = "";
         String setHeaderParams = getBean().needsHtmlRepresentation() ? HTML_REPRESENTATION : "" ;
         Object[] args = new Object[]{serviceJavaName, portJavaName, portGetterMethod, argumentInitializationPart, returnTypeName, operationJavaName, argumentDeclarationPart, serviceFieldName, printerName};
@@ -423,7 +412,7 @@ public class WsdlComponentGenerator extends RestComponentGenerator {
         Object[] annotationAttrs = new Object[0];
         Object returnType = Constants.VOID;
         String bodyText = "{ WSBindingProvider bp = (WSBindingProvider)port;";
-        bodyText += "bp.setOutboundHeaders("; 
+        bodyText += "bp.setOutboundHeaders(";
         boolean first = true;
         for (ParameterInfo pinfo : getBean().getHeaderParameters()) {
             if (pinfo.getDefaultValue() == null) {
@@ -440,21 +429,21 @@ public class WsdlComponentGenerator extends RestComponentGenerator {
                 bodyText += "\""+ namespaceUri +"\",";
             }
             bodyText += "\"" + pinfo.getName()+"\"), \""+pinfo.getDefaultValue()+"\")";
-        } 
+        }
         bodyText += ");";
         String[] parameters = new String[] { "port" };
         Object[] paramTypes = new Object[] { portJavaType };
         String[] paramAnnotations = new String[0];
         Object[] paramAnnotationAttrs = new String[0];
         String comment = null;
-        
+
         return JavaSourceHelper.addMethod(copy, tree,
                 modifiers, annotations, annotationAttrs,
                 SET_HEADER_PARAMS, returnType, parameters, paramTypes, //NOI18N
                 paramAnnotations, paramAnnotationAttrs,
                 bodyText, comment);      //NOI18N
     }
-    
+
     @Override
     protected FileObject generateJaxbOutputWrapper() throws IOException {
         if (getBean().needsHtmlRepresentation()) {

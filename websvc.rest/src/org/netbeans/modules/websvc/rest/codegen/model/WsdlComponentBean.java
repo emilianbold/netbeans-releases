@@ -66,7 +66,7 @@ public class WsdlComponentBean extends RestComponentBean {
         for (Method m : data.getService().getMethods()) {
             String service = m.getServiceName();
             String port = m.getPortName();
-            infos.add(new JaxwsOperationInfo(service, port, m.getName(), m.getUrl(), project));
+            infos.add(new JaxwsOperationInfo(data.getCategoryName(), service, port, m.getName(), m.getUrl(), project));
         }
         
         return infos.toArray(new JaxwsOperationInfo[infos.size()]);

@@ -18,16 +18,11 @@
  */
 package org.netbeans.modules.websvc.rest.support;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
-import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
-import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
@@ -42,11 +37,6 @@ import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPBinding;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPHeader;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
-import org.netbeans.modules.xml.retriever.catalog.Utilities;
-import org.netbeans.modules.xml.wsdl.model.WSDLModelFactory;
-import org.netbeans.modules.xml.xam.locator.CatalogModelException;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -149,21 +139,5 @@ public class JaxWsUtils {
             javaType = toJavaType(xsdType);
         }
         return javaType;
-    }
-
-    public static FileObject getSoapHandler(Client client, 
-                                            WsdlPort port, 
-                                            WsdlOperation operation) {
-        //TODO
-        return null;
-    }
-    
-    public static FileObject createSoapHandler(FileObject dest, 
-                                               Client client, 
-                                               WsdlPort port, 
-                                               WsdlOperation operation, 
-                                               Map<QName,Object> soapHeaderValues) {
-        //TODO
-        return null;
     }
 }

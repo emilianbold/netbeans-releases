@@ -19,10 +19,8 @@
 package org.netbeans.modules.websvc.rest.codegen.model;
 
 import java.io.File;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -31,7 +29,6 @@ import javax.xml.namespace.QName;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.rest.support.JaxWsUtils;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
-import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModeler;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelerFactory;
@@ -39,6 +36,10 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlParameter;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
+import org.netbeans.modules.websvc.manager.model.WebServiceData;
+import org.netbeans.modules.websvc.manager.model.WebServiceGroup;
+import org.netbeans.modules.websvc.manager.model.WebServiceListModel;
+import org.netbeans.modules.websvc.manager.util.WebServiceLibReferenceHelper;
 import org.netbeans.modules.websvc.rest.codegen.Constants;
 import org.netbeans.modules.websvc.rest.wizard.Util;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
@@ -54,49 +55,30 @@ import org.openide.filesystems.FileUtil;
  */
 public class JaxwsOperationInfo {
 
-    String serviceName;
-    String portName;
-    String operationName;
-    String wsdlUrl;
-    Project project;
-    String packageName;
-    JAXWSClientSupport support;
-    Client client;
-    WsdlService service;
-    WsdlOperation operation;
-    WsdlPort port;
+    private String categoryName;
+    private String serviceName;
+    private String portName;
+    private String operationName;
+    private String wsdlUrl;
+    private Project project;
+    private WebServiceData webServiceData;
+    private WsdlService service;
+    private WsdlOperation operation;
+    private WsdlPort port;
 
-    public JaxwsOperationInfo(String serviceName, String portName, String operationName, String wsdlURL, Project project) {
+    public JaxwsOperationInfo(String categoryName, String serviceName, String portName, String operationName, String wsdlURL, Project project) {
+        this.categoryName = categoryName;
         this.serviceName = serviceName;
         this.portName = portName;
         this.operationName = operationName;
         this.wsdlUrl = wsdlURL;
         this.project = project;
-        this.packageName = derivePackageName(wsdlURL, serviceName);
-        support = JAXWSClientSupport.getJaxWsClientSupport(project.getProjectDirectory());
-        if (support == null) {
-            throw new IllegalArgumentException("Project " + project.getProjectDirectory() + " does not support JAX-WS client"); //NOI18N
-        }
     }
 
-    private String derivePackageName(String wsdlURL, String subPackage) {
-        if (wsdlURL.startsWith("file:")) {
-            throw new IllegalArgumentException("URL to access WSDL could not be local");
-        }
-        int iStart = wsdlURL.indexOf("://") + 3;
-        int iEnd = wsdlURL.indexOf('/', iStart);
-        String pakName = wsdlURL.substring(iStart, iEnd);
-        String[] segments = pakName.split("\\.");
-        StringBuilder sb = new StringBuilder(segments[segments.length - 1]);
-        sb.append('.');
-        sb.append(segments[segments.length - 2]);
-        if (subPackage != null) {
-            sb.append(".");
-            sb.append(subPackage.toLowerCase());
-        }
-        return sb.toString();
+    public String getCategoryName() {
+        return categoryName;
     }
-
+    
     public String getServiceName() {
         return serviceName;
     }
@@ -113,42 +95,20 @@ public class JaxwsOperationInfo {
         return wsdlUrl;
     }
 
-    public URL getWsdlLocation() {
-        try {
-            String clientName = getServiceClient().getName();
-            String localWsdlFilePath = getServiceClient().getLocalWsdlFile();
-            File folder = FileUtil.toFile(support.getLocalWsdlFolderForClient(clientName, false));
-            return new File(folder, localWsdlFilePath).toURL();
-        } catch (MalformedURLException ex) {
-            Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
-            throw new IllegalArgumentException(ex);
-        }
-    }
-
-    public Client getServiceClient() {
-        if (client != null) {
-            return client;
-        }
-        List clients = support.getServiceClients();
-        for (Object o : clients) {
-            if (o instanceof Client) {
-                Client c = (Client) o;
-                if (serviceName.equals(c.getName()) && wsdlUrl.equals(c.getWsdlUrl())) {
-                    return c;
-                }
-            }
-        }
-        return null;
+    public String getWsdlLocation() {
+        initWsdlModelInfo();
+        return webServiceData.getURL();
     }
 
     public void initWsdlModelInfo() {
-        if (service != null) {
-            return;
+        if (webServiceData != null) return;
+        
+        webServiceData = WebServiceListModel.getInstance().getWebServiceData(wsdlUrl, serviceName);
+        if (webServiceData == null) {
+            throw new IllegalStateException("There might have been earlier errors in initializing Web Services");
         }
-
-        setupWebServiceClient();
-        service = getWsdlModel().getServiceByName(serviceName);
-
+        
+        service = webServiceData.getWsdlService();
         if (service == null) {
             throw new IllegalArgumentException("Service " + serviceName + " does not exists");
         }
@@ -160,35 +120,7 @@ public class JaxwsOperationInfo {
         if (operation == null) {
             throw new IllegalArgumentException("Operation " + operationName + " does not exists");
         }
-    }
-
-    public void setupWebServiceClient() {
-        if (getServiceClient() == null) {
-            support.addServiceClient(serviceName, wsdlUrl, packageName, true);
-        }
-    }
-    
-    public void setupSoapHandler(FileObject destdir) {
-        if (needsSoapHandler() &&
-            JaxWsUtils.getSoapHandler(getServiceClient(), getPort(), getOperation()) == null) {
-            Map<QName,Object> initValues = new HashMap<QName,Object>();
-            for (ParameterInfo info : getSoapHeaderParameters()) {
-                if (info.getDefaultValue() != null) {
-                    initValues.put(info.getQName(), info.getDefaultValue());
-                }
-            }
-            JaxWsUtils.createSoapHandler(destdir, getServiceClient(), getPort(), getOperation(), initValues);
-        }
-    }
-
-    private WsdlModel wsdlModel = null;
-    private WsdlModel getWsdlModel() {
-        if (wsdlModel == null) {
-            WsdlModeler wsdlModeler = WsdlModelerFactory.getDefault().getWsdlModeler(getWsdlLocation());
-            wsdlModeler.setPackageName(packageName);
-            wsdlModel = wsdlModeler.getAndWaitForWsdlModel();
-        }
-        return wsdlModel;
+        WebServiceLibReferenceHelper.addDefaultJaxWsClientJar(project, webServiceData);
     }
 
     public static WsdlOperation findOperationByName(WsdlPort port, String name) {
@@ -242,7 +174,6 @@ public class JaxwsOperationInfo {
 
     //TODO maybe parse SEI class (using Retouche) for @WebParam.Mode annotation
     public String getOutputType() {
-        initWsdlModelInfo();
         String outputType = getOperation().getReturnTypeName();
         if (Constants.VOID.equals(outputType)) {
             for (WsdlParameter p : getOperation().getParameters()) {
@@ -328,11 +259,10 @@ public class JaxwsOperationInfo {
         }
         return headerParams;
     }
-    
+
     public WSDLModel getXamWsdlModel() {
         try {
-            FileObject folder = support.getLocalWsdlFolderForClient(getServiceName(), false);
-            FileObject wsdlFO = folder.getFileObject(getServiceClient().getLocalWsdlFile());
+            FileObject wsdlFO = FileUtil.toFileObject(new File(webServiceData.getURL()));;
             return WSDLModelFactory.getDefault().getModel(Utilities.createModelSource(wsdlFO, true));
         } catch(CatalogModelException ex) {
             Logger.global.log(Level.INFO, "", ex);
