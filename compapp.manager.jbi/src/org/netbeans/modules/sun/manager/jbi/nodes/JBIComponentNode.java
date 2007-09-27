@@ -698,8 +698,9 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
             }
                         
             // Automatic component shutdown before calling upgrade
-            boolean shutdownNeeded = canShutdown();
-            if (shutdownNeeded) {
+            String oldState = getState();             
+            if (JBIComponentStatus.STOPPED_STATE.equals(oldState) ||
+                    JBIComponentStatus.STARTED_STATE.equals(oldState)) {
                 if (confirmComponentShutdownDuringUpgrade) {
                     DoNotShowAgainConfirmation d = new DoNotShowAgainConfirmation(
                         NbBundle.getMessage(JBIComponentNode.class, "MSG_AUTO_SHUTDOWN_COMPONENT_DURING_UPGRADE", componentName), // NOI18N
@@ -716,35 +717,43 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
 
                 shutdown(false);
             }
-
-            String progressLabel = getUpgradeProgressMessageLabel();
-            String message = NbBundle.getMessage(JBIComponentContainerNode.class, 
-                    progressLabel, componentName);
-            final ProgressUI progressUI = new ProgressUI(message, false);
-
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    setBusy(true);
-                    progressUI.start();
-                }
-            });
-
-            final String jarFilePath = files.get(0).getAbsolutePath();
-            final String result = adminService.upgradeComponent(componentName, jarFilePath);
-
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    progressUI.finish();
-                    setBusy(false);
-                    JBIMBeanTaskResultHandler.showRemoteInvokationResult(
-                            GenericConstants.UPGRADE_COMPONENT_OPERATION_NAME,
-                            jarFilePath, result);
-                }
-            });
             
-            // Automatic start (restore)
-            if (shutdownNeeded) {
+            // Make sure the component is really shutdown before calling upgrade
+            clearJBIComponentStatusCache(compType);
+            String state = getState();
+            if (JBIComponentStatus.SHUTDOWN_STATE.equals(state)) {
+                String progressLabel = getUpgradeProgressMessageLabel();
+                String message = NbBundle.getMessage(JBIComponentContainerNode.class, 
+                        progressLabel, componentName);
+                final ProgressUI progressUI = new ProgressUI(message, false);
+
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        setBusy(true);
+                        progressUI.start();
+                    }
+                });
+
+                final String jarFilePath = files.get(0).getAbsolutePath();
+                final String result = adminService.upgradeComponent(componentName, jarFilePath);
+
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        progressUI.finish();
+                        setBusy(false);
+                        JBIMBeanTaskResultHandler.showRemoteInvokationResult(
+                                GenericConstants.UPGRADE_COMPONENT_OPERATION_NAME,
+                                jarFilePath, result);
+                    }
+                });
+            }
+            
+            // Restore old state
+            if (JBIComponentStatus.STARTED_STATE.equals(oldState)) {
                 start();
+            } if (JBIComponentStatus.STOPPED_STATE.equals(oldState)) {
+                start();
+                stop();
             }
         }
     }    
