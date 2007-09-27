@@ -843,8 +843,11 @@ is divided into following sections:
                 </j2seproject1:java>
             </target>
             
+            <target name="-do-not-recompile">
+                <property name="javac.includes.binary" value=""/> <!-- #116230 hack -->
+            </target>
             <target name="run-single">
-                <xsl:attribute name="depends">init,compile</xsl:attribute>
+                <xsl:attribute name="depends">init,-do-not-recompile,compile-single</xsl:attribute>
                 <fail unless="run.class">Must select one file in the IDE or set run.class</fail>
                 <j2seproject1:java classname="${{run.class}}"/>
             </target>
@@ -896,7 +899,7 @@ is divided into following sections:
             
             <target name="debug-single">
                 <xsl:attribute name="if">netbeans.home</xsl:attribute>
-                <xsl:attribute name="depends">init,compile,-debug-start-debugger,-debug-start-debuggee-single</xsl:attribute>
+                <xsl:attribute name="depends">init,-do-not-recompile,compile-single,-debug-start-debugger,-debug-start-debuggee-single</xsl:attribute>
             </target>
             
             <target name="-pre-debug-fix">
@@ -1151,7 +1154,7 @@ is divided into following sections:
             </target>
             
             <target name="test-single">
-                <xsl:attribute name="depends">init,compile-test,-pre-test-run-single,-do-test-run-single,-post-test-run-single</xsl:attribute>
+                <xsl:attribute name="depends">init,-do-not-recompile,compile-test-single,-pre-test-run-single,-do-test-run-single,-post-test-run-single</xsl:attribute>
                 <xsl:attribute name="description">Run single unit test.</xsl:attribute>
             </target>
             
@@ -1190,7 +1193,7 @@ is divided into following sections:
             </target>
             
             <target name="debug-test">
-                <xsl:attribute name="depends">init,compile-test,-debug-start-debugger-test,-debug-start-debuggee-test</xsl:attribute>
+                <xsl:attribute name="depends">init,-do-not-recompile,compile-test-single,-debug-start-debugger-test,-debug-start-debuggee-test</xsl:attribute>
             </target>
             
             <target name="-do-debug-fix-test">

@@ -475,7 +475,6 @@ class J2SEActionProvider implements ActionProvider {
         FileObject[] testSrcPath = project.getTestSourceRoots().getRoots();
         FileObject root = getRoot(testSrcPath, files[0]);
         p.setProperty("test.includes", ActionUtils.antIncludesList(files, root)); // NOI18N
-        // The following is no longer actually necessary (see #97053), but should be harmless to leave in:
         p.setProperty("javac.includes", ActionUtils.antIncludesList(files, root)); // NOI18N
         return new String[] {"test-single"}; // NOI18N
     }
@@ -486,6 +485,7 @@ class J2SEActionProvider implements ActionProvider {
         String path = FileUtil.getRelativePath(root, files[0]);
         // Convert foo/FooTest.java -> foo.FooTest
         p.setProperty("test.class", path.substring(0, path.length() - 5).replace('/', '.')); // NOI18N
+        p.setProperty("javac.includes", ActionUtils.antIncludesList(files, root)); // NOI18N
         return new String[] {"debug-test"}; // NOI18N
     }
 
@@ -744,7 +744,7 @@ class J2SEActionProvider implements ActionProvider {
     private void showPlatformWarning () {
         final JButton closeOption = new JButton (NbBundle.getMessage(J2SEActionProvider.class, "CTL_BrokenPlatform_Close"));
         closeOption.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(J2SEActionProvider.class, "AD_BrokenPlatform_Close"));
-        final ProjectInformation pi = (ProjectInformation) this.project.getLookup().lookup (ProjectInformation.class);
+        final ProjectInformation pi = project.getLookup().lookup(ProjectInformation.class);
         final String projectDisplayName = pi == null ? 
             NbBundle.getMessage (J2SEActionProvider.class,"TEXT_BrokenPlatform_UnknownProjectName")
             : pi.getDisplayName();

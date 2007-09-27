@@ -380,13 +380,13 @@ public final class BuildImplTest extends NbTestCase {
         p.setProperty("javac.includes", "pkg/Source2.java");
         p.setProperty("run.class", "pkg.Source2");
         assertBuildSuccess(ActionUtils.runTarget(buildXml, new String[]{"run-single"}, p));
-        assertTrue("compile target was not executed", output.contains(/*85707*/"compile:"));
+        assertTrue("compile-single target was not executed", output.contains("compile-single:"));
         assertTrue("run target was not executed", output.contains("run-single:"));
         assertTrue("main class was not executed", output.contains("Source2 main class executed"));
 
         FileObject fo = aph.getProjectDirectory();
         assertNotNull("build/classes/pkg/Source2.class must exist", fo.getFileObject("build/classes/pkg/Source2.class"));
-        assertEquals("Only one class should be compiled", /*85707*/3, fo.getFileObject("build/classes/pkg").getChildren().length);
+        assertEquals("Only one class should be compiled", 1, fo.getFileObject("build/classes/pkg").getChildren().length);
         assertNull("build/test folder should not be created", fo.getFileObject("build/test"));
         assertNull("dist folder should not be created", fo.getFileObject("dist"));
     }
