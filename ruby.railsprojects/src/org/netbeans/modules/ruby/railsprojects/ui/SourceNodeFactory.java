@@ -146,7 +146,7 @@ public final class SourceNodeFactory implements NodeFactory {
             if (key.group == null) {
                 try {
                     DataObject dobj = DataObject.find(key.fileObject);
-                    return dobj.getNodeDelegate();
+                    return new FilterNode(dobj.getNodeDelegate());
                 } catch (DataObjectNotFoundException ex) {
                     Exceptions.printStackTrace(ex);
                 }
@@ -196,12 +196,12 @@ public final class SourceNodeFactory implements NodeFactory {
             this.fileObject = fileObject;
             this.generator = Generator.NONE;
         }
-        
+
         @Override
         public int hashCode() {
             return fileObject.hashCode();
         }
-        
+
         @Override
         public boolean equals(Object obj) {
             if (!(obj instanceof SourceGroupKey)) {
@@ -288,7 +288,7 @@ public final class SourceNodeFactory implements NodeFactory {
         }
         
         
-        public Action[] getActions(boolean context) {
+        public @Override Action[] getActions(boolean context) {
             if (!context) {
                 if (actions == null) {
                     Action superActions[] = super.getActions(context);
@@ -327,7 +327,7 @@ public final class SourceNodeFactory implements NodeFactory {
         
         public void actionPerformed(ActionEvent e) {
             // RubyCustomizerProvider cp = (RubyCustomizerProvider) project.getLookup().lookup(RubyCustomizerProvider.class);
-            CustomizerProviderImpl cp = (CustomizerProviderImpl) project.getLookup().lookup(CustomizerProviderImpl.class);
+            CustomizerProviderImpl cp = project.getLookup().lookup(CustomizerProviderImpl.class);
             if (cp != null) {
                 cp.showCustomizer(nodeName, panelName);
             }
