@@ -74,7 +74,7 @@ public class SettingsTableModel extends AbstractTableModel {
     };
     private List<UpdateUnitProvider> updateProviders;
     private Set<String> originalProviders;
-    private PluginManagerUI pluginManager = null;
+    private SettingsTab settingsTab = null;
     
     private final Logger logger = Logger.getLogger ("org.netbeans.modules.autoupdate.ui.SettingsTableModel");
     /** Creates a new instance of SettingsTableModel */
@@ -82,12 +82,12 @@ public class SettingsTableModel extends AbstractTableModel {
         refreshModel ();
     }
     
-    void setPluginManager (PluginManagerUI manager) {
-        this.pluginManager = manager;
+    void setSettingsTab (SettingsTab settingsTab) {
+        this.settingsTab = settingsTab;
     }
     
-    PluginManagerUI getPluginManager () {
-        return pluginManager;
+    SettingsTab getSettingsTab () {
+        return settingsTab;
     }
         
     void refreshModel () {
@@ -105,27 +105,27 @@ public class SettingsTableModel extends AbstractTableModel {
             newValue.add (p.getName ());
         }
         if (! forRefresh.isEmpty ()) {
-            getPluginManager ().setWaitingState (true);
+            getSettingsTab ().setWaitingState (true);
             Utilities.startAsWorkerThread (new Runnable () {
                 public void run () {
                     try {
-                        Utilities.presentRefreshProviders (forRefresh, getPluginManager (), true);
-                        getPluginManager ().updateUnitsChanged ();
+                        Utilities.presentRefreshProviders (forRefresh, getSettingsTab ().getPluginManager (), true);
+                        getSettingsTab ().getPluginManager ().updateUnitsChanged ();
                     } finally {
-                        getPluginManager ().setWaitingState (false);
+                        getSettingsTab ().setWaitingState (false);
                     }
                 }
             });
         }
         // check removed providers
         if (oldValue != null && ! oldValue.isEmpty () && ! newValue.containsAll (oldValue)) {
-            getPluginManager ().setWaitingState (true);
+            getSettingsTab ().setWaitingState (true);
             Utilities.startAsWorkerThread (new Runnable () {
                 public void run () {
                     try {
-                        getPluginManager ().updateUnitsChanged ();
+                        getSettingsTab ().getPluginManager ().updateUnitsChanged ();
                     } finally {
-                        getPluginManager ().setWaitingState (false);
+                        getSettingsTab ().setWaitingState (false);
                     }
                 }
             });
@@ -141,7 +141,7 @@ public class SettingsTableModel extends AbstractTableModel {
         if (unitProvider != null) {
             UpdateUnitProviderFactory.getDefault ().remove (unitProvider);
         }
-        getPluginManager ().updateUnitsChanged ();
+        getSettingsTab ().getPluginManager ().updateUnitsChanged ();
     }
     
     public void add (String name, String displayName, URL url, boolean state) {
@@ -179,13 +179,13 @@ public class SettingsTableModel extends AbstractTableModel {
                     RequestProcessor.getDefault ().post (new Runnable () {
                         public void run () {
                             // was enabled and won't be more -> remove it from model
-                            getPluginManager ().setWaitingState (true);
+                            getSettingsTab ().setWaitingState (true);
                             Utilities.startAsWorkerThread (new Runnable () {
                                 public void run () {
                                     try {
-                                        getPluginManager ().updateUnitsChanged ();
+                                        getSettingsTab ().getPluginManager ().updateUnitsChanged ();
                                     } finally {
-                                        getPluginManager ().setWaitingState (false);
+                                        getSettingsTab ().setWaitingState (false);
                                     }
                                 }
                             });
@@ -193,14 +193,14 @@ public class SettingsTableModel extends AbstractTableModel {
                     });
                 } else {
                     // was enabled and won't be more -> add it from model and read its content
-                    getPluginManager ().setWaitingState (true);
+                    getSettingsTab ().setWaitingState (true);
                     Utilities.startAsWorkerThread (new Runnable () {
                         public void run () {
                             try {
-                                Utilities.presentRefreshProvider (unitProvider, getPluginManager (), false);
-                                getPluginManager ().updateUnitsChanged ();
+                                Utilities.presentRefreshProvider (unitProvider, getSettingsTab ().getPluginManager (), false);
+                                getSettingsTab ().getPluginManager ().updateUnitsChanged ();
                             } finally {
-                                getPluginManager ().setWaitingState (false);
+                                getSettingsTab ().setWaitingState (false);
                             }
                         }
                     });

@@ -110,12 +110,17 @@ public class PluginManagerUI extends javax.swing.JPanel implements UpdateUnitLis
     
     void setWaitingState (boolean waitingState) {
         boolean enabled = !waitingState;
-        Component[] all = getComponents ();
-        for (Component component : all) {
-            if (! component.equals (bClose) && ! component.equals (bHelp)) {
-                component.setEnabled (enabled);
-            }
-        }
+
+        for (Component c : tpTabs.getComponents()) {
+            if (c instanceof UnitTab) {
+                ((UnitTab) c).setWaitingState (waitingState);
+            }            
+        }               
+        
+        // the Close & Help buttons are always enabled
+        bClose.setEnabled (true);
+        bHelp.setEnabled (true);
+        
         Component parent = getParent ();
         Component rootPane = getRootPane ();
         if (parent != null) {
@@ -128,13 +133,8 @@ public class PluginManagerUI extends javax.swing.JPanel implements UpdateUnitLis
                 rootPane.setCursor (Cursor.getPredefinedCursor (Cursor.WAIT_CURSOR));
             }
         }
-        Component[] components = tpTabs.getComponents();
-        for (Component c : components) {
-            if (c instanceof UnitTab) {
-                ((UnitTab)c).setWaitingState (waitingState);
-            }            
-        }        
     }
+
     @Override
     public void addNotify () {
         super.addNotify ();

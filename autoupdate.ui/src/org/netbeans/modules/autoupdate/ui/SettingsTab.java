@@ -43,7 +43,6 @@ package org.netbeans.modules.autoupdate.ui;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -92,9 +91,11 @@ public class SettingsTab extends javax.swing.JPanel {
     private Action editAction;    
     private Action addAction;   
     private Listener listener;
+    private PluginManagerUI manager;
     
     /** Creates new form UnitTab */
     public SettingsTab(PluginManagerUI manager) {
+        this.manager = manager;
         initComponents();
         scrollerForTable = new JScrollPane();
         table = new Table();
@@ -124,7 +125,7 @@ public class SettingsTab extends javax.swing.JPanel {
         //cbModules.setSelected(Utilities.modulesOnly());
         //cbPlugins.setSelected(!Utilities.modulesOnly());
         cbGlobalInstall.setSelected(Utilities.isGlobalInstallation());
-        getSettingsTableModel ().setPluginManager (manager);
+        getSettingsTableModel ().setSettingsTab (this);
         TableColumn activeColumn = table.getColumnModel ().getColumn (0);
         activeColumn.setMaxWidth (table.getTableHeader ().getHeaderRect (0).width);
         
@@ -136,6 +137,10 @@ public class SettingsTab extends javax.swing.JPanel {
 
     public String getDisplayName () {
         return NbBundle.getMessage (SettingsTab.class, "SettingsTab_displayName"); //NOI18N
+    }
+    
+    PluginManagerUI getPluginManager () {
+        return manager;
     }
         
     private void addListener () {
@@ -389,28 +394,28 @@ private class Listener implements ListSelectionListener,  TableModelListener {
             provider.setEnable (panel.isActive ());
             if (oldValue && ! forceRead) {
                 // was enabled and won't be more -> remove it from model
-                getSettingsTableModel ().getPluginManager ().setWaitingState (true);
+                setWaitingState (true);
                 Utilities.startAsWorkerThread (new Runnable () {
                     public void run () {
                         try {
-                            getSettingsTableModel ().getPluginManager ().updateUnitsChanged ();
+                            getPluginManager ().updateUnitsChanged ();
                         } finally {
-                            getSettingsTableModel ().getPluginManager ().setWaitingState (false);
+                            setWaitingState (false);
                         }
                     }
                 });
             } else {
                 final boolean force = forceRead;
                 // was enabled and won't be more -> add it from model and read its content
-                getSettingsTableModel ().getPluginManager ().setWaitingState (true);
+                setWaitingState (true);
                 Utilities.startAsWorkerThread (new Runnable () {
 
                     public void run () {
                         try {
-                            Utilities.presentRefreshProviders (Collections.singleton (provider), getSettingsTableModel ().getPluginManager (), force);
-                            getSettingsTableModel ().getPluginManager ().updateUnitsChanged ();
+                            Utilities.presentRefreshProviders (Collections.singleton (provider), getPluginManager (), force);
+                            getPluginManager ().updateUnitsChanged ();
                         } finally {
-                            getSettingsTableModel ().getPluginManager ().setWaitingState (false);
+                            setWaitingState (false);
                         }
                     }
                     
@@ -600,23 +605,8 @@ private class Listener implements ListSelectionListener,  TableModelListener {
     // End of variables declaration//GEN-END:variables
  
     void setWaitingState (boolean waitingState) {
-        getSettingsTableModel().getPluginManager().setWaitingState(waitingState);
-        
-        boolean enabled = !waitingState;
-        Component[] all = getComponents ();
-        for (Component component : all) {
-                changeComponentsEnableState(component,enabled);
-                
-        }
-    }
-    
-    void changeComponentsEnableState (Component component, boolean b) {
-        component.setEnabled(b);
-        if (component instanceof Container) {
-            Component[] nested = ((Container)component).getComponents();
-            for (Component nestedcomponent : nested)
-                changeComponentsEnableState(nestedcomponent, b);
-        }
+        getPluginManager ().setWaitingState (waitingState);
+        table.setEnabled (! waitingState);
     }
     
     private static class UpdateProviderRenderer extends  DefaultTableCellRenderer {
