@@ -815,11 +815,6 @@ final class Central implements ControllerHandler {
                 new ViewRequest(mode, View.CHANGE_MODE_TOPCOMPONENT_REMOVED,
                 null, tc));
         }
-
-        // Notify closed.
-        if(opened) {
-            WindowManagerImpl.getInstance().notifyTopComponentClosed(tc);
-        }
         
         if(oldActive != newActive) {
             WindowManagerImpl.getInstance().doFirePropertyChange(
@@ -832,6 +827,11 @@ final class Central implements ControllerHandler {
                 newActive.getSelectedTopComponent());
         } else {
             WindowManagerImpl.notifyRegistryTopComponentActivated(null);
+        }
+        
+        // Notify closed.
+        if(opened) {
+            WindowManagerImpl.getInstance().notifyTopComponentClosed(tc);
         }
     }
 
