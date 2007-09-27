@@ -32,6 +32,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Registry;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jemmy.JemmyException;
+import org.netbeans.jemmy.Timeouts;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.JListOperator;
@@ -159,6 +160,10 @@ public class CompletionJListOperator extends JListOperator {
     
     private static Object waitFor(Waitable action) {
         Waiter waiter = new Waiter(action);
+        Timeouts waiterTimeouts = waiter.getTimeouts();
+        waiterTimeouts.setTimeout("Waiter.TimeDelta", 500);
+        waiterTimeouts.setTimeout("Waiter.AfterWaitingTime", 500);
+        waiter.setTimeouts(waiterTimeouts);
         try {
             return waiter.waitAction(null);
         } catch (InterruptedException ex) {
