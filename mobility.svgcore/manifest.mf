@@ -9,3 +9,6 @@ Name: org/netbeans/modules/mobility/svgcore/SVGDataLoader.class
 OpenIDE-Module-Class: Loader 
 Install-Before: org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.core.XMLDataObject 
 
+Name: org/netbeans/modules/mobility/svgcore/palette/SVGPaletteItemDataLoader.class
+OpenIDE-Module-Class: Loader
+

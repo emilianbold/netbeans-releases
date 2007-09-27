@@ -33,6 +33,7 @@ import org.netbeans.modules.mobility.svgcore.composer.SVGObject;
 import org.netbeans.modules.mobility.svgcore.composer.SVGObjectOutline;
 import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
 import org.netbeans.modules.mobility.svgcore.view.svg.AbstractSVGAction;
+import org.w3c.dom.svg.SVGLocatableElement;
 
 /**
  *
@@ -154,9 +155,9 @@ public final class MoveFocusActionFactory extends AbstractComposerActionFactory 
         if ( !isOutsideEvent &&
               m_sceneMgr.isReadOnly() &&
               m_focusTargets.size() > 0) {
-            SVGObject [] objects = m_sceneMgr.getPerseusController().getObjectsAt(me.getX(), me.getY());
-            if (objects != null && objects.length > 0 && objects[0] != null)  {
-                String id = objects[0].getElementId();
+            SVGLocatableElement elem = m_sceneMgr.getPerseusController().findElementAt(me.getX(), me.getY());
+            if (elem != null)  {
+                String id = elem.getId();
                 if ( id != null)
                     return m_focusTargets.indexOf(id); {
                 }

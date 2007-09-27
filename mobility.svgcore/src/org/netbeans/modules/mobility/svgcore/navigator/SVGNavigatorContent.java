@@ -338,8 +338,9 @@ public class SVGNavigatorContent extends JPanel implements SceneManager.Selectio
             doj.getModel().addModelListener(modelListener);
         }        
 
+        @SuppressWarnings("unchecked")
         protected Cookie getCookie(Class clazz) {
-            Cookie       cookie = null;;
+            Cookie       cookie = null;
             TopComponent tc     = m_doj.getMTVC();
 
             if ( tc != null) {

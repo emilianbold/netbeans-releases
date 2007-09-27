@@ -14,9 +14,7 @@
 package org.netbeans.modules.mobility.svgcore.composer.actions;
 
 import java.awt.AWTEvent;
-import java.awt.Graphics;
 import java.awt.Rectangle;
-import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import org.netbeans.modules.mobility.svgcore.composer.AbstractComposerAction;

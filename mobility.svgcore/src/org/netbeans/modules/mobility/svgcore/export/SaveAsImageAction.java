@@ -48,7 +48,7 @@ public final class SaveAsImageAction extends CookieAction{
     }
 
     protected void performAction(Node[] n) {
-        SVGDataObject doj = (SVGDataObject) n[0].getLookup().lookup(SVGDataObject.class);
+        SVGDataObject doj = n[0].getLookup().lookup(SVGDataObject.class);
         if (doj != null){       
             try {
                 SVGImageRasterizerPanel panel = new SVGImageRasterizerPanel(doj, null);

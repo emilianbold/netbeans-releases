@@ -6,7 +6,6 @@
      <body>
          <![CDATA[ <polygon points="20,10 80,40 40,80" fill="blue" stroke="black" stroke-width="1"/>]]>
      </body>
-     
      <icon16 urlvalue="org/netbeans/modules/mobility/svgcore/resources/palette/polygon_16.png" />
      <icon32 urlvalue="org/netbeans/modules/mobility/svgcore/resources/palette/polygon_32.png" />
      

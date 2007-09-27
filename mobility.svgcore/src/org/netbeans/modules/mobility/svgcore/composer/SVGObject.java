@@ -15,11 +15,12 @@
 package org.netbeans.modules.mobility.svgcore.composer;
 
 import com.sun.perseus.j2d.Transform;
+import com.sun.perseus.util.SVGConstants;
 import java.awt.Rectangle;
 import java.util.List;
+import java.util.logging.Level;
 import org.netbeans.modules.mobility.svgcore.composer.prototypes.PatchedTransformableElement;
 import org.netbeans.modules.mobility.svgcore.model.SVGFileModel;
-import org.openide.util.Exceptions;
 import org.w3c.dom.svg.SVGElement;
 import org.w3c.dom.svg.SVGLocatableElement;
 import org.w3c.dom.svg.SVGMatrix;
@@ -32,8 +33,8 @@ import org.w3c.dom.svg.SVGRect;
 public final class SVGObject {
     private final SceneManager        m_sceneMgr;
     private final SVGLocatableElement m_elem;
-    public final Transform            m_initialTransform;
-    private       SVGObjectOutline    m_outline = null;
+    private final Transform           m_initialTransform;
+    private       SVGObjectOutline    m_outline   = null;
     private       boolean             m_isDeleted = false;
 
     private       float               m_translateDx = 0;
@@ -49,9 +50,7 @@ public final class SVGObject {
     private       float               m_tempSkewY       = 0;
     private       float               m_tempScale       = 1;
     private       float               m_tempRotate      = 0;
-   
-    private static final String ATTR_TRANSFORM = "transform"; //NOI18N
-    
+       
     public SVGObject(SceneManager sceneMgr, SVGLocatableElement elem) {
         assert sceneMgr != null;
         assert elem != null;
@@ -60,6 +59,7 @@ public final class SVGObject {
         m_elem             = elem;
         m_initialTransform = new Transform( m_elem instanceof PatchedTransformableElement ? 
             ((PatchedTransformableElement) m_elem).getTransform() : null);
+        SceneManager.log(Level.FINE, "SVGObject created: " + m_elem); //NOI18N        
     }
     
     public SceneManager getSceneManager() {
@@ -83,16 +83,11 @@ public final class SVGObject {
     public SVGRect getSafeBBox() {
         return PerseusController.getSafeBBox(m_elem);
     }
-/*    
-    public synchronized SVGRect getSVGScreenBBox() {
-        return PerseusController.getSafeScreenBBox(m_elem);
-    }
-*/    
+
     public Rectangle getScreenBBox() {
         return getOutline().getScreenBoundingBox();
     }        
 
-    
     public boolean isDeleted() {
         return m_isDeleted;
     }
@@ -141,8 +136,6 @@ public final class SVGObject {
                         _dy = point[1] - txf.getComponent(5);
                     } 
                     
-                    //System.out.println("Dx=" + _dx + ", Dy=" + _dy);
-                    
                     if ( isRelative) {
                         m_tempTranslateDx += _dx;
                         m_tempTranslateDy += _dy;
@@ -152,8 +145,7 @@ public final class SVGObject {
                     }
                     applyUserTransform();
                 } catch (Exception ex) {
-                    System.err.println("Translate operation failed!");
-                    Exceptions.printStackTrace(ex);
+                    SceneManager.error( "Translate operation failed!", ex); //NOI18N        
                 }
             }            
         });
@@ -166,8 +158,7 @@ public final class SVGObject {
                     m_tempScale = scale;
                     applyUserTransform();
                 } catch (Exception ex) {
-                    System.err.println("Scale operation failed!");
-                    Exceptions.printStackTrace(ex);
+                    SceneManager.error( "Scale operation failed!", ex); //NOI18N        
                 }
             }            
         });
@@ -180,8 +171,7 @@ public final class SVGObject {
                     m_tempRotate = rotate;
                     applyUserTransform();
                 } catch (Exception ex) {
-                    System.err.println("Rotate operation failed!");
-                    Exceptions.printStackTrace(ex);
+                    SceneManager.error( "Rotate operation failed!", ex); //NOI18N        
                 }
             }            
         });
@@ -195,14 +185,12 @@ public final class SVGObject {
                     m_tempSkewY = skewY;
                     applyUserTransform();
                 } catch (Exception ex) {
-                    System.err.println("Skew operation failed!");
-                    Exceptions.printStackTrace(ex);
+                    SceneManager.error( "Skew operation failed!", ex); //NOI18N        
                 }
             }            
         });
     }
-    private static final String OPERATION_TOKEN = "operation";
-    
+
     public void moveToTop() {
         String id = getElementId();
         getPerseusController().moveToTop(m_elem);
@@ -235,8 +223,8 @@ public final class SVGObject {
         if ( !m_isDeleted) {
             String id = getElementId();
                     
-            //getPerseusController().delete(m_elem);
             getFileModel().deleteElement(id,new SVGFileModel.TransactionCommand() {
+                @SuppressWarnings("unchecked")
                 public Object execute(Object userData) {
                     //ask for repaint before the object is removed,
                     //the bounding box shall not be avaiable after delete
@@ -252,14 +240,14 @@ public final class SVGObject {
                 }
             });
         } else {
-            System.err.println("Already deleted!");
+            SceneManager.log( Level.SEVERE, "SVGObject is already deleted."); //NOI18N        
         }
     }
     
     public void applyTextChanges() {
         if (m_elem != null && m_elem instanceof PatchedTransformableElement) {
         String transform = getTransformAsText((PatchedTransformableElement) m_elem);
-        m_sceneMgr.getDataObject().getModel().setAttribute(getElementId(), ATTR_TRANSFORM, transform);
+        m_sceneMgr.getDataObject().getModel().setAttribute(getElementId(), SVGConstants.SVG_TRANSFORM_ATTRIBUTE, transform);
         }
     }
     
@@ -379,11 +367,10 @@ public final class SVGObject {
                 txf.mMultiply(m_initialTransform);
                 pg.setTransform(txf);
             } else {
-                System.err.println("Null BBox for " + pg);
+                SceneManager.log( Level.SEVERE, "Null BBox for " + pg); //NOI18N                        
             }
         }
     }
-
             
     protected final PerseusController getPerseusController() {
         return m_sceneMgr.getPerseusController();

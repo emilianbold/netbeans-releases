@@ -20,7 +20,7 @@ import java.awt.Cursor;
  *
  * @author Pavel Benes
  */
-public class ActionMouseCursor {
+public final class ActionMouseCursor {
     private final Cursor m_cursor;
     private final int    m_priority;
     

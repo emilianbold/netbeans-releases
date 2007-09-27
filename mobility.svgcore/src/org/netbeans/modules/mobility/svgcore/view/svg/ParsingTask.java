@@ -35,6 +35,7 @@ import javax.swing.event.HyperlinkListener;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.mobility.svgcore.SVGDataObject;
+import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
 import org.netbeans.modules.mobility.svgcore.model.EncodingInputStream;
 import org.netbeans.modules.mobility.svgcore.model.SVGFileModel;
 import org.netbeans.modules.mobility.svgcore.view.source.SVGSourceMultiViewElement;
@@ -51,9 +52,10 @@ import org.xml.sax.SAXParseException;
  * @author Pavel Benes
  */
 final class ParsingTask extends Thread implements HyperlinkListener { 
-    private static final String HTML_BEGIN = "<html><body><font face=\"Monospaced\" size=\"4\" color=\"black\">"; //NOI18N
-    private static final String HTML_END   = "</font></body><html>"; //NOI18N
-    
+    private static final String HTML_BEGIN  = "<html><body><font face=\"Monospaced\" size=\"4\" color=\"black\">"; //NOI18N
+    private static final String HTML_END    = "</font></body><html>"; //NOI18N
+    private static final String PARSE_TOKEN = "parse"; //NOI18N
+
     private static final class ErrorDescription {      
         private static final int SEVERITY_FATAL   = 0;
         private static final int SEVERITY_ERROR   = 1;
@@ -151,7 +153,6 @@ final class ParsingTask extends Thread implements HyperlinkListener {
         interrupt();
     }
 
-    private static final String PARSE_TOKEN = "parse";
     public void run() {
         try {
             SVGFileModel fileModel = m_dObj.getModel();
@@ -222,7 +223,7 @@ final class ParsingTask extends Thread implements HyperlinkListener {
                 sb.append("</font>"); //NOI18N
             }
         }
-        sb.append( "</font>"); //NOI18N
+        sb.append("</font>"); //NOI18N
         sb.append("<br>"); //NOI18N
         sb.append(NbBundle.getMessage(SVGViewTopComponent.class, "ERR_ErrorWarnings", //NOI18N
                   Integer.toString(errNum[0]), Integer.toString(errNum[1]), Integer.toString(errNum[2]))); 
@@ -265,19 +266,16 @@ final class ParsingTask extends Thread implements HyperlinkListener {
         InputStream in = new EncodingInputStream( (BaseDocument) doc, m_dObj.getEncodingHelper().getEncoding());
         try { 
             InputSource isource = new InputSource(in);
-            //System.out.println("Parsing XML document");
             XMLUtil.parse( isource, true, true, errorHandler, EntityCatalog.getDefault());
         } catch( SAXException e) { 
             //Not interested in these errors ...
         } catch (Exception e) {
-            System.err.println(e.getClass().getName() + " " + e.getLocalizedMessage());
-            e.printStackTrace();
-            //Not interested in these errors ...
+            SceneManager.error("Error during document parse", e); //NOI18N
         } finally {
             try {
                 in.close();
             } catch (IOException ex) {
-                ex.printStackTrace();
+                SceneManager.error("Could not close stream", ex); //NOI18N
             }
         }
         

@@ -16,18 +16,18 @@
 
 package org.netbeans.modules.mobility.svgcore.view.svg;
 
-import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.util.MissingResourceException;
 import javax.swing.ImageIcon;
-import org.openide.util.Utilities;
 
 /**
  *
  * @author Pavel Benes
  */
 public abstract class AbstractSVGToggleAction extends AbstractSVGAction {
+    private static final long serialVersionUID  = 5862679852552354L;    
     private static final String RES_NAME_SUFFIX = "1_"; //NOI18N
+    
     public static final String  SELECTION_STATE = "selected"; //NOI18N
     
     protected final String    m_label1;
@@ -59,16 +59,7 @@ public abstract class AbstractSVGToggleAction extends AbstractSVGAction {
             hint = m_label1;
         }
         m_hint1 = hint;
-        
-        ImageIcon icon = null;
-        try {
-            String iconPath = ICON_PATH_PREFIX + getMessage( ICON_ID_PREFIX + RES_NAME_SUFFIX + name);
-            Image img = Utilities.loadImage(iconPath);
-            assert img != null : "Icon not found: " + iconPath;
-            icon = new ImageIcon(img);
-        } catch( MissingResourceException e) {}
-        
-        m_icon1 = icon;
+        m_icon1 = getIcon(ICON_ID_PREFIX + RES_NAME_SUFFIX + name);
     }
     
     protected String getLabel() {

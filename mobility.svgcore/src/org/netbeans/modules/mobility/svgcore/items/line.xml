@@ -6,7 +6,6 @@
      <body>
          <![CDATA[ <line x1="0" y1="0" x2="100" y2="100" stroke="black" stroke-width="1"/>]]>
      </body>
-     
      <icon16 urlvalue="org/netbeans/modules/mobility/svgcore/resources/palette/line_16.png" />
      <icon32 urlvalue="org/netbeans/modules/mobility/svgcore/resources/palette/line_32.png" />
      

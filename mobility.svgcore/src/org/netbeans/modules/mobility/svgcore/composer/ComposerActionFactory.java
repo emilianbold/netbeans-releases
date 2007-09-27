@@ -23,11 +23,11 @@ import javax.swing.Action;
  * @author Pavel Benes
  */
 public interface ComposerActionFactory {
-    public ComposerAction       startAction(AWTEvent event, boolean isOutsideEvent);
-    public boolean              isBlocked();
-    public void                 setBlocked(boolean isBlocked);
-    public SceneManager         getSceneManager();
-    public ActionMouseCursor    getMouseCursor(MouseEvent evt, boolean isOutsideEvent);
-    public Action []            getMenuActions();
-    public void                 updateActionState();
+    public ComposerAction    startAction(AWTEvent event, boolean isOutsideEvent);
+    public boolean           isBlocked();
+    public void              setBlocked(boolean isBlocked);
+    public SceneManager      getSceneManager();
+    public ActionMouseCursor getMouseCursor(MouseEvent evt, boolean isOutsideEvent);
+    public Action []         getMenuActions();
+    public void              updateActionState();
 }

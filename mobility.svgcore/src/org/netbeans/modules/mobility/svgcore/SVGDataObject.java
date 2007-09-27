@@ -13,6 +13,7 @@
 package org.netbeans.modules.mobility.svgcore;
 
 import java.awt.Image;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,6 +21,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.logging.Level;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -48,7 +50,10 @@ import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.SaveAsCapable;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
+import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.TopComponent;
 
 /**
@@ -56,19 +61,19 @@ import org.openide.windows.TopComponent;
  * @author Pavel Benes
  */
 @SuppressWarnings({"unchecked"})
-public class SVGDataObject extends XmlMultiViewDataObject {
-    private static final long serialVersionUID = 123471457562776148L;
-    
+public final class SVGDataObject extends XmlMultiViewDataObject {
+    private static final long  serialVersionUID = 123471457562776148L;
+    private static final Image SVGFILE_ICON     = Utilities.loadImage("org/netbeans/modules/mobility/svgcore/resources/svg.png"); // NOI18N
+
     public static final int    XML_VIEW_INDEX   = 0;
     public static final int    SVG_VIEW_INDEX   = 1;
     public static final String PROP_EXT_CHANGE  = "external_change"; //NOI18N
-    public static final String EXT_SVG          = "svg";
-    public static final String EXT_SVGZ         = "svgz";
-    
-    private static final Image SVGFILE_ICON = org.openide.util.Utilities.loadImage("org/netbeans/modules/mobility/svgcore/resources/svg.png"); // NOI18N
-    
+    public static final String EXT_SVG          = "svg"; //NOI18N
+    public static final String EXT_SVGZ         = "svgz"; //NOI18N
+        
     private transient SVGFileModel m_model;
     private transient SceneManager m_sceneManager;
+    private transient MultiViewElement m_activeElement = null;
     
     private final DataCache m_dataCache = new XmlMultiViewDataObject.DataCache() {
         public void loadData(FileObject file, FileLock dataLock) throws IOException {
@@ -79,7 +84,9 @@ public class SVGDataObject extends XmlMultiViewDataObject {
         }
     };
 
-    private class SVGEditorSupport extends XmlMultiViewEditorSupport {
+    private final class SVGEditorSupport extends XmlMultiViewEditorSupport {
+        private static final long  serialVersionUID = 123471457562776148L;
+        
         public SVGEditorSupport() {
             super(SVGDataObject.this);
         }
@@ -90,10 +97,8 @@ public class SVGDataObject extends XmlMultiViewDataObject {
         }
         
         protected void saveFromKitToStream(StyledDocument doc, EditorKit kit, OutputStream stream)
-        throws IOException, BadLocationException {
+            throws IOException, BadLocationException {
             FileObject fo = getPrimaryFile();
-            
-            //m_wasSaved = true;
             
             if ( isSVGZ(fo.getExt())) {
                 GZIPOutputStream gzipStream = new GZIPOutputStream(stream);            
@@ -109,19 +114,21 @@ public class SVGDataObject extends XmlMultiViewDataObject {
         }
     }
     
-    private static class VisualView extends DesignMultiViewDesc {
+    private static final class VisualView extends DesignMultiViewDesc {
         private static final long serialVersionUID = 7526471457562776148L;
+        //private static final  HelpCtx DEFAULT_HELP = new HelpCtx("MOBILITY.SVG.COMPOSER_VIEW"); // NOI18N
+        private static final  HelpCtx DEFAULT_HELP = new HelpCtx(HelpCtx.class.getName() + ".DEFAULT_HELP"); // NOI18N
         
         VisualView(SVGDataObject dObj) {
             super(dObj, NbBundle.getMessage(SVGDataObject.class, "LBL_MULVIEW_TITLE_VIEW")); //NOI18N
         }
         
-        public org.netbeans.core.spi.multiview.MultiViewElement createElement() {
+        public MultiViewElement createElement() {
             SVGDataObject dObj = (SVGDataObject)getDataObject();
             return new SVGViewMultiViewElement(dObj);
         }
         
-        public java.awt.Image getIcon() {
+        public Image getIcon() {
             return SVGFILE_ICON;
         }
         
@@ -129,12 +136,16 @@ public class SVGDataObject extends XmlMultiViewDataObject {
             return "multiview_svgview"; //NOI18N
         }
         
+        public HelpCtx getHelpCtx() {
+            return DEFAULT_HELP;
+        }        
+        
         public int getPersistenceType() {
             return TopComponent.PERSISTENCE_ONLY_OPENED;
         }
     }
     
-    private static class XMLTextView extends DesignMultiViewDesc {
+    private static final class XMLTextView extends DesignMultiViewDesc {
         private static final long serialVersionUID = 7526471457562776147L;
         
         XMLTextView(SVGDataObject dObj) {
@@ -177,6 +188,7 @@ public class SVGDataObject extends XmlMultiViewDataObject {
                 getEditorSupport().saveAs( folder, fileName );
             }
         });  
+        SceneManager.log(Level.INFO, "SVGDataObject created for " + pf.getPath()); //NOI18N
     }
         
     public DataCache getDataCache() {
@@ -192,9 +204,18 @@ public class SVGDataObject extends XmlMultiViewDataObject {
         return getEditorSupport().getMVTC();        
     }
     
+    public MultiViewElement getActiveElement() {
+        return m_activeElement;
+    }
+    
+    public void setMultiViewElement(MultiViewElement active) {
+        m_activeElement = active;
+    }
+    
     public synchronized SVGFileModel getModel() {
         if (m_model == null) {
             m_model = new SVGFileModel( getEditorSupport());
+            SceneManager.log(Level.INFO, "Model created for " + getPrimaryFile().getPath());//NOI18N
         }
         return m_model;
     }
@@ -202,17 +223,23 @@ public class SVGDataObject extends XmlMultiViewDataObject {
     public synchronized SceneManager getSceneManager() {
         if (m_sceneManager == null) {
             m_sceneManager = new SceneManager();
+            SceneManager.log(Level.INFO, "SceneManager created for " + getPrimaryFile().getPath()); //NOI18N
             m_sceneManager.initialize(this);
         }
         return m_sceneManager;        
     }
-       
+    
+    public static boolean isSVGZ(String fileExt) {
+        return EXT_SVGZ.equals(fileExt.toLowerCase()); 
+    }
+
     private synchronized void release() {
         if (m_model != null) {
             m_model.detachDocument();
         }
         m_model = null;
-        m_sceneManager = null;        
+        m_sceneManager = null; 
+        SceneManager.log(Level.INFO, "SVGDataObject released for " + getPrimaryFile().getPath()); //NOI18N
     }
     
     protected synchronized XmlMultiViewEditorSupport getEditorSupport() {
@@ -237,9 +264,23 @@ public class SVGDataObject extends XmlMultiViewDataObject {
     protected String getPrefixMark() {
         return null;
     }   
-
-    public static boolean isSVGZ(String fileExt) {
-        return EXT_SVGZ.equals(fileExt.toLowerCase()); //NOI18N
+    
+    public static boolean isSVGFile( File file) {
+        String name = file.getName().toLowerCase();
+        return name.endsWith('.' + EXT_SVG) || name.endsWith( '.' + EXT_SVGZ);
+    }
+    
+    public static SVGDataObject getActiveDataObject(java.awt.Container comp) {
+        while( comp != null) {
+            if ( comp instanceof CloneableTopComponent) {
+                SVGDataObject dObj = ((CloneableTopComponent) comp).getLookup().lookup(SVGDataObject.class);
+                if ( dObj != null) {
+                    return dObj;
+                } 
+            }
+            comp = comp.getParent();
+        }
+        return null;
     }
     
     @SuppressWarnings({"deprecation"})
@@ -320,7 +361,7 @@ public class SVGDataObject extends XmlMultiViewDataObject {
 
         public InputStream getInputStream() throws FileNotFoundException {
             try {
-                java.io.InputStream in = m_delegate.getInputStream();
+                InputStream in = m_delegate.getInputStream();
                 return new GZIPInputStream(in);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);

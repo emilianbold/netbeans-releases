@@ -36,17 +36,17 @@ import org.openide.windows.TopComponent;
  * @author Pavel Benes
  */
 public abstract class AbstractSVGAction extends AbstractAction implements Presenter.Popup {
-    protected static final String ICON_PATH_PREFIX = "org/netbeans/modules/mobility/svgcore/resources/"; //NOI18N
-    protected static final String LBL_ID_PREFIX    = "LBL_"; //NOI18N
-    protected static final String ICON_ID_PREFIX   = "ICON_"; //NOI18N
-    protected static final String HINT_ID_PREFIX   = "HINT_"; //NOI18N
-    protected static final String KEY_ID_PREFIX    = "KEY_"; //NOI18N
+    public static final String ICON_PATH_PREFIX = "org/netbeans/modules/mobility/svgcore/resources/"; //NOI18N
+    public static final String LBL_ID_PREFIX    = "LBL_"; //NOI18N
+    public static final String ICON_ID_PREFIX   = "ICON_"; //NOI18N
+    public static final String HINT_ID_PREFIX   = "HINT_"; //NOI18N
+    public static final String KEY_ID_PREFIX    = "KEY_"; //NOI18N
 
-    protected final String m_name;
-    protected final String m_label;
-    protected final String m_hint;
+    protected final String    m_name;
+    protected final String    m_label;
+    protected final String    m_hint;
     protected final ImageIcon m_icon;
-    protected final int    m_toolbarPos;
+    protected final int       m_toolbarPos;
         
     public AbstractSVGAction(String name) {
         this(name, true);
@@ -60,16 +60,8 @@ public abstract class AbstractSVGAction extends AbstractAction implements Presen
         m_name  = name;
         m_label = getMessage(LBL_ID_PREFIX + name);
         
-        ImageIcon icon = null;
-        
-        try {
-            String iconPath = ICON_PATH_PREFIX + getMessage( ICON_ID_PREFIX + name);
-            Image img = Utilities.loadImage(iconPath);
-            assert img != null : "Icon not found: " + iconPath;
-            icon = new ImageIcon(img);
-        } catch( MissingResourceException e) {}
-        
-        setIcon( m_icon = icon);
+        m_icon = getIcon(ICON_ID_PREFIX + name);
+        setIcon( m_icon);
         
         String hint;
         try {
@@ -80,15 +72,11 @@ public abstract class AbstractSVGAction extends AbstractAction implements Presen
         m_hint = hint;
         
         try {
-            String    key    = getMessage( KEY_ID_PREFIX + name);
+            String    key    = getCleanMessage( KEY_ID_PREFIX + name);
             KeyStroke stroke = KeyStroke.getKeyStroke(key);
-            if (stroke != null) {
-                putValue(Action.ACCELERATOR_KEY, stroke);
-            } else {
-                System.err.println("Invalid key stroke: " + name);
-            }
-        } catch( MissingResourceException e) {
-        }
+            assert stroke != null : "Invalid key stroke: " + name; //NOI18N
+            putValue(Action.ACCELERATOR_KEY, stroke);
+        } catch( MissingResourceException e) {}
         
         setDescription(hint);
         setEnabled(isEnabled);
@@ -104,38 +92,15 @@ public abstract class AbstractSVGAction extends AbstractAction implements Presen
     protected final void setDescription(String hint) {
         KeyStroke stroke = (KeyStroke) getValue(Action.ACCELERATOR_KEY);
         if (stroke != null) {
-            hint += " (";
+            hint += " ("; //NOI18N
             String str = KeyEvent.getKeyModifiersText(stroke.getModifiers());
             if (str.length() > 0) {
-                hint += str + "+";
+                hint += str + "+"; //NOI18N
             }
             hint += KeyEvent.getKeyText(stroke.getKeyCode()) + ")"; //NOI18N
         }
         putValue(Action.SHORT_DESCRIPTION, hint);
     }
-    
-    /*
-    public AbstractSVGAction(String iconName, String hintResId, String lblResId) {
-        this( iconName, hintResId, lblResId, true);
-    }
-
-    public AbstractSVGAction(String iconName, String hintResId, String lblResId, boolean enabled) {
-        this(iconName, hintResId, lblResId, enabled, 100);
-        putValue(Action.SMALL_ICON, new ImageIcon(Utilities.loadImage( ICON_PATH_PREFIX + iconName)));
-        putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(SVGViewTopComponent.class, hintResId));
-        setEnabled(enabled);
-    }
-
-    public AbstractSVGAction(String iconName, String hintResId, String lblResId, boolean enabled, int position) {
-        m_name = iconName;
-        m_label = getMessage(lblResId);
-        putValue(Action.SMALL_ICON, new ImageIcon(Utilities.loadImage( ICON_PATH_PREFIX + iconName)));
-        putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(SVGViewTopComponent.class, hintResId));
-        setEnabled(enabled);
-        m_toolbarPos = position;
-        m_menuPos = 100;
-    }
-    */
     
     public String getActionID() {
         return m_name;
@@ -166,7 +131,39 @@ public abstract class AbstractSVGAction extends AbstractAction implements Presen
         return m_label;
     }
     
-    protected static String getMessage(String msgId) {
+    public static String getMessage(String msgId) {
         return NbBundle.getMessage(SVGViewTopComponent.class, msgId);       
+    }
+    
+    public static String getCleanMessage(String msgId) {
+        String msg = getMessage(msgId);
+        
+        if ( msg != null && msg.length() > 0) {
+            // remove the (m,n) suffix that gets attached when NbBundle.DEBUG 
+            // property is set to true
+            int p;
+            if ( (p=msg.lastIndexOf('(')) != -1) {
+                int q;
+                if ( (q=msg.indexOf(')', p)) != -1) {
+                    StringBuilder sb = new StringBuilder(msg);
+                    sb.delete(p, q+1);
+                    msg = sb.toString().trim();
+                }
+            }
+        }
+        return msg;
+    }
+    
+    public static ImageIcon getIcon( String bundleKey) {
+        try {
+            String iconFileName = getCleanMessage( bundleKey).trim();
+            String iconPath = ICON_PATH_PREFIX + iconFileName;
+            Image img = Utilities.loadImage(iconPath);
+            assert img != null : "Icon not found: " + iconPath; //NOI18N
+            return new ImageIcon(img);
+        } catch( MissingResourceException e) {
+            // no icon is provided
+            return null;
+        }
     }
 }

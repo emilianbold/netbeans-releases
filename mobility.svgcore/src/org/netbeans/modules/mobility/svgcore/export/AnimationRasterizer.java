@@ -20,8 +20,6 @@ import java.awt.image.IndexColorModel;
 import java.awt.image.WritableRaster;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -45,13 +43,11 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.mobility.project.J2MEProject;
 import org.netbeans.modules.mobility.project.ProjectConfigurationsHelper;
 import org.netbeans.modules.mobility.svgcore.SVGDataObject;
+import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
 import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.w3c.dom.svg.SVGSVGElement;
 
@@ -61,13 +57,18 @@ import org.w3c.dom.svg.SVGSVGElement;
  * @author breh
  */
 public class AnimationRasterizer {
+    private static final int   PATTERN_SIZE     = 10;
+    private static final Color PATTERN_COLOR1   = new Color(192, 192, 192);
+    private static final Color PATTERN_COLOR2   = new Color(220, 220, 220);
+    private static final Color BACKGROUND_COLOR = Color.WHITE;
+
     public enum CompressionLevel {
-        MAXIMUM( "Maximum", 10),
-        VERY_HIGH("Very High", 30),
-        HIGH("High", 40),
-        MEDIUM("Medium", 60),
-        LOW("Low", 80),
-        MINIMUM("Minimum", 99);
+        MAXIMUM( getMessage("LBL_CompressionMaximum"), 10), //NOI18N
+        VERY_HIGH(getMessage("LBL_CompressionVeryHigh"), 30), //NOI18N
+        HIGH(getMessage("LBL_CompressionHigh"), 40), //NOI18N
+        MEDIUM(getMessage("LBL_CompressionMedium"), 60), //NOI18N
+        LOW(getMessage("LBL_CompressionLow"), 80), //NOI18N
+        MINIMUM(getMessage("LBL_CompressionMinimum"), 99); //NOI18N
 
         private final String  m_name;
         private final int     m_rate;
@@ -92,24 +93,22 @@ public class AnimationRasterizer {
                     return level;
                 }
             }
-            assert false : "Could not find compression level for rate: " + rate;
+            assert false : "Could not find compression level for rate: " + rate; //NOI18N
             return MINIMUM;
         }
     }    
-
-    public static final CompressionLevel DEFAULT_COMPRESSION = CompressionLevel.HIGH;
 
     private interface ColorReducer {
         BufferedImage reduceColors(BufferedImage image, Params params);
     }
     
     public enum ColorReductionMethod implements ColorReducer {
-        QUANTIZE("Color Quantization") {
+        QUANTIZE( getMessage("LBL_ColorReductionColorQuantization")) { //NOI18N
             public BufferedImage reduceColors(BufferedImage image, Params params) {
                 return reduceColorsQuantize(image, params);
             }
         }, 
-        MEDIAN_CUT("Median Cut"){
+        MEDIAN_CUT(getMessage("LBL_ColorReductionMedianCut")){ //NOI18N
             public BufferedImage reduceColors(BufferedImage image, Params params) {
                 return reduceColorsMedianCut(image, params);
             }
@@ -169,11 +168,11 @@ public class AnimationRasterizer {
         
         public String getFileName( String filename) {
             String str = filename.toLowerCase();
-            String ext = "." + SVGDataObject.EXT_SVG;
+            String ext = "." + SVGDataObject.EXT_SVG; //NOI18N
             if ( !str.endsWith(ext)) {
-                ext = "." + SVGDataObject.EXT_SVGZ;
+                ext = "." + SVGDataObject.EXT_SVGZ; //NOI18N
                 if ( !str.endsWith(ext)){
-                    ext = "";
+                    ext = "";  //NOI18N
                 }
             }
             filename = filename.substring(0, filename.length() - ext.length()) + m_extension;
@@ -259,19 +258,23 @@ public class AnimationRasterizer {
         return filenameRoot;
     }
     
-    static void export(final SVGDataObject dObj, final Params params) throws MissingResourceException {
-        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(SaveAnimationAsImageAction.class, "TITLE_AnimationExportProgress")); //NOI18N
-        try {   
-            final FileObject fo        = dObj.getPrimaryFile();
-            final File       directory = FileUtil.toFile(fo.getParent());
-            
+    public static void export(final SVGDataObject dObj, final Params params) throws MissingResourceException {
+        FileObject fo = dObj.getPrimaryFile();
+        export(dObj, params, fo.getParent());
+    }
+        
+    public static FileObject export(final SVGDataObject dObj, final Params params, final FileObject directory) throws MissingResourceException {
+        final ProgressHandle handle = ProgressHandleFactory.createHandle( getMessage("TITLE_AnimationExportProgress")); //NOI18N
+        FileObject file = null;
+        try {               
             if (!params.isForAllConfigurations()){
                 handle.start(1);
                 
                 String   filenameRoot = createFileNameRoot(dObj, params, null, false);                
-                rasterizeImage( params.getSVGImage(), directory, filenameRoot, params);                
+                file = rasterizeImage( params.getSVGImage(), directory, filenameRoot, params);                
                 handle.progress(1);
             } else {
+                FileObject fo = dObj.getPrimaryFile();                
                 Collection<ProjectConfiguration> configurations = params.getProject().getConfigurationHelper().getConfigurations();
                 handle.start(configurations.size());
                 
@@ -287,115 +290,29 @@ public class AnimationRasterizer {
                     String    filenameRoot = createFileNameRoot(dObj, params, configuration, false);
                     Dimension dim          = ScreenSizeHelper.getCurrentDeviceScreenSize(fo, configuration.getDisplayName());
                     
-                    params.setImageWidth((int)((double)dim.getWidth() * ratioWidth));
-                    params.setImageHeight((int)((double)dim.getHeight() * ratioHeight));
+                    params.setImageWidth((int)(dim.getWidth() * ratioWidth));
+                    params.setImageHeight((int)(dim.getHeight() * ratioHeight));
                     
                     rasterizeImage( params.getSVGImage(), directory, filenameRoot, params);
                     handle.progress(++stepsDone);
                 }
              }
-            fo.getParent().refresh(false);
-        } catch (FileStateInvalidException ex) {
-            ErrorManager.getDefault().notify(ex);
+             directory.refresh(false);
         } catch (Exception ex) {
-            ErrorManager.getDefault().notify(ex);
+            SceneManager.error("Image export failed.", ex); //NOI18N            
         } finally {
             handle.finish();
         }
+        return file;
     }
-
-/*
-    static void exportElement(final FileObject fo, final J2MEProject project, final SVGImage svgImage, String id, Params params) throws MissingResourceException {
-        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(SaveAnimationAsImageAction.class, "TITLE_AnimationExportProgress"));
-        try {                    
-            id = id != null ? "_" + id + "_": "";
-            
-            final File directory = FileUtil.toFile(fo.getParent());
-            
-            if (!params.isForAllConfigurations()){
-                handle.start(1);
-                //File output = new File(FileUtil.toFile(fo.getParent()), fo.getName()  + id + getActiveConfigurationName(fo) + getSuffixForImageType(imageType));
-                String filenameRoot = fo.getName()  + id + getActiveConfigurationName(fo);
-                AnimationRasterizer.rasterize( svgImage, directory, filenameRoot, params);
-                handle.progress(1);
-            } else {
-               
-                Collection<ProjectConfiguration> configurations = project.getConfigurationHelper().getConfigurations();
-                handle.start(configurations.size());
-                int stepsDone = 0;
-
-                int imageWidth = params.getImageWidth();
-                int imageHeigth = params.getImageHeight();
-                
-                  for (ProjectConfiguration configuration: configurations) {
-                    String name;
-                    if (configuration != project.getConfigurationHelper().getDefaultConfiguration ()){
-                        name = "_" + configuration.getDisplayName();
-                    } else {
-                        name = "";
-                    }
-                    Dimension activeDimenson = ScreenSizeHelper.getCurrentDeviceScreenSize(fo, null);
-                    double ratioWidth = (double)imageWidth / activeDimenson.getWidth();
-                    double ratioHeight = (double)imageHeigth / activeDimenson.getHeight();
-                    
-                    //File output = new File(FileUtil.toFile(fo.getParent()), fo.getName() + id + name + getSuffixForImageType(imageType));
-                    String filenameRoot =  fo.getName() + id + name;
-                    Dimension dim = ScreenSizeHelper.getCurrentDeviceScreenSize(fo, configuration.getDisplayName());
-                    params.setImageWidth((int)((double)dim.getWidth() * ratioWidth));
-                    params.setImageHeight((int)((double)dim.getHeight() * ratioHeight));
-                    AnimationRasterizer.rasterize( fo.getURL().toString(), directory, filenameRoot, params);
-                    handle.progress(++stepsDone);
-                }
-                 
-            }
-            fo.getParent().refresh(false);
-        } catch (FileStateInvalidException ex) {
-            ErrorManager.getDefault().notify(ex);
-        } catch (Exception ex) {
-            ErrorManager.getDefault().notify(ex);
-        } finally {
-            handle.finish();
-        }
-    }    
-*/
-    
-    /**
-     * @param args 
-     */
-    /*
-    private static void rasterize(String svgURL,File directory, String filenameRoot, Params params) throws IOException {
-        // Load SVG image into memory
-        SVGImage svgImage = (SVGImage) SVGImage.createImage(svgURL, null);
-        rasterize(svgImage,directory,filenameRoot, params);
-    }
-  */  
-    private static final Color BACKGROUND_COLOR = Color.WHITE;
     
     private static BufferedImage adjustImage(BufferedImage img, Params params) {
-/*        if ( !params.isTransparent()) {
-            // remove all (semi) transparent pixels
-            int w = img.getWidth();
-            int h = img.getHeight();
-
-            BufferedImage background = new BufferedImage( w, h, BufferedImage.TYPE_INT_ARGB);            
-            Graphics g = background.createGraphics();
-            g.setColor(BACKGROUND_COLOR);
-            g.fillRect(0, 0, w, h);
-            g.drawImage(img, 0, 0, null);
-            g.dispose();
-            img = background;            
-        } */
-
         if (params.getImageType().needsColorReduction()) {
             img = params.getColorReductionMethod().reduceColors(img, params);
         }
         return img;
     }
-    
-    private static final int PATTERN_SIZE = 10;
-    private static final Color PATTERN_COLOR1 = new Color(192, 192, 192);
-    private static final Color PATTERN_COLOR2 = new Color(220, 220, 220);
-    
+        
     public static PreviewInfo previewFrame( SVGImage svgImage, Params params, int frameIndex, float time) throws IOException {
         BufferedImage img;
         
@@ -445,7 +362,6 @@ public class AnimationRasterizer {
                 img = background;
             }
         }
-        //writeImageToFile(img, new File( "c:\\test.jpg"), params);
         return new PreviewInfo(  img, params.getImageType().toString(), buff.size());
     }
     
@@ -477,8 +393,8 @@ public class AnimationRasterizer {
             if ( svgImage.getViewportHeight() * ratio > h) {
                 ratio = (float) h / svgImage.getViewportHeight();
             }
-            int _w = Math.round( (float) (svgImage.getViewportWidth() * ratio));
-            int _h = Math.round( (float) (svgImage.getViewportHeight() * ratio));
+            int _w = Math.round( (svgImage.getViewportWidth() * ratio));
+            int _h = Math.round( (svgImage.getViewportHeight() * ratio));
             svgImage.setViewportWidth(_w);
             svgImage.setViewportHeight(_h);
             assert _w <= w;
@@ -510,20 +426,30 @@ public class AnimationRasterizer {
         return img;
     }
     
-    public static void rasterizeImage(SVGImage svgImage, File directory, String filenameRoot, Params params) throws IOException {        
+    public static FileObject rasterizeImage(SVGImage svgImage, FileObject dir, String filenameRoot, Params params) throws IOException {        
+        FileObject file = null;
         int frameNum = params.getNumberFrames();
         
         if (params.isInSingleImage()) {
             BufferedImage img = rasterizeFramesInSingleImage( svgImage, params);
-            writeImageToFile( img, new File( directory, createFileName(filenameRoot, params, -1, -1)), params);
+            FileObject fo = dir.createData(createFileName(filenameRoot, params, -1, -1));
+            
+            writeImageToFile( img, fo, params);
+            file = fo;
         } else {
             for (int i = 0; i < frameNum; i++) {
                 BufferedImage img = rasterizeFrame( null, 0, svgImage, params, 
                         params.getStartTime() + (i / params.getFramesPerSecond()));
                 img = adjustImage(img, params);
-                writeImageToFile( img, new File( directory, createFileName(filenameRoot, params, i, frameNum) ), params);
+                FileObject fo = dir.createData(createFileName(filenameRoot, params, i, frameNum));
+                writeImageToFile( img, fo, params);
             }
         }
+        return file;
+    }
+    
+    static final String getMessage( String stringID) {
+        return NbBundle.getMessage(AnimationRasterizer.class, stringID);
     }
     
     private static int getEncodedSize(BufferedImage img, Params params) throws IOException {
@@ -542,7 +468,7 @@ public class AnimationRasterizer {
         void updateProgress( String text);
     }
     
-    public static int calculateAnimationSize(SVGImage svgImage, Params params, ProgressUpdater updater) throws IOException, InterruptedException {        
+    static int calculateAnimationSize(SVGImage svgImage, Params params, ProgressUpdater updater) throws IOException, InterruptedException {        
         int size;
         int frameNum = params.getNumberFrames();
         
@@ -552,13 +478,13 @@ public class AnimationRasterizer {
             BufferedImage img = createBuffer(w * frameNum, h, params.isTransparent());
             for (int i = 0; i < frameNum; i++) {
                 if (updater != null) {
-                    updater.updateProgress("Rasterizing " + i + "/" + frameNum + " ...");
+                    updater.updateProgress( NbBundle.getMessage(AnimationRasterizer.class, "LBL_PreviewRasterizing", String.valueOf(i), String.valueOf(frameNum))); //NOI18N
                 }
                 rasterizeFrame( img, i * w, svgImage, params, params.getStartTime() + (i / params.getFramesPerSecond()));
             }
             checkInterrupted();
             if (updater != null) {
-                updater.updateProgress("Encoding image ...");
+                updater.updateProgress(getMessage("LBL_PreviewEncoding")); //NOI18N
             }
             img = adjustImage(img, params);
             checkInterrupted();
@@ -591,150 +517,6 @@ public class AnimationRasterizer {
         }
     }
     
-    
- /*   
-    public static void _rasterize(SVGImage svgImage, File directory, String filenameRoot, Params params) throws IOException {
-        // Scale the SVG image to the desired size.
-        svgImage.setViewportWidth(params.getImageWidth());
-        svgImage.setViewportHeight(params.getImageHeight());
-
-        // create instance of scalable graphics
-        ScalableGraphics sg = ScalableGraphics.createInstance();
-
-        float currentTime = params.getStartTime();
-        float stepLenght = (params.getEndTime() - params.getStartTime()) / params.getNumberFrames();
-        SVGSVGElement element = 
-                (SVGSVGElement) svgImage.getDocument().getDocumentElement();
-        element.setCurrentTime(currentTime);
-        
-        if (params.isInSingleImage()) {
-            // Create an offscreen buffer of the right size.        
-            BufferedImage buffer = new BufferedImage(params.getImageWidth() params.getImageWidth() * params.getNumberFrames(),
-                    params.getImageHeight(), BufferedImage.TYPE_INT_ARGB);            
-            //BufferedImage buffer = new BufferedImage(width * numberOfSteps, height, BufferedImage.TYPE_BYTE_INDEXED);            
-            // Create graphics to draw the image into.
-            Graphics g = buffer.createGraphics();
-            g.setColor(Color.WHITE);            
-            // Render now for each rendering step.
-            for (int i = 0; i < params.getNumberFrames(); i++) {
-                sg.bindTarget(g);
-                sg.render(i * params.getImageWidth(), 0, svgImage);
-                sg.releaseTarget();
-                currentTime += stepLenght;
-                element.setCurrentTime(currentTime);
-            }
-
-            //System.out.println("Number of bands: " + buffer.getSampleModel().getNumBands());
-            //System.out.println("Color model: " + buffer.getColorModel());
-//*            
-            {    
-                System.out.println("Encoding PNG with Batik #1...");
-                File outputFile = new File(directory, filenameRoot + "1" + getSuffixForImageType(imageType));        
-                PNGEncodeParam.RGB params = new PNGEncodeParam.RGB();
-                //params.setBitDepth(8);
-                FileOutputStream fout = new FileOutputStream(outputFile);
-                PNGImageEncoder pngEncoder = new PNGImageEncoder(fout, params);
-                pngEncoder.encode(buffer);
-                fout.close();
-                System.out.println("PNG encoded.");
-            }
-
-            {    
-                System.out.println("Encoding PNG with Batik #2...");
-                File outputFile = new File(directory, filenameRoot + "2" + getSuffixForImageType(imageType));        
-                PNGEncodeParam params = new PNGEncodeParam.RGB();
-                params.setBitDepth(16);
-                FileOutputStream fout = new FileOutputStream(outputFile);
-                PNGImageEncoder pngEncoder = new PNGImageEncoder(fout, params);
-                pngEncoder.encode(buffer);
-                fout.close();
-                System.out.println("PNG encoded.");
-            }
-
-            {    
-                System.out.println("Encoding PNG with Batik #3...");
-                File outputFile = new File(directory, filenameRoot + "3" + getSuffixForImageType(imageType));        
-                PNGEncodeParam params = new PNGEncodeParam.Gray();
-                FileOutputStream fout = new FileOutputStream(outputFile);
-                PNGImageEncoder pngEncoder = new PNGImageEncoder(fout, params);
-                pngEncoder.encode(buffer);
-                fout.close();
-                System.out.println("PNG encoded.");
-            }
-  //       
-            System.out.print("Writing PNG using JDK (DirectColorModel ...");
-            File outputFile = new File(directory,filenameRoot + "_jdk0" +  getSuffixForImageType(params.getImageType()));        
-            writeImageToFile(buffer, outputFile, params);
-            System.out.println("size=" + outputFile.length());
-///*
-            System.out.print("Writing PNG using Batik (DirectColorModel ...");
-            outputFile = new File(directory, filenameRoot + "_batik0" +  getSuffixForImageType(imageType));        
-            FileOutputStream fout = new FileOutputStream(outputFile);
-            PNGEncodeParam params = PNGEncodeParam.getDefaultEncodeParam(buffer);
-            PNGImageEncoder pngEncoder = new PNGImageEncoder(fout, params);
-            pngEncoder.encode(buffer);
-            fout.close();
-            System.out.println("size=" + outputFile.length());
-
-            System.out.print("Writing PNG using JDK (remapped IndexedColorModel ...");
-            BufferedImage buffer2 = convertModel1(buffer);
-            outputFile = new File(directory, filenameRoot + "_jdk2" + getSuffixForImageType(imageType));                    
-            writeImageToFile(buffer2, outputFile, imageType, compressionQuality, progressive);
-            System.out.println("size=" + outputFile.length());
-
-            System.out.print("Writing PNG using Batik (remapped IndexedColorModel ...");
-            outputFile = new File(directory, filenameRoot + "_batik2" +  getSuffixForImageType(imageType));        
-            fout = new FileOutputStream(outputFile);
-            params = PNGEncodeParam.getDefaultEncodeParam(buffer2);
-            pngEncoder = new PNGImageEncoder(fout, params);
-            pngEncoder.encode(buffer2);
-            fout.close();
-            System.out.println("size=" + outputFile.length());
-            
-            System.out.print("Writing PNG using JDK (IndexedColorModel ...");
-            BufferedImage buffer1 = convertModel(buffer);
-            outputFile = new File(directory, filenameRoot + "_jdk1" + getSuffixForImageType(imageType));                    
-            writeImageToFile(buffer1, outputFile, imageType, compressionQuality, progressive);
-            System.out.println("size=" + outputFile.length());
-
-            System.out.print("Writing PNG using Batik (IndexedColorModel ...");
-            outputFile = new File(directory, filenameRoot + "_batik1" +  getSuffixForImageType(imageType));        
-            fout = new FileOutputStream(outputFile);
-            params = PNGEncodeParam.getDefaultEncodeParam(buffer1);
-            pngEncoder = new PNGImageEncoder(fout, params);
-            pngEncoder.encode(buffer1);
-            fout.close();
-            System.out.println("size=" + outputFile.length());
-//            
-        } else {                       
-
-            for (int i = 0; i < params.getNumberFrames(); i++) {                                
-                // Create an offscreen buffer of the right size.        
-                BufferedImage buffer = new BufferedImage(params.getImageWidth(), params.getImageHeight(), BufferedImage.TYPE_INT_ARGB);
-                // Create graphics to draw the image into.
-                Graphics g = buffer.createGraphics();
-                g.setColor(Color.WHITE);                        
-                sg.bindTarget(g);
-                sg.render(0, 0, svgImage);
-                sg.releaseTarget();
-                currentTime += stepLenght;
-                element.setCurrentTime(currentTime);
-                final int fileIndex = i + 1;
-                File outputFile = new File(directory,filenameRoot + "_" + fileIndex + getSuffixForImageType(params.getImageType()));                
-                writeImageToFile(buffer, outputFile, params);
-            }            
-        }                
-    }
-
-            
-    private static BufferedImage convertModel( BufferedImage image) {
-        BufferedImage img = new BufferedImage( image.getWidth(), image.getHeight(), BufferedImage.TYPE_BYTE_INDEXED);
-        Graphics g = img.createGraphics();
-        g.drawImage(image, 0, 0, null);
-        g.dispose();
-        return img;
-    }
-*/
     private static BufferedImage reduceColorsMedianCut(BufferedImage image, Params params) {
         int w = image.getWidth(),
             h = image.getHeight();
@@ -812,8 +594,8 @@ public class AnimationRasterizer {
          */ 
     }
             
-    private static void writeImageToFile(BufferedImage image, File file, Params params) throws IOException {
-        FileOutputStream fout = new FileOutputStream(file);
+    private static void writeImageToFile(BufferedImage image, FileObject file, Params params) throws IOException {
+        OutputStream fout = file.getOutputStream();
         try {
             encodeImage(image, fout, params);
             fout.flush();
@@ -821,16 +603,6 @@ public class AnimationRasterizer {
             fout.close();
         }
     }
-    
-    /*
-    static {
-        String [] formats = ImageIO.getWriterFormatNames();
-        System.out.println("Image writters:");
-        for ( String writer : formats) {
-            System.out.println(writer);
-        }
-    }*/
-    
 
     private static void encodeImage(BufferedImage image, OutputStream out, Params params) throws IOException {
         Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName(params.getImageType().getName());
@@ -870,13 +642,13 @@ public class AnimationRasterizer {
     private static String getActiveConfigurationName( FileObject primaryFile ){
         Project p = FileOwnerQuery.getOwner(primaryFile);
         if (p == null || !(p instanceof J2MEProject)){
-            return "";
+            return ""; //NOI18N
         }
         return getDefaultName((J2MEProject) p);
     }
     
     private static String getDefaultName(J2MEProject project){
-        AntProjectHelper helper = (AntProjectHelper) project.getLookup().lookup(AntProjectHelper.class);
+        AntProjectHelper helper = project.getLookup().lookup(AntProjectHelper.class);
         EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         ProjectConfigurationsHelper confs = project.getConfigurationHelper();
         

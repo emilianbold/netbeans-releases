@@ -269,8 +269,14 @@ Microsystems, Inc. All Rights Reserved.
             <file name="polygon.xml" url="/org/netbeans/modules/mobility/svgcore/items/polygon.xml"/>
             <file name="open_curve.xml" url="/org/netbeans/modules/mobility/svgcore/items/open_curve.xml"/>
             <file name="closed_curve.xml" url="/org/netbeans/modules/mobility/svgcore/items/closed_curve.xml"/>
+            <file name="text.xml" url="/org/netbeans/modules/mobility/svgcore/items/text.xml"/>
         </folder>        
     </folder>
+    
+    <folder name="SVGPalette">
+        <folder name="ThumbnailImages">
+        </folder>
+    </folder>    
 
     <folder name="Navigator">
         <folder name="Panels">
@@ -353,6 +359,55 @@ Microsystems, Inc. All Rights Reserved.
                     </folder>
             </folder>
         </folder>
+        <folder name="text">
+            <folder name="x-svg-palette-item">
+                <folder name="Actions">
+                    <file name="org-openide-actions-CopyAction.instance">
+                        <attr name="position" intvalue="500"/>
+                    </file>
+                    <file name="org-openide-actions-CutAction.instance">
+                        <attr name="position" intvalue="400"/>
+                    </file>
+                    <file name="org-openide-actions-DeleteAction.instance">
+                        <attr name="position" intvalue="700"/>
+                    </file>
+                    <file name="org-openide-actions-FileSystemAction.instance">
+                        <attr name="position" intvalue="200"/>
+                    </file>
+                    <file name="org-openide-actions-OpenAction.instance">
+                        <attr name="position" intvalue="100"/>
+                    </file>
+                    <file name="org-openide-actions-PropertiesAction.instance">
+                        <attr name="position" intvalue="1300"/>
+                    </file>
+                    <file name="org-openide-actions-RenameAction.instance">
+                        <attr name="position" intvalue="800"/>
+                    </file>
+                    <file name="org-openide-actions-SaveAsTemplateAction.instance">
+                        <attr name="position" intvalue="1000"/>
+                    </file>
+                    <file name="org-openide-actions-ToolsAction.instance">
+                        <attr name="position" intvalue="1200"/>
+                    </file>
+                    <file name="sep-1.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="300"/>
+                    </file>
+                    <file name="sep-2.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="600"/>
+                    </file>
+                    <file name="sep-3.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="900"/>
+                    </file>
+                    <file name="sep-4.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1100"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
     </folder>
     <folder name="OptionsDialog">
         <folder name="Advanced">
@@ -361,6 +416,9 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
     <folder name="Services">
         <folder name="MIMEResolver">
+            <file name="SVGPaletteItemResolver.xml" url="SVGPaletteItemResolver.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.svgcore.Bundle"/>
+            </file>
             <file name="SVGResolver.xml" url="SVGResolver.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.svgcore.Bundle"/>
             </file>

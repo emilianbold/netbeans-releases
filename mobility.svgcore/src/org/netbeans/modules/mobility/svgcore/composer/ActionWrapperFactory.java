@@ -14,6 +14,7 @@
 
 package org.netbeans.modules.mobility.svgcore.composer;
 
+import java.util.logging.Level;
 import javax.swing.Action;
 import org.openide.filesystems.FileObject;
 import org.openide.util.actions.SystemAction;
@@ -37,20 +38,22 @@ public final class ActionWrapperFactory {
         m_toolBarPosition = getAttribute(fo, "toolBarPosition"); //NOI18N
     }
 
+    @SuppressWarnings("unchecked")
     public ActionWrapper createWrapper( SceneManager smgr) {
         if (m_actionId != null) {
             Action action = null;
 
             if (m_actionId.endsWith(CLASS_EXT)) {
+                String className = "";
                 try {
-                    String className = m_actionId.substring(0, m_actionId.length() - CLASS_EXT.length());
+                    className = m_actionId.substring(0, m_actionId.length() - CLASS_EXT.length());
                     Class clazz = Class.forName(className);
                     action = SystemAction.get(clazz);
                 } catch( ClassNotFoundException e) {
-                    System.err.println("Class " + m_actionId + " not found"); //NOI18N
+                    SceneManager.log(Level.SEVERE, "Class " + className + " not found for actionID " + m_actionId, e); //NOI18N
                 }
             } else {
-                    action = smgr.getAction(m_actionId);
+                action = smgr.getAction(m_actionId);
             }
 
             if (action != null) {

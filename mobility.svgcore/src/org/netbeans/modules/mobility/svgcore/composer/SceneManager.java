@@ -25,6 +25,8 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.microedition.m2g.SVGImage;
 import javax.swing.Action;
 import javax.swing.JComponent;
@@ -46,6 +48,8 @@ import org.netbeans.modules.mobility.svgcore.composer.actions.SkewActionFactory;
 import org.netbeans.modules.mobility.svgcore.composer.actions.TranslateActionFactory;
 import org.netbeans.modules.mobility.svgcore.view.svg.AbstractSVGAction;
 import org.netbeans.modules.mobility.svgcore.view.svg.SVGStatusBar;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.AbstractLookup;
@@ -60,13 +64,73 @@ import org.w3c.dom.svg.SVGLocatableElement;
  * @author Pavel Benes
  */
 public final class SceneManager {   
-    public static final int  EVENT_ANIM_STARTED    = AWTEvent.RESERVED_ID_MAX + 534;
-    public static final int  EVENT_ANIM_STOPPED    = EVENT_ANIM_STARTED + 1;
-    public static final int  EVENT_IMAGE_DISPLAYED = EVENT_ANIM_STOPPED + 1;
-    
-    public static final String OPERATION_TOKEN = "operation";
+    public static final int    EVENT_ANIM_STARTED    = AWTEvent.RESERVED_ID_MAX + 534;
+    public static final int    EVENT_ANIM_STOPPED    = EVENT_ANIM_STARTED + 1;
+    public static final int    EVENT_IMAGE_DISPLAYED = EVENT_ANIM_STOPPED + 1;    
+    public static final String OPERATION_TOKEN       = "operation"; //NOI18N
         
+    private static final Logger  LOGGER;
+    private static final String  LOGGER_NAME = "mobility.svg"; //NOI18N
+    private static final boolean LOG_TIME;
+    private static final boolean LOG_THREAD;
+    
+    private static int           s_instanceCounter = 0;
+    
+    static {
+        LOGGER = Logger.getLogger( LOGGER_NAME); 
+        if ( LOGGER.getLevel() == null) {
+            LOGGER.setLevel( Level.WARNING);
+        }
+        Logger.getLogger("global").log( Level.INFO, "mobility.svg.level=" + LOGGER.getLevel()); //NOI18N
+        String str;
+
+        str = LOGGER_NAME + ".logTime"; //NOI18N
+        LOG_TIME = Boolean.valueOf(System.getProperty(str)); 
+        LOGGER.info(str + '=' + LOG_TIME);
+        
+        str = LOGGER_NAME + ".logThread"; //NOI18N
+        LOG_THREAD = Boolean.valueOf(System.getProperty(str)); 
+        LOGGER.info(str + '=' + LOG_THREAD);
+    }
+
+    public static boolean isEnabled( Level level) {
+        return LOGGER.isLoggable(level);
+    }
+    
+    public static void log( Level level, String msg, Throwable thrown) {
+        LOGGER.log(level, decorate(level, msg), thrown);
+    }
+
+    public static void log( Level level, String msg) {
+        LOGGER.log(level, decorate(level, msg));
+    }
+
+    public static void error( String msg, Throwable thrown) {
+        log(Level.SEVERE, msg, thrown);
+        NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(thrown);
+        DialogDisplayer.getDefault().notifyLater(e);        
+    }
+    
+    private static String decorate(Level level, String msg) {
+        if ( LOGGER.isLoggable(level) && (LOG_THREAD || LOG_TIME)) {
+            StringBuilder sb = new StringBuilder();
+            if ( LOG_TIME) {
+                sb.append( System.currentTimeMillis());
+                sb.append(' ');
+            }
+            if ( LOG_THREAD) {
+                sb.append('[');
+                sb.append( Thread.currentThread().toString());
+                sb.append("] "); //NOI18N
+            }
+            sb.append(msg);
+            msg = sb.toString();
+        }
+        return msg;
+    }
+    
     private transient SVGDataObject               m_dObj = null;
+    private transient int                         m_instanceID;
     private transient InstanceContent             m_lookupContent;
     private transient Lookup                      m_lookup;   
     private transient PerseusController           m_perseusController;
@@ -83,7 +147,9 @@ public final class SceneManager {
     private transient String                      m_selectedId = null;
     private transient String                      m_selectedTag = null;
     private           float                       m_animationDuration = PerseusController.ANIMATION_DEFAULT_DURATION; 
-    
+    private final     List<String>                m_busyStates   = new ArrayList<String>(4);
+    private boolean                               m_busyCursorOn = false;
+        
     /** persistent properties */
     private boolean  m_isReadOnly   = true;
             float    m_zoomRatio    = (float)1.0;
@@ -103,6 +169,7 @@ public final class SceneManager {
     public void initialize(SVGDataObject dObj) {
         assert m_dObj == null : "Scene manager cannot be initialized twice"; //NOI18N
         m_dObj              = dObj;
+        m_instanceID        = s_instanceCounter++;
         m_lookupContent     = new InstanceContent();
         m_lookup            = new AbstractLookup(m_lookupContent);        
 
@@ -129,44 +196,7 @@ public final class SceneManager {
 
         m_screenMgr = new ScreenManager(this);
         updateStatusBar();
-        /*
-        Thread th = new Thread() {
-            public void run() {
-                int count = 0;
-                org.openide.util.Lookup lookup = getLoookup();
-                while(true) {
-                    try {
-                        System.out.println("#" + count++);
-                        java.lang.Object o = lookup.lookup(org.netbeans.modules.mobility.svgcore.composer.SVGObject.class);
-                        if (o != null) {
-                            java.lang.System.out.println("SVGObject found: " + o);
-                        } else {
-                            java.lang.System.out.println("SVGObject not found");
-                        }
-                        o = lookup.lookup(org.w3c.dom.svg.SVGLocatableElement.class);
-                        if (o != null) {
-                            java.lang.System.out.println("SVGLocatableElement found: " + o);
-                        } else {
-                            java.lang.System.out.println("SVGLocatableElement not found");
-                        }
 
-                Lookup.Template<?> templ = new Lookup.Template(SVGObject.class);
-                if (lookup.lookupItem(templ) != null) {
-                    System.out.println("Template found");
-                } else {
-                    System.out.println("Template not found");
-                }        
-
-                        Thread.sleep(1000);
-                    } catch (InterruptedException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-            }
-        };
-        th.setDaemon(true);
-        th.start();
-         */
         m_registeredActions = new ArrayList<Action>();
         for (ComposerActionFactory factory : m_actionFactories) {
             Action [] factoryActions;
@@ -178,6 +208,10 @@ public final class SceneManager {
         }        
     }
 
+    public String toString() {
+        return "SceneManager-" + m_instanceID + "-" + (m_dObj != null ? m_dObj.getPrimaryFile().toString() : "null"); //NOI18N
+    }
+    
     public synchronized void setImage(SVGImage svgImage) {
         if (m_svgImage != null) {
             resetImage();
@@ -233,16 +267,13 @@ public final class SceneManager {
         if ( m_selectedId != null) {
             SVGObject selectedObj = m_perseusController.getObjectById(m_selectedId);
             
-            if (selectedObj != null && m_selectedTag != null &&
-                m_selectedTag.equals( selectedObj.getSVGElement().getLocalName())) {
+            if (selectedObj != null && (m_selectedTag == null ||
+                m_selectedTag.equals( selectedObj.getSVGElement().getLocalName()))) {
                 setSelection(m_selectedId, false);
             }
             m_selectedId = null;
         }
     }
-    
-    private final List<String> m_busyStates   = new ArrayList<String>(4);
-    private boolean      m_busyCursorOn = false;
     
     public void setBusyState( String key, boolean isBusy) {
         synchronized( m_busyStates) {
@@ -259,7 +290,6 @@ public final class SceneManager {
             final boolean busyCursorOn = !m_busyStates.isEmpty();
             if (m_busyCursorOn != busyCursorOn) {
                 if ( m_screenMgr != null) {
-                    //System.out.println("AWT Thread: " + SwingUtilities.isEventDispatchThread());
                     final Component comp = m_screenMgr.getComponent();
 
                     if ( comp != null) {
@@ -285,13 +315,11 @@ public final class SceneManager {
     public void serialize(ObjectOutputStream out) throws IOException {
         out.writeBoolean(m_isReadOnly);
         out.writeFloat(m_zoomRatio);
-        //out.writeFloat(m_animDuration);
     }
 
     public void deserialize(ObjectInputStream in) throws IOException {
         m_isReadOnly   = in.readBoolean();
         m_zoomRatio    = in.readFloat();
-        //m_animDuration = in.readFloat();
     }
         
     Action getAction(String actionID) {
@@ -306,7 +334,7 @@ public final class SceneManager {
                 return action;
             }
         }
-        System.err.println("Unknown action id " + actionID); //NOI18N
+        SceneManager.log(Level.SEVERE, "Unknown action id " + actionID); //NOI18N
         return null;
     }
     
@@ -413,28 +441,34 @@ public final class SceneManager {
         if ( isDelayed) {
             m_selectedId = id;
         } else {
-            SVGObject selectedObj = m_perseusController.getObjectById(id);
+            SVGObject [] oldSelection = getSelected();
+            
+            if ( id != null) {
+                SVGObject selectedObj = m_perseusController.getObjectById(id);
 
-            if (selectedObj != null) {
-                SVGObject [] oldSelection = getSelected();
+                if (selectedObj != null) {
+                    SelectAction action = m_selectActionFactory.getActiveAction();
+                    if (action != null) {
+                        action.actionCompleted();
+                    }
 
+                    synchronized( m_activeActions) {
+                        m_activeActions.push( m_selectActionFactory.startAction(selectedObj));
+                    }
+                    ActionMouseCursor cursor = m_selectActionFactory.getMouseCursor(null, false);
+                    m_screenMgr.setCursor(cursor != null ? cursor.getCursor() : null);
+                }
+            } else {
                 SelectAction action = m_selectActionFactory.getActiveAction();
-                if (action != null) {
+                if ( action != null) {
                     action.actionCompleted();
                 }
-
-                synchronized( m_activeActions) {
-                    m_activeActions.push( m_selectActionFactory.startAction(selectedObj));
-                }
-                ActionMouseCursor cursor = m_selectActionFactory.getMouseCursor(null, false);
-                m_screenMgr.setCursor(cursor != null ? cursor.getCursor() : null);
-
-                //TODO implement better selection change handling
-                SVGObject [] newSelection = getSelected();
-                if (!SVGObject.areSame(newSelection, oldSelection)) {
-                    selectionChanged(newSelection, oldSelection);
-                }        
             }
+            //TODO implement better selection change handling
+            SVGObject [] newSelection = getSelected();
+            if (!SVGObject.areSame(newSelection, oldSelection)) {
+                selectionChanged(newSelection, oldSelection);
+            }        
         }
     }
     
@@ -445,6 +479,10 @@ public final class SceneManager {
     }
     
      public void processEvent(AWTEvent event) {
+         if (isEnabled(Level.FINEST)) {
+             SceneManager.log(Level.FINEST, "Processing event: " + event); //NOI18N
+         }
+         
          if ( !isBusy()) {
             boolean isOutsideEvent = event.getSource() != m_screenMgr.getAnimatorView(); 
             SVGObject [] oldSelection = getSelected();
@@ -551,7 +589,7 @@ public final class SceneManager {
      * @param y the new position of the cursor along the y-axis.
      */
     void popupAt(final int x, final int y) {
-        SVGLocatableElement elem = m_perseusController._findElementAt(x, y);
+        SVGLocatableElement elem = m_perseusController.findElementAt(x, y);
         if (m_popupElement != null) {
             m_lookupContent.remove(m_popupElement);
         }
@@ -571,13 +609,9 @@ public final class SceneManager {
         }
 
         if (newSelection != null && newSelection.length > 0) {
-            //m_dObj.getModel().storeSelection( newSelection[0].getElementId());
-
             for (int i = 0; i < newSelection.length; i++) {
                 m_lookupContent.add(newSelection[i]);
             }
-            //TODO use better mechanism for selection handling
-            //m_dObj.getModel().setSelected( newSelection[0].getElementId());
         }  
         notifySelectionChanged(newSelection, oldSelection);
     }

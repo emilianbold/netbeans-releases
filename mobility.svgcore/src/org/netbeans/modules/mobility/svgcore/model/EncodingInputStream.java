@@ -29,6 +29,7 @@ import org.netbeans.editor.BaseDocument;
  *
  * @author Pavel Benes
  */
+@SuppressWarnings("unchecked")
 public class EncodingInputStream extends InputStream {
     private final CharBuffer     m_chars;
     private       CharsetEncoder m_encoder = null;
@@ -52,7 +53,11 @@ public class EncodingInputStream extends InputStream {
     }
 
     public EncodingInputStream(BaseDocument doc, String encoding) {
-        this( CharBuffer.wrap( (CharSequence) doc.getProperty(CharSequence.class)), encoding);
+        this( (CharSequence) doc.getProperty(CharSequence.class), encoding);
+    }
+
+    public EncodingInputStream(CharSequence chars, String encoding) {
+        this( CharBuffer.wrap( chars), encoding);
     }
     
     public EncodingInputStream(CharBuffer chars, String encoding) {

@@ -42,11 +42,9 @@ import org.w3c.dom.svg.SVGSVGElement;
  * @author Pavel Benes
  */
 public final class ScreenManager {
-    //private static final Image PEN_ICON            = org.openide.util.Utilities.loadImage ("org/netbeans/modules/mobility/svgcore/resources/pen.png"); // NOI18N        
     private static final Color VIEWBOXBORDER_COLOR = Color.DARK_GRAY;
-
-    private static final float MINIMUM_ZOOM = 0.01f;
-    private static final float MAXIMUM_ZOOM = 100f;
+    private static final float MINIMUM_ZOOM        = 0.01f;
+    private static final float MAXIMUM_ZOOM        = 100f;
     
     private final SceneManager   m_sceneMgr;
     private final SVGStatusBar   m_statusBar;
@@ -95,13 +93,6 @@ public final class ScreenManager {
                                 actions.get(i).paint(g, x, y, isReadOnly);
                             }
                         }
-
-                        /*
-                        if (!isReadOnly) {
-                            x += 1;
-                            y += h - PEN_ICON.getHeight(null) - 1;
-                            g.drawImage(PEN_ICON, x, y, null);
-                        }*/
                     } finally {
                         g.setClip(clip);
                     }
@@ -251,10 +242,6 @@ public final class ScreenManager {
 
         // show all area in case the view box is not defined
         boolean showAll = viewBoxRect == null ? true : m_showAllArea;
-        
-        //System.out.println("ViewBox: " + viewBoxRect);
-        //System.out.println("TotalBox: " + svg.getBBox());
-        //System.out.println("TotalScreenBBox: " + svg.getScreenBBox());
 
         translatePoint.setX(0);
         translatePoint.setY(0);
@@ -278,7 +265,6 @@ public final class ScreenManager {
                 }
 
                 SVGRect screenBBox = svg.getScreenBBox();
-                //System.out.println("Actual TotalScreenBBox: " + screenBBox);
 
                 translatePoint.setX(-screenBBox.getX());
                 translatePoint.setY(-screenBBox.getY());            

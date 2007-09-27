@@ -27,7 +27,7 @@ import javax.swing.UIManager;
 import javax.swing.border.Border;
 import org.openide.util.NbBundle;
 
-public class SVGStatusBar extends JPanel {
+public final class SVGStatusBar extends JPanel {
     public static final int CELL_POSITION = 0;
     public static final int CELL_MODE     = 1;
     public static final int CELL_MAIN     = 2;

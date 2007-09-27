@@ -12,20 +12,23 @@
  */   
 package org.netbeans.modules.mobility.svgcore.view.svg;
 
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import javax.swing.JComponent;
 import org.netbeans.modules.mobility.svgcore.SVGDataObject;
 import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
+import org.netbeans.modules.mobility.svgcore.palette.SVGPaletteFactory;
 import org.netbeans.modules.xml.multiview.AbstractMultiViewElement;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
 /**
  *
  * @author Pavel Benes
  */
-public class SVGViewMultiViewElement extends AbstractMultiViewElement {
+public final class SVGViewMultiViewElement extends AbstractMultiViewElement {
     private static final long serialVersionUID = 7526471457562007148L;        
     
     private transient SVGViewTopComponent svgView = null;
@@ -56,12 +59,13 @@ public class SVGViewMultiViewElement extends AbstractMultiViewElement {
     public void componentHidden() {
         if (svgView != null) {
             svgView.componentHidden();
+            getDataObject().setMultiViewElement(null);
         }
     }
 
     public void componentOpened() {
         super.componentOpened();
-        ((SVGDataObject) dObj).getModel().attachToOpenedDocument();
+        getDataObject().getModel().attachToOpenedDocument();
         if (svgView != null) {
             svgView.componentOpened();
         }
@@ -69,6 +73,7 @@ public class SVGViewMultiViewElement extends AbstractMultiViewElement {
 
     public void componentShowing() {
         svgView.onShow();
+        getDataObject().setMultiViewElement(this);
         dObj.setLastOpenView( SVGDataObject.SVG_VIEW_INDEX);
     }
 
@@ -79,10 +84,21 @@ public class SVGViewMultiViewElement extends AbstractMultiViewElement {
      */    
     
     public Lookup getLookup() {
-        return new ProxyLookup( new Lookup[] {
-            svgView.getLookup(),
-            dObj.getNodeDelegate().getLookup()
-        }); 
+        Lookup palette = null;
+
+        try {
+            palette = Lookups.singleton( SVGPaletteFactory.getPalette());
+        } catch( IOException e) {
+            SceneManager.error("Palette could not be created.", e); //NOI18N
+        }
+
+        Lookup [] lookup;
+        if (palette == null) {
+            lookup = new Lookup[] { svgView.getLookup(), dObj.getNodeDelegate().getLookup()}; 
+        } else {
+            lookup = new Lookup[] { svgView.getLookup(), palette, dObj.getNodeDelegate().getLookup()}; 
+        }
+        return new ProxyLookup( lookup);
     }
 
     public JComponent getToolbarRepresentation() {
@@ -99,7 +115,11 @@ public class SVGViewMultiViewElement extends AbstractMultiViewElement {
     }
     
     private SceneManager getSceneManager() {
-        return ((SVGDataObject) this.dObj).getSceneManager();
+        return getDataObject().getSceneManager();
+    }
+    
+    private SVGDataObject getDataObject() {
+        return (SVGDataObject) this.dObj;
     }
     
     private void readObject(ObjectInputStream in) {

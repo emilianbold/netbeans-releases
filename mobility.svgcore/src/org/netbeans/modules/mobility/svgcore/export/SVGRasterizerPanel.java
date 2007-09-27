@@ -42,9 +42,9 @@ import org.netbeans.modules.mobility.project.J2MEProject;
 import org.netbeans.modules.mobility.svgcore.SVGDataObject;
 import org.netbeans.modules.mobility.svgcore.composer.PerseusController;
 import org.netbeans.modules.mobility.svgcore.composer.SVGObjectOutline;
+import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
 import org.netbeans.modules.mobility.svgcore.export.ComponentGroup.ComponentWrapper;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.w3c.dom.svg.SVGElement;
 import org.w3c.dom.svg.SVGLocatableElement;
 import org.w3c.dom.svg.SVGMatrix;
@@ -126,8 +126,9 @@ public abstract class SVGRasterizerPanel extends JPanel implements AnimationRast
     
     protected ComponentGroup createCompressionGroup(JComboBox combo, JSpinner spinner) {
         spinner.setModel( new SpinnerNumberModel( 0, 0, 99, 1));
-        spinner.setValue( new Integer( AnimationRasterizer.DEFAULT_COMPRESSION.getRate()));
-        combo.setSelectedItem(AnimationRasterizer.DEFAULT_COMPRESSION);
+        AnimationRasterizer.CompressionLevel defLevel = AnimationRasterizer.CompressionLevel.HIGH;
+        spinner.setValue( new Integer( defLevel.getRate()));
+        combo.setSelectedItem(defLevel);
         
         return new SVGRasterizerComponentGroup( createComboWrapper(combo), spinner);
     }
@@ -178,7 +179,7 @@ public abstract class SVGRasterizerPanel extends JPanel implements AnimationRast
         try {
             m_svgImage = m_dObj.getModel().parseSVGImage();
         } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
+            SceneManager.error("Load of SVG image failed", ex); //NOI18N
         }
     }
     

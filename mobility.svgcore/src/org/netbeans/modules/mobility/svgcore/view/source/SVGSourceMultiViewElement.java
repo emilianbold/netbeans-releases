@@ -13,14 +13,15 @@
 
 package org.netbeans.modules.mobility.svgcore.view.source;
 
+import org.netbeans.modules.mobility.svgcore.palette.SVGPaletteFactory;
 import java.io.IOException;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.mobility.svgcore.SVGDataObject;
+import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
 import org.netbeans.modules.mobility.svgcore.view.svg.SelectionCookie;
 import org.netbeans.modules.xml.multiview.XmlMultiViewElement;
 import org.netbeans.spi.palette.PaletteController;
-import org.openide.ErrorManager;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
@@ -43,7 +44,7 @@ public class SVGSourceMultiViewElement extends XmlMultiViewElement {
     
     public Lookup getLookup() {
         try {
-            PaletteController pc = SVGXMLPaletteFactory.getPalette();
+            PaletteController pc = SVGPaletteFactory.getPalette();
 
             return new ProxyLookup(new org.openide.util.Lookup[] {                
                 dObj.getNodeDelegate().getLookup(),
@@ -55,22 +56,25 @@ public class SVGSourceMultiViewElement extends XmlMultiViewElement {
                 })
             });
         } catch( IOException e) {
-            e.printStackTrace();
+            SceneManager.error("Lookup creation failed", e); //NOI18N
             return super.getLookup();
         }
     }    
 
+    public void componentHidden() {
+        ((SVGDataObject) dObj).setMultiViewElement(null);
+        super.componentHidden();
+    }
+    
     public void componentOpened() {
         super.componentOpened();
         ((SVGDataObject) dObj).getModel().attachToOpenedDocument();
-        
-        //tell the model that real document is available
-        //((SVGDataObject) dObj).getModel().refresh();
     }
 
     public void componentShowing() {
         super.componentShowing();
         dObj.setLastOpenView(SVGDataObject.XML_VIEW_INDEX);
+        ((SVGDataObject) dObj).setMultiViewElement(this);
     }
     
     public static void selectElement( final SVGDataObject svgDoj, int startOffset, final boolean requestFocus) {
@@ -85,7 +89,7 @@ public class SVGSourceMultiViewElement extends XmlMultiViewElement {
         SwingUtilities.invokeLater( new Runnable() {
             @SuppressWarnings({"deprecation"})
             public void run() {
-                EditorCookie ed = (EditorCookie) svgDoj.getCookie(EditorCookie.class);
+                EditorCookie ed = svgDoj.getCookie(EditorCookie.class);
                 try {
                     if (ed != null) {
                         ed.openDocument();
@@ -106,21 +110,21 @@ public class SVGSourceMultiViewElement extends XmlMultiViewElement {
                         }
                     }            
                 } catch( Exception e) {
-                    ErrorManager.getDefault().notify(e);
+                    SceneManager.error("Select in editor failed.", e); //NOI18N
                 }
             }            
         });        
     }    
         
     private static boolean openFileInEditor(SVGDataObject svgDoj) {
-        EditCookie ck = (EditCookie) svgDoj.getCookie(EditCookie.class);
+        EditCookie ck = svgDoj.getCookie(EditCookie.class);
         
         if (ck != null) {
             ck.edit();
             return true;
         }
 
-        OpenCookie oc = (OpenCookie) svgDoj.getCookie(OpenCookie.class);
+        OpenCookie oc = svgDoj.getCookie(OpenCookie.class);
         if (oc != null) {
             oc.open();
             return true;
