@@ -44,6 +44,7 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.modules.java.editor.imports.ComputeImports;
+import org.netbeans.modules.java.editor.imports.JavaFixAllImports;
 import org.netbeans.modules.java.hints.errors.ImportClass.ImportCandidatesHolder;
 import org.netbeans.modules.java.hints.infrastructure.CreatorBasedLazyFixList;
 import org.netbeans.modules.java.hints.infrastructure.ErrorHintsProvider;
@@ -306,7 +307,12 @@ public final class ImportClass implements ErrorRule<ImportCandidatesHolder> {
                             return ;
                         }
                         
-                        SourceUtils.resolveImport(copy, new TreePath(copy.getCompilationUnit()), fqn);
+                        CompilationUnitTree cut = JavaFixAllImports.addImports(
+                            copy.getCompilationUnit(),
+                            Collections.singletonList(te.getQualifiedName().toString()),
+                            copy.getTreeMaker()
+                        );
+                        copy.rewrite(copy.getCompilationUnit(), cut);
                     }
                     
             };

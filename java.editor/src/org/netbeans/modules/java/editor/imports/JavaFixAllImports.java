@@ -25,6 +25,7 @@ import java.awt.Dialog;
 import java.awt.Toolkit;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +37,7 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.java.source.ui.ElementIcons;
@@ -203,15 +205,12 @@ public class JavaFixAllImports {
                                 
                                 cut = wc.getTreeMaker().removeCompUnitImport(cut, (ImportTree) path.getLeaf());
                             }
-                            
-                            wc.rewrite(wc.getCompilationUnit(), cut);
                         }
                         
-                        TreePath context = new TreePath(wc.getCompilationUnit());
+                        cut = addImports(cut, toImport, wc.getTreeMaker());
                         
-                        for (String fqn : toImport) {
-                            SourceUtils.resolveImport(wc, context, fqn);
-                        }
+                        wc.rewrite(wc.getCompilationUnit(), cut);
+                        
                         if( !shouldShowImportsPanel ) {
                             String statusText;
                             if( toImport.isEmpty() && !someImportsWereRemoved ) {
@@ -237,6 +236,39 @@ public class JavaFixAllImports {
         } catch (IOException ioe) {
             ErrorManager.getDefault().notify(ioe);
         }
+    }
+    
+    //XXX: copied from SourceUtils.addImports. Ideally, should be on one place only:
+    public static CompilationUnitTree addImports(CompilationUnitTree cut, List<String> toImport, TreeMaker make)
+        throws IOException {
+        // do not modify the list given by the caller (may be reused or immutable).
+        toImport = new ArrayList<String>(toImport); 
+        Collections.sort(toImport);
+
+        List<ImportTree> imports = new ArrayList<ImportTree>(cut.getImports());
+        int currentToImport = toImport.size() - 1;
+        int currentExisting = imports.size() - 1;
+        
+        while (currentToImport >= 0 && currentExisting >= 0) {
+            String currentToImportText = toImport.get(currentToImport);
+            
+            while (currentExisting >= 0 && (imports.get(currentExisting).isStatic() || imports.get(currentExisting).getQualifiedIdentifier().toString().compareTo(currentToImportText) > 0))
+                currentExisting--;
+            
+            if (currentExisting >= 0) {
+                imports.add(currentExisting+1, make.Import(make.Identifier(currentToImportText), false));
+                currentToImport--;
+            }
+        }
+        // we are at the head of import section and we still have some imports
+        // to add, put them to the very beginning
+        while (currentToImport >= 0) {
+            String importText = toImport.get(currentToImport);
+            imports.add(0, make.Import(make.Identifier(importText), false));
+            currentToImport--;
+        }
+        // return a copy of the unit with changed imports section
+        return make.CompilationUnit(cut.getPackageName(), imports, cut.getTypeDecls(), cut.getSourceFile());
     }
     
 }
