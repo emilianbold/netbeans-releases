@@ -26,6 +26,7 @@ Microsystems, Inc. All Rights Reserved.
             <public-packages>
                 <subpackages>javax.jws</subpackages>
                 <subpackages>javax.xml</subpackages>
+                <subpackages>javax.annotation</subpackages>
             </public-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/jaxws21/api/jaxws-api.jar</runtime-relative-path>
