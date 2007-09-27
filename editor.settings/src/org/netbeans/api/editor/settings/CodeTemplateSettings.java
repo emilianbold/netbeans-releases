@@ -19,7 +19,7 @@
 
 package org.netbeans.api.editor.settings;
 
-import java.util.Collection;
+import java.util.List;
 import javax.swing.KeyStroke;
 
 /**
@@ -48,7 +48,7 @@ public abstract class CodeTemplateSettings {
      *
      * @return An unmodifiable list of code template descriptions.
      */
-    public abstract Collection<CodeTemplateDescription> getCodeTemplateDescriptions();
+    public abstract List<CodeTemplateDescription> getCodeTemplateDescriptions();
     
     /**
      * Gets the keystroke that expands the code templates abbreviations.
