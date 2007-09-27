@@ -1,0 +1,46 @@
+
+State of macro map:
+Own Map:
+MACROS (sorted 0):
+System Map:
+MACROS (sorted 0):
+
+
+========== Dumping model of FILE cnav.c
+Includes:
+    <no includes>
+Macros:
+    <no macros>
+FUNCTION cStyle [2:1/1-2:14/14] FunctionImpl SCOPE: $Global$ 
+    DEFINITION: cStyle  [4:1/16-4:29/44]
+    SIGNATURE cStyle()
+    UNIQUE NAME F:cStyle()
+    PARAMETERS:
+    RETURNS int TEXT=int  [2:1/1-2:4/4]
+FUNCTION DEFINITION cStyle  [4:1/16-4:29/44] FunctionDDImpl SCOPE: $Global$ 
+    SIGNATURE cStyle(int)
+    UNIQUE NAME f:cStyle(int)
+    DECLARATION: cStyle  [2:1/1-2:14/14]
+    PARAMETERS:
+         [4:12/27-4:15/30]  TYPE: int TEXT=int  [4:12/27-4:15/30]  INIT: null  SCOPE: cStyle 
+    RETURNS int TEXT=int  [4:1/16-4:4/19]
+    STATEMENT Compound  [4:16/31-4:29/44] SCOPE: cStyle 
+        STATEMENT Return  [4:18/33-4:27/42] SCOPE: Stmt  [4:16/31-4:29/44] text: 'return 0;'
+
+========== Dumping model of PROJECT DummyProject
+FUNCTION cStyle [2:1/1-2:14/14] FunctionImpl SCOPE: $Global$ 
+    DEFINITION: cStyle  [4:1/16-4:29/44]
+    SIGNATURE cStyle()
+    UNIQUE NAME F:cStyle()
+    PARAMETERS:
+    RETURNS int TEXT=int  [2:1/1-2:4/4]
+FUNCTION DEFINITION cStyle  [4:1/16-4:29/44] FunctionDDImpl SCOPE: $Global$ 
+    SIGNATURE cStyle(int)
+    UNIQUE NAME f:cStyle(int)
+    DECLARATION: cStyle  [2:1/1-2:14/14]
+    PARAMETERS:
+         [4:12/27-4:15/30]  TYPE: int TEXT=int  [4:12/27-4:15/30]  INIT: null  SCOPE: cStyle 
+    RETURNS int TEXT=int  [4:1/16-4:4/19]
+    STATEMENT Compound  [4:16/31-4:29/44] SCOPE: cStyle 
+        STATEMENT Return  [4:18/33-4:27/42] SCOPE: Stmt  [4:16/31-4:29/44] text: 'return 0;'
+
