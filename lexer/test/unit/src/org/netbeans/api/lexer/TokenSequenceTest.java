@@ -26,9 +26,11 @@ import java.io.StringReader;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
+import javax.swing.text.Document;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.lexer.TokenList;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
+import org.netbeans.lib.lexer.test.ModificationTextDocument;
 import org.netbeans.lib.lexer.test.simple.*;
 import org.netbeans.lib.lexer.token.DefaultToken;
 import org.netbeans.lib.lexer.token.TextToken;
@@ -399,6 +401,28 @@ public class TokenSequenceTest extends NbTestCase {
         assertTrue(ts.moveNext());
         assertSame(TextToken.class, ts.token().getClass());
         assertSize("Token instance too big", Collections.singletonList(ts.token()), 24,new Object[] {  tokenList,TestTokenId.PLUS, "+"});
+    }
+
+    public void testSubSequenceInUnfinishedTH() throws Exception {
+        Document doc = new ModificationTextDocument();
+        //             012345678
+        String text = "ab cd efg";
+        doc.insertString(0, text, null);
+        
+        doc.putProperty(Language.class,TestTokenId.language());
+        TokenHierarchy<?> hi = TokenHierarchy.get(doc);
+        
+        TokenSequence<?> ts = hi.tokenSequence();
+        assertTrue(ts.moveNext());
+        
+        ts = ts.subSequence(2, 6);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.WHITESPACE, " ", 2);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "cd", 3);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.WHITESPACE, " ", 5);
+        assertFalse(ts.moveNext());
     }
 
 }

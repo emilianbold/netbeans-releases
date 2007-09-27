@@ -105,7 +105,7 @@ public final class SubSequenceTokenList<T extends TokenId> implements TokenList<
                     // there may be gaps between tokens due to token id filter use.
                     AbstractToken<?> token = token(limitEndIndex - 1);
                     int tokenLength = token.length();
-                    while (limitEndOffset >= tokenOffset + tokenLength) { // above present token
+                    while (limitEndOffset > tokenOffset + tokenLength) { // above present token
                         Object tokenOrEmbeddingContainer = tokenList.tokenOrEmbeddingContainer(limitEndIndex);
                         if (tokenOrEmbeddingContainer != null) {
                             token = LexerUtilsConstants.token(tokenOrEmbeddingContainer);
