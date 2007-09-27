@@ -279,21 +279,7 @@ public class RetoucheUtils {
     }
     
     public static boolean isOnSourceClasspath(FileObject fo) {
-        Project p = FileOwnerQuery.getOwner(fo);
-        if (p==null) return false;
-        Project[] opened = OpenProjects.getDefault().getOpenProjects();
-        for (int i = 0; i<opened.length; i++) {
-            if (p==opened[i]) {
-                SourceGroup[] gr = ProjectUtils.getSources(p).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-                for (int j = 0; j < gr.length; j++) {
-                    if (fo==gr[j].getRootFolder()) return true;
-                    if (FileUtil.isParentOf(gr[j].getRootFolder(), fo))
-                        return true;
-                }
-                return false;
-            }
-        }
-        return false;
+        return ClassPath.getClassPath(fo, ClassPath.SOURCE)!=null;
     }
 
     public static boolean isClasspathRoot(FileObject fo) {
