@@ -78,10 +78,10 @@ public class Wsdl2Java {
     /** The wsimport catalog file (generated during the wsdl copy as part of the xml retriever) **/
     private File catalogFile;
     
-    public Wsdl2Java(WebServiceData wsData, File catalog) {
+    public Wsdl2Java(WebServiceData wsData) {
         webServiceData = wsData;
         properties = new Properties();
-        this.catalogFile = catalog;
+        this.catalogFile = new File(wsData.getCatalog());
     }
 
     /*

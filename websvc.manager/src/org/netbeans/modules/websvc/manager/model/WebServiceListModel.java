@@ -18,6 +18,8 @@
  */
 package org.netbeans.modules.websvc.manager.model;
 
+import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Collections;
@@ -25,8 +27,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.websvc.manager.WebServiceManager;
 import org.netbeans.modules.websvc.manager.WebServicePersistenceManager;
+import org.openide.util.RequestProcessor;
 
 /**
  * A model to keep track of web service data and their group
@@ -78,7 +83,7 @@ public class WebServiceListModel {
         return partnerServices;
     }
     
-    private boolean containsKey(List list, String key) {
+    private static boolean containsKey(List list, String key) {
         synchronized (list) {
             for (Object o : list) {
                 if (o instanceof WebServiceData) {
@@ -127,9 +132,9 @@ public class WebServiceListModel {
     /** Add the webservice data with a unique Id */
     public void addWebService(WebServiceData webService) {
         initialize();
-        if (!webServices.contains(webService)) {
+        if (!webServices.contains(webService)) { 
             WebServiceListModel.setDirty(true);
-            webServices.add(webService);
+            webServices.add(webService); 
         }
     }
     
@@ -238,6 +243,42 @@ public class WebServiceListModel {
         return null;
     }
     
+    public WebServiceData findWebServiceData(String wsdlUrl, String serviceName) {
+        return findWebServiceData(wsdlUrl, serviceName, true);
+    }
+    
+    public WebServiceData findWebServiceData(String wsdlUrl, String serviceName, boolean strict) {
+        WebServiceData target = null;
+        for (WebServiceData wsd : getWebServiceSet()) {
+            if (wsdlUrl.equals(wsd.getOriginalWsdl())) {
+                target = wsd;
+            }
+            if (serviceName.equals(wsd.getName())) {
+                return wsd;
+            }
+        }
+
+        if (! strict && target != null) {
+            WebServiceData clone = new WebServiceData(target);
+            clone.setName(serviceName);
+            return clone;
+        }
+        
+        return null;
+    }
+    
+    public WebServiceData getWebServiceData(String wsdlUrl, String serviceName) {
+        WebServiceData target = findWebServiceData(wsdlUrl, serviceName, false);
+        if (target != null && ! target.isReady()) {
+            try {
+                WebServiceManager.getInstance().ensureWebServiceClientReady(target);
+            } catch (IOException ex) {
+                Logger.global.log(Level.INFO, ex.getLocalizedMessage(), ex);
+            }
+        }
+        return target;
+    }
+
     public List<WebServiceGroup> getWebServiceGroupSet() {
         initialize();
         return webServiceGroups;

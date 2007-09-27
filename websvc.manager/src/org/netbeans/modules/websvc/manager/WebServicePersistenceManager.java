@@ -52,9 +52,6 @@ import org.w3c.dom.NodeList;
  * @author  Winston Prakash, quynguyen
  */
 public class WebServicePersistenceManager implements ExceptionListener {
-    //TODO: (nam) derive from default value used by wscompile
-    private static final String DEFAULT_PACKAGE = "websvc"; // NOI18N
-    
     private File websvcDir = new File(WebServiceManager.WEBSVC_HOME);
     private File websvcRefFile = new File(websvcDir, "websvc_ref.xml");
     private List<WebServiceDescriptor> descriptorsToWrite = null;
@@ -246,7 +243,7 @@ public class WebServicePersistenceManager implements ExceptionListener {
                     newGroup.setName(groupName);
                     
                     for (String url : currentUrls) {
-                        WebServiceData wsData = new WebServiceData(url, url, DEFAULT_PACKAGE, newGroup.getId());
+                        WebServiceData wsData = new WebServiceData(url, url, newGroup.getId());
                         WebServiceListModel.getInstance().addWebService(wsData);
                         
                         newGroup.add(wsData.getId(), true);

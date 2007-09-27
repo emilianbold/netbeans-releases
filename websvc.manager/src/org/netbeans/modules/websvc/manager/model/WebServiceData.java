@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.websvc.manager.model;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.websvc.manager.api.WebServiceDescriptor;
@@ -74,24 +75,67 @@ public class WebServiceData {
     public WebServiceData() {
     }
     
-    public WebServiceData(String url, String originalWsdl, String packageName, String groupId) {
+    public WebServiceData(String url, String originalWsdl, String groupId) {
         websvcId = WebServiceListModel.getInstance().getUniqueWebServiceId();
         wsdlUrl = url;
-        this.packageName = packageName;
+        this.packageName = derivePackageName(originalWsdl, null);
         this.groupId = groupId;
         this.compiled = false;
         this.originalWsdl = originalWsdl;
     }
     
-    public WebServiceData(WsdlService service, String url, String originalWsdl, String packageName, String groupId){
-        websvcId = WebServiceListModel.getInstance().getUniqueWebServiceId();
-        wsdlUrl = url;
+    public WebServiceData(WsdlService service, String url, String originalWsdl, String groupId){
+        this(url, originalWsdl, groupId);
         wsdlService = service;
         wsName = service.getName();
-        this.packageName = packageName;
-        this.groupId = groupId;
-        this.compiled = false;
-        this.originalWsdl = originalWsdl;
+    }
+    
+    public WebServiceData(WebServiceData that) {
+        this(that.getURL(), that.getOriginalWsdl(), that.getGroupId());
+        this.packageName = that.packageName;
+        this.jaxWsDescriptor = that.jaxWsDescriptor;
+        this.jaxWsDescriptorPath = that.jaxWsDescriptorPath;
+        this.jaxWsEnabled = that.jaxWsEnabled;
+        this.jaxRpcDescriptor = that.jaxRpcDescriptor;
+        this.jaxRpcDescriptorPath = that.jaxRpcDescriptorPath;
+        this.jaxRpcEnabled = that.jaxRpcEnabled;
+        this.catalog = that.catalog;
+        this.wsdlService = that.wsdlService;
+        this.wsName = that.wsName;
+    }
+    
+    public boolean isReady() {
+        if (! new File(getURL()).isFile() || getCatalog() == null || ! new File(getCatalog()).isFile()) {
+            return false;
+        }
+        
+        if (getName() == null || getWsdlService() == null) {
+            return false;
+        }
+        
+        if (getJaxWsDescriptor() == null || getJaxWsDescriptor().getJars().isEmpty()) {
+            return false;
+        }
+        
+        return true;
+    }
+    
+    private String derivePackageName(String wsdlURL, String subPackage) {
+        if (wsdlURL.startsWith("file:")) {
+            throw new IllegalArgumentException("URL to access WSDL could not be local");
+        }
+        int iStart = wsdlURL.indexOf("://") + 3;
+        int iEnd = wsdlURL.indexOf('/', iStart);
+        String pakName = wsdlURL.substring(iStart, iEnd);
+        String[] segments = pakName.split("\\.");
+        StringBuilder sb = new StringBuilder(segments[segments.length - 1]);
+        sb.append('.');
+        sb.append(segments[segments.length - 2]);
+        if (subPackage != null) {
+            sb.append(".");
+            sb.append(subPackage.toLowerCase());
+        }
+        return sb.toString();
     }
     
     public void setWsdlService(WsdlService svc){

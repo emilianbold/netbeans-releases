@@ -45,6 +45,7 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
 
 import org.netbeans.modules.websvc.manager.model.WebServiceListModel;
 import org.netbeans.modules.websvc.manager.model.WebServiceData;
+import org.netbeans.modules.websvc.manager.model.WebServiceGroup;
 import org.netbeans.modules.xml.retriever.Retriever;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -120,6 +121,40 @@ public final class WebServiceManager {
         wsdlModeler.generateWsdlModel(listener);
     }
     
+    public void ensureWebServiceClientReady(WebServiceData wsData) throws IOException {
+        if (wsData.getURL() == null || ! new File(wsData.getURL()).isFile()) {
+            File localWsdlFile = copyWsdlResources(wsData.getOriginalWsdl());
+            File catalogFile = new File(WEBSVC_HOME, getCatalogForWsdl(wsData.getOriginalWsdl()));
+            wsData.setCatalog(catalogFile.getAbsolutePath());
+            wsData.setURL(localWsdlFile.getAbsolutePath());
+        }
+        
+        URL wsdlLocation = new File(wsData.getURL()).toURL();
+        WsdlModeler wsdlModeler = WsdlModelerFactory.getDefault().getWsdlModeler(wsdlLocation);
+        wsdlModeler.setPackageName(wsData.getPackageName());
+        WsdlModel model = wsdlModeler.getAndWaitForWsdlModel();
+        
+        List<WsdlService> services = model.getServices();
+        if (services.isEmpty()) {
+            throw new IllegalArgumentException(wsdlLocation + " has no services."); //NOI18N
+        }
+
+        for (WsdlService service : services) {
+            if (service.getName().equals(wsData.getName())) {
+                wsData.setWsdlService(service);
+
+                WebServiceListModel.getInstance().addWebService(wsData);
+                WebServiceGroup group = WebServiceListModel.getInstance().getWebServiceGroup(wsData.getGroupId());
+                if (group != null) {
+                    group.add(wsData.getId());
+                }
+
+                compileService(wsData);
+                break;
+            }
+        }
+    }
+
     public void refreshWebService(WebServiceData wsData) throws IOException {
         removeWebService(wsData, false);
         wsData.setURL(null);
@@ -142,9 +177,10 @@ public final class WebServiceManager {
 
         URL wsdlUrl = localWsdlFile.toURI().toURL();
         WsdlModelListenerImpl listener = new WsdlModelListenerImpl(localWsdlFile, wsData.getOriginalWsdl(), wsData.getPackageName(), wsData.getGroupId(), catalogFile);
+        //listener.refreshing = true;
         listener.webServiceData = wsData;
         WsdlModeler wsdlModeler = WsdlModelerFactory.getDefault().getWsdlModeler(wsdlUrl);
-        
+        listener.setWsdlModeler(wsdlModeler);
         wsdlModeler.generateWsdlModel(listener);
     }
     
@@ -216,9 +252,11 @@ public final class WebServiceManager {
             // remove the top-level wsdl file
             extendedDelete(new File(wsData.getURL()));
 
-            File catalogFile = new File(wsData.getCatalog());
-            if (catalogFile.exists()) {
-                rmDir(catalogFile.getParentFile());
+            if (wsData.getCatalog() != null) {
+                File catalogFile = new File(wsData.getCatalog());
+                if (catalogFile.exists()) {
+                    rmDir(catalogFile.getParentFile());
+                }
             }
         }
     }
@@ -244,7 +282,7 @@ public final class WebServiceManager {
                         if (wsData.isCompiled() || compiler == null) {
                             return;
                         }
-                        compiler.compileService(wsData);
+                        compileService(wsData);
                     }
                 };
 
@@ -381,14 +419,14 @@ public final class WebServiceManager {
             }
         }
     }
-    
+
     private static final class WsdlModelListenerImpl implements WsdlModelListener{
         private boolean newlyAdded;
+        //private boolean refreshing;
         private String packageName;
         private String groupId;
         private WsdlModeler modeler = null;
         private File wsdlFile;
-        private URL wsdl;
         private WebServiceData webServiceData;
         private File catalogFile;
         private String originalWsdl;
@@ -399,22 +437,19 @@ public final class WebServiceManager {
             this.groupId = groupId;
             this.newlyAdded = true;
             this.wsdlFile = wsdlFile;
-            this.wsdl = wsdlFile.toURI().toURL();
             this.catalogFile = catalogFile;
             this.originalWsdl = originalWsdl;
         }
         
         WsdlModelListenerImpl(WebServiceData wsData){
+            if (wsData.getURL() == null || wsData.getCatalog() == null) {
+                throw new IllegalArgumentException("Invalid WebServiceData: URL or Catalog");
+            }
             this.webServiceData = wsData;
             this.newlyAdded = false;
-            if (wsData.getURL() != null) {
-                wsdlFile = new File(wsData.getURL());
-            }
-            
-            if (wsData.getCatalog() != null) {
-                catalogFile = new File(wsData.getCatalog());
-            }
-            
+            this.groupId = wsData.getGroupId();
+            this.wsdlFile = new File(wsData.getURL());
+            this.catalogFile = new File(wsData.getCatalog());
             this.originalWsdl = wsData.getOriginalWsdl();
         }
         
@@ -425,15 +460,18 @@ public final class WebServiceManager {
         public void modelCreated(final WsdlModel model) {
             Runnable createClients = new Runnable() {
                 public void run() {
-                    createWSClient(model);
+                    if (model != null) {
+                        createWSClient(model);
+                    } else {
+                        cleanup();
+                    }
                 }
             };
             
             WebServiceManager.getInstance().getRequestProcessor().post(createClients);
         }
         
-        public void createWSClient(WsdlModel model) {
-            if (model == null) {
+        private void cleanup() {
                 // clean up wsdl and catalog
                 if (webServiceData != null)
                     WebServiceListModel.getInstance().removeWebService(webServiceData.getId());
@@ -452,13 +490,13 @@ public final class WebServiceManager {
                     NotifyDescriptor d = new NotifyDescriptor.Message(message);
                     DialogDisplayer.getDefault().notify(d);
                 }
-                return;
-            }
-            
+        }
+        
+        private void createWSClient(WsdlModel model) {            
             WebServiceListModel listModel = WebServiceListModel.getInstance();            
             List<WsdlService> services = model.getServices();
             
-            if (newlyAdded) {
+            if (newlyAdded) {// || refreshing) {
                 for (WsdlService svc: services) {
                     boolean hasSoapPort = false;
                     for (WsdlPort port : svc.getPorts()) {
@@ -486,9 +524,9 @@ public final class WebServiceManager {
                     WebServiceData wsData;
                     
                     if (webServiceData == null) {
-                        wsData = new WebServiceData(svc, wsdlFile.getAbsolutePath(), originalWsdl, packageName, groupId);
+                        wsData = new WebServiceData(svc, wsdlFile.getAbsolutePath(), originalWsdl, groupId);
                                wsData.setCatalog(catalogFile.getAbsolutePath());
-                        
+                        wsData.setPackageName(packageName);
                         listModel.addWebService(wsData);
                         listModel.getWebServiceGroup(groupId).add(wsData.getId());
                     }else {
@@ -530,8 +568,8 @@ public final class WebServiceManager {
                 }
             }
         }
-        
-        protected synchronized void compileService(WebServiceData wsData) {
+    }
+        static synchronized void compileService(WebServiceData wsData) {
             try {
                 if (WebServiceListModel.getInstance().getWebService(wsData.getId()) == null || wsData.isCompiled()) {
                     return;
@@ -541,12 +579,13 @@ public final class WebServiceManager {
                 WsdlService svc = wsData.getWsdlService();
                 
                 // compile the WSDL and create the proxy jars
-                Wsdl2Java wsdl2Java = new Wsdl2Java(wsData, catalogFile);
+                Wsdl2Java wsdl2Java = new Wsdl2Java(wsData);
                 boolean success = wsdl2Java.createProxyJars();
                 if (!success) {
                     return;
                 }
-                
+                URL wsdl = new File(wsData.getURL()).toURL();
+                String packageName = wsData.getPackageName();
                 if (wsData.isJaxRpcEnabled()) {
                     WebServiceDescriptor jaxRpcDescriptor = new WebServiceDescriptor(wsData.getName(), packageName, WebServiceDescriptor.JAX_RPC_TYPE, wsdl, new File(WEBSVC_HOME, wsData.getJaxRpcDescriptorPath()), svc);
                     jaxRpcDescriptor.addJar(wsData.getName() + ".jar", WebServiceDescriptor.JarEntry.PROXY_JAR_TYPE);
@@ -600,9 +639,10 @@ public final class WebServiceManager {
                 } else {
                     WebServiceManager.getInstance().removeWebService(wsData);
                 }
-            }finally {
+            } catch(IOException ex) {
+                Logger.global.log(Level.INFO, ex.getLocalizedMessage(), ex);
+            } finally {
                 WebServiceManager.getInstance().compilingServices.remove(wsData);
             }
         }
-    }
 }

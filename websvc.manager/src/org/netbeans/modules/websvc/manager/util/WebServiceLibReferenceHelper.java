@@ -33,6 +33,8 @@ import java.util.List;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
+import org.netbeans.modules.websvc.manager.api.WebServiceDescriptor;
+import org.netbeans.modules.websvc.manager.model.WebServiceData;
 import org.netbeans.modules.websvc.manager.util.ManagerUtil;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
@@ -193,6 +195,23 @@ public class WebServiceLibReferenceHelper {
         public void addLibraryReferences(Project project, Library[] libraries) throws IOException {
             ManagerUtil.addLibraryReferences(project, libraries);
         }
+    }
+    
+    public static void addDefaultJaxWsClientJar(Project project, WebServiceData data) {
+        List<String> jars = getDefaultJaxWsClientJars(data);
+        addArchiveRefsToProject(project, jars);
+    }
+    
+    public static List<String> getDefaultJaxWsClientJars(WebServiceData data) {
+        List<String> jarPaths = new ArrayList<String>();
+        File basePath = new File(WebServiceDescriptor.WEBSVC_HOME, data.getJaxWsDescriptorPath()).getParentFile();
+        for (WebServiceDescriptor.JarEntry jar : data.getJaxWsDescriptor().getJars()) {
+            if (jar.getType().equals(WebServiceDescriptor.JarEntry.PROXY_JAR_TYPE)) {
+                File jarPath = new File(basePath, jar.getName());
+                jarPaths.add(jarPath.getAbsolutePath());
+            }
+        }
+        return jarPaths;
     }
     
 }
