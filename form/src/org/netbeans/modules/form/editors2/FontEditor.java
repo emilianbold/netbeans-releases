@@ -36,6 +36,7 @@ import org.jdesktop.layout.LayoutStyle;
 
 import org.openide.awt.Mnemonics;
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
+import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.form.*;
@@ -74,6 +75,15 @@ public class FontEditor extends ResourceWrapperEditor implements XMLPropertyEdit
             formModel.raiseVersionLevel(FormModel.FormVersion.NB60_PRE, FormModel.FormVersion.NB60);
         } else {
             super.updateFormVersionLevel();
+        }
+    }
+
+    @Override
+    public void attachEnv(PropertyEnv env) {
+        super.attachEnv(env);
+        FeatureDescriptor prop = env.getFeatureDescriptor();
+        if (prop != null) {
+            prop.setValue("canEditAsText", Boolean.FALSE); // NOI18N
         }
     }
 
