@@ -84,6 +84,7 @@ public class BasicBrandingModel {
     
     /** for generating property branding.token*/
     private boolean brandingEnabled;
+    private boolean brandingChanged = false;
     
     /** for properties (app.name, app.title, app.icon)*/
     private String name;
@@ -130,6 +131,7 @@ public class BasicBrandingModel {
     public void setBrandingEnabled(boolean brandingEnabled) {
         if (this.brandingEnabled != brandingEnabled) {
             this.brandingEnabled = brandingEnabled;
+            brandingChanged = true;
             changeSupport.fireChange();
         }
     }
@@ -230,10 +232,12 @@ public class BasicBrandingModel {
             getBranding().brandBundleKeys(splashKeys);
             getBranding().brandFile(splash);                        
         } else {
-            suiteProps.removeProperty(BasicBrandingModel.BRANDING_TOKEN_PROPERTY);
-            suiteProps.removeProperty(BasicBrandingModel.NAME_PROPERTY);
-            suiteProps.removeProperty(BasicBrandingModel.TITLE_PROPERTY);
-            suiteProps.removeProperty(BasicBrandingModel.ICON_LOCATION_PROPERTY);            
+            if (brandingChanged) {//#115737
+                suiteProps.removeProperty(BasicBrandingModel.BRANDING_TOKEN_PROPERTY);
+                suiteProps.removeProperty(BasicBrandingModel.NAME_PROPERTY);
+                suiteProps.removeProperty(BasicBrandingModel.TITLE_PROPERTY);
+                suiteProps.removeProperty(BasicBrandingModel.ICON_LOCATION_PROPERTY);
+            }
         }
     }
     
@@ -278,6 +282,7 @@ public class BasicBrandingModel {
         initName(false);
         initTitle(false);
         brandingEnabledRefresh();
+        brandingChanged = false;
     }
     
     void brandingEnabledRefresh() {
