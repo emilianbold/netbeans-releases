@@ -24,12 +24,18 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CoderResult;
 import java.util.List;
 import java.util.logging.Logger;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.FunctionBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.LineBreakpoint;
+import org.netbeans.modules.cnd.debugger.gdb.utils.GdbPathDecoder;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
@@ -65,29 +71,20 @@ public class EditorContextBridge {
     
     public static boolean showSource(CallStackFrame csf) {
         String fullname = csf.getFullname();
-        log.fine("ECB.showSource: csf.getFullname got [" + fullname + "]");
         
         if (fullname != null) {
-            File file = new File(fullname);
+            File file = new File(toUTF(fullname));
 	    if (file.exists()) {
-                log.fine("ECB.showSource: File.exists for [" + file.getAbsolutePath() + "]");
                 try {
                     File f2 = file.getCanonicalFile();
                     file = f2;
                 } catch (IOException ioe) {
                 }
 		FileObject fo = FileUtil.toFileObject(file);
-                if (fo != null) {
-                    log.fine("ECB.showSource: Got FileObject");
-                } else {
-                    log.fine("ECB.showSource: Didn't get FileObject");
-                }
 		String url;
 		try {
 		    url = fo.getURL().toExternalForm();
-                    log.fine("ECB.showSource: Got url [" + url + "]");
 		} catch (FileStateInvalidException ex) {
-                    log.fine("ECB.showSource: Didn't get url (got FSIE: " + ex.getLocalizedMessage() + ")");
 		    if (Utilities.isWindows()) {
 			url = "file:/" + fo.getPath().replace(" ", "%20"); // NOI18N
 		    } else {
@@ -98,6 +95,31 @@ public class EditorContextBridge {
 	    }
         }
 	return false;
+    }
+    
+    private static String toUTF(String path) {
+        String lang = System.getenv("LANG") + System.getenv("LC_ALL"); // NOI18N
+        
+        if (lang != null && (lang.contains("UTF-8") || lang.contains("UTF8"))) { // NOI18N
+            Charset cs = Charset.forName("UTF-8"); // NOI18N
+            CharsetDecoder decoder = cs.newDecoder();
+            GdbPathDecoder gpd = new GdbPathDecoder(cs, decoder);
+            ByteBuffer in = ByteBuffer.wrap(path.getBytes());
+            CharBuffer out = CharBuffer.allocate(path.length());
+            CoderResult cres = gpd.decode(in, out, true);
+            
+            if (!cres.isError()) {
+                File file = new File(new String(out.array()));
+                if (file.exists()) {
+                    try {
+                        path = file.getCanonicalPath();
+                    } catch (IOException ioe) {
+                        path = file.getAbsolutePath();
+                    }
+                }
+            }
+        }
+        return path;
     }
     
     /**
@@ -140,7 +162,7 @@ public class EditorContextBridge {
     public static Object annotate(CallStackFrame csf, String annotationType) {
         String fullname = csf.getFullname();
         if (fullname != null) {
-            File file = new File(fullname);
+            File file = new File(toUTF(fullname));
 	    if (file.exists()) {
                 try {
                     File f2 = file.getCanonicalFile();

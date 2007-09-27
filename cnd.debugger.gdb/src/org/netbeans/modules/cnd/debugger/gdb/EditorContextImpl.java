@@ -83,7 +83,6 @@ public class EditorContextImpl extends EditorContext {
     private EditorCookie currentEditorCookie = null;
     private Logger log = Logger.getLogger("gdb.logger"); // NOI18N
     
-    
     {
         pcs = new PropertyChangeSupport(this);
 
@@ -109,25 +108,19 @@ public class EditorContextImpl extends EditorContext {
     public boolean showSource(String url, int lineNumber, Object timeStamp) {
         Line l = getLine(url, lineNumber, timeStamp); // false = use original ln
         if (l == null) {
-            log.fine("ECI.showSource(" + url + ", " + lineNumber + "): Didn't get Line");
             return false;
         }
-        log.fine("ECI.showSource(" + url + ", " + lineNumber + "): Got Line");
         if (fronting != null) {
             if (fronting.equals("true")) { // NOI18N
-                log.fine("ECI.showSource(" + url + ", " + lineNumber + "): show(LIne.SHOW_TOFRONT");
                 l.show(Line.SHOW_TOFRONT); //FIX 47825
             } else {
-                log.fine("ECI.showSource(" + url + ", " + lineNumber + "): show(LIne.SHOW_GOTO");
                 l.show(Line.SHOW_GOTO);
             }
             return true;
         }
         if (Utilities.isWindows()) {
-            log.fine("ECI.showSource(" + url + ", " + lineNumber + "): show(LIne.SHOW_TOFRONT");
             l.show(Line.SHOW_TOFRONT); //FIX 47825
         } else  {
-            log.fine("ECI.showSource(" + url + ", " + lineNumber + "): show(LIne.SHOW_GOTO");
             l.show(Line.SHOW_GOTO);
         }
         return true;

@@ -1522,18 +1522,18 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         }
     }
     
-    /** Count watches by counting GdbWatchVariables listening for property changes */
-    private int getWatchCount() {
-        PropertyChangeListener[] pcl = pcs.getPropertyChangeListeners();
-        int count = 0;
-        
-        for (int i = 0; i < pcl.length; i++) {
-            if (pcl[i] instanceof GdbWatchVariable) {
-                count++;
-            }
-        }
-        return count;
-    }
+//    /** Count watches by counting GdbWatchVariables listening for property changes */
+//    private int getWatchCount() {
+//        PropertyChangeListener[] pcl = pcs.getPropertyChangeListeners();
+//        int count = 0;
+//        
+//        for (int i = 0; i < pcl.length; i++) {
+//            if (pcl[i] instanceof GdbWatchVariable) {
+//                count++;
+//            }
+//        }
+//        return count;
+//    }
     
     public void requestDerefValue(AbstractVariable var, String name) {
         if (state.equals(STATE_STOPPED)) {
