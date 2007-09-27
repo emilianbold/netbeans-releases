@@ -22,6 +22,7 @@ package org.netbeans.modules.mercurial;
 import java.io.*;
 import org.netbeans.modules.mercurial.ui.diff.Setup;
 import org.netbeans.modules.mercurial.util.*;
+import org.netbeans.modules.mercurial.Mercurial;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -55,7 +56,7 @@ public class VersionsCache {
         if (Setup.REVISION_BASE.equals(revision)) {
             try {
                 File tempFile = File.createTempFile(base.getName(), null);
-                File repository = HgUtils.getRootFile(HgUtils.getCurrentContext(null));
+                File repository = Mercurial.getInstance().getTopmostManagedParent(base);
                 HgCommand.doCat(repository, base, tempFile);
                 if (tempFile.length() == 0) return null;
                 return tempFile;
@@ -69,7 +70,7 @@ public class VersionsCache {
         } else {
             try {
                 File tempFile = File.createTempFile(base.getName(), null);
-                File repository = HgUtils.getRootFile(HgUtils.getCurrentContext(null));
+                File repository = Mercurial.getInstance().getTopmostManagedParent(base);
                 HgCommand.doCat(repository, base, tempFile, revision);
                 if (tempFile.length() == 0) return null;
                 return tempFile;
