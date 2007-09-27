@@ -133,6 +133,7 @@
 	<mapID target="me.deploy_ftp" url="deploy/deploy_ftp.html"/>
 	<mapID target="me.deploy_webdav" url="deploy/deploy_webdav.html"/>
 	<mapID target="me.deploy_scp" url="deploy/deploy_scp.html"/>
+        <mapID target="me.deploy_ricoh" url="deploy/deploy_ricoh.html"/>
 	<mapID target="org.netbeans.modules.mvd.ui.palette.wizard.SelectProjectPanel" url="ui/wizard_addcomponent_selectproject.html"/>
 	<mapID target="org.netbeans.modules.mvd.ui.palette.wizard.SelectClassesPanel" url="ui/wizard_addcomponent_selectclasses.html"/>
 	<mapID target="j2me.designer.property.CommandAction" url="ui/mvd_actioneditor.html"/>
