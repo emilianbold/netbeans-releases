@@ -428,6 +428,7 @@ public class HgCommand {
         command.add(HG_VERBOSE_CMD);
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
+        command.add(to.getAbsolutePath());
 
         return exec(command);
     }
