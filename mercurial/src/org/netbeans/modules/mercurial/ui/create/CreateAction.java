@@ -42,10 +42,6 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.Sources;
-import org.netbeans.api.project.Sources;
-import org.netbeans.api.project.SourceGroup;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
 
@@ -170,16 +166,12 @@ public class CreateAction extends AbstractAction {
         HgProgressSupport supportAdd = new HgProgressSupport() {
             public void perform() {
                 try {
-                    Sources sources = ProjectUtils.getSources(proj);
-                    SourceGroup [] sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
+                    File[] files = HgUtils.getProjectRootFiles(proj);
                     FileStatusCache cache = hg.getFileStatusCache();
                     FileInformation fi = new FileInformation(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY, null, false);
 
-                    for (int j = 0; j < sourceGroups.length; j++) {
-
-                        SourceGroup sourceGroup = sourceGroups[j];
-                        FileObject srcRootFo = sourceGroup.getRootFolder();
-                        File rootFile = FileUtil.toFile(srcRootFo);
+                    for (int j = 0; j < files.length; j++) {
+                        File rootFile = files[j];
                         Calendar start = Calendar.getInstance();
                         repositoryFiles = HgCommand.getUnknownStatus(rootToManage, rootFile);
                         Calendar end = Calendar.getInstance();
