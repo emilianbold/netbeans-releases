@@ -1,7 +1,7 @@
 package org.netbeans.modules.groovy.grails;
 
 import java.util.logging.Logger;
-import org.netbeans.modules.groovy.grails.api.Settings;
+import org.netbeans.modules.groovy.grails.settings.Settings;
 
 import org.openide.modules.ModuleInstall;
 

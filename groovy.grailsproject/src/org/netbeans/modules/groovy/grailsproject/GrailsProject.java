@@ -32,7 +32,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
-import org.netbeans.modules.groovy.grails.api.Settings;
 
 /**
  *
@@ -43,14 +42,13 @@ public final class GrailsProject implements Project {
     private final FileObject projectDir;
     private final ProjectState projectState;
     private final LogicalViewProvider logicalView;
-    private final Settings grailsServerSettings = Settings.getInstance();
 
     private Lookup lookup;
 
     public GrailsProject(FileObject projectDir, ProjectState projectState) {
         this.projectDir = projectDir;
         this.projectState = projectState;
-        this.logicalView = new GrailsLogicalViewProvider(this, grailsServerSettings);
+        this.logicalView = new GrailsLogicalViewProvider(this);
     }
 
     public FileObject getProjectDirectory() {

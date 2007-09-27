@@ -58,7 +58,6 @@ import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
-import org.netbeans.modules.groovy.grails.api.Settings;
 
 /**
  *
@@ -67,15 +66,13 @@ import org.netbeans.modules.groovy.grails.api.Settings;
 public class GrailsLogicalViewProvider implements LogicalViewProvider {
     
     private final GrailsProject project;
-    private final Settings grailsServerSettings;
-    
-    public GrailsLogicalViewProvider(GrailsProject project, Settings grailsServerSettings) {
+       
+    public GrailsLogicalViewProvider(GrailsProject project) {
         this.project = project;
-        this.grailsServerSettings = grailsServerSettings;
-    }
+        }
     
     public Node createLogicalView() {
-        return new GrailsLogicalViewRootNode(grailsServerSettings);
+        return new GrailsLogicalViewRootNode();
     }
     
     //==========================================================================
@@ -90,16 +87,14 @@ public class GrailsLogicalViewProvider implements LogicalViewProvider {
         private final Object privateLock = new Object();
         private boolean iconChange;
         private boolean nameChange;
-        private Settings grailsServerSettings;
-
-        public GrailsLogicalViewRootNode(Settings grailsServerSettings) {
+        
+        public GrailsLogicalViewRootNode() {
             super(NodeFactorySupport.createCompositeChildren(
                     project,
                     "Projects/org-netbeans-modules-groovy-grailsproject/Nodes"),
                     Lookups.singleton(project)
                     );
             setProjectFiles(project);
-            this.grailsServerSettings = grailsServerSettings;
         }
         
         public Image getIcon(int type) {
@@ -230,7 +225,7 @@ public class GrailsLogicalViewProvider implements LogicalViewProvider {
             actions.add(CommonProjectActions.setAsMainProjectAction());
             actions.add(CommonProjectActions.closeProjectAction());
             actions.add(null);
-            actions.add(new GrailsServerCommandAction(grailsServerSettings));
+            actions.add(new GrailsServerCommandAction(project));
             actions.add(SystemAction.get(FindAction.class));
             
             return actions.toArray(new Action[actions.size()]);
