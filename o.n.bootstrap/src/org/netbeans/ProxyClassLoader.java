@@ -223,11 +223,11 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
                 if (del.contains(pcl) && shouldDelegateResource(path, pcl)) { // that cover given package
                     cls = pcl.selfLoadClass(pkg, name);
                     if (cls != null) break;
+                    }
                 } 
-            } 
             if (cls == null && del.contains(this)) cls = selfLoadClass(pkg, name); 
             if (cls != null) sclPackages.put(pkg, false); 
-        } 
+            } 
         if (cls == null && shouldDelegateResource(path, null)) cls = systemCL.loadClass(name); // may throw CNFE
         if (cls == null) throw new ClassNotFoundException(name); 
         if (resolve) resolveClass(cls); 
@@ -237,7 +237,7 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
     /** May return null */ 
     private synchronized Class selfLoadClass(String pkg, String name) { 
         Class cls = findLoadedClass(name); 
-        if (cls == null) cls = doLoadClass(pkg, name); 
+        if (cls == null) cls = doLoadClass(pkg, name);
         return cls; 
     }
 
@@ -583,20 +583,8 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
         }
     }
     
-    /**
-     * Can be overridden by special classloaders
-     * (see project installer/jnlp/modules).
-     * @see #loadInOrder
-     */
-    protected boolean shouldBeCheckedAsParentProxyClassLoader() {
-        return true;
-    }
-
-    /**
-     * Allows turning off the optimization in {@link #loadInOrder}.
-     */
-    protected boolean optimizeNBLoading() {
-        return true;
+    protected final void setSystemClassLoader(ClassLoader s) {
+        systemCL = s;
     }
     
     protected boolean shouldDelegateResource(String pkg, ClassLoader parent) {
@@ -613,7 +601,7 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
                 if (set.contains(this) && set.size() == 1 ) {
                     it.remove();
                 } else {
-                    if (set.remove(this));
+                    set.remove(this);
                 }
             }
         }

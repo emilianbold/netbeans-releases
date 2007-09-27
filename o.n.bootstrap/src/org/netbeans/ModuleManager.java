@@ -131,10 +131,20 @@ public final class ModuleManager {
         }
         classLoader = new SystemClassLoader(classLoaderPatches, new ClassLoader[] {installer.getClass ().getClassLoader()}, Collections.<Module>emptySet());
         updateContextClassLoaders(classLoader, true);
-
+        
         moduleFactory = Lookup.getDefault().lookup(ModuleFactory.class);
         if (moduleFactory == null) {
             moduleFactory = new ModuleFactory();
+        } else {
+            // Custom module factory might want to replace
+            // the system classloader by its own.
+            // If it does not want to replace it the following
+            // call should not change anything since the system classloader
+            // should still be set to ClassLoader.getSystemClassLoader() so
+            // the following call will set it to the same value.
+            classLoader.setSystemClassLoader(
+                moduleFactory.getClasspathDelegateClassLoader(this, 
+                    ClassLoader.getSystemClassLoader()));
         }
     }
 
