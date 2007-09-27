@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.DefaultComboBoxModel;
 import javax.microedition.m2g.SVGImage;
 import javax.swing.*;
@@ -57,7 +58,6 @@ import org.openide.util.NbBundle;
 public class SVGImageEditorElement extends PropertyEditorResourceElement implements Runnable {
 
     private static final String EXTENSION = "svg"; // NOI18N
-    
     private long componentID;
     private boolean doNotFireEvent;
     private Project project;
@@ -65,7 +65,8 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement impleme
     private SVGImageComponent imageView;
     private DefaultComboBoxModel comboBoxModel;
     private Map<String, FileObject> paths;
-    private Thread thread;
+    private final AtomicBoolean requiresModelUpdate = new AtomicBoolean(false);
+    private DesignComponentWrapper wrapper;
 
     public SVGImageEditorElement() {
         paths = new HashMap<String, FileObject>();
@@ -89,6 +90,7 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement impleme
     }
 
     public void setDesignComponentWrapper(final DesignComponentWrapper wrapper) {
+        this.wrapper = wrapper;
         DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
         if (document != null) {
             project = ProjectUtils.getProject(document);
@@ -143,18 +145,20 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement impleme
             text = "";
         }
 
-        addImage(text);
+        addImage(text, true);
     }
 
-    private void addImage(String path) {
+    private void addImage(String path, boolean selectImage) {
         doNotFireEvent = true;
         if (comboBoxModel.getIndexOf(path) == -1) {
             comboBoxModel.addElement(path);
             sortComboBoxContent();
         }
-        pathTextComboBox.setSelectedItem(path);
+        if (selectImage) {
+            pathTextComboBox.setSelectedItem(path);
+            updatePreview();
+        }
         doNotFireEvent = false;
-        updatePreview();
     }
 
     @SuppressWarnings(value = "unchecked")
@@ -191,8 +195,8 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement impleme
         doNotFireEvent = false;
         paths.clear();
 
-        FileObject sourceFolder = getSourceFolder();
-        searchImagesInDirectory(sourceFolder);
+//        FileObject sourceFolder = getSourceFolder();
+//        searchImagesInDirectory(sourceFolder);
         Map<FileObject, String> fileMap = MidpProjectSupport.getAllFilesForProjectByExt(document, Collections.<String>singleton(EXTENSION));
         for (FileObject fo : fileMap.keySet()) {
             checkFile(fo);
@@ -202,22 +206,22 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement impleme
             pathTextComboBox.setEnabled(true);
         }
     }
-
-    private void searchImagesInDirectory(FileObject dir) {
-        for (FileObject fo : dir.getChildren()) {
-            if (fo.isFolder()) {
-                searchImagesInDirectory(fo);
-            } else {
-                checkFile(fo);
-            }
-        }
-    }
+    
+//    private void searchImagesInDirectory(FileObject dir) {
+//        for (FileObject fo : dir.getChildren()) {
+//            if (fo.isFolder()) {
+//                searchImagesInDirectory(fo);
+//            } else {
+//                checkFile(fo);
+//            }
+//        }
+//    }
 
     private void checkFile(FileObject fo) {
         if (EXTENSION.equals(fo.getExt().toLowerCase())) {
             String path = convertFile(fo, false);
             if (path != null) {
-                addImage(path);
+                addImage(path, false);
             }
         }
     }
@@ -295,31 +299,37 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement impleme
         if (document != null) {
             updateModel(document);
         }
-        showProgressBar(true);
+
+        showProgressBar(false);
+        setDesignComponentWrapper(wrapper);
+        requiresModelUpdate.set(false);
     }
 
     @Override
     public void addNotify() {
         super.addNotify();
-        if (thread == null || !thread.isAlive()) {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    showProgressBar(true);
-                    thread = new Thread(this);
-                    thread.start();
-                }
-            });
+
+        if (requiresModelUpdate.getAndSet(true)) {
+            return;
         }
+
+        showProgressBar(true);
+        new Thread(this).start();
     }
 
-    private synchronized void showProgressBar(boolean isShowing) {
-        progressBar.setVisible(true);
+    private void showProgressBar(final boolean isShowing) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                progressBar.setVisible(isShowing);
+            }
+        });
     }
 
     @Override
     public void removeNotify() {
         paths.clear();
         project = null;
+        wrapper = null;
         super.removeNotify();
     }
 

@@ -198,8 +198,8 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
         comboBoxModel.removeAllElements();
         doNotFireEvent = false;
         paths.clear();
-        FileObject sourceFolder = getSourceFolder();
-        searchImagesInDirectory(sourceFolder);
+//        FileObject sourceFolder = getSourceFolder();
+//        searchImagesInDirectory(sourceFolder);
         Map<FileObject, String> fileMap = MidpProjectSupport.getImagesForProject(document, false);
         for (FileObject fo : fileMap.keySet()) {
             checkFile(fo);
@@ -207,15 +207,15 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
         pathTextComboBox.setEnabled(true);
     }
 
-    private void searchImagesInDirectory(FileObject dir) {
-        for (FileObject fo : dir.getChildren()) {
-            if (fo.isFolder()) {
-                searchImagesInDirectory(fo);
-            } else {
-                checkFile(fo);
-            }
-        }
-    }
+//    private void searchImagesInDirectory(FileObject dir) {
+//        for (FileObject fo : dir.getChildren()) {
+//            if (fo.isFolder()) {
+//                searchImagesInDirectory(fo);
+//            } else {
+//                checkFile(fo);
+//            }
+//        }
+//    }
 
     private void checkFile(FileObject fo) {
         for (String ext : EXTENSIONS) {
