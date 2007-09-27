@@ -112,6 +112,9 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
                     "()[Ljava/lang/Object;",
                     new Variable [0]
                 );
+                if (ov == null) {
+                    return new Object[] {};
+                }
                 return original.getChildren(ov, from, to);
             } catch (NoSuchMethodException e) {
                 Field elementData = ov.getField("elementData");
@@ -139,11 +142,17 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
                     "()Ljava/util/Set;",
                     new Variable [0]
                 );
+                if (ov == null) {
+                    return new Object[] {};
+                }
                 ov = (ObjectVariable) ov.invokeMethod (
                     "toArray",
                     "()[Ljava/lang/Object;",
                     new Variable [0]
                 );
+                if (ov == null) {
+                    return new Object[] {};
+                }
                 return original.getChildren(ov, from, to);
             } catch (InvalidExpressionException e) {
                 if ( (e.getTargetException () != null) &&
@@ -234,6 +243,9 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
                     "()[Ljava/lang/Object;",
                     new Variable [0]
                 );
+                if (ov == null) {
+                    return 0;
+                }
                 return original.getChildrenCount(ov);
             } catch (NoSuchMethodException e) {
                 Field elementData = ov.getField("elementData");
@@ -260,11 +272,17 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
                     "()Ljava/util/Set;",
                     new Variable [0]
                 );
+                if (ov == null) {
+                    return 0;
+                }
                 ov = (ObjectVariable) ov.invokeMethod (
                     "toArray",
                     "()[Ljava/lang/Object;",
                     new Variable [0]
                 );
+                if (ov == null) {
+                    return 0;
+                }
                 return original.getChildrenCount(ov);
             } catch (InvalidExpressionException e) {
                 if ( (e.getTargetException () != null) &&
