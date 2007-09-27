@@ -23,7 +23,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
@@ -47,9 +49,8 @@ public class RailsProjectOperations implements DeleteOperationImplementation, Co
         this.project = project;
     }
     
-    private static void addFile(FileObject projectDirectory, String fileName, List/*<FileObject>*/ result) {
+    private static void addFile(FileObject projectDirectory, String fileName, Set<FileObject> result) {
         FileObject file = projectDirectory.getFileObject(fileName);
-        
         if (file != null) {
             result.add(file);
         }
@@ -57,22 +58,28 @@ public class RailsProjectOperations implements DeleteOperationImplementation, Co
     
     public List<FileObject> getMetadataFiles() {
         FileObject projectDirectory = project.getProjectDirectory();
-        List<FileObject> files = new ArrayList<FileObject>();
+        Set<FileObject> files = new LinkedHashSet<FileObject>();
         
         addFile(projectDirectory, "nbproject", files); // NOI18N
         addFile(projectDirectory, "build.xml", files); // NOI18N
         addFile(projectDirectory, "xml-resources", files); //NOI18N
         addFile(projectDirectory, "catalog.xml", files); //NOI18N
 
-        return files;
+        return new ArrayList<FileObject>(files);
     }
     
     public List<FileObject> getDataFiles() {
-        List<FileObject> files = new ArrayList<FileObject>();
+        Set<FileObject> files = new LinkedHashSet<FileObject>();
         files.addAll(Arrays.asList(project.getSourceRoots().getRoots()));
         files.addAll(Arrays.asList(project.getTestSourceRoots().getRoots()));
-        addFile(project.getProjectDirectory(), "manifest.mf", files); // NOI18N
-        return files;
+        // additional dirs
+        addFile(project.getProjectDirectory(), "app", files); // NOI18N
+        addFile(project.getProjectDirectory(), "tmp", files); // NOI18N
+        addFile(project.getProjectDirectory(), "test", files); // NOI18N
+        // additional files
+        addFile(project.getProjectDirectory(), "README", files); // NOI18N
+        addFile(project.getProjectDirectory(), "Rakefile", files); // NOI18N
+        return new ArrayList<FileObject>(files);
     }
     
     public void notifyDeleting() throws IOException {
@@ -148,7 +155,7 @@ public class RailsProjectOperations implements DeleteOperationImplementation, Co
     private void fixDistJarProperty (final String newName) {
         ProjectManager.mutex().writeAccess(new Runnable () {
             public void run () {
-                ProjectInformation pi = (ProjectInformation) project.getLookup().lookup(ProjectInformation.class);
+                ProjectInformation pi = project.getLookup().lookup(ProjectInformation.class);
                 String oldDistJar = pi == null ? null : "${dist.dir}/"+PropertyUtils.getUsablePropertyName(pi.getDisplayName())+".jar"; //NOI18N
                 EditableProperties ep = project.getUpdateHelper().getProperties (RakeProjectHelper.PROJECT_PROPERTIES_PATH);
                 String propValue = ep.getProperty("dist.jar");  //NOI18N
