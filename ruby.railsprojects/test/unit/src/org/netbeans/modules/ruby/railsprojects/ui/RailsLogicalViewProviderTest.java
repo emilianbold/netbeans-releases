@@ -35,7 +35,7 @@ public class RailsLogicalViewProviderTest extends RailsProjectTestBase {
 
     public void testFindPath() throws Exception {
         registerLayer();
-        RailsProject project = createTestProjectFromDataFile("testfiles/plain_rails.txt");
+        RailsProject project = createTestPlainProject();
         LogicalViewProvider lvp = project.getLookup().lookup(LogicalViewProvider.class);
         assertNotNull("have a LogicalViewProvider", lvp);
         Node root = new FilterNode(lvp.createLogicalView());
@@ -45,7 +45,7 @@ public class RailsLogicalViewProviderTest extends RailsProjectTestBase {
     
     public void testDoubleCreation() throws Exception { // #116678
         registerLayer();
-        RailsProject project = createTestProjectFromDataFile("testfiles/plain_rails.txt");
+        RailsProject project = createTestPlainProject();
         LogicalViewProvider lvp = project.getLookup().lookup(LogicalViewProvider.class);
         assertNotNull("have a LogicalViewProvider", lvp);
         lvp.createLogicalView().getChildren().getNodes(true);

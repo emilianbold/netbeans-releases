@@ -58,7 +58,11 @@ public class RailsProjectTestBase extends RubyTestBase {
         return project;
     }
 
-    protected RailsProject createTestProjectFromDataFile(final String dataFile) throws Exception {
+    protected RailsProject createTestPlainProject() throws Exception {
+        return createTestProjectFromDataFile("testfiles/plain_rails.txt");
+    }
+    
+    private RailsProject createTestProjectFromDataFile(final String dataFile) throws Exception {
         RailsProject project = createTestProject("RubyProject");
         createFilesFromDesc(project.getProjectDirectory(), dataFile);
         return project;
