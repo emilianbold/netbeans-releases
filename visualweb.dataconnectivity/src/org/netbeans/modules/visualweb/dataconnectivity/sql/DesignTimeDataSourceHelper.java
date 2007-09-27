@@ -479,7 +479,8 @@ public class DesignTimeDataSourceHelper {
     public Map updateDataSource(Project currentProj) {       
          // Manage the migration of legacy projects
         if (ImportDataSource.isLegacyProject(currentProj) && JsfProjectUtils.getProjectProperty(currentProj, "migrated").equals("")) {//NOI18N   
-            DataSourceResolver.getInstance().updateSettings();        
+            DataSourceResolver.getInstance().updateSettings();
+            JsfProjectUtils.createProjectProperty(currentProj, "migrated", "true");
         }
         
         // Get the data sources in the project then bind them to the project's context

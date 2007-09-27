@@ -214,17 +214,11 @@ public class DataSourceResolver implements DataSourceInfoListener, Runnable {
         // Update Project's datasources
         try {
             new DesignTimeDataSourceHelper().updateDataSource(project);
-            markProject(project);
             checkConnections(project);
         } catch (NamingException ne) {
             Logger.getLogger("copy").info("Migrating user settings failed " + ne); //NOI18N
         }
-    }
-    
-    // Mark legacy project as migrated
-    private void markProject(Project project) {
-        JsfProjectUtils.createProjectProperty(project, "migrated", "true");
-    }
+    }        
     
     // Check if any database connections needed by the project are missing
     private void checkConnections(Project project) {

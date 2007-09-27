@@ -109,7 +109,6 @@ public class ImportDataSource {
     public static void prepareCopy() throws IOException {
         // Check if already migrated
         if (isMigrated()) {
-            System.out.println("nothing to migrated"); //NOI18N
             return;
         }
         
