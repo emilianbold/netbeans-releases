@@ -114,7 +114,7 @@ if ! ant -f nbbuild/build.xml -Dsigtest.output.dir=`pwd`/$sigtest_incompat_gen c
         echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/artifact/$sigtest_incompat_gen"; 
         echo; 
         cat `pwd`/$sigtest_incompat_gen/*
-    ) | mail -s "Incompatible API change $JOB_NAME build #$BUILD_NUMBER" jtulach@netbeans.org
+    ) | mail -s "Incompatible API change $JOB_NAME build #$BUILD_NUMBER" api-changes@netbeans.org
 fi
 
 ###############  Commit validation tests  ##########################
