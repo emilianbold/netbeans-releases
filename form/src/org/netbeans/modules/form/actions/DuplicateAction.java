@@ -72,7 +72,7 @@ public class DuplicateAction  extends NodeAction {
 
     private static void duplicate(Node[] nodes, int dimension, int direction) {
         List<RADComponent> comps = FormUtils.getSelectedLayoutComponents(nodes);
-        RADVisualContainer parent = getParent(comps);
+        RADVisualContainer parent = (comps != null) ? getParent(comps) : null;
         if (parent != null) {
             FormModel formModel = parent.getFormModel();
             LayoutModel layoutModel = formModel.getLayoutModel();
