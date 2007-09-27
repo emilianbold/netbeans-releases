@@ -26,7 +26,6 @@ import java.util.Collection;
 import java.util.HashMap;
 
 import org.openide.util.NbBundle;
-import org.openide.util.SharedClassObject;
 
 import org.netbeans.editor.BaseCaret;
 import org.openide.modules.ModuleInfo;
@@ -91,7 +90,7 @@ public class BaseOptionsBeanInfo extends SimpleBeanInfo {
     * @return Returns an array of PropertyDescriptors
     * describing the editable properties supported by this bean.
     */
-    public PropertyDescriptor[] getPropertyDescriptors () {
+    public @Override PropertyDescriptor[] getPropertyDescriptors () {
         if (descriptors == null) {
             String[] propNames = getPropNames();
             PropertyDescriptor[] pds = new PropertyDescriptor[propNames.length];
@@ -186,24 +185,41 @@ public class BaseOptionsBeanInfo extends SimpleBeanInfo {
         String hidden[] = (usesNewOptions) ?
                 new String[] {
                     BaseOptions.ABBREV_MAP_PROP,
-                    BaseOptions.EXPAND_TABS_PROP,
-                    BaseOptions.SPACES_PER_TAB_PROP,
-                    BaseOptions.OPTIONS_VERSION_PROP,
-                    BaseOptions.CARET_ITALIC_INSERT_MODE_PROP,
-                    BaseOptions.CARET_ITALIC_OVERWRITE_MODE_PROP,
-                    BaseOptions.COLORING_MAP_PROP,
-                    BaseOptions.FONT_SIZE_PROP,
-                    BaseOptions.KEY_BINDING_LIST_PROP,
-                    BaseOptions.TEXT_LIMIT_LINE_COLOR_PROP,
+                    BaseOptions.CARET_BLINK_RATE_PROP,
                     BaseOptions.CARET_COLOR_INSERT_MODE_PROP,
                     BaseOptions.CARET_COLOR_OVERWRITE_MODE_PROP,
+                    BaseOptions.CARET_ITALIC_INSERT_MODE_PROP,
+                    BaseOptions.CARET_ITALIC_OVERWRITE_MODE_PROP,
+                    BaseOptions.CARET_TYPE_INSERT_MODE_PROP,
+                    BaseOptions.CARET_TYPE_OVERWRITE_MODE_PROP,
+                    BaseOptions.CODE_FOLDING_PROPS_PROP,
+                    BaseOptions.COLORING_MAP_PROP,
+                    BaseOptions.EXPAND_TABS_PROP,
+                    BaseOptions.FONT_SIZE_PROP,
+                    BaseOptions.HIGHLIGHT_CARET_ROW_PROP,
+                    BaseOptions.HIGHLIGHT_MATCHING_BRACKET_PROP,
+                    BaseOptions.KEY_BINDING_LIST_PROP,
+                    BaseOptions.MACRO_MAP_PROP,
+                    BaseOptions.OPTIONS_VERSION_PROP,
+                    BaseOptions.PAIR_CHARACTERS_COMPLETION,
+                    BaseOptions.SCROLL_FIND_INSETS_PROP,
+                    BaseOptions.SCROLL_JUMP_INSETS_PROP,
+                    BaseOptions.SPACES_PER_TAB_PROP,
+                    BaseOptions.TAB_SIZE_PROP,
+                    BaseOptions.TEXT_LIMIT_LINE_COLOR_PROP,
+                    BaseOptions.TEXT_LIMIT_LINE_VISIBLE_PROP,
+                    BaseOptions.TEXT_LIMIT_WIDTH_PROP,
                 } :
                 new String[] {
-                    BaseOptions.EXPAND_TABS_PROP,
-                    BaseOptions.SPACES_PER_TAB_PROP,
-                    BaseOptions.OPTIONS_VERSION_PROP,
                     BaseOptions.CARET_ITALIC_INSERT_MODE_PROP,
-                    BaseOptions.CARET_ITALIC_OVERWRITE_MODE_PROP
+                    BaseOptions.CARET_ITALIC_OVERWRITE_MODE_PROP,
+                    BaseOptions.EXPAND_TABS_PROP,
+                    BaseOptions.HIGHLIGHT_CARET_ROW_PROP,
+                    BaseOptions.HIGHLIGHT_MATCHING_BRACKET_PROP,
+                    BaseOptions.OPTIONS_VERSION_PROP,
+                    BaseOptions.SCROLL_FIND_INSETS_PROP,
+                    BaseOptions.SCROLL_JUMP_INSETS_PROP,
+                    BaseOptions.SPACES_PER_TAB_PROP,
                 } ;
         
         setHidden(hidden);
@@ -274,7 +290,7 @@ public class BaseOptionsBeanInfo extends SimpleBeanInfo {
     /* @param type Desired type of the icon
     * @return returns the Java loader's icon
     */
-    public Image getIcon(final int type) {
+    public @Override Image getIcon(final int type) {
         if ((type == BeanInfo.ICON_COLOR_16x16) || (type == BeanInfo.ICON_MONO_16x16)) {
             if (icon == null)
                 icon = loadImage(iconPrefix + ".gif"); // NOI18N
@@ -317,11 +333,11 @@ public class BaseOptionsBeanInfo extends SimpleBeanInfo {
                                               getString("BLOCK_CARET") // NOI18N
                                           };
 
-        public String[] getTags() {
+        public @Override String[] getTags() {
             return locTags;
         }
 
-        public void setAsText(String txt) {
+        public @Override void setAsText(String txt) {
             for (int i = 0; i < locTags.length; i++) {
                 if (locTags[i].equals(txt)) {
                     setValue(tags[i]);
@@ -330,7 +346,7 @@ public class BaseOptionsBeanInfo extends SimpleBeanInfo {
             }
         }
 
-        public String getAsText() {
+        public @Override String getAsText() {
             String val = (String) getValue();
             for (int i = 0; i < tags.length; i++) {
                 if (tags[i].equals(val)) {

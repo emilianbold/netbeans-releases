@@ -53,33 +53,49 @@ public class JavaOptionsBeanInfo extends BaseOptionsBeanInfo {
 
     }
 
-    protected String[] getPropNames() {
+    protected @Override String[] getPropNames() {
         return JavaOptions.JAVA_PROP_NAMES;
     }
 
-    protected void updatePropertyDescriptors() {
+    protected @Override void updatePropertyDescriptors() {
         super.updatePropertyDescriptors();
 
         setExpert(EXPERT_PROP_NAMES);
-        setHidden(new String[] {
-            JavaOptions.FORMAT_SPACE_BEFORE_PARENTHESIS_PROP,
-            JavaOptions.FORMAT_COMPOUND_BRACKET_ADD_NL_PROP,
-            JavaOptions.FAST_IMPORT_PACKAGE_PROP,
-            JavaOptions.GOTO_CLASS_CASE_SENSITIVE_PROP,
-            JavaOptions.GOTO_CLASS_SHOW_INNER_CLASSES_PROP,
-            JavaOptions.GOTO_CLASS_SHOW_LIBRARY_CLASSES_PROP
-        });
+        String hidden[] = (usesNewOptions()) ?
+            new String[] {
+                JavaOptions.COMPLETION_AUTO_POPUP_DELAY_PROP,
+                JavaOptions.COMPLETION_AUTO_POPUP_PROP,
+                JavaOptions.COMPLETION_CASE_SENSITIVE_PROP,
+                JavaOptions.COMPLETION_INSTANT_SUBSTITUTION_PROP,
+                JavaOptions.COMPLETION_NATURAL_SORT_PROP,
+                JavaOptions.FAST_IMPORT_PACKAGE_PROP,
+                JavaOptions.FORMAT_SPACE_BEFORE_PARENTHESIS_PROP,
+                JavaOptions.FORMAT_COMPOUND_BRACKET_ADD_NL_PROP,
+                JavaOptions.GOTO_CLASS_CASE_SENSITIVE_PROP,
+                JavaOptions.GOTO_CLASS_SHOW_INNER_CLASSES_PROP,
+                JavaOptions.GOTO_CLASS_SHOW_LIBRARY_CLASSES_PROP,
+                JavaOptions.SHOW_DEPRECATED_MEMBERS_PROP,
+        } : new String [] {
+                JavaOptions.FAST_IMPORT_PACKAGE_PROP,
+                JavaOptions.FORMAT_SPACE_BEFORE_PARENTHESIS_PROP,
+                JavaOptions.FORMAT_COMPOUND_BRACKET_ADD_NL_PROP,
+                JavaOptions.GOTO_CLASS_CASE_SENSITIVE_PROP,
+                JavaOptions.GOTO_CLASS_SHOW_INNER_CLASSES_PROP,
+                JavaOptions.GOTO_CLASS_SHOW_LIBRARY_CLASSES_PROP,
+        };
+        
+        setHidden(hidden);
         setPropertyEditor(BaseOptions.CODE_FOLDING_PROPS_PROP, CodeFoldingEditor.class, false);
     }
 
-    protected Class getBeanClass() {
+    protected @Override Class getBeanClass() {
         return JavaOptions.class;
     }
 
     /**
      * Get localized string
      */
-    protected String getString(String key) {
+    protected @Override String getString(String key) {
         try {
             return NbBundle.getMessage(JavaOptionsBeanInfo.class, key);
         } catch (MissingResourceException e) {
