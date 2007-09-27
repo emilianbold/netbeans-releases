@@ -595,7 +595,10 @@ made subject to such option by the copyright holder.
             <file name="DS-7.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-actions-GlobalPropertiesAction.instance"/>
             </file>
-            <file name="D-S-F4.shadow">
+            <file name="DS-W.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloseAllDocumentsAction.instance"/>
+            </file>
+            <file name="DS-F4.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloseAllDocumentsAction.instance"/>
             </file>
             <file name="SO-7.shadow">
@@ -875,7 +878,10 @@ made subject to such option by the copyright holder.
             <file name="DS-7.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-actions-GlobalPropertiesAction.instance"/>
             </file>
-            <file name="D-S-W.shadow">
+            <file name="DS-F4.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloseAllDocumentsAction.instance"/>
+            </file>
+            <file name="DS-W.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloseAllDocumentsAction.instance"/>
             </file>
             <file name="SO-7.shadow">
