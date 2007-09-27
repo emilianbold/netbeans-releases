@@ -1168,7 +1168,7 @@ public abstract class Children extends Object {
         }
 
         Set<Node> toRemove = new HashSet<Node>(oldNodes);
-        toRemove.removeAll(newNodes);
+        toRemove.removeAll(new HashSet<Node>(newNodes));
 
         if (!toRemove.isEmpty()) {
             // notify removing, the set must be ready for
