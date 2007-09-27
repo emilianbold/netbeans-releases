@@ -53,37 +53,12 @@ import org.openide.windows.WindowManager;
 public class GoToAction extends CookieAction {
     /** silence compiler warnings */
     private static final long serialVersionUID = 1L;
-    private static ActSubMenuModel model = new ActSubMenuModel(null);
-
+    private ActSubMenuModel model = new ActSubMenuModel(null);
+    
     public String getName() {
         return model.createName();
     }
-
-    /**
-     * Getter for array of activated goto types.
-     *
-     * @param  activatedNodes  array of activated nodes.
-     * @return  array of GotoType.
-     */
-    private static GotoType[] getGotoTypes(Node[] activatedNodes) {
-        List<GotoType> types = new ArrayList<GotoType>();
-        if (activatedNodes != null && activatedNodes.length == 1) {
-            Node node = activatedNodes[0];
-            GotoCookie cookie = node.getCookie(GotoCookie.class);
-            if (cookie != null) {
-                for (GotoType type : cookie.getGotoTypes()) {
-                    Component comp = type.getComponent(node);
-                    // Return only the types that are going to work properly.
-                    ViewComponentCookie.View view  = type.getView();
-                    if (XAMUtils.getViewCookie(comp, view) != null) {
-                        types.add(type);
-                    }
-                }
-            }
-        }
-        return types.toArray(new GotoType[types.size()]);
-    }
-
+    
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
@@ -119,37 +94,50 @@ public class GoToAction extends CookieAction {
     }
 
     /** Implementation of Actions.SubMenuModel */
-    private static class ActSubMenuModel extends EventListenerList implements Actions.SubMenuModel {
+    private class ActSubMenuModel extends EventListenerList implements Actions.SubMenuModel {
         static final long serialVersionUID = -4273674308662494596L;
-//	private transient Lookup lookup;
-
+        private transient Node lastNode;
+        private transient GotoType[] gotoTypes;
         ActSubMenuModel(Lookup lookup) {
-// Per IZ#86250, avoid caching lookup to prevent memory leak
-//            this.lookup = lookup;
         }
 
-        private Node[] nodes() {
-//	    if (lookup != null) {
-//		java.util.Collection c = lookup.lookup(new Lookup.Template(Node.class)).allItems();
-//
-//		if (c.size() == 1) {
-//		    java.util.Iterator it = c.iterator();
-//
-//		    while (it.hasNext()) {
-//			Lookup.Item item = (Lookup.Item) it.next();
-//			Node n = (Node) item.getInstance();
-//
-//			if (n != null) {
-//			    return new Node[]{n};
-//			}
-//		    }
-//		}
-//	    }
-            return WindowManager.getDefault().getRegistry().getCurrentNodes();
+        private Node getSelectedNode() {
+            if(lastNode != null)
+                return lastNode;
+            Node[] nodes = WindowManager.getDefault().getRegistry().getCurrentNodes();
+            if (nodes != null && nodes.length == 1 && nodes[0] != lastNode) {
+                lastNode = nodes[0];
+            }
+            return lastNode;
         }
-
+        
+        /**
+         * Getter for array of activated goto types.
+         *
+         * @param  activatedNodes  array of activated nodes.
+         * @return  array of GotoType.
+         */
+        private GotoType[] getGotoTypes(Node node) {
+            if( (lastNode == node) && (gotoTypes != null))
+                return gotoTypes;
+            List<GotoType> types = new ArrayList<GotoType>();
+            GotoCookie cookie = node.getCookie(GotoCookie.class);
+            if (cookie != null) {
+                for (GotoType type : cookie.getGotoTypes()) {
+                    Component comp = type.getComponent(node);
+                    // Return only the types that are going to work properly.
+                    ViewComponentCookie.View view  = type.getView();
+                    if (XAMUtils.getViewCookie(comp, view) != null) {
+                        types.add(type);
+                    }
+                }
+            }            
+            gotoTypes = types.toArray(new GotoType[types.size()]);
+            return gotoTypes;
+        }
+        
         private String createName() {
-            GotoType[] types = getGotoTypes(nodes());
+            GotoType[] types = getGotoTypes(getSelectedNode());
             if (types != null && types.length == 1) {
                 return NbBundle.getMessage(GoToAction.class,
                         "LBL_GoTo_Name", types[0].getName());
@@ -159,11 +147,11 @@ public class GoToAction extends CookieAction {
         }
 
         public int getCount() {
-            return getGotoTypes(nodes()).length;
+            return getGotoTypes(getSelectedNode()).length;
         }
 
         public String getLabel(int index) {
-            GotoType[] types = getGotoTypes(nodes());
+            GotoType[] types = getGotoTypes(getSelectedNode());
             if (types.length <= index) {
                 return null;
             } else {
@@ -172,7 +160,7 @@ public class GoToAction extends CookieAction {
         }
 
         public HelpCtx getHelpCtx(int index) {
-            GotoType[] types = getGotoTypes(nodes());
+            GotoType[] types = getGotoTypes(getSelectedNode());
             if (types.length <= index) {
                 return null;
             } else {
@@ -181,11 +169,12 @@ public class GoToAction extends CookieAction {
         }
 
         public void performActionAt(int index) {
-            Node[] nodes = nodes();
-            GotoType[] types = getGotoTypes(nodes);
+            Node node = getSelectedNode();
+            GotoType[] types = getGotoTypes(getSelectedNode());
             if (types.length > index) {
-                types[index].show(nodes[0]);
+                types[index].show(node);
             }
+            this.lastNode = null;
         }
 
         /** Adds change listener for changes of the model.
@@ -206,7 +195,7 @@ public class GoToAction extends CookieAction {
      * extract the nodes it operates on from it. Otherwise it delegates to the
      * regular NodeAction.
      */
-    private static final class DelegateAction implements
+    private final class DelegateAction implements
             Action, Presenter.Menu, Presenter.Popup {
         /** Action to delegate to. */
         private final CookieAction delegate;
