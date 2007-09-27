@@ -129,6 +129,10 @@ final class JUnitOutputReader {
      * @see  #progressHandle
      */
     private boolean isDeterminateProgress;
+    /**
+     * stores progress currently displayed in the progress bar
+     */
+    private int lastProgress = 0;
     /** */
     private MessageFormat progressStepFormatSuiteName;
     /** */
@@ -663,6 +667,7 @@ final class JUnitOutputReader {
                 this.expectedSuitesCount = expectedSuitesCount;
                 progressHandle.start(PROGRESS_WORKUNITS);
                 progressHandle.progress(INITIAL_PROGRESS);      // 1 %
+                lastProgress = INITIAL_PROGRESS;
             } else {
                 progressHandle.start();
             }
@@ -686,6 +691,7 @@ final class JUnitOutputReader {
             updateProgress();
         } else if (isDeterminateProgress /* and will be indeterminate */ ) {
             progressHandle.switchToIndeterminate();
+            lastProgress = 0;
         }//else
             //is indeterminate and will be indeterminate - no change
          //
@@ -737,7 +743,16 @@ final class JUnitOutputReader {
                 + String.format("%3d%%",
                                 100 * progress / PROGRESS_WORKUNITS));  //NOI18N
         }
-        if (progress > INITIAL_PROGRESS) {
+        if (progress < INITIAL_PROGRESS) {
+            progress = INITIAL_PROGRESS;
+        }
+        if (progress != lastProgress) {
+            if (progress < lastProgress) {
+                /* hack to allow decrease of progress: */
+                progressHandle.switchToIndeterminate();
+                progressHandle.switchToDeterminate(PROGRESS_WORKUNITS);
+            }
+            lastProgress = progress;
             if (message != null) {
                 progressHandle.progress(message, progress);
             } else {
