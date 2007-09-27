@@ -125,10 +125,9 @@ public final class CppSwitchAction extends BaseAction {
         CsmFile f = CsmUtilities.getCsmFile(activatedNodes[0], false);
         CsmFile target = null;
         if (f != null) {
-            NodeKind nk = getTargetNodeKind(activatedNodes);
-            if (nk == NodeKind.SOURCE) {
+            if (f.isHeaderFile()) {
                 target = findSource(f);
-            } else if (nk == NodeKind.HEADER) {
+            } else if (f.isSourceFile()) {
                 target = findHeader(f);
             }
         }
