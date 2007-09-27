@@ -33,7 +33,6 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.MultiDataObject;
-import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 

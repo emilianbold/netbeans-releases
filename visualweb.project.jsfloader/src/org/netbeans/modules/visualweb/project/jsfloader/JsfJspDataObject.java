@@ -26,6 +26,11 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Method;
+import java.nio.charset.Charset;
+import java.nio.charset.IllegalCharsetNameException;
+import java.nio.charset.UnsupportedCharsetException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -52,6 +57,8 @@ import org.xml.sax.SAXException;
 import org.netbeans.modules.visualweb.api.insync.InSyncService;
 import org.netbeans.modules.visualweb.api.insync.JsfJspDataObjectMarker;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfDataObjectException;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 
 /** Object that represents one JSP file which has corresponding java file.
@@ -72,6 +79,7 @@ implements CookieSet.Factory, JsfJspDataObjectMarker {
     private static final String DEFAULT_ENCODING = "ISO-8559-1"; // NOI18N
     
     private transient OpenEdit openEdit;
+    private transient Lookup currentLookup;
 
     /** New instance.
     * @param pf primary file object for this data object
@@ -85,8 +93,40 @@ implements CookieSet.Factory, JsfJspDataObjectMarker {
         set.add(JsfJspEditorSupport.class, this);
         set.add(ViewSupport.class, this);
         set.add(TagLibParseCookie.class, this);
+        
+        createLookup();
     }
 
+    private void createLookup() {
+        Lookup noEncodingLookup = super.getLookup();
+
+        org.netbeans.spi.queries.FileEncodingQueryImplementation feq = new org.netbeans.spi.queries.FileEncodingQueryImplementation() {
+
+            public Charset getEncoding(FileObject file) {
+                assert file != null;
+                assert file.equals(getPrimaryFile());
+
+                String charsetName = getFileEncoding();
+                try {
+                    return Charset.forName(charsetName);
+                } catch (IllegalCharsetNameException ichse) {
+                    //the jsp templates contains the ${encoding} property 
+                    //so the ICHNE is always thrown for them, just ignore
+                    Boolean template = (Boolean)file.getAttribute("template");//NOI18N
+                    if(template == null || !template.booleanValue()) {
+                        Logger.getLogger("global").log(Level.INFO, "Detected illegal charset name in file " + file.getNameExt() + " (" + ichse.getMessage() + ")");
+                    }
+                } catch (UnsupportedCharsetException uchse) {
+                    Logger.getLogger("global").log(Level.INFO, "Detected unsupported charset name in file " + file.getNameExt() + " (" + uchse.getMessage() + ")");
+                }
+
+                return null;
+            }
+        };
+
+        currentLookup = new ProxyLookup(noEncodingLookup, Lookups.singleton(feq));
+    }
+    
     protected Node createNodeDelegate () {
         DataNode n = new JsfJspDataNode(this, Children.LEAF);
         n.setIconBase(JSP_ICON_BASE);
@@ -123,7 +163,7 @@ implements CookieSet.Factory, JsfJspDataObjectMarker {
 
     @Override
     public Lookup getLookup() {
-        return getCookieSet().getLookup();
+        return currentLookup;
     }
 
     /** Gets the superclass cookie, without hacking save cookie. */
