@@ -117,27 +117,32 @@ if [ ! -z "$netbeans_extraclusters" ] ; then
 fi
 
 heap_size () {
-    mem=128
+    mem=840
+    cms_options=" -J-XX:+UseConcMarkSweepGC -J-XX:+CMSClassUnloadingEnabled -J-XX:+CMSPermGenSweepingEnabled"
     case "`uname`" in
         Linux*)
         mem=`cat /proc/meminfo | grep MemTotal | tr -d [:space:][:alpha:]:`
-        mem=`expr $mem / 4096`
+        mem=`expr $mem / 1024`
         ;;
     SunOS*)
         mem=`/usr/sbin/prtconf | grep Memory | tr -dc '[0-9]'`
-        mem=`expr $mem / 4`
         ;;
     Darwin*)
-        mem=`sysctl hw.physmem | tr -d [:alpha:][:space:].:`
-        mem=`expr $mem / 4194304`
+        mem=`/usr/sbin/sysctl hw.physmem | tr -d [:alpha:][:space:].:`
+        mem=`expr $mem / 1048576`
+        cms_options=""
         ;;
         *) 
         ;;
     esac
+    mem=`expr \( $mem - 200 \) / 5`
     if [ $mem -gt 512 ] ; then
         mem=512
     elif [ $mem -lt 96 ] ; then
         mem=96
+    fi
+    if [ $mem -lt 256 ] ; then
+        cms_options=""
     fi
     max_heap_size=$mem
     return 0
