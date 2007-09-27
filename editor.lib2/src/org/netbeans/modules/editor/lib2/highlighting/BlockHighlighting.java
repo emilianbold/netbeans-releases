@@ -27,7 +27,7 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.SimpleAttributeSet;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.modules.editor.lib2.search.EditorFindSupport;
 import org.netbeans.spi.editor.highlighting.HighlightsChangeEvent;
@@ -72,7 +72,10 @@ public class BlockHighlighting extends AbstractHighlightsContainer implements Hi
         fireHighlightsChange(event.getStartOffset(), event.getEndOffset());
     }
     
-    public void highlightBlock(final int startOffset, final int endOffset, final String coloringName) {
+    public void highlightBlock(
+        final int startOffset, final int endOffset, final String coloringName, 
+        final boolean extendsEol, final boolean extendsEmptyLine
+    ) {
         document.render(new Runnable() {
             public void run() {
                 if (startOffset < endOffset) {
@@ -85,7 +88,7 @@ public class BlockHighlighting extends AbstractHighlightsContainer implements Hi
                         newBag.addHighlight(
                             document.createPosition(startOffset), 
                             document.createPosition(endOffset),
-                            getAttribs(coloringName)
+                            getAttribs(coloringName, extendsEol, extendsEmptyLine)
                         );
                         bag.setHighlights(newBag);
                     } catch (BadLocationException e) {
@@ -112,11 +115,22 @@ public class BlockHighlighting extends AbstractHighlightsContainer implements Hi
         }
     }
     
-    private AttributeSet getAttribs(String coloringName) {
-        FontColorSettings fcs = MimeLookup.getLookup(
-            MimePath.parse(getMimeType())).lookup(FontColorSettings.class);
+    private AttributeSet getAttribs(String coloringName, boolean extendsEol, boolean extendsEmptyLine) {
+        FontColorSettings fcs = MimeLookup.getLookup(getMimeType()).lookup(FontColorSettings.class);
         AttributeSet attribs = fcs.getFontColors(coloringName);
-        return attribs == null ? SimpleAttributeSet.EMPTY : attribs;
+        
+        if (attribs == null) {
+            attribs = SimpleAttributeSet.EMPTY;
+        } else if (extendsEol || extendsEmptyLine) {
+            attribs = AttributesUtilities.createImmutable(
+                attribs, 
+                AttributesUtilities.createImmutable(
+                    ATTR_EXTENDS_EOL, Boolean.valueOf(extendsEol),
+                    ATTR_EXTENDS_EMPTY_LINE, Boolean.valueOf(extendsEmptyLine))
+            );
+        }
+        
+        return attribs;
     }
     
     private String getMimeType() {

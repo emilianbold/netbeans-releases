@@ -255,10 +255,9 @@ public final class EditorFindSupport {
         if (layer != null) {
             
             if (startSelection >= 0 && endSelection >= 0 && startSelection < endSelection ) {
-                layer.highlightBlock(
-                    startSelection, endSelection, FontColorNames.BLOCK_SEARCH_COLORING);
+                layer.highlightBlock(startSelection, endSelection, FontColorNames.BLOCK_SEARCH_COLORING, true, true);
             } else {
-                layer.highlightBlock(-1, -1, FontColorNames.BLOCK_SEARCH_COLORING);
+                layer.highlightBlock(-1, -1, FontColorNames.BLOCK_SEARCH_COLORING, true, true);
             }
             
         }
@@ -374,7 +373,9 @@ public final class EditorFindSupport {
                             layer.highlightBlock(
                                 pos,
                                 pos + len,
-                                blockSearch ? FontColorNames.INC_SEARCH_COLORING : FontColorNames.SELECTION_COLORING
+                                blockSearch ? FontColorNames.INC_SEARCH_COLORING : FontColorNames.SELECTION_COLORING,
+                                false,
+                                false
                             );
                         }
 
@@ -396,7 +397,7 @@ public final class EditorFindSupport {
         BlockHighlighting layer = comp == null ? null : findLayer(comp, Factory.INC_SEARCH_LAYER);
         
         if (layer != null) {
-            layer.highlightBlock(-1, -1, null);
+            layer.highlightBlock(-1, -1, null, false, false);
         }
     }
     
