@@ -42,10 +42,14 @@
 package org.openide.actions;
 
 
-import javax.swing.event.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.openide.LifecycleManager;
 import org.openide.loaders.DataObject;
-import org.openide.util.*;
+import org.openide.util.Exceptions;
+import org.openide.util.HelpCtx;
+import org.openide.util.Mutex;
+import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
 
 /** Save all open objects.
@@ -55,6 +59,8 @@ import org.openide.util.actions.CallableSystemAction;
 * @author   Jan Jancura, Ian Formanek
 */
 public final class SaveAllAction extends CallableSystemAction {
+    static final long serialVersionUID = 333L;
+
     /** to make sure only one instance of this class can run at a time */
     private static final Object RUNNING = new Object ();
 
@@ -66,6 +72,7 @@ public final class SaveAllAction extends CallableSystemAction {
     /* Creates new HashMap and inserts some properties to it.
     * @return the hash map
     */
+    @Override
     protected void initialize () {
         super.initialize ();
         // false by default
@@ -73,7 +80,7 @@ public final class SaveAllAction extends CallableSystemAction {
         // listen to the changes
         chl = new ModifiedListL();
         DataObject.getRegistry().addChangeListener(
-            (ChangeListener)(org.openide.util.WeakListeners.change(chl, DataObject.getRegistry ())));
+            (org.openide.util.WeakListeners.change(chl, DataObject.getRegistry())));
     }
 
     public String getName() {
@@ -84,6 +91,7 @@ public final class SaveAllAction extends CallableSystemAction {
         return new HelpCtx (SaveAllAction.class);
     }
 
+    @Override
     protected String iconResource () {
         return "org/openide/loaders/saveAll.gif"; // NOI18N
     }
@@ -110,6 +118,7 @@ public final class SaveAllAction extends CallableSystemAction {
         }
     }
     
+    @Override
     protected boolean asynchronous() {
         return true;
     }
@@ -120,7 +129,7 @@ public final class SaveAllAction extends CallableSystemAction {
         public void stateChanged(final ChangeEvent evt) {
             Mutex.EVENT.writeAccess(new Runnable() {
                 public void run() {
-                    setEnabled(((java.util.Set)evt.getSource()).size() > 0);
+                    setEnabled(DataObject.getRegistry().getModifiedSet().size() > 0);
                 }
             });
         }
