@@ -21,6 +21,7 @@ package org.netbeans.modules.j2ee.dd.api.web;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.net.URL;
@@ -31,6 +32,8 @@ import org.netbeans.modules.j2ee.dd.impl.common.DDUtils;
 import org.openide.filesystems.*;
 import org.xml.sax.*;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
@@ -48,6 +51,8 @@ public final class DDProvider {
     private Map errorMap;
     private FCA fileChangeListener;
     private Map musMap;
+
+    private static final Logger LOG = Logger.getLogger(DDProvider.class.getName());
     
     /** Creates a new instance of WebModule */
     private DDProvider() {
@@ -110,6 +115,18 @@ public final class DDProvider {
             } else if (ex.getException() instanceof SAXParseException) {
                 webApp.setError((SAXParseException) ex.getException());
             }
+        } catch (FileNotFoundException fnfe) {
+            // see #116571. not pretty, but at least allows users to open a web.xml similar 
+            // to the one in the aforementioned issue without NPEs. handling of the declared IOE in the
+            // clients of this method is a can of worms that i do not want to open right now. moreover,
+            // the situation when the FNFE is thrown is similar to when a SAXException is thrown.
+            LOG.log(Level.INFO,
+                    "A file referenced from [" +
+                    FileUtil.getFileDisplayName(fo) + "] could not be found",
+                    fnfe); // NO18N
+            webApp = new WebAppProxy(null, version);
+            webApp.setStatus(WebApp.STATE_INVALID_UNPARSABLE);
+            webApp.setError(new SAXParseException(fnfe.getMessage(), null, fnfe));
         }
         synchronized(ddMap){
             WebApp cached = getFromCache(fo);
