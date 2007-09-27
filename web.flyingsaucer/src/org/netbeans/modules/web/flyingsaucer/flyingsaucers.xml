@@ -26,6 +26,5 @@ Microsystems, Inc. All Rights Reserved.
     <volume>
         <type>classpath</type>
         <resource>jar:nbinst://org.netbeans.modules.web.flyingsaucer/modules/ext/core-renderer.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.web.flyingsaucer/modules/ext/cssparser-0-9-4-fs.jar!/</resource>
     </volume>
 </library>
