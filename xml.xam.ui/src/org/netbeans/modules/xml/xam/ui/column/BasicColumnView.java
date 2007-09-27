@@ -248,15 +248,15 @@ public class BasicColumnView extends JPanel implements ColumnView {
             // Add a fudge factor of 1 pixel to insulate against roundoff
             // errors that cause the view not to scroll fully to the right
             newX += 1;
-
-            try {
-                // Pause briefly to perform the synchronous animation.
-                // Using a Timer simply will not work, as this method
-                // must return only after the animation is complete.
-                Thread.currentThread().sleep(SCROLL_DELAY);
-            } catch (InterruptedException ie) {
-                // Do nothing
-            }
+//            //Fix for IZ
+//            try {
+//                // Pause briefly to perform the synchronous animation.
+//                // Using a Timer simply will not work, as this method
+//                // must return only after the animation is complete.
+//                Thread.currentThread().sleep(SCROLL_DELAY);
+//            } catch (InterruptedException ie) {
+//                // Do nothing
+//            }
 
             position = new Point(newX, (int) position.getY());
             viewport.setViewPosition(position);
