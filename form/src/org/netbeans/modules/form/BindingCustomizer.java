@@ -472,8 +472,10 @@ public class BindingCustomizer extends JPanel {
         List<RADComponent> nonvisualList = formModel.getNonVisualComponents();
         List<RADComponent> visualList = formModel.getVisualComponents();
         RADComponent topcomp = formModel.getTopRADComponent();
-        nonvisualList.remove(topcomp);
-        visualList.remove(topcomp);
+        if (topcomp != null) {
+            nonvisualList.remove(topcomp);
+            visualList.remove(topcomp);
+        }
 
         Comparator<RADComponent> c = new RADComponentComparator();
         Collections.sort(nonvisualList, c);
@@ -482,7 +484,9 @@ public class BindingCustomizer extends JPanel {
         allComponents = new ArrayList<RADComponent>(nonvisualList.size() + visualList.size() + 1);
         allComponents.addAll(nonvisualList);
         allComponents.addAll(visualList);
-        allComponents.add(topcomp);
+        if (topcomp != null) {
+            allComponents.add(topcomp);
+        }
 
         sourceCombo.removeAllItems();
         String select = NbBundle.getMessage(BindingCustomizer.class, "MSG_BindingCustomizer_None"); // NOI18N
