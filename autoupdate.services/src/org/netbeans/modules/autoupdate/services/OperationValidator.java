@@ -341,7 +341,7 @@ abstract class OperationValidator {
             boolean wasAdded = requestedToDisable.addAll (toDisable);
             
             // XXX why sometimes happens that no all module for deactivated found?
-            assert ! wasAdded : "The requestedToDisable cannot be enlarged by " + toDisable;
+            // assert ! wasAdded : "The requestedToDisable cannot be enlarged by " + toDisable;
             if (LOGGER.isLoggable (Level.FINE) && wasAdded) {
                 toDisable.removeAll (filterCandidatesToDeactivate (modules, requestedToDisable, mm));
                 LOGGER.log (Level.FINE, "requestedToDisable was enlarged by " + toDisable);
