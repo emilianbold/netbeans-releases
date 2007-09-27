@@ -292,7 +292,7 @@ Microsystems, Inc. All Rights Reserved.
                 </xsl:choose>  
             </xsl:variable>
             <xsl:attribute name="wsdl">${basedir}/${conf-dir}xml-resources/<xsl:value-of select="$wsDir"/>/<xsl:value-of select="$wsName"/>/wsdl/<xsl:value-of select="$wsdlUrl"/></xsl:attribute>
-            <xsl:if test="$isService = 'false'">
+            <xsl:if test="not($isService)">
                 <xsl:attribute name="wsdlLocation"><xsl:value-of select="$wsdlUrlActual" /></xsl:attribute>
             </xsl:if> 
             <xsl:attribute name="catalog"><xsl:value-of select="$Catalog" /></xsl:attribute>
