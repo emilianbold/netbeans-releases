@@ -431,7 +431,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             leftImagePanel.setOpaque(false);
             
             // this /////////////////////////////////////////////////////////////////
-            add(leftImagePanel, new GridBagConstraints(
+            /*add(leftImagePanel, new GridBagConstraints(
                     0, 0,                             // x, y
                     1, 100,                           // width, height
                     2.0, 1.0,                         // weight-x, weight-y
@@ -439,9 +439,9 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                     GridBagConstraints.BOTH,          // fill
                     new Insets(0, 0, 0, 0),           // padding
                     0, 0));                           // padx, pady - ???
-            
+            */
             add(textPane, new GridBagConstraints(
-                    1, 0,                             // x, y
+                    0, 0,                             // x, y
                     1, 1,                             // width, height
                     1.0, 1.0,                         // weight-x, weight-y
                     GridBagConstraints.CENTER,        // anchor
@@ -449,7 +449,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                     new Insets(11, 11, 0, 11),        // padding
                     0, 0));                           // padx, pady - ???
             add(customizeButton, new GridBagConstraints(
-                    1, 1,                             // x, y
+                    0, 1,                             // x, y
                     1, 1,                             // width, height
                     1.0, 0.0,                         // weight-x, weight-y
                     GridBagConstraints.LINE_START,    // anchor
@@ -457,7 +457,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                     new Insets(7, 11, 11, 0),         // padding
                     0, 0));                           // padx, pady - ???
             add(installationSizeLabel, new GridBagConstraints(
-                    2, 1,                             // x, y
+                    1, 1,                             // x, y
                     1, 1,                             // width, height
                     0.0, 0.0,                         // weight-x, weight-y
                     GridBagConstraints.CENTER,        // anchor

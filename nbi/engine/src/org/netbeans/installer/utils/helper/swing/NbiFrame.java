@@ -113,7 +113,7 @@ public class NbiFrame extends JFrame {
                     System.getProperty(FRAME_ICON_URI_PROPERTY);
             
             try {
-                frameIcon = FileProxy.getInstance().getFile(frameIconUri);
+                frameIcon = FileProxy.getInstance().getFile(frameIconUri,true);
                 customIconLoaded = true;
             } catch (DownloadException e) {
                 ErrorManager.notifyWarning(ResourceUtils.getString(
@@ -127,7 +127,7 @@ public class NbiFrame extends JFrame {
             final String frameIconUri = DEFAULT_FRAME_ICON_URI;
             
             try {
-                frameIcon = FileProxy.getInstance().getFile(frameIconUri);
+                frameIcon = FileProxy.getInstance().getFile(frameIconUri,true);
                 customIconLoaded = true;
             } catch (DownloadException e) {
                 ErrorManager.notifyWarning(ResourceUtils.getString(

@@ -113,7 +113,7 @@ public class CommandLauncher extends ShLauncher {
             }
             
             try {
-                iconFile = FileProxy.getInstance().getFile(uri);
+                iconFile = FileProxy.getInstance().getFile(uri,true);
                 LauncherResource iconResource = new LauncherResource (iconFile);
                 jvmArguments.add(XDOCK_ICON_PROPERTY_NAME + StringUtils.EQUAL + iconResource.getAbsolutePath());
                 otherResources.add(iconResource);

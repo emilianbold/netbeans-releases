@@ -51,7 +51,7 @@ public class NbiPanel extends JPanel {
     public void setBackgroundImage(String backgroundImageURI, int anchor) {
         if (backgroundImageURI != null) {
             try {
-                File file = FileProxy.getInstance().getFile(backgroundImageURI);
+                File file = FileProxy.getInstance().getFile(backgroundImageURI,true);
                 Image backgroundImage = new ImageIcon(file.getAbsolutePath()).
                         getImage();
                 imagesMap.put(anchor,backgroundImage);

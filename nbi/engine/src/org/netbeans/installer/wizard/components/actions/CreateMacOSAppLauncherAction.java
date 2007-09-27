@@ -143,7 +143,7 @@ public class CreateMacOSAppLauncherAction extends WizardAction {
                 iconUri = CommandLauncher.JAVA_APPLICATION_ICON_DEFAULT_URI;
             }
             
-            File iconFile = FileProxy.getInstance().getFile(iconUri);
+            File iconFile = FileProxy.getInstance().getFile(iconUri,true);
             
             File iconFileTarget = new File(resDirectory, iconName);
             
@@ -156,7 +156,7 @@ public class CreateMacOSAppLauncherAction extends WizardAction {
             File file = SystemUtils.createLauncher(properties, platform, progress).
                     getOutputFile();
             
-            File testJDKFile = FileProxy.getInstance().getFile(JavaUtils.TEST_JDK_URI);
+            File testJDKFile = FileProxy.getInstance().getFile(JavaUtils.TEST_JDK_URI,true);
             
             FileUtils.copyFile(testJDKFile,
                     new File(appInsideDir, testJDKName));
