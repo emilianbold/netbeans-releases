@@ -899,9 +899,9 @@ made subject to such option by the copyright holder.
             <file name="DELETE.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-DeleteAction.instance"/>
             </file>
-            <file name="D-0.shadow">
+            <!-- file name="D-0.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-SwitchToRecentDocumentAction.instance"/>
-            </file>
+            </file-->
             <file name="DS-U.shadow">
                 <attr name="originalFile" stringvalue="Actions/JUnitTests/org-netbeans-modules-junit-CreateTestAction.instance"/>
             </file>
@@ -952,6 +952,12 @@ made subject to such option by the copyright holder.
             </file>
             <file name="F11.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-BuildMainProject.instance"/>
+            </file>
+            <file name="OS-O.shadow">
+                <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-jumpto-file-FileSearchAction.instance"/>
+            </file>
+            <file name="D-O.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-jumpto-type-GoToType.instance"/>
             </file>
         </folder>
         

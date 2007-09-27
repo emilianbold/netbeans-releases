@@ -78,6 +78,7 @@ Contributor(s): Andrei Badea, Leon Chiver
     </folder>
       
     <!-- Install the action shortcuts -->
+    <!--
     <folder name="Keymaps">
         <folder name="NetBeans">
             <file name="OS-O.shadow">
@@ -88,7 +89,8 @@ Contributor(s): Andrei Badea, Leon Chiver
             </file>
         </folder>
     </folder>
-
+    -->
+    
     <!-- folder name="Editors">
       <folder name="text">
           <folder name="x-java">
