@@ -90,8 +90,8 @@ import org.netbeans.modules.j2ee.sun.sunresources.beans.DatabaseUtils;
 public class ResourceUtils implements WizardConstants{
     
     static final ResourceBundle bundle = ResourceBundle.getBundle("org.netbeans.modules.j2ee.sun.ide.sunresources.beans.Bundle");// NOI18N
-    static final String[] sysDatasources = {"jdbc/__TimerPool", "jdbc/__CallFlowPool", "jdbc/__default"}; //NOI18N
-    static final String[] sysConnpools = {"__CallFlowPool", "__TimerPool", "DerbyPool"}; //NOI18N
+    static final String[] sysDatasources = {"jdbc/__TimerPool", "jdbc/__CallFlowPool"}; //NOI18N
+    static final String[] sysConnpools = {"__CallFlowPool", "__TimerPool"}; //NOI18N
     static final String SAMPLE_DATASOURCE = "jdbc/sample";
     static final String SAMPLE_CONNPOOL = "SamplePool";
     static final String SUN_RESOURCE_FILENAME = "sun-resources.xml"; //NOI18N
@@ -795,14 +795,16 @@ public class ResourceUtils implements WizardConstants{
             String OPER_OBJ_ConnPoolResource = "getJdbcConnectionPool"; //NOI18N
             String keyProp = "name"; //NOI18N
             InstanceProperties instanceProperties = getTargetServer(data.getTargetFileObject());
-            if(instanceProperties != null)
+            if(instanceProperties != null) {
                 connPools = getResourceNames(instanceProperties, OPER_OBJ_ConnPoolResource, keyProp);
+            }    
             connPools.removeAll(Arrays.asList(sysConnpools));  
             List projectCP = getProjectResources(data, __ConnectionPoolResource);
             for(int i=0; i<projectCP.size(); i++){
                 String localCP = projectCP.get(i).toString();
-                if(! connPools.contains(localCP))
+                if(! connPools.contains(localCP)) {
                     connPools.add(localCP);
+                }   
             }
         } catch (java.lang.NoClassDefFoundError ncdfe) {
             // this happens durring  unit tests for the DataSourceWizard

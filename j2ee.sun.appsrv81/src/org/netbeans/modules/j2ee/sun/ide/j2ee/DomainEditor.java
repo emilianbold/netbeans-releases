@@ -413,7 +413,7 @@ public class DomainEditor {
         return jvmOption;
      }
     
-    static final String[] sysDatasources = {"jdbc/__TimerPool", "jdbc/__CallFlowPool", "jdbc/__default"}; //NOI18N
+    static final String[] sysDatasources = {"jdbc/__TimerPool", "jdbc/__CallFlowPool"}; //NOI18N
     
     
             
