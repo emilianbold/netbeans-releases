@@ -134,6 +134,17 @@ public final class Percent extends JComboBox implements ActionListener {
     });
     addActionListener(this);
     setValue(initValue);
+    selecteValue();
+  }
+
+  private void selecteValue() {
+    String text = getEditorItem();
+    
+    for (int i=0; i < getItemCount(); i++) {
+      if (text.equals(getItemAt(i))) {
+        setSelectedIndex(i);
+      }
+    }
   }
 
   public boolean isCustomValue() {
@@ -141,7 +152,7 @@ public final class Percent extends JComboBox implements ActionListener {
   }
 
   public String getEditorItem() {
-    return (String) getEditor().getItem();
+    return getEditor().getItem().toString();
   }
 
   public void actionPerformed(ActionEvent event) {
