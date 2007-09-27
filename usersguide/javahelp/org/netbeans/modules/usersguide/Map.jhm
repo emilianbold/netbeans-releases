@@ -14,7 +14,6 @@
 <mapID target="ide.welcome" url="getstart/welcome.html" />
 <mapID target="pending" url="pending.html" />
 <mapID target="tbd" url="tbd.html" />
-<mapID target="gs.tour" url="getstart/idetour.html" />
 
 
 <!--begin Projects section-->
