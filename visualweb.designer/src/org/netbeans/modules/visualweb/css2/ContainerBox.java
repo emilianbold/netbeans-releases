@@ -746,6 +746,11 @@ public class ContainerBox extends CssBox {
                 //               (LineBoxGroup)nextBox.getParent().getParent());
                 //      gotta check if nextBox instanceof LineBoxGroup too
                 lb.addBox(box, prevBox, nextBox);
+                
+                // XXX #109446 Use just the created LineBoxGroup in the context.
+                preserveLineBox = true;
+                oldLineBox = context.lineBox;
+                context.lineBox = lb;
             } else if ((prevBox != null) && prevBox.isInlineBox()) {
                 // We're inserting an inline element between an
                 // inline box and a block box; add it to the previous
@@ -764,6 +769,11 @@ public class ContainerBox extends CssBox {
                 }
 
                 lb.addBox(box, prevBox, null);
+                
+                // XXX #109446 Use just the created LineBoxGroup in the context.
+                preserveLineBox = true;
+                oldLineBox = context.lineBox;
+                context.lineBox = lb;
             } else if ((nextBox != null) && nextBox.isInlineBox()) {
                 // We're inserting an inline element between a
                 // block box and an inline box; add it to the front
@@ -782,6 +792,11 @@ public class ContainerBox extends CssBox {
                 }
 
                 lb.addBox(box, null, nextBox);
+                
+                // XXX #109446 Use just the created LineBoxGroup in the context.
+                preserveLineBox = true;
+                oldLineBox = context.lineBox;
+                context.lineBox = lb;
             } else {
                 // We're inserting an inline element between two block
                 // boxes

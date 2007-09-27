@@ -674,6 +674,17 @@ public abstract class DocumentBox extends ContainerBox {
                     nextBox = prevBox.getParent().getBox(index);
                 }
             }
+            
+            // XXX #109446.
+            if (nextBox != null) {
+                Element prevComponentRootElement = ModelViewMapper.findClosestComponentRootElement(prevBox.getElement());
+                if (prevComponentRootElement == ModelViewMapper.findClosestComponentRootElement(nextBox.getElement())) {
+                    if (prevComponentRootElement != ModelViewMapper.findClosestComponentRootElement(node)) {
+                        prevBox = getWebForm().findCssBoxForElement(prevComponentRootElement);
+                        nextBox = null;
+                    }
+                }
+            }
         } else if ((nextBox != null) && (prevBox == null)) {
             int index = nextBox.getParentIndex() - 1;
 
@@ -682,6 +693,17 @@ public abstract class DocumentBox extends ContainerBox {
                     prevBox = ((LineBoxGroup)nextBox.getParent()).getManagedBoxes().get(index);
                 } else {
                     prevBox = nextBox.getParent().getBox(index);
+                }
+            }
+            
+            // XXX #109446.
+            if (prevBox != null) {
+                Element nextComponentRootElement = ModelViewMapper.findClosestComponentRootElement(nextBox.getElement());
+                if (nextComponentRootElement == ModelViewMapper.findClosestComponentRootElement(prevBox.getElement())) {
+                    if (nextComponentRootElement != ModelViewMapper.findClosestComponentRootElement(node)) {
+                        prevBox = null;
+                        nextBox = getWebForm().findCssBoxForElement(nextComponentRootElement);
+                    }
                 }
             }
         }

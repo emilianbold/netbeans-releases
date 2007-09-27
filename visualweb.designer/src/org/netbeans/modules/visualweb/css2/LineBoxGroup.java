@@ -126,7 +126,44 @@ public class LineBoxGroup extends ContainerBox {
             // can avoid creating the box itself.
             return;
         }
-
+        
+        // XXX #109446 Ensure new box of another component is not put
+        // inbetween of two boxes belonging to other component.
+        if (prevBox != null) {
+            Element newComponentRootElement = ModelViewMapper.findClosestComponentRootElement(box.getElement());
+            Element prevComponentRootElement = ModelViewMapper.findClosestComponentRootElement(prevBox.getElement());
+            if (newComponentRootElement != prevComponentRootElement) {
+                CssBox tmpNextBox = getNextCssBox(allBoxes, prevBox);
+                while (tmpNextBox != null) {
+                    Element nextComponentRootElement = ModelViewMapper.findClosestComponentRootElement(tmpNextBox.getElement());
+                    if (prevComponentRootElement == nextComponentRootElement) {
+                        prevBox = tmpNextBox;
+                        nextBox = null;
+                        tmpNextBox = getNextCssBox(allBoxes, tmpNextBox);
+                    } else {
+                        break;
+                    }
+                }
+            }
+        }
+        if (nextBox != null) {
+            Element newComponentRootElement = ModelViewMapper.findClosestComponentRootElement(box.getElement());
+            Element nextComponentRootElement = ModelViewMapper.findClosestComponentRootElement(nextBox.getElement());
+            if (newComponentRootElement != nextComponentRootElement) {
+                CssBox tmpPrevBox = getPreviousCssBox(allBoxes, nextBox);
+                while (tmpPrevBox != null) {
+                    Element prevComponentRootElement = ModelViewMapper.findClosestComponentRootElement(tmpPrevBox.getElement());
+                    if (prevComponentRootElement == nextComponentRootElement) {
+                        prevBox = null;
+                        nextBox = tmpPrevBox;
+                        tmpPrevBox = getPreviousCssBox(allBoxes, tmpPrevBox);
+                    } else {
+                        break;
+                    }
+                }
+            }
+        }
+        
         allBoxes.add(box, prevBox, nextBox);
         
         // XXX #98826 Very suspicoius code leading to the issue.
@@ -135,6 +172,34 @@ public class LineBoxGroup extends ContainerBox {
         // However to comment out the nexst line doesn't work either, a messy impl.
         box.setParent(this);
         box.setPositionedBy(this);
+    }
+
+    private static CssBox getNextCssBox(BoxList boxList, CssBox cssBox) {
+        if (boxList == null || cssBox == null) {
+            return null;
+        }
+        
+        int boxIndex = boxList.indexOf(cssBox);
+        int nextBoxIndex = boxIndex < boxList.size() - 1 ? boxIndex + 1 : -1;
+        if (nextBoxIndex == -1) {
+            return null;
+        } else {
+            return boxList.get(nextBoxIndex);
+        }
+    }
+
+    private static CssBox getPreviousCssBox(BoxList boxList, CssBox cssBox) {
+        if (boxList == null || cssBox == null) {
+            return null;
+        }
+        
+        int boxIndex = boxList.indexOf(cssBox);
+        int previousBoxIndex = boxIndex > 0 ? boxIndex - 1 : -1;
+        if (previousBoxIndex == -1) {
+            return null;
+        } else {
+            return boxList.get(previousBoxIndex);
+        }
     }
 
     /**
@@ -445,8 +510,11 @@ public class LineBoxGroup extends ContainerBox {
                         for (int k = i + 1; k < n; k++) {
                             CssBox nextSibling = list.get(k);
                             if (boxListBoxElement == nextSibling.getElement()) {
-                                // XXX Place the next sibling to the place holder position.
-                                boxList.add(nextSibling, boxListBox, nextBoxListBox);
+                                // XXX #109446 Don't add if it is already in.
+                                if (boxList.indexOf(nextSibling) == -1) {
+                                    // XXX Place the next sibling to the place holder position.
+                                    boxList.add(nextSibling, boxListBox, nextBoxListBox);
+                                }
                                 processedChildren.add(nextSibling);
                             }
                         }

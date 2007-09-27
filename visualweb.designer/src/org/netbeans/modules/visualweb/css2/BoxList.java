@@ -20,6 +20,7 @@ package org.netbeans.modules.visualweb.css2;
 
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.List;
 
 import org.openide.ErrorManager;
 import org.w3c.dom.Element;
@@ -108,6 +109,15 @@ public class BoxList {
         }
 
         return boxes[index];
+    }
+    
+    public int indexOf(CssBox cssBox) {
+        if (keepSorted && !isSorted) {
+            zsort();
+        }
+        
+        List<CssBox> cssBoxes = Arrays.asList(boxes);
+        return cssBoxes.indexOf(cssBox);
     }
 
     /** Remove the given  box from the list and update parent indices.

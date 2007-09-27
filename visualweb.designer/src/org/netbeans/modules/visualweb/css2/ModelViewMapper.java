@@ -2938,14 +2938,14 @@ public final class ModelViewMapper {
 //    }
 
     /** Finds closes parent (including itself) component root element.  */
-    public static Element findClosestComponentRootElement(Element element) {
-        while (element != null) {
-            if (WebForm.getDomProviderService().isPrincipalElement(element, null)) {
-                return element;
+    public static Element findClosestComponentRootElement(Node node) {
+        while (node != null) {
+            if (node instanceof Element
+            && WebForm.getDomProviderService().isPrincipalElement((Element)node, null)) {
+                return (Element)node;
             }
             
-            Node parentNode = element.getParentNode();
-            element = parentNode instanceof Element ? (Element)parentNode : null;
+            node = node.getParentNode();
         }
         
         return null;
