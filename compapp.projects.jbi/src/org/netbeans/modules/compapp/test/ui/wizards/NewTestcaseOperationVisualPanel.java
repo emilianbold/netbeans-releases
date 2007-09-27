@@ -52,6 +52,7 @@ import org.openide.util.NbBundle;
 import java.awt.Component;
 import javax.swing.JLabel;
 import javax.swing.tree.TreePath;
+import org.netbeans.modules.compapp.projects.jbi.JbiActionProvider;
 import org.netbeans.modules.compapp.test.wsdl.Util;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.BindingOperation;
@@ -59,6 +60,8 @@ import org.netbeans.modules.xml.wsdl.model.Input;
 import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.model.Output;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 
 public class NewTestcaseOperationVisualPanel extends javax.swing.JPanel  {
     
@@ -74,14 +77,23 @@ public class NewTestcaseOperationVisualPanel extends javax.swing.JPanel  {
         mScrollPanel = new javax.swing.JScrollPane();
         mTree = new javax.swing.JTree();
         mTree.getAccessibleContext().setAccessibleName(
-                NbBundle.getMessage(NewTestcaseWsdlVisualPanel.class, "ACS_OperationTree_A11YName"));  // NOI18N
-        mTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
-        mTree.getSelectionModel().addTreeSelectionListener(new TreeSelectionListener() {
+                NbBundle.getMessage(NewTestcaseWsdlVisualPanel.class, 
+                "ACS_OperationTree_A11YName"));  // NOI18N
+        final TreeSelectionModel selectionModel = mTree.getSelectionModel();       
+        selectionModel.setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+        selectionModel.addTreeSelectionListener(new TreeSelectionListener() {
             public void valueChanged(TreeSelectionEvent e) {
                 BindingOperation bindingOp = getSelectedBindingOperation();
-                jTextFieldSelectedOperation.setText(bindingOp == null ? 
-                    "" : getOperationSignature(bindingOp)); // NOI18N
-                mPanel.fireChangeEvent(); // Notify that the panel changed
+                try {
+                    jTextFieldSelectedOperation.setText(bindingOp == null ? 
+                        "" : getOperationSignature(bindingOp)); // NOI18N
+                    mPanel.fireChangeEvent(); // Notify that the panel changed
+                } catch (Exception ex) {
+                    NotifyDescriptor d = new NotifyDescriptor.Message(
+                            ex.getMessage(), NotifyDescriptor.ERROR_MESSAGE);
+                    DialogDisplayer.getDefault().notify(d);
+                    selectionModel.clearSelection();
+                }
             }
         });
         mTree.setRootVisible(false);
@@ -252,6 +264,11 @@ public class NewTestcaseOperationVisualPanel extends javax.swing.JPanel  {
     private static String getOperationSignature(BindingOperation bindingOp) {
         Operation op = bindingOp.getOperation().get();
         
+        if (op == null) {
+            String msg = NbBundle.getMessage(NewTestcaseOperationVisualPanel.class, 
+                    "MSG_MISSING_OPERATION_FOR_BINDING_OPERATION", bindingOp.getName());
+            throw new RuntimeException(msg);
+        }
         Input input = op.getInput();
         Output output = op.getOutput();
         StringBuffer sb = new StringBuffer();
