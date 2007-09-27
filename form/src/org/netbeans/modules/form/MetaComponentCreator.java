@@ -1364,7 +1364,7 @@ public class MetaComponentCreator {
         else if (comp instanceof JTable) {
             javax.swing.table.TableModel tm = ((JTable)comp).getModel();
             if (tm == null
-                || (tm instanceof javax.swing.table.DefaultTableModel
+                || (tm.getClass().equals(javax.swing.table.DefaultTableModel.class)
                     && tm.getRowCount() == 0 && tm.getColumnCount() == 0))
             {
                 String prefix = NbBundle.getMessage(MetaComponentCreator.class, "FMT_CreatorTableTitle"); // NOI18N
