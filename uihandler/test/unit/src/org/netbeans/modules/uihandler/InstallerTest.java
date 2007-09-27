@@ -443,4 +443,17 @@ public class InstallerTest extends NbTestCase {
         Installer.parseButtons(is, def, dd);
         return dd.getOptions();
     }
+    
+    public void testCreateMessage(){
+        String message = Installer.createMessage(new NullPointerException());
+        assertEquals("NullPointerException at org.netbeans.modules.uihandler.InstallerTest.testCreateMessage", message);
+        message = Installer.createMessage(new AssertionError());
+        assertEquals("AssertionError at org.netbeans.modules.uihandler.InstallerTest.testCreateMessage", message);
+        message = Installer.createMessage(new AssertionError("TEST"));
+        assertEquals("AssertionError: TEST", message);
+        message = Installer.createMessage(new Throwable());
+        assertEquals("Throwable at org.netbeans.modules.uihandler.InstallerTest.testCreateMessage", message);
+        message = Installer.createMessage(new Error("PROBLEM"));
+        assertEquals("Error: PROBLEM", message);
+    }
 }

@@ -1081,6 +1081,19 @@ public class Installer extends ModuleInstall implements Runnable {
         
     } // end of Submit
     
+    protected static String createMessage(Throwable thr){
+        String message = thr.toString();
+        if (message.startsWith("java.lang.")){
+            message = message.substring(10);
+        }
+        int indexClassName = message.indexOf(':');
+        if (indexClassName == -1){ // there is no message after className
+            StackTraceElement elem = thr.getStackTrace()[0];
+            return message + " at " + elem.getClassName()+"."+elem.getMethodName();
+        }
+        return message;
+    }
+    
     private static final class SubmitInteractive extends Submit 
     implements HyperlinkListener {
         private boolean connectDialog;
@@ -1100,7 +1113,7 @@ public class Installer extends ModuleInstall implements Runnable {
             if (reportPanel==null) reportPanel = new ReportPanel();
             Throwable t = getThrown();
             if ((t != null)&&(reportPanel !=null)){
-                reportPanel.setSummary(t.toString());
+                reportPanel.setSummary(createMessage(t));
                 dim = new Dimension(470, 450);
             }
             browser = new JEditorPane();
