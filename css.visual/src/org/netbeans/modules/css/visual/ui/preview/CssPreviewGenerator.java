@@ -134,7 +134,7 @@ public class CssPreviewGenerator {
                         selectors = null;
                         break;
                     } else {
-                        selectors.add(selector);
+                        selectors.add("*".equals(selector.trim()) ? "div" : selector);
                     }
                 }
             }
@@ -188,6 +188,7 @@ public class CssPreviewGenerator {
                     elementName = ruleName.substring(0, index);
                     className = ruleName.substring(index + 1);
                 }
+                
                 preview.append("<");
                 preview.append(elementName);
                 preview.append(" class=\"");
@@ -224,6 +225,10 @@ public class CssPreviewGenerator {
                 
             } else {
                 //'normal' element selector
+                if("*".equals(ruleName.trim())) {
+                    ruleName = "div";
+                }
+                
                 preview.append("\n<");
                 preview.append(ruleName);
                 preview.append(">");
@@ -242,7 +247,7 @@ public class CssPreviewGenerator {
     private static boolean isPureSelector(String selectorName) {
         for(int i = 0; i < selectorName.length(); i++) {
             char ch = selectorName.charAt(i);
-            if(!(Character.isLetter(ch) || Character.isDigit(ch))) {
+            if(!(Character.isLetter(ch) || Character.isDigit(ch) || ch == '*')) {
                 return false;
             }
         }
