@@ -60,6 +60,8 @@ public interface JbiConstants {
     public static final String JBI_CONNECTION_ELEM_NAME = "connection";  // NO18N  
     public static final String JBI_PROVIDER_ELEM_NAME = "provider";  // NO18N
     public static final String JBI_CONSUMER_ELEM_NAME = "consumer";  // NO18N
+    public static final String JBI_PROVIDES_ELEM_NAME = "provides";  // NO18N
+    public static final String JBI_CONSUMES_ELEM_NAME = "consumes";  // NO18N
     public static final String JBI_SERVICES_ELEM_NAME = "services";  // NO18N
     
     public static final String JBI_ENDPOINT_NAME_ATTR_NAME = "endpoint-name";  // NO18N

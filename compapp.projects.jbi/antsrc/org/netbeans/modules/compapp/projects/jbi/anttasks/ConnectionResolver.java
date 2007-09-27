@@ -111,6 +111,18 @@ public class ConnectionResolver implements CasaConstants {
     public Map<String, List<Connection>[]> getBCConnections() {
         return bcConnections;
     }
+
+    public boolean isConnected(Endpoint p) {
+        if (connectionList == null) {
+            return false;
+        }
+        for (Connection con : connectionList) {
+            if ((con.getConsume().equals(p)) || (con.getProvide().equals(p))) {
+                return true;
+            }
+        }
+        return false;
+    }
     
     /**
      * 

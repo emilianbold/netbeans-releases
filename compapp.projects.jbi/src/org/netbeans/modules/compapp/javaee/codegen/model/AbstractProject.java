@@ -124,13 +124,13 @@ public class AbstractProject implements JavaEEProject{
     protected static final String RES_XML_ENTRY = "META-INF/sun-resources.xml"; //NOI18N
 
     // 06/04/07, JavaEE SE endpoint mapping
-    private static final String MAPPING_PREFIX = "javaee_" ;     //NOI18N
-    private static final String MAPPING_EXT = "javaee_ext" ;     //NOI18N
-    private static final String MAPPING_NS = "http://javaee.serviceengine.sun.com/endpoint/naming/extension" ;     //NOI18N
-    private static final String MAPPING_ELEMS = "ept-mappings" ;     //NOI18N
-    private static final String MAPPING_ELEM = "ept-mapping" ;     //NOI18N
-    private static final String MAPPING_JAVA_ELEM = "java-ept" ;     //NOI18N
-    private static final String MAPPING_WSDL_ELEM = "wsdl-ept" ;     //NOI18N
+    public static final String MAPPING_PREFIX = "javaee_" ;     //NOI18N
+    public static final String MAPPING_EXT = "javaee_ext" ;     //NOI18N
+    public static final String MAPPING_NS = "http://javaee.serviceengine.sun.com/endpoint/naming/extension" ;     //NOI18N
+    public static final String MAPPING_ELEMS = "ept-mappings" ;     //NOI18N
+    public static final String MAPPING_ELEM = "ept-mapping" ;     //NOI18N
+    public static final String MAPPING_JAVA_ELEM = "java-ept" ;     //NOI18N
+    public static final String MAPPING_WSDL_ELEM = "wsdl-ept" ;     //NOI18N
 
     private static Logger logger = Logger.getLogger(AbstractProject.class.getName());
     

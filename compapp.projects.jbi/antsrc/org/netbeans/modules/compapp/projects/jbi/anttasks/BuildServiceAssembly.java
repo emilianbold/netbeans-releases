@@ -42,12 +42,7 @@
 package org.netbeans.modules.compapp.projects.jbi.anttasks;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.StringTokenizer;
+import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
@@ -65,12 +60,14 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.netbeans.modules.compapp.projects.jbi.MigrationHelper;
+import org.netbeans.modules.compapp.projects.jbi.JbiConstants;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectConstants;
 import org.netbeans.modules.compapp.projects.jbi.descriptor.XmlUtil;
 import org.netbeans.modules.compapp.projects.jbi.descriptor.endpoints.model.Connection;
 import org.netbeans.modules.compapp.projects.jbi.descriptor.endpoints.model.Endpoint;
 import org.netbeans.modules.compapp.projects.jbi.descriptor.endpoints.model.PtConnection;
 import org.netbeans.modules.compapp.projects.jbi.ui.customizer.JbiProjectProperties;
+import org.netbeans.modules.compapp.javaee.codegen.model.AbstractProject;
 import org.netbeans.modules.xml.wsdl.model.Port;
 import org.netbeans.modules.xml.wsdl.model.Service;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
@@ -168,7 +165,7 @@ public class BuildServiceAssembly extends Task {
             String javaeeJars = p.getProperty(JbiProjectProperties.JBI_JAVAEE_JARS);
             String jars = p.getProperty((JbiProjectProperties.JBI_CONTENT_ADDITIONAL));
             
-            projDirLoc = p.getProperty("basedir") + File.separator;            
+            projDirLoc = p.getProperty("basedir") + File.separator;
             String srcDirLoc = projDirLoc + "src" + File.separator;
             String confDirLoc = srcDirLoc + "conf" + File.separator;
             
@@ -224,10 +221,12 @@ public class BuildServiceAssembly extends Task {
             // loop thru SE suprojects and copying SE deployment jars            
             List<String> srcJarPaths = getJarList(jars);
             List<String> javaEEJarPaths = getJarList(javaeeJars);
-            
+            List<String> saEEJarPaths = new ArrayList<String>();
+
             for (String srcJarPath : srcJarPaths) {
                 if ((javaEEJarPaths != null) && (javaEEJarPaths.contains(srcJarPath))){
                     srcJarPath = getLocalJavaEEJarPath(buildDir, srcJarPath);
+                    saEEJarPaths.add(srcJarPath);
                     createEndpointsFrom(srcJarPath);
                     continue;
                 }
@@ -308,7 +307,9 @@ public class BuildServiceAssembly extends Task {
             }
             
             casaBuilder.createCasaDocument(jbiDocument);  
-            
+
+            // 9/12/07, filter out unconnected JavaEE endpoints
+            filterJavaEEEndpoints(connectionResolver, saEEJarPaths, serviceUnitsDirLoc);
         } catch (Exception e) {
             e.printStackTrace();
             log("Build SA Failed: " + e.toString());
@@ -323,7 +324,7 @@ public class BuildServiceAssembly extends Task {
             }
         }
     }
-        
+
     private List<String> getJarList(String commaSeparatedList){
         List<String>  ret = new ArrayList<String>();
         if (commaSeparatedList != null) {
@@ -617,7 +618,7 @@ public class BuildServiceAssembly extends Task {
         }
         return ret;
     }
-    
+
     private void createEndpointsFrom(String jarFile)  throws Exception {
         JarFile jar = new JarFile(jarFile);
         byte[] buffer = new byte[1024];
@@ -987,4 +988,142 @@ public class BuildServiceAssembly extends Task {
         
         return ret;
     }
+
+    //--------------------------------------------------------------------
+    // 09/12/07, T.Li, code add to support JavaEE endpoint filtering
+    //--------------------------------------------------------------------
+
+    private void filterJavaEEEndpoints(ConnectionResolver cR, List<String> saEEJarPaths,
+                String serviceUnitsDirLoc) {
+        String NS = AbstractProject.MAPPING_NS;
+        for (String path : saEEJarPaths) {
+            File jbixml = new File(serviceUnitsDirLoc + "/" + getJavaEEProjName(path) + "/jbi.xml");
+            try {
+                // 1. get the EE proj jbi.xml from jbiServiceUnits
+                Document jbiDoc = XmlUtil.createDocument(true, jbixml);
+                NodeList nodeList = jbiDoc.getElementsByTagName(JbiConstants.JBI_PROVIDES_ELEM_NAME);
+                List<Element> uList = new ArrayList<Element>();
+                getUnconnectedNodes(uList, nodeList, cR);
+                nodeList = jbiDoc.getElementsByTagName(JbiConstants.JBI_CONSUMES_ELEM_NAME);
+                getUnconnectedNodes(uList, nodeList, cR);
+
+                if (uList.size() > 0) {
+                    // 2. remove unconnected endpoint from jbi.xml
+                    Node srvNode = jbiDoc.getElementsByTagName(JbiConstants.JBI_SERVICES_ELEM_NAME).item(0);
+                    Node mapNode = jbiDoc.getElementsByTagNameNS(NS, AbstractProject.MAPPING_ELEMS).item(0);
+                    NodeList mapList = jbiDoc.getElementsByTagNameNS(NS, AbstractProject.MAPPING_JAVA_ELEM);
+                    Hashtable eptMap = new Hashtable();
+                    for (int i=0; i<mapList.getLength(); i++) {
+                        Element map = (Element) mapList.item(i);
+                        String eptName = map.getAttribute(JbiConstants.JBI_ENDPOINT_NAME_ATTR_NAME);
+                        eptMap.put(eptName, map.getParentNode());
+                    }
+                    for (Element elm : uList) {
+                        String eptName = elm.getAttribute(JbiConstants.JBI_ENDPOINT_NAME_ATTR_NAME);
+                        srvNode.removeChild(elm);
+                        if (mapNode != null) {
+                            mapNode.removeChild((Node) eptMap.get(eptName));
+                        }
+                    }
+                    byte[] jbiNew = XmlUtil.writeToBytes(jbiDoc);
+
+                    // 3. update EE proj jar in the build dir
+                    copyJavaEEJarFile(path, jbiNew);
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
+    }
+
+    private void copyJavaEEJarFile(String inFile, byte[] jbixml) {
+        byte[] buffer = new byte[1024];
+        int bytesRead;
+        File jarFile = null;
+        File tempJarFile = null;
+        JarFile jar = null;
+        JarOutputStream newJar = null;
+        boolean jarUpdated = false;
+        try {
+            jarFile = new File(inFile);
+            tempJarFile = new File(inFile + ".new");
+            jar = new JarFile(jarFile);
+            newJar = new JarOutputStream(new FileOutputStream(tempJarFile));
+            Enumeration entries = jar.entries();
+
+            while (entries.hasMoreElements()) {
+                JarEntry entry = (JarEntry) entries.nextElement();
+
+                String fileName = entry.getName().toLowerCase();
+                if (fileName.equalsIgnoreCase(SU_JBIXML_PATH)) {
+                    // replace only if there is already a jbi.xml
+                    JarEntry jbiEntry = new JarEntry(SU_JBIXML_PATH);
+                    newJar.putNextEntry(jbiEntry);
+                    newJar.write(jbixml);
+                } else { // just copying...
+                    newJar.putNextEntry(entry);
+                    InputStream is = jar.getInputStream(entry);
+                    while ((bytesRead = is.read(buffer)) != -1) {
+                        newJar.write(buffer, 0, bytesRead);
+                    }
+                    is.close();
+                    is = null;
+                }
+            }
+            jarUpdated = true;
+        } catch (Exception ex) {
+            log("Copying EE jar aborted due to : " + ex);
+            ex.printStackTrace();
+        } finally {
+            try {
+                if (newJar != null) {
+                    newJar.close();
+                }
+                if (jar != null) {
+                    jar.close();
+                }
+                if (jarUpdated) {
+                    jarFile.delete();
+                    tempJarFile.renameTo(jarFile);
+                } else {
+                    if (tempJarFile != null) {
+                        tempJarFile.delete();
+                    }
+                }
+            } catch (IOException ignored) {
+                log("Copying EE jar aborted finally due to : " + ignored);
+            }
+        }
+    }
+
+    private String getJavaEEProjName(String subProjectJar){
+        File sJar = null;
+        String ret = null;
+        if (subProjectJar != null){
+            sJar = new File(subProjectJar);
+            String sJarName = sJar.getName();
+            int ext = sJarName.indexOf('.');
+            if (ext > 0) {
+                sJarName = sJarName.substring(0, ext);
+            }
+            ret = sJarName; //NOI18N
+        }
+        return ret;
+    }
+
+    private void getUnconnectedNodes(List<Element> uList, NodeList nodeList, ConnectionResolver cR) {
+        for (int i = 0, node = nodeList.getLength(); i < node; i++) {
+            Element pe = (Element) nodeList.item(i);
+            String endpointName = pe.getAttribute(JbiConstants.JBI_ENDPOINT_NAME_ATTR_NAME);
+            QName serviceQName = getNSName(pe, pe.getAttribute(JbiConstants.JBI_SERVICE_NAME_ATTR_NAME));
+            QName interfaceQName = getNSName(pe, pe.getAttribute(JbiConstants.JBI_INTERFACE_NAME_ATTR_NAME));
+            Endpoint p = new Endpoint(endpointName, serviceQName, interfaceQName);
+            boolean connected = cR.isConnected(p);
+            //System.out.println("\tEntPt: "+endpointName+ ", connected: "+connected);
+            if (! connected) {
+                uList.add(pe);
+            }
+        }
+    }
+
 }

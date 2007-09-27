@@ -197,7 +197,6 @@ public class XmlUtil {
         return ret;
     }
 
-
     /**
      * Description of the Method
      *
@@ -217,6 +216,32 @@ public class XmlUtil {
 
         DocumentBuilder builder = factory.newDocumentBuilder();
         Document document = builder.parse(source);
+
+        document.normalize();
+
+        return document;
+    }
+
+
+    /**
+     * Description of the Method
+     *
+     * @param namespaceAware  Description of the Parameter
+     * @param file            Description of the Parameter
+     * @return                Description of the Return Value
+     * @exception Exception   Description of the Exception
+     */
+    public static Document createDocument(boolean namespaceAware,
+                                           File file)
+             throws Exception {
+
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+
+        factory.setNamespaceAware(true);
+        //factory.setValidating();
+
+        DocumentBuilder builder = factory.newDocumentBuilder();
+        Document document = builder.parse(file);
 
         document.normalize();
 
