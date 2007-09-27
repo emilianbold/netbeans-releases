@@ -207,6 +207,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     /**
      * Return of create preprocHandler for internal use.
      * Should never be used outside of FileImpl.
+     * This method could be called only from doParse, to prevent sharing myPreprocHander instance
      */
     private APTPreprocHandler getCreatePreprocHandler() {
         // use current
@@ -511,7 +512,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     public TokenStream getTokenStream() {
-        APTPreprocHandler preprocHandler = getCreatePreprocHandler(); 
+        APTPreprocHandler preprocHandler = getPreprocHandler();
         APTFile apt = null;
 	if (TraceFlags.USE_AST_CACHE) {
 	    apt = CacheManager.getInstance().findAPT(this);
@@ -593,6 +594,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             initGuardIfNeeded(preprocHandler, aptFull);
             // make real parse
             APTParseFileWalker walker = new APTParseFileWalker(ProjectBase.getStartProject(preprocHandler.getIncludeHandler()), aptFull, this, preprocHandler);
+            walker.addMacroAndIncludes(true);
             if (TraceFlags.DEBUG) {
                 System.err.println("doParse " + getAbsolutePath() + " with " + ParserQueue.tracePreprocState(oldState));
             }

@@ -69,8 +69,6 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
     @Override
     public TokenStream getTokenStream() {
         setMode(ProjectBase.GATHERING_TOKENS);
-        // in this phase we should create objects for #define and #include
-        addMacroAndIncludes(true);
         // get original
         TokenStream ts = super.getTokenStream();
         // remove comments
