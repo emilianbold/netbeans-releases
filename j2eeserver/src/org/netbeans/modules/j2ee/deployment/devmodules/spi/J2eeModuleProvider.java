@@ -700,11 +700,35 @@ public abstract class J2eeModuleProvider {
         }
         ServerRegistry.getInstance().getServer(getServerID()).getVerifierSupport().verify(target, logger);
     }
-    
+
+    // TODO project should handle this
     protected final void fireServerChange (String oldServerID, String newServerID) {
-        Server oldServer = ServerRegistry.getInstance ().getServer (oldServerID);
-	Server newServer = ServerRegistry.getInstance ().getServer (newServerID);
-        if (oldServer != null && newServer != null && !oldServer.equals (newServer)) {
+        Server oldServer = ServerRegistry.getInstance().getServer(oldServerID);
+        Server newServer = ServerRegistry.getInstance().getServer(newServerID);
+
+        // corresponds to the "resolve missing server" or "new project"
+        if (oldServer == null && newServer != null) {
+            ConfigSupportImpl oldConSupp;
+            synchronized (this) {
+                oldConSupp = configSupportImpl;
+                configSupportImpl = null;
+            }
+
+            if (oldConSupp != null) {
+                /**
+                 * Only if we are resolving the missing server we create the
+                 * configuration. In fact this shouldn't hurt anything if we
+                 * did it always, but some plugins print some annoying messages.
+                 * However oldConSupp not null condition could be fragile.
+                 */
+                getConfigSupportImpl().ensureConfigurationReady();
+                oldConSupp.dispose();
+            }
+            return;
+        }
+
+        // corresponds to switching from one server to another, both existing
+        if (oldServer != null && newServer != null && !newServer.equals(oldServer)) {
 
             if (J2eeModule.WAR.equals(getJ2eeModule().getModuleType())) {
                 String oldCtxPath = getConfigSupportImpl().getWebContextRoot();
@@ -714,6 +738,7 @@ public abstract class J2eeModuleProvider {
                     configSupportImpl = null;
                 }
                 getConfigSupportImpl().ensureConfigurationReady();
+
                 if (oldCtxPath == null || oldCtxPath.equals("")) { //NOI18N
                     oldCtxPath = getDeploymentName().replace(' ', '_'); //NOI18N
                     char c [] = oldCtxPath.toCharArray();
@@ -726,6 +751,7 @@ public abstract class J2eeModuleProvider {
                     oldCtxPath = "/" + new String (c); //NOI18N
                 }
                 getConfigSupportImpl().setWebContextRoot(oldCtxPath);
+
                 if (oldConSupp != null) {
                     oldConSupp.dispose();
                 }
@@ -742,7 +768,7 @@ public abstract class J2eeModuleProvider {
             }
         }
     }
-        
+
     /**
      * Returns all configuration files known to this J2EE Module.
      */
