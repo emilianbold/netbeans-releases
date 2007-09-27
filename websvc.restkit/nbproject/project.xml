@@ -6,6 +6,13 @@
             <code-name-base>org.netbeans.modules.websvc.restkit</code-name-base>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.websvc.components.google</code-name-base>
+                    <run-dependency>
+                        <release-version>0-1</release-version>
+                        <specification-version>0.2</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.websvc.rest</code-name-base>
                     <run-dependency>
                         <release-version>0</release-version>
@@ -13,9 +20,7 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.websvc.restlib</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
+                    <code-name-base>org.netbeans.modules.websvc.rest.component.strikeiron</code-name-base>
                     <run-dependency>
                         <release-version>0</release-version>
                         <specification-version>0.2</specification-version>
@@ -29,7 +34,9 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.websvc.rest.component.strikeiron</code-name-base>
+                    <code-name-base>org.netbeans.modules.websvc.restlib</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
                     <run-dependency>
                         <release-version>0</release-version>
                         <specification-version>0.2</specification-version>
