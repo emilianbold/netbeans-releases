@@ -21,7 +21,7 @@ package org.netbeans.modules.options.colors;
 
 import java.util.Comparator;
 import javax.swing.text.AttributeSet;
-import javax.swing.text.StyleConstants;
+import org.netbeans.api.editor.settings.EditorStyleConstants;
 
 
 /**
@@ -41,7 +41,7 @@ public final class CategoryComparator implements Comparator<AttributeSet> {
     }
     
     private static String name (AttributeSet o) {
-        return (String) o.getAttribute(StyleConstants.NameAttribute);
+        return ((String) o.getAttribute(EditorStyleConstants.DisplayName)).toLowerCase();
     }
     
 }
