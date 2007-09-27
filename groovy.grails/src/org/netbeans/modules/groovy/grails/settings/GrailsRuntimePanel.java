@@ -55,7 +55,7 @@ final class GrailsRuntimePanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(GrailsRuntimePanel.class, "SupportPanel.jLabel2.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(linkLabel, "<html><a href=\"http://groovy.codehaus.org\">http://www.grails.org</a></html>"); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(linkLabel, "<html><a href=\"http://www.grails.org\">http://www.grails.org</a></html>"); // NOI18N
         linkLabel.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 linkLabelMouseEntered(evt);
@@ -174,7 +174,7 @@ final class GrailsRuntimePanel extends javax.swing.JPanel {
 
     private void linkLabelMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_linkLabelMousePressed
         try {
-            HtmlBrowser.URLDisplayer.getDefault().showURL(new URL("http://groovy.codehaus.org")); // NOI18N
+            HtmlBrowser.URLDisplayer.getDefault().showURL(new URL("http://www.grails.org")); // NOI18N
         } catch (MalformedURLException murle) {
             Exceptions.printStackTrace(murle);
         }

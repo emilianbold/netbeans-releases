@@ -41,6 +41,7 @@ public class GrailsServerRunnable implements Runnable {
     public GrailsServerRunnable(OutputWriter writer, Project project, String cmd){
         this.writer = writer;
         this.settings = Settings.getInstance();
+        // FIXME: will this run on Windows as well ??? slash/backslash?
         this.grailsExecutable = settings.getGrailsBase() + "/bin/grails";
         this.project = project; 
         this.cmd = cmd;
@@ -53,10 +54,11 @@ public class GrailsServerRunnable implements Runnable {
                 NbProcessDescriptor grailsProcessDesc = new NbProcessDescriptor(grailsExecutable, cmd);
                 
                 String cwdName = "/" + project.getProjectDirectory().getPath();
-                writer.print("Working Dir: " + cwdName + "\n");
+                // writer.print("Working Dir: " + cwdName + "\n");
                 
                 File cwd = new File(cwdName);
                 Process process = grailsProcessDesc.exec(null, null, cwd);
+                
                 // Process process = grailsProcessDesc.exec();
                 readOutput(process.getInputStream());
 

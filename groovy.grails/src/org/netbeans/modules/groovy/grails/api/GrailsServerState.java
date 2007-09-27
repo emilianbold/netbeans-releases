@@ -26,44 +26,42 @@
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.grails;
+package org.netbeans.modules.groovy.grails.api;
 
-import org.netbeans.modules.groovy.grails.api.GrailsServer;
-import org.openide.execution.ExecutionEngine;
+import org.openide.util.Task;
+import org.openide.util.TaskListener;
 import org.openide.execution.ExecutorTask;
-import org.openide.windows.IOProvider;
-import org.openide.windows.InputOutput;
-import org.openide.windows.OutputWriter;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.groovy.grails.api.GrailsServerState;
+
 /**
  *
  * @author schmidtm
  */
-public class ExternalGrailsServer implements GrailsServer{
+public class GrailsServerState implements TaskListener{
+    private boolean running = false;
+    private ExecutorTask exTask;
+    
+    public GrailsServerState (){
+        }
 
-    public int runCommand(Project prj, String cmd) {
-        
-        String tabName = "Grails Server for: " + prj.getProjectDirectory().getName();
-        InputOutput io = IOProvider.getDefault().getIO(tabName, true);
-        io.select (); //Tree tab is selected
-        OutputWriter writer = io.getOut ();
-                
-        ExecutionEngine engine = ExecutionEngine.getDefault();
-        ExecutorTask exTask = engine.execute(tabName, new GrailsServerRunnable(writer, prj, cmd), io);
-        
-        GrailsServerState serverState = prj.getLookup().lookup(GrailsServerState.class);
-        
-        serverState.setRunning(true);
-        serverState.setExTask(exTask);
-        exTask.addTaskListener(serverState);
-       
-//        if (exTask.result() == 0 ) {
-//            writer.print("Execution was successful");
-//        }
-        
-        
-        return 0;
+    public boolean isRunning() {
+        return running;
     }
 
+    public void setRunning(boolean running) {
+        this.running = running;
+    }
+
+    public void taskFinished(Task task) {
+        running = false;
+    }
+
+    public ExecutorTask getExTask() {
+        return exTask;
+    }
+
+    public void setExTask(ExecutorTask exTask) {
+        this.exTask = exTask;
+    }
+    
+    
 }

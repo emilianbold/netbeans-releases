@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.groovy.grailsproject;
 
+import org.netbeans.modules.groovy.grails.api.GrailsServerState;
 import org.netbeans.modules.groovy.grailsproject.ui.GrailsLogicalViewProvider;
 import java.awt.Image;
 import java.beans.PropertyChangeListener;
@@ -62,6 +63,7 @@ public final class GrailsProject implements Project {
                 projectState, //allow outside code to mark the project as needing saving
                 new Info(), //Project information implementation
                 new GrailsSources(projectDir),
+                new GrailsServerState(),
                 logicalView //Logical view of project implementation
             );
         }
