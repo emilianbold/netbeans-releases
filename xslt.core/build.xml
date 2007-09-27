@@ -41,9 +41,4 @@
 -->
 <project name="org.netbeans.modules.xslt.core" default="netbeans" basedir=".">
     <import file="../../../nbbuild/templates/projectized.xml"/>
-
-    <target name="netbeans-extra"> <!-- todo r -->
-        <delete dir="../../openesbaddons"/>
-        <delete dir="../../../serverplugins/sun/webserver7/test"/>
-    </target>
 </project>
