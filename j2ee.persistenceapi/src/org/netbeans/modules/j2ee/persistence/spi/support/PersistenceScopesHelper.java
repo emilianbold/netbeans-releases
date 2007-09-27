@@ -81,6 +81,8 @@ public final class PersistenceScopesHelper {
         synchronized (this) {
             oldPersistenceExists = persistenceExists;
             oldPersistenceScope = persistenceScope;
+            
+            LOG.fine("changePersistenceScope: newPersistenceXml=" + newPersistenceXml); // NOI18N
 
             if (persistenceXml != null) {
                 FileChangeSupport.DEFAULT.removeListener(fileListener, persistenceXml);
@@ -98,6 +100,8 @@ public final class PersistenceScopesHelper {
             change();
 
             newPersistenceExists = persistenceExists;
+            
+            LOG.fine("changePersistenceScope: oldPersistenceExists=" + oldPersistenceExists + ", newPersistenceExists=" + newPersistenceExists); // NOI18N
         }
 
         if (oldPersistenceExists != newPersistenceExists || (oldPersistenceScope != newPersistenceScope && newPersistenceExists)) {
@@ -127,6 +131,7 @@ public final class PersistenceScopesHelper {
             if (persistenceXml != null) {
                 persistenceExists = FileUtil.toFileObject(persistenceXml) != null;
             }
+            LOG.fine("change: persistenceExists=" + persistenceExists); // NOI18N
         }
     }
 
@@ -142,7 +147,7 @@ public final class PersistenceScopesHelper {
             newPersistenceExists = persistenceExists;
         }
 
-        LOG.fine("fileEvent: oldPersistenceExists=" + oldPersistenceExists + ", newPersistenceExists=" + newPersistenceExists); // NOI18N
+        LOG.fine("@" + Integer.toHexString(System.identityHashCode(this)) + " fileEvent: oldPersistenceExists=" + oldPersistenceExists + ", newPersistenceExists=" + newPersistenceExists); // NOI18N
 
         if (oldPersistenceExists != newPersistenceExists) {
             LOG.fine("fileEvent: firing PROP_PERSISTENCE_SCOPES change"); // NOI18N
