@@ -127,11 +127,8 @@ ant -f nbbuild/build.xml commit-validation
 sh -x `dirname $0`/initAppserver.sh
 # visualweb UI validation tests
 sh -x `dirname $0`/run-vw-sanity.sh
-
 # SOA (BPEL, XSLT) and XML UI validation tests
-## XXX these tests are failing, need to fix before turning it on again
-##ant -f xtest/instance/build.xml -Djdkhome=$JDK_TESTS -Dxtest.config=commit-validation-enterprise -Dxtest.instance.name="Enterprise tests" -Dxtest.no.cleanresults=true runtests
-
+ant -f xtest/instance/build.xml -Djdkhome=$JDK_TESTS -Dxtest.config=commit-validation-enterprise -Dxtest.instance.name="Enterprise tests" -Dxtest.no.cleanresults=true runtests
 # CND UI validation tests
 ant -f xtest/instance/build.xml -Djdkhome=$JDK_TESTS -Dxtest.config=commit-validation-cnd -Dxtest.instance.name="CND tests" -Dxtest.no.cleanresults=true runtests
 # Profiler UI validation tests
