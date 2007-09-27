@@ -253,10 +253,10 @@ public final class BuildImplTest extends NbTestCase {
         assertNotNull(root.getFileObject("build/classes/p/A.class"));
         assertNotNull(root.getFileObject("build/classes/p/B.class"));
         assertNull(root.getFileObject("build/classes/p/C.class"));
-        TestFileUtils.touch(a, null);
+        TestFileUtils.touch(a, root.getFileObject("build/classes/p/A.class"));
         TestFileUtils.writeFile(root, "src/p/A.java", "BROKEN");
         assertBuildFailure(ActionUtils.runTarget(buildXml, new String[] {"compile-single"}, p));
-        TestFileUtils.touch(a, null);
+        TestFileUtils.touch(a, root.getFileObject("build/classes/p/A.class"));
         TestFileUtils.writeFile(root, "src/p/A.java", "package p; class A {}");
         assertBuildSuccess(ActionUtils.runTarget(buildXml, new String[] {"compile-single"}, p));
         // XXX test same in test dir
