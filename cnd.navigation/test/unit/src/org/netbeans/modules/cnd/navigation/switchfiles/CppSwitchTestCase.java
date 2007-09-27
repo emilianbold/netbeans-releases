@@ -54,9 +54,6 @@ public class CppSwitchTestCase extends TraceModelTestBase {
                 assert f!=null && f.getAbsolutePath().indexOf("welcome.cc")!=-1; //NOI18N
             }
         }
-
-        
-        System.err.println("hello");
     }
 
     @Override
