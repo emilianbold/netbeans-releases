@@ -622,7 +622,9 @@ final class Attribute extends Dialog
       SPACING_MAX,
       SPACING_STP
     ));
-    setWidth(myLineSpacing, myBackgroundColor.getPreferredSize().width);
+    int height = myLineSpacing.getPreferredSize().height;
+    setHeight(myLineSpacing, Util.round(height * SPACING_FTR));
+
     label.setLabelFor(myLineSpacing);
     panel.add(myLineSpacing, c);
   }
@@ -926,5 +928,6 @@ final class Attribute extends Dialog
   private static final double SPACING_MIN =  0.1;
   private static final double SPACING_MAX = 10.0;
   private static final double SPACING_STP =  0.1;
+  private static final double SPACING_FTR = 1.15;
   private static final int [] PERCENTS = new int [] { 25, 50, 75, 100, 125, 150 };
 }
