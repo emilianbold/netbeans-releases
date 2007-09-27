@@ -646,15 +646,16 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
         <property name="sigtest.fail.on.error" value="true"/>
         <taskdef name="sigtest" classname="org.netbeans.nbbuild.Sigtest" classpath="${nb_all}/nbbuild/nbantext.jar"/>
         <property name="sigtest.jar" location="${nb_all}/nbbuild/external/apitest-24.jar"/> 
+        <property file="${manifest.mf}" prefix="mf."/>
+        <condition property="mf.OpenIDE-Module-Specification-Version" value="${spec.version.base}"> <!-- fallback -->
+            <isset property="spec.version.base"/>
+        </condition>
 
         <property name="cp.extra" value=""/>
         <path id="sigtest.class.path.ref">
             <path path="${module.run.classpath}"/>
             <path path="${cp.extra}"/>
             <path path="${cluster}/${module.jar}"/>
-            <fileset dir="${java.home}/lib/">
-                <include name="*.jar"/>
-            </fileset>
         </path>
         <pathconvert refid="sigtest.class.path.ref" property="sigtest.class.path">
             
@@ -677,6 +678,7 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
         <sigtest fileName="${sigtest.file}"
                  sigtestJar="${sigtest.jar}"
                  classpath="${sigtest.class.path}"
+                 version="${mf.OpenIDE-Module-Specification-Version}"
                  action="generate"
                  packages="${sigtest.public.packages}"
                  failonerror="${sigtest.gen.fail.on.error}"
@@ -688,6 +690,7 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
         <sigtest fileName="${sigtest.file}"
                  sigtestJar="${sigtest.jar}"
                  classpath="${sigtest.class.path}"
+                 version="${mf.OpenIDE-Module-Specification-Version}"
                  action="${sigtest.check.type}"
                  packages="${sigtest.public.packages}"
                  failonerror="${sigtest.fail.on.error}"

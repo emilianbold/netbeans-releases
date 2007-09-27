@@ -50,6 +50,7 @@ import org.apache.tools.ant.Task;
 import org.apache.tools.ant.taskdefs.Java;
 import org.apache.tools.ant.types.Commandline;
 import org.apache.tools.ant.types.EnumeratedAttribute;
+import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.types.Path;
 import org.apache.tools.ant.types.Reference;
 
@@ -64,6 +65,7 @@ public class Sigtest extends Task {
     ActionType action;
     File sigtestJar;
     boolean failOnError = true;
+    String version;
     
     public void setFileName(File f) {
         fileName = f;
@@ -92,6 +94,9 @@ public class Sigtest extends Task {
     }
     public void setClasspathRef(Reference r) {
         createClasspath().setRefid(r);
+    }
+    public void setVersion(String v) {
+        version = v;
     }
 
     public void setSigtestJar(File f) {
@@ -178,7 +183,15 @@ public class Sigtest extends Task {
         arg = java.createArg();
         arg.setValue("-Classpath");
         arg = java.createArg();
-        arg.setPath(classpath);
+        {
+            Path extracp = new Path(getProject());
+            extracp.add(classpath);
+            FileSet jdk = new FileSet();
+            jdk.setDir(new File(new File(System.getProperty("java.home")), "lib"));
+            jdk.setIncludes("*.jar");
+            extracp.addFileset(jdk);
+            arg.setPath(extracp);
+        }
         
         File outputFile = null;
         String s = getProject().getProperty("sigtest.output.dir");
@@ -232,6 +245,7 @@ public class Sigtest extends Task {
     private void apitest() {
         Java java = new Java();
         java.setProject(getProject());
+        java.setTaskName(getTaskName());
         java.setFork(true);
         Path sigtestPath = new Path(getProject());
         sigtestPath.setLocation(sigtestJar);
@@ -253,7 +267,7 @@ public class Sigtest extends Task {
             arg.setValue("-setup");
         } else if (action.getValue().equals("binarycheck")) {
             arg = java.createArg();
-            arg.setValue("-extendableinterfaces");
+            arg.setValue("-extensibleinterfaces");
         } else if (action.getValue().equals("check")) {
             // no special arg for check
         } else if (action.getValue().equals("strictcheck")) {
@@ -261,6 +275,12 @@ public class Sigtest extends Task {
             arg.setValue("-maintenance");
         } else {
             throw new BuildException("Unknown action: " + action);
+        }
+        if (version != null) {
+            arg = java.createArg();
+            arg.setValue("-Version");
+            arg = java.createArg();
+            arg.setValue(version);
         }
         
         
