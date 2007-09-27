@@ -176,8 +176,8 @@ public class HttpProxyUpdater {
         
         String nonHosts = System.getProperty("http.nonProxyHosts", ""); //NOI18N
         if (nonHosts.trim().length() != 0) { 
-            // the property might contain spaces like -Dhttp.nonProxyHosts= localhost localhost.czech.sun.com
-             nonHosts = nonHosts;
+            // remove any spaces -Dhttp.nonProxyHosts= localhost| localhost.czech.sun.com
+            nonHosts = nonHosts.replaceAll(" ", ""); //NOI18N
         } else {
             nonHosts = null;
         }
