@@ -112,6 +112,7 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
         
         // listens on clikcs on table header, detects column and sort accordingly to chosen one
         table.getTableHeader().addMouseListener(new MouseAdapter() {
+            @Override
             public void mouseClicked(MouseEvent e) {
                 TableColumnModel colModel = table.getColumnModel();
                 int columnModelIndex = colModel.getColumnIndexAtX(e.getX());
@@ -264,6 +265,7 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
         removeButton.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(BundleEditPanel.class).getString("ACS_LBL_RemovePropertyButton"));
     }
     
+    @Override
     public boolean requestFocusInWindow() {
         return table.requestFocusInWindow();
     }
@@ -599,11 +601,13 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
     
     
     /** Header renderer used in table view. */
+    @SuppressWarnings("serial")
     private class TableViewHeaderRenderer extends DefaultTableCellRenderer {
         /** Sorted column. */
         private int column;
         
         /** Overrides superclass method. */
+        @Override
         public Component getTableCellRendererComponent(JTable table, Object value,
         boolean isSelected, boolean hasFocus, int row, int column) {
             
@@ -624,6 +628,7 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
         }
         
         /** Overrides superclass method. Adds painting ascending/descending marks for sorted column header. */
+        @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
             
@@ -706,6 +711,7 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
      * This subclass of Default column model is provided due correct set of column widths,
      * see the JTable and horizontal scrolling problem in Java Discussion Forum.
      */
+    @SuppressWarnings("serial")
     private class TableViewColumnModel extends DefaultTableColumnModel {
         /** Helper listener. */
         private AncestorListener ancestorListener;
@@ -714,6 +720,7 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
         private final TableCellRenderer headerRenderer = new TableViewHeaderRenderer();
         
         /** Overrides superclass method. */
+        @Override
         public void addColumn(TableColumn aColumn) {
             if (aColumn == null) {
                 throw new IllegalArgumentException("Object is null"); // NOI18N
@@ -817,8 +824,10 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
     
     
     /** Renderer which renders cells in table view. */
+    @SuppressWarnings("serial")
     private class TableViewRenderer extends DefaultTableCellRenderer {
         /** Overrides superclass method. */
+        @Override
         public Component getTableCellRendererComponent(JTable table,
         Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             
@@ -872,6 +881,7 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
         }
         
         /** Overrides superclass method. It adds the highlighting of search occurences in it. */
+        @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
             
@@ -910,6 +920,7 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
     
     /** <code>JTable</code> with one bug fix.
      * @see #removeEditorSilent */
+    @SuppressWarnings("serial")
     static class BundleTable extends JTable {
         
         public BundleTable(){
