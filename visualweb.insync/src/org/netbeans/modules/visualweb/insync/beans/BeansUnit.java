@@ -757,6 +757,11 @@ public class BeansUnit implements Unit {
         if (parent != null)
             parent.removeChild(bean);  // remove from parent list
         beansToRemove.add(bean);
+        //It may exist in the beansToAdd list if the removal happens before
+        //the bean is inserted into java source
+        if(beansToAdd.contains(bean)) {
+            beansToAdd.remove(bean);
+        }
     }
 
     /**
