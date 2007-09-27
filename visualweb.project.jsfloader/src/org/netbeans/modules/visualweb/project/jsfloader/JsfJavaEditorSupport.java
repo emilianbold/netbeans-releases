@@ -96,9 +96,9 @@ import org.netbeans.core.spi.multiview.MultiViewFactory;
 public final class JsfJavaEditorSupport extends DataEditorSupport implements EditorCookie.Observable, CloseCookie, PrintCookie {
 
 // <multiview>
-    private static final String MV_ID_DESIGNER = "designer"; // NOI18N
-    private static final String MV_ID_JSP      = "jsp"; // NOI18N
-    private static final String MV_ID_JAVA     = "java"; // NOI18N
+    static final String MV_ID_DESIGNER = "designer"; // NOI18N
+    static final String MV_ID_JSP      = "jsp"; // NOI18N
+    static final String MV_ID_JAVA     = "java"; // NOI18N
 
     private static final int ELEMENT_INDEX_DESIGNER = 0;
     private static final int ELEMENT_INDEX_JSP      = 1;
@@ -340,7 +340,7 @@ public final class JsfJavaEditorSupport extends DataEditorSupport implements Edi
         MultiViewDescription[] descs = new MultiViewDescription[] {
             new DesignerDesc(jsfJspDataObject),
             new JspDesc(jsfJspDataObject),
-            new JavaDesc(jsfJavaDataObject)
+            new JavaDesc(jsfJavaDataObject, jsfJspDataObject)
         };
         
         CloneableTopComponent mvtc =
@@ -521,9 +521,21 @@ public final class JsfJavaEditorSupport extends DataEditorSupport implements Edi
         public MultiViewElement createElement() {
 //            final MultiViewElement multiViewElement =  DesignerServiceHack.getDefault().
 //                    getMultiViewElementForDataObject(jsfJspDataObject);
-            final MultiViewElement multiViewElement = DesignerJsfServiceProvider.getDesignerJsfService().createDesignerMultiViewElement(jsfJspDataObject);
+            if (jsfJspDataObject.isTemplate()) {
+                return MultiViewFactory.BLANK_ELEMENT;
+            }
             
+            final MultiViewElement multiViewElement = DesignerJsfServiceProvider.getDesignerJsfService().createDesignerMultiViewElement(jsfJspDataObject);
+
             if(multiViewElement != null) {
+                // XXX Part of workaround for IZ 58136
+                final MultiViewElement multiViewDelegate;
+                if (!jsfJspDataObject.isTemplate()) {
+                    multiViewDelegate = new OpenEditOverride.MultiViewDelegate(multiViewElement, preferredID(), jsfJspDataObject);
+                }else {
+                    multiViewDelegate = multiViewElement;
+                }
+                
                 // XXX #6357375 Setting the last multiview, because after deserialization,
                 // there seems to be no other way how to get it.
                 EventQueue.invokeLater(new Runnable() {
@@ -538,7 +550,7 @@ public final class JsfJavaEditorSupport extends DataEditorSupport implements Edi
                     }
                 });
                 
-                return multiViewElement;
+                return multiViewDelegate;
             }
 //                WebForm webForm = jsfJspDataObject.getWebForm();
 //                webForm.createTopComponent(jsfJspEditorSupport);
@@ -585,6 +597,14 @@ public final class JsfJavaEditorSupport extends DataEditorSupport implements Edi
                 jsfJspEditorSupport.prepareDocument();
                 final MultiViewElement multiViewElement = jsfJspEditorSupport.createMultiViewElement();
                 
+                // XXX Part of workaround for IZ 58136
+                final MultiViewElement multiViewDelegate;
+                if (!jsfJspDataObject.isTemplate()) {
+                    multiViewDelegate = new OpenEditOverride.MultiViewDelegate(multiViewElement, preferredID(), jsfJspDataObject);
+                }else {
+                    multiViewDelegate = multiViewElement;
+                }
+
                 // XXX #6357375 Setting the last multiview, because after deserialization,
                 // there seems to be no other way how to get it.
                 EventQueue.invokeLater(new Runnable() {
@@ -599,7 +619,7 @@ public final class JsfJavaEditorSupport extends DataEditorSupport implements Edi
                     }
                 });
                 
-                return multiViewElement;
+                return multiViewDelegate;
             }
             return MultiViewFactory.BLANK_ELEMENT;
         }
@@ -632,10 +652,11 @@ public final class JsfJavaEditorSupport extends DataEditorSupport implements Edi
         private static final long serialVersionUID =-3126744316624172415L;
 
         private JsfJavaDataObject jsfJavaDataObject;
+        private JsfJspDataObject jsfJspDataObject;
         
-        
-        public JavaDesc(JsfJavaDataObject jsfJavaDataObject) {
+        public JavaDesc(JsfJavaDataObject jsfJavaDataObject, JsfJspDataObject jsfJspDataObject) {
             this.jsfJavaDataObject = jsfJavaDataObject;
+            this.jsfJspDataObject = jsfJspDataObject;
         }
         
         public MultiViewElement createElement() {
@@ -643,6 +664,14 @@ public final class JsfJavaEditorSupport extends DataEditorSupport implements Edi
             if(javaEditor != null) {
                 javaEditor.prepareDocument();
                 final MultiViewElement multiViewElement = new JavaEditorTopComponent(javaEditor);
+
+                // XXX Part of workaround for IZ 58136
+                final MultiViewElement multiViewDelegate;
+                if (!jsfJspDataObject.isTemplate()) {
+                    multiViewDelegate = new OpenEditOverride.MultiViewDelegate(multiViewElement, preferredID(), jsfJspDataObject);
+                }else {
+                    multiViewDelegate = multiViewElement;
+                }
                 
                 // XXX #6357375 Setting the last multiview, because after deserialization,
                 // there seems to be no other way how to get it.
@@ -658,7 +687,7 @@ public final class JsfJavaEditorSupport extends DataEditorSupport implements Edi
                     }
                 });
                 
-                return multiViewElement;
+                return multiViewDelegate;
             }
             return MultiViewFactory.BLANK_ELEMENT;
         }

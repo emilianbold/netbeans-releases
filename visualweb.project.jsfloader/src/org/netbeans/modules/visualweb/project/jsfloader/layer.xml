@@ -43,6 +43,15 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>
     
+    <folder name="Projects">
+      <folder name="org-netbeans-modules-web-project">
+        <folder name="Lookup">
+          <file name="org.netbeans.modules.visualweb.project.jsfloader.OpenEditOverride.instance"/>
+        </folder>
+      </folder>
+    </folder> 
+
+
     <folder name="CreatorJavaPalette">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsfloader.codeclips.Bundle"/>
         

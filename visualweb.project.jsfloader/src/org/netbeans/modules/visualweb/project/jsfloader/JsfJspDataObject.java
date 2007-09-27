@@ -177,11 +177,32 @@ implements CookieSet.Factory, JsfJspDataObjectMarker {
     
     private class OpenEdit implements OpenCookie, EditCookie {
         public void open() {
-            getJsfJspEditorSupport().openDesigner();
+            String attr = getAttribute();
+            if ((attr != null && attr.equals(JsfJavaEditorSupport.MV_ID_DESIGNER)) || attr == null) {
+                getJsfJspEditorSupport().openDesigner();
+            }else {
+                getJsfJspEditorSupport().editJsp();
+            }
         }
         public void edit() {
-            getJsfJspEditorSupport().editJsp();
+            String attr = getAttribute();
+            if (attr != null && attr.equals(JsfJavaEditorSupport.MV_ID_DESIGNER)) {
+                getJsfJspEditorSupport().openDesigner();
+            } else {
+                getJsfJspEditorSupport().editJsp();
+            }
         }
+        
+        private String getAttribute() {
+            try {
+                String attr = (String)getPrimaryFile().getAttribute(OpenEditOverride.MULTIVIEW_ATTRIBUTE);
+                getPrimaryFile().setAttribute(OpenEditOverride.MULTIVIEW_ATTRIBUTE, null);
+                return attr;
+            }catch (IOException ex) {
+            }
+            return null;
+        }
+        
     }
     
     
