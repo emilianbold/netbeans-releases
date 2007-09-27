@@ -348,14 +348,15 @@ public class IdentifierExpression extends ExpressionStateHandler
                         retVal = symbolTable.findInstance(curInstanceName);
                         if(retVal == null)
                         {
-                           retVal = searchForInstance(attrName, curInstanceName, curType, symbolTable, pClassLoader);
+                           retVal = searchForInstance(attrName, curInstanceName, pThisPtr, symbolTable, pClassLoader);
+                           
                            if(retVal == null)
                            {
                               // Basically create an Anonymous instance.  We are mostly in a referencing a
                               // static member.
                               retVal =  new ObjectInstanceInformation();
                               retVal.setInstanceTypeName(attrName);
-                           }
+                           }                           
                         }
                      }
                   }
@@ -366,7 +367,7 @@ public class IdentifierExpression extends ExpressionStateHandler
                         retVal = symbolTable.findInstance(curInstanceName);
                         if(retVal == null)
                         {
-                           retVal = searchForInstance(attrName, curInstanceName, pThisPtr, symbolTable, pClassLoader);
+                           retVal = searchForInstance(attrName, curInstanceName, curType, symbolTable, pClassLoader);
                            if(retVal == null)
                            {
                               // Basically create an Anonymous instance.  We are mostly in a referencing a
@@ -392,6 +393,7 @@ public class IdentifierExpression extends ExpressionStateHandler
                         ObjectInstanceInformation objInstance = 
                             (ObjectInstanceInformation)retVal;
                         curType = objInstance.getInstanceType();
+                        if (curType == null) curType = pThisPtr;
                      }
                      
                   }
