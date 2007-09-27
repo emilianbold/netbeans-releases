@@ -76,7 +76,9 @@ public class PullAction extends AbstractAction {
             List<String> listIncoming) {
         FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
         File[] localModNewFiles = cache.listFiles(ctx, 
-                FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY | FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY);
+                FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY | 
+                FileInformation.STATUS_VERSIONED_CONFLICT | 
+                FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY);
         List<String> listIncomingAndLocalMod = new ArrayList<String>();
         Set<String> setFiles = new HashSet<String>();
         String filesStr;
@@ -137,14 +139,16 @@ public class PullAction extends AbstractAction {
         final File root = HgUtils.getRootFile(ctx);
         if (root == null) return;
         String repository = root.getAbsolutePath();
-        final String pullPath = HgCommand.getPullDefault(root).getAbsolutePath();
-        final String fromPrjName = HgProjectUtils.getProjectName(root);
+        File pullFile = HgCommand.getPullDefault(root);
+        final String pullPath = pullFile.getAbsolutePath();
+        // We assume that if fromPrjName is null that it is a remote pull
+        final String fromPrjName = HgProjectUtils.getProjectName(pullFile);
         final String toPrjName = HgProjectUtils.getProjectName(root);
         
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
         HgProgressSupport support = new HgProgressSupport() {
-            public void perform() { performPull(PullType.LOCAL, ctx, root, pullPath, fromPrjName, toPrjName); } };
-            
+            public void perform() { performPull(fromPrjName != null ? PullType.LOCAL : PullType.OTHER, ctx, root, pullPath, fromPrjName, toPrjName); } };
+
         support.start(rp, repository, org.openide.util.NbBundle.getMessage(PullAction.class, "MSG_PULL_PROGRESS")); // NOI18N
     }
 
@@ -203,8 +207,13 @@ public class PullAction extends AbstractAction {
                 }
 
                 HgUtils.outputMercurialTab(list);
-                HgUtils.outputMercurialTabInRed(NbBundle.getMessage(
-                        PullAction.class, "MSG_PULL_FROM", fromPrjName, pullPath)); // NOI18N
+                if (fromPrjName != null) {
+                    HgUtils.outputMercurialTabInRed(NbBundle.getMessage(
+                            PullAction.class, "MSG_PULL_FROM", fromPrjName, pullPath)); // NOI18N
+                } else {
+                    HgUtils.outputMercurialTabInRed(NbBundle.getMessage(
+                            PullAction.class, "MSG_PULL_FROM_NONAME", pullPath)); // NOI18N
+                }
                 HgUtils.outputMercurialTabInRed(NbBundle.getMessage(
                         PullAction.class, "MSG_PULL_TO", toPrjName, root)); // NOI18N
 
@@ -225,11 +234,11 @@ public class PullAction extends AbstractAction {
                     HgUtils.outputMercurialTab(""); // NOI18N
                     HgUtils.outputMercurialTabInRed(NbBundle.getMessage(PullAction.class, "MSG_PULL_MERGE_DO")); // NOI18N
                     MergeAction.doMergeAction(root, null);
-                }
-                
-                List<String> headRevList = HgCommand.getHeadRevisions(root);
-                if (headRevList != null && headRevList.size() > 1){
-                    MergeAction.printMergeWarning(headRevList);
+                } else {
+                    List<String> headRevList = HgCommand.getHeadRevisions(root);
+                    if (headRevList != null && headRevList.size() > 1){
+                        MergeAction.printMergeWarning(headRevList);
+                    }
                 }
             }
 
