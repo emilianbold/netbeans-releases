@@ -105,6 +105,10 @@ public class JSFConfigComponentFactoryImpl implements JSFConfigComponentFactory 
         return new SupportedLocaleImpl(model);
     }
 
+    public ResourceBundleImpl createResourceBundle() {
+        return new ResourceBundleImpl(model);
+    }
+    
     public static boolean areSameQName(JSFConfigQNames jsfqname,Element element) {
         QName qname = AbstractDocumentComponent.getQName(element);
         boolean aresame = false;
@@ -180,6 +184,8 @@ public class JSFConfigComponentFactoryImpl implements JSFConfigComponentFactory 
                 created = new ViewHandlerImpl((JSFConfigModelImpl)context.getModel(), element);
             } else if (isElementQName(JSFConfigQNames.LOCALE_CONFIG)) {
                 created = new LocaleConfigImpl((JSFConfigModelImpl)context.getModel(), element);
+            } else if (isElementQName(JSFConfigQNames.RESOURCE_BUNDLE)) {
+                created = new ResourceBundleImpl((JSFConfigModelImpl)context.getModel(), element);
             }
         }
         
@@ -200,6 +206,11 @@ public class JSFConfigComponentFactoryImpl implements JSFConfigComponentFactory 
             } else if (isElementQName(JSFConfigQNames.ICON)){
                 created = new IconImpl((JSFConfigModelImpl)context.getModel(), element);
             }
+        }
+        
+        @Override
+        public void visit(ResourceBundle context) {
+            checkDescriptionGroup(context);
         }
     }
 

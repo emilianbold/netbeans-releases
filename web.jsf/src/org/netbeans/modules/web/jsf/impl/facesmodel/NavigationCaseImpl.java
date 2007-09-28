@@ -31,13 +31,13 @@ import org.w3c.dom.Element;
  */
 public class NavigationCaseImpl extends DescriptionGroupImpl implements NavigationCase{
     
-    protected static final List<String> SORTED_ELEMENTS = new ArrayList();
+    protected static final List<String> NAVIGATION_CASE_SORTED_ELEMENTS = new ArrayList();
     {
-        SORTED_ELEMENTS.addAll(DescriptionGroupImpl.SORTED_ELEMENTS);
-        SORTED_ELEMENTS.add(JSFConfigQNames.FROM_ACTION.getLocalName());
-        SORTED_ELEMENTS.add(JSFConfigQNames.FROM_OUTCOME.getLocalName());
-        SORTED_ELEMENTS.add(JSFConfigQNames.TO_VIEW_ID.getLocalName());
-        SORTED_ELEMENTS.add(JSFConfigQNames.REDIRECT.getLocalName());
+        NAVIGATION_CASE_SORTED_ELEMENTS.addAll(DescriptionGroupImpl.DESCRIPTION_GROUP_SORTED_ELEMENTS);
+        NAVIGATION_CASE_SORTED_ELEMENTS.add(JSFConfigQNames.FROM_ACTION.getLocalName());
+        NAVIGATION_CASE_SORTED_ELEMENTS.add(JSFConfigQNames.FROM_OUTCOME.getLocalName());
+        NAVIGATION_CASE_SORTED_ELEMENTS.add(JSFConfigQNames.TO_VIEW_ID.getLocalName());
+        NAVIGATION_CASE_SORTED_ELEMENTS.add(JSFConfigQNames.REDIRECT.getLocalName());
     }
     
     /** Creates a new instance of NavigationCaseImpl */
@@ -65,8 +65,8 @@ public class NavigationCaseImpl extends DescriptionGroupImpl implements Navigati
         setChildElementText(FROM_OUTCOME, fromOutcome, JSFConfigQNames.FROM_OUTCOME.getQName(getModel().getVersion()));
     }
 
-    protected List<String> getSortedListOfLocalNames(){
-        return SORTED_ELEMENTS;
+    protected List<String> getSortedListOfLocalNames() {
+        return NAVIGATION_CASE_SORTED_ELEMENTS;
     }
     
     public void setRedirected(boolean redirect) {

@@ -31,11 +31,11 @@ import org.w3c.dom.Element;
  */
 public abstract class DescriptionGroupImpl extends JSFConfigComponentImpl implements DescriptionGroup {
     
-    protected static final List<String> SORTED_ELEMENTS = new ArrayList();
+    protected static final List<String> DESCRIPTION_GROUP_SORTED_ELEMENTS = new ArrayList();
     { 
-        SORTED_ELEMENTS.add(JSFConfigQNames.DESCRIPTION.getLocalName());
-        SORTED_ELEMENTS.add(JSFConfigQNames.DISPLAY_NAME.getLocalName());
-        SORTED_ELEMENTS.add(JSFConfigQNames.ICON.getLocalName());
+        DESCRIPTION_GROUP_SORTED_ELEMENTS.add(JSFConfigQNames.DESCRIPTION.getLocalName());
+        DESCRIPTION_GROUP_SORTED_ELEMENTS.add(JSFConfigQNames.DISPLAY_NAME.getLocalName());
+        DESCRIPTION_GROUP_SORTED_ELEMENTS.add(JSFConfigQNames.ICON.getLocalName());
     }
             
     public DescriptionGroupImpl(JSFConfigModelImpl model, Element element) {
@@ -88,6 +88,11 @@ public abstract class DescriptionGroupImpl extends JSFConfigComponentImpl implem
     
     public void removeIcon(Icon icon) {
         removeChild(ICON, icon);
+    }
+    
+    @Override
+    protected List<String> getSortedListOfLocalNames() {
+        return DESCRIPTION_GROUP_SORTED_ELEMENTS;
     }
     
 }

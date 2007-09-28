@@ -40,10 +40,25 @@ public class JSFResultItemPaintComponent {
    
    public static class JSFMethodPaintComponent extends ResultItemPaintComponent.ELPropertyPaintComponent {
         private static final String METHOD_PATH = "org/netbeans/modules/web/jsf/editor/jspel/resources/method_16.png";      //NOI18N
-        private String typeName;
         
         protected Icon getIcon(){
             return new ImageIcon(org.openide.util.Utilities.loadImage(METHOD_PATH));
+        }
+   }
+   
+   public static class JSFResourceBundlePaintComponent extends ResultItemPaintComponent.ELBeanPaintComponent {
+        private static final String BUNDLE_ICON_PATH = "org/netbeans/modules/web/jsf/editor/jspel/resources/propertiesLocale.gif";  //NOI18N
+        
+        protected Icon getIcon(){
+            return new ImageIcon(org.openide.util.Utilities.loadImage(BUNDLE_ICON_PATH));
+        }
+   }
+   
+   public static class JSFResourceItemPaintComponent extends ResultItemPaintComponent.ELBeanPaintComponent {
+        private static final String BUNDLE_ICON_PATH = "org/netbeans/modules/web/jsf/editor/jspel/resources/propertiesKey.gif";  //NOI18N
+        
+        protected Icon getIcon(){
+            return new ImageIcon(org.openide.util.Utilities.loadImage(BUNDLE_ICON_PATH));
         }
    }
     

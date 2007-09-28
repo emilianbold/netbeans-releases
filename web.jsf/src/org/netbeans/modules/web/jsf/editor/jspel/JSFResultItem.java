@@ -66,4 +66,42 @@ public class JSFResultItem {
             return paintComponent;
         }
     }
+    
+    public static class JSFResourceBundle extends JspCompletionItem.ELBean {
+        
+        private static JSFResultItemPaintComponent.JSFResourceBundlePaintComponent paintComponent = null;
+        
+        JSFResourceBundle( String text, String type ) {
+            super(text, type);
+        }
+        
+        public int getSortPriority() {
+            return 10;
+        }
+        
+        public Component getPaintComponent(boolean isSelected) {
+            if (paintComponent == null)
+                paintComponent = new JSFResultItemPaintComponent.JSFResourceBundlePaintComponent();
+            paintComponent.setString(text);
+            paintComponent.setTypeName(type);
+            return paintComponent;
+        }
+    }
+    
+    public static class JSFResourceItem extends JspCompletionItem.JspResultItem {
+        
+        private static JSFResultItemPaintComponent.JSFResourceItemPaintComponent paintComponent = null;
+        
+        JSFResourceItem( String text, String type ) {
+            super(text, type);
+        }
+        
+        
+        public Component getPaintComponent(boolean isSelected) {
+            if (paintComponent == null)
+                paintComponent = new JSFResultItemPaintComponent.JSFResourceItemPaintComponent();
+            paintComponent.setString(text);
+            return paintComponent;
+        }
+    }
 }

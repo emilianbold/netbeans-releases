@@ -38,6 +38,7 @@ public interface JSFConfigVisitor {
     void visit(LocaleConfig component);
     void visit(DefaultLocale component);
     void visit(SupportedLocale component);
+    void visit(ResourceBundle component);
     
     /**
      * Default shallow visitor.
@@ -85,6 +86,10 @@ public interface JSFConfigVisitor {
         }
 
         public void visit(SupportedLocale component) {
+            visitChild();
+        }
+        
+        public void visit(ResourceBundle component) {
             visitChild();
         }
     }

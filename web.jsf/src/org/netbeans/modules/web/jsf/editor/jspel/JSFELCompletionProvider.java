@@ -30,6 +30,7 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.core.syntax.JspSyntaxSupport;
 import org.netbeans.modules.web.core.syntax.completion.JspCompletionItem;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
+import org.netbeans.modules.web.jsf.api.facesmodel.ResourceBundle;
 import org.netbeans.spi.editor.completion.*;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
@@ -77,16 +78,27 @@ public class JSFELCompletionProvider implements CompletionProvider{
                 switch (elExpr.parse(offset)){
                     case JSFELExpression.EL_START:
                         List <ManagedBean>beans = JSFBeanCache.getBeans(wm);
-                        
+                        // check managed beans
                         for (ManagedBean bean : beans){
                             if (bean.getManagedBeanName().startsWith(elExpr.getReplace())){
                                 complItems.add(new JSFResultItem.JSFBean(bean.getManagedBeanName(), bean.getManagedBeanClass()));
+                            }
+                        }
+                        // check bundles properties
+                        List <ResourceBundle> bundles = elExpr.getJSFResourceBundles(wm);
+                        for (ResourceBundle bundle : bundles) {
+                            if (bundle.getVar() != null && bundle.getVar().startsWith(elExpr.getReplace())) {
+                                complItems.add(new JSFResultItem.JSFResourceBundle(bundle.getVar(), bundle.getBaseName()));
                             }
                         }
                         break;
                     case JSFELExpression.EL_JSF_BEAN:
                         List<CompletionItem> items = elExpr.getPropertyCompletionItems(elExpr.getObjectClass());
                         complItems.addAll(items);
+                        break;
+                    case JSFELExpression.EL_JSF_RESOURCE_BUNDLE:
+                        List<CompletionItem> bitems = elExpr.getPropertyKeys(elExpr.bundle, elExpr.getReplace());
+                        complItems.addAll(bitems);
                         break;
                 }
                 for (int i = 0; i < complItems.size(); i++)

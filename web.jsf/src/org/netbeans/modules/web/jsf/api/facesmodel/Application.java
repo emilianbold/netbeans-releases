@@ -41,6 +41,11 @@ public interface Application extends JSFConfigComponent {
      * Property name of &lt;locale-config&gt; element.
      */ 
     public static final String LOCALE_CONFIG = JSFConfigQNames.LOCALE_CONFIG.getLocalName();
+    
+    /**
+     * Property name of &lt;resource-bundle&gt; element.
+     */ 
+    public static final String RESOURCE_BUNDLE = JSFConfigQNames.RESOURCE_BUNDLE.getLocalName();
 
     List<ViewHandler> getViewHandlers();
     void addViewHandler(ViewHandler handler);
@@ -51,4 +56,9 @@ public interface Application extends JSFConfigComponent {
     void addLocaleConfig(LocaleConfig locale);
     void addLocaleConfig(int index, LocaleConfig locale);
     void removeLocaleConfig(LocaleConfig locale);
+    
+    List<ResourceBundle> getResourceBundles();
+    void addResourceBundle(ResourceBundle locale);
+    void addResourceBundle(int index, ResourceBundle locale);
+    void removeResourceBundle(ResourceBundle locale);
 }

@@ -157,4 +157,15 @@ public class SyncUpdateVisitor extends JSFConfigVisitor.Default implements Compo
             }
         }
     }
+    
+    @Override
+    public void visit(ResourceBundle component) {
+        if (target instanceof Application) {
+            if (operation == Operation.ADD) {
+                insert(Application.RESOURCE_BUNDLE, component);
+            } else {
+                remove(Application.RESOURCE_BUNDLE, component);
+            }
+        }
+    }
 }

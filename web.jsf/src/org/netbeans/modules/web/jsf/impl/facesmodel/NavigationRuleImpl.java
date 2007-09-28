@@ -33,11 +33,11 @@ import org.w3c.dom.Element;
  */
 public class NavigationRuleImpl extends DescriptionGroupImpl implements NavigationRule{
     
-    protected static final List<String> SORTED_ELEMENTS = new ArrayList();
+    protected static final List<String> NAVIGATION_RULE_SORTED_ELEMENTS = new ArrayList();
     {
-        SORTED_ELEMENTS.addAll(DescriptionGroupImpl.SORTED_ELEMENTS);
-        SORTED_ELEMENTS.add(JSFConfigQNames.FROM_VIEW_ID.getLocalName());
-        SORTED_ELEMENTS.add(JSFConfigQNames.NAVIGATION_CASE.getLocalName());
+        NAVIGATION_RULE_SORTED_ELEMENTS.addAll(DescriptionGroupImpl.DESCRIPTION_GROUP_SORTED_ELEMENTS);
+        NAVIGATION_RULE_SORTED_ELEMENTS.add(JSFConfigQNames.FROM_VIEW_ID.getLocalName());
+        NAVIGATION_RULE_SORTED_ELEMENTS.add(JSFConfigQNames.NAVIGATION_CASE.getLocalName());
     }
     
     public NavigationRuleImpl(JSFConfigModelImpl model, Element element) {
@@ -72,8 +72,8 @@ public class NavigationRuleImpl extends DescriptionGroupImpl implements Navigati
         setChildElementText(FROM_VIEW_ID, fromView, JSFConfigQNames.FROM_VIEW_ID.getQName(getModel().getVersion()));
     }
     
-    protected List<String> getSortedListOfLocalNames(){
-        return SORTED_ELEMENTS;
+    protected List<String> getSortedListOfLocalNames() {
+        return NAVIGATION_RULE_SORTED_ELEMENTS;
     }
     
     public void accept(JSFConfigVisitor visitor) {

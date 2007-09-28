@@ -42,4 +42,5 @@ public interface JSFConfigComponentFactory {
     LocaleConfig createLocaleConfig();
     DefaultLocale createDefatultLocale();
     SupportedLocale createSupportedLocale();
+    ResourceBundle createResourceBundle();
 }

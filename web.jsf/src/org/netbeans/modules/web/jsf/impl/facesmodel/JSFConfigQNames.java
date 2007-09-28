@@ -63,7 +63,11 @@ public enum JSFConfigQNames {
     VIEW_HANDLER("view-handler"),                   //NOI18N
     LOCALE_CONFIG("locale-config"),                 //NOI18N
     DEFAULT_LOCALE("default-locale"),               //NOI18N
-    SUPPORTED_LOCALE("supported-locale");           //NOI18N
+    SUPPORTED_LOCALE("supported-locale"),           //NOI18N
+    //resource_bundle
+    RESOURCE_BUNDLE("resource-bundle"),             //NOI18N
+    BASE_NAME("base-name"),                         //NOI18N
+    VAR("var");                                     //NOI18N
     
     private QName qname_1_1;
     private QName qname_1_2;
@@ -110,6 +114,7 @@ public enum JSFConfigQNames {
         mappedQNames_1_1.add(ICON.getQName(JSFVersion.JSF_1_1));
         mappedQNames_1_1.add(APPLICATION.getQName(JSFVersion.JSF_1_1));
         mappedQNames_1_1.add(VIEW_HANDLER.getQName(JSFVersion.JSF_1_1));
+        mappedQNames_1_1.add(RESOURCE_BUNDLE.getQName(JSFVersion.JSF_1_1));
         
         mappedQNames_1_2.add(FACES_CONFIG.getQName(JSFVersion.JSF_1_2));
         mappedQNames_1_2.add(MANAGED_BEAN.getQName(JSFVersion.JSF_1_2));
@@ -121,6 +126,7 @@ public enum JSFConfigQNames {
         mappedQNames_1_2.add(ICON.getQName(JSFVersion.JSF_1_2));
         mappedQNames_1_2.add(APPLICATION.getQName(JSFVersion.JSF_1_2));
         mappedQNames_1_2.add(VIEW_HANDLER.getQName(JSFVersion.JSF_1_2));
+        mappedQNames_1_2.add(RESOURCE_BUNDLE.getQName(JSFVersion.JSF_1_2));
     }
     
     public static Set<QName> getMappedQNames(JSFVersion version) {

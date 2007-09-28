@@ -22,6 +22,7 @@ package org.netbeans.modules.web.jsf.impl.facesmodel;
 import java.util.List;
 import org.netbeans.modules.web.jsf.api.facesmodel.Application;
 import org.netbeans.modules.web.jsf.api.facesmodel.LocaleConfig;
+import org.netbeans.modules.web.jsf.api.facesmodel.ResourceBundle;
 import org.netbeans.modules.web.jsf.api.facesmodel.ViewHandler;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigVisitor;
 import org.w3c.dom.Element;
@@ -74,6 +75,22 @@ public class ApplicationImpl extends JSFConfigComponentImpl implements Applicati
         removeChild(LOCALE_CONFIG, locale);
     }
 
+    public List<ResourceBundle> getResourceBundles() {
+        return getChildren(ResourceBundle.class);
+    }
+
+    public void addResourceBundle(ResourceBundle resourceBundle) {
+        appendChild(RESOURCE_BUNDLE, resourceBundle);
+    }
+
+    public void addResourceBundle(int index, ResourceBundle resourceBundle) {
+        insertAtIndex(RESOURCE_BUNDLE, resourceBundle, index, ResourceBundle.class);
+    }
+
+    public void removeResourceBundle(ResourceBundle resourceBundle) {
+        removeChild(RESOURCE_BUNDLE, resourceBundle);
+    }
+    
     public void accept(JSFConfigVisitor visitor) {
         visitor.visit(this);
     }
