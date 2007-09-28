@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.editor.cplusplus;
 
 import org.netbeans.editor.TokenID;
 import org.netbeans.editor.TokenItem;
+import org.netbeans.editor.TokenCategory;
 import org.netbeans.editor.TokenContextPath;
 import org.netbeans.editor.ext.FormatTokenPosition;
 import org.netbeans.editor.ext.ExtFormatSupport;
@@ -92,7 +93,84 @@ public class CCFormatSupport extends ExtFormatSupport {
          return (token != null && token.getImage().startsWith("#")); // NOI18N
                  //&& getVisualColumnOffset(getPosition(token,0)) == 0);
      }
-    
+
+     /** Is given token a preprocessor **/
+     public boolean isPreprocessorLine(TokenItem token){
+         if (token != null){
+            FormatTokenPosition ft = findLineFirstNonWhitespace(getPosition(token, 0));
+            if (ft != null) {
+                if (isEndBackSlashedLine(ft)) {
+                    FormatTokenPosition eol = findPreviousEOL(ft);
+                    ft = eol;
+                    while(eol != null){
+                        if (isBackSlashEndLine(eol)){
+                            ft = eol;
+                            eol = findPreviousEOL(eol);
+                        } else {
+                            break;
+                        }
+                    }
+                    ft = findLineFirstNonWhitespace(ft);
+                } else if (isBackSlashEndLine(ft)) {
+                    FormatTokenPosition eol = ft;
+                    eol = findPreviousEOL(eol);
+                    while(eol != null){
+                        if (isBackSlashEndLine(eol)){
+                            ft = eol;
+                            eol = findPreviousEOL(eol);
+                        } else {
+                            break;
+                        }
+                    }
+                    ft = findLineFirstNonWhitespace(ft);
+                }
+                if (ft != null) {
+                     token = ft.getToken();
+                }
+            }
+         }
+         return (token != null && token.getImage().startsWith("#")); // NOI18N
+     }
+
+     
+     
+    /** Return the ending non whitespace on the line or null
+    * if there's no such token on the given line.
+    */
+    public boolean isEndBackSlashedLine(FormatTokenPosition pos) {
+        FormatTokenPosition eol = findPreviousEOL(pos);
+        if (eol != null){
+            TokenItem token = eol.getToken();
+            if (token != null) {
+                eol =  findLineFirstNonWhitespace(getPosition(token, 0));
+                if (eol != null) {
+                    return isBackSlashEndLine(eol);
+                }
+            }
+        }
+        return false;
+    }
+
+    /** Return the ending non whitespace on the line or null
+    * if there's no such token on the given line.
+    */
+    public boolean isBackSlashEndLine(FormatTokenPosition pos) {
+        FormatTokenPosition eol = findLineEndNonImportant(pos);
+        if (eol != null){
+            TokenItem token = eol.getToken();
+            if (token !=null) {
+                if (token.getTokenID() == CCTokenContext.BACKSLASH || 
+                    token.getTokenID() == CCTokenContext.INVALID_BACKSLASH){
+                    return true;
+                }
+                token = token.getPrevious();
+                return token !=null &&
+                        (token.getTokenID() == CCTokenContext.BACKSLASH ||
+                         token.getTokenID() == CCTokenContext.INVALID_BACKSLASH);
+            }
+        }
+        return false;
+    }
 
     public boolean isMultiLineComment(TokenItem token) {
         return (token.getTokenID() == CCTokenContext.BLOCK_COMMENT);
@@ -115,10 +193,12 @@ public class CCFormatSupport extends ExtFormatSupport {
         return CCTokenContext.WHITESPACE;
     }
 
+    @Override
     public TokenContextPath getWhitespaceTokenContextPath() {
         return tokenContextPath;
     }
 
+    @Override
     public boolean canModifyWhitespace(TokenItem inToken) {
         if (inToken.getTokenContextPath() == CCTokenContext.contextPath) {
             switch (inToken.getTokenID().getNumericID()) {
@@ -217,7 +297,7 @@ public class CCFormatSupport extends ExtFormatSupport {
                         return t;
                 }
                 // Remember last important token (preprocessor token are not important (?) (4922370))
-                if (!isPreprocessorAtLineStart(t) && isImportant(t, 0)) {
+                if (!isPreprocessorLine(t) && isImportant(t, 0)) {
                     lit = t;
                 }
             }
@@ -419,8 +499,8 @@ public class CCFormatSupport extends ExtFormatSupport {
     public TokenItem findStatementStart(TokenItem token) {
         TokenItem t = findStatementStart(token, true);
         // preprocessor tokens are not important (bug#22570)
-        while (t != null && isPreprocessorAtLineStart(t)) {
-            t = findStatementStart(t.getPrevious());
+        while (t != null && isPreprocessorLine(t)) {
+            t = findStatementStart(t.getPrevious(), true);
         }
         return t;
     }
@@ -710,7 +790,7 @@ public class CCFormatSupport extends ExtFormatSupport {
                     case CCTokenContext.SEMICOLON_ID: // semicolon found
                         TokenItem tt = findStatementStart(token);
                         // preprocessor tokens are not important (bug#22570)
-                        while (tt != null && (isPreprocessorAtLineStart(tt) ||
+                        while (tt != null && (isPreprocessorLine(tt) ||
 				    tt.getImage().startsWith("\n"))) { // NOI18N
 			    tt = findStatementStart(tt.getPrevious());
                         }
@@ -844,14 +924,120 @@ public class CCFormatSupport extends ExtFormatSupport {
     }
 
     private boolean isStatement(TokenItem t){
-        t = t.getNext();
+        boolean likeDeclaration = false;
+        boolean findLParen = false;
+        int identifiers = 0;
         while (t != null) {
             if (t.getTokenContextPath() == tokenContextPath) {
                 switch (t.getTokenID().getNumericID()) {
+                    case CCTokenContext.EQ_ID:
+                    case CCTokenContext.AND_EQ_ID:
+                    case CCTokenContext.OR_EQ_ID:
+                    case CCTokenContext.MUL_EQ_ID:
+                    case CCTokenContext.DIV_EQ_ID:
+                    case CCTokenContext.XOR_EQ_ID:
+                    case CCTokenContext.MOD_EQ_ID:
+                    case CCTokenContext.DYNAMIC_CAST_ID:
+                    case CCTokenContext.STATIC_CAST_ID:
+                    case CCTokenContext.REINTERPRET_CAST_ID:
+                    case CCTokenContext.CONST_CAST_ID:
+                    case CCTokenContext.NEW_ID:
+                    case CCTokenContext.DELETE_ID:
+                    case CCTokenContext.RETURN_ID:
+                    case CCTokenContext.BREAK_ID:
+                    case CCTokenContext.CASE_ID:
+                    case CCTokenContext.CATCH_ID:
+                    case CCTokenContext.CONTINUE_ID:
+                    case CCTokenContext.DEFAULT_ID:
+                    case CCTokenContext.DO_ID:
+                    case CCTokenContext.ELSE_ID:
+                    case CCTokenContext.FALSE_ID:
+                    case CCTokenContext.FOR_ID:
+                    case CCTokenContext.GOTO_ID:
+                    case CCTokenContext.IF_ID:
+                    case CCTokenContext.NULL_ID:
+                    case CCTokenContext.SIZEOF_ID:
+                    case CCTokenContext.SWITCH_ID:
+                    case CCTokenContext.THIS_ID:
+                    case CCTokenContext.THROW_ID:
+                    case CCTokenContext.TRUE_ID:
+                    case CCTokenContext.TRY_ID:
+                    case CCTokenContext.USING_ID:
+                    case CCTokenContext.WHILE_ID:
+                    case CCTokenContext.CHAR_LITERAL_ID:
+                    case CCTokenContext.STRING_LITERAL_ID:
+                    case CCTokenContext.INT_LITERAL_ID:
+                    case CCTokenContext.LONG_LITERAL_ID:
+                    case CCTokenContext.HEX_LITERAL_ID:
+                    case CCTokenContext.OCTAL_LITERAL_ID:
+                    case CCTokenContext.FLOAT_LITERAL_ID:
+                    case CCTokenContext.DOUBLE_LITERAL_ID:
                     case CCTokenContext.SEMICOLON_ID:
                         return true;
+                    case CCTokenContext.FRIEND_ID:
+                    case CCTokenContext.EXPLICIT_ID:
+                    case CCTokenContext.EXTERN_ID:
+                    case CCTokenContext.CLASS_ID:
+                    case CCTokenContext.STATIC_ID:
+                    case CCTokenContext.OPERATOR_ID:
+                    case CCTokenContext.PRIVATE_ID:
+                    case CCTokenContext.PROTECTED_ID:
+                    case CCTokenContext.PUBLIC_ID:
+                    case CCTokenContext.NAMESPACE_ID:
+                    case CCTokenContext.TEMPLATE_ID:
+                    case CCTokenContext.UNION_ID:
+                    case CCTokenContext.ENUM_ID:
+                    case CCTokenContext.VIRTUAL_ID:
+                    case CCTokenContext.INLINE_ID:
                     case CCTokenContext.LBRACE_ID:
                         return false;
+                    case CCTokenContext.RPAREN_ID:
+                        if (likeDeclaration) {
+                            return false;
+                        }
+                    case CCTokenContext.LPAREN_ID:
+                        if (!findLParen && identifiers > 1){
+                            likeDeclaration = true;
+                        }
+                        findLParen = true;
+                        break;
+                    case CCTokenContext.ASM_ID:
+                    case CCTokenContext.AUTO_ID:
+                    case CCTokenContext.BOOLEAN_ID:
+                    case CCTokenContext.CHAR_ID:
+                    case CCTokenContext.DOUBLE_ID:
+                    case CCTokenContext.EXPORT_ID:
+                    case CCTokenContext.FLOAT_ID:
+                    case CCTokenContext.INT_ID:
+                    case CCTokenContext.LONG_ID:
+                    case CCTokenContext.MUTABLE_ID:
+                    case CCTokenContext.REGISTER_ID:
+                    case CCTokenContext.SHORT_ID:
+                    case CCTokenContext.SIGNED_ID:
+                    case CCTokenContext.STRUCT_ID:
+                    case CCTokenContext.TYPEDEF_ID:
+                    case CCTokenContext.TYPENAME_ID:
+                    case CCTokenContext.UNSIGNED_ID:
+                    case CCTokenContext.VOID_ID:
+                    case CCTokenContext.WCHAR_T_ID:
+                    case CCTokenContext.VOLATILE_ID:
+                    case CCTokenContext.CONST_ID:
+                        if (!findLParen) {
+                            return false;
+                        }
+                        break;
+                    case CCTokenContext.IDENTIFIER_ID:
+                        identifiers++;
+                        break;
+                    case CCTokenContext.MUL_ID:
+                    case CCTokenContext.AND_ID:
+                        break;
+                    default:
+                       TokenCategory category = t.getTokenID().getCategory();
+                       if (category == CCTokenContext.OPERATORS) {
+                           return true;
+                       }
+                       break;
                 }
             }
             t = t.getNext();
@@ -865,8 +1051,11 @@ public class CCFormatSupport extends ExtFormatSupport {
         // Get the first non-whitespace position on the line
         FormatTokenPosition firstNWS = findLineFirstNonWhitespace(pos);
         if (firstNWS != null) { // some non-WS on the line
-            if (isPreprocessorAtLineStart(firstNWS.getToken())){
-                    // leave untouched for now, (bug#22570)
+            if (isPreprocessorLine(firstNWS.getToken())){
+                 // leave untouched for now, (bug#22570)
+                if (!isPreprocessorAtLineStart(firstNWS.getToken())) {
+                    return pos;
+                }
             } else if (isComment(firstNWS)) { // comment is first on the line
                 if (isMultiLineComment(firstNWS) && firstNWS.getOffset() != 0) {
                     
@@ -1200,8 +1389,11 @@ public class CCFormatSupport extends ExtFormatSupport {
                  if (ft == null) {
                      return null;
                  }
-                 if (isPreprocessorAtLineStart(ft.getToken())) {
-                    t = findImportantToken(t, limitToken, backward);
+                 if (isPreprocessorLine(ft.getToken())) {
+                    t = backward ? t.getPrevious() : t.getNext();
+                    if (t != null) {
+                        t = findImportantToken(t, limitToken, backward);
+                    }
                  } else {
                      break;
                  }

@@ -256,7 +256,7 @@ public class CCFormatter extends ExtFormatter {
             ftp = ccfs.findNonWhitespace(endOfPreviousLine, null, true, true);
             if (ftp.getToken().getTokenID() == CCTokenContext.LINE_COMMENT ||
                 ftp.getToken().getTokenID() == CCTokenContext.LBRACE ||
-                ccfs.isPreprocessorAtLineStart(ftp.getToken())){
+                ccfs.isPreprocessorLine(ftp.getToken())){
                 return;
             }
 
@@ -383,7 +383,7 @@ public class CCFormatter extends ExtFormatter {
                                 ftp = ccfs.findNonWhitespace(endOfPreviousLine, null, true, true);
                                 if (ftp.getToken().getTokenID() == CCTokenContext.LINE_COMMENT ||
                                     ftp.getToken().getTokenID() == CCTokenContext.LBRACE ||
-                                    ccfs.isPreprocessorAtLineStart(ftp.getToken()))
+                                    ccfs.isPreprocessorLine(ftp.getToken()))
                                     break;
 
                                 // now move the "{" to the end of previous line
