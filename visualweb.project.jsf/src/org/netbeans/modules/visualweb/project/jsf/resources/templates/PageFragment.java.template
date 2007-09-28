@@ -44,6 +44,9 @@ public class ${name} extends AbstractFragmentBean {
      * 
      * <p>The default implementation does nothing.</p>
      */
+<#if sourceLevel?? && ( sourceLevel = "1.5" || sourceLevel = "1.6" || sourceLevel = "1.7" ) >
+    @Override
+</#if>
     public void init() {
         // Perform initializations inherited from our superclass
         super.init();
@@ -76,6 +79,9 @@ public class ${name} extends AbstractFragmentBean {
      * 
      * <p>The default implementation does nothing.</p>
      */
+<#if sourceLevel?? && ( sourceLevel = "1.5" || sourceLevel = "1.6" || sourceLevel = "1.7" ) >
+    @Override
+</#if>
     public void destroy() {
     }
 }

@@ -26,6 +26,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
@@ -35,6 +37,9 @@ import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.core.jsploader.api.TagLibParseCookie;
 import org.netbeans.modules.web.core.jsploader.api.TagLibParseFactory;
 
@@ -57,6 +62,7 @@ import org.xml.sax.SAXException;
 import org.netbeans.modules.visualweb.api.insync.InSyncService;
 import org.netbeans.modules.visualweb.api.insync.JsfJspDataObjectMarker;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfDataObjectException;
+import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
@@ -499,7 +505,16 @@ implements CookieSet.Factory, JsfJspDataObjectMarker {
         } else {
             DataObject newBackingJava = null;
             try {
-                newBackingJava = backingTemplate.createFromTemplate(backingTargetFolder, result.getName());
+                FileObject resultFileObject = result.getPrimaryFile();
+                Project project = FileOwnerQuery.getOwner(resultFileObject);
+                if (project == null) {                    
+                    newBackingJava = backingTemplate.createFromTemplate(backingTargetFolder, result.getName());
+                } else {
+                    Map<String, String> templateParameters = new HashMap<String, String>();
+                    templateParameters.put("j2eePlatformVersion", JsfProjectUtils.getJ2eePlatformVersion(project)); //NOI18N
+                    templateParameters.put("sourceLevel", JsfProjectUtils.getSourceLevel(project)); //NOI18N
+                    newBackingJava = backingTemplate.createFromTemplate(backingTargetFolder, result.getName(), templateParameters);
+                }
             }catch (Exception ex) {
                 // XXX NB issue #113284
                 ex.printStackTrace();

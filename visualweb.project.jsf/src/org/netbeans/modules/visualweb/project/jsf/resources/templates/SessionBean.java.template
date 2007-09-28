@@ -53,6 +53,9 @@ public class ${name} extends AbstractSessionBean {
      * or resources that are required for the lifetime of a particular
      * user session.</p>
      */
+<#if sourceLevel?? && ( sourceLevel = "1.5" || sourceLevel = "1.6" || sourceLevel = "1.7" ) >
+    @Override
+</#if>
     public void init() {
         // Perform initializations inherited from our superclass
         super.init();
@@ -86,6 +89,9 @@ public class ${name} extends AbstractSessionBean {
      * <p>You may customize this method to release references to session data
      * or resources that can not be serialized with the session itself.</p>
      */
+<#if sourceLevel?? && ( sourceLevel = "1.5" || sourceLevel = "1.6" || sourceLevel = "1.7" ) >
+    @Override
+</#if>
     public void passivate() {
     }
 
@@ -97,6 +103,9 @@ public class ${name} extends AbstractSessionBean {
      * data or resources that could not be serialized with the
      * session itself.</p>
      */
+<#if sourceLevel?? && ( sourceLevel = "1.5" || sourceLevel = "1.6" || sourceLevel = "1.7" ) >
+    @Override
+</#if>
     public void activate() {
     }
 
@@ -109,6 +118,9 @@ public class ${name} extends AbstractSessionBean {
      * during the execution of the <code>init()</code> method, or
      * at any later time during the lifetime of the application.</p>
      */
+<#if sourceLevel?? && ( sourceLevel = "1.5" || sourceLevel = "1.6" || sourceLevel = "1.7" ) >
+    @Override
+</#if>
     public void destroy() {
     }
 }

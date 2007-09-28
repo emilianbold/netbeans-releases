@@ -54,6 +54,9 @@ public class ${name} extends AbstractApplicationBean {
      * components), or to allocate resources that are required for the
      * lifetime of the application.</p>
      */
+<#if sourceLevel?? && ( sourceLevel = "1.5" || sourceLevel = "1.6" || sourceLevel = "1.7" ) >
+    @Override
+</#if>
     public void init() {
         // Perform initializations inherited from our superclass
         super.init();
@@ -86,6 +89,9 @@ public class ${name} extends AbstractApplicationBean {
      * during the execution of the <code>init()</code> method, or
      * at any later time during the lifetime of the application.</p>
      */
+<#if sourceLevel?? && ( sourceLevel = "1.5" || sourceLevel = "1.6" || sourceLevel = "1.7" ) >
+    @Override
+</#if>
     public void destroy() {
     }
 
@@ -98,6 +104,9 @@ public class ${name} extends AbstractApplicationBean {
      * <p>The default implementation uses the implementation from
      * our superclass, <code>AbstractApplicationBean</code>.</p>
      */
+<#if sourceLevel?? && ( sourceLevel = "1.5" || sourceLevel = "1.6" || sourceLevel = "1.7" ) >
+    @Override
+</#if>
     public String getLocaleCharacterEncoding() {
         return super.getLocaleCharacterEncoding();
     }

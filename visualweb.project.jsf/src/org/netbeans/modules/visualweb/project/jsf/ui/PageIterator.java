@@ -32,6 +32,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import java.awt.Component;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.List;
@@ -187,15 +188,6 @@ public class PageIterator implements TemplateWizard.Iterator {
         FileObject template = Templates.getTemplate(wizard);
         Project project = Templates.getProject(wizard);
 
-        // Java EE 5 / JSF 1.2 project needs different template
-        if (J2eeModule.JAVA_EE_5.equals(JsfProjectUtils.getJ2eePlatformVersion(project))) {
-            String name = "Templates/Jsf12Apps/" + template.getNameExt(); // NOI18N
-            FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource(name);
-            if (fo != null) {
-                template = fo;
-            }
-        }
-
         DataObject dTemplate = DataObject.find(template);                
         String targetName = Templates.getTargetName(wizard);
         Set result = Collections.EMPTY_SET;
@@ -238,8 +230,11 @@ public class PageIterator implements TemplateWizard.Iterator {
                 // Default name.
                 obj = dTemplate.createFromTemplate(df);
             } else {
+                Map<String, String> templateParameters = new HashMap<String, String>();
+                templateParameters.put("j2eePlatformVersion", JsfProjectUtils.getJ2eePlatformVersion(project)); //NOI18N
+                templateParameters.put("sourceLevel", JsfProjectUtils.getSourceLevel(project)); //NOI18N
+
                 if ("jsp".equals(template.getExt())) { // NOI18N
-                    HashMap<String, String> templateParameters = new HashMap<String, String>();
                     FileObject webDocbase = JsfProjectUtils.getDocumentRoot(project);
                     String folder;
                     if (dir == webDocbase) {
@@ -254,10 +249,9 @@ public class PageIterator implements TemplateWizard.Iterator {
                     }
                     templateParameters.put("folder", folder); //NOI18N
 
-                    obj = dTemplate.createFromTemplate(df, targetName, templateParameters);
-                } else {
-                    obj = dTemplate.createFromTemplate(df, targetName);
                 }
+                
+                obj = dTemplate.createFromTemplate(df, targetName, templateParameters);
             }
         } catch(org.netbeans.modules.visualweb.project.jsf.api.JsfDataObjectException jsfe) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(

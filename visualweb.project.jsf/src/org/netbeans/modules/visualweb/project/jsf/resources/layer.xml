@@ -129,45 +129,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsf/resources/templates/descriptions/stylesheetTemplateHelp.html"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             </file>
-            </folder>
-
-        <folder name="Jsf12Apps">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsf.resources.Bundle"/>
-            <attr name="position" intvalue="2200"/>
-            <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsf/resources/templates/descriptions/webappsTemplateHelp.html"/>
-            <file name="Page.jsp" url="/org/netbeans/modules/visualweb/project/jsf/resources/templates/1_5/Page.jsp.template">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsf.resources.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsfloader/resources/jsfJspObject.png"/>
-                <attr name="position" intvalue="100"/>
-                <attr name="template" boolvalue="true"/>
-                <attr name="templateCategory" stringvalue="rave-page_1.5"/>
-                <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.visualweb.project.jsf.ui.PageIterator.createWebFormIterator"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsf/resources/templates/descriptions/WebFormTemplateHelp.html"/>
-                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-            </file>
-            <file name="Page.java" url="/org/netbeans/modules/visualweb/project/jsf/resources/templates/1_5/Page.java.template">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsf.resources.Bundle"/>
-                <attr name="position" intvalue="200"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsf/resources/templates/descriptions/pageJavaTemplateHelp.html"/>
-                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-            </file>
-            <file name="PageFragment.jspf" url="/org/netbeans/modules/visualweb/project/jsf/resources/templates/1_5/PageFragment.jspf.template">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsf.resources.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsfloader/resources/jsfJspfObject.png"/>
-                <attr name="position" intvalue="300"/>
-                <attr name="template" boolvalue="true"/>
-                <attr name="templateCategory" stringvalue="rave-page_1.5"/>
-                <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.visualweb.project.jsf.ui.PageIterator.createWebFormIterator"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsf/resources/templates/descriptions/WebFormTemplateHelp.html"/>
-                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-            </file>
-            <file name="PageFragment.java" url="/org/netbeans/modules/visualweb/project/jsf/resources/templates/1_5/PageFragment.java.template">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsf.resources.Bundle"/>
-                <attr name="position" intvalue="400"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsf/resources/templates/descriptions/pageJavaTemplateHelp.html"/>
-                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-            </file>
-        </folder>  <!-- Jsf12Apps -->
+        </folder>        
     </folder> <!-- Templates -->
 
     <folder name="org-netbeans-api-project-libraries">

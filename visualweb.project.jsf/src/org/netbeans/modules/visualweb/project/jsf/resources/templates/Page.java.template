@@ -9,12 +9,21 @@ package ${package};
 </#if>
 
 import com.sun.rave.web.ui.appbase.AbstractPageBean;
+<#if j2eePlatformVersion?? && j2eePlatformVersion = "1.5">
+import com.sun.webui.jsf.component.Body;
+import com.sun.webui.jsf.component.Form;
+import com.sun.webui.jsf.component.Head;
+import com.sun.webui.jsf.component.Html;
+import com.sun.webui.jsf.component.Link;
+import com.sun.webui.jsf.component.Page;
+<#else>
 import com.sun.rave.web.ui.component.Body;
 import com.sun.rave.web.ui.component.Form;
 import com.sun.rave.web.ui.component.Head;
 import com.sun.rave.web.ui.component.Html;
 import com.sun.rave.web.ui.component.Link;
 import com.sun.rave.web.ui.component.Page;
+</#if>
 import javax.faces.FacesException;
 
 /**
@@ -118,6 +127,9 @@ public class ${name} extends AbstractPageBean {
      * values submitted with this request.  Instead, they represent the
      * property values that were saved for this view when it was rendered.</p>
      */
+<#if sourceLevel?? && ( sourceLevel = "1.5" || sourceLevel = "1.6" || sourceLevel = "1.7" ) >
+    @Override
+</#if>
     public void init() {
         // Perform initializations inherited from our superclass
         super.init();
@@ -148,6 +160,9 @@ public class ${name} extends AbstractPageBean {
      * is processing a form submit.  Customize this method to allocate
      * resources that will be required in your event handlers.</p>
      */
+<#if sourceLevel?? && ( sourceLevel = "1.5" || sourceLevel = "1.6" || sourceLevel = "1.7" ) >
+    @Override
+</#if>
     public void preprocess() {
     }
 
@@ -159,6 +174,9 @@ public class ${name} extends AbstractPageBean {
      * this method to allocate resources that will be required for rendering
      * this page.</p>
      */
+<#if sourceLevel?? && ( sourceLevel = "1.5" || sourceLevel = "1.6" || sourceLevel = "1.7" ) >
+    @Override
+</#if>
     public void prerender() {
     }
 
@@ -170,6 +188,9 @@ public class ${name} extends AbstractPageBean {
      * <code>preprocess()</code>, or <code>prerender()</code> methods (or
      * acquired during execution of an event handler).</p>
      */
+<#if sourceLevel?? && ( sourceLevel = "1.5" || sourceLevel = "1.6" || sourceLevel = "1.7" ) >
+    @Override
+</#if>
     public void destroy() {
     }
 }
