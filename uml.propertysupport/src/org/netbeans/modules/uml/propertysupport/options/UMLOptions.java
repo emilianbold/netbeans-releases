@@ -39,14 +39,6 @@
  * made subject to such option by the copyright holder.
  */
 
-/*
- * MyOptionsPanel.java
- *
- * Created on October 28, 2005, 2:43 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
 
 package org.netbeans.modules.uml.propertysupport.options;
 
