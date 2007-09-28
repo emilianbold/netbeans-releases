@@ -764,6 +764,9 @@ public abstract class DocumentBox extends ContainerBox {
             updateLayout(cc.nextChangedBox);
         }
 
+        // XXX #99918.
+        adjustFixedBoxesIssue99918();
+        
         updateSizeInfo();
 
         if ((Math.abs(extentX) > 50000) || (Math.abs(extentY) > 50000) ||
@@ -1035,6 +1038,9 @@ public abstract class DocumentBox extends ContainerBox {
             updateLayout(cc.nextChangedBox);
         }
 
+        // XXX #99918.
+        adjustFixedBoxesIssue99918();
+        
         updateSizeInfo();
 
         if ((Math.abs(extentX) > 50000) || (Math.abs(extentY) > 50000) ||
