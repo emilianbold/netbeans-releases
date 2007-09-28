@@ -72,6 +72,7 @@ public class CCFormatSupport extends ExtFormatSupport {
         return tokenContextPath;
     }
 
+    @Override
     public boolean isComment(TokenItem token, int offset) {
         TokenID tokenID = token.getTokenID();
         return (token.getTokenContextPath() == tokenContextPath
@@ -189,6 +190,7 @@ public class CCFormatSupport extends ExtFormatSupport {
             && token.getImage().startsWith("/*");
     }
 
+    @Override
     public TokenID getWhitespaceTokenID() {
         return CCTokenContext.WHITESPACE;
     }
@@ -261,7 +263,7 @@ public class CCFormatSupport extends ExtFormatSupport {
                                     return (lit != null) ? lit : t;
                             }
                         }
-                        if (lit != null && firstColon){
+                        if (lit != null && firstColon && tt == null){
                             return lit;
                         }
                         firstColon = false;
@@ -900,9 +902,9 @@ public class CCFormatSupport extends ExtFormatSupport {
         // Find stmt start and add continuation indent
         TokenItem stmtStart = findStatementStart(t);
         indent = getTokenIndent(stmtStart);
-        int tindent = getTokenIndent(t);
-        if (tindent > indent)
-            return tindent;
+        //int tindent = getTokenIndent(t);
+        //if (tindent > indent)
+        //    return tindent;
         
         if (stmtStart != null) {
             // Check whether there is a comma on the previous line end
@@ -926,6 +928,7 @@ public class CCFormatSupport extends ExtFormatSupport {
     private boolean isStatement(TokenItem t){
         boolean likeDeclaration = false;
         boolean findLParen = false;
+        boolean findQuestion = false;
         int identifiers = 0;
         while (t != null) {
             if (t.getTokenContextPath() == tokenContextPath) {
@@ -937,11 +940,6 @@ public class CCFormatSupport extends ExtFormatSupport {
                     case CCTokenContext.DIV_EQ_ID:
                     case CCTokenContext.XOR_EQ_ID:
                     case CCTokenContext.MOD_EQ_ID:
-                    case CCTokenContext.DYNAMIC_CAST_ID:
-                    case CCTokenContext.STATIC_CAST_ID:
-                    case CCTokenContext.REINTERPRET_CAST_ID:
-                    case CCTokenContext.CONST_CAST_ID:
-                    case CCTokenContext.NEW_ID:
                     case CCTokenContext.DELETE_ID:
                     case CCTokenContext.RETURN_ID:
                     case CCTokenContext.BREAK_ID:
@@ -951,28 +949,21 @@ public class CCFormatSupport extends ExtFormatSupport {
                     case CCTokenContext.DEFAULT_ID:
                     case CCTokenContext.DO_ID:
                     case CCTokenContext.ELSE_ID:
-                    case CCTokenContext.FALSE_ID:
                     case CCTokenContext.FOR_ID:
                     case CCTokenContext.GOTO_ID:
                     case CCTokenContext.IF_ID:
-                    case CCTokenContext.NULL_ID:
                     case CCTokenContext.SIZEOF_ID:
                     case CCTokenContext.SWITCH_ID:
                     case CCTokenContext.THIS_ID:
                     case CCTokenContext.THROW_ID:
-                    case CCTokenContext.TRUE_ID:
                     case CCTokenContext.TRY_ID:
                     case CCTokenContext.USING_ID:
                     case CCTokenContext.WHILE_ID:
-                    case CCTokenContext.CHAR_LITERAL_ID:
-                    case CCTokenContext.STRING_LITERAL_ID:
-                    case CCTokenContext.INT_LITERAL_ID:
-                    case CCTokenContext.LONG_LITERAL_ID:
-                    case CCTokenContext.HEX_LITERAL_ID:
-                    case CCTokenContext.OCTAL_LITERAL_ID:
-                    case CCTokenContext.FLOAT_LITERAL_ID:
-                    case CCTokenContext.DOUBLE_LITERAL_ID:
+                        return true;
                     case CCTokenContext.SEMICOLON_ID:
+                        if (likeDeclaration) {
+                            return false;
+                        }
                         return true;
                     case CCTokenContext.FRIEND_ID:
                     case CCTokenContext.EXPLICIT_ID:
@@ -991,10 +982,21 @@ public class CCFormatSupport extends ExtFormatSupport {
                     case CCTokenContext.INLINE_ID:
                     case CCTokenContext.LBRACE_ID:
                         return false;
-                    case CCTokenContext.RPAREN_ID:
-                        if (likeDeclaration) {
+                    case CCTokenContext.COLON_ID:
+                        if (!findQuestion) {
                             return false;
                         }
+                        break;
+                    case CCTokenContext.QUESTION_ID:
+                        findQuestion = true;
+                        break;
+                    case CCTokenContext.SCOPE_ID:
+                        if (!findLParen && identifiers == 1){
+                            likeDeclaration = true;
+                        }
+                        break;
+                    case CCTokenContext.RPAREN_ID:
+                        break;
                     case CCTokenContext.LPAREN_ID:
                         if (!findLParen && identifiers > 1){
                             likeDeclaration = true;
@@ -1029,15 +1031,6 @@ public class CCFormatSupport extends ExtFormatSupport {
                     case CCTokenContext.IDENTIFIER_ID:
                         identifiers++;
                         break;
-                    case CCTokenContext.MUL_ID:
-                    case CCTokenContext.AND_ID:
-                        break;
-                    default:
-                       TokenCategory category = t.getTokenID().getCategory();
-                       if (category == CCTokenContext.OPERATORS) {
-                           return true;
-                       }
-                       break;
                 }
             }
             t = t.getNext();
