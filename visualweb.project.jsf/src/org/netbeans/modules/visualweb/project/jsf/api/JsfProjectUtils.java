@@ -19,7 +19,7 @@
 
 package org.netbeans.modules.visualweb.project.jsf.api;
 
-import org.netbeans.modules.visualweb.project.jsf.JsfProjectTemplateJakarta;
+import org.netbeans.modules.visualweb.project.jsf.JsfProjectTemplate;
 import org.netbeans.modules.visualweb.project.jsf.actions.ImportFileAction;
 import org.netbeans.modules.visualweb.project.jsf.libraries.LibraryDefinition;
 import org.netbeans.modules.visualweb.project.jsf.libraries.J2SELibraryDefinition;
@@ -133,7 +133,7 @@ public class JsfProjectUtils {
      * @return The project template class that will perform the instantiation of project contents
      */
     public static ProjectTemplate getProjectTemplate() {
-        return new JsfProjectTemplateJakarta();
+        return new JsfProjectTemplate();
     }
 
     /**

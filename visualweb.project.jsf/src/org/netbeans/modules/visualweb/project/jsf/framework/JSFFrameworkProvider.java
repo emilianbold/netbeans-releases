@@ -19,19 +19,14 @@
 
 package org.netbeans.modules.visualweb.project.jsf.framework;
 
-import org.netbeans.modules.visualweb.project.jsf.JsfProjectTemplateJakarta;
+import org.netbeans.modules.visualweb.project.jsf.JsfProjectTemplate;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectConstants;
 import org.netbeans.modules.visualweb.project.jsf.api.ProjectTemplate;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.math.BigInteger;
 import java.util.HashSet;
 import java.util.Set;
@@ -51,7 +46,6 @@ import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.FileLock;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -102,10 +96,10 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
     
     // not named extend() so as to avoid implementing WebFrameworkProvider.extend()
     // better to move this to JSFConfigurationPanel
-    Set extendImpl(final WebModule webModule) {
+    Set extendImpl(WebModule webModule) {
         final FileObject fileObject = webModule.getDocumentBase();
         final Project project = FileOwnerQuery.getOwner(fileObject);
-        final ProjectTemplate template = new JsfProjectTemplateJakarta();
+        final ProjectTemplate template = new JsfProjectTemplate();
         Set result = new HashSet();
               
         // Set Bean Package and Start Page
@@ -131,7 +125,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             public void run() {
                 try{
                     project.getProjectDirectory().setAttribute("NewProject", Boolean.TRUE); // NOI18N
-                    template.create(project, webModule.getJ2eePlatformVersion(), pageName);
+                    template.create(project, pageName);
                 } catch (IOException ioe){
                     LOGGER.log(Level.WARNING, "Exception during extending an web project", ioe); //NOI18N
                 }

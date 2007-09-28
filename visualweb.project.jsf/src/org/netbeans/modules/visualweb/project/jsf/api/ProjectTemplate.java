@@ -24,7 +24,6 @@ import org.netbeans.modules.visualweb.project.jsf.*;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Enumeration;
-import java.util.Properties;
 import java.util.Map;
 import org.netbeans.api.project.Project;
 import org.openide.ErrorManager;
@@ -38,7 +37,6 @@ import org.openide.util.Utilities;
 
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 
 public abstract class ProjectTemplate {
@@ -49,9 +47,9 @@ public abstract class ProjectTemplate {
 
     public abstract void addLibrary(Project project) throws IOException;
 
-    public abstract void create(Project project, String j2eeLevel, String pageName) throws IOException;
+    public abstract void create(Project project, String pageName) throws IOException;
 
-    public abstract void instantiateFile(Project project, Node node, FileObject folder, String j2eeLevel, String pageName) throws IOException;
+    public abstract void instantiateFile(Project project, Node node, FileObject folder, String pageName) throws IOException;
 
     protected FileObject instantiateFileTemplate(FileObject folder, String name, String templateName, Map<String, String> parameters) throws IOException {
         FileSystem fs = Repository.getDefault().getDefaultFileSystem();
