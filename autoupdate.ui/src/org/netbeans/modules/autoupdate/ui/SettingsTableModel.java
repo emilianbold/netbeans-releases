@@ -42,6 +42,7 @@
 package org.netbeans.modules.autoupdate.ui;
 
 import java.net.URL;
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -233,9 +234,10 @@ public class SettingsTableModel extends AbstractTableModel {
         return NbBundle.getMessage (SettingsTableModel.class, COLUMN_NAME_KEYS[columnIndex]);
     }
     private static void sortAlphabetically (List<UpdateUnitProvider> res) {
-        Collections.sort (res, new Comparator<UpdateUnitProvider>(){
-            public int compare (UpdateUnitProvider arg0, UpdateUnitProvider arg1) {
-                return arg0.getDisplayName ().compareTo (arg1.getDisplayName ());
+        Collections.sort (res, new Comparator<UpdateUnitProvider>() {
+            Collator COLL = Collator.getInstance();
+            public int compare(UpdateUnitProvider p1, UpdateUnitProvider p2) {
+                return COLL.compare(p1.getDisplayName(), p2.getDisplayName());
             }
         });
         
