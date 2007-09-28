@@ -96,7 +96,7 @@ Microsystems, Inc. All Rights Reserved.
   <target name="build-pkg" depends="build-app">
     <echo message="NETBEANS_INSTALL_DIR=&quot;${appname}.app&quot;${line.separator}" file="pkg/scripts/env.sh"/>
     <mkdir dir="build/pkg"/>
-    <delete dir="build/pkg/NetBeansDev.pkg"/>
+    <delete dir="build/pkg/NetBeans.pkg"/>
     <exec executable="sh" failonerror="yes">
       <arg value="-c"/>
       <arg value='cd "${appdir}/Contents/Resources/NetBeans"; find . -name \*.jar -exec pack200 -J-Xmx256m -g {}.pack {} \;'/>
@@ -107,7 +107,7 @@ Microsystems, Inc. All Rights Reserved.
     </exec>
     <exec executable="sh" failonerror="yes">
       <arg value="-c"/>
-      <arg value="/Developer/Tools/packagemaker -build -v -p build/pkg/NetBeansDev.pkg -proj pkg/installer.pmproj"/>
+      <arg value="/Developer/Tools/packagemaker -build -v -p build/pkg/NetBeans.pkg -proj pkg/installer.pmproj"/>
     </exec>
   </target>
 

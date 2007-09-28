@@ -53,6 +53,6 @@ cd Contents/Resources/NetBeans*/nb6.0
 mkdir var
 touch var/license_accepted
 
-if [ -d "/Library/Receipts/NetBeansDev.pkg" ] ; then
-    rm -rf "/Library/Receipts/NetBeansDev.pkg"
+if [ -d "/Library/Receipts/NetBeans.pkg" ] ; then
+    rm -rf "/Library/Receipts/NetBeans.pkg"
 fi
