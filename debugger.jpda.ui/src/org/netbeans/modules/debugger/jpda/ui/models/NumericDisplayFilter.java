@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -51,7 +51,9 @@ NodeActionsProviderFilter, Constants {
         String columnID
     ) throws UnknownTypeException {
         if ( (columnID == Constants.WATCH_VALUE_COLUMN_ID ||
-              columnID == Constants.LOCALS_VALUE_COLUMN_ID) && 
+              columnID == Constants.WATCH_TO_STRING_COLUMN_ID ||
+              columnID == Constants.LOCALS_VALUE_COLUMN_ID ||
+              columnID == Constants.LOCALS_TO_STRING_COLUMN_ID) && 
             node instanceof Variable && 
             isIntegralType ((Variable) node)
         ) {
@@ -130,72 +132,99 @@ NodeActionsProviderFilter, Constants {
     
     // other methods ...........................................................
     
+    private static int getChar(String toString) {
+        // Remove the surrounding apostrophes first:
+        toString = toString.substring(1, toString.length() - 1);
+        char c = toString.charAt(0);
+        return c & 0xFFFF;
+    }
+    
     private Object getValue (Variable var, NumericDisplaySettings settings) {
         if (settings == null) return var.getValue ();
         String type = var.getType ();
-        switch (settings.getDisplayAs ()) {
-        case NumericDisplaySettings.DECIMAL:
-            return var.getValue ();
-        case NumericDisplaySettings.HEXADECIMAL:
-            if ("int".equals (type))
-                return "0x" + Integer.toHexString (
-                    Integer.parseInt (var.getValue ())
-                );
-            else
-            if ("short".equals (type)) {
-                String rv = Integer.toHexString(Short.parseShort(var.getValue()));
-                if (rv.length() > 4) rv = rv.substring(rv.length() - 4, rv.length());
-                return "0x" + rv;
-            } else if ("byte".equals(type)) {
-                String rv = Integer.toHexString(Byte.parseByte(var.getValue()));
-                if (rv.length() > 2) rv = rv.substring(rv.length() - 2, rv.length());
-                return "0x" + rv;
-            } else
-                return "0x" + Long.toHexString (
-                    Long.parseLong (var.getValue ())
-                );
-        case NumericDisplaySettings.OCTAL:
-            if ("int".equals (type))
-                return "0" + Integer.toOctalString (
-                    Integer.parseInt (var.getValue ())
-                );
-            else
-            if ("short".equals(type)) {
-                String rv = Integer.toOctalString(Short.parseShort(var.getValue()));
-                if (rv.length() > 5) rv = rv.substring(rv.length() - 5, rv.length());
-                return "0" + (rv.charAt(0) == '0' ? "1" : "") + rv;
-            } else
-            if ("byte".equals(type)) {
-                String rv = Integer.toOctalString(Byte.parseByte(var.getValue()));
-                if (rv.length() > 3) rv = "1" + rv.substring(rv.length() - 2, rv.length());
-                return "0" + rv;
-            } else
-                return "0" + Long.toOctalString (
-                    Long.parseLong (var.getValue ())
-                );
-        case NumericDisplaySettings.BINARY:
-            if ("int".equals(type))
-                return Integer.toBinaryString(Integer.parseInt(var.getValue()));
-            else if ("short".equals(type)) {
-                String rv = Integer.toBinaryString(Short.parseShort(var.getValue()));
-                if (rv.length() > 16) rv = rv.substring(rv.length() - 16, rv.length());
-                return rv;
-            } else if ("byte".equals(type)) {
-                String rv = Integer.toBinaryString(Byte.parseByte(var.getValue()));
-                if (rv.length() > 8) rv = rv.substring(rv.length() - 8, rv.length());
-                return rv;
-            } else
-                return Long.toBinaryString (Long.parseLong (var.getValue ()));
-        case NumericDisplaySettings.CHAR:
-            try {
+        try {
+            switch (settings.getDisplayAs ()) {
+            case NumericDisplaySettings.DECIMAL:
+                if ("char".equals(type)) {
+                    int c = getChar(var.getValue());
+                    return Integer.toString(c);
+                } else {
+                    return var.getValue ();
+                }
+            case NumericDisplaySettings.HEXADECIMAL:
+                if ("int".equals (type))
+                    return "0x" + Integer.toHexString (
+                        Integer.parseInt (var.getValue ())
+                    );
+                else
+                if ("short".equals (type)) {
+                    String rv = Integer.toHexString(Short.parseShort(var.getValue()));
+                    if (rv.length() > 4) rv = rv.substring(rv.length() - 4, rv.length());
+                    return "0x" + rv;
+                } else if ("byte".equals(type)) {
+                    String rv = Integer.toHexString(Byte.parseByte(var.getValue()));
+                    if (rv.length() > 2) rv = rv.substring(rv.length() - 2, rv.length());
+                    return "0x" + rv;
+                } else if ("char".equals(type)) {
+                    int c = getChar(var.getValue());
+                    return "0x" + Integer.toHexString(c);
+                } else {//if ("long".equals(type)) {
+                    return "0x" + Long.toHexString (
+                        Long.parseLong (var.getValue ())
+                    );
+                }
+            case NumericDisplaySettings.OCTAL:
+                if ("int".equals (type))
+                    return "0" + Integer.toOctalString (
+                        Integer.parseInt (var.getValue ())
+                    );
+                else
+                if ("short".equals(type)) {
+                    String rv = Integer.toOctalString(Short.parseShort(var.getValue()));
+                    if (rv.length() > 5) rv = rv.substring(rv.length() - 5, rv.length());
+                    return "0" + (rv.charAt(0) == '0' ? "1" : "") + rv;
+                } else
+                if ("byte".equals(type)) {
+                    String rv = Integer.toOctalString(Byte.parseByte(var.getValue()));
+                    if (rv.length() > 3) rv = "1" + rv.substring(rv.length() - 2, rv.length());
+                    return "0" + rv;
+                } else if ("char".equals(type)) {
+                    int c = getChar(var.getValue());
+                    return "0" + Integer.toOctalString(c);
+                } else {//if ("long".equals(type)) {
+                    return "0" + Long.toOctalString (
+                        Long.parseLong (var.getValue ())
+                    );
+                }
+            case NumericDisplaySettings.BINARY:
+                if ("int".equals(type))
+                    return Integer.toBinaryString(Integer.parseInt(var.getValue()));
+                else if ("short".equals(type)) {
+                    String rv = Integer.toBinaryString(Short.parseShort(var.getValue()));
+                    if (rv.length() > 16) rv = rv.substring(rv.length() - 16, rv.length());
+                    return rv;
+                } else if ("byte".equals(type)) {
+                    String rv = Integer.toBinaryString(Byte.parseByte(var.getValue()));
+                    if (rv.length() > 8) rv = rv.substring(rv.length() - 8, rv.length());
+                    return rv;
+                } else if ("char".equals(type)) {
+                    int c = getChar(var.getValue());
+                    return Integer.toBinaryString(c);
+                } else {//if ("long".equals(type)) {
+                    return Long.toBinaryString (Long.parseLong (var.getValue ()));
+                }
+            case NumericDisplaySettings.CHAR:
+                if ("char".equals(type)) {
+                    return var.getValue ();
+                }
                 return "'" + new Character (
                     (char) Integer.parseInt (var.getValue ())
                 ) + "'";
-            } catch (Exception e) {
-                return "?";
+            default:
+                return var.getValue ();
             }
-        default:
-            return var.getValue ();
+        } catch (NumberFormatException nfex) {
+            return nfex.getLocalizedMessage();
         }
     }
 
@@ -220,9 +249,11 @@ NodeActionsProviderFilter, Constants {
     implements Presenter.Popup {
 
         private Variable variable;
+        private String type;
 
         public DisplayAsAction(Variable variable) {
             this.variable = variable;
+            this.type = variable.getType();
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -299,7 +330,11 @@ NodeActionsProviderFilter, Constants {
                     break;
                 }
             } else {
-                decimalItem.setSelected (true);
+                if ("char".equals(type)) {
+                    charItem.setSelected(true);
+                } else {
+                    decimalItem.setSelected (true);
+                }
             }
 
             displayAsPopup.add (decimalItem);
@@ -314,8 +349,13 @@ NodeActionsProviderFilter, Constants {
             NumericDisplaySettings lds = (NumericDisplaySettings) 
                 variableToDisplaySettings.get (variable);
             if (lds == null) {
-                lds = new NumericDisplaySettings 
-                    (NumericDisplaySettings.DECIMAL);
+                if ("char".equals(type)) {
+                    lds = new NumericDisplaySettings 
+                        (NumericDisplaySettings.CHAR);
+                } else {
+                    lds = new NumericDisplaySettings 
+                        (NumericDisplaySettings.DECIMAL);
+                }
             }
             if (lds.getDisplayAs () == how) return;
             variableToDisplaySettings.put 
