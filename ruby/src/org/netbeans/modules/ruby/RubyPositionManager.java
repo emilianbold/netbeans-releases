@@ -24,6 +24,7 @@ import org.jruby.ast.Node;
 import org.jruby.lexer.yacc.ISourcePosition;
 import org.netbeans.api.gsf.Element;
 import org.netbeans.api.gsf.OffsetRange;
+import org.netbeans.api.gsf.ParserResult;
 import org.netbeans.api.gsf.PositionManager;
 import org.netbeans.modules.ruby.elements.AstElement;
 
@@ -123,5 +124,17 @@ public class RubyPositionManager implements PositionManager {
         }
 
         return false;
+    }
+
+    public boolean isTranslatingSource() {
+        return false;
+    }
+
+    public int getLexicalOffset(ParserResult result, int astOffset) {
+        return astOffset;
+    }
+
+    public int getAstOffset(ParserResult result, int lexicalOffset) {
+        return lexicalOffset;
     }
 }

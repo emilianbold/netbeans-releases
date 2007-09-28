@@ -93,18 +93,27 @@ public class LexUtilities {
         // XXX What about BEGIN{} and END{} ?
     }
 
-    /** For a possibly generated offset in an AST, return the corresponding lexing/true document offset */
-    public static int getLexerOffset(CompilationInfo info, int astOffset) {
-        if (info.getEmbeddingModel() != null) {
-            return info.getEmbeddingModel().generatedToSourcePos(info.getFileObject(), astOffset);
-        }
-        
-        return astOffset;
-    }
-
     private LexUtilities() {
     }
 
+    /** For a possibly generated offset in an AST, return the corresponding lexing/true document offset */
+    public static int getLexerOffset(CompilationInfo info, int astOffset) {
+        return info.getPositionManager().getLexicalOffset(info.getParserResult(), astOffset);
+    }
+    
+    public static OffsetRange getLexerOffsets(CompilationInfo info, OffsetRange astRange) {
+        int rangeStart = astRange.getStart();
+        int start = info.getPositionManager().getLexicalOffset(info.getParserResult(), rangeStart);
+        if (start == rangeStart) {
+            return astRange;
+        } else if (start == -1) {
+            return OffsetRange.NONE;
+        } else {
+            // Assumes the translated range maintains size
+            return new OffsetRange(start, start+astRange.getLength());
+        }
+    }
+    
     /** Find the ruby token sequence (in case it's embedded in something else at the top level */
     @SuppressWarnings("unchecked")
     public static TokenSequence<?extends GsfTokenId> getRubyTokenSequence(BaseDocument doc, int offset) {

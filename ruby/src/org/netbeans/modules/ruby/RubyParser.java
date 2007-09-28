@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.ruby;
 
+import org.netbeans.api.gsf.ParserResult.AstTreeNode;
 import org.netbeans.modules.ruby.elements.CommentElement;
 import java.io.IOException;
 import java.io.Reader;
@@ -80,7 +81,7 @@ import org.openide.util.NbBundle;
  * @author Tor Norbye
  */
 public class RubyParser implements Parser {
-    private final PositionManager positions = new RubyPositionManager();
+    private final PositionManager positions = createPositionManager();
 
     /**
      * Creates a new instance of RubyParser
@@ -119,6 +120,10 @@ public class RubyParser implements Parser {
             ParseEvent doneEvent = new ParseEvent(ParseEvent.Kind.PARSE, file, result);
             listener.finished(doneEvent);
         }
+    }
+
+    protected PositionManager createPositionManager() {
+        return new RubyPositionManager();
     }
 
     /**
@@ -210,6 +215,8 @@ public class RubyParser implements Parser {
                         } else if (line.endsWith("::")) { // NOI18N
                             removeChars = 2;
                             removeOffset = lineEnd - 1;
+                        } else if (line.endsWith(":")) { // NOI18N
+                            removeChars = 1;
                         } else if (line.endsWith("@@")) { // NOI18N
                             removeChars = 2;
                             removeOffset = lineEnd - 1;
@@ -260,12 +267,12 @@ public class RubyParser implements Parser {
     }
     
     @SuppressWarnings("fallthrough")
-    private ParserResult sanitize(final Context context,
+    private RubyParseResult sanitize(final Context context,
         final Sanitize sanitizing) {
 
         switch (sanitizing) {
         case NEVER:
-            return new RubyParseResult(context.file);
+            return createParseResult(context.file, null, null, null, null, null);
 
         case NONE:
 
@@ -315,11 +322,11 @@ public class RubyParser implements Parser {
         case MISSING_END:
         default:
             // We're out of tricks - just return the failed parse result
-            return new RubyParseResult(context.file);
+            return createParseResult(context.file, null, null, null, null, null);
         }
     }
 
-    private void notifyError(Context context, String key,
+    protected void notifyError(Context context, String key,
         Severity severity, String description, String details, int offset, Sanitize sanitizing) {
         // Replace a common but unwieldy JRuby error message with a shorter one
         if (description.startsWith("syntax error, expecting	")) { // NOI18N
@@ -347,7 +354,7 @@ public class RubyParser implements Parser {
         }
     }
 
-    ParserResult parseBuffer(final Context context, final Sanitize sanitizing) {
+    protected RubyParseResult parseBuffer(final Context context, final Sanitize sanitizing) {
         boolean sanitizedSource = false;
         String source = context.source;
         if (!((sanitizing == Sanitize.NONE) || (sanitizing == Sanitize.NEVER))) {
@@ -456,13 +463,18 @@ public class RubyParser implements Parser {
             context.sanitized = sanitizing;
             AstRootElement rootElement = new AstRootElement(context.file.getFileObject(), root, result);
             AstNodeAdapter ast = new AstNodeAdapter(null, root);
-            RubyParseResult r = new RubyParseResult(context.file, rootElement, ast, root, realRoot, result);
+            RubyParseResult r = createParseResult(context.file, rootElement, ast, root, realRoot, result);
             r.setSanitized(context.sanitized, context.sanitizedRange);
             r.setSource(source);
             return r;
         } else {
             return sanitize(context, sanitizing);
         }
+    }
+    
+    protected RubyParseResult createParseResult(ParserFile file, AstRootElement rootElement, AstTreeNode ast, Node root,
+        RootNode realRoot, RubyParserResult jrubyResult) {
+        return new RubyParseResult(file, rootElement, ast, root, realRoot, jrubyResult);
     }
     
     public PositionManager getPositionManager() {
@@ -641,7 +653,7 @@ public class RubyParser implements Parser {
         private int caretOffset;
         private Sanitize sanitized = Sanitize.NONE;
         
-        Context(ParserFile parserFile, ParseListener listener, String source, int caretOffset) {
+        public Context(ParserFile parserFile, ParseListener listener, String source, int caretOffset) {
             this.file = parserFile;
             this.listener = listener;
             this.source = source;

@@ -79,7 +79,8 @@ public class ExpandSameLineDef implements AstRule {
     }
 
     public boolean appliesTo(CompilationInfo info) {
-        return true;
+        // Skip for RHTML files for now - isn't implemented properly
+        return info.getFileObject().getMIMEType().equals("text/x-ruby");
     }
 
     public Set<Integer> getKinds() {

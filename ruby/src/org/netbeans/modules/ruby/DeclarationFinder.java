@@ -93,6 +93,9 @@ import org.openide.util.Exceptions;
  *   for aliases!
  * @todo If you're looking for a local class, such as a Rails model, I should
  *   find those first!
+ * @todo I've gotta use the inherited method and field finders! If I'm in a Rails model
+ *   and search for find_all it goes and pops into the stubs for enumerations instead.
+ *   I -know- the method being referenced here since we have the inheritance chain!
  * 
  * @author Tor Norbye
  */

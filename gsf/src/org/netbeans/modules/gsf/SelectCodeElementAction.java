@@ -45,7 +45,7 @@ import org.openide.util.NbBundle;
  *
  * @author Miloslav Metelka, Jan Pokorsky
  */
-final class SelectCodeElementAction extends BaseAction {
+public final class SelectCodeElementAction extends BaseAction {
 
     private boolean selectNext;
 

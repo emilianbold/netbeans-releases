@@ -24,10 +24,8 @@ import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Formatter;
-import org.netbeans.editor.Settings;
 import org.netbeans.editor.ext.ExtFormatter;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
-import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.indent.IndentTestMimeDataProvider;
 import org.netbeans.modules.gsf.GsfIndentTaskFactory;
 import org.netbeans.modules.html.editor.indent.HtmlIndentTaskFactory;
@@ -65,7 +63,7 @@ public abstract class RhtmlTestBase extends RubyTestBase {
         
         Formatter.setFormatter(RhtmlKit.class, new ExtFormatter(RhtmlKit.class));
     }
-
+    
     @Override
     protected void tearDown() throws Exception {
         IndentTestMimeDataProvider.removeInstances(RubyInstallation.RHTML_MIME_TYPE, rhtmlReformatFactory);
@@ -119,16 +117,17 @@ public abstract class RhtmlTestBase extends RubyTestBase {
             text = text.substring(0, caretPos) + text.substring(caretPos+1);
         }
 
-        JEditorPane pane = new JEditorPane();
-        pane.setEditorKit(new RhtmlKit());
-        pane.setContentType(RubyInstallation.RHTML_MIME_TYPE);
+        JEditorPane.registerEditorKitForContentType(RubyInstallation.RHTML_MIME_TYPE, RhtmlKit.class.getName());
+        JEditorPane pane = new JEditorPane(RubyInstallation.RHTML_MIME_TYPE, text);
+        //pane.setEditorKit(new RhtmlKit());
+        //pane.setContentType(RubyInstallation.RHTML_MIME_TYPE);
                 
         BaseDocument bdoc = (BaseDocument)pane.getDocument();
 
         bdoc.putProperty(org.netbeans.api.lexer.Language.class, RhtmlTokenId.language());
         bdoc.putProperty("mimeType", RubyInstallation.RHTML_MIME_TYPE);
 
-        bdoc.insertString(0, text, null);
+        //bdoc.insertString(0, text, null);
         if (sourceStartPos != -1) {
             assert sourceEndPos != -1;
             pane.setSelectionStart(sourceStartPos);

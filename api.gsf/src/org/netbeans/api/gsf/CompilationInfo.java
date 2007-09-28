@@ -57,7 +57,6 @@ public abstract class CompilationInfo {
     private PositionManager positions;
     private Parser parser;
     private FileObject fo;
-    protected EmbeddingModel embeddingModel;
 
     public CompilationInfo(final FileObject fo) throws IOException {
         this.fo = fo;
@@ -163,9 +162,5 @@ public abstract class CompilationInfo {
 
     public void setParser(Parser parser) {
         this.parser = parser;
-    }
-
-    public EmbeddingModel getEmbeddingModel() {
-        return embeddingModel;
     }
 }

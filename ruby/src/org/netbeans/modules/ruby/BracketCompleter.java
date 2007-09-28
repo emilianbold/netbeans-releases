@@ -1643,7 +1643,12 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
             return Collections.emptyList();
         }
 
-        AstPath path = new AstPath(root, caretOffset);
+        int astOffset = AstUtilities.getAstOffset(info, caretOffset);
+        if (astOffset == -1) {
+            return Collections.emptyList();
+        }
+
+        AstPath path = new AstPath(root, astOffset);
         List<OffsetRange> ranges = new ArrayList<OffsetRange>();
 
         // Check if the caret is within a comment, and if so insert a new
@@ -1725,9 +1730,12 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
 
             // The contains check should be unnecessary, but I end up getting
             // some weird positions for some JRuby AST nodes
-            if (range.containsInclusive(caretOffset) && !range.equals(previous)) {
-                ranges.add(range);
-                previous = range;
+            if (range.containsInclusive(astOffset) && !range.equals(previous)) {
+                range = LexUtilities.getLexerOffsets(info, range);
+                if (range != OffsetRange.NONE) {
+                    ranges.add(range);
+                    previous = range;
+                }
             }
         }
 

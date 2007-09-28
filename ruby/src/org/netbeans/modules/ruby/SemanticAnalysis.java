@@ -41,6 +41,7 @@ import org.netbeans.api.gsf.ColoringAttributes;
 import org.netbeans.api.gsf.CompilationInfo;
 import org.netbeans.api.gsf.OffsetRange;
 import org.netbeans.api.gsf.SemanticAnalyzer;
+import org.netbeans.modules.ruby.lexer.LexUtilities;
 
 
 /**
@@ -51,6 +52,11 @@ import org.netbeans.api.gsf.SemanticAnalyzer;
  * @todo Show unused highlighting for unused class variables:
  *    private_class_method
  *   See section 7.8 in http://www.rubycentral.com/faq/rubyfaq-7.html
+ * @todo Handle java fully packaged names by not bolding "java" and "javax" method
+ *   calls in Java projects
+ * @todo I can do faster tree walking with a quick integer set of node types I'm
+ *   interested in, or more specifically a set of node types I know I can prune:
+ *   ArgNodes etc. 
  * @author Tor Norbye
  */
 public class SemanticAnalysis implements SemanticAnalyzer {
@@ -102,6 +108,18 @@ public class SemanticAnalysis implements SemanticAnalyzer {
         }
 
         if (highlights.size() > 0) {
+            if (info.getPositionManager().isTranslatingSource()) {
+                Map<OffsetRange, ColoringAttributes> translated = new HashMap<OffsetRange,ColoringAttributes>(2*highlights.size());
+                for (Map.Entry<OffsetRange,ColoringAttributes> entry : highlights.entrySet()) {
+                    OffsetRange range = LexUtilities.getLexerOffsets(info, entry.getKey());
+                    if (range != OffsetRange.NONE) {
+                        translated.put(range, entry.getValue());
+                    }
+                }
+                
+                highlights = translated;
+            }
+            
             this.semanticHighlights = highlights;
         } else {
             this.semanticHighlights = null;

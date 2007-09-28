@@ -125,7 +125,9 @@ class TestCompilationInfo extends CompilationInfo {
             sourceFiles.add(file);
             
             RubyParser.Context context = new RubyParser.Context(file, listener, text, caretOffset);
-            ParserResult pr = new RubyParser().parseBuffer(context, RubyParser.Sanitize.NONE);
+            RubyParser parser = new RubyParser();
+            setPositionManager(parser.getPositionManager());
+            ParserResult pr = parser.parseBuffer(context, RubyParser.Sanitize.NONE);
             r = result = pr;
         }
         

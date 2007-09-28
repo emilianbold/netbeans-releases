@@ -104,6 +104,7 @@ import org.openide.filesystems.FileObject;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.ruby.RubyParseResult;
 import org.netbeans.modules.ruby.StructureAnalyzer;
+import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.PositionRef;
 import org.openide.util.NbBundle;
@@ -796,14 +797,12 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
                         }
 
                         desc = desc + "; " + errorMsg;
-                        start = end = error.getStartPosition().getOffset();
-                        if (workingCopy.getEmbeddingModel() != null) {
-                            start = workingCopy.getEmbeddingModel().generatedToSourcePos(workingCopy.getFileObject(), start);
-                            if (start == -1) {
-                                start = 0; // Just point to top of the file
-                            }
-                            end = start;
+                        start = error.getStartPosition().getOffset();
+                        start = LexUtilities.getLexerOffset(workingCopy, start);
+                        if (start == -1) {
+                            start = 0;
                         }
+                        end = start;
                     }
                     PositionRef startPos = ces.createPositionRef(start, Bias.Forward);
                     PositionRef endPos = ces.createPositionRef(end, Bias.Forward);
@@ -916,13 +915,11 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
                 ces = RetoucheUtils.findCloneableEditorSupport(workingCopy);
             }
             
-            if (workingCopy.getEmbeddingModel() != null) {
-                pos = workingCopy.getEmbeddingModel().generatedToSourcePos(workingCopy.getFileObject(), pos);
-                
-                if (pos == -1) {
-                    // Translation failed
-                    return;
-                }
+            // Convert from AST to lexer offsets if necessary
+            pos = LexUtilities.getLexerOffset(workingCopy, pos);
+            if (pos == -1) {
+                // Translation failed
+                return;
             }
             
             int start = pos;

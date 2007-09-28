@@ -76,6 +76,7 @@ import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.RubyIndex;
 import org.netbeans.modules.ruby.elements.AstElement;
 import org.netbeans.modules.ruby.elements.IndexedClass;
+import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -366,14 +367,12 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
                         }
 
                         desc = desc + "; " + errorMsg;
-                        start = end = error.getStartPosition().getOffset();
-                        if (compiler.getEmbeddingModel() != null) {
-                            start = compiler.getEmbeddingModel().generatedToSourcePos(compiler.getFileObject(), start);
-                            if (start == -1) {
-                                start = 0; // Just point to top of the file
-                            }
-                            end = start;
+                        start = error.getStartPosition().getOffset();
+                        start = LexUtilities.getLexerOffset(compiler, start);
+                        if (start == -1) {
+                            start = 0;
                         }
+                        end = start;
                     }
                     
                     Set<Modifier> modifiers = Collections.emptySet();

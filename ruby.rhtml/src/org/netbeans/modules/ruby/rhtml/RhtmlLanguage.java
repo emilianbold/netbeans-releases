@@ -16,20 +16,15 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-package org.netbeans.modules.ruby;
+package org.netbeans.modules.ruby.rhtml;
+
 
 import org.netbeans.api.gsf.GsfLanguage;
 import org.netbeans.api.lexer.Language;
-import org.netbeans.modules.ruby.lexer.RubyTokenId;
-
-
-/*
- * Language/lexing configuration for Ruby
- *
- * @author Tor Norbye
- */
-public class RubyLanguage implements GsfLanguage {
-    public RubyLanguage() {
+import org.netbeans.modules.ruby.RubyUtils;
+import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
+public class RhtmlLanguage implements GsfLanguage {
+    public RhtmlLanguage() {
     }
 
     public String getLineCommentPrefix() {
@@ -41,6 +36,6 @@ public class RubyLanguage implements GsfLanguage {
     }
 
     public Language getLexerLanguage() {
-        return RubyTokenId.language();
+        return RhtmlTokenId.language();
     }
 }

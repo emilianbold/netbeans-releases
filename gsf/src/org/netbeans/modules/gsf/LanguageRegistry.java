@@ -268,6 +268,11 @@ public class LanguageRegistry implements Iterable<Language> {
                     language.setDisplayName(displayName);
                 }
 
+                Boolean useCustomEditorKit = (Boolean)mimeFile.getAttribute("useCustomEditorKit"); // NOI18N
+                if (useCustomEditorKit != null && useCustomEditorKit.booleanValue()) {
+                    language.setUseCustomEditorKit(true);
+                }
+                
                 // Try to obtain icon from (new) IDE location for icons per mime type:
                 FileObject loaderMimeFile = sfs.findResource("Loaders/" + mime);
 

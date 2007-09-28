@@ -19,13 +19,9 @@
 
 package org.netbeans.api.gsf;
 
-import java.util.List;
-
 import org.netbeans.api.gsf.annotations.CheckForNull;
 import org.netbeans.api.gsf.annotations.NonNull;
-import org.netbeans.api.gsf.annotations.Nullable;
 import org.netbeans.api.lexer.Language;
-import org.netbeans.api.lexer.TokenId;
 
 
 /**
@@ -62,35 +58,4 @@ public interface GsfLanguage {
      */
     @NonNull
     Language getLexerLanguage();
-
-    /**
-     * <p>Return a set of token types that are relevant to the lexer for this language.
-     * "Relevant" here
-     * means that it's a TokenType that will ever be passed in by the scanner to the
-     * {@link TokenResult}.</p>
-     * <p>
-     * Technically, it's a List, not a Set. The list of TokenTypes will be used for
-     * example in the color and font chooser for the editor, such that users can customize
-     * the appearance of source text. The order of the tokens in the list will be used
-     * in the TokenType list in the editor style chooser.
-     * </p>
-     * <p>
-     * If a language returns null or an empty List, <b>all</b> known TokenTypes will be
-     * offered to the user. To avoid this, return only tokens that are relevant to this
-     * language.
-     * </p>
-     * <p>
-     * You are strongly encouraged to use existing {@link DefaultTokenType} tokens when
-     * possible, such that user's existing color customizations will apply.
-     * </p>
-     * <p>
-     * You should also register a code fragment sample in the layer
-     * (at <code>OptionsDialog/PreviewExamples/</code><i>mime/type/</i>) and this code
-     * sample should try to use as many of the tokens pertaining to the language such
-     * that users can see the effect of customizing the various token types.
-     * </p>
-     * @todo Make this into a Map interface that is called just once instead.
-     */
-    @CheckForNull
-    List<? extends TokenId> getRelevantTokenTypes();
 }

@@ -564,4 +564,6 @@ public class RhtmlKitTest extends RhtmlTestBase {
     public void testToggleComment13() throws Exception {
         toggleComment("<% #ruby^ %>", "<% ruby %>");
     }
+    
+    // test insert break; in particular, entering out of <% else %> doesn't work at the end of input!
 }

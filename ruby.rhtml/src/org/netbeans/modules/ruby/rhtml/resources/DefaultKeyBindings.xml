@@ -14,16 +14,27 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE bindings PUBLIC "-//NetBeans//DTD Editor KeyBindings settings 1.1//EN" "http://www.netbeans.org/dtds/EditorKeyBindings-1_1.dtd">
 
-  <!-- IMPORTANT:  To handle Apple-specific keybindings, there is another copy of
-     this file, with minor diffs, in ide/applemenu.  Any changes made here should
-     be made there too -->                            
+<!-- TODO: The java version of this file contains a comment that there is another
+copy of this file in ide/applemenu. Check whether I need to do something there!
+
+See http://wiki.netbeans.info/wiki/view/DevFaqLogicalKeybindings for action names
+
+-->
 <bindings>
+    <bind actionName="goto-declaration" key="D-B"/>
     <bind actionName="comment" key="D-SLASH"/>
     <bind actionName="goto-help" key="O-F1"/>
-    <bind actionName="uncomment" key="DS-SLASH"/>
+    <!--
+    <bind actionName="select-element-next" key="OS-PERIOD"/>
+    <bind actionName="select-element-previous" key="OS-COMMA"/>
+    -->
+    <bind actionName="in-place-refactoring" key="D-R"/>
+    <bind actionName="ruby-goto-test" key="DS-T"/>
+    <bind actionName="ruby-reflow-paragraph" key="DS-P"/>
+    <bind actionName="run-focused-spec" key="OS-F6"/>
 </bindings>

@@ -70,6 +70,8 @@ import org.openide.filesystems.FileObject;
  * @todo A reference to "foo." in a method is an alias to "@foo" if the method
  *    has not been defined explicitly. Attributes are especially clear, but an
  *    index lookup from type analyzer may be too expensive.
+ * @todo The structure analyzer already tracks field declarations for the current class;
+ *    I should use that to track down the types
  * @todo Use some statistical results to improve this; .to_s => String, .to_f => float,
  *   etc.
  *

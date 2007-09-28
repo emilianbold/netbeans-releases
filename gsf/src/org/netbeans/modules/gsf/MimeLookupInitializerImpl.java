@@ -102,6 +102,10 @@ public class MimeLookupInitializerImpl implements MimeLookupInitializer {
             if (LanguageRegistry.getInstance().isSupported(mimeTypes[0])) {
                 final Language language = LanguageRegistry.getInstance().getLanguageByMimeType(mimeTypes[0]);
                 assert language != null;
+                
+                if (language.useCustomEditorKit()) {
+                    return null;
+                }
 
                 // TODO - finer granularity. What is really initialized here is layer stuff
                 // related to the language.

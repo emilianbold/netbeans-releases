@@ -46,13 +46,25 @@ import org.netbeans.modules.retouche.editor.semantic.ColoringManager;
  *    on a project basis) and would be used by plugins to drive parser specific
  *    info.  Similarly for JavaScript I have multiple language versions - 1.0 through 1.6
  *    in the case of Rhino (corresponding to different JavaScript/EcmaScript versions).
- * @todo Add a "Line Comment Prefix" property for languages (e.g. "//" for Java, "#" for ksh,
- *    etc. which can be used to drive the availability and implementation of the Comment
- *    (Shift + Meta + T) feature (and uncomment, Shift + Meta + D).
  *
  * @author <a href="mailto:tor.norbye@sun.com">Tor Norbye</a>
  */
 public interface Language {
+
+    /** 
+     * HACK: Some language supports may want to use their own editor kit
+     * implementation (such as Schliemann) for some services. By returning
+     * true here (which can be done by registering "useCustomEditorKit" on the
+     * GsfPlugin folder for the mime type) GSF will not register its own editing
+     * services for this mime type.
+     * <p>
+     * If you set this flag, you may need to register additional services on your
+     * own. For example, if you still want GSF "Go To Declaration" functionality,
+     * you need to register the GsfHyperlinkProvider.
+     * The ruby/rhtml/ module provides an example of this.
+     */
+    boolean useCustomEditorKit();
+
     /** Return the display-name (user visible, and localized) name of this language.
      * It should be brief (one or two words). For example "Java", "C++", "Groovy",
      * "Visual Basic", etc.

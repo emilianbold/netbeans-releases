@@ -65,7 +65,6 @@ import org.netbeans.modules.ruby.RubyMimeResolver;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.elements.IndexedMethod;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
-import org.netbeans.modules.ruby.rhtml.editor.completion.RhtmlEmbeddingModel;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
 import org.netbeans.modules.ruby.rubyproject.RubyProject;
 import org.netbeans.spi.gsfpath.classpath.support.ClassPathSupport;
@@ -92,10 +91,8 @@ import org.openide.xml.XMLUtil;
 public class RetoucheUtils {
     // XXX Should this be unused now?
     public static Source createSource(ClasspathInfo cpInfo, FileObject fo) {
-        if (RubyUtils.isRubyFile(fo)) {
+        if (RubyUtils.isRubyOrRhtmlFile(fo)) {
             return Source.create(cpInfo, fo);
-        } else if (RubyUtils.isRhtmlFile(fo)) {
-            return new RhtmlEmbeddingModel().getModel(fo).getSource();
         }
         
         return null;
@@ -104,27 +101,12 @@ public class RetoucheUtils {
     public static Source getSource(FileObject fo) {
         Source source =  Source.forFileObject(fo);
         
-        if (source == null) {
-            List<FileObject> fos = Collections.singletonList(fo);
-            source = Source.createFromModel(ClasspathInfo.create(fo), fos, new RhtmlEmbeddingModel());
-        }
-        
         return source;
     }
     
     public static Source getSource(Document doc) {
         Source source = Source.forDocument(doc);
-        if (source == null) {
-            // Rhtml file?
-            DataObject dobj = (DataObject)doc.getProperty(Document.StreamDescriptionProperty);
-            if (dobj != null) {
-                FileObject fo = dobj.getPrimaryFile();
-                if (RubyUtils.isRhtmlFile(fo)) {
-                    List<FileObject> fos = Collections.singletonList(fo);
-                    source = Source.createFromModel(ClasspathInfo.create(fo), fos, new RhtmlEmbeddingModel());
-                }
-            }
-        }
+
         return source;
     }
     

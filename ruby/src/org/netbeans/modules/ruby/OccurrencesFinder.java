@@ -130,14 +130,19 @@ public class OccurrencesFinder implements org.netbeans.api.gsf.OccurrencesFinder
 
         RubyParseResult rpr = (RubyParseResult)info.getParserResult();
 
-        AstPath path = new AstPath(root, caretPosition);
+        int astOffset = AstUtilities.getAstOffset(info, caretPosition);
+        if (astOffset == -1) {
+            return;
+        }
+
+        AstPath path = new AstPath(root, astOffset);
         Node closest = path.leaf();
 
         // When we sanitize the line around the caret, occurrences
         // highlighting can get really ugly
         OffsetRange blankRange = rpr.getSanitizedRange();
 
-        if (blankRange.containsInclusive(caretPosition)) {
+        if (blankRange.containsInclusive(astOffset)) {
             closest = null;
         }
 
@@ -292,7 +297,7 @@ public class OccurrencesFinder implements org.netbeans.api.gsf.OccurrencesFinder
                 // line in a method will cause it to highlight.
                 OffsetRange range = AstUtilities.getFunctionNameRange(root);
 
-                if (range.containsInclusive(caretPosition)) {
+                if (range.containsInclusive(astOffset)) {
                     String name = ((MethodDefNode)closest).getName();
                     highlightMethod(root, name,
                         Collections.singletonList(Arity.getDefArity(closest)), highlights);
@@ -332,9 +337,9 @@ public class OccurrencesFinder implements org.netbeans.api.gsf.OccurrencesFinder
                 int aliasPos = an.getPosition().getStartOffset();
                 String name = null;
 
-                if (caretPosition > (aliasPos + 6)) { // 6: "alias ".length()
+                if (astOffset > (aliasPos + 6)) { // 6: "alias ".length()
 
-                    if (caretPosition > (aliasPos + 6 + newLength)) {
+                    if (astOffset > (aliasPos + 6 + newLength)) {
                         OffsetRange range = AstUtilities.getAliasOldRange(an);
                         highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
                         name = an.getOldName();
@@ -422,6 +427,18 @@ public class OccurrencesFinder implements org.netbeans.api.gsf.OccurrencesFinder
         }
 
         if (highlights.size() > 0) {
+            if (info.getPositionManager().isTranslatingSource()) {
+                Map<OffsetRange, ColoringAttributes> translated = new HashMap<OffsetRange,ColoringAttributes>(2*highlights.size());
+                for (Map.Entry<OffsetRange,ColoringAttributes> entry : highlights.entrySet()) {
+                    OffsetRange range = LexUtilities.getLexerOffsets(info, entry.getKey());
+                    if (range != OffsetRange.NONE) {
+                        translated.put(range, entry.getValue());
+                    }
+                }
+                
+                highlights = translated;
+            }
+
             this.occurrences = highlights;
         } else {
             this.occurrences = null;

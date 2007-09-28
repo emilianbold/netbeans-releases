@@ -39,6 +39,7 @@ import org.netbeans.modules.ruby.hints.spi.AstRule;
 import org.netbeans.modules.ruby.hints.spi.Description;
 import org.netbeans.modules.ruby.hints.spi.Fix;
 import org.netbeans.modules.ruby.hints.spi.HintSeverity;
+import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -100,10 +101,11 @@ public class BlockVarReuse implements AstRule {
                     fixList.add(new RenameVarFix(info, childPath, false));
                     fixList.add(new RenameVarFix(info, childPath, true));
 
-                    // TODO - add a hint to turn off this hint?
-                    // Should be a utility or infrastructure option!
-                    Description desc = new Description(this, getDisplayName(), info.getFileObject(), range, fixList, 100);
-                    result.add(desc);
+                    range = LexUtilities.getLexerOffsets(info, range);
+                    if (range != OffsetRange.NONE) {
+                        Description desc = new Description(this, getDisplayName(), info.getFileObject(), range, fixList, 100);
+                        result.add(desc);
+                    }
                 }
             }
         }
@@ -151,7 +153,11 @@ public class BlockVarReuse implements AstRule {
 
         private void addNonBlockRefs(Node node, String name, Set<OffsetRange> ranges) {
             if ((node.nodeId == NodeTypes.LOCALASGNNODE || node.nodeId == NodeTypes.LOCALVARNODE) && name.equals(((INameNode)node).getName())) {
-                ranges.add(AstUtilities.getNameRange(node));
+                OffsetRange range = AstUtilities.getNameRange(node);
+                range = LexUtilities.getLexerOffsets(info, range);
+                if (range != OffsetRange.NONE) {
+                    ranges.add(range);
+                }
             }
 
             @SuppressWarnings(value = "unchecked")

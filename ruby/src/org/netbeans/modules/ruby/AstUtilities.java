@@ -93,14 +93,24 @@ public class AstUtilities {
      */
     private static final boolean INCLUDE_DEFS_PREFIX = false;
 
-    static int getAstOffset(CompilationInfo info, int lexOffset) {
-        if (info.getEmbeddingModel() != null) {
-            return info.getEmbeddingModel().sourceToGeneratedPos(info.getFileObject(), lexOffset);
-        }
+    public static int getAstOffset(CompilationInfo info, int lexOffset) {
+        return info.getPositionManager().getAstOffset(info.getParserResult(), lexOffset);
         
-        return lexOffset;
     }
 
+    public static OffsetRange getAstOffsets(CompilationInfo info, OffsetRange lexicalRange) {
+        int rangeStart = lexicalRange.getStart();
+        int start = info.getPositionManager().getAstOffset(info.getParserResult(), rangeStart);
+        if (start == rangeStart) {
+            return lexicalRange;
+        } else if (start == -1) {
+            return OffsetRange.NONE;
+        } else {
+            // Assumes the translated range maintains size
+            return new OffsetRange(start, start+lexicalRange.getLength());
+        }
+    }
+    
     /** This is a utility class only, not instantiatiable */
     private AstUtilities() {
     }
@@ -363,7 +373,7 @@ public class AstUtilities {
     }
 
     private static void addRequires(Node node, Set<String> requires) {
-        if (node instanceof FCallNode) {
+        if (node.nodeId == NodeTypes.FCALLNODE) {
             // A method call
             String name = ((INameNode)node).getName();
 
@@ -389,8 +399,8 @@ public class AstUtilities {
                     }
                 }
             }
-        } else if (node instanceof ModuleNode || node instanceof ClassNode ||
-                node instanceof MethodDefNode) {
+        } else if (node.nodeId == NodeTypes.MODULENODE || node.nodeId == NodeTypes.CLASSNODE ||
+                node.nodeId == NodeTypes.DEFNNODE || node.nodeId == NodeTypes.DEFSNODE) {
             // Only look for require statements at the top level
             return;
         }
@@ -406,7 +416,8 @@ public class AstUtilities {
     /** Locate the method of the given name and arity */
     public static MethodDefNode findMethod(Node node, String name, Arity arity) {
         // Recursively search for methods or method calls that match the name and arity
-        if (node instanceof MethodDefNode && ((MethodDefNode)node).getName().equals(name)) {
+        if ((node.nodeId == NodeTypes.DEFNNODE || node.nodeId == NodeTypes.DEFSNODE) &&
+            ((MethodDefNode)node).getName().equals(name)) {
             Arity defArity = Arity.getDefArity(node);
 
             if (Arity.matches(arity, defArity)) {
@@ -502,7 +513,7 @@ public class AstUtilities {
     public static Node findBlock(AstPath path) {
         // Find the closest block node enclosing the given node
         for (Node curr : path) {
-            if (curr instanceof BlockNode || (curr instanceof IterNode && !(curr instanceof ForNode))) {
+            if (curr.nodeId == NodeTypes.BLOCKNODE || curr.nodeId == NodeTypes.ITERNODE) {
                 return curr;
             }
         }
@@ -513,7 +524,7 @@ public class AstUtilities {
     public static MethodDefNode findMethod(AstPath path) {
         // Find the closest block node enclosing the given node
         for (Node curr : path) {
-            if (curr instanceof MethodDefNode) {
+            if (curr.nodeId == NodeTypes.DEFNNODE || curr.nodeId == NodeTypes.DEFSNODE) {
                 return (MethodDefNode)curr;
             }
         }
@@ -539,7 +550,7 @@ public class AstUtilities {
         // Find the closest block node enclosing the given node
         for (Node curr : path) {
             // XXX What about SClassNodes?
-            if (curr instanceof ClassNode || curr instanceof ModuleNode) {
+            if (curr.nodeId == NodeTypes.CLASSNODE || curr.nodeId == NodeTypes.MODULENODE) {
                 return (IScopingNode)curr;
             }
         }
@@ -548,7 +559,9 @@ public class AstUtilities {
     }
 
     public static boolean isCall(Node node) {
-        return node instanceof FCallNode || node instanceof VCallNode || node instanceof CallNode;
+        return node.nodeId == NodeTypes.FCALLNODE ||
+                node.nodeId == NodeTypes.VCALLNODE ||
+                node.nodeId == NodeTypes.CALLNODE;
     }
     
     public static String getCallName(Node node) {

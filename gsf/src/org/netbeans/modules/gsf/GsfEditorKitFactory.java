@@ -100,8 +100,6 @@ import org.openide.util.NbBundle;
  * @author Jan Jancura
  */
 public class GsfEditorKitFactory {
-    private final static boolean PRETTY_PRINT_AVAILABLE = Boolean.getBoolean("ruby.prettyprint");
-
     private static final String selectNextElementAction = "select-element-next"; //NOI18N
     private static final String selectPreviousElementAction = "select-element-previous"; //NOI18N
     private static final String previousCamelCasePosition = "previous-camel-case-position"; //NOI18N
@@ -190,7 +188,7 @@ public class GsfEditorKitFactory {
 
             return doc;
         }
-        
+
         @Override
         public SyntaxSupport createSyntaxSupport(BaseDocument doc) {
             return new ExtSyntaxSupport(doc) {
@@ -237,7 +235,7 @@ public class GsfEditorKitFactory {
             Action[] superActions = super.createActions();
             GsfLanguage gsfLanguage = language.getGsfLanguage();
 
-            ArrayList<Action> actions = new ArrayList(10);
+            ArrayList<Action> actions = new ArrayList(30);
 
             actions.add(new GsfDefaultKeyTypedAction());
             actions.add(new GsfInsertBreakAction());
@@ -256,7 +254,6 @@ public class GsfEditorKitFactory {
             }
             
             actions.add(new InstantRenameAction());
-            actions.add(new PrettyPrintAction());
             actions.add(new GenericGoToDeclarationAction());
             actions.add(new GenericGenerateGoToPopupAction());
             actions.add(new SelectCodeElementAction(selectNextElementAction, true));
@@ -282,73 +279,6 @@ public class GsfEditorKitFactory {
                 }
             }
             return null;
-        }
-
-        public class PrettyPrintAction extends BaseAction {
-
-            static final long serialVersionUID =-1L;
-            public PrettyPrintAction() {
-                super("pretty-print",
-                      ABBREV_RESET | MAGIC_POSITION_RESET | UNDO_MERGE_RESET);
-            }
-            
-            @Override
-            public boolean isEnabled() {
-                return PRETTY_PRINT_AVAILABLE;
-            }
-
-            public void actionPerformed(ActionEvent evt, final JTextComponent target) {
-//                if (target != null) {
-//                    if (!target.isEditable() || !target.isEnabled()) {
-//                        target.getToolkit().beep();
-//                        return;
-//                    }
-//
-//                    final BaseDocument doc = (BaseDocument)target.getDocument();
-//                    FileObject fo = getFileObject(doc);
-//                    if (fo == null) {
-//                        target.getToolkit().beep();
-//                        return;
-//                    }
-//
-//                    // Set hourglass cursor
-//                    Cursor origCursor = target.getCursor();
-//                    target.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-//
-//                    try {
-//                        Source js = Source.forFileObject(fo);
-//                        final String[] result = new String[1];
-//
-//                        js.runUserActionTask(new CancellableTask<CompilationController>() {
-//                            public void cancel() {
-//                            }
-//
-//                            public void run(CompilationController controller)
-//                                throws Exception {
-//                                if (controller.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
-//                                    return;
-//                                }
-//
-//                                FormattingPreferences preferences = new GsfFormattingPreferences(language.getFormatter().indentSize(),
-//                                        language.getFormatter().hangingIndentSize());
-//                                ParserResult result = controller.getParserResult();
-//                                Caret caret = target.getCaret();
-//                                language.getFormatter().reformat(doc, result, preferences, caret);
-//                                Language language = controller.getLanguage();
-//                            }
-//                        }, true);
-//                    } catch (IOException ioe) {
-//                        Exceptions.printStackTrace(ioe);
-//                    } finally {
-//                        target.setCursor(origCursor);
-//                    }
-//                }
-            }
-            
-            @Override
-            protected Class getShortDescriptionBundleClass() {
-                return PrettyPrintAction.class;
-            }
         }
 
         public class GsfDefaultKeyTypedAction extends ExtDefaultKeyTypedAction {
@@ -647,7 +577,6 @@ public class GsfEditorKitFactory {
     private class EditorActionWrapper extends BaseAction {
         EditorAction gotoAction;
         
-        /** Creates a new instance of InstantRenameAction */
         public EditorActionWrapper(EditorAction gotoAction) {
             super(gotoAction.getName(),
                   // Not sure about these flags?

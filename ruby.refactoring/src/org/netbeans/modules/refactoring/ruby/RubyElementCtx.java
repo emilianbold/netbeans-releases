@@ -99,11 +99,8 @@ public class RubyElementCtx {
     public RubyElementCtx(CompilationInfo info, int caret) {
         Node root = AstUtilities.getRoot(info);
 
-        if (info.getEmbeddingModel() != null) {
-            caret = info.getEmbeddingModel().sourceToGeneratedPos(info.getFileObject(), caret);
-        }
-
-        path = new AstPath(root, caret);
+        int astOffset = AstUtilities.getAstOffset(info, caret);
+        path = new AstPath(root, astOffset);
 
         Node leaf = path.leaf();
 

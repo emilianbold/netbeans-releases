@@ -18,9 +18,6 @@
  */
 package org.netbeans.modules.ruby;
 
-import java.util.List;
-import java.util.Set;
-
 import org.jruby.ast.Node;
 import org.jruby.ast.RootNode;
 import org.jruby.parser.RubyParserResult;
@@ -29,7 +26,6 @@ import org.netbeans.api.gsf.OffsetRange;
 import org.netbeans.api.gsf.ParserFile;
 import org.netbeans.api.gsf.ParserResult;
 import org.netbeans.api.gsf.annotations.NonNull;
-import org.netbeans.modules.ruby.elements.AstElement;
 import org.netbeans.modules.ruby.elements.AstRootElement;
 
 
@@ -49,16 +45,6 @@ public class RubyParseResult extends ParserResult {
     private RubyParserResult jrubyResult;
     private boolean commentsAdded;
 
-    /** Result used for failed compilation
-     * @todo Provide errors too?
-     */
-    public RubyParseResult(ParserFile file) {
-        super(file);
-    }
-
-    /**
-     * Result used for successful compilation
-     */
     public RubyParseResult(ParserFile file, AstRootElement rootElement, AstTreeNode ast, Node root,
         RootNode realRoot, RubyParserResult jrubyResult) {
         super(file);

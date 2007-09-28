@@ -28,7 +28,6 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.ruby.AstUtilities;
-import org.netbeans.modules.ruby.RubyParseResult;
 import org.netbeans.modules.ruby.RubyTestBase;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
 import org.openide.filesystems.FileObject;
@@ -45,7 +44,7 @@ public class RhtmlModelTest extends RubyTestBase {
         TokenHierarchy hi = TokenHierarchy.create(rhtml, RhtmlTokenId.language());
         TokenSequence<RhtmlTokenId> ts = hi.tokenSequence();
 
-        RhtmlModel model = new RhtmlModel(null, null, null);
+        RhtmlModel model = new RhtmlModel(null);
 
         StringBuilder buffer = new StringBuilder();
         model.eruby(buffer, hi, ts);

@@ -33,6 +33,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
+import org.netbeans.editor.BaseDocument;
 
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
@@ -43,6 +44,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.text.Line;
 import org.openide.text.NbDocument;
@@ -61,6 +63,7 @@ public class NbUtilities {
     }
 
     public static JEditorPane getOpenPane() {
+        // TODO - switch to the edtor registry!
         Node[] arr = TopComponent.getRegistry().getActivatedNodes();
 
         if (arr.length > 0) {
@@ -75,6 +78,23 @@ public class NbUtilities {
             }
         }
 
+        return null;
+    }
+    
+    public static BaseDocument getDocument(FileObject fileObject, boolean openIfNecessary) {
+        try {
+            DataObject dobj = DataObject.find(fileObject);
+            
+            EditorCookie ec = dobj.getCookie(EditorCookie.class);
+            if (ec != null) {
+                return (BaseDocument)(openIfNecessary ? ec.openDocument() : ec.getDocument());
+            }
+        } catch (DataObjectNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        
         return null;
     }
 

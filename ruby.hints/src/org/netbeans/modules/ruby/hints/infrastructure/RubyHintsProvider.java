@@ -233,8 +233,10 @@ public class RubyHintsProvider implements HintsProvider {
         if (isCancelled()) {
             return;
         }
+        
+        int astOffset = AstUtilities.getAstOffset(info, caretOffset);
 
-        AstPath path = new AstPath(root, caretOffset);
+        AstPath path = new AstPath(root, astOffset);
         List<Description> descriptions = new ArrayList<Description>();
         
         Iterator<Node> it = path.leafToRoot();

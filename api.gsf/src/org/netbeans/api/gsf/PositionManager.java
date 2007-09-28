@@ -21,7 +21,6 @@
 package org.netbeans.api.gsf;
 
 import org.netbeans.api.gsf.annotations.NonNull;
-import org.netbeans.api.gsf.Element;
 
 /**
  * A PositionManager is responsible for mapping ComObjects provided by a Parser
@@ -38,4 +37,33 @@ public interface PositionManager {
      */
     @NonNull
     OffsetRange getOffsetRange(Element file, Element object);
+
+    /**
+     * Return true if this position manager translates source positions
+     */
+    boolean isTranslatingSource();
+    
+    /**
+     * Return the lexical offset corresponding to the given ast offset.
+     * For most source files, this is the same (so it just returns the parameter)
+     * but in languages like RHTML where the lexical input file is translated
+     * into Ruby before being parsed, the offsets may differ.
+     * 
+     * @param result The result associated with this parser job
+     * @param astOffset The offset in the source processed by the parser
+     * @return The lexical offset corresponding to the ast offset, or -1
+     *   if the corresponding position couldn't be determined
+     */
+    int getLexicalOffset(ParserResult result, int astOffset);
+
+    /**
+     * Reverse mapping from lexical offset to ast offset. See {@link getLexicalOffset}
+     * for an explanation.
+     * 
+     * @param result The result associated with this parser job
+     * @param lexicalOffset The lexical offset in the source buffer
+     * @return The corresponding offset in the AST, or -1 if the position couldn't be
+     *  determined
+     */
+    int getAstOffset(ParserResult result, int lexicalOffset);
 }

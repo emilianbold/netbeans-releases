@@ -39,8 +39,12 @@ public class RhtmlCodeTemplateFilter implements CodeTemplateFilter {
     }
 
     public synchronized boolean accept(CodeTemplate template) {
-        return "for".equals(template.getAbbreviation()) ||
-                (template.getParametrizedText().indexOf("allowSurround") != -1); // NOI18N
+        if (template != null && template.getParametrizedText().indexOf("${selection") != -1) { // NOI18N
+            return "for".equals(template.getAbbreviation()) || (template.getParametrizedText().indexOf("allowSurround") != -1); // NOI18N
+        }
+
+        // Other templates are filtered for code completion listing etc.
+        return true;
     }
     
     public static final class Factory implements CodeTemplateFilter.Factory {

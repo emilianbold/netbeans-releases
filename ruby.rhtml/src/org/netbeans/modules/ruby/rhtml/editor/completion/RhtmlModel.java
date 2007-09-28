@@ -32,15 +32,15 @@ import org.netbeans.api.retouche.source.ClasspathInfo;
 import org.netbeans.api.retouche.source.Source;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 
 /**
  * Creates a Ruby model for an RHTML file. Simulates ERB to generate Ruby from
- * the RHTML. This is registered as a CompilationInfo EmbeddingModel, such that
- * clients iterating over the content can compute proper offsets.
+ * the RHTML.
  *
  * This class attaches itself to a document, and listens on changes. When
  * a client asks for the Ruby source of the RHTML file, it lazily generates it
- * if the document has been modified.
+ * if and only if the document has been modified.
  *
  * @author Marek Fukala
  * @author Tor Norbye
@@ -50,14 +50,25 @@ public class RhtmlModel {
     private final ArrayList<CodeBlockData> codeBlocks = new ArrayList<CodeBlockData>();
     private String rubyCode;
     //private String rhtmlCode; // For debugging purposes
-    private RhtmlEmbeddingModel embeddingModel;
     private boolean documentDirty = true;
-    private FileObject fo;
+    
+    /** Caching */
+    private int prevAstOffset; // Don't need to initialize: the map 0 => 0 is correct
+    /** Caching */
+    private int prevLexOffset;
  
-    RhtmlModel(Document doc, FileObject fo, RhtmlEmbeddingModel embeddingModel) {
+    public static RhtmlModel get(Document doc) {
+        RhtmlModel model = (RhtmlModel)doc.getProperty(RhtmlModel.class);
+        if(model == null) {
+            model = new RhtmlModel(doc);
+            doc.putProperty(RhtmlModel.class, model);
+        }
+
+        return model;
+    }
+    
+    RhtmlModel(Document doc) {
         this.doc = doc;
-        this.fo = fo;
-        this.embeddingModel = embeddingModel;
 
         if (doc != null) { // null in some unit tests
             TokenHierarchy hi = TokenHierarchy.get(doc);
@@ -67,20 +78,6 @@ public class RhtmlModel {
                 }
             });
         }
-    }
-    
-    public Source getSource() throws IllegalArgumentException {
-        if (doc == null) {
-            throw new IllegalArgumentException ("doc == null");  //NOI18N
-        }
-        @SuppressWarnings("unchecked")
-        Reference<Source> ref = (Reference<Source>)doc.getProperty(Source.class);
-        Source js = ref != null ? ref.get() : null;
-        if (js == null) {
-            List<FileObject> fos = Collections.singletonList(fo);
-            js = Source.createFromModel(ClasspathInfo.create(fo), fos, embeddingModel);
-        }
-        return js;
     }
 
     public String getRubyCode() {
@@ -111,7 +108,7 @@ public class RhtmlModel {
      * @param tokenHierarchy The token hierarchy for the RHTML code
      * @param tokenSequence  The token sequence for the RHTML code
      */
-    public void eruby(StringBuilder outputBuffer,
+    void eruby(StringBuilder outputBuffer,
             TokenHierarchy<Document> tokenHierarchy,            
             TokenSequence<RhtmlTokenId> tokenSequence) {
         StringBuilder buffer = outputBuffer;
@@ -216,6 +213,7 @@ public class RhtmlModel {
                 CodeBlockData blockData = new CodeBlockData(sourceStart, sourceEnd, generatedStart, generatedEnd);
                 codeBlocks.add(blockData);
 
+// Make code sanitizing work better:  buffer.append("\n).to_s;"); // NOI18N
                 buffer.append(").to_s;"); // NOI18N
             }
         }
@@ -230,6 +228,15 @@ public class RhtmlModel {
     }
     
     public int sourceToGeneratedPos(int sourceOffset){
+        // Caching
+        if (prevLexOffset == sourceOffset) {
+            return prevAstOffset;
+        }
+        prevLexOffset = sourceOffset;
+        
+        // TODO - second level of caching on the code block to catch
+        // nearby searches
+        
         // Not checking dirty flag here; sourceToGeneratedPos() should apply
         // to the positions as they were when we generated the ruby code
         
@@ -242,13 +249,24 @@ public class RhtmlModel {
         int offsetWithinBlock = sourceOffset - codeBlock.sourceStart;
         int generatedOffset = codeBlock.generatedStart+offsetWithinBlock;
         if (generatedOffset <= codeBlock.generatedEnd) {
-            return generatedOffset;
+            prevAstOffset = generatedOffset;
         } else {
-            return codeBlock.generatedEnd;
+            prevAstOffset = codeBlock.generatedEnd;
         }
+        
+        return prevAstOffset;
     }
     
     public int generatedToSourcePos(int generatedOffset) {
+        // Caching
+        if (prevAstOffset == generatedOffset) {
+            return prevLexOffset;
+        }
+        prevAstOffset = generatedOffset;
+        // TODO - second level of caching on the code block to catch
+        // nearby searches
+
+        
         // Not checking dirty flag here; generatedToSourcePos() should apply
         // to the positions as they were when we generated the ruby code
 
@@ -261,10 +279,12 @@ public class RhtmlModel {
         int offsetWithinBlock = generatedOffset - codeBlock.generatedStart;
         int sourceOffset = codeBlock.sourceStart+offsetWithinBlock;
         if (sourceOffset <= codeBlock.sourceEnd) {
-            return sourceOffset;
+            prevLexOffset = sourceOffset;
         } else {
-            return codeBlock.sourceEnd;
+            prevLexOffset = codeBlock.sourceEnd;
         }
+        
+        return prevLexOffset;
     }
     
     private CodeBlockData getCodeBlockAtSourceOffset(int offset){
@@ -277,6 +297,7 @@ public class RhtmlModel {
     }
 
     private CodeBlockData getCodeBlockAtGeneratedOffset(int offset){
+        // TODO - binary search!! they are ordered!
         for (CodeBlockData codeBlock : codeBlocks){
             if (codeBlock.generatedStart <= offset && codeBlock.generatedEnd >= offset){
                 return codeBlock;

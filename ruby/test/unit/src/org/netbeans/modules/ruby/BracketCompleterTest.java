@@ -183,7 +183,6 @@ public class BracketCompleterTest extends RubyTestBase {
             DocumentUtilities.setTypingModification(doc, false);
             doc.atomicUnlock();
         }
-        
     }
 
     private void deleteChar(String original, String expected) throws BadLocationException {

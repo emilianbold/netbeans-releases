@@ -29,7 +29,6 @@ import org.netbeans.api.gsf.DeclarationFinder;
 import org.netbeans.api.gsf.Formatter;
 import org.netbeans.api.gsf.InstantRenamer;
 import org.netbeans.api.gsf.Indexer;
-import org.netbeans.modules.gsf.Language;
 import org.netbeans.api.gsf.Parser;
 import org.netbeans.api.gsf.GsfLanguage;
 import org.netbeans.api.gsf.HintsProvider;
@@ -50,6 +49,7 @@ public class DefaultLanguage implements Language {
     private String displayName;
     private String iconBase;
     private String mime;
+    private boolean useCustomEditorKit;
     private List<String> extensions;
     private List<Action> actions;
     private GsfLanguage language;
@@ -103,6 +103,15 @@ public class DefaultLanguage implements Language {
 //        this.palette = palette;
     }
 
+
+    public boolean useCustomEditorKit() {
+        return useCustomEditorKit;
+    }
+    
+    public void setUseCustomEditorKit(boolean useCustomEditorKit) {
+        this.useCustomEditorKit = useCustomEditorKit;
+    }
+    
     public String getDisplayName() {
         return displayName;
     }
@@ -210,7 +219,7 @@ public class DefaultLanguage implements Language {
         // Construct the service lazily using the instance cookie on the provided data object
         try {
             DataObject dobj = DataObject.find(file);
-            InstanceCookie ic = (InstanceCookie) dobj.getCookie(InstanceCookie.class);
+            InstanceCookie ic = dobj.getCookie(InstanceCookie.class);
             return ic.instanceCreate();
         } catch (ClassNotFoundException e) {
             ErrorManager.getDefault().notify(e);
@@ -222,6 +231,7 @@ public class DefaultLanguage implements Language {
         return null;
     }
     
+    @Override
     public String toString() {
         return mime + ":" + displayName;
     }

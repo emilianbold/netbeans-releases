@@ -27,7 +27,6 @@ import java.util.Map;
 import javax.swing.Action;
 import javax.swing.JSeparator;
 
-import org.netbeans.modules.gsf.Language;
 import org.openide.ErrorManager;
 import org.openide.actions.OpenAction;
 import org.openide.cookies.InstanceCookie;
@@ -48,9 +47,12 @@ public class GsfDataNode extends DataNode {
 
     public GsfDataNode(GsfDataObject basDataObject, Language language) {
         super(basDataObject, Children.LEAF);
-        setIconBaseWithExtension(language.getIconBase());
+        if (language != null) {
+            setIconBaseWithExtension(language.getIconBase());
+        }
     }
 
+    @Override
     public Action getPreferredAction() {
         return SystemAction.get(OpenAction.class);
     }
@@ -60,6 +62,7 @@ public class GsfDataNode extends DataNode {
     * @see DataLoader#getActions
     * @return array of actions or <code>null</code>
     */
+    @Override
     public Action[] getActions(boolean context) {
         String mimeType = getDataObject().getPrimaryFile().getMIMEType();
 

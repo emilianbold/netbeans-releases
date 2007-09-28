@@ -37,6 +37,7 @@ import org.netbeans.modules.ruby.hints.spi.AstRule;
 import org.netbeans.modules.ruby.hints.spi.Description;
 import org.netbeans.modules.ruby.hints.spi.Fix;
 import org.netbeans.modules.ruby.hints.spi.HintSeverity;
+import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.openide.util.NbBundle;
 
 
@@ -178,10 +179,11 @@ public class RailsDeprecations implements AstRule {
     private void addFix(CompilationInfo info, Node node, List<Description> result, String displayName) {
         OffsetRange range = AstUtilities.getNameRange(node);
 
-        Description desc = new Description(this, displayName, info.getFileObject(), range, Collections.<Fix>emptyList(), 100);
-        result.add(desc);
-
-        // TODO - add a fix to turn off this hint? - Should be a utility or infrastructure option!
+        range = LexUtilities.getLexerOffsets(info, range);
+        if (range != OffsetRange.NONE) {
+            Description desc = new Description(this, displayName, info.getFileObject(), range, Collections.<Fix>emptyList(), 100);
+            result.add(desc);
+        }
     }
 
     public boolean getDefaultEnabled() {

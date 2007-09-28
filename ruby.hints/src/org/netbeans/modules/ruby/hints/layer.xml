@@ -64,6 +64,14 @@ Microsystems, Inc. All Rights Reserved.
                 </file>
             </folder>
         </folder>
+        <folder name="application">
+            <folder name="x-httpd-eruby">
+                <file name="hints.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.api.gsf.HintsProvider"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.hints.infrastructure.RubyHintsProvider"/>
+                </file>
+            </folder>
+        </folder>
     </folder>
     
 </filesystem>

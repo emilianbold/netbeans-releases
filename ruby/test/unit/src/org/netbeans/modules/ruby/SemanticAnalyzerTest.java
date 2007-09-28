@@ -18,14 +18,6 @@ public class SemanticAnalyzerTest extends RubyTestBase {
         super(testName);
     }
 
-    @Override
-    protected void setUp() throws java.lang.Exception {
-    }
-
-    @Override
-    protected void tearDown() throws java.lang.Exception {
-    }
-
     private String annotate(Document doc, Map<OffsetRange, ColoringAttributes> highlights) throws Exception {
         StringBuilder sb = new StringBuilder();
         String text = doc.getText(0, doc.getLength());

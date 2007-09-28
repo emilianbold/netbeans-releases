@@ -20,6 +20,7 @@
 package org.netbeans.modules.ruby.rhtml.editor;
 
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
 import javax.swing.Action;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
@@ -37,11 +38,13 @@ import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction;
 import org.netbeans.modules.editor.html.HTMLKit;
+import org.netbeans.modules.editor.retouche.InstantRenameAction;
+import org.netbeans.modules.gsf.SelectCodeElementAction;
 import org.netbeans.modules.ruby.BracketCompleter;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
+import org.netbeans.modules.ruby.rhtml.RhtmlDocument;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
-import org.netbeans.modules.ruby.rhtml.loaders.BackgroundParser;
 import org.openide.util.Exceptions;
 
 /**
@@ -50,6 +53,9 @@ import org.openide.util.Exceptions;
  * @todo Automatic bracket matching for RHTML files should probably split Ruby blocks up,
  *  e.g. pressing enter here:  <% if true| %> should take you -outside- of the current
  *  block and insert a matching <% end %> outside!
+ * @todo Hook up caret motion commands
+ * @todo Hook up refactoring and inline rename operations
+ * @todo Pressing newline in an EMPTY rhtml expression should NOT newline me out of the block!
  * 
  * @author Marek Fukala
  * @author Tor Norbye
@@ -59,6 +65,7 @@ import org.openide.util.Exceptions;
 public class RhtmlKit extends HTMLKit {
     /** Completion assistance for Ruby */
     private BracketCompleter rubyCompletion = new BracketCompleter();
+
     /** Index in parent kit's action array where the default key action is found. */
     private static int defaultKeyActionIndex = -1;
     
@@ -77,6 +84,59 @@ public class RhtmlKit extends HTMLKit {
     public String getContentType() {
         return RhtmlTokenId.MIME_TYPE;
     }
+    
+//    @Override
+//    public Document createDefaultDocument() {
+//        Document doc = new RhtmlDocument(RhtmlKit.class);
+//
+//        //doc.putProperty("mimeType", mimeType); //NOI18N
+//
+//        initDocument(doc);
+//        return doc;
+//    }
+//
+//    @Override
+//    public SyntaxSupport createSyntaxSupport(BaseDocument doc) {
+//        return new ExtSyntaxSupport(doc) {
+//
+//            @Override
+//            public int[] findMatchingBlock(int offset, boolean simpleSearch)
+//                    throws BadLocationException {
+//                // Do parenthesis matching, if applicable
+//                BracketCompletion bracketCompletion = language.getBracketCompletion();
+//                if (bracketCompletion != null) {
+//                    OffsetRange range = bracketCompletion.findMatching(getDocument(), offset/*, simpleSearch*/);
+//                    if (range == OffsetRange.NONE) {
+//                        return null;
+//                    } else {
+//                        return new int[] { range.getStart(), range.getEnd() };
+//                    }
+//                }
+//
+//                return null;
+//            }
+//        };
+//    }
+//
+//    @Override
+//    protected void initDocument(BaseDocument doc) {
+//        // XXX This appears in JavaKit, not sure why, but doing it just in case.
+//        //do not ask why, fire bug in the IZ:
+//        CodeTemplateManager.get(doc);
+//    }
+
+    
+    
+    private static final String selectNextElementAction = "select-element-next"; //NOI18N
+    private static final String selectPreviousElementAction = "select-element-previous"; //NOI18N
+    private static final String previousCamelCasePosition = "previous-camel-case-position"; //NOI18N
+    private static final String nextCamelCasePosition = "next-camel-case-position"; //NOI18N
+    private static final String selectPreviousCamelCasePosition = "select-previous-camel-case-position"; //NOI18N
+    private static final String selectNextCamelCasePosition = "select-next-camel-case-position"; //NOI18N
+    private static final String deletePreviousCamelCasePosition = "delete-previous-camel-case-position"; //NOI18N
+    private static final String deleteNextCamelCasePosition = "delete-next-camel-case-position"; //NOI18N
+    private static final String expandAllCodeBlockFolds = "expand-all-code-block-folds"; //NOI18N
+    private static final String collapseAllCodeBlockFolds = "collapse-all-code-block-folds"; //NOI18N
     
     @Override
     protected Action[] createActions() {
@@ -104,6 +164,9 @@ public class RhtmlKit extends HTMLKit {
                     new RhtmlInsertBreakAction(), 
                     new RhtmlDeleteCharAction(deletePrevCharAction, false),
                     new RhtmlToggleCommentAction(),
+                    new SelectCodeElementAction(selectNextElementAction, true),
+                    new SelectCodeElementAction(selectPreviousElementAction, false),
+                    new InstantRenameAction(),
                  });
     }
 
@@ -194,10 +257,40 @@ public class RhtmlKit extends HTMLKit {
         // of it
         if (dotPos < doc.getLength()-3) {
             String text = doc.getText(dotPos, 3);
-            if (text.equals(" %>") || text.startsWith("%>")) {
-                // TODO - double check at the lexical level!
-                caret.setDot(dotPos + text.indexOf('>')+1);
-                return true;
+            if (text.equals(" %>") || text.startsWith("%>") || text.equals("-%>") || text.equals("% -%")) { // NOI18N
+                TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
+                TokenSequence<?extends TokenId> ts = th.tokenSequence();
+                ts.move(dotPos);
+                if (ts.moveNext()) {
+                    // Go backwards and make sure we have nothing before the previous
+                    // delimiter
+                    TokenId id = ts.token().id();
+                    boolean notJustSpace = false;
+                    if (id == RhtmlTokenId.RUBY || id == RhtmlTokenId.RUBY_EXPR || id == RhtmlTokenId.DELIMITER) {
+                        do {
+                            id = ts.token().id();
+                            if (id == RhtmlTokenId.DELIMITER && ts.token().text().charAt(0) == '<') {
+                                if (notJustSpace ) {
+                                    caret.setDot(dotPos + text.indexOf('>')+1);
+                                    return true;
+                                }
+                                return false;
+                            } else if (id == RhtmlTokenId.RUBY || id == RhtmlTokenId.RUBY_EXPR) {
+                                if (!notJustSpace) {
+                                    TokenSequence<? extends TokenId> ets = ts.embedded();
+                                    if (ets != null) {
+                                        ets.moveStart();
+                                        while (ets.moveNext()) {
+                                            if (ets.token().id() != RubyTokenId.WHITESPACE) {
+                                                notJustSpace = true;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        } while (ts.movePrevious());
+                    }
+                }
             }
         }
         
@@ -288,6 +381,11 @@ public class RhtmlKit extends HTMLKit {
             }
 
             super.replaceSelection(target, dotPos, caret, str, overwrite);
+        }
+        
+        @Override
+        protected void checkIndentHotChars(JTextComponent target, String typedText) {
+            // No reformatting here
         }
     }
     
@@ -385,9 +483,8 @@ public class RhtmlKit extends HTMLKit {
     @Override
     protected void initDocument(Document doc) {
         super.initDocument(doc);
-        
-        /** Attach error listener */
-        new BackgroundParser(doc);
+
+        doc.putProperty(org.netbeans.api.lexer.Language.class, RhtmlTokenId.language());
     }
     
     private static Token<? extends TokenId> getToken(BaseDocument doc, int offset, boolean checkEmbedded) {

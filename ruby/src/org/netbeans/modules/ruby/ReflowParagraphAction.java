@@ -502,6 +502,7 @@ public class ReflowParagraphAction extends AbstractAction implements EditorActio
 
                 // If this content had flowed text I want to flow
                 // it here... otherwise flush
+                // TODO - is the space here optional? (See :: pattern above
                 if (!(text.matches("^\\[[\\S]+\\] .+") || text.matches("^[\\S]+:: .+"))) {
                     flush();
                     indentedList = true;

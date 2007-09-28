@@ -61,10 +61,6 @@ public interface Completable {
         STOP
     }
 
-    /**
-     *  @todo Pass in the completion type? (Smart versus documentation etc.)
-     *  @todo Pass in the line offsets? Nah, just make the completion provider figure those out.
-     */
     List<CompletionProposal> complete(@NonNull CompilationInfo info, int caretOffset, String prefix,
         @NonNull NameKind kind, @NonNull QueryType queryType, boolean caseSensitive, @NonNull HtmlFormatter formatter);
 

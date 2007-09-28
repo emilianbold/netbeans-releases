@@ -23,7 +23,6 @@ import java.util.Collections;
 import java.util.Set;
 import javax.swing.Icon;
 import javax.swing.text.Position.Bias;
-import org.netbeans.api.gsf.EmbeddingModel;
 import org.netbeans.api.gsf.Modifier;
 
 import org.netbeans.api.gsf.OffsetRange;
@@ -34,6 +33,7 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.refactoring.ruby.ui.tree.ElementGripFactory;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.netbeans.modules.ruby.AstUtilities;
+import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -95,24 +95,12 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
     }
 
     public static WhereUsedElement create(RubyElementCtx tree) {
+        CompilationInfo info = tree.getInfo();
         OffsetRange range = AstUtilities.getNameRange(tree.getNode());
         assert range != OffsetRange.NONE;
 
-        CompilationInfo info = tree.getInfo();
-        
-        if (info.getEmbeddingModel() != null) {
-            EmbeddingModel model = info.getEmbeddingModel();
-            int start = range.getStart();
-            int end = range.getEnd();
-            start = model.generatedToSourcePos(info.getFileObject(), start);
-            end = model.generatedToSourcePos(info.getFileObject(), end);
-
-            range = new OffsetRange(start, end);
-
-            assert start != -1 && end != -1;
-        }
-        
-
+        range = LexUtilities.getLexerOffsets(info, range);
+        assert range != OffsetRange.NONE;
         
         Set<Modifier> modifiers = Collections.emptySet();
         if (tree.getElement() != null) {

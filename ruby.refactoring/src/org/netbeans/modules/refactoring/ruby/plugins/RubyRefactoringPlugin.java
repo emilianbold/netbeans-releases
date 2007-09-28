@@ -40,7 +40,6 @@ import org.netbeans.modules.refactoring.api.*;
 import org.netbeans.modules.refactoring.ruby.RetoucheUtils;
 import org.netbeans.modules.refactoring.ruby.RubyElementCtx;
 import org.netbeans.modules.ruby.RubyUtils;
-import org.netbeans.modules.ruby.rhtml.editor.completion.RhtmlEmbeddingModel;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -169,6 +168,8 @@ public abstract class RubyRefactoringPlugin extends ProgressProviderAdapter impl
         Collection<ModificationResult> results = new LinkedList<ModificationResult>();
         try {
             // Process Ruby files and RHTML files separately - and OTHER files separately
+            // TODO - now that I don't need separate RHTML models any more, can
+            // I just do a single pass?
             Set<FileObject> rubyFiles = new HashSet<FileObject>(2*files.size());
             Set<FileObject> rhtmlFiles = new HashSet<FileObject>(2*files.size());
             for (FileObject file : files) {
@@ -190,8 +191,8 @@ public abstract class RubyRefactoringPlugin extends ProgressProviderAdapter impl
             }
             work = groupByRoot(rhtmlFiles);
             for (List<FileObject> fos : work) {
-                final Source source = Source.createFromModel(ClasspathInfo.create(fos.get(0)), fos, new RhtmlEmbeddingModel());
-                try {// todo - make sure I have a source in case I add rhtml files here!
+                final Source source = Source.create(ClasspathInfo.create(fos.get(0)), fos);
+                try {
                     results.add(source.runModificationTask(task));
                 } catch (IOException ex) {
                     throw (RuntimeException) new RuntimeException().initCause(ex);

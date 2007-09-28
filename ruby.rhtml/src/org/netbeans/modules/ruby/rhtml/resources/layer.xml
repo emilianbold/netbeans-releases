@@ -4,6 +4,8 @@
     <folder name="Loaders">
         <folder name="application">
             <folder name="x-httpd-eruby">
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/ruby/rhtml/resources/rhtml16.gif"/>
+                <attr name="iconBase" stringvalue="org/netbeans/modules/ruby/rhtml/resources/rhtml16.gif"/>
                 <folder name="Actions">
                     <file name="org-openide-actions-OpenAction.instance">
                         <attr name="position" intvalue="100"/>
@@ -95,17 +97,25 @@
                 
                 <folder name="CompletionProviders">
                     <file name="org-netbeans-modules-editor-html-HTMLCompletionProvider.instance"/>
-                    <file name="org-netbeans-modules-ruby-rhtml-editor-completion-RhtmlCompletionProvider.instance"/>
+                    <file name="org-netbeans-modules-retouche-editor-completion-GsfCompletionProvider.instance"/>
+                    <!-- This doesn't work right because most of the templates don't start with characters
+                         that are identifiers
+                    <file name="org-netbeans-lib-editor-codetemplates-CodeTemplateCompletionProvider.instance"/>
+                    -->
                 </folder>
    
+                <!--
                 <folder name="CodeTemplateFilterFactories">
                     <file name="org-netbeans-modules-ruby-rhtml-editor-RhtmlCodeTemplateFilter$Factory.instance"/>
+                    OR:
+                    <file name="org-netbeans-modules-retouche-editor-codetemplates-GsfCodeTemplateFilter$Factory.instance"/>
                 </folder>   
+                -->
 
                 <folder name="HyperlinkProviders">
-                    <file name="RhtmlHyperlinkProvider.instance">
-                        <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.rhtml.editor.completion.RhtmlHyperlinkProvider"/>
-                        <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider"/>
+                    <file name="GsfHyperlinkProvider.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.retouche.editor.hyperlink.GsfHyperlinkProvider"/>
+                        <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
                     </file>
                 </folder>
 
@@ -133,13 +143,18 @@
                     </folder>
                 </folder>
 
+                <!--
                 <folder name="Keybindings">
                     <folder name="NetBeans">
                         <folder name="Defaults">
-                            <file name="keybindings.xml" url="DefaultKeyBindings.xml"/>
+                            <file name="org-netbeans-modules-ruby-keybindings.xml" url="DefaultKeyBindings.xml"/>
+                            <file name="org-netbeans-modules-ruby-keybindings-mac.xml" url="DefaultKeyBindings-Mac.xml">
+                                <attr name="nbeditor-settings-targetOS" stringvalue="OS_MAC"/>
+                            </file>
                         </folder>
                     </folder>
                 </folder>
+                -->
                 <folder name="Popup">
                     <file name="format">
                         <attr name="position" intvalue="1480"/>
@@ -163,6 +178,58 @@
         <folder name="PreviewExamples">
             <folder name="application">
                 <file name="x-httpd-eruby" url="RhtmlExample"/>
+            </folder>
+        </folder>
+    </folder>
+    <folder name="GsfPlugins">
+        <folder name="application">
+            <folder name="x-httpd-eruby">
+                <attr name="displayName" stringvalue="RHTML"/>
+                <!-- Use Schliemann instead of the custom GSF editor kit -->
+                <attr name="useCustomEditorKit" boolvalue="true"/>
+                
+                <file name="language.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.api.gsf.GsfLanguage"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.rhtml.RhtmlLanguage"/>
+                </file>
+                
+                <file name="parser.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.api.gsf.Parser"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.rhtml.RhtmlParser"/>
+                </file>
+
+                <file name="renamer.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.api.gsf.InstantRenamer"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.RenameHandler"/>
+                </file>
+
+                <file name="completion.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.api.gsf.Completable"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.rhtml.RhtmlCompleter"/>
+                </file>
+                
+                <file name="declarationfinder.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.api.gsf.DeclarationFinder"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.rhtml.RhtmlFinder"/>
+                </file>
+                
+                <!--
+                Navigator handled by Schliemann
+                <file name="structure.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.api.gsf.StructureScanner"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.StructureAnalyzer"/>
+                </file>
+
+                Don't index rhtml files - there's usually nothing interesting (new classes, methods) there
+                <file name="indexer.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.api.gsf.Indexer"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.RubyIndexer"/>
+                </file>
+                <folder name="extensions">
+                    <file name="rhtml"/>
+                    <file name="erb"/>
+                </folder>
+                -->
             </folder>
         </folder>
     </folder>

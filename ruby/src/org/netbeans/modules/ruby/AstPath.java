@@ -31,6 +31,9 @@ import org.jruby.lexer.yacc.ISourcePosition;
 /**
  * This represents a path in a JRuby AST.
  *
+ * @todo Performance: Make a cache here since I tend to do AstPath(caretOffset) from
+ *  several related services for a single parser result
+ * 
  * @author Tor Norbye
  */
 public class AstPath implements Iterable<Node> {

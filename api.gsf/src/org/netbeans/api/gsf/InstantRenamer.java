@@ -19,15 +19,10 @@
 
 package org.netbeans.api.gsf;
 
-import java.util.List;
 import java.util.Set;
-
-import org.netbeans.api.gsf.OffsetRange;
-import org.netbeans.api.gsf.CompilationInfo;
 
 import org.netbeans.api.gsf.annotations.CheckForNull;
 import org.netbeans.api.gsf.annotations.NonNull;
-import org.netbeans.api.gsf.annotations.Nullable;
 
 
 /**
