@@ -90,8 +90,8 @@ made subject to such option by the copyright holder.
         <java classname="antlr.Tool"  fork="true">
             <arg value="-o"/>
             <arg value="${antlr.output.dir}"/>
+            <!--<arg value="-traceParser"/>-->
             <arg value="${antlr.grammar.dir}/cppparser.g"/>
-            <!-- <arg value="-traceParser"/> -->
             <classpath path="${antlr.jar}"/>
         </java>        
     </target>
