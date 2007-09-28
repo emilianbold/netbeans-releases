@@ -13,7 +13,13 @@
 <tocitem text="Legal Notices" target="ide.credits" />
 
 <tocitem text="IDE Basics" expand="false">
- 
+
+  <tocitem text="Getting Started" >
+
+
+  </tocitem>
+  
+
   <tocitem text="Basic File Features" >
     <tocitem text="Searching Files" target="files.search" />
     <tocitem text="Comparing Two Files in the IDE" target="files.diff" />
