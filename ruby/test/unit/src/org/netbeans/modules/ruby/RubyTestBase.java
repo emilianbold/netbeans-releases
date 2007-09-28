@@ -32,11 +32,12 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.CharBuffer;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.prefs.Preferences;
 import javax.swing.text.Document;
 import org.jruby.ast.Node;
-import org.netbeans.api.gsf.CompilationInfo;
 import org.netbeans.api.gsf.FormattingPreferences;
 import org.netbeans.api.gsf.ParseListener;
 import org.netbeans.api.gsf.ParserFile;
@@ -132,7 +133,7 @@ public abstract class RubyTestBase extends NbTestCase {
         }
     }
 
-    protected String readFile(final FileObject fo) {
+    public static String readFile(final FileObject fo) {
         try {
             final StringBuilder sb = new StringBuilder(5000);
             fo.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
@@ -172,7 +173,7 @@ public abstract class RubyTestBase extends NbTestCase {
         }
     }
 
-    protected BaseDocument getDocument(String s) {
+    public static BaseDocument createDocument(String s) {
         try {
             BaseDocument doc = new BaseDocument(null, false);
             doc.putProperty(org.netbeans.api.lexer.Language.class, RubyTokenId.language());
@@ -186,6 +187,11 @@ public abstract class RubyTestBase extends NbTestCase {
             fail(ex.toString());
             return null;
         }
+    }
+
+
+    protected BaseDocument getDocument(String s) {
+        return createDocument(s);
     }
 
     protected BaseDocument getDocument(FileObject fo) {
@@ -231,7 +237,7 @@ public abstract class RubyTestBase extends NbTestCase {
         return info;
     }
     
-    protected static String readFile(File f) throws Exception {
+    public static String readFile(File f) throws Exception {
         FileReader r = new FileReader(f);
         int fileLen = (int)f.length();
         CharBuffer cb = CharBuffer.allocate(fileLen);
@@ -378,6 +384,17 @@ public abstract class RubyTestBase extends NbTestCase {
         assertEquals(expected.trim(), description.trim());
     }
 
+    public void assertEquals(Collection<String> s1, Collection<String> s2) {
+        List<String> l1 = new ArrayList<String>();
+        l1.addAll(s1);
+        Collections.sort(l1);
+        List<String> l2 = new ArrayList<String>();
+        l2.addAll(s2);
+        Collections.sort(l2);
+        
+        assertEquals(l1.toString(), l2.toString());
+    }
+    
     protected Formatter getFormatter(FormattingPreferences preferences) {
         if (preferences == null) {
             preferences = new IndentPrefs(2,2);

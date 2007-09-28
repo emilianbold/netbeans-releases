@@ -19,9 +19,13 @@
 
 package org.netbeans.modules.ruby;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 import org.jruby.ast.Node;
 import org.jruby.ast.NodeTypes;
 import org.jruby.ast.types.INameNode;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -64,5 +68,54 @@ public class AstUtilitiesTest extends RubyTestBase {
         assertNotNull(node);
         assertEquals(node.nodeId, NodeTypes.CLASSVARASGNNODE);
         assertEquals("@@debugging", ((INameNode)node).getName());
+    }
+
+    public void testFindRequires() throws Exception {
+        Node root = getRootNode("testfiles/ape.rb");
+        Set<String> requires = AstUtilities.getRequires(root);
+        List<String> expected = Arrays.asList(new String[] {
+            "rexml/document",
+            "rubygems",
+            "builder",
+            "getter",
+            "service",
+            "samples",
+            "entry",
+            "poster",
+            "collection",
+            "deleter",
+            "putter",
+            "feed",
+            "html",
+            "crumbs",
+            "escaper", 
+            "categories",
+            "names",
+            "validator",
+            "authent"
+        });
+        assertEquals(expected, requires);
+    }
+    
+    public void testGetMethodName() {
+        String testFile = "testfiles/ape.rb";
+        FileObject fileObject = getTestFile(testFile);
+        String text = readFile(fileObject);
+        
+        int offset = 0;
+        String method = AstUtilities.getMethodName(fileObject, offset);
+        assertNull(method);
+        
+        offset = text.indexOf("@w.text! lines[-1]");
+        method = AstUtilities.getMethodName(fileObject, offset);
+        assertEquals("report_li", method);
+        
+        offset = text.indexOf("step[1 .. -1].each { |li| report_li(nil, nil, li) }");
+        method = AstUtilities.getMethodName(fileObject, offset);
+        assertEquals("report_html", method);
+    }
+    
+    public void testFindBlock() {
+        
     }
 }
