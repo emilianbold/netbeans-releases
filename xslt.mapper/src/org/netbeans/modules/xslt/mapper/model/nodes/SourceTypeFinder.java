@@ -90,6 +90,9 @@ public class SourceTypeFinder {
     }
     
     private TreeNode findImpl(TreeNode currentNode, int depth){
+        if (locationSteps == null || depth >= locationSteps.length) {
+            return null;
+        }
         LocationStep step = locationSteps[depth];
         
         XPathPredicateExpression[] predicates = step.getPredicates();
