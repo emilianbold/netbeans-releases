@@ -23,11 +23,13 @@ import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
 import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -35,12 +37,12 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.WSDLModelFactory;
 import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
-import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.OperationPanel;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
@@ -68,6 +70,7 @@ final class WsdlPanel implements WizardDescriptor.FinishablePanel {
     public static final String WSDL_TARGETNAMESPACE = "WSDL_TARGETNAMESPACE";
     
     public static final String WSDL_DEFINITION_NAME = "WSDL_DEFINITION_NAME";
+    public static final String ENCODING = "PROJECT_ENCODING";
     
     
     private static final String DEFAULT_TARGET_NAMESPACE = "urn:WS/wsdl"; //NOI18N
@@ -170,7 +173,7 @@ final class WsdlPanel implements WizardDescriptor.FinishablePanel {
     public void storeSettings(Object settings) {
         TemplateWizard wiz = (TemplateWizard) settings;
         
-        if(templateWizard.getValue() == TemplateWizard.CANCEL_OPTION) {
+        if(wiz.getValue() == TemplateWizard.CANCEL_OPTION) {
             if (mTempWSDLModel != null) {
                 DataObject dobj = ActionHelper.getDataObject(mTempWSDLModel);
                 if (dobj != null) dobj.setModified(false);
@@ -182,7 +185,6 @@ final class WsdlPanel implements WizardDescriptor.FinishablePanel {
             return;
         }
         
-        
         String fileName = Templates.getTargetName(wiz);
         if (fileName == null) return;
         wiz.putProperty(FILE_NAME, fileName);
@@ -192,19 +194,20 @@ final class WsdlPanel implements WizardDescriptor.FinishablePanel {
         wiz.putProperty(WSDL_DEFINITION_NAME, definitionName);
         try {
             if (tempWSDLFile == null) {
+                
                 // Create a temporary file for storing our settings.
                 tempWSDLFile = File.createTempFile(fileName + "RIT", ".wsdl"); // NOI18N
-                tempWSDLFile.deleteOnExit();
                 populateFileFromTemplate(tempWSDLFile);
+                tempWSDLFile.deleteOnExit();
                 templateWizard.putProperty(
                         WizardPortTypeConfigurationStep.TEMP_WSDLFILE, tempWSDLFile);
                 mTempWSDLModel = prepareModelFromFile(tempWSDLFile, definitionName);
-                templateWizard.putProperty(
+                wiz.putProperty(
                         WizardPortTypeConfigurationStep.TEMP_WSDLMODEL, mTempWSDLModel);
             } else {
-                templateWizard.putProperty(
+                wiz.putProperty(
                         WizardPortTypeConfigurationStep.TEMP_WSDLMODEL, mTempWSDLModel);
-                templateWizard.putProperty(
+                wiz.putProperty(
                         WizardPortTypeConfigurationStep.TEMP_WSDLFILE, tempWSDLFile);
                 mTempWSDLModel.startTransaction();
                 mTempWSDLModel.getDefinitions().setTargetNamespace(targetNamespace);
@@ -235,6 +238,9 @@ final class WsdlPanel implements WizardDescriptor.FinishablePanel {
         if (templateWizard == null) {
             throw new IOException("templateWizard not defined");
         }
+        
+        String encoding = (String) templateWizard.getProperty(ENCODING);
+        
         FileObject template = Templates.getTemplate(templateWizard);
         DataObject dTemplate = DataObject.find(template);
         if (dTemplate != null) {
@@ -242,14 +248,22 @@ final class WsdlPanel implements WizardDescriptor.FinishablePanel {
                     dTemplate.getPrimaryFile()).getCookie(EditorCookie.class);
             editorCookie.openDocument();
             Document doc = editorCookie.getDocument();
-            FileWriter writer = new FileWriter(file);
+            StringBuilder stringBuilder = new StringBuilder();
             try {
-                writer.write(doc.getText(0, doc.getLength()));
+                stringBuilder.append(doc.getText(0, doc.getLength()));
             } catch (BadLocationException ble) {
                 // This basically cannot happen.
                 ErrorManager.getDefault().notify(ble);
             }
+            if (!encoding.equalsIgnoreCase("UTF-8")) {
+                stringBuilder.delete(30, 35);
+                stringBuilder.insert(30, encoding);
+            }
+            FileOutputStream stream = new FileOutputStream(file);
+            OutputStreamWriter writer = new OutputStreamWriter(stream, encoding);
+            writer.write(stringBuilder.toString());
             writer.close();
+            stream.close();
         }
     }
 
