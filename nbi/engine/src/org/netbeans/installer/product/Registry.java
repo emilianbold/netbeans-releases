@@ -282,18 +282,13 @@ public class Registry {
         LogManager.log("... removing remaining installation data for all the products");
         for (Product product: getProducts()) {
             for (ExtendedUri uri: product.getDataUris()) {
-                if ((uri.getLocal() != null) &&
-                        !uri.getLocal().equals(uri.getRemote()) &&
-                        !uri.getAlternates().contains(uri.getLocal())) {
-                    try {
-                        FileUtils.deleteFile(new File(uri.getLocal()));
-                        uri.setLocal(null);
-                    } catch (IOException e) {
-                        ErrorManager.notifyWarning(
-                                ResourceUtils.getString(Registry.class,
-                                ERROR_CANNOT_DELETE_DATA_KEY),
-                                e);
-                    }
+                try {
+                    FileProxy.getInstance().deleteFile(uri);
+                } catch (IOException e) {
+                    ErrorManager.notifyWarning(
+                            ResourceUtils.getString(Registry.class,
+                            ERROR_CANNOT_DELETE_DATA_KEY),
+                            e);
                 }
             }
         }

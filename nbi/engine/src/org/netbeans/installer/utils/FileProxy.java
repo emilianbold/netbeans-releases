@@ -69,6 +69,14 @@ public class FileProxy {
         cache.remove(uri);
     }
     
+    public void deleteFile(ExtendedUri uri) throws IOException {
+         if ((uri.getLocal() != null) &&
+                        !uri.getLocal().equals(uri.getRemote()) &&
+                        !uri.getAlternates().contains(uri.getLocal())) {
+             deleteFile(uri.getRemote());
+             uri.setLocal(null);
+         }
+     }
     public void deleteFile(URI uri) throws IOException {
         deleteFile(uri.toString());
     }
@@ -96,7 +104,9 @@ public class FileProxy {
     public File getFile(String uri, ClassLoader loader) throws DownloadException {
         return getFile(uri, null, loader);
     }
-    
+    public File getFile(String uri, ClassLoader loader, boolean deleteOnExit) throws DownloadException {
+        return getFile(uri, null, loader, deleteOnExit);
+    }
     public File getFile(URI uri, Progress progress)  throws DownloadException {
         return getFile(uri, progress, null, false);
     }

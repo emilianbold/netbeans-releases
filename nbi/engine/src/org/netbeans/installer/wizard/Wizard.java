@@ -192,10 +192,10 @@ public class Wizard {
         try {
             final File schemaFile = FileProxy.getInstance().getFile(
                     componentsSchemaUri,
-                    classLoader);
+                    classLoader, true);
             final File componentsFile = FileProxy.getInstance().getFile(
                     componentsUri,
-                    classLoader);
+                    classLoader, true);
             
             final Schema schema = SchemaFactory.
                     newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI).

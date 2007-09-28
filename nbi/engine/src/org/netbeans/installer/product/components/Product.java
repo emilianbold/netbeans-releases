@@ -281,8 +281,7 @@ public final class Product extends RegistryNode {
             
             // finally remove the data file
             try {
-                FileUtils.deleteFile(dataFile);
-                uri.setLocal(null);
+                FileProxy.getInstance().deleteFile(uri);
             } catch (IOException e) {
                 throw new InstallationException(
                         ResourceUtils.getString(Product.class,
