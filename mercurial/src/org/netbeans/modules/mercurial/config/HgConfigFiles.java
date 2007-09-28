@@ -95,14 +95,23 @@ public class HgConfigFiles {
         }
     }
  
-    public void setProperty(String section, String name, String value) {
-        if (value.length() == 0) {
-            removeProperty(section, name);
+    public void setProperty(String section, String name, String value, boolean allowEmpty) {
+        if (!allowEmpty) {
+            if (value.length() == 0) {
+                removeProperty(section, name);
+            } else {
+                Ini.Section inisection = getSection(hgrc, section, true);
+                inisection.put(name, value);
+            }
         } else {
             Ini.Section inisection = getSection(hgrc, section, true);
             inisection.put(name, value);
         }
         storeIni(hgrc, "hgrc"); // NOI18N
+    }
+
+    public void setProperty(String section, String name, String value) {
+        setProperty(section, name,value, false);
     }
 
     public void setUserName(String value) {

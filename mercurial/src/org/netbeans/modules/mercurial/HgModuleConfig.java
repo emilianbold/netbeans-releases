@@ -194,6 +194,10 @@ public class HgModuleConfig {
         getHgConfigFiles(file).setProperty(name, value);
     }
 
+    public void setProperty(File file, String section, String name, String value, boolean allowEmpty) {
+        getHgConfigFiles(file).setProperty(section, name, value, allowEmpty);
+    }
+
     public void setProperty(File file, String section, String name, String value) {
         getHgConfigFiles(file).setProperty(section, name, value);
     }

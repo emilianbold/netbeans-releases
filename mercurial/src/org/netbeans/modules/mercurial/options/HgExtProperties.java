@@ -198,7 +198,7 @@ public class HgExtProperties implements ActionListener, DocumentListener {
                     for (int i = 0; i < hgPropertiesNodes.length; i++) {
                         String hgPropertyName = hgPropertiesNodes[propTable.getModelIndex(i)].getName();
                         String hgPropertyValue = hgPropertiesNodes[propTable.getModelIndex(i)].getValue();
-                        HgModuleConfig.getDefault().setProperty(root, "extensions", hgPropertyName, hgPropertyValue); // NOI18N
+                        HgModuleConfig.getDefault().setProperty(root, "extensions", hgPropertyName, hgPropertyValue, true); // NOI18N
                     }
                 }
             };
