@@ -156,32 +156,41 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel, ChangeLi
     }
 
     private String checkBackwardsKit() {
+        LibraryManager libManager = LibraryManager.getDefault();
+        boolean JavaEE5Project = JsfProjectUtils.isJavaEE5Project(project);
+        ClassPath cp = ClassPath.getClassPath(JsfProjectUtils.getDocumentRoot(project), ClassPath.COMPILE);
         boolean addJSF11 = false;
+        boolean addJAXRPC = false;
         boolean addRowset = false;
 
-        if (!JsfProjectUtils.isJavaEE5Project(project) && (LibraryManager.getDefault().getLibrary("jsf1102") == null)) { // I18N
-            // It's a J2EE 1.4 project
-            ClassPath cp = ClassPath.getClassPath(JsfProjectUtils.getDocumentRoot(project), ClassPath.COMPILE);
-            if (cp.findResource("javax/faces/FacesException.class") == null && //NOI18N
-                cp.findResource("org/apache/myfaces/webapp/StartupServletContextListener.class") == null) { //NOI18N
-                // Server doesn't have the JSF RI support
+        // It's a VisualWeb/Creator J2EE 1.4 project
+        if (!JavaEE5Project) {
+            if ((libManager.getLibrary("jsf1102") == null) && // I18N
+                (cp.findResource("javax/faces/FacesException.class") == null) && //NOI18N
+                (cp.findResource("org/apache/myfaces/webapp/StartupServletContextListener.class") == null)) { //NOI18N
+                // Both the IDE and Server do not have the JSF 1.1 RI support
                 addJSF11 = true;
+            }
+
+            if ((libManager.getLibrary("jaxrpc16") == null) && // I18N
+                (cp.findResource("javax/xml/rpc/Service.class") == null)) { //NOI18N
+                // Both the IDE and Server do not have the JAXRPC support
+                addJAXRPC = true;
             }
         }
 
+        // It's a VisualWeb/Creator J2SE 1.3/1.4 project
         String srcLevel = JsfProjectUtils.getSourceLevel(project);
-        if (("1.3".equals(srcLevel) || "1.4".equals(srcLevel)) && // NOI18N
-            (LibraryManager.getDefault().getLibrary("rowset-ri") == null)) { // NOI18N
-            // It's a J2SE 1.3/1.4 project
-            ClassPath cp = ClassPath.getClassPath(JsfProjectUtils.getDocumentRoot(project), ClassPath.COMPILE);
-            if (cp.findResource("javax/sql/rowset/BaseRowSet.class") == null) { //NOI18N
+        if (("1.3".equals(srcLevel) || "1.4".equals(srcLevel))) { // NOI18N
+            if ((libManager.getLibrary("rowset-ri") == null) && // NOI18N
+                (cp.findResource("javax/sql/rowset/BaseRowSet.class") == null)) { //NOI18N
                 // IDE doesn't have the Rowset RI support
                 addRowset = true;
             }
         }
 
-        if (addJSF11 || addRowset) {
-            return JsfProjectUtils.getBackwardsKitMesg(addJSF11, addRowset);
+        if (addJSF11 || addJAXRPC || addRowset) {
+            return JsfProjectUtils.getBackwardsKitMesg(addJSF11, addJAXRPC, addRowset);
         } else {
             return null;
         }

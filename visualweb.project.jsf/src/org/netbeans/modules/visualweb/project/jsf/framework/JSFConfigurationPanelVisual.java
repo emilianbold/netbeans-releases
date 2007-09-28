@@ -61,7 +61,8 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
     private String serverInstanceID;
     private boolean addJSF = false;
 
-    // <RAVE> Default Bean Package
+    // <RAVE> Visual Web JSF Backwards Compatibility Kit & Default Bean Package
+    private boolean addJAXRPC = false;
     private boolean addRowset = false;
     private boolean beanPackageModified = false;
     // </RAVE>
@@ -512,7 +513,7 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
             }
 
             // <RAVE>
-            initRowsetSettings();
+            initBackwardsKitSettings("1.5".equals(j2eeLevel), currentServerInstanceID); // NOI18N
             // </RAVE>
         }
         
@@ -525,8 +526,8 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
             }
         }
 
-        if (addJSF11 || addRowset) {
-            controller.setErrorMessage(JsfProjectUtils.getBackwardsKitMesg(addJSF11, addRowset)); //NOI18N
+        if (addJSF11 || addJAXRPC || addRowset) {
+            controller.setErrorMessage(JsfProjectUtils.getBackwardsKitMesg(addJSF11, addJAXRPC, addRowset)); //NOI18N
             return false;
         }
         // </RAVE>
@@ -603,7 +604,7 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
         initLibSettings(webModule25Version, serverInstanceID);
 
         // <RAVE>
-        initRowsetSettings();
+        initBackwardsKitSettings(webModule25Version, serverInstanceID);
         // </RAVE>
     }
     
@@ -651,17 +652,38 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
     }
 
     // <RAVE>
-    private void initRowsetSettings() {
-        addRowset = false;
+    private void initBackwardsKitSettings(boolean webModule25Version, String serverInstanceID) {
+        // It's a J2EE 1.4 project
+        addJAXRPC = false;
+        if (!webModule25Version) {
+            Library libJAXRPC = LibraryManager.getDefault().getLibrary("jaxrpc16"); // NOI18N
+
+            // IDE does not have the JAXRPC support
+            if (libJAXRPC == null) {
+                // Server does not have the JAXRPC support
+                if (serverInstanceID == null) {
+                    addJAXRPC = true;
+                } else {
+                    try {
+                        File[] cp = Deployment.getDefault().getJ2eePlatform(serverInstanceID).getClasspathEntries();
+                        addJAXRPC = !Util.containsClass(Arrays.asList(cp), "javax.xml.rpc.Service"); // NOI18N
+                    } catch (IOException exc) {
+                    }
+                }
+            }
+        }
+
         String setSrcLevel = (project == null) ? null : JsfProjectUtils.getSourceLevel(project);
         if (setSrcLevel == null) {
             Properties properties = panel.getController().getProperties();
             setSrcLevel = (String) properties.getProperty("setSourceLevel"); //NOI18N
         }
 
+        // It's a J2SE 1.4 project
+        addRowset = false;
         if ("1.4".equals(setSrcLevel)) { // NOI18N
-            // It's a J2SE 1.4 project
             Library libRowset = LibraryManager.getDefault().getLibrary("rowset-ri"); // NOI18N
+            // IDE doesn't have the Rowset RI support
             if (libRowset == null) {
                 addRowset = true;
             }

@@ -1705,16 +1705,23 @@ public class JsfProjectUtils {
         return JsfProjectLibrary.isDesigntimeLib(name);
     }
 
-    public static String getBackwardsKitMesg(boolean addJSF11, boolean addRowset) {
-        String RI = (addJSF11 && addRowset) ? NbBundle.getMessage(JsfProjectUtils.class, "LBL_MissingTwo")
-                                            : NbBundle.getMessage(JsfProjectUtils.class, "LBL_MissingOne");
+    public static String getBackwardsKitMesg(boolean addJSF11, boolean addJAXRPC, boolean addRowset) {
+        int count = 0;
         String nbms = "";
         if (addJSF11) {
+            count++;
             nbms = NbBundle.getMessage(JsfProjectUtils.class, "LBL_MissingJSF");
         }
+        if (addJAXRPC) {
+            count++;
+            nbms += NbBundle.getMessage(JsfProjectUtils.class, "LBL_MissingJAXRPC");
+        }
         if (addRowset) {
+            count++;
             nbms += NbBundle.getMessage(JsfProjectUtils.class, "LBL_MissingRowset");
         }
+
+        String RI = NbBundle.getMessage(JsfProjectUtils.class, (count > 1) ? "LBL_MissingMany" : "LBL_MissingOne");
 
         return NbBundle.getMessage(JsfProjectUtils.class, "LBL_MissingNBM", RI, nbms);
     }
