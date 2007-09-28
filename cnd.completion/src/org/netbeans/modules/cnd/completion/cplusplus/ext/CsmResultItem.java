@@ -225,8 +225,16 @@ public abstract class CsmResultItem
                     break;
                 case ';':
                 case ',':
+                case '+':
+                case '-':
+                case '=':
+                case '/':
+                case '*':
+                case '%':
+                case ':':
                     completion.hideCompletion();
                     completion.hideDocumentation();
+                    break;
                 case '.':
                     if (defaultAction((JTextComponent)evt.getSource(), Character.toString(evt.getKeyChar()))) {
                         evt.consume();
