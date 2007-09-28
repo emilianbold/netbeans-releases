@@ -36,7 +36,7 @@ import org.netbeans.installer.utils.exceptions.DownloadException;
  * @author Kirill Sorokin
  */
 public class NbiPanel extends JPanel {
-    private HashMap<Integer, Image> imagesMap ;
+    private HashMap<Integer, ImageIcon> imagesMap ;
     public static final int ANCHOR_TOP_LEFT  = 1;
     public static final int ANCHOR_TOP_RIGHT = 2;
     public static final int ANCHOR_BOTTOM_LEFT = 3;
@@ -46,29 +46,35 @@ public class NbiPanel extends JPanel {
         super();
         
         setLayout(new GridBagLayout());
-        imagesMap = new HashMap <Integer, Image> ();
+        imagesMap = new HashMap <Integer, ImageIcon> ();
     }
     public void setBackgroundImage(String backgroundImageURI, int anchor) {
         if (backgroundImageURI != null) {
             try {
                 File file = FileProxy.getInstance().getFile(backgroundImageURI,true);
-                Image backgroundImage = new ImageIcon(file.getAbsolutePath()).
-                        getImage();
-                imagesMap.put(anchor,backgroundImage);
+                ImageIcon backgroundImage = new ImageIcon(file.getAbsolutePath());
+                setBackgroundImage(backgroundImage,anchor);
             } catch (DownloadException e) {
                 LogManager.log(e);
             }
         }
     }
-    
+    public void setBackgroundImage(ImageIcon backgroundImage, int anchor) {
+        if (backgroundImage != null) {
+                imagesMap.put(anchor,backgroundImage);            
+        }
+    }
+    public ImageIcon getBackgroundImage(int anchor) {
+        return imagesMap.get(anchor);
+    }
     protected void paintComponent(Graphics graphics) {
         super.paintComponent(graphics);
         
         for(Integer anchor : imagesMap.keySet()){
-            Image backgroundImage = imagesMap.get(anchor);
+            Image backgroundImage = imagesMap.get(anchor).getImage();
             if (backgroundImage != null) {
                 switch(anchor.intValue()) {
-                    case ANCHOR_TOP_LEFT :
+                    case ANCHOR_TOP_LEFT :                        
                         graphics.drawImage(backgroundImage,
                                 0,
                                 0,
@@ -80,7 +86,7 @@ public class NbiPanel extends JPanel {
                                 0,
                                 this);
                         break;
-                    case ANCHOR_BOTTOM_LEFT:
+                    case ANCHOR_BOTTOM_LEFT:                        
                         graphics.drawImage(backgroundImage,
                                 0,
                                 this.getHeight() - backgroundImage.getHeight(this),
