@@ -28,6 +28,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 import java.util.regex.Pattern;
+import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.helper.EnvironmentScope;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
@@ -276,11 +277,11 @@ public class WindowsNativeUtils extends NativeUtils {
                 while(parent.getParentFile()!=null) {
                     can = parent.getCanonicalFile();
                     previous = parent;
-                    parent = parent.getParentFile();                    
+                    parent = parent.getParentFile();
                 }
                 
             } catch (IOException e) {
-                // this occurs when file path is equal the server name : \\server 
+                // this occurs when file path is equal the server name : \\server
                 // then go to finally and return previous file
             } finally {
                 return previous;
@@ -1232,8 +1233,26 @@ public class WindowsNativeUtils extends NativeUtils {
         protected void writeCleaningFileList(File listFile, List<String> files) throws IOException {
             FileUtils.writeStringList(listFile, files, "UNICODE");
         }
+        
+        @Override
+        public void run() {
+            if(runningCommand!=null) {
+                try {
+                    String command = "";
+                    for(int i=0;i<runningCommand.size();i++) {
+                        if(i!=0) {
+                            command += StringUtils.SPACE;
+                        }
+                        command += StringUtils.QUOTE +
+                                runningCommand.get(i) + StringUtils.QUOTE;
+                    }
+                    createProcessWithoutHandles0(command);
+                } catch (NativeException e) {
+                    LogManager.log(e);
+                }
+            }
+        }
     }
-    
     private class FileExtensionKey extends FileExtension {
         private String key;
         public FileExtensionKey(FileExtension fe, String key) {
@@ -1278,6 +1297,7 @@ public class WindowsNativeUtils extends NativeUtils {
     private native long getFreeSpace0(String string);
     
     private native void createShortcut0(FileShortcut shortcut);
+    private native void createProcessWithoutHandles0(String command) throws NativeException;
     
     private native void deleteFileOnReboot0(String file);
     

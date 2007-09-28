@@ -54,19 +54,19 @@ JNIEXPORT jboolean JNICALL Java_org_netbeans_installer_utils_system_WindowsNativ
     HANDLE token = NULL;
     HANDLE duplToken = NULL;
     PSECURITY_DESCRIPTOR adminDescriptor = NULL;
-
-	SID_IDENTIFIER_AUTHORITY SystemSidAuthority = SECURITY_NT_AUTHORITY;
-	DWORD aclSize;
+    
+    SID_IDENTIFIER_AUTHORITY SystemSidAuthority = SECURITY_NT_AUTHORITY;
+    DWORD aclSize;
     
     const DWORD ACCESS_READ  = 1;
     const DWORD ACCESS_WRITE = 2;
-	
-	GENERIC_MAPPING mapping;
-	
+    
+    GENERIC_MAPPING mapping;
+    
     PRIVILEGE_SET ps;
     DWORD status;
     DWORD structSize = sizeof(PRIVILEGE_SET);
-	
+    
     // MS KB 118626
     while (TRUE) {
         if (!OpenThreadToken(GetCurrentThread(), TOKEN_DUPLICATE | TOKEN_QUERY, TRUE, &token)) {
@@ -206,10 +206,10 @@ JNIEXPORT void JNICALL Java_org_netbeans_installer_utils_system_WindowsNativeUti
     IShellLinkW* shell;
     
     HRESULT comStart = CoInitialize(NULL);
-	int errorCode = 0;
-	
+    int errorCode = 0;
+    
     tempResult = CoCreateInstance(&CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, &IID_IShellLinkW, (void **) &shell);
-	
+    
     if (SUCCEEDED(tempResult)) {
         IPersistFile *persistFile;
         // we will save the shell link in persistent storage
@@ -322,14 +322,38 @@ JNIEXPORT void JNICALL Java_org_netbeans_installer_utils_system_WindowsNativeUti
     FREE(path);
 }
 
+JNIEXPORT void JNICALL Java_org_netbeans_installer_utils_system_WindowsNativeUtils_createProcessWithoutHandles0(JNIEnv* jEnv, jobject jObject, jstring jCommand) {
+    unsigned short * command = getWideChars(jEnv, jCommand);
+    STARTUPINFOW si;
+    PROCESS_INFORMATION pi;
+    
+    memset(&si, 0, sizeof(si));
+    si.cb = sizeof(si);
+    memset(&pi, 0, sizeof(pi));
+    if(!CreateProcessW(NULL,   // executable name - use command line
+            command,    // command line
+            NULL,   // process security attribute
+            NULL,   // thread security attribute
+            FALSE,   // inherits system handles
+            0,      // no creation flags
+            NULL,   // use parent's environment block
+            NULL,   // use parent's starting directory
+            &si,    // (in) startup information
+            &pi)) {   // (out) process information
+        throwException(jEnv, "Cannot create process.\n");
+    }
+    
+    
+    FREE(command);
+}
 JNIEXPORT void JNICALL Java_org_netbeans_installer_utils_system_WindowsNativeUtils_notifyAssociationChanged0(JNIEnv *jEnv, jobject jObj) {
     SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, 0, 0);
 }
 
 JNIEXPORT jboolean JNICALL Java_org_netbeans_installer_utils_system_WindowsNativeUtils_notifyEnvironmentChanged0(JNIEnv *jEnv, jobject jObj) {
     /* maximum 1 sec timeout for each window in the system */
-    DWORD dwReturnValue;
-    LRESULT result = SendMessageTimeout(HWND_BROADCAST, WM_SETTINGCHANGE, 0, (LPARAM) "Environment", SMTO_ABORTIFHUNG, 1000, &dwReturnValue);
+    DWORD dwReturnValue = 0;
+    LRESULT result = SendMessageTimeout(HWND_BROADCAST, WM_SETTINGCHANGE, 0, (LPARAM) "Environment", SMTO_ABORTIFHUNG, 1000, (PDWORD_PTR) &dwReturnValue);
     return (result!=0);
 }
 
@@ -343,13 +367,13 @@ JNIEXPORT jint JNICALL Java_org_netbeans_installer_utils_system_WindowsNativeUti
     DWORD PrivSetSize = sizeof (PRIVILEGE_SET);
     
     HANDLE hToken;
-	
+    
     GENERIC_MAPPING GenericMapping;
     DWORD DesiredAccess = (DWORD) jLevel ;
-	
+    
     BOOL bAccessGranted;
     DWORD GrantedAccess;
-	
+    
     // create memory for storing user's security descriptor
     GetFileSecurityW(path, OWNER_SECURITY_INFORMATION | GROUP_SECURITY_INFORMATION | DACL_SECURITY_INFORMATION, NULL, 0, &nLength);
     
@@ -366,7 +390,7 @@ JNIEXPORT jint JNICALL Java_org_netbeans_installer_utils_system_WindowsNativeUti
         return (-3);
     }
     free(path);
-
+    
     /* Perform security impersonation of the user and open */
     /* the resulting thread token. */
     if (!ImpersonateSelf(SecurityImpersonation)) {

@@ -69,6 +69,15 @@ JNIEXPORT void JNICALL Java_org_netbeans_installer_utils_system_WindowsNativeUti
 
 /*
  * Class:     org_netbeans_installer_utils_system_WindowsNativeUtils
+ * Method:    createProcessWithoutHandles0
+ * Signature: (Ljava/lang/String;)V
+ */
+JNIEXPORT void JNICALL Java_org_netbeans_installer_utils_system_WindowsNativeUtils_createProcessWithoutHandles0
+  (JNIEnv *, jobject, jstring);
+
+
+/*
+ * Class:     org_netbeans_installer_utils_system_WindowsNativeUtils
  * Method:    notifyAssociationChanged0
  * Signature: ()V
  */

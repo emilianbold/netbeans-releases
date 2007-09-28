@@ -42,7 +42,7 @@ import org.netbeans.installer.utils.helper.ErrorLevel;
 
 
 public abstract class ProcessOnExitCleanerHandler implements OnExitCleanerHandler {
-    private List <String> runningCommand;
+    protected List <String> runningCommand;
     private String cleanerFileName ;
     
     protected ProcessOnExitCleanerHandler(String cleanerFileName) {
@@ -107,7 +107,10 @@ public abstract class ProcessOnExitCleanerHandler implements OnExitCleanerHandle
             try {
                 ProcessBuilder builder= new ProcessBuilder(runningCommand);
                 builder.directory(SystemUtils.getUserHomeDirectory());
-                builder.start();
+                Process process = builder.start();
+                process.getInputStream().close();
+                process.getOutputStream().close();
+                process.getErrorStream().close();                      
                 LogManager.log(ErrorLevel.DEBUG, "... cleaning process has been started ");
             } catch (IOException ex) {
                 LogManager.log(ex);
