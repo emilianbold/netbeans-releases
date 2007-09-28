@@ -51,7 +51,7 @@ import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
 /**
- * Key for ProjectSettingsValidator data
+ * Key for FileContainer data
  * @author Vladimir Kvashin
  */
 public class FileContainerKey extends ProjectNameBasedKey {
