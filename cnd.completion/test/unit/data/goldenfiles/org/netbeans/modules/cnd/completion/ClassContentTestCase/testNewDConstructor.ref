@@ -1,0 +1,7 @@
+argc int
+argv char**
+d D
+pD D*
+D
+E
+main(int argc, char** argv) int
