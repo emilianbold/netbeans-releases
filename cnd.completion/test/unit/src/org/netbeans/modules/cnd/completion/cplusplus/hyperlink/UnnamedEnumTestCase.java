@@ -41,27 +41,25 @@
 
 package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.test.BaseTestSuite;
-
 /**
  *
  * @author Vladimir Voskresensky
  */
-public class CsmHyperlinkTest extends BaseTestSuite {
+public class UnnamedEnumTestCase extends HyperlinkBaseTestCase {
     
-    public CsmHyperlinkTest() {
-        super("C/C++ Hyperlink");
-        
-        this.addTestSuite(ClassMembersHyperlinkTestCase.class);
-        this.addTestSuite(NamespacesHyperlinkTestCase.class);
-        this.addTestSuite(BasicHyperlinkTestCase.class);
-        this.addTestSuite(UnnamedEnumTestCase.class);
+    public UnnamedEnumTestCase(String testName) {
+        super(testName);
+        //System.setProperty("cnd.modelimpl.trace.registration", "true");
     }
-
-    public static Test suite() {
-        TestSuite suite = new CsmHyperlinkTest();
-        return suite;
+    
+    public void testExecutionContextT() throws Exception {
+        performTest("unnamedTypedefEnum.cc", 6, 20, "unnamedTypedefEnum.cc", 6, 17); // k_eExecutionContextSystemTask
+        performTest("unnamedTypedefEnum.cc", 7, 20, "unnamedTypedefEnum.cc", 7, 17); // k_eExecutionContextMPTask
+        performTest("unnamedTypedefEnum.cc", 13, 60, "unnamedTypedefEnum.cc", 6, 17); // k_eExecutionContextSystemTask
+        performTest("unnamedTypedefEnum.cc", 16, 60, "unnamedTypedefEnum.cc", 7, 17); // k_eExecutionContextMPTask
     }
+    
+    public void testA() throws Exception {
+        performTest("unnamedTypedefEnum.cc", 25, 6, "unnamedTypedefEnum.cc", 25, 5); // A1
+    }    
 }
