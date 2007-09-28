@@ -34,15 +34,14 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumnModel;
 
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.util.NbBundle;
-
-import org.netbeans.modules.visualweb.api.complib.ComplibException;
 import org.netbeans.modules.visualweb.complib.Complib;
 import org.netbeans.modules.visualweb.complib.ComplibServiceProvider;
 import org.netbeans.modules.visualweb.complib.IdeUtil;
 import org.netbeans.modules.visualweb.complib.ComplibServiceProvider.ComponentInfo;
+import org.netbeans.modules.visualweb.complib.api.ComplibException;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 
 /**
  *

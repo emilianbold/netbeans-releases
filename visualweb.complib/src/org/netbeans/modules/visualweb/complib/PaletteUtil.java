@@ -26,20 +26,17 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.WeakHashMap;
 
+import org.netbeans.modules.visualweb.complib.Complib.Identifier;
+import org.netbeans.modules.visualweb.complib.ComplibManifest.EeSpecVersion;
+import org.netbeans.modules.visualweb.complib.ComplibServiceProvider.ComponentInfo;
+import org.netbeans.modules.visualweb.complib.api.ComplibException;
+import org.netbeans.modules.visualweb.palette.api.PaletteItemInfoCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.nodes.Index;
 import org.openide.nodes.Node;
-
-import org.netbeans.modules.visualweb.api.complib.ComplibException;
-import org.netbeans.modules.visualweb.complib.Complib.Identifier;
-import org.netbeans.modules.visualweb.complib.ComplibManifest.EeSpecVersion;
-import org.netbeans.modules.visualweb.complib.ComplibServiceProvider.ComponentInfo;
-import org.netbeans.modules.visualweb.palette.api.PaletteItemInfoCookie;
 
 /**
  * Facade to simplify interface to underlying NetBeans Palette API

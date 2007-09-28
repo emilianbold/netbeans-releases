@@ -27,19 +27,19 @@ import java.util.List;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
-import org.netbeans.modules.visualweb.api.complib.ComplibException;
 import org.netbeans.modules.visualweb.complib.Complib.InitialPaletteFolder;
+import org.netbeans.modules.visualweb.complib.api.ComplibException;
 
 /**
  * Represents an unexpanded complib package file.
- *
+ * 
  * @author Edwin Goei
  */
 public class ComplibPackage {
 
     /**
      * ClassLoader used to load l10n resources from a *.complib file
-     *
+     * 
      * @author Edwin Goei
      */
     private static class ResourceClassLoader extends URLClassLoader {
@@ -51,9 +51,9 @@ public class ComplibPackage {
     }
 
     /**
-     * ClassLoader used to load resources referenced in package file metadata
-     * such as the manifest and initial-palette config file. These resources can
-     * be accessed before or after a package is expanded.
+     * ClassLoader used to load resources referenced in package file metadata such as the manifest
+     * and initial-palette config file. These resources can be accessed before or after a package is
+     * expanded.
      */
     private ResourceClassLoader resourceClassLoader;
 
@@ -63,24 +63,23 @@ public class ComplibPackage {
     private File packageFile;
 
     /**
-     * This constructor partially validates the complib package file. A
-     * successful return indicates a valid package file.
-     *
+     * This constructor partially validates the complib package file. A successful return indicates
+     * a valid package file.
+     * 
      * @param packageFile
      * @throws ComplibException
      *             if complib file is not valid
      * @throws IOException
      */
-    public ComplibPackage(File packageFile) throws ComplibException,
-            IOException {
+    public ComplibPackage(File packageFile) throws ComplibException, IOException {
         File freedJarFile = IdeUtil.freeJarFile(packageFile);
 
         JarFile jarFile = new JarFile(freedJarFile);
         Manifest manifest = jarFile.getManifest();
         if (manifest == null) {
             // Construct an appropriate error message
-            String message = freedJarFile.equals(packageFile) ? ""
-                    : "' copied from '" + packageFile; // NOI18N
+            String message = freedJarFile.equals(packageFile) ? "" : "' copied from '"
+                    + packageFile; // NOI18N
             throw new ComplibException("File '" + freedJarFile + message
                     + "' must contain a complib manifest."); // NOI18N
         }
@@ -89,8 +88,7 @@ public class ComplibPackage {
         URL packageFileUrl = freedJarFile.toURI().toURL();
         resourceClassLoader = new ResourceClassLoader(packageFileUrl);
 
-        complibManifest = ComplibManifest.getInstance(manifest,
-                resourceClassLoader);
+        complibManifest = ComplibManifest.getInstance(manifest, resourceClassLoader);
         jarFile.close();
 
         this.packageFile = freedJarFile;
@@ -102,7 +100,7 @@ public class ComplibPackage {
 
     /**
      * Method does not throw a checked exception. Used by UI.
-     *
+     * 
      * @return
      */
     public List<InitialPaletteFolder> getInitialPaletteFolders() {
@@ -111,7 +109,7 @@ public class ComplibPackage {
 
     /**
      * Returns the localized Title if it has been localized
-     *
+     * 
      * @return
      */
     public String getTitle() {

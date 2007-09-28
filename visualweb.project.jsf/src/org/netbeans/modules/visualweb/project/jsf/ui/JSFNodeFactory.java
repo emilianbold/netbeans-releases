@@ -19,10 +19,10 @@
 
 package org.netbeans.modules.visualweb.project.jsf.ui;
 
+import org.netbeans.modules.visualweb.complib.api.ComplibService;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 import org.netbeans.modules.visualweb.project.jsf.framework.JSFFrameworkProvider;
 import org.netbeans.modules.visualweb.project.jsf.services.ThemeNodeService;
-import org.netbeans.modules.visualweb.project.jsf.services.ComponentLibraryService;
 import org.netbeans.modules.visualweb.project.jsf.services.DataSourceService;
 
 import org.netbeans.modules.web.api.webmodule.WebFrameworks;
@@ -36,7 +36,6 @@ import java.util.List;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.Action;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ui.support.NodeFactory;
@@ -113,7 +112,7 @@ public class JSFNodeFactory implements NodeFactory {
 
                 return null;
             } else if (key == COMPONENT_LIBS) {
-                ComponentLibraryService complibService = (ComponentLibraryService) Lookup.getDefault().lookup(ComponentLibraryService.class);
+                ComplibService complibService =  Lookup.getDefault().lookup(ComplibService.class);
                 if (complibService != null) {
                     return complibService.getComplibsRootNode(project);
                 } else {

@@ -27,12 +27,12 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.netbeans.modules.visualweb.api.complib.ComplibException;
+import org.netbeans.modules.visualweb.complib.api.ComplibException;
 import org.openide.modules.InstalledFileLocator;
 
 /**
  * Represents the built-in component library
- *
+ * 
  * @author Edwin Goei
  */
 public class BuiltInComplib extends Complib {
@@ -40,7 +40,7 @@ public class BuiltInComplib extends Complib {
 
     /**
      * Returns a single instance. Main entry point.
-     *
+     * 
      * @return
      */
     public static BuiltInComplib getInstance() {
@@ -57,19 +57,16 @@ public class BuiltInComplib extends Complib {
     private BuiltInComplib() throws XmlException, ComplibException {
         // TODO this should probably be read in from a NB layer file instead
         URL configUrl = BuiltInComplib.class.getResource("built-in-config.xml"); // NOI18N
-        ComplibManifest compLibManifest = ComplibManifest.getInstance(
-                configUrl, getClassLoader());
+        ComplibManifest compLibManifest = ComplibManifest.getInstance(configUrl, getClassLoader());
         initCompLibManifest(compLibManifest);
 
         initPaths();
     }
 
-    protected List<File> convertConfigPathToFileList(List<String> path)
-            throws ComplibException {
+    protected List<File> convertConfigPathToFileList(List<String> path) throws ComplibException {
         ArrayList<File> retVal = new ArrayList<File>(path.size());
         for (String pathElm : path) {
-            File file = InstalledFileLocator.getDefault().locate(pathElm, null,
-                    false);
+            File file = InstalledFileLocator.getDefault().locate(pathElm, null, false);
             retVal.add(file);
         }
         return retVal;
@@ -81,8 +78,7 @@ public class BuiltInComplib extends Complib {
         return nbModuleClassLoader;
     }
 
-    BeanInfo getBeanInfo(String className) throws ClassNotFoundException,
-            IntrospectionException {
+    BeanInfo getBeanInfo(String className) throws ClassNotFoundException, IntrospectionException {
         Class beanClass = Class.forName(className, true, getClassLoader());
         return Introspector.getBeanInfo(beanClass);
     }

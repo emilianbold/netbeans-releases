@@ -35,12 +35,12 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.visualweb.api.complib.ComplibEvent;
-import org.netbeans.modules.visualweb.api.complib.ComplibListener;
 import org.netbeans.modules.visualweb.complib.ComplibServiceProvider;
 import org.netbeans.modules.visualweb.complib.ExtensionComplib;
 import org.netbeans.modules.visualweb.complib.IdeUtil;
 import org.netbeans.modules.visualweb.complib.ComplibServiceProvider.RelatedComplibs;
+import org.netbeans.modules.visualweb.complib.api.ComplibEvent;
+import org.netbeans.modules.visualweb.complib.api.ComplibListener;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;

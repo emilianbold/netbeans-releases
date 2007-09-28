@@ -23,7 +23,6 @@ import java.awt.Image;
 import java.beans.BeanDescriptor;
 import java.beans.BeanInfo;
 import java.beans.Introspector;
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
@@ -32,18 +31,17 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.logging.Level;
 import java.util.prefs.Preferences;
 
 import javax.swing.Action;
@@ -58,10 +56,6 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.visualweb.api.complib.ComplibEvent;
-import org.netbeans.modules.visualweb.api.complib.ComplibException;
-import org.netbeans.modules.visualweb.api.complib.ComplibListener;
-import org.netbeans.modules.visualweb.api.complib.ComplibService;
 import org.netbeans.modules.visualweb.complib.Complib.Identifier;
 import org.netbeans.modules.visualweb.complib.Complib.InitialPaletteFolder;
 import org.netbeans.modules.visualweb.complib.Complib.InitialPaletteItem;
@@ -69,6 +63,10 @@ import org.netbeans.modules.visualweb.complib.ComplibManifest.EeSpecVersion;
 import org.netbeans.modules.visualweb.complib.PaletteUtil.Category;
 import org.netbeans.modules.visualweb.complib.PaletteUtil.Item;
 import org.netbeans.modules.visualweb.complib.PaletteUtil.Palette;
+import org.netbeans.modules.visualweb.complib.api.ComplibEvent;
+import org.netbeans.modules.visualweb.complib.api.ComplibException;
+import org.netbeans.modules.visualweb.complib.api.ComplibListener;
+import org.netbeans.modules.visualweb.complib.api.ComplibService;
 import org.netbeans.modules.visualweb.complib.ui.ComplibsRootNode;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 import org.netbeans.spi.palette.PaletteActions;
@@ -98,6 +96,17 @@ import com.sun.rave.designtime.DisplayItem;
  * @author Edwin Goei
  */
 public class ComplibServiceProvider implements ComplibService {
+
+    /**
+     * FileObject attribute set on project dir to specify version of complib implementation for that
+     * project
+     */
+    private static final String ATTR_MIGRATION_VERSION = "org-netbeans-modules-visualweb-complib_migration-version";
+
+    /** Values for ATTR_MIGRATION_VERSION */
+    enum ProjectComplibVersion {
+        NETBEANS_6
+    }
 
     public static final String ADDABLE_COMPLIBS = "addableComplibs";
 
@@ -452,32 +461,26 @@ public class ComplibServiceProvider implements ComplibService {
 
         installNewComplibPackages(complibsToInstallDir);
 
-        // Get initial set of open projects
-        Project[] projectsArray = OpenProjects.getDefault().getOpenProjects();
-        final HashSet<Project> initialProjects = new HashSet<Project>(Arrays.asList(projectsArray));
-        initProjectComplibs(initialProjects);
-        initSharedComplibs(initialProjects);
-
-        // Listen for project open events and ensure complib library defs and refs are initialized
-        OpenProjects.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (OpenProjects.PROPERTY_OPEN_PROJECTS.equals(evt.getPropertyName())) {
-                    List<Project> oldOpenProjectsList = Arrays
-                            .asList((Project[]) evt.getOldValue());
-                    List<Project> newOpenProjectsList = Arrays
-                            .asList((Project[]) evt.getNewValue());
-
-                    Set<Project> openedProjectsSet = new LinkedHashSet<Project>(newOpenProjectsList);
-                    openedProjectsSet.removeAll(oldOpenProjectsList);
-                    initProjectComplibs(openedProjectsSet);
-                    initSharedComplibs(openedProjectsSet);
-
-                    Set<Project> closedProjectsSet = new LinkedHashSet<Project>(oldOpenProjectsList);
-                    closedProjectsSet.removeAll(newOpenProjectsList);
-                    cleanUpProjects(closedProjectsSet);
-                }
-            }
-        });
+        /*
+         * // Get initial set of open projects Project[] projectsArray =
+         * OpenProjects.getDefault().getOpenProjects(); final HashSet<Project> initialProjects =
+         * new HashSet<Project>(Arrays.asList(projectsArray));
+         * xinitProjectComplibs(initialProjects); initSharedComplibs(initialProjects); // Listen for
+         * project open events and ensure complib library defs and refs are initialized
+         * OpenProjects.getDefault().addPropertyChangeListener(new PropertyChangeListener() { public
+         * void propertyChange(PropertyChangeEvent evt) { if
+         * (OpenProjects.PROPERTY_OPEN_PROJECTS.equals(evt.getPropertyName())) { List<Project>
+         * oldOpenProjectsList = Arrays .asList((Project[]) evt.getOldValue()); List<Project>
+         * newOpenProjectsList = Arrays .asList((Project[]) evt.getNewValue());
+         * 
+         * Set<Project> openedProjectsSet = new LinkedHashSet<Project>(newOpenProjectsList);
+         * openedProjectsSet.removeAll(oldOpenProjectsList);
+         * xinitProjectComplibs(openedProjectsSet); initSharedComplibs(openedProjectsSet);
+         * 
+         * Set<Project> closedProjectsSet = new LinkedHashSet<Project>(oldOpenProjectsList);
+         * closedProjectsSet.removeAll(newOpenProjectsList); cleanUpProjects(closedProjectsSet); } }
+         * });
+         */
     }
 
     private void initUserScope() throws IOException {
@@ -524,7 +527,7 @@ public class ComplibServiceProvider implements ComplibService {
         return projects;
     }
 
-    private void initProjectComplibs(Set<Project> projects) {
+    private void xinitProjectComplibs(Set<Project> projects) {
         for (Project project : projects) {
             if (JsfProjectUtils.isJsfProject(project)) {
                 try {
@@ -536,7 +539,8 @@ public class ComplibServiceProvider implements ComplibService {
                     for (ExtensionComplib projectComplib : projectComplibs) {
                         ExtensionComplib userComplib = userScope.getExistingComplib(projectComplib);
                         if (userComplib != null) {
-                            // FIXME code does not work. It needs to be revised anyway when NB api is available 110040.
+                            // FIXME code does not work. It needs to be revised anyway when NB api
+                            // is available 110040.
                             // try {
                             // removeLegacyLibraryRefsAndDefs(project, projectComplib);
                             // } catch (IOException e) {
@@ -544,8 +548,8 @@ public class ComplibServiceProvider implements ComplibService {
                             // .logWarning(
                             // "Unable to remove legacy library reference and definition. Use
                             // Project Properties to remove manually",
-                            //                                                e);
-                            //                            }
+                            // e);
+                            // }
                             addLibraryRefAndDef(project, userComplib);
                         }
                     }
@@ -591,9 +595,14 @@ public class ComplibServiceProvider implements ComplibService {
         // TODO Not sure this is the right UI
         String msg = NbBundle.getMessage(ComplibServiceProvider.class,
                 "complib.initProjectComplibs"); // NOI18N
-        NotifyDescriptor nd = new NotifyDescriptor.Message(msg,
-                NotifyDescriptor.INFORMATION_MESSAGE);
-        DialogDisplayer.getDefault().notify(nd);
+        if (false) {
+            NotifyDescriptor nd = new NotifyDescriptor.Message(msg,
+                    NotifyDescriptor.INFORMATION_MESSAGE);
+            DialogDisplayer.getDefault().notify(nd);
+        } else {
+            // Too many dialogs are distracting so just log the event
+            IdeUtil.getLogger().log(Level.INFO, msg);
+        }
 
         // Install complibs into user scope and the palette
         for (Iterator<ExtensionComplib> iter = al.iterator(); iter.hasNext();) {
@@ -1844,6 +1853,117 @@ public class ComplibServiceProvider implements ComplibService {
                 + " Shared Component Library";
         String libName = IdeUtil.removeWhiteSpace(description);
         return new LibraryDescriptor(libName, description);
+    }
+
+    /**
+     * Returns true iff the embedded project complib refs and defs need to be migrated.
+     * 
+     * @param project
+     * @return
+     */
+    private boolean needsMigration(Project project) {
+        if (!JsfProjectUtils.isJsfProject(project)) {
+            // No migration needed for non-visualweb projects
+            return false;
+        }
+
+        // Check to see if the migration has already taken place
+        FileObject projectDir = project.getProjectDirectory();
+        Object migrationVersion = projectDir.getAttribute(ATTR_MIGRATION_VERSION);
+        if (ProjectComplibVersion.NETBEANS_6.equals(migrationVersion)) {
+            // Already migrated
+            return false;
+        }
+
+        return true;
+    }
+
+    public List<String> getLibRefNamesToRemove(Project project) {
+        if (!needsMigration(project)) {
+            return Collections.emptyList();
+        }
+
+        List<String> libNames = new ArrayList<String>();
+
+        Scope scope = null;
+        try {
+            scope = Scope.getScopeForProject(project);
+        } catch (IOException e) {
+            IdeUtil
+                    .logWarning(
+                            "Unable to obtain legacy library reference information for project: '"
+                                    + project.getProjectDirectory()
+                                    + "'. You may need to use Project Properties to remove broken references manually.",
+                            e);
+        }
+        Set<ExtensionComplib> projectComplibs = scope.getComplibs();
+        String projectName = project.getProjectDirectory().getName();
+        for (ExtensionComplib complib : projectComplibs) {
+            /*
+             * In NetBeans VWP 5.5.x or shortfin, there was only a single Lib Def with a
+             * "design-time" volume but two separate Lib Refs that showed up in the Project
+             * Properites UI as a node under "Libraries" w/o package checkbox and another under
+             * "Packaging".
+             */
+            String libName = IdeUtil.removeWhiteSpace(projectName + "_"
+                    + complib.getDirectoryBaseName());
+            libNames.add(libName);
+
+            /*
+             * In Creator, there were two pairs of Lib Def and Lib Refs, one for design-time and one
+             * for runtime.
+             */
+            libName = IdeUtil.removeWhiteSpace(projectName + " Design-time " + complib.getTitle());
+            libNames.add(libName);
+
+            libName = IdeUtil.removeWhiteSpace(projectName + " Runtime " + complib.getTitle());
+            libNames.add(libName);
+        }
+
+        return libNames;
+    }
+
+    public void initProjectComplibs(Project project) {
+        try {
+            Scope scope = Scope.getScopeForProject(project);
+            Set<ExtensionComplib> projectComplibs = scope.getComplibs();
+            ensureProjectComplibsAreInstalled(projectComplibs);
+
+            // Init library refs and defs for each complib
+            for (ExtensionComplib projectComplib : projectComplibs) {
+                ExtensionComplib userComplib = userScope.getExistingComplib(projectComplib);
+                if (userComplib != null) {
+                    addLibraryRefAndDef(project, userComplib);
+                }
+            }
+        } catch (IOException e) {
+            IdeUtil.logError("Unable to initialize component libraries for project: "
+                    + project.getProjectDirectory(), e);
+        }
+
+        /*
+         * This code is related to project complib migration. Note: there is some magic that happens
+         * in web/project that is not obvious. According to issue #110040, the
+         * BrokenLibraryRefFilter is called which removes legacy library refs from the project
+         * before the broken library references dialog is invoked in web/project. Then,
+         * ComplibProjectOpenedHook is called which will add any needed library refs and defs by
+         * calling this method. We therefore note that the embedded project complib refs and defs
+         * have been successfully migrated.
+         */
+        FileObject projectDir = project.getProjectDirectory();
+        try {
+            projectDir.setAttribute(ATTR_MIGRATION_VERSION, ProjectComplibVersion.NETBEANS_6);
+        } catch (IOException e) {
+            IdeUtil.logWarning(e);
+        }
+    }
+
+    public void cleanUpProjectComplibs(Project project) {
+        try {
+            Scope.destroyScopeForProject(project);
+        } catch (IOException e) {
+            IdeUtil.logWarning(e);
+        }
     }
 
 }

@@ -31,8 +31,7 @@ import java.util.Set;
 import java.util.WeakHashMap;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.visualweb.api.complib.ComplibException;
-import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
+import org.netbeans.modules.visualweb.complib.api.ComplibException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.w3c.dom.Comment;
@@ -118,7 +117,7 @@ class Scope {
      * Load in any expanded complibs in this scope
      */
     private void loadComplibs() {
-        Set dirs = readDirectoryIndex();
+        Set<String> dirs = readDirectoryIndex();
 
         // Restore the valid list of ExtensionComplib-s
         FileObject complibFo = FileUtil.toFileObject(installHome);
@@ -371,7 +370,7 @@ class Scope {
      * 
      * @return Set of String-s, possibly empty. Never null.
      */
-    private Set readDirectoryIndex() {
+    private Set<String> readDirectoryIndex() {
         File indexFile = getIndexFile();
         if (!indexFile.exists()) {
             // No index file so return previously initialized empty set

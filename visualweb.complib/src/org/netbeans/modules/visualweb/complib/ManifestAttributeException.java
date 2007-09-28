@@ -19,12 +19,11 @@
 
 package org.netbeans.modules.visualweb.complib;
 
-import org.netbeans.modules.visualweb.api.complib.ComplibException;
-
+import org.netbeans.modules.visualweb.complib.api.ComplibException;
 
 /**
  * Indicates problem with complib manifest attribute
- *
+ * 
  * @author Edwin Goei
  */
 class ManifestAttributeException extends ComplibException {

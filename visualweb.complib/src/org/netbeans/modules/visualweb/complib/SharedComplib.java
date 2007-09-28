@@ -22,7 +22,7 @@ package org.netbeans.modules.visualweb.complib;
 import java.io.File;
 import java.io.IOException;
 
-import org.netbeans.modules.visualweb.api.complib.ComplibException;
+import org.netbeans.modules.visualweb.complib.api.ComplibException;
 
 public class SharedComplib extends ExtensionComplib {
 

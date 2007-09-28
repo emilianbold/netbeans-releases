@@ -33,16 +33,15 @@ import java.util.ResourceBundle;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
+import org.netbeans.modules.visualweb.complib.Complib.InitialPaletteFolder;
+import org.netbeans.modules.visualweb.complib.Complib.InitialPaletteItem;
+import org.netbeans.modules.visualweb.complib.api.ComplibException;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
-
-import org.netbeans.modules.visualweb.api.complib.ComplibException;
-import org.netbeans.modules.visualweb.complib.Complib.InitialPaletteFolder;
-import org.netbeans.modules.visualweb.complib.Complib.InitialPaletteItem;
 
 /**
  * Represents configuration information for a component library.
@@ -57,15 +56,13 @@ class ComplibManifest {
 
     private static final String MISSING_RESOURCE = "Missing resource: "; // NOI18N
 
-    private static final String API_COMPAT_VERSION = PREFIX
-            + "API-Compatibility-Version"; // NOI18N
+    private static final String API_COMPAT_VERSION = PREFIX + "API-Compatibility-Version"; // NOI18N
 
     private static final Version VERSION_1_0_0 = new Version(1, 0, 0);
 
     private static final Version VERSION_2_0_0 = new Version(2, 0, 0);
 
-    private static final String CONFIGURATION = PREFIX
-            + "Complib-Configuration"; // NOI18N
+    private static final String CONFIGURATION = PREFIX + "Complib-Configuration"; // NOI18N
 
     private static final String ELM_ROOT = "complibConfiguration"; // NOI18N
 
@@ -82,44 +79,36 @@ class ComplibManifest {
 
     private static final String XP_CONFIG_VERSION = XP_PREFIX + "@version"; // NOI18N
 
-    private static final String XP_IDENTIFIER_URI = XP_PREFIX
-            + "identifier/uri/text()"; // NOI18N
+    private static final String XP_IDENTIFIER_URI = XP_PREFIX + "identifier/uri/text()"; // NOI18N
 
-    private static final String XP_IDENTIFIER_VERSION = XP_PREFIX
-            + "identifier/version/text()"; // NOI18N
+    private static final String XP_IDENTIFIER_VERSION = XP_PREFIX + "identifier/version/text()"; // NOI18N
 
     private static final String XP_TITLE_KEY = XP_PREFIX + "titleKey/text()"; // NOI18N
 
     private static final String XP_RUNTIME_PATH = XP_PREFIX + "runtimePath"; // NOI18N
 
-    private static final String XP_DESIGN_TIME_PATH = XP_PREFIX
-            + ELM_DESIGN_TIME_PATH; // NOI18N
+    private static final String XP_DESIGN_TIME_PATH = XP_PREFIX + ELM_DESIGN_TIME_PATH; // NOI18N
 
     private static final String XP_JAVADOC_PATH = XP_PREFIX + "javadocPath"; // NOI18N
 
     private static final String XP_SOURCE_PATH = XP_PREFIX + "sourcePath"; // NOI18N
 
-    private static final String XP_WEB_RESOURCE_PATH = XP_PREFIX
-            + "webResourcePath"; // NOI18N
+    private static final String XP_WEB_RESOURCE_PATH = XP_PREFIX + "webResourcePath"; // NOI18N
 
     private static final String XP_HELP_PATH = XP_PREFIX + "helpPath"; // NOI18N
 
     private static final String XP_HELP_PREFIX = XP_HELP_PATH + "/@helpPrefix"; // NOI18N
 
     /** @since NetBeans Visual Web 6 */
-    private static final String XP_HELP_SET_FILE = XP_HELP_PATH
-            + "/@helpSetFile"; // NOI18N
+    private static final String XP_HELP_SET_FILE = XP_HELP_PATH + "/@helpSetFile"; // NOI18N
 
-    private static final String XP_INITIAL_PALETTE_FOLDER = XP_PREFIX
-            + "initialPalette/folder"; // NOI18N
+    private static final String XP_INITIAL_PALETTE_FOLDER = XP_PREFIX + "initialPalette/folder"; // NOI18N
 
     private static final String XP_PATH_ELEMENT = "pathElement"; // NOI18N
 
-    private static final String XP_EE_SPEC_VERSION = XP_PREFIX
-            + "eeSpecification/@version"; // NOI18N
+    private static final String XP_EE_SPEC_VERSION = XP_PREFIX + "eeSpecification/@version"; // NOI18N
 
-    private static final String XP_SUN_FACES_CONFIG = XP_PREFIX
-            + "sunFacesConfig/text()"; // NOI18N
+    private static final String XP_SUN_FACES_CONFIG = XP_PREFIX + "sunFacesConfig/text()"; // NOI18N
 
     private static final String ATT_CLASS_NAME = "className"; // NOI18N
 
@@ -177,14 +166,12 @@ class ComplibManifest {
     private String helpPrefix;
 
     /**
-     * "/" separated path to HelpSet file relative to helpPath. eg.
-     * "help/my-help.hs"
+     * "/" separated path to HelpSet file relative to helpPath. eg. "help/my-help.hs"
      */
     private String helpSetFile;
 
     /**
-     * Relative complib resource path to a sun-faces-config.xml type code
-     * generator input file
+     * Relative complib resource path to a sun-faces-config.xml type code generator input file
      */
     private String sunFacesConfig;
 
@@ -200,8 +187,8 @@ class ComplibManifest {
     private static final List<String> EMPTY_LIST = Collections.emptyList();
 
     /**
-     * Represents legacy component library configuration info that was in Reef,
-     * AKA Rave version 1.x.
+     * Represents legacy component library configuration info that was in Reef, AKA Rave version
+     * 1.x.
      * 
      * @author Edwin Goei
      */
@@ -210,16 +197,14 @@ class ComplibManifest {
         private static final String LIBRARY_URI = PREFIX + "Library-URI"; // NOI18N
 
         /** The ordered pair (Library-URI, Library-Version) must be unique */
-        private static final String LIBRARY_VERSION = PREFIX
-                + "Library-Version"; // NOI18N
+        private static final String LIBRARY_VERSION = PREFIX + "Library-Version"; // NOI18N
 
         /** Library-Title used as a user-friendly name which may not be unique */
         private static final String LIBRARY_TITLE = PREFIX + "Library-Title"; // NOI18N
 
         private static final String RUNTIME_PATH = PREFIX + "Runtime-Path"; // NOI18N
 
-        private static final String DESIGN_TIME_PATH = PREFIX
-                + "Design-Time-Path"; // NOI18N
+        private static final String DESIGN_TIME_PATH = PREFIX + "Design-Time-Path"; // NOI18N
 
         private static final String JAVADOC_PATH = PREFIX + "Javadoc-Path"; // NOI18N
 
@@ -245,8 +230,7 @@ class ComplibManifest {
             if (valLibraryVersion == null) {
                 throw new ManifestAttributeException(MISSING + LIBRARY_VERSION);
             }
-            this.identifier = new Complib.Identifier(valLibraryUri,
-                    valLibraryVersion);
+            this.identifier = new Complib.Identifier(valLibraryUri, valLibraryVersion);
 
             String val;
 
@@ -298,8 +282,8 @@ class ComplibManifest {
     }
 
     /**
-     * When no resource bundle is used, use a fake empty resource bundle so we
-     * don't have to special case for null later
+     * When no resource bundle is used, use a fake empty resource bundle so we don't have to special
+     * case for null later
      */
     private static class EmptyResourceBundle extends ListResourceBundle {
 
@@ -312,10 +296,9 @@ class ComplibManifest {
     }
 
     /**
-     * Parse the Jar Manifest and return a CompLibManifest. This can occur
-     * before a package is expanded. This needs to be fast since a UI may depend
-     * on accessing some metadata about this library. Only some info such as the
-     * library Title is accessible before a package is expanded.
+     * Parse the Jar Manifest and return a CompLibManifest. This can occur before a package is
+     * expanded. This needs to be fast since a UI may depend on accessing some metadata about this
+     * library. Only some info such as the library Title is accessible before a package is expanded.
      * 
      * @param manifest
      *            root jar Manifest which may refer to external resources
@@ -325,8 +308,8 @@ class ComplibManifest {
      * @throws ComplibException
      * @throws IOException
      */
-    static ComplibManifest getInstance(Manifest manifest,
-        ClassLoader resourceClassLoader) throws ComplibException, IOException {
+    static ComplibManifest getInstance(Manifest manifest, ClassLoader resourceClassLoader)
+            throws ComplibException, IOException {
         // API Version attribute is required
         Attributes attrs = manifest.getMainAttributes();
 
@@ -342,8 +325,7 @@ class ComplibManifest {
             if (complibConfigAttr == null) {
                 throw new ManifestAttributeException(MISSING + CONFIGURATION);
             }
-            URL complibConfUrl = resourceClassLoader
-                    .getResource(complibConfigAttr);
+            URL complibConfUrl = resourceClassLoader.getResource(complibConfigAttr);
             if (complibConfUrl == null) {
                 throw new ComplibException(MISSING_RESOURCE + complibConfigAttr);
             }
@@ -354,15 +336,15 @@ class ComplibManifest {
         } else if (VERSION_1_0_0.equals(apiVersion)) {
             compLibConfig = new ComplibManifest.LegacyManifest(attrs);
         } else {
-            throw new ManifestAttributeException(API_COMPAT_VERSION
-                    + " must be " + VERSION_2_0_0 + " or " + VERSION_1_0_0); // NOI18N
+            throw new ManifestAttributeException(API_COMPAT_VERSION + " must be " + VERSION_2_0_0
+                    + " or " + VERSION_1_0_0); // NOI18N
         }
 
         return compLibConfig;
     }
 
-    static ComplibManifest getInstance(URL configUrl,
-        ClassLoader resourceClassLoader) throws ComplibException, XmlException {
+    static ComplibManifest getInstance(URL configUrl, ClassLoader resourceClassLoader)
+            throws ComplibException, XmlException {
         // TODO what about closing the doc??
         Document configDoc = new XmlUtil().read(configUrl);
         return new ComplibManifest(configDoc, resourceClassLoader);
@@ -376,25 +358,22 @@ class ComplibManifest {
      * @param doc
      *            DOM that represents complib configuration metadata
      * @param resourceClassLoader
-     *            ClassLoader to load localized resources used for example for
-     *            folder names
+     *            ClassLoader to load localized resources used for example for folder names
      * @throws XmlException
      * @throws ComplibException
      */
-    private ComplibManifest(Document doc, ClassLoader resourceClassLoader)
-            throws XmlException, ComplibException {
+    private ComplibManifest(Document doc, ClassLoader resourceClassLoader) throws XmlException,
+            ComplibException {
         this.doc = doc;
 
         Element root = doc.getDocumentElement();
         if (!ELM_ROOT.equals(root.getNodeName())) {
-            throw new ComplibException(
-                    "Complib configuration root element must be '" // NOI18N
-                            + ELM_ROOT + "'"); // NOI18N
+            throw new ComplibException("Complib configuration root element must be '" // NOI18N
+                    + ELM_ROOT + "'"); // NOI18N
         }
 
         // Schema version of complib config file
-        Attr versionAttr = (Attr) XmlUtil.selectSingleNode(doc,
-                XP_CONFIG_VERSION);
+        Attr versionAttr = (Attr) XmlUtil.selectSingleNode(doc, XP_CONFIG_VERSION);
         String versionString = versionAttr.getValue();
         int version;
         if ("1.0".equals(versionString)) {
@@ -475,8 +454,7 @@ class ComplibManifest {
      * @throws ComplibException
      *             if required text node does not exist
      */
-    private String getRequiredTextNode(String xpath) throws XmlException,
-            ComplibException {
+    private String getRequiredTextNode(String xpath) throws XmlException, ComplibException {
         Text text = (Text) XmlUtil.selectSingleNode(doc, xpath);
         if (text == null) {
             throw new ComplibException(REQUIRES + xpath);
@@ -484,8 +462,7 @@ class ComplibManifest {
         return text.getNodeValue().trim();
     }
 
-    private String getOptionalTextNode(String xpath, String defaultVal)
-            throws XmlException {
+    private String getOptionalTextNode(String xpath, String defaultVal) throws XmlException {
         Text text = (Text) XmlUtil.selectSingleNode(doc, xpath);
         if (text == null) {
             return defaultVal;
@@ -502,8 +479,7 @@ class ComplibManifest {
      * @throws ComplibException
      *             if no path elements are found
      */
-    private List<String> getRequiredConfigPath(String xpath)
-            throws XmlException, ComplibException {
+    private List<String> getRequiredConfigPath(String xpath) throws XmlException, ComplibException {
         List<String> path = getConfigPath(xpath);
         if (path.isEmpty()) {
             throw new ComplibException(REQUIRES + xpath);
@@ -531,8 +507,7 @@ class ComplibManifest {
         NodeList nl = XmlUtil.selectNodeList(elm, XP_PATH_ELEMENT);
         for (int i = 0; i < nl.getLength(); i++) {
             Element pathElmElm = (Element) nl.item(i);
-            Text pathElmText = (Text) XmlUtil.selectSingleNode(pathElmElm,
-                    "text()"); // NOI18N
+            Text pathElmText = (Text) XmlUtil.selectSingleNode(pathElmElm, "text()"); // NOI18N
             if (pathElmText != null) {
                 String val = pathElmText.getNodeValue();
                 if ("" != val.trim()) {
@@ -543,8 +518,7 @@ class ComplibManifest {
         return path;
     }
 
-    private boolean getBoolean(String xpath, boolean defaultValue)
-            throws XmlException {
+    private boolean getBoolean(String xpath, boolean defaultValue) throws XmlException {
         Attr attr = (Attr) XmlUtil.selectSingleNode(doc, xpath);
         if (attr == null) {
             return defaultValue;
@@ -567,8 +541,7 @@ class ComplibManifest {
      * @return
      * @throws XmlException
      */
-    private InitialPaletteFolder createFolderRecurse(Element folderElement)
-            throws XmlException {
+    private InitialPaletteFolder createFolderRecurse(Element folderElement) throws XmlException {
         // Derive the localized name
         String key = folderElement.getAttribute(ATT_KEY);
         InitialPaletteFolder folder = new InitialPaletteFolder(getResource(key));
@@ -591,8 +564,7 @@ class ComplibManifest {
         return folder;
     }
 
-    private InitialPaletteItem createItemRecurse(Element itemElement)
-            throws XmlException {
+    private InitialPaletteItem createItemRecurse(Element itemElement) throws XmlException {
         // Derive the localized name
         String className = itemElement.getAttribute(ATT_CLASS_NAME);
         InitialPaletteItem item = new InitialPaletteItem(className);
@@ -620,32 +592,28 @@ class ComplibManifest {
      * @param complibConfigurationElm
      * @param resourceClassLoader
      */
-    private void initResourceBundle(Element complibConfigurationElm,
-        ClassLoader resourceClassLoader) {
-        String rbBaseName = complibConfigurationElm
-                .getAttribute(ATT_RESOURCE_BUNDLE);
+    private void initResourceBundle(Element complibConfigurationElm, ClassLoader resourceClassLoader) {
+        String rbBaseName = complibConfigurationElm.getAttribute(ATT_RESOURCE_BUNDLE);
         if (rbBaseName.length() != 0) {
             // Attribute was specified or defaulted
             try {
                 /*
-                 * As a workaround for the NB ProxyClassLoader warning, look for
-                 * the bundle under META-INF first and then go look starting at
-                 * the top level as usual.
+                 * As a workaround for the NB ProxyClassLoader warning, look for the bundle under
+                 * META-INF first and then go look starting at the top level as usual.
                  * 
                  * @since NetBeans 6 Visual Web
                  */
                 if (rbBaseName.indexOf(".") == -1) {
                     try {
-                        rb = ResourceBundle.getBundle(RESOURCE_BUNDLE_PREFIX
-                                + rbBaseName, Locale.getDefault(),
-                                resourceClassLoader);
-                    } catch (MissingResourceException mre) {
-                        rb = ResourceBundle.getBundle(rbBaseName, Locale
+                        rb = ResourceBundle.getBundle(RESOURCE_BUNDLE_PREFIX + rbBaseName, Locale
                                 .getDefault(), resourceClassLoader);
+                    } catch (MissingResourceException mre) {
+                        rb = ResourceBundle.getBundle(rbBaseName, Locale.getDefault(),
+                                resourceClassLoader);
                     }
                 } else {
-                    rb = ResourceBundle.getBundle(rbBaseName, Locale
-                            .getDefault(), resourceClassLoader);
+                    rb = ResourceBundle.getBundle(rbBaseName, Locale.getDefault(),
+                            resourceClassLoader);
                 }
             } catch (RuntimeException e) {
                 // Fallback: warn user and default to using no resource bundle
@@ -659,8 +627,7 @@ class ComplibManifest {
     }
 
     /**
-     * Return a value from a resource bundle or the key itself if this is not
-     * possible.
+     * Return a value from a resource bundle or the key itself if this is not possible.
      * 
      * @param key
      * @return value correspinding to key or key itself
@@ -680,9 +647,9 @@ class ComplibManifest {
     }
 
     /**
-     * Returns a List<InitialPaletteFolder> representing the initial palette
-     * structure for this complib, if any. If the list is empty, then this
-     * complib does not have an initial palette specified.
+     * Returns a List<InitialPaletteFolder> representing the initial palette structure for this
+     * complib, if any. If the list is empty, then this complib does not have an initial palette
+     * specified.
      * 
      * @return List<InitialPaletteFolder> which may be empty but never null.
      */
@@ -758,14 +725,12 @@ class ComplibManifest {
         declaredDesignTimePath.add(dtJarText);
 
         // Persist it in DOM
-        Element dtPathElm = (Element) XmlUtil.selectSingleNode(doc,
-                XP_DESIGN_TIME_PATH);
+        Element dtPathElm = (Element) XmlUtil.selectSingleNode(doc, XP_DESIGN_TIME_PATH);
         if (dtPathElm == null) {
             // No DT path element so create it and insert it
 
             dtPathElm = doc.createElement(ELM_DESIGN_TIME_PATH);
-            Element rtPathElm = (Element) XmlUtil.selectSingleNode(doc,
-                    XP_RUNTIME_PATH);
+            Element rtPathElm = (Element) XmlUtil.selectSingleNode(doc, XP_RUNTIME_PATH);
             Element parentElm = (Element) rtPathElm.getParentNode();
             Node insertNode = rtPathElm.getNextSibling();
             parentElm.insertBefore(dtPathElm, insertNode);

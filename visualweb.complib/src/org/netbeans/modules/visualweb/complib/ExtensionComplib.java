@@ -36,30 +36,29 @@ import java.util.List;
 import java.util.Properties;
 import java.util.jar.Manifest;
 
-import org.netbeans.modules.visualweb.api.complib.ComplibException;
 import org.netbeans.modules.visualweb.classloaderprovider.CommonClassloaderProvider;
+import org.netbeans.modules.visualweb.complib.api.ComplibException;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;
 
 /**
- * Represents an extension component library provided by a third party. There
- * are two main use cases for this class:
+ * Represents an extension component library provided by a third party. There are two main use cases
+ * for this class:
  * <nl>
  * <li>Creating from a package file</li>
  * <li>Creating from an existing expanded directory</li>
  * </nl>
  * 
  * <p>
- * The first case is used during initial component import in the UI which must
- * be fast. At this time only a limited amount of information from the complib
- * manifest such as the component library title can be accessed via a few
- * methods. Calling other methods requires that the complib package first be
- * expanded. Once expanded, any method can be called.
+ * The first case is used during initial component import in the UI which must be fast. At this time
+ * only a limited amount of information from the complib manifest such as the component library
+ * title can be accessed via a few methods. Calling other methods requires that the complib package
+ * first be expanded. Once expanded, any method can be called.
  * </p>
  * 
  * <p>
- * The second case is used when a library is already installed and is persisted
- * on disk in expanded form.
+ * The second case is used when a library is already installed and is persisted on disk in expanded
+ * form.
  * </p>
  * 
  * @author Edwin Goei
@@ -88,11 +87,10 @@ public class ExtensionComplib extends Complib {
         private static final ClassLoader parentClassLoader;
         static {
             /*
-             * Use Java EE 5 common class loader as a superset. It contains
-             * classes from older EE API versions, the Creator design-time API,
-             * and also classes that should not technically be available but
-             * this is a convenient implementation. Code copied from insync
-             * ModelSet().
+             * Use Java EE 5 common class loader as a superset. It contains classes from older EE
+             * API versions, the Creator design-time API, and also classes that should not
+             * technically be available but this is a convenient implementation. Code copied from
+             * insync ModelSet().
              */
             CommonClassloaderProvider commonClassloaderProvider = null;
 
@@ -101,8 +99,7 @@ public class ExtensionComplib extends Complib {
                     CommonClassloaderProvider.JAVA_EE_5);
             Result result = Lookup.getDefault().lookup(
                     new Lookup.Template(CommonClassloaderProvider.class));
-            for (Iterator iterator = result.allInstances().iterator(); iterator
-                    .hasNext();) {
+            for (Iterator iterator = result.allInstances().iterator(); iterator.hasNext();) {
                 CommonClassloaderProvider aCommonClassloaderProvider = (CommonClassloaderProvider) iterator
                         .next();
                 if (aCommonClassloaderProvider.isCapableOf(capabilities)) {
@@ -112,8 +109,7 @@ public class ExtensionComplib extends Complib {
             }
 
             if (commonClassloaderProvider == null) {
-                throw new RuntimeException(
-                        "No Common Classloader Provider found."); // TODO I18N
+                throw new RuntimeException("No Common Classloader Provider found."); // TODO I18N
             }
 
             parentClassLoader = commonClassloaderProvider.getClassLoader();
@@ -141,21 +137,21 @@ public class ExtensionComplib extends Complib {
     private File packageFile;
 
     /**
-     * Component library directory is absolute, may temporarily be null.
-     * Non-null value iff package is expanded.
+     * Component library directory is absolute, may temporarily be null. Non-null value iff package
+     * is expanded.
      */
     private File absoluteLibDir;
 
     /**
-     * ClassLoader used to load resources referenced in package file metadata
-     * such as the manifest and initial-palette config file. These resources can
-     * be accessed before or after a package is expanded.
+     * ClassLoader used to load resources referenced in package file metadata such as the manifest
+     * and initial-palette config file. These resources can be accessed before or after a package is
+     * expanded.
      */
     private ResourceClassLoader resourceClassLoader;
 
     /**
-     * ClassLoader for loading classes in this complib. This can only be used
-     * after a package is expanded.
+     * ClassLoader for loading classes in this complib. This can only be used after a package is
+     * expanded.
      */
     private LibraryClassLoader libClassLoader;
 
@@ -173,8 +169,8 @@ public class ExtensionComplib extends Complib {
         Manifest manifest = new Manifest(in);
         URL absLibDirUrl = absoluteLibDir.toURI().toURL();
         this.resourceClassLoader = new ResourceClassLoader(absLibDirUrl);
-        ComplibManifest compLibManifest = ComplibManifest.getInstance(manifest,
-                resourceClassLoader);
+        ComplibManifest compLibManifest = ComplibManifest
+                .getInstance(manifest, resourceClassLoader);
         initCompLibManifest(compLibManifest);
         in.close();
 
@@ -184,8 +180,7 @@ public class ExtensionComplib extends Complib {
         initPaths();
     }
 
-    protected List<File> convertConfigPathToFileList(List<String> path)
-            throws ComplibException {
+    protected List<File> convertConfigPathToFileList(List<String> path) throws ComplibException {
         ArrayList<File> retVal = new ArrayList<File>(path.size());
         for (String pathElm : path) {
             File file = new File(absoluteLibDir, pathElm);
@@ -198,8 +193,7 @@ public class ExtensionComplib extends Complib {
         return retVal;
     }
 
-    protected File[] convertConfigPathToFileArray(List<String> path)
-            throws ComplibException {
+    protected File[] convertConfigPathToFileArray(List<String> path) throws ComplibException {
         File[] retVal = new File[path.size()];
         for (int i = 0; i < path.size(); i++) {
             String pathElm = (String) path.get(i);
@@ -221,8 +215,8 @@ public class ExtensionComplib extends Complib {
     }
 
     /**
-     * Returns the base name of the root of this component library. The library
-     * must already be expanded.
+     * Returns the base name of the root of this component library. The library must already be
+     * expanded.
      * 
      * @return Returns the base name of this component library
      */
@@ -231,8 +225,7 @@ public class ExtensionComplib extends Complib {
     }
 
     /**
-     * Returns the absolute root of this component library. The library must
-     * already be expanded.
+     * Returns the absolute root of this component library. The library must already be expanded.
      * 
      * @return Returns the absolute root of this component library, never null
      */
@@ -251,8 +244,7 @@ public class ExtensionComplib extends Complib {
     }
 
     @Override
-    BeanInfo getBeanInfo(String className) throws ClassNotFoundException,
-            IntrospectionException {
+    BeanInfo getBeanInfo(String className) throws ClassNotFoundException, IntrospectionException {
         // 6393979 Simulate an appropriate context ClassLoader.
         // Temporarily set the context ClassLoader and restore it later.
         // TODO Possibly remove this code when class loading is fixed in Mako.
