@@ -24,7 +24,3 @@ instdir="/Applications/NetBeans/glassfish-v2b58g"
 if [ -d "$instdir" ] ; then
     rm -rf "$instdir"
 fi
-
-if [ -d "/Library/Receipts/glassfish-v2b58g.pkg" ] ; then
-    rm -rf "/Library/Receipts/glassfish-v2b58g.pkg"
-fi

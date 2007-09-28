@@ -29,3 +29,6 @@ cd ..
 
 "$script_dir"/perm.sh
 
+if [ -d "/Library/Receipts/openesb.pkg" ] ; then
+    rm -rf "/Library/Receipts/openesb.pkg"
+fi

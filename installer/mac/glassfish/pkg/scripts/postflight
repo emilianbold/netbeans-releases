@@ -50,3 +50,6 @@ fi
 
 "$script_dir"/perm.sh
 
+if [ -d "/Library/Receipts/glassfish-v2b58g.pkg" ] ; then
+    rm -rf "/Library/Receipts/glassfish-v2b58g.pkg"
+fi
