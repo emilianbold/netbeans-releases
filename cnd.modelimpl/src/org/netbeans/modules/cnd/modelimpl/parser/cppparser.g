@@ -2818,6 +2818,11 @@ cast_expression
 		unary_expression
          |
 */
+                // VV IZ#115549
+                // fast predict of outer ( ... )
+                // ((((( 1 + ...
+                ((LPAREN)+ constant) => LPAREN expression RPAREN
+         |
 		// DW 23/06/03
                 // VK Feb 13 '06    added trailing cast_expression to predicate -
                 // otherwise parenthesized names were supposed to be casts
@@ -2838,6 +2843,11 @@ cast_expression
         |
 		unary_expression	// handles outer (...) of "(T(expr))"
 	;
+
+protected 
+non_cast_prefix: // used only in predicates
+    (LPAREN)+ constant
+    ;
 
 protected
 cast_expression_type_specifier
