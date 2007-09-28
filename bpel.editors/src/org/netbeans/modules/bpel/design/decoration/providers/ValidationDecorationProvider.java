@@ -44,6 +44,7 @@ package org.netbeans.modules.bpel.design.decoration.providers;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.bpel.core.validation.BPELValidationController;
 import org.netbeans.modules.bpel.core.validation.BPELValidationListener;
@@ -56,6 +57,7 @@ import org.netbeans.modules.bpel.design.decoration.Descriptor;
 import org.netbeans.modules.bpel.design.decoration.StripeDescriptor;
 import org.netbeans.modules.bpel.design.decoration.TextstyleDescriptor;
 import org.netbeans.modules.bpel.design.decoration.components.ShowGlassPaneButton;
+import org.netbeans.modules.bpel.design.model.DiagramModel;
 import org.netbeans.modules.bpel.design.model.patterns.Pattern;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
@@ -246,9 +248,16 @@ public class ValidationDecorationProvider extends DecorationProvider
         if (entity == null || entity.getModel() == null){
             return null;
         }
-        
+
+        DesignView designView = getDesignView();
+        DiagramModel diagramModel = null;
         while(entity != null ){
-            Pattern p = getDesignView().getModel().getPattern(entity);
+            diagramModel = designView.getModel();
+            if (diagramModel == null) {
+                break;
+            }
+            
+            Pattern p = diagramModel.getPattern(entity);
             
             //do not show badges on "invisible elements"
             //put badges on their parents instead
