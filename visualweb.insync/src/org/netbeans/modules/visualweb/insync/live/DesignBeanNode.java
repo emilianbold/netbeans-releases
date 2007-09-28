@@ -545,7 +545,9 @@ public class DesignBeanNode extends AbstractNode implements DesignBeanListener {
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             } catch (ClassNotFoundException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                // Ignore
+                // This exception may be thrown if the user has copied a DesignBean
+                // from a different Visual Web project
             }
         } else if (t.isDataFlavorSupported(cutFlavor)) {
             try {
