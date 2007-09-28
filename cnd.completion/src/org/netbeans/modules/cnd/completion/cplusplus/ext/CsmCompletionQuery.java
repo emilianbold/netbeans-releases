@@ -1324,7 +1324,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                         isConstructor = false;
                     }
                 } 
-                if (isConstructor == false) {
+                if (true || isConstructor == false) {
                     // Help for the method
 
                     // when use hyperlink => method() is passed as methodOpen, but we 
@@ -1332,7 +1332,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                     // otherwise we need all in current context
                     if (!methodOpen || openingSource) {
                         List mtdList = new ArrayList();
-                        if (first) {
+                        if (first && !(isConstructor && lastType != null)) { // already resolved for constructor
                             // resolve all functions in context
                             int varPos = mtdNameExp.getTokenOffset(0);
                             compResolver.setResolveTypes(CompletionResolver.RESOLVE_FUNCTIONS);
