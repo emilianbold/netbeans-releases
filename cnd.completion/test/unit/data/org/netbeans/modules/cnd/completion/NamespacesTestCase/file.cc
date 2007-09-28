@@ -26,6 +26,26 @@ namespace S1 {
             S1::f1();
             S2::f2();
         }
+
+        struct s2Struct {
+            int f;
+        } sss;
     }
 }
 
+
+void usingS1() {
+    using namespace S1;
+     //
+}
+
+void usingS2() {
+    using namespace S2;
+     //
+}
+
+void usingS1S2() {
+    using namespace S1;
+    using namespace S2;
+     //
+}

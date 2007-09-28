@@ -6,4 +6,8 @@ namespace S1 {
         int i2;
         void f2();
     }
+    
+    struct str {
+        int i;
+    } q;
 }
