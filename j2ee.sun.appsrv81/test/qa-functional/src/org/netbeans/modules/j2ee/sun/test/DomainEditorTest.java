@@ -50,10 +50,7 @@ public class DomainEditorTest extends NbTestCase {
         DomainEditor de = new DomainEditor(dm);
         
         String loc = de.getDomainLocation();
-        Document doc = de.getDomainDocument();
         Document doc2 = de.getDomainDocument(loc);
-        de.addProfilerElements(doc,"/foo/bar/bas", new String[] { "aaaaaaaaaa", "bbbbbbbbbb", "ccccccccccc"});
-        de.removeProfilerElements(doc);
         String oldProxyValues[] = de.getHttpProxyOptions();
         String foo[] = new String[] { 
             HttpProxyUpdater.HTTPS_PROXY_HOST+"yyyyyyyyy",
@@ -74,10 +71,28 @@ public class DomainEditorTest extends NbTestCase {
         de.getConnPoolsFromXml();        
         
     }
+
+    public void checkProfilerInsertion() {
+        ServerInstance inst = ServerRegistry.getInstance().getServerInstance(Util._URL);
+        DeploymentManager dm = inst.getDeploymentManager();
+        DomainEditor de = new DomainEditor(dm);
+        
+        String loc = de.getDomainLocation();
+        Document doc = de.getDomainDocument();
+        char quote = '"';
+        String value = "-agentpath:" + quote + "C:\\Program Files\\NetBeans 6.0\\profiler2\\lib\\deployed\\jdk16\\windows\\profilerinterface.dll=\\" + quote + "C:\\Program Files\\NetBeans 6.0\\profiler2\\lib\\" + quote + ",5140";
+        boolean added = de.addProfilerElements(doc,"/foo/bar/bas", new String[] { "aaaaaaaaaa", "bbbbbbbbbb", value});
+        if (! added) {
+            this.fail("Could not add profiler elements");
+        }
+        de.removeProfilerElements(doc);        
+    }
+
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite("DomainEditorTest");
         suite.addTest(new AddRemoveSjsasInstanceTest("addSjsasInstance"));  
         suite.addTest(new DomainEditorTest("poundOnEditor"));
+        suite.addTest(new DomainEditorTest("checkProfilerInsertion"));
         suite.addTest(new AddRemoveSjsasInstanceTest("removeSjsasInstance"));        
         return suite;
     }
