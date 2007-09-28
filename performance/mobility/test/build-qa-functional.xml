@@ -170,10 +170,10 @@
     <!-- ============= -->
 
     <target name="set-wtk-path" unless="wtk.zipfile.name">
-        <condition property="wtk.zipfile.name" value="wtk22_win.zip">
+        <condition property="wtk.zipfile.name" value="wtk252-windows.zip">
             <os family="windows"/>
         </condition>
-        <condition property="wtk.zipfile.name" value="wtk22_linux.zip">
+        <condition property="wtk.zipfile.name" value="wtk252-linux.zip">
             <os family="unix" name="linux"/>
         </condition>
     </target>
@@ -181,9 +181,7 @@
     <target name="prepare-wtk" depends="set-wtk-path">
         <fail unless="wtk.zipfile.name" message="Not supported platform."/>
         
-        <property name="emulators.mobility" value="${netbeans.dest.dir}/mobility8/emulators-inst"/>
-        <mkdir dir="${emulators.mobility}"/>
-        <copy file="${nbextra.dir}/qa/performance/mobility/${wtk.zipfile.name}" todir="${emulators.mobility}"/>
+        <unzip src="${nbextra.dir}/qa/performance/mobility/${wtk.zipfile.name}" dest="${netbeans.dest.dir}/mobility8"/>
     </target>
     
 </project>
