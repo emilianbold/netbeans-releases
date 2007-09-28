@@ -44,6 +44,7 @@ import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.netbeans.api.project.Project;
 
 /**
  * Pull action for mercurial:
@@ -72,10 +73,12 @@ public class PullAction extends AbstractAction {
         pull(context);
     }
 
-    public static boolean confirmWithLocalChanges(VCSContext ctx, Class bundleLocation, String title, String query, 
+    public static boolean confirmWithLocalChanges(File rootFile, Class bundleLocation, String title, String query, 
             List<String> listIncoming) {
         FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
-        File[] localModNewFiles = cache.listFiles(ctx, 
+        File[] roots = new File[1];
+        roots[0] = rootFile;
+        File[] localModNewFiles = cache.listFiles(roots, 
                 FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY | 
                 FileInformation.STATUS_VERSIONED_CONFLICT | 
                 FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY);
@@ -83,7 +86,7 @@ public class PullAction extends AbstractAction {
         Set<String> setFiles = new HashSet<String>();
         String filesStr;
         String[] aFileStr;
-        String root = HgUtils.getRootPath(ctx);
+        String root = rootFile.getAbsolutePath();
         
         for(String s: listIncoming){
             if(s.indexOf(CHANGESET_FILES_PREFIX) == 0){
@@ -91,6 +94,7 @@ public class PullAction extends AbstractAction {
                 aFileStr = filesStr.split(" ");
                 for(String fileStr: aFileStr){
                     setFiles.add(root + File.separator + fileStr);
+                    break;
                 }
             }
         }
@@ -141,9 +145,12 @@ public class PullAction extends AbstractAction {
         String repository = root.getAbsolutePath();
         File pullFile = HgCommand.getPullDefault(root);
         final String pullPath = pullFile.getAbsolutePath();
-        // We assume that if fromPrjName is null that it is a remote pull
+        // We assume that if fromPrjName is null that it is a remote pull.
+        // This is not true as a project which is in a subdirectory of a
+        // repository will report a project name of null. This does no harm.
         final String fromPrjName = HgProjectUtils.getProjectName(pullFile);
-        final String toPrjName = HgProjectUtils.getProjectName(root);
+        Project proj = HgUtils.getProject(ctx);
+        final String toPrjName = HgProjectUtils.getProjectName(proj);
         
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
         HgProgressSupport support = new HgProgressSupport() {
@@ -182,7 +189,7 @@ public class PullAction extends AbstractAction {
             HgUtils.outputMercurialTabInRed(NbBundle.getMessage(PullAction.class, "MSG_PULL_TITLE_SEP")); // NOI18N
             
             // Warn User when there are Local Changes present that Pull will overwrite
-            if (!bNoChanges && !confirmWithLocalChanges(ctx, PullAction.class, "MSG_PULL_LOCALMODS_CONFIRM_TITLE", "MSG_PULL_LOCALMODS_CONFIRM_QUERY", listIncoming)) { // NOI18N
+            if (!bNoChanges && !confirmWithLocalChanges(root, PullAction.class, "MSG_PULL_LOCALMODS_CONFIRM_TITLE", "MSG_PULL_LOCALMODS_CONFIRM_QUERY", listIncoming)) { // NOI18N
                 HgUtils.outputMercurialTabInRed(NbBundle.getMessage(PullAction.class, "MSG_PULL_LOCALMODS_CANCEL")); // NOI18N
                 HgUtils.outputMercurialTab(""); // NOI18N
                 return;
