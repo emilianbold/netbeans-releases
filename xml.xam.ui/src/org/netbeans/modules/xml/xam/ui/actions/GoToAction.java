@@ -85,10 +85,12 @@ public class GoToAction extends CookieAction {
         };
     }
 
+    @Override
     protected boolean asynchronous() {
         return false;
     }
 
+    @Override
     public Action createContextAwareInstance(Lookup actionContext) {
         return new DelegateAction(this, actionContext);
     }
@@ -96,19 +98,28 @@ public class GoToAction extends CookieAction {
     /** Implementation of Actions.SubMenuModel */
     private class ActSubMenuModel extends EventListenerList implements Actions.SubMenuModel {
         static final long serialVersionUID = -4273674308662494596L;
-        private transient Node lastNode;
+        
+        //IZ: 115374: Cache the last selected gotoNode and gotoTypes
+        //getRegistry().getCurrentNodes() returns a different one
+        //when user clicks on goto.
+        private transient Node gotoNode;
         private transient GotoType[] gotoTypes;
+        
         ActSubMenuModel(Lookup lookup) {
         }
 
         private Node getSelectedNode() {
-            if(lastNode != null)
-                return lastNode;
-            Node[] nodes = WindowManager.getDefault().getRegistry().getCurrentNodes();
-            if (nodes != null && nodes.length == 1 && nodes[0] != lastNode) {
-                lastNode = nodes[0];
+            //return the cached one, if exists
+            if(gotoNode != null)
+                return gotoNode;
+            
+            //new one
+            Node[] nodes = WindowManager.getDefault().getRegistry().getCurrentNodes();            
+            if (nodes != null && nodes.length == 1 && nodes[0] != gotoNode) {
+                gotoNode = nodes[0];
             }
-            return lastNode;
+            //worst case
+            return gotoNode;
         }
         
         /**
@@ -118,7 +129,9 @@ public class GoToAction extends CookieAction {
          * @return  array of GotoType.
          */
         private GotoType[] getGotoTypes(Node node) {
-            if( (lastNode == node) && (gotoTypes != null))
+            if(node == null)
+                return null;
+            if( (gotoNode == node) && (gotoTypes != null))
                 return gotoTypes;
             List<GotoType> types = new ArrayList<GotoType>();
             GotoCookie cookie = node.getCookie(GotoCookie.class);
@@ -147,12 +160,12 @@ public class GoToAction extends CookieAction {
         }
 
         public int getCount() {
-            return getGotoTypes(getSelectedNode()).length;
+            return getSelectedNode()==null?0:getGotoTypes(getSelectedNode()).length;
         }
 
         public String getLabel(int index) {
             GotoType[] types = getGotoTypes(getSelectedNode());
-            if (types.length <= index) {
+            if ( (types == null) || (types.length <= index) ) {
                 return null;
             } else {
                 return types[index].getName();
@@ -161,7 +174,7 @@ public class GoToAction extends CookieAction {
 
         public HelpCtx getHelpCtx(int index) {
             GotoType[] types = getGotoTypes(getSelectedNode());
-            if (types.length <= index) {
+            if ( (types == null) || (types.length <= index) ) {
                 return null;
             } else {
                 return types[index].getHelpCtx();
@@ -171,10 +184,11 @@ public class GoToAction extends CookieAction {
         public void performActionAt(int index) {
             Node node = getSelectedNode();
             GotoType[] types = getGotoTypes(getSelectedNode());
-            if (types.length > index) {
+            if ((types != null) && (types.length > index)) {
                 types[index].show(node);
             }
-            this.lastNode = null;
+            this.gotoNode = null;
+            this.gotoTypes = null;
         }
 
         /** Adds change listener for changes of the model.
