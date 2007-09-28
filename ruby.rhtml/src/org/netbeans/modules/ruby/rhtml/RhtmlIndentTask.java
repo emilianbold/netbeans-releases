@@ -50,6 +50,7 @@ public class RhtmlIndentTask implements IndentTask {
     }
 
     public static void reindent(BaseDocument doc, int start, int end) throws BadLocationException {
+        doc.putProperty("HTML_FORMATTER_ACTS_ON_TOP_LEVEL", Boolean.TRUE);
         int offset = Utilities.getRowStart(doc, end);
         org.netbeans.editor.Formatter editorFormatter = doc.getFormatter();
         while (offset >= start) {
