@@ -42,6 +42,7 @@ import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.FileObject;
 
 /**
  * Push action for mercurial: 
@@ -52,8 +53,6 @@ import org.openide.filesystems.FileUtil;
 public class PushAction extends AbstractAction {
     
     private final VCSContext context;
-    private static File pushPath = null;
-    private static boolean bMergeNeeded = false;
 
     public PushAction(String name, VCSContext context) {
         this.context = context;
@@ -64,122 +63,138 @@ public class PushAction extends AbstractAction {
         push(context);
     }
     
-     public static void push(VCSContext ctx){
+    public static void push(VCSContext ctx){
         final File root = HgUtils.getRootFile(ctx);
         if (root == null) return;
         String repository = root.getAbsolutePath();
-        pushPath = HgCommand.getPushDefault(root);
-        if(pushPath == null) return;
+        final File pushFile = HgCommand.getPushDefault(root);
+        if(pushFile == null) return;
         final String fromPrjName = HgProjectUtils.getProjectName(root);
-        final String toPrjName = HgProjectUtils.getProjectName(pushPath);
-        
+        final String toPrjName = HgProjectUtils.getProjectName(pushFile);
+
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
         HgProgressSupport support = new HgProgressSupport() {
-            public void perform() {
-                
-                try {
-                    HgUtils.outputMercurialTabInRed(
-                                NbBundle.getMessage(PushAction.class,
-                                "MSG_PUSH_TITLE")); // NOI18N
-                    HgUtils.outputMercurialTabInRed(
-                                NbBundle.getMessage(PushAction.class,
-                                "MSG_PUSH_TITLE_SEP")); // NOI18N
-                    List<String> listOutgoing = HgCommand.doOutgoing(root, pushPath);
-                    if ((listOutgoing == null) || listOutgoing.isEmpty()) return;
-                    boolean bNoChanges = HgCommand.isNoChanges(listOutgoing.get(listOutgoing.size()-1));
-                    if (toPrjName != null ||
-                        // a local push to a repository which is not a project
-                        (toPrjName == null && FileUtil.toFileObject(FileUtil.normalizeFile(root)) != null)) {
-                        if (!bNoChanges && !PullAction.confirmWithLocalChanges(pushPath, PushAction.class,
-                             "MSG_PUSH_LOCALMODS_CONFIRM_TITLE", "MSG_PUSH_LOCALMODS_CONFIRM_QUERY", listOutgoing)) { // NOI18N
-                            HgUtils.outputMercurialTabInRed(NbBundle.getMessage(PullAction.class, "MSG_PULL_LOCALMODS_CANCEL")); // NOI18N
-                            HgUtils.outputMercurialTab(""); // NOI18N
-                            return;
-                        }
-                    }
-
-                    // We have a local repository
-                    List<String> list = HgCommand.doPush(root, pushPath);
-                    
-                    bMergeNeeded = HgCommand.isHeadsCreated(list.get(list.size()-1));
-                        
-                    if(!HgCommand.isNoChanges(listOutgoing.get(listOutgoing.size()-1))){
-                        InputOutput io = IOProvider.getDefault().getIO(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE, false);
-                        io.select();
-                        OutputWriter out = io.getOut();
-                        OutputWriter outRed = io.getErr();
-                        outRed.println(NbBundle.getMessage(PushAction.class,"MSG_CHANGESETS_TO_PUSH")); // NOI18N
-                        for( String s : listOutgoing){
-                            if (s.indexOf(Mercurial.CHANGESET_STR) == 0){
-                                outRed.println(s);
-                            }else if( !s.equals("")){ // NOI18N
-                                out.println(s);
-                            }
-                        }
-                        out.println(""); // NOI18N
-                        out.close();
-                        outRed.close();
-                    }
-
-                    HgUtils.outputMercurialTab(list);
-                        
-                    if (toPrjName == null) {
-                        HgUtils.outputMercurialTabInRed(
-                                    NbBundle.getMessage(PushAction.class,
-                                    "MSG_PUSH_TO_NONAME", pushPath)); // NOI18N
-                    } else {
-                        HgUtils.outputMercurialTabInRed(
-                                    NbBundle.getMessage(PushAction.class,
-                                    "MSG_PUSH_TO", toPrjName, pushPath)); // NOI18N
-                    }
-                    HgUtils.outputMercurialTabInRed(
-                                NbBundle.getMessage(PushAction.class,
-                                "MSG_PUSH_FROM", fromPrjName, root)); // NOI18N
-                                            
-                    // Push does not do an Update of the target Working Dir
-                    if(!bMergeNeeded && !bNoChanges){
-                        HgUtils.outputMercurialTab(""); // NOI18N
-                        if (toPrjName == null) {
-                            HgUtils.outputMercurialTabInRed(
-                                        NbBundle.getMessage(PushAction.class,
-                                        "MSG_PUSH_UPDATE_NEEDED_NONAME", toPrjName, pushPath)); // NOI18N
-                        } else {
-                            File targetRepo = Mercurial.getInstance().getTopmostManagedParent(pushPath);
-                            list = HgCommand.doUpdateAll(targetRepo, false, null);                    
-                            HgUtils.outputMercurialTab(list);
-                            HgUtils.outputMercurialTabInRed(
-                                        NbBundle.getMessage(PushAction.class,
-                                        "MSG_PUSH_UPDATE_DONE", toPrjName, pushPath)); // NOI18N
-                        }
-                    }     
-                        
-                    if (bMergeNeeded){
-                        boolean bConfirmMerge = HgUtils.confirmDialog(PushAction.class, "MSG_PUSH_MERGE_CONFIRM_TITLE", "MSG_PUSH_MERGE_CONFIRM_QUERY");
-                     
-                        File targetRepo = Mercurial.getInstance().getTopmostManagedParent(pushPath);
-                        if (bConfirmMerge) {
-                            HgUtils.outputMercurialTab(""); // NOI18N
-                            HgUtils.outputMercurialTabInRed(
-                                       NbBundle.getMessage(PushAction.class,
-                                       "MSG_PUSH_MERGE_DO")); // NOI18N
-                            MergeAction.doMergeAction(targetRepo, null);
-                        } else {
-                            List<String> headRevList = HgCommand.getHeadRevisions(targetRepo);
-                            if (headRevList != null && headRevList.size() > 1) {
-                                MergeAction.printMergeWarning(headRevList);
-                            }
-                        }
-                    }
-                    HgUtils.outputMercurialTab(""); // NOI18N
-                } catch (HgException ex) {
-                    NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
-                    DialogDisplayer.getDefault().notifyLater(e);
-                }
-            }
-        };
+            public void perform() { performPush(root, pushFile, fromPrjName, toPrjName); } };
         support.start(rp, repository, 
                 org.openide.util.NbBundle.getMessage(PushAction.class, "MSG_PUSH_PROGRESS")); // NOI18N
         
+    }
+                
+    static void performPush(File root, File pushFile, String fromPrjName, String toPrjName) {
+        try {
+            List<String> listOutgoing = HgCommand.doOutgoing(root, pushFile);
+            if ((listOutgoing == null) || listOutgoing.isEmpty()) return;
+
+            boolean bLocalPush = (FileUtil.toFileObject(FileUtil.normalizeFile(pushFile)) != null);
+            boolean bNoChanges = HgCommand.isNoChanges(listOutgoing.get(listOutgoing.size()-1));
+
+            HgUtils.outputMercurialTabInRed(NbBundle.getMessage(PushAction.class, "MSG_PUSH_TITLE")); // NOI18N
+            HgUtils.outputMercurialTabInRed(NbBundle.getMessage(PushAction.class, "MSG_PUSH_TITLE_SEP")); // NOI18N
+
+            if (bLocalPush) {
+                // Warn user if there are local changes which Push will overwrite
+                if (!bNoChanges && !PullAction.confirmWithLocalChanges(pushFile, PushAction.class,
+                     "MSG_PUSH_LOCALMODS_CONFIRM_TITLE", "MSG_PUSH_LOCALMODS_CONFIRM_QUERY", listOutgoing)) { // NOI18N
+                    HgUtils.outputMercurialTabInRed(NbBundle.getMessage(PullAction.class, "MSG_PULL_LOCALMODS_CANCEL")); // NOI18N
+                    HgUtils.outputMercurialTab(""); // NOI18N
+                    return;
+                }
+            }
+
+            List<String> list = HgCommand.doPush(root, pushFile);
+                    
+            if (list != null && !list.isEmpty()) {
+                        
+                if(!HgCommand.isNoChanges(listOutgoing.get(listOutgoing.size()-1))){
+                    InputOutput io = IOProvider.getDefault().getIO(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE, false);
+                    io.select();
+                    OutputWriter out = io.getOut();
+                    OutputWriter outRed = io.getErr();
+                    outRed.println(NbBundle.getMessage(PushAction.class,"MSG_CHANGESETS_TO_PUSH")); // NOI18N
+                    for( String s : listOutgoing){
+                        if (s.indexOf(Mercurial.CHANGESET_STR) == 0){
+                            outRed.println(s);
+                        }else if( !s.equals("")){ // NOI18N
+                            out.println(s);
+                        }
+                    }
+                    out.println(""); // NOI18N
+                    out.close();
+                    outRed.close();
+                }
+
+                HgUtils.outputMercurialTab(list);
+                        
+                if (toPrjName == null) {
+                    HgUtils.outputMercurialTabInRed(
+                                NbBundle.getMessage(PushAction.class,
+                                "MSG_PUSH_TO_NONAME", pushFile)); // NOI18N
+                } else {
+                    HgUtils.outputMercurialTabInRed(
+                                NbBundle.getMessage(PushAction.class,
+                                "MSG_PUSH_TO", toPrjName, pushFile)); // NOI18N
+                }
+                HgUtils.outputMercurialTabInRed(
+                            NbBundle.getMessage(PushAction.class,
+                            "MSG_PUSH_FROM", fromPrjName, root)); // NOI18N
+                                            
+                boolean bMergeNeeded = HgCommand.isHeadsCreated(list.get(list.size()-1));
+                boolean bConfirmMerge = false;
+                // Push does not do an Update of the target Working Dir
+                if(!bMergeNeeded){
+                    HgUtils.outputMercurialTab(""); // NOI18N
+                    if (!bLocalPush) {
+                        HgUtils.outputMercurialTabInRed(
+                                    NbBundle.getMessage(PushAction.class,
+                                    "MSG_PUSH_UPDATE_NEEDED_NONAME", toPrjName, pushFile)); // NOI18N
+                    } else {
+                        list = HgCommand.doUpdateAll(pushFile, false, null, false);                    
+                        HgUtils.outputMercurialTab(list);
+                        if (toPrjName != null) {
+                            HgUtils.outputMercurialTabInRed(
+                                        NbBundle.getMessage(PushAction.class,
+                                        "MSG_PUSH_UPDATE_DONE", toPrjName, pushFile)); // NOI18N
+                        } else {
+                            HgUtils.outputMercurialTabInRed(
+                                        NbBundle.getMessage(PushAction.class,
+                                        "MSG_PUSH_UPDATE_DONE_NONAME", pushFile)); // NOI18N
+                        }
+                        boolean bOutStandingUncommittedMerges = HgCommand.isErrorOutStandingUncommittedMerges(list.get(list.size() -1));
+                        if (bOutStandingUncommittedMerges) {
+                            bConfirmMerge = HgUtils.confirmDialog(PushAction.class, "MSG_PUSH_MERGE_CONFIRM_TITLE", "MSG_PUSH_MERGE_UNCOMMITTED_CONFIRM_QUERY");
+                        }
+                    }
+                } else {     
+                    bConfirmMerge = HgUtils.confirmDialog(PushAction.class, "MSG_PUSH_MERGE_CONFIRM_TITLE", "MSG_PUSH_MERGE_CONFIRM_QUERY");
+                }     
+
+                if (bConfirmMerge) {
+                    HgUtils.outputMercurialTab(""); // NOI18N
+                    HgUtils.outputMercurialTabInRed(
+                               NbBundle.getMessage(PushAction.class,
+                               "MSG_PUSH_MERGE_DO")); // NOI18N
+                    MergeAction.doMergeAction(pushFile, null);
+                } else {
+                    List<String> headRevList = HgCommand.getHeadRevisions(pushFile);
+                    if (headRevList != null && headRevList.size() > 1) {
+                        MergeAction.printMergeWarning(headRevList);
+                    }
+                }
+            }     
+            if (bLocalPush && !bNoChanges) {
+                HgUtils.forceStatusRefresh(pushFile);
+                // refresh filesystem to take account of deleted files
+                FileObject rootObj = FileUtil.toFileObject(pushFile);
+                try {
+                    rootObj.getFileSystem().refresh(true);
+                } catch (java.lang.Exception ex) {
+                }
+            }
+            HgUtils.outputMercurialTab(""); // NOI18N
+        } catch (HgException ex) {
+            NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
+            DialogDisplayer.getDefault().notifyLater(e);
+        }
     }
     
     public boolean isEnabled() {
