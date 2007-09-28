@@ -214,10 +214,11 @@ public class HgCommand {
      * @param File repository of the mercurial repository's root directory
      * @param Boolean force an Update and overwrite any modified files in the  working directory
      * @param String revision to be updated to
+     * @param Boolean throw exception on error
      * @return hg update output
      * @throws org.netbeans.modules.mercurial.HgException
      */
-    public static List<String> doUpdateAll(File repository, boolean bForce, String revision) throws HgException {
+    public static List<String> doUpdateAll(File repository, boolean bForce, String revision, boolean bThrowException) throws HgException {
         if (repository == null ) return null;
         List<String> command = new ArrayList<String>();
 
@@ -231,17 +232,22 @@ public class HgCommand {
         }
 
         List<String> list = exec(command);
-        if (!list.isEmpty()) {
-            if  (isErrorUpdateSpansBranches(list.get(0))) {
-                throw new HgException(org.openide.util.NbBundle.getMessage(HgCommand.class, "MSG_WARN_UPDATE_MERGE_TEXT"));
+        if (bThrowException) {
+            if (!list.isEmpty()) {
+                if  (isErrorUpdateSpansBranches(list.get(0))) {
+                    throw new HgException(org.openide.util.NbBundle.getMessage(HgCommand.class, "MSG_WARN_UPDATE_MERGE_TEXT"));
+                } else if (isErrorOutStandingUncommittedMerges(list.get(0))) {
+                    throw new HgException(org.openide.util.NbBundle.getMessage(HgCommand.class, "MSG_WARN_UPDATE_COMMIT_TEXT"));
+                }
             }
-            else if (isErrorOutStandingUncommittedMerges(list.get(0))) {
-                throw new HgException(org.openide.util.NbBundle.getMessage(HgCommand.class, "MSG_WARN_UPDATE_COMMIT_TEXT"));
-             }
-        } 
+        }
         return list;
     }
     
+    public static List<String> doUpdateAll(File repository, boolean bForce, String revision) throws HgException {
+        return doUpdateAll(repository, bForce, revision, true);
+    }
+
     /**
      * Roll back the last transaction in this repository
      * Transactions are used to encapsulate the effects of all commands
