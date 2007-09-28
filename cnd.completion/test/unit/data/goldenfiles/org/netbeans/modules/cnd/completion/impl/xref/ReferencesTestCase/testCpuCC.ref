@@ -1,198 +1,198 @@
-'"cpu.h"', tokenID=user-include, offset=919 [22:10/919-22:17/926]
+'"cpu.h"', tokenID=user-include, offset=2153 [44:10/2153-44:17/2160]
 --OWNER:
-    INCLUDE "cpu.h" [22:1/910-22:17/926]
+    INCLUDE "cpu.h" [44:1/2144-44:17/2160]
 --RESOLVED TO:
     FILE ReferencesTestCase/cpu.h
 ==============================================================
-'Cpu', tokenID=identifier, offset=928 [24:1/928-24:4/931]
+'Cpu', tokenID=identifier, offset=2162 [46:1/2162-46:4/2165]
 --OWNER:
-    FUNCTION_DEFINITION Cpu(int,int,int)  [24:1/928-27:2/1106] ReferencesTestCase/cpu.cc
+    FUNCTION_DEFINITION Cpu(int,int,int)  [46:1/2162-49:2/2340] ReferencesTestCase/cpu.cc
 --RESOLVED TO:
-    CLASS Cpu [25:1/926-37:3/1323] ReferencesTestCase/cpu.h
+    CLASS Cpu [47:1/2160-59:3/2557] ReferencesTestCase/cpu.h
 ==============================================================
-'Cpu', tokenID=identifier, offset=933 [24:6/933-24:9/936]
+'Cpu', tokenID=identifier, offset=2167 [46:6/2167-46:9/2170]
 --OWNER:
-    FUNCTION_DEFINITION Cpu(int,int,int)  [24:1/928-27:2/1106] ReferencesTestCase/cpu.cc
+    FUNCTION_DEFINITION Cpu(int,int,int)  [46:1/2162-49:2/2340] ReferencesTestCase/cpu.cc
 --RESOLVED TO:
-    FUNCTION Cpu(int,int,int)  [30:9/1090-30:75/1156] ReferencesTestCase/cpu.h
+    FUNCTION Cpu(int,int,int)  [52:9/2324-52:75/2390] ReferencesTestCase/cpu.h
 ==============================================================
-'type', tokenID=identifier, offset=941 [24:14/941-24:18/945]
+'type', tokenID=identifier, offset=2175 [46:14/2175-46:18/2179]
 --OWNER:
-    VARIABLE type [24:10/937-24:18/945] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [24:10/937-24:13/940]  INIT: null  SCOPE: Cpu 
+    VARIABLE type [46:10/2171-46:18/2179] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [46:10/2171-46:13/2174]  INIT: null  SCOPE: Cpu 
 --RESOLVED TO:
-    VARIABLE type [24:10/937-24:18/945] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [24:10/937-24:13/940]  INIT: null  SCOPE: Cpu 
+    VARIABLE type [46:10/2171-46:18/2179] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [46:10/2171-46:13/2174]  INIT: null  SCOPE: Cpu 
 ==============================================================
-'architecture', tokenID=identifier, offset=965 [24:38/965-24:50/977]
+'architecture', tokenID=identifier, offset=2199 [46:38/2199-46:50/2211]
 --OWNER:
-    VARIABLE architecture [24:34/961-24:50/977] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [24:34/961-24:37/964]  INIT: null  SCOPE: Cpu 
+    VARIABLE architecture [46:34/2195-46:50/2211] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [46:34/2195-46:37/2198]  INIT: null  SCOPE: Cpu 
 --RESOLVED TO:
-    VARIABLE architecture [24:34/961-24:50/977] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [24:34/961-24:37/964]  INIT: null  SCOPE: Cpu 
+    VARIABLE architecture [46:34/2195-46:50/2211] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [46:34/2195-46:37/2198]  INIT: null  SCOPE: Cpu 
 ==============================================================
-'units', tokenID=identifier, offset=998 [24:71/998-24:76/1003]
+'units', tokenID=identifier, offset=2232 [46:71/2232-46:76/2237]
 --OWNER:
-    VARIABLE units [24:67/994-24:76/1003] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [24:67/994-24:70/997]  INIT: null  SCOPE: Cpu 
+    VARIABLE units [46:67/2228-46:76/2237] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [46:67/2228-46:70/2231]  INIT: null  SCOPE: Cpu 
 --RESOLVED TO:
-    VARIABLE units [24:67/994-24:76/1003] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [24:67/994-24:70/997]  INIT: null  SCOPE: Cpu 
+    VARIABLE units [46:67/2228-46:76/2237] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [46:67/2228-46:70/2231]  INIT: null  SCOPE: Cpu 
 ==============================================================
-'Module', tokenID=identifier, offset=1019 [25:5/1019-25:11/1025]
+'Module', tokenID=identifier, offset=2253 [47:5/2253-47:11/2259]
 --OWNER:
-    FUNCTION_DEFINITION Cpu(int,int,int)  [24:1/928-27:2/1106] ReferencesTestCase/cpu.cc
+    FUNCTION_DEFINITION Cpu(int,int,int)  [46:1/2162-49:2/2340] ReferencesTestCase/cpu.cc
 --RESOLVED TO:
-    FUNCTION Module(const char*,const char*,int,int,int)  [32:5/1012-32:92/1099] ReferencesTestCase/module.h
+    FUNCTION Module(const char*,const char*,int,int,int)  [54:5/2246-54:92/2333] ReferencesTestCase/module.h
 ==============================================================
-'type', tokenID=identifier, offset=1044 [25:30/1044-25:34/1048]
+'type', tokenID=identifier, offset=2278 [47:30/2278-47:34/2282]
 --OWNER:
-    FUNCTION_DEFINITION Cpu(int,int,int)  [24:1/928-27:2/1106] ReferencesTestCase/cpu.cc
+    FUNCTION_DEFINITION Cpu(int,int,int)  [46:1/2162-49:2/2340] ReferencesTestCase/cpu.cc
 --RESOLVED TO:
-    VARIABLE type [24:10/937-24:18/945] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [24:10/937-24:13/940]  INIT: null  SCOPE: Cpu 
+    VARIABLE type [46:10/2171-46:18/2179] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [46:10/2171-46:13/2174]  INIT: null  SCOPE: Cpu 
 ==============================================================
-'architecture', tokenID=identifier, offset=1050 [25:36/1050-25:48/1062]
+'architecture', tokenID=identifier, offset=2284 [47:36/2284-47:48/2296]
 --OWNER:
-    FUNCTION_DEFINITION Cpu(int,int,int)  [24:1/928-27:2/1106] ReferencesTestCase/cpu.cc
+    FUNCTION_DEFINITION Cpu(int,int,int)  [46:1/2162-49:2/2340] ReferencesTestCase/cpu.cc
 --RESOLVED TO:
-    VARIABLE architecture [24:34/961-24:50/977] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [24:34/961-24:37/964]  INIT: null  SCOPE: Cpu 
+    VARIABLE architecture [46:34/2195-46:50/2211] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [46:34/2195-46:37/2198]  INIT: null  SCOPE: Cpu 
 ==============================================================
-'units', tokenID=identifier, offset=1064 [25:50/1064-25:55/1069]
+'units', tokenID=identifier, offset=2298 [47:50/2298-47:55/2303]
 --OWNER:
-    FUNCTION_DEFINITION Cpu(int,int,int)  [24:1/928-27:2/1106] ReferencesTestCase/cpu.cc
+    FUNCTION_DEFINITION Cpu(int,int,int)  [46:1/2162-49:2/2340] ReferencesTestCase/cpu.cc
 --RESOLVED TO:
-    VARIABLE units [24:67/994-24:76/1003] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [24:67/994-24:70/997]  INIT: null  SCOPE: Cpu 
+    VARIABLE units [46:67/2228-46:76/2237] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [46:67/2228-46:70/2231]  INIT: null  SCOPE: Cpu 
 ==============================================================
-'ComputeSupportMetric', tokenID=identifier, offset=1081 [26:9/1081-26:29/1101]
+'ComputeSupportMetric', tokenID=identifier, offset=2315 [48:9/2315-48:29/2335]
 --OWNER:
     STMT Expression text='ComputeSupportMetric()'
 --RESOLVED TO:
-    FUNCTION ComputeSupportMetric()  [36:9/1292-36:37/1320] ReferencesTestCase/cpu.h
+    FUNCTION ComputeSupportMetric()  [58:9/2526-58:37/2554] ReferencesTestCase/cpu.h
 ==============================================================
-'Cpu', tokenID=identifier, offset=1283 [35:6/1283-35:9/1286]
+'Cpu', tokenID=identifier, offset=2517 [57:6/2517-57:9/2520]
 --OWNER:
-    FUNCTION_DEFINITION ComputeSupportMetric()  [35:1/1278-49:2/1547] ReferencesTestCase/cpu.cc
+    FUNCTION_DEFINITION ComputeSupportMetric()  [57:1/2512-71:2/2781] ReferencesTestCase/cpu.cc
 --RESOLVED TO:
-    CLASS Cpu [25:1/926-37:3/1323] ReferencesTestCase/cpu.h
+    CLASS Cpu [47:1/2160-59:3/2557] ReferencesTestCase/cpu.h
 ==============================================================
-'ComputeSupportMetric', tokenID=identifier, offset=1288 [35:11/1288-35:31/1308]
+'ComputeSupportMetric', tokenID=identifier, offset=2522 [57:11/2522-57:31/2542]
 --OWNER:
-    FUNCTION_DEFINITION ComputeSupportMetric()  [35:1/1278-49:2/1547] ReferencesTestCase/cpu.cc
+    FUNCTION_DEFINITION ComputeSupportMetric()  [57:1/2512-71:2/2781] ReferencesTestCase/cpu.cc
 --RESOLVED TO:
-    FUNCTION ComputeSupportMetric()  [36:9/1292-36:37/1320] ReferencesTestCase/cpu.h
+    FUNCTION ComputeSupportMetric()  [58:9/2526-58:37/2554] ReferencesTestCase/cpu.h
 ==============================================================
-'metric', tokenID=identifier, offset=1321 [36:9/1321-36:15/1327]
+'metric', tokenID=identifier, offset=2555 [58:9/2555-58:15/2561]
 --OWNER:
-    VARIABLE metric [36:5/1317-36:35/1347] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [36:5/1317-36:8/1320]  INIT: text='100'  SCOPE: Stmt  [35:34/1311-49:2/1547]
+    VARIABLE metric [58:5/2551-58:35/2581] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [58:5/2551-58:8/2554]  INIT: text='100'  SCOPE: Stmt  [57:34/2545-71:2/2781]
 --RESOLVED TO:
-    VARIABLE metric [36:5/1317-36:35/1347] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [36:5/1317-36:8/1320]  INIT: text='100'  SCOPE: Stmt  [35:34/1311-49:2/1547]
+    VARIABLE metric [58:5/2551-58:35/2581] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [58:5/2551-58:8/2554]  INIT: text='100'  SCOPE: Stmt  [57:34/2545-71:2/2781]
 ==============================================================
-'GetUnits', tokenID=identifier, offset=1336 [36:24/1336-36:32/1344]
+'GetUnits', tokenID=identifier, offset=2570 [58:24/2570-58:32/2578]
 --OWNER:
-    VARIABLE metric [36:5/1317-36:35/1347] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [36:5/1317-36:8/1320]  INIT: text='100'  SCOPE: Stmt  [35:34/1311-49:2/1547]
+    VARIABLE metric [58:5/2551-58:35/2581] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [58:5/2551-58:8/2554]  INIT: text='100'  SCOPE: Stmt  [57:34/2545-71:2/2781]
 --RESOLVED TO:
-    FUNCTION GetUnits() const  [53:5/1741-53:26/1762] ReferencesTestCase/module.h
+    FUNCTION GetUnits() const  [75:5/2975-75:26/2996] ReferencesTestCase/module.h
 ==============================================================
-'GetTypeID', tokenID=identifier, offset=1361 [38:13/1361-38:22/1370]
+'GetTypeID', tokenID=identifier, offset=2595 [60:13/2595-60:22/2604]
 --OWNER:
-     [38:13/1361-38:24/1372] ReferencesTestCase/cpu.cc
+     [60:13/2595-60:24/2606] ReferencesTestCase/cpu.cc
 --RESOLVED TO:
-    FUNCTION GetTypeID() const  [45:5/1525-45:27/1547] ReferencesTestCase/module.h
+    FUNCTION GetTypeID() const  [67:5/2759-67:27/2781] ReferencesTestCase/module.h
 ==============================================================
-'MEDIUM', tokenID=identifier, offset=1389 [39:14/1389-39:20/1395]
+'MEDIUM', tokenID=identifier, offset=2623 [61:14/2623-61:20/2629]
 --OWNER:
     STMT Case text='MEDIUM'
 --RESOLVED TO:
-    ENUMERATOR Cpu::CpuType::MEDIUM [27:24/989-27:30/995] ReferencesTestCase/cpu.h
+    ENUMERATOR Cpu::CpuType::MEDIUM [49:24/2223-49:30/2229] ReferencesTestCase/cpu.h
 ==============================================================
-'metric', tokenID=identifier, offset=1409 [40:13/1409-40:19/1415]
+'metric', tokenID=identifier, offset=2643 [62:13/2643-62:19/2649]
 --OWNER:
     STMT Expression text='metric += 100'
 --RESOLVED TO:
-    VARIABLE metric [36:5/1317-36:35/1347] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [36:5/1317-36:8/1320]  INIT: text='100'  SCOPE: Stmt  [35:34/1311-49:2/1547]
+    VARIABLE metric [58:5/2551-58:35/2581] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [58:5/2551-58:8/2554]  INIT: text='100'  SCOPE: Stmt  [57:34/2545-71:2/2781]
 ==============================================================
-'HIGH', tokenID=identifier, offset=1457 [43:14/1457-43:18/1461]
+'HIGH', tokenID=identifier, offset=2691 [65:14/2691-65:18/2695]
 --OWNER:
     STMT Case text='HIGH'
 --RESOLVED TO:
-    ENUMERATOR Cpu::CpuType::HIGH [27:33/998-27:37/1002] ReferencesTestCase/cpu.h
+    ENUMERATOR Cpu::CpuType::HIGH [49:33/2232-49:37/2236] ReferencesTestCase/cpu.h
 ==============================================================
-'metric', tokenID=identifier, offset=1475 [44:13/1475-44:19/1481]
+'metric', tokenID=identifier, offset=2709 [66:13/2709-66:19/2715]
 --OWNER:
     STMT Expression text='metric += 400'
 --RESOLVED TO:
-    VARIABLE metric [36:5/1317-36:35/1347] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [36:5/1317-36:8/1320]  INIT: text='100'  SCOPE: Stmt  [35:34/1311-49:2/1547]
+    VARIABLE metric [58:5/2551-58:35/2581] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [58:5/2551-58:8/2554]  INIT: text='100'  SCOPE: Stmt  [57:34/2545-71:2/2781]
 ==============================================================
-'SetSupportMetric', tokenID=identifier, offset=1520 [48:5/1520-48:21/1536]
+'SetSupportMetric', tokenID=identifier, offset=2754 [70:5/2754-70:21/2770]
 --OWNER:
     STMT Expression text='SetSupportMetric(metric)'
 --RESOLVED TO:
-    FUNCTION SetSupportMetric(int)  [55:5/1768-55:34/1797] ReferencesTestCase/module.h
+    FUNCTION SetSupportMetric(int)  [77:5/3002-77:34/3031] ReferencesTestCase/module.h
 ==============================================================
-'metric', tokenID=identifier, offset=1537 [48:22/1537-48:28/1543]
+'metric', tokenID=identifier, offset=2771 [70:22/2771-70:28/2777]
 --OWNER:
     STMT Expression text='SetSupportMetric(metric)'
 --RESOLVED TO:
-    VARIABLE metric [36:5/1317-36:35/1347] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [36:5/1317-36:8/1320]  INIT: text='100'  SCOPE: Stmt  [35:34/1311-49:2/1547]
+    VARIABLE metric [58:5/2551-58:35/2581] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [58:5/2551-58:8/2554]  INIT: text='100'  SCOPE: Stmt  [57:34/2545-71:2/2781]
 ==============================================================
-'Cpu', tokenID=identifier, offset=1561 [51:13/1561-51:16/1564]
+'Cpu', tokenID=identifier, offset=2795 [73:13/2795-73:16/2798]
 --OWNER:
-    FUNCTION_DEFINITION GetType() const  [51:1/1549-62:2/1785] ReferencesTestCase/cpu.cc
+    FUNCTION_DEFINITION GetType() const  [73:1/2783-84:2/3019] ReferencesTestCase/cpu.cc
 --RESOLVED TO:
-    CLASS Cpu [25:1/926-37:3/1323] ReferencesTestCase/cpu.h
+    CLASS Cpu [47:1/2160-59:3/2557] ReferencesTestCase/cpu.h
 ==============================================================
-'GetType', tokenID=identifier, offset=1566 [51:18/1566-51:25/1573]
+'GetType', tokenID=identifier, offset=2800 [73:18/2800-73:25/2807]
 --OWNER:
-    FUNCTION_DEFINITION GetType() const  [51:1/1549-62:2/1785] ReferencesTestCase/cpu.cc
+    FUNCTION_DEFINITION GetType() const  [73:1/2783-84:2/3019] ReferencesTestCase/cpu.cc
 --RESOLVED TO:
-    FUNCTION GetType() const  [32:9/1174-32:45/1210] ReferencesTestCase/cpu.h
+    FUNCTION GetType() const  [54:9/2408-54:45/2444] ReferencesTestCase/cpu.h
 ==============================================================
-'GetTypeID', tokenID=identifier, offset=1596 [52:13/1596-52:22/1605]
+'GetTypeID', tokenID=identifier, offset=2830 [74:13/2830-74:22/2839]
 --OWNER:
-     [52:13/1596-52:24/1607] ReferencesTestCase/cpu.cc
+     [74:13/2830-74:24/2841] ReferencesTestCase/cpu.cc
 --RESOLVED TO:
-    FUNCTION GetTypeID() const  [45:5/1525-45:27/1547] ReferencesTestCase/module.h
+    FUNCTION GetTypeID() const  [67:5/2759-67:27/2781] ReferencesTestCase/module.h
 ==============================================================
-'MEDIUM', tokenID=identifier, offset=1624 [53:14/1624-53:20/1630]
+'MEDIUM', tokenID=identifier, offset=2858 [75:14/2858-75:20/2864]
 --OWNER:
     STMT Case text='MEDIUM'
 --RESOLVED TO:
-    ENUMERATOR Cpu::CpuType::MEDIUM [27:24/989-27:30/995] ReferencesTestCase/cpu.h
+    ENUMERATOR Cpu::CpuType::MEDIUM [49:24/2223-49:30/2229] ReferencesTestCase/cpu.h
 ==============================================================
-'HIGH', tokenID=identifier, offset=1685 [56:14/1685-56:18/1689]
+'HIGH', tokenID=identifier, offset=2919 [78:14/2919-78:18/2923]
 --OWNER:
     STMT Case text='HIGH'
 --RESOLVED TO:
-    ENUMERATOR Cpu::CpuType::HIGH [27:33/998-27:37/1002] ReferencesTestCase/cpu.h
+    ENUMERATOR Cpu::CpuType::HIGH [49:33/2232-49:37/2236] ReferencesTestCase/cpu.h
 ==============================================================
-'Cpu', tokenID=identifier, offset=1799 [64:13/1799-64:16/1802]
+'Cpu', tokenID=identifier, offset=3033 [86:13/3033-86:16/3036]
 --OWNER:
-    FUNCTION_DEFINITION GetCategory() const  [64:1/1787-77:2/2090] ReferencesTestCase/cpu.cc
+    FUNCTION_DEFINITION GetCategory() const  [86:1/3021-99:2/3324] ReferencesTestCase/cpu.cc
 --RESOLVED TO:
-    CLASS Cpu [25:1/926-37:3/1323] ReferencesTestCase/cpu.h
+    CLASS Cpu [47:1/2160-59:3/2557] ReferencesTestCase/cpu.h
 ==============================================================
-'GetCategory', tokenID=identifier, offset=1804 [64:18/1804-64:29/1815]
+'GetCategory', tokenID=identifier, offset=3038 [86:18/3038-86:29/3049]
 --OWNER:
-    FUNCTION_DEFINITION GetCategory() const  [64:1/1787-77:2/2090] ReferencesTestCase/cpu.cc
+    FUNCTION_DEFINITION GetCategory() const  [86:1/3021-99:2/3324] ReferencesTestCase/cpu.cc
 --RESOLVED TO:
-    FUNCTION GetCategory() const  [33:9/1219-33:49/1259] ReferencesTestCase/cpu.h
+    FUNCTION GetCategory() const  [55:9/2453-55:49/2493] ReferencesTestCase/cpu.h
 ==============================================================
-'GetCategoryID', tokenID=identifier, offset=1838 [65:13/1838-65:26/1851]
+'GetCategoryID', tokenID=identifier, offset=3072 [87:13/3072-87:26/3085]
 --OWNER:
-     [65:13/1838-65:28/1853] ReferencesTestCase/cpu.cc
+     [87:13/3072-87:28/3087] ReferencesTestCase/cpu.cc
 --RESOLVED TO:
-    FUNCTION GetCategoryID() const  [49:5/1634-49:31/1660] ReferencesTestCase/module.h
+    FUNCTION GetCategoryID() const  [71:5/2868-71:31/2894] ReferencesTestCase/module.h
 ==============================================================
-'OPTERON', tokenID=identifier, offset=1870 [66:14/1870-66:21/1877]
+'OPTERON', tokenID=identifier, offset=3104 [88:14/3104-88:21/3111]
 --OWNER:
     STMT Case text='OPTERON'
 --RESOLVED TO:
-    ENUMERATOR Cpu::CpuArch::OPTERON [28:24/1029-28:31/1036] ReferencesTestCase/cpu.h
+    ENUMERATOR Cpu::CpuArch::OPTERON [50:24/2263-50:31/2270] ReferencesTestCase/cpu.h
 ==============================================================
-'INTEL', tokenID=identifier, offset=1937 [69:14/1937-69:19/1942]
+'INTEL', tokenID=identifier, offset=3171 [91:14/3171-91:19/3176]
 --OWNER:
     STMT Case text='INTEL'
 --RESOLVED TO:
-    ENUMERATOR Cpu::CpuArch::INTEL [28:33/1038-28:38/1043] ReferencesTestCase/cpu.h
+    ENUMERATOR Cpu::CpuArch::INTEL [50:33/2272-50:38/2277] ReferencesTestCase/cpu.h
 ==============================================================
-'SPARC', tokenID=identifier, offset=1996 [72:14/1996-72:19/2001]
+'SPARC', tokenID=identifier, offset=3230 [94:14/3230-94:19/3235]
 --OWNER:
     STMT Case text='SPARC'
 --RESOLVED TO:
-    ENUMERATOR Cpu::CpuArch::SPARC [28:40/1045-28:45/1050] ReferencesTestCase/cpu.h
+    ENUMERATOR Cpu::CpuArch::SPARC [50:40/2279-50:45/2284] ReferencesTestCase/cpu.h
 ==============================================================

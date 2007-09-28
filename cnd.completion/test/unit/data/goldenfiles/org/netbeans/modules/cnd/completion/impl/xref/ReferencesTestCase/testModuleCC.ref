@@ -1,828 +1,828 @@
-'"module.h"', tokenID=user-include, offset=961 [23:10/961-23:20/971]
+'"module.h"', tokenID=user-include, offset=2195 [45:10/2195-45:20/2205]
 --OWNER:
-    INCLUDE "module.h" [23:1/952-23:20/971]
+    INCLUDE "module.h" [45:1/2186-45:20/2205]
 --RESOLVED TO:
     FILE ReferencesTestCase/module.h
 ==============================================================
-'Module', tokenID=identifier, offset=973 [25:1/973-25:7/979]
+'Module', tokenID=identifier, offset=2207 [47:1/2207-47:7/2213]
 --OWNER:
-    FUNCTION_DEFINITION Module()  [25:1/973-28:2/1054] ReferencesTestCase/module.cc
+    FUNCTION_DEFINITION Module()  [47:1/2207-50:2/2288] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    CLASS Module [29:1/971-70:3/2187] ReferencesTestCase/module.h
+    CLASS Module [51:1/2205-92:3/3421] ReferencesTestCase/module.h
 ==============================================================
-'Module', tokenID=identifier, offset=981 [25:9/981-25:15/987]
+'Module', tokenID=identifier, offset=2215 [47:9/2215-47:15/2221]
 --OWNER:
-    FUNCTION_DEFINITION Module()  [25:1/973-28:2/1054] ReferencesTestCase/module.cc
+    FUNCTION_DEFINITION Module()  [47:1/2207-50:2/2288] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    FUNCTION Module()  [31:5/998-31:14/1007] ReferencesTestCase/module.h
+    FUNCTION Module()  [53:5/2232-53:14/2241] ReferencesTestCase/module.h
 ==============================================================
-'SetDescription', tokenID=identifier, offset=996 [26:5/996-26:19/1010]
+'SetDescription', tokenID=identifier, offset=2230 [48:5/2230-48:19/2244]
 --OWNER:
     STMT Expression text='SetDescription("undefined")'
 --RESOLVED TO:
-    FUNCTION SetDescription(const char*)  [38:5/1335-38:50/1380] ReferencesTestCase/module.h
+    FUNCTION SetDescription(const char*)  [60:5/2569-60:50/2614] ReferencesTestCase/module.h
 ==============================================================
-'SetVendor', tokenID=identifier, offset=1029 [27:5/1029-27:14/1038]
+'SetVendor', tokenID=identifier, offset=2263 [49:5/2263-49:14/2272]
 --OWNER:
     STMT Expression text='SetVendor("undefined")'
 --RESOLVED TO:
-    FUNCTION SetVendor(const char*)  [41:5/1426-41:35/1456] ReferencesTestCase/module.h
+    FUNCTION SetVendor(const char*)  [63:5/2660-63:35/2690] ReferencesTestCase/module.h
 ==============================================================
-'Module', tokenID=identifier, offset=1056 [30:1/1056-30:7/1062]
+'Module', tokenID=identifier, offset=2290 [52:1/2290-52:7/2296]
 --OWNER:
-    FUNCTION_DEFINITION Module(const char*,const char*,int,int,int)  [30:1/1056-36:2/1287] ReferencesTestCase/module.cc
+    FUNCTION_DEFINITION Module(const char*,const char*,int,int,int)  [52:1/2290-58:2/2521] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    CLASS Module [29:1/971-70:3/2187] ReferencesTestCase/module.h
+    CLASS Module [51:1/2205-92:3/3421] ReferencesTestCase/module.h
 ==============================================================
-'Module', tokenID=identifier, offset=1064 [30:9/1064-30:15/1070]
+'Module', tokenID=identifier, offset=2298 [52:9/2298-52:15/2304]
 --OWNER:
-    FUNCTION_DEFINITION Module(const char*,const char*,int,int,int)  [30:1/1056-36:2/1287] ReferencesTestCase/module.cc
+    FUNCTION_DEFINITION Module(const char*,const char*,int,int,int)  [52:1/2290-58:2/2521] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    FUNCTION Module(const char*,const char*,int,int,int)  [32:5/1012-32:92/1099] ReferencesTestCase/module.h
+    FUNCTION Module(const char*,const char*,int,int,int)  [54:5/2246-54:92/2333] ReferencesTestCase/module.h
 ==============================================================
-'_description', tokenID=identifier, offset=1083 [30:28/1083-30:40/1095]
+'_description', tokenID=identifier, offset=2317 [52:28/2317-52:40/2329]
 --OWNER:
-    VARIABLE _description [30:16/1071-30:40/1095] ReferencesTestCase/module.cc  TYPE: const *char TEXT=const char*  [30:16/1071-30:27/1082]  INIT: null  SCOPE: Module 
+    VARIABLE _description [52:16/2305-52:40/2329] ReferencesTestCase/module.cc  TYPE: const *char TEXT=const char*  [52:16/2305-52:27/2316]  INIT: null  SCOPE: Module 
 --RESOLVED TO:
-    VARIABLE _description [30:16/1071-30:40/1095] ReferencesTestCase/module.cc  TYPE: const *char TEXT=const char*  [30:16/1071-30:27/1082]  INIT: null  SCOPE: Module 
+    VARIABLE _description [52:16/2305-52:40/2329] ReferencesTestCase/module.cc  TYPE: const *char TEXT=const char*  [52:16/2305-52:27/2316]  INIT: null  SCOPE: Module 
 ==============================================================
-'_vendor', tokenID=identifier, offset=1109 [30:54/1109-30:61/1116]
+'_vendor', tokenID=identifier, offset=2343 [52:54/2343-52:61/2350]
 --OWNER:
-    VARIABLE _vendor [30:42/1097-30:61/1116] ReferencesTestCase/module.cc  TYPE: const *char TEXT=const char*  [30:42/1097-30:53/1108]  INIT: null  SCOPE: Module 
+    VARIABLE _vendor [52:42/2331-52:61/2350] ReferencesTestCase/module.cc  TYPE: const *char TEXT=const char*  [52:42/2331-52:53/2342]  INIT: null  SCOPE: Module 
 --RESOLVED TO:
-    VARIABLE _vendor [30:42/1097-30:61/1116] ReferencesTestCase/module.cc  TYPE: const *char TEXT=const char*  [30:42/1097-30:53/1108]  INIT: null  SCOPE: Module 
+    VARIABLE _vendor [52:42/2331-52:61/2350] ReferencesTestCase/module.cc  TYPE: const *char TEXT=const char*  [52:42/2331-52:53/2342]  INIT: null  SCOPE: Module 
 ==============================================================
-'_type', tokenID=identifier, offset=1122 [30:67/1122-30:72/1127]
+'_type', tokenID=identifier, offset=2356 [52:67/2356-52:72/2361]
 --OWNER:
-    VARIABLE _type [30:63/1118-30:72/1127] ReferencesTestCase/module.cc  TYPE: int TEXT=int  [30:63/1118-30:66/1121]  INIT: null  SCOPE: Module 
+    VARIABLE _type [52:63/2352-52:72/2361] ReferencesTestCase/module.cc  TYPE: int TEXT=int  [52:63/2352-52:66/2355]  INIT: null  SCOPE: Module 
 --RESOLVED TO:
-    VARIABLE _type [30:63/1118-30:72/1127] ReferencesTestCase/module.cc  TYPE: int TEXT=int  [30:63/1118-30:66/1121]  INIT: null  SCOPE: Module 
+    VARIABLE _type [52:63/2352-52:72/2361] ReferencesTestCase/module.cc  TYPE: int TEXT=int  [52:63/2352-52:66/2355]  INIT: null  SCOPE: Module 
 ==============================================================
-'_category', tokenID=identifier, offset=1133 [30:78/1133-30:87/1142]
+'_category', tokenID=identifier, offset=2367 [52:78/2367-52:87/2376]
 --OWNER:
-    VARIABLE _category [30:74/1129-30:87/1142] ReferencesTestCase/module.cc  TYPE: int TEXT=int  [30:74/1129-30:77/1132]  INIT: null  SCOPE: Module 
+    VARIABLE _category [52:74/2363-52:87/2376] ReferencesTestCase/module.cc  TYPE: int TEXT=int  [52:74/2363-52:77/2366]  INIT: null  SCOPE: Module 
 --RESOLVED TO:
-    VARIABLE _category [30:74/1129-30:87/1142] ReferencesTestCase/module.cc  TYPE: int TEXT=int  [30:74/1129-30:77/1132]  INIT: null  SCOPE: Module 
+    VARIABLE _category [52:74/2363-52:87/2376] ReferencesTestCase/module.cc  TYPE: int TEXT=int  [52:74/2363-52:77/2366]  INIT: null  SCOPE: Module 
 ==============================================================
-'_units', tokenID=identifier, offset=1148 [30:93/1148-30:99/1154]
+'_units', tokenID=identifier, offset=2382 [52:93/2382-52:99/2388]
 --OWNER:
-    VARIABLE _units [30:89/1144-30:99/1154] ReferencesTestCase/module.cc  TYPE: int TEXT=int  [30:89/1144-30:92/1147]  INIT: null  SCOPE: Module 
+    VARIABLE _units [52:89/2378-52:99/2388] ReferencesTestCase/module.cc  TYPE: int TEXT=int  [52:89/2378-52:92/2381]  INIT: null  SCOPE: Module 
 --RESOLVED TO:
-    VARIABLE _units [30:89/1144-30:99/1154] ReferencesTestCase/module.cc  TYPE: int TEXT=int  [30:89/1144-30:92/1147]  INIT: null  SCOPE: Module 
+    VARIABLE _units [52:89/2378-52:99/2388] ReferencesTestCase/module.cc  TYPE: int TEXT=int  [52:89/2378-52:92/2381]  INIT: null  SCOPE: Module 
 ==============================================================
-'SetDescription', tokenID=identifier, offset=1162 [31:5/1162-31:19/1176]
---OWNER:
-    STMT Expression text='SetDescription(_description)'
---RESOLVED TO:
-    FUNCTION SetDescription(const char*)  [38:5/1335-38:50/1380] ReferencesTestCase/module.h
-==============================================================
-'_description', tokenID=identifier, offset=1177 [31:20/1177-31:32/1189]
+'SetDescription', tokenID=identifier, offset=2396 [53:5/2396-53:19/2410]
 --OWNER:
     STMT Expression text='SetDescription(_description)'
 --RESOLVED TO:
-    VARIABLE _description [30:16/1071-30:40/1095] ReferencesTestCase/module.cc  TYPE: const *char TEXT=const char*  [30:16/1071-30:27/1082]  INIT: null  SCOPE: Module 
+    FUNCTION SetDescription(const char*)  [60:5/2569-60:50/2614] ReferencesTestCase/module.h
 ==============================================================
-'SetVendor', tokenID=identifier, offset=1196 [32:5/1196-32:14/1205]
+'_description', tokenID=identifier, offset=2411 [53:20/2411-53:32/2423]
+--OWNER:
+    STMT Expression text='SetDescription(_description)'
+--RESOLVED TO:
+    VARIABLE _description [52:16/2305-52:40/2329] ReferencesTestCase/module.cc  TYPE: const *char TEXT=const char*  [52:16/2305-52:27/2316]  INIT: null  SCOPE: Module 
+==============================================================
+'SetVendor', tokenID=identifier, offset=2430 [54:5/2430-54:14/2439]
 --OWNER:
     STMT Expression text='SetVendor(_vendor)'
 --RESOLVED TO:
-    FUNCTION SetVendor(const char*)  [41:5/1426-41:35/1456] ReferencesTestCase/module.h
+    FUNCTION SetVendor(const char*)  [63:5/2660-63:35/2690] ReferencesTestCase/module.h
 ==============================================================
-'_vendor', tokenID=identifier, offset=1206 [32:15/1206-32:22/1213]
+'_vendor', tokenID=identifier, offset=2440 [54:15/2440-54:22/2447]
 --OWNER:
     STMT Expression text='SetVendor(_vendor)'
 --RESOLVED TO:
-    VARIABLE _vendor [30:42/1097-30:61/1116] ReferencesTestCase/module.cc  TYPE: const *char TEXT=const char*  [30:42/1097-30:53/1108]  INIT: null  SCOPE: Module 
+    VARIABLE _vendor [52:42/2331-52:61/2350] ReferencesTestCase/module.cc  TYPE: const *char TEXT=const char*  [52:42/2331-52:53/2342]  INIT: null  SCOPE: Module 
 ==============================================================
-'SetType', tokenID=identifier, offset=1220 [33:5/1220-33:12/1227]
+'SetType', tokenID=identifier, offset=2454 [55:5/2454-55:12/2461]
 --OWNER:
     STMT Expression text='SetType(_type)'
 --RESOLVED TO:
-    FUNCTION SetType(int)  [44:5/1497-44:28/1520] ReferencesTestCase/module.h
+    FUNCTION SetType(int)  [66:5/2731-66:28/2754] ReferencesTestCase/module.h
 ==============================================================
-'_type', tokenID=identifier, offset=1228 [33:13/1228-33:18/1233]
+'_type', tokenID=identifier, offset=2462 [55:13/2462-55:18/2467]
 --OWNER:
     STMT Expression text='SetType(_type)'
 --RESOLVED TO:
-    VARIABLE _type [30:63/1118-30:72/1127] ReferencesTestCase/module.cc  TYPE: int TEXT=int  [30:63/1118-30:66/1121]  INIT: null  SCOPE: Module 
+    VARIABLE _type [52:63/2352-52:72/2361] ReferencesTestCase/module.cc  TYPE: int TEXT=int  [52:63/2352-52:66/2355]  INIT: null  SCOPE: Module 
 ==============================================================
-'SetCategory', tokenID=identifier, offset=1240 [34:5/1240-34:16/1251]
+'SetCategory', tokenID=identifier, offset=2474 [56:5/2474-56:16/2485]
 --OWNER:
     STMT Expression text='SetCategory(_category)'
 --RESOLVED TO:
-    FUNCTION SetCategory(int)  [48:5/1598-48:36/1629] ReferencesTestCase/module.h
+    FUNCTION SetCategory(int)  [70:5/2832-70:36/2863] ReferencesTestCase/module.h
 ==============================================================
-'_category', tokenID=identifier, offset=1252 [34:17/1252-34:26/1261]
+'_category', tokenID=identifier, offset=2486 [56:17/2486-56:26/2495]
 --OWNER:
     STMT Expression text='SetCategory(_category)'
 --RESOLVED TO:
-    VARIABLE _category [30:74/1129-30:87/1142] ReferencesTestCase/module.cc  TYPE: int TEXT=int  [30:74/1129-30:77/1132]  INIT: null  SCOPE: Module 
+    VARIABLE _category [52:74/2363-52:87/2376] ReferencesTestCase/module.cc  TYPE: int TEXT=int  [52:74/2363-52:77/2366]  INIT: null  SCOPE: Module 
 ==============================================================
-'SetUnits', tokenID=identifier, offset=1268 [35:5/1268-35:13/1276]
+'SetUnits', tokenID=identifier, offset=2502 [57:5/2502-57:13/2510]
 --OWNER:
     STMT Expression text='SetUnits(_units)'
 --RESOLVED TO:
-    FUNCTION SetUnits(int)  [52:5/1715-52:26/1736] ReferencesTestCase/module.h
+    FUNCTION SetUnits(int)  [74:5/2949-74:26/2970] ReferencesTestCase/module.h
 ==============================================================
-'_units', tokenID=identifier, offset=1277 [35:14/1277-35:20/1283]
+'_units', tokenID=identifier, offset=2511 [57:14/2511-57:20/2517]
 --OWNER:
     STMT Expression text='SetUnits(_units)'
 --RESOLVED TO:
-    VARIABLE _units [30:89/1144-30:99/1154] ReferencesTestCase/module.cc  TYPE: int TEXT=int  [30:89/1144-30:92/1147]  INIT: null  SCOPE: Module 
+    VARIABLE _units [52:89/2378-52:99/2388] ReferencesTestCase/module.cc  TYPE: int TEXT=int  [52:89/2378-52:92/2381]  INIT: null  SCOPE: Module 
 ==============================================================
-'Module', tokenID=identifier, offset=1308 [39:1/1308-39:7/1314]
+'Module', tokenID=identifier, offset=2542 [61:1/2542-61:7/2548]
 --OWNER:
-    FUNCTION_DEFINITION Module(const Module&)  [39:1/1308-45:2/1513] ReferencesTestCase/module.cc
+    FUNCTION_DEFINITION Module(const Module&)  [61:1/2542-67:2/2747] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    CLASS Module [29:1/971-70:3/2187] ReferencesTestCase/module.h
+    CLASS Module [51:1/2205-92:3/3421] ReferencesTestCase/module.h
 ==============================================================
-'Module', tokenID=identifier, offset=1316 [39:9/1316-39:15/1322]
+'Module', tokenID=identifier, offset=2550 [61:9/2550-61:15/2556]
 --OWNER:
-    FUNCTION_DEFINITION Module(const Module&)  [39:1/1308-45:2/1513] ReferencesTestCase/module.cc
+    FUNCTION_DEFINITION Module(const Module&)  [61:1/2542-67:2/2747] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    FUNCTION Module(const Module&)  [35:5/1203-35:31/1229] ReferencesTestCase/module.h
+    FUNCTION Module(const Module&)  [57:5/2437-57:31/2463] ReferencesTestCase/module.h
 ==============================================================
-'Module', tokenID=identifier, offset=1329 [39:22/1329-39:28/1335]
+'Module', tokenID=identifier, offset=2563 [61:22/2563-61:28/2569]
 --OWNER:
-    TYPE const &Module TEXT=const Module&  [39:16/1323-39:29/1336] ReferencesTestCase/module.cc
+    TYPE const &Module TEXT=const Module&  [61:16/2557-61:29/2570] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    CLASS Module [29:1/971-70:3/2187] ReferencesTestCase/module.h
+    CLASS Module [51:1/2205-92:3/3421] ReferencesTestCase/module.h
 ==============================================================
-'obj', tokenID=identifier, offset=1337 [39:30/1337-39:33/1340]
+'obj', tokenID=identifier, offset=2571 [61:30/2571-61:33/2574]
 --OWNER:
-    VARIABLE obj [39:16/1323-39:33/1340] ReferencesTestCase/module.cc  TYPE: const &Module TEXT=const Module&  [39:16/1323-39:29/1336]  INIT: null  SCOPE: Module 
+    VARIABLE obj [61:16/2557-61:33/2574] ReferencesTestCase/module.cc  TYPE: const &Module TEXT=const Module&  [61:16/2557-61:29/2570]  INIT: null  SCOPE: Module 
 --RESOLVED TO:
-    VARIABLE obj [39:16/1323-39:33/1340] ReferencesTestCase/module.cc  TYPE: const &Module TEXT=const Module&  [39:16/1323-39:29/1336]  INIT: null  SCOPE: Module 
+    VARIABLE obj [61:16/2557-61:33/2574] ReferencesTestCase/module.cc  TYPE: const &Module TEXT=const Module&  [61:16/2557-61:29/2570]  INIT: null  SCOPE: Module 
 ==============================================================
-'SetDescription', tokenID=identifier, offset=1348 [40:5/1348-40:19/1362]
---OWNER:
-    STMT Expression text='SetDescription(obj.GetDescription())'
---RESOLVED TO:
-    FUNCTION SetDescription(const char*)  [38:5/1335-38:50/1380] ReferencesTestCase/module.h
-==============================================================
-'obj', tokenID=identifier, offset=1363 [40:20/1363-40:23/1366]
+'SetDescription', tokenID=identifier, offset=2582 [62:5/2582-62:19/2596]
 --OWNER:
     STMT Expression text='SetDescription(obj.GetDescription())'
 --RESOLVED TO:
-    VARIABLE obj [39:16/1323-39:33/1340] ReferencesTestCase/module.cc  TYPE: const &Module TEXT=const Module&  [39:16/1323-39:29/1336]  INIT: null  SCOPE: Module 
+    FUNCTION SetDescription(const char*)  [60:5/2569-60:50/2614] ReferencesTestCase/module.h
 ==============================================================
-'GetDescription', tokenID=identifier, offset=1367 [40:24/1367-40:38/1381]
+'obj', tokenID=identifier, offset=2597 [62:20/2597-62:23/2600]
 --OWNER:
     STMT Expression text='SetDescription(obj.GetDescription())'
 --RESOLVED TO:
-    FUNCTION GetDescription() const  [39:5/1385-39:40/1420] ReferencesTestCase/module.h
+    VARIABLE obj [61:16/2557-61:33/2574] ReferencesTestCase/module.cc  TYPE: const &Module TEXT=const Module&  [61:16/2557-61:29/2570]  INIT: null  SCOPE: Module 
 ==============================================================
-'SetVendor', tokenID=identifier, offset=1390 [41:5/1390-41:14/1399]
---OWNER:
-    STMT Expression text='SetVendor(obj.GetVendor())'
---RESOLVED TO:
-    FUNCTION SetVendor(const char*)  [41:5/1426-41:35/1456] ReferencesTestCase/module.h
-==============================================================
-'obj', tokenID=identifier, offset=1400 [41:15/1400-41:18/1403]
---OWNER:
-    STMT Expression text='SetVendor(obj.GetVendor())'
---RESOLVED TO:
-    VARIABLE obj [39:16/1323-39:33/1340] ReferencesTestCase/module.cc  TYPE: const &Module TEXT=const Module&  [39:16/1323-39:29/1336]  INIT: null  SCOPE: Module 
-==============================================================
-'GetVendor', tokenID=identifier, offset=1404 [41:19/1404-41:28/1413]
---OWNER:
-    STMT Expression text='SetVendor(obj.GetVendor())'
---RESOLVED TO:
-    FUNCTION GetVendor() const  [42:5/1461-42:35/1491] ReferencesTestCase/module.h
-==============================================================
-'SetType', tokenID=identifier, offset=1422 [42:5/1422-42:12/1429]
---OWNER:
-    STMT Expression text='SetType(obj.type)'
---RESOLVED TO:
-    FUNCTION SetType(int)  [44:5/1497-44:28/1520] ReferencesTestCase/module.h
-==============================================================
-'obj', tokenID=identifier, offset=1430 [42:13/1430-42:16/1433]
---OWNER:
-    STMT Expression text='SetType(obj.type)'
---RESOLVED TO:
-    VARIABLE obj [39:16/1323-39:33/1340] ReferencesTestCase/module.cc  TYPE: const &Module TEXT=const Module&  [39:16/1323-39:29/1336]  INIT: null  SCOPE: Module 
-==============================================================
-'type', tokenID=identifier, offset=1434 [42:17/1434-42:21/1438]
---OWNER:
-    STMT Expression text='SetType(obj.type)'
---RESOLVED TO:
-    VARIABLE type [64:5/2032-64:18/2045] ReferencesTestCase/module.h  TYPE: int TEXT=int  [64:5/2032-64:8/2035]  INIT: null  SCOPE: Module 
-==============================================================
-'SetUnits', tokenID=identifier, offset=1445 [43:5/1445-43:13/1453]
---OWNER:
-    STMT Expression text='SetUnits(obj.units)'
---RESOLVED TO:
-    FUNCTION SetUnits(int)  [52:5/1715-52:26/1736] ReferencesTestCase/module.h
-==============================================================
-'obj', tokenID=identifier, offset=1454 [43:14/1454-43:17/1457]
---OWNER:
-    STMT Expression text='SetUnits(obj.units)'
---RESOLVED TO:
-    VARIABLE obj [39:16/1323-39:33/1340] ReferencesTestCase/module.cc  TYPE: const &Module TEXT=const Module&  [39:16/1323-39:29/1336]  INIT: null  SCOPE: Module 
-==============================================================
-'units', tokenID=identifier, offset=1458 [43:18/1458-43:23/1463]
---OWNER:
-    STMT Expression text='SetUnits(obj.units)'
---RESOLVED TO:
-    VARIABLE units [66:5/2072-66:19/2086] ReferencesTestCase/module.h  TYPE: int TEXT=int  [66:5/2072-66:8/2075]  INIT: null  SCOPE: Module 
-==============================================================
-'SetSupportMetric', tokenID=identifier, offset=1470 [44:5/1470-44:21/1486]
---OWNER:
-    STMT Expression text='SetSupportMetric(obj.GetSupportMetric())'
---RESOLVED TO:
-    FUNCTION SetSupportMetric(int)  [55:5/1768-55:34/1797] ReferencesTestCase/module.h
-==============================================================
-'obj', tokenID=identifier, offset=1487 [44:22/1487-44:25/1490]
---OWNER:
-    STMT Expression text='SetSupportMetric(obj.GetSupportMetric())'
---RESOLVED TO:
-    VARIABLE obj [39:16/1323-39:33/1340] ReferencesTestCase/module.cc  TYPE: const &Module TEXT=const Module&  [39:16/1323-39:29/1336]  INIT: null  SCOPE: Module 
-==============================================================
-'GetSupportMetric', tokenID=identifier, offset=1491 [44:26/1491-44:42/1507]
---OWNER:
-    STMT Expression text='SetSupportMetric(obj.GetSupportMetric())'
---RESOLVED TO:
-    FUNCTION GetSupportMetric() const  [56:5/1802-56:34/1831] ReferencesTestCase/module.h
-==============================================================
-'Module', tokenID=identifier, offset=1515 [47:1/1515-47:7/1521]
---OWNER:
-    TYPE &Module TEXT=Module&  [47:1/1515-47:8/1522] ReferencesTestCase/module.cc
---RESOLVED TO:
-    CLASS Module [29:1/971-70:3/2187] ReferencesTestCase/module.h
-==============================================================
-'Module', tokenID=identifier, offset=1523 [47:9/1523-47:15/1529]
---OWNER:
-    FUNCTION_DEFINITION operator =(const Module&)  [47:1/1515-55:2/1755] ReferencesTestCase/module.cc
---RESOLVED TO:
-    CLASS Module [29:1/971-70:3/2187] ReferencesTestCase/module.h
-==============================================================
-'Module', tokenID=identifier, offset=1548 [47:34/1548-47:40/1554]
---OWNER:
-    TYPE const &Module TEXT=const Module&  [47:28/1542-47:41/1555] ReferencesTestCase/module.cc
---RESOLVED TO:
-    CLASS Module [29:1/971-70:3/2187] ReferencesTestCase/module.h
-==============================================================
-'obj', tokenID=identifier, offset=1556 [47:42/1556-47:45/1559]
---OWNER:
-    VARIABLE obj [47:28/1542-47:45/1559] ReferencesTestCase/module.cc  TYPE: const &Module TEXT=const Module&  [47:28/1542-47:41/1555]  INIT: null  SCOPE: operator = 
---RESOLVED TO:
-    VARIABLE obj [47:28/1542-47:45/1559] ReferencesTestCase/module.cc  TYPE: const &Module TEXT=const Module&  [47:28/1542-47:41/1555]  INIT: null  SCOPE: operator = 
-==============================================================
-'SetDescription', tokenID=identifier, offset=1567 [48:5/1567-48:19/1581]
+'GetDescription', tokenID=identifier, offset=2601 [62:24/2601-62:38/2615]
 --OWNER:
     STMT Expression text='SetDescription(obj.GetDescription())'
 --RESOLVED TO:
-    FUNCTION SetDescription(const char*)  [38:5/1335-38:50/1380] ReferencesTestCase/module.h
+    FUNCTION GetDescription() const  [61:5/2619-61:40/2654] ReferencesTestCase/module.h
 ==============================================================
-'obj', tokenID=identifier, offset=1582 [48:20/1582-48:23/1585]
+'SetVendor', tokenID=identifier, offset=2624 [63:5/2624-63:14/2633]
+--OWNER:
+    STMT Expression text='SetVendor(obj.GetVendor())'
+--RESOLVED TO:
+    FUNCTION SetVendor(const char*)  [63:5/2660-63:35/2690] ReferencesTestCase/module.h
+==============================================================
+'obj', tokenID=identifier, offset=2634 [63:15/2634-63:18/2637]
+--OWNER:
+    STMT Expression text='SetVendor(obj.GetVendor())'
+--RESOLVED TO:
+    VARIABLE obj [61:16/2557-61:33/2574] ReferencesTestCase/module.cc  TYPE: const &Module TEXT=const Module&  [61:16/2557-61:29/2570]  INIT: null  SCOPE: Module 
+==============================================================
+'GetVendor', tokenID=identifier, offset=2638 [63:19/2638-63:28/2647]
+--OWNER:
+    STMT Expression text='SetVendor(obj.GetVendor())'
+--RESOLVED TO:
+    FUNCTION GetVendor() const  [64:5/2695-64:35/2725] ReferencesTestCase/module.h
+==============================================================
+'SetType', tokenID=identifier, offset=2656 [64:5/2656-64:12/2663]
+--OWNER:
+    STMT Expression text='SetType(obj.type)'
+--RESOLVED TO:
+    FUNCTION SetType(int)  [66:5/2731-66:28/2754] ReferencesTestCase/module.h
+==============================================================
+'obj', tokenID=identifier, offset=2664 [64:13/2664-64:16/2667]
+--OWNER:
+    STMT Expression text='SetType(obj.type)'
+--RESOLVED TO:
+    VARIABLE obj [61:16/2557-61:33/2574] ReferencesTestCase/module.cc  TYPE: const &Module TEXT=const Module&  [61:16/2557-61:29/2570]  INIT: null  SCOPE: Module 
+==============================================================
+'type', tokenID=identifier, offset=2668 [64:17/2668-64:21/2672]
+--OWNER:
+    STMT Expression text='SetType(obj.type)'
+--RESOLVED TO:
+    VARIABLE type [86:5/3266-86:18/3279] ReferencesTestCase/module.h  TYPE: int TEXT=int  [86:5/3266-86:8/3269]  INIT: null  SCOPE: Module 
+==============================================================
+'SetUnits', tokenID=identifier, offset=2679 [65:5/2679-65:13/2687]
+--OWNER:
+    STMT Expression text='SetUnits(obj.units)'
+--RESOLVED TO:
+    FUNCTION SetUnits(int)  [74:5/2949-74:26/2970] ReferencesTestCase/module.h
+==============================================================
+'obj', tokenID=identifier, offset=2688 [65:14/2688-65:17/2691]
+--OWNER:
+    STMT Expression text='SetUnits(obj.units)'
+--RESOLVED TO:
+    VARIABLE obj [61:16/2557-61:33/2574] ReferencesTestCase/module.cc  TYPE: const &Module TEXT=const Module&  [61:16/2557-61:29/2570]  INIT: null  SCOPE: Module 
+==============================================================
+'units', tokenID=identifier, offset=2692 [65:18/2692-65:23/2697]
+--OWNER:
+    STMT Expression text='SetUnits(obj.units)'
+--RESOLVED TO:
+    VARIABLE units [88:5/3306-88:19/3320] ReferencesTestCase/module.h  TYPE: int TEXT=int  [88:5/3306-88:8/3309]  INIT: null  SCOPE: Module 
+==============================================================
+'SetSupportMetric', tokenID=identifier, offset=2704 [66:5/2704-66:21/2720]
+--OWNER:
+    STMT Expression text='SetSupportMetric(obj.GetSupportMetric())'
+--RESOLVED TO:
+    FUNCTION SetSupportMetric(int)  [77:5/3002-77:34/3031] ReferencesTestCase/module.h
+==============================================================
+'obj', tokenID=identifier, offset=2721 [66:22/2721-66:25/2724]
+--OWNER:
+    STMT Expression text='SetSupportMetric(obj.GetSupportMetric())'
+--RESOLVED TO:
+    VARIABLE obj [61:16/2557-61:33/2574] ReferencesTestCase/module.cc  TYPE: const &Module TEXT=const Module&  [61:16/2557-61:29/2570]  INIT: null  SCOPE: Module 
+==============================================================
+'GetSupportMetric', tokenID=identifier, offset=2725 [66:26/2725-66:42/2741]
+--OWNER:
+    STMT Expression text='SetSupportMetric(obj.GetSupportMetric())'
+--RESOLVED TO:
+    FUNCTION GetSupportMetric() const  [78:5/3036-78:34/3065] ReferencesTestCase/module.h
+==============================================================
+'Module', tokenID=identifier, offset=2749 [69:1/2749-69:7/2755]
+--OWNER:
+    TYPE &Module TEXT=Module&  [69:1/2749-69:8/2756] ReferencesTestCase/module.cc
+--RESOLVED TO:
+    CLASS Module [51:1/2205-92:3/3421] ReferencesTestCase/module.h
+==============================================================
+'Module', tokenID=identifier, offset=2757 [69:9/2757-69:15/2763]
+--OWNER:
+    FUNCTION_DEFINITION operator =(const Module&)  [69:1/2749-77:2/2989] ReferencesTestCase/module.cc
+--RESOLVED TO:
+    CLASS Module [51:1/2205-92:3/3421] ReferencesTestCase/module.h
+==============================================================
+'Module', tokenID=identifier, offset=2782 [69:34/2782-69:40/2788]
+--OWNER:
+    TYPE const &Module TEXT=const Module&  [69:28/2776-69:41/2789] ReferencesTestCase/module.cc
+--RESOLVED TO:
+    CLASS Module [51:1/2205-92:3/3421] ReferencesTestCase/module.h
+==============================================================
+'obj', tokenID=identifier, offset=2790 [69:42/2790-69:45/2793]
+--OWNER:
+    VARIABLE obj [69:28/2776-69:45/2793] ReferencesTestCase/module.cc  TYPE: const &Module TEXT=const Module&  [69:28/2776-69:41/2789]  INIT: null  SCOPE: operator = 
+--RESOLVED TO:
+    VARIABLE obj [69:28/2776-69:45/2793] ReferencesTestCase/module.cc  TYPE: const &Module TEXT=const Module&  [69:28/2776-69:41/2789]  INIT: null  SCOPE: operator = 
+==============================================================
+'SetDescription', tokenID=identifier, offset=2801 [70:5/2801-70:19/2815]
 --OWNER:
     STMT Expression text='SetDescription(obj.GetDescription())'
 --RESOLVED TO:
-    VARIABLE obj [47:28/1542-47:45/1559] ReferencesTestCase/module.cc  TYPE: const &Module TEXT=const Module&  [47:28/1542-47:41/1555]  INIT: null  SCOPE: operator = 
+    FUNCTION SetDescription(const char*)  [60:5/2569-60:50/2614] ReferencesTestCase/module.h
 ==============================================================
-'GetDescription', tokenID=identifier, offset=1586 [48:24/1586-48:38/1600]
+'obj', tokenID=identifier, offset=2816 [70:20/2816-70:23/2819]
 --OWNER:
     STMT Expression text='SetDescription(obj.GetDescription())'
 --RESOLVED TO:
-    FUNCTION GetDescription() const  [39:5/1385-39:40/1420] ReferencesTestCase/module.h
+    VARIABLE obj [69:28/2776-69:45/2793] ReferencesTestCase/module.cc  TYPE: const &Module TEXT=const Module&  [69:28/2776-69:41/2789]  INIT: null  SCOPE: operator = 
 ==============================================================
-'SetVendor', tokenID=identifier, offset=1609 [49:5/1609-49:14/1618]
+'GetDescription', tokenID=identifier, offset=2820 [70:24/2820-70:38/2834]
+--OWNER:
+    STMT Expression text='SetDescription(obj.GetDescription())'
+--RESOLVED TO:
+    FUNCTION GetDescription() const  [61:5/2619-61:40/2654] ReferencesTestCase/module.h
+==============================================================
+'SetVendor', tokenID=identifier, offset=2843 [71:5/2843-71:14/2852]
 --OWNER:
     STMT Expression text='SetVendor(obj.GetVendor())'
 --RESOLVED TO:
-    FUNCTION SetVendor(const char*)  [41:5/1426-41:35/1456] ReferencesTestCase/module.h
+    FUNCTION SetVendor(const char*)  [63:5/2660-63:35/2690] ReferencesTestCase/module.h
 ==============================================================
-'obj', tokenID=identifier, offset=1619 [49:15/1619-49:18/1622]
+'obj', tokenID=identifier, offset=2853 [71:15/2853-71:18/2856]
 --OWNER:
     STMT Expression text='SetVendor(obj.GetVendor())'
 --RESOLVED TO:
-    VARIABLE obj [47:28/1542-47:45/1559] ReferencesTestCase/module.cc  TYPE: const &Module TEXT=const Module&  [47:28/1542-47:41/1555]  INIT: null  SCOPE: operator = 
+    VARIABLE obj [69:28/2776-69:45/2793] ReferencesTestCase/module.cc  TYPE: const &Module TEXT=const Module&  [69:28/2776-69:41/2789]  INIT: null  SCOPE: operator = 
 ==============================================================
-'GetVendor', tokenID=identifier, offset=1623 [49:19/1623-49:28/1632]
+'GetVendor', tokenID=identifier, offset=2857 [71:19/2857-71:28/2866]
 --OWNER:
     STMT Expression text='SetVendor(obj.GetVendor())'
 --RESOLVED TO:
-    FUNCTION GetVendor() const  [42:5/1461-42:35/1491] ReferencesTestCase/module.h
+    FUNCTION GetVendor() const  [64:5/2695-64:35/2725] ReferencesTestCase/module.h
 ==============================================================
-'SetType', tokenID=identifier, offset=1641 [50:5/1641-50:12/1648]
+'SetType', tokenID=identifier, offset=2875 [72:5/2875-72:12/2882]
 --OWNER:
     STMT Expression text='SetType(obj.type)'
 --RESOLVED TO:
-    FUNCTION SetType(int)  [44:5/1497-44:28/1520] ReferencesTestCase/module.h
+    FUNCTION SetType(int)  [66:5/2731-66:28/2754] ReferencesTestCase/module.h
 ==============================================================
-'obj', tokenID=identifier, offset=1649 [50:13/1649-50:16/1652]
+'obj', tokenID=identifier, offset=2883 [72:13/2883-72:16/2886]
 --OWNER:
     STMT Expression text='SetType(obj.type)'
 --RESOLVED TO:
-    VARIABLE obj [47:28/1542-47:45/1559] ReferencesTestCase/module.cc  TYPE: const &Module TEXT=const Module&  [47:28/1542-47:41/1555]  INIT: null  SCOPE: operator = 
+    VARIABLE obj [69:28/2776-69:45/2793] ReferencesTestCase/module.cc  TYPE: const &Module TEXT=const Module&  [69:28/2776-69:41/2789]  INIT: null  SCOPE: operator = 
 ==============================================================
-'type', tokenID=identifier, offset=1653 [50:17/1653-50:21/1657]
+'type', tokenID=identifier, offset=2887 [72:17/2887-72:21/2891]
 --OWNER:
     STMT Expression text='SetType(obj.type)'
 --RESOLVED TO:
-    VARIABLE type [64:5/2032-64:18/2045] ReferencesTestCase/module.h  TYPE: int TEXT=int  [64:5/2032-64:8/2035]  INIT: null  SCOPE: Module 
+    VARIABLE type [86:5/3266-86:18/3279] ReferencesTestCase/module.h  TYPE: int TEXT=int  [86:5/3266-86:8/3269]  INIT: null  SCOPE: Module 
 ==============================================================
-'SetUnits', tokenID=identifier, offset=1664 [51:5/1664-51:13/1672]
+'SetUnits', tokenID=identifier, offset=2898 [73:5/2898-73:13/2906]
 --OWNER:
     STMT Expression text='SetUnits(obj.units)'
 --RESOLVED TO:
-    FUNCTION SetUnits(int)  [52:5/1715-52:26/1736] ReferencesTestCase/module.h
+    FUNCTION SetUnits(int)  [74:5/2949-74:26/2970] ReferencesTestCase/module.h
 ==============================================================
-'obj', tokenID=identifier, offset=1673 [51:14/1673-51:17/1676]
+'obj', tokenID=identifier, offset=2907 [73:14/2907-73:17/2910]
 --OWNER:
     STMT Expression text='SetUnits(obj.units)'
 --RESOLVED TO:
-    VARIABLE obj [47:28/1542-47:45/1559] ReferencesTestCase/module.cc  TYPE: const &Module TEXT=const Module&  [47:28/1542-47:41/1555]  INIT: null  SCOPE: operator = 
+    VARIABLE obj [69:28/2776-69:45/2793] ReferencesTestCase/module.cc  TYPE: const &Module TEXT=const Module&  [69:28/2776-69:41/2789]  INIT: null  SCOPE: operator = 
 ==============================================================
-'units', tokenID=identifier, offset=1677 [51:18/1677-51:23/1682]
+'units', tokenID=identifier, offset=2911 [73:18/2911-73:23/2916]
 --OWNER:
     STMT Expression text='SetUnits(obj.units)'
 --RESOLVED TO:
-    VARIABLE units [66:5/2072-66:19/2086] ReferencesTestCase/module.h  TYPE: int TEXT=int  [66:5/2072-66:8/2075]  INIT: null  SCOPE: Module 
+    VARIABLE units [88:5/3306-88:19/3320] ReferencesTestCase/module.h  TYPE: int TEXT=int  [88:5/3306-88:8/3309]  INIT: null  SCOPE: Module 
 ==============================================================
-'SetSupportMetric', tokenID=identifier, offset=1689 [52:5/1689-52:21/1705]
+'SetSupportMetric', tokenID=identifier, offset=2923 [74:5/2923-74:21/2939]
 --OWNER:
     STMT Expression text='SetSupportMetric(obj.GetSupportMetric())'
 --RESOLVED TO:
-    FUNCTION SetSupportMetric(int)  [55:5/1768-55:34/1797] ReferencesTestCase/module.h
+    FUNCTION SetSupportMetric(int)  [77:5/3002-77:34/3031] ReferencesTestCase/module.h
 ==============================================================
-'obj', tokenID=identifier, offset=1706 [52:22/1706-52:25/1709]
+'obj', tokenID=identifier, offset=2940 [74:22/2940-74:25/2943]
 --OWNER:
     STMT Expression text='SetSupportMetric(obj.GetSupportMetric())'
 --RESOLVED TO:
-    VARIABLE obj [47:28/1542-47:45/1559] ReferencesTestCase/module.cc  TYPE: const &Module TEXT=const Module&  [47:28/1542-47:41/1555]  INIT: null  SCOPE: operator = 
+    VARIABLE obj [69:28/2776-69:45/2793] ReferencesTestCase/module.cc  TYPE: const &Module TEXT=const Module&  [69:28/2776-69:41/2789]  INIT: null  SCOPE: operator = 
 ==============================================================
-'GetSupportMetric', tokenID=identifier, offset=1710 [52:26/1710-52:42/1726]
+'GetSupportMetric', tokenID=identifier, offset=2944 [74:26/2944-74:42/2960]
 --OWNER:
     STMT Expression text='SetSupportMetric(obj.GetSupportMetric())'
 --RESOLVED TO:
-    FUNCTION GetSupportMetric() const  [56:5/1802-56:34/1831] ReferencesTestCase/module.h
+    FUNCTION GetSupportMetric() const  [78:5/3036-78:34/3065] ReferencesTestCase/module.h
 ==============================================================
-'Module', tokenID=identifier, offset=1757 [57:1/1757-57:7/1763]
+'Module', tokenID=identifier, offset=2991 [79:1/2991-79:7/2997]
 --OWNER:
-    FUNCTION_DEFINITION ~Module()  [57:1/1757-58:2/1778] ReferencesTestCase/module.cc
+    FUNCTION_DEFINITION ~Module()  [79:1/2991-80:2/3012] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    CLASS Module [29:1/971-70:3/2187] ReferencesTestCase/module.h
+    CLASS Module [51:1/2205-92:3/3421] ReferencesTestCase/module.h
 ==============================================================
-'Module', tokenID=identifier, offset=1766 [57:10/1766-57:16/1772]
+'Module', tokenID=identifier, offset=3000 [79:10/3000-79:16/3006]
 --OWNER:
-    FUNCTION_DEFINITION ~Module()  [57:1/1757-58:2/1778] ReferencesTestCase/module.cc
+    FUNCTION_DEFINITION ~Module()  [79:1/2991-80:2/3012] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    FUNCTION ~Module()  [33:5/1104-33:23/1122] ReferencesTestCase/module.h
+    FUNCTION ~Module()  [55:5/2338-55:23/2356] ReferencesTestCase/module.h
 ==============================================================
-'Module', tokenID=identifier, offset=1785 [60:6/1785-60:12/1791]
+'Module', tokenID=identifier, offset=3019 [82:6/3019-82:12/3025]
 --OWNER:
-    FUNCTION_DEFINITION SetDescription(const char*)  [60:1/1780-62:2/1875] ReferencesTestCase/module.cc
+    FUNCTION_DEFINITION SetDescription(const char*)  [82:1/3014-84:2/3109] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    CLASS Module [29:1/971-70:3/2187] ReferencesTestCase/module.h
+    CLASS Module [51:1/2205-92:3/3421] ReferencesTestCase/module.h
 ==============================================================
-'SetDescription', tokenID=identifier, offset=1793 [60:14/1793-60:28/1807]
+'SetDescription', tokenID=identifier, offset=3027 [82:14/3027-82:28/3041]
 --OWNER:
-    FUNCTION_DEFINITION SetDescription(const char*)  [60:1/1780-62:2/1875] ReferencesTestCase/module.cc
+    FUNCTION_DEFINITION SetDescription(const char*)  [82:1/3014-84:2/3109] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    FUNCTION SetDescription(const char*)  [38:5/1335-38:50/1380] ReferencesTestCase/module.h
+    FUNCTION SetDescription(const char*)  [60:5/2569-60:50/2614] ReferencesTestCase/module.h
 ==============================================================
-'new_description', tokenID=identifier, offset=1820 [60:41/1820-60:56/1835]
+'new_description', tokenID=identifier, offset=3054 [82:41/3054-82:56/3069]
 --OWNER:
-    VARIABLE new_description [60:29/1808-60:56/1835] ReferencesTestCase/module.cc  TYPE: const *char TEXT=const char*  [60:29/1808-60:40/1819]  INIT: null  SCOPE: SetDescription 
+    VARIABLE new_description [82:29/3042-82:56/3069] ReferencesTestCase/module.cc  TYPE: const *char TEXT=const char*  [82:29/3042-82:40/3053]  INIT: null  SCOPE: SetDescription 
 --RESOLVED TO:
-    VARIABLE new_description [60:29/1808-60:56/1835] ReferencesTestCase/module.cc  TYPE: const *char TEXT=const char*  [60:29/1808-60:40/1819]  INIT: null  SCOPE: SetDescription 
+    VARIABLE new_description [82:29/3042-82:56/3069] ReferencesTestCase/module.cc  TYPE: const *char TEXT=const char*  [82:29/3042-82:40/3053]  INIT: null  SCOPE: SetDescription 
 ==============================================================
-'description', tokenID=identifier, offset=1843 [61:5/1843-61:16/1854]
+'description', tokenID=identifier, offset=3077 [83:5/3077-83:16/3088]
 --OWNER:
     STMT Expression text='description = new_description'
 --RESOLVED TO:
-    VARIABLE description [62:5/1947-62:25/1967] ReferencesTestCase/module.h  TYPE: $unresolved$::string TEXT=string  [62:5/1947-62:11/1953]  INIT: null  SCOPE: Module 
+    VARIABLE description [84:5/3181-84:25/3201] ReferencesTestCase/module.h  TYPE: $unresolved$::string TEXT=string  [84:5/3181-84:11/3187]  INIT: null  SCOPE: Module 
 ==============================================================
-'new_description', tokenID=identifier, offset=1857 [61:19/1857-61:34/1872]
+'new_description', tokenID=identifier, offset=3091 [83:19/3091-83:34/3106]
 --OWNER:
     STMT Expression text='description = new_description'
 --RESOLVED TO:
-    VARIABLE new_description [60:29/1808-60:56/1835] ReferencesTestCase/module.cc  TYPE: const *char TEXT=const char*  [60:29/1808-60:40/1819]  INIT: null  SCOPE: SetDescription 
+    VARIABLE new_description [82:29/3042-82:56/3069] ReferencesTestCase/module.cc  TYPE: const *char TEXT=const char*  [82:29/3042-82:40/3053]  INIT: null  SCOPE: SetDescription 
 ==============================================================
-'Module', tokenID=identifier, offset=1889 [64:13/1889-64:19/1895]
+'Module', tokenID=identifier, offset=3123 [86:13/3123-86:19/3129]
 --OWNER:
-    FUNCTION_DEFINITION GetDescription() const  [64:1/1877-66:2/1955] ReferencesTestCase/module.cc
+    FUNCTION_DEFINITION GetDescription() const  [86:1/3111-88:2/3189] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    CLASS Module [29:1/971-70:3/2187] ReferencesTestCase/module.h
+    CLASS Module [51:1/2205-92:3/3421] ReferencesTestCase/module.h
 ==============================================================
-'GetDescription', tokenID=identifier, offset=1897 [64:21/1897-64:35/1911]
+'GetDescription', tokenID=identifier, offset=3131 [86:21/3131-86:35/3145]
 --OWNER:
-    FUNCTION_DEFINITION GetDescription() const  [64:1/1877-66:2/1955] ReferencesTestCase/module.cc
+    FUNCTION_DEFINITION GetDescription() const  [86:1/3111-88:2/3189] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    FUNCTION GetDescription() const  [39:5/1385-39:40/1420] ReferencesTestCase/module.h
+    FUNCTION GetDescription() const  [61:5/2619-61:40/2654] ReferencesTestCase/module.h
 ==============================================================
-'description', tokenID=identifier, offset=1933 [65:12/1933-65:23/1944]
+'description', tokenID=identifier, offset=3167 [87:12/3167-87:23/3178]
 --OWNER:
     STMT Return text='return description.c_str();'
 --RESOLVED TO:
-    VARIABLE description [62:5/1947-62:25/1967] ReferencesTestCase/module.h  TYPE: $unresolved$::string TEXT=string  [62:5/1947-62:11/1953]  INIT: null  SCOPE: Module 
+    VARIABLE description [84:5/3181-84:25/3201] ReferencesTestCase/module.h  TYPE: $unresolved$::string TEXT=string  [84:5/3181-84:11/3187]  INIT: null  SCOPE: Module 
 ==============================================================
-'c_str', tokenID=identifier, offset=1945 [65:24/1945-65:29/1950]
+'c_str', tokenID=identifier, offset=3179 [87:24/3179-87:29/3184]
 --OWNER:
     STMT Return text='return description.c_str();'
 --RESOLVED TO:
     null
 ==============================================================
-'Module', tokenID=identifier, offset=1962 [68:6/1962-68:12/1968]
+'Module', tokenID=identifier, offset=3196 [90:6/3196-90:12/3202]
 --OWNER:
-    FUNCTION_DEFINITION SetVendor(const char*)  [68:1/1957-70:2/2032] ReferencesTestCase/module.cc
+    FUNCTION_DEFINITION SetVendor(const char*)  [90:1/3191-92:2/3266] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    CLASS Module [29:1/971-70:3/2187] ReferencesTestCase/module.h
+    CLASS Module [51:1/2205-92:3/3421] ReferencesTestCase/module.h
 ==============================================================
-'SetVendor', tokenID=identifier, offset=1970 [68:14/1970-68:23/1979]
+'SetVendor', tokenID=identifier, offset=3204 [90:14/3204-90:23/3213]
 --OWNER:
-    FUNCTION_DEFINITION SetVendor(const char*)  [68:1/1957-70:2/2032] ReferencesTestCase/module.cc
+    FUNCTION_DEFINITION SetVendor(const char*)  [90:1/3191-92:2/3266] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    FUNCTION SetVendor(const char*)  [41:5/1426-41:35/1456] ReferencesTestCase/module.h
+    FUNCTION SetVendor(const char*)  [63:5/2660-63:35/2690] ReferencesTestCase/module.h
 ==============================================================
-'new_vendor', tokenID=identifier, offset=1992 [68:36/1992-68:46/2002]
+'new_vendor', tokenID=identifier, offset=3226 [90:36/3226-90:46/3236]
 --OWNER:
-    VARIABLE new_vendor [68:24/1980-68:46/2002] ReferencesTestCase/module.cc  TYPE: const *char TEXT=const char*  [68:24/1980-68:35/1991]  INIT: null  SCOPE: SetVendor 
+    VARIABLE new_vendor [90:24/3214-90:46/3236] ReferencesTestCase/module.cc  TYPE: const *char TEXT=const char*  [90:24/3214-90:35/3225]  INIT: null  SCOPE: SetVendor 
 --RESOLVED TO:
-    VARIABLE new_vendor [68:24/1980-68:46/2002] ReferencesTestCase/module.cc  TYPE: const *char TEXT=const char*  [68:24/1980-68:35/1991]  INIT: null  SCOPE: SetVendor 
+    VARIABLE new_vendor [90:24/3214-90:46/3236] ReferencesTestCase/module.cc  TYPE: const *char TEXT=const char*  [90:24/3214-90:35/3225]  INIT: null  SCOPE: SetVendor 
 ==============================================================
-'vendor', tokenID=identifier, offset=2010 [69:5/2010-69:11/2016]
---OWNER:
-    STMT Expression text='vendor = new_vendor'
---RESOLVED TO:
-    VARIABLE vendor [63:5/1972-63:20/1987] ReferencesTestCase/module.h  TYPE: $unresolved$::string TEXT=string  [63:5/1972-63:11/1978]  INIT: null  SCOPE: Module 
-==============================================================
-'new_vendor', tokenID=identifier, offset=2019 [69:14/2019-69:24/2029]
+'vendor', tokenID=identifier, offset=3244 [91:5/3244-91:11/3250]
 --OWNER:
     STMT Expression text='vendor = new_vendor'
 --RESOLVED TO:
-    VARIABLE new_vendor [68:24/1980-68:46/2002] ReferencesTestCase/module.cc  TYPE: const *char TEXT=const char*  [68:24/1980-68:35/1991]  INIT: null  SCOPE: SetVendor 
+    VARIABLE vendor [85:5/3206-85:20/3221] ReferencesTestCase/module.h  TYPE: $unresolved$::string TEXT=string  [85:5/3206-85:11/3212]  INIT: null  SCOPE: Module 
 ==============================================================
-'Module', tokenID=identifier, offset=2046 [72:13/2046-72:19/2052]
+'new_vendor', tokenID=identifier, offset=3253 [91:14/3253-91:24/3263]
 --OWNER:
-    FUNCTION_DEFINITION GetVendor() const  [72:1/2034-74:2/2102] ReferencesTestCase/module.cc
+    STMT Expression text='vendor = new_vendor'
 --RESOLVED TO:
-    CLASS Module [29:1/971-70:3/2187] ReferencesTestCase/module.h
+    VARIABLE new_vendor [90:24/3214-90:46/3236] ReferencesTestCase/module.cc  TYPE: const *char TEXT=const char*  [90:24/3214-90:35/3225]  INIT: null  SCOPE: SetVendor 
 ==============================================================
-'GetVendor', tokenID=identifier, offset=2054 [72:21/2054-72:30/2063]
+'Module', tokenID=identifier, offset=3280 [94:13/3280-94:19/3286]
 --OWNER:
-    FUNCTION_DEFINITION GetVendor() const  [72:1/2034-74:2/2102] ReferencesTestCase/module.cc
+    FUNCTION_DEFINITION GetVendor() const  [94:1/3268-96:2/3336] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    FUNCTION GetVendor() const  [42:5/1461-42:35/1491] ReferencesTestCase/module.h
+    CLASS Module [51:1/2205-92:3/3421] ReferencesTestCase/module.h
 ==============================================================
-'vendor', tokenID=identifier, offset=2085 [73:12/2085-73:18/2091]
+'GetVendor', tokenID=identifier, offset=3288 [94:21/3288-94:30/3297]
+--OWNER:
+    FUNCTION_DEFINITION GetVendor() const  [94:1/3268-96:2/3336] ReferencesTestCase/module.cc
+--RESOLVED TO:
+    FUNCTION GetVendor() const  [64:5/2695-64:35/2725] ReferencesTestCase/module.h
+==============================================================
+'vendor', tokenID=identifier, offset=3319 [95:12/3319-95:18/3325]
 --OWNER:
     STMT Return text='return vendor.c_str();'
 --RESOLVED TO:
-    VARIABLE vendor [63:5/1972-63:20/1987] ReferencesTestCase/module.h  TYPE: $unresolved$::string TEXT=string  [63:5/1972-63:11/1978]  INIT: null  SCOPE: Module 
+    VARIABLE vendor [85:5/3206-85:20/3221] ReferencesTestCase/module.h  TYPE: $unresolved$::string TEXT=string  [85:5/3206-85:11/3212]  INIT: null  SCOPE: Module 
 ==============================================================
-'c_str', tokenID=identifier, offset=2092 [73:19/2092-73:24/2097]
+'c_str', tokenID=identifier, offset=3326 [95:19/3326-95:24/3331]
 --OWNER:
     STMT Return text='return vendor.c_str();'
 --RESOLVED TO:
     null
 ==============================================================
-'Module', tokenID=identifier, offset=2109 [76:6/2109-76:12/2115]
+'Module', tokenID=identifier, offset=3343 [98:6/3343-98:12/3349]
 --OWNER:
-    FUNCTION_DEFINITION SetType(int)  [76:1/2104-78:2/2163] ReferencesTestCase/module.cc
+    FUNCTION_DEFINITION SetType(int)  [98:1/3338-100:2/3397] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    CLASS Module [29:1/971-70:3/2187] ReferencesTestCase/module.h
+    CLASS Module [51:1/2205-92:3/3421] ReferencesTestCase/module.h
 ==============================================================
-'SetType', tokenID=identifier, offset=2117 [76:14/2117-76:21/2124]
+'SetType', tokenID=identifier, offset=3351 [98:14/3351-98:21/3358]
 --OWNER:
-    FUNCTION_DEFINITION SetType(int)  [76:1/2104-78:2/2163] ReferencesTestCase/module.cc
+    FUNCTION_DEFINITION SetType(int)  [98:1/3338-100:2/3397] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    FUNCTION SetType(int)  [44:5/1497-44:28/1520] ReferencesTestCase/module.h
+    FUNCTION SetType(int)  [66:5/2731-66:28/2754] ReferencesTestCase/module.h
 ==============================================================
-'new_type', tokenID=identifier, offset=2129 [76:26/2129-76:34/2137]
+'new_type', tokenID=identifier, offset=3363 [98:26/3363-98:34/3371]
 --OWNER:
-    VARIABLE new_type [76:22/2125-76:34/2137] ReferencesTestCase/module.cc  TYPE: int TEXT=int  [76:22/2125-76:25/2128]  INIT: null  SCOPE: SetType 
+    VARIABLE new_type [98:22/3359-98:34/3371] ReferencesTestCase/module.cc  TYPE: int TEXT=int  [98:22/3359-98:25/3362]  INIT: null  SCOPE: SetType 
 --RESOLVED TO:
-    VARIABLE new_type [76:22/2125-76:34/2137] ReferencesTestCase/module.cc  TYPE: int TEXT=int  [76:22/2125-76:25/2128]  INIT: null  SCOPE: SetType 
+    VARIABLE new_type [98:22/3359-98:34/3371] ReferencesTestCase/module.cc  TYPE: int TEXT=int  [98:22/3359-98:25/3362]  INIT: null  SCOPE: SetType 
 ==============================================================
-'type', tokenID=identifier, offset=2145 [77:5/2145-77:9/2149]
---OWNER:
-    STMT Expression text='type = new_type'
---RESOLVED TO:
-    VARIABLE type [64:5/2032-64:18/2045] ReferencesTestCase/module.h  TYPE: int TEXT=int  [64:5/2032-64:8/2035]  INIT: null  SCOPE: Module 
-==============================================================
-'new_type', tokenID=identifier, offset=2152 [77:12/2152-77:20/2160]
+'type', tokenID=identifier, offset=3379 [99:5/3379-99:9/3383]
 --OWNER:
     STMT Expression text='type = new_type'
 --RESOLVED TO:
-    VARIABLE new_type [76:22/2125-76:34/2137] ReferencesTestCase/module.cc  TYPE: int TEXT=int  [76:22/2125-76:25/2128]  INIT: null  SCOPE: SetType 
+    VARIABLE type [86:5/3266-86:18/3279] ReferencesTestCase/module.h  TYPE: int TEXT=int  [86:5/3266-86:8/3269]  INIT: null  SCOPE: Module 
 ==============================================================
-'Module', tokenID=identifier, offset=2169 [80:5/2169-80:11/2175]
+'new_type', tokenID=identifier, offset=3386 [99:12/3386-99:20/3394]
 --OWNER:
-    FUNCTION_DEFINITION GetTypeID() const  [80:1/2165-82:2/2215] ReferencesTestCase/module.cc
+    STMT Expression text='type = new_type'
 --RESOLVED TO:
-    CLASS Module [29:1/971-70:3/2187] ReferencesTestCase/module.h
+    VARIABLE new_type [98:22/3359-98:34/3371] ReferencesTestCase/module.cc  TYPE: int TEXT=int  [98:22/3359-98:25/3362]  INIT: null  SCOPE: SetType 
 ==============================================================
-'GetTypeID', tokenID=identifier, offset=2177 [80:13/2177-80:22/2186]
+'Module', tokenID=identifier, offset=3403 [102:5/3403-102:11/3409]
 --OWNER:
-    FUNCTION_DEFINITION GetTypeID() const  [80:1/2165-82:2/2215] ReferencesTestCase/module.cc
+    FUNCTION_DEFINITION GetTypeID() const  [102:1/3399-104:2/3449] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    FUNCTION GetTypeID() const  [45:5/1525-45:27/1547] ReferencesTestCase/module.h
+    CLASS Module [51:1/2205-92:3/3421] ReferencesTestCase/module.h
 ==============================================================
-'type', tokenID=identifier, offset=2208 [81:12/2208-81:16/2212]
+'GetTypeID', tokenID=identifier, offset=3411 [102:13/3411-102:22/3420]
+--OWNER:
+    FUNCTION_DEFINITION GetTypeID() const  [102:1/3399-104:2/3449] ReferencesTestCase/module.cc
+--RESOLVED TO:
+    FUNCTION GetTypeID() const  [67:5/2759-67:27/2781] ReferencesTestCase/module.h
+==============================================================
+'type', tokenID=identifier, offset=3442 [103:12/3442-103:16/3446]
 --OWNER:
     STMT Return text='return type;'
 --RESOLVED TO:
-    VARIABLE type [64:5/2032-64:18/2045] ReferencesTestCase/module.h  TYPE: int TEXT=int  [64:5/2032-64:8/2035]  INIT: null  SCOPE: Module 
+    VARIABLE type [86:5/3266-86:18/3279] ReferencesTestCase/module.h  TYPE: int TEXT=int  [86:5/3266-86:8/3269]  INIT: null  SCOPE: Module 
 ==============================================================
-'Module', tokenID=identifier, offset=2222 [84:6/2222-84:12/2228]
+'Module', tokenID=identifier, offset=3456 [106:6/3456-106:12/3462]
 --OWNER:
-    FUNCTION_DEFINITION SetCategory(int)  [84:1/2217-86:2/2292] ReferencesTestCase/module.cc
+    FUNCTION_DEFINITION SetCategory(int)  [106:1/3451-108:2/3526] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    CLASS Module [29:1/971-70:3/2187] ReferencesTestCase/module.h
+    CLASS Module [51:1/2205-92:3/3421] ReferencesTestCase/module.h
 ==============================================================
-'SetCategory', tokenID=identifier, offset=2230 [84:14/2230-84:25/2241]
+'SetCategory', tokenID=identifier, offset=3464 [106:14/3464-106:25/3475]
 --OWNER:
-    FUNCTION_DEFINITION SetCategory(int)  [84:1/2217-86:2/2292] ReferencesTestCase/module.cc
+    FUNCTION_DEFINITION SetCategory(int)  [106:1/3451-108:2/3526] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    FUNCTION SetCategory(int)  [48:5/1598-48:36/1629] ReferencesTestCase/module.h
+    FUNCTION SetCategory(int)  [70:5/2832-70:36/2863] ReferencesTestCase/module.h
 ==============================================================
-'new_category', tokenID=identifier, offset=2246 [84:30/2246-84:42/2258]
+'new_category', tokenID=identifier, offset=3480 [106:30/3480-106:42/3492]
 --OWNER:
-    VARIABLE new_category [84:26/2242-84:42/2258] ReferencesTestCase/module.cc  TYPE: int TEXT=int  [84:26/2242-84:29/2245]  INIT: null  SCOPE: SetCategory 
+    VARIABLE new_category [106:26/3476-106:42/3492] ReferencesTestCase/module.cc  TYPE: int TEXT=int  [106:26/3476-106:29/3479]  INIT: null  SCOPE: SetCategory 
 --RESOLVED TO:
-    VARIABLE new_category [84:26/2242-84:42/2258] ReferencesTestCase/module.cc  TYPE: int TEXT=int  [84:26/2242-84:29/2245]  INIT: null  SCOPE: SetCategory 
+    VARIABLE new_category [106:26/3476-106:42/3492] ReferencesTestCase/module.cc  TYPE: int TEXT=int  [106:26/3476-106:29/3479]  INIT: null  SCOPE: SetCategory 
 ==============================================================
-'category', tokenID=identifier, offset=2266 [85:5/2266-85:13/2274]
---OWNER:
-    STMT Expression text='category = new_category'
---RESOLVED TO:
-    VARIABLE category [65:5/2050-65:22/2067] ReferencesTestCase/module.h  TYPE: int TEXT=int  [65:5/2050-65:8/2053]  INIT: null  SCOPE: Module 
-==============================================================
-'new_category', tokenID=identifier, offset=2277 [85:16/2277-85:28/2289]
+'category', tokenID=identifier, offset=3500 [107:5/3500-107:13/3508]
 --OWNER:
     STMT Expression text='category = new_category'
 --RESOLVED TO:
-    VARIABLE new_category [84:26/2242-84:42/2258] ReferencesTestCase/module.cc  TYPE: int TEXT=int  [84:26/2242-84:29/2245]  INIT: null  SCOPE: SetCategory 
+    VARIABLE category [87:5/3284-87:22/3301] ReferencesTestCase/module.h  TYPE: int TEXT=int  [87:5/3284-87:8/3287]  INIT: null  SCOPE: Module 
 ==============================================================
-'Module', tokenID=identifier, offset=2298 [88:5/2298-88:11/2304]
+'new_category', tokenID=identifier, offset=3511 [107:16/3511-107:28/3523]
 --OWNER:
-    FUNCTION_DEFINITION GetCategoryID() const  [88:1/2294-90:2/2352] ReferencesTestCase/module.cc
+    STMT Expression text='category = new_category'
 --RESOLVED TO:
-    CLASS Module [29:1/971-70:3/2187] ReferencesTestCase/module.h
+    VARIABLE new_category [106:26/3476-106:42/3492] ReferencesTestCase/module.cc  TYPE: int TEXT=int  [106:26/3476-106:29/3479]  INIT: null  SCOPE: SetCategory 
 ==============================================================
-'GetCategoryID', tokenID=identifier, offset=2306 [88:13/2306-88:26/2319]
+'Module', tokenID=identifier, offset=3532 [110:5/3532-110:11/3538]
 --OWNER:
-    FUNCTION_DEFINITION GetCategoryID() const  [88:1/2294-90:2/2352] ReferencesTestCase/module.cc
+    FUNCTION_DEFINITION GetCategoryID() const  [110:1/3528-112:2/3586] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    FUNCTION GetCategoryID() const  [49:5/1634-49:31/1660] ReferencesTestCase/module.h
+    CLASS Module [51:1/2205-92:3/3421] ReferencesTestCase/module.h
 ==============================================================
-'category', tokenID=identifier, offset=2341 [89:12/2341-89:20/2349]
+'GetCategoryID', tokenID=identifier, offset=3540 [110:13/3540-110:26/3553]
+--OWNER:
+    FUNCTION_DEFINITION GetCategoryID() const  [110:1/3528-112:2/3586] ReferencesTestCase/module.cc
+--RESOLVED TO:
+    FUNCTION GetCategoryID() const  [71:5/2868-71:31/2894] ReferencesTestCase/module.h
+==============================================================
+'category', tokenID=identifier, offset=3575 [111:12/3575-111:20/3583]
 --OWNER:
     STMT Return text='return category;'
 --RESOLVED TO:
-    VARIABLE category [65:5/2050-65:22/2067] ReferencesTestCase/module.h  TYPE: int TEXT=int  [65:5/2050-65:8/2053]  INIT: null  SCOPE: Module 
+    VARIABLE category [87:5/3284-87:22/3301] ReferencesTestCase/module.h  TYPE: int TEXT=int  [87:5/3284-87:8/3287]  INIT: null  SCOPE: Module 
 ==============================================================
-'Module', tokenID=identifier, offset=2359 [92:6/2359-92:12/2365]
+'Module', tokenID=identifier, offset=3593 [114:6/3593-114:12/3599]
 --OWNER:
-    FUNCTION_DEFINITION SetUnits(int)  [92:1/2354-94:2/2417] ReferencesTestCase/module.cc
+    FUNCTION_DEFINITION SetUnits(int)  [114:1/3588-116:2/3651] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    CLASS Module [29:1/971-70:3/2187] ReferencesTestCase/module.h
+    CLASS Module [51:1/2205-92:3/3421] ReferencesTestCase/module.h
 ==============================================================
-'SetUnits', tokenID=identifier, offset=2367 [92:14/2367-92:22/2375]
+'SetUnits', tokenID=identifier, offset=3601 [114:14/3601-114:22/3609]
 --OWNER:
-    FUNCTION_DEFINITION SetUnits(int)  [92:1/2354-94:2/2417] ReferencesTestCase/module.cc
+    FUNCTION_DEFINITION SetUnits(int)  [114:1/3588-116:2/3651] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    FUNCTION SetUnits(int)  [52:5/1715-52:26/1736] ReferencesTestCase/module.h
+    FUNCTION SetUnits(int)  [74:5/2949-74:26/2970] ReferencesTestCase/module.h
 ==============================================================
-'new_units', tokenID=identifier, offset=2380 [92:27/2380-92:36/2389]
+'new_units', tokenID=identifier, offset=3614 [114:27/3614-114:36/3623]
 --OWNER:
-    VARIABLE new_units [92:23/2376-92:36/2389] ReferencesTestCase/module.cc  TYPE: int TEXT=int  [92:23/2376-92:26/2379]  INIT: null  SCOPE: SetUnits 
+    VARIABLE new_units [114:23/3610-114:36/3623] ReferencesTestCase/module.cc  TYPE: int TEXT=int  [114:23/3610-114:26/3613]  INIT: null  SCOPE: SetUnits 
 --RESOLVED TO:
-    VARIABLE new_units [92:23/2376-92:36/2389] ReferencesTestCase/module.cc  TYPE: int TEXT=int  [92:23/2376-92:26/2379]  INIT: null  SCOPE: SetUnits 
+    VARIABLE new_units [114:23/3610-114:36/3623] ReferencesTestCase/module.cc  TYPE: int TEXT=int  [114:23/3610-114:26/3613]  INIT: null  SCOPE: SetUnits 
 ==============================================================
-'units', tokenID=identifier, offset=2397 [93:5/2397-93:10/2402]
---OWNER:
-    STMT Expression text='units = new_units'
---RESOLVED TO:
-    VARIABLE units [66:5/2072-66:19/2086] ReferencesTestCase/module.h  TYPE: int TEXT=int  [66:5/2072-66:8/2075]  INIT: null  SCOPE: Module 
-==============================================================
-'new_units', tokenID=identifier, offset=2405 [93:13/2405-93:22/2414]
+'units', tokenID=identifier, offset=3631 [115:5/3631-115:10/3636]
 --OWNER:
     STMT Expression text='units = new_units'
 --RESOLVED TO:
-    VARIABLE new_units [92:23/2376-92:36/2389] ReferencesTestCase/module.cc  TYPE: int TEXT=int  [92:23/2376-92:26/2379]  INIT: null  SCOPE: SetUnits 
+    VARIABLE units [88:5/3306-88:19/3320] ReferencesTestCase/module.h  TYPE: int TEXT=int  [88:5/3306-88:8/3309]  INIT: null  SCOPE: Module 
 ==============================================================
-'Module', tokenID=identifier, offset=2423 [96:5/2423-96:11/2429]
+'new_units', tokenID=identifier, offset=3639 [115:13/3639-115:22/3648]
 --OWNER:
-    FUNCTION_DEFINITION GetUnits() const  [96:1/2419-98:2/2469] ReferencesTestCase/module.cc
+    STMT Expression text='units = new_units'
 --RESOLVED TO:
-    CLASS Module [29:1/971-70:3/2187] ReferencesTestCase/module.h
+    VARIABLE new_units [114:23/3610-114:36/3623] ReferencesTestCase/module.cc  TYPE: int TEXT=int  [114:23/3610-114:26/3613]  INIT: null  SCOPE: SetUnits 
 ==============================================================
-'GetUnits', tokenID=identifier, offset=2431 [96:13/2431-96:21/2439]
+'Module', tokenID=identifier, offset=3657 [118:5/3657-118:11/3663]
 --OWNER:
-    FUNCTION_DEFINITION GetUnits() const  [96:1/2419-98:2/2469] ReferencesTestCase/module.cc
+    FUNCTION_DEFINITION GetUnits() const  [118:1/3653-120:2/3703] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    FUNCTION GetUnits() const  [53:5/1741-53:26/1762] ReferencesTestCase/module.h
+    CLASS Module [51:1/2205-92:3/3421] ReferencesTestCase/module.h
 ==============================================================
-'units', tokenID=identifier, offset=2461 [97:12/2461-97:17/2466]
+'GetUnits', tokenID=identifier, offset=3665 [118:13/3665-118:21/3673]
+--OWNER:
+    FUNCTION_DEFINITION GetUnits() const  [118:1/3653-120:2/3703] ReferencesTestCase/module.cc
+--RESOLVED TO:
+    FUNCTION GetUnits() const  [75:5/2975-75:26/2996] ReferencesTestCase/module.h
+==============================================================
+'units', tokenID=identifier, offset=3695 [119:12/3695-119:17/3700]
 --OWNER:
     STMT Return text='return units;'
 --RESOLVED TO:
-    VARIABLE units [66:5/2072-66:19/2086] ReferencesTestCase/module.h  TYPE: int TEXT=int  [66:5/2072-66:8/2075]  INIT: null  SCOPE: Module 
+    VARIABLE units [88:5/3306-88:19/3320] ReferencesTestCase/module.h  TYPE: int TEXT=int  [88:5/3306-88:8/3309]  INIT: null  SCOPE: Module 
 ==============================================================
-'Module', tokenID=identifier, offset=2476 [100:6/2476-100:12/2482]
+'Module', tokenID=identifier, offset=3710 [122:6/3710-122:12/3716]
 --OWNER:
-    FUNCTION_DEFINITION SetSupportMetric(int)  [100:1/2471-102:2/2552] ReferencesTestCase/module.cc
+    FUNCTION_DEFINITION SetSupportMetric(int)  [122:1/3705-124:2/3786] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    CLASS Module [29:1/971-70:3/2187] ReferencesTestCase/module.h
+    CLASS Module [51:1/2205-92:3/3421] ReferencesTestCase/module.h
 ==============================================================
-'SetSupportMetric', tokenID=identifier, offset=2484 [100:14/2484-100:30/2500]
+'SetSupportMetric', tokenID=identifier, offset=3718 [122:14/3718-122:30/3734]
 --OWNER:
-    FUNCTION_DEFINITION SetSupportMetric(int)  [100:1/2471-102:2/2552] ReferencesTestCase/module.cc
+    FUNCTION_DEFINITION SetSupportMetric(int)  [122:1/3705-124:2/3786] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    FUNCTION SetSupportMetric(int)  [55:5/1768-55:34/1797] ReferencesTestCase/module.h
+    FUNCTION SetSupportMetric(int)  [77:5/3002-77:34/3031] ReferencesTestCase/module.h
 ==============================================================
-'new_metric', tokenID=identifier, offset=2505 [100:35/2505-100:45/2515]
+'new_metric', tokenID=identifier, offset=3739 [122:35/3739-122:45/3749]
 --OWNER:
-    VARIABLE new_metric [100:31/2501-100:45/2515] ReferencesTestCase/module.cc  TYPE: int TEXT=int  [100:31/2501-100:34/2504]  INIT: null  SCOPE: SetSupportMetric 
+    VARIABLE new_metric [122:31/3735-122:45/3749] ReferencesTestCase/module.cc  TYPE: int TEXT=int  [122:31/3735-122:34/3738]  INIT: null  SCOPE: SetSupportMetric 
 --RESOLVED TO:
-    VARIABLE new_metric [100:31/2501-100:45/2515] ReferencesTestCase/module.cc  TYPE: int TEXT=int  [100:31/2501-100:34/2504]  INIT: null  SCOPE: SetSupportMetric 
+    VARIABLE new_metric [122:31/3735-122:45/3749] ReferencesTestCase/module.cc  TYPE: int TEXT=int  [122:31/3735-122:34/3738]  INIT: null  SCOPE: SetSupportMetric 
 ==============================================================
-'supportMetric', tokenID=identifier, offset=2523 [101:5/2523-101:18/2536]
---OWNER:
-    STMT Expression text='supportMetric = new_metric'
---RESOLVED TO:
-    VARIABLE supportMetric [67:5/2091-67:27/2113] ReferencesTestCase/module.h  TYPE: int TEXT=int  [67:5/2091-67:8/2094]  INIT: null  SCOPE: Module 
-==============================================================
-'new_metric', tokenID=identifier, offset=2539 [101:21/2539-101:31/2549]
+'supportMetric', tokenID=identifier, offset=3757 [123:5/3757-123:18/3770]
 --OWNER:
     STMT Expression text='supportMetric = new_metric'
 --RESOLVED TO:
-    VARIABLE new_metric [100:31/2501-100:45/2515] ReferencesTestCase/module.cc  TYPE: int TEXT=int  [100:31/2501-100:34/2504]  INIT: null  SCOPE: SetSupportMetric 
+    VARIABLE supportMetric [89:5/3325-89:27/3347] ReferencesTestCase/module.h  TYPE: int TEXT=int  [89:5/3325-89:8/3328]  INIT: null  SCOPE: Module 
 ==============================================================
-'Module', tokenID=identifier, offset=2558 [104:5/2558-104:11/2564]
+'new_metric', tokenID=identifier, offset=3773 [123:21/3773-123:31/3783]
 --OWNER:
-    FUNCTION_DEFINITION GetSupportMetric() const  [104:1/2554-106:2/2620] ReferencesTestCase/module.cc
+    STMT Expression text='supportMetric = new_metric'
 --RESOLVED TO:
-    CLASS Module [29:1/971-70:3/2187] ReferencesTestCase/module.h
+    VARIABLE new_metric [122:31/3735-122:45/3749] ReferencesTestCase/module.cc  TYPE: int TEXT=int  [122:31/3735-122:34/3738]  INIT: null  SCOPE: SetSupportMetric 
 ==============================================================
-'GetSupportMetric', tokenID=identifier, offset=2566 [104:13/2566-104:29/2582]
+'Module', tokenID=identifier, offset=3792 [126:5/3792-126:11/3798]
 --OWNER:
-    FUNCTION_DEFINITION GetSupportMetric() const  [104:1/2554-106:2/2620] ReferencesTestCase/module.cc
+    FUNCTION_DEFINITION GetSupportMetric() const  [126:1/3788-128:2/3854] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    FUNCTION GetSupportMetric() const  [56:5/1802-56:34/1831] ReferencesTestCase/module.h
+    CLASS Module [51:1/2205-92:3/3421] ReferencesTestCase/module.h
 ==============================================================
-'supportMetric', tokenID=identifier, offset=2604 [105:12/2604-105:25/2617]
+'GetSupportMetric', tokenID=identifier, offset=3800 [126:13/3800-126:29/3816]
+--OWNER:
+    FUNCTION_DEFINITION GetSupportMetric() const  [126:1/3788-128:2/3854] ReferencesTestCase/module.cc
+--RESOLVED TO:
+    FUNCTION GetSupportMetric() const  [78:5/3036-78:34/3065] ReferencesTestCase/module.h
+==============================================================
+'supportMetric', tokenID=identifier, offset=3838 [127:12/3838-127:25/3851]
 --OWNER:
     STMT Return text='return supportMetric;'
 --RESOLVED TO:
-    VARIABLE supportMetric [67:5/2091-67:27/2113] ReferencesTestCase/module.h  TYPE: int TEXT=int  [67:5/2091-67:8/2094]  INIT: null  SCOPE: Module 
+    VARIABLE supportMetric [89:5/3325-89:27/3347] ReferencesTestCase/module.h  TYPE: int TEXT=int  [89:5/3325-89:8/3328]  INIT: null  SCOPE: Module 
 ==============================================================
-'ostream', tokenID=identifier, offset=2622 [108:1/2622-108:8/2629]
+'ostream', tokenID=identifier, offset=3856 [130:1/3856-130:8/3863]
 --OWNER:
-    TYPE &$unresolved$::ostream TEXT=ostream&  [108:1/2622-108:9/2630] ReferencesTestCase/module.cc
+    TYPE &$unresolved$::ostream TEXT=ostream&  [130:1/3856-130:9/3864] ReferencesTestCase/module.cc
 --RESOLVED TO:
     null
 ==============================================================
-'ostream', tokenID=identifier, offset=2643 [108:22/2643-108:29/2650]
+'ostream', tokenID=identifier, offset=3877 [130:22/3877-130:29/3884]
 --OWNER:
-    TYPE &$unresolved$::ostream TEXT=ostream&  [108:22/2643-108:30/2651] ReferencesTestCase/module.cc
+    TYPE &$unresolved$::ostream TEXT=ostream&  [130:22/3877-130:30/3885] ReferencesTestCase/module.cc
 --RESOLVED TO:
     null
 ==============================================================
-'output', tokenID=identifier, offset=2652 [108:31/2652-108:37/2658]
+'output', tokenID=identifier, offset=3886 [130:31/3886-130:37/3892]
 --OWNER:
-    VARIABLE output [108:22/2643-108:37/2658] ReferencesTestCase/module.cc  TYPE: &$unresolved$::ostream TEXT=ostream&  [108:22/2643-108:30/2651]  INIT: null  SCOPE: operator << 
+    VARIABLE output [130:22/3877-130:37/3892] ReferencesTestCase/module.cc  TYPE: &$unresolved$::ostream TEXT=ostream&  [130:22/3877-130:30/3885]  INIT: null  SCOPE: operator << 
 --RESOLVED TO:
-    VARIABLE output [108:22/2643-108:37/2658] ReferencesTestCase/module.cc  TYPE: &$unresolved$::ostream TEXT=ostream&  [108:22/2643-108:30/2651]  INIT: null  SCOPE: operator << 
+    VARIABLE output [130:22/3877-130:37/3892] ReferencesTestCase/module.cc  TYPE: &$unresolved$::ostream TEXT=ostream&  [130:22/3877-130:30/3885]  INIT: null  SCOPE: operator << 
 ==============================================================
-'Module', tokenID=identifier, offset=2666 [108:45/2666-108:51/2672]
+'Module', tokenID=identifier, offset=3900 [130:45/3900-130:51/3906]
 --OWNER:
-    TYPE const &Module TEXT=const Module&  [108:39/2660-108:52/2673] ReferencesTestCase/module.cc
+    TYPE const &Module TEXT=const Module&  [130:39/3894-130:52/3907] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    CLASS Module [29:1/971-70:3/2187] ReferencesTestCase/module.h
+    CLASS Module [51:1/2205-92:3/3421] ReferencesTestCase/module.h
 ==============================================================
-'module', tokenID=identifier, offset=2674 [108:53/2674-108:59/2680]
+'module', tokenID=identifier, offset=3908 [130:53/3908-130:59/3914]
 --OWNER:
-    VARIABLE module [108:39/2660-108:59/2680] ReferencesTestCase/module.cc  TYPE: const &Module TEXT=const Module&  [108:39/2660-108:52/2673]  INIT: null  SCOPE: operator << 
+    VARIABLE module [130:39/3894-130:59/3914] ReferencesTestCase/module.cc  TYPE: const &Module TEXT=const Module&  [130:39/3894-130:52/3907]  INIT: null  SCOPE: operator << 
 --RESOLVED TO:
-    VARIABLE module [108:39/2660-108:59/2680] ReferencesTestCase/module.cc  TYPE: const &Module TEXT=const Module&  [108:39/2660-108:52/2673]  INIT: null  SCOPE: operator << 
+    VARIABLE module [130:39/3894-130:59/3914] ReferencesTestCase/module.cc  TYPE: const &Module TEXT=const Module&  [130:39/3894-130:52/3907]  INIT: null  SCOPE: operator << 
 ==============================================================
-'output', tokenID=identifier, offset=2693 [110:5/2693-110:11/2699]
+'output', tokenID=identifier, offset=3927 [132:5/3927-132:11/3933]
 --OWNER:
     STMT Expression text='output << "** " << module.GetDescription() << " module data **" << endl'
 --RESOLVED TO:
-    VARIABLE output [108:22/2643-108:37/2658] ReferencesTestCase/module.cc  TYPE: &$unresolved$::ostream TEXT=ostream&  [108:22/2643-108:30/2651]  INIT: null  SCOPE: operator << 
+    VARIABLE output [130:22/3877-130:37/3892] ReferencesTestCase/module.cc  TYPE: &$unresolved$::ostream TEXT=ostream&  [130:22/3877-130:30/3885]  INIT: null  SCOPE: operator << 
 ==============================================================
-'module', tokenID=identifier, offset=2712 [110:24/2712-110:30/2718]
+'module', tokenID=identifier, offset=3946 [132:24/3946-132:30/3952]
 --OWNER:
     STMT Expression text='output << "** " << module.GetDescription() << " module data **" << endl'
 --RESOLVED TO:
-    VARIABLE module [108:39/2660-108:59/2680] ReferencesTestCase/module.cc  TYPE: const &Module TEXT=const Module&  [108:39/2660-108:52/2673]  INIT: null  SCOPE: operator << 
+    VARIABLE module [130:39/3894-130:59/3914] ReferencesTestCase/module.cc  TYPE: const &Module TEXT=const Module&  [130:39/3894-130:52/3907]  INIT: null  SCOPE: operator << 
 ==============================================================
-'GetDescription', tokenID=identifier, offset=2719 [110:31/2719-110:45/2733]
+'GetDescription', tokenID=identifier, offset=3953 [132:31/3953-132:45/3967]
 --OWNER:
     STMT Expression text='output << "** " << module.GetDescription() << " module data **" << endl'
 --RESOLVED TO:
-    FUNCTION GetDescription() const  [39:5/1385-39:40/1420] ReferencesTestCase/module.h
+    FUNCTION GetDescription() const  [61:5/2619-61:40/2654] ReferencesTestCase/module.h
 ==============================================================
-'endl', tokenID=identifier, offset=2760 [110:72/2760-110:76/2764]
+'endl', tokenID=identifier, offset=3994 [132:72/3994-132:76/3998]
 --OWNER:
     STMT Expression text='output << "** " << module.GetDescription() << " module data **" << endl'
 --RESOLVED TO:
     null
 ==============================================================
-'output', tokenID=identifier, offset=2770 [111:5/2770-111:11/2776]
+'output', tokenID=identifier, offset=4004 [133:5/4004-133:11/4010]
 --OWNER:
     STMT Expression text='output << "Module type: " << module.GetType() << endl'
 --RESOLVED TO:
-    VARIABLE output [108:22/2643-108:37/2658] ReferencesTestCase/module.cc  TYPE: &$unresolved$::ostream TEXT=ostream&  [108:22/2643-108:30/2651]  INIT: null  SCOPE: operator << 
+    VARIABLE output [130:22/3877-130:37/3892] ReferencesTestCase/module.cc  TYPE: &$unresolved$::ostream TEXT=ostream&  [130:22/3877-130:30/3885]  INIT: null  SCOPE: operator << 
 ==============================================================
-'module', tokenID=identifier, offset=2799 [111:34/2799-111:40/2805]
+'module', tokenID=identifier, offset=4033 [133:34/4033-133:40/4039]
 --OWNER:
     STMT Expression text='output << "Module type: " << module.GetType() << endl'
 --RESOLVED TO:
-    VARIABLE module [108:39/2660-108:59/2680] ReferencesTestCase/module.cc  TYPE: const &Module TEXT=const Module&  [108:39/2660-108:52/2673]  INIT: null  SCOPE: operator << 
+    VARIABLE module [130:39/3894-130:59/3914] ReferencesTestCase/module.cc  TYPE: const &Module TEXT=const Module&  [130:39/3894-130:52/3907]  INIT: null  SCOPE: operator << 
 ==============================================================
-'GetType', tokenID=identifier, offset=2806 [111:41/2806-111:48/2813]
+'GetType', tokenID=identifier, offset=4040 [133:41/4040-133:48/4047]
 --OWNER:
     STMT Expression text='output << "Module type: " << module.GetType() << endl'
 --RESOLVED TO:
-    FUNCTION GetType() const  [46:5/1552-46:45/1592] ReferencesTestCase/module.h
+    FUNCTION GetType() const  [68:5/2786-68:45/2826] ReferencesTestCase/module.h
 ==============================================================
-'endl', tokenID=identifier, offset=2819 [111:54/2819-111:58/2823]
+'endl', tokenID=identifier, offset=4053 [133:54/4053-133:58/4057]
 --OWNER:
     STMT Expression text='output << "Module type: " << module.GetType() << endl'
 --RESOLVED TO:
     null
 ==============================================================
-'output', tokenID=identifier, offset=2829 [112:5/2829-112:11/2835]
+'output', tokenID=identifier, offset=4063 [134:5/4063-134:11/4069]
 --OWNER:
     STMT Expression text='output << "Module category: " << module.GetCategory() << endl'
 --RESOLVED TO:
-    VARIABLE output [108:22/2643-108:37/2658] ReferencesTestCase/module.cc  TYPE: &$unresolved$::ostream TEXT=ostream&  [108:22/2643-108:30/2651]  INIT: null  SCOPE: operator << 
+    VARIABLE output [130:22/3877-130:37/3892] ReferencesTestCase/module.cc  TYPE: &$unresolved$::ostream TEXT=ostream&  [130:22/3877-130:30/3885]  INIT: null  SCOPE: operator << 
 ==============================================================
-'module', tokenID=identifier, offset=2862 [112:38/2862-112:44/2868]
+'module', tokenID=identifier, offset=4096 [134:38/4096-134:44/4102]
 --OWNER:
     STMT Expression text='output << "Module category: " << module.GetCategory() << endl'
 --RESOLVED TO:
-    VARIABLE module [108:39/2660-108:59/2680] ReferencesTestCase/module.cc  TYPE: const &Module TEXT=const Module&  [108:39/2660-108:52/2673]  INIT: null  SCOPE: operator << 
+    VARIABLE module [130:39/3894-130:59/3914] ReferencesTestCase/module.cc  TYPE: const &Module TEXT=const Module&  [130:39/3894-130:52/3907]  INIT: null  SCOPE: operator << 
 ==============================================================
-'GetCategory', tokenID=identifier, offset=2869 [112:45/2869-112:56/2880]
+'GetCategory', tokenID=identifier, offset=4103 [134:45/4103-134:56/4114]
 --OWNER:
     STMT Expression text='output << "Module category: " << module.GetCategory() << endl'
 --RESOLVED TO:
-    FUNCTION GetCategory() const  [50:5/1665-50:49/1709] ReferencesTestCase/module.h
+    FUNCTION GetCategory() const  [72:5/2899-72:49/2943] ReferencesTestCase/module.h
 ==============================================================
-'endl', tokenID=identifier, offset=2886 [112:62/2886-112:66/2890]
+'endl', tokenID=identifier, offset=4120 [134:62/4120-134:66/4124]
 --OWNER:
     STMT Expression text='output << "Module category: " << module.GetCategory() << endl'
 --RESOLVED TO:
     null
 ==============================================================
-'output', tokenID=identifier, offset=2896 [113:5/2896-113:11/2902]
+'output', tokenID=identifier, offset=4130 [135:5/4130-135:11/4136]
 --OWNER:
     STMT Expression text='output << "Number of sub-modules: " << module.GetUnits() << endl'
 --RESOLVED TO:
-    VARIABLE output [108:22/2643-108:37/2658] ReferencesTestCase/module.cc  TYPE: &$unresolved$::ostream TEXT=ostream&  [108:22/2643-108:30/2651]  INIT: null  SCOPE: operator << 
+    VARIABLE output [130:22/3877-130:37/3892] ReferencesTestCase/module.cc  TYPE: &$unresolved$::ostream TEXT=ostream&  [130:22/3877-130:30/3885]  INIT: null  SCOPE: operator << 
 ==============================================================
-'module', tokenID=identifier, offset=2935 [113:44/2935-113:50/2941]
+'module', tokenID=identifier, offset=4169 [135:44/4169-135:50/4175]
 --OWNER:
     STMT Expression text='output << "Number of sub-modules: " << module.GetUnits() << endl'
 --RESOLVED TO:
-    VARIABLE module [108:39/2660-108:59/2680] ReferencesTestCase/module.cc  TYPE: const &Module TEXT=const Module&  [108:39/2660-108:52/2673]  INIT: null  SCOPE: operator << 
+    VARIABLE module [130:39/3894-130:59/3914] ReferencesTestCase/module.cc  TYPE: const &Module TEXT=const Module&  [130:39/3894-130:52/3907]  INIT: null  SCOPE: operator << 
 ==============================================================
-'GetUnits', tokenID=identifier, offset=2942 [113:51/2942-113:59/2950]
+'GetUnits', tokenID=identifier, offset=4176 [135:51/4176-135:59/4184]
 --OWNER:
     STMT Expression text='output << "Number of sub-modules: " << module.GetUnits() << endl'
 --RESOLVED TO:
-    FUNCTION GetUnits() const  [53:5/1741-53:26/1762] ReferencesTestCase/module.h
+    FUNCTION GetUnits() const  [75:5/2975-75:26/2996] ReferencesTestCase/module.h
 ==============================================================
-'endl', tokenID=identifier, offset=2956 [113:65/2956-113:69/2960]
+'endl', tokenID=identifier, offset=4190 [135:65/4190-135:69/4194]
 --OWNER:
     STMT Expression text='output << "Number of sub-modules: " << module.GetUnits() << endl'
 --RESOLVED TO:
     null
 ==============================================================
-'output', tokenID=identifier, offset=2966 [114:5/2966-114:11/2972]
+'output', tokenID=identifier, offset=4200 [136:5/4200-136:11/4206]
 --OWNER:
     STMT Expression text='output << "Module support metric: " << module.GetSupportMetric() << endl'
 --RESOLVED TO:
-    VARIABLE output [108:22/2643-108:37/2658] ReferencesTestCase/module.cc  TYPE: &$unresolved$::ostream TEXT=ostream&  [108:22/2643-108:30/2651]  INIT: null  SCOPE: operator << 
+    VARIABLE output [130:22/3877-130:37/3892] ReferencesTestCase/module.cc  TYPE: &$unresolved$::ostream TEXT=ostream&  [130:22/3877-130:30/3885]  INIT: null  SCOPE: operator << 
 ==============================================================
-'module', tokenID=identifier, offset=3005 [114:44/3005-114:50/3011]
+'module', tokenID=identifier, offset=4239 [136:44/4239-136:50/4245]
 --OWNER:
     STMT Expression text='output << "Module support metric: " << module.GetSupportMetric() << endl'
 --RESOLVED TO:
-    VARIABLE module [108:39/2660-108:59/2680] ReferencesTestCase/module.cc  TYPE: const &Module TEXT=const Module&  [108:39/2660-108:52/2673]  INIT: null  SCOPE: operator << 
+    VARIABLE module [130:39/3894-130:59/3914] ReferencesTestCase/module.cc  TYPE: const &Module TEXT=const Module&  [130:39/3894-130:52/3907]  INIT: null  SCOPE: operator << 
 ==============================================================
-'GetSupportMetric', tokenID=identifier, offset=3012 [114:51/3012-114:67/3028]
+'GetSupportMetric', tokenID=identifier, offset=4246 [136:51/4246-136:67/4262]
 --OWNER:
     STMT Expression text='output << "Module support metric: " << module.GetSupportMetric() << endl'
 --RESOLVED TO:
-    FUNCTION GetSupportMetric() const  [56:5/1802-56:34/1831] ReferencesTestCase/module.h
+    FUNCTION GetSupportMetric() const  [78:5/3036-78:34/3065] ReferencesTestCase/module.h
 ==============================================================
-'endl', tokenID=identifier, offset=3034 [114:73/3034-114:77/3038]
+'endl', tokenID=identifier, offset=4268 [136:73/4268-136:77/4272]
 --OWNER:
     STMT Expression text='output << "Module support metric: " << module.GetSupportMetric() << endl'
 --RESOLVED TO:
     null
 ==============================================================
-'output', tokenID=identifier, offset=3056 [116:12/3056-116:18/3062]
+'output', tokenID=identifier, offset=4290 [138:12/4290-138:18/4296]
 --OWNER:
     STMT Return text='return output;'
 --RESOLVED TO:
-    VARIABLE output [108:22/2643-108:37/2658] ReferencesTestCase/module.cc  TYPE: &$unresolved$::ostream TEXT=ostream&  [108:22/2643-108:30/2651]  INIT: null  SCOPE: operator << 
+    VARIABLE output [130:22/3877-130:37/3892] ReferencesTestCase/module.cc  TYPE: &$unresolved$::ostream TEXT=ostream&  [130:22/3877-130:30/3885]  INIT: null  SCOPE: operator << 
 ==============================================================
