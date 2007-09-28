@@ -152,12 +152,23 @@ public class DatasourceTransferManager implements DesignTimeTransferDataCreator{
             if (schema.equals("")) {
                 if (databaseProductName.equals("MySQL") && url.lastIndexOf("?") == -1)
                     dsName = url.substring(url.lastIndexOf("/") + 1, url.length()) + "_" + databaseProductName;
-                else if (databaseProductName.equals("MySQL")) {
-                    dsName = url.substring(url.lastIndexOf("/") + 1, url.lastIndexOf("?")) + "_" + databaseProductName;;
+                else if (databaseProductName.contains("/")) {
+                    int slashLoc = databaseProductName.indexOf("/");
+                    String prefix = databaseProductName.substring(0, slashLoc-1);
+                    String suffix = databaseProductName.substring(slashLoc);                   
+                    dsName = prefix + "_" + suffix;
+                } else if (databaseProductName.equals("MySQL")) {
+                    dsName = url.substring(url.lastIndexOf("/") + 1, url.lastIndexOf("?")) + "_" + databaseProductName;
                 } else
                     dsName = getTableName() + "_" + databaseProductName;
-            } else
+            } else if (databaseProductName.contains("/")) {
+                int slashLoc = databaseProductName.indexOf("/");
+                String prefix = databaseProductName.substring(0, slashLoc);
+                String suffix = databaseProductName.substring(slashLoc+1);
+                dsName = prefix + "_" + suffix;
+            } else {
                 dsName = dbConnection.getSchema() + "_" + databaseProductName;
+            }
             
             // Check if target server supports data source creation.  If not then cancel drop
             Project currentProj = CurrentProject.getInstance().getCurrentProject(designBeans);
