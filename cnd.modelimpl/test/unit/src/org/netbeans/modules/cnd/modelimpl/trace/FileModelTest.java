@@ -64,6 +64,11 @@ public class FileModelTest extends TraceModelTestBase {
         getTraceModel().setDumpPPState(true);
     }
     
+    public void testStackOverflowOnCastExpression() throws Exception {
+        // IZ#115549 StackOverflowError on parsing long expressions
+        performTest("stackoverflow.cc");        
+    }
+    
     public void testIncompleteString() throws Exception {
         performTest("incomplete_string.cc");        
     }
