@@ -69,6 +69,8 @@ import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement;
+import org.netbeans.modules.cnd.api.model.CsmType;
+import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
@@ -155,6 +157,41 @@ public final class CsmProjectContentResolver {
         this.file = file;
         this.project = file != null ? file.getProject() : null;
         this.sort = needSort;
+    }
+
+    private List<CsmEnumerator> getEnumeratorsFromEnumsAndTypedefs(List enumsAndTypedefs, boolean match, String strPrefix, boolean sort) {
+        List<CsmEnumerator> res = new ArrayList<CsmEnumerator>();
+        if (enumsAndTypedefs != null) {
+            for (Iterator it = enumsAndTypedefs.iterator(); it.hasNext();) {
+                CsmObject ob = (CsmObject) it.next();
+                CsmEnum elemEnum = null;
+                if (CsmKindUtilities.isEnum(ob)) {
+                    elemEnum = (CsmEnum) ob;
+                } else {
+                    // for typedef check whether it defines unnamed enum
+                    assert CsmKindUtilities.isTypedef(ob);
+                    CsmTypedef td = (CsmTypedef) ob;
+                    if (td.isTypeUnnamed() && td.getType() != null) {
+                        CsmType type = td.getType();
+                        if (CsmKindUtilities.isEnum(type.getClassifier())) {
+                            elemEnum = (CsmEnum) type.getClassifier();
+                        }
+                    }
+                }
+                if (elemEnum != null) {
+                    for (Iterator enmtrIter = elemEnum.getEnumerators().iterator(); enmtrIter.hasNext();) {
+                        CsmEnumerator elem = (CsmEnumerator) enmtrIter.next();
+                        if (matchName(elem.getName(), strPrefix, match)) {
+                            res.add(elem);
+                        }
+                    }
+                }
+            }
+            if (sort && res != null) {
+                CsmSortUtilities.sortMembers(res, isCaseSensitive());
+            }
+        }
+        return res;
     }
     
     private CsmProject getProject() {
@@ -470,25 +507,14 @@ public final class CsmProjectContentResolver {
     public List/*<CsmEnumerator>*/ getNamespaceEnumerators(CsmNamespace ns, String strPrefix, boolean match, boolean searchNested) {
         boolean sort = isSortNeeded();
         // get all enums and check theirs enumerators
-        List enums = getNamespaceMembers(ns, CsmDeclaration.Kind.ENUM, "", false, searchNested);
-        List res = new ArrayList();
-        if (enums != null) {
-            for (Iterator it = enums.iterator(); it.hasNext();) {
-                CsmEnum elemEnum = (CsmEnum) it.next();
-                for (Iterator enmtrIter = elemEnum.getEnumerators().iterator(); enmtrIter.hasNext();) {
-                    CsmEnumerator elem = (CsmEnumerator) enmtrIter.next();
-                    if (matchName(elem.getName(), strPrefix, match)) {
-                        if (res == null) {
-                            res = new ArrayList();
-                        }
-                        res.add(elem);
-                    }
-                }
-            }
-            if (sort && res != null) {
-                CsmSortUtilities.sortMembers(res, isCaseSensitive());
-            }
-        }
+        // also get all typedefs and check whether they define
+        // unnamed enum
+        CsmDeclaration.Kind classKinds[] =	{
+            CsmDeclaration.Kind.ENUM,
+            CsmDeclaration.Kind.TYPEDEF
+        };        
+        List enumsAndTypedefs = getNamespaceMembers(ns, classKinds, "", false, searchNested);
+        List res = getEnumeratorsFromEnumsAndTypedefs(enumsAndTypedefs, match, strPrefix, sort);
         return res;
     }
 
@@ -534,25 +560,14 @@ public final class CsmProjectContentResolver {
     public List/*<CsmEnumerator>*/ getEnumerators(CsmClass clazz, CsmOffsetableDeclaration contextDeclaration, String strPrefix, boolean match, boolean inspectParentClasses,boolean scopeAccessedClassifier) {
         boolean sort = isSortNeeded();
         // get all enums and check theirs enumerators
-        List enums = getClassMembers(clazz, contextDeclaration, CsmDeclaration.Kind.ENUM, "", false, false, inspectParentClasses,scopeAccessedClassifier);
-        List res = new ArrayList();
-        if (enums != null) {
-            for (Iterator it = enums.iterator(); it.hasNext();) {
-                CsmEnum elemEnum = (CsmEnum) it.next();
-                for (Iterator enmtrIter = elemEnum.getEnumerators().iterator(); enmtrIter.hasNext();) {
-                    CsmEnumerator elem = (CsmEnumerator) enmtrIter.next();
-                    if (matchName(elem.getName(), strPrefix, match)) {
-                        if (res == null) {
-                            res = new ArrayList();
-                        }
-                        res.add(elem);
-                    }
-                }
-            }
-            if (sort && res != null) {
-                CsmSortUtilities.sortMembers(res, isCaseSensitive());
-            }
-        }
+        // also get all typedefs and check whether they define
+        // unnamed enum
+        CsmDeclaration.Kind classKinds[] =	{
+            CsmDeclaration.Kind.ENUM,
+            CsmDeclaration.Kind.TYPEDEF
+        };        
+        List enumsAndTypedefs = getClassMembers(clazz, contextDeclaration, classKinds, "", false, false, inspectParentClasses,scopeAccessedClassifier);
+        List res = getEnumeratorsFromEnumsAndTypedefs(enumsAndTypedefs, match, strPrefix, sort);
         return res;
     }
     
