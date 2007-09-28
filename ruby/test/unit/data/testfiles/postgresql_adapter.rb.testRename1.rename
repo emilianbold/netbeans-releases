@@ -1,0 +1,2 @@
+4:   def indexes(|>table_name<|, name = nil) #:nodoc:
+12:          AND t.relname = '#{|>table_name<|}'

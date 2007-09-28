@@ -1,0 +1,2 @@
+336:     def each_address(name, &|>proc<|)
+339:         @name2addr[name].each(&|>proc<|)

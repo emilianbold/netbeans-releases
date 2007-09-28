@@ -1,0 +1,8 @@
+302:               |>addr<|, hostname, *aliases = line.split(/\s+/)
+303:               next unless |>addr<|
+304:               |>addr<|.untaint
+306:               @addr2name[|>addr<|] = [] unless @addr2name.include? |>addr<|
+307:               @addr2name[|>addr<|] << hostname
+308:               @addr2name[|>addr<|] += aliases
+310:               @name2addr[hostname] << |>addr<|
+314:                 @name2addr[n] << |>addr<|
