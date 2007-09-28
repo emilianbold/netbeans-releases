@@ -16,6 +16,7 @@
  */
 package org.netbeans.modules.websvc.editor.hints.rules;
 
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
@@ -38,7 +39,7 @@ public class NoOperations extends AbstractWebServiceRule {
     }
 
     protected ErrorDescription[] apply(TypeElement subject, ProblemContext ctx) {
-        if (!hasWebMethods(subject)) {
+        if (subject.getKind() == ElementKind.CLASS && !hasWebMethods(subject)) {
             String label = NbBundle.getMessage(NoOperations.class, "MSG_AddOperation");
             Fix addOperFix = new AddWSOpeartion(ctx.getFileObject());
             ErrorDescription problem = createProblem(subject, ctx, label, addOperFix);
