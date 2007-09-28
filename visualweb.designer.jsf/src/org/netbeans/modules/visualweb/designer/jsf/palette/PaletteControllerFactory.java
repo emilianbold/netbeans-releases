@@ -19,9 +19,9 @@
 
 package org.netbeans.modules.visualweb.designer.jsf.palette;
 
-import org.netbeans.modules.visualweb.api.complib.ComplibEvent;
-import org.netbeans.modules.visualweb.api.complib.ComplibListener;
-import org.netbeans.modules.visualweb.api.complib.ComplibService;
+import org.netbeans.modules.visualweb.complib.api.ComplibEvent;
+import org.netbeans.modules.visualweb.complib.api.ComplibListener;
+import org.netbeans.modules.visualweb.complib.api.ComplibService;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
