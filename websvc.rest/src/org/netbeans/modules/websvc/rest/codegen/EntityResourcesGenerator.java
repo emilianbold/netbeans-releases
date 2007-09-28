@@ -1077,11 +1077,19 @@ public class EntityResourcesGenerator extends AbstractGenerator {
         String[] params = new String[] { "id" };
         Object[] paramTypes = new Object[] { getIdFieldType(bean) };
         
+        // Temporary workaround because Jersey does not support Character type
+        // in UriParam.
+        String idType = bean.getEntityClassInfo().getIdFieldInfo().getType();
+        String idString = "id";     //NOI18N        
+        if (idType.equals("java.lang.Character")) { //NOI18N
+            idString = "id.charAt(0)";
+        }
+        
         String bodyText = "{" +
                 "try {" +
                 "return ($CLASS$) PersistenceService.getInstance()." +
                 "createNamedQuery(\"$CLASS$.findBy$UPPER_ID$\")." +
-                "setParameter(\"$ID$\", id).getSingleResult();" +
+                "setParameter(\"$ID$\", $ID_STRING$).getSingleResult();" +
                 "} catch (NoResultException ex) {" +
                 "throw new WebApplicationException(new Throwable(\"Resource for \" + context.getAbsolute() + \" does not exist.\"), 404);" +
                 "}" +
@@ -1090,7 +1098,7 @@ public class EntityResourcesGenerator extends AbstractGenerator {
         String id = bean.getEntityClassInfo().getIdFieldInfo().getName();
         bodyText = bodyText.replace("$CLASS$", getEntityClassName(bean)).
                 replace("$UPPER_ID$", capitalizeFirstLetter(id)).
-                replace("$ID$", id);
+                replace("$ID$", id).replace("$ID_STRING$", idString);
         
         String comment = "Returns an instance of $CLASS$ identified by id.\n\n" +
                 "@param id identifier for the entity\n" +
@@ -1701,7 +1709,15 @@ public class EntityResourcesGenerator extends AbstractGenerator {
     }
     
     private String getIdFieldType(EntityResourceBean bean) {
-        return bean.getEntityClassInfo().getIdFieldInfo().getType();
+        String type = bean.getEntityClassInfo().getIdFieldInfo().getType();
+   
+        // Temporary workaround because Jersey does not support
+        // Character type in UriParam
+        if (type.equals("java.lang.Character")) {        //NOI18N
+            return "java.lang.String";              //NOI18N
+        }
+        
+        return type;
     }
     
     private String getIdFieldName(EntityResourceBean bean) {
