@@ -26,12 +26,7 @@ This topic describes common tasks that you can perform with NetBeans Ruby. For m
     <td>Create a new Ruby or Ruby on Rails project </td>
     <td><ol>
         <li> Choose File &gt; New Project from the main menu to open the New Project wizard.
-          <object classid=java:com.sun.java.help.impl.JHSecondaryViewer>
-    <param name="content" value="../../ui_elements/editors/visual_designer_popup.html">
-    <param name="viewerActivator" value="javax.help.LinkLabel">
-    <param name="viewerStyle" value="javax.help.Popup">
-    <param name="viewerSize" value="500,500">
-    <param name="text" value="Visual Designer."></object>
+          
 
 </li>
         <li>Select Ruby in the Categories list.</li>
@@ -46,13 +41,7 @@ This topic describes common tasks that you can perform with NetBeans Ruby. For m
     <td>Import an existing Ruby or Ruby on Rails application </td>
     <td><ol>
       <li> Choose File &gt; New Project from the main menu to open the New Project wizard.
-          <object classid=java:com.sun.java.help.impl.JHSecondaryViewer>
-            <param name="content" value="../../ui_elements/editors/visual_designer_popup.html">
-            <param name="viewerActivator" value="javax.help.LinkLabel">
-            <param name="viewerStyle" value="javax.help.Popup">
-            <param name="viewerSize" value="500,500">
-            <param name="text" value="Visual Designer.">
-          </object>
+          
       </li>
       <li>Select Ruby in the Categories list.</li>
       <li>In the projects list, select either  Ruby Application with Existing Sources or Ruby on Rails Application with Existing Sources.</li>
@@ -91,22 +80,25 @@ This topic describes common tasks that you can perform with NetBeans Ruby. For m
   <td>Edit files </td>
   <td><ol>
       <li>In the Projects window, select the node for your project and, if necessary, double-click it to open the node.</li>
-      <li>Navigate to the file you want to edit and double-click it to open it in the editor.</li>
-      </ol></td>
-</tr>
-<tr valign="top">
-  <td>Run Rake tasks </td>
-  <td><ol>
-      <li>In the Projects window, select the name of your project and right-click<a href="usingirb.html"></a> it.</li>
-      <li>Select Run Rake Task and choose the type of task you would like to run.</li>
-      <li>Check the progress of the task in the Output window at the bottom of the IDE.</li>
-  </ol></td>
-</tr>
-<tr valign="top">
-  <td>Use the interactive Ruby shell (irb) in NetBeans </td>
-  <td><ul>
-    <li>Choose Window &gt; Other &gt; Ruby Shell (IRB). For more information, see <a href="usingirb.html">Using Interactive Ruby (IRB)</a>.</li>
-  </ul></td>
+      <li>Navigate to the file you want to edit and double-click it to open it in the editor.
+<p>For more information on the editor, see:
+</p>
+      
+    <ul>
+      <li><a href="editor_shortcuts_codetemplates.html">Ruby Editor Shortcut Keys and Code Templates</a></li>
+    <li>
+    <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+      <param name="viewerActivator" value="javax.help.LinkButton">
+      <param name="content" value=
+        "http://wiki.netbeans.org/wiki/view/RubyEditing">
+      <param name="text" value=
+        "Ruby Editing">
+    </object>
+</li>
+    </ul>
+</li>
+      </ol>
+</td>
 </tr>
 <tr valign="top">
   <td>Choose a database server for a Ruby on Rails project </td>
@@ -119,7 +111,7 @@ This topic describes common tasks that you can perform with NetBeans Ruby. For m
 <tr valign="top">
   <td>Migrate a database </td>
   <td><ul>
-      <li>To migrate a database (for example, add tables that you have defined in a model), right-click the main project node in the Projects window and selecte Migrate Database &gt; To Current Version.</li>
+      <li>To migrate a database (for example, add tables that you have defined in a model), right-click the main project node in the Projects window and choose Migrate Database &gt; To Current Version.</li>
   <li>You can also revert the database to an earlier version by choosing one of the other To Version choices.</li>
   <li>For an example, see  &nbsp;
     <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
@@ -154,15 +146,20 @@ This topic describes common tasks that you can perform with NetBeans Ruby. For m
   </ul></td>
 </tr>
 <tr valign="top">
-  <td>Manage your Ruby gems </td>
+  <td>Run a Ruby or Rails application</td>
   <td><ul>
-    <li>Choose Tools &gt; Ruby Gems to open the <a href="gemmanager.html">Ruby Gems Manager</a>.</li>
-  </ul></td>
+      <li>Click the Run Main Project <img src="images/runprojicon.gif" alt="Run Project button" width="11" height="20" align="absmiddle">&nbsp;toolbar button or press F6 or choose Run &gt; Run Main project from the main menu.
+        <ul>
+          <li>You see a Ruby project's output in a window at the bottom of the IDE.</li>
+          <li>A Ruby on Rails project runs in the WEBrick server and displays in your default browser.</li>
+        </ul>
+      </li>
+  </ul>    </td>
 </tr>
 <tr valign="top">
   <td>Test a Ruby or Rails application</td>
   <td><ul>
-      <li>See <br>
+      <li>See 
           <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
             <param name="viewerActivator" value="javax.help.LinkButton">
             <param name="content" value=
@@ -174,18 +171,68 @@ This topic describes common tasks that you can perform with NetBeans Ruby. For m
   </ul></td>
 </tr>
 <tr valign="top">
+  <td>Debug a Ruby on Rails application </td>
+  <td><p>If you are using the default JRuby interpreter, you can use only the standard debugger.</p>
+    <p>If you have <a href="rubyoptions.html">changed your interpreter</a> to the native Ruby interpreter, you can use the Fast Debugger.</p>
+    <ul>
+      <li>To debug a Ruby on Rails application, choose Run &gt; Debug Main Project from the main menu.
+
+          <p>For more information, see the following links:</p>
+      <ul>
+            <li>
+          <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+            <param name="viewerActivator" value="javax.help.LinkButton">
+            <param name="content" value=
+        "http://wiki.netbeans.org/wiki/view/RubyDebugging">
+            <param name="text" value=
+        "Ruby Debugging">
+          </object>
+</li>
+          <li>The "Debugging and Testing" links at 
+          <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+            <param name="viewerActivator" value="javax.help.LinkButton">
+            <param name="content" value=
+        "http://www.netbeans.org/kb/60/ruby/index.html">
+            <param name="text" value=
+        "NetBeans IDE 6.0 Ruby Documentation">
+          </object>
+</li>
+      </ul>
+      </li>
+    </ul></td>
+</tr>
+<tr valign="top">
   <td>Deploy a JRuby application </td>
   <td><ul>
-    <li>See &nbsp;
-        <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-        <param name="viewerActivator" value="javax.help.LinkButton">
-        <param name="content" value=
+      <li>See &nbsp;
+          <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+            <param name="viewerActivator" value="javax.help.LinkButton">
+            <param name="content" value=
         "http://www.netbeans.org/kb/60/ruby/setting-up.html#glassfish">
-        <param name="text" value=
+            <param name="text" value=
         "Deploying a JRuby Application to Glassfish">
-      </object>&nbsp; in Installing and Configuring Ruby Support.
-
-</li>
+          </object>
+  &nbsp; in Installing and Configuring Ruby Support. </li>
+  </ul></td>
+</tr>
+<tr valign="top">
+  <td>Manage your Ruby gems </td>
+  <td><ul>
+    <li>Choose Tools &gt; Ruby Gems to open the <a href="gemmanager.html">Ruby Gems Manager</a>.</li>
+  </ul></td>
+</tr>
+<tr valign="top">
+  <td>Run Rake tasks </td>
+  <td><ol>
+      <li>In the Projects window, select the name of your project and right-click<a href="usingirb.html"></a> it.</li>
+      <li>Select Run Rake Task and choose the type of task you would like to run.</li>
+      <li>Check the progress of the task in the Output window at the bottom of the IDE.</li>
+  </ol></td>
+</tr>
+<tr valign="top">
+  <td>Use the interactive Ruby shell (irb) in NetBeans </td>
+  <td><ul>
+      <li>Choose Window &gt; Other &gt; Ruby Shell (IRB). For more information, see <a href="usingirb.html">Using Interactive Ruby (IRB)</a>.</li>
   </ul></td>
 </tr>
 </table>
@@ -196,17 +243,7 @@ This topic describes common tasks that you can perform with NetBeans Ruby. For m
 <dd><a href="../component_process.html">Working With Components</a></dd>
 <!--<dd><a href="../probscomponents.html">Problems and Solutions with Components</a></dd> -->
 </dl>
-<dl>
-<dt><a name="tutorials">Tutorials</a></dt>
 
-<dd>
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">
-		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5">
-</object>
-</dd>
-
-</dl>
 
 <hr>
 <!-- Start Customer Feedback Link -->
