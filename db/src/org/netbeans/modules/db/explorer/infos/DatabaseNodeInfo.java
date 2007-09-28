@@ -742,7 +742,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
 
                         //action = (SystemAction)Class.forName(actcn).newInstance();
                         //action = (SystemAction)SharedClassObject.findObject(Class.forName(actcn), true);
-                        action = SystemAction.get(Class.forName(actcn));
+                        action = SystemAction.get(Class.forName(actcn).asSubclass(SystemAction.class));
                         ((DatabaseAction)action).setName(locname);
                         ((DatabaseAction)action).setNode(actnode);
                     } else {
@@ -750,7 +750,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
                         if (l == null) {
                             l = getClass().getClassLoader();
                         }
-                        action = SystemAction.get(Class.forName(actcn, true, l));
+                        action = SystemAction.get(Class.forName(actcn, true, l).asSubclass(SystemAction.class));
                     }
 
                 } catch (Exception e) {
