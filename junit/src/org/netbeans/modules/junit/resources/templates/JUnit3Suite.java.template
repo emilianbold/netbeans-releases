@@ -32,13 +32,13 @@ public class ${name} extends TestCase {
         return suite;
     }
 
-<#if methodSetUp?? && methodSetUp>
+<#if methodSetUp!false>
     protected void setUp() throws Exception {
         super.setUp();
     }
 
 </#if>
-<#if methodTearDown?? && methodTearDown>
+<#if methodTearDown!false>
     protected void tearDown() throws Exception {
         super.tearDown();
     }
