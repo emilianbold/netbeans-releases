@@ -56,7 +56,6 @@ import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.api.java.source.support.CancellableTreePathScanner;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
@@ -127,7 +126,6 @@ public class TestCreator {
     private boolean generateSourceCodeHints = true;
     private boolean generateSetUp = true;
     private boolean generateTearDown = true;
-    private String initialMainMethodBody;
 
     /**
      * Creates a new instance of TestCreator
@@ -679,12 +677,13 @@ public class TestCreator {
 
 
             if (generateMethodJavadoc) {
-                Comment javadoc = Comment.create("\n\t/*"+
+                Comment javadoc = Comment.create(Comment.Style.JAVADOC,
+                        -2,-2,-2,
                         NbBundle.getMessage(
                                 TestCreator.class,
                                 "PROP_src_code_javadoc",   //NOI18N
                                 testMethodName,
-                                srcClass.getSimpleName().toString())+"*/");
+                                srcClass.getSimpleName().toString()));
                 maker.addComment(method, javadoc, true);
             }
 
