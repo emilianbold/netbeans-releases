@@ -8,11 +8,11 @@
             <and>
                 <isfalse value="${{ricoh.dalp.is-managed}}"/>
                 <not>
-                    <available file="./${application.name}.dalp"/>
+                    <available file="./${{application.name}}.dalp"/>
                 </not>
             </and>
         </condition>
-        <fail if="no.unmanaged.dalp" message="Dalp file ${application.name}.dalp is required in project directory when DALP management is set to off."/>
+        <fail if="no.unmanaged.dalp" message="Dalp file ${{application.name}}.dalp is required in project directory when DALP management is set to off."/>
         <condition property="no.vendor.name" value="true">
             <equals arg1="${{application.vendor}}" arg2="" trim="true"/>
         </condition>
@@ -48,7 +48,7 @@
         </taskIf>
         <taskIf if="ricoh.dalp.is-managed" value="false">
             <copy tofile="${{dalp.dist}}">
-                <fileset file="./${application.name}.dalp"/>
+                <fileset file="./${{application.name}}.dalp"/>
             </copy>
             <echo message="Non-managed dalp file ${{dalp.dist}} w/ icon imported"/>
         </taskIf>
@@ -64,7 +64,7 @@
         </taskIf>
         <taskIf if="ricoh.dalp.is-managed" value="false">
             <copy tofile="${{dalp.dist}}">
-                <fileset file="./${application.name}.dalp"/>
+                <fileset file="./${{application.name}}.dalp"/>
             </copy>
             <echo message="Non-managed dalp file ${{dalp.dist}} w/o icon imported"/>
         </taskIf>

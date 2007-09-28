@@ -66,17 +66,17 @@ Microsystems, Inc. All Rights Reserved.
         <jar destfile="${dist.dir}/${dist.jar}" manifest="${ricoh.deployment.keystore.manifest}" update="true"/>
         <signjar jar="${dist.dir}/${dist.jar}" alias="${ricoh.deployment.keystore.alias}" storepass="${ricoh.deployment.keystore.password}" signedjar="${deploy.dir}/${dist.jar}" keystore="${ricoh.deployment.keystore.file}"/>
         <echo message="install ${ricoh.application.uid} cvm ${dist.jar} ${xlet.dalp}" file="${deploy.dir}/bootscript"/>
-        <zip destfile="${rideploy.zip}" basedir="${deploy.dir}"/>
         <echo message="rideploy file = ${rideploy.zip}"/>
     </target>
 
     <target name="create-target" unless="no.application.uid">
         <mkdir dir="${deploy.dir}"/>
         <copy todir="${deploy.dir}" file="${dist.jar}" overwrite="true" failonerror="false"/>
-        <copy todir="${deploy.dir}" overwrite="true">
-            <fileset dir="${dist.dir}/lib"/>
-        </copy>
         <copy todir="${deploy.dir}" file="${dalp.dist}" overwrite="true"/>
+        <copy todir="${deploy.dir}" overwrite="true">
+            <fileset dir="${dist.dir}/lib/"/>
+        </copy>
+        <delete dir="${dist.dir}/lib/"/> <!-- not sure, if this is the best option -->
     </target>
 
     <target name="deploy-ricoh" depends="create-target" unless="no.application.uid"> <!--"-do-init-target, build-target, update-dalp-index, servlet-dist" > -->
@@ -95,12 +95,6 @@ Microsystems, Inc. All Rights Reserved.
 
         <echo message="Variable configuration:"/>
         <echoproperties/> 
-        <property name="xlet.jar" value="${deploy.dir}/${ant.project.name}.jar"/>
-        <copy todir="${deploy.dir}">
-            <fileset dir="${dist.jar.dir}">
-                <include name="lib"/>
-            </fileset>
-        </copy>
         <antcall target="sign-jar"/>  
         
         <!--default deployment method -->
@@ -109,10 +103,7 @@ Microsystems, Inc. All Rights Reserved.
         <taskIf if="ricoh.deployment.deploy.method" value="sdcard">
             <echo message="Deploying to SD Card @ ${ricoh.deployment.sdcard.path}"/>
             <copy todir="${ricoh.deployment.sdcard.path}/sdk/dsdk/dist/${ricoh.application.uid}" overwrite="true" >
-                <fileset dir="${deploy.dir}">
-                    <include name="*.jar"/>
-                    <include name="*.dalp"/>
-                </fileset>
+                <fileset dir="${deploy.dir}"/>
             </copy>
         </taskIf>
         
@@ -122,6 +113,9 @@ Microsystems, Inc. All Rights Reserved.
             <property name="ricoh.deployment.http.port" value="8080"/>
             <property name="ricoh.deployment.http.platform" value="SDK/J 2.0+"/>    
             
+            <zip destfile="${rideploy.zip}">
+                <fileset dir="${deploy.dir}"/>
+            </zip>
             <echo message="Installing directly to MFD:"/>
             <echo message="Host:        ${ricoh.deployment.server.name}"/>
             <echo message="Port:        ${ricoh.deployment.http.port}"/>

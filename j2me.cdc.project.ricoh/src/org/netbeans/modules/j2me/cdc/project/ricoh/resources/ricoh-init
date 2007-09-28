@@ -20,12 +20,11 @@
         <property name="xlet.dalp" value="${{application.name}}.dalp"/>
         <property name="xlet.dalp.name-only" value="${{application.name}}.dalp"/>
         <property name="deploy.dir" value="${{dist.dir}}/deploy"/>
-        <property name="signed.jar" value="${{dist.dir}}/RICOH.jar"/>
-        <property name="rideploy.zip" value="${{dist.dir}}/RICOH.zip"/>
+        <property name="rideploy.zip" value="${{dist.dir}}/${{application.name}}.zip"/>
         <property name="ricoh.dalp.is-managed" value="true"/>
         <property name="ricoh.dalp.information.is-icon-used" value="true"/>
         <property name="ricoh.platform.target.version" value="2.0"/>
-        <property name="ricoh.dalp.version" value="${deployment.number}"/>
+        <property name="ricoh.dalp.version" value="${{deployment.number}}"/>
         <property name="ricoh.dalp.application-desc.visible" value="true"/>
         <property name="ricoh.dalp.install.destination" value="hdd"/>
         <property name="ricoh.dalp.install.work-dir" value="hdd"/>
