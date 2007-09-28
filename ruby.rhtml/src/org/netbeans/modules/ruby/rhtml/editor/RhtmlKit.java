@@ -43,7 +43,7 @@ import org.netbeans.modules.gsf.SelectCodeElementAction;
 import org.netbeans.modules.ruby.BracketCompleter;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
-import org.netbeans.modules.ruby.rhtml.RhtmlDocument;
+//import org.netbeans.modules.ruby.rhtml.RhtmlDocument;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
 import org.openide.util.Exceptions;
 
