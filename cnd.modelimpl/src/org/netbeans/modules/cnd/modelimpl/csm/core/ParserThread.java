@@ -78,7 +78,7 @@ public class ParserThread implements Runnable {
                             APTPreprocHandler.State state = entry.getPreprocState();
                             if (state != null) {
                                 // init from entry
-                                preprocHandler = file.getProjectImpl().createDefaultPreprocHandler(file.getBuffer().getFile());
+                                preprocHandler = file.getProjectImpl().createEmptyPreprocHandler(file.getBuffer().getFile());
                                 if( TraceFlags.TRACE_PARSER_QUEUE ) {
                                     System.err.println("before ensureParse on " + file.getAbsolutePath() + 
                                             ParserQueue.tracePreprocState(state)); 

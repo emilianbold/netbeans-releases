@@ -741,7 +741,7 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         }
     }
     
-    protected APTPreprocHandler createDefaultPreprocHandler(File file) {
+    protected APTPreprocHandler createEmptyPreprocHandler(File file) {
         StartEntry startEntry = new StartEntry(FileContainer.getFileKey(file, true),
                 RepositoryUtils.UIDtoKey(getUID()));
         return APTHandlersSupport.createEmptyPreprocHandler(startEntry);
@@ -803,7 +803,7 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
     }
     
     /*package*/ final APTPreprocHandler getPreprocHandler(File file) {
-        APTPreprocHandler preprocHandler = createDefaultPreprocHandler(file);
+        APTPreprocHandler preprocHandler = createEmptyPreprocHandler(file);
         APTPreprocHandler.State state = getPreprocState(file);
         preprocHandler = restorePreprocHandler(file, preprocHandler, state);
         return preprocHandler;
