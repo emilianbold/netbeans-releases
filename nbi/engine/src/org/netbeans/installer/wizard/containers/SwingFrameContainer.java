@@ -22,6 +22,7 @@ package org.netbeans.installer.wizard.containers;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -31,11 +32,12 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.net.URL;
 import javax.swing.AbstractAction;
+import javax.swing.ImageIcon;
 import javax.swing.JRootPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import javax.swing.border.LineBorder;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.FileProxy;
 import org.netbeans.installer.utils.ResourceUtils;
@@ -93,7 +95,7 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
         super();
         
         frameWidth = UiUtils.getDimension(System.getProperties(),
-                WIZARD_FRAME_WIDTH_PROPERTY,  
+                WIZARD_FRAME_WIDTH_PROPERTY,
                 DEFAULT_WIZARD_FRAME_WIDTH);
         frameMinimumWidth = UiUtils.getDimension(System.getProperties(),
                 WIZARD_FRAME_MINIMUM_WIDTH_PROPERTY,
@@ -103,7 +105,7 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
                 DEFAULT_WIZARD_FRAME_MAXIMUM_WIDTH);
         
         frameHeight = UiUtils.getDimension(System.getProperties(),
-                WIZARD_FRAME_HEIGHT_PROPERTY,  
+                WIZARD_FRAME_HEIGHT_PROPERTY,
                 DEFAULT_WIZARD_FRAME_HEIGHT);
         frameMinimumHeight = UiUtils.getDimension(System.getProperties(),
                 WIZARD_FRAME_MINIMUM_HEIGHT_PROPERTY,
@@ -356,6 +358,11 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
         private NbiPanel titlePanel;
         
         /**
+         * Container for the title and description image.
+         */
+        private NbiPanel titleDescriptionImagePanel;
+        
+        /**
          * Separator between the wizard page header (title and description) and the
          * main wizard page contents.
          */
@@ -511,10 +518,27 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
             titlePanel.setLayout(new GridBagLayout());
             titlePanel.setOpaque(true);
             
+            
+            
             String imageUri = System.getProperty(WIZARD_FRAME_HEAD_IMAGE_URI_PROPERTY);
             if(imageUri!=null) {
-                titlePanel.setBackgroundImage(imageUri, titlePanel.ANCHOR_BOTTOM_RIGHT);
-                
+                titleDescriptionImagePanel = new NbiPanel();
+                titleDescriptionImagePanel.setBackgroundImage(imageUri, NbiPanel.ANCHOR_TOP_RIGHT);
+                ImageIcon icon = titleDescriptionImagePanel.getBackgroundImage(NbiPanel.ANCHOR_TOP_RIGHT);
+                titleDescriptionImagePanel.setPreferredSize(new Dimension(icon.getIconWidth(), icon.getIconHeight()));
+                titleDescriptionImagePanel.setPreferredSize(new Dimension(icon.getIconWidth(),icon.getIconHeight()));
+                titleDescriptionImagePanel.setMaximumSize(new Dimension(icon.getIconWidth(),icon.getIconHeight()));
+                titleDescriptionImagePanel.setMinimumSize(new Dimension(icon.getIconWidth(),0));
+                titleDescriptionImagePanel.setSize(new Dimension(icon.getIconWidth(),icon.getIconHeight()));                
+                titleDescriptionImagePanel.setOpaque(false);
+                titlePanel.add(titleDescriptionImagePanel, new GridBagConstraints(
+                    1, 0,                             // x, y
+                    1, 2,                             // width, height
+                    0.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.NORTH,    // anchor
+                    GridBagConstraints.BOTH,          // fill
+                    new Insets(0, 0, 0, 0),        // padding
+                    0, 0));                           // padx, pady - ???
             }
             
             // topSeparator /////////////////////////////////////////////////////////
@@ -538,7 +562,7 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
                     0, 0));                           // padx, pady - ???
             titlePanel.add(topSeparator, new GridBagConstraints(
                     0, 2,                             // x, y
-                    1, 1,                             // width, height
+                    2, 1,                             // width, height
                     1.0, 0.0,                         // weight-x, weight-y
                     GridBagConstraints.CENTER,        // anchor
                     GridBagConstraints.HORIZONTAL,    // fill
@@ -735,7 +759,7 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
      * Default value for the wizard frame's initial height.
      */
     public static final int DEFAULT_WIZARD_FRAME_HEIGHT =
-           NbiFrame.DEFAULT_FRAME_HEIGHT;
+            NbiFrame.DEFAULT_FRAME_HEIGHT;
     
     /**
      * Default value for the wizard frame's minimum height.
