@@ -107,10 +107,7 @@ public abstract class ProcessOnExitCleanerHandler implements OnExitCleanerHandle
             try {
                 ProcessBuilder builder= new ProcessBuilder(runningCommand);
                 builder.directory(SystemUtils.getUserHomeDirectory());
-                Process process = builder.start();
-                process.getInputStream().close();
-                process.getOutputStream().close();
-                process.getErrorStream().close();                      
+                builder.start();
                 LogManager.log(ErrorLevel.DEBUG, "... cleaning process has been started ");
             } catch (IOException ex) {
                 LogManager.log(ex);
