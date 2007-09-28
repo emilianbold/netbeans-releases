@@ -84,7 +84,9 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="900"/>
                  <attr name="template" boolvalue="true"/>
                  <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.xml.jaxb.ui.JAXBWizardIterator.create"/>
-                 <attr name="templateCategory" stringvalue="java-classes"/>
+                 <!-- attr name="templateCategory" stringvalue="java-classes"/-->
+                 <!-- attr name="templateCategory" stringvalue="web-service-clients,web-services"/-->
+                 <attr name="templateCategory" stringvalue="web-service-clients"/>
                  <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/jaxb/resources/JAXBWiz.html"/>
                  <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.jaxb.Bundle"/>
                  <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/jaxb/resources/XML_file.png"/> 
