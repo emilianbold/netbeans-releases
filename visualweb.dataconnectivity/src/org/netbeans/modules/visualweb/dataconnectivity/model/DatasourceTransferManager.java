@@ -154,8 +154,8 @@ public class DatasourceTransferManager implements DesignTimeTransferDataCreator{
                     dsName = url.substring(url.lastIndexOf("/") + 1, url.length()) + "_" + databaseProductName;
                 else if (databaseProductName.contains("/")) {
                     int slashLoc = databaseProductName.indexOf("/");
-                    String prefix = databaseProductName.substring(0, slashLoc-1);
-                    String suffix = databaseProductName.substring(slashLoc);                   
+                    String prefix = databaseProductName.substring(0, slashLoc);
+                    String suffix = databaseProductName.substring(slashLoc+1);                   
                     dsName = prefix + "_" + suffix;
                 } else if (databaseProductName.equals("MySQL")) {
                     dsName = url.substring(url.lastIndexOf("/") + 1, url.lastIndexOf("?")) + "_" + databaseProductName;
