@@ -21,6 +21,7 @@ package org.netbeans.modules.groovy.grailsproject;
 
 import org.netbeans.modules.groovy.grails.api.GrailsServerState;
 import org.netbeans.modules.groovy.grailsproject.ui.GrailsLogicalViewProvider;
+import org.netbeans.modules.groovy.grailsproject.ui.GrailsProjectCustomizerProvider;
 import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import javax.swing.Icon;
@@ -64,6 +65,7 @@ public final class GrailsProject implements Project {
                 new Info(), //Project information implementation
                 new GrailsSources(projectDir),
                 new GrailsServerState(),
+                new GrailsProjectCustomizerProvider(this),
                 logicalView //Logical view of project implementation
             );
         }

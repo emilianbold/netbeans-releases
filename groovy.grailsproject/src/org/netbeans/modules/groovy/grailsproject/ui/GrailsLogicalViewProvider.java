@@ -227,6 +227,7 @@ public class GrailsLogicalViewProvider implements LogicalViewProvider {
             actions.add(null);
             actions.add(new GrailsServerCommandAction(project));
             actions.add(SystemAction.get(FindAction.class));
+            actions.add(CommonProjectActions.customizeProjectAction());
             
             return actions.toArray(new Action[actions.size()]);
             
