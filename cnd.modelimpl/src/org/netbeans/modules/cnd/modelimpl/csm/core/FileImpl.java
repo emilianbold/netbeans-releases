@@ -169,10 +169,6 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         Notificator.instance().registerNewFile(this);
     }    
     
-    public FileImpl(FileBuffer fileBuffer, ProjectBase project) {
-	this(fileBuffer, project, UNDEFINED_FILE, (APTPreprocHandler)null);
-    }
-    
     private ProjectBase _getProject(boolean assertNotNull) {
         ProjectBase prj = this.projectRef;
         if (prj == null) {
