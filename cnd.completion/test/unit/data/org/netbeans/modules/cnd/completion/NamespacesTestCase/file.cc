@@ -40,7 +40,7 @@ void usingS1() {
 }
 
 void usingS2() {
-    using namespace S2;
+     //
      //
 }
 

@@ -56,6 +56,15 @@ public class NamespacesTestCase extends CompletionBaseTestCase {
         super(testName, true);
     }
     
+    public void testNs1StructVariable() throws Exception {
+        // IZ#102894: Hyperlink and Code Completion works badly with namespaces
+        super.performTest("file.cc", 39, 5, "q.");
+    }
+    
+    public void testNs2() throws Exception {
+        // IZ#102894: Hyperlink and Code Completion works badly with namespaces
+        super.performTest("file.cc", 43, 5, "using namespace S1::");
+    }    
     public void testInFunction() throws Exception {
         super.performTest("file.cc", 5, 5);
     }        
