@@ -18,9 +18,6 @@ package org.netbeans.modules.j2ee.core.api.support.java;
 
 import java.util.StringTokenizer;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
@@ -33,6 +30,7 @@ public final class JavaIdentifiers {
 
     private JavaIdentifiers(){
     }
+
     /**
      * Checks whether the given <code>packageName</code> represents a
      * valid name for a package.
@@ -62,17 +60,15 @@ public final class JavaIdentifiers {
      * Gets the fully qualified name for the given <code>fileObject</code>. If it
      * represents a java package, returns the name of the package (with dots as separators).
      *
-     *@param fileObject the file object whose FQN is to be get. Must belong to
-     * a project.
-     *@return the FQN for the given file object.
+     * @param fileObject the file object whose FQN is to be get.
+     * @return the FQN for the given file object or null.
      */
     public static String getQualifiedName(FileObject fileObject){
-        Project project = FileOwnerQuery.getOwner(fileObject);
-        if (project == null){
-           throw new IllegalArgumentException("The given FileObject [" + fileObject +"] does not belong to any project");//NO18N                  "")
+        ClassPath classPath = ClassPath.getClassPath(fileObject, ClassPath.SOURCE);
+        if (classPath != null) {
+            return classPath.getResourceName(fileObject, '.', false);
         }
-        ClassPathProvider classPathProvider = project.getLookup().lookup(ClassPathProvider.class);
-        return classPathProvider.findClassPath(fileObject, ClassPath.SOURCE).getResourceName(fileObject, '.', false);
+        return null;
     }
     
     /**
