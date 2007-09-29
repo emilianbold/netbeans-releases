@@ -70,7 +70,7 @@ import org.openide.util.Utilities;
  */
 public class AbstractVariable implements LocalVariable, Customizer {
     
-    private GdbDebugger _debugger;
+    private GdbDebugger debugger;
     private CallStackFrame csf;
     protected String name;
     protected String type;
@@ -88,7 +88,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
     public AbstractVariable(GdbVariable var) {
         this(var.getName(), var.getType(), var.getValue(), var.getDerefedValue());
         
-        getDebugger(); // get and save _debugger
+        getDebugger(); // get and save debugger
     }
     
     public AbstractVariable(String name) {
@@ -110,9 +110,8 @@ public class AbstractVariable implements LocalVariable, Customizer {
             value = GdbUtils.mackHack(value);
         }
         
-        GdbDebugger debugger = getDebugger();
-        if (debugger != null) {
-            debugger.waitForTypeCompletionCompletion();
+        if (getDebugger() != null) {
+            getDebugger().waitForTypeCompletionCompletion();
             expandChildrenFromValue(this);
         }
     }
@@ -143,8 +142,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
         int pos;
         
         if (getFieldsCount() == 0) {
-            GdbDebugger debugger = getDebugger();
-            if (debugger != null) {
+            if (getDebugger() != null) {
                 value = value.trim();
                 if (value.length() > 0 && value.charAt(0) == '(' && (pos = GdbUtils.findMatchingParen(value, 0)) != -1) {
                     // Strip a cast
@@ -165,7 +163,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
                     if (value == null) { // Invalid input
                         msg = NbBundle.getMessage(AbstractVariable.class, "ERR_SetValue_Invalid_Number"); // NOI18N
                     }
-                } else if (debugger.isCplusPlus() && type.equals("bool")) { // NOI18N
+                } else if (getDebugger().isCplusPlus() && type.equals("bool")) { // NOI18N
                     if (!value.equals("true") && !value.equals("false") && !isNumber(value)) { // NOI18N
                         msg = NbBundle.getMessage(AbstractVariable.class, "ERR_SetValue_Invalid_CplusPlus_Bool"); // NOI18N
                     }
@@ -206,7 +204,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
                         }
                     }
                     ovalue = this.value;
-                    debugger.updateVariable(this, fullname, value);
+                    getDebugger().updateVariable(this, fullname, value);
                 }
             }
         }
@@ -411,21 +409,20 @@ public class AbstractVariable implements LocalVariable, Customizer {
     }
     
     protected final GdbDebugger getDebugger() {
-        if (_debugger == null) {
+        if (debugger == null) {
             DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager().getCurrentEngine();
             if (currentEngine == null) {
                 return null;
             }
-            _debugger = (GdbDebugger) currentEngine.lookupFirst(null, GdbDebugger.class);
+            debugger = (GdbDebugger) currentEngine.lookupFirst(null, GdbDebugger.class);
         }
-        return _debugger;
+        return debugger;
     }
     
     private CallStackFrame getCurrentCallStackFrame() {
         if (csf == null) {
-            GdbDebugger debugger = getDebugger();
-            if (debugger != null) {
-                csf = debugger.getCurrentCallStackFrame();
+            if (getDebugger() != null) {
+                csf = getDebugger().getCurrentCallStackFrame();
             }
             if (csf == null) {
                 throw new IllegalStateException();
@@ -513,6 +510,9 @@ public class AbstractVariable implements LocalVariable, Customizer {
                             }
                         }
                     }
+                } else if (GdbUtils.isArray(t) && t.startsWith("char [")) { // NOI18N
+                    // gdb puts them in string
+                    count += parseCharArray(var, var.name, t, v.substring(1, v.length() - 1));
                 } else if (var.derefValue != null) {
                     if (var.type.endsWith(" **") && // NOI18N
                             isCharString(var.type.substring(0, var.type.length() - 1))) {
@@ -689,6 +689,38 @@ public class AbstractVariable implements LocalVariable, Customizer {
             }
         }
         return null;
+    }
+    
+    private int parseCharArray(AbstractVariable var, String basename, String type, String value) {
+        int pos = type.indexOf(']');
+        int vidx = 1;
+        
+        try {
+            int count = Integer.parseInt(type.substring(6, pos));
+            for (int i = 0; i < count; i++) {
+                String val;
+                if (vidx < (value.length() - 2) && value.substring(vidx, vidx + 2).equals("\\\\")) { // NOI18N
+                    char ch = value.charAt(vidx + 2);
+                    if (Character.isDigit(ch)) {
+                        val = '\\' + value.substring(vidx + 2, vidx + 5);
+                        vidx += 5;
+                    } else {
+                        val = '\\' + value.substring(vidx + 2, vidx + 3);
+                        vidx += 3;
+                    }
+                } else if (value.charAt(vidx) == '\\') { // we're done...
+                    val = "\\000"; // NOI18N
+                } else {
+                    val = value.substring(vidx, vidx + 1);
+                    vidx++;
+                }
+                var.addField(new AbstractField(var, basename + "[" + i + "]", "char", // NOI18N
+                    '\'' + val + '\''));
+            }
+            return count;
+        } catch (NumberFormatException nfe) {
+        }
+        return 0;
     }
     
     private int parseArray(AbstractVariable var, String basename, String type, String value) {

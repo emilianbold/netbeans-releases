@@ -41,6 +41,12 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.utils;
 
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CharsetEncoder;
+import java.nio.charset.CoderResult;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -261,20 +267,68 @@ public class GdbUtils {
             } else if (ch == '[') {
                 tend = findMatchingBrace(info, i);
             } else {
-//                log.fine("INTERNAL ERROR: GdbLogger.createMapFromString(msg) cannot parse message. msg="+info); // NOI18N
                 break;
             }
             
             // put the value in the map and prepare for the next property
             value = info.substring(i, tend);
             if (Utilities.isWindows() && value.startsWith("/cygdrive/")) { // NOI18N
-                value = value.charAt(10) + ":" + value.substring(11); // NOI18N
+                value = value.charAt(10) + ':' + value.substring(11);
+            }
+            if (key.equals("fullname") || key.equals("file")) { // NOI18N
+                value = gdbToUTF(value); // possibly convert multi-byte fields
             }
             map.put(key, value);
             i = tend + 2;
         }
         
         return map;
+    }
+    
+    public static String gdbToUTF(String string) {
+        String lang = System.getenv("LANG") + System.getenv("LC_ALL"); // NOI18N
+        
+        if (lang != null && (lang.contains("UTF-8") || lang.contains("UTF8"))) { // NOI18N
+            Charset cs = Charset.forName("UTF-8"); // NOI18N
+            CharsetDecoder decoder = cs.newDecoder();
+            GdbDecoder gpd = new GdbDecoder(cs, decoder);
+            ByteBuffer in = ByteBuffer.wrap(string.getBytes());
+            CharBuffer out = CharBuffer.allocate(string.length());
+            CoderResult cres = gpd.decode(in, out, true);
+            
+            if (!cres.isError()) {
+                string = new String(out.array()).substring(0, out.position());
+            }
+        }
+        return string;
+    }
+    
+    public static String utfToGdb(String string) {
+        String lang = System.getenv("LANG") + System.getenv("LC_ALL"); // NOI18N
+        
+        if (lang != null && (lang.contains("UTF-8") || lang.contains("UTF8"))) { // NOI18N
+            Charset cs = Charset.forName("UTF-8"); // NOI18N
+            CharsetEncoder encoder = cs.newEncoder();
+            GdbEncoder gpe = new GdbEncoder(cs, encoder);
+            CharBuffer in = CharBuffer.wrap(string.toCharArray());
+            ByteBuffer out = ByteBuffer.allocate(string.length() << 3);
+            CoderResult cres = gpe.encode(in, out, true);
+            
+            if (!cres.isError()) {
+                string = new String(out.array()).substring(0, out.position());
+            }
+        }
+        return string;
+    }
+    
+    public static boolean isMultiByte(String file) {
+        char[] ch = file.toCharArray();
+        for (int i = 0; i < file.length(); i++) {
+            if (ch[i] > 0x80) {
+                return true;
+            }
+        }
+        return false;
     }
     
     /**
@@ -311,6 +365,9 @@ public class GdbUtils {
             value = info.substring(idx, tend);
             if (Utilities.isWindows() && value.startsWith("/cygdrive/")) { // NOI18N
                 value = value.charAt(10) + ":" + value.substring(11); // NOI18N
+            }
+            if (key.equals("fullname") || key.equals("file")) { // NOI18N
+                value = gdbToUTF(value); // possibly convert multi-byte fields
             }
             list.add(key + "=" + value); // NOI18N
             idx = tend + 1;

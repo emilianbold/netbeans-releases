@@ -41,12 +41,6 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.URLMapper;
-import org.openide.util.Utilities;
-
 /**
  * Notifies about function breakpoint events.
  *
@@ -143,6 +137,7 @@ public class FunctionBreakpoint extends GdbBreakpoint {
      *
      * @return  a string representation of the object
      */
+    @Override
     public String toString() {
         return "FunctionBreakpoint " + function; // NOI18N
     }

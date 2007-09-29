@@ -56,7 +56,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.util.Utilities;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
-import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
+import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
 
 /**
  * Class GdbProxy is a Controller component of gdb driver
@@ -294,10 +294,19 @@ public class GdbProxy implements GdbMiDefinitions {
      * @return token number
      */
     public int break_insert(int flags, String name) {
-        StringBuilder cmd = new StringBuilder(MI_CMD_BREAK_INSERT);
+        StringBuilder cmd = new StringBuilder();
 
-        if ((flags & GdbDebugger.GDB_TMP_BREAKPOINT) != 0) {
-            cmd.append("-t "); // NOI18N
+        if (GdbUtils.isMultiByte(name)) {
+            if ((flags & GdbDebugger.GDB_TMP_BREAKPOINT) != 0) {
+                cmd.append("tbreak "); // NOI18N
+            } else {
+                cmd.append("break "); // NOI18N
+            }
+        } else {
+            cmd.append(MI_CMD_BREAK_INSERT);
+            if ((flags & GdbDebugger.GDB_TMP_BREAKPOINT) != 0) {
+                cmd.append("-t "); // NOI18N
+            }
         }
 
         // Temporary fix for Windows

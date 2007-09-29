@@ -145,7 +145,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private Map<Integer, GdbVariable> symbolCompletionTable = new HashMap<Integer, GdbVariable>();
     private Map<Integer, StringBuilder> typeCompletionTable = new HashMap<Integer, StringBuilder>();
     private Set<String> typePendingTable = new HashSet<String>();
-    private Map<Integer, GdbVariable> valueCompletionTable = new HashMap<Integer, GdbVariable>();
     private Map<Integer, AbstractVariable> derefValueMap = new HashMap<Integer, AbstractVariable>();
     private Map<Integer, GdbWatchVariable> watchTypeMap = new HashMap<Integer, GdbWatchVariable>();
     private Map<Integer, GdbWatchVariable> watchValueMap = new HashMap<Integer, GdbWatchVariable>();
@@ -453,29 +452,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             if (token == ttToken) {
                 ttAnnotation.postToolTip(msg.substring(13, msg.length() - 1));
                 ttToken = 0;
-            } else if ((var = valueCompletionTable.remove(itok)) != null) {
-                if (GdbUtils.isPointer(var.getType())) {
-                    if (var.getType().replace(" ", "").indexOf("**") != -1) { // NOI18N
-                        int argc;
-                        if (var.getName().equals("argv") && (argc = findArgcFromLocals()) > 0) { // NOI18N
-                            List<GdbVariable> children = var.getChildren();
-                            int nchildren = var.getNumberChildren();
-                            if (nchildren == 0) {
-                                for (int i = 1; i < argc; i++) {
-                                    int tok = gdb.data_evaluate_expression(var.getName() + '[' + i + ']');
-                                    valueCompletionTable.put(Integer.valueOf(tok), var);
-                                }
-                            }
-                            String val = msg.substring(13, msg.length() - 1);
-                            children.add(new GdbVariable(var.getName() + '[' + nchildren + ']',
-                                    GdbUtils.getBaseType(var.getType()) + " *", val)); // NOI18N
-                        }
-                    } else {
-                        var.setDerefedValue(msg.substring(13, msg.length() - 1));
-                    }
-                } else {
-                    var.setValue(msg.substring(13, msg.length() - 1));
-                }
             } else if ((avar = derefValueMap.remove(itok)) != null) {
                 avar.setDerefValue(msg.substring(13, msg.length() - 1));
             } else if ((watch = watchValueMap.remove(itok)) != null) {
@@ -529,10 +505,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             msg = msg.substring(11);
             
             if (typeCompletionTable.get(itok) != null) {
-                String s = typeCompletionTable.remove(itok).toString();
-                typePendingTable.remove(s.substring(0, s.indexOf('=')));
-            } else if (valueCompletionTable.get(itok) != null) {
-                valueCompletionTable.remove(itok);
+                typeCompletionTable.remove(itok);
             }
             if (token == ttToken) { // invalid tooltip request
                 ttAnnotation.postToolTip('>' + msg.substring(1, msg.length() - 1) + '<');
@@ -667,6 +640,16 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             }
             if (msg.contains("cygwin")) { // NOI18N
                 cygwin = true;
+            }
+        } else if (msg.startsWith("Breakpoint ") && msg.contains(" at 0x")) { // NOI18N
+            // Due to a gdb bug (6.6 and earlier) we use a "break" command for multi-byte filenames
+            int pos = msg.indexOf(' ', 12);
+            String num = msg.substring(11, pos);
+            Map<String, String> map = new HashMap<String, String>();
+            map.put("number", num); // NOI18N
+            breakpointValidation(token, map);
+            if (getState().equals(STATE_SILENT_STOP)) {
+                setRunning();
             }
         } else if (msg.startsWith("Copyright ") || // NOI18N
                 msg.startsWith("GDB is free software,") || // NOI18N
@@ -1060,8 +1043,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 while (!isTypeCompletionComplete() && state.equals(STATE_STOPPED) && tcwait++ < 40) {
                     if (tcwait > 5) {
                         log.warning("Waiting for type completion - " + tcwait +
-                                " [TCT: " + typeCompletionTable.size() + ", TPT: " + typePendingTable.size() + // NOI18N
-                                ", VCT: " + valueCompletionTable.size() + "]"); // NOI18N
+                                " [TCT: " + typeCompletionTable.size() + // NOI18N
+                                ", TPT: " + typePendingTable.size() + "]"); // NOI18N
                     }
                     try {
                         Thread.sleep(250);
@@ -1074,7 +1057,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     }
     
     public boolean isTypeCompletionComplete() {
-        return typeCompletionTable.isEmpty() && typePendingTable.isEmpty() && valueCompletionTable.isEmpty();
+        return typeCompletionTable.isEmpty() && typePendingTable.isEmpty();
     }
     
     /**
@@ -1137,18 +1120,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 for (GdbVariable var : localVariables) {
                     int token = gdb.whatis(var.getName());
                     symbolCompletionTable.put(Integer.valueOf(token), var);
-
-                    String value = var.getValue();
-                    if (value.charAt(0) == '(') {
-                        int pos = GdbUtils.findMatchingParen(value, 0);
-                        if (pos > 0) {
-                            String cast = value.substring(0, pos + 1);
-                            if (cast.indexOf("*)") > 0) { // NOI18N
-                                token = gdb.data_evaluate_expression('*' + var.getName());
-                                valueCompletionTable.put(Integer.valueOf(token), var);
-                            }
-                        }
-                    }
                 }
             }
         }

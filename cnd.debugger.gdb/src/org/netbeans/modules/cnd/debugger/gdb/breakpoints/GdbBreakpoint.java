@@ -54,6 +54,7 @@ import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.event.GdbBreakpointEvent;
 import org.netbeans.modules.cnd.debugger.gdb.event.GdbBreakpointListener;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
+import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Utilities;
@@ -142,9 +143,9 @@ public abstract class GdbBreakpoint extends Breakpoint {
      * @param file name
      */
     public void setURL(String url) {
-        String old;
+        url = GdbUtils.gdbToUTF(url);
         synchronized (this) {
-            if (url == this.url || (url != null && this.url != null && url.equals(this.url))) {
+            if (url != null && this.url != null && url.equals(this.url)) {
                 return;
             }
             // The code below is a protection against "invalid" URL values.
@@ -174,7 +175,6 @@ public abstract class GdbBreakpoint extends Breakpoint {
             } catch (Exception ex) {
                 assert !Boolean.getBoolean("gdb.assertions.enabled"); // NOI18N
             }
-            old = this.url;
             this.url = url;
         }
 //        firePropertyChange(PROP_URL, old, url);
@@ -201,7 +201,7 @@ public abstract class GdbBreakpoint extends Breakpoint {
                 c = ""; // NOI18N
             }
             c = c.trim();
-            if ((c == condition) ||
+            if ((c.equals(condition)) ||
                     ((c != null) && (condition != null) && condition.equals(c))) {
                 return;
             }
@@ -272,7 +272,7 @@ public abstract class GdbBreakpoint extends Breakpoint {
      * @param printText a new value of print text property
      */
     public void setPrintText(String printText) {
-        if (this.printText == printText) {
+        if (this.printText == null || this.printText.equals(printText)) {
             return;
         }
         String old = this.printText;

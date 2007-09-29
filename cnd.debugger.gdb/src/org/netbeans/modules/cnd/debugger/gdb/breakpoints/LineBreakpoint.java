@@ -41,13 +41,6 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.URLMapper;
-import org.openide.util.Utilities;
-
 /**
  * Notifies about line breakpoint events.
  *
@@ -61,10 +54,6 @@ import org.openide.util.Utilities;
  * @author Gordon Prieur (copied from Jan Jancura's JPDA LineBreakpoint)
  */
 public class LineBreakpoint extends GdbBreakpoint {
-
-    public static final String          PROP_LINE_NUMBER = "lineNumber"; // NOI18N
-    public static final String          PROP_URL = "url"; // NOI18N
-    public static final String          PROP_CONDITION = "condition"; // NOI18N
     
     /**
      * Creates a new breakpoint for given parameters.
@@ -85,6 +74,7 @@ public class LineBreakpoint extends GdbBreakpoint {
      *
      * @return  a string representation of the object
      */
+    @Override
     public String toString() {
         return "LineBreakpoint " + getURL() + " : " + getLineNumber(); // NOI18N
     }

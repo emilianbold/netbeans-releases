@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 
 import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
-import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 
 /**
 * Implementation of breakpoint on method.

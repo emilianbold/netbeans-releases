@@ -59,8 +59,7 @@ public class BreakpointsUpdater extends LazyActionsManagerListener {
     private GdbDebugger debugger;
     
     public BreakpointsUpdater(ContextProvider lookupProvider) {
-        GdbDebugger debugger = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
-        this.debugger = debugger;
+        debugger = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
         EditorContextBridge.createTimeStamp(debugger);
         BreakpointAnnotationListener bal = (BreakpointAnnotationListener) 
             DebuggerManager.getDebuggerManager().lookupFirst(null, BreakpointAnnotationListener.class);

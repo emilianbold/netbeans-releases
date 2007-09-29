@@ -41,14 +41,8 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 
-import java.util.Map;
-import java.util.WeakHashMap;
 
-import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Properties;
-import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
-import org.netbeans.modules.cnd.debugger.gdb.breakpoints.LineBreakpoint;
-import org.netbeans.modules.cnd.debugger.gdb.breakpoints.FunctionBreakpoint;
 
 /**
  *
