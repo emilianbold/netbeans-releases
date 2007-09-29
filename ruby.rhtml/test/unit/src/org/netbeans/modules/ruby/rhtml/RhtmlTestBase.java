@@ -18,6 +18,9 @@
 package org.netbeans.modules.ruby.rhtml;
 
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import javax.swing.Action;
 import javax.swing.JEditorPane;
 import org.netbeans.api.html.lexer.HTMLTokenId;
@@ -27,12 +30,21 @@ import org.netbeans.editor.Formatter;
 import org.netbeans.editor.ext.ExtFormatter;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.editor.indent.IndentTestMimeDataProvider;
+import org.netbeans.modules.gsf.DefaultLanguage;
 import org.netbeans.modules.gsf.GsfIndentTaskFactory;
+import org.netbeans.modules.gsf.Language;
+import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.modules.html.editor.indent.HtmlIndentTaskFactory;
+import org.netbeans.modules.ruby.BracketCompleter;
+import org.netbeans.modules.ruby.RenameHandler;
+import org.netbeans.modules.ruby.RubyLanguage;
 import org.netbeans.modules.ruby.RubyTestBase;
 import org.netbeans.modules.ruby.rhtml.editor.RhtmlKit;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
 
 /**
  *
@@ -62,6 +74,26 @@ public abstract class RhtmlTestBase extends RubyTestBase {
         //IndentTestMimeDataProvider.addInstances(RubyInstallation.RUBY_MIME_TYPE, rubyReformatFactory);
         
         Formatter.setFormatter(RhtmlKit.class, new ExtFormatter(RhtmlKit.class));
+        
+        LanguageRegistry registry = LanguageRegistry.getInstance();
+        List<Action> actions = Collections.emptyList();
+        if (!LanguageRegistry.getInstance().isSupported(RhtmlTokenId.MIME_TYPE)) {
+            List<String> extensions = Collections.singletonList("rhtml");
+            Language dl = new DefaultLanguage("RHTML", "org/netbeans/modules/ruby/jrubydoc.png", RhtmlTokenId.MIME_TYPE, extensions, 
+                    actions, new RubyLanguage(), 
+                    new RhtmlParser(), new RhtmlCompleter(), new RenameHandler(), new RhtmlFinder(), 
+                    null, new BracketCompleter(), null, null, null);
+            List<Language> languages = new ArrayList<Language>();
+            languages.add(dl);
+            registry.addLanguages(languages);
+
+            FileSystem fs = Repository.getDefault().getDefaultFileSystem();
+            String mimeFolder = "Editors/" + dl.getMimeType();
+            final FileObject root = fs.findResource(mimeFolder); // NOI18N
+            if (root == null) {
+                FileUtil.createFolder(fs.getRoot(), mimeFolder);
+            }
+        }
     }
     
     @Override
