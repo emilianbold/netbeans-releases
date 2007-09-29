@@ -24,6 +24,8 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="Connections"/>
         <folder name="JDBCDrivers">
             <file name="JDBCODBC.xml" url="JDBCODBC.xml"/>
+            <file name="MYSQL.xml" url="MYSQL.xml"/>
+            <file name="POSTGRES.xml" url="POSTGRES.xml"/>
         </folder>
         <folder name="Runtimes"/>
     </folder>
