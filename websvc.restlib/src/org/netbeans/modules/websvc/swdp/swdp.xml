@@ -32,7 +32,7 @@ Microsystems, Inc. All Rights Reserved.
         <resource>jar:nbinst:///modules/ext/rest/persistence-api-1.0.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/jaxws21/activation.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/jaxws21/api/jsr250-api.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/rest/localizer.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/rest/http.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/rest/wadl2java.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/jaxws21/api/jaxws-api.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/jaxws21/api/jaxb-api.jar!/</resource>
@@ -42,7 +42,6 @@ Microsystems, Inc. All Rights Reserved.
         <resource>jar:nbinst:///modules/ext/rest/rome-0.9.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/rest/jdom-1.0.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/rest/jettison-1.0-RC1.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/rest/comresrcgen.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/rest/grizzly-1.0.13.jar!/</resource>
     </volume>  
 </library>
