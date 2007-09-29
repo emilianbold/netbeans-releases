@@ -64,7 +64,6 @@ public class RenameBeanValueBindingExpressionRefactoringElement extends SimpleRe
     }
 
     public PositionBounds getPosition() {
-        // TODO
         return null;
     }
 
@@ -72,9 +71,6 @@ public class RenameBeanValueBindingExpressionRefactoringElement extends SimpleRe
         return Lookup.EMPTY;
     }
 
-    public void performChange() {
-        // TODO 
-        
-    }
+    public void performChange() {}
     
 }

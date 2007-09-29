@@ -40,18 +40,11 @@ public class RenameBeanNameStringRefactoringElement extends SimpleRefactoringEle
 
     private String newBeanName;
 
-    private boolean enabled;
-
-    private int status = RefactoringElementImplementation.NORMAL;
-
     private PositionBounds bounds;
 
     public RenameBeanNameStringRefactoringElement(String oldBeanName, String newBeanName) {
         this.oldBeanName = oldBeanName;
         this.newBeanName = newBeanName;
-
-        // initially enabled
-        enabled = true;
     }
 
     public String getText() {
@@ -64,14 +57,6 @@ public class RenameBeanNameStringRefactoringElement extends SimpleRefactoringEle
         return MessageFormat.format(NbBundle.getBundle(
                 RenameBeanNameStringRefactoringElement.class).getString("MSG_RenameBeanNameStringDisplayText"),
                 new Object[] {oldBeanName});
-    }
-
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
     }
 
     /**
@@ -90,14 +75,6 @@ public class RenameBeanNameStringRefactoringElement extends SimpleRefactoringEle
         if (bounds == null) {
         }
         return bounds;
-    }
-
-    public int getStatus() {
-        return status;
-    }
-
-    public void setStatus(int status) {
-        this.status = status;
     }
     
     public void openInEditor() {

@@ -43,9 +43,7 @@ import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.visualweb.insync.Model;
-import org.netbeans.modules.visualweb.insync.faces.ElBindingScanner;
 import org.netbeans.modules.visualweb.insync.faces.AnyAttrValueScanner;
-import org.netbeans.modules.visualweb.insync.faces.ElementAttrValueScanner;
 import org.netbeans.modules.visualweb.insync.markup.MarkupUnit;
 import org.netbeans.modules.visualweb.insync.models.FacesModel;
 import org.netbeans.modules.visualweb.insync.models.FacesModelSet;
@@ -488,7 +486,7 @@ public class FacesJspFileMoveRefactoringPlugin extends FacesRefactoringPlugin {
                 	targetRelativePath = newName;
                 } else {
                 	targetRelativePath = parentRelativePath + "/" + newName;
-                } 
+                }
     		}
         	
     		// compute the new target and make sure it exists
@@ -670,6 +668,9 @@ public class FacesJspFileMoveRefactoringPlugin extends FacesRefactoringPlugin {
 	                }
 	            }
 	        }
+	        
+            // Perform modeling of all children after folder rename
+            refactoringElements.addFileChange(getRefactoring(), new PostProcessRenamedFolderRefactoringElement(folder, newName));
     	}
 
         return null;

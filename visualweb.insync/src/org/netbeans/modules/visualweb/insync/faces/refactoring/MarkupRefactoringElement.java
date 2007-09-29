@@ -57,8 +57,4 @@ public abstract class MarkupRefactoringElement extends SimpleRefactoringElementI
         int result = markupUnit.getOffset(element);
         return result;
     }
-
-    protected boolean isExternalChange() {
-        return false;
-    }
 }

@@ -28,6 +28,7 @@ import org.netbeans.modules.visualweb.insync.java.JavaUnit;
 
 import java.beans.BeanInfo;
 import java.beans.EventSetDescriptor;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
@@ -1801,11 +1802,15 @@ public class FacesModel extends Model {
             }
             
             if(doRemoveModel){
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        getFacesModelSet().removeModel(FacesModel.this);
-                    }
-                });
+                try {
+                    SwingUtilities.invokeAndWait(new Runnable() {
+                        public void run() {
+                            getFacesModelSet().removeModel(FacesModel.this);
+                        }
+                    });
+                } catch (InterruptedException e) {
+                } catch (InvocationTargetException e) {
+                }
             }
         }
         

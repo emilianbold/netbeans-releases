@@ -872,7 +872,7 @@ public abstract class ModelSet implements FileChangeListener {
     }
     
     // XXX NB issue #
-    private void processFileDataCreated(final FileObject fileObject) {  
+    public void processFileDataCreated(final FileObject fileObject) {  
         // we should create Model only if the file is under document root or source root
         if (!FileUtil.isParentOf(JsfProjectUtils.getDocumentRoot(getProject()), fileObject) &&
                !FileUtil.isParentOf(JsfProjectUtils.getSourceRoot(getProject()), fileObject)) {
@@ -887,7 +887,11 @@ public abstract class ModelSet implements FileChangeListener {
             public void run() {
  */
         ModelCreateVisitor visitor = new ModelCreateVisitor();
-        visitor.visit(fileObject);
+        if (fileObject.isFolder()) {
+            visitor.traverse(fileObject);
+        } else {
+            visitor.visit(fileObject);            
+        }
         Collection modelsAdded = visitor.getModelsAdded();
         for (Iterator i = modelsAdded.iterator(); i.hasNext(); ) {
             Model model = (Model) i.next();

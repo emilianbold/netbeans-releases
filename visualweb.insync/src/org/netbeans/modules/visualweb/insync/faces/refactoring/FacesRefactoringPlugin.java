@@ -71,7 +71,6 @@ abstract class FacesRefactoringPlugin extends ProgressProviderAdapter implements
 
     public abstract Problem prepare(RefactoringElementsBag refactoringElements);
 
-
     public void start(ProgressEvent event) {
         fireProgressListenerStart(event.getOperationType(), event.getCount());
     }
