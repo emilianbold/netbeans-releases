@@ -159,6 +159,7 @@ implements ExplorerManager.Provider, PropertyChangeListener, CaretListener, Comp
         try {
             int offset = text.getDocument().getLength();
             owner.setValue("offset", offset); // NOI18N
+            TimeToFailure.logAction();
             LogRecords.write(os, r);
             text.getDocument().insertString(offset, os.toString("UTF-8"), null); // NOI18N
             text.getCaret().setDot(0);

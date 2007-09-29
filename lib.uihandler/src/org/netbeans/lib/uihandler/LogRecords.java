@@ -80,7 +80,7 @@ public final class LogRecords {
         Decorations.decorate(r, d);
     }
     
-    public static void write(OutputStream os, LogRecord rec) throws IOException {
+    public static void write(OutputStream os, LogRecord rec) throws IOException {           
         String formated = FORMATTER.format(rec);
         byte[] arr = formated.getBytes("utf-8");
         os.write(arr);

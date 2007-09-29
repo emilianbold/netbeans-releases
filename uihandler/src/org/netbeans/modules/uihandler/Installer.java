@@ -150,6 +150,7 @@ public class Installer extends ModuleInstall implements Runnable {
     
     @Override
     public void restored() {
+        TimeToFailure.logAction();
         Logger log = Logger.getLogger("org.netbeans.ui"); // NOI18N
         log.setUseParentHandlers(false);
         log.setLevel(Level.FINEST);
@@ -903,6 +904,7 @@ public class Installer extends ModuleInstall implements Runnable {
                 final List<LogRecord> recs = getLogs();
                 saveUserName();
                 LogRecord userData = getUserData(true);
+                recs.add(TimeToFailure.logFailure());
                 recs.add(userData);
                 if ((report)&&!(reportPanel.asAGuest())){
                     try{
