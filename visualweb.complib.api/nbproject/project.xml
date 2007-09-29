@@ -36,6 +36,7 @@
                 <friend>org.netbeans.modules.visualweb.complib</friend>
                 <friend>org.netbeans.modules.visualweb.designer.jsf</friend>
                 <friend>org.netbeans.modules.visualweb.project.jsf</friend>
+                <friend>org.netbeans.modules.visualweb.samples.bundled</friend>
                 <friend>org.netbeans.modules.visualweb.samples.postrel</friend>
                 <package>org.netbeans.modules.visualweb.complib.api</package>
             </friend-packages>

@@ -5,8 +5,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 
-import org.netbeans.modules.visualweb.api.complib.ComplibException;
-import org.netbeans.modules.visualweb.api.complib.ComplibService;
+import org.netbeans.modules.visualweb.complib.api.ComplibException;
+import org.netbeans.modules.visualweb.complib.api.ComplibService;
 
 import org.openide.modules.ModuleInstall;
 import org.openide.modules.InstalledFileLocator;

@@ -33,11 +33,11 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.visualweb.complib</code-name-base>
+                    <code-name-base>org.netbeans.modules.visualweb.complib.api</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>2.0</specification-version>
+                        <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -63,14 +63,14 @@
                     <run-dependency>
                         <specification-version>6.4.11</specification-version>
                     </run-dependency>
-               </dependency>
-               <dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.openide.loaders</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency/>
-               </dependency>
-               <dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.openide.modules</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
