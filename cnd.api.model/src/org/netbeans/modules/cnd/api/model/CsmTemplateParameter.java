@@ -41,8 +41,6 @@
 
 package org.netbeans.modules.cnd.api.model;
 
-import org.netbeans.modules.cnd.api.model.util.TypeSafeEnum;
-
 /**
  * Represent one template parameter
  * @author Vladimir Kvashin
@@ -55,7 +53,7 @@ public interface CsmTemplateParameter extends CsmNamedElement {
         TEMPLATE
     }
     
-    /** Gets this template parameter kin */
+    /** Gets this template parameter kind */
     Kind getKind();
     
     
