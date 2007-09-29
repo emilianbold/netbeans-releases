@@ -216,7 +216,6 @@
                 <package>org.netbeans.modules.cnd.api.compilers</package>
                 <package>org.netbeans.modules.cnd.api.execution</package>
                 <package>org.netbeans.modules.cnd.api.picklist</package>
-                <package>org.netbeans.modules.cnd.api.project</package>
                 <package>org.netbeans.modules.cnd.api.utils</package>
                 <package>org.netbeans.modules.cnd.api.xml</package>
                 <package>org.netbeans.modules.cnd.builds</package>
@@ -228,12 +227,9 @@
                 <package>org.netbeans.modules.cnd.editor.shell</package>
                 <package>org.netbeans.modules.cnd.editor.spi.cplusplus</package>
                 <package>org.netbeans.modules.cnd.execution</package>
-                <package>org.netbeans.modules.cnd.execution41.org.openide.actions</package>
                 <package>org.netbeans.modules.cnd.execution41.org.openide.cookies</package>
-                <package>org.netbeans.modules.cnd.execution41.org.openide.execution</package>
                 <package>org.netbeans.modules.cnd.execution41.org.openide.loaders</package>
                 <package>org.netbeans.modules.cnd.loaders</package>
-                <package>org.netbeans.modules.cnd.makewizard</package>
                 <package>org.netbeans.modules.cnd.settings</package>
                 <package>org.netbeans.modules.cnd.ui.options</package>
             </public-packages>
