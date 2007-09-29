@@ -36,8 +36,8 @@ Microsystems, Inc. All Rights Reserved.
                 <binary-origin>build/external/rest/wadl2java.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/rest/localizer.jar</runtime-relative-path>
-                <binary-origin>build/external/rest/localizer.jar</binary-origin>
+                <runtime-relative-path>ext/rest/http.jar</runtime-relative-path>
+                <binary-origin>build/external/rest/http.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/rest/rome-0.9.jar</runtime-relative-path>
