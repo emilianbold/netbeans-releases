@@ -253,6 +253,8 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
     }
     
     public void setExpression(String expression) {
-        watch.setExpression(expression);
+        if (expression != null && expression.trim().length() > 0) {
+            watch.setExpression(expression);
+        }
     }
 }

@@ -164,7 +164,9 @@ public class WatchesActionsProvider implements NodeActionsProvider {
         if (panel.getClientProperty("WatchCanceled") != null) { //NOI18N
             return;
         }
-        w.setExpression(wp.getExpression());
+        if (wp.getExpression() != null && wp.getExpression().trim().length() > 0) {
+            w.setExpression(wp.getExpression());
+        }
     }
 
     private static void newWatch() {
@@ -186,6 +188,8 @@ public class WatchesActionsProvider implements NodeActionsProvider {
         if (panel.getClientProperty("WatchCanceled") != null) { //NOI18N
             return;
         }
-        DebuggerManager.getDebuggerManager().createWatch(wp.getExpression());
+        if (wp.getExpression() != null && wp.getExpression().trim().length() > 0) {
+            DebuggerManager.getDebuggerManager().createWatch(wp.getExpression());
+        }
     }
 }
