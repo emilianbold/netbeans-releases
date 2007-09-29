@@ -1842,6 +1842,11 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
             } else {
                 // Find next
                 int start = wordOffset+1;
+                if (wordOffset < 0 || wordOffset >= s.length()) {
+                    // Probably the end of a token sequence, such as this:
+                    // <%s|%>
+                    return -1;
+                }
                 if (Character.isUpperCase(s.charAt(wordOffset))) { 
                     // if starting from a Uppercase char, first skip over follwing upper case chars
                     for (int i = start; i < length; i++) {

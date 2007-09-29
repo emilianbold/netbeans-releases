@@ -89,7 +89,10 @@
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId.language"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
                 </file>
-                
+
+<!--
+                <file name="org-netbeans-modules-retouche-editor-semantic-HighlightsLayerFactoryImpl.instance" />
+-->
                 <attr name="createDataObject" boolvalue="false"/>
                 <file name="language.nbs" url="RHTML.nbs">
                     <attr name="icon" stringvalue="org/netbeans/modules/ruby/rhtml/resources/rhtml16.gif"/>
@@ -211,6 +214,11 @@
                 <file name="declarationfinder.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.api.gsf.DeclarationFinder"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.rhtml.RhtmlFinder"/>
+                </file>
+                
+                <file name="bracket.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.api.gsf.BracketCompletion"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.BracketCompleter"/>
                 </file>
                 
                 <!--

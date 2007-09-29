@@ -20,7 +20,6 @@
 package org.netbeans.modules.ruby.rhtml.editor;
 
 import java.awt.event.ActionEvent;
-import java.util.ArrayList;
 import javax.swing.Action;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
@@ -39,11 +38,18 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction;
 import org.netbeans.modules.editor.html.HTMLKit;
 import org.netbeans.modules.editor.retouche.InstantRenameAction;
+import org.netbeans.modules.gsf.DeleteToNextCamelCasePosition;
+import org.netbeans.modules.gsf.DeleteToPreviousCamelCasePosition;
+import org.netbeans.modules.gsf.GsfEditorKitFactory;
+import org.netbeans.modules.gsf.Language;
+import org.netbeans.modules.gsf.LanguageRegistry;
+import org.netbeans.modules.gsf.NextCamelCasePosition;
+import org.netbeans.modules.gsf.PreviousCamelCasePosition;
 import org.netbeans.modules.gsf.SelectCodeElementAction;
-import org.netbeans.modules.ruby.BracketCompleter;
+import org.netbeans.modules.gsf.SelectNextCamelCasePosition;
+import org.netbeans.modules.gsf.SelectPreviousCamelCasePosition;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
-//import org.netbeans.modules.ruby.rhtml.RhtmlDocument;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
 import org.openide.util.Exceptions;
 
@@ -64,7 +70,7 @@ import org.openide.util.Exceptions;
 
 public class RhtmlKit extends HTMLKit {
     /** Completion assistance for Ruby */
-    private BracketCompleter rubyCompletion = new BracketCompleter();
+    private Language language;
 
     /** Index in parent kit's action array where the default key action is found. */
     private static int defaultKeyActionIndex = -1;
@@ -78,6 +84,7 @@ public class RhtmlKit extends HTMLKit {
         
     public RhtmlKit(){
         super(RhtmlTokenId.MIME_TYPE);
+        language = LanguageRegistry.getInstance().getLanguageByMimeType(RhtmlTokenId.MIME_TYPE);
     }
     
     @Override
@@ -129,14 +136,6 @@ public class RhtmlKit extends HTMLKit {
     
     private static final String selectNextElementAction = "select-element-next"; //NOI18N
     private static final String selectPreviousElementAction = "select-element-previous"; //NOI18N
-    private static final String previousCamelCasePosition = "previous-camel-case-position"; //NOI18N
-    private static final String nextCamelCasePosition = "next-camel-case-position"; //NOI18N
-    private static final String selectPreviousCamelCasePosition = "select-previous-camel-case-position"; //NOI18N
-    private static final String selectNextCamelCasePosition = "select-next-camel-case-position"; //NOI18N
-    private static final String deletePreviousCamelCasePosition = "delete-previous-camel-case-position"; //NOI18N
-    private static final String deleteNextCamelCasePosition = "delete-next-camel-case-position"; //NOI18N
-    private static final String expandAllCodeBlockFolds = "expand-all-code-block-folds"; //NOI18N
-    private static final String collapseAllCodeBlockFolds = "collapse-all-code-block-folds"; //NOI18N
     
     @Override
     protected Action[] createActions() {
@@ -161,13 +160,20 @@ public class RhtmlKit extends HTMLKit {
         superActions[defaultKeyActionIndex] = new RhtmlDefaultKeyTypedAction((ExtDefaultKeyTypedAction)superActions[defaultKeyActionIndex]);
         
         return TextAction.augmentList(superActions, new Action[] {
-                    new RhtmlInsertBreakAction(), 
-                    new RhtmlDeleteCharAction(deletePrevCharAction, false),
-                    new RhtmlToggleCommentAction(),
-                    new SelectCodeElementAction(selectNextElementAction, true),
-                    new SelectCodeElementAction(selectPreviousElementAction, false),
-                    new InstantRenameAction(),
-                 });
+            // TODO - also register a Tab key action which tabs out of <% %> if the caret is near the end
+            new RhtmlInsertBreakAction(), 
+            new RhtmlDeleteCharAction(deletePrevCharAction, false),
+            new RhtmlToggleCommentAction(),
+            new SelectCodeElementAction(selectNextElementAction, true),
+            new SelectCodeElementAction(selectPreviousElementAction, false),
+            new NextCamelCasePosition(GsfEditorKitFactory.findAction(superActions, nextWordAction), language),
+            new PreviousCamelCasePosition(GsfEditorKitFactory.findAction(superActions, previousWordAction), language),
+            new SelectNextCamelCasePosition(GsfEditorKitFactory.findAction(superActions, selectionNextWordAction), language),
+            new SelectPreviousCamelCasePosition(GsfEditorKitFactory.findAction(superActions, selectionPreviousWordAction), language),
+            new DeleteToNextCamelCasePosition(GsfEditorKitFactory.findAction(superActions, removeNextWordAction), language),
+            new DeleteToPreviousCamelCasePosition(GsfEditorKitFactory.findAction(superActions, removePreviousWordAction), language),
+            new InstantRenameAction(),
+         });
     }
 
     /** Return true if the given offset is inside Ruby code (where ruby completion should kick in */
@@ -332,12 +338,12 @@ public class RhtmlKit extends HTMLKit {
         protected void insertString(BaseDocument doc, int dotPos, Caret caret, String str,
             boolean overwrite) throws BadLocationException {
             boolean handled =
-                rubyCompletion.beforeCharInserted(doc, dotPos, currentTarget,
+                language.getBracketCompletion().beforeCharInserted(doc, dotPos, currentTarget,
                     str.charAt(0));
 
             if (!handled) {
                 super.insertString(doc, dotPos, caret, str, overwrite);
-                handled = rubyCompletion.afterCharInserted(doc, dotPos, currentTarget,
+                handled = language.getBracketCompletion().afterCharInserted(doc, dotPos, currentTarget,
                         str.charAt(0));
             }
         }
@@ -355,7 +361,7 @@ public class RhtmlKit extends HTMLKit {
                     int caretPosition = caret.getDot();
 
                     boolean handled =
-                        rubyCompletion.beforeCharInserted(doc, caretPosition,
+                        language.getBracketCompletion().beforeCharInserted(doc, caretPosition,
                             target, insertedChar);
 
                     int p0 = Math.min(caret.getDot(), caret.getMark());
@@ -370,7 +376,7 @@ public class RhtmlKit extends HTMLKit {
                             doc.insertString(p0, str, null);
                         }
 
-                        rubyCompletion.afterCharInserted(doc, caret.getDot() - 1,
+                        language.getBracketCompletion().afterCharInserted(doc, caret.getDot() - 1,
                             target, insertedChar);
                     }
                 } catch (BadLocationException e) {
@@ -406,7 +412,7 @@ public class RhtmlKit extends HTMLKit {
                     return super.beforeBreak(target, doc, caret);
                 }
                 
-                int newOffset = rubyCompletion.beforeBreak(doc, dotPos, target);
+                int newOffset = language.getBracketCompletion().beforeBreak(doc, dotPos, target);
 
                 if (newOffset >= 0) {
                     return new Integer(newOffset);
@@ -471,7 +477,7 @@ public class RhtmlKit extends HTMLKit {
                 return;
             }
 
-            boolean success = rubyCompletion.charBackspaced(doc, dotPos, currentTarget, ch);
+            boolean success = language.getBracketCompletion().charBackspaced(doc, dotPos, currentTarget, ch);
         }
     }
     
