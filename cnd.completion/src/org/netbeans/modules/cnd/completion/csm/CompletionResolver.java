@@ -115,6 +115,8 @@ public interface CompletionResolver {
                                                                 RESOLVE_GLOB_MACROS | RESOLVE_LIB_MACROS;
 
     public static final int RESOLVE_FUNCTIONS              = RESOLVE_GLOB_FUNCTIONS | RESOLVE_LIB_FUNCTIONS | RESOLVE_CLASS_METHODS;
+
+    public static final int RESOLVE_VARIABLES              = RESOLVE_GLOB_VARIABLES | RESOLVE_LIB_VARIABLES | RESOLVE_CLASS_FIELDS;
     /**
      * specify what to resolve by this resolver
      */

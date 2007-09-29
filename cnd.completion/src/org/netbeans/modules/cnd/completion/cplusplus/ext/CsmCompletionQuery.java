@@ -917,11 +917,27 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                 result = new CsmCompletionResult(component, getBaseDocument(), res, var + '*', item, 0, isProjectBeeingParsed());  //NOI18N
                             } else { // not last item or finding type
                                 if (kind != ExprKind.SCOPE) {
+                                    // find type of variable
                                     lastType = (CsmType)sup.findType(var, varPos);
+                                    if (lastType == null) {
+                                        // try to find with resolver
+                                        CompletionResolver.Result res = null;
+                                        compResolver.setResolveTypes(CompletionResolver.RESOLVE_VARIABLES);
+                                        if (compResolver.refresh() && compResolver.resolve(varPos, var, true)) {
+                                            res = compResolver.getResult();
+                                        }
+                                        List vars = new ArrayList();
+                                        res.addResulItemsToCol(vars);
+                                        if (vars.size() > 0) {
+                                            // get the first
+                                            CsmVariable varElem = (CsmVariable) vars.get(0);
+                                            lastType = varElem.getType();
+                                        }
+                                    }
                                 }
                                 if (lastType != null) { // variable found
                                     staticOnly = false;
-                                } else { // no variable found
+                                } else if ((kind == ExprKind.SCOPE) || (kind == ExprKind.NONE)){ // no variable found
                                     if (kind == ExprKind.SCOPE) {
                                         scopeAccessedClassifier = true;
                                     }
@@ -935,7 +951,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                             }
                                             if (lastNamespace == null) {
                                                 // try class name
-                                                cls = kind == ExprKind.ARROW ? null : findExactClass(var, varPos);
+                                                cls = findExactClass(var, varPos);
                                                 if (cls == null) {
                                                     cont = false;
                                                 }
