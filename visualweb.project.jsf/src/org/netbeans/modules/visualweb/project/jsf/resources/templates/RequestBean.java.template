@@ -26,7 +26,6 @@ import javax.faces.FacesException;
  */
 public class ${name} extends AbstractRequestBean {
     // <editor-fold defaultstate="collapsed" desc="Managed Component Definition">
-    private int __placeholder;
 
     /**
      * <p>Automatically managed component initialization.  <strong>WARNING:</strong>
