@@ -362,7 +362,7 @@ public class CustomizerAbilities extends JPanel implements CustomizerPanel, Visu
         }
         
                  
-        private static class AbiltitesComparator implements Comparator<Map.Entry<String,String>>
+        private static class AbilitiesComparator implements Comparator<Map.Entry<String,String>>
         {
             public int compare(Map.Entry<String,String> o1, Map.Entry<String,String> o2)
             {
@@ -380,7 +380,7 @@ public class CustomizerAbilities extends JPanel implements CustomizerPanel, Visu
             assert data != null;
             map = data[0] == null ? new HashMap<String,String>() : (HashMap<String,String>) data[0];
             entries = new ArrayList<Map.Entry<String,String>>(map.entrySet());
-            Collections.sort(entries,new AbiltitesComparator());
+            Collections.sort(entries,new AbilitiesComparator());
             fireTableDataChanged();
         }
         
