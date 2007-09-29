@@ -165,6 +165,11 @@ public class GdbProxy implements GdbMiDefinitions {
         return engine.sendCommand(MI_CMD_INFO_THREADS);
     }
 
+    /** Set the current thread */
+    public int thread_select(String id) {
+        return engine.sendCommand("-thread-select " + id); // NOI18N
+    }
+
     /**
      *  Ask gdb about /proc info. We don't really care about the /proc, but it also returns
      *  the process ID, which we do care about.

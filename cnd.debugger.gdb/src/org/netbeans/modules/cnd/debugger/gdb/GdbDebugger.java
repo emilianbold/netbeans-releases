@@ -153,6 +153,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private Map<String, BreakpointImpl> breakpointList = Collections.synchronizedMap(new HashMap<String, BreakpointImpl>());
     private Logger log = Logger.getLogger("gdb.logger"); // NOI18N
     private int currentToken = 0;
+    private String currentThread = "1"; // NOI18N
     private int ttToken = 0;
     private ToolTipAnnotation ttAnnotation = null;
     private Timer startupTimer = null;
@@ -553,6 +554,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 // ignore - probably dereferencing an uninitialized pointer
             } else if (msg.contains("mi_cmd_break_insert: Garbage following <location>")) { // NOI18N
                 // ignore - probably a breakpoint from another project
+            } else if (msg.contains("Undefined mi command: ") && msg.contains("(missing implementation")) { // NOI18N
+                // ignore - gdb/mi defines commands which haven't been implemented yet
             } else if (!state.equals(STATE_NONE)) {
                 // ignore errors after we've terminated (they could have been in the input queue)
                 log.warning("Unexpected gdb error: " + msg);
@@ -1360,7 +1363,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 finish(false);
             } else if (reason.equals("breakpoint-hit")) { // NOI18N
                 GdbBreakpoint breakpoint;
-                String frame = map.get("frame"); // NOI18N
                 gdb.stack_list_frames();
                 BreakpointImpl impl = getBreakpointList().get(map.get("bkptno")); // NOI18N
                 if (impl != null && (breakpoint = impl.getBreakpoint()) != null) {
@@ -1392,6 +1394,10 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 }
             } else if (reason.equals("signal-received")) { // NOI18N
                 if (getState().equals(STATE_RUNNING)) {
+                    String thread_id = map.get("thread-id"); // NOI18N
+                    if (thread_id != null && !thread_id.equals(currentThread)) {
+                        gdb.thread_select(currentThread);
+                    }
                     gdb.stack_list_frames();
                     setStopped();
                 }
