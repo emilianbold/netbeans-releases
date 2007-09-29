@@ -174,6 +174,7 @@ public class DatasourceTransferManager implements DesignTimeTransferDataCreator{
             Project currentProj = CurrentProject.getInstance().getCurrentProject(designBeans);
             if (!DataSourceResolver.getInstance().isDatasourceCreationSupported(currentProj)) {
                 cancel = true;
+                DataSourceResolver.getInstance().postUnsupportedDataSourceCreationDialog();
             }
             
             // ensure data source name is unique

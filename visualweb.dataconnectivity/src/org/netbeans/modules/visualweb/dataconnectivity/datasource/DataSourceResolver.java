@@ -47,13 +47,16 @@ import org.netbeans.modules.visualweb.dataconnectivity.model.ProjectDataSourceMa
 import org.netbeans.modules.visualweb.dataconnectivity.naming.DatabaseSettingsImporter;
 import org.netbeans.modules.visualweb.dataconnectivity.project.datasource.ProjectDataSourceTracker;
 import org.netbeans.modules.visualweb.dataconnectivity.sql.DesignTimeDataSourceHelper;
+import org.netbeans.modules.visualweb.dataconnectivity.ui.DataSourceCreationNotSupported;
 import org.netbeans.modules.visualweb.dataconnectivity.utils.ImportDataSource;
 import org.netbeans.modules.visualweb.insync.Model;
 import org.netbeans.modules.visualweb.insync.ModelSet;
 import org.netbeans.modules.visualweb.insync.ModelSetsListener;
 import org.netbeans.modules.visualweb.insync.models.FacesModelSet;
-import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
@@ -228,7 +231,20 @@ public class DataSourceResolver implements DataSourceInfoListener, Runnable {
             ImportDataSource.showAlert();
         }
     }
-
+    
+    /**
+     * Post an information dialog to inform the user that the target application server does not support the automatic creation of data sources
+     */
+    public synchronized void postUnsupportedDataSourceCreationDialog() {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                DataSourceCreationNotSupported noDataSourceDialog = new DataSourceCreationNotSupported();
+                NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(DataSourceCreationNotSupported.class, "MSG_DataSourceNotSupported"), NotifyDescriptor.WARNING_MESSAGE); //NOI18N
+                DialogDisplayer.getDefault().notify(nd);
+                noDataSourceDialog.setVisible(true);
+            }
+        });
+    }
 
     public void modelProjectForDataSources(Project currentProj) {
         project = currentProj;
