@@ -133,7 +133,11 @@ public abstract class RubyTestBase extends NbTestCase {
         }
     }
 
-    public static String readFile(final FileObject fo) {
+    protected String readFile(final FileObject fo) {
+        return read(fo);
+    }
+    
+    public static String read(final FileObject fo) {
         try {
             final StringBuilder sb = new StringBuilder(5000);
             fo.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
@@ -173,6 +177,7 @@ public abstract class RubyTestBase extends NbTestCase {
         }
     }
 
+    
     public static BaseDocument createDocument(String s) {
         try {
             BaseDocument doc = new BaseDocument(null, false);

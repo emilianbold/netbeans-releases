@@ -25,7 +25,7 @@ public class TestSourceModelFactory extends SourceModelFactory {
 
         public void runUserActionTask(CancellableTask<CompilationInfo> task, boolean shared) throws IOException {
             try {
-                String text = RubyTestBase.readFile(fo);
+                String text = RubyTestBase.read(fo);
                 BaseDocument doc = RubyTestBase.createDocument(text);
                 TestCompilationInfo testInfo = new TestCompilationInfo(null, fo, doc, text);
 
