@@ -31,7 +31,10 @@ public class TestSourceModelFactory extends SourceModelFactory {
 
                 task.run(testInfo);
             } catch (Exception ex) {
-                throw new IOException(ex);
+                IOException ioe = new IOException();
+                ioe.initCause(ex);
+                
+                throw ioe;
             }
         }
 
