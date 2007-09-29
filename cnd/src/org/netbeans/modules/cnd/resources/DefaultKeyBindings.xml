@@ -45,5 +45,5 @@ Contributor(s):
     <bind actionName="comment" key="DS-T"/>
     <bind actionName="uncomment" key="DS-D"/>  
     <bind actionName="toggle-comment" key="D-SLASH"/>
-    <bind actionName="goto-declaration" key="O-G"/> 
+    <bind actionName="goto-declaration" key="D-B"/> 
 </bindings>
