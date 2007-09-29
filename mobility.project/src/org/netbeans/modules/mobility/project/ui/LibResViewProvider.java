@@ -33,13 +33,17 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import javax.swing.Action;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.modules.mobility.project.J2MEProject;
 import org.netbeans.modules.mobility.project.DefaultPropertiesDescriptor;
 import org.netbeans.modules.mobility.project.ProjectConfigurationsHelper;
 import org.netbeans.modules.mobility.project.ui.customizer.J2MEProjectProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.openide.actions.CopyAction;
 import org.openide.actions.PasteAction;
 import org.openide.explorer.ExplorerManager;
@@ -99,18 +103,21 @@ class LibResViewProvider  extends J2MEPhysicalViewProvider.ChildLookup
      * This listner checks changes of properties of particular project
      */
     
-    private class ConfPropChangeListener implements PropertyChangeListener
+    private class ConfPropChangeListener implements ChangeListener
     {
         final AntProjectHelper helper; 
         final J2MEProject project;
         final Node node;
+        final PropertyProvider pp;
+        private String oldValue, oldPropName;
         
-        ConfPropChangeListener(Node n)
+        ConfPropChangeListener(Node n, PropertyProvider pp)
         {
             super();            
             node=n;
             project=node.getLookup().lookup(J2MEProject.class);
             helper=project.getLookup().lookup(AntProjectHelper.class);
+            this.pp=pp;
         }
 
         public void propertyChange(final PropertyChangeEvent evt) {
@@ -169,6 +176,31 @@ class LibResViewProvider  extends J2MEPhysicalViewProvider.ChildLookup
                 }
             });
         }
+
+        public void stateChanged(ChangeEvent e)
+        {
+            Map<String,String> props=pp.getProperties();
+            String newPropName;
+            ProjectConfiguration conf=project.getConfigurationHelper().getActiveConfiguration();
+            if (conf.getDisplayName().equals(project.getConfigurationHelper().getDefaultConfiguration().getDisplayName()))
+            {
+                newPropName=DefaultPropertiesDescriptor.LIBS_CLASSPATH;
+            }
+            else
+            {
+                newPropName=J2MEProjectProperties.CONFIG_PREFIX+conf.getDisplayName()+"."+DefaultPropertiesDescriptor.LIBS_CLASSPATH;
+            }    
+            String newValue=props.get(newPropName);
+            if (newPropName ==null)
+                return;
+            if (newValue == null || !newPropName.equals(oldPropName) || !newValue.equals(oldValue))
+            {
+                PropertyChangeEvent ev=new PropertyChangeEvent(this,newPropName, oldValue,newValue);
+                propertyChange(ev);
+                oldValue=newValue;
+                oldPropName=newPropName;
+            }
+        }
     }
     
     /**
@@ -185,7 +217,9 @@ class LibResViewProvider  extends J2MEPhysicalViewProvider.ChildLookup
             node=n;
             final J2MEProject project=node.getLookup().lookup(J2MEProject.class);
             AntProjectHelper helper=project.getLookup().lookup(AntProjectHelper.class);
-            helper.getStandardPropertyEvaluator().addPropertyChangeListener(new ConfPropChangeListener(node));
+            PropertyProvider pp=helper.getPropertyProvider(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+            pp.addChangeListener(new ConfPropChangeListener(node,pp));
+            //helper.getStandardPropertyEvaluator().addPropertyChangeListener();
         }
         
         public void propertyChange(final PropertyChangeEvent evt)
