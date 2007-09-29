@@ -255,7 +255,7 @@ public class RhtmlKit extends HTMLKit {
 
         // First see if we're -right- before a %>, if so, just enter out
         // of it
-        if (dotPos < doc.getLength()-3) {
+        if (dotPos <= doc.getLength()-3) {
             String text = doc.getText(dotPos, 3);
             if (text.equals(" %>") || text.startsWith("%>") || text.equals("-%>") || text.equals("% -%")) { // NOI18N
                 TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
