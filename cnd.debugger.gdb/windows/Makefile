@@ -48,14 +48,14 @@
 # The cnd.dll includes a signal handler which is needed to ensure we ca
 # sucessfully interupt the inferior process in a debugging session.
 
-all: cnd.dll
+all: GdbKillProc
 
-cnd.dll: CndSigHandler.o
-	gcc -Wl,--out-implib,libcnd.import.a -shared -o cnd.dll CndSigHandler.o
+GdbKillProc: GdbKillProc.o
+	gcc -O -o GdbKillProc GdbKillProc.o -mno-cygwin -mthreads
 
-CndsigHandler.o: CndSigHandler.c
-	gcc -c CndSigHandler.c 
+GdbKillProc.o: GdbKillProc.c
+	gcc -c -O GdbKillProc.c -mno-cygwin -mthreads
 
 clean:
-	rm -f CndSigHandler.o cnd.dll libcnd.import.a
+	rm -f GdbKillProc.exe GdbKillProc.o
 

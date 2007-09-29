@@ -221,10 +221,9 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 if (conType != RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
                     gdb.set_new_console();
                 }
-                File cnd_dll = InstalledFileLocator.getDefault().locate("bin/cnd.dll", null, false); // NOI18N
-                gdb.gdb_set_environment("LD_PRELOAD=" + cygpath(cnd_dll.getAbsolutePath())); // NOI18N
+//                File cnd_dll = InstalledFileLocator.getDefault().locate("bin/cnd.dll", null, false); // NOI18N
+//                gdb.gdb_set_environment("LD_PRELOAD=" + cygpath(cnd_dll.getAbsolutePath())); // NOI18N
             }
-            int id;
             if (pae.getID() == ProjectActionEvent.DEBUG_STEPINTO) {
                 continueAfterFirstStop = false; // step into project
             }
@@ -1137,8 +1136,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private void firstStop() {
         firstStop = false;
         if (Utilities.isWindows()) {
-            gdb.data_evaluate_expression("_CndSigInit()"); // NOI18N
-            gdb.break_insert(GDB_INVISIBLE_BREAKPOINT, "_CndSigHandler"); // NOI18N
+//            gdb.data_evaluate_expression("_CndSigInit()"); // NOI18N
+//            gdb.break_insert(GDB_INVISIBLE_BREAKPOINT, "_CndSigHandler"); // NOI18N
             gdb.info_threads(); // we get the PID from this...
         } else if (Utilities.getOperatingSystem() != Utilities.OS_MAC) {
             gdb.info_proc(); // we get the PID from this...
@@ -1195,7 +1194,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             File f;
 
             if (Utilities.isWindows()) {
-                f = new File(CppUtils.getCygwinBase() + "/bin/kill.exe"); // NOI18N
+                f = InstalledFileLocator.getDefault().locate("bin/GdbKillProc.exe", null, false);
                 if (f.exists()) {
                     killcmd.add(f.getAbsolutePath());
                 }

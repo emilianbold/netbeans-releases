@@ -73,6 +73,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
 	assert (!(currentDebugger != null && Boolean.getBoolean("gdb.assertions.enabled"))); // NOI18N
     }
 
+    @Override
     public String[] getProperties() {
         return new String[] {DebuggerManager.PROP_CURRENT_ENGINE};
     }
@@ -80,15 +81,16 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
     /**
      * Listens GdbDebuggerEngineImpl and DebuggerManager.
      */
+    @Override
     public void propertyChange(PropertyChangeEvent e) {
-        if (e.getPropertyName() == DebuggerManager.PROP_CURRENT_ENGINE) {
+        if (e.getPropertyName().equals(DebuggerManager.PROP_CURRENT_ENGINE)) {
             updateCurrentDebugger();
             annotate();
-        } else if (e.getPropertyName() == GdbDebugger.PROP_CURRENT_THREAD) {
+        } else if (e.getPropertyName().equals(GdbDebugger.PROP_CURRENT_THREAD)) {
             annotate();
-        } else if (e.getPropertyName() == GdbDebugger.PROP_CURRENT_CALL_STACK_FRAME) {
+        } else if (e.getPropertyName().equals(GdbDebugger.PROP_CURRENT_CALL_STACK_FRAME)) {
             annotate();
-        } else if (e.getPropertyName() == GdbDebugger.PROP_STATE) {
+        } else if (e.getPropertyName().equals(GdbDebugger.PROP_STATE)) {
             annotate();
         }
     }
@@ -127,7 +129,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
         }
         
         // 1) no current thread => remove annotations
-        if (currentDebugger.getState() != GdbDebugger.STATE_STOPPED) {
+        if (!currentDebugger.getState().equals(GdbDebugger.STATE_STOPPED)) {
             synchronized (currentPCLock) {
                 currentPCSet = false; // The annotation is goint to be removed
             }
@@ -138,9 +140,9 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
         // 2) get call stack & Line
         ArrayList stack = currentDebugger.getCallStack();
         final CallStackFrame csf = currentDebugger.getCurrentCallStackFrame();
-        final DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager().getCurrentEngine();
-        final Session currentSession = DebuggerManager.getDebuggerManager().getCurrentSession();
-        final String language = currentSession == null ? null : currentSession.getCurrentLanguage();
+//        final DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager().getCurrentEngine();
+//        final Session currentSession = DebuggerManager.getDebuggerManager().getCurrentSession();
+//        final String language = currentSession == null ? null : currentSession.getCurrentLanguage();
 
         // 3) annotate current line & stack
         synchronized (currentPCLock) {
@@ -237,7 +239,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
                         int i, k = stack.size();
                         for (i = 0; i < k; i++) {
                             // 1) check Line
-                            String language = null;
+//                            String language = null;
                             CallStackFrame csf = (CallStackFrame) stack.get(i);
                             int lineNumber = csf.getLineNumber();
                             String line = Integer.toString(lineNumber);

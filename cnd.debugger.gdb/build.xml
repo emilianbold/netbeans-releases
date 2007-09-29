@@ -46,7 +46,7 @@ made subject to such option by the copyright holder.
 
     <target name="netbeans-extra">
 	<mkdir dir="${cluster}/bin"/>
-	<copy file="windows/cnd.dll" todir="${cluster}/bin"/>
+        <copy file="windows/GdbKillProc.exe" todir="${cluster}/bin"/>
     </target>
 
 </project>

@@ -48,7 +48,6 @@
 package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 
 import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -56,13 +55,9 @@ import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
-import org.netbeans.api.debugger.LazyDebuggerManagerListener;
 
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
-import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
-import org.netbeans.modules.cnd.debugger.gdb.breakpoints.FunctionBreakpoint;
-import org.netbeans.modules.cnd.debugger.gdb.breakpoints.LineBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.EditorContextBridge;
 import org.openide.util.Utilities;
 
@@ -79,6 +74,7 @@ public class BreakpointAnnotationListener extends DebuggerManagerAdapter {
     private boolean listen = true;
     
     
+    @Override
     public String[] getProperties() {
         return new String[] {DebuggerManager.PROP_BREAKPOINTS};
     }
@@ -86,6 +82,7 @@ public class BreakpointAnnotationListener extends DebuggerManagerAdapter {
     /**
      * Listens on breakpoint.
      */
+    @Override
     public void propertyChange(PropertyChangeEvent e) {
         if (listen) {
             String propertyName = e.getPropertyName();
@@ -111,6 +108,7 @@ public class BreakpointAnnotationListener extends DebuggerManagerAdapter {
      *
      * @param b breakpoint
      */
+    @Override
     public void breakpointAdded(Breakpoint b) {
         b.addPropertyChangeListener(this);
         if (b instanceof GdbBreakpoint) {
@@ -123,6 +121,7 @@ public class BreakpointAnnotationListener extends DebuggerManagerAdapter {
      *
      * @param breakpoint
      */
+    @Override
     public void breakpointRemoved(Breakpoint b) {
         b.removePropertyChangeListener(this);
         removeAnnotation(b);
