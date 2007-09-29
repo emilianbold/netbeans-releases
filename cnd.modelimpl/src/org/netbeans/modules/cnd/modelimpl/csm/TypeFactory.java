@@ -137,13 +137,15 @@ public class TypeFactory {
         while( ptrOperator != null && ptrOperator.getType() == CPPTokenTypes.CSM_PTR_OPERATOR ) {
             //for( AST token = ptrOperator.getFirstChild(); token != null; token = token.getNextSibling() ) {
                 AST token = ptrOperator.getFirstChild();
-                switch( token.getType() ) {
-                    case CPPTokenTypes.STAR:
-                        pointerDepth++;
-                        break;
-                    case CPPTokenTypes.AMPERSAND:
-                        refence = true;
-                        break;
+                if (token != null) {
+                    switch( token.getType() ) {
+                        case CPPTokenTypes.STAR:
+                            pointerDepth++;
+                            break;
+                        case CPPTokenTypes.AMPERSAND:
+                            refence = true;
+                            break;
+                    }
                 }
             //}
             ptrOperator = ptrOperator.getNextSibling();
