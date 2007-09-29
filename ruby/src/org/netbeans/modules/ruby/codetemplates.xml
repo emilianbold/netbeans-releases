@@ -40,9 +40,9 @@ end]]></code>
   </codetemplate>
   <codetemplate abbreviation="doc" descriptionId="ct_doc">
     <code>
-<![CDATA[=begin
-${selection line allowSurround}
-=end
+<![CDATA[
+=begin
+${selection line}=end
 ${cursor}]]>
     </code>
   </codetemplate>

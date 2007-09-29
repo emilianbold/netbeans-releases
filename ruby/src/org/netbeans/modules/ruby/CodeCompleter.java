@@ -365,6 +365,7 @@ public class CodeCompleter implements Completable {
     static {
         selectionTemplates.add("begin"); // NOI18N
         selectionTemplates.add("do"); // NOI18N
+        selectionTemplates.add("doc"); // NOI18N
         //selectionTemplates.add("dop"); // NOI18N
         selectionTemplates.add("if"); // NOI18N
         selectionTemplates.add("ife"); // NOI18N
