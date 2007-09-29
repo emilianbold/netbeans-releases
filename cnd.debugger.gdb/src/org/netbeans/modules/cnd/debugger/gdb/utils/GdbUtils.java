@@ -88,15 +88,15 @@ public class GdbUtils {
         return ver;
     }
     
-    /**
-     * Determine if we're running Cygwin or not
-     *
-     * @param message The input string (without the '~')
-     * @return boolean true if Cygwin else false
-     */
-    private static boolean isCygwin(String message) {
-        return Utilities.isWindows() && message.toLowerCase().contains("cygwin"); // NOI18N
-    }
+//    /**
+//     * Determine if we're running Cygwin or not
+//     *
+//     * @param message The input string (without the '~')
+//     * @return boolean true if Cygwin else false
+//     */
+//    private static boolean isCygwin(String message) {
+//        return Utilities.isWindows() && message.toLowerCase().contains("cygwin"); // NOI18N
+//    }
 
     /**
      *  Ignoring array and pointer information, is this type a keyword type? We may check more
@@ -273,7 +273,7 @@ public class GdbUtils {
             // put the value in the map and prepare for the next property
             value = info.substring(i, tend);
             if (Utilities.isWindows() && value.startsWith("/cygdrive/")) { // NOI18N
-                value = value.charAt(10) + ':' + value.substring(11);
+                value = value.charAt(10) + ":" + value.substring(11); // NOI18N
             }
             if (key.equals("fullname") || key.equals("file")) { // NOI18N
                 value = gdbToUTF(value); // possibly convert multi-byte fields
