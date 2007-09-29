@@ -165,7 +165,7 @@ public class CodeCompleterTest extends RubyTestBase {
             Language dl = new DefaultLanguage("Ruby", "org/netbeans/modules/ruby/jrubydoc.png", "text/x-ruby", extensions, 
                     actions, new RubyLanguage(), 
                     new RubyParser(), new CodeCompleter(), new RenameHandler(), new DeclarationFinder(), 
-                    new Formatter(), new BracketCompleter(), new RubyIndexer(), new StructureAnalyzer(), null);
+                    new Formatter(), new BracketCompleter(), new RubyIndexer(), new StructureAnalyzer(), null, false);
             List<Language> languages = new ArrayList<Language>();
             languages.add(dl);
             registry.addLanguages(languages);

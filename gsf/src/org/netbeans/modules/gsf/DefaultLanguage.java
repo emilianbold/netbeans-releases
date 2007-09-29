@@ -85,7 +85,7 @@ public class DefaultLanguage implements Language {
     public DefaultLanguage(String displayName, String iconBase, String mime, List<String> extensions, List<Action> actions,
             GsfLanguage gsfLanguage, Parser parser, Completable completionProvider, InstantRenamer renamer,
             DeclarationFinder declarationFinder, Formatter formatter, BracketCompletion bracketCompletion, Indexer indexer,
-            StructureScanner structure, /*PaletteController*/Object palette) {
+            StructureScanner structure, /*PaletteController*/Object palette, boolean useCustomEditorKit) {
         this.displayName = displayName;
         this.iconBase = iconBase;
         this.mime = mime;
@@ -101,6 +101,7 @@ public class DefaultLanguage implements Language {
         this.indexer = indexer;
         this.structure = structure;
 //        this.palette = palette;
+        this.useCustomEditorKit = useCustomEditorKit;
     }
 
 
