@@ -44,6 +44,7 @@ import javax.swing.JFileChooser;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -83,7 +84,7 @@ public class AddDriverDialog extends javax.swing.JPanel {
         this();
         customizer = true;
         
-        String fileName;
+        String fileName = "";
         URL[] urls = drv.getURLs();
         for (int i = 0; i < urls.length; i++) {
             FileObject fo = URLMapper.findFileObject(urls[i]);
@@ -93,6 +94,14 @@ public class AddDriverDialog extends javax.swing.JPanel {
                 } catch (URISyntaxException e) {
                     Exceptions.printStackTrace(e);
                     fileName = null;
+                }
+            } 
+            // 117005  AddDriverDialog NPE occurs if registering driver using a layer file 
+            else if (!fo.isData()) {
+                try {
+                    fileName = fo.getFileSystem().getDisplayName();
+                } catch (FileStateInvalidException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
             } else {
                 fileName = FileUtil.toFile(fo).getAbsolutePath();
