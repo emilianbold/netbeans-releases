@@ -54,6 +54,19 @@ public class IdeUtil {
 
     private static File raveClusterDir;
 
+    /**
+     * Returns the Logger for this NB module. Use Java logging instead of the older NB ErrorManager APIs.
+     * 
+     * @return
+     */
+    public static Logger getLogger() {
+        return logger;
+    }
+
+    /**
+     * @deprecated Use the newer Java logging API.
+     * @param th
+     */
     public static void logWarning(Throwable th) {
         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, th);
     }
@@ -66,6 +79,10 @@ public class IdeUtil {
         logWarning(new Throwable(msg, cause));
     }
 
+    /**
+     * @deprecated Use the newer Java logging API.
+     * @param th
+     */
     public static void logError(Throwable th) {
         ErrorManager.getDefault().notify(ErrorManager.ERROR, th);
     }
@@ -462,15 +479,6 @@ public class IdeUtil {
             }
         }
         return complibStateDir;
-    }
-
-    /**
-     * Returns the Logger for this NB module
-     * 
-     * @return
-     */
-    public static Logger getLogger() {
-        return logger;
     }
 
     /** *********** End module-specifc methods ****************************** */

@@ -50,7 +50,6 @@ import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
 import javax.swing.event.EventListenerList;
 
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.libraries.Library;
@@ -128,11 +127,11 @@ public class ComplibServiceProvider implements ComplibService {
             if (project == null) {
                 return true;
             }
-            Node itemNode = (Node) lookup.lookup(Node.class);
+            Node itemNode = lookup.lookup(Node.class);
             if (itemNode == null) {
                 return true;
             }
-            DataObject dataObj = (DataObject) itemNode.getLookup().lookup(DataObject.class);
+            DataObject dataObj = itemNode.getLookup().lookup(DataObject.class);
             if (!(dataObj instanceof DataFolder)) {
                 return true;
             }
@@ -158,11 +157,11 @@ public class ComplibServiceProvider implements ComplibService {
             if (project == null) {
                 return true;
             }
-            Node itemNode = (Node) lookup.lookup(Node.class);
+            Node itemNode = lookup.lookup(Node.class);
             if (itemNode == null) {
                 return true;
             }
-            DataObject dataObj = (DataObject) itemNode.getLookup().lookup(DataObject.class);
+            DataObject dataObj = itemNode.getLookup().lookup(DataObject.class);
             if (dataObj == null) {
                 return true;
             }
@@ -254,7 +253,7 @@ public class ComplibServiceProvider implements ComplibService {
     /**
      * Part of interface that ComplibServiceProvider exports to the UI
      */
-    public static class ComponentInfo implements Comparable {
+    public static class ComponentInfo implements Comparable<Object> {
         /** className is unique within the scope of a ComplibImpl */
         private String className;
 
@@ -453,34 +452,11 @@ public class ComplibServiceProvider implements ComplibService {
          * Note: no code executed as a result of calling this constructor should call back into this
          * constructor. For example, do not call ComplibServiceProvider.getInstance() or else this
          * will cause initialization problems.
-         * 
-         * TODO Reduce the amount of code here so it is easier to tell
          */
 
         initUserScope();
 
         installNewComplibPackages(complibsToInstallDir);
-
-        /*
-         * // Get initial set of open projects Project[] projectsArray =
-         * OpenProjects.getDefault().getOpenProjects(); final HashSet<Project> initialProjects =
-         * new HashSet<Project>(Arrays.asList(projectsArray));
-         * xinitProjectComplibs(initialProjects); initSharedComplibs(initialProjects); // Listen for
-         * project open events and ensure complib library defs and refs are initialized
-         * OpenProjects.getDefault().addPropertyChangeListener(new PropertyChangeListener() { public
-         * void propertyChange(PropertyChangeEvent evt) { if
-         * (OpenProjects.PROPERTY_OPEN_PROJECTS.equals(evt.getPropertyName())) { List<Project>
-         * oldOpenProjectsList = Arrays .asList((Project[]) evt.getOldValue()); List<Project>
-         * newOpenProjectsList = Arrays .asList((Project[]) evt.getNewValue());
-         * 
-         * Set<Project> openedProjectsSet = new LinkedHashSet<Project>(newOpenProjectsList);
-         * openedProjectsSet.removeAll(oldOpenProjectsList);
-         * xinitProjectComplibs(openedProjectsSet); initSharedComplibs(openedProjectsSet);
-         * 
-         * Set<Project> closedProjectsSet = new LinkedHashSet<Project>(oldOpenProjectsList);
-         * closedProjectsSet.removeAll(newOpenProjectsList); cleanUpProjects(closedProjectsSet); } }
-         * });
-         */
     }
 
     private void initUserScope() throws IOException {
@@ -527,52 +503,6 @@ public class ComplibServiceProvider implements ComplibService {
         return projects;
     }
 
-    private void xinitProjectComplibs(Set<Project> projects) {
-        for (Project project : projects) {
-            if (JsfProjectUtils.isJsfProject(project)) {
-                try {
-                    Scope scope = Scope.getScopeForProject(project);
-                    Set<ExtensionComplib> projectComplibs = scope.getComplibs();
-                    ensureProjectComplibsAreInstalled(projectComplibs);
-
-                    // Init library ref for each complib
-                    for (ExtensionComplib projectComplib : projectComplibs) {
-                        ExtensionComplib userComplib = userScope.getExistingComplib(projectComplib);
-                        if (userComplib != null) {
-                            // FIXME code does not work. It needs to be revised anyway when NB api
-                            // is available 110040.
-                            // try {
-                            // removeLegacyLibraryRefsAndDefs(project, projectComplib);
-                            // } catch (IOException e) {
-                            // IdeUtil
-                            // .logWarning(
-                            // "Unable to remove legacy library reference and definition. Use
-                            // Project Properties to remove manually",
-                            // e);
-                            // }
-                            addLibraryRefAndDef(project, userComplib);
-                        }
-                    }
-                } catch (IOException e) {
-                    IdeUtil.logError("Unable to initialize component libraries for project: "
-                            + project.getProjectDirectory(), e);
-                }
-            }
-        }
-    }
-
-    private void cleanUpProjects(Set<Project> projects) {
-        for (Project project : projects) {
-            if (JsfProjectUtils.isJsfProject(project)) {
-                try {
-                    Scope.destroyScopeForProject(project);
-                } catch (IOException e) {
-                    IdeUtil.logError(e);
-                }
-            }
-        }
-    }
-
     /**
      * Make sure the project complibs are installed on the palette.
      * 
@@ -614,112 +544,6 @@ public class ComplibServiceProvider implements ComplibService {
                 IdeUtil.logWarning(e);
             }
         }
-    }
-
-    /**
-     * Remove existing legacy Library Refs and Library Defs to an embedded complib for a particular
-     * project.
-     * 
-     * Note: This is a hack because as of 2007-07 there isn't a NB API to enumerate all of the
-     * project's library references. If and when NB provides such an API, we can change this code.
-     * 
-     * @param project
-     * @param projectComplib
-     *            complib embedded in project
-     * @throws IOException
-     */
-    private void removeLegacyLibraryRefsAndDefs(Project project, ExtensionComplib projectComplib)
-            throws IOException {
-        if (removeLegacyShortfinLibRefsAndDefs(project, projectComplib)) {
-            return;
-        }
-
-        removeLegacyCreatorLibRefsAndDefs(project, projectComplib);
-    }
-
-    private boolean removeLegacyShortfinLibRefsAndDefs(Project project, ExtensionComplib complib)
-            throws IOException {
-        /*
-         * In NetBeans VWP 5.5.x or shortfin, there was only a single Lib Def with a "design-time"
-         * volume but two separate Lib Refs that showed up in the Project Properites UI as a node
-         * under "Libraries" w/o package checkbox and another under "Packaging".
-         */
-        String projectName = project.getProjectDirectory().getName();
-        String libName = IdeUtil.removeWhiteSpace(projectName + "_"
-                + complib.getDirectoryBaseName());
-        Library libDef = getMaybeFakeLibDef(libName, complib);
-
-        // Remove existing "compile" Lib Ref
-        boolean foundCompile = JsfProjectUtils.removeLibraryReferences(project,
-                new Library[] { libDef }, ClassPath.COMPILE);
-
-        // Remove existing "package" Lib Ref
-        boolean foundPackaging = JsfProjectUtils.removeLibraryReferences(project,
-                new Library[] { libDef }, ClassPath.EXECUTE);
-
-        // Remove the Lib Def
-        JsfProjectUtils.removeLibrary(libName);
-
-        // Cleanup bundle
-        LibraryLocalizationBundle.remove(libName);
-
-        // If we found at least one of them then the project was probably a shortfin project
-        return foundCompile || foundPackaging;
-    }
-
-    private boolean removeLegacyCreatorLibRefsAndDefs(Project project, ExtensionComplib complib)
-            throws IOException {
-        /*
-         * In Creator, there were two pairs of Lib Def and Lib Refs, one for design-time and one for
-         * runtime. So we remove both pairs. First the runtime...
-         */
-        String projectName = project.getProjectDirectory().getName();
-        String libName = IdeUtil.removeWhiteSpace(projectName + " Design-time "
-                + complib.getTitle());
-        Library libDef = getMaybeFakeLibDef(libName, complib);
-        // Remove existing "compile" Lib Ref
-        boolean foundCompile = JsfProjectUtils.removeLibraryReferences(project,
-                new Library[] { libDef }, ClassPath.COMPILE);
-
-        // Remove the Lib Def
-        JsfProjectUtils.removeLibrary(libName);
-
-        // Cleanup bundle
-        LibraryLocalizationBundle.remove(libName);
-
-        /*
-         * Now, the design-time which appears in the Project Properties "Packaging" sub-node.
-         */
-        libName = IdeUtil.removeWhiteSpace(projectName + " Runtime " + complib.getTitle());
-        libDef = getMaybeFakeLibDef(libName, complib);
-        // Remove existing "package" Lib Ref
-        boolean foundPackaging = JsfProjectUtils.removeLibraryReferences(project,
-                new Library[] { libDef }, ClassPath.EXECUTE);
-
-        // Remove the Lib Def
-        JsfProjectUtils.removeLibrary(libName);
-
-        // Cleanup bundle
-        LibraryLocalizationBundle.remove(libName);
-
-        // If we found at least one of them then the project was probably a Creator project
-        return foundCompile || foundPackaging;
-    }
-
-    private Library getMaybeFakeLibDef(String libName, ExtensionComplib complib) throws IOException {
-        Library libDef = LibraryManager.getDefault().getLibrary(libName);
-        if (libDef == null) {
-            /*
-             * There is no NB API to remove just a Lib Ref so we create a dummy Lib Def to check if
-             * there is a Lib Ref that points to it. As of 2007-04-22, we also need to have a
-             * classpath specified or else JsfProjectUtils.hasLibraryReference(project, libDef) does
-             * not work.
-             */
-            List<URL> rtPath = fileListToUrlList(complib.getRuntimePath());
-            libDef = JsfProjectUtils.createComponentLibrary(libName, null, null, rtPath, null,
-                    null, null);
-        }
-        return libDef;
     }
 
     /**
@@ -1140,7 +964,7 @@ public class ComplibServiceProvider implements ComplibService {
         // Sort the returned components
         SortedSet<ComponentInfo> compInfos = new TreeSet<ComponentInfo>(compInfoMap.values());
 
-        return (ComponentInfo[]) compInfos.toArray(EMPTY_COMPONENT_INFO_ARRAY);
+        return compInfos.toArray(EMPTY_COMPONENT_INFO_ARRAY);
     }
 
     private void getUniqueInitialItems(Map<String, ComponentInfo> compInfoMap, Complib complib,
@@ -1414,8 +1238,8 @@ public class ComplibServiceProvider implements ComplibService {
         HashSet<ExtensionComplib> result = new HashSet<ExtensionComplib>(userScope.getComplibs());
 
         Set<ExtensionComplib> prjComplibs = getComplibsForProject(project);
-        for (Iterator iter = result.iterator(); iter.hasNext();) {
-            ExtensionComplib usrComplib = (ExtensionComplib) iter.next();
+        for (Iterator<ExtensionComplib> iter = result.iterator(); iter.hasNext();) {
+            ExtensionComplib usrComplib = iter.next();
 
             // TODO Generalize this code to work with future EE versions
             if (isNonEe5Project
