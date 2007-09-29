@@ -85,26 +85,6 @@ public class AbilitiesPanel implements NavigatorPanel
 {
     private static ABPanel instance=null;
     
-    //Version for the hack
-    /*
-    static class ABHint implements NavigatorLookupHint
-    {
-        private String ext="";
-        
-        private synchronized void setExt()
-        {
-            ext="ext";
-        }
-        
-        synchronized public String getContentType()
-        {
-            String ret= "j2me/abilities"+ext;
-            ext="";
-            return ret;
-        }
-    };
-     **/
-    
     static class ABHint implements NavigatorLookupHint
     {
         static String hint= "j2me/abilities";
@@ -233,8 +213,13 @@ public class AbilitiesPanel implements NavigatorPanel
                         
                         for (Entry<String,String> entry : copiedAbilities.entrySet())
                         {
-                            addAbility(ep,helper,entry.getKey(),entry.getValue());
-                            tableModel.addRow(entry.getKey(), entry.getValue());
+                            String value=entry.getValue();
+                            if (MULTIPLE_VALUES.equals(value))
+                            {
+                                value="";
+                            }
+                            addAbility(ep,helper,entry.getKey(),value);
+                            tableModel.addRow(entry.getKey(), value);
                         }
                         try
                         {
