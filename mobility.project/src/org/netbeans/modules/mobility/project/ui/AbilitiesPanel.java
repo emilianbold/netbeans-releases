@@ -396,7 +396,8 @@ public class AbilitiesPanel implements NavigatorPanel
             final JPopupMenu pm=new JPopupMenu();
             for (Action act : actions)
                 pm.add(act);            
-            table.addMouseListener(new MouseAdapter()
+            
+            MouseAdapter listener=new MouseAdapter()
             {
                 public void mousePressed(MouseEvent e) {
                   showPopup(e);
@@ -410,12 +411,16 @@ public class AbilitiesPanel implements NavigatorPanel
                   if (e.isPopupTrigger()) {
                     int row=table.rowAtPoint(e.getPoint());
                     int selRows[]=table.getSelectedRows();
-                    if ((selRows.length>=2 && (row < selRows[0] || row > selRows[selRows.length-1])) || selRows.length<2)
-                        table.setRowSelectionInterval(row,row);
+                    if (row >= 0)
+                        if ((selRows.length>=2 && (row < selRows[0] || row > selRows[selRows.length-1])) || selRows.length<2)
+                            table.setRowSelectionInterval(row,row);
                     pm.show(e.getComponent(), e.getX(), e.getY());
                   }
                 }
-            });
+            };
+            
+            scrollPane.addMouseListener(listener);
+            table.addMouseListener(listener);
             
             editor.addCellEditorListener(new CellEditorListener() {                                    
                 public void editingStopped(ChangeEvent e)
