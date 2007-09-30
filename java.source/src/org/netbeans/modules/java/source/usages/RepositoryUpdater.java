@@ -179,6 +179,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     private final Map<URL, Collection<File>> url2Recompile = new HashMap<URL, Collection<File>>();
     private boolean recompileScheduled;
     private boolean recompileToBeScheduled;
+    private final Set<URL> recompileFilesWithErrors = new HashSet<URL>();
+    private boolean recompileFilesWithErrorsScheduled;
+    private boolean recompileFilesWithErrorsToBeScheduled;
     private final Map<URL, Collection<File>> url2CompileWithDeps = new HashMap<URL, Collection<File>>();
     private final Map<URL, Reference<Task>> url2CompileWithDepsTask = new HashMap<URL, Reference<Task>>();
     private boolean compileWithDepsToBeScheduled;
@@ -462,11 +465,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         //new file creation may cause/fix some errors
                         //not 100% correct (consider eg. a file that has two .* imports
                         //new file creation may cause new error in this case
-                        List<File> toReparse = new LinkedList<File>();
-                        for (URL u : TaskCache.getDefault().getAllFilesInError(root)) {
-                            toReparse.add(FileUtil.normalizeFile(new File(u.toURI())));
-                        }
-                        assureRecompiled(root, toReparse);
+                        assureFilesWithErrorsRecompiled(root);
                     }
                 }
             }
@@ -476,8 +475,6 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     submit(Work.binary(fo, root));
                 }
             }
-        } catch (URISyntaxException ioe) {
-            Exceptions.printStackTrace(ioe);
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
         }
@@ -543,7 +540,18 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 this.noSubmited++;
             }
             final CompileWorker cw = new CompileWorker (work);
-            JavaSourceAccessor.INSTANCE.runSpecialTask (cw, work.getType() == WorkType.RECOMPILE ? JavaSource.Priority.LOW : JavaSource.Priority.MAX);
+            JavaSource.Priority p;
+            
+            switch (work.getType()) {
+                case RECOMPILE:
+                case RECOMPILE_FILES_WITH_ERRORS:
+                    p = JavaSource.Priority.LOW;
+                    break;
+                default:
+                    p = JavaSource.Priority.MAX;
+                    break;
+            }
+            JavaSourceAccessor.INSTANCE.runSpecialTask (cw, p);
         }
     }
     
@@ -671,6 +679,19 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         }
     }
     
+    private synchronized void assureFilesWithErrorsRecompiled(URL root) {
+        recompileFilesWithErrors.add(root);
+        
+        if (!recompileFilesWithErrorsScheduled) {
+            if (lockRU) {
+                recompileFilesWithErrorsToBeScheduled = true;
+            } else {
+                submit(Work.recompileFilesWithErrors());
+                recompileFilesWithErrorsScheduled = true;
+            }
+        }
+    }
+    
     private synchronized void assureCompiledWithDeps(final URL root, File file) {
         Reference<Task> taskRef = url2CompileWithDepsTask.get(root);
         Task t = taskRef != null ? taskRef.get() : null;
@@ -716,6 +737,12 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             submit(Work.recompile());
             recompileScheduled = true;
             recompileToBeScheduled = false;
+        }
+        
+        if (recompileFilesWithErrorsToBeScheduled) {
+            submit(Work.recompileFilesWithErrors());
+            recompileFilesWithErrorsScheduled = true;
+            recompileFilesWithErrorsToBeScheduled = false;
         }
         
         if (compileWithDepsToBeScheduled) {
@@ -861,7 +888,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     }
     
     private static enum WorkType {
-        COMPILE_BATCH, COMPILE_CONT, COMPILE, DELETE, UPDATE_BINARY, FILTER_CHANGED, COMPILE_WITH_DEPENDENCIES, RECOMPILE
+        COMPILE_BATCH, COMPILE_CONT, COMPILE, DELETE, UPDATE_BINARY, FILTER_CHANGED, COMPILE_WITH_DEPENDENCIES, RECOMPILE, RECOMPILE_FILES_WITH_ERRORS
     };
     
     
@@ -942,6 +969,10 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             return new RecompileWork(null);
         }
         
+        public static Work recompileFilesWithErrors() {
+            return new RecompileFilesWithErrorsWork(null);
+        }
+        
         public static Work compileWithDeps(URL root, Collection<File> filesToCompile) {
             return new CompileWithDepsWork(root, filesToCompile, null);
         }
@@ -1004,6 +1035,12 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     private static class RecompileWork extends Work {
         public RecompileWork(CountDownLatch latch) {
             super(WorkType.RECOMPILE, latch);
+        }
+    }
+    
+    private static class RecompileFilesWithErrorsWork extends Work {
+        public RecompileFilesWithErrorsWork(CountDownLatch latch) {
+            super(WorkType.RECOMPILE_FILES_WITH_ERRORS, latch);
         }
     }
     
@@ -1290,6 +1327,35 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             }
                             break;
                         }
+                        case RECOMPILE_FILES_WITH_ERRORS:
+                        {
+                            Set<URL> toAnalyse = new HashSet<URL>();
+                            synchronized (RepositoryUpdater.this) {
+                                toAnalyse.addAll(recompileFilesWithErrors);
+                                recompileFilesWithErrors.clear();
+                                recompileFilesWithErrorsScheduled = false;
+                            }
+                            
+                            for (URL root : toAnalyse) {
+                                try {
+                                    long s = System.currentTimeMillis();
+
+                                    List<File> toReparse = new LinkedList<File>();
+                                    for (URL u : TaskCache.getDefault().getAllFilesInError(root)) {
+                                        toReparse.add(FileUtil.normalizeFile(new File(u.toURI())));
+                                    }
+
+                                    long e = System.currentTimeMillis();
+
+                                    LOGGER.log(Level.FINE, "Enumerating files with errors for root: {0} took: {1} ms.", new Object[]{root, e - s});
+
+                                    assureRecompiled(root, toReparse);
+                                } catch (URISyntaxException e) {
+                                    LOGGER.log(Level.WARNING, null, e);
+                                }
+                            }
+                            break;
+                        }
                         case RECOMPILE:
                         {
                             //XXX compileWithDeps should have priority ower recompile:
@@ -1506,11 +1572,17 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             }
             
             if (isInitialCompilation) {
-                clean |= getAttribute(root, DIRTY_ROOT, null) != null; //always do a clean rebuild if root dirty
+                if (getAttribute(root, DIRTY_ROOT, null) != null) { //always do a clean rebuild if root dirty
+                    LOGGER.fine("forcing clean due to dirty root");
+                    clean = true;
+                }
                 
                 String sourceLevel = SourceLevelQuery.getSourceLevel(rootFo);
                 
-                clean |= ensureAttributeValue(root, SOURCE_LEVEL_ROOT, sourceLevel, true);
+                if (ensureAttributeValue(root, SOURCE_LEVEL_ROOT, sourceLevel, true)) {
+                    LOGGER.fine("forcing clean due to source level change");
+                    clean = true;
+                }
                 
                 String extraCompilerOptions = CompilerSettings.getCommandLine();
                 
@@ -1518,13 +1590,22 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     extraCompilerOptions = null;
                 }
                 
-                clean |= ensureAttributeValue(root, EXTRA_COMPILER_OPTIONS, extraCompilerOptions, true);
+                if (ensureAttributeValue(root, EXTRA_COMPILER_OPTIONS, extraCompilerOptions, true)) {
+                    LOGGER.fine("forcing clean due to extra compiler options change");
+                    clean = true;
+                }
                 
                 clean |= ensureAttributeValue(root, CLASSPATH_ATTRIBUTE, classPathToString(ClasspathInfo.create(bootPath, compilePath, sourcePath)), true);
 
                 if (TasklistSettings.isTasklistEnabled() && TasklistSettings.isDependencyTrackingEnabled()) {
-                    clean |= ensureAttributeValue(root, CONTAINS_TASKLIST_DATA, "true", true);
-                    clean |= ensureAttributeValue(root, CONTAINS_TASKLIST_DEPENDENCY_DATA, "true", true);
+                    if (ensureAttributeValue(root, CONTAINS_TASKLIST_DATA, "true", true)) {
+                        LOGGER.fine("forcing clean because there are not tasklist data");
+                        clean = true;
+                    }
+                    if (ensureAttributeValue(root, CONTAINS_TASKLIST_DEPENDENCY_DATA, "true", true)) {
+                        LOGGER.fine("forcing clean because there are not tasklist dependency data");
+                        clean = true;
+                    }
                 }
             }
 
@@ -2283,7 +2364,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         while (true) {
             boolean sleep;
             synchronized (this) {
-                sleep = compileScheduled > 0 || !url2Recompile.isEmpty();
+                sleep = compileScheduled > 0 || !url2Recompile.isEmpty() || !recompileFilesWithErrors.isEmpty();
             }
             
             if (sleep) {
@@ -2530,16 +2611,24 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         }                                
                         List<Diagnostic> diag = new ArrayList<Diagnostic>();
                         URI u = active.toUri();
-                        for (Diagnostic d : listener.errors) {
+                        for (Iterator<Diagnostic> it = listener.errors.iterator(); it.hasNext(); ) {
+                            Diagnostic d = it.next();
+                            
                             if (active.equals(d.getSource())) {
                                 diag.add(d);
+                                it.remove();
                             }
                         }
-                        for (Diagnostic d : listener.warnings) {
+                        
+                        for (Iterator<Diagnostic> it = listener.warnings.iterator(); it.hasNext(); ) {
+                            Diagnostic d = it.next();
+                            
                             if (active.equals(d.getSource())) {
                                 diag.add(d);
+                                it.remove();
                             }
                         }
+                        
                         if (TasklistSettings.isTasklistEnabled()) {
                             toRefresh.addAll(TaskCache.getDefault().dumpErrors(rootFo.getURL(), u.toURL(), activeFile, diag));
                         }

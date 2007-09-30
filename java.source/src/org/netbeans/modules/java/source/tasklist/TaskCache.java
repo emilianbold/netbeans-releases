@@ -24,15 +24,14 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -57,6 +56,9 @@ import org.openide.filesystems.URLMapper;
  * @author Jan Lahoda, Stanislav Aubrecht
  */
 public class TaskCache {
+    
+    private static final String ERR_EXT = "err";
+    private static final String WARN_EXT = "warn";
     
     private static final Logger LOG = Logger.getLogger(TaskCache.class.getName());
     
@@ -94,8 +96,6 @@ public class TaskCache {
     private List<Task> getErrors(FileObject file, boolean onlyErrors) {
         LOG.log(Level.FINE, "getErrors, file={0}", FileUtil.getFileDisplayName(file));
         
-        List<Task> result = new ArrayList<Task>();
-        
         try {
             File input = computePersistentFile(file);
             
@@ -106,58 +106,21 @@ public class TaskCache {
             
             input.getParentFile().mkdirs();
             
-            BufferedReader pw = new BufferedReader(new InputStreamReader(new FileInputStream(input), "UTF-8"));
-            String line;
-            
-            while ((line = pw.readLine()) != null) {
-                String[] parts = line.split(":");
-                
-                Kind kind = Kind.valueOf(parts[0]);
-                
-                if (kind == null) {
-                    continue;
-                }
-                
-                int lineNumber = Integer.parseInt(parts[1]);
-                String message = parts[2];
-                
-                message = message.replaceAll("\\\\d", ":");
-                message = message.replaceAll("\\\\n", " ");
-                message = message.replaceAll("\\\\\\\\", "\\\\");
-                
-                String severity = getTaskType(kind);
-                
-                if( null != severity && (!onlyErrors || kind == Kind.ERROR)) {
-                    Task err = Task.create(file, severity, message, lineNumber );
-                    result.add( err );
-                }
-            }
-            
-            pw.close();
+            return loadErrors(input, file, onlyErrors);
         } catch (IOException e) {
             e.printStackTrace();
         }
         
-        return result;
+        return Collections.<Task>emptyList();
     }
     
-    public Set<URL> dumpErrors(URL root, URL file, File fileFile, List<? extends Diagnostic> errors) throws IOException {
-        if (!fileFile.canRead()) {
-            //make sure unreadable (non-existing) files do not have any associated errors:
-            errors = Collections.<Diagnostic>emptyList();
-        }
-        
-        File[] output = computePersistentFile(root, file);
-        boolean containsErrors = false;
-        
+    private boolean dumpErrors(File output, List<? extends Diagnostic> errors, boolean interestedInReturnValue) throws IOException {
         if (!errors.isEmpty()) {
-            output[1].getParentFile().mkdirs();
-            PrintWriter pw = new PrintWriter(new OutputStreamWriter(new FileOutputStream(output[1]), "UTF-8"));
+            boolean existed = interestedInReturnValue && output.exists();
+            output.getParentFile().mkdirs();
+            PrintWriter pw = new PrintWriter(new OutputStreamWriter(new FileOutputStream(output), "UTF-8"));
             
             for (Diagnostic d : errors) {
-                if (d.getKind() == Kind.ERROR) {
-                    containsErrors = true;
-                }
                 pw.print(d.getKind());
                 pw.print(':');
                 pw.print(d.getLineNumber());
@@ -173,109 +136,120 @@ public class TaskCache {
             }
             
             pw.close();
+            
+            return !existed;
         } else {
-            output[1].delete();
+            return output.delete();
         }
+    }
+    
+    private void separate(List<? extends Diagnostic> input, List<Diagnostic> errors, List<Diagnostic> notErrors) {
+        for (Diagnostic d : input) {
+            if (d.getKind() == Kind.ERROR) {
+                errors.add(d);
+            } else {
+                notErrors.add(d);
+            }
+        }
+    }
+    
+    public Set<URL> dumpErrors(URL root, URL file, File fileFile, List<? extends Diagnostic> errors) throws IOException {
+        if (!fileFile.canRead()) {
+            //if the file is not readable anymore, ignore the errors:
+            errors = Collections.emptyList();
+        }
+        
+        File[] output = computePersistentFile(root, file);
+        
+        List<Diagnostic> trueErrors = new LinkedList<Diagnostic>();
+        List<Diagnostic> notErrors = new LinkedList<Diagnostic>();
+        
+        separate(errors, trueErrors, notErrors);
+        
+        boolean modified = dumpErrors(output[1], trueErrors, true);
+        
+        dumpErrors(output[2], notErrors, false);
         
         Set<URL> toRefresh = new HashSet<URL>();
         
         toRefresh.add(file);
         
-        File current = output[1].getParentFile();
-        File currentFile = fileFile.getParentFile();
-                
-        while (!output[0].equals(current)) {
-            if (updateInErrorFolder(current, file, containsErrors, true))
+        if (!modified) {
+            File current = output[1].getParentFile();
+            File currentFile = fileFile.getParentFile();
+
+            while (!output[0].equals(current)) {
                 toRefresh.add(currentFile.toURL());
-            current = current.getParentFile();
-            currentFile = currentFile.getParentFile();
-        }
-        
-        if (updateInErrorFolder(current, file, containsErrors, true))
+                current = current.getParentFile();
+                currentFile = currentFile.getParentFile();
+            }
+
             toRefresh.add(currentFile.toURL());
-        
-        updateInErrorFolder(output[1].getParentFile(), file, containsErrors, false);
-            
-        FileObject rootFO = URLMapper.findFileObject(root);
-        
-        //XXX:
-        if (rootFO != null) {
-            Project p = FileOwnerQuery.getOwner(rootFO);
-            
-            if (p != null) {
-                FileObject currentFO = rootFO;
-                FileObject projectDirectory = p.getProjectDirectory();
-                
-                if (FileUtil.isParentOf(projectDirectory, rootFO)) {
-                    while (currentFO != null && currentFO != projectDirectory) {
-                        toRefresh.add(currentFO.getURL());
-                        currentFO = currentFO.getParent();
+
+            FileObject rootFO = URLMapper.findFileObject(root);
+
+            //XXX:
+            if (rootFO != null) {
+                Project p = FileOwnerQuery.getOwner(rootFO);
+
+                if (p != null) {
+                    FileObject currentFO = rootFO;
+                    FileObject projectDirectory = p.getProjectDirectory();
+
+                    if (FileUtil.isParentOf(projectDirectory, rootFO)) {
+                        while (currentFO != null && currentFO != projectDirectory) {
+                            toRefresh.add(currentFO.getURL());
+                            currentFO = currentFO.getParent();
+                        }
                     }
+
+                    toRefresh.add(projectDirectory.getURL());
                 }
-                
-                toRefresh.add(projectDirectory.getURL());
             }
         }
         
         return toRefresh;
     }
-    
-    private boolean updateInErrorFolder(File current, URL file, boolean inError, boolean recursive) throws IOException {
-        File dep = getDep(current, recursive);
-        
-        if (!dep.canRead() && !inError)
-            return false;
-        
-        Set<URL> read = new HashSet<URL>();
-        
-//            LOG.log(Level.FINE, "getErrors, error file={0}", input.getAbsolutePath());
-            
-        if (dep.canRead()) {
-            BufferedReader pw = new BufferedReader(new InputStreamReader(new FileInputStream(dep), "UTF-8"));
-            try {
-                String line;
-                
-                while ((line = pw.readLine()) != null) {
-                    try {
-                        read.add(new URL(line));
-                    } catch (MalformedURLException malformedURL) {
-                        LOG.warning("Malformed URL: " + line +" in: " + dep.getAbsolutePath());
-                    }
-                }
-            } finally {
-                pw.close();
+
+    private List<Task> loadErrors(File input, FileObject file, boolean onlyErrors) throws IOException {
+        List<Task> result = new LinkedList<Task>();
+        BufferedReader pw = new BufferedReader(new InputStreamReader(new FileInputStream(input), "UTF-8"));
+        String line;
+
+        while ((line = pw.readLine()) != null) {
+            String[] parts = line.split(":");
+
+            Kind kind = Kind.valueOf(parts[0]);
+
+            if (kind == null) {
+                continue;
+            }
+
+            int lineNumber = Integer.parseInt(parts[1]);
+            String message = parts[2];
+
+            message = message.replaceAll("\\\\d", ":");
+            message = message.replaceAll("\\\\n", " ");
+            message = message.replaceAll("\\\\\\\\", "\\\\");
+
+            String severity = getTaskType(kind);
+
+            if (null != severity && (!onlyErrors || kind == Kind.ERROR)) {
+                Task err = Task.create(file, severity, message, lineNumber);
+                result.add(err);
             }
         }
+
+        pw.close();
         
-        boolean modified;
-        
-        if (inError) {
-            modified = read.add(file);
-        } else {
-            modified = read.remove(file);
-        }
-        
-        if (modified) {
-            if (read.isEmpty()) {
-                dep.delete();
-            } else {
-                PrintWriter pw = new PrintWriter(new OutputStreamWriter(new FileOutputStream(dep), "UTF-8"));
-                
-                try {
-                    for (URL u : read) {
-                        pw.println(u.toExternalForm());
-                    }
-                } finally {
-                    pw.close();
-                }
-            }
-        }
-        
-        return modified;
+        return result;
     }
     
-    //XXX: slow, should be rewritten:
     public List<URL> getAllFilesWithRecord(URL root) throws IOException {
+        return getAllFilesWithRecord(root, false);
+    }
+    
+    private List<URL> getAllFilesWithRecord(URL root, boolean onlyErrors) throws IOException {
         try {
             List<URL> result = new LinkedList<URL>();
             URI rootURI = root.toURI();
@@ -291,10 +265,16 @@ public class TaskCache {
                 assert f != null;
                 
                 if (f.isFile()) {
-                    if (f.getName().endsWith("err")) {
+                    if (f.getName().endsWith(ERR_EXT)) {
                         String relative = cacheRootURI.relativize(f.toURI()).getPath();
                         
-                        relative = relative.replaceAll("err$", "java");
+                        relative = relative.replaceAll(ERR_EXT + "$", "java");
+                        result.add(rootURI.resolve(relative).toURL());
+                    }
+                    if (!onlyErrors && f.getName().endsWith(WARN_EXT)) {
+                        String relative = cacheRootURI.relativize(f.toURI()).getPath();
+                        
+                        relative = relative.replaceAll(WARN_EXT + "$", "java");
                         result.add(rootURI.resolve(relative).toURL());
                     }
                 } else {
@@ -314,28 +294,7 @@ public class TaskCache {
     }
     
     public List<URL> getAllFilesInError(URL root) throws IOException {
-        File[] cacheRoot = computePersistentFile(root, root);
-        File dep = getDep(cacheRoot[0], true);
-        List<URL> result = new LinkedList<URL>();
-        
-        if (dep.canRead()) {
-            BufferedReader pw = new BufferedReader(new InputStreamReader(new FileInputStream(dep), "UTF-8"));
-            try {
-                String line;
-                
-                while ((line = pw.readLine()) != null) {
-                    result.add(new URL(line));
-                }
-            } finally {
-                pw.close();
-            }
-        }
-        
-        return result;
-    }
-    
-    private File getDep(File folder, boolean recursive) {
-        return new File(folder, recursive ? "recursive.dep" : "nonrecursive.dep");
+        return getAllFilesWithRecord(root, true);
     }
     
     public boolean isInError(FileObject file, boolean recursive) {
@@ -366,16 +325,45 @@ public class TaskCache {
                     return false;
                 }
                 
-                File cacheFile = getDep(new File(new File(cacheRoot.getParentFile(), "errors"), resourceName), recursive);
+                final File folder = new File(new File(cacheRoot.getParentFile(), "errors"), resourceName);
                 
-                LOG.log(Level.FINE, "cache file={0}, canRead={1}", new Object[] {cacheFile, Boolean.valueOf(cacheFile.canRead())});
-                
-                return cacheFile.canRead();
+                return folderContainsErrors(folder, recursive);
             } catch (IOException e) {
                 Logger.getLogger("global").log(Level.WARNING, null, e);
                 return false;
             }
         }
+    }
+    
+    private boolean folderContainsErrors(File folder, boolean recursively) throws IOException {
+        File[] errors = folder.listFiles(new FilenameFilter() {
+            public boolean accept(File dir, String name) {
+                return name.endsWith(".err");
+            }
+        });
+        
+        if (errors == null)
+            return false;
+        
+        if (errors.length > 0) {
+            return true;
+        }
+        
+        if (!recursively)
+            return false;
+        
+        File[] children = folder.listFiles();
+        
+        if (children == null)
+            return false;
+        
+        for (File c : children) {
+            if (c.isDirectory() && folderContainsErrors(c, recursively)) {
+                return true;
+            }
+        }
+        
+        return false;
     }
     
     private File[] computePersistentFile(URL root, URL file) throws IOException {
@@ -389,9 +377,10 @@ public class TaskCache {
             }
             File cacheRoot = Index.getClassFolder(root);
             File errorsRoot = new File(cacheRoot.getParentFile(), "errors");
-            File cacheFile = new File(errorsRoot, resourceName + ".err");
+            File errorCacheFile = new File(errorsRoot, resourceName + "." + ERR_EXT);
+            File warningCacheFile = new File(errorsRoot, resourceName + "." + WARN_EXT);
             
-            return new File[] {errorsRoot, cacheFile};
+            return new File[] {errorsRoot, errorCacheFile, warningCacheFile};
         } catch (URISyntaxException e) {
             throw (IOException) new IOException().initCause(e);
         }

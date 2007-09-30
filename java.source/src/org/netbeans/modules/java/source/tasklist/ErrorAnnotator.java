@@ -245,9 +245,12 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
         return result;
     }
     
+    private long cumulativeTime;
     private Collection<FileObject> toProcess = null;
+    
     private final RequestProcessor.Task WORKER = new RequestProcessor("ErrorAnnotator worker", 1).create(new Runnable() {
         public void run() {
+            long startTime = System.currentTimeMillis();
             Collection<FileObject> toProcess;
             
             synchronized (ErrorAnnotator.this) {
@@ -273,6 +276,10 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
 
                 fireFileStatusChanged(Collections.singleton(f));
             }
+            
+            long endTime = System.currentTimeMillis();
+            
+            Logger.getLogger(ErrorAnnotator.class.getName()).log(Level.FINE, "time spent in error annotations computation: {0}, cumulative time: {1}", new Object[] {(endTime - startTime), (cumulativeTime += (endTime - startTime))});
         }
     });
 }
