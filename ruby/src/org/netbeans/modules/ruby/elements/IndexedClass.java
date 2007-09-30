@@ -82,11 +82,13 @@ public final class IndexedClass extends IndexedElement implements ClassElement {
     
     @Override 
     public boolean equals(Object o) {
-        return ((IndexedClass)o).fqn.equals(fqn);
+        //return ((IndexedClass)o).fqn.equals(fqn);
+        return super.equals(o);
     }
     
     @Override
     public int hashCode() {
-        return fqn.hashCode();
+        //return fqn.hashCode();
+        return super.hashCode();
     }
 }

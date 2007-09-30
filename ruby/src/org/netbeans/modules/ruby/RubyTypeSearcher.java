@@ -68,7 +68,7 @@ public class RubyTypeSearcher implements TypeSearcher {
             textForQuery = textForQuery.toLowerCase();
         }
         
-        Set<IndexedClass> classes = index.getClasses(textForQuery, kind, true, false, false, scope);
+        Set<IndexedClass> classes = index.getClasses(textForQuery, kind, true, false, false, scope, null);
         //return classes;
         
         Set<RubyTypeDescriptor> result = new HashSet<RubyTypeDescriptor>();

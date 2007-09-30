@@ -101,7 +101,7 @@ public final class RubyIndex {
 
     Set<IndexedClass> getClasses(String name, final NameKind kind, boolean includeAll,
         boolean skipClasses, boolean skipModules) {
-        return getClasses(name, kind, includeAll, skipClasses, skipModules, ALL_SCOPE);
+        return getClasses(name, kind, includeAll, skipClasses, skipModules, ALL_SCOPE, null);
     }
 
     /**
@@ -110,12 +110,13 @@ public final class RubyIndex {
      * @param name The name of the class - possibly a fqn like File::Stat, or just a class
      *   name like Stat, or just a prefix like St.
      * @param kind Whether we want the exact name, or whether we're searching by a prefix.
-     * @param includeAll If true, return multiple RuIndexedClassnstances for the same logical
+     * @param includeAll If true, return multiple IndexedClasses for the same logical
      *   class, one for each declaration point. For example, File is defined both in the
      *   builtin stubs as well as in ftools.
      */
     public Set<IndexedClass> getClasses(String name, final NameKind kind, boolean includeAll,
-        boolean skipClasses, boolean skipModules, Set<Index.SearchScope> scope) {
+        boolean skipClasses, boolean skipModules, Set<Index.SearchScope> scope,
+        Set<String> uniqueClasses) {
         String classFqn = null;
 
         if (name != null) {
@@ -162,12 +163,10 @@ public final class RubyIndex {
         search(field, name, kind, result, scope);
 
         // TODO Prune methods to fit my scheme - later make lucene index smarter about how to prune its index search
-        final Set<String> uniqueClasses;
-
         if (includeAll) {
             uniqueClasses = null;
-        } else {
-            uniqueClasses = new HashSet<String>(); // TODO : init inside includeAll check
+        } else if (uniqueClasses == null) {
+            uniqueClasses = new HashSet<String>();
         }
 
         final Set<IndexedClass> classes = new HashSet<IndexedClass>();
@@ -186,8 +185,17 @@ public final class RubyIndex {
                 continue;
             }
 
-            if ((classFqn != null) && !classFqn.equals(map.getValue(RubyIndexer.FIELD_IN))) {
-                continue;
+            if (classFqn != null) {
+                if (kind == NameKind.CASE_INSENSITIVE_PREFIX ||
+                        kind == NameKind.CASE_INSENSITIVE_REGEXP) {
+                    if (!classFqn.equalsIgnoreCase(map.getValue(RubyIndexer.FIELD_IN))) {
+                        continue;
+                    }
+                } else {
+                    if (!classFqn.equals(map.getValue(RubyIndexer.FIELD_IN))) {
+                        continue;
+                    }
+                }
             }
 
             String attrs = map.getValue(RubyIndexer.FIELD_CLASS_ATTRS);

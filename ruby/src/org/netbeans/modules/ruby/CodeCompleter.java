@@ -1013,11 +1013,12 @@ public class CodeCompleter implements Completable {
         AstPath path = request.path;
         String ctx = AstUtilities.getFqnName(path);
 
-        Set<IndexedClass> classes = index.getClasses(fullPrefix, kind, false, false, false);
+        Set<String> uniqueClasses = new HashSet<String>();
+        Set<IndexedClass> classes = index.getClasses(fullPrefix, kind, false, false, false, RubyIndex.ALL_SCOPE, uniqueClasses);
 
         // Also try looking or classes scoped by the current class
         if ((ctx != null) && (ctx.length() > 0)) {
-            Set<IndexedClass> extraClasses = index.getClasses(ctx + "::" + fullPrefix, kind, false, false, false);
+            Set<IndexedClass> extraClasses = index.getClasses(ctx + "::" + fullPrefix, kind, false, false, false, RubyIndex.ALL_SCOPE, uniqueClasses);
             classes.addAll(extraClasses);
         }
 

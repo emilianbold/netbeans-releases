@@ -889,10 +889,11 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
         String fqn = possibleFqn;
 
         // First try looking only at the local scope
+        Set<String> uniqueClasses = new HashSet<String>();
         while ((classes.size() == 0) && (fqn.length() > 0)) {
             classes =
                 index.getClasses(fqn + "::" + name, NameKind.EXACT_NAME, true, false, // NOI18N
-                    false, RubyIndex.SOURCE_SCOPE);
+                    false, RubyIndex.SOURCE_SCOPE, uniqueClasses);
 
             int f = fqn.lastIndexOf("::"); // NOI18N
 
@@ -905,7 +906,7 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
 
         if (classes.size() == 0) {
             classes = index.getClasses(name, NameKind.EXACT_NAME, true, false, false,
-                    RubyIndex.SOURCE_SCOPE);
+                    RubyIndex.SOURCE_SCOPE, uniqueClasses);
         }
 
         // If no success with looking only at the source scope, look in libraries as well
