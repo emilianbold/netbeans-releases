@@ -64,9 +64,28 @@ public class CppUtils {
         if (string == null || string.length() == 0)
             return string;
         
-        StringBuilder formattedString = new StringBuilder(string.length());
-        StringBuilder token = new StringBuilder();
         boolean firstToken = true;
+        ArrayList<String> tokens = tokenizeString(string);
+        StringBuilder formattedString = new StringBuilder(string.length());
+        for (String token : tokens) {
+            if (!firstToken) {
+                formattedString.append(delimiter);
+                formattedString.append(" "); // NOI18N
+            }
+            formattedString.append(prepend);
+            formattedString.append(token);
+            firstToken = false;
+        }
+        
+        return formattedString.toString();
+    }
+    
+    public static ArrayList<String> tokenizeString(String string)  {
+        ArrayList<String> list = new ArrayList<String>(0);
+        
+        if (string == null || string.length() == 0)
+            return list;
+        StringBuilder token = new StringBuilder();
         boolean inToken = false;
         boolean inQuote = false;
         char quoteChar = '\0';
@@ -80,14 +99,8 @@ public class CppUtils {
                 } else {
                     if (eol || Character.isWhitespace(string.charAt(i))) {
                         if (token.length() > 0) {
-                            if (!firstToken) {
-                                formattedString.append(delimiter);
-                                formattedString.append(" "); // NOI18N
+                            list.add(token.toString());
                             }
-                            formattedString.append(prepend);
-                            formattedString.append(token);
-                        }
-                        firstToken = false;
                         inToken = false;
                         token = new StringBuilder();
                     } else {
@@ -106,9 +119,9 @@ public class CppUtils {
             }
         }
         if (token.length() > 0)
-            formattedString.append(token);
+            list.add(token.toString());
         
-        return formattedString.toString();
+        return list;
     }
     
     public static String getCygwinBase() {

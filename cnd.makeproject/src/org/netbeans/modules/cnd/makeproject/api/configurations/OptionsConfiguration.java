@@ -93,20 +93,17 @@ public class OptionsConfiguration {
     }
 
     public String[] getValues() {
-	List values = new ArrayList();
-	StringTokenizer st = new StringTokenizer(getValue());
-	while (st.hasMoreTokens()) {
-	    values.add(st.nextToken());
-	}
-	return (String[])values.toArray(new String[values.size()]);
-    }
-    public List getValuesAsList() {
-	List values = new ArrayList();
-	StringTokenizer st = new StringTokenizer(getValue());
-	while (st.hasMoreTokens()) {
-	    values.add(st.nextToken());
+        List<String> list = getValuesAsList();
+	String[] values = new String[list.size()];
+        int i = 0;
+        for (String s : list) {
+            values[i++] = s;
 	}
         return values;
+    }
+
+    public List<String> getValuesAsList() {
+        return CppUtils.tokenizeString(getValue());
     }
 
     // Predefined
