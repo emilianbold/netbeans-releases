@@ -715,26 +715,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         }
     }
     
-    /**
-     * Since argc and argv go together so often, this method looks for argc while evaluating
-     * argv. The purpose is to determine how many subvalues of argv to request from gdb.
-     */
-    private int findArgcFromLocals() {
-        synchronized (localVariables) {
-            for (GdbVariable var : localVariables) {
-                if (var.getName().equals("argc") && var.getType().equals("int")) { // NOI18N
-                    String val = var.getValue();
-                    try {
-                        return Integer.parseInt(val);
-                    } catch (NumberFormatException ex) {
-                        return -1;
-                    }
-                }
-            }
-        }
-        return -1;
-    }
-    
     private Map<String, Object> addSuperclassEntries(Map<String, Object> map, String info) {
         char c;
         int pos;
@@ -892,40 +872,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         return false;
     }
     
-    /** Remove some C++ keywords from the field list */
-    private String stripField(String field) {
-        if (isCplusPlus()) {
-            boolean modified = true;
-            
-            while (modified) {
-                modified = false;
-                if (field.startsWith("static ")) { // NOI18N
-                    field = field.substring(7).trim();
-                    modified = true;
-                } else if (field.startsWith("public: ")) { // NOI18N
-                    field = field.substring(8).trim();
-                    modified = true;
-                } else if (field.startsWith("private: ")) { // NOI18N
-                    field = field.substring(9).trim();
-                    modified = true;
-                } else if (field.startsWith("protected: ")) { // NOI18N
-                    field = field.substring(11).trim();
-                    modified = true;
-                } else if (field.startsWith("virtual ")) { // NOI18N
-                    field = field.substring(8).trim();
-                    modified = true;
-                } else if (field.startsWith("const ")) { // NOI18N
-                    field = field.substring(6).trim();
-                    modified = true;
-                } else if (field.endsWith(" const")) { // NOI18N
-                    field = field.substring(0, field.length() - 6).trim();
-                    modified = true;
-                }
-            }
-        }
-        return field;
-    }
-    
     /** Parse a substring from a ptype class response to see if we have any superclasses */
     private void checkForSuperClass(String info) {
         boolean hasSuperClass = false;
@@ -1001,6 +947,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 if (!GdbUtils.isSimple(type) && !type.equals("<No data fields>") && !isUnnamedType(type)) { // NOI18N
                     addTypeCompletion(o.toString());
                 }
+            } else if (o instanceof Map) {
+                checkForUnknownTypes((Map) o);
             }
         }
     }
