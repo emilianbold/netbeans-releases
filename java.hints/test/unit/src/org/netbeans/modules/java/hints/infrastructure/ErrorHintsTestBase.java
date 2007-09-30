@@ -116,6 +116,14 @@ public abstract class ErrorHintsTestBase extends NbTestCase {
         return new String[0];
     }
             
+    protected void performAnalysisTest(String fileName, String code, String... golden) throws Exception {
+        int[] caretPosition = new int[1];
+        
+        code = org.netbeans.modules.java.hints.TestUtilities.detectOffsets(code, caretPosition);
+        
+        performAnalysisTest(fileName, code, caretPosition[0], golden);
+    }
+    
     protected void performAnalysisTest(String fileName, String code, int pos, String... golden) throws Exception {
         prepareTest(fileName, code);
         
