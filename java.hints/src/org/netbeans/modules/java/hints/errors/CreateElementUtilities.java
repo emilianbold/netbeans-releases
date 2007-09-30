@@ -242,6 +242,17 @@ public final class CreateElementUtilities {
         //#92419: check for abstract method/method without body:
         MethodTree mt = (MethodTree) parent.getLeaf();
         
+        if (mt.getReturnType() == error) {
+            types.add(ElementKind.CLASS);
+            types.add(ElementKind.INTERFACE);
+            types.add(ElementKind.ENUM);
+        }
+	
+	if (mt.getThrows() != null && !mt.getThrows().isEmpty() && mt.getThrows().get(0) == error) {
+	    types.add(ElementKind.CLASS);
+	    typeParameterBound[0] = info.getElements().getTypeElement("java.lang.Exception").asType();
+	}
+        
         if (mt.getBody() == null) {
             return null;
         }
@@ -263,18 +274,6 @@ public final class CreateElementUtilities {
         } catch (IOException ex) {
             Logger.getLogger("global").log(Level.INFO, ex.getMessage(), ex);
         }
-        
-        if (mt.getReturnType() == error) {
-            types.add(ElementKind.CLASS);
-            types.add(ElementKind.INTERFACE);
-            types.add(ElementKind.ENUM);
-        }
-	
-	if (mt.getThrows() != null && !mt.getThrows().isEmpty() && mt.getThrows().get(0) == error) {
-	    types.add(ElementKind.CLASS);
-	    typeParameterBound[0] = info.getElements().getTypeElement("java.lang.Exception").asType();
-	    System.out.println("");
-	}
         
         return null;
     }
