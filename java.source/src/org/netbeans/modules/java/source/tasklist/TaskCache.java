@@ -174,7 +174,7 @@ public class TaskCache {
         
         toRefresh.add(file);
         
-        if (!modified) {
+        if (modified) {
             File current = output[1].getParentFile();
             File currentFile = fileFile.getParentFile();
 
