@@ -522,7 +522,7 @@ public class GotoTest extends AbstractAction implements EditorAction {
         // Deps?
         Set<SearchScope> scope = EnumSet.of(SearchScope.SOURCE /*,SearchScope.DEPENDENCIES*/);
         Set<IndexedClass> classes =
-            index.getClasses(className, NameKind.EXACT_NAME, true, false, false /*?*/, scope);
+            index.getClasses(className, NameKind.EXACT_NAME, true, false, false /*?*/, scope, null);
 
         // First look for candidates whose filenames contain test or tc
         // Second look for candidates whose paths contain test
