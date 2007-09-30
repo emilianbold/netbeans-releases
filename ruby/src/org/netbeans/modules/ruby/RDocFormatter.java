@@ -678,7 +678,7 @@ class RDocFormatter {
 
         for (String s : code) {
             // Truncate shared left hand side
-            if (min > 0) {
+            if (min > 0 && s.length() >= min) {
                 s = s.substring(min);
             }
             // Attempt
