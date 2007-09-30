@@ -311,6 +311,10 @@ public class EditorContextImpl extends EditorContext {
                         currentURL = "";
                     }
                 }
+                if (Utilities.isWindows()) {
+                    // We need consistent because sometimes we compare to URLs...
+                    currentURL = currentURL.replace("\\", "/"); // NOI18N
+                }
             }
 
             return currentURL;

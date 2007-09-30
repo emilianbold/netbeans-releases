@@ -43,21 +43,17 @@ package org.netbeans.modules.cnd.debugger.gdb.actions;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.util.Collections;
 import java.util.Set;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.BreakpointAnnotationListener;
-import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.EditorContextBridge;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.LineBreakpoint;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.netbeans.spi.debugger.ContextProvider;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -65,7 +61,6 @@ import org.openide.util.Utilities;
  */
 public class ToggleBreakpointActionProvider extends ActionsProviderSupport implements PropertyChangeListener {
     
-    private GdbDebugger debugger;    
     private BreakpointAnnotationListener breakpointAnnotationListener;
     
     /** Creates a new instance of ToggleBreakpointActionProvider */
@@ -75,7 +70,6 @@ public class ToggleBreakpointActionProvider extends ActionsProviderSupport imple
     
     /** Creates a new instance of ToggleBreakpointActionProvider */
     public ToggleBreakpointActionProvider(ContextProvider lookupProvider) {
-        debugger = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
         EditorContextBridge.getContext().addPropertyChangeListener(this);       
     }
     

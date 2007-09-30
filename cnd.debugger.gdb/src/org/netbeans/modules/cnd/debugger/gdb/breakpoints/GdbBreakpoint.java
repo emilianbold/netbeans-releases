@@ -43,11 +43,8 @@ package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Map;
 
 import org.netbeans.api.debugger.Breakpoint;
 
@@ -58,11 +55,6 @@ import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Utilities;
-
-/*
- * Note: This class may need to become abstracto with a GdbBreakpoint and
- * a DbxBreakpoint derived from it...
- */
 
 /**
  * Abstract definition of Cnd breakpoint.
@@ -85,10 +77,7 @@ public abstract class GdbBreakpoint extends Breakpoint {
     private int                         suspend = 0; // Not fully implemented yet!
     private String                      printText;
     private HashSet                     breakpointListeners = new HashSet();
-    private static Map                  bplist = Collections.synchronizedMap(new HashMap());
     private GdbDebugger                 debugger;
-    private Object			LOCK = new Object();
-    private int				id = 0;
     private String                      condition = ""; // NOI18N
     private String                      url = "";       // NOI18N
     private String                      path = "";      // NOI18N
@@ -157,6 +146,9 @@ public abstract class GdbBreakpoint extends Breakpoint {
                     url = "file:/" + url; // NOI18N
                 }
             }
+            // We need consistent slashes for compairing an existing breakpoint's url
+            // to a proposed breakpoint's url.
+            url = url.replace("\\", "/"); // NOI18N
             
             // Also set the path variable, based on the URL.
             try {
