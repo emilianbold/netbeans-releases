@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.languages;
 
+import org.netbeans.api.languages.ASTEvaluator;
 import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -43,6 +44,7 @@ import org.netbeans.api.languages.ASTPath;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ASTToken;
+import org.netbeans.api.languages.ParserManager.State;
 import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.api.languages.TokenInput;
 import org.netbeans.api.languages.TokenInput;
@@ -126,16 +128,15 @@ public class Language extends org.netbeans.api.languages.Language {
     }
     
     public Set<String> getSkipTokenTypes () {
-        if (skipTokenTypes == null) {
-            skipTokenTypes = new HashSet<String> ();
-            List<Feature> ss = getFeatures ("SKIP");
-            Iterator<Feature> it = ss.iterator ();
-            while (it.hasNext ()) {
-                Feature s = it.next ();
-                skipTokenTypes.add (s.getSelector ().getAsString ());
-            }
-        }
+        if (skipTokenTypes == null)
+            return Collections.<String>emptySet ();
         return skipTokenTypes;
+    }
+    
+    void addSkipTokenType (String tokenType) {
+        if (skipTokenTypes == null)
+            skipTokenTypes = new HashSet<String> ();
+        skipTokenTypes.add (tokenType);
     }
     
     public boolean hasAnalyser () {
@@ -182,7 +183,7 @@ public class Language extends org.netbeans.api.languages.Language {
 
     public String localize(String str) {
         if (!bundleResolved) {
-            Feature bundleFeature = getFeature("BUNDLE");
+            Feature bundleFeature = getFeature ("BUNDLE");
             if (bundleFeature != null) {
                 String baseName = (String)bundleFeature.getValue();
                 if (baseName != null) {
@@ -314,267 +315,125 @@ public class Language extends org.netbeans.api.languages.Language {
     // private helper methods ..................................................
     
     private void importAllFeatures (Language l) {
-        Iterator<String> it = l.featureLists.keySet ().iterator ();
-        while (it.hasNext ()) {
-            String featureName = it.next ();
-            List<Feature> features = l.getFeatures (featureName);
-            Iterator<Feature> it2 = features.iterator ();
-            while (it2.hasNext ()) {
-                Feature f = it2.next ();
-                addFeature (f);
-            }
-        }
+        featureList.importFeatures (l.featureList);
     }
-
-    private Map<String,List<Feature>> featureLists = new HashMap<String,List<Feature>> ();
-    private Map<String,Object> featuresMap = new HashMap<String,Object> ();
-    private static final Object BLA = new Object ();
     
-    public void addFeature (Feature feature) {
-        String featureName = feature.getFeatureName ();
-        if (featureName.equals ("IMPORT")) {
-            importLanguage (feature);
-            return;
-        }
-        
-        List<Feature> list = featureLists.get (featureName);
-        if (list == null) {
-            list = new ArrayList<Feature> ();
-            featureLists.put (featureName, list);
-        }
-        list.add (feature);
+    private FeatureList featureList = new FeatureList ();
 
-        if (feature.getSelector () == null) {
-            Object o = featuresMap.get (featureName);
-            if (o == null)
-                featuresMap.put (featureName, feature);
-            else
-            if (o instanceof List)
-                ((List) o).add (feature);
-            else {
-                List<Feature> l = new ArrayList<Feature> ();
-                l.add ((Feature) o);
-                l.add (feature);
-                featuresMap.put (featureName, l);
-            }
-            return;
-        }
-        Map m = (Map) featuresMap.get (featureName);
-        if (m == null) {
-            m = new HashMap ();
-            featuresMap.put (featureName, m);
-        }
-        List<String> path = feature.getSelector ().getPath ();
-        for (int i = path.size () - 1; i > 0; i--) {
-            String name = path.get (i);
-            Object o = m.get (name);
-            if (o instanceof Map)
-                m = (Map) o;
-            else {
-                Map mm = new HashMap ();
-                if (o != null)
-                    mm.put (BLA, o);
-                m.put (name, mm);
-                m = mm;
-            }
-        }
-        String name = path.get (0);
-        Object o = m.get (name);
-        if (o instanceof List)
-            ((List<Feature>) o).add (feature);
+    public void addFeature (Feature feature) {
+        if (feature.getFeatureName().equals (SKIP))
+            addSkipTokenType (feature.getSelector ().getAsString ());
         else
-        if (o instanceof Map) {
-            m = (Map) o;
-            o = m.get (BLA);
-            if (o instanceof List)
-                ((List) o).add (feature);
-            else
-            if (o == null)
-                m.put (BLA, feature);
-            else {
-                List l = new ArrayList ();
-                l.add (o);
-                l.add (feature);
-                m.put (BLA, l);
-            }
-        } else
-        if (o == null) 
-            m.put (name, feature);
-        else {
-            List l = new ArrayList ();
-            l.add (o);
-            l.add (feature);
-            m.put (name, l);
-        }
+            featureList.add (feature);
     }
 
     public List<Feature> getFeatures (String featureName) {
-        List<Feature> r = featureLists.get (featureName);
-        if (r != null) return r;
-        return Collections.<Feature>emptyList ();
+        return featureList.getFeatures (featureName);
     }
 
     public Feature getFeature (String featureName) {
-        List<Feature> r = featureLists.get (featureName);
-        if (r == null) return null;
-        if (r.size () == 1) return r.get (0);
-        throw new IllegalArgumentException ();
-    }
-    
-    public Feature getFeature (String featureName, ASTPath path) {
-        List<Feature> r = getFeatures (featureName, path);
-        if (r.isEmpty ()) return null;
-        if (r.size () == 1) return r.get (0);
-        throw new IllegalArgumentException ();
-    }
-    
-    public Feature getFeature (String featureName, String id) {
-        Map m = (Map) featuresMap.get (featureName);
-        if (m == null) return null;
-        Object o = m.get (id);
-        if (o instanceof Map)
-            o = ((Map) o).get (BLA);
-        if (o == null) return null;
-        if (o instanceof Feature)
-            return (Feature) o;
-        List<Feature> r = (List<Feature>) o;
-        if (r.isEmpty ()) return null;
-        if (r.size () == 1) return r.get (0);
-        throw new IllegalArgumentException ();
+        List<Feature> features = getFeatures (featureName);
+        if (features.isEmpty ()) return null;
+        return features.get (0);
     }
     
     public List<Feature> getFeatures (String featureName, String id) {
-        Map m = (Map) featuresMap.get (featureName);
-        if (m == null) return Collections.<Feature>emptyList ();
-        Object o = m.get (id);
-        if (o instanceof Map)
-            o = ((Map) o).get (BLA);
-        if (o == null) return Collections.<Feature>emptyList ();
-        if (o instanceof Feature)
-            return Collections.<Feature>singletonList ((Feature) o);
-        return (List<Feature>) o;
+        return featureList.getFeatures (featureName, id);
     }
 
-    public List<Feature> getFeatures (String featureName, ASTPath path) {
-        Map m = (Map) featuresMap.get (featureName);
-        if (m == null) return Collections.<Feature>emptyList ();
-        Object last = null;
-        int i = path.size () - 1;
-        for (; i >= 0; i--) {
-            ASTItem item = path.get (i);
-            String name = item instanceof ASTToken ?
-                ((ASTToken) item).getType () :
-                ((ASTNode) item).getNT ();
-            Object o = m.get (name);
-            if (m.containsKey (BLA))
-                last = m.get (BLA);
-            if (o instanceof Map) {
-                m = (Map) o;
-                continue;
-            }
-            if (o instanceof List)
-                return (List<Feature>) o;
-            if (o != null)
-                return Collections.<Feature>singletonList ((Feature) o);
-            if (last != null) {
-                if (last instanceof List)
-                    return (List<Feature>) last;
-                 return Collections.<Feature>singletonList ((Feature) last);
-            }
-            break;
-        }
-        return Collections.<Feature>emptyList ();
+    public Feature getFeature (String featureName, String id) {
+        List<Feature> features = getFeatures (featureName, id);
+        if (features.isEmpty ()) return null;
+        return features.get (0);
     }
     
-//    public Object getFeature (String featureName, ASTPath path) {
-//        Map m = (Map) features.get (featureName);
-//        if (m == null) return null;
-//        ListIterator<ASTItem> it = path.listIterator (path.size ());
-//        while (it.hasPrevious ()) {
-//            ASTItem item = it.previous ();
-//            Object value = (item instanceof ASTToken) ? 
-//                m.get (((ASTToken) item).getType ()) :
-//                m.get (((ASTNode) item).getNT ());
-//            if (value == null) return m.get ("");
-//            if (value instanceof MMap)
-//                m = (Map) value;
-//            else
-//                return value;
-//        }
-//        return null;
-//    }
-//    
-//    public Object getFeature (String featureName, String id) {
-//        Map m = (Map) features.get (featureName);
-//        if (m == null) return null;
-//        Object value = m.get (id);
-//        if (value == null) return m.get ("");
-//        if (value instanceof MMap) {
-//            m = (Map) value;
-//            return m.get ("");
-//        }
-//        return value;
-//    }
-//
-//    public Collection getFeatures (String featureName) {
-//        Map m = (Map) features.get (featureName);
-//        if (m == null) return null;
-//        return m.values ();
-//    }
-////    public Map getFeature (String featureName) {
-////        return (Map) features.get (featureName);
-////    }
-//    
-////    private Object getFeature (String featureName, ASTItem item) {
-////        if (item instanceof ASTNode)
-////            return getFeature (featureName, (ASTNode) item);
-////        return getFeature (featureName, (ASTToken) item);
-////    }
-////    
-////    private Object getFeature (String featureName, ASTToken token) {
-////        Map m = (Map) features.get (featureName);
-////        if (m == null) return null;
-////        Object result = m.get (token.getType ());
-////        if (result instanceof MMap) return null;
-////        return result;
-////    }
+    public List<Feature> getFeatures (String featureName, ASTPath path) {
+        return featureList.getFeatures (featureName, path);
+    }
     
-//    public boolean supportsFeature (String featureName) {
-//        return features.get (featureName) != null;
+    public Feature getFeature (String featureName, ASTPath path) {
+        List<Feature> features = getFeatures (featureName, path);
+        if (features.isEmpty ()) return null;
+        return features.get (0);
+    }
+    
+    void evaluate (
+        State state, 
+        List<ASTItem> path, 
+        Map<String,Set<ASTEvaluator>> evaluatorsMap                             ,Map<Object,Long> times
+    ) {
+        featureList.evaluate (
+            state, 
+            path, 
+            evaluatorsMap                                                       ,times
+        );
+    }
+    
+//    public Feature getFeature (String featureName, ASTPath path) {
+//        List<Feature> r = getFeatures (featureName, path);
+//        if (r.isEmpty ()) return null;
+//        if (r.size () == 1) return r.get (0);
+//        throw new IllegalArgumentException ();
+//    }
+//    
+//    public Feature getFeature (String featureName, String id) {
+//        Map m = (Map) featuresMap.get (featureName);
+//        if (m == null) return null;
+//        Object o = m.get (id);
+//        if (o instanceof Map)
+//            o = ((Map) o).get (BLA);
+//        if (o == null) return null;
+//        if (o instanceof Feature)
+//            return (Feature) o;
+//        List<Feature> r = (List<Feature>) o;
+//        if (r.isEmpty ()) return null;
+//        if (r.size () == 1) return r.get (0);
+//        throw new IllegalArgumentException ();
+//    }
+//    
+//    public List<Feature> getFeatures (String featureName, String id) {
+//        Map m = (Map) featuresMap.get (featureName);
+//        if (m == null) return Collections.<Feature>emptyList ();
+//        Object o = m.get (id);
+//        if (o instanceof Map)
+//            o = ((Map) o).get (BLA);
+//        if (o == null) return Collections.<Feature>emptyList ();
+//        if (o instanceof Feature)
+//            return Collections.<Feature>singletonList ((Feature) o);
+//        return (List<Feature>) o;
 //    }
 //
-//    void addFeature (String featureName, Identifier id, Object feature) {
-//        Map m = getFolder (featureName);
-//        for (int i = id.name.size () - 1; i > 0; i--) {
-//            Object o = m.get (id.name.get (i));
-//            if (o instanceof MMap)
+//    public List<Feature> getFeatures (String featureName, ASTPath path) {
+//        Map m = (Map) featuresMap.get (featureName);
+//        if (m == null) return Collections.<Feature>emptyList ();
+//        Object last = null;
+//        int i = path.size () - 1;
+//        for (; i >= 0; i--) {
+//            ASTItem item = path.get (i);
+//            String name = item instanceof ASTToken ?
+//                ((ASTToken) item).getType () :
+//                ((ASTNode) item).getNT ();
+//            Object o = m.get (name);
+//            if (m.containsKey (BLA))
+//                last = m.get (BLA);
+//            if (o instanceof Map) {
 //                m = (Map) o;
-//            else {
-//                Map mm = new MMap ();
-//                if (o != null)
-//                    mm.put ("", o);
-//                m.put (id.name.get (i), mm);
-//                m = mm;
+//                continue;
 //            }
+//            if (o instanceof List)
+//                return (List<Feature>) o;
+//            if (o != null)
+//                return Collections.<Feature>singletonList ((Feature) o);
+//            if (last != null) {
+//                if (last instanceof List)
+//                    return (List<Feature>) last;
+//                 return Collections.<Feature>singletonList ((Feature) last);
+//            }
+//            break;
 //        }
-//        Object o = m.get (id.name.get (0));
-//        if (o != null && o instanceof Map)
-//            ((Map) o).put ("", feature);
-//        else
-//            m.put (
-//                id.name.get (0),
-//                feature
-//            );
+//        return Collections.<Feature>emptyList ();
 //    }
     
-//    private Map getFolder (String featureName) {
-//        Map m = (Map) features.get (featureName);
-//        if (m == null) {
-//            m = new HashMap ();
-//            features.put (featureName, m);
-//        }
-//        return m;
-//    }
 
     public ASTNode parse (InputStream is) throws IOException, ParseException {
         BufferedReader br = new BufferedReader (new InputStreamReader (is));

@@ -28,6 +28,7 @@ import javax.swing.text.Document;
 
 import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ASTPath;
+import org.netbeans.api.languages.ParserManager;
 import org.netbeans.api.languages.ParserManager.State;
 import org.netbeans.api.languages.ParserManagerListener;
 import org.netbeans.api.languages.SyntaxContext;
@@ -39,7 +40,6 @@ import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.LanguagesManager;
-import org.netbeans.modules.languages.EditorParser;
 
 
 /**
@@ -49,14 +49,14 @@ import org.netbeans.modules.languages.EditorParser;
 public class DatabaseManager implements ParserManagerListener {
     
     private NbEditorDocument            doc;
-    private EditorParser                parser;
+    private ParserManager               parser;
 
     
     /** Creates a new instance of AnnotationManager */
     public DatabaseManager (Document doc) {
         
         this.doc = (NbEditorDocument) doc;
-        parser = EditorParser.get (doc);
+        parser = ParserManager.get (doc);
         parser.addListener (this);
     }
 
@@ -71,7 +71,7 @@ public class DatabaseManager implements ParserManagerListener {
     static DatabaseContext parse (
         ASTNode ast, 
         Document doc,
-        EditorParser parser
+        ParserManager parser
     ) {
         DatabaseContext rootContext = new DatabaseContext (null, null, ast.getOffset (), ast.getEndOffset ());
         List<ASTItem> path = new ArrayList<ASTItem> ();
@@ -95,11 +95,11 @@ public class DatabaseManager implements ParserManagerListener {
     }
     
     private static void process (
-        List<ASTItem> path, 
-        DatabaseContext context, 
-        List<DatabaseItem> unresolvedUsages,
-        Document doc,
-        EditorParser parser
+        List<ASTItem>           path, 
+        DatabaseContext         context, 
+        List<DatabaseItem>      unresolvedUsages,
+        Document                doc,
+        ParserManager           parser
     ) {
         ASTItem last = path.get (path.size () - 1);
         Iterator<ASTItem> it = last.getChildren ().iterator ();

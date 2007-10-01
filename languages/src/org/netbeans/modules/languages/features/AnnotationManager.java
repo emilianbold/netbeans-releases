@@ -28,9 +28,9 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
 import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
+import org.netbeans.api.languages.ParserManager;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.languages.EditorParser;
 import org.netbeans.api.languages.ASTEvaluator;
 import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ParseException;
@@ -55,7 +55,7 @@ import org.openide.text.Annotation;
 public class AnnotationManager extends ASTEvaluator {
     
     private NbEditorDocument            doc;
-    private EditorParser                parser;
+    private ParserManager               parser;
     private List<ASTItem>               items;
     private List<Feature>               marks;
     private List<LanguagesAnnotation>   annotations = new ArrayList<LanguagesAnnotation> ();
@@ -65,8 +65,12 @@ public class AnnotationManager extends ASTEvaluator {
     public AnnotationManager (Document doc) {
         
         this.doc = (NbEditorDocument) doc;
-        parser = EditorParser.get (doc);
+        parser = ParserManager.get (doc);
         parser.addASTEvaluator (this);
+    }
+    
+    public String getFeatureName () {
+        return "MARK";
     }
 
     public void beforeEvaluation (State state, ASTNode root) {
@@ -78,19 +82,10 @@ public class AnnotationManager extends ASTEvaluator {
         refresh (items, marks);
     }
 
-    public void evaluate (State state, ASTPath path) {
-        try {
-            ASTItem item = path.getLeaf ();
-            Language language = LanguagesManager.getDefault ().
-                getLanguage (item.getMimeType ());
-            Feature mark = language.getFeature ("MARK", path);
-            if (mark != null) {
-                if (mark.getBoolean ("condition", SyntaxContext.create (doc, path), true)) {
-                    items.add (item);
-                    marks.add (mark);
-                }
-            }
-        } catch (ParseException ex) {
+    public void evaluate (State state, List<ASTItem> path, Feature feature) {
+        if (feature.getBoolean ("condition", SyntaxContext.create (doc, ASTPath.create (path)), true)) {
+            items.add (path.get (path.size () - 1));
+            marks.add (feature);
         }
     }
     

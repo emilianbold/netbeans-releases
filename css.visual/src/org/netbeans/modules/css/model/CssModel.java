@@ -38,6 +38,7 @@ import org.netbeans.api.languages.ParserManager;
 import org.netbeans.api.languages.ParserManager.State;
 import org.netbeans.api.languages.ParserManagerListener;
 import org.netbeans.modules.css.editor.CssEditorKit;
+import org.netbeans.modules.languages.Feature;
 import org.openide.util.Exceptions;
 
 /**
@@ -322,14 +323,18 @@ public final class CssModel {
             }
         }
         
-        public void evaluate(State state, ASTPath path) {
-            ASTItem item = path.getLeaf();
+        public void evaluate(State state, List<ASTItem> path, Feature feature) {
+            ASTItem item = path.get (path.size () - 1);
             if(item instanceof ASTNode) {
                 if(((ASTNode)item).getNT().equals("ERROR")) { //NOI18N
                     //source contains errors
                     sourceOK = false;
                 }
             }
+        }
+
+        public String getFeatureName() {
+            return null;
         }
         
     }

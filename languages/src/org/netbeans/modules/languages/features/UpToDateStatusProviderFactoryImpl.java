@@ -21,11 +21,11 @@ package org.netbeans.modules.languages.features;
 
 import javax.swing.text.Document;
 import org.netbeans.api.languages.ASTNode;
+import org.netbeans.api.languages.ParserManager;
 import org.netbeans.api.languages.ParserManager.State;
 import org.netbeans.api.languages.ParserManagerListener;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.api.languages.ASTNode;
-import org.netbeans.modules.languages.EditorParser;
 import org.netbeans.spi.editor.errorstripe.UpToDateStatus;
 import org.netbeans.spi.editor.errorstripe.UpToDateStatusProvider;
 import org.netbeans.spi.editor.errorstripe.UpToDateStatusProviderFactory;
@@ -47,11 +47,11 @@ public class UpToDateStatusProviderFactoryImpl implements UpToDateStatusProvider
     
     private static class UpToDateStatusProviderImpl extends UpToDateStatusProvider {
         
-        private EditorParser editorParser;
+        private ParserManager editorParser;
         
         
         private UpToDateStatusProviderImpl (NbEditorDocument doc) {
-            editorParser = EditorParser.get (doc);
+            editorParser = ParserManager.get (doc);
             editorParser.addListener (new ParserManagerListener () {
                 public void parsed (State state, ASTNode ast) {
                     firePropertyChange (PROP_UP_TO_DATE, null, null);

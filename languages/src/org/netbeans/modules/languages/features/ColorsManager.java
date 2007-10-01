@@ -267,7 +267,7 @@ public class ColorsManager {
         return result;
     }
     
-    private static AttributeSet createColoring(Feature f, ResourceBundle bundle) {
+    static SimpleAttributeSet createColoring(Feature f, ResourceBundle bundle) {
         String colorName = (String) f.getValue("color_name");
         String displayName = null;
         if (colorName == null)
@@ -295,7 +295,7 @@ public class ColorsManager {
                 );
     }
     
-    private static AttributeSet createColoring(
+    private static SimpleAttributeSet createColoring(
             String colorName,
             String displayName,
             String defaultColor,

@@ -34,6 +34,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.languages.Feature;
 
 /** 
  * This class listens on the Schlieman parser and once the AST processing finishes
@@ -173,14 +174,18 @@ public class JspColoringUpdater {
             }
         }
         
-        public void evaluate(State state, ASTPath path) {
-            ASTItem item = path.getLeaf();
+        public void evaluate(State state, List<ASTItem> path, Feature feature) {
+            ASTItem item = path.get (path.size () - 1);
             if(item instanceof ASTNode) {
                 if(((ASTNode)item).getNT().equals("ERROR")) { //NOI18N
                     //source contains errors
                     sourceOK = false;
                 }
             }
+        }
+
+        public String getFeatureName() {
+            return null;
         }
         
     }

@@ -16,32 +16,32 @@
  */
 package org.netbeans.modules.languages.features;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
+import java.awt.Color;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
-import java.util.Set;
+import java.util.Map;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
 import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import org.netbeans.api.languages.ASTEvaluator;
 
 import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ASTPath;
-import org.netbeans.api.languages.ASTToken;
-import org.netbeans.api.languages.Highlighting;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.languages.ParserManager;
 import org.netbeans.api.languages.ParserManager.State;
-import org.netbeans.api.languages.ParserManagerListener;
-import org.netbeans.modules.languages.Language;
-import org.netbeans.modules.languages.LanguagesManager;
+import org.netbeans.api.languages.SyntaxContext;
+import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.ParserManagerImpl;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.support.AbstractHighlightsContainer;
-import org.openide.util.WeakListeners;
+import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 
 
 /**
@@ -50,176 +50,196 @@ import org.openide.util.WeakListeners;
  */
 class SemanticHighlightsLayer extends AbstractHighlightsContainer {
 
+    private static Map<Document,List<WeakReference<SemanticHighlightsLayer>>> cache = new HashMap<Document,List<WeakReference<SemanticHighlightsLayer>>> ();
+            
     private Document            document;
-    private Highlighting        highlighting;
-    private ParserManager       parserManager;
-    private final Listener      listener;
+    private OffsetsBag          offsetsBag;
     
     SemanticHighlightsLayer (Document document) {
         this.document = document;
-        listener = new Listener ();
-        highlighting = Highlighting.getHighlighting (document);
-        highlighting.addPropertyChangeListener (WeakListeners.propertyChange(listener, highlighting));
-        parserManager = ParserManagerImpl.get (document);
-        parserManager.addListener (WeakListeners.create(ParserManagerListener.class, listener, parserManager));
+        offsetsBag = new OffsetsBag (document);
+        List<WeakReference<SemanticHighlightsLayer>> layers = cache.get (document);
+        if (layers == null) {
+            new Listener (document);
+            layers = new ArrayList<WeakReference<SemanticHighlightsLayer>> ();
+            cache.put (document, layers);
+        }
+        layers.add (new WeakReference<SemanticHighlightsLayer> (this));
     }
 
     public HighlightsSequence getHighlights (int startOffset, int endOffset) {
-        return new Highlights (document, highlighting, parserManager, startOffset, endOffset);
+                                                                                //S ystem.out.println("SemanticHighlightsLayer.getHighlights " + startOffset + " : " + endOffset);
+        return offsetsBag.getHighlights (startOffset, endOffset);
+    }
+    
+    private void setOffsetsBag (OffsetsBag offsetsBag) {
+        this.offsetsBag = offsetsBag;
+        fireHighlightsChange (0, document.getLength ());
     }
 
-    private class Listener implements PropertyChangeListener, ParserManagerListener {
-        public void propertyChange (final PropertyChangeEvent evt) {
-            fireHighlightsChange ((Integer) evt.getOldValue (), (Integer) evt.getNewValue ());
+    private static class Listener extends ASTEvaluator {
+        
+        private Document document;
+        private OffsetsBag offsetsBag;
+
+        Listener (Document document) {
+            this.document = document;
+            ParserManager.get (document).addASTEvaluator (this);
+        }
+        
+        public String getFeatureName () {
+            return null; //"COLOR";
+        }
+        
+        public void beforeEvaluation (State state, ASTNode root) {
+            if (state == State.PARSING) return;
+            offsetsBag = new OffsetsBag (document, true);
         }
 
-        public void parsed (State state, ASTNode root) {
-            if(state != State.PARSING) {
-                fireHighlightsChange(0, document.getLength());
+        public void afterEvaluation (State state, ASTNode root) {
+            if (state == State.PARSING) return;
+            List<WeakReference<SemanticHighlightsLayer>> layers = cache.get (document);
+            List<WeakReference<SemanticHighlightsLayer>> newLayers = new ArrayList<WeakReference<SemanticHighlightsLayer>> ();
+            boolean remove = true;
+            Iterator<WeakReference<SemanticHighlightsLayer>> it = layers.iterator ();
+            while (it.hasNext()) {
+                WeakReference<SemanticHighlightsLayer> weakReference = it.next ();
+                SemanticHighlightsLayer layer = weakReference.get ();
+                if (layer == null) continue;
+                remove = false;
+                layer.setOffsetsBag (offsetsBag);
+                newLayers.add (weakReference);
             }
+            if (remove) {
+                cache.remove (document);
+                ParserManagerImpl.get (document).removeASTEvaluator (this);
+            } else
+                cache.put (document, newLayers);
+        }
+
+        public void evaluate (State state, List<ASTItem> path, Feature feature) {
+            if (state == State.PARSING) return;
+            AttributeSet attributeSet = null;
+            ASTItem leaf = path.get (path.size () - 1);
+            SyntaxContext context = SyntaxContext.create (document, ASTPath.create (path));
+            if (feature.getBoolean ("condition", context, true))
+                attributeSet = ColorsManager.createColoring (feature, null);
+            
+            ASTNode rootNode = (ASTNode) path.get (0);
+            DatabaseContext root = DatabaseManager.getRoot (rootNode);
+            DatabaseItem i = root.getDatabaseItem (leaf.getOffset ());
+            if (i != null && i.getEndOffset () == leaf.getEndOffset ()) {
+                AttributeSet as = getAttributes (i);
+                if (as != null)
+                    if (attributeSet != null) 
+                        ((SimpleAttributeSet) attributeSet).addAttributes (as);
+                    else
+                        attributeSet = as;
+            }
+            
+            offsetsBag.addHighlight (leaf.getOffset (), leaf.getEndOffset (), attributeSet);
+            
+        }
+    
+        private static AttributeSet getAttributes (DatabaseItem item) {
+            if (item instanceof DatabaseDefinition) {
+                DatabaseDefinition definition = (DatabaseDefinition) item;
+                if ("global_variable".equals (definition.getName ()))
+                    System.out.println("");
+                if (definition.getUsages ().isEmpty ()) {
+                    if ("parameter".equals (definition.getType ()))
+                        return getUnusedParameterAttributes ();
+                    if ("variable".equals (definition.getType ()))
+                        return getUnusedLocalVariableAttributes ();
+                    if ("field".equals (definition.getType ()))
+                        return getUnusedFieldAttributes ();
+                } else {
+                    if ("parameter".equals (definition.getType ()))
+                        return getParameterAttributes ();
+                    if ("variable".equals (definition.getType ()))
+                        return getLocalVariableAttributes ();
+                    if ("field".equals (definition.getType ()))
+                        return getFieldAttributes ();
+                }
+            }
+            if (item instanceof DatabaseUsage) {
+                DatabaseUsage usage = (DatabaseUsage) item;
+                DatabaseDefinition definition = usage.getDefinition ();
+                if ("parameter".equals (definition.getType ()))
+                    return getParameterAttributes ();
+                if ("local".equals (definition.getType ()))
+                    return getLocalVariableAttributes ();
+                if ("field".equals (definition.getType ()))
+                    return getFieldAttributes ();
+            }
+            return null;
         }
     }
     
-    private static class Highlights implements HighlightsSequence {
-
-        private Document            document;
-        private ParserManager       parserManager;
-        private int                 endOffset;
-        private int                 startOffset1;
-        private int                 endOffset1;
-        private SimpleAttributeSet  attributeSet;
-        private Highlighting        highlighting;
-        private ASTNode             ast;
-        
-        
-        private Highlights (
-            Document        document, 
-            Highlighting    highlighting, 
-            ParserManager   parserManager,
-            int             startOffset, 
-            int             endOffset
-        ) {
-            this.document = document;
-            this.parserManager = parserManager;
-            this.highlighting = highlighting;
-            this.endOffset = endOffset;
-            startOffset1 = startOffset;
-            endOffset1 = startOffset;
-            try {
-                ast = parserManager.getAST ();
-            } catch (ParseException ex) {
-                ast = ex.getASTNode ();
-            }
+    private static AttributeSet unusedParameterAttributeSet;
+    
+    private static AttributeSet getUnusedParameterAttributes () {
+        if (unusedParameterAttributeSet == null) {
+            SimpleAttributeSet sas = new SimpleAttributeSet ();
+            StyleConstants.setForeground (sas, new Color (115, 115, 115));
+            unusedParameterAttributeSet = sas;
         }
-        
-        public boolean moveNext () {
-            if (ast == null) return false;
-            if (parserManager.getState () == State.PARSING) return false;
-            attributeSet = new SimpleAttributeSet ();
-            do {
-                startOffset1 = endOffset1;
-                if (startOffset1 >= document.getLength () - 1) return false;
-                ASTPath path = ast.findPath (startOffset1);
-                if (path != null) {
-                    boolean isTrailing = isTrailing (path);
-                    ASTNode splitNode = isTrailing ? splitNode (path) : null;
-                    int i, k = path.size ();
-                    for ( i = 0; i < k; i++) {
-                        ASTItem item = path.get (i);
-                        if (isTrailing && splitNode == item) {
-                            break;
-                        }
-                        try {
-                            Language language = LanguagesManager.getDefault ().getLanguage (item.getMimeType ());
-                            AttributeSet as = null;
-                            List<AttributeSet> colors = ColorsManager.getColors (language, path.subPath (i), document);
-                            if (colors != null && !colors.isEmpty ()) {
-                                for (Iterator<AttributeSet> it = colors.iterator (); it.hasNext ();) {
-                                    as = it.next ();
-                                    attributeSet.addAttributes (as);
-                                }
-                                endOffset1 = path.get (i).getEndOffset ();
-                            }
-                            as = highlighting.get (item);
-                            if (as != null) {
-                                attributeSet.addAttributes (as);
-                                endOffset1 = path.get (i).getEndOffset ();
-                            }
-                        } catch (ParseException ex) {
-                        }
-                    }
-                    if (endOffset1 > startOffset1)
-                        return true;
-
-                    //There might be a "holes" in the AST so the ast.findPath (offset)
-                    //returns the root 'S' node for the offset.
-                    //Do not skip behind the end of the node (end of the file) in such case.
-                    if(path.size() > 1) {
-                        endOffset1 = path.getLeaf ().getEndOffset ();
-                    }
-                }
-                
-                if (endOffset1 == startOffset1)
-                    endOffset1++;
-            } while (endOffset1 < endOffset);
-            return false;
+        return unusedParameterAttributeSet;
+    }
+    
+    private static AttributeSet parameterAttributeSet;
+    
+    private static AttributeSet getParameterAttributes () {
+        if (parameterAttributeSet == null) {
+            SimpleAttributeSet sas = new SimpleAttributeSet ();
+            StyleConstants.setForeground (sas, new Color (160, 96, 1));
+            parameterAttributeSet = sas;
         }
-
-        public int getStartOffset () {
-            return startOffset1;
+        return parameterAttributeSet;
+    }
+    
+    private static AttributeSet unusedLocalVariableAttributeSet;
+    
+    private static AttributeSet getUnusedLocalVariableAttributes () {
+        if (unusedLocalVariableAttributeSet == null) {
+            SimpleAttributeSet sas = new SimpleAttributeSet ();
+            StyleConstants.setForeground (sas, new Color (115, 115, 115));
+            unusedLocalVariableAttributeSet = sas;
         }
-
-        public int getEndOffset () {
-            return endOffset1;
+        return unusedLocalVariableAttributeSet;
+    }
+    
+    private static AttributeSet localVariableAttributeSet;
+    
+    private static AttributeSet getLocalVariableAttributes () {
+        if (localVariableAttributeSet == null) {
+            SimpleAttributeSet sas = new SimpleAttributeSet ();
+            localVariableAttributeSet = sas;
         }
-
-        public AttributeSet getAttributes () {
-            return attributeSet;
+        return localVariableAttributeSet;
+    }
+    
+    private static AttributeSet unusedFieldAttributeSet;
+    
+    private static AttributeSet getUnusedFieldAttributes () {
+        if (unusedFieldAttributeSet == null) {
+            SimpleAttributeSet sas = new SimpleAttributeSet ();
+            StyleConstants.setForeground (sas, new Color (115, 115, 115));
+            StyleConstants.setBold (sas, true);
+            unusedFieldAttributeSet = sas;
         }
-
-        private static boolean isTrailing (ASTPath path) {
-            try {
-                if (path.size () < 2 ||
-                    !(path.get (path.size () - 2) instanceof ASTNode)
-                )
-                    return false;
-                ASTNode lastNode = (ASTNode) path.get (path.size () - 2);
-                Language language = LanguagesManager.getDefault ().getLanguage (lastNode.getMimeType ());
-                Set skipTokens = language.getSkipTokenTypes();
-                if (!(path.getLeaf () instanceof ASTToken))
-                    return false;
-                ASTToken leaf = (ASTToken) path.getLeaf ();
-                if (!skipTokens.contains (leaf.getType ())) 
-                    return false;
-                List<ASTItem> list = lastNode.getChildren ();
-                for (ListIterator<ASTItem> iter = list.listIterator (list.size ()); iter.hasPrevious (); ) {
-                    ASTItem item = iter.previous ();
-                    if (item == leaf)
-                        return true;
-                    if (!(item instanceof ASTToken) || 
-                        !skipTokens.contains (((ASTToken) item).getType ())
-                    )
-                        break;
-                } // for
-            } catch (ParseException ex) {
-            }
-            return false;
+        return unusedFieldAttributeSet;
+    }
+    
+    private static AttributeSet fieldAttributeSet;
+    
+    private static AttributeSet getFieldAttributes () {
+        if (fieldAttributeSet == null) {
+            SimpleAttributeSet sas = new SimpleAttributeSet ();
+            StyleConstants.setForeground (sas, new Color (9, 134, 24));
+            StyleConstants.setBold (sas, true);
+            fieldAttributeSet = sas;
         }
-
-        private static ASTNode splitNode (ASTPath path) {
-            Iterator iter = path.listIterator ();
-            Object o = iter.next();
-            while (o instanceof ASTNode) {
-                List children = ((ASTNode)o).getChildren ();
-                o = iter.next();
-                if (!(o instanceof ASTNode)) {
-                    break;
-                }
-                if (children.get (children.size () - 1) != o) {
-                    return (ASTNode) o;
-                }
-            } // while
-            return null;
-        }
+        return fieldAttributeSet;
     }
 }
