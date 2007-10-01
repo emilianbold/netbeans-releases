@@ -194,88 +194,8 @@ public class InnerToOuterRefactoringPlugin extends JavaRefactoringPlugin {
         
         TransformTask transform = new TransformTask(new InnerToOuterTransformer(refactoring), refactoring.getSourceType());
         createAndAddElements(a, transform, refactoringElements, refactoring);
-        createAndAddElements(
-                Collections.singleton(RetoucheUtils.getFileObject(refactoring.getRefactoringSource().lookup(TreePathHandle.class))),
-                new AddOuterClass(), 
-                refactoringElements,
-                refactoring);
         fireProgressListenerStop();
         return null;
-    }
-    
-    private class AddOuterClass implements CancellableTask<WorkingCopy> {
-
-        public void cancel() {
-        }
-
-        public void run(WorkingCopy workingCopy) throws Exception {
-            workingCopy.toPhase(JavaSource.Phase.RESOLVED);
-            TreeMaker tm = workingCopy.getTreeMaker();
-            TreePathHandle treePathHandle = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
-            Element inner = treePathHandle.resolveElement(workingCopy);
-            
-            Element outer = inner.getEnclosingElement();
-            Element outerouter = outer.getEnclosingElement();
-            
-            TreePath tp = workingCopy.getTrees().getPath(inner);
-            ClassTree innerClass = (ClassTree) tp.getLeaf();
-            ClassTree newInnerClass = tm.setLabel(innerClass, refactoring.getClassName());
-            
-            newInnerClass = refactorInnerClass(tm, newInnerClass, workingCopy, outer);
-            
-            if (outerouter.getKind() == ElementKind.PACKAGE) {
-                FileObject sourceRoot=ClassPath.getClassPath(workingCopy.getFileObject(), ClassPath.SOURCE).findOwnerRoot(workingCopy.getFileObject());
-                ClassTree outerTree = (ClassTree) workingCopy.getTrees().getTree(outer);
-                ClassTree newOuter = tm.removeClassMember(outerTree, innerClass);
-                workingCopy.rewrite(outerTree, newOuter);
-                JavaRefactoringUtils.cacheTreePathInfo(workingCopy.getTrees().getPath(outer), workingCopy);
-                CompilationUnitTree compilationUnit = tp.getCompilationUnit();
-                String relativePath = compilationUnit.getPackageName().toString().replace('.', '/') + '/' + refactoring.getClassName() + ".java";
-                CompilationUnitTree newCompilation = tm.CompilationUnit(sourceRoot, relativePath, null, Collections.singletonList(newInnerClass));
-                workingCopy.rewrite(null, newCompilation);        
-            } else {
-                ClassTree outerTree = (ClassTree) workingCopy.getTrees().getTree(outer);
-                ClassTree outerouterTree = (ClassTree) workingCopy.getTrees().getTree(outerouter);
-                ClassTree newOuter = tm.removeClassMember(outerTree, innerClass);
-                ClassTree newOuterOuter = tm.addClassMember(outerouterTree, newInnerClass);
-                workingCopy.rewrite(outerTree, newOuter);
-                JavaRefactoringUtils.cacheTreePathInfo(workingCopy.getTrees().getPath(outer), workingCopy);
-                workingCopy.rewrite(outerouterTree, newOuterOuter);
-            }
-            
-            for (Element superType:RetoucheUtils.getSuperTypes((TypeElement)inner, workingCopy, true)) {
-                ClassTree tree = (ClassTree) workingCopy.getTrees().getTree(superType);
-            }
-        }
-        
-        private ClassTree refactorInnerClass(TreeMaker tm, ClassTree newInnerClass, WorkingCopy workingCopy, Element outer) {
-            String referenceName = refactoring.getReferenceName();
-            if (referenceName != null) {
-                VariableTree variable = tm.Variable(tm.Modifiers(Collections.<Modifier>emptySet()), refactoring.getReferenceName(), tm.Type(outer.asType()), null);
-                newInnerClass = tm.insertClassMember(newInnerClass, 0, variable);
-
-                for (Tree member:newInnerClass.getMembers()) {
-                    if (member.getKind() == Tree.Kind.METHOD) {
-                        MethodTree m = (MethodTree) member;
-                        if (m.getReturnType()==null) {
-                            MethodTree newConstructor = tm.addMethodParameter(m, variable);
-                            AssignmentTree assign = tm.Assignment(tm.Identifier("this."+referenceName), tm.Identifier(referenceName));
-                            BlockTree block = tm.insertBlockStatement(newConstructor.getBody(), 1, tm.ExpressionStatement(assign));
-                            newConstructor = tm.Constructor(
-                                    tm.Modifiers(newConstructor.getModifiers().getFlags(), newConstructor.getModifiers().getAnnotations()),
-                                    newConstructor.getTypeParameters(), 
-                                    newConstructor.getParameters(),
-                                    newConstructor.getThrows(),
-                                    block);
-                            
-                            newInnerClass = tm.removeClassMember(newInnerClass, m);
-                            newInnerClass = tm.addClassMember(newInnerClass, newConstructor);
-                        }
-                    }
-                }
-            }
-            return newInnerClass;
-        }
     }
 
 //    public Problem fastCheckParameters() {
