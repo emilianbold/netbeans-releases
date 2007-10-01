@@ -88,7 +88,6 @@ import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 
@@ -214,13 +213,13 @@ public class TraceModel {
 	private boolean printTokens = false;
         private boolean dumpModelAfterCleaningCache = false; // --clean4dump
 	
-	private List quoteIncludePaths = new ArrayList();
-	private List systemIncludePaths = new ArrayList();
-	private List currentIncludePaths = null;
+	private List<String> quoteIncludePaths = new ArrayList<String>();
+	private List<String> systemIncludePaths = new ArrayList<String>();
+	private List<String> currentIncludePaths = null;
 	
-	private List macros = new ArrayList();
+	private List<String> macros = new ArrayList<String>();
 	
-	private List fileList = new ArrayList();
+	private List<File> fileList = new ArrayList<File>();
 	
 	private boolean dumpStatistics = false;
 	private static final int DEFAULT_TRACEMODEL_STATISTICS_LEVEL = 1;
@@ -241,7 +240,7 @@ public class TraceModel {
 
         public void setDumpPPState(boolean dumpPPState) {
             this.dumpPPState = dumpPPState;
-            this.LEAVE_PP_STATE_UNCLEANED = true;
+            LEAVE_PP_STATE_UNCLEANED = true;
         }
 	
 	// if true, then relative include paths oin -I option are considered
@@ -257,7 +256,7 @@ public class TraceModel {
 	
 	private boolean testFolding = false;
 	
-	private Map/*<String, Integer>*/ cacheTimes = new HashMap();
+	private Map<String, Long> cacheTimes = new HashMap<String, Long>();
 	
 	private int lap = 0;
 	
@@ -341,12 +340,12 @@ public class TraceModel {
 			case 'S':   dumpStatistics=true;
 			if (argRest.length() > 0) {
 				// dump directory for per file statistics
-				File dumpDir = new File(argRest);
-				dumpDir.mkdirs();
-				if (!dumpDir.isDirectory()) {
+				File perFileDumpDir = new File(argRest);
+				perFileDumpDir.mkdirs();
+				if (!perFileDumpDir.isDirectory()) {
 					print("Parameter -S" + argRest + " does not specify valid directory"); // NOI18N
 				} else {
-					this.dumpDir = dumpDir.getAbsolutePath();
+					this.dumpDir = perFileDumpDir.getAbsolutePath();
 				}
 				argHasBeenEaten = true;
 			}
@@ -354,16 +353,15 @@ public class TraceModel {
 			// "-sFileName" defines global statistics dump file
 			case 's':   dumpStatistics=true;
 			if (argRest.length() > 0) {
-				// global dumpFile
-				File dumpFile = new File(argRest);
-				if (dumpFile.exists()) {
-					dumpFile.delete();
+				File globalDumpFile = new File(argRest);
+				if (globalDumpFile.exists()) {
+					globalDumpFile.delete();
 				}
 				try {
-					if (dumpFile.getParentFile() != null) {
-						dumpFile.getParentFile().mkdirs();
-						dumpFile.createNewFile();
-						this.dumpFile = dumpFile.getAbsolutePath();
+					if (globalDumpFile.getParentFile() != null) {
+						globalDumpFile.getParentFile().mkdirs();
+						globalDumpFile.createNewFile();
+						this.dumpFile = globalDumpFile.getAbsolutePath();
 						argHasBeenEaten = true;
 					} else {
 						//                                    System.err.println("failed to create statistics file");
@@ -423,7 +421,7 @@ public class TraceModel {
                 }
 	}
 	
-	private void addFile(List files, File file) {
+	private void addFile(List<File> files, File file) {
 		if (file.isDirectory()) {
 			String[] list = file.list();
 			for (int i = 0; i < list.length; i++) {
@@ -445,7 +443,6 @@ public class TraceModel {
 	}
 	
 	/*package*/ void doTest() {
-		long time = 0;
 		if( ! pathsRelCurFile ) {
 			List[] paths = { quoteIncludePaths, systemIncludePaths };
 			for (int listIdx = 0; listIdx < paths.length; listIdx++) {
@@ -583,7 +580,7 @@ public class TraceModel {
 			}
 			if( listFilesAtEnd ) {
 				print("\n========== User project files =========="); // NOI18N
-				List l = new ArrayList(getProject().getAllFiles().size());
+				List<String> l = new ArrayList<String>(getProject().getAllFiles().size());
 				for (Iterator it = getProject().getAllFiles().iterator(); it.hasNext();) {
 					CsmFile file = (CsmFile) it.next();
 					l.add(file.getAbsolutePath());
@@ -594,7 +591,7 @@ public class TraceModel {
 					
 				}
 				print("\n========== Library files =========="); // NOI18N
-				l = new ArrayList();
+				l = new ArrayList<String>();
 				for (Iterator it1 = getProject().getLibraries().iterator(); it1.hasNext();) {
 					ProjectBase lib = (ProjectBase) it1.next();
 					for (Iterator it2 = lib.getAllFiles().iterator(); it2.hasNext();) {
@@ -752,10 +749,10 @@ public class TraceModel {
 		for( int i = 0; i < fileList.size(); i++ ) {
 			try {
 				if (!testFolding) {
-					TestResult res = test((File) fileList.get(i));
+					TestResult res = test(fileList.get(i));
 					total.accumulate(res);
 				} else {
-					testFolding((File)fileList.get(i));
+					testFolding(fileList.get(i));
 				}
 			} catch( Exception e ) {
 				e.printStackTrace(System.err);
@@ -828,10 +825,10 @@ public class TraceModel {
 	private APTSystemStorage sysAPTData = APTSystemStorage.getDefault();
 	
 	private APTIncludeHandler getIncludeHandler(File file) {
-		List sysIncludes = sysAPTData.getIncludes("TraceModelSysIncludes", getSystemIncludes()); // NOI18N
-		List qInc = quoteIncludePaths;
+		List<String> sysIncludes = sysAPTData.getIncludes("TraceModelSysIncludes", getSystemIncludes()); // NOI18N
+		List<String> qInc = quoteIncludePaths;
 		if( pathsRelCurFile ) {
-			qInc = new ArrayList(quoteIncludePaths.size());
+			qInc = new ArrayList<String>(quoteIncludePaths.size());
 			for (Iterator it = quoteIncludePaths.iterator(); it.hasNext();) {
 				String path = (String) it.next();
 				if( !( new File(path).isAbsolute() ) ) {
@@ -865,10 +862,10 @@ public class TraceModel {
 		return map;
 	}
 	
-	private List getSystemIncludes() {
-		Set all = new HashSet(systemIncludePaths);
+	private List<String> getSystemIncludes() {
+		Set<String> all = new HashSet<String>(systemIncludePaths);
                 if (DISABLE_PREDEFINED) {
-                    return new ArrayList(all);
+                    return new ArrayList<String>(all);
                 }            
 		if (CPP_SYS_INCLUDE) {
 			// add generated by gcc 3.3.4 on SuSe 9.2
@@ -903,13 +900,13 @@ public class TraceModel {
                         all.add("/usr/non-exists"); // NOI18N
                     }
                 }
-		return new ArrayList(all);
+		return new ArrayList<String>(all);
 	}
 	
-	private List getSysMacros() {
-		Set all = new HashSet();
+	private List<String> getSysMacros() {
+		Set<String> all = new HashSet<String>();
                 if (DISABLE_PREDEFINED) {
-                    return Collections.EMPTY_LIST;
+                    return Collections.emptyList();
                 }
 		if (CPP_DEFINE) {
                     if ((Utilities.getOperatingSystem() & Utilities.OS_SOLARIS) != 0) {
@@ -1151,7 +1148,7 @@ public class TraceModel {
                         all.add("NO_DEFAULT_DEFINED_SYSTEM_MACROS"); // NOI18N
                     }
                 }
-		return new ArrayList(all);
+		return new ArrayList<String>(all);
 	}
 	//    // generates NativeProject using input project info
 	//    private NativeProject getNativeProject(File file, ProjectBase prj) {
@@ -1568,8 +1565,8 @@ public class TraceModel {
 					postfix += "."+Diagnostic.getStatisticsLevel(); // NOI18N
 				}
 				String name = file.getName()+postfix;
-				String dumpFile = new File(this.dumpDir, name).getAbsolutePath();
-				Diagnostic.dumpFileStatistics(dumpFile);
+				String theDumpFile = new File(this.dumpDir, name).getAbsolutePath();
+				Diagnostic.dumpFileStatistics(theDumpFile);
 			}
 			if (this.dumpFile != null) {
 				Diagnostic.dumpFileStatistics(this.dumpFile, true);
@@ -1592,11 +1589,11 @@ public class TraceModel {
 		}
 		
                 if ( doCleanRepository ) {
-		    CsmProject project = fileImpl.getProject();
+		    CsmProject prj = fileImpl.getProject();
 		    String absPath = fileImpl.getAbsolutePath();
 		    fileImpl = null;
                     RepositoryAccessor.getRepository().debugClear();
-		    fileImpl = (FileImpl) project.findFile(absPath);
+		    fileImpl = (FileImpl) prj.findFile(absPath);
                 }
                 
 		if( dumpModel ) {
@@ -1765,7 +1762,7 @@ public class TraceModel {
 		}
 		Reader reader  = new InputStreamReader(is);
 		reader = new BufferedReader(reader);
-                FoldingParser p = (FoldingParser)Lookup.getDefault().lookup(FoldingParser.class);
+                FoldingParser p = Lookup.getDefault().lookup(FoldingParser.class);
                 if (p != null) {
                     List<CppFoldRecord> folds = p.parse(file.getAbsolutePath(), reader);
                     try {
@@ -1801,13 +1798,13 @@ public class TraceModel {
 	};
 
     /*package*/ ProjectBase getProject() {
-        ProjectBase project;
+        ProjectBase prj;
         if (TraceFlags.USE_REPOSITORY) {
-            project = projectUID == null ? null : (ProjectBase)projectUID.getObject();
+            prj = projectUID == null ? null : (ProjectBase)projectUID.getObject();
         } else {
-            project = this.project;
+            prj = this.project;
         }
-        return project;
+        return prj;
     }
 
     private void setProject(ProjectBase project) {
