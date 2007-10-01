@@ -11,40 +11,39 @@
     <body>
         <h2>Profiling a Web Application</h2>
         <p><small><a href="#seealso">See Also</a></small></p>
-<!--<p>There are two ways to profile an EJB module:</p>
+<p>There are two ways to profile a web application project:</p>
 <ul>
-  <li>As a stand-alone EJB module</li>
+  <li>As a stand-alone web application project</li>
   <li>As part of an enterprise application</li>
 </ul>
 <p>If your web application is part of an enterprise application, you should always 
     profile it by running the profile command on the enterprise application project. 
-    Since the IDE does not know which enterprise applications an EJB module project 
-    belongs to, running the Profile command on an EJB module project deploys it 
-    as a stand-alone module.</p>
+    Since the IDE does not know which enterprise applications a web application project
+    belongs to, running the Profile command on a web application project deploys it 
+    as a stand-alone application.</p>
     
-    <p>If you are deploying your EJB module or enterprise application to a local installation
+    <p>If you are deploying your web application or enterprise application to a local installation
     of the Sun Java System Application Server/GlassFish, you can profile your project by 
     choosing Profile Main Project from the main menu or choosing Profile from the pop-up menu in the
     Projects window.</p>
     
-    <p>If you are deploying your EJB module or enterprise application to a remote server,
+    <p>If you are deploying your web application or enterprise application to a remote server,
     you need to attach the IDE to the remote server and profile the application in Attach mode.
     The Attach Wizard can help you configure the remote server to accept attachment.</p>
 
-<p><b>To profile a stand-alone EJB module:</b></p>
+<p><b>To profile a stand-alone web application:</b></p>
 <ol>
-  <li>In the Projects window, right-click the EJB module project and choose Profile. </li>
+  <li>In the Projects window, right-click the web application project and choose Profile. </li>
   <li>Select a profiling task and click Run.</li>
 </ol>
-<p>When you profile a stand-alone EJB module, the IDE does the following:</p>
+<p>When you profile a stand-alone web application project, the IDE does the following:</p>
 <ul>
-  <li>Compiles the EJB module if necessary.</li>
+  <li>Compiles the web application if necessary.</li>
   <li>Stops the application server and starts it in profile mode.</li>
-  <li>Deploys the EJB module to the application server.</li>
+  <li>Deploys the web application to the application server.</li>
   <li>Starts a profiling session, attaches the profiler to the server, and opens the Profiler window in the IDE. 
     After the application is deployed to the server, you should invoke its code the same way as you would for debugging or 
     just evaluating application functionality. 
-    You can use an application client or a web application to access the EJB and invoke its code. 
     You can view the profiling data once the code of the application is invoked.</li>
 </ul>
 <p><b>To profile an enterprise application:</b></p>
@@ -54,10 +53,10 @@
 </ol>
 
 <ul class="note">
-    <li>If you are analyzing application performance, choose the Profile Projects &amp;
-    Subprojects Classes filter to ensure that the classes in your EJB module and
-    web module projects will be profiled. If you do not choose this filter, the classes in 
-    the EJB module and web module are not profiled.
+    <li>If you are analyzing application performance, you may want to choose the Profile Projects &amp;
+    Subprojects Classes filter if you want to profile the classes in your web application and
+    also any sub-projects, such as any EJB modules. If you do not choose this filter, the classes in 
+    the EJB module are not profiled.
     <p>You can limit the classes in the enterprise application that are profiled by doing the following:</p>
     <ol>
         <li>In the Analyze Performance pane, choose the Profile Projects &amp;
@@ -78,7 +77,7 @@
     the Profiler window in the IDE. If the application has 
     a designated web application and URL to run, the IDE opens the URL in the 
     external browser.</li>
-</ul>-->
+</ul>
 
         
         <dl>
