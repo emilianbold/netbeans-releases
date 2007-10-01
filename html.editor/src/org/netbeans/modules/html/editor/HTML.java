@@ -21,6 +21,7 @@ package org.netbeans.modules.html.editor;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
@@ -33,6 +34,7 @@ import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ASTToken;
 import org.netbeans.api.languages.LibrarySupport;
+import org.netbeans.api.lexer.TokenHierarchy;
 
 /**
  *
@@ -42,6 +44,21 @@ import org.netbeans.api.languages.LibrarySupport;
 public class HTML {
     
     private static final String HTML401 = "org/netbeans/modules/html/editor/resources/HTML401.xml";
+    
+    
+    
+    //workaround for #117351 Invalid livecycle of Context object
+    //must be removed once the issue is really fixed.
+    private static TokenSequence findTokenSequence(int offset, Context ctx) {
+        TokenSequence ts = null;
+        try {
+            ts = ctx.getTokenSequence();
+        } catch (ConcurrentModificationException cme) {
+            TokenHierarchy th = TokenHierarchy.get(ctx.getDocument());
+            ts = th.tokenSequence();
+        }
+        return findTokenSequence(offset, ts);
+    }
     
     private static TokenSequence findTokenSequence(int offset, TokenSequence ts) {
         if("text/html".equals(ts.language().mimeType())) {
@@ -70,7 +87,7 @@ public class HTML {
         }
         SyntaxContext scontext = (SyntaxContext)context;
         int item_offset = scontext.getASTPath().getLeaf().getOffset();
-        TokenSequence ts = findTokenSequence(item_offset, context.getTokenSequence());
+        TokenSequence ts = findTokenSequence(item_offset, context);
         if(ts == null) return false;
         Token t = ts.token ();
         if (t == null) return false;
@@ -89,7 +106,7 @@ public class HTML {
         }
         SyntaxContext scontext = (SyntaxContext)context;
         int item_offset = scontext.getASTPath().getLeaf().getOffset();
-        TokenSequence ts = findTokenSequence(item_offset, context.getTokenSequence());
+        TokenSequence ts = findTokenSequence(item_offset, context);
         if(ts == null) return false;
         Token t = ts.token ();
         if (t == null) return false;
