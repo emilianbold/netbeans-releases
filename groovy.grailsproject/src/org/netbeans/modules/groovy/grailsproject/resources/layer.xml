@@ -1,7 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
+    <folder name="Templates">
+        <folder name="Project">
+            <folder name="Scripting">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.grailsproject.ui.wizards.Bundle"/>
+                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/groovy/grailsproject/resources/desktop.html"/>
 
+                <file name="emptyGrails.xml">
+                    <attr name="template" boolvalue="true"/>
+                    <attr name="instantiatingIterator" newvalue="org.netbeans.modules.groovy.grailsproject.ui.wizards.NewGrailsProjectWizardIterator"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.grailsproject.ui.wizards.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/groovy/grailsproject/resources/GrailsIcon16x16.png"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/groovy/grailsproject/resources/emptyProject.html"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+    
     <folder name="Projects">
         <folder name="org-netbeans-modules-groovy-grailsproject">
 
