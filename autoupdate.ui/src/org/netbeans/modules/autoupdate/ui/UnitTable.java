@@ -44,6 +44,8 @@ package org.netbeans.modules.autoupdate.ui;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -68,6 +70,7 @@ public class UnitTable extends JTable {
     private UnitCategoryTableModel model = null;
     private static final int DARKER_COLOR_COMPONENT = 10;
     private TableCellRenderer enableRenderer = null;
+    private int rowHeight = -1;
     
     /** Creates a new instance of UpdateTable */
     public UnitTable (TableModel model) {
@@ -163,6 +166,13 @@ public class UnitTable extends JTable {
             c.setForeground(getForeground());
             JComponent jc = (JComponent)c;
             jc.setBorder(BorderFactory.createEmptyBorder());
+        }
+        if (rowHeight < 0) {
+            Font font =  c.getFont();
+            FontMetrics fontMetrics = c.getFontMetrics(font);
+            int def = new JTable().getRowHeight();
+            rowHeight = Math.max(def, fontMetrics.getHeight());
+            setRowHeight(rowHeight);
         }
         
         return c;
