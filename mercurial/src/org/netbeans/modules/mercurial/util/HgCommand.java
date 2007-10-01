@@ -1555,6 +1555,7 @@ public class HgCommand {
         assert ( command != null && command.size() > 0);
         List<String> list = new ArrayList<String>();
         BufferedReader input = null;
+        Process proc = null;
         try{
             if (command.size() > 10)  {
                 List<String> smallCommand = new ArrayList<String>();
@@ -1567,7 +1568,6 @@ public class HgCommand {
             } else {
                 Mercurial.LOG.log(Level.FINE, "execEnv(): " + command); // NOI18N
             }
-            Process proc;
             if(env != null && env.size() > 0){
                 proc = Runtime.getRuntime().exec(
                     command.toArray(new String[command.size()]),
@@ -1606,9 +1606,10 @@ public class HgCommand {
         }catch(IOException e){
             // Hg does not seem to be returning error status != 0
             // even when it fails when for instance adding an already tracked file to
-            // the repository - we will have to examine the output in the cpntext of the
+            // the repository - we will have to examine the output in the context of the
             // calling func and raise exceptions there if needed
             Mercurial.LOG.log(Level.FINE, "execEnv():  execEnv(): IOException " + e); // NOI18N
+            if (proc != null) proc.destroy();
             throw new HgException(HG_UNABLE_EXECUTE_COMMAND_ERR);
         }finally{
             // TODO: should handle the input.close() if input != null

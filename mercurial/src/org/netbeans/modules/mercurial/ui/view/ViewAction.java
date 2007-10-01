@@ -25,6 +25,7 @@ import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.RequestProcessor;
 
 import java.io.File;
 import java.util.List;
@@ -50,7 +51,8 @@ public class ViewAction extends AbstractAction {
         final File root = HgUtils.getRootFile(context);
         if (root == null) return;
         String repository = root.getAbsolutePath();
-        SwingUtilities.invokeLater(new Runnable() {
+        RequestProcessor rp = RequestProcessor.getDefault();
+        rp.post(new Runnable() {
             public void run() {
                 performView(root);
             }
