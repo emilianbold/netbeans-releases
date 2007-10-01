@@ -172,8 +172,15 @@ public class DetailsPanel extends JTextPane  {
         rightCornerHeader  = new JPanel();        
         rightCornerHeader.setBorder(compoundBorder);
         
-        header.setBackground(UnitTable.getDarkerColor(getBackground()));
-        rightCornerHeader.setBackground(UnitTable.getDarkerColor(getBackground()));
+        Color headerBgColor = UnitTable.getDarkerColor(getBackground());
+        header.setBackground(headerBgColor);
+        if (button != null) {
+            button.setOpaque(false);
+        }
+        if (button2 != null) {
+            button2.setOpaque(false);
+        }        
+        rightCornerHeader.setBackground(headerBgColor);
         setBorder(BorderFactory.createEmptyBorder(3, 3, 0, 0));
     }
 }
