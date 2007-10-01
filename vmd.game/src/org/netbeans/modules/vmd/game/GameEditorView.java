@@ -130,6 +130,7 @@ public class GameEditorView implements DataEditorView, EditorManagerListener {
     public JComponent getToolbarRepresentation() {
         if (this.toolBarRepresentation == null) {
             JToolBar tool = new JToolBar();
+            tool.setFloatable (false);
             tool.setRollover (true);
 			
             tool.addSeparator();
