@@ -952,7 +952,8 @@ public class RADComponent {
         } else {
             for (int i=0; i < eventProperties.length; i++) {
                 Event e = eventProperties[i].getEvent();
-                if ("actionPerformed".equals(e.getListenerMethod().getName())) { // NOI18N
+                if ("actionPerformed".equals(e.getListenerMethod().getName()) // NOI18N
+                        && !(getBeanInstance() instanceof javax.swing.JMenu)) {
                     return e;
                 }
             }
