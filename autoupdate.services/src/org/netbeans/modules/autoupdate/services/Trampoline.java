@@ -98,7 +98,7 @@ public abstract class Trampoline<Support> extends Object {
     protected abstract UpdateUnitProviderImpl impl (UpdateUnitProvider provider);
 
     // spi.UpdateItem
-    protected abstract UpdateItemImpl impl (UpdateItem item);
+    public abstract UpdateItemImpl impl (UpdateItem item);
     protected abstract UpdateItem createUpdateItem (UpdateItemImpl impl);
     
     // spi.AutoupdateClusterCreator

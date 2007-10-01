@@ -52,6 +52,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -92,11 +93,6 @@ public class ModuleUpdateElementImpl extends UpdateElementImpl {
             getLogger ().log (Level.WARNING, "Module " + codeName + " doesn't provider display name. Value of \"OpenIDE-Module-Name\" cannot be null.");
         }
         displayName = dn == null ? codeName : dn;
-        description = (String) moduleInfo.getLocalizedAttribute ("OpenIDE-Module-Long-Description");
-        category = item.getCategory ();
-        if (category == null) {
-            category = (String) moduleInfo.getLocalizedAttribute ("OpenIDE-Module-Display-Category");
-        }
         author = item.getAuthor ();
         downloadSize = item.getDownloadSize ();
         homepage = item.getHomepage ();
@@ -118,6 +114,13 @@ public class ModuleUpdateElementImpl extends UpdateElementImpl {
     }
     
     public String getDescription () {
+        if (description == null) {
+            description = (String) moduleInfo.getLocalizedAttribute ("OpenIDE-Module-Long-Description");
+            String notification = item.getModuleNotification ();
+            if (notification != null && notification.length () > 0) {
+                description = NbBundle.getMessage (ModuleUpdateElementImpl.class, "ModuleUpdateElementImpl_ModuleNotification", description, notification.trim ());
+            }
+        }
         return description;
     }
     
@@ -142,12 +145,18 @@ public class ModuleUpdateElementImpl extends UpdateElementImpl {
     }
     
     public String getCategory () {
-        if (isAutoload () || isFixed ()) {
-            category = UpdateUnitFactory.LIBRARIES_CATEGORY;
-        } else if (isEager ()) {
-            category = UpdateUnitFactory.BRIDGES_CATEGORY;
-        } else if (category == null || category.length () == 0) {
-            category = UpdateUnitFactory.UNSORTED_CATEGORY;
+        if (category == null) {
+            category = item.getCategory ();
+            if (category == null) {
+                category = (String) moduleInfo.getLocalizedAttribute ("OpenIDE-Module-Display-Category");
+            }
+            if (isAutoload () || isFixed ()) {
+                category = UpdateUnitFactory.LIBRARIES_CATEGORY;
+            } else if (isEager ()) {
+                category = UpdateUnitFactory.BRIDGES_CATEGORY;
+            } else if (category == null || category.length () == 0) {
+                category = UpdateUnitFactory.UNSORTED_CATEGORY;
+            }
         }
         return category;
     }

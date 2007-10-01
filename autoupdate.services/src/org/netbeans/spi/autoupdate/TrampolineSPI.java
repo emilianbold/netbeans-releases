@@ -73,7 +73,7 @@ final class TrampolineSPI extends Trampoline {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    protected UpdateItemImpl impl(UpdateItem item) {
+    public UpdateItemImpl impl(UpdateItem item) {
         return item.impl;
     }
 

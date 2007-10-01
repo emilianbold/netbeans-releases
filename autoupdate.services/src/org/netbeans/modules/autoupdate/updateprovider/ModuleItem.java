@@ -67,6 +67,7 @@ public class ModuleItem extends UpdateItemImpl {
     private Date publishDate;
     private boolean isEager;
     private boolean isAutoload;
+    private String moduleNotification = null;
     
     private URL distribution;
     private Manifest manifest;
@@ -171,6 +172,14 @@ public class ModuleItem extends UpdateItemImpl {
 
     public boolean isEager () {
         return isEager;
+    }
+    
+    public String getModuleNotification () {
+        return moduleNotification;
+    }
+    
+    void setModuleNotification (String notification) {
+        this.moduleNotification = notification;
     }
     
 }

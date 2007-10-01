@@ -56,6 +56,7 @@ import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.autoupdate.services.Trampoline;
 import org.netbeans.modules.autoupdate.services.Utilities;
 import org.netbeans.spi.autoupdate.UpdateItem;
 import org.netbeans.spi.autoupdate.UpdateLicense;
@@ -142,6 +143,7 @@ public abstract class SimpleItem {
         public static final String ATTR_SPECIFICATION_VERSION = "OpenIDE-Module-Specification-Version";
         public static final String IS_EAGER = "eager";
         public static final String IS_AUTOLOAD = "autoload";
+        public static final String MODULE_NOTIFICATION = "module_notification";
         
         private String moduleCodeName;
         private String specVersion;
@@ -186,6 +188,17 @@ public abstract class SimpleItem {
                 mfAttrs.put (new Attributes.Name (attr.getName ()), attr.getValue ());
             }
             return mf;
+        }
+        
+        private static String getModuleNotfication (Node n) {
+            NodeList l = ((Element) n).getElementsByTagName (MODULE_NOTIFICATION);
+            if (l == null || l.getLength () == 0) {
+                return null;
+            }
+            assert l != null && l.getLength() == 1 : "MODULE_NOTIFICATION should contains one and only one list.";
+            assert Node.ELEMENT_NODE == l.item (0).getNodeType ();
+            
+            return l.item (0).getChildNodes().item (0).getNodeValue ();
         }
         
         private static String getModuleCodeName (Node n) {
@@ -287,6 +300,10 @@ public abstract class SimpleItem {
                     isGlobal,
                     targetcluster,
                     lic);
+            
+            // read module notification
+            UpdateItemImpl impl = Trampoline.SPI.impl(res);
+            ((ModuleItem) impl).setModuleNotification (getModuleNotfication (declaratingNode));
             
             // clean up declaratingNode
             declaratingNode = null;

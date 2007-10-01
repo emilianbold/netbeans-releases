@@ -77,7 +77,7 @@ final class TrampolineAPI extends Trampoline {
         return element.impl;
     }
 
-    protected UpdateItemImpl impl(UpdateItem item) {
+    public UpdateItemImpl impl(UpdateItem item) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
