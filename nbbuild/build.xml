@@ -568,8 +568,8 @@ Link to <A HREF="overview-summary.html">Non-frame version.</A>
     <!-- if anybody knows better place for icons, let me know: jtulach@netbeans.org -->
 
     <mkdir dir="${netbeans.dest.dir}/etc" />
-    <copy file="../ide/launcher/netbeans.conf" todir="${netbeans.dest.dir}/etc" />
-    <copy file="../ide/launcher/netbeans.clusters" todir="${netbeans.dest.dir}/etc" />
+    <copy file="../ide/launcher/netbeans.conf" todir="${netbeans.dest.dir}/etc" overwrite="true"/>
+    <copy file="../ide/launcher/netbeans.clusters" todir="${netbeans.dest.dir}/etc" overwrite="true"/>
 
     <echo message="${netbeans.dest.dir}/${nb.cluster.platform.dir}/lib/nbexec" />
     <fixcrlf eol="lf" srcdir="${netbeans.dest.dir}" >
