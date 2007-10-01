@@ -143,9 +143,10 @@ is divided into following sections:
             <attribute default="${excludes}" name="excludes"/>
             <attribute default="${javac.debug}" name="debug"/>
             <attribute default="" name="javac.compilerargs.jaxws"/>
+            <attribute default="" name="sourcepath"/>
             <element name="customize" optional="true"/>
             <sequential>
-                <javac debug="@{debug}" deprecation="${javac.deprecation}" destdir="@{destdir}" encoding="${source.encoding}" excludes="@{excludes}" includeantruntime="false" includes="@{includes}" source="${javac.source}" sourcepath="" srcdir="@{srcdir}" target="${javac.target}">
+                <javac debug="@{debug}" deprecation="${javac.deprecation}" destdir="@{destdir}" encoding="${source.encoding}" excludes="@{excludes}" includeantruntime="false" includes="@{includes}" source="${javac.source}" sourcepath="@{sourcepath}" srcdir="@{srcdir}" target="${javac.target}">
                     <classpath>
                         <path path="@{classpath}"/>
                     </classpath>
@@ -187,7 +188,7 @@ is divided into following sections:
             <attribute default="${includes}" name="includes"/>
             <attribute default="${excludes}" name="excludes"/>
             <sequential>
-                <junit dir="${basedir}" errorproperty="tests.failed" failureproperty="tests.failed" fork="true" showoutput="true">
+                <junit dir="${work.dir}" errorproperty="tests.failed" failureproperty="tests.failed" fork="true" showoutput="true">
                     <batchtest todir="${build.test.results.dir}">
                         <fileset dir="${test.src.dir}" excludes="@{excludes},${excludes}" includes="@{includes}">
                             <filename name="**/*Test.java"/>
@@ -324,7 +325,7 @@ is divided into following sections:
     <target depends="init,deps-jar,-pre-pre-compile" name="-do-compile-single">
         <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
         <j2seproject3:force-recompile/>
-        <j2seproject3:javac excludes="" includes="${javac.includes}"/>
+        <j2seproject3:javac excludes="" includes="${javac.includes}" sourcepath="${src.dir}"/>
     </target>
     <target name="-post-compile-single">
         <!-- Empty placeholder for easier customization. -->
@@ -455,7 +456,6 @@ is divided into following sections:
             <classpath>
                 <path path="${javac.classpath}"/>
             </classpath>
-            <packageset dir="${src.dir}" excludes="${excludes}" includes="${includes}"/>
             <fileset dir="${src.dir}" excludes="${excludes}" includes="${includes}">
                 <filename name="**/*.java"/>
             </fileset>
@@ -496,7 +496,7 @@ is divided into following sections:
     <target depends="init,compile,-pre-pre-compile-test,-pre-compile-test-single" if="have.tests" name="-do-compile-test-single">
         <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
         <j2seproject3:force-recompile destdir="${build.test.classes.dir}"/>
-        <j2seproject3:javac classpath="${javac.test.classpath}" debug="true" destdir="${build.test.classes.dir}" excludes="" includes="${javac.includes}" srcdir="${test.src.dir}"/>
+        <j2seproject3:javac classpath="${javac.test.classpath}" debug="true" destdir="${build.test.classes.dir}" excludes="" includes="${javac.includes}" sourcepath="${test.src.dir}" srcdir="${test.src.dir}"/>
         <copy todir="${build.test.classes.dir}">
             <fileset dir="${test.src.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
         </copy>
