@@ -41,60 +41,26 @@
 
 package org.netbeans.spi.project.ui.support;
 
-import com.sun.org.apache.bcel.internal.generic.LOOKUPSWITCH;
 import java.lang.reflect.InvocationTargetException;
 import junit.framework.TestCase;
-import junit.framework.*;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import javax.swing.SwingUtilities;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
-import org.netbeans.junit.MockServices;
-import org.openide.ErrorManager;
-import org.openide.cookies.InstanceCookie;
-import org.openide.filesystems.FileAttributeEvent;
-import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileEvent;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileRenameEvent;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.loaders.FolderLookup;
-import org.openide.loaders.InstanceDataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
 /**
- *
  * @author mkleint
  */
 public class NodeFactorySupportTest extends TestCase {
     
     public NodeFactorySupportTest(String testName) {
         super(testName);
-    }
-
-    protected void setUp() throws Exception {
-    }
-
-    protected void tearDown() throws Exception {
     }
 
     /**
@@ -159,15 +125,15 @@ public class NodeFactorySupportTest extends TestCase {
            content = cont;
        }
        
-       protected Lookup createLookup() {
+       protected @Override Lookup createLookup() {
            return new AbstractLookup(content);
        }
        
-       public void addNotify() {
+       public @Override void addNotify() {
            super.addNotify();
        }
        
-       public void removeNotify() {
+       public @Override void removeNotify() {
            super.removeNotify();
        }
    }
