@@ -36,6 +36,7 @@ import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
@@ -117,6 +118,7 @@ public final class J2MEProject implements Project, AntProjectListener {
     final ProjectConfigurationsHelper configHelper;
     
     private static final Set<FileObject> roots = new HashSet<FileObject>();
+    private static final Map<FileObject, Boolean> folders = new WeakHashMap<FileObject, Boolean>();
     private final ReferenceHelper refHelper;
     private final PropertyChangeSupport pcs;
     public FileBuiltQueryImpl fileBuiltQuery;
@@ -128,22 +130,33 @@ public final class J2MEProject implements Project, AntProjectListener {
         if (archiveRoot != null) {
             fo = archiveRoot;
         }
-        while (fo != null) {
-            synchronized (roots) {
-                if (roots.contains(fo)) return true;
-            }
-            FileObject xml;
-            if (fo.isFolder() && (xml = fo.getFileObject("nbproject/project.xml")) != null) { //NOI18N
-                if (isJ2MEProjectXML(xml)) {
-                    synchronized (roots) {
-                        roots.add(fo);
-                    }
-                    return true;
-                }
-            }
-            fo = fo.getParent();
+        return isJ2MEFolder(fo.getParent());
+    }
+        
+    private static boolean isJ2MEFolder(FileObject fo) { 
+        if (fo == null) return false;
+        synchronized (roots) {
+            if (roots.contains(fo)) return true;
         }
-        return false;
+        Boolean result;
+        synchronized (folders) {
+            result = folders.get(fo);
+        }
+        if (result == null) {
+            FileObject xml;
+            if (fo.isFolder() && (xml = fo.getFileObject("nbproject/project.xml")) != null) {
+                result = isJ2MEProjectXML(xml);
+                if (result) synchronized (roots) {
+                    roots.add(fo);
+                }
+            } else {
+                result = isJ2MEFolder(fo.getParent());
+            }
+            synchronized (folders) {
+                folders.put(fo, result);
+            }
+        }
+        return result;
     }
     
     protected static void addRoots(final AntProjectHelper helper) {
