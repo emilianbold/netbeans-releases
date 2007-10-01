@@ -19,7 +19,15 @@
 package org.netbeans.modules.mercurial.ui.view;
 
 import org.netbeans.modules.versioning.spi.VCSContext;
+import org.netbeans.modules.mercurial.Mercurial;
+import org.netbeans.modules.mercurial.HgException;
+import org.netbeans.modules.mercurial.util.HgCommand;
+import org.netbeans.modules.mercurial.util.HgUtils;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 
+import java.io.File;
+import java.util.List;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 
@@ -39,10 +47,30 @@ public class ViewAction extends AbstractAction {
     }
     
     public void actionPerformed(ActionEvent e) {
-        // TODO: View action
+        final File root = HgUtils.getRootFile(context);
+        if (root == null) return;
+        String repository = root.getAbsolutePath();
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                performView(root);
+            }
+        });
+    }
+
+    static void performView(File root) {
+        try {
+            List<String> output = HgCommand.doView(root);
+        } catch (HgException ex) {
+            NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
+            DialogDisplayer.getDefault().notifyLater(e);
+        }
     }
 
     public boolean isEnabled() {
-	return false;
+        File root = HgUtils.getRootFile(context);
+        if (root == null)
+            return false;
+        else
+            return true;
     } 
 }

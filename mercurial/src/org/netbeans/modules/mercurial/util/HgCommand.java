@@ -131,6 +131,7 @@ public class HgCommand {
     private static final String HG_VERSION_CMD = "version"; // NOI18N
     private static final String HG_INCOMING_CMD = "incoming"; // NOI18N
     private static final String HG_OUTGOING_CMD = "outgoing"; // NOI18N
+    private static final String HG_VIEW_CMD = "view"; // NOI18N
     private static final String HG_VERBOSE_CMD = "-v"; // NOI18N
     
     private static final String HG_MERGE_NEEDED_ERR = "(run 'hg heads' to see heads, 'hg merge' to merge)"; // NOI18N
@@ -158,6 +159,8 @@ public class HgCommand {
     private static final String HG_NO_CHANGE_NEEDED_ERR = "no change needed"; // NOI18N
     private static final String HG_NO_ROLLBACK_ERR = "no rollback information available"; // NOI18N
     private static final String HG_NO_UPDATES_ERR = "0 files updated, 0 files merged, 0 files removed, 0 files unresolved"; // NOI18N
+    private static final String HG_NO_VIEW_ERR = "hg: unknown command 'view'"; // NOI18N
+    private static final String HG_HGK_NOT_FOUND_ERR = "sh: hgk: not found"; // NOI18N
     
     private static final char HG_STATUS_CODE_MODIFIED = 'M' + ' ';    // NOI18N // STATUS_VERSIONED_MODIFIEDLOCALLY
     private static final char HG_STATUS_CODE_ADDED = 'A' + ' ';      // NOI18N // STATUS_VERSIONED_ADDEDLOCALLY
@@ -462,7 +465,34 @@ public class HgCommand {
         return exec(command);
     }
 
-     /**
+    /**
+     * Run the command hg view for the specified repository
+     *
+     * @param File repository of the mercurial repository's root directory
+     * @throws org.netbeans.modules.mercurial.HgException
+     */
+    public static List<String> doView(File repository) throws HgException {
+        if (repository == null) return null;
+        List<String> command = new ArrayList<String>();
+
+        command.add(getHgCommand());
+        command.add(HG_VIEW_CMD);
+        command.add(HG_OPT_REPOSITORY);
+        command.add(repository.getAbsolutePath());
+
+        List<String> list = exec(command);
+        if (!list.isEmpty()) {
+            if (isErrorNoView(list.get(list.size() -1))) {
+                throw new HgException(org.openide.util.NbBundle.getMessage(HgCommand.class, "MSG_WARN_NO_VIEW_TEXT"));
+             }
+            else if (isErrorHgkNotFound(list.get(0))) {
+                throw new HgException(org.openide.util.NbBundle.getMessage(HgCommand.class, "MSG_WARN_HGK_NOT_FOUND_TEXT"));
+            }
+        } 
+        return list;
+    }
+     
+    /**
      * Determines whether repository requires a merge - has more than 1 heads
      *
      * @param File repository of the mercurial repository's root directory
@@ -1680,6 +1710,14 @@ public class HgCommand {
         return msg.indexOf(HG_NO_UPDATES_ERR) > -1;                                   // NOI18N
     }
     
+    private static boolean isErrorNoView(String msg) {
+        return msg.indexOf(HG_NO_VIEW_ERR) > -1;                                     // NOI18N
+    }
+
+    private static boolean isErrorHgkNotFound(String msg) {
+        return msg.indexOf(HG_HGK_NOT_FOUND_ERR) > -1;                               // NOI18N
+    }
+
     public static void createConflictFile(String path) {
         try {
             File file = new File(path + HG_STR_CONFLICT_EXT);

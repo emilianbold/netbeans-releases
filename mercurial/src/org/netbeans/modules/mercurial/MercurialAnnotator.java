@@ -55,6 +55,7 @@ import org.netbeans.modules.mercurial.ui.status.StatusAction;
 import org.netbeans.modules.mercurial.ui.update.ConflictResolvedAction;
 import org.netbeans.modules.mercurial.ui.update.ResolveConflictsAction;
 import org.netbeans.modules.mercurial.ui.update.UpdateAction;
+import org.netbeans.modules.mercurial.ui.view.ViewAction;
 import org.netbeans.modules.mercurial.util.HgProjectUtils;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.mercurial.util.HgCommand;
@@ -323,7 +324,7 @@ public class MercurialAnnotator extends VCSAnnotator {
             }
             actions.add(tempA);
             actions.add(new LogAction(loc.getString("CTL_PopupMenuItem_Log"), ctx)); // NOI18N
-            // TODO: actions.add(new ViewAction(loc.getString("CTL_PopupMenuItem_View"), ctx)); // NOI18N
+            actions.add(new ViewAction(loc.getString("CTL_PopupMenuItem_View"), ctx)); // NOI18N
             actions.add(null);
             actions.add(new RollbackAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_Rollback"), ctx)); // NOI18N
             actions.add(new RevertModificationsAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_Revert"), ctx)); // NOI18N
@@ -365,7 +366,7 @@ public class MercurialAnnotator extends VCSAnnotator {
                     actions.add(tempA);
                 }
                 actions.add(new LogAction(loc.getString("CTL_PopupMenuItem_Log"), ctx)); // NOI18N
-                // TODO: actions.add(new ViewAction(loc.getString("CTL_PopupMenuItem_View"), ctx)); // NOI18N
+                actions.add(new ViewAction(loc.getString("CTL_PopupMenuItem_View"), ctx)); // NOI18N
                 actions.add(null);
                 actions.add(new RollbackAction(NbBundle.getMessage(MercurialAnnotator.class,
                         "CTL_PopupMenuItem_Rollback"), ctx)); // NOI18N
