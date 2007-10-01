@@ -45,6 +45,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
@@ -58,6 +59,7 @@ import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.filesystems.FileObject;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -101,9 +103,34 @@ public class SuppressWarningsFixer implements ErrorRule<Void> {
         return KEY2SUPRESS_KEY.keySet();
     }
 
+    private boolean isSuppressWarningsSupported(CompilationInfo info) {
+        //cannot suppress if there is no SuppressWarnings annotation in the platform:
+        if (info.getElements().getTypeElement("java.lang.SuppressWarnings") == null)
+            return false;
+        
+        String sourceVersion = SourceLevelQuery.getSourceLevel(info.getFileObject());
+        
+        if (sourceVersion == null) {
+            return true;
+        }
+        
+        try {
+            SpecificationVersion version = new SpecificationVersion(sourceVersion);
+            SpecificationVersion supp = new SpecificationVersion("1.5");
+
+            return version.compareTo(supp) >= 0;
+        } catch (NumberFormatException e) {
+            return true;
+        }
+    }
+    
     public List<Fix> run(CompilationInfo compilationInfo, String diagnosticKey,
                          int offset, TreePath treePath,
                          Data<Void> data) {
+        if (!isSuppressWarningsSupported(compilationInfo)) {
+            return null;
+        }
+
         String suppressKey = KEY2SUPRESS_KEY.get(diagnosticKey);
 	
 	final Set<Kind> DECLARATION = EnumSet.of(Kind.CLASS, Kind.METHOD, Kind.VARIABLE);
