@@ -40,6 +40,7 @@ public class ShellAboutBox extends javax.swing.JDialog {
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(applicationpackage.ShellApp.class).getContext().getResourceMap(ShellAboutBox.class);
         setTitle(resourceMap.getString("title")); // NOI18N
+        setModal(true);
         setName("aboutBox"); // NOI18N
         setResizable(false);
 

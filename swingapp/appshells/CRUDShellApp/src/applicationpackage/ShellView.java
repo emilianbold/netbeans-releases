@@ -261,7 +261,7 @@ public class ShellView extends FrameView {
     }
 
     @Action
-    public void showAboutBox(ActionEvent e) {
+    public void showAboutBox() {
         if (aboutBox == null) {
             JFrame mainFrame = ShellApp.getApplication().getMainFrame();
             aboutBox = new ShellAboutBox(mainFrame);
