@@ -309,7 +309,7 @@ public class DocumentEditorView extends FrameView {
     }
 
     @Action
-    public void showAboutBox(ActionEvent e) {
+    public void showAboutBox() {
         if (aboutBox == null) {
             JFrame mainFrame = DocumentEditorApp.getApplication().getMainFrame();
             aboutBox = new DocumentEditorAboutBox(mainFrame);

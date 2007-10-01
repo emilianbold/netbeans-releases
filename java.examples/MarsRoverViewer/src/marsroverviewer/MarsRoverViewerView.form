@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<Form version="1.4">
+<Form version="1.5" maxVersion="1.5">
   <NonVisualComponents>
     <Container class="javax.swing.JPanel" name="mainPanel">
       <Properties>
@@ -15,7 +15,7 @@
         </DimensionLayout>
         <DimensionLayout dim="1">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Component id="scrollPane" alignment="0" pref="294" max="32767" attributes="0"/>
+              <Component id="scrollPane" alignment="0" pref="288" max="32767" attributes="0"/>
           </Group>
         </DimensionLayout>
       </Layout>
@@ -59,13 +59,10 @@
             <MenuItem class="javax.swing.JMenuItem" name="previousMenuItem">
               <Properties>
                 <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.swingapp.ActionEditor">
-                  <action class="marsroverviewer.MarsRoverViewerView" id="previousImage"/>
+                  <action class="marsroverviewer.MarsRoverViewerView" id="previousImage" methodName="previousImage"/>
                 </Property>
                 <Property name="name" type="java.lang.String" value="previousMenuItem" noResource="true"/>
               </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="previousMenuItemActionPerformed"/>
-              </Events>
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_VariableLocal" type="java.lang.Boolean" value="true"/>
                 <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="0"/>
@@ -74,7 +71,7 @@
             <MenuItem class="javax.swing.JMenuItem" name="nextMenuItem">
               <Properties>
                 <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.swingapp.ActionEditor">
-                  <action class="marsroverviewer.MarsRoverViewerView" id="nextImage"/>
+                  <action class="marsroverviewer.MarsRoverViewerView" id="nextImage" methodName="nextImage"/>
                 </Property>
                 <Property name="name" type="java.lang.String" value="nextMenuItem" noResource="true"/>
               </Properties>
@@ -86,7 +83,7 @@
             <MenuItem class="javax.swing.JMenuItem" name="refreshMenuItem">
               <Properties>
                 <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.swingapp.ActionEditor">
-                  <action class="marsroverviewer.MarsRoverViewerView" id="refreshImage"/>
+                  <action class="marsroverviewer.MarsRoverViewerView" id="refreshImage" methodName="refreshImage"/>
                 </Property>
                 <Property name="name" type="java.lang.String" value="refreshMenuItem" noResource="true"/>
               </Properties>
@@ -98,7 +95,7 @@
             <MenuItem class="javax.swing.JMenuItem" name="stopMenuItem">
               <Properties>
                 <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.swingapp.ActionEditor">
-                  <action class="marsroverviewer.MarsRoverViewerView" id="stopLoading"/>
+                  <action class="marsroverviewer.MarsRoverViewerView" id="stopLoading" methodName="stopLoading"/>
                 </Property>
                 <Property name="name" type="java.lang.String" value="stopMenuItem" noResource="true"/>
               </Properties>
@@ -119,7 +116,7 @@
             <MenuItem class="javax.swing.JMenuItem" name="exitMenuItem">
               <Properties>
                 <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.swingapp.ActionEditor">
-                  <action class="org.jdesktop.application.Application" id="quit"/>
+                  <action class="org.jdesktop.application.Application" id="quit" methodName="quit"/>
                 </Property>
                 <Property name="name" type="java.lang.String" value="exitMenuItem" noResource="true"/>
               </Properties>
@@ -142,7 +139,7 @@
             <MenuItem class="javax.swing.JMenuItem" name="aboutMenuItem">
               <Properties>
                 <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.swingapp.ActionEditor">
-                  <action class="marsroverviewer.MarsRoverViewerView" id="showAboutBox"/>
+                  <action class="marsroverviewer.MarsRoverViewerView" id="showAboutBox" methodName="showAboutBox"/>
                 </Property>
                 <Property name="name" type="java.lang.String" value="aboutMenuItem" noResource="true"/>
               </Properties>
@@ -167,7 +164,7 @@
         <Component class="javax.swing.JButton" name="previousButton">
           <Properties>
             <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.swingapp.ActionEditor">
-              <action class="marsroverviewer.MarsRoverViewerView" id="previousImage"/>
+              <action class="marsroverviewer.MarsRoverViewerView" id="previousImage" methodName="previousImage"/>
             </Property>
             <Property name="focusable" type="boolean" value="false"/>
             <Property name="horizontalTextPosition" type="int" value="0"/>
@@ -178,7 +175,7 @@
         <Component class="javax.swing.JButton" name="nextButton">
           <Properties>
             <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.swingapp.ActionEditor">
-              <action class="marsroverviewer.MarsRoverViewerView" id="nextImage"/>
+              <action class="marsroverviewer.MarsRoverViewerView" id="nextImage" methodName="nextImage"/>
             </Property>
             <Property name="focusable" type="boolean" value="false"/>
             <Property name="horizontalTextPosition" type="int" value="0"/>
@@ -189,7 +186,7 @@
         <Component class="javax.swing.JButton" name="refreshButton">
           <Properties>
             <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.swingapp.ActionEditor">
-              <action class="marsroverviewer.MarsRoverViewerView" id="refreshImage"/>
+              <action class="marsroverviewer.MarsRoverViewerView" id="refreshImage" methodName="refreshImage"/>
             </Property>
             <Property name="focusable" type="boolean" value="false"/>
             <Property name="horizontalTextPosition" type="int" value="0"/>
@@ -200,7 +197,7 @@
         <Component class="javax.swing.JButton" name="stopButton">
           <Properties>
             <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.swingapp.ActionEditor">
-              <action class="marsroverviewer.MarsRoverViewerView" id="stopLoading"/>
+              <action class="marsroverviewer.MarsRoverViewerView" id="stopLoading" methodName="stopLoading"/>
             </Property>
             <Property name="focusable" type="boolean" value="false"/>
             <Property name="horizontalTextPosition" type="int" value="0"/>
@@ -222,7 +219,7 @@
               <Group type="102" alignment="0" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="statusMessageLabel" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace pref="310" max="32767" attributes="0"/>
+                  <EmptySpace pref="306" max="32767" attributes="0"/>
                   <Component id="progressBar" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="statusAnimationLabel" min="-2" max="-2" attributes="0"/>

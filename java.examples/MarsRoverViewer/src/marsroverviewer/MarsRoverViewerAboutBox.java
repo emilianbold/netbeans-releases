@@ -69,6 +69,7 @@ public class MarsRoverViewerAboutBox extends javax.swing.JDialog {
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(marsroverviewer.MarsRoverViewerApp.class).getContext().getResourceMap(MarsRoverViewerAboutBox.class);
         setTitle(resourceMap.getString("title")); // NOI18N
+        setModal(true);
         setName("aboutBox"); // NOI18N
         setResizable(false);
 

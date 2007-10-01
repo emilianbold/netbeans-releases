@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<Form version="1.4">
+<Form version="1.5" maxVersion="1.5">
   <NonVisualComponents>
     <Container class="javax.swing.JPanel" name="mainPanel">
       <Properties>
@@ -62,7 +62,7 @@
             <MenuItem class="javax.swing.JMenuItem" name="openMenuItem">
               <Properties>
                 <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.swingapp.ActionEditor">
-                  <action class="documenteditor.DocumentEditorView" id="open"/>
+                  <action class="documenteditor.DocumentEditorView" id="open" methodName="open"/>
                 </Property>
                 <Property name="name" type="java.lang.String" value="openMenuItem" noResource="true"/>
               </Properties>
@@ -74,7 +74,7 @@
             <MenuItem class="javax.swing.JMenuItem" name="saveMenuItem">
               <Properties>
                 <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.swingapp.ActionEditor">
-                  <action class="documenteditor.DocumentEditorView" id="save"/>
+                  <action class="documenteditor.DocumentEditorView" id="save" methodName="save"/>
                 </Property>
                 <Property name="name" type="java.lang.String" value="saveMenuItem" noResource="true"/>
               </Properties>
@@ -86,7 +86,7 @@
             <MenuItem class="javax.swing.JMenuItem" name="saveAsMenuItem">
               <Properties>
                 <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.swingapp.ActionEditor">
-                  <action class="documenteditor.DocumentEditorView" id="saveAs"/>
+                  <action class="documenteditor.DocumentEditorView" id="saveAs" methodName="saveAs"/>
                 </Property>
                 <Property name="name" type="java.lang.String" value="saveAsMenuItem" noResource="true"/>
               </Properties>
@@ -107,7 +107,7 @@
             <MenuItem class="javax.swing.JMenuItem" name="exitMenuItem">
               <Properties>
                 <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.swingapp.ActionEditor">
-                  <action class="org.jdesktop.application.Application" id="quit"/>
+                  <action class="org.jdesktop.application.Application" id="quit" methodName="quit"/>
                 </Property>
                 <Property name="name" type="java.lang.String" value="exitMenuItem" noResource="true"/>
               </Properties>
@@ -177,7 +177,7 @@
             <MenuItem class="javax.swing.JMenuItem" name="aboutMenuItem">
               <Properties>
                 <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.swingapp.ActionEditor">
-                  <action class="documenteditor.DocumentEditorView" id="showAboutBox"/>
+                  <action class="documenteditor.DocumentEditorView" id="showAboutBox" methodName="showAboutBox"/>
                 </Property>
                 <Property name="name" type="java.lang.String" value="aboutMenuItem" noResource="true"/>
               </Properties>
@@ -202,7 +202,7 @@
         <Component class="javax.swing.JButton" name="openToolBarButton">
           <Properties>
             <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.swingapp.ActionEditor">
-              <action class="documenteditor.DocumentEditorView" id="open"/>
+              <action class="documenteditor.DocumentEditorView" id="open" methodName="open"/>
             </Property>
             <Property name="focusable" type="boolean" value="false"/>
             <Property name="horizontalTextPosition" type="int" value="0"/>
@@ -213,7 +213,7 @@
         <Component class="javax.swing.JButton" name="saveToolBarButton">
           <Properties>
             <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.swingapp.ActionEditor">
-              <action class="documenteditor.DocumentEditorView" id="save"/>
+              <action class="documenteditor.DocumentEditorView" id="save" methodName="save"/>
             </Property>
             <Property name="focusable" type="boolean" value="false"/>
             <Property name="horizontalTextPosition" type="int" value="0"/>
