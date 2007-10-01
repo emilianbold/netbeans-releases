@@ -51,7 +51,7 @@ import org.netbeans.modules.websvc.wsdl.config.ServiceInformationImpl;
 public class RefreshServiceAction extends NodeAction {
 
     protected boolean enable(Node[] activatedNodes) {
-        return true;
+        return (activatedNodes != null && activatedNodes.length == 1);
     }
 
     public HelpCtx getHelpCtx() {

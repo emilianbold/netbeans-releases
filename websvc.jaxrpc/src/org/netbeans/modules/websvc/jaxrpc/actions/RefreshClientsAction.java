@@ -37,7 +37,7 @@ import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 public class RefreshClientsAction extends NodeAction {
 	
 	protected boolean enable(Node[] activatedNodes) {
-		return true;
+            return (activatedNodes != null && activatedNodes.length == 1);
 	}
 	
 	public HelpCtx getHelpCtx() {
