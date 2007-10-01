@@ -22,6 +22,7 @@ package org.netbeans.modules.subversion.config;
 import java.io.File;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
+import org.netbeans.modules.proxy.Base64Encoder;
 import org.netbeans.modules.subversion.config.KVFile.Key;
 import org.openide.filesystems.FileUtil;
 
@@ -49,8 +50,7 @@ public class CertificateFile extends SVNCredentialFile {
     }
 
     private void setCert(X509Certificate cert) throws CertificateEncodingException {
-        String encodedCert = new sun.misc.BASE64Encoder().encode(cert.getEncoded());        
-        encodedCert = encodedCert.replace(NEWLINE, ""); // XXX where does this come from ????!!!         // NOI18N
+        String encodedCert = Base64Encoder.encode(cert.getEncoded());                
         setValue(getCertKey(), encodedCert.getBytes());
     }
         

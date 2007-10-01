@@ -22,6 +22,7 @@
 package org.netbeans.modules.subversion.config;
 
 import java.io.IOException;
+import org.netbeans.modules.proxy.Base64Encoder;
 
 /**
  * Scrambles text (the password) using the standard scheme described in the
@@ -321,16 +322,10 @@ public class Scrambler {
     }     
     
     private byte[] decode(String str) {        
-        try {
-            return new sun.misc.BASE64Decoder().decodeBuffer(str);
-        }
-        catch (IOException ex) {
-            
-        }  
-        return null;
+            return Base64Encoder.decode(str);
     }
     
     private byte[] encode(byte[] encode) {        
-        return new sun.misc.BASE64Encoder().encode(encode).getBytes();                   
+        return Base64Encoder.encode(encode).getBytes();                   
     }
 }

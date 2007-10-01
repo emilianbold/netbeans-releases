@@ -461,11 +461,9 @@ public class SvnClientExceptionHandler {
     private String getFingerprint(X509Certificate cert, String alg) {
         String str;
         try {
-            str = new sun.misc.BASE64Encoder().encode(cert.getEncoded());            
-            str = str.replace(NEWLINE, ""); // NOI18N
-            MessageDigest md5 = MessageDigest.getInstance(alg);
-            byte[] url = new sun.misc.BASE64Decoder().decodeBuffer(str);            
-            md5.update(url);
+            byte[] encoded = cert.getEncoded();            
+            MessageDigest md5 = MessageDigest.getInstance(alg);            
+            md5.update(encoded);
             byte[] md5digest = md5.digest();            
             String ret = ""; // NOI18N
             for (int i = 0; i < md5digest.length; i++) {
@@ -479,8 +477,6 @@ public class SvnClientExceptionHandler {
         } catch (CertificateEncodingException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); // should not happen
         } catch (NoSuchAlgorithmException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); // should not happen
-        } catch (IOException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); // should not happen
         }                       
         return ""; // NOI18N
