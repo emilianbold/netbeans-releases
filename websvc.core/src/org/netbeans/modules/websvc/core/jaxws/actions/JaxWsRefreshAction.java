@@ -42,21 +42,15 @@ public class JaxWsRefreshAction extends CookieAction {
         return new Class[] {JaxWsRefreshCookie.class};
     }
     
+    @Override
     protected boolean asynchronous() {
         return true;
     }
     
     protected void performAction(Node[] activatedNodes) {
         JaxWsRefreshCookie cookie = 
-           (JaxWsRefreshCookie)activatedNodes[0].getCookie(JaxWsRefreshCookie.class);
+           activatedNodes[0].getCookie(JaxWsRefreshCookie.class);
         cookie.refreshService(true);
     }
-
-    protected boolean enable(Node[] activatedNodes) {
-        if (activatedNodes==null || activatedNodes.length==0) return false;
-        Service service = (Service)activatedNodes[0].getLookup().lookup(Service.class);
-        if (service!=null && service.getWsdlUrl()!=null) return true;
-        return false;
-    }
-    
+  
 }
