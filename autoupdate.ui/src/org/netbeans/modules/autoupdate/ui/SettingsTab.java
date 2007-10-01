@@ -459,6 +459,9 @@ private class Listener implements ListSelectionListener,  TableModelListener {
                     }
                 });
                 DialogDisplayer.getDefault().createDialog(descriptor).setVisible(true);
+                if (listener != null) {
+                    listener.modelOrSelectionChanged ();
+                }
             }
         }
     }

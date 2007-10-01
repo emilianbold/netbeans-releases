@@ -32,19 +32,19 @@
                       <EmptySpace min="12" pref="12" max="-2" attributes="0"/>
                       <Component id="lCheckPeriod" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="cbCheckPeriod" pref="472" max="32767" attributes="0"/>
+                      <Component id="cbCheckPeriod" pref="480" max="32767" attributes="0"/>
                       <EmptySpace min="-2" pref="58" max="-2" attributes="0"/>
                       <Component id="bProxy" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="lGeneral" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jSeparatorAdvanced" pref="677" max="32767" attributes="0"/>
+                      <Component id="jSeparatorAdvanced" pref="687" max="32767" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="lConnection" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jSeparatorConnection" pref="531" max="32767" attributes="0"/>
+                      <Component id="jSeparatorConnection" pref="565" max="32767" attributes="0"/>
                   </Group>
                   <Component id="lUpdateCenters" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="cbGlobalInstall" alignment="0" min="-2" max="-2" attributes="0"/>
