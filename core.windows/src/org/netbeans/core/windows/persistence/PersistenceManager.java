@@ -1247,8 +1247,7 @@ public final class PersistenceManager implements PropertyChangeListener {
             }
         }
     }
-
-
+    
     /** Searches for module with given code name and specification version.
      * @param codeNameBase unique string base name of the module
      * (without release number)
@@ -1283,14 +1282,16 @@ public final class PersistenceManager implements PropertyChangeListener {
             // search for equal base name and then compare release and
             // spec numbers, if present
             if (curInfo.getCodeNameBase().equals(codeNameBase)) {
-                if((release < 0 && spec == null)
-                || (curInfo.getCodeNameRelease() > release)) {
+                if (((release < 0) && (spec == null)) || (curInfo.getCodeNameRelease() >= release)) {
                     return curInfo;
-                } else if(release < 0
-                || curInfo.getCodeNameRelease() == release) {
-                    if(spec == null
-                    || curInfo.getSpecificationVersion().compareTo(spec) >= 0) {
+                } else if ((release < 0) || (curInfo.getCodeNameRelease() == release)) {
+                    if (spec == null) {
                         return curInfo;
+                    } else {
+                        if ((curInfo.getSpecificationVersion() != null) 
+                        && (curInfo.getSpecificationVersion().compareTo(spec) >= 0)) {
+                            return curInfo;
+                        }
                     }
                 }
             }
