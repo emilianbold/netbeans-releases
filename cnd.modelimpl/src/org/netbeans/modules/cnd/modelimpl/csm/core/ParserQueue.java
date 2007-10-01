@@ -51,7 +51,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
  * A queue that hold a list of files to parse.
  * @author Vladimir Kvashin
  */
-public class ParserQueue {
+public final class ParserQueue {
     
     public static class Entry {
         
@@ -592,7 +592,7 @@ public class ParserQueue {
         }
     }
     
-    public void onFileParsingFinished(FileImpl file) {
+    /*package*/ void onFileParsingFinished(FileImpl file, APTPreprocHandler preprocHandler) {
         boolean lastFileInProject;
         boolean idle = false;
         ProjectBase project;
@@ -613,7 +613,7 @@ public class ParserQueue {
                 }
             }
         }
-        ProgressSupport.instance().fireFileParsingFinished(file);
+        ProgressSupport.instance().fireFileParsingFinished(file, preprocHandler);
         if( lastFileInProject ) {
             if (TraceFlags.TRACE_CLOSE_PROJECT) System.err.println("Last file in project " + project.getName());
             project.onParseFinish();

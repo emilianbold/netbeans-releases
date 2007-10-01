@@ -107,6 +107,15 @@ public class APTHandlersSupportImpl {
         return usrPaths;
     } 
     
+    public static StartEntry extractStartEntry(APTPreprocHandler.State state) {
+        return (state == null) ? null : ((APTPreprocHandlerImpl.StateImpl)state).getStartEntry();
+    }
+    
+    
+    /*package*/ static StartEntry extractStartEntry(APTIncludeHandler.State state) {
+	return (state == null) ? null : ((APTIncludeHandlerImpl.StateImpl) state).getStartEntry();
+    }
+    
     /*package*/ static APTIncludeHandler.State copyIncludeState(APTIncludeHandler.State inclState, boolean cleanState) {
         return inclState == null ? null : ((APTIncludeHandlerImpl.StateImpl)inclState).copy(cleanState);
     }

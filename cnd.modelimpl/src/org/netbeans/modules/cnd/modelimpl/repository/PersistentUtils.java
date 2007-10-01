@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
+import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.utils.APTStringManager;
 import org.netbeans.modules.cnd.apt.utils.FilePathCache;
@@ -424,20 +425,21 @@ public class PersistentUtils {
     // support preprocessor states
     
 
-    public static void writeStringToStateMap(Map<String, APTPreprocHandler.State> filesHandlers, DataOutput output) throws IOException {
-        assert filesHandlers != null;
-        int collSize = filesHandlers.size();
-        output.writeInt(collSize);
-
-        for (Entry<String, APTPreprocHandler.State> entry: filesHandlers.entrySet()) {
-            assert entry != null;
-            String key = entry.getKey();
-            output.writeUTF(key);
-            assert key != null;
-            APTPreprocHandler.State state = entry.getValue();
-            writePreprocState(state, output);
-        }         
-    }
+// Unused for the time being
+//    public static void writeStringToStateMap(Map<String, APTPreprocHandler.State> filesHandlers, DataOutput output) throws IOException {
+//        assert filesHandlers != null;
+//        int collSize = filesHandlers.size();
+//        output.writeInt(collSize);
+//
+//        for (Entry<String, APTPreprocHandler.State> entry: filesHandlers.entrySet()) {
+//            assert entry != null;
+//            String key = entry.getKey();
+//            output.writeUTF(key);
+//            assert key != null;
+//            APTPreprocHandler.State state = entry.getValue();
+//            writePreprocState(state, output);
+//        }         
+//    }
 
     public static void readStringToStateMap(Map<String, APTPreprocHandler.State> filesHandlers, DataInput input) throws IOException {
         assert filesHandlers != null;
@@ -453,12 +455,15 @@ public class PersistentUtils {
     }
     
     public static void writePreprocState(APTPreprocHandler.State state, DataOutput output) throws IOException {
-        APTSerializeUtils.writePreprocState(state, output);
+	APTPreprocHandler.State cleanedState = APTHandlersSupport.createCleanPreprocState(state);
+        APTSerializeUtils.writePreprocState(cleanedState, output);
     }
     
     public static APTPreprocHandler.State readPreprocState(DataInput input) throws IOException {
-        return APTSerializeUtils.readPreprocState(input);
-    }    
+        APTPreprocHandler.State state = APTSerializeUtils.readPreprocState(input);
+	assert state.isCleaned();
+	return state;
+    }
     
     ////////////////////////////////////////////////////////////////////////////
     // indices

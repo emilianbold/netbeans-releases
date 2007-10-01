@@ -158,9 +158,6 @@ public class TraceModel {
 	
 	private static final int APT_REPEAT_TEST =Integer.getInteger("apt.repeat.test", 3).intValue(); // NOI18N
 
-        public static boolean LEAVE_PP_STATE_UNCLEANED = false;
-	
-	
 	public static void main(String[] args) {
 		new TraceModel().test(args);
 		if (TraceFlags.USE_AST_CACHE) {
@@ -240,7 +237,6 @@ public class TraceModel {
 
         public void setDumpPPState(boolean dumpPPState) {
             this.dumpPPState = dumpPPState;
-            LEAVE_PP_STATE_UNCLEANED = true;
         }
 	
 	// if true, then relative include paths oin -I option are considered
@@ -334,7 +330,7 @@ public class TraceModel {
 			}
 			break;
 			case 'c':   testCache = true; break;
-			case 'p':   dumpPPState = true; LEAVE_PP_STATE_UNCLEANED = true; break;
+			case 'p':   dumpPPState = true; break;
 			case 'D':   macros.add(argRest);argHasBeenEaten = true;break;
 			// "-SDir" defines dump directory for per file statistics
 			case 'S':   dumpStatistics=true;
@@ -1496,6 +1492,7 @@ public class TraceModel {
             doTest();
         }
         
+	
 	private TestResult test(File file)
 			throws FileNotFoundException, RecognitionException, TokenStreamException, IOException, ClassNotFoundException {
 		
@@ -1527,6 +1524,15 @@ public class TraceModel {
 		FileImpl fileImpl = null;
 		int errCount = 0;
 		
+                final Map<CsmFile, APTPreprocHandler> states = new HashMap<CsmFile, APTPreprocHandler>();
+                class ProgressListenerExImpl extends CsmProgressAdapter implements CsmProgressListenerEx {
+                    public void fileParsingFinished(CsmFile file, APTPreprocHandler preprocHandler) {
+                        states.put(file, preprocHandler);
+                    }
+                };
+		CsmProgressListenerEx progressListenerEx = new ProgressListenerExImpl();
+		model.addProgressListener(progressListenerEx);
+		
 		APTPreprocHandler preprocHandler = getPreprocHandler(file);
                 APTPreprocHandler.State state = preprocHandler.getState();
             
@@ -1534,10 +1540,6 @@ public class TraceModel {
                 fileImpl = (FileImpl) getProject().testAPTParseFile(file.getAbsolutePath(), fileType, preprocHandler);
 		try {
 			fileImpl.scheduleParsing(true, state);
-			if( preprocHandler != null ) { // i.e. if TraceFlags.USE_APT
-				preprocHandler.setState(fileImpl.testGetPreprocState());
-			}
-			fileImpl.setPreprocHandler(null);
 			waitProjectParsed(false);
 			if( dumpAst || writeAst || showAstWindow ) {
 			    tree = fileImpl.parse(getPreprocHandler(file));
@@ -1545,8 +1547,13 @@ public class TraceModel {
 		} catch( InterruptedException e ) {
 			// nothing to do
 		}
+		finally {
+                    model.removeProgressListener(progressListenerEx);
+		}
 		errCount = fileImpl.getErrorCount();
 		if ( dumpPPState ) {
+                        preprocHandler = states.get(fileImpl);
+			assert preprocHandler != null;
 			dumpMacroMap(preprocHandler.getMacroMap());
 		}
 		time = System.currentTimeMillis() - time;

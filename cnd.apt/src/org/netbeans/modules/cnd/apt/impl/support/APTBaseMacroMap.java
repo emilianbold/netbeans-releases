@@ -95,7 +95,7 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
     // manage define/undef macros
 
     
-    public void fill(List<String> macros) {
+    protected final void fill(List<String> macros) {
         // update callback with user macros information
         for (Iterator<String> it = macros.iterator(); it.hasNext();) {
             String macro = it.next();

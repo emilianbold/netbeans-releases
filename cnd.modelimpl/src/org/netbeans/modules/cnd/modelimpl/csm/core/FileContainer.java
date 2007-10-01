@@ -159,35 +159,26 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
         if (f == null){
             return;
         }
-        synchronized (getLock(file)) {
-            if (f.state == null || !f.state.isValid()){
-                f.state = state;
-            } else {
-                if (f.state.isCompileContext()) {
-                    if (state.isCompileContext()) {
-                        f.state = state;
-                    } else {
-                        if (TRACE_PP_STATE_OUT) {
-                            System.err.println("Do not reset correct state to incorrect "+file.getAbsolutePath());
-                        }
-                    }
-                } else {
-                    f.state = state;
-//                    if (state.isCompileContext()){
-//                        f.state = state;
-//                    } else {
-//                        if (TRACE_PP_STATE_OUT) {
-//                            System.err.println("Do not reset incorrect state to incorrect state "+file.getAbsolutePath());
-//                        }
-//                    }
-                }
-            }
-        }
-        if (TRACE_PP_STATE_OUT) {
-            String path = getFileKey(file, false);
-            System.err.println("\nPut state for file" + path + "\n");
-            System.err.println(state);
-        }
+	if (f.state == null || !f.state.isValid()) {
+	    f.state = state;
+	} else {
+	    if (f.state.isCompileContext()) {
+		if (state.isCompileContext()) {
+		    f.state = state;
+		} else {
+		    if (TRACE_PP_STATE_OUT) {
+			System.err.println("Do not reset correct state to incorrect " + file.getAbsolutePath());
+		    }
+		}
+	    } else {
+		f.state = state;
+	    }
+	}
+	if (TRACE_PP_STATE_OUT) {
+	    String path = getFileKey(file, false);
+	    System.err.println("\nPut state for file" + path + "\n");
+	    System.err.println(state);
+	}
     }
     
     public void invalidatePreprocState(File file) {

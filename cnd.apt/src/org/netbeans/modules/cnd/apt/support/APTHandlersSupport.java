@@ -85,6 +85,10 @@ public class APTHandlersSupport {
         return APTHandlersSupportImpl.extractIncludeStack(state);
     }
     
+    public static StartEntry extractStartEntry(APTPreprocHandler.State state) {
+	return APTHandlersSupportImpl.extractStartEntry(state);
+    }
+    
     public static APTPreprocHandler.State createInvalidPreprocState(APTPreprocHandler.State orig) {
         return APTHandlersSupportImpl.createInvalidPreprocState(orig);
     }

@@ -45,6 +45,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -128,7 +129,9 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
     
     public void setState(State state) {
         if (state instanceof StateImpl) {
-            ((StateImpl)state).restoreTo(this);
+	    StateImpl stateImpl = ((StateImpl)state);
+	    assert ! stateImpl.isCleaned();
+            stateImpl.restoreTo(this);
         }
     }
     
@@ -170,16 +173,18 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
         private StateImpl(StateImpl other, boolean cleanState) {
             // shared information
             this.startFile = other.startFile;
-            this.systemIncludePaths = other.systemIncludePaths;
-            this.userIncludePaths = other.userIncludePaths;
             
             // state object is immutable => safe to share stacks
             this.inclStack = other.inclStack;
-            
-            if (!cleanState) {
-                this.recurseIncludes = other.recurseIncludes;
-            } else {
+	    
+            if (cleanState) {
+                this.systemIncludePaths = Collections.emptyList();
+                this.userIncludePaths = Collections.emptyList();
                 this.recurseIncludes = null;
+            } else {
+                this.systemIncludePaths = other.systemIncludePaths;
+                this.userIncludePaths = other.userIncludePaths;
+                this.recurseIncludes = other.recurseIncludes;
             }
         }
         
@@ -318,6 +323,10 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
                 }
             }
         }        
+	
+	/* package */ final StartEntry getStartEntry() {
+	    return startFile;
+	}
 
         @Override
         public boolean equals(Object obj) {

@@ -48,6 +48,7 @@ import java.util.List;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.apt.support.StartEntry;
 import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 
 /**
@@ -244,6 +245,11 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
         /*package*/ List<String> getUserIncludePaths() {
             return APTHandlersSupportImpl.extractUserIncludePaths(this.inclState);
         }        
+	
+        /* package */ final StartEntry getStartEntry() {
+	    return APTHandlersSupportImpl.extractStartEntry(this.inclState);
+	}
+
         ////////////////////////////////////////////////////////////////////////
         // persistence support
 

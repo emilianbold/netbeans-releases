@@ -802,11 +802,20 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         return map;
     }
     
-    /*package*/ final APTPreprocHandler getPreprocHandler(File file) {
+    public final APTPreprocHandler getPreprocHandler(File file) {
         APTPreprocHandler preprocHandler = createEmptyPreprocHandler(file);
         APTPreprocHandler.State state = getPreprocState(file);
-        preprocHandler = restorePreprocHandler(file, preprocHandler, state);
-        return preprocHandler;
+	if( state != null ) {
+            if( state.isCleaned() ) {
+                return restorePreprocHandler(file, preprocHandler, state);
+            } else {
+		if (TRACE_PP_STATE_OUT) System.err.println("copying state for " + file);
+                preprocHandler.setState(state);
+                return preprocHandler;
+            }
+	}
+        if (TRACE_PP_STATE_OUT) System.err.printf("null state for %s, returning default one", file);
+	return preprocHandler;
     }
     
     public final APTPreprocHandler.State getPreprocState(FileImpl fileImpl) {
@@ -827,10 +836,14 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         APTPreprocHandler.State state = getPreprocState(file);
         if( state == null ) {
             // remember the first state
-            return findFile(file, fileType, preprocHandler, true, preprocHandler.getState());
+            return findFile(file, fileType, preprocHandler, true, preprocHandler.getState(), null);
         } else {
-            preprocHandler = restorePreprocHandler(file, preprocHandler, state);
-            return findFile(file, fileType, preprocHandler, true, null);
+	    if( state.isCleaned() ) {
+                preprocHandler = restorePreprocHandler(file, preprocHandler, state);
+	    } else {
+		preprocHandler.setState(state);
+	    }
+            return findFile(file, fileType, preprocHandler, true, null, null);
         }
     }
     
@@ -840,6 +853,9 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
      * Object stateLock = getFileContainer().getLock(file);
      */
     protected final void putPreprocState(File file, APTPreprocHandler.State state) {
+	if( state != null && ! state.isCleaned() ) {
+	    state = APTHandlersSupport.createCleanPreprocState(state);
+	}
         getFileContainer().putPreprocState(file, state);
     }
     
@@ -889,7 +905,7 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
             if( disposing ) {
                 return null;
             }
-            FileImpl csmFile = findFile(new File(file), FileImpl.HEADER_FILE, preprocHandler, false, null);
+            FileImpl csmFile = findFile(new File(file), FileImpl.HEADER_FILE, preprocHandler, false, null, null);
 
             APTFile aptLight = getAPTLight(csmFile);
 
@@ -978,11 +994,12 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         File file = new File(absolutePath);
         APTPreprocHandler preprocHandler = null;
         if (getPreprocState(file) == null){
+	    NativeFileItem nativeFile = null;
             // Try to find native file
             if (getPlatformProject() instanceof NativeProject){
                 NativeProject prj = (NativeProject)getPlatformProject();
                 if (prj != null){
-                    NativeFileItem nativeFile = prj.findFileItem(file);
+                    nativeFile = prj.findFileItem(file);
                     if( nativeFile == null ) {
                         // if not belong to NB project => not our file
                         return null;
@@ -995,14 +1012,15 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
                 }
             }
             if (preprocHandler != null) {
-                return findFile(file, FileImpl.UNDEFINED_FILE, preprocHandler, true, preprocHandler.getState());
+                return findFile(file, FileImpl.UNDEFINED_FILE, preprocHandler, true, preprocHandler.getState(), nativeFile);
             }
         }
-        return findFile(file, FileImpl.UNDEFINED_FILE, preprocHandler, true, null);
+	// if getPreprocState(file) isn't null, the file alreasy exists, so we may not pass nativeFile
+        return findFile(file, FileImpl.UNDEFINED_FILE, preprocHandler, true, null, null);
     }
     
     protected FileImpl findFile(File file, int fileType, APTPreprocHandler preprocHandler,
-            boolean scheduleParseIfNeed, APTPreprocHandler.State initial) {
+            boolean scheduleParseIfNeed, APTPreprocHandler.State initial, NativeFileItem nativeFileItem) {
         
         FileImpl impl = getFile(file);
         if( impl == null ) {
@@ -1010,7 +1028,7 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
                 impl = getFile(file);
                 if( impl == null ) {
                     preprocHandler = preprocHandler == null ? getPreprocHandler(file) : preprocHandler;
-                    impl = new FileImpl(ModelSupport.instance().getFileBuffer(file), this, fileType, preprocHandler);
+                    impl = new FileImpl(ModelSupport.instance().getFileBuffer(file), this, fileType, preprocHandler, nativeFileItem);
                     putFile(file, impl, initial);
                     // NB: parse only after putting into a map
                     if( scheduleParseIfNeed ) {
@@ -1063,11 +1081,14 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
                 if( impl == null ) {
                     preprocHandler = createPreprocHandler(nativeFile);
                     assert preprocHandler != null;
-                    impl = new FileImpl(buf, this, fileType, preprocHandler);
+                    impl = new FileImpl(buf, this, fileType, preprocHandler, nativeFile);
                     putFile(file, impl, preprocHandler.getState());
                 }
             }
         }
+	else {
+	    impl.setNativeFileItem(nativeFile);
+	}
         return new FileAndHandler(impl, preprocHandler);
     }
     
@@ -1081,6 +1102,9 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
     }
     
     protected void putFile(File file, FileImpl impl, APTPreprocHandler.State state) {
+	if( state != null && ! state.isCleaned() ) {
+	    state = APTHandlersSupport.createCleanPreprocState(state);
+	}
         getFileContainer().putFile(file, impl, state);
     }
     
@@ -1440,112 +1464,104 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         return getName() + ' ' + getClass().getName() + " @" + hashCode(); // NOI18N
     }
     
-    /*package*/final void cleanPreprocStateAfterParse(FileImpl fileImpl, APTPreprocHandler.State state2Clean) {
-        if (TraceFlags.CLEAN_MACROS_AFTER_PARSE) {
-            File file = fileImpl.getBuffer().getFile();
-            Object stateLock = getFileContainer().getLock(file);
-            synchronized (stateLock) {
-                APTPreprocHandler.State rememberedState = getPreprocState(file);
-                if (TRACE_PP_STATE_OUT) System.err.println("was " + rememberedState);
-                if (rememberedState != null) {
-                    if (state2Clean.equals(rememberedState)) {
-                        if (!rememberedState.isCleaned()) {
-                            if (TRACE_PP_STATE_OUT) System.err.println("cleaning for " + file.getAbsolutePath());
-                            APTPreprocHandler.State cleaned = APTHandlersSupport.createCleanPreprocState(state2Clean);
-                            putPreprocState(file, cleaned);
-                        } else {
-                            if (TRACE_PP_STATE_OUT) System.err.println("not need cleaning for " + file.getAbsolutePath());
-                        }
-                    } else {
-                        if (TRACE_PP_STATE_OUT) System.err.println("don't need to clean replaced state for " + file.getAbsolutePath());
-                    }
-                }
-                if (TRACE_PP_STATE_OUT) System.err.println("after cleaning " + rememberedState);
-            }
-        }
+    /** 
+     * Just a struct for the getStartEntryInfo return valie:
+     * if java allowed passing pointers by reference, we won't create this...
+     */
+    private static class /*struct*/ StartEntryInfo {
+	
+	public final APTPreprocHandler preprocHandler;
+	public final ProjectBase startProject;
+	public final FileImpl csmFile;
+
+	public StartEntryInfo(APTPreprocHandler preprocHandler, ProjectBase startProject, FileImpl csmFile) {
+	    this.preprocHandler = preprocHandler;
+	    this.startProject = startProject;
+	    this.csmFile = csmFile;
+	}
+	
     }
     
-    private APTPreprocHandler restorePreprocHandler(File interestedFile, APTPreprocHandler preprocHandler, APTPreprocHandler.State state) {
-        if (state != null) {
-            Object stateLock = getFileContainer().getLock(interestedFile);
-            synchronized (stateLock) {
-                if (state.isCleaned()) {
-                    // clean state could be in 2 cases:
-                    // source file is not included anywhere => it's in cleaned state
-                    // header file's associated state was cleaned by removing deriving macro info
-                    APTPreprocHandler.State cleanedState = state;
-                    // walk through include stack to restore preproc information
-                    List<APTIncludeHandler.IncludeInfo> reverseInclStack = APTHandlersSupport.extractIncludeStack(cleanedState);
-                    assert (reverseInclStack != null);
-                    if (reverseInclStack.isEmpty()) {
-                        if (TRACE_PP_STATE_OUT) System.err.println("return without restoring for " + interestedFile);
-                        preprocHandler.setState(state);                        
-                    } else {
-                        if (TRACE_PP_STATE_OUT) System.err.println("restoring for " + interestedFile);
-                        // we need to reverse includes stack
-                        assert (!reverseInclStack.isEmpty()) : "state of stack is " + reverseInclStack;
-                        Stack<APTIncludeHandler.IncludeInfo> inclStack = new Stack<APTIncludeHandler.IncludeInfo>();
-                        for (int i = reverseInclStack.size() - 1; i >= 0; i--) {
-                            APTIncludeHandler.IncludeInfo inclInfo = reverseInclStack.get(i);
-                            inclStack.push(inclInfo);
-                        }
-
-                        APTPreprocHandler.State oldState = preprocHandler.getState();
-                        preprocHandler.setState(cleanedState);
-                        if (TRACE_PP_STATE_OUT) System.err.println("before restoring " + preprocHandler); // NOI18N
-                        APTIncludeHandler inclHanlder = preprocHandler.getIncludeHandler();
-                        assert inclHanlder != null;
-                        ProjectBase startProject = getStartProject(inclHanlder);
-                        //FileImpl csmFile = getStartFile(inclHanlder);
-                        FileImpl csmFile = startProject.getFile(new File(inclHanlder.getStartEntry().getStartFile()));
-                        if (csmFile == null) {
-                            preprocHandler.setState(oldState);
-                            return preprocHandler;
-                        }
-                        assert csmFile != null;
-                        APTFile aptLight = null;
-                        try {
-                            aptLight = getAPTLight(csmFile);
-                        } catch (IOException ex) {
-                            ex.printStackTrace(System.err);
-                        }
-                        if (aptLight != null) {
-                            // for testing remember restored file
-                            long time = REMEMBER_RESTORED ? System.currentTimeMillis() : 0;
-                            int stackSize = inclStack.size();
-                            APTWalker walker = new APTRestorePreprocStateWalker(startProject, aptLight, csmFile,
-                                    preprocHandler, inclStack, FileContainer.getFileKey(interestedFile, false));
-                            walker.visit();
-                            if (REMEMBER_RESTORED) {
-                                if (testRestoredFiles == null) {
-                                    testRestoredFiles = new ArrayList<String>();
-                                }
-                                FileImpl interestedFileImpl = getFile(interestedFile);
-                                assert interestedFileImpl != null;
-                                String msg = interestedFile.getAbsolutePath() +
-                                        " [" + (interestedFileImpl.isHeaderFile() ? "H" : interestedFileImpl.isSourceFile() ? "S" : "U") + "]"; // NOI18N
-                                time = System.currentTimeMillis() - time;
-                                msg = msg + " within " + time + "ms" + " stack " + stackSize + " elems"; // NOI18N
-                                System.err.println("#" + testRestoredFiles.size() + " restored: " + msg); // NOI18N
-                                testRestoredFiles.add(msg);
-                            }
-                            if (TRACE_PP_STATE_OUT) System.err.println("after restoring " + preprocHandler); // NOI18N
-                            APTPreprocHandler.State fullState = preprocHandler.getState();
-                            putPreprocState(interestedFile, fullState);
-                        }
-                    }
-                } else {
-                    if (TRACE_PP_STATE_OUT) System.err.println("retrurn without restoring for " + interestedFile);
-                    preprocHandler.setState(state);
-                }
-            }
-        }
-        return preprocHandler;
+    private StartEntryInfo getStartEntryInfo(APTPreprocHandler preprocHandler, APTPreprocHandler.State state) {
+	StartEntry startEntry = APTHandlersSupport.extractStartEntry(state);
+	ProjectBase startProject = getStartProject(startEntry);
+	FileImpl csmFile = startProject.getFile(new File(startEntry.getStartFile()));
+	if (csmFile != null) {
+	    NativeFileItem nativeFile = csmFile.getNativeFileItem();
+	    if( nativeFile != null ) {
+                preprocHandler = createPreprocHandler(nativeFile);
+	    }
+	}	
+	return new StartEntryInfo(preprocHandler, startProject, csmFile);
     }
 
-    public static ProjectBase getStartProject(final APTIncludeHandler inclHanlder) {
-        // start from the first file, then use include stack
-        Key key = inclHanlder.getStartEntry().getStartFileProject();
+    private APTPreprocHandler restorePreprocHandler(File interestedFile, APTPreprocHandler preprocHandler, APTPreprocHandler.State state) {
+	assert state != null;
+	assert state.isCleaned();
+	// walk through include stack to restore preproc information
+	List<APTIncludeHandler.IncludeInfo> reverseInclStack = APTHandlersSupport.extractIncludeStack(state);
+	assert (reverseInclStack != null);
+	if (reverseInclStack.isEmpty()) {
+	    if (TRACE_PP_STATE_OUT) System.err.println("stack is empty; return default for " + interestedFile);
+	    return getStartEntryInfo(preprocHandler, state).preprocHandler;
+	} else {
+	    if (TRACE_PP_STATE_OUT) System.err.println("restoring for " + interestedFile);
+	    // we need to reverse includes stack
+	    assert (!reverseInclStack.isEmpty()) : "state of stack is " + reverseInclStack;
+	    Stack<APTIncludeHandler.IncludeInfo> inclStack = reverse(reverseInclStack);
+	    StartEntryInfo sei = getStartEntryInfo(preprocHandler, state);
+	    FileImpl csmFile = sei.csmFile;
+	    ProjectBase startProject = sei.startProject;
+	    preprocHandler = sei.preprocHandler;
+
+	    assert csmFile != null;
+	    APTFile aptLight = null;
+	    try {
+		aptLight = getAPTLight(csmFile);
+	    } catch (IOException ex) {
+		ex.printStackTrace(System.err);
+	    }
+	    if (aptLight != null) {
+		// for testing remember restored file
+		long time = REMEMBER_RESTORED ? System.currentTimeMillis() : 0;
+		int stackSize = inclStack.size();
+		APTWalker walker = new APTRestorePreprocStateWalker(startProject, aptLight, csmFile, preprocHandler, inclStack, FileContainer.getFileKey(interestedFile, false));
+		walker.visit();
+		if (REMEMBER_RESTORED) {
+		    if (testRestoredFiles == null) {
+			testRestoredFiles = new ArrayList<String>();
+		    }
+		    FileImpl interestedFileImpl = getFile(interestedFile);
+		    assert interestedFileImpl != null;
+		    String msg = interestedFile.getAbsolutePath() + " [" + (interestedFileImpl.isHeaderFile() ? "H" : interestedFileImpl.isSourceFile() ? "S" : "U") + "]"; // NOI18N
+		    time = System.currentTimeMillis() - time;
+		    msg = msg + " within " + time + "ms" + " stack " + stackSize + " elems"; // NOI18N
+		    System.err.println("#" + testRestoredFiles.size() + " restored: " + msg); // NOI18N
+		    testRestoredFiles.add(msg);
+		}
+		if (TRACE_PP_STATE_OUT) {
+		    System.err.println("after restoring " + preprocHandler); // NOI18N
+		}
+	    }
+            return preprocHandler;
+	}
+    }
+
+    private static <T> Stack<T> reverse(List<T> original) {
+        Stack<T> reverse = new Stack<T>();
+        for (int i = original.size() - 1; i >= 0; i--) {
+            T inclInfo = original.get(i);
+            reverse.push(inclInfo);
+        }	
+	return reverse;
+    }
+       
+    public static ProjectBase getStartProject(final APTPreprocHandler.State state) {
+	return getStartProject(APTHandlersSupport.extractStartEntry(state));
+    }
+    
+    public static ProjectBase getStartProject(StartEntry startEntry) {
+        Key key = startEntry.getStartFileProject();
         ProjectBase prj = (ProjectBase)RepositoryUtils.get(key);
         return prj;
     }
