@@ -60,6 +60,7 @@ public class UnitDetails extends DetailsPanel{
     
     /** Creates a new instance of UnitDetails */
     public UnitDetails() {
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(UnitTable.class, "ACN_UnitDetails")); // NOI18N
     }
 
     public void setUnit(Unit u) {

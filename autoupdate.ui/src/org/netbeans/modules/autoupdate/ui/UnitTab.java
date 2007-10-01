@@ -524,11 +524,11 @@ public class UnitTab extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(topButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 434, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 453, Short.MAX_VALUE)
                         .add(lSearch)
                         .add(4, 4, 4)
                         .add(tfSearch, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 114, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(spTab, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 667, Short.MAX_VALUE)
+                    .add(spTab, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 689, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(bTabAction)
@@ -558,6 +558,9 @@ public class UnitTab extends javax.swing.JPanel {
 
         layout.linkSize(new java.awt.Component[] {lSelectionInfo, lWarning}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
+        lSearch.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(UnitTab.class, "ACD_Search")); // NOI18N
+        topButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(UnitTab.class, "ACN_Reload")); // NOI18N
+        topButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(UnitTab.class, "ACD_Reload")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     

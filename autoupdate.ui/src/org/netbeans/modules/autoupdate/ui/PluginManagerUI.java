@@ -338,7 +338,7 @@ public class PluginManagerUI extends javax.swing.JPanel implements UpdateUnitLis
                         .add(bClose)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(bHelp))
-                    .add(tpTabs, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 779, Short.MAX_VALUE))
+                    .add(tpTabs, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 813, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -354,6 +354,12 @@ public class PluginManagerUI extends javax.swing.JPanel implements UpdateUnitLis
                         .add(bClose, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addContainerGap())
         );
+
+        tpTabs.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PluginManagerUI.class, "ACN_Tabs")); // NOI18N
+        tpTabs.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PluginManagerUI.class, "ACD_Tabs")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PluginManagerUI.class, "ACN_PluginManagerUI")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PluginManagerUI.class, "ACD_PluginManagerUI")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
 private void tpTabsStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_tpTabsStateChanged

@@ -75,6 +75,8 @@ public class UnitTable extends JTable {
     /** Creates a new instance of UpdateTable */
     public UnitTable (TableModel model) {
         super (model);
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(UnitTable.class, "ACN_UnitTable")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(UnitTab.class, "ACD_UnitTable")); // NOI18N        
         this.model = (UnitCategoryTableModel) model;
         setShowGrid (false);
         setColumnsSize ();
