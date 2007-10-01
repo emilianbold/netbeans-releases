@@ -29,7 +29,6 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
@@ -42,7 +41,6 @@ import java.util.Set;
 import javax.swing.SwingUtilities;
 
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
@@ -51,7 +49,6 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.visualweb.classloaderprovider.CommonClassloaderProvider;
 import org.netbeans.modules.visualweb.extension.openide.util.Trace;
-import org.netbeans.modules.visualweb.insync.java.ReadTaskWrapper;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileAttributeEvent;
@@ -220,28 +217,7 @@ public abstract class ModelSet implements FileChangeListener {
             set = (ModelSet) sets.get(project);
         }
         if (set == null && ofType != null) {
-        	FileObject sourceRootFileObject = JsfProjectUtils.getSourceRoot(project);
-            Enumeration<? extends FileObject> sourceFileObjects = sourceRootFileObject.getChildren(true);
-            FileObject anyJavaFile = null;
-            while (sourceFileObjects.hasMoreElements()) {
-                FileObject aSourceFileObject = sourceFileObjects.nextElement();
-                if (aSourceFileObject.getMIMEType().equals("text/x-java")) { // NOI18N
-                    anyJavaFile = aSourceFileObject;
-                    break;
-                }
-            }
-            if (anyJavaFile == null) {
-                // Can't use wrapper task to ensure background scaning
-                // stopped while modeling.
-            	set = createInstance(project, ofType);
-            } else {
-                set = (ModelSet) ReadTaskWrapper.execute(
-	                    new ReadTaskWrapper.Read() {
-	                        public Object run(CompilationInfo cinfo){
-	                        	return createInstance(project, ofType);
-	                        }
-	                    }, anyJavaFile);             
-            }
+            set = createInstance(project, ofType);
             if(set != null) {
                 synchronized (sets) {
                     sets.put(project, set);

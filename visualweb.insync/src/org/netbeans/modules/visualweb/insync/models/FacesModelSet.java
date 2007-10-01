@@ -84,6 +84,9 @@ import org.netbeans.api.project.Sources;
 import java.util.List;
 import java.util.Collection;
 import java.util.ArrayList;
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.modules.visualweb.insync.java.ReadTaskWrapper;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 
 /**
@@ -377,6 +380,41 @@ public class FacesModelSet extends ModelSet implements FacesDesignProject {
         facesConfigModel = new FacesConfigModel(this);
         setConfigModel(facesConfigModel);
 
+        FileObject anyJavaFile = getAnyJavaFile();
+        if (anyJavaFile == null || !SourceUtils.isScanInProgress()) {
+            ReadTaskWrapper.execute(new ReadTaskWrapper.Read() {
+                public Object run(CompilationInfo cinfo) {
+                    doModeling();
+                    return null;
+                }
+            }, anyJavaFile);
+        }else {
+            // Can't use wrapper task to ensure background scaning
+            // stopped while modeling.
+            doModeling();
+        }
+        
+        projectBuiltQueryStatus = ProjectBuiltQuery.getStatus(project);
+        projectBuiltQueryStatusChangeListener  = new ChangeListener() {
+            public void stateChanged(ChangeEvent changeEvent) {
+                try {
+                    if (projectBuiltQueryStatus != null && projectBuiltQueryStatus.isBuilt()) {
+                        classPathChanged();
+                        // Now refresh all models
+                        for (Iterator i = getModelsMap().values().iterator(); i.hasNext(); ) {
+                            ((FacesModel)i.next()).refresh(true);
+                        }
+                    }
+                } catch (IllegalStateException ise) {
+                    ErrorManager.getDefault().notify(ise);
+                }               
+            }
+        };
+        projectBuiltQueryStatus.addChangeListener(projectBuiltQueryStatusChangeListener);
+    }
+
+
+    private void doModeling() {
         //In case of new project, we need to model all the managed beans in order
         //to generate the cross referencing accessors
         Object newProject = project.getProjectDirectory().getAttribute("NewProject"); //NOI18N
@@ -416,24 +454,6 @@ public class FacesModelSet extends ModelSet implements FacesDesignProject {
             // save the files to prevent them being open unsaved
             saveAll();       
         }
-        
-        projectBuiltQueryStatus = ProjectBuiltQuery.getStatus(project);
-        projectBuiltQueryStatusChangeListener  = new ChangeListener() {
-            public void stateChanged(ChangeEvent changeEvent) {
-                try {
-                    if (projectBuiltQueryStatus != null && projectBuiltQueryStatus.isBuilt()) {
-                        classPathChanged();
-                        // Now refresh all models
-                        for (Iterator i = getModelsMap().values().iterator(); i.hasNext(); ) {
-                            ((FacesModel)i.next()).refresh(true);
-                        }
-                    }
-                } catch (IllegalStateException ise) {
-                    ErrorManager.getDefault().notify(ise);
-                }               
-            }
-        };
-        projectBuiltQueryStatus.addChangeListener(projectBuiltQueryStatusChangeListener);
     }
 
     /**
@@ -453,6 +473,22 @@ public class FacesModelSet extends ModelSet implements FacesDesignProject {
     }
 
     //------------------------------------------------------------------------------------ Accessors
+
+
+    private FileObject getAnyJavaFile() {
+        FileObject sourceRootFileObject = JsfProjectUtils.getSourceRoot(project);
+        Enumeration<? extends FileObject> sourceFileObjects = sourceRootFileObject.getChildren(true);
+        FileObject anyJavaFile = null;
+        while (sourceFileObjects.hasMoreElements()) {
+            FileObject aSourceFileObject = sourceFileObjects.nextElement();
+            if (aSourceFileObject.getMIMEType().equals("text/x-java")) {
+                // NOI18N
+                anyJavaFile = aSourceFileObject;
+                break;
+            }
+        }
+        return anyJavaFile;
+    }
 
     /**
      * @return
