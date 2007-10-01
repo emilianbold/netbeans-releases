@@ -56,6 +56,7 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import javax.rmi.CORBA.Util;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -67,6 +68,7 @@ import org.netbeans.core.spi.multiview.CloseOperationHandler;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.modules.xml.axi.AXIModel;
 import org.netbeans.modules.xml.axi.AXIModelFactory;
+import org.netbeans.modules.xml.core.cookies.CookieManagerCookie;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.schema.multiview.SchemaMultiViewSupport;
@@ -84,6 +86,7 @@ import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.cookies.PrintCookie;
+import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -95,6 +98,7 @@ import org.openide.text.NbDocument;
 import org.openide.util.NbBundle;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
+import org.openide.util.UserCancelException;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -485,45 +489,54 @@ public class SchemaEditorSupport extends DataEditorSupport
             Object res = DialogDisplayer.getDefault().notify(descriptor);
             
             if (res.equals(NotifyDescriptor.YES_OPTION)) {
-                // Update prolog to new valid encoding.
-                try {
-                    final int MAX_PROLOG = 1000;
-                    int maxPrologLen = Math.min(MAX_PROLOG, doc.getLength());
-                    final char prolog[] = doc.getText(0, maxPrologLen).toCharArray();
-                    int prologLen = 0;
-                    if (prolog[0] == '<' && prolog[1] == '?' && prolog[2] == 'x') {
-                        for (int i = 3; i < maxPrologLen; i++) {
-                            if (prolog[i] == '?' && prolog[i + 1] == '>') {
-                                prologLen = i + 1;
-                                break;
-                            }
-                        }
-                    }
-                    
-                    final int passPrologLen = prologLen;
-                    Runnable edit = new Runnable() {
-                        public void run() {
-                            try {
-                                doc.remove(0, passPrologLen + 1);
-                                doc.insertString(0, "<?xml version='1.0' encoding='UTF-8' ?>\n<!-- was: " +
-                                        new String(prolog, 0, passPrologLen + 1) + " -->", null); // NOI18N
-                            } catch (BadLocationException ble) {
-                                if (System.getProperty("netbeans.debug.exceptions") != null) // NOI18N
-                                    ble.printStackTrace();
-                            }
-                        }
-                    };
-                    NbDocument.runAtomic(doc, edit);
-                    
-                    super.saveDocument();
-                    getDataObject().setModified(false);
-                    
-                } catch (BadLocationException lex) {
-                    ErrorManager.getDefault().notify(lex);
-                }
+                updateDocumentWithNewEncoding(doc);
+            } else {
+                throw new UserCancelException();                
             }
         }
     }
+    
+    /**
+     * update prolog to new valid encoding
+     */
+    private void updateDocumentWithNewEncoding(final StyledDocument doc) throws IOException {
+        try {
+            final int MAX_PROLOG = 1000;
+            int maxPrologLen = Math.min(MAX_PROLOG, doc.getLength());
+            final char prolog[] = doc.getText(0, maxPrologLen).toCharArray();
+            int prologLen = 0;
+            if (prolog[0] == '<' && prolog[1] == '?' && prolog[2] == 'x') {
+                for (int i = 3; i < maxPrologLen; i++) {
+                    if (prolog[i] == '?' && prolog[i + 1] == '>') {
+                        prologLen = i + 1;
+                        break;
+                    }
+                }
+            }
+
+            final int passPrologLen = prologLen;
+            Runnable edit = new Runnable() {
+                public void run() {
+                    try {
+                        doc.remove(0, passPrologLen + 1);
+                        doc.insertString(0, "<?xml version='1.0' encoding='UTF-8' ?>\n<!-- was: " +
+                                new String(prolog, 0, passPrologLen + 1) + " -->", null); // NOI18N
+                    } catch (BadLocationException ble) {
+                        if (System.getProperty("netbeans.debug.exceptions") != null) // NOI18N
+                            ble.printStackTrace();
+                    }
+                }
+            };
+            NbDocument.runAtomic(doc, edit);
+
+            super.saveDocument();
+            getDataObject().setModified(false);
+
+        } catch (BadLocationException lex) {
+            ErrorManager.getDefault().notify(lex);
+        }
+    }    
+    
     
     /**
      * Validate the selected encoding to determine if it is usuable or not.
@@ -653,6 +666,29 @@ public class SchemaEditorSupport extends DataEditorSupport
         }
         
         super.notifyClosed();
+    }
+    
+    /*
+     * Update presence of SaveCookie on first keystroke.
+     */
+    protected boolean notifyModified() {
+        boolean notify = super.notifyModified();
+        if (!notify) {
+            return false;
+        }
+        SchemaDataObject obj = (SchemaDataObject)getDataObject();
+        if (obj.getCookie(SaveCookie.class) == null) {
+            obj.addSaveCookie(new SaveCookie() {
+                public void save() throws java.io.IOException {
+                    try {
+                        saveDocument();
+                    } catch(UserCancelException e) {
+                        //just ignore
+                    }
+                }
+            });
+        }
+        return true;
     }
     
     /**

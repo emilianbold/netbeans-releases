@@ -113,6 +113,15 @@ public final class SchemaDataObject extends MultiDataObject {
             XmlFileEncodingQueryImpl.singleton()});
     }
     
+    public void addSaveCookie(SaveCookie cookie){
+        getCookieSet().add(cookie);
+    }
+    
+    public void removeSaveCookie(){
+        Node.Cookie cookie = getCookie(SaveCookie.class);
+        if (cookie!=null) getCookieSet().remove(cookie);
+    }    
+    
     /**
      * Return the editor support for this data object.
      *
