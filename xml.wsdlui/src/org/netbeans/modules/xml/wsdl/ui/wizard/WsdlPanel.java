@@ -39,7 +39,6 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.WSDLModelFactory;
 import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
@@ -91,7 +90,7 @@ final class WsdlPanel implements WizardDescriptor.FinishablePanel {
     
     private TextChangeListener mListener = new TextChangeListener();
     
-    WsdlPanel(Project project, SourceGroup[] folders) {
+    WsdlPanel(Project project) {
         this.project = project;
     }
     

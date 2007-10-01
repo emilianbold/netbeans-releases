@@ -30,8 +30,8 @@ import java.io.Writer;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -58,6 +58,7 @@ import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.xsd.WSDLSchema;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
+import org.netbeans.modules.xml.xam.ui.ProjectConstants;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
@@ -66,6 +67,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
 
@@ -73,22 +75,39 @@ public final class NewWSDLWizardIterator implements TemplateWizard.Iterator {
     
     private int index;
     
-    private WizardDescriptor wizard;
     private WizardDescriptor.Panel[] panels;
     
     private WizardDescriptor.Panel folderPanel;
-    private transient SourceGroup[] sourceGroups;
     
     /**
      * Initialize panels representing individual wizard's steps and sets
      * various properties for them influencing wizard appearance.
      */
-    private Panel[] createPanels(Project project) {
+    private Panel[] createPanels(Project project, TemplateWizard wizard) {
         Sources sources = project.getLookup().lookup(org.netbeans.api.project.Sources.class);
-        sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
-        folderPanel = new WsdlPanel(project,sourceGroups);
+        List<SourceGroup> roots = new ArrayList<SourceGroup>();
+        SourceGroup[] javaRoots = 
+            sources.getSourceGroups(ProjectConstants.JAVA_SOURCES_TYPE);
+        roots.addAll(Arrays.asList(javaRoots));
+        if (roots.isEmpty()) {
+            SourceGroup[] sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
+            roots.addAll(Arrays.asList(sourceGroups));
+        }
+        DataFolder folder = DataFolder.findFolder(roots.get(0).getRootFolder());
+        DataFolder projectFolder = 
+            DataFolder.findFolder(project.getProjectDirectory());
+        try {
+            if (wizard.getTargetFolder().equals(projectFolder)) {
+                wizard.setTargetFolder(folder);
+            }
+        } catch (IOException ioe) {
+            wizard.setTargetFolder(folder);
+        }
+        SourceGroup[] sourceGroups = roots.toArray(new SourceGroup[roots.size()]);
+        folderPanel = new WsdlPanel(project);
         // creates simple wizard panel with bottom panel
-        WizardDescriptor.Panel firstPanel = new WizardNewWSDLStep(Templates.createSimpleTargetChooser(project,sourceGroups,folderPanel));
+        WizardDescriptor.Panel firstPanel = 
+            new WizardNewWSDLStep(Templates.createSimpleTargetChooser(project, sourceGroups, folderPanel));
         JComponent c = (JComponent)firstPanel.getComponent();
         // the bottom panel should listen to changes on file name text field
         ((WsdlPanel)folderPanel).setNameTF(findFileNameField(c, Templates.getTargetName(wizard)));
@@ -322,10 +341,9 @@ public final class NewWSDLWizardIterator implements TemplateWizard.Iterator {
     }
     
     public void initialize(TemplateWizard wiz) {
-        this.wizard = wiz;
         index = 0;
         Project project = Templates.getProject( wiz );
-        panels = createPanels(project);
+        panels = createPanels(project, wiz);
         
         // Creating steps.
         Object prop = wiz.getProperty("WizardPanel_contentData"); // NOI18N
@@ -356,9 +374,9 @@ public final class NewWSDLWizardIterator implements TemplateWizard.Iterator {
             if (encoding == null) {
                 encoding = "UTF8";
             }
-            wizard.putProperty(WsdlPanel.ENCODING, encoding);
+            wiz.putProperty(WsdlPanel.ENCODING, encoding);
         } catch (IOException e) {
-            wizard.putProperty(WsdlPanel.ENCODING, "UTF8");
+            wiz.putProperty(WsdlPanel.ENCODING, "UTF8");
             
         }
         
@@ -368,7 +386,7 @@ public final class NewWSDLWizardIterator implements TemplateWizard.Iterator {
 
     public void uninitialize(TemplateWizard wiz) {
         
-        File tempWSDLFile = (File) wizard.getProperty(WizardPortTypeConfigurationStep.TEMP_WSDLFILE);
+        File tempWSDLFile = (File) wiz.getProperty(WizardPortTypeConfigurationStep.TEMP_WSDLFILE);
         try {
         	if(tempWSDLFile != null) {
     	        
@@ -385,20 +403,9 @@ public final class NewWSDLWizardIterator implements TemplateWizard.Iterator {
         	ErrorManager.getDefault().notify(ex);
         }
         
-        this.wizard = null;
         panels = null;
         
     }
-    
-    
-    public Set instantiate() throws IOException {
-        return Collections.EMPTY_SET;
-    }
-    
-    public void initialize(WizardDescriptor wizard) {
-        this.wizard = wizard;
-    }
-    
     
     public WizardDescriptor.Panel current() {
         return panels[index];
@@ -465,7 +472,7 @@ public final class NewWSDLWizardIterator implements TemplateWizard.Iterator {
     // there before this wizard was instantiated. It should be better handled
     // by NetBeans Wizard API itself rather than needed to be implemented by a
     // client code.
-    private String[] createSteps() {
+    /*private String[] createSteps() {
         String[] beforeSteps = null;
         Object prop = wizard.getProperty("WizardPanel_contentData");
         if (prop != null && prop instanceof String[]) {
@@ -485,7 +492,7 @@ public final class NewWSDLWizardIterator implements TemplateWizard.Iterator {
             }
         }
         return res;
-    }
+    }*/
 
     //from schema wizard
     private JTextField findFileNameField(Component panel, String text) {
@@ -506,7 +513,7 @@ public final class NewWSDLWizardIterator implements TemplateWizard.Iterator {
     /*
      * Recursively gets all components in the components array and puts it in allComponents
      */
-    public static void getAllComponents( Component[] components, Collection<Component> allComponents ) {
+    public void getAllComponents( Component[] components, Collection<Component> allComponents ) {
         for( int i = 0; i < components.length; i++ ) {
             if( components[i] != null ) {
                 allComponents.add( components[i] );
