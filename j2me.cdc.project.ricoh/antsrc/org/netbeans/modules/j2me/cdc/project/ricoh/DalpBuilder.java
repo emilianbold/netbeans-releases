@@ -200,13 +200,10 @@ public class DalpBuilder extends Task {
         {
             if (getProject().getProperty("ricoh.dalp.display-mode.is-hvga-support").equals("true"))
                 pw.println("<display-mode size=\"HVGA\" type=\"COLOR\"/>");
-            else
             if (getProject().getProperty("ricoh.dalp.display-mode.is-vga-support").equals("true"))
                 pw.println("<display-mode size=\"VGA\" type=\"COLOR\"/>");
-            else
             if (getProject().getProperty("ricoh.dalp.display-mode.is-wvga-support").equals("true"))
                 pw.println("<display-mode size=\"WVGA\" type=\"COLOR\"/>");
-            else
             if (getProject().getProperty("ricoh.dalp.display-mode.is-4line-support").equals("true"))
                 pw.println("<display-mode size=\"4LINE\" type=\"COLOR\"/>");
         }
@@ -215,13 +212,10 @@ public class DalpBuilder extends Task {
         {
             if (getProject().getProperty("ricoh.dalp.display-mode.is-hvga-support").equals("true"))
                 pw.println("<display-mode size=\"HVGA\" type=\"MONO\"/>");
-            else
             if (getProject().getProperty("ricoh.dalp.display-mode.is-vga-support").equals("true"))
                 pw.println("<display-mode size=\"VGA\" type=\"MONO\"/>");
-            else
             if (getProject().getProperty("ricoh.dalp.display-mode.is-wvga-support").equals("true"))
                 pw.println("<display-mode size=\"WVGA\" type=\"MONO\"/>");
-            else
             if (getProject().getProperty("ricoh.dalp.display-mode.is-4line-support").equals("true"))
                 pw.println("<display-mode size=\"4LINE\" type=\"MONO\"/>");
         }            

@@ -22,6 +22,8 @@
 package org.netbeans.modules.j2me.cdc.project.ricoh;
 
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -65,6 +67,10 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
     public RicohProjectCategoryCustomizer() {
         initComponents();
         this.invertBitmapCheckBox.setVisible(false);
+        installLocationTextField.setVisible(false);
+        this.add(installLocationTextField);
+        workingDirTextField.setVisible(false);
+        this.add(workingDirTextField);
     }
 
 
@@ -103,11 +109,12 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
         vps.register(invertBitmapCheckBox, RicohPropertiesDescriptor.RICOH_ICON_INVERT, useDefault);
         vps.register(abbrevationTextField, RicohPropertiesDescriptor.RICOH_DALP_INFO_ABBREVIATION, useDefault);
         vps.register(startupArgumentsTextField, RicohPropertiesDescriptor.RICOH_DALP_ARGUMENT, useDefault);
-        vps.register(installHDDRadioButton, RicohPropertiesDescriptor.RICOH_DALP_INSTALL_DESTINATION, useDefault);
-        vps.register(installSDVMRadioButton, RicohPropertiesDescriptor.RICOH_DALP_INSTALL_DESTINATION, useDefault);
+//        vps.register(installHDDRadioButton, RicohPropertiesDescriptor.RICOH_DALP_INSTALL_DESTINATION, useDefault);
+//        vps.register(installSDVMRadioButton, RicohPropertiesDescriptor.RICOH_DALP_INSTALL_DESTINATION, useDefault);
+//        vps.register(installOtherSDRadioButton, RicohPropertiesDescriptor.RICOH_DALP_INSTALL_DESTINATION, useDefault);
         vps.register(installLocationTextField, RicohPropertiesDescriptor.RICOH_DALP_INSTALL_DESTINATION, useDefault);
-        vps.register(workingDirHDDRadioButton, RicohPropertiesDescriptor.RICOH_DALP_INSTALL_WORKDIR, useDefault);
-        vps.register(workingDirSDVMRadioButton, RicohPropertiesDescriptor.RICOH_DALP_INSTALL_WORKDIR, useDefault);
+//        vps.register(workingDirHDDRadioButton, RicohPropertiesDescriptor.RICOH_DALP_INSTALL_WORKDIR, useDefault);
+//        vps.register(workingDirSDVMRadioButton, RicohPropertiesDescriptor.RICOH_DALP_INSTALL_WORKDIR, useDefault);
         vps.register(workingDirTextField, RicohPropertiesDescriptor.RICOH_DALP_INSTALL_WORKDIR, useDefault);
         vps.register(dalpSpecSDKJ1RadioButton, RicohPropertiesDescriptor.RICOH_DALP_RESOURCES_DSDK_VERSION, useDefault);
         vps.register(dalpSpecSDKJ2RadioButton, RicohPropertiesDescriptor.RICOH_DALP_RESOURCES_DSDK_VERSION, useDefault);
@@ -154,13 +161,65 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
         return null;
     }
 
+    @Override
+    public void addNotify() {
+        String selection = installLocationTextField.getText();
+        if ("hdd".equals(selection)){
+            installHDDRadioButton.setSelected(true);
+            installLocationComboBox.setEnabled(false);
+        } else if ("sdcard".equals(selection)) {
+            installSDVMRadioButton.setSelected(true);
+            installLocationComboBox.setEnabled(false);
+        } else if (selection.startsWith("sdcard")){
+            int index = 0;
+            try {
+                index = Integer.parseInt(selection.substring(6)) - 1;
+            } catch (Exception e){}
+            installOtherSDRadioButton.setSelected(true);
+            installLocationComboBox.setSelectedIndex(index);
+            installLocationComboBox.setEnabled(true);            
+        } else {
+            installHDDRadioButton.setSelected(true);
+            installLocationComboBox.setEnabled(false);
+        }
+
+        selection = workingDirTextField.getText();
+        if ("hdd".equals(selection)){
+            workingDirHDDRadioButton.setSelected(true);
+            workingDirComboBox.setEnabled(false);
+        } else if ("sdcard".equals(selection)) {
+            workingDirSDVMRadioButton.setSelected(true);
+            workingDirComboBox.setEnabled(false);
+        } else if (selection.startsWith("sdcard")){
+            int index = 0;
+            try {
+                index = Integer.parseInt(selection.substring(5)) - 1;
+            } catch (Exception e){}
+            workingDirOtherSDRadioButton.setSelected(true);
+            workingDirComboBox.setSelectedIndex(index);
+            workingDirComboBox.setEnabled(true);
+        } else {
+            workingDirHDDRadioButton.setSelected(true);
+            workingDirComboBox.setEnabled(false);
+        }
+        startListening();
+        super.addNotify();
+    }
+
+    @Override
+    public void removeNotify() {
+        super.removeNotify();
+        stopListening();
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
      * always regenerated by the Form Editor.
      */
-    // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
 
         advancedOptionsPanel = new javax.swing.JPanel();
         advancedOptionConfigPanel = new javax.swing.JPanel();
@@ -175,14 +234,6 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
         useAbbreviationCheckBox = new javax.swing.JCheckBox();
         jLabel28 = new javax.swing.JLabel();
         startupArgumentsTextField = new javax.swing.JTextField();
-        jLabel30 = new javax.swing.JLabel();
-        installHDDRadioButton = new javax.swing.JRadioButton();
-        installSDVMRadioButton = new javax.swing.JRadioButton();
-        installOtherSDRadioButton = new javax.swing.JRadioButton();
-        workingDirOtherSDRadioButton = new javax.swing.JRadioButton();
-        workingDirSDVMRadioButton = new javax.swing.JRadioButton();
-        workingDirHDDRadioButton = new javax.swing.JRadioButton();
-        jLabel31 = new javax.swing.JLabel();
         jSeparator1 = new javax.swing.JSeparator();
         jLabel16 = new javax.swing.JLabel();
         dalpSpecSDKJ1RadioButton = new javax.swing.JRadioButton();
@@ -199,10 +250,20 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
         autoRunCheckBox = new javax.swing.JCheckBox();
         autoInstallCheckBox = new javax.swing.JCheckBox();
         colorEnableCheckBox = new javax.swing.JCheckBox();
-        jSeparator2 = new javax.swing.JSeparator();
         visibleCheckBox = new javax.swing.JCheckBox();
         invertBitmapCheckBox = new javax.swing.JCheckBox();
+        jPanel1 = new javax.swing.JPanel();
+        jPanel2 = new javax.swing.JPanel();
+        jLabel30 = new javax.swing.JLabel();
+        installHDDRadioButton = new javax.swing.JRadioButton();
+        installSDVMRadioButton = new javax.swing.JRadioButton();
+        installOtherSDRadioButton = new javax.swing.JRadioButton();
         installLocationComboBox = new javax.swing.JComboBox();
+        jPanel3 = new javax.swing.JPanel();
+        jLabel31 = new javax.swing.JLabel();
+        workingDirHDDRadioButton = new javax.swing.JRadioButton();
+        workingDirSDVMRadioButton = new javax.swing.JRadioButton();
+        workingDirOtherSDRadioButton = new javax.swing.JRadioButton();
         workingDirComboBox = new javax.swing.JComboBox();
         disableDalpManagementCheckBox = new javax.swing.JCheckBox();
         appTypeButtonGroup = new javax.swing.ButtonGroup();
@@ -272,84 +333,6 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
 
         startupArgumentsTextField.setNextFocusableComponent(installHDDRadioButton);
 
-        jLabel30.setFont(new java.awt.Font("Tahoma", 1, 11));
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel30, bundle.getString("LBL_InstallLocation")); // NOI18N
-
-        installLocationButtonGroup.add(installHDDRadioButton);
-        installHDDRadioButton.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(installHDDRadioButton, bundle.getString("LBL_InstallLocHDD")); // NOI18N
-        installHDDRadioButton.setActionCommand("hdd"); // NOI18N
-        installHDDRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        installHDDRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        installHDDRadioButton.setNextFocusableComponent(installSDVMRadioButton);
-        installHDDRadioButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                installHDDRadioButtonActionPerformed(evt);
-            }
-        });
-
-        installLocationButtonGroup.add(installSDVMRadioButton);
-        org.openide.awt.Mnemonics.setLocalizedText(installSDVMRadioButton, bundle.getString("LBL_InstallLocVM")); // NOI18N
-        installSDVMRadioButton.setActionCommand("sdcard"); // NOI18N
-        installSDVMRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        installSDVMRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        installSDVMRadioButton.setNextFocusableComponent(installOtherSDRadioButton);
-        installSDVMRadioButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                installSDVMRadioButtonActionPerformed(evt);
-            }
-        });
-
-        installLocationButtonGroup.add(installOtherSDRadioButton);
-        org.openide.awt.Mnemonics.setLocalizedText(installOtherSDRadioButton, bundle.getString("LBL_InstallLocOther")); // NOI18N
-        installOtherSDRadioButton.setActionCommand("sdcard0"); // NOI18N
-        installOtherSDRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        installOtherSDRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        installOtherSDRadioButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                installOtherSDRadioButtonActionPerformed(evt);
-            }
-        });
-
-        workingDirectoryButtonGroup.add(workingDirOtherSDRadioButton);
-        org.openide.awt.Mnemonics.setLocalizedText(workingDirOtherSDRadioButton, bundle.getString("LBL_WorkingDirOther")); // NOI18N
-        workingDirOtherSDRadioButton.setActionCommand("sdcard0"); // NOI18N
-        workingDirOtherSDRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        workingDirOtherSDRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        workingDirOtherSDRadioButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                workingDirOtherSDRadioButtonActionPerformed(evt);
-            }
-        });
-
-        workingDirectoryButtonGroup.add(workingDirSDVMRadioButton);
-        org.openide.awt.Mnemonics.setLocalizedText(workingDirSDVMRadioButton, bundle.getString("LBL_WorkingDirVM")); // NOI18N
-        workingDirSDVMRadioButton.setActionCommand("sdcard"); // NOI18N
-        workingDirSDVMRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        workingDirSDVMRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        workingDirSDVMRadioButton.setNextFocusableComponent(workingDirOtherSDRadioButton);
-        workingDirSDVMRadioButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                workingDirSDVMRadioButtonActionPerformed(evt);
-            }
-        });
-
-        workingDirectoryButtonGroup.add(workingDirHDDRadioButton);
-        workingDirHDDRadioButton.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(workingDirHDDRadioButton, bundle.getString("LBL_WorkingDirHDD")); // NOI18N
-        workingDirHDDRadioButton.setActionCommand("hdd"); // NOI18N
-        workingDirHDDRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        workingDirHDDRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        workingDirHDDRadioButton.setNextFocusableComponent(workingDirSDVMRadioButton);
-        workingDirHDDRadioButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                workingDirHDDRadioButtonActionPerformed(evt);
-            }
-        });
-
-        jLabel31.setFont(new java.awt.Font("Tahoma", 1, 11));
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel31, bundle.getString("LBL_WorkingDir")); // NOI18N
-
         jSeparator1.setOrientation(javax.swing.SwingConstants.VERTICAL);
 
         jLabel16.setFont(new java.awt.Font("Tahoma", 1, 11));
@@ -408,11 +391,13 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
         hvgaCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         hvgaCheckBox.setNextFocusableComponent(vgaCheckBox);
 
+        vgaCheckBox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(vgaCheckBox, bundle.getString("LBL_VGA")); // NOI18N
         vgaCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         vgaCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         vgaCheckBox.setNextFocusableComponent(wvgaCheckBox);
 
+        wvgaCheckBox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(wvgaCheckBox, bundle.getString("LBL_WVGA")); // NOI18N
         wvgaCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         wvgaCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
@@ -449,19 +434,164 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
         invertBitmapCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         invertBitmapCheckBox.setNextFocusableComponent(abbrevationTextField);
 
+        jPanel1.setLayout(new java.awt.GridBagLayout());
+
+        jLabel30.setFont(new java.awt.Font("Tahoma", 1, 11));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel30, bundle.getString("LBL_InstallLocation")); // NOI18N
+
+        installLocationButtonGroup.add(installHDDRadioButton);
+        installHDDRadioButton.setSelected(true);
+        org.openide.awt.Mnemonics.setLocalizedText(installHDDRadioButton, bundle.getString("LBL_InstallLocHDD")); // NOI18N
+        installHDDRadioButton.setActionCommand("hdd"); // NOI18N
+        installHDDRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        installHDDRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        installHDDRadioButton.setNextFocusableComponent(installSDVMRadioButton);
+
+        installLocationButtonGroup.add(installSDVMRadioButton);
+        org.openide.awt.Mnemonics.setLocalizedText(installSDVMRadioButton, bundle.getString("LBL_InstallLocVM")); // NOI18N
+        installSDVMRadioButton.setActionCommand("sdcard"); // NOI18N
+        installSDVMRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        installSDVMRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        installSDVMRadioButton.setNextFocusableComponent(installOtherSDRadioButton);
+
+        installLocationButtonGroup.add(installOtherSDRadioButton);
+        org.openide.awt.Mnemonics.setLocalizedText(installOtherSDRadioButton, bundle.getString("LBL_InstallLocOther")); // NOI18N
+        installOtherSDRadioButton.setActionCommand("sdcard0"); // NOI18N
+        installOtherSDRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        installOtherSDRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+
         installLocationComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "SD Card Slot 1", "SD Card Slot 2", "SD Card Slot 3" }));
         installLocationComboBox.setNextFocusableComponent(workingDirHDDRadioButton);
-        installLocationComboBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                installLocationComboBoxActionPerformed(evt);
-            }
-        });
+
+        org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jLabel30)
+                    .add(jPanel2Layout.createSequentialGroup()
+                        .add(installOtherSDRadioButton)
+                        .add(6, 6, 6)
+                        .add(installLocationComboBox, 0, 135, Short.MAX_VALUE))
+                    .add(installHDDRadioButton)
+                    .add(installSDVMRadioButton))
+                .addContainerGap())
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .add(jLabel30)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(installHDDRadioButton)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(installSDVMRadioButton)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(installOtherSDRadioButton)
+                    .add(installLocationComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(22, Short.MAX_VALUE))
+        );
+
+        jPanel2Layout.linkSize(new java.awt.Component[] {installHDDRadioButton, installSDVMRadioButton}, org.jdesktop.layout.GroupLayout.VERTICAL);
+
+        jLabel30.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSN_InstallLocation")); // NOI18N
+        jLabel30.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSD_InstallLocation")); // NOI18N
+        installHDDRadioButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSN_InstallLocHDD")); // NOI18N
+        installHDDRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSN_InstallLocHDD")); // NOI18N
+        installSDVMRadioButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSN_InstallLocVM")); // NOI18N
+        installSDVMRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSD_InstallLocVM")); // NOI18N
+        installOtherSDRadioButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSN_InstallLocOther")); // NOI18N
+        installOtherSDRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSD_InstallLocOther")); // NOI18N
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 0.5;
+        gridBagConstraints.weighty = 1.0;
+        jPanel1.add(jPanel2, gridBagConstraints);
+
+        jLabel31.setFont(new java.awt.Font("Tahoma", 1, 11));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel31, bundle.getString("LBL_WorkingDir")); // NOI18N
+
+        workingDirectoryButtonGroup.add(workingDirHDDRadioButton);
+        workingDirHDDRadioButton.setSelected(true);
+        org.openide.awt.Mnemonics.setLocalizedText(workingDirHDDRadioButton, bundle.getString("LBL_WorkingDirHDD")); // NOI18N
+        workingDirHDDRadioButton.setActionCommand("hdd"); // NOI18N
+        workingDirHDDRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        workingDirHDDRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        workingDirHDDRadioButton.setNextFocusableComponent(workingDirSDVMRadioButton);
+
+        workingDirectoryButtonGroup.add(workingDirSDVMRadioButton);
+        org.openide.awt.Mnemonics.setLocalizedText(workingDirSDVMRadioButton, bundle.getString("LBL_WorkingDirVM")); // NOI18N
+        workingDirSDVMRadioButton.setActionCommand("sdcard"); // NOI18N
+        workingDirSDVMRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        workingDirSDVMRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        workingDirSDVMRadioButton.setNextFocusableComponent(workingDirOtherSDRadioButton);
+
+        workingDirectoryButtonGroup.add(workingDirOtherSDRadioButton);
+        org.openide.awt.Mnemonics.setLocalizedText(workingDirOtherSDRadioButton, bundle.getString("LBL_WorkingDirOther")); // NOI18N
+        workingDirOtherSDRadioButton.setActionCommand("sdcard0"); // NOI18N
+        workingDirOtherSDRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        workingDirOtherSDRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         workingDirComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "SD Card Slot 1", "SD Card Slot 2", "SD Card Slot 3" }));
         workingDirComboBox.setNextFocusableComponent(dalpSpecSDKJ1RadioButton);
-        workingDirComboBox.addActionListener(new java.awt.event.ActionListener() {
+
+        org.jdesktop.layout.GroupLayout jPanel3Layout = new org.jdesktop.layout.GroupLayout(jPanel3);
+        jPanel3.setLayout(jPanel3Layout);
+        jPanel3Layout.setHorizontalGroup(
+            jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel3Layout.createSequentialGroup()
+                .addContainerGap()
+                .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jLabel31)
+                    .add(workingDirHDDRadioButton)
+                    .add(workingDirSDVMRadioButton)
+                    .add(jPanel3Layout.createSequentialGroup()
+                        .add(workingDirOtherSDRadioButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(workingDirComboBox, 0, 124, Short.MAX_VALUE)))
+                .addContainerGap())
+        );
+        jPanel3Layout.setVerticalGroup(
+            jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel3Layout.createSequentialGroup()
+                .addContainerGap()
+                .add(jLabel31)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(workingDirHDDRadioButton)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(workingDirSDVMRadioButton)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(workingDirOtherSDRadioButton)
+                    .add(workingDirComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(22, Short.MAX_VALUE))
+        );
+
+        jLabel31.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSN_WorkingDir")); // NOI18N
+        jLabel31.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSD_WorkingDir")); // NOI18N
+        workingDirHDDRadioButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSN_WorkingDirHDD")); // NOI18N
+        workingDirHDDRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSD_WorkingDirHDD")); // NOI18N
+        workingDirSDVMRadioButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSN_WorkingDirVM")); // NOI18N
+        workingDirSDVMRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSD_WorkingDirVM")); // NOI18N
+        workingDirOtherSDRadioButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSN_WorkingDirOther")); // NOI18N
+        workingDirOtherSDRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSD_WorkingDirOther")); // NOI18N
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 0.5;
+        gridBagConstraints.weighty = 1.0;
+        jPanel1.add(jPanel3, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(disableDalpManagementCheckBox, bundle.getString("LBL_DalpManagement")); // NOI18N
+        disableDalpManagementCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        disableDalpManagementCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        disableDalpManagementCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                workingDirComboBoxActionPerformed(evt);
+                disableDalpManagementCheckBoxActionPerformed(evt);
             }
         });
 
@@ -471,86 +601,66 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
             advancedOptionConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, advancedOptionConfigPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(advancedOptionConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 625, Short.MAX_VALUE)
+                .add(advancedOptionConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 496, Short.MAX_VALUE)
+                    .add(jLabel15)
+                    .add(jLabel22)
+                    .add(jLabel28)
+                    .add(advancedOptionConfigPanelLayout.createSequentialGroup()
+                        .add(10, 10, 10)
+                        .add(advancedOptionConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(advancedOptionConfigPanelLayout.createSequentialGroup()
+                                .add(iconPathOrAbbrevLabel)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(abbrevationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 402, Short.MAX_VALUE))
+                            .add(advancedOptionConfigPanelLayout.createSequentialGroup()
+                                .add(useAbbreviationCheckBox)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(invertBitmapCheckBox)
+                                .add(117, 117, 117))))
                     .add(advancedOptionConfigPanelLayout.createSequentialGroup()
                         .add(advancedOptionConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jLabel15)
-                            .add(jLabel22)
-                            .add(jLabel28)
-                            .add(advancedOptionConfigPanelLayout.createSequentialGroup()
-                                .add(10, 10, 10)
-                                .add(advancedOptionConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(advancedOptionConfigPanelLayout.createSequentialGroup()
-                                        .add(iconPathOrAbbrevLabel)
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                        .add(abbrevationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 386, Short.MAX_VALUE))
-                                    .add(advancedOptionConfigPanelLayout.createSequentialGroup()
-                                        .add(useAbbreviationCheckBox)
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                        .add(invertBitmapCheckBox)
-                                        .add(117, 117, 117))))
-                            .add(advancedOptionConfigPanelLayout.createSequentialGroup()
-                                .add(advancedOptionConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(jLabel14)
-                                    .add(jLabel18))
-                                .add(41, 41, 41)
-                                .add(advancedOptionConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(advancedOptionConfigPanelLayout.createSequentialGroup()
-                                        .add(dalpVersionTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 71, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                        .add(259, 259, 259))
-                                    .add(codeBaseTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 350, Short.MAX_VALUE)))
-                            .add(startupArgumentsTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 465, Short.MAX_VALUE)
-                            .add(advancedOptionConfigPanelLayout.createSequentialGroup()
-                                .add(advancedOptionConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(installSDVMRadioButton)
-                                    .add(installHDDRadioButton)
-                                    .add(advancedOptionConfigPanelLayout.createSequentialGroup()
-                                        .add(installOtherSDRadioButton)
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                        .add(installLocationComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                                    .add(jLabel30))
-                                .add(31, 31, 31)
-                                .add(advancedOptionConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(jLabel31)
-                                    .add(workingDirSDVMRadioButton)
-                                    .add(workingDirHDDRadioButton)
-                                    .add(advancedOptionConfigPanelLayout.createSequentialGroup()
-                                        .add(workingDirOtherSDRadioButton)
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                        .add(workingDirComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 95, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                                .add(63, 63, 63)))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jSeparator1)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                            .add(jLabel14)
+                            .add(jLabel18))
+                        .add(41, 41, 41)
                         .add(advancedOptionConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(visibleCheckBox)
                             .add(advancedOptionConfigPanelLayout.createSequentialGroup()
-                                .add(10, 10, 10)
-                                .add(advancedOptionConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(dalpSpecSDKJ1RadioButton)
-                                    .add(dalpSpecSDKJ2RadioButton)))
-                            .add(jLabel16)
-                            .add(jLabel25)
-                            .add(jLabel27)
-                            .add(advancedOptionConfigPanelLayout.createSequentialGroup()
-                                .add(10, 10, 10)
-                                .add(advancedOptionConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(adminRadioButton)
-                                    .add(guestRadioButton)))
-                            .add(jLabel29)
-                            .add(autoRunCheckBox)
-                            .add(advancedOptionConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                                .add(org.jdesktop.layout.GroupLayout.LEADING, autoInstallCheckBox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .add(org.jdesktop.layout.GroupLayout.LEADING, advancedOptionConfigPanelLayout.createSequentialGroup()
-                                    .add(10, 10, 10)
-                                    .add(advancedOptionConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                        .add(vgaCheckBox)
-                                        .add(hvgaCheckBox)
-                                        .add(wvgaCheckBox)
-                                        .add(lcdCheckBox))))
-                            .add(colorEnableCheckBox))))
-                .addContainerGap())
+                                .add(dalpVersionTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 71, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .add(259, 259, 259))
+                            .add(codeBaseTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 375, Short.MAX_VALUE)))
+                    .add(startupArgumentsTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 496, Short.MAX_VALUE)
+                    .add(disableDalpManagementCheckBox))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(advancedOptionConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(visibleCheckBox)
+                    .add(advancedOptionConfigPanelLayout.createSequentialGroup()
+                        .add(10, 10, 10)
+                        .add(advancedOptionConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(dalpSpecSDKJ1RadioButton)
+                            .add(dalpSpecSDKJ2RadioButton)))
+                    .add(jLabel16)
+                    .add(jLabel25)
+                    .add(jLabel27)
+                    .add(advancedOptionConfigPanelLayout.createSequentialGroup()
+                        .add(10, 10, 10)
+                        .add(advancedOptionConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(adminRadioButton)
+                            .add(guestRadioButton)))
+                    .add(jLabel29)
+                    .add(autoRunCheckBox)
+                    .add(advancedOptionConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                        .add(org.jdesktop.layout.GroupLayout.LEADING, autoInstallCheckBox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .add(org.jdesktop.layout.GroupLayout.LEADING, advancedOptionConfigPanelLayout.createSequentialGroup()
+                            .add(10, 10, 10)
+                            .add(advancedOptionConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                .add(vgaCheckBox)
+                                .add(hvgaCheckBox)
+                                .add(wvgaCheckBox)
+                                .add(lcdCheckBox))))
+                    .add(colorEnableCheckBox))
+                .add(35, 35, 35))
         );
         advancedOptionConfigPanelLayout.setVerticalGroup(
             advancedOptionConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -581,27 +691,12 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(startupArgumentsTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(advancedOptionConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(jLabel30)
-                            .add(jLabel31))
+                        .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 121, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(advancedOptionConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(installHDDRadioButton)
-                            .add(workingDirHDDRadioButton))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(advancedOptionConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(workingDirSDVMRadioButton)
-                            .add(installSDVMRadioButton))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(advancedOptionConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(workingDirOtherSDRadioButton)
-                            .add(installOtherSDRadioButton)
-                            .add(installLocationComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(workingDirComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                        .add(disableDalpManagementCheckBox))
                     .add(advancedOptionConfigPanelLayout.createSequentialGroup()
                         .addContainerGap()
                         .add(advancedOptionConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 331, Short.MAX_VALUE)
                             .add(advancedOptionConfigPanelLayout.createSequentialGroup()
                                 .add(jLabel16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 14, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -633,16 +728,12 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(colorEnableCheckBox)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(visibleCheckBox)))
-                        .add(18, 18, 18)
-                        .add(jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 1, Short.MAX_VALUE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))
-                .addContainerGap())
+                                .add(visibleCheckBox))
+                            .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 392, Short.MAX_VALUE))))
+                .addContainerGap(80, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
 
         advancedOptionConfigPanelLayout.linkSize(new java.awt.Component[] {abbrevationTextField, codeBaseTextField, dalpVersionTextField, jLabel14, jLabel22, useAbbreviationCheckBox}, org.jdesktop.layout.GroupLayout.VERTICAL);
-
-        advancedOptionConfigPanelLayout.linkSize(new java.awt.Component[] {installHDDRadioButton, installSDVMRadioButton}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
         jLabel15.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_AdvancedOptions")); // NOI18N
         jLabel15.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_AdvancedOptions")); // NOI18N
@@ -666,22 +757,6 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
         jLabel28.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSD_StartupArgs")); // NOI18N
         startupArgumentsTextField.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_StartupArgumentsTextField")); // NOI18N
         startupArgumentsTextField.getAccessibleContext().setAccessibleDescription("KEY ACSD_StartupArgumentsTextField : RB org/netbeans/modules/j2me/cdc/project/ricoh/Bundle");
-        jLabel30.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSN_InstallLocation")); // NOI18N
-        jLabel30.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSD_InstallLocation")); // NOI18N
-        installHDDRadioButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSN_InstallLocHDD")); // NOI18N
-        installHDDRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSN_InstallLocHDD")); // NOI18N
-        installSDVMRadioButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSN_InstallLocVM")); // NOI18N
-        installSDVMRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSD_InstallLocVM")); // NOI18N
-        installOtherSDRadioButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSN_InstallLocOther")); // NOI18N
-        installOtherSDRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSD_InstallLocOther")); // NOI18N
-        workingDirOtherSDRadioButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSN_WorkingDirOther")); // NOI18N
-        workingDirOtherSDRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSD_WorkingDirOther")); // NOI18N
-        workingDirSDVMRadioButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSN_WorkingDirVM")); // NOI18N
-        workingDirSDVMRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSD_WorkingDirVM")); // NOI18N
-        workingDirHDDRadioButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSN_WorkingDirHDD")); // NOI18N
-        workingDirHDDRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSD_WorkingDirHDD")); // NOI18N
-        jLabel31.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSN_WorkingDir")); // NOI18N
-        jLabel31.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSD_WorkingDir")); // NOI18N
         jLabel16.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSN_DalpVersion")); // NOI18N
         jLabel16.getAccessibleContext().setAccessibleDescription("KEY ACSD_DalpVersion : RB org/netbeans/modules/j2me/cdc/project/ricoh/Bundle");
         dalpSpecSDKJ1RadioButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSN_SDKJ_Spec_1_0")); // NOI18N
@@ -714,38 +789,22 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
         colorEnableCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSD_EnableColorDisplay")); // NOI18N
         visibleCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSN_Visible")); // NOI18N
         visibleCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSD_Visible")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(disableDalpManagementCheckBox, bundle.getString("LBL_DalpManagement")); // NOI18N
-        disableDalpManagementCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        disableDalpManagementCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        disableDalpManagementCheckBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                disableDalpManagementCheckBoxActionPerformed(evt);
-            }
-        });
+        disableDalpManagementCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSN_DalpManagement")); // NOI18N
+        disableDalpManagementCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSD_DalpManagement")); // NOI18N
 
         org.jdesktop.layout.GroupLayout advancedOptionsPanelLayout = new org.jdesktop.layout.GroupLayout(advancedOptionsPanel);
         advancedOptionsPanel.setLayout(advancedOptionsPanelLayout);
         advancedOptionsPanelLayout.setHorizontalGroup(
             advancedOptionsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(advancedOptionConfigPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .add(advancedOptionsPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(disableDalpManagementCheckBox)
-                .addContainerGap(284, Short.MAX_VALUE))
         );
         advancedOptionsPanelLayout.setVerticalGroup(
             advancedOptionsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, advancedOptionsPanelLayout.createSequentialGroup()
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .add(advancedOptionConfigPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(disableDalpManagementCheckBox)
-                .add(139, 139, 139))
+                .add(165, 165, 165))
         );
-
-        disableDalpManagementCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSN_DalpManagement")); // NOI18N
-        disableDalpManagementCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSD_DalpManagement")); // NOI18N
 
         advancedOptionsPanel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSD_ProjectAdvancedCustomizerPanel")); // NOI18N
 
@@ -809,7 +868,7 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
                             .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                                 .add(jLabel1)
                                 .add(25, 25, 25)
-                                .add(applicationUID, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 269, Short.MAX_VALUE))
+                                .add(applicationUID, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 270, Short.MAX_VALUE))
                             .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                                 .add(jLabel2)
                                 .add(22, 22, 22)
@@ -827,9 +886,9 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
                             .add(jLabel4))
                         .add(28, 28, 28)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, faxNumber, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 405, Short.MAX_VALUE)
-                            .add(telephoneNumber, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 405, Short.MAX_VALUE)
-                            .add(email, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 405, Short.MAX_VALUE))))
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, faxNumber, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 407, Short.MAX_VALUE)
+                            .add(telephoneNumber, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 407, Short.MAX_VALUE)
+                            .add(email, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 407, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -1013,45 +1072,58 @@ private void disableDalpManagementCheckBoxActionPerformed(java.awt.event.ActionE
     }
 }//GEN-LAST:event_disableDalpManagementCheckBoxActionPerformed
 
-private void installLocationComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_installLocationComboBoxActionPerformed
-    installLocationTextField.setText("sdcard" + (installLocationComboBox.getSelectedIndex() + 1)); //NOI18N
-}//GEN-LAST:event_installLocationComboBoxActionPerformed
+    private void startListening(){
+        installLocationComboBox.addActionListener(aListener);
+        workingDirComboBox.addActionListener(aListener);
+        installOtherSDRadioButton.addActionListener(aListener);
+        installSDVMRadioButton.addActionListener(aListener);
+        installHDDRadioButton.addActionListener(aListener);
+        workingDirOtherSDRadioButton.addActionListener(aListener);
+        workingDirSDVMRadioButton.addActionListener(aListener);   
+        workingDirHDDRadioButton.addActionListener(aListener);        
+    }
 
-private void workingDirComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_workingDirComboBoxActionPerformed
-    workingDirTextField.setText("sdcard" + (this.workingDirComboBox.getSelectedIndex() + 1)); //NOI18N
-}//GEN-LAST:event_workingDirComboBoxActionPerformed
-
-private void installOtherSDRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_installOtherSDRadioButtonActionPerformed
-    installLocationComboBox.setEnabled(true);
-    installLocationComboBoxActionPerformed(evt);
-}//GEN-LAST:event_installOtherSDRadioButtonActionPerformed
-
-private void installSDVMRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_installSDVMRadioButtonActionPerformed
-    installLocationComboBox.setEnabled(false);
-    installLocationTextField.setText("sdcard"); //NOI18N
-}//GEN-LAST:event_installSDVMRadioButtonActionPerformed
-
-private void installHDDRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_installHDDRadioButtonActionPerformed
-    installLocationComboBox.setEnabled(false);
-    installLocationTextField.setText("hdd"); //NOI18N
-}//GEN-LAST:event_installHDDRadioButtonActionPerformed
-
-private void workingDirOtherSDRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_workingDirOtherSDRadioButtonActionPerformed
-    workingDirComboBox.setEnabled(true);
-    workingDirComboBoxActionPerformed(evt);
-}//GEN-LAST:event_workingDirOtherSDRadioButtonActionPerformed
-
-private void workingDirSDVMRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_workingDirSDVMRadioButtonActionPerformed
-    workingDirComboBox.setEnabled(false);
-    workingDirTextField.setText("sdcard");  //NOI18N
-}//GEN-LAST:event_workingDirSDVMRadioButtonActionPerformed
-
-private void workingDirHDDRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_workingDirHDDRadioButtonActionPerformed
-    workingDirComboBox.setEnabled(false);
-    workingDirTextField.setText("hdd");  //NOI18N
-}//GEN-LAST:event_workingDirHDDRadioButtonActionPerformed
-
-
+    private void stopListening(){
+        installLocationComboBox.removeActionListener(aListener);
+        workingDirComboBox.removeActionListener(aListener);
+        installOtherSDRadioButton.removeActionListener(aListener);
+        installSDVMRadioButton.removeActionListener(aListener);
+        installHDDRadioButton.removeActionListener(aListener);
+        workingDirOtherSDRadioButton.removeActionListener(aListener);
+        workingDirSDVMRadioButton.removeActionListener(aListener);   
+        workingDirHDDRadioButton.removeActionListener(aListener);        
+    }
+    
+    private ActionListener aListener = new ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+            stopListening();
+            Object source = e.getSource();
+            if (source.equals(installLocationComboBox)){
+                installLocationTextField.setText("sdcard" + (installLocationComboBox.getSelectedIndex() + 1)); //NOI18N
+            } else if (source.equals(workingDirComboBox)) {
+                workingDirTextField.setText("sdcard" + (workingDirComboBox.getSelectedIndex() + 1)); //NOI18N
+            } else if (source.equals(installOtherSDRadioButton)) {
+                installLocationComboBox.setEnabled(true);
+                installLocationTextField.setText("sdcard" + (installLocationComboBox.getSelectedIndex() + 1)); //NOI18N
+            } else if (source.equals(installSDVMRadioButton)) {
+                installLocationComboBox.setEnabled(false);
+                installLocationTextField.setText("sdcard");
+            } else if (source.equals(installHDDRadioButton)) {
+                installLocationComboBox.setEnabled(false);
+                installLocationTextField.setText("hdd");
+            } else if (source.equals(workingDirOtherSDRadioButton)) {
+                workingDirComboBox.setEnabled(true);
+                workingDirTextField.setText("sdcard" + (workingDirComboBox.getSelectedIndex() + 1)); //NOI18N                
+            } else if (source.equals(workingDirSDVMRadioButton)) {
+                workingDirComboBox.setEnabled(false);
+                workingDirTextField.setText("sdcard");
+            } else if (source.equals(workingDirHDDRadioButton)) {
+                workingDirComboBox.setEnabled(false);
+                workingDirTextField.setText("hdd");
+            } 
+            startListening();
+        }
+    };
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -1108,8 +1180,10 @@ private void workingDirHDDRadioButtonActionPerformed(java.awt.event.ActionEvent 
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel9;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
     private javax.swing.JSeparator jSeparator1;
-    private javax.swing.JSeparator jSeparator2;
     private javax.swing.JCheckBox lcdCheckBox;
     private javax.swing.JTextField startupArgumentsTextField;
     private javax.swing.JTextField telephoneNumber;

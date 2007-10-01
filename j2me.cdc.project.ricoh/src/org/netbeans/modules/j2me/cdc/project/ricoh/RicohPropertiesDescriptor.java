@@ -116,8 +116,8 @@ public class RicohPropertiesDescriptor implements ProjectPropertiesDescriptor {
             set.add(new PropertyDescriptor(RICOH_DALP_INSTALL_DESTINATION, true, DefaultPropertyParsers.STRING_PARSER, "hdd")); //NOI18N                    
             set.add(new PropertyDescriptor(RICOH_DALP_INSTALL_WORKDIR, true, DefaultPropertyParsers.STRING_PARSER, "hdd")); //NOI18N                    
             set.add(new PropertyDescriptor(RICOH_DALP_DISPLAYMODE_HVGA, true, DefaultPropertyParsers.BOOLEAN_PARSER, TRUE));                    
-            set.add(new PropertyDescriptor(RICOH_DALP_DISPLAYMODE_VGA, true, DefaultPropertyParsers.BOOLEAN_PARSER, FALSE));                    
-            set.add(new PropertyDescriptor(RICOH_DALP_DISPLAYMODE_WVGA, true, DefaultPropertyParsers.BOOLEAN_PARSER, FALSE));                    
+            set.add(new PropertyDescriptor(RICOH_DALP_DISPLAYMODE_VGA, true, DefaultPropertyParsers.BOOLEAN_PARSER, TRUE));                    
+            set.add(new PropertyDescriptor(RICOH_DALP_DISPLAYMODE_WVGA, true, DefaultPropertyParsers.BOOLEAN_PARSER, TRUE));                    
             set.add(new PropertyDescriptor(RICOH_DALP_DISPLAYMODE_4LINE, true, DefaultPropertyParsers.BOOLEAN_PARSER, FALSE));                    
             set.add(new PropertyDescriptor(RICOH_DALP_DISPLAYMODE_COLOR, true, DefaultPropertyParsers.BOOLEAN_PARSER, TRUE));                    
             set.add(new PropertyDescriptor(RICOH_DALP_ARGUMENT, true, DefaultPropertyParsers.STRING_PARSER, EMPTY));                    
