@@ -293,9 +293,13 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         if (location < -1 || location >= diffs.length) throw new IllegalArgumentException("Illegal difference number: " + location); // NOI18N
         if (location == -1) {
         } else {
-            ignoredUpdateEvents = 6;
             setDifferenceIndex(location);
-            showCurrentDifference();
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    ignoredUpdateEvents = 6;
+                    showCurrentDifference();
+                }
+            });
         }
     }
 
