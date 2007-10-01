@@ -71,6 +71,7 @@
             </file>
 
             <file name="HelloMIDlet.java" url="templates/hellovisualmidlet_java.template">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.vmd.midp.resources.Bundle"/>
                 <attr name="position" intvalue="700"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>

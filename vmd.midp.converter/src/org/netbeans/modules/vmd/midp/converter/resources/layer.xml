@@ -9,6 +9,7 @@
     <folder name="Templates">
         <folder name="MIDP">
             <file name="ConverterVisualMIDlet.java" url="templates/convertervisualmidlet_java.template">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.vmd.midp.converter.resources.Bundle"/>
                 <attr name="position" intvalue="710"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
