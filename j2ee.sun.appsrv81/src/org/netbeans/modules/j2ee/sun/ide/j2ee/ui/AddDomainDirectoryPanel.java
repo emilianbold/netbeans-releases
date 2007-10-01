@@ -21,9 +21,13 @@ package org.netbeans.modules.j2ee.sun.ide.j2ee.ui;
 
 import java.awt.Component;
 import java.io.File;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.Utils;
@@ -133,6 +137,23 @@ class AddDomainDirectoryPanel implements WizardDescriptor.FinishablePanel,
                         NbBundle.getMessage(AddDomainDirectoryPanel.class,
                         "Msg_InValidDomainDirParent",                                 //NOI18N
                         parent.getAbsolutePath()));
+                return false;
+            }
+            String path = domainDir.getAbsolutePath();
+            byte bytes[] = path.getBytes();
+            byte utf8[] = bytes;
+            try {
+                utf8 = path.getBytes("UTF-8");
+            } catch (java.io.UnsupportedEncodingException uee) {
+                // if we get to here... creating a domain will be the least
+                // of the users worries.  A Java VM has to support UTF-8 encoding.
+                Logger.getLogger(AddDomainDirectoryPanel.class.getName()).log(Level.FINER,
+                        null, uee);
+            }
+            if (bytes.length != utf8.length) {
+                wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE,
+                        NbBundle.getMessage(AddDomainDirectoryPanel.class,
+                        "Msg_Utf8Required"));                                 //NOI18N
                 return false;
             }
             wiz.putProperty(AddDomainWizardIterator.DOMAIN,domainDir.getName());
