@@ -137,7 +137,7 @@ public class ConverterDisplayables {
                     DesignComponent foundCommand = commandEventSource.readProperty (CommandEventSourceCD.PROP_COMMAND).getComponent ();
                     if (selectCommand == foundCommand) {
                         found = true;
-                        list.writeProperty (ListCD.PROP_SELECT_COMMAND, PropertyValue.createComponentReference (selectCommand));
+                        list.writeProperty (ListCD.PROP_SELECT_COMMAND, PropertyValue.createComponentReference (commandEventSource));
                         break;
                     }
                 }
