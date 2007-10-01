@@ -139,11 +139,11 @@ class NodeCache implements PropertyChangeListener
         if (gray)
         {
             resNode=NodeFactory.resourcesNode(resNodes.toArray(subNodes), lookup,
-                    "Resources","Resources - Inherited from "+project.getConfigurationHelper().getDefaultConfiguration().getDisplayName(),PLATFORM_ICON,emptyAction);
+                    "Resources",NbBundle.getMessage(NodeCache.class,"LBL_NodeCache_InheritedResources",project.getConfigurationHelper().getDefaultConfiguration().getDisplayName()),PLATFORM_ICON,emptyAction);
         }
         else
         {
-            resNode=NodeFactory.resourcesNode(resNodes.toArray(subNodes), lookup, "Resources","Resources",PLATFORM_ICON,pActions);
+            resNode=NodeFactory.resourcesNode(resNodes.toArray(subNodes), lookup, "Resources",NbBundle.getMessage(NodeCache.class,"LBL_NodeCache_Resources"),PLATFORM_ICON,pActions);
         }
         resNode.setValue("gray",gray);
         allNodes.add(resNode);        
