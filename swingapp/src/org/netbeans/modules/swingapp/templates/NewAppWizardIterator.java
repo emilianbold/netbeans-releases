@@ -21,8 +21,9 @@ package org.netbeans.modules.swingapp.templates;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -210,13 +211,16 @@ public class NewAppWizardIterator implements WizardDescriptor.InstantiatingItera
         // remember project location in ProjectChooser
         ProjectChooser.setProjectsFolder(projectDirectory.getParentFile());
 
+        FileObject appFO = AppProjectGenerator.getGeneratedFile(
+                projectFolderFO, "src/applicationpackage/ShellApp.java", // NOI18N
+                templateNames, substNames);
         FileObject mainFormFO = AppProjectGenerator.getGeneratedFile(
                 projectFolderFO, "src/applicationpackage/ShellView.java", // NOI18N
                 templateNames, substNames);
         wizard.putProperty("mainForm", mainFormFO); // NOI18N
 
-        Set resultSet = new HashSet();
-        Set subResults = null;
+        Set<FileObject> resultSet = new SetKeepingAddOrder<FileObject>(true);
+        Set<FileObject> subResults = null;
 
         // let the app shell wizard do the additional configuration
         if (appShellIterator != null) {
@@ -224,13 +228,40 @@ public class NewAppWizardIterator implements WizardDescriptor.InstantiatingItera
         }
 
         resultSet.add(projectFolderFO);
-        if (subResults != null)
+        if (appFO != null) {
+            resultSet.add(appFO);
+        }
+        if (subResults != null) {
             resultSet.addAll(subResults);
-        if ((appShellIterator == null) && (mainFormFO != null)) {
+        }
+        // we need all forms to be opened and regenerated
+        collectForms(projectFolderFO.getFileObject("src"), resultSet); // NOI18N
+        // the main form should open as last
+        if (mainFormFO != null) {
             resultSet.add(mainFormFO);
         }
 
         return resultSet;
+    }
+
+    private static void collectForms(FileObject folder, Set<FileObject> set) {
+        if (folder == null || !folder.isFolder()) {
+            return;
+        }
+        for (FileObject file : folder.getChildren()) {
+            if (file.isFolder()) {
+                collectForms(file, set);
+            }
+            if (file.getExt().equalsIgnoreCase("java") // NOI18N
+                    && file.existsExt("form")) { // NOI18N
+                try {
+                    file.setAttribute("justCreatedByNewWizard", Boolean.TRUE); // NOI18N
+                    set.add(file);
+                } catch (IOException ex) {
+                    Logger.getLogger(NewAppWizardIterator.class.getName()).log(Level.WARNING, null, ex);
+                }
+            }
+        }
     }
 
     public void uninitialize(WizardDescriptor wiz) {
@@ -273,5 +304,102 @@ public class NewAppWizardIterator implements WizardDescriptor.InstantiatingItera
             appPrefix + "AboutBox", // NOI18N
             FileEncodingQuery.getDefaultEncoding().name() // for source.encoding in project.properties
         };
+    }
+
+    // -----
+
+    /**
+     * Set implementation ensuring the elements are returned in the same order
+     * as added. See 'add' and 'iterator' methods.
+     */
+    private static class SetKeepingAddOrder<E> implements Set<E> {
+        private HashMap<E, Long> map = new HashMap<E, Long>();
+        private long counter;
+        private boolean reAdd;
+
+        /**
+         * @param readd if true, an already present element when added again
+         *        will be moved to the end (like if it was removed and added
+         *        again), if false, the element will keep its position (no change)
+         */
+        SetKeepingAddOrder(boolean readd) {
+            this.reAdd = readd;
+        }
+
+        public boolean add(E o){
+            boolean contain = map.containsKey(o);
+            if (!contain || reAdd) {
+                map.put(o, new Long(++counter));
+            }
+            return contain;
+        }
+
+        public Iterator<E> iterator() {
+            @SuppressWarnings("unchecked")
+            Map.Entry<E,Long>[] entries = (Map.Entry<E,Long>[]) new Map.Entry[map.size()];
+            map.entrySet().toArray(entries);
+            Arrays.sort(entries, new Comparator<Map.Entry<E,Long>>() {
+                public int compare(Map.Entry<E, Long> o1, Map.Entry<E, Long> o2) {
+                    return o1.getValue().compareTo(o2.getValue());
+                }
+            });
+            List<E> list = new ArrayList<E>(entries.length);
+            for (Map.Entry<E, Long> e : entries) {
+                list.add(e.getKey());
+            }
+            return list.iterator();
+        }
+
+        // -----
+
+        public int size() {
+            return map.size();
+        }
+        public boolean isEmpty() {
+            return map.isEmpty();
+        }
+        public boolean contains(Object o) {
+            return map.containsKey(o);
+        }
+        public boolean containsAll(Collection<?> coll) {
+            for (Object o : coll) {
+                if (!map.containsKey(o)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        public boolean remove(Object o) {
+            return map.remove(o) != null;
+        }
+        public boolean addAll(Collection<? extends E> coll) {
+            boolean ret = false;
+            for (E o : coll) {
+                ret |= add(o);
+            }
+            return ret;
+        }
+        public boolean removeAll(Collection<?> coll) {
+            boolean ret = false;
+            for (Object o : coll) {
+                ret |= remove(o);
+            }
+            return ret;
+        }
+        public boolean retainAll(Collection<?> coll) {
+            throw new UnsupportedOperationException();
+        }
+        public void clear() {
+            map.clear();
+        }
+        public Object[] toArray() {
+            return map.keySet().toArray();
+        }
+        public <T> T[] toArray(T[] a) {
+            return map.keySet().toArray(a);
+        }
+        public String toString() {
+            return map.keySet().toString();
+        }
     }
 }
