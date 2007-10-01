@@ -35,11 +35,25 @@ import org.netbeans.modules.vmd.api.model.PresenterEvent;
  * @author Karol Harezlak
  * @author Anton Chechel
  */
+
+/**
+ * This implemementation of PropertiesPresenter enables forwarding of particular 
+ * properties form one DesignComponent to another. For example using this class 
+ * it is possible to attache properties from one DesignComponent to another so user
+ * sees it as single component collection. 
+ */
 public class PropertiesPresenterForwarder extends PropertiesPresenter {
     
     private String propertyName;
     private String[] propertyNames;
-    
+    /**
+     * Creates PropertiesPresenterForwarder based on the name of 
+     * the PropertyDescriptor attached to the DesignComponent which owns this presenter
+     * forwarder. PropertyDescriptor which is indicated by the given property name has to
+     * holds references to the DdsignComponent
+     * @param propertyName property name
+     * @return
+     */
     public static Presenter createByReference(String propertyName) {
         return new PropertiesPresenterForwarder(propertyName);
     }
@@ -48,7 +62,7 @@ public class PropertiesPresenterForwarder extends PropertiesPresenter {
         return new PropertiesPresenterForwarder(propertyName, propertyNames);
     }
     
-    private PropertiesPresenterForwarder(String propertyName, String... propertyNames) {
+    private PropertiesPresenterForwarder(String propertyName, String... propertyNames) {        
         this.propertyName = propertyName;
         this.propertyNames = propertyNames;
     }

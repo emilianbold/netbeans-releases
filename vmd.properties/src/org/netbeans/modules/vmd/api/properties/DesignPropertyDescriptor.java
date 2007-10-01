@@ -29,31 +29,80 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
  * @author Karol Harezlak
  */
 
+/**
+ * This class is a property descriptor. It contains all information about given DesignComponent's PropertyDescriptor 
+ * to create property in the Properties Window. It is possible to bind more that one DesignComponent's PropertyDescriptor \
+ * in one DesignPropertyDescryptor. In this case single property in the Properties Window will represent more
+ * that one DesignComponent's PropertyDescriptor.   
+ * 
+ */
 public abstract class DesignPropertyDescriptor {
 
-    /** Default implementation of DesignPropertyDescriptor
-     *
+    /**
+     * Default implementation of DesignPropertyDescriptor. To map one DesignPropertyDescriptor with
+     * more that one DesignComponent's PropertyDescriptors assign more that one PropertyDescriptor name to the 
+     * propertyNames parameter. Creates DesignPropertyDescriptor based on given parameters.
+     * 
+     * 
+     * @param displayName  display name of this property created based on this DesignPropertyDescriptor.
+     * This String represent display name of the property shown in the Properties Window.
+     * @param toolTip tool tip shown for this property in the Properties Window.
+     * @param category property's category
+     * @param propertyEditor custom property editor
+     * @param propertyEditorType type of property ediotr (for example Boolena.class, String.class) 
+     * @param propertyNames names of the PropertyDescriptors connected with this DesignPropertyDescriptor
+     * @return instance of DesignPropertyDescriptor
      */
     public static final DesignPropertyDescriptor create(String displayName, String toolTip, String category, DesignPropertyEditor propertyEditor, Class propertyEditorType, String... propertyNames) {
         return new DefaultPropertyDescriptor(displayName, toolTip, category, propertyEditor, propertyEditorType, propertyNames);
     }
 
-    //First name of the list is always name which will be return when Property.getName
+    /**
+     * Returns list of the names of the PropertyDescriptors connected with this DesignPropertyDescriptor.
+     * NOTE: First name of this list is a primary name of the property created based on this DesignPropertyDescriptor.
+     * 
+     * @return list of properties names
+     */
     public abstract List<String> getPropertyNames();
-
+    
+    /**
+     * Returns display name of this property created based on this DesignPropertyDescriptor.
+     * This String represent display name of the property shown in the Properties Window.
+     * @return display name
+     */
     public abstract String getPropertyDisplayName();
-
+    
+    /**
+     * Returns tool tip shown for property created based on this DesignPropertyDescriptor in the Properties Window.
+     * @return tool tip
+     */
     public abstract String getPropertyToolTip();
-
+    
+    /**
+     * Returns property's category as a String.
+     * @return category
+     */
     public abstract String getPropertyCategory();
-
+    
+     /**
+     * Returns custom property editor for the property .
+     * @return category
+     */
     public abstract DesignPropertyEditor getPropertyEditor();
-
+    
+     /**
+     * Returns DesignComponent connected with this DesignPropertyDEscriptor (property). 
+     * @return DesignComponent
+     */
     public abstract DesignComponent getComponent();
 
     @Deprecated
     public abstract Class getPropertyEditorType();
-
+    /**
+     * This method is executed when PropertiesPresenter which contains this DesignPropertyDesciptor is
+     * attached to the DesignComponet.
+     * @param component DesignComponent connected with this DesignPropertyDEscriptor
+     */
     public abstract void init(DesignComponent component);
 
     private static class DefaultPropertyDescriptor extends DesignPropertyDescriptor {

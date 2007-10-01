@@ -30,25 +30,48 @@ import java.util.List;
  *
  * @author Karol Harezlak
  */
+/**
+ * This class is a default implmentation of PropertiesPresenter. It helps in easy way to compose
+ * and provide infomrmations neccessary to create DesignComponent properties visiable in
+ * the Properties Window.
+ */
 public class DefaultPropertiesPresenter extends PropertiesPresenter {
 
-    private static final String NULL_DEFAULT = "Null DefaultPropertyEditorSupport not allowed"; //NOI18N
-    
+    private static final String NULL_DEFAULT = "Null DefaultPropertyEditorSupport"; //NOI18N
     private List<DesignPropertyDescriptor> descriptors;
     private List<String> categories;
     private String category;
     private DesignEventFilterResolver designEventFilterResolver;
 
+    /**
+     * Creates instances of the PropertiesPresenter.
+     */
     public DefaultPropertiesPresenter() {
         descriptors = new ArrayList<DesignPropertyDescriptor>();
         categories = new ArrayList<String>();
     }
 
+    /**
+     * Creates instances of the PropertiesPresenter. Use this constructor if you'd like to 
+     * provide DesignEventFilterResolver to controll execution of designChange method of this
+     * presenter.
+     * @param designEventFilterResolver
+     */
     public DefaultPropertiesPresenter(DesignEventFilterResolver designEventFilterResolver) {
         this();
         this.designEventFilterResolver = designEventFilterResolver;
     }
 
+    /**
+     * Based on this methods DesignPropertyEditor is created and automatically added to the list of DesignPropertyDesicriptors
+     * available for this presenter.
+     * @param displayName  display name of this property created based on this DesignPropertyDescriptor.
+     * This String represent display name of the property shown in the Properties Window.
+     * @param toolTip tool tip shown for this property in the Properties Window.
+     * @param propertyEditor custom property editor
+     * @param propertyNames names of the PropertyDescriptors connected with this DesignPropertyDescriptor
+     * @return instance of DefaultPropertiesPresenter
+     */
     public DefaultPropertiesPresenter addProperty(String displayName, String toolTip, DesignPropertyEditor propertyEditor, String... propertyNames) {
         if (propertyNames.length < 1) {
             throw new IllegalArgumentException(); //NOI18N
@@ -60,6 +83,15 @@ public class DefaultPropertiesPresenter extends PropertiesPresenter {
         return this;
     }
 
+    /**
+     * Based on this methods DesignPropertyEditor is created and automatically added to the list of DesignPropertyDesicriptors
+     * available for this presenter.
+     * @param displayName  display name of this property created based on this DesignPropertyDescriptor.
+     * This String represent display name of the property shown in the Properties Window.
+     * @param propertyEditor custom property editor
+     * @param propertyNames names of the PropertyDescriptors connected with this DesignPropertyDescriptor
+     * @return instance of DefaultPropertiesPresenter
+     */
     public DefaultPropertiesPresenter addProperty(String displayName, DesignPropertyEditor propertyEditor, String... propertyNames) {
         if (propertyNames.length < 1) {
             throw new IllegalArgumentException(); //NOI18N
@@ -71,6 +103,11 @@ public class DefaultPropertiesPresenter extends PropertiesPresenter {
         return this;
     }
 
+    /** Based on this methods DesignPropertyEditor is created and automatically added to the list of DesignPropertyDesicriptors
+     * available for this presenter.
+     * @param propertyCategory property's category as a String 
+     * @return instance of DefaultPropertiesPresenter
+     */
     public DefaultPropertiesPresenter addPropertiesCategory(String propertyCategory) {
         assert propertyCategory != null : " Group category cant be null"; // NOI18N
         this.category = propertyCategory;
@@ -80,10 +117,18 @@ public class DefaultPropertiesPresenter extends PropertiesPresenter {
         return this;
     }
 
+    /**
+     * Returns list of DesignPropertyEditors.
+     * @return list od DesignPropertyDescriptors
+     */
     public List<DesignPropertyDescriptor> getDesignPropertyDescriptors() {
         return descriptors;
     }
 
+    /**
+     * Returns custom property editor for the property .
+     * @return category
+     */
     public List<String> getPropertiesCategories() {
         return categories;
     }

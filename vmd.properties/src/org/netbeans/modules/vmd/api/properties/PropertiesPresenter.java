@@ -26,10 +26,24 @@ import org.netbeans.modules.vmd.api.model.DynamicPresenter;
  *
  * @author Karol Harezlak
  */
+
+/**
+ * Major function of this class is to provide information about properties of
+ * DesignComponent to display them (visualize) in the Properties Window Properties.
+ * Based on this informations provided by this presenter Properties module is able to create properties sheet and
+ * custom property editors.
+ */
 public abstract class PropertiesPresenter extends DynamicPresenter {
-
+    
+    /**
+     * Returns list of DesignPropertyEditors.
+     * @return list od DesignPropertyDescriptors
+     */
     public abstract List<DesignPropertyDescriptor> getDesignPropertyDescriptors();
-
+    /**
+     * Returns list of categories avaiable for properties in this presenter.
+     * @return list of categories
+     */
     public abstract List<String> getPropertiesCategories();
 
 }
