@@ -218,13 +218,17 @@ public final class PropertyEditorTimeout extends PropertyEditorUserCode implemen
         }
 
         public void insertUpdate(DocumentEvent evt) {
-            radioButton.setSelected(true);
-            checkNumberStatus();
+            if (textField.hasFocus()) {
+                radioButton.setSelected(true);
+                checkNumberStatus();
+            }
         }
 
         public void removeUpdate(DocumentEvent evt) {
-            radioButton.setSelected(true);
-            checkNumberStatus();
+            if (textField.hasFocus()) {
+                radioButton.setSelected(true);
+                checkNumberStatus();
+            }
         }
 
         public void changedUpdate(DocumentEvent evt) {

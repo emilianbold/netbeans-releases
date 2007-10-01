@@ -2,16 +2,16 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.vmd.midp.propertyeditors;
@@ -48,7 +48,7 @@ public class PropertyEditorPreferredSize extends PropertyEditorUserCode implemen
 
     private static final String UNLOCKED_TEXT = NbBundle.getMessage(PropertyEditorPreferredSize.class, "LBL_PREF_SIZE_UNLOCKED_TXT"); // NOI18N
     private static final String UNLOCKED_NUM_TEXT = String.valueOf(ItemCD.UNLOCKED_VALUE.getPrimitiveValue());
-
+    
     private CustomEditor customEditor;
     private JRadioButton radioButton;
     private String label;
@@ -57,7 +57,7 @@ public class PropertyEditorPreferredSize extends PropertyEditorUserCode implemen
     private PropertyEditorPreferredSize(String label, String ucLabel, TypeID parentTypeID) {
         super(ucLabel);
         this.label = label;
-        this.parentTypeID = parentTypeID; 
+        this.parentTypeID = parentTypeID;
         initComponents();
 
         initElements(Collections.<PropertyEditorElement>singleton(this));
@@ -108,11 +108,11 @@ public class PropertyEditorPreferredSize extends PropertyEditorUserCode implemen
         return String.valueOf(valueValue);
     }
 
-    public void setTextForPropertyValue (String text) {
+    public void setTextForPropertyValue(String text) {
         saveValue(text);
     }
 
-    public String getTextForPropertyValue () {
+    public String getTextForPropertyValue() {
         return null;
     }
 
@@ -183,7 +183,7 @@ public class PropertyEditorPreferredSize extends PropertyEditorUserCode implemen
 
         return super.supportsCustomEditor();
     }
-    
+
     private boolean isWriteableByParentType() {
         if (component == null || component.get() == null) {
             return false;
@@ -198,7 +198,7 @@ public class PropertyEditorPreferredSize extends PropertyEditorUserCode implemen
                     parent[0] = _component.getParentComponent();
                 }
             });
-            
+
             if (parent[0] != null && parentTypeID.equals(parent[0].getType())) {
                 return false;
             }
@@ -264,20 +264,25 @@ public class PropertyEditorPreferredSize extends PropertyEditorUserCode implemen
         }
 
         public void insertUpdate(DocumentEvent evt) {
-            radioButton.setSelected(true);
-            checkNumberStatus();
+            if (textField.hasFocus()) {
+                radioButton.setSelected(true);
+                checkNumberStatus();
+            }
         }
 
         public void removeUpdate(DocumentEvent evt) {
-            radioButton.setSelected(true);
-            checkNumberStatus();
+            if (textField.hasFocus()) {
+                radioButton.setSelected(true);
+                checkNumberStatus();
+            }
         }
 
         public void changedUpdate(DocumentEvent evt) {
         }
 
         private void checkNumberStatus() {
-            if (!Pattern.matches("[\\d\\-]+", textField.getText())) { // NOI18N
+            if (!Pattern.matches("[\\d\\-]+", textField.getText())) {
+                // NOI18N
                 displayWarning(PropertyEditorNumber.NON_DIGITS_TEXT);
             } else {
                 clearErrorStatus();

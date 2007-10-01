@@ -57,7 +57,7 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
     public static final int DEPENDENCE_NONE = 0;
     public static final int DEPENDENCE_TEXT_BOX = 1;
     public static final int DEPENDENCE_TEXT_FIELD = 2;
-
+    
     private CustomEditor customEditor;
     private JRadioButton radioButton;
     private int dependence;
@@ -84,7 +84,7 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
         this.dependence = dependence;
         this.useTextArea = useTextArea;
         this.label = label;
-        this.parentTypeID = parentTypeID; 
+        this.parentTypeID = parentTypeID;
         initComponents();
 
         initElements(Collections.<PropertyEditorElement>singleton(this));
@@ -123,7 +123,7 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
     public static final PropertyEditorString createInstance(int dependence, String label) {
         return new PropertyEditorString(null, dependence, true, label, null);
     }
-    
+
     /**
      * Creates instance of PropertyEditorString with particular dependences and NOT editable for given parent TypeID.
      * @param int dependence
@@ -255,7 +255,10 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
         } else {
             customEditor.setText((String) value.getPrimitiveValue());
         }
-        radioButton.setSelected(!isCurrentValueAUserCodeType());
+        if (!isCurrentValueAUserCodeType()) {
+            radioButton.setSelected(true);
+            radioButton.requestFocus();
+        }
     }
 
     private void saveValue(String text) {
@@ -316,7 +319,7 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
                     parent[0] = _component.getParentComponent();
                 }
             });
-            
+
             if (parent[0] != null && parentTypeID.equals(parent[0].getType())) {
                 return false;
             }
@@ -324,7 +327,7 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
         return true;
     }
 
-    /*
+/*
      * Custom property editor. JEditorPane plus possible JLabels with comments.
      */
     private class CustomEditor implements DocumentListener {
@@ -340,7 +343,7 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
 
         private void initComponents() {
             panel = new JPanel(new GridBagLayout());
-            
+
             JComponent textComponent;
             if (useTextArea) {
                 editorPane = new JTextArea();
@@ -389,15 +392,18 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
         }
 
         public void insertUpdate(DocumentEvent e) {
-            radioButton.setSelected(true);
+            if (editorPane.hasFocus()) {
+                radioButton.setSelected(true);
+            }
         }
 
         public void removeUpdate(DocumentEvent e) {
-            radioButton.setSelected(true);
+            if (editorPane.hasFocus()) {
+                radioButton.setSelected(true);
+            }
         }
 
         public void changedUpdate(DocumentEvent e) {
-            radioButton.setSelected(true);
         }
     }
 }

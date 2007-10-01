@@ -215,13 +215,17 @@ public final class PropertyEditorDate extends PropertyEditorUserCode implements 
         }
 
         public void insertUpdate(DocumentEvent evt) {
-            radioButton.setSelected(true);
-            checkDateStatus();
+            if (textField.hasFocus()) {
+                radioButton.setSelected(true);
+                checkDateStatus();
+            }
         }
 
         public void removeUpdate(DocumentEvent evt) {
-            radioButton.setSelected(true);
-            checkDateStatus();
+            if (textField.hasFocus()) {
+                radioButton.setSelected(true);
+                checkDateStatus();
+            }
         }
 
         public void changedUpdate(DocumentEvent evt) {

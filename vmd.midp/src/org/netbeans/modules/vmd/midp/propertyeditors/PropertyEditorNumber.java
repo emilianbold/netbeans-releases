@@ -420,13 +420,17 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
         }
         
         public void insertUpdate(DocumentEvent evt) {
-            radioButton.setSelected(true);
-            checkNumberStatus();
+            if (textField.hasFocus()) {
+                radioButton.setSelected(true);
+                checkNumberStatus();
+            }
         }
         
         public void removeUpdate(DocumentEvent evt) {
-            radioButton.setSelected(true);
-            checkNumberStatus();
+            if (textField.hasFocus()) {
+                radioButton.setSelected(true);
+                checkNumberStatus();
+            }
         }
         
         public void changedUpdate(DocumentEvent evt) {

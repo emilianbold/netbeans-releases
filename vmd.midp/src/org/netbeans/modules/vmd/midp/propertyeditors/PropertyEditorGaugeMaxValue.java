@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.vmd.midp.propertyeditors;
 
-import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -238,13 +237,17 @@ public final class PropertyEditorGaugeMaxValue extends PropertyEditorUserCode im
         }
 
         public void insertUpdate(DocumentEvent evt) {
-            radioButton.setSelected(true);
-            checkNumberStatus();
+            if (textField.hasFocus()) {
+                radioButton.setSelected(true);
+                checkNumberStatus();
+            }
         }
 
         public void removeUpdate(DocumentEvent evt) {
-            radioButton.setSelected(true);
-            checkNumberStatus();
+            if (textField.hasFocus()) {
+                radioButton.setSelected(true);
+                checkNumberStatus();
+            }
         }
 
         public void changedUpdate(DocumentEvent evt) {

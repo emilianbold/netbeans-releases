@@ -76,6 +76,7 @@ public class TickerEditorElement extends PropertyEditorResourceElement implement
 
             this.componentID = component.getComponentID();
             component.getDocument().getTransactionManager().readAccess(new Runnable() {
+
                 public void run() {
                     PropertyValue propertyValue = component.readProperty(TickerCD.PROP_STRING);
                     if (!isPropertyValueAUserCodeType(propertyValue)) {
@@ -112,15 +113,18 @@ public class TickerEditorElement extends PropertyEditorResourceElement implement
     }
 
     public void insertUpdate(DocumentEvent e) {
-        textChanged();
+        if (tickerTextField.hasFocus()) {
+            textChanged();
+        }
     }
 
     public void removeUpdate(DocumentEvent e) {
-        textChanged();
+        if (tickerTextField.hasFocus()) {
+            textChanged();
+        }
     }
 
     public void changedUpdate(DocumentEvent e) {
-        textChanged();
     }
 
     private synchronized void textChanged() {

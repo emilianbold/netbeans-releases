@@ -355,13 +355,17 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor {
         }
 
         public void insertUpdate(DocumentEvent evt) {
-            userCodeRadioButton.setSelected(true);
-            setNewValue();
+            if (userCodeEditorPane.hasFocus()) {
+                userCodeRadioButton.setSelected(true);
+                setNewValue();
+            }
         }
 
         public void removeUpdate(DocumentEvent evt) {
-            userCodeRadioButton.setSelected(true);
-            setNewValue();
+            if (userCodeEditorPane.hasFocus()) {
+                userCodeRadioButton.setSelected(true);
+                setNewValue();
+            }
         }
 
         public void changedUpdate(DocumentEvent evt) {
@@ -371,7 +375,7 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor {
             setNewValue();
         }
 
-         @Override
+        @Override
         public void addNotify() {
             if (!initialized) {
                 initComponents();
