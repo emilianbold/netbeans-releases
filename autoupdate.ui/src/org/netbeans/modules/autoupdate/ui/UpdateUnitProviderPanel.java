@@ -76,6 +76,8 @@ public class UpdateUnitProviderPanel extends javax.swing.JPanel {
         tfURL.setText(url);
         tfName.setText(name);
         cbActive.setSelected(isActive);
+        getAccessibleContext().setAccessibleName("ACN_UpdateCenterCustomizer");
+        getAccessibleContext().setAccessibleDescription("ACD_UpdateCenterCustomizer");
     }
     
     JButton getOKButton() {
