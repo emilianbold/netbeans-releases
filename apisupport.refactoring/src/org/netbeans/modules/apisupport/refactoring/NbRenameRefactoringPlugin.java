@@ -443,22 +443,23 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
             return NbBundle.getMessage(NbRenameRefactoringPlugin.class, "TXT_ManifestRename", this.name, attrName);
         }
         
+        @Override
         public void performChange() {
             String content = Utility.readFileIntoString(parentFile);
             oldContent = content;
             if (content != null) {
-                String longName = oldName;
+                String shortName = oldName.substring(oldName.lastIndexOf(".") + 1);
                 if (newName == null) {
-//                    System.out.println("new name=" + rename.getNewName());
                     newName = rename.getNewName();
                     newName = newName.replace('.', '/') + ".class"; //NOI18N
                 }
-                longName = longName.replace('.', '/') + ".class"; //NOI18N
-                content = content.replaceAll(longName, newName);
+                shortName = shortName + ".class"; //NOI18N
+                content = content.replaceAll(shortName, newName);
                 Utility.writeFileFromString(parentFile, content);
             }
         }
         
+        @Override
         public void undoChange() {
             if (oldContent != null) {
                 Utility.writeFileFromString(parentFile, oldContent);
