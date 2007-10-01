@@ -70,7 +70,7 @@ public final class ChangeType implements ErrorRule<Void> {
     
     static void computeType(CompilationInfo info, int offset, TypeMirror[] tm, ExpressionTree[] expression, TypeMirror[] expressionType, Tree[] leaf) {
         TreePath path = info.getTreeUtilities().pathFor(offset);
-
+        
         // Try to locate the VARIABLE tree
         if (path != null) {
             Tree scope = path.getLeaf();
@@ -85,9 +85,36 @@ public final class ChangeType implements ErrorRule<Void> {
             		// set it's parent as the scope
             		scope = path.getLeaf();
             	}
+            } else if (scope.getKind() == Kind.MEMBER_SELECT) {
+                path = path.getParentPath();
+                if (path != null) {
+                    // set it's parent as the scope
+                    scope = path.getLeaf();
+                    if (scope.getKind() == Kind.METHOD_INVOCATION) {
+                        path = path.getParentPath();
+                        if (path != null) {
+                            // set it's parent as the scope
+                            scope = path.getLeaf();
+                        }
+                    }
+                }
+            } else if (scope.getKind() == Kind.IDENTIFIER) {
+                path = path.getParentPath();
+                if (path != null) {
+                    // set it's parent as the scope
+                    scope = path.getLeaf();
+                    if (scope.getKind() == Kind.MEMBER_SELECT ||
+                            scope.getKind() == Kind.METHOD_INVOCATION) {
+                        path = path.getParentPath();
+                        if (path != null) {
+                            // set it's parent as the scope
+                            scope = path.getLeaf();
+                        }
+                    }
+                }
             }
             
-            // Is thsis a VARIABLE tree
+            // Is this a VARIABLE tree
             if (scope.getKind() == Kind.VARIABLE && ((VariableTree) scope).getInitializer() != null) {
                 expected = info.getTrees().getTypeMirror(path);
                 found = ((VariableTree) scope).getInitializer();
