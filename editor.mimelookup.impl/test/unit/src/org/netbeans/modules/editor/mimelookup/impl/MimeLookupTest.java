@@ -44,7 +44,7 @@ public class MimeLookupTest extends NbTestCase {
         super(testName);
     }
     
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         clearWorkDir();
         String fsstruct [] = new String [] {
             "Editors/text/xml/text/html/java-lang-StringBuffer.instance", //NOI18N
@@ -88,7 +88,7 @@ public class MimeLookupTest extends NbTestCase {
         checkLookupObject(lookup, TestLookupObject.class, false);
         checkLookupObject(lookup ,TestLookupObjectTwo.class, true);
 
-        lookup = MimeLookup.getMimeLookup("text/jsp");//NOI18N
+        lookup = MimeLookup.getLookup("text/jsp");//NOI18N
         checkLookupObject(lookup, TestLookupObject.class, true);
         checkLookupObject(lookup, TestLookupObjectTwo.class, false);
         
@@ -102,7 +102,7 @@ public class MimeLookupTest extends NbTestCase {
         mp = MimePath.parse("text/xml/text/jsp/text/html"); //NOI18N
         lookup = MimeLookup.getLookup(mp);
         checkLookupObject(lookup, TestLookupObject.class, true);
-        lookup = MimeLookup.getMimeLookup("text/xml");
+        lookup = MimeLookup.getLookup("text/xml");
         checkLookupObject(lookup, TestLookupObject.class, false);        
         mp = MimePath.parse("text/xml/text/jsp");
         lookup = MimeLookup.getLookup(mp);
@@ -115,7 +115,7 @@ public class MimeLookupTest extends NbTestCase {
         checkLookupObject(lookup, TestLookupObject.class, false);
         checkLookupObject(lookup, TestLookupObjectTwo.class, false);
         
-        lookup = MimeLookup.getMimeLookup("text/jsp");//NOI18N
+        lookup = MimeLookup.getLookup("text/jsp");//NOI18N
         checkLookupObject(lookup, TestLookupObject.class, true);
         checkLookupObject(lookup, TestLookupObjectTwo.class, false);
         
@@ -179,7 +179,7 @@ public class MimeLookupTest extends NbTestCase {
         checkLookupObject(lookup, TestLookupObject.class, false);
         checkLookupObject(lookup ,TestLookupObjectTwo.class, false);
         
-        lookup = MimeLookup.getMimeLookup("text/jsp");//NOI18N
+        lookup = MimeLookup.getLookup("text/jsp");//NOI18N
         checkLookupObject(lookup, TestLookupObject.class, false);
         checkLookupObject(lookup, TestLookupObjectTwo.class, false);
         
@@ -241,7 +241,7 @@ public class MimeLookupTest extends NbTestCase {
         //----------------------------------------------------------------------
         // result *NOT* firing on standard mime type testing
         resultChangedCount[0] = 0;
-        lookup = MimeLookup.getMimeLookup("image/jpeg"); //NOI18N
+        lookup = MimeLookup.getLookup("image/jpeg"); //NOI18N
         // try to lookup TestLookupObjectTwo, while TestLookupObject will be installed.
         // firing should not happen
         result = lookup.lookup(new Template(TestLookupObjectTwo.class));
@@ -268,7 +268,7 @@ public class MimeLookupTest extends NbTestCase {
         // "Editors/application/dtd/testLookup/org-netbeans-modules-editor-mimelookup-TestLookupObject.instance", //NOI18N                     
         // "Editors/application/x-ant+dtd/java-lang-StringBuffer.instance", //NOI18N
         // "Editors/application/x-ant+dtd/text/x-java/testLookupTwo/org-netbeans-modules-editor-mimelookup-TestLookupObjectTwo.instance", //NOI18N 
-        lookup = MimeLookup.getMimeLookup("application/x-ant+dtd"); //NOI18N
+        lookup = MimeLookup.getLookup("application/x-ant+dtd"); //NOI18N
         checkLookupObject(lookup, TestLookupObject.class, true);
         checkLookupObject(lookup, StringBuffer.class, true);
         checkLookupObject(lookup, String.class, false);
@@ -323,14 +323,14 @@ public class MimeLookupTest extends NbTestCase {
         // result *NOT* firing and firing on "compound" mime type testing where object is 
         // installed in inherited folder
         resultChangedCount[0] = 0;
-        lookup = MimeLookup.getMimeLookup("audiox/mp3+dtd"); //NOI18N
+        lookup = MimeLookup.getLookup("video/mp3+dtd"); //NOI18N
         result = lookup.lookup(new Template(TestLookupObject.class));
         result.allInstances();
         result.addLookupListener(listener);
         checkResultChange(0);
 
         //simulate module installation, new file will be added
-        createFile("Editors/audiox/dtd/testLookupTwo/" +
+        createFile("Editors/video/dtd/testLookupTwo/" +
                 "org-netbeans-modules-editor-mimelookup-impl-TestLookupObjectTwo.instance");
         
         checkResultChange(0);
@@ -339,7 +339,7 @@ public class MimeLookupTest extends NbTestCase {
         
         // now install TestLookupObject, firing should happen
         //simulate module installation, new file will be added
-        createFile("Editors/audiox/dtd/testLookup/" +
+        createFile("Editors/video/dtd/testLookup/" +
                 "org-netbeans-modules-editor-mimelookup-impl-TestLookupObject.instance");
         
         checkResultChange(1);
@@ -353,7 +353,7 @@ public class MimeLookupTest extends NbTestCase {
         // result *NOT* firing and firing on "compound" *SUB* mime type testing where object is 
         // installed in inherited folder
         resultChangedCount[0] = 0;
-        mp = MimePath.parse("audioy/mp3+dtd/audio/wav"); //NOI18N
+        mp = MimePath.parse("message/mp3+dtd/audio/wav"); //NOI18N
         lookup = MimeLookup.getLookup(mp);
         result = lookup.lookup(new Template(TestLookupObject.class));
         result.allInstances();
@@ -361,7 +361,7 @@ public class MimeLookupTest extends NbTestCase {
         checkResultChange(0);
 
         //simulate module installation, new file will be added
-        createFile("Editors/audioy/dtd/audio/wav/testLookupTwo/" +
+        createFile("Editors/message/dtd/audio/wav/testLookupTwo/" +
                 "org-netbeans-modules-editor-mimelookup-impl-TestLookupObjectTwo.instance");
         
         checkResultChange(0);
@@ -370,7 +370,7 @@ public class MimeLookupTest extends NbTestCase {
         
         // now install TestLookupObject, firing should happen
         //simulate module installation, new file will be added
-        createFile("Editors/audioy/dtd/audio/wav/testLookup/" +
+        createFile("Editors/message/dtd/audio/wav/testLookup/" +
                 "org-netbeans-modules-editor-mimelookup-impl-TestLookupObject.instance");
 
         checkResultChange(1);
@@ -384,7 +384,7 @@ public class MimeLookupTest extends NbTestCase {
         // result *NOT* firing and firing on "compound" *SUB* mime type testing where object is 
         // installed in inherited mime type folder
         resultChangedCount[0] = 0;
-        mp = MimePath.get(MimePath.get("audioy/mp3+dtd"), "audio/wav"); //NOI18N
+        mp = MimePath.get(MimePath.get("message/mp3+dtd"), "audio/wav"); //NOI18N
         lookup = MimeLookup.getLookup(mp);
         result = lookup.lookup(new Template(IllegalStateException.class));
         result.allInstances();
@@ -392,7 +392,7 @@ public class MimeLookupTest extends NbTestCase {
         checkResultChange(0);
 
         //simulate module installation, new file will be added
-        createFile("Editors/audioy/dtd/" +
+        createFile("Editors/message/dtd/" +
                 "java-lang-InstantiationException.instance");
         
         checkResultChange(0);
@@ -401,7 +401,7 @@ public class MimeLookupTest extends NbTestCase {
         
         // now install TestLookupObject, firing should happen
         //simulate module installation, new file will be added
-        createFile("Editors/audioy/dtd/" +
+        createFile("Editors/message/dtd/" +
                 "java-lang-IllegalStateException.instance");
 
         checkResultChange(1);
@@ -415,14 +415,14 @@ public class MimeLookupTest extends NbTestCase {
         // result *NOT* firing and firing on mime type testing where object is 
         // installed in mime type folder
         resultChangedCount[0] = 0;
-        lookup = MimeLookup.getMimeLookup("audioz/mp3"); //NOI18N
+        lookup = MimeLookup.getLookup("model/mp3"); //NOI18N
         result = lookup.lookup(new Template(IllegalStateException.class));
         result.allInstances();
         result.addLookupListener(listener);
         checkResultChange(0);
 
         //simulate module installation, new file will be added
-        createFile("Editors/audioz/mp3/" +
+        createFile("Editors/model/mp3/" +
                 "java-lang-InstantiationException.instance");
         
         checkResultChange(0);
@@ -431,7 +431,7 @@ public class MimeLookupTest extends NbTestCase {
         
         // now install TestLookupObject, firing should happen
         //simulate module installation, new file will be added
-        createFile("Editors/audioz/mp3/" +
+        createFile("Editors/model/mp3/" +
                 "java-lang-IllegalStateException.instance");
 
         checkResultChange(1);
@@ -454,7 +454,7 @@ public class MimeLookupTest extends NbTestCase {
         //StringBuffer.instance is declared 
         // in "Editors/text/xml/text/html/java-lang-StringBuffer.instance"
         // it shouldn't be found in text/xml parent folder
-        MimeLookup lookup = MimeLookup.getMimeLookup("text/xml");
+        Lookup lookup = MimeLookup.getLookup("text/xml");
         checkLookupObject(lookup, StringBuffer.class, false);        
     }
 
@@ -478,7 +478,7 @@ public class MimeLookupTest extends NbTestCase {
      * mime type will not instantiate lookup object
      */
     public void testLazyLookupObjectInstantiation() throws IOException{
-        MimeLookup lookup = MimeLookup.getMimeLookup("text/xml"); //NOI18N
+        Lookup lookup = MimeLookup.getLookup("text/xml"); //NOI18N
         // lookup for some object in the mime lookup
         checkLookupObject(lookup, StringBuffer.class, false);
         // calling 
