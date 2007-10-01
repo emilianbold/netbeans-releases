@@ -22,11 +22,14 @@ package org.netbeans.modules.db.explorer;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.util.Collection;
+import java.util.concurrent.CountDownLatch;
 import org.netbeans.modules.db.explorer.nodes.RootNode;
 import org.netbeans.modules.db.test.DOMCompare;
 import org.netbeans.modules.db.test.TestBase;
 import org.netbeans.modules.db.test.Util;
 import org.openide.cookies.InstanceCookie;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
@@ -109,7 +112,23 @@ public class DatabaseConnectionConvertorTest extends TestBase {
     
     public void testSaveOnPropertyChange() throws Exception {
         DatabaseConnection dbconn = new DatabaseConnection("a", "b", "c", "d", "e", null);
-        DatabaseConnectionConvertor.create(dbconn);
+        FileObject fo = DatabaseConnectionConvertor.create(dbconn).getPrimaryFile();
+        
+        class FCL extends FileChangeAdapter {
+            
+            private final CountDownLatch latch = new CountDownLatch(1);
+            
+            public void fileChanged(FileEvent fe) {
+                latch.countDown();
+            }
+            
+            public void await() throws InterruptedException {
+                latch.await();
+            }
+        }
+        
+        FCL fcl = new FCL();
+        fo.addFileChangeListener(fcl);
         
         dbconn.setDriver("org.bar.BarDriver");
         dbconn.setDriverName("bar_driver");
@@ -117,11 +136,7 @@ public class DatabaseConnectionConvertorTest extends TestBase {
         dbconn.setSchema("schema");
         dbconn.setUser("user");
         
-        try {
-            Thread.sleep(2500);
-        } catch (InterruptedException e) { }
-        
-        FileObject fo = Util.getConnectionsFolder().getChildren()[0];
+        fcl.await();
         
         ErrorHandlerImpl errHandler = new ErrorHandlerImpl();
         Document doc = null;
