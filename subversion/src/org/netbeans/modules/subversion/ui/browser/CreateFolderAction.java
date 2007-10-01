@@ -75,7 +75,7 @@ public class CreateFolderAction extends BrowserAction implements PropertyChangeL
     }
 
     /**
-     * Configures this action with the actuall browser instance
+     * Configures this action with the actual browser instance
      */
     public void setBrowser(Browser browser) {        
         Browser oldBrowser = getBrowser();
