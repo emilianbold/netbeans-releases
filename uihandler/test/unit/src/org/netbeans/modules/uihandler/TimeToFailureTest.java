@@ -51,7 +51,7 @@ public class TimeToFailureTest extends TestCase {
     public void testLog() throws InterruptedException {
         System.setProperty("java.util.prefs.PreferencesFactory","org.netbeans.junit.internal.MemoryPreferencesFactory");//NOI18N
         TimeToFailure.logAction();
-        Thread.sleep(5); 
+        Thread.sleep(10); 
         TimeToFailure.logAction();
         assertTrue("More then 5 ms", 5 <= TimeToFailure.totalTime);        
         assertNotNull(TimeToFailure.logFailure());
