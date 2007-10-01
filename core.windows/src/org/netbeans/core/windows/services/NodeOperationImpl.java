@@ -209,6 +209,9 @@ public final class NodeOperationImpl extends NodeOperation {
         Dialog d = findCachedPropertiesDialog( n );
         if( null == d ) {
             NbSheet s = new NbSheet ();
+            //#70831 - small hack: mark the NbSheet as 'floating propertis dialog' 
+            //(unlike the global Properties window)
+            s.putClientProperty( "isPropertiesDialog", Boolean.TRUE ); //NOI18N
             Node[] nds = new Node[] { n };
             s.setNodes (nds);
             openProperties(s, nds);
@@ -231,6 +234,9 @@ public final class NodeOperationImpl extends NodeOperation {
         Dialog d = findCachedPropertiesDialog( nodes );
         if( null == d ) {
             NbSheet s = new NbSheet ();
+            //#70831 - small hack: mark the NbSheet as 'floating propertis dialog' 
+            //(unlike the global Properties window)
+            s.putClientProperty( "isPropertiesDialog", Boolean.TRUE ); //NOI18N
             s.setNodes (nodes);
             openProperties(s, nodes);
         } else {
