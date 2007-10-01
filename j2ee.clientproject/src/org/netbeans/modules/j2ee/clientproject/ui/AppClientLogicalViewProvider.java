@@ -952,9 +952,11 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
                 result.add(KEY_SERVICE_REFS);
             } else {
                 WebServicesClientSupport wscs = WebServicesClientSupport.getWebServicesClientSupport(project.getProjectDirectory());
-                List wsClients = wscs.getServiceClients();
-                if ((wsClients != null)  && (!wsClients.isEmpty())) {
-                    result.add(KEY_SERVICE_REFS);
+                if (wscs != null) {
+                    List wsClients = wscs.getServiceClients();
+                    if ((wsClients != null)  && (!wsClients.isEmpty())) {
+                        result.add(KEY_SERVICE_REFS);
+                    }
                 }
             }
             
