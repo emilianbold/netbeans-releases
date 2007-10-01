@@ -118,7 +118,6 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
             int remainder = encoded % 1000000;
             this.lexerState    = remainder / 1000;
             this.lexerScriptState = remainder % 1000;
-            System.out.println("\nrestarted to state " + lexerState);
         }
     }
     
@@ -188,8 +187,6 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
         
         while (true) {
             actChar = input.read();
-            
-            System.out.print(lexerState + ":'" + (char)actChar + "'; ");
             
             if (actChar == EOF) {
                 if(input.readLengthEOF() == 1) {
@@ -825,7 +822,7 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
             if(input.readLength() == 0) {
                 LOGGER.log(Level.INFO, "Found zero length token: ");
             }
-            System.out.println("\n[" + this.getClass().getSimpleName() + "] token ('" + input.readText().toString() + "'; id=" + tokenId + "; state=" + state() + ")\n");
+            LOGGER.log(Level.INFO, "[" + this.getClass().getSimpleName() + "] token ('" + input.readText().toString() + "'; id=" + tokenId + "; state=" + state() + ")\n");
         }
         return tokenFactory.createToken(tokenId);
     }
