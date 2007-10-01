@@ -42,11 +42,14 @@
 package org.netbeans.modules.updatecenters.resources;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.StringTokenizer;
 import org.netbeans.spi.autoupdate.AutoupdateClusterCreator;
 
@@ -93,11 +96,20 @@ public final class NetBeansClusterCreator extends AutoupdateClusterCreator {
         File conf = findConf(parent, clusters);
         assert conf != null;
         clusters.add(cluster);
-        OutputStream os = new FileOutputStream(conf, true);
-        os.write('\n');
-        os.write(clusterName.getBytes());
-        os.write('\n');
-        os.close();
+        Properties p = new Properties();
+        InputStream is = new FileInputStream(conf);
+        try{
+            p.load(is);
+        } finally {
+            is.close();
+        }
+        if (!p.keySet().contains(clusterName)) {         
+            OutputStream os = new FileOutputStream(conf, true);
+            os.write('\n');
+            os.write(clusterName.getBytes());
+            os.write('\n');
+            os.close();
+        }
         return clusters.toArray(new File[0]);
     }
 }
