@@ -24,6 +24,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.File;
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -154,6 +155,7 @@ public class HgCommand {
     private static final String HG_NOT_FOUND_ERR = "not found!"; // NOI18N
     private static final String HG_CANNOT_READ_COMMIT_MESSAGE_ERR = "abort: can't read commit message"; // NOI18N
     private static final String HG_UNABLE_EXECUTE_COMMAND_ERR = "unable to execute hg command"; // NOI18N
+    private static final String HG_CANCELLED_COMMAND_ERR = "command has been cancelled"; // NOI18N
     private static final String HG_UNABLE_CLONE_ERR = "abort: destination "; // NOI18N
     private static final String HG_NODE_NAME_ERR = "abort: node name or service name not known"; // NOI18N
     private static final String HG_NO_CHANGE_NEEDED_ERR = "no change needed"; // NOI18N
@@ -1603,17 +1605,37 @@ public class HgCommand {
             } catch (InterruptedException e) {
                 Mercurial.LOG.log(Level.FINE, "execEnv():  process interrupted " + e); // NOI18N
             }
+        }catch(InterruptedIOException e){
+            // We get here is we try to cancel so kill the process
+            Mercurial.LOG.log(Level.FINE, "execEnv():  execEnv(): InterruptedIOException " + e); // NOI18N
+            if (proc != null)  {
+                try {
+                    proc.getInputStream().close();
+                    proc.getOutputStream().close();
+                    proc.getErrorStream().close();
+                } catch (IOException ioex) {
+                //Just ignore. Closing streams.
+                }
+                proc.destroy();
+            }
+            throw new HgException(HG_CANCELLED_COMMAND_ERR);
         }catch(IOException e){
             // Hg does not seem to be returning error status != 0
             // even when it fails when for instance adding an already tracked file to
             // the repository - we will have to examine the output in the context of the
             // calling func and raise exceptions there if needed
             Mercurial.LOG.log(Level.FINE, "execEnv():  execEnv(): IOException " + e); // NOI18N
-            if (proc != null) proc.destroy();
+             
             throw new HgException(HG_UNABLE_EXECUTE_COMMAND_ERR);
         }finally{
-            // TODO: should handle the input.close() if input != null
-            input = null;
+            if (input != null) {
+                try {
+                    input.close();
+                } catch (IOException ioex) {
+                //Just ignore. Closing streams.
+                }
+                input = null;
+            }
         }
         return list;
     }
