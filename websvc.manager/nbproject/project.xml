@@ -245,6 +245,7 @@
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.visualweb.websvcmgr</friend>
+                <friend>org.netbeans.modules.websvc.components.strikeiron</friend>
                 <friend>org.netbeans.modules.websvc.rest</friend>
                 <package>org.netbeans.modules.websvc.manager.api</package>
                 <package>org.netbeans.modules.websvc.manager.model</package>
