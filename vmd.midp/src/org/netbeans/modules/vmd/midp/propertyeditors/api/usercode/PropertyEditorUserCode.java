@@ -56,14 +56,13 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor {
     public static final String USER_CODE_TEXT = NbBundle.getMessage(PropertyEditorUserCode.class, "LBL_STRING_USER_CODE"); // NOI18N
     private static final Icon ICON_WARNING = new ImageIcon(Utilities.loadImage("org/netbeans/modules/vmd/midp/resources/warning.gif")); // NOI18N
     private static final Icon ICON_ERROR = new ImageIcon(Utilities.loadImage("org/netbeans/modules/vmd/midp/resources/error.gif")); // NOI18N
-
+    
     private final CustomEditor customEditor;
     private JRadioButton userCodeRadioButton;
     private final JLabel messageLabel;
     private String userCodeLabel;
     private String userCode = ""; // NOI18N
     protected WeakReference<DesignComponent> component;
-    private boolean initialized;
 
     protected PropertyEditorUserCode(String userCodeLabel) {
         this.userCodeLabel = userCodeLabel;
@@ -98,9 +97,7 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor {
      */
     @Override
     public final Component getCustomEditor() {
-        if (initialized) {
-            initCustomEditor();
-        }
+        initCustomEditor();
         return customEditor;
     }
 
@@ -113,7 +110,6 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor {
             customEditor.setUserCodeText(null);
             customEditor.updateState(value);
         }
-        customEditor.initRetoucheStuff();
     }
 
     @Override
@@ -218,9 +214,10 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor {
 
         private Collection<PropertyEditorElement> elements;
         private JEditorPane userCodeEditorPane;
-
+        
         public void init(Collection<PropertyEditorElement> elements) {
             this.elements = elements;
+            initComponents();
         }
 
         private void initComponents() {
@@ -377,15 +374,11 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor {
 
         @Override
         public void addNotify() {
-            if (!initialized) {
-                initComponents();
-                initCustomEditor();
-                initialized = true;
-            }
+            customEditor.initRetoucheStuff();
             super.addNotify();
         }
 
-         private void setNewValue() {
+        private void setNewValue() {
             userCode = userCodeEditorPane.getText();
         }
 
