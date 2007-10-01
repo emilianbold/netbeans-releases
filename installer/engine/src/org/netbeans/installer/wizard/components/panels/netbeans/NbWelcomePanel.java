@@ -48,6 +48,7 @@ import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.exceptions.NativeException;
 import org.netbeans.installer.utils.helper.Status;
+import org.netbeans.installer.utils.helper.Text;
 import org.netbeans.installer.utils.helper.swing.NbiButton;
 import org.netbeans.installer.utils.helper.swing.NbiCheckBox;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
@@ -480,26 +481,26 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                             
                             if (product.getStatus() == Status.INSTALLED) {
                                 chBox = new NbiCheckBox();
-                                chBox.setText(
-                                        //StringUtils.format(
-                                        //panel.getProperty(WELCOME_TEXT_PRODUCT_INSTALLED_TEMPLATE_PROPERTY),
-                                        node.getDisplayName());
+                                chBox.setText( "<html>" + 
+                                        StringUtils.format(
+                                        panel.getProperty(WELCOME_TEXT_PRODUCT_INSTALLED_TEMPLATE_PROPERTY),
+                                        node.getDisplayName()));
                                 chBox.setSelected(true);
                                 chBox.setEnabled(false);
                             } else if (product.getStatus() == Status.TO_BE_INSTALLED) {
                                 chBox = new NbiCheckBox();
-                                chBox.setText(
-                                        //StringUtils.format(
-                                        //panel.getProperty(WELCOME_TEXT_PRODUCT_NOT_INSTALLED_TEMPLATE_PROPERTY),
-                                        node.getDisplayName());
+                                chBox.setText("<html>" + 
+                                        StringUtils.format(
+                                        panel.getProperty(WELCOME_TEXT_PRODUCT_NOT_INSTALLED_TEMPLATE_PROPERTY),
+                                        node.getDisplayName()));
                                 chBox.setSelected(true);
                                 chBox.setEnabled(true);
                             } else if (product.getStatus() == Status.NOT_INSTALLED) {
                                 chBox = new NbiCheckBox();
-                                chBox.setText(
-                                        //StringUtils.format(
-                                        //panel.getProperty(WELCOME_TEXT_PRODUCT_NOT_INSTALLED_TEMPLATE_PROPERTY),
-                                        node.getDisplayName());
+                                chBox.setText("<html>" + 
+                                        StringUtils.format(
+                                        panel.getProperty(WELCOME_TEXT_PRODUCT_NOT_INSTALLED_TEMPLATE_PROPERTY),
+                                        node.getDisplayName()));
                                 chBox.setSelected(false);
                                 chBox.setEnabled(true);
                             }
@@ -517,7 +518,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                                         3, 1,                             // width, height
                                         1.0, 0.0,                         // weight-x, weight-y
                                         GridBagConstraints.LINE_START,        // anchor
-                                        GridBagConstraints.NONE,          // fill
+                                        GridBagConstraints.HORIZONTAL,          // fill
                                         new Insets(0, 11, 0, 0),        // padding
                                         0, 0));
                                 chBox.addActionListener(new ActionListener() {
