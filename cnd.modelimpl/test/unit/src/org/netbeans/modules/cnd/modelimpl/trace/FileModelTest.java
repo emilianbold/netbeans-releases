@@ -64,6 +64,10 @@ public class FileModelTest extends TraceModelTestBase {
         getTraceModel().setDumpPPState(true);
     }
     
+    public void testFunWithoutRetTypeInClassBody() throws Exception {
+        performTest("constructors_and_fun_no_ret_types.cc");
+    }
+    
     public void testStackOverflowOnCastExpression() throws Exception {
         // IZ#115549 StackOverflowError on parsing long expressions
         performTest("stackoverflow.cc");        
