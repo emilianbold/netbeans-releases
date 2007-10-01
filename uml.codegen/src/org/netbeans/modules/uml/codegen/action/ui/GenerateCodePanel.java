@@ -602,10 +602,6 @@ public class GenerateCodePanel extends javax.swing.JPanel
         
         if (list == null || list.size() == 0)
         {
-            targetProjectCombo.setModel(new DefaultComboBoxModel(
-                new String[]{NbBundle.getMessage(
-                GenerateCodePanel.class, "MSG_NoValidOpenTargetProjects")}));
-            
             noSourceFolder = true;
             enableExistingProjectElementGroup(false);
         }
