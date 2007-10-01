@@ -265,6 +265,10 @@ public class HTMLCompletionQuery implements CompletionQuery {
                     len = prefix.length();
                     List possible = tag.getAttributeList( prefix ); // All attribs of given tag
                     Collection<SyntaxElement.TagAttribute> existing = tagElem.getAttributes(); // Attribs already used
+                    Collection<String> existingAttrsNames = new ArrayList<String>(existing.size());
+                    for(SyntaxElement.TagAttribute ta : existing) {
+                        existingAttrsNames.add(ta.getName());
+                    }
                     
                     String wordAtCursor = (item == null) ? null : item.text().toString();
                     // #BUGFIX 25261 because of being at the end of document the
@@ -279,7 +283,7 @@ public class HTMLCompletionQuery implements CompletionQuery {
                         DTD.Attribute attr = (DTD.Attribute)i.next();
                         String aName = attr.getName();
                         if( aName.equals( prefix )
-                        || (!existing.contains( aName.toUpperCase()) && !existing.contains( aName.toLowerCase()))
+                        || (!existingAttrsNames.contains( aName.toUpperCase()) && !existingAttrsNames.contains( aName.toLowerCase()))
                         || (wordAtCursor.equals( aName ) && prefix.length() > 0))
                             result.add( attr );
                     }
