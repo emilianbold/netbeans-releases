@@ -262,7 +262,7 @@ public class Util {
     
     public static String singularize(String name) {
         // get around inflector bug:  'address' -> 'addres'
-        if (name.endsWith("s")) {
+        if (name.endsWith("ss")) {
             String plural = Inflector.getInstance().pluralize(name);
             if (! name.equals(plural)) {
                 return name;
@@ -272,6 +272,10 @@ public class Util {
     }
     
     public static String pluralize(String name) {
+        if (name.endsWith("s")) {
+            name = Inflector.getInstance().singularize(name);
+        }
+        
         return Inflector.getInstance().pluralize(name);
     }
     
@@ -279,13 +283,13 @@ public class Util {
         if (bean.isContainer()) {
             return bean.getName();
         } else {
-            return Inflector.getInstance().pluralize(bean.getName());
+            return pluralize(bean.getName());
         }
     }
     
     public static String getSingularName(EntityResourceBean bean) {
         if (bean.isContainer()) {
-            return Inflector.getInstance().singularize(bean.getName());
+            return singularize(bean.getName());
         } else {
             return bean.getName();
         }

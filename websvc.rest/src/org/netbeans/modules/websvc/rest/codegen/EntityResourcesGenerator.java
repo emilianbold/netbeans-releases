@@ -714,14 +714,15 @@ public class EntityResourcesGenerator extends AbstractGenerator {
                 "$CLASS$ entity = data.getEntity();" +
                 "createEntity(entity);" +
                 "service.commitTx();" +
-                "return Builder.created(context.getAbsolute().resolve(entity.$ID_GETTER$() + \"/\")).build();" +
+                "return Builder.created(context.getAbsolute().resolve($ID_TO_URI$ + \"/\")).build();" +
                 "} finally {" +
                 "service.close();" +
                 "}" +
                 "}";
         
+      
         bodyText = bodyText.replace("$CLASS$", getEntityClassName(bean)).
-                replace("$ID_GETTER$", getIdGetter(bean));
+                replace("$ID_TO_URI$", getIdFieldToUriStmt(bean));
         
         String comment = "Post method for creating an instance of $CLASS$ using XML as the input format.\n\n" +
                 "@param data an $CONVERTER$ entity that is deserialized from an XML stream\n" +
@@ -851,21 +852,23 @@ public class EntityResourcesGenerator extends AbstractGenerator {
             JavaSourceHelper.createIdentifierTree(copy, mimeTypes) };
         
         Object returnType = getConverterType(bean);
+ 
+        String[] parameters = getIdFieldIdArray(bean, false, null); 
+        Object[] paramTypes = getIdFieldTypeArray(bean, false, null); 
+        String[] paramAnnotations = getIdFieldUriParamArray(bean, false, null);
+        Object[] paramAnnotationAttrs = getIdFieldNameArray(bean, false, null);
+        String idList = getIdFieldIdList(bean);
         
         String bodyText = "{ try {" +
-                "return  new $CONVERTER$(getEntity(id), context.getAbsolute()); " +
+                "return  new $CONVERTER$(getEntity($ID_LIST$), context.getAbsolute()); " +
                 "} finally {" +
                 "PersistenceService.getInstance().close();" +
                 "}" +
                 "}";
         
-        bodyText = bodyText.replace("$CONVERTER$", getConverterName(bean));
-        
-        String[] parameters = new String[] {"id"};      //NOI18N
-        Object[] paramTypes = new Object[] {getIdFieldType(bean)};
-        String[] paramAnnotations = new String[] {Constants.URI_PARAM_ANNOTATION};
-        Object[] paramAnnotationAttrs = new Object[] {getIdFieldName(bean)};
-        
+        bodyText = bodyText.replace("$CONVERTER$", getConverterName(bean)).
+                replace("$ID_LIST$", idList);
+       
         String comment = "Get method for retrieving an instance of $CLASS identified by id in XML format.\n\n" +
                 "@param id identifier for the entity\n" +
                 "@return an instance of $CONVERTER$";
@@ -891,21 +894,24 @@ public class EntityResourcesGenerator extends AbstractGenerator {
             HttpMethodType.PUT.value(),
             JavaSourceHelper.createIdentifierTree(copy, mimeTypes) };
         
-        String[] params = new String[] { "id", "data" };
-        Object[] paramTypes = new Object[] { getIdFieldType(bean), getConverterType(bean) };
-        String[] paramAnnotations = new String[] {Constants.URI_PARAM_ANNOTATION, null};
-        Object[] paramAnnotationAttrs = new Object[] {getIdFieldName(bean), null};
+        String[] params = getIdFieldIdArray(bean, true, "data"); 
+        Object[] paramTypes = getIdFieldTypeArray(bean, true, getConverterType(bean));
+        String[] paramAnnotations = getIdFieldUriParamArray(bean, true, null); 
+        Object[] paramAnnotationAttrs = getIdFieldNameArray(bean, true, null);
+        String idList = getIdFieldIdList(bean);
         
         String bodyText = "{ " +
                 "PersistenceService service = PersistenceService.getInstance();" +
                 "try {" +
                 "service.beginTx();" +
-                "updateEntity(getEntity(id), data.getEntity());" +
+                "updateEntity(getEntity($ID_LIST$), data.getEntity());" +
                 "service.commitTx();" +
                 "} finally {" +
                 "service.close();" +
                 "}" +
                 "}";
+        
+        bodyText = bodyText.replace("$ID_LIST$", idList);
         
         String comment = "Put method for updating an instance of $CLASS identified by id using XML as the input format.\n\n" +
                 "@param id identifier for the entity\n" +
@@ -932,23 +938,25 @@ public class EntityResourcesGenerator extends AbstractGenerator {
         Object[] annotationAttrs = new Object[] {
             HttpMethodType.DELETE.value() };
         
-        String[] params = new String[] {"id"};      //NOI18N
-        Object[] paramTypes = new Object[] {getIdFieldType(bean)};
-        String[] paramAnnotations = new String[] {Constants.URI_PARAM_ANNOTATION};
-        Object[] paramAnnotationAttrs = new Object[] {getIdFieldName(bean)};
+        String[] parameters = getIdFieldIdArray(bean, false, null);
+        Object[] paramTypes = getIdFieldTypeArray(bean, false, null); 
+        String[] paramAnnotations = getIdFieldUriParamArray(bean, false, null);
+        Object[] paramAnnotationAttrs = getIdFieldNameArray(bean, false, null);
+        String idList = getIdFieldIdList(bean);
         
         String bodyText = "{" +
                 "PersistenceService service = PersistenceService.getInstance();" +
                 "try {" +
                 "service.beginTx();" +
-                "$CLASS$ entity = getEntity(id);" +
+                "$CLASS$ entity = getEntity($ID_LIST$);" +
                 "service.removeEntity(entity);" +
                 "service.commitTx();" +
                 "} finally {" +
                 "service.close();" +
                 "}" +
                 "}";
-        bodyText = bodyText.replace("$CLASS$", getEntityClassName(bean));
+        bodyText = bodyText.replace("$CLASS$", getEntityClassName(bean)).
+                replace("$ID_LIST$", idList);
         
         String comment = "Delete method for deleting an instance of $CLASS identified by id.\n\n" +
                 "@param id identifier for the entity\n";
@@ -956,7 +964,7 @@ public class EntityResourcesGenerator extends AbstractGenerator {
         
         return JavaSourceHelper.addMethod(copy, tree, modifiers, annotations,
                 annotationAttrs, HttpMethodType.DELETE.prefix(), returnType,
-                params, paramTypes, paramAnnotations,
+                parameters, paramTypes, paramAnnotations,
                 paramAnnotationAttrs, bodyText, comment);
     }
     
@@ -966,10 +974,13 @@ public class EntityResourcesGenerator extends AbstractGenerator {
         FieldInfo fieldInfo = relatedResource.getFieldInfo();
         Modifier[] modifiers = new Modifier[] {Modifier.PUBLIC};
         String[] annotations = new String[] {Constants.URI_TEMPLATE_ANNOTATION};
-        String[] params = new String[] { "id" };
-        Object[] paramTypes = new Object[] { getIdFieldType(bean) };
-        String[] paramAnnotations = new String[] {Constants.URI_PARAM_ANNOTATION};
-        Object[] paramAnnotationAttrs = new Object[] {getIdFieldName(bean)};
+        
+        String[] params = getIdFieldIdArray(bean, false, null); 
+        Object[] paramTypes = getIdFieldTypeArray(bean, false, null); 
+        String[] paramAnnotations = getIdFieldUriParamArray(bean, false, null);
+        Object[] paramAnnotationAttrs = getIdFieldNameArray(bean, false, null);
+        String idList = getIdFieldIdList(bean);
+        
         String uriTemplate = lowerCaseFirstLetter(subBean.getName()) + "/";
         String[] annotationAttrs = new String[] {uriTemplate};
         Object returnType = getResourceType(subBean);
@@ -996,9 +1007,9 @@ public class EntityResourcesGenerator extends AbstractGenerator {
         
         if (subBean.isItem()) {
             bodyText = "{" +
-                    "final $CLASS$ parent = getEntity(id);" +
+                    "final $CLASS$ parent = getEntity($ID_LIST$);" +
                     "return new $RESOURCE$(context) {" +
-                    "@Override protected $SUBCLASS$ getEntity($ID_TYPE$ id) {" +
+                    "@Override protected $SUBCLASS$ getEntity($ID_PARAMS$) {" +
                     "$SUBCLASS$ entity = parent.$GETTER$();" +
                     "if (entity == null) {" +
                     "throw new WebApplicationException(new Throwable(\"Resource for \" + context.getAbsolute() + \" does not exist.\"), 404);" +
@@ -1008,13 +1019,14 @@ public class EntityResourcesGenerator extends AbstractGenerator {
                     "};" +
                     "}";
             bodyText = bodyText.replace("$CLASS$", getEntityClassName(bean)).
+                    replace("$ID_LIST$", idList).
                     replace("$RESOURCE$", resourceName).
                     replace("$SUBCLASS$", getEntityClassName(subBean)).
-                    replace("$ID_TYPE$", demodulize(getIdFieldType(subBean))).
+                    replace("$ID_PARAMS$", getIdFieldParamList(subBean)).
                     replace("$GETTER$", getGetterName(fieldInfo));
         } else {
             bodyText = "{" +
-                    "final $CLASS$ parent = getEntity(id);" +
+                    "final $CLASS$ parent = getEntity($ID_LIST$);" +
                     "return new $RESOURCE$(context) {" +
                     "@Override protected Collection<$SUBCLASS$> getEntities() {" +
                     "return parent.$GETTER$();" +
@@ -1052,6 +1064,7 @@ public class EntityResourcesGenerator extends AbstractGenerator {
             bodyText += "}};}";
             
             bodyText = bodyText.replace("$CLASS$", getEntityClassName(bean)).
+                    replace("$ID_LIST$", idList).
                     replace("$RESOURCE$", resourceName).
                     replace("$SUBCLASS$", getEntityClassName(subBean)).
                     replace("$GETTER$", getGetterName(fieldInfo));
@@ -1074,21 +1087,31 @@ public class EntityResourcesGenerator extends AbstractGenerator {
     private ClassTree addGetEntityMethod(WorkingCopy copy, ClassTree tree,
             EntityResourceBean bean) {
         Modifier[] modifiers = new Modifier[] {Modifier.PROTECTED};
-        String[] params = new String[] { "id" };
-        Object[] paramTypes = new Object[] { getIdFieldType(bean) };
+        String[] params = getIdFieldIdArray(bean, false, null); 
+        Object[] paramTypes = getIdFieldTypeArray(bean, false, null); 
         
-        // Temporary workaround because Jersey does not support Character type
-        // in UriParam.
-        String idType = bean.getEntityClassInfo().getIdFieldInfo().getType();
-        String idString = "id";     //NOI18N        
-        if (idType.equals("java.lang.Character")) { //NOI18N
-            idString = "id.charAt(0)";
+        FieldInfo idField = bean.getEntityClassInfo().getIdFieldInfo();
+        
+        String idString = "id";
+        String newIdStatement = "";
+        String idType = idField.getType();   
+        
+        if (idField.isEmbeddedId()) {
+            newIdStatement = idType + " id = new " + idType + "(" +
+                    getIdFieldIdList(bean) + ");";
+         } else {
+            // Temporary workaround because Jersey does not support Character type
+            // in UriParam.      
+            if (idType.equals("java.lang.Character")) { //NOI18N
+                idString = "id.charAt(0)";
+            }
         }
         
         String bodyText = "{" +
                 "try {" +
+                "$NEW_ID_STMT$" + 
                 "return ($CLASS$) PersistenceService.getInstance()." +
-                "createNamedQuery(\"$CLASS$.findBy$UPPER_ID$\")." +
+                "createQuery(\"SELECT e FROM $CLASS$ e where e.$ID$ = :$ID$\")." +
                 "setParameter(\"$ID$\", $ID_STRING$).getSingleResult();" +
                 "} catch (NoResultException ex) {" +
                 "throw new WebApplicationException(new Throwable(\"Resource for \" + context.getAbsolute() + \" does not exist.\"), 404);" +
@@ -1096,8 +1119,8 @@ public class EntityResourcesGenerator extends AbstractGenerator {
                 "}";
         
         String id = bean.getEntityClassInfo().getIdFieldInfo().getName();
-        bodyText = bodyText.replace("$CLASS$", getEntityClassName(bean)).
-                replace("$UPPER_ID$", capitalizeFirstLetter(id)).
+        bodyText = bodyText.replace("$NEW_ID_STMT$", newIdStatement).
+                replace("$CLASS$", getEntityClassName(bean)).
                 replace("$ID$", id).replace("$ID_STRING$", idString);
         
         String comment = "Returns an instance of $CLASS$ identified by id.\n\n" +
@@ -1379,6 +1402,10 @@ public class EntityResourcesGenerator extends AbstractGenerator {
     private ClassTree addGetUriMethod(WorkingCopy copy, ClassTree tree) {
         Modifier[] modifiers = new Modifier[] {Modifier.PUBLIC};
         String[] annotations = new String[] {Constants.XML_ATTRIBUTE_ANNOTATION};
+        Object[] annotationAttrs = new Object[] {
+            JavaSourceHelper.createAssignmentTree(copy, "name", "uri")
+        };
+        
         Object returnType = Constants.URI_TYPE;
         
         String bodyText = "{return uri;}";
@@ -1387,8 +1414,8 @@ public class EntityResourcesGenerator extends AbstractGenerator {
                 "@return the uri";
         
         return JavaSourceHelper.addMethod(copy, tree,
-                modifiers, annotations, null,
-                "getUri", returnType, null, null, null, null,
+                modifiers, annotations, annotationAttrs,
+                "getResourceUri", returnType, null, null, null, null,
                 bodyText, comment);
     }
     
@@ -1580,22 +1607,26 @@ public class EntityResourcesGenerator extends AbstractGenerator {
             FieldInfo fieldInfo) {
         Modifier[] modifiers = new Modifier[] {Modifier.PUBLIC};
         String[] annotations = new String[] {Constants.XML_ATTRIBUTE_ANNOTATION};
+        Object[] annotationAttrs = new Object[] {
+            JavaSourceHelper.createAssignmentTree(copy, "name", "uri")
+        };
+        
         Object returnType = Constants.URI_TYPE;
         
         String bodyText = "{if (isUriExtendable) {" +
-                "return uri.resolve($GETTER$().toString() + \"/\");" +
+                "return uri.resolve($ID_TO_URI$ + \"/\");" +
                 "}" +
                 "return uri;" +
                 "}";
         
-        bodyText = bodyText.replace("$GETTER$", getGetterName(fieldInfo));
+        bodyText = bodyText.replace("$ID_TO_URI$", getIdFieldToUriStmt(fieldInfo));
         
         String comment = "Returns the URI associated with this reference converter.\n\n" +
                 "@return the converted uri";
         
         return JavaSourceHelper.addMethod(copy, tree,
-                modifiers, annotations, null,
-                "getUri", returnType, null, null, null, null,
+                modifiers, annotations, annotationAttrs,
+                "getResourceUri", returnType, null, null, null, null,
                 bodyText, comment);
     }
     
@@ -1611,7 +1642,7 @@ public class EntityResourcesGenerator extends AbstractGenerator {
         String comment = "Sets the URI for this reference converter.\n\n";
         
         return JavaSourceHelper.addMethod(copy, tree,
-                modifiers, null, null, "setUri", returnType,
+                modifiers, null, null, "setResourceUri", returnType,
                 params, paramTypes, null, null,
                 bodyText, comment);
     }
@@ -1722,6 +1753,196 @@ public class EntityResourcesGenerator extends AbstractGenerator {
     
     private String getIdFieldName(EntityResourceBean bean) {
         return bean.getEntityClassInfo().getIdFieldInfo().getName();
+    }
+    
+    private String[] getIdFieldIdArray(EntityResourceBean bean, boolean append,
+            String additionalId) {
+        FieldInfo field = bean.getEntityClassInfo().getIdFieldInfo();
+        
+        if (field.isEmbeddedId()) {
+            Collection<FieldInfo> fields = field.getFieldInfos();
+            int index = 0;
+            int size = (append) ? fields.size()+1 : fields.size();
+            String[] idArray = new String[size];
+        
+            for (int i = 0; i < size; i++) {
+                idArray[i] = "id" + (i+1);
+            }
+            if (append) {
+                idArray[size-1]= additionalId; 
+            }
+            
+            return idArray;
+        } else {
+            if (!append) {
+                return new String[] {"id"};
+            } else {
+                return new String[] {"id", additionalId};
+            }
+        }
+    }
+    
+    private String[] getIdFieldNameArray(EntityResourceBean bean, boolean append,
+            String additionalName) {
+        FieldInfo field = bean.getEntityClassInfo().getIdFieldInfo();
+        
+        if (field.isEmbeddedId()) {
+            Collection<FieldInfo> fields = field.getFieldInfos();
+            int index = 0;
+            int size = (append) ? fields.size()+1 : fields.size();
+            String[] fieldArray = new String[size];
+            
+            for (FieldInfo f : fields) {
+                fieldArray[index++] = f.getName();
+            }
+            
+            if (append) {
+                fieldArray[size-1]= additionalName; 
+            }
+            
+            return fieldArray;
+        } else {
+            if (!append) {
+                return new String[] {field.getName()};
+            } else {
+                return new String[] {field.getName(), additionalName};
+            }
+        }
+    }
+    
+    private Object[] getIdFieldTypeArray(EntityResourceBean bean, boolean append,
+            Object additionalType) {
+        FieldInfo field = bean.getEntityClassInfo().getIdFieldInfo();
+       
+        if (field.isEmbeddedId()) {
+            Collection<FieldInfo> fields = field.getFieldInfos();
+            int index = 0;
+            int size = (append) ? fields.size()+1 : fields.size();
+            Object[] typeArray = new Object[size];
+            
+            for (FieldInfo f : fields) {
+                typeArray[index++] = f.getType();
+            }
+            
+            if (append) {
+                typeArray[size-1] = additionalType;
+            }
+            return typeArray;
+        } else {
+            String type = field.getType();
+            if (type.equals("java.lang.Character")) {
+                type = "java.lang.String";
+            }
+                
+            if (!append) {
+                return new Object[] {type};
+            } else {
+                return new Object[] {type, additionalType};
+            }
+        }
+    }
+    
+    private String[] getIdFieldUriParamArray(EntityResourceBean bean, boolean append,
+            String additionalUriParam) {
+        FieldInfo field = bean.getEntityClassInfo().getIdFieldInfo();
+        
+        if (field.isEmbeddedId())  {
+            int size = (append) ? field.getFieldInfos().size()+1 :
+                field.getFieldInfos().size();
+            String[] uriParamArray = new String[size];
+            
+            for (int i = 0; i < size; i++) {
+                uriParamArray[i] = Constants.URI_PARAM_ANNOTATION;
+            }
+            
+            if (append) {
+                uriParamArray[size-1] = additionalUriParam;
+            }
+            
+            return uriParamArray;
+        } else {
+            if (!append) {
+                return new String[] {Constants.URI_PARAM_ANNOTATION};
+            } else {
+                return new String[] {Constants.URI_PARAM_ANNOTATION, additionalUriParam};
+            }
+        }
+    }
+    
+    private String getIdFieldIdList(EntityResourceBean bean) {
+        FieldInfo field = bean.getEntityClassInfo().getIdFieldInfo();
+        
+        if (field.isEmbeddedId()) {
+            int size = field.getFieldInfos().size();
+            String idList = "";
+            
+            for (int i = 1; i <= size; i++) {
+                if (i > 1) {
+                    idList += ", ";
+                }
+                
+                idList += "id" + i;
+            }
+            
+            return idList;
+        } else {
+            return "id";        //NOI18N
+        }
+    }
+    
+    private String getIdFieldToUriStmt(EntityResourceBean bean) {
+        return getIdFieldToUriStmt(bean.getEntityClassInfo().getIdFieldInfo());
+    }
+    
+    private String getIdFieldToUriStmt(FieldInfo idField) {
+        String getterName = getGetterName(idField);
+        
+        if (idField.isEmbeddedId()) {
+            Collection<FieldInfo> fields = idField.getFieldInfos();
+            int size = fields.size();
+            String stmt = "";
+            int index = 0;
+            
+            for (FieldInfo f : fields) {
+                if (index++ > 0) {
+                    stmt += " + \",\" + ";
+                }
+                stmt += "entity." + getterName + "()." + 
+                        getGetterName(f) + "()";
+            }
+ 
+            return stmt;
+        } else {
+            return "entity." + getterName + "()";
+        }
+    }
+    
+    private String getIdFieldParamList(EntityResourceBean bean) {
+        FieldInfo idField = bean.getEntityClassInfo().getIdFieldInfo();
+       
+        if (idField.isEmbeddedId()) {
+            Collection<FieldInfo> fields = idField.getFieldInfos();
+            int index = 0;
+            int size = fields.size();
+            String paramStr = "";
+            
+            for (FieldInfo f : fields) {
+                if (index++ > 0) {
+                    paramStr += ", ";
+                }
+                
+                paramStr += f.getSimpleTypeName() + " id" + index;
+            }
+         
+            return paramStr;
+        } else {
+            String type = idField.getSimpleTypeName();
+            if (type.equals("Character")) {
+                type = "String";
+            }
+            
+            return type + " id";
+        }      
     }
     
     private String getIdGetter(EntityResourceBean bean) {

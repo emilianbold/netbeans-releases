@@ -124,7 +124,25 @@ public class EntityResourceModelBuilder {
         
         itemBean.setName(Util.singularize(info.getName()));
         itemBean.setEntityClassInfo(info);
-        itemBean.setUriTemplate("{" + info.getIdFieldInfo().getName() + "}/");   //NOI18N
+        FieldInfo idField = info.getIdFieldInfo();
+        String uriTemplate = "";
+        
+        if (!idField.isEmbeddedId()) {
+            uriTemplate = "{" + info.getIdFieldInfo().getName() + "}/";   //NOI18N
+        } else {
+            int count = 0;
+            for (FieldInfo field : idField.getFieldInfos()) {      
+                if (count++ > 0) {
+                    uriTemplate += ",";     //NOI18N
+                }
+                
+                uriTemplate += "{" + field.getName() + "}";     //NOI18N
+            }
+            
+            uriTemplate += "/";     //NOI18N
+        }
+        
+        itemBean.setUriTemplate(uriTemplate);
         
         model.addItemResourceBean(itemBean);
         
