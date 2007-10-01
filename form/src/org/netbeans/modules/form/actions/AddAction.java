@@ -126,8 +126,9 @@ public class AddAction extends CallableSystemAction {
                             paletteItem.setComponentClassSource(ClassPathUtils.getProjectClassSource(
                                     FormEditor.getFormDataObject(formModel).getPrimaryFile(), chooseBeanType));
                         }
-                        if (formModel.getComponentCreator()
-                              .createComponent(paletteItem.getComponentClassSource(),
+                        MetaComponentCreator creator = formModel.getComponentCreator();
+                        if (creator.canAddComponent(paletteItem.getComponentClass(), targetComponent)
+                            && creator.createComponent(paletteItem.getComponentClassSource(),
                                                targetComponent, null) != null) {
                             added = true;
                         }
