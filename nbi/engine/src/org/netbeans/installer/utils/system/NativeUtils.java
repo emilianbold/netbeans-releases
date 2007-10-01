@@ -66,7 +66,7 @@ public abstract class NativeUtils {
     public final static String NATIVE_CLEANER_RESOURCE_SUFFIX =
             NATIVE_RESOURCE_SUFFIX +
             "cleaner/"; // NOI18N
-    
+    private static OnExitCleanerHandler cleanerHandler;
     
     public static synchronized NativeUtils getInstance() {
         final Platform platform = SystemUtils.getCurrentPlatform();
@@ -133,7 +133,7 @@ public abstract class NativeUtils {
             props.setJvmArguments(new String[]{
                 "-Xmx256m",
                 "-Xms64m",
-                "-D" + Installer.LOCAL_DIRECTORY_PATH_PROPERTY + 
+                "-D" + Installer.LOCAL_DIRECTORY_PATH_PROPERTY +
                         "=" + new File(System.getProperty(
                         Installer.LOCAL_DIRECTORY_PATH_PROPERTY)).
                         getAbsolutePath()});
@@ -181,31 +181,27 @@ public abstract class NativeUtils {
     public boolean checkFileAccess(File file, boolean isReadNotModify) throws NativeException {
         return true;
     }
-    
-    public final void addDeleteOnExitFile(File file) {
-        if(!deleteOnExitFiles.contains(file)) {
-            deleteOnExitFiles.add(file);
-        }
+    private final void initializeDeteleOnExit() {
+        
+    }
+    public final void addDeleteOnExitFile(File file) {        
+        getDeleteOnExitHandler().addDeleteOnExitFile(file);
     }
     
     public final void removeDeleteOnExitFile(File file) {
-        deleteOnExitFiles.remove(file);
+        getDeleteOnExitHandler().removeDeleteOnExitFile(file);
     }
-    
-    protected OnExitCleanerHandler getDeleteOnExit() {
+    protected OnExitCleanerHandler newDeleteOnExitCleanerHandler() {
         return new JavaOnExitCleanerHandler();
     }
-    
-    public void deleteFilesOnExit() {
-        OnExitCleanerHandler deleteOnExit = getDeleteOnExit();
-        try {
-            deleteOnExit.initialize(deleteOnExitFiles);
-            deleteOnExit.run();
-        } catch (IOException ex) {
-            LogManager.log(ex);
-        }
-        
+    protected OnExitCleanerHandler getDeleteOnExitHandler() {
+        if(cleanerHandler == null) {
+            cleanerHandler = newDeleteOnExitCleanerHandler();
+            Runtime.getRuntime().addShutdownHook(cleanerHandler);
+        }   
+        return cleanerHandler;
     }
+    
     
     public abstract List<File> getFileSystemRoots() throws IOException;
     
@@ -226,6 +222,7 @@ public abstract class NativeUtils {
                 FileUtils.writeFile(file, input);
                 
                 System.load(file.getAbsolutePath());
+                
                 addDeleteOnExitFile(file);
             } catch (IOException e) {
                 ErrorManager.notifyCritical(

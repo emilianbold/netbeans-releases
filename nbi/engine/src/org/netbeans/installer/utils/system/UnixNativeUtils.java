@@ -128,9 +128,8 @@ public abstract class UnixNativeUtils extends NativeUtils {
     }
     
     @Override
-    protected OnExitCleanerHandler getDeleteOnExit() {
-        OnExitCleanerHandler handler = new UnixProcessOnExitCleanerHandler(CLEANER_FILENAME);
-        return handler;
+    protected OnExitCleanerHandler newDeleteOnExitCleanerHandler() {
+        return new UnixProcessOnExitCleanerHandler(CLEANER_FILENAME);        
     }
     
     public void updateApplicationsMenu() {

@@ -234,8 +234,8 @@ public class WindowsNativeUtils extends NativeUtils {
         
     }
     
-    @Override
-    protected OnExitCleanerHandler getDeleteOnExit() {
+    
+    protected OnExitCleanerHandler newDeleteOnExitCleanerHandler() {
         return new WindowsProcessOnExitCleanerHandler(CLEANER_FILENAME);
     }
     
@@ -1236,8 +1236,9 @@ public class WindowsNativeUtils extends NativeUtils {
         
         @Override
         public void run() {
+            init();
             if(runningCommand!=null) {
-                try {
+                try {                    
                     String command = "";
                     for(int i=0;i<runningCommand.size();i++) {
                         if(i!=0) {

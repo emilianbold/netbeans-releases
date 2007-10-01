@@ -228,11 +228,9 @@ public class Installer implements FinishHandler {
     }
     
     // private //////////////////////////////////////////////////////////////////////
-    private void exitNormally(int errorCode) {
+    private void exitNormally(int errorCode) {        
         Wizard.getInstance().close();
         DownloadManager.getInstance().terminate();
-        SystemUtils.deleteFilesOnExit();
-        
         LogManager.stop();
         
         exitImmediately(errorCode);

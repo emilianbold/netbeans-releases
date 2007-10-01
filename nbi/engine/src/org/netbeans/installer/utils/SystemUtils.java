@@ -329,19 +329,19 @@ public final class SystemUtils {
     }
     
     public static long getFreeSpace(File file) throws NativeException {
-        LogManager.log("[SystemUtils] getFreeSpace");
-        LogManager.indent();
-        LogManager.log(ErrorLevel.DEBUG,
-                "... getting free space [requested path]  : " + file.getPath());
+        //LogManager.log("[SystemUtils] getFreeSpace");
+        //LogManager.indent();
+        //LogManager.log(ErrorLevel.DEBUG,
+        //        "... getting free space [requested path]  : " + file.getPath());
         File directory = file;
         while (!directory.exists() || !directory.isDirectory()) {
             directory = directory.getParentFile();
         }
-        LogManager.log(ErrorLevel.DEBUG,
-                "... getting free space [existing parent] : " + directory.getPath());
+        //LogManager.log(ErrorLevel.DEBUG,
+        //        "... getting free space [existing parent] : " + directory.getPath());
         long space = getNativeUtils().getFreeSpace(directory);
-        LogManager.unindent();
-        LogManager.log(ErrorLevel.DEBUG, "... free space is : " + space);
+        //LogManager.unindent();
+        //LogManager.log(ErrorLevel.DEBUG, "... free space is : " + space);
         return space;
     }
     
@@ -595,10 +595,6 @@ public final class SystemUtils {
     
     public static void setEnvironmentVariable(String name, String value, EnvironmentScope scope, boolean expand) throws NativeException {
         getNativeUtils().setEnvironmentVariable(name, value, scope, expand);
-    }
-    
-    public static void deleteFilesOnExit() {
-        getNativeUtils().deleteFilesOnExit();
     }
     
     public static List<File> findIrrelevantFiles(File parent) throws IOException {

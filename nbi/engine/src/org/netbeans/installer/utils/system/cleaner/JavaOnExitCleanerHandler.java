@@ -28,15 +28,15 @@ import java.util.List;
  *
  * @author Dmitry Lipin
  */
-public class JavaOnExitCleanerHandler implements OnExitCleanerHandler {
-    private List <File> fileList;
-    public void initialize(final List <File> files) throws IOException {
-        fileList = files;
+public class JavaOnExitCleanerHandler extends OnExitCleanerHandler {
+    @Override
+    public void addDeleteOnExitFile(File file) {
+        file.deleteOnExit();
     }
-    public void run()  {
-        for(File file : fileList) {
-            file.deleteOnExit();
-        }
+    @Override
+    public void removeDeleteOnExitFile(File file) {
+        //not supported
     }
-    
+    public void run()  {        
+    }
 }
