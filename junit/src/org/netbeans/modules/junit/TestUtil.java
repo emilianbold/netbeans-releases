@@ -811,5 +811,8 @@ public class TestUtil {
         return (lastDotIndex == -1) ? fullName
                                     : fullName.substring(lastDotIndex + 1);
     }
+
+    private TestUtil() {
+    }
     
 }
