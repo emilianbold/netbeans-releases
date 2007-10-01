@@ -39,7 +39,6 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -76,6 +75,7 @@ import org.openide.util.NbBundle;
  * @author  vstejskal
  * @author  Marian Petras
  */
+@SuppressWarnings("serial")
 public final class JUnitCfgOfCreate extends SelfResizingPanel
                                     implements ChangeListener {
     
@@ -625,6 +625,7 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
      *
      * @param  g  <code>Graphics</code> used to paint this panel's children
      */
+    @Override
     protected void paintedFirstTime(java.awt.Graphics g) {
         if (initialMessage != null) {
             displayMessage(initialMessage);
@@ -856,8 +857,7 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
      * Initializes form in the Test Settings panel of the dialog.
      */
     private void fillFormData() {
-        final DataObject dataObj = (DataObject)
-                                  nodes[0].getLookup().lookup(DataObject.class);
+        final DataObject dataObj = nodes[0].getLookup().lookup(DataObject.class);
         final FileObject fileObj = dataObj.getPrimaryFile();
         
         if (singleClass) {
@@ -959,6 +959,7 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
         }
         
         // #93658: GTK needs name to render cell renderer "natively"
+        @Override
         public String getName() {
             String name = super.getName();
             return name == null ? "ComboBox.renderer" : name;  // NOI18N
