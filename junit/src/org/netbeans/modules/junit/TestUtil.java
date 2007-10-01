@@ -168,12 +168,14 @@ public class TestUtil {
         DataFolder      df;
         
         dO = node.getCookie(DataObject.class);
-        if (null != dO)
+        if (null != dO) {
             return dO.getPrimaryFile();
+        }
 
         df = node.getCookie(DataFolder.class);
-        if (null != df)
+        if (null != df) {
             return df.getPrimaryFile();
+        }
         
 //XXX: retouche
 //        ClassElement ce = (ClassElement) node.getCookie(ClassElement.class);
@@ -281,8 +283,9 @@ public class TestUtil {
     static String fileToClassName(String fileName) {
         if (fileName.endsWith(".java")) {                               //NOI18N
             return (fileName.substring(0, fileName.length()-5)).replace('/','.');
-        } else
+        } else {
             return null;
+        }
     }
 
     /**
@@ -721,10 +724,12 @@ public class TestUtil {
         StringTokenizer tukac = new StringTokenizer(str, ".");
         while (tukac.hasMoreTokens()) {
             String token = tukac.nextToken();
-            if ("".equals(token))
+            if ("".equals(token)) {
                 return false;
-            if (!Utilities.isJavaIdentifier(token))
+            }
+            if (!Utilities.isJavaIdentifier(token)) {
                 return false;
+            }
         }
         return true;
     }
