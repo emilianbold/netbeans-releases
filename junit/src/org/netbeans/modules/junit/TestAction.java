@@ -42,6 +42,7 @@ abstract class TestAction extends NodeAction {
     TestAction() {
     }
     
+    @Override
     public boolean asynchronous() {
         return false;
     }
