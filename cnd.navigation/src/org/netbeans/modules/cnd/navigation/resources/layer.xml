@@ -29,7 +29,7 @@
                 <folder name="Keybindings">
                     <folder name="NetBeans">
                         <folder name="Defaults">
-                            <file name="keybindings.xml" url="DefaultKeyBindings.xml"/>
+                            <file name="navigation-keybindings.xml" url="DefaultKeyBindings.xml"/>
                         </folder>
                     </folder>
                 </folder>
@@ -78,7 +78,7 @@
                 <folder name="Keybindings">
                     <folder name="NetBeans">
                         <folder name="Defaults">
-                            <file name="keybindings.xml" url="DefaultKeyBindings.xml"/>
+                            <file name="navigation-keybindings.xml" url="DefaultKeyBindings.xml"/>
                         </folder>
                     </folder>
                 </folder>

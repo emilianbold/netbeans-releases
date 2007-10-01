@@ -46,4 +46,10 @@ Contributor(s):
     <bind actionName="uncomment" key="DS-D"/>  
     <bind actionName="toggle-comment" key="D-SLASH"/>
     <bind actionName="goto-declaration" key="D-B"/> 
+    <!-- 
+        the next line is to prevent user from confusing.
+        otherwise goto-super-implementation which is disabled for
+        C/C++ will have Ctrl-B shortcut in Navigate menu
+    <bind actionName="goto-super-implementation" key="DS-P"/>
+    -->
 </bindings>
