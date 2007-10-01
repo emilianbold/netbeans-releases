@@ -1,139 +1,63 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--       
-*     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
+*     Copyright ï¿½ 2007 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 <html>
-<head>
-<title>Projects Window</title>
-<link rel="StyleSheet" href="../../ide.css" type="text/css">
-</head>
-<body>
-<h2>Projects Window</h2>
-<p><small><a href="#seealso">See Also</a></small> </p>
-<p>The Projects window is the main entry point to your project sources. It shows 
-  a logical view of important project contents such as Java packages and Web pages. 
-  You can open the Projects window by choosing Window &gt; Projects (Ctrl-1). 
-<ul class="note"> 
-  <li>You can specify how Java source files are displayed in the Projects window by 
-  right-clicking the Projects window title, choosing View Java Packages As and then selecting 
-  one of the following view options:
-    <ul>
-        <li><b>List.</b> When selected, files are displayed according to their logical structure.</li>
-        <li><b>Tree.</b> When selected, files are displayed in a directory-based view.</li> 
-    </ul>
-  </li>
-  <li> You can view all of your project contents in a directory-based view in 
-    the <a href="proj_files_window.html">Files window</a>. To open the Files window, 
-    choose Window &gt; Files (Ctrl-2).</li>
-  </ul>
-
-<h3>Project Icons</h3>
-<p>The following table lists the main project icons as they appear in the Projects 
-  window. 
-<table border="1" cellpadding="5" cellspacing="0">
-  <tr align="left"> 
-    <th scope="col"><b>Icon</b></th>
-    <th scope="col"><b>Description</b></th>
-  </tr>
-  <tr> 
-    <td><img src="../../images/j2seProject.gif" width="16" height="16"></td>
-    <td>Standard Java project</td>
-  </tr>
-  <tr> 
-    <td><img src="../../images/webProjectIcon.gif" width="16" height="16"></td>
-    <td>Standard web project</td>
-  </tr>
-  <tr>
-    <td><img src="../../images/EjbModuleNodeIcon.gif" width="16" height="16" alt="ejb module project icon"></td>
-    <td>EJB module project</td>
-  </tr>
-  <tr> 
-    <td><img src="../../images/earProjectIcon.gif" width="16" height="16" alt="Enterprise application project icon"></td>
-    <td>Enterprise application project</td>
-  </tr>
-  <tr> 
-    <td><img src="../../images/module.gif" width="16" height="16" alt="NetBeans plug-in module project icon"></td>
-    <td>NetBeans plug-in module project</td>
-  </tr>
-    <tr> 
-    <td><img src="../../images/appclient.gif" width="16" height="16" alt="enterprise application client project icon"></td>
-    <td>Enterprise application client project</td>
-  </tr>
-    <tr> 
-    <td><img src="../../images/application_assembler_16.gif" width="16" height="16" alt="enterprise packaged archive project icon"></td>
-    <td>Enterprise packaged archive project</td>
-  </tr>
-  <tr> 
-    <td><img src="../../images/freeform-project.png" width="16" height="16"></td>
-    <td>Free-form project</td>
-  </tr>
-  <tr> 
-    <td><img src="../../images/webPages.gif" width="20" height="16"></td>
-    <td>Web pages node. This node appears in web projects.</td>
-  </tr>
-  <tr> 
-    <td><img src="../../images/packagesNode.gif" width="20" height="18"></td>
-    <td>Java packages root. In <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
-        <param name="content" value="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/glossary_freeform.html">
-        <param name="viewerActivator" value="javax.help.LinkLabel">
-        <param name="viewerStyle" value="javax.help.Popup">
-        <param name="viewerSize" value="400,160">
-        <param name="text" value="free-form projects">
-        <param name="textFontSize" value="medium">
-        <param name="textFontFamily" value="SansSerif">
-        <param name="textFontStyle" value="italic">
-        <param name="textFontWeight" value="bold">
-        <param name="textColor" value="blue">
-      </object>, there is one Java package root node for each of your source folders.</td>
-  </tr>
-  <tr> 
-    <td><img src="../../images/package.gif" width="16" height="16"></td>
-    <td>Java package</td>
-  </tr>
-  <tr> 
-    <td><img src="../../images/packageEmpty.gif" width="16" height="16"></td>
-    <td>Empty Java package</td>
-  </tr>
-  <tr> 
-    <td><img src="../../images/packagePrivate.gif" width="16" height="16"></td>
-    <td>Private Java package</td>
-  </tr>
-  <tr> 
-    <td><img src="../../images/packagePublic.gif" width="16" height="16"></td>
-    <td>Public Java package</td>
-  </tr>
-  <!--TODO? document this on Projects window page?
-<tr><td><img src="images/projectDesktop.gif" alt="root Project node"></td><td>The root Project node.</td></tr>
--->
-  <!--<tr><td><img src="images/defaultFolder.gif" alt=" "></td><td>Folder. 
-This icon represents folders, directories, and Java packages.</td></tr>-->
-  <!--<tr><td><img src="images/instanceObject.gif" alt=" "></td><td>Instance of a Java class.</td></tr>-->
-</table>
-<h3>Main Project</h3>
-<p>Whenever you have multiple projects open, one should always be set as the main 
-  project. The main project is usually the project that contains an application's 
-  main class. The IDE provides shortcut commands to quickly build, run, and debug 
-  the main project. </p>
-<p>In the Projects window, the main project is shown in bold. You can set any 
-  project as the main project by right-clicking its project node and choosing 
-  Set as Main Project. </p>
-<h3>Pop-up Menu</h3>
-<p>Each node in the projects window has a pop-up menu of commands that you 
-  can run on that node. You open a node's pop-up menu by right-clicking the 
-  node. The pop-up menu for project nodes contains all of the major project 
-  commands, like Build, Run, and Debug. The pop-up menu also contains a Properties 
-  command, which you can use to configure your project.</p>
-<dl>
-    <dt><a name="seealso">See Also</a></dt>
-    <dd><a href="proj_files_window.html">Files Window</a></dd>
-    <dd><a href="proj_fav_window.html">Favorites Window</a></dd>
-    <dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/proj_stand_about.html">About Standard Projects</a></dd>
-    <dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/proj_free_about.html">About Free-Form Projects</a></dd></dl>
-
-<hr><small><a href="../../credits.html">Legal Notices</a></small>
-
-<table border="0" cellpadding="50">
-<tr><td>&nbsp;</td></tr>
-</table></body>
+    <head>
+        <title>Projects Window</title>
+        <link rel="StyleSheet" href="../../ide.css" type="text/css">
+    </head>
+    
+    <body>
+        <h2>Projects Window</h2>
+        
+        <p><small><a href="#seealso">See Also</a></small></p>
+        
+        <p>The Projects window is the main entry point to your project sources. It shows 
+            a logical view of important project contents. You can open the Projects window 
+            by choosing Window &gt; Projects (Ctrl-1).</p>
+            
+        <ul class="note">
+            <li> You can view all of your project contents in a directory-based view in 
+                the <a href="proj_files_window.html">Files window</a>. To open the Files 
+                window, choose Window &gt; Files (Ctrl-2).</li>
+        </ul>
+        
+        <h4>To view documentation specific to the type of project you are working 
+            in, see the following pages:</h4>
+            
+        <ul>
+            <li><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/proj_window.html">Java Projects</a></li>
+            <li><a href="nbdocs://org.netbeans.modules.cnd/org/netbeans/modules/cnd/help/GettingStarted/ProjectsWindow.html">C/C++ Projects</a></li>
+            <!-- <li><a href="">Ruby Projects</a></li> -->
+        </ul>
+        
+        <h3>Main Projects</h3>
+        
+        <p>Whenever you have multiple projects open, one should always be set as the main 
+            project. The main project is usually the project that contains an application's 
+            main class. The IDE provides shortcut commands to quickly build, run, and debug 
+            the main project.</p>
+            
+        <p>In the Projects window, the main project is shown in bold. You can set any 
+            project as the main project by right-clicking its project node and choosing 
+            Set as Main Project.</p>
+            
+        <h3>Pop-up Menu</h3>
+        
+        <p>Each node in the projects window has a context-sensitive pop-up menu listing 
+            commands that you can run on that node. You open a node's pop-up menu by 
+            right-clicking the node. The pop-up menu for project nodes contains all of 
+            the major project commands. The pop-up menu also contains a Properties 
+            command, which you can use to configure your project.</p>
+        
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="proj_files_window.html">Files Window</a></dd>
+        </dl>
+        
+        <hr><small><a href="../../credits.html">Legal Notices</a></small>
+        <br><br><br>
+    </body>
 </html>
