@@ -20,7 +20,6 @@
 
 package org.netbeans.installer.wizard.components.panels.netbeans;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -30,6 +29,7 @@ import java.awt.event.ActionListener;
 import java.util.LinkedList;
 import java.util.List;
 import javax.swing.ImageIcon;
+import javax.swing.border.EmptyBorder;
 import org.netbeans.installer.Installer;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.RegistryNode;
@@ -49,6 +49,7 @@ import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.exceptions.NativeException;
 import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.helper.swing.NbiButton;
+import org.netbeans.installer.utils.helper.swing.NbiCheckBox;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
 import org.netbeans.installer.utils.helper.swing.NbiPanel;
 import org.netbeans.installer.utils.helper.swing.NbiTextPane;
@@ -210,7 +211,10 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                         product.setStatus(Status.NOT_INSTALLED);
                     }
                 } else if (product.getUid().equals("tomcat") &&
-                        (product.getStatus() == Status.TO_BE_INSTALLED)) {
+                        (product.getStatus() == Status.TO_BE_INSTALLED) &&
+                        BundleType.getType(System.getProperty(
+                        WELCOME_PAGE_TYPE_PROPERTY)).
+                        equals(BundleType.CUSTOMIZE)) {
                     product.setStatus(Status.NOT_INSTALLED);
                 }
             }
@@ -300,15 +304,13 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                     final Product product = (Product) node;
                     
                     if (product.getStatus() == Status.INSTALLED) {
-                        if(type.equals(BundleType.JAVAEE) ||
-                                type.equals(BundleType.CUSTOMIZE)) {
+                        if(type.equals(BundleType.CUSTOMIZE)) {
                             welcomeText.append(StringUtils.format(
                                     panel.getProperty(WELCOME_TEXT_PRODUCT_INSTALLED_TEMPLATE_PROPERTY),
                                     node.getDisplayName()));
                         }
                     } else if (product.getStatus() == Status.TO_BE_INSTALLED) {
-                        if(type.equals(BundleType.JAVAEE) ||
-                                type.equals(BundleType.CUSTOMIZE)) {
+                        if(type.equals(BundleType.CUSTOMIZE)) {
                             welcomeText.append(StringUtils.format(
                                     panel.getProperty(WELCOME_TEXT_PRODUCT_NOT_INSTALLED_TEMPLATE_PROPERTY),
                                     node.getDisplayName()));
@@ -327,8 +329,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                             new ProductFilter(Status.INSTALLED)));
                     
                     if (node.hasChildren(filter)) {
-                        if(type.equals(BundleType.JAVAEE) ||
-                                type.equals(BundleType.CUSTOMIZE)) {
+                        if(type.equals(BundleType.CUSTOMIZE)) {
                             welcomeText.append(StringUtils.format(
                                     panel.getProperty(WELCOME_TEXT_GROUP_TEMPLATE_PROPERTY),
                                     node.getDisplayName()));
@@ -346,17 +347,26 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             customizeButton.setText(
                     panel.getProperty(CUSTOMIZE_BUTTON_TEXT_PROPERTY));
             
+            updateSizes();
+            
+            super.initialize();
+        }
+        
+        private void updateSizes() {
             long installationSize = 0;
             for (Product product: Registry.getInstance().getProductsToInstall()) {
                 installationSize += product.getRequiredDiskSpace();
             }
             
-            installationSizeLabel.setText(StringUtils.format(
+           if (installationSize == 0) {
+                installationSizeLabel.setText(StringUtils.EMPTY_STRING);
+            } else {
+                installationSizeLabel.setText(StringUtils.format(
                     panel.getProperty(INSTALLATION_SIZE_LABEL_TEXT_PROPERTY),
                     StringUtils.formatSize(installationSize)));
-            
-            super.initialize();
+            }
         }
+            
         
         @Override
         protected String validateInput() {
@@ -440,6 +450,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             
             leftImagePanel.setOpaque(true);
             // this /////////////////////////////////////////////////////////////////
+            int dy = 0;
             add(leftImagePanel, new GridBagConstraints(
                     0, 0,                             // x, y
                     1, 100,                           // width, height
@@ -447,35 +458,127 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                     GridBagConstraints.WEST,     // anchor
                     GridBagConstraints.VERTICAL,          // fill
                     new Insets(0, 0, 0, 0),           // padding
-                    0, 0));                           // padx, pady - ???            
+                    0, 0));                           // padx, pady - ???
             add(textPane, new GridBagConstraints(
-                    1, 0,                             // x, y
-                    2, 1,                             // width, height
-                    1.0, 1.0,                         // weight-x, weight-y
-                    GridBagConstraints.CENTER,        // anchor
-                    GridBagConstraints.BOTH,          // fill
+                    1, dy++,                             // x, y
+                    3, 1,                             // width, height
+                    1.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.LINE_START,        // anchor
+                    GridBagConstraints.HORIZONTAL,          // fill
                     new Insets(11, 11, 0, 11),        // padding
                     0, 0));                           // padx, pady - ???
+            BundleType type = BundleType.getType(
+                    System.getProperty(WELCOME_PAGE_TYPE_PROPERTY));
+            //textPane.setBorder(new LineBorder(Color.BLACK));
+            if(type.equals(BundleType.JAVAEE)) {
+                for (RegistryNode node: registryNodes) {
+                    if (node instanceof Product) {
+                        final Product product = (Product) node;
+                        if(product.getUid().equals("glassfish") ||
+                                product.getUid().equals("tomcat")) {
+                            final NbiCheckBox chBox;
+                            
+                            if (product.getStatus() == Status.INSTALLED) {
+                                chBox = new NbiCheckBox();
+                                chBox.setText(
+                                        //StringUtils.format(
+                                        //panel.getProperty(WELCOME_TEXT_PRODUCT_INSTALLED_TEMPLATE_PROPERTY),
+                                        node.getDisplayName());
+                                chBox.setSelected(true);
+                                chBox.setEnabled(false);
+                            } else if (product.getStatus() == Status.TO_BE_INSTALLED) {
+                                chBox = new NbiCheckBox();
+                                chBox.setText(
+                                        //StringUtils.format(
+                                        //panel.getProperty(WELCOME_TEXT_PRODUCT_NOT_INSTALLED_TEMPLATE_PROPERTY),
+                                        node.getDisplayName());
+                                chBox.setSelected(true);
+                                chBox.setEnabled(true);
+                            } else if (product.getStatus() == Status.NOT_INSTALLED) {
+                                chBox = new NbiCheckBox();
+                                chBox.setText(
+                                        //StringUtils.format(
+                                        //panel.getProperty(WELCOME_TEXT_PRODUCT_NOT_INSTALLED_TEMPLATE_PROPERTY),
+                                        node.getDisplayName());
+                                chBox.setSelected(false);
+                                chBox.setEnabled(true);
+                            }
+                            else {
+                                chBox = null;
+                            }
+                            if(chBox != null) {
+                                chBox.setOpaque(false);
+                                
+                                //chBox.setPreferredSize(new Dimension(chBox.getPreferredSize().width,
+                                //        chBox.getPreferredSize().height-2));
+                                chBox.setBorder(new EmptyBorder(0,0,0,0));
+                                add(chBox,new GridBagConstraints(
+                                        1, dy++,                             // x, y
+                                        3, 1,                             // width, height
+                                        1.0, 0.0,                         // weight-x, weight-y
+                                        GridBagConstraints.LINE_START,        // anchor
+                                        GridBagConstraints.NONE,          // fill
+                                        new Insets(0, 11, 0, 0),        // padding
+                                        0, 0));
+                                chBox.addActionListener(new ActionListener() {
+                                    public void actionPerformed(ActionEvent e) {
+                                        if(chBox.isSelected()) {
+                                            product.setStatus(Status.TO_BE_INSTALLED);
+                                        } else {
+                                            product.setStatus(Status.NOT_INSTALLED);
+                                        }
+                                        updateErrorMessage();
+                                        updateSizes();
+                                    }
+                                });
+                                
+                            }
+                        }
+                    }
+                }
+            }
+            NbiTextPane separatorPane =  new NbiTextPane();
+            //separatorPane.setBorder(new LineBorder(Color.RED));
+            add(separatorPane , new GridBagConstraints(
+                    1, dy++,                             // x, y
+                    3, 1,                             // width, height
+                    1.0, 2.0,                         // weight-x, weight-y
+                    GridBagConstraints.LINE_START,        // anchor
+                    GridBagConstraints.BOTH,          // fill
+                    new Insets(0, 0, 0, 00),        // padding
+                    0, 0));                           // padx, pady - ???
+            
+            
             add(customizeButton, new GridBagConstraints(
-                    1, 1,                             // x, y
+                    1, dy,                             // x, y
                     1, 1,                             // width, height
                     1.0, 0.0,                         // weight-x, weight-y
                     GridBagConstraints.LINE_START,    // anchor
                     GridBagConstraints.NONE,          // fill
                     new Insets(7, 11, 11, 0),         // padding
                     0, 0));                           // padx, pady - ???
+            separatorPane =  new NbiTextPane();
+            add(separatorPane , new GridBagConstraints(
+                    2, dy,                             // x, y
+                    1, 1,                             // width, height
+                    1.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.CENTER,        // anchor
+                    GridBagConstraints.BOTH,          // fill
+                    new Insets(0, 0, 0, 0),        // padding
+                    0, 0));                           // padx, pady - ???
+            
             add(installationSizeLabel, new GridBagConstraints(
-                    2, 1,                             // x, y
+                    3, dy,                             // x, y
                     1, 1,                             // width, height
                     0.0, 0.0,                         // weight-x, weight-y
                     GridBagConstraints.EAST,        // anchor
                     GridBagConstraints.HORIZONTAL,    // fill
                     new Insets(7, 11, 0, 11),         // padding
-                    0, 0));                           // padx, pady - ???
-             
+                    0, 0));                          // padx, pady - ???
+            
             // move error label after the left welcome image
             Component errorLabel = getComponent(0);
-            getLayout().removeLayoutComponent(errorLabel);             
+            getLayout().removeLayoutComponent(errorLabel);
             add(errorLabel, new GridBagConstraints(
                     1, 99,                             // x, y
                     99, 1,                             // width, height
@@ -489,11 +592,8 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             if (SystemUtils.isMacOS()) {
                 customizeButton.setOpaque(false);
             }
-            BundleType type = BundleType.getType(
-                    System.getProperty(WELCOME_PAGE_TYPE_PROPERTY));
             
-            if(type.equals(BundleType.JAVAEE) ||
-                    type.equals(BundleType.CUSTOMIZE)) {
+            if(type.equals(BundleType.CUSTOMIZE)) {
                 customizeButton.setVisible(true);
             } else {
                 customizeButton.setVisible(false);
@@ -664,7 +764,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
     public static final String DEFAULT_COMPONENT_DESCRIPTION_PROPERTY =
             "default.component.description";
     public static final String WELCOME_PAGE_LEFT_IMAGE_RESOURCE =
-            FileProxy.RESOURCE_SCHEME_PREFIX + 
+            FileProxy.RESOURCE_SCHEME_PREFIX +
             "org/netbeans/installer/wizard/wizard-welcome-left.png";
     public static final String DEFAULT_CUSTOMIZE_TITLE =
             ResourceUtils.getString(NbWelcomePanel.class,
