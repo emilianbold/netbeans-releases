@@ -944,11 +944,11 @@ public class CPPParserEx extends CPPParser {
          */
     //}
     
-    protected final boolean isCtor() { 
-        return _isCtor();
-    }
+//    protected final boolean isCtor() { 
+//        return _isCtor();
+//    }
     
-    protected final boolean _isCtor() { 
+//    protected final boolean _isCtor() { 
 //	if (codeFoldingParse) {
 //            String lastID, refID;
 //	    /*
@@ -969,8 +969,8 @@ public class CPPParserEx extends CPPParser {
 //	    return lastID != null && refID != null && strcmp(lastID, refID) == 0;
 //	} else {
 //	    // The easy case...
-	return qualifiedItemIsOneOf(qiCtor);
-    }
+//	return qualifiedItemIsOneOf(qiCtor);
+//    }
     
     
     /*protected int getOffset() { 

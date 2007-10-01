@@ -462,7 +462,7 @@ tokens {
             consumeUntil(tokenSet);
 	}
 	
-	protected boolean isCtor() { /*TODO: implement*/ throw new NotImplementedException(); }
+	//protected boolean isCtor() { /*TODO: implement*/ throw new NotImplementedException(); }
 	//protected boolean isValidIdentifier(String id) { /*TODO: implement*/ throw new NotImplementedException(); }
 
 	protected
@@ -708,7 +708,7 @@ template_explicit_specialization
 // it's a caller's responsibility to check isCPlusPlus
 //
 protected
-external_declaration_template { K_and_R = false; }
+external_declaration_template { K_and_R = false; boolean ctrName=false;}
 	:      
 		(LITERAL_template LESSTHAN GREATERTHAN) => template_explicit_specialization
 	|
@@ -749,22 +749,27 @@ external_declaration_template { K_and_R = false; }
                        // Templated CONSTRUCTOR declaration
                         (	(template_head)?   // :)
                                 ctor_decl_spec
-                                {qualifiedItemIsOneOf(qiCtor)}?
+                                /*{qualifiedItemIsOneOf(qiCtor)}?*/
                                 ctor_declarator[false] (EOF|SEMICOLON)
                         )=>
                         {if (statementTrace>=1) 
-                                printf("external_declaration_template_11a[%d]: Constructor declarator\n",
+                                printf("external_declaration_template_11a[%d]: Constructor or no-ret type fun declarator\n",
                                         LT(1).getLine());
                         }
                         (template_head)?   // :)
                         ctor_decl_spec
+                        {ctrName = qualifiedItemIsOneOf(qiCtor);}
                         ctor_declarator[false] 	(EOF!|SEMICOLON) // Constructor declarator
                         {
-                        // below is a workaround for know infinite loop bug in ANTLR 
-                        // see http://www.jguru.com/faq/view.jsp?EID=271922
-                        //if( #cds1 != null ) { #cds1.setNextSibling(null); }; 
-                        #external_declaration_template= #(#[CSM_CTOR_TEMPLATE_DECLARATION, "CSM_CTOR_TEMPLATE_DECLARATION"],  #external_declaration_template); //end_of_stmt();
-                        }   
+                            // below is a workaround for know infinite loop bug in ANTLR 
+                            // see http://www.jguru.com/faq/view.jsp?EID=271922
+                            //if( #cds1 != null ) { #cds1.setNextSibling(null); }; 
+                            if (ctrName) {
+                                #external_declaration_template= #(#[CSM_CTOR_TEMPLATE_DECLARATION, "CSM_CTOR_TEMPLATE_DECLARATION"],  #external_declaration_template); //end_of_stmt();
+                            } else {
+                                #external_declaration_template= #(#[CSM_FUNCTION_TEMPLATE_DECLARATION, "CSM_FUNCTION_TEMPLATE_DECLARATION"],  #external_declaration_template); //end_of_stmt();
+                            }
+                        }
 
                   |   
 			// Templated CONSTRUCTOR definition
@@ -871,7 +876,7 @@ external_declaration {String s; K_and_R = false; boolean definition;}
 		// Constructor DEFINITION (non-templated)
 		{isCPlusPlus()}?
 		(	(options {warnWhenFollowAmbig = false;}: ctor_decl_spec)?
-			{isCtor()}?
+			{qualifiedItemIsOneOf(qiCtor)}?
 		)=>
 		{if (statementTrace>=1) 
 			printf("external_declaration_5[%d]: Constructor definition\n",
@@ -1105,7 +1110,7 @@ member_declaration_template
 	;
 
 member_declaration
-	{String q; boolean definition;}
+	{String q; boolean definition;boolean ctrName=false;}
 	:
 	(
 		// Class definition
@@ -1131,21 +1136,26 @@ member_declaration
 	|
 		// Constructor declarator
 		(	ctor_decl_spec
-			{qualifiedItemIsOneOf(qiCtor)}?
+			/*{qualifiedItemIsOneOf(qiCtor)}?*/
 			ctor_declarator[false] (EOF|SEMICOLON)
 		)=>
 		{if (statementTrace>=1) 
-			printf("member_declaration_3[%d]: Constructor declarator\n",
+			printf("member_declaration_3[%d]: Constructor or no-ret type fun declarator\n",
 				LT(1).getLine());
 		}
 		cds:ctor_decl_spec
+                {ctrName = qualifiedItemIsOneOf(qiCtor);}
 		cd:ctor_declarator[false] 	(EOF!|SEMICOLON) // Constructor declarator
 		{
-                // below is a workaround for know infinite loop bug in ANTLR 
-                // see http://www.jguru.com/faq/view.jsp?EID=271922
-		if( #cds != null ) { #cds.setNextSibling(null); }; 
-		#member_declaration = #(#[CSM_CTOR_DECLARATION, "CSM_CTOR_DECLARATION"], #cds, #cd); //end_of_stmt();
-		}
+                    // below is a workaround for know infinite loop bug in ANTLR 
+                    // see http://www.jguru.com/faq/view.jsp?EID=271922
+                    if( #cds != null ) { #cds.setNextSibling(null); }; 
+                    if (ctrName) {
+                        #member_declaration = #(#[CSM_CTOR_DECLARATION, "CSM_CTOR_DECLARATION"], #cds, #cd); //end_of_stmt();
+                    } else {
+                        #member_declaration = #(#[CSM_FUNCTION_DECLARATION, "CSM_FUNCTION_DECLARATION"], #cds, #cd); //end_of_stmt();
+                    }
+                }
 		
 	|  
 		// JEL Predicate to distinguish ctor from function
@@ -1153,18 +1163,27 @@ member_declaration
 		// It unfortunately matches A::A where A is not enclosing
 		// class -- this will have to be checked semantically
 		(	ctor_decl_spec
-			{qualifiedItemIsOneOf(qiCtor)}?
+			/*{qualifiedItemIsOneOf(qiCtor)}?*/
 			ctor_declarator[true]
 			(COLON        // DEFINITION :ctor_initializer
 			|LCURLY       // DEFINITION (compound Statement) ?
 			)
 		)=>
 		{if (statementTrace>=1) 
-			printf("member_declaration_4[%d]: Constructor definition\n",
+			printf("member_declaration_4[%d]: Constructor or no-ret type fun definition\n",
 				LT(1).getLine());
 		}
-		ctor_definition 
-		{ #member_declaration = #(#[CSM_CTOR_DEFINITION, "CSM_CTOR_DEFINITION"], #member_declaration); }
+                ctor_decl_spec
+                {ctrName = qualifiedItemIsOneOf(qiCtor);}
+                ctor_declarator[true]
+		ctor_body 
+		{ 
+                    if (ctrName) {
+                        #member_declaration = #(#[CSM_CTOR_DEFINITION, "CSM_CTOR_DEFINITION"], #member_declaration); 
+                    } else {
+                        #member_declaration = #(#[CSM_FUNCTION_DEFINITION, "CSM_FUNCTION_DEFINITION"], #member_declaration); 
+                    }
+                }
 	|  
 		// No template_head allowed for dtor member
 		// Backtrack if not a dtor (no TILDE)
