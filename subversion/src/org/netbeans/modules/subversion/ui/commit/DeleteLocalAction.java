@@ -108,7 +108,7 @@ public final class DeleteLocalAction extends ContextAction {
                     fo.delete(lock);       
                 } catch (IOException e) {
                     ErrorManager err = ErrorManager.getDefault();
-                    err.annotate(e, NbBundle.getMessage(DeleteLocalAction.class, "BK0001", file.getAbsolutePath())); // NOI18N
+                    err.annotate(e, NbBundle.getMessage(DeleteLocalAction.class, "MSG_Cannot_lock", file.getAbsolutePath())); // NOI18N
                     err.notify(e);
                 } finally {
                     if (lock != null) {
