@@ -149,7 +149,7 @@ public class ClassPathSupport {
                 }                    
                 
                 if ( f == null || !f.exists() ) {
-                    item = Item.createBroken( Item.TYPE_JAR, pe[i] );
+                    item = Item.createBroken( f, pe[i] );
                 }
                 else {
                     item = Item.create( f, pe[i] );
@@ -278,23 +278,27 @@ public class ClassPathSupport {
         public static final int TYPE_LIBRARY = 1;
         public static final int TYPE_ARTIFACT = 2;
         public static final int TYPE_CLASSPATH = 3;
-
-        // Reference to a broken object
-        private static final String BROKEN = "BrokenReference"; // NOI18N
+        
         
         private Object object;
         private URI artifactURI;
         private int type;
         private String property;
+        private final boolean broken;
         
-        private Item( int type, Object object, String property ) {
+        private Item( int type, Object object, String property, boolean broken ) {
             this.type = type;
             this.object = object;
             this.property = property;
+            this.broken = broken;
+        }
+        
+        private Item (int type, Object object, String property) {
+            this (type, object, property, false);
         }
         
         private Item( int type, Object object, URI artifactURI, String property ) {
-            this( type, object, property );
+            this( type, object, property, false);
             this.artifactURI = artifactURI;
         }
               
@@ -336,9 +340,15 @@ public class ClassPathSupport {
             if ( property == null ) {
                 throw new IllegalArgumentException( "property must not be null in broken items" ); // NOI18N
             }
-            return new Item( type, BROKEN, property );
+            return new Item( type, null, property, true);
         }                
         
+        public static Item createBroken( final File file, String property ) {
+            if ( property == null ) {
+                throw new IllegalArgumentException( "property must not be null in broken items" ); // NOI18N
+            }
+            return new Item( TYPE_JAR, file, property, true);
+        }
         
         // Instance methods ----------------------------------------------------
         
@@ -382,15 +392,15 @@ public class ClassPathSupport {
         }
         
         public boolean isBroken() {
-            return object == BROKEN;
+            return this.broken;
         }
                         
         public int hashCode() {
         
             int hash = getType();
 
-            if ( object == BROKEN ) {
-                return BROKEN.hashCode();
+            if ( this.broken ) {
+                return 42;
             }
             
             switch ( getType() ) {

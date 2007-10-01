@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -148,11 +149,21 @@ public class J2SEProjectClassPathModifier extends ProjectClassPathModifierImplem
                                     resources.add (item);
                                     changed = true;
                                 }                            
-                                else if (operation == REMOVE && resources.contains(item)) {
-                                    resources.remove(item);
-                                    changed = true;
+                                else if (operation == REMOVE) {
+                                    if (resources.remove(item)) {
+                                        changed = true;
+                                    }
+                                    else {
+                                        for (Iterator<ClassPathSupport.Item> it = resources.iterator(); it.hasNext();) {
+                                            ClassPathSupport.Item _r = it.next();
+                                            if (_r.isBroken() && _r.getType() == ClassPathSupport.Item.TYPE_JAR && f.equals(_r.getFile())) {
+                                                it.remove();
+                                                changed = true;
+                                            }
+                                        }
+                                    }
                                 }
-                            }                                                                                                                
+                            }
                             if (changed) {
                                 String itemRefs[] = cs.encodeToStrings( resources.iterator() );
                                 props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);  //PathParser may change the EditableProperties

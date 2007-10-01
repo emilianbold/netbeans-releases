@@ -257,6 +257,61 @@ public class J2SEProjectClassPathModifierTest extends NbTestCase {
         assertEquals(jarFile,this.helper.resolveFileObject(cpRoots[1]));
     }
     
+    public void testRemoveBrokenRoot () throws Exception {
+        final FileObject rootFolder = this.scratch.createFolder("BrokenRoot");
+        final FileObject jarFile = this.scratch.createData("brokenarchive","jar");
+        final File jar = FileUtil.toFile(jarFile);
+        assertNotNull(jar);
+        FileLock lck = jarFile.lock();
+        try {
+            ZipOutputStream jf = new ZipOutputStream (jarFile.getOutputStream(lck));            
+            try {
+                jf.putNextEntry(new ZipEntry("Test.properties"));
+            }finally {
+                jf.close();
+            }
+        } finally {
+            lck.releaseLock();
+        }
+        final FileObject jarRoot = FileUtil.getArchiveRoot(jarFile);
+        final URL rootFolderURL = rootFolder.getURL();
+        ProjectClassPathModifier.addRoots (new URL[] {rootFolderURL}, this.src, ClassPath.COMPILE);
+        String cp = this.eval.getProperty("javac.classpath");
+        assertNotNull (cp);
+        String[] cpRoots = PropertyUtils.tokenizePath (cp);
+        assertNotNull (cpRoots);
+        assertEquals(1,cpRoots.length);
+        assertEquals(rootFolder,this.helper.resolveFileObject(cpRoots[0]));
+        rootFolder.delete();
+        assertFalse(rootFolder.isValid());
+        ProjectClassPathModifier.removeRoots (new URL[] {rootFolderURL},this.src, ClassPath.COMPILE);
+        cp = this.eval.getProperty("javac.classpath");
+        assertNotNull (cp);
+        cpRoots = PropertyUtils.tokenizePath (cp);
+        assertNotNull (cpRoots);
+        assertEquals(0,cpRoots.length);
+        final URL jarRootURL = jarRoot.getURL();
+        ProjectClassPathModifier.addRoots(new URL[] {jarRootURL},this.test,ClassPath.EXECUTE);
+        cp = this.eval.getProperty("run.test.classpath");
+        assertNotNull (cp);
+        cpRoots = PropertyUtils.tokenizePath (cp);
+        assertNotNull (cpRoots);
+        assertEquals(5,cpRoots.length);
+        assertEquals(this.helper.resolveFileObject(cpRoots[4]),jarFile);
+        jarFile.delete();
+        assertFalse (jarRoot.isValid());
+        ProjectClassPathModifier.removeRoots (new URL[] {jarRootURL},this.test, ClassPath.EXECUTE);
+        cp = this.eval.getProperty("run.test.classpath");
+        assertNotNull (cp);
+        cpRoots = PropertyUtils.tokenizePath (cp);
+        assertNotNull (cpRoots);
+        assertEquals(4,cpRoots.length);
+        for (String path : cpRoots) {
+            File f = helper.resolveFile(path);
+            assertFalse(jar.equals(f));
+        }
+    }
+    
     
     private static class TestLibraryProvider implements LibraryProvider {
         
