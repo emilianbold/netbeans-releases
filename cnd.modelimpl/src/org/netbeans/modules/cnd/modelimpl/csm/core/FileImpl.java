@@ -152,7 +152,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     
     private NativeFileItem nativeFileItem;
 
-    public FileImpl(FileBuffer fileBuffer, ProjectBase project, int fileType, APTPreprocHandler preprocHandler, NativeFileItem nativeFileItem) {
+    public FileImpl(FileBuffer fileBuffer, ProjectBase project, int fileType, NativeFileItem nativeFileItem) {
 	state = State.INITIAL;
 	this.nativeFileItem = nativeFileItem;
         setBuffer(fileBuffer);

@@ -1027,8 +1027,8 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
             synchronized( getFileContainer() ) {
                 impl = getFile(file);
                 if( impl == null ) {
-                    preprocHandler = preprocHandler == null ? getPreprocHandler(file) : preprocHandler;
-                    impl = new FileImpl(ModelSupport.instance().getFileBuffer(file), this, fileType, preprocHandler, nativeFileItem);
+                    preprocHandler = (preprocHandler == null) ? getPreprocHandler(file) : preprocHandler;
+                    impl = new FileImpl(ModelSupport.instance().getFileBuffer(file), this, fileType, nativeFileItem);
                     putFile(file, impl, initial);
                     // NB: parse only after putting into a map
                     if( scheduleParseIfNeed ) {
@@ -1081,7 +1081,7 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
                 if( impl == null ) {
                     preprocHandler = createPreprocHandler(nativeFile);
                     assert preprocHandler != null;
-                    impl = new FileImpl(buf, this, fileType, preprocHandler, nativeFile);
+                    impl = new FileImpl(buf, this, fileType, nativeFile);
                     putFile(file, impl, preprocHandler.getState());
                 }
             }
