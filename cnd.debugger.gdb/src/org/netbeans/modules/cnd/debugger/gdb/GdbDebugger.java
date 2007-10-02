@@ -513,7 +513,12 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 avar.setDerefValue(msg.substring(1, msg.length() - 1));
             } else if (watchValueMap.get(itok) != null) {
                 watch = watchValueMap.remove(itok);
-                watch.setValueToError(msg.substring(1, msg.length() - 1));
+                if (msg.startsWith("\"The program being debugged was signaled while in a function called from GDB.")) { // NOI18N
+                   watch.setValueToError(NbBundle.getMessage(GdbDebugger.class,
+                           "ERR_WatchedFunctionAborted")); // NOI18N
+                } else {
+                    watch.setValueToError(msg.substring(1, msg.length() - 1));
+                }
                 firePropertyChange(Watch.PROP_VALUE, watch, null);
             } else if (watchTypeMap.get(itok) != null) {
                 watch = watchTypeMap.remove(itok);
@@ -690,8 +695,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     } catch (NumberFormatException ex) {
                     }
                 }
-//            } else if (watchValueMap.get(Integer.valueOf(token)) != null) {
-//                System.err.println("");
             }
         }
     }
