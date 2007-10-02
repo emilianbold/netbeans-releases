@@ -68,7 +68,6 @@ public final class RubyDebuggerTest extends TestBase {
     protected void setUp() throws Exception {
         super.setUp();
         watchStepping = false;
-        DebuggerPreferences.getInstance().setVerboseDebugger(VERBOSE);
         clearWorkDir();
     }
     
