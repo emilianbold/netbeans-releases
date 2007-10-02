@@ -56,49 +56,29 @@ public class LibrariesNodeTest extends TestBase {
     public LibrariesNodeTest(String testName) {
         super(testName);
     }
-    
+
     public void testLibrariesNodeListening() throws Exception {
         NbModuleProject p = generateStandaloneModule("module");
         LogicalViewProvider lvp = p.getLookup().lookup(LogicalViewProvider.class);
         assertNotNull("have a LogicalViewProvider", lvp);
         Node root = lvp.createLogicalView();
         Node libraries = root.getChildren().findChild(LibrariesNode.LIBRARIES_NAME);
-        assertNotNull("have the Libraries node", libraries);
-        libraries.getChildren().getNodes(); // ping
-        
-        waitForChildrenUpdate();
-        assertEquals("just jdk node is present", 1, libraries.getChildren().getNodes(true).length);
-        
+        TestBase.assertAsynchronouslyUpdatedChildrenNodes(libraries, 1);
         Util.addDependency(p, "org.netbeans.modules.java.project");
         ProjectManager.getDefault().saveProject(p);
-        
-        waitForChildrenUpdate();
-        assertEquals("dependency noticed", 2, libraries.getChildren().getNodes(true).length);
+        TestBase.assertAsynchronouslyUpdatedChildrenNodes(libraries, 2);
     }
     
     public void testDependencyNodeActions() throws Exception {
         NbModuleProject p = generateStandaloneModule("module");
-        LogicalViewProvider lvp = (LogicalViewProvider) p.getLookup().lookup(LogicalViewProvider.class);
+        LogicalViewProvider lvp = p.getLookup().lookup(LogicalViewProvider.class);
         Node root = lvp.createLogicalView();
         Node libraries = root.getChildren().findChild(LibrariesNode.LIBRARIES_NAME);
-        
         Util.addDependency(p, "org.netbeans.modules.java.project");
         ProjectManager.getDefault().saveProject(p);
-        libraries.getChildren().getNodes(); // ping
-        waitForChildrenUpdate();
+        TestBase.assertAsynchronouslyUpdatedChildrenNodes(libraries, 2);
         Node[] nodes = libraries.getChildren().getNodes(true);
-        assertEquals("dependency noticed", 2, nodes.length);
-        assertEquals("dependency noticed", 4, nodes[1].getActions(false).length);
+        assertEquals("four actions", 4, nodes[1].getActions(false).length);
     }
-    
-    private void waitForChildrenUpdate() {
-        LibrariesNode.RP.post(new Runnable() {
-            public void run() {
-                // flush LibrariesNode.RP under which is the Children's update run
-            }
-        }).waitFinished();
-    }
-    
-    // XXX Much more needed
     
 }

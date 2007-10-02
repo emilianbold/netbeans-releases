@@ -85,13 +85,11 @@ public class ModuleLogicalViewTest extends TestBase {
         Node root = lvp.createLogicalView();
         Node iFiles = root.getChildren().findChild(ImportantFilesNodeFactory.IMPORTANT_FILES_NAME);
         assertNotNull("have the Important Files node", iFiles);
-        iFiles.getChildren().getNodes(true); // ping
-        waitForChildrenUpdate();
-        assertEquals("five important files", 5, iFiles.getChildren().getNodes(true).length);
-        FileUtil.createData(p.getProjectDirectory(), "nbproject/project.properties");
-        iFiles.getChildren().getNodes(true); // ping
-        waitForChildrenUpdate();
-        assertEquals("nbproject/project.properties noticed", 6, iFiles.getChildren().getNodes(true).length);
+        FileObject propsFO = p.getProjectDirectory().getFileObject("nbproject/project.properties");
+        propsFO = FileUtil.moveFile(propsFO, p.getProjectDirectory().getFileObject("nbproject"), "project-bck");
+        TestBase.assertAsynchronouslyUpdatedChildrenNodes(iFiles, 5);
+        FileUtil.moveFile(propsFO, p.getProjectDirectory().getFileObject("nbproject"), "project");
+        TestBase.assertAsynchronouslyUpdatedChildrenNodes(iFiles, 6);
     }
     
     private Node find(LogicalViewProvider lvp, String path) throws Exception {

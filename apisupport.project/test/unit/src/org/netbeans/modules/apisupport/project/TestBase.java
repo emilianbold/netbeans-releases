@@ -72,6 +72,7 @@ import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.openide.filesystems.FileLock;
 import org.openide.modules.ModuleInfo;
+import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 
 /**
@@ -86,8 +87,7 @@ import org.openide.util.Lookup;
     public static final String CLUSTER_ENTERPRISE = "enterprise4";
     public static final String CLUSTER_APISUPPORT = "apisupport1";
     public static final String CLUSTER_JAVA = "java1";
-    
-    
+
     protected TestBase(String name) {
         super(name);
     }
@@ -115,7 +115,7 @@ import org.openide.util.Lookup;
      */
     protected static boolean noDataDir = false;
     
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         super.setUp();
         Lookup.getDefault().lookup(ModuleInfo.class);
         cvsAvailable = isCVSAvailable();
@@ -168,7 +168,7 @@ import org.openide.util.Lookup;
         NbPlatform.reset();
     }
     
-    protected void tearDown() throws Exception {
+    protected @Override void tearDown() throws Exception {
         super.tearDown();
         ErrorManagerImpl.registerCase(null);
     }
@@ -274,7 +274,7 @@ import org.openide.util.Lookup;
         while (name.length() < 3) {
             name = name + "x";
         }
-        File todir = workdir.createTempFile(name, null, workdir);
+        File todir = File.createTempFile(name, null, workdir);
         todir.delete();
         doCopy(d, todir);
         return todir;
@@ -554,5 +554,16 @@ import org.openide.util.Lookup;
         assertNotNull("xtest.netbeans.dest.dir property has to be set when running within binary distribution", destDir);
         return new File(destDir);
     }
-    
-  }
+
+    private static int getChildrenLenght(final Node node) {
+        return node.getChildren().getNodes(true).length;
+    }
+
+    /** Fails with timeout if children are not updated to the required count. */
+    public static void assertAsynchronouslyUpdatedChildrenNodes(final Node node, final int n) throws InterruptedException {
+        for (int current = getChildrenLenght(node); current != n; current = getChildrenLenght(node)) {
+            System.out.println("Waiting for " + n + " child(ren); having " + current);
+            Thread.sleep(400);
+        }
+    }
+}
