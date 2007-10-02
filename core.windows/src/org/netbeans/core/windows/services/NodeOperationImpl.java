@@ -208,13 +208,8 @@ public final class NodeOperationImpl extends NodeOperation {
     public void showProperties (Node n) {
         Dialog d = findCachedPropertiesDialog( n );
         if( null == d ) {
-            NbSheet s = new NbSheet ();
-            //#70831 - small hack: mark the NbSheet as 'floating propertis dialog' 
-            //(unlike the global Properties window)
-            s.putClientProperty( "isPropertiesDialog", Boolean.TRUE ); //NOI18N
             Node[] nds = new Node[] { n };
-            s.setNodes (nds);
-            openProperties(s, nds);
+            openProperties(new NbSheet(), nds);
         } else {
             d.setVisible( true );
             d.toFront();
@@ -233,12 +228,7 @@ public final class NodeOperationImpl extends NodeOperation {
     public void showProperties (Node[] nodes) {
         Dialog d = findCachedPropertiesDialog( nodes );
         if( null == d ) {
-            NbSheet s = new NbSheet ();
-            //#70831 - small hack: mark the NbSheet as 'floating propertis dialog' 
-            //(unlike the global Properties window)
-            s.putClientProperty( "isPropertiesDialog", Boolean.TRUE ); //NOI18N
-            s.setNodes (nodes);
-            openProperties(s, nodes);
+            openProperties(new NbSheet(), nodes);
         } else {
             d.setVisible( true );
             d.toFront();
@@ -311,7 +301,7 @@ public final class NodeOperationImpl extends NodeOperation {
 
     /** Helper method, opens properties top component in single mode
     * and requests a focus for it */
-    private static void openProperties (final TopComponent tc, final Node[] nds) {
+    private static void openProperties (final NbSheet sheet, final Node[] nds) {
         // XXX #36492 in NbSheet the name is set asynch from setNodes.
 //        Mutex.EVENT.readAccess (new Runnable () { // PENDING
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
@@ -324,8 +314,8 @@ public final class NodeOperationImpl extends NodeOperation {
                     }
                     
                     Dialog dlg = org.openide.DialogDisplayer.getDefault().createDialog(new DialogDescriptor (
-                        tc,
-                        tc.getName(),
+                        sheet,
+                        sheet.getName(),
                         modal,
                         new Object [] {DialogDescriptor.CLOSED_OPTION},
                         DialogDescriptor.CLOSED_OPTION,
@@ -333,8 +323,9 @@ public final class NodeOperationImpl extends NodeOperation {
                         null,
                         null
                     ));
+                    sheet.setNodes(nds);
                     //fix for issue #40323
-                    SheetNodesListener listener = new SheetNodesListener(dlg, tc);
+                    SheetNodesListener listener = new SheetNodesListener(dlg, sheet);
                     listener.attach(nds);
                     
                     nodeCache.add( nds );

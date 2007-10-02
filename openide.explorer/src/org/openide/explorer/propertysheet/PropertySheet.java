@@ -574,23 +574,16 @@ public class PropertySheet extends JPanel {
                             SwingUtilities.invokeLater(
                                 new Runnable() {
                                     public void run() {
-                                        //#70831 - make sure that the Node is set *after* addNotify() has been called
-                                        //otherwise the preferred size of inner components will be all messed up and
-                                        //the properties dialog window will be too small
-                                        if( isPropertiesDialog() && getParent().getParent() == null ) {
-                                            SwingUtilities.invokeLater( this );
-                                        } else {
-                                            final boolean loggable = PropUtils.isLoggable(PropertySheet.class);
+                                        final boolean loggable = PropUtils.isLoggable(PropertySheet.class);
 
-                                            if (loggable) {
-                                                PropUtils.log(
-                                                    PropertySheet.class,
-                                                    "Delayed " + "updater setting nodes to " + Arrays.asList(nodes)
-                                                );
-                                            }
-
-                                            doSetNodes(nodes);
+                                        if (loggable) {
+                                            PropUtils.log(
+                                                PropertySheet.class,
+                                                "Delayed " + "updater setting nodes to " + Arrays.asList(nodes)
+                                            );
                                         }
+
+                                        doSetNodes(nodes);
                                     }
                                 }
                             );
@@ -611,22 +604,6 @@ public class PropertySheet extends JPanel {
 
         // if some task runs then return schedule task which will set nodes
         return scheduleTask;
-    }
-    
-    /**
-     * @return True if this PropertySheet is/will be displayed in a floating 
-     * properties dialog window (i.e. not the global Properties window).
-     */
-    private boolean isPropertiesDialog() {
-        boolean res = false;
-        if( null != getParent() && getParent() instanceof JComponent ) {
-            JComponent c = (JComponent)getParent();
-            Object val = c.getClientProperty( "isPropertiesDialog" ); //NOI18N
-            if( null != val && val instanceof Boolean ) {
-                res = ((Boolean)val).booleanValue();
-            }
-        }
-        return res;
     }
 
     // end of delayed    
@@ -699,7 +676,7 @@ public class PropertySheet extends JPanel {
             helpAction.checkContext();
         }
     }
-    
+
     private boolean noNullPropertyLists(PropertySet[] ps) {
         boolean result = true;
 
