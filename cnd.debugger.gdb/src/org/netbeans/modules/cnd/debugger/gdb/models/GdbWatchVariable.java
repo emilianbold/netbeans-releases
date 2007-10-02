@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.debugger.gdb.models;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import org.netbeans.api.debugger.Watch;
+import org.netbeans.modules.cnd.debugger.gdb.Field;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 
 /**
@@ -195,6 +196,10 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
             if (invalidValue[0]) {
                 invalidValue.notifyAll();
                 invalidValue[0] = false;
+            }
+            if (fields.length > 0) {
+                fields = new Field[0];
+                expandChildren();
             }
         }
     }
