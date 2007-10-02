@@ -565,19 +565,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                     }
                 }
                                 
-                if (commitMessage != null) {
-                    int width = master.getWidth();
-                    if (width > 0) {
-                        FontMetrics fm = list.getFontMetrics(list.getFont());
-                        Rectangle2D rect = fm.getStringBounds(commitMessage, textPane.getGraphics());
-                        int nlc, i;
-                        for (nlc = -1, i = 0; i != -1 ; i = commitMessage.indexOf('\n', i + 1), nlc++);
-                        nlc++;
-                        int lines = (int) (rect.getWidth() / (width - 80) + 1);
-                        int ph = fm.getHeight() * (lines + nlc) + 0;
-                        textPane.setPreferredSize(new Dimension(width - 50, ph));
-                    }
-                }
+                resizePane(commitMessage, list.getFontMetrics(list.getFont()));
                 sd.setCharacterAttributes(0, Integer.MAX_VALUE, style, false);
             } catch (BadLocationException e) {
                 ErrorManager.getDefault().notify(e);
@@ -616,11 +604,28 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 sd.insertString(sd.getLength(), FIELDS_SEPARATOR + dispRevision.getChangedPath().getPath(), null);
                 
                 sd.setCharacterAttributes(0, Integer.MAX_VALUE, style, false);
+                resizePane(sd.getText(0, sd.getLength() - 1), list.getFontMetrics(list.getFont()));
             } catch (BadLocationException e) {
                 ErrorManager.getDefault().notify(e);
-            }
+            }            
         }
 
+        private void resizePane(String text, FontMetrics fm) {
+            if(text == null) {
+                text = "";
+            }
+            int width = master.getWidth();
+            if (width > 0) {                
+                Rectangle2D rect = fm.getStringBounds(text, textPane.getGraphics());
+                int nlc, i;
+                for (nlc = -1, i = 0; i != -1 ; i = text.indexOf('\n', i + 1), nlc++);
+                nlc++;
+                int lines = (int) (rect.getWidth() / (width - 80) + 1);
+                int ph = fm.getHeight() * (lines + nlc) + 0;
+                textPane.setPreferredSize(new Dimension(width - 50, ph));
+            }
+        }
+        
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
             if (index == -1) return;
