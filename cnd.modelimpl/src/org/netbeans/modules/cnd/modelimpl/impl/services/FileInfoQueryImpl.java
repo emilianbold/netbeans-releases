@@ -33,10 +33,9 @@ import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
+import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
-import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
-import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTFindUnusedBlocksWalker;
@@ -58,17 +57,13 @@ public class FileInfoQueryImpl extends CsmFileInfoQuery {
     private List<String> getIncludePaths(CsmFile file, boolean system) {
         List<String> out = Collections.<String>emptyList();
         if (file instanceof FileImpl) {
-            FileImpl fileImpl = (FileImpl)file;
-            ProjectBase prj = fileImpl.getProjectImpl();
-            if (prj != null) {
-                APTPreprocHandler.State state = prj.getPreprocState(fileImpl);
-                if (state != null) {
-                    if (system) {
-                        out = APTHandlersSupport.extractSystemIncludePaths(state);
-                    } else {
-                        out = APTHandlersSupport.extractUserIncludePaths(state);
-                    }
-                }            
+            NativeFileItem item = ProjectBase.getCompiledFileItem((FileImpl)file);
+            if (item != null) {
+                if (system) {
+                    out = item.getSystemIncludePaths();
+                } else {
+                    out = item.getUserIncludePaths();
+                }
             }   
         }
         return out;

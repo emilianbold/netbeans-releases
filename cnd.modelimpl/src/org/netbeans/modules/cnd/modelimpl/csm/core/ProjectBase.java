@@ -1483,13 +1483,12 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
     }
     
     private StartEntryInfo getStartEntryInfo(APTPreprocHandler preprocHandler, APTPreprocHandler.State state) {
-	StartEntry startEntry = APTHandlersSupport.extractStartEntry(state);
-	ProjectBase startProject = getStartProject(startEntry);
-	FileImpl csmFile = startProject.getFile(new File(startEntry.getStartFile()));
+	FileImpl csmFile = getStartFile(state);
+	ProjectBase startProject = csmFile != null ? csmFile.getProjectImpl() : null;
 	if (csmFile != null) {
 	    NativeFileItem nativeFile = csmFile.getNativeFileItem();
 	    if( nativeFile != null ) {
-                preprocHandler = createPreprocHandler(nativeFile);
+                preprocHandler = startProject.createPreprocHandler(nativeFile);
 	    }
 	}	
 	return new StartEntryInfo(preprocHandler, startProject, csmFile);
@@ -1556,6 +1555,24 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
 	return reverse;
     }
        
+    public static NativeFileItem getCompiledFileItem(FileImpl fileImpl) {
+        NativeFileItem out = null;
+        ProjectBase filePrj = fileImpl.getProjectImpl();
+        if (filePrj != null) {
+            APTPreprocHandler.State state = filePrj.getPreprocState(fileImpl);
+            FileImpl startFile = getStartFile(state);
+            out = startFile != null ? startFile.getNativeFileItem() : null;
+        }
+        return out;
+    }
+    
+    public static FileImpl getStartFile(final APTPreprocHandler.State state) {
+        StartEntry startEntry = APTHandlersSupport.extractStartEntry(state);
+	ProjectBase startProject = getStartProject(startEntry);
+        FileImpl csmFile = startProject.getFile(new File(startEntry.getStartFile()));
+        return csmFile;
+    }
+    
     public static ProjectBase getStartProject(final APTPreprocHandler.State state) {
 	return getStartProject(APTHandlersSupport.extractStartEntry(state));
     }
