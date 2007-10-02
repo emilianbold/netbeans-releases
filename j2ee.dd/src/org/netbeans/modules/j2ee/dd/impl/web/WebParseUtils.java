@@ -62,6 +62,8 @@ public class WebParseUtils {
         }
     }
     
+    //XXX: note that this resolver does not handle entities from included schemas
+    // correctly. See #116379.
     private static class DDResolver implements EntityResolver {
         static DDResolver resolver;
         static synchronized DDResolver getInstance() {
@@ -99,5 +101,16 @@ public class WebParseUtils {
         return ParseUtils.parseDD(is, DDResolver.getInstance());
     }
    
-  
+    /**
+     * Parses the given <code>inputSource</code> using the given <code>resolver</code>.
+     * @param inputSource the source to parse.
+     * @param resolver the resolver to use for parsing.
+     * @return the SAX exception encountered during parsing or null if there was
+     * no exception.
+     */
+    public static SAXParseException parse (InputSource is, EntityResolver resolver) 
+            throws org.xml.sax.SAXException, java.io.IOException {
+        return ParseUtils.parseDD(is, resolver);
+    }
+   
 }

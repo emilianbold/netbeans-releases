@@ -69,9 +69,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.j2ee.dd.impl.common.ParseUtils;
+import org.netbeans.modules.j2ee.ddloaders.catalog.EnterpriseCatalog;
 import org.openide.awt.HtmlBrowser;
 import org.openide.loaders.MultiDataObject;
 import org.openide.util.Exceptions;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 /**
  * Represents a DD object in the Repository.
@@ -396,11 +400,22 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
         } else {
             DDUtils.merge(ejbJar, createReader());
         }
-        setSaxError(ejbJar.getError());
+        validateDocument();
     }
     
     protected void validateDocument() throws IOException {
-        setSaxError(DDUtils.createEjbJarProxy(createReader()).getError());
+        try{
+            ParseUtils.parseDD(new InputSource(createInputStream()), new EnterpriseCatalog());
+            setSaxError(null);
+        }catch (SAXException saxe){
+            setSaxError(saxe);
+            ejbJar.setStatus(EjbJar.STATE_INVALID_UNPARSABLE);
+            if (saxe instanceof SAXParseException) {
+                ejbJar.setError((SAXParseException) saxe);
+            } else if (saxe.getException() instanceof SAXParseException) {
+                ejbJar.setError((SAXParseException) saxe.getException());
+            }
+        }   
     }
     
     private void setEjbJar(EjbJarProxy newEjbJar) {

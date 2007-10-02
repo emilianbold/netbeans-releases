@@ -50,6 +50,7 @@ import org.netbeans.modules.j2ee.dd.api.client.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
 import org.netbeans.modules.j2ee.dd.impl.client.ClientParseUtils;
 import org.netbeans.modules.j2ee.dd.impl.client.AppClientProxy;
+import org.netbeans.modules.j2ee.ddloaders.catalog.EnterpriseCatalog;
 import org.netbeans.modules.j2ee.ddloaders.multiview.DDMultiViewDataObject;
 import org.netbeans.modules.j2ee.ddloaders.web.DDDataObject;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -519,7 +520,7 @@ public class ClientDataObject extends  DDMultiViewDataObject
         AppClientProxy webAppProxy = (AppClientProxy) appClient;
         try {
             // preparsing
-            SAXParseException error = ClientParseUtils.parse(new InputSource(createReader()));
+            SAXParseException error = ClientParseUtils.parse(new InputSource(createReader()), new EnterpriseCatalog());
             setSaxError(error);
 
             String version = ClientParseUtils.getVersion(new InputSource(createReader()));

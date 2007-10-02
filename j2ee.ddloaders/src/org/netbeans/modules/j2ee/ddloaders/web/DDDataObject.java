@@ -57,6 +57,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.j2ee.ddloaders.catalog.EnterpriseCatalog;
 
 import org.netbeans.modules.j2ee.ddloaders.web.multiview.*;
 import org.netbeans.modules.j2ee.ddloaders.multiview.DDMultiViewDataObject;
@@ -228,7 +229,7 @@ public class DDDataObject extends  DDMultiViewDataObject
         WebAppProxy webAppProxy = (WebAppProxy) webApp;
         try {
             // preparsing
-            SAXParseException error = WebParseUtils.parse(new InputSource(createReader()));
+            SAXParseException error = WebParseUtils.parse(new InputSource(createReader()), new EnterpriseCatalog());
             setSaxError(error);
 
             String version = WebParseUtils.getVersion(new InputSource(createReader()));
