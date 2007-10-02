@@ -1251,14 +1251,14 @@ public class CasaWrapperModel extends CasaModelImpl {
         Service service = wsdlFactory.createService(); // FIXME: use existing one?
         String newServiceName = getUniqueServiceName(compAppWSDLModel);
         service.setName(newServiceName);
-        service.addPort(port);
         
         compAppWSDLModel.startTransaction();
         try {
-            port.setBinding(port.createReferenceTo(binding, Binding.class));
-            binding.setType(binding.createReferenceTo(portType, PortType.class));
             definitions.addBinding(binding);
-            definitions.addService(service);
+            binding.setType(binding.createReferenceTo(portType, PortType.class));
+            definitions.addService(service);            
+            service.addPort(port);
+            port.setBinding(port.createReferenceTo(binding, Binding.class));
         } finally {
             if (compAppWSDLModel.isIntransaction()) {
                 compAppWSDLModel.endTransaction();
@@ -2435,7 +2435,7 @@ public class CasaWrapperModel extends CasaModelImpl {
             out.println("             xmlns:wsdl=\"http://schemas.xmlsoap.org/wsdl/\""); // NOI18M
             out.println("             xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\""); // NOI18M
             out.println("             targetNamespace=\"" + tns + "\""); // NOI18M
-            out.println("             xmlns:myns=\"" + tns + "\">"); // NOI18M
+            out.println("             xmlns:tns=\"" + tns + "\">"); // NOI18M
             out.println("</definitions>"); // NOI18M
         } catch (IOException ex) {
             ex.printStackTrace();
