@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.utils;
 
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
@@ -276,7 +277,7 @@ public class GdbUtils {
                 value = value.charAt(10) + ":" + value.substring(11); // NOI18N
             }
             if (key.equals("fullname") || key.equals("file")) { // NOI18N
-                value = gdbToUTF(value); // possibly convert multi-byte fields
+                value = gdbToUserEncoding(value); // possibly convert multi-byte fields
             }
             map.put(key, value);
             i = tend + 2;
@@ -285,7 +286,7 @@ public class GdbUtils {
         return map;
     }
     
-    public static String gdbToUTF(String string) {
+    public static String gdbToUserEncoding(String string) {
         String lang = System.getenv("LANG") + System.getenv("LC_ALL"); // NOI18N
         
         if (lang != null && (lang.contains("UTF-8") || lang.contains("UTF8"))) { // NOI18N
@@ -298,6 +299,28 @@ public class GdbUtils {
             
             if (!cres.isError()) {
                 string = new String(out.array()).substring(0, out.position());
+            }
+        } else if (System.getProperty("sun.jnu.encoding").toLowerCase().contains("cp12151")) {
+            // The first part transforms string to byte array
+            char[] chars = string.toCharArray();
+            ArrayList<Byte> _bytes = new ArrayList<Byte>();
+            for (int i = 0; i < chars.length; i++) {
+                char ch = chars[i];
+                if (ch == '\\') {
+                    char[] charVal = {chars[++i], chars[++i], chars[++i]};
+                    ch = (char) Integer.valueOf(String.valueOf(charVal), 8).intValue();
+                }
+                _bytes.add((byte) ch);
+            }
+            byte[] bytes = new byte[_bytes.size()];
+            for (int i = 0; i < bytes.length; i++) {
+                bytes[i] = _bytes.get(i);
+            }
+
+            // The second part performs encoding to current coding system
+            try {
+                string = new String(bytes, System.getProperty("sun.jnu.encoding"));
+            } catch (UnsupportedEncodingException e) {
             }
         }
         return string;
@@ -367,7 +390,7 @@ public class GdbUtils {
                 value = value.charAt(10) + ":" + value.substring(11); // NOI18N
             }
             if (key.equals("fullname") || key.equals("file")) { // NOI18N
-                value = gdbToUTF(value); // possibly convert multi-byte fields
+                value = gdbToUserEncoding(value); // possibly convert multi-byte fields
             }
             list.add(key + "=" + value); // NOI18N
             idx = tend + 1;
