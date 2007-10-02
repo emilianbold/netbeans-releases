@@ -111,11 +111,9 @@ NodeActionsProvider {
             }
             
             // 3) join them
-            Object[] os = new Object [sourceRoots.length + additionalSourceRoots.size() + ep.length];
+            Object[] os = new Object [sourceRoots.length + ep.length];
             System.arraycopy (sourceRoots, 0, os, 0, sourceRoots.length);
-            Object[] addSrcRoots = additionalSourceRoots.toArray();
-            System.arraycopy (addSrcRoots, 0, os, sourceRoots.length, addSrcRoots.length);
-            System.arraycopy (ep, 0, os, sourceRoots.length + addSrcRoots.length, ep.length);
+            System.arraycopy (ep, 0, os, sourceRoots.length, ep.length);
             to = Math.min(os.length, to);
             from = Math.min(os.length, from);
             Object[] fos = new Object [to - from];
