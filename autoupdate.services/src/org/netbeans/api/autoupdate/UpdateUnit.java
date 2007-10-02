@@ -46,9 +46,9 @@ import org.netbeans.modules.autoupdate.services.Trampoline;
 import org.netbeans.modules.autoupdate.services.UpdateUnitImpl;
 
 /** Instances provided by the <code>UpdateManager</code> which represents wrapper of
- * <code>UpdateElement</code>. The one unit contains all avaliable elements of
- * as same unit, i.e. Editor module, version 1.1 is installed in IDE, server with module
- * update can contain Editor module, version 1.2 and Editor, version 1.0 is in
+ * <code>UpdateElement</code>. The one unit contains all available elements of
+ * the same type. For example, Editor module version 1.1 is installed in the IDE; a server with a module
+ * update can contain Editor module version 1.2; and Editor version 1.0 is in
  * IDE backup.
  * 
  * @author Jiri Rechtacek (jrechtacek@netbeans.org)
