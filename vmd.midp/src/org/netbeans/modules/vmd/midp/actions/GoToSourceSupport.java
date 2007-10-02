@@ -21,10 +21,10 @@ import org.netbeans.api.editor.guards.GuardedSectionManager;
 import org.netbeans.modules.vmd.api.io.ActiveViewSupport;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.api.io.ProjectUtils;
+import org.netbeans.modules.vmd.api.io.providers.IOSupport;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
-
 import javax.swing.*;
 import javax.swing.text.StyledDocument;
 import java.io.IOException;
@@ -33,62 +33,65 @@ import java.io.IOException;
  *
  * @author Karol Harezlak
  */
-public class GoToSourceSupport {
+public final class GoToSourceSupport {
+    
+    private GoToSourceSupport() {
+    }
 
     public static void goToSourceOfComponent(final DesignComponent component) {
         if (component == null) {
             return;
         }
-        final CloneableEditorSupport[] editorSupport = new CloneableEditorSupport[1];
-        component.getDocument().getTransactionManager().readAccess(new Runnable() {
 
+        final DataObjectContext context = ProjectUtils.getDataObjectContextForDocument(component.getDocument());
+        if (context == null) {
+            return;
+        }
+
+        final CloneableEditorSupport[] editorSupport = new CloneableEditorSupport[1];
+        final GoToSourcePresenter[] presenter = new GoToSourcePresenter[1];
+        component.getDocument().getTransactionManager().readAccess(new Runnable() {
             public void run() {
-                GoToSourcePresenter presenter = component.getPresenter(GoToSourcePresenter.class);
-                if (presenter == null) {
-                    return;
+                presenter[0] = component.getPresenter(GoToSourcePresenter.class);
+                if (presenter[0] != null) {
+                    editorSupport[0] = context.getCloneableEditorSupport();
                 }
-                DataObjectContext context = ProjectUtils.getDataObjectContextForDocument(component.getDocument());
-                if (context == null) {
-                    return;
-                }
-                editorSupport[0] = context.getCloneableEditorSupport();
             }
         });
 
         if (editorSupport[0] == null) {
             return;
         }
+
+        // issue#116006
+        IOSupport.forceUpdateCode(context.getDataObject());
+
         editorSupport[0].edit();
 
         component.getDocument().getTransactionManager().readAccess(new Runnable() {
-
             public void run() {
-                GoToSourcePresenter presenter = component.getPresenter(GoToSourcePresenter.class);
-                if (presenter == null) {
-                    return;
-                }
-                StyledDocument document;
+                StyledDocument document = null;
                 try {
                     document = editorSupport[0].openDocument();
                 } catch (IOException e) {
                     Exceptions.printStackTrace(e);
-                    return;
                 }
-                if (document == null) {
-                    return;
-                }
-                ProjectUtils.requestVisibility(ActiveViewSupport.getDefault().getActiveView().getContext(), ProjectUtils.getSourceEditorViewDisplayName ());
-                JEditorPane[] panes = editorSupport[0].getOpenedPanes();
-                if (panes == null || panes.length < 1) {
-                    return;
-                }
-                JEditorPane pane = panes[0];
-                pane.setVisible(true);
-                Iterable<GuardedSection> iterable = GuardedSectionManager.getInstance(document).getGuardedSections();
-                for (GuardedSection section : iterable) {
-                    if (presenter.matches(section)) {
-                        pane.setCaretPosition(section.getCaretPosition().getOffset());
-                        return;
+                
+                if (document != null) {
+                    ProjectUtils.requestVisibility(ActiveViewSupport.getDefault().getActiveView().getContext(), ProjectUtils.getSourceEditorViewDisplayName());
+                    JEditorPane[] panes = editorSupport[0].getOpenedPanes();
+                    
+                    if (panes != null && panes.length >= 1) {
+                        JEditorPane pane = panes[0];
+                        pane.setVisible(true);
+                        Iterable<GuardedSection> iterable = GuardedSectionManager.getInstance(document).getGuardedSections();
+                        
+                        for (GuardedSection section : iterable) {
+                            if (presenter[0].matches(section)) {
+                                pane.setCaretPosition(section.getCaretPosition().getOffset());
+                                break;
+                            }
+                        }
                     }
                 }
             }
