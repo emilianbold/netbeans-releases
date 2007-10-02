@@ -199,12 +199,10 @@ public class PageFlowToolbarUtilities {
         layoutButton.setToolTipText(TT_LAYOUTPAGES);
         layoutButton.addMouseListener(new MouseAdapter() {
 
-            final PageFlowView view = getPageFlowView();
-
             @Override
             public void mouseClicked(MouseEvent e) {
-                view.layoutNodes();
-                view.requestMultiViewActive();
+                getPageFlowView().layoutNodes();
+                getPageFlowView().requestMultiViewActive();
             }
         });
         return layoutButton;
@@ -212,7 +210,7 @@ public class PageFlowToolbarUtilities {
     private Reference<PageFlowView> pageFlowViewRef;
 
     /* Get's the PageFlowView of the current utilities */
-    public PageFlowView getPageFlowView() {
+    public final PageFlowView getPageFlowView() {
         return pageFlowViewRef.get();
     }
 

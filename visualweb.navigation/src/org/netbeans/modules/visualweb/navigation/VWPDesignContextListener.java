@@ -23,6 +23,7 @@ import com.sun.rave.designtime.DesignProperty;
 import com.sun.rave.designtime.Position;
 import com.sun.rave.designtime.event.DesignContextListener;
 import java.awt.EventQueue;
+import java.lang.ref.WeakReference;
 
 /**
  *
@@ -30,10 +31,9 @@ import java.awt.EventQueue;
  */
 public class VWPDesignContextListener implements DesignContextListener {
 
-    VWPContentModel vwpContentModel;
 
     public VWPDesignContextListener(VWPContentModel vwpContentModel) {
-        this.vwpContentModel = vwpContentModel;
+        setVwpContentModel( vwpContentModel );
     }
 
     public void contextActivated(DesignContext context) {
@@ -73,7 +73,7 @@ public class VWPDesignContextListener implements DesignContextListener {
         System.out.println("InstanceNameChanged");
         EventQueue.invokeLater(new Runnable() {
             public void run() {
-                vwpContentModel.updateModel();
+                getVwpContentModel().updateModel();
             }
         });
     }
@@ -88,5 +88,18 @@ public class VWPDesignContextListener implements DesignContextListener {
 
     public void eventChanged(DesignEvent event) {
         //throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    private WeakReference<VWPContentModel> refVWPContentModel;
+    private   VWPContentModel getVwpContentModel() {
+        VWPContentModel vwpContentModel = null;
+        if( refVWPContentModel != null ){
+            vwpContentModel = refVWPContentModel.get();
+        }
+        return vwpContentModel;
+    }
+
+    private void setVwpContentModel(VWPContentModel vwpContentModel) {
+        refVWPContentModel = new WeakReference<VWPContentModel>(vwpContentModel);
     }
 }

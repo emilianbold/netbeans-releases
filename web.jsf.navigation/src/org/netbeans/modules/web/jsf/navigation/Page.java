@@ -12,7 +12,6 @@ package org.netbeans.modules.web.jsf.navigation;
 import java.awt.Image;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import javax.swing.Action;
@@ -33,7 +32,6 @@ import org.openide.loaders.DataNode;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 
@@ -186,6 +184,10 @@ public class Page extends PageFlowSceneElement implements SaveCookie {
     /* Joelle: Temporarily I need not use destroy for the other purpose.  I plan to fix after stabilization */
     public void destroy2() {
         destroyListeners();
+        pc = null;
+        original = null;
+        pccl = null;
+        pageContentModel = null;
     }
 
     public void destroy() throws IOException {
@@ -304,7 +306,6 @@ public class Page extends PageFlowSceneElement implements SaveCookie {
         return pinNodes;
     }
     private PageContentChangeListener pccl;
-
     /**
      * Before using this method, it is good to make sure all listeners
      * are destroyed.  Use destroyListeners().
@@ -332,18 +333,21 @@ public class Page extends PageFlowSceneElement implements SaveCookie {
         }
     }
 
+    private final Page getInstance() {
+        return this;
+    }
     private class PageContentChangeListener implements ChangeListener {
 
         private final PageFlowController pc;
-        private final Page pageNode;
+//        private final Page pageNode;
 
         public PageContentChangeListener(PageFlowController pc, Page pageNode) {
             this.pc = pc;
-            this.pageNode = pageNode;
+//            this.pageNode = pageNode;
         }
 
         public void stateChanged(ChangeEvent arg0) {
-            pc.updatePageItems(pageNode);
+            pc.updatePageItems(getInstance());
         }
     }
 
@@ -387,12 +391,10 @@ public class Page extends PageFlowSceneElement implements SaveCookie {
 
     public final class NonDataNode extends AbstractNode {
 
-        private final Page page;
 
         public NonDataNode(Page page, String pageName) {
             super(Children.LEAF);
             super.setName(pageName);
-            this.page = page;
         }
 
         @Override
@@ -402,13 +404,13 @@ public class Page extends PageFlowSceneElement implements SaveCookie {
 
         @Override
         public String getName() {
-            return page.getName();
+            return getInstance().getName();
         }
 
         @Override
         public void setName(String s) {
             super.setName(s);
-            page.setName(s);
+            getInstance().setName(s);
         }
     }
 }

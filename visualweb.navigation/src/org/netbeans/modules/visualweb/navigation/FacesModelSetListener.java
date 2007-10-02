@@ -17,6 +17,7 @@
 package org.netbeans.modules.visualweb.navigation;
 
 import java.awt.EventQueue;
+import java.lang.ref.WeakReference;
 import java.util.logging.Logger;
 import org.netbeans.modules.visualweb.insync.Model;
 import org.netbeans.modules.visualweb.insync.ModelSetListener;
@@ -29,10 +30,10 @@ import org.netbeans.modules.visualweb.insync.models.FacesModel;
 public class FacesModelSetListener implements ModelSetListener {
 
     private static Logger LOGGER = Logger.getLogger(FacesModelSetListener.class.getName());
-    private final VWPContentModel vwpContentModel;
+
 
     public FacesModelSetListener(VWPContentModel vwpContentModel) {
-        this.vwpContentModel = vwpContentModel;
+        setVwpContentModel(vwpContentModel);
     }
 
     public void modelAdded(Model model) {
@@ -41,13 +42,13 @@ public class FacesModelSetListener implements ModelSetListener {
     }
 
     public void modelChanged(final Model myModel) {
-        FacesModel facesModel = vwpContentModel.getFacesModel();
+        FacesModel facesModel = getVwpContentModel().getFacesModel();
         LOGGER.finest("Model Changed()");
-        if ((myModel == facesModel) || (myModel.getFile().getExt().equals("jspf") && vwpContentModel.isKnownFragementModel(facesModel, facesModel.getRootBean(), myModel))) {
+        if ((myModel == facesModel) || (myModel.getFile().getExt().equals("jspf") && getVwpContentModel().isKnownFragementModel(facesModel, facesModel.getRootBean(), myModel))) {
             EventQueue.invokeLater(new Runnable() {
 
                 public void run() {
-                    vwpContentModel.updateModel();
+                    getVwpContentModel().updateModel();
                 }
             });
         }
@@ -61,5 +62,19 @@ public class FacesModelSetListener implements ModelSetListener {
     public void modelProjectChanged() {
         LOGGER.finest("Model Project Changed()");
         //DO NOTHING
+    }
+    
+    private WeakReference<VWPContentModel> refVWPContentModel;
+
+    private VWPContentModel getVwpContentModel() {
+        VWPContentModel vwpContentModel = null;
+        if( refVWPContentModel != null ){
+            vwpContentModel = refVWPContentModel.get();
+        }
+        return vwpContentModel;
+    }
+
+    private void setVwpContentModel(VWPContentModel vwpContentModel) {
+        refVWPContentModel = new WeakReference<VWPContentModel>(vwpContentModel);
     }
 }

@@ -11,6 +11,7 @@ package org.netbeans.modules.visualweb.navigation;
 
 import com.sun.rave.designtime.DesignBean;
 import java.awt.Image;
+import java.lang.ref.WeakReference;
 import javax.swing.Action;
 import org.netbeans.modules.web.jsf.navigation.pagecontentmodel.PageContentItem;
 import org.openide.cookies.OpenCookie;
@@ -23,7 +24,6 @@ import org.openide.nodes.Node.Cookie;
 public class VWPContentItem extends PageContentItem {
 
     DesignBean designBean;
-    VWPContentModel model;
 
 //    /** Creates a new instance of VWPContentItem */
 //    public VWPContentItem( VWPContentModel model, DesignBean bean, String name, String fromString, Image icon, boolean isOutcome )  {
@@ -37,7 +37,7 @@ public class VWPContentItem extends PageContentItem {
         assert model != null;
 
         this.designBean = bean;
-        this.model = model;
+        setModel( model );
     }
 
 
@@ -50,9 +50,9 @@ public class VWPContentItem extends PageContentItem {
     @Override
     public void setFromOutcome(String fromOutcome) {
         if (fromOutcome == null) {
-            model.deleteCaseOutcome(this);
+            getModel().deleteCaseOutcome(this);
         } else {
-            model.setCaseOutcome(this, fromOutcome, false);
+            getModel().setCaseOutcome(this, fromOutcome, false);
         }
         super.setFromOutcome(fromOutcome);
     }
@@ -68,7 +68,7 @@ public class VWPContentItem extends PageContentItem {
     @Override
     public Action[] getActions() {
         if (actions == null) {
-            actions = model.getActionsFactory().getVWPContentItemActions(this);
+            actions = getModel().getActionsFactory().getVWPContentItemActions(this);
         }
         return actions;
     }
@@ -80,10 +80,23 @@ public class VWPContentItem extends PageContentItem {
         if (type.equals(OpenCookie.class)) {
             return (T) new OpenCookie() {
                 public void open() {
-                    model.openPageHandler(item);
+                    getModel().openPageHandler(item);
                 }
             };
         } 
         return super.getCookie(type);
+    }
+
+    private WeakReference<VWPContentModel> refVWPContentModel;
+    private VWPContentModel getModel() {
+        VWPContentModel model = null;
+        if( refVWPContentModel != null ) {
+            model = refVWPContentModel.get();
+        }
+        return model;
+    }
+
+    private void setModel(VWPContentModel model) {
+        this.refVWPContentModel = new WeakReference<VWPContentModel>( model );
     }
 }

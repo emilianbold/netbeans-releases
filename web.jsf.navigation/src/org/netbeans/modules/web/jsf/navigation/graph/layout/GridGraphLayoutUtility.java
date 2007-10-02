@@ -37,8 +37,6 @@ import org.netbeans.api.visual.widget.Widget;
  */
 public class GridGraphLayoutUtility {
 
-    private GridGraphLayoutUtility() {
-    }
 
     public static <N,E,P> void performLayout( GraphPinScene<N, E, P> graph, boolean checker, int horizontalGap, int verticalGap ){
         

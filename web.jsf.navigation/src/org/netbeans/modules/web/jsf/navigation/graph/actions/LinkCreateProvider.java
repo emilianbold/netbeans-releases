@@ -26,8 +26,8 @@
 
 package org.netbeans.modules.web.jsf.navigation.graph.actions;
 
-
 import java.awt.Point;
+import java.lang.ref.WeakReference;
 import org.netbeans.api.visual.action.ConnectProvider;
 import org.netbeans.api.visual.action.ConnectorState;
 import org.netbeans.api.visual.widget.Scene;
@@ -43,41 +43,53 @@ import org.netbeans.modules.web.jsf.navigation.graph.PageFlowScene;
  * @author joelle
  */
 public class LinkCreateProvider implements ConnectProvider {
-    
-    private final PageFlowScene graphScene;
+
+    private WeakReference<PageFlowScene> refGraphScene;
     Page source = null;
     Page target = null;
     Pin pinNode = null;
-    
+
     /**
      * Creates a new instance of LinkCreateProvider
      * @param graphScene
      *
      */
     public LinkCreateProvider(PageFlowScene graphScene) {
-        this.graphScene = graphScene;
+        setGraphScene(graphScene);
+    }
+
+    public PageFlowScene getGraphScene() {
+        PageFlowScene scene = null;
+        if (refGraphScene != null) {
+            scene = refGraphScene.get();
+        }
+        return scene;
     }
     
+    public void setGraphScene( PageFlowScene scene ) {
+        refGraphScene = new WeakReference<PageFlowScene>(scene);
+    }
+
     public boolean isSourceWidget(Widget sourceWidget) {
-        
-        Object object = graphScene.findObject(sourceWidget);
+        PageFlowScene scene = getGraphScene();
+        Object object = scene.findObject(sourceWidget);
         source = null;
         pinNode = null;
-        if (graphScene.isPin(object)){
-            pinNode = (Pin)object;
+        if (scene.isPin(object)) {
+            pinNode = (Pin) object;
             source = pinNode.getPage();
-        } else if ( graphScene.isNode(object) ){
-            source = (Page)object;
+        } else if (scene.isNode(object)) {
+            source = (Page) object;
         }
-        
+
         return source != null;
-        
     }
-    
+
     public ConnectorState isTargetWidget(Widget sourceWidget, Widget targetWidget) {
         target = null;
-        Object object = graphScene.findObject(targetWidget);
-        target = graphScene.isNode(object) ? (Page) object : null;
+        PageFlowScene scene = getGraphScene();
+        Object object = scene.findObject(targetWidget);
+        target = scene.isNode(object) ? (Page) object : null;
         if (target != null) {
             return ConnectorState.ACCEPT;
         }
@@ -94,29 +106,28 @@ public class LinkCreateProvider implements ConnectProvider {
         ////        }
         //        return ConnectorState.REJECT_AND_STOP;
     }
-    
+
     public boolean hasCustomTargetWidgetResolver(Scene scene) {
         return false;
     }
-    
+
     public Widget resolveTargetWidget(Scene scene, Point sceneLocation) {
         return null;
     }
-    
+
     public void createConnection(Widget sourceWidget, Widget targetWidget) {
-        PageFlowController pfc = graphScene.getPageFlowView().getPageFlowController();
-        if ( pfc != null && sourceWidget != null && targetWidget != null ) {
-            
+        PageFlowScene scene = getGraphScene();
+        PageFlowController pfc = scene.getPageFlowView().getPageFlowController();
+        if (pfc != null && sourceWidget != null && targetWidget != null) {
+
             NavigationCase caseNode = pfc.createLink(source, target, pinNode);
 //            assert caseNode != null;
 //            assert caseNode.getToViewId() != null;
 //            assert caseNode.getFromOutcome() != null;
-            
-            graphScene.validate();
+            scene.validate();
         }
         //            addEdge (edge);
         //            setEdgeSource (edge, source);
         //            setEdgeTarget (edge, target);
     }
-    
 }

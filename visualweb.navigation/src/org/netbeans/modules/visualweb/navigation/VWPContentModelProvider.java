@@ -39,7 +39,6 @@ public class VWPContentModelProvider implements PageContentModelProvider {
     }
 
     public PageContentModel getPageContentModel(FileObject fileObject) {
-
         Reference<VWPContentModel> ref = map.get(fileObject);
         VWPContentModel model = null;
         if (ref != null) {

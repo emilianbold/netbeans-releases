@@ -30,21 +30,18 @@ import java.awt.Point;
 import java.lang.ref.WeakReference;
 import java.util.HashSet;
 import java.util.Set;
-import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import org.netbeans.api.visual.action.PopupMenuProvider;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.web.jsf.navigation.Page;
 import org.netbeans.modules.web.jsf.navigation.graph.PageFlowScene;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.windows.TopComponent;
 import javax.swing.Action;
 import org.netbeans.modules.web.jsf.navigation.Pin;
-import org.netbeans.modules.web.jsf.navigation.graph.PageFlowSceneElement;
 
 /**
  *
@@ -52,18 +49,20 @@ import org.netbeans.modules.web.jsf.navigation.graph.PageFlowSceneElement;
  */
 public class PageFlowPopupProvider implements PopupMenuProvider {
 
-    private final PageFlowScene graphScene;
-    private final TopComponent tc;
-
     /**
      * Creates a Popup for any right click on Page Flow Editor
      * @param graphScene The related PageFlow Scene.
      * @param tc
      */
     public PageFlowPopupProvider(PageFlowScene graphScene, TopComponent tc) {
-        this.tc = tc;
-        this.graphScene = graphScene;
+        setTc(tc);
+        setGraphScene( graphScene );
         initialize();
+    }
+    
+    public void destroy() {
+        setTc(null);
+        setGraphScene(null);
     }
     // <actions from layers>
     private static final String PATH_PAGEFLOW_NODE_ACTIONS = "PageFlowEditor/PopupActions/PageFlowSceneElement"; // NOI18N
@@ -71,22 +70,22 @@ public class PageFlowPopupProvider implements PopupMenuProvider {
 
     private void initialize() {
         InstanceContent ic = new InstanceContent();
-        ic.add(graphScene);
+        ic.add(getGraphScene());
     }
 
     /* Point and widget are actually not needed. */
     public JPopupMenu getPopupMenu(Widget widget, Point point) {
-        Object obj = graphScene.getHoveredObject();
+        Object obj = getGraphScene().getHoveredObject();
 
 
 
         if (obj != null) {
 
-            Set elements = graphScene.getSelectedObjects();            
+            Set elements = getGraphScene().getSelectedObjects();            
             if( !elements.contains(obj)) {
                 Set<Object> set = new HashSet<Object>();
                 set.add(obj);
-                graphScene.setSelectedObjects(set);
+                getGraphScene().setSelectedObjects(set);
             }
 
 //          Node nodes[] = tc.getActivatedNodes();
@@ -104,15 +103,15 @@ public class PageFlowPopupProvider implements PopupMenuProvider {
                     System.arraycopy(fileSystemActions, 0, actions, 0, fileSystemActions.length);
                     System.arraycopy(pageNodeActions, 0, actions, fileSystemActions.length, pageNodeActions.length);
                 }
-                return Utilities.actionsToPopup(actions, tc.getLookup());
+                return Utilities.actionsToPopup(actions, getTc().getLookup());
             } else if (obj instanceof Pin) {
                 Pin pinNode = (Pin) obj;
                 Action[] actions = pinNode.getActions();
-                return Utilities.actionsToPopup(actions, tc.getLookup());
+                return Utilities.actionsToPopup(actions, getTc().getLookup());
             }
-            return Utilities.actionsToPopup(SystemFileSystemSupport.getActions(PATH_PAGEFLOW_NODE_ACTIONS), tc.getLookup());
+            return Utilities.actionsToPopup(SystemFileSystemSupport.getActions(PATH_PAGEFLOW_NODE_ACTIONS), getTc().getLookup());
         }
-        return Utilities.actionsToPopup(SystemFileSystemSupport.getActions(PATH_PAGEFLOW_SCENE_ACTIONS), tc.getLookup());
+        return Utilities.actionsToPopup(SystemFileSystemSupport.getActions(PATH_PAGEFLOW_SCENE_ACTIONS), getTc().getLookup());
     }
     /** Weak reference to the lookup. */
     private WeakReference<Lookup> lookupWRef = new WeakReference<Lookup>(null);
@@ -120,16 +119,42 @@ public class PageFlowPopupProvider implements PopupMenuProvider {
     /** Adds <code>NavigatorLookupHint</code> into the original lookup,
      * for the navigator. */
     private Lookup getLookup() {
-        Lookup lookup = (Lookup) lookupWRef.get();
+        Lookup lookup = lookupWRef.get();
 
         if (lookup == null) {
             InstanceContent ic = new InstanceContent();
             //                ic.add(firstObject);
-            ic.add(graphScene);
+            ic.add(getGraphScene());
             lookup = new AbstractLookup(ic);
             lookupWRef = new WeakReference<Lookup>(lookup);
         }
 
         return lookup;
+    }
+
+    private WeakReference<PageFlowScene> refPageFlowScene;
+    public PageFlowScene getGraphScene() {
+        PageFlowScene scene = null;
+        if( refPageFlowScene != null ){
+            scene = refPageFlowScene.get();
+        }
+        return scene;
+    }
+
+    public void setGraphScene(PageFlowScene graphScene) {
+        refPageFlowScene = new WeakReference<PageFlowScene>(graphScene);
+    }
+
+    private WeakReference<TopComponent> refTC;
+    public TopComponent getTc() {
+        TopComponent tc = null;
+        if( refTC != null ){
+            tc = refTC.get();
+        }
+        return tc;
+    }
+
+    public void setTc(TopComponent tc) {
+        refTC = new WeakReference<TopComponent>(tc);
     }
 }

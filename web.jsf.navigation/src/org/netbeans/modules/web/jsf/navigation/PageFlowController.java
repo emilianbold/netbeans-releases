@@ -32,6 +32,7 @@ import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -64,7 +65,6 @@ import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.web.jsf.navigation.PageFlowToolbarUtilities.Scope;
 import org.netbeans.modules.web.jsf.navigation.pagecontentmodel.PageContentModelProvider;
-import org.netbeans.modules.xml.xam.ComponentListener;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditorCookie;
@@ -78,17 +78,18 @@ import org.openide.util.Lookup;
  */
 public class PageFlowController {
 
-    private final PageFlowView view;
-    private final JSFConfigModel configModel;
+    private PageFlowView view;
+    private JSFConfigModel configModel;
     private final Collection<FileObject> webFiles;
     private DataObject configDataObj;
-    private final Map<NavigationCase, NavigationCaseEdge> navCase2NavCaseEdge = new HashMap<NavigationCase, NavigationCaseEdge>();
-    private final Map<NavigationRule, String> navRule2String = new HashMap<NavigationRule, String>();
-    private final Map<String, Page> pageName2Page = new HashMap<String, Page>(); //Should this be synchronized.
+    private final Map<NavigationCase, NavigationCaseEdge> navCase2NavCaseEdge = new WeakHashMap<NavigationCase, NavigationCaseEdge>();
+    private final Map<NavigationRule, String> navRule2String = new WeakHashMap<NavigationRule, String>();
+    private final HashMap<String, WeakReference<Page>> pageName2Page = new HashMap<String, WeakReference<Page>>(); //Should this be synchronized.
     //    public static final String DEFAULT_DOC_BASE_FOLDER = "web"; //NOI18NF
     private static final String NO_WEB_FOLDER_WARNING = NbBundle.getMessage(PageFlowController.class, "MSG_NoWebFolder");
     private static final String NO_WEB_FOLDER_TITLE = NbBundle.getMessage(PageFlowController.class, "TLE_NoWebFolder");
-    private final FileObject webFolder;
+    private  FileObject webFolder;
+
     /** Creates a new instance of PageFlowController
      * @param context
      * @param view
@@ -103,7 +104,7 @@ public class PageFlowController {
             Exceptions.printStackTrace(donfe);
         }
         configModel = ConfigurationUtils.getConfigModel(configFile, true);
-        Project project = FileOwnerQuery.getOwner(configFile);
+        //  Project project = FileOwnerQuery.getOwner(configFile);
         //        webFolder = project.getProjectDirectory().getFileObject(DEFAULT_DOC_BASE_FOLDER);
         webFolder = PageFlowView.getWebFolder(configFile);
         if (webFolder == null) {
@@ -137,6 +138,19 @@ public class PageFlowController {
             webFiles = getAllProjectRelevantFilesObjects();
         }
     }
+    
+    public void destroy() {
+        webFolder = null;
+        configModel = null;
+        view = null;
+        webFiles.clear();
+        navCase2NavCaseEdge.clear();
+        navRule2String.clear();
+        pageName2Page.clear();
+                
+    }
+    
+    
     private static final String PROP_SHOW_NO_WEB_FOLDER = "showNoWebFolder"; // NOI18N
 
     public final void setShowNoWebFolderDialog(boolean show) {
@@ -192,7 +206,6 @@ public class PageFlowController {
 //            configModel.removeComponentListener(cl);
 //            cl = null;
 //        }
-
         FileObject myWebFolder = getWebFolder();
         if (fcl != null && myWebFolder != null) {
             try {
@@ -413,9 +426,9 @@ public class PageFlowController {
                 createAllProjectPages(pagesInConfig);
             } else if (isCurrentScope(Scope.SCOPE_ALL_FACESCONFIG)) {
                 List<NavigationRule> allRules = new ArrayList<NavigationRule>();
-                FileObject webFolder = getWebFolder();
-                if (webFolder != null) {
-                    WebModule webModule = WebModule.getWebModule(webFolder);
+                FileObject myWebFolder = getWebFolder();
+                if (myWebFolder != null) {
+                    WebModule webModule = WebModule.getWebModule(myWebFolder);
                     FileObject[] configFiles = ConfigurationUtils.getFacesConfigFiles(webModule);
                     for (FileObject aConfigFile : configFiles) {
                         JSFConfigModel aConfigModel = ConfigurationUtils.getConfigModel(aConfigFile, true);
@@ -627,9 +640,13 @@ public class PageFlowController {
         LOGGER.finest("PageName2Page: remove " + displayName);
         printThreadInfo();
         synchronized (pageName2Page) {
-            Page node = pageName2Page.remove(displayName);
-            if (destroy) {
-                destroyPageFlowNode(node);
+            Page node = null;
+            WeakReference<Page> nodeRef = pageName2Page.remove(displayName);
+            if (nodeRef != null) {
+                node = nodeRef.get();
+                if (destroy) {
+                    destroyPageFlowNode(node);
+                }
             }
             return node;
         }
@@ -644,11 +661,14 @@ public class PageFlowController {
         LOGGER.finest("PageName2Page: replace " + oldName + " to " + newName);
         printThreadInfo();
         synchronized (pageName2Page) {
-            Page node2 = pageName2Page.remove(oldName);
-            if (node == null || node2 == null) {
-                System.err.println("PageFlowEditor: Trying to add Page [" + oldName + "] but it is null.");
+            WeakReference<Page> node2Ref = pageName2Page.remove(oldName);
+            if (node2Ref != null) {
+                Page node2 = node2Ref.get();
+                if (node == null || node2 == null) {
+                    System.err.println("PageFlowEditor: Trying to add Page [" + oldName + "] but it is null.");
+                }
+                pageName2Page.put(newName, new WeakReference<Page>(node));
             }
-            pageName2Page.put(newName, node);
         }
     }
 
@@ -675,7 +695,7 @@ public class PageFlowController {
             throw new RuntimeException("PageFlowEditor: Trying to add Page [" + displayName + "] but it is null.");
         }
         synchronized (pageName2Page) {
-            pageName2Page.put(displayName, pageNode);
+            pageName2Page.put(displayName, new WeakReference<Page>(pageNode));
         }
     }
 
@@ -696,7 +716,12 @@ public class PageFlowController {
             /*
              * End Test
              */
-            return pageName2Page.get(displayName);
+            Page page = null;
+            WeakReference<Page> pageRef = pageName2Page.get(displayName);
+            if (pageRef != null) {
+                page = pageRef.get();
+            }
+            return page;
         }
     }
 

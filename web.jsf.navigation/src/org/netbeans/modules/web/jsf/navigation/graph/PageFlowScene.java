@@ -26,6 +26,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.TexturePaint;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import org.netbeans.modules.web.jsf.navigation.graph.actions.LinkCreateProvider;
@@ -98,7 +99,7 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
     private final LayerWidget connectionLayer = new LayerWidget(this);
     private final LayerWidget upperLayer = new LayerWidget(this);
 
-    private final Router router;
+    private Router router;
     /**
      * The maximum is used for determining which router to used.  If either
      * edges or pages exceed the max, the direct routing algorithm will be used
@@ -116,8 +117,9 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
     private final WidgetAction selectAction = ActionFactory.createSelectAction(new PageFlowSelectProvider());
     private final WidgetAction doubleClickAction = ActionFactory.createEditAction(new PageNodeEditAction());
 
-    private final PageFlowView tc;
-    private final PopupMenuProvider popupProvider; //Please see POPUP_HACK below.
+    private PageFlowView tc;
+    private PopupMenuProvider popupProvider; //Please see POPUP_HACK below.
+    private PFObjectSceneListener pfObjectSceneListener;
     private static Paint PAINT_BACKGROUND;
     static {
         Image sourceImage = Utilities.loadImage("org/netbeans/modules/web/jsf/navigation/graph/resources/paper_grid.png"); // NOI18N
@@ -163,7 +165,8 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
         popupProvider = new PageFlowPopupProvider(this, tc);
         actions.addAction(ActionFactory.createPopupMenuAction(popupProvider));
         actions.addAction(createActionMap());
-        addObjectSceneListener(new PFObjectSceneListener(tc), ObjectSceneEventType.OBJECT_SELECTION_CHANGED);
+        pfObjectSceneListener = new PFObjectSceneListener(tc);
+        addObjectSceneListener(pfObjectSceneListener, ObjectSceneEventType.OBJECT_SELECTION_CHANGED);
 
 
         /* Temporary workaround  ISSUE# 107506 Still an issue. */
@@ -174,7 +177,20 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
         FreePlaceNodesLayouter fpnl = new FreePlaceNodesLayouter(this, tc.getVisibleRect());
         
     }
-
+    
+    /* Used to destroy everything in the scene. */
+    public void destoryPageFlowScene() {
+        removeObjectSceneListener(pfObjectSceneListener);
+        tc = null;
+        router = null;
+        Chain chainActions = getActions();
+        ((PageFlowPopupProvider)popupProvider).destroy();
+        popupProvider = null;
+        pfObjectSceneListener = null;
+        for( WidgetAction action : new ArrayList<WidgetAction>(chainActions.getActions()) ){
+            chainActions.removeAction(action);
+        }
+    }
 
 
     private WidgetAction createActionMap() {

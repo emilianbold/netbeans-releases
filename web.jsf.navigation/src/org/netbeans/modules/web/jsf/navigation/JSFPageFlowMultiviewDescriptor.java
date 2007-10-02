@@ -157,7 +157,6 @@ public class JSFPageFlowMultiviewDescriptor implements MultiViewDescription, Ser
                 // ok, we no action like this I guess
             }
             return new Action[]{};
-
         }
 
         public Lookup getLookup() {
@@ -177,22 +176,27 @@ public class JSFPageFlowMultiviewDescriptor implements MultiViewDescription, Ser
         }
 
         public void componentClosed() {
-            tc.unregstierListeners();
             final FileObject storageFile = PageFlowView.getStorageFile(context.getFacesConfigFile());
 
             if (storageFile != null && storageFile.isValid()) {
                 tc.serializeNodeLocations(storageFile);
-                return;
-            }
-            DialogDescriptor dialog;
-            if (storageFile != null) {
-                dialog = new DialogDescriptor(NbBundle.getMessage(JSFPageFlowMultiviewDescriptor.class, "MSG_NoFileToSave", storageFile), NbBundle.getMessage(JSFPageFlowMultiviewDescriptor.class, "TLE_NoFileToSave"));
             } else {
-                dialog = new DialogDescriptor(NbBundle.getMessage(JSFPageFlowMultiviewDescriptor.class, "MSG_NoProjectToSave"), NbBundle.getMessage(JSFPageFlowMultiviewDescriptor.class, "TLE_NoFileToSave"));
+                DialogDescriptor dialog;
+                if (storageFile != null) {
+                    dialog = new DialogDescriptor(NbBundle.getMessage(JSFPageFlowMultiviewDescriptor.class, "MSG_NoFileToSave", storageFile), NbBundle.getMessage(JSFPageFlowMultiviewDescriptor.class, "TLE_NoFileToSave"));
+                } else {
+                    dialog = new DialogDescriptor(NbBundle.getMessage(JSFPageFlowMultiviewDescriptor.class, "MSG_NoProjectToSave"), NbBundle.getMessage(JSFPageFlowMultiviewDescriptor.class, "TLE_NoFileToSave"));
+                }
+                dialog.setOptions(new Object[]{DialogDescriptor.OK_OPTION});
+                java.awt.Dialog d = org.openide.DialogDisplayer.getDefault().createDialog(dialog);
+                d.setVisible(true);
             }
-            dialog.setOptions(new Object[]{DialogDescriptor.OK_OPTION});
-            java.awt.Dialog d = org.openide.DialogDisplayer.getDefault().createDialog(dialog);
-            d.setVisible(true);
+
+            tc.unregstierListeners();
+           // tc.clearGraph();
+            tc.destroyScene();
+            tc = null;
+
             LOG.finest("PageFlowEditor componentClosed");
         }
 

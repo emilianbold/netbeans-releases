@@ -52,8 +52,8 @@ public final class FreePlaceNodesLayouter {
     private FreePlaceNodesLayouter(PageFlowScene scene, boolean isOneTimeUse){
         this.scene = scene;
         if( !isOneTimeUse){            
-            scene.addSceneListener(new PageFlowSceneListener(scene));
-            scene.addObjectSceneListener(new PageFlowObjectSceneListener(scene), ObjectSceneEventType.OBJECT_ADDED);
+            scene.addSceneListener(new PageFlowSceneListener());
+            scene.addObjectSceneListener(new PageFlowObjectSceneListener(), ObjectSceneEventType.OBJECT_ADDED);
         }
     }
     
@@ -132,10 +132,6 @@ public final class FreePlaceNodesLayouter {
     
     private final Collection<Page> nodesAdded = new HashSet<Page>();
     private class PageFlowObjectSceneListener implements ObjectSceneListener{
-        private final PageFlowScene scene;
-        public PageFlowObjectSceneListener(PageFlowScene scene) {
-            this.scene = scene;
-        }
         
         public void objectAdded(ObjectSceneEvent event, Object addedObject) {
             if( scene.isNode(addedObject) ) {
@@ -184,11 +180,6 @@ public final class FreePlaceNodesLayouter {
      * gets called one last time.
      */
     private class PageFlowSceneListener implements SceneListener {
-        private final PageFlowScene scene;
-        public PageFlowSceneListener(PageFlowScene scene) {
-            this.scene = scene;
-        }
-        
         public void sceneRepaint() {
         }
         

@@ -91,6 +91,8 @@ public class VWPContentModel extends PageContentModel {
     public void destroy() throws IOException {
         destroyListeners();
         provider.removeModel(this);
+        pageContentItems.clear();
+
     }
 
     public VWPContentModel() {

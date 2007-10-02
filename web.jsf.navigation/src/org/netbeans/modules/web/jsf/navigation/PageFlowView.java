@@ -52,7 +52,6 @@ import org.netbeans.api.visual.vmd.VMDPinWidget;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.api.editor.JSFConfigEditorContext;
-import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
 import org.netbeans.modules.web.jsf.navigation.JSFPageFlowMultiviewDescriptor.PageFlowElement;
 import org.netbeans.modules.web.jsf.navigation.graph.layout.LayoutUtility;
 import org.netbeans.modules.web.jsf.navigation.graph.PageFlowScene;
@@ -87,19 +86,16 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
 
     private JSFConfigEditorContext context;
     private PageFlowScene scene;
-    private JSFConfigModel configModel;
     private PageFlowController pfc;
-    private PageFlowElement multiview;
     private PageFlowSceneData sceneData;
     private BlockingQueue<Runnable> runnables = new LinkedBlockingQueue<Runnable>();
     private ThreadPoolExecutor executor;
     private static final Logger LOG = Logger.getLogger("org.netbeans.web.jsf.navigation");
-    private JComponent view;
     private static final String ACN_PAGEVIEW_TC = NbBundle.getMessage(PageFlowView.class, "ACN_PageView_TC");
     private static final String ACDS_PAGEVIEW_TC = NbBundle.getMessage(PageFlowView.class, "ACDS_PageView_TC");
 
     PageFlowView(PageFlowElement multiview, JSFConfigEditorContext context) {
-        this.multiview = multiview;
+        setMultiview(multiview);
         this.context = context;
         scene = initializeScene();
         pfc = new PageFlowController(context, this);
@@ -119,7 +115,7 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
     }
 
     public void requestMultiViewActive() {
-        multiview.getMultiViewCallback().requestActive();
+        getMultiview().getMultiViewCallback().requestActive();
         requestFocus(); //This is a hack because requestActive does not call requestFocus when it is already active (BUT IT SHOULD).
     }
 
@@ -191,9 +187,8 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
         scene = new PageFlowScene(this);
 
         scene.setAccessibleContext(this.getAccessibleContext());
-        view = scene.createView();
 
-        JScrollPane pane = new JScrollPane(view);
+        JScrollPane pane = new JScrollPane(scene.createView());
         pane.setVisible(true);
 
         add(pane, BorderLayout.CENTER);
@@ -201,6 +196,17 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
         setDefaultActivatedNode();
 
         return scene;
+    }
+
+    public void destroyScene() {
+        clearGraph();
+        scene.destoryPageFlowScene();
+        scene = null;
+        sceneData = null;
+        runnables.clear();
+        context = null;
+        pfc.destroy();
+        pfc = null;
     }
 
     /**
@@ -232,7 +238,7 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
             Project p = FileOwnerQuery.getOwner(dataObject.getPrimaryFile());
             /* Let's only worry about this if it is actually part of a project.*/
             if (p != null) {
-                FileObject projectDirectory = p.getProjectDirectory();
+                //FileObject projectDirectory = p.getProjectDirectory();
                 Sources sources = ProjectUtils.getSources(p);
                 SourceGroup[] groups = sources.getSourceGroups(Sources.TYPE_GENERIC);
                 FileObject srcFolder;
@@ -289,10 +295,13 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
         //Workaround: Temporarily Wrapping Collection because of  http://www.netbeans.org/issues/show_bug.cgi?id=97496
         Collection<Page> nodes = new HashSet<Page>(scene.getNodes());
         for (Page node : nodes) {
-            scene.removeNodeWithEdges(node);
+            scene.removeNodeWithEdges(node);  
+            node.destroy2();
         }
         scene.validate();
     }
+    
+    
 
     /**
      * Validating the graph is necessary to push a series of modifications to view.
@@ -345,7 +354,7 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
         //        widget.setNodeProperties(null /*IMAGE_LIST*/, pageName, type, glyphs);
         widget.setNodeProperties(pageNode.getIcon(java.beans.BeanInfo.ICON_COLOR_16x16), pageName, type, glyphs);
         PageFlowSceneData.PageData data = sceneData.getPageData(pageName);
-        if (data != null ){
+        if (data != null) {
             widget.setPreferredLocation(data.getPoint());
             widget.setMinimized(data.isMinimized());
         }
@@ -604,14 +613,14 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
     @Override
     public void requestFocus() {
         super.requestFocus();
-        view.requestFocus();
+        scene.getView().requestFocus();
     }
 
     @SuppressWarnings(value = "deprecation")
     @Override
     public boolean requestFocusInWindow() {
         super.requestFocusInWindow();
-        return view.requestFocusInWindow();
+        return scene.getView().requestFocusInWindow();
     }
 
     /**
@@ -811,9 +820,9 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
      */
     public void layoutNodes() {
         LayoutUtility.LayoutType useLayout = null;
-        
-        
-        switch( lastUsedLayout ){
+
+
+        switch (lastUsedLayout) {
             case GRID_GRAPH:
                 useLayout = LayoutUtility.LayoutType.FREE_PLACES_NODES;
                 break;
@@ -844,5 +853,18 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
      */
     protected void clearBackgroundPinAddingProcess() {
         executor.purge();
+    }
+    private WeakReference<PageFlowElement> multiviewRef;
+
+    public PageFlowElement getMultiview() {
+        PageFlowElement multiview = null;
+        if (multiviewRef != null) {
+            multiview = multiviewRef.get();
+        }
+        return multiview;
+    }
+
+    public void setMultiview(PageFlowElement multiview) {
+        this.multiviewRef = new WeakReference<PageFlowElement>(multiview);
     }
 }

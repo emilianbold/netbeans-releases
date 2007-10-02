@@ -11,6 +11,7 @@ package org.netbeans.modules.visualweb.navigation;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.lang.ref.WeakReference;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
@@ -22,13 +23,12 @@ import org.openide.util.NbBundle;
  * @author joelle
  */
 public class VWPContentActions {
-    public VWPContentModel vwpContentModel;
     //
     //    /** Creates a new instance of VWPContentActions
     //     * @param facesModel
     //     */
     public VWPContentActions(VWPContentModel vwpContentModel) {
-        this.vwpContentModel = vwpContentModel;
+        setVwpContentModel(vwpContentModel);
 //        handleAddCommandButton.putValue("NAME", addButton);
 //        handleAddCommandLink.putValue("NAME", addHyperlink);
 //        handleAddImageHyperLink.putValue("NAME", addImageHyperlink);
@@ -62,7 +62,7 @@ public class VWPContentActions {
                 
         public void actionPerformed(ActionEvent ev) { 
             
-            vwpContentModel.addPageBean(VWPContentUtilities.BUTTON);
+            getVwpContentModel().addPageBean(VWPContentUtilities.BUTTON);
         }
     };
     
@@ -73,7 +73,7 @@ public class VWPContentActions {
             putValue(NAME, addHyperlink);
         }
         public void actionPerformed(ActionEvent e) {
-            vwpContentModel.addPageBean(VWPContentUtilities.HYPERLINK);
+            getVwpContentModel().addPageBean(VWPContentUtilities.HYPERLINK);
         } 
     };
     
@@ -84,7 +84,7 @@ public class VWPContentActions {
             putValue(NAME, addImageHyperlink);
         }
         public void actionPerformed(ActionEvent e) {
-            vwpContentModel.addPageBean(VWPContentUtilities.IMAGE_HYPERLINK);
+            getVwpContentModel().addPageBean(VWPContentUtilities.IMAGE_HYPERLINK);
         }
     };
     
@@ -96,9 +96,22 @@ public class VWPContentActions {
             putValue( NAME, openHandler);
         }                
         public void actionPerformed(ActionEvent ev) {
-            vwpContentModel.openPageHandler(item);
+            getVwpContentModel().openPageHandler(item);
             
         }
+    }
+
+    private WeakReference<VWPContentModel> refVWPContentModel;
+    private VWPContentModel getVwpContentModel() {
+        VWPContentModel vwpContentModel = null;
+        if ( refVWPContentModel != null ){
+            vwpContentModel = refVWPContentModel.get();
+        }
+        return vwpContentModel;
+    }
+
+    private void setVwpContentModel(VWPContentModel vwpContentModel) {
+        refVWPContentModel = new WeakReference<VWPContentModel>(vwpContentModel);
     }
     
 }
