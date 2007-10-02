@@ -397,7 +397,7 @@ public class JaxWsChildren extends Children.Keys/* implements MDRChangeListener 
         wsdlModeler.setJAXBBindings(bindings);
     }
     
-    void refreshKeys(boolean downloadWsdl, final boolean refreshImplClass) {
+    void refreshKeys(boolean downloadWsdl, final boolean refreshImplClass, String newWsdlUrl) {
         if (!isFromWsdl()) return;
         super.addNotify();
         List keys=null;
@@ -410,9 +410,29 @@ public class JaxWsChildren extends Children.Keys/* implements MDRChangeListener 
                 FileObject xmlResorcesFo = support.getLocalWsdlFolderForService(serviceName,true);
                 FileObject localWsdl = null;
                 try {
-                    localWsdl = WSUtils.retrieveResource(
-                            xmlResorcesFo,
-                            new URI(service.getWsdlUrl()));
+                    String oldWsdlUrl = service.getWsdlUrl();
+                    boolean jaxWsModelChanged = false;
+                    if (newWsdlUrl.length()>0 && !oldWsdlUrl.equals(newWsdlUrl)) {
+                         localWsdl = WSUtils.retrieveResource(
+                                xmlResorcesFo,
+                                new URI(newWsdlUrl));   
+                         jaxWsModelChanged = true;
+                    } else {
+                        localWsdl = WSUtils.retrieveResource(
+                                xmlResorcesFo,
+                                new URI(oldWsdlUrl));
+                    }
+                    if (jaxWsModelChanged) {
+                        service.setWsdlUrl(newWsdlUrl);
+                        FileObject xmlResourcesFo = support.getLocalWsdlFolderForService(serviceName,false);
+                        if (xmlResourcesFo!=null) {
+                            String localWsdlUrl = FileUtil.getRelativePath(xmlResourcesFo, localWsdl);
+                            service.setLocalWsdlFile(localWsdlUrl);
+                        }
+                        Project project = FileOwnerQuery.getOwner(srcRoot);
+                        JaxWsModel jaxWsModel = (JaxWsModel)project.getLookup().lookup(JaxWsModel.class);
+                        if (jaxWsModel!=null) jaxWsModel.write();
+                    }  
                     // copy resources to WEB-INF/wsdl/${serviceName}
                     FileObject wsdlFolder = getWsdlFolderForService(support, serviceName);
                     WSUtils.copyFiles(xmlResorcesFo, wsdlFolder);

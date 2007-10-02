@@ -718,24 +718,24 @@ public class JaxWsNode extends AbstractNode implements WsWsdlCookie, JaxWsTester
          * refresh service information obtained from wsdl (when wsdl file was changed)
          */
         public void refreshService(boolean downloadWsdl) {
-            if(downloadWsdl){
-                int result = RefreshWsDialog.open(downloadWsdl, service.getImplementationClass(), service.getWsdlUrl());
-                if (RefreshWsDialog.CLOSE==result) return;
-                if (RefreshWsDialog.DO_ALL==result)
-                    ((JaxWsChildren)getChildren()).refreshKeys(true, true);
-                else if (RefreshWsDialog.DOWNLOAD_WSDL==result)
-                    ((JaxWsChildren)getChildren()).refreshKeys(true, false);
-                else if (RefreshWsDialog.REGENERATE_IMPL_CLASS==result)
-                    ((JaxWsChildren)getChildren()).refreshKeys(false, true);
+            if (downloadWsdl) {
+                String result = RefreshWsDialog.open(downloadWsdl, service.getImplementationClass(), service.getWsdlUrl());
+                if (RefreshWsDialog.CLOSE.equals(result)) return;
+                if (result.startsWith(RefreshWsDialog.DO_ALL))
+                    ((JaxWsChildren)getChildren()).refreshKeys(true, true, result.substring(1));
+                else if (result.startsWith(RefreshWsDialog.DOWNLOAD_WSDL))
+                    ((JaxWsChildren)getChildren()).refreshKeys(true, false, result.substring(1));
+                else if (RefreshWsDialog.REGENERATE_IMPL_CLASS.equals(result))
+                    ((JaxWsChildren)getChildren()).refreshKeys(false, true, null);
                 else
-                    ((JaxWsChildren)getChildren()).refreshKeys(false, false);
-            } else{
-                int result = RefreshWsDialog.openWithOKButtonOnly(downloadWsdl, service.getImplementationClass(),
+                    ((JaxWsChildren)getChildren()).refreshKeys(false, false, null);
+            } else {
+                String result = RefreshWsDialog.openWithOKButtonOnly(downloadWsdl, service.getImplementationClass(),
                         service.getWsdlUrl());
-                if(RefreshWsDialog.REGENERATE_IMPL_CLASS==result){
-                    ((JaxWsChildren)getChildren()).refreshKeys(false, true);
+                if(RefreshWsDialog.REGENERATE_IMPL_CLASS.equals(result)) {
+                    ((JaxWsChildren)getChildren()).refreshKeys(false, true, null);
                 } else{
-                    ((JaxWsChildren)getChildren()).refreshKeys(false, false);
+                    ((JaxWsChildren)getChildren()).refreshKeys(false, false, null);
                 }
             }
         }        

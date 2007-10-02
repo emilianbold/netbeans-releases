@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.websvc.core.jaxws.nodes;
 
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -29,11 +31,11 @@ import org.openide.util.NbBundle;
  */
 public class RefreshWsDialog extends javax.swing.JPanel {
     
-    static final int CLOSE = 0;
-    static final int DO_NOTHING = 1;
-    static final int DOWNLOAD_WSDL = 2;
-    static final int REGENERATE_IMPL_CLASS = 3;
-    static final int DO_ALL = 4;
+    static final String CLOSE = "0";
+    static final String DO_NOTHING = "1";
+    static final String DOWNLOAD_WSDL = "2";
+    static final String REGENERATE_IMPL_CLASS = "3";
+    static final String DO_ALL = "4";
     
     private String implClass,url;
     private boolean downloadWsdl;
@@ -47,23 +49,36 @@ public class RefreshWsDialog extends javax.swing.JPanel {
         if (!downloadWsdl) {
             downloadWsdlCheckBox.setVisible(false);
             jLabel1.setVisible(false);
+            jTextField1.setVisible(false);
+        } else {
+            jTextField1.setText(url);
+            downloadWsdlCheckBox.addItemListener(new ItemListener() {
+
+                public void itemStateChanged(ItemEvent e) {
+                    if (((javax.swing.JCheckBox)e.getSource()).isSelected())
+                        jTextField1.setEditable(true);
+                    else 
+                        jTextField1.setEditable(false);
+                }
+
+            });            
         }
     }
  
-    public static int open(boolean downloadWsdl, String implClass, String url) {
+    public static String open(boolean downloadWsdl, String implClass, String url) {
         String title = NbBundle.getMessage(RefreshWsDialog.class, "MSG_ConfirmServiceRefresh");
-        RefreshWsDialog delDialog = new RefreshWsDialog(downloadWsdl, implClass, url);
-        NotifyDescriptor desc = new NotifyDescriptor.Confirmation(delDialog, title, NotifyDescriptor.YES_NO_OPTION);
+        RefreshWsDialog refreshDialog = new RefreshWsDialog(downloadWsdl, implClass, url);
+        NotifyDescriptor desc = new NotifyDescriptor.Confirmation(refreshDialog, title, NotifyDescriptor.YES_NO_OPTION);
         Object result = DialogDisplayer.getDefault().notify(desc);
         if (result.equals(NotifyDescriptor.CLOSED_OPTION)) {
             return CLOSE;
         } else if (result.equals(NotifyDescriptor.NO_OPTION)) {
             return CLOSE;
-        } else if (delDialog.downloadWsdl() && delDialog.regenerate()) {
-            return DO_ALL;
-        } else if (delDialog.downloadWsdl()) {
-            return DOWNLOAD_WSDL;
-        } else if (delDialog.regenerate()) {
+        } else if (refreshDialog.downloadWsdl() && refreshDialog.regenerate()) {
+            return DO_ALL+refreshDialog.getWsdlUrl();
+        } else if (refreshDialog.downloadWsdl()) {
+            return DOWNLOAD_WSDL+refreshDialog.getWsdlUrl();
+        } else if (refreshDialog.regenerate()) {
             return REGENERATE_IMPL_CLASS;
         } else return DO_NOTHING;
         
@@ -74,12 +89,12 @@ public class RefreshWsDialog extends javax.swing.JPanel {
      * but does not give a choice as to refreshing the nodes (i.e. the nodes are
      * always refreshed.
      */
-    public static int openWithOKButtonOnly(boolean downloadWsdl, String implClass, String url){
+    public static String openWithOKButtonOnly(boolean downloadWsdl, String implClass, String url){
         String title = NbBundle.getMessage(RefreshWsDialog.class, "MSG_ConfirmServiceRefresh");
         RefreshWsDialog delDialog = new RefreshWsDialog(downloadWsdl, implClass, url);
         NotifyDescriptor desc = new NotifyDescriptor.Message(delDialog, NotifyDescriptor.INFORMATION_MESSAGE);
         DialogDisplayer.getDefault().notify(desc);
-        if(delDialog.regenerate()){
+        if(delDialog.regenerate()) {
             return REGENERATE_IMPL_CLASS;
         }
         return DO_NOTHING;
@@ -109,11 +124,12 @@ public class RefreshWsDialog extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
+        jTextField1 = new javax.swing.JTextField();
 
         setLayout(new java.awt.GridBagLayout());
 
         downloadWsdlCheckBox.setMnemonic(org.openide.util.NbBundle.getMessage(RefreshWsDialog.class, "MSG_DownloadWsdl_mnem").charAt(0));
-        downloadWsdlCheckBox.setText(org.openide.util.NbBundle.getMessage(RefreshWsDialog.class, "MSG_DownloadServiceWsdl", new Object[] {url})); // NOI18N
+        downloadWsdlCheckBox.setText(org.openide.util.NbBundle.getMessage(RefreshWsDialog.class, "MSG_DownloadWsdl", new Object[] {url})); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -126,7 +142,7 @@ public class RefreshWsDialog extends javax.swing.JPanel {
         regenerateCheckBox.setText(org.openide.util.NbBundle.getMessage(RefreshWsDialog.class, "MSG_RegenerateImplClass")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(10, 0, 0, 0);
@@ -135,7 +151,7 @@ public class RefreshWsDialog extends javax.swing.JPanel {
         jLabel1.setText(org.openide.util.NbBundle.getMessage(RefreshWsDialog.class, "HINT_DownloadWsdl")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 22, 0, 0);
         add(jLabel1, gridBagConstraints);
@@ -143,7 +159,7 @@ public class RefreshWsDialog extends javax.swing.JPanel {
         jLabel2.setText(org.openide.util.NbBundle.getMessage(RefreshWsDialog.class, "HINT_RegenerateImplClass", new Object[] {implClass+".java.old"})); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 22, 0, 0);
         add(jLabel2, gridBagConstraints);
@@ -153,6 +169,14 @@ public class RefreshWsDialog extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 20, 0);
         add(jLabel3, gridBagConstraints);
+
+        jTextField1.setEditable(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 22, 0, 22);
+        add(jTextField1, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
     
     
@@ -161,7 +185,11 @@ public class RefreshWsDialog extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JTextField jTextField1;
     private javax.swing.JCheckBox regenerateCheckBox;
     // End of variables declaration//GEN-END:variables
     
+    private String getWsdlUrl() {
+        return jTextField1.getText().trim();
+    }
 }

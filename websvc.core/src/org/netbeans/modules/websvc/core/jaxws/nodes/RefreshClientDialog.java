@@ -90,7 +90,7 @@ public class RefreshClientDialog extends javax.swing.JPanel {
         setLayout(new java.awt.GridBagLayout());
 
         downloadWsdlCheckBox.setMnemonic(org.openide.util.NbBundle.getMessage(RefreshClientDialog.class, "MSG_DownloadWsdl_mnem").charAt(0));
-        downloadWsdlCheckBox.setText(org.openide.util.NbBundle.getMessage(RefreshClientDialog.class, "MSG_DownloadClientWsdl")); // NOI18N
+        downloadWsdlCheckBox.setText(org.openide.util.NbBundle.getMessage(RefreshClientDialog.class, "MSG_DownloadWsdl")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
