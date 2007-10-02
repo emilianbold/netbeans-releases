@@ -122,6 +122,7 @@ public class ViewRevisionAction extends AbstractAction implements Runnable {
         File daoFile = new File(tempFolder, base.getName());
         daoFile.deleteOnExit();
         Utils.copyStreamsCloseAll(new FileOutputStream(daoFile), new FileInputStream(original)); 
+        Utils.associateEncoding(base, daoFile);
         final FileObject fo = FileUtil.toFileObject(daoFile);
         DataObject dao = DataObject.find(fo);
         EditorCookie ec = dao.getCookie(EditorCookie.class);

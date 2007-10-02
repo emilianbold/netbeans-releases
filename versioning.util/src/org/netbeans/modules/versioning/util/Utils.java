@@ -36,6 +36,9 @@ import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 
 import javax.swing.text.Document;
+import javax.swing.text.StyledDocument;
+import javax.swing.text.EditorKit;
+import javax.swing.text.BadLocationException;
 import javax.swing.*;
 import java.io.*;
 import java.util.prefs.Preferences;
@@ -630,7 +633,7 @@ public final class Utils {
      */
     public static void openFile(FileObject fo, String revision) {
         ViewEnv env = new ViewEnv(fo);
-        CloneableEditorSupport ces = new ViewCES(env, fo.getNameExt() + " @ " + revision); // NOI18N
+        CloneableEditorSupport ces = new ViewCES(env, fo.getNameExt() + " @ " + revision, FileEncodingQuery.getEncoding(fo)); // NOI18N
         ces.view();
     }
 
@@ -796,10 +799,16 @@ public final class Utils {
     private static class ViewCES extends CloneableEditorSupport {
         
         private final String name;
+        private final Charset charset;
 
-        public ViewCES(Env env, String name) {
+        public ViewCES(Env env, String name, Charset charset) {
             super(env);
             this.name = name;
+            this.charset = charset;
+        }
+
+        protected void loadFromStreamToKit(StyledDocument doc, InputStream stream, EditorKit kit) throws IOException, BadLocationException {
+            kit.read(new InputStreamReader(stream, charset), doc, 0);
         }
 
         protected String messageSave() {
