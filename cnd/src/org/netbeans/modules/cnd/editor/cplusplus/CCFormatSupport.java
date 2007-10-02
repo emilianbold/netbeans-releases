@@ -269,7 +269,6 @@ public class CCFormatSupport extends ExtFormatSupport {
                         firstColon = false;
                         break;
 
-                    case CCTokenContext.ENUM_ID:
                     case CCTokenContext.DO_ID:
                     case CCTokenContext.SWITCH_ID:
                     case CCTokenContext.CASE_ID:
