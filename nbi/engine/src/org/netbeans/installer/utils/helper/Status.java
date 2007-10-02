@@ -20,6 +20,7 @@
 
 package org.netbeans.installer.utils.helper;
 
+import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.exceptions.UnrecognizedObjectException;
 
 public enum Status {
@@ -41,13 +42,13 @@ public enum Status {
     public String getDisplayName() {
         switch (this) {
             case NOT_INSTALLED:
-                return "Not installed";
+                return NOT_INSTALLED_STRING;
             case TO_BE_INSTALLED:
-                return "To be installed";
+                return TO_BE_INSTALLED_STRING;
             case INSTALLED:
-                return "Installed";
+                return INSTALLED_STRING;
             case TO_BE_UNINSTALLED:
-                return "To be uninstalled";
+                return TO_BE_UNINSTALLED_STRING;
         }
         
         return null;
@@ -56,5 +57,17 @@ public enum Status {
     public String toString() {
         return name;
     }
+    private static final String NOT_INSTALLED_STRING = 
+            ResourceUtils.getString(Status.class,
+            "Status.not-installed");
+    private static final String TO_BE_INSTALLED_STRING = 
+            ResourceUtils.getString(Status.class,
+            "Status.to-be-installed");
+    private static final String INSTALLED_STRING = 
+            ResourceUtils.getString(Status.class,
+            "Status.installed");
+    private static final String TO_BE_UNINSTALLED_STRING = 
+            ResourceUtils.getString(Status.class,
+            "Status.to-be-uninstalled");
 }
 

@@ -20,6 +20,8 @@
 
 package org.netbeans.installer.utils.helper;
 
+import org.netbeans.installer.utils.ResourceUtils;
+
 public enum DetailedStatus {
     INSTALLED_SUCCESSFULLY,
     INSTALLED_WITH_WARNINGS,
@@ -31,19 +33,38 @@ public enum DetailedStatus {
     public String toString() {
         switch (this) {
             case INSTALLED_SUCCESSFULLY:
-                return "Installed Successfully";
+                return INSTALLED_SUCCESSFULLY_STRING;
             case INSTALLED_WITH_WARNINGS:
-                return "Installed With Warnings";
+                return INSTALLED_WITH_WARNINGS_STRING;
             case FAILED_TO_INSTALL:
-                return "Failed to Install";
+                return FAILED_TO_INSTALL_STRING;
             case UNINSTALLED_SUCCESSFULLY:
-                return "Uninstalled Successfully";
+                return UNINSTALLED_SUCCESSFULLY_STRING;
             case UNINSTALLED_WITH_WARNINGS:
-                return "Uninstalled With Warnings";
+                return UNINSTALLED_WITH_WARNINGS_STRING;
             case FAILED_TO_UNINSTALL:
-                return "Failed to Uninstall";
+                return FAILED_TO_UNINSTALL_STRING;
             default:
                 return null;
         }
     }
+    private static final String INSTALLED_SUCCESSFULLY_STRING = 
+            ResourceUtils.getString(DetailedStatus.class,
+            "DetailedStatus.install.succes");//NOI18N
+private static final String INSTALLED_WITH_WARNINGS_STRING = 
+            ResourceUtils.getString(DetailedStatus.class,
+            "DetailedStatus.install.warning");//NOI18N
+private static final String FAILED_TO_INSTALL_STRING = 
+            ResourceUtils.getString(DetailedStatus.class,
+            "DetailedStatus.install.error");//NOI18N
+
+private static final String UNINSTALLED_SUCCESSFULLY_STRING = 
+            ResourceUtils.getString(DetailedStatus.class,
+            "DetailedStatus.uninstall.success");//NOI18N
+private static final String UNINSTALLED_WITH_WARNINGS_STRING = 
+            ResourceUtils.getString(DetailedStatus.class,
+            "DetailedStatus.uninstall.warning");//NOI18N
+private static final String FAILED_TO_UNINSTALL_STRING = 
+            ResourceUtils.getString(DetailedStatus.class,
+            "DetailedStatus.uninstall.error");//NOI18N
 }
