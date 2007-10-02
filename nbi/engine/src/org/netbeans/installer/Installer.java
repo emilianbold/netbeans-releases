@@ -30,10 +30,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLDecoder;
-import java.nio.channels.FileChannel;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.Locale;
+import java.util.MissingResourceException;
 import java.util.Properties;
+import java.util.ResourceBundle;
 import java.util.TreeSet;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
@@ -137,8 +139,8 @@ public class Installer implements FinishHandler {
         // devise the configuration differences in case of errors
         dumpSystemInfo();
         
-        loadProperties();
         parseArguments(arguments);
+        loadEngineProperties();
         setLocalDirectory();
         
         // once we have set the local directory (and therefore devised the log
@@ -228,7 +230,7 @@ public class Installer implements FinishHandler {
     }
     
     // private //////////////////////////////////////////////////////////////////////
-    private void exitNormally(int errorCode) {        
+    private void exitNormally(int errorCode) {
         Wizard.getInstance().close();
         DownloadManager.getInstance().terminate();
         LogManager.stop();
@@ -262,35 +264,24 @@ public class Installer implements FinishHandler {
         LogManager.logExit("... end of target system information"); // NOI18N
     }
     
-    private void loadProperties() {
+    private void loadEngineProperties() {
         LogManager.logEntry("loading engine properties"); // NOI18N
         
         try {
-            LogManager.logIndent("loading properties file from " + // NOI18N
-                    EngineResources.ENGINE_PROPERTIES);
+            LogManager.logIndent("loading engine properties");
             
-            final InputStream input = getClass().getClassLoader().
-                    getResourceAsStream(EngineResources.ENGINE_PROPERTIES);
+            ResourceBundle bundle = ResourceBundle.getBundle(
+                    EngineResources.ENGINE_PROPERTIES_BUNDLE);
+            Enumeration <String> keys = bundle.getKeys();
             
-            if (input != null) {
-                final Properties properties = new Properties();
-                
-                properties.load(input);
-                for (Object key: properties.keySet()) {
-                    LogManager.log("loading " + // NOI18N
-                            key + " => " + properties.get(key)); // NOI18N
-                    
-                    System.setProperty(
-                            key.toString(),
-                            properties.get(key).toString());
-                }
+            while (keys.hasMoreElements()) {
+                final String key = keys.nextElement();
+                final String value = bundle.getString(key);
+                LogManager.log("loading " + key + " => " + value); // NOI18N
+                System.setProperty(key,value);
             }
-        } catch (IOException e) {
-            final String message = ResourceUtils.getString(
-                    Installer.class,
-                    ERROR_LOAD_ENGINE_PROPERTIES_KEY);
-            
-            ErrorManager.notifyWarning(message, e);
+        } catch (MissingResourceException e) {
+            LogManager.log("... no engine properties file, skip loading engine properties");
         }
         
         LogManager.unindent();
@@ -916,7 +907,7 @@ public class Installer implements FinishHandler {
                             StringUtils.FORWARD_SLASH;
                     if(!name.startsWith(dataDir) || // all except "data/""
                             name.equals(dataDir) || // "data/"
-                            name.equals(EngineResources.ENGINE_PROPERTIES)) { // "data/engine.properties"
+                            name.matches(EngineResources.ENGINE_PROPERTIES_PATTERN)) {
                         jos.putNextEntry(new JarEntry(name));
                         if(!name.endsWith(StringUtils.FORWARD_SLASH)) {
                             StreamUtils.transferData(ResourceUtils.getResource(name), jos);

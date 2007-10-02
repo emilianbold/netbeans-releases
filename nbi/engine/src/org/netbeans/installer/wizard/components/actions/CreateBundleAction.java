@@ -2,17 +2,17 @@
  * The contents of this file are subject to the terms of the Common Development and
  * Distribution License (the License). You may not use this file except in compliance
  * with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
  * http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file and
  * include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
  * the following below the CDDL Header, with the fields enclosed by brackets []
  * replaced by your own identifying information:
- * 
+ *
  *     "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
@@ -163,25 +163,31 @@ public class CreateBundleAction extends WizardAction {
                     output);
             
             // load default engine properties and set all components to be installed by default
-            Properties engineProps = new Properties();
-            engineProps.load(ResourceUtils.getResource(EngineResources.ENGINE_PROPERTIES));
-            
-            if(System.getProperty(Installer.BUNDLE_PROPERTIES_FILE_PROPERTY)!=null) {
-                Properties pr = new Properties();
-                InputStream is = new FileInputStream(new File(
-                        System.getProperty(Installer.
-                        BUNDLE_PROPERTIES_FILE_PROPERTY)));
-                pr.load(is);
-                is.close();
-                engineProps.putAll(pr);
-            }
-            
-            engineProps.setProperty(Registry.SUGGEST_INSTALL_PROPERTY,
-                    StringUtils.EMPTY_STRING + true);
-            output.putNextEntry(new JarEntry(
-                    EngineResources.ENGINE_PROPERTIES));
-            engineProps.store(output, null);
-            
+            String [] contents = StringUtils.splitByLines(
+                    StreamUtils.readStream(
+                    ResourceUtils.getResource(
+                    EngineResources.ENGINE_CONTENTS_LIST)));
+            for(String entry : contents) {
+                if(entry.matches(EngineResources.ENGINE_PROPERTIES_PATTERN)) {
+                    Properties engineProps = new Properties();
+                    engineProps.load(ResourceUtils.getResource(entry));
+                    
+                    if(System.getProperty(Installer.BUNDLE_PROPERTIES_FILE_PROPERTY)!=null) {
+                        Properties pr = new Properties();
+                        InputStream is = new FileInputStream(new File(
+                                System.getProperty(Installer.
+                                BUNDLE_PROPERTIES_FILE_PROPERTY)));
+                        pr.load(is);
+                        is.close();
+                        engineProps.putAll(pr);
+                    }
+                    
+                    engineProps.setProperty(Registry.SUGGEST_INSTALL_PROPERTY,
+                            StringUtils.EMPTY_STRING + true);
+                    output.putNextEntry(new JarEntry(entry));
+                    engineProps.store(output, null);
+                }
+            }            
             
             progress.addPercentage(percentageLeak);
             LogManager.log("... adding " + products.size() + " products");
@@ -253,7 +259,7 @@ public class CreateBundleAction extends WizardAction {
                             new File(logicUri.getLocal()),
                             output);
                     
-                    // delete the downloaded file -- we need to delete it only in 
+                    // delete the downloaded file -- we need to delete it only in
                     // case it has been really downloaded, i.e. the local URI is
                     // different from the main remote one and the alternates
                     if (!logicUri.getLocal().equals(logicUri.getRemote()) &&
@@ -281,7 +287,7 @@ public class CreateBundleAction extends WizardAction {
                             new File(dataUris.get(i).getLocal()),
                             output);
                     
-                    // delete the downloaded file -- we need to delete it only in 
+                    // delete the downloaded file -- we need to delete it only in
                     // case it has been really downloaded, i.e. the local URI is
                     // different from the main remote one and the alternates
                     if (!dataUri.getLocal().equals(dataUri.getRemote()) &&

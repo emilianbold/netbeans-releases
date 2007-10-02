@@ -47,6 +47,13 @@ public final class EngineResources {
     public static final String ENGINE_CONTENTS_LIST = 
             DATA_DIRECTORY + "/engine.list";
     
+    public static final String ENGINE_PROPERTIES_BUNDLE = 
+            DATA_DIRECTORY + ".engine";
+    
+    @Deprecated
     public static final String ENGINE_PROPERTIES = 
             DATA_DIRECTORY + "/engine.properties";
+    
+    public static final String ENGINE_PROPERTIES_PATTERN = 
+            "^" + DATA_DIRECTORY  + "/engine(_[a-zA-Z]+)*.properties$";//NOI18N
 }
