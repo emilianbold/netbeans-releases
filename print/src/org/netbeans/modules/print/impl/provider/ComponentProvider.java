@@ -72,7 +72,10 @@ public class ComponentProvider implements PrintProvider {
   public PrintPage [][] getPages(int pageWidth, int pageHeight, double pageZoom) {
     List<ComponentPage> pages = new ArrayList<ComponentPage>();
     JComponent component = getComponent();
-    
+
+    if (component == null) {
+      return null;
+    }
     int componentWidth = component.getWidth();
     int componentHeight = component.getHeight();
 

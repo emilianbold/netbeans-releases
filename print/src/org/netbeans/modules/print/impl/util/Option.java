@@ -173,6 +173,15 @@ public final class Option {
     set(BORDER, value);
   }
 
+
+  public boolean isAsEditor() {
+    return get(AS_EDITOR, false);
+  }
+
+  public void setAsEditor(boolean value) {
+    set(AS_EDITOR, value);
+  }
+
   public Color getBorderColor() {
     return getColor(get(BORDER_COLOR, null), Color.black);
   }
@@ -472,6 +481,7 @@ public final class Option {
   private static final String FOOTER_RIGHT_TEXT = Pattern.MODIFIED_DATE.getName() +
     "  " + Pattern.MODIFIED_TIME.getName(); // NOI18N
 
+  private static final String AS_EDITOR = "print.text.as.editor"; // NOI18N
   private static final String WRAP_LINES = "print.text.wrap.lines"; // NOI18N
   private static final String LINE_NUMBERS = "print.text.line.numbers"; // NOI18N
   private static final String USE_FONT = "print.text.use.font"; // NOI18N

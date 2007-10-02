@@ -49,12 +49,15 @@ import java.util.Date;
 import java.util.List;
 
 import javax.swing.JComponent;
+import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
+import org.openide.cookies.EditorCookie;
 import org.openide.text.AttributedCharacters;
 import org.netbeans.editor.BaseDocument;
 
+import org.netbeans.modules.print.impl.util.Util;
 import static org.netbeans.modules.print.api.PrintUtil.*;
 
 /**
@@ -63,26 +66,36 @@ import static org.netbeans.modules.print.api.PrintUtil.*;
  */
 public final class TextProvider extends ComponentProvider {
 
-  public TextProvider(Document document, Date modified) {
-    super(null, getName(document), modified);
-    myDocument = document;
+  public TextProvider(EditorCookie editor, Date modified) {
+    super(null, getName(editor), modified);
+    myEditor = editor;
   }
 
   @Override
   protected JComponent getComponent()
   {
-    if (myDocument instanceof BaseDocument &&
-      myDocument.getLength() < MAX_ATTR_TEXT_SIZE)
-    {
+    if (Util.getOption().isAsEditor()) {
+      JEditorPane[] panes = myEditor.getOpenedPanes();
+
+      if (panes != null && panes.length != 0) {
+        return panes[0];
+      }
+      return null;
+    }
+    Document document = myEditor.getDocument();
+      
+    if (document == null) {
+      return null;
+    }
+    if (document instanceof BaseDocument && document.getLength() < MAX_ATTR_TEXT_SIZE) {
 //out();
 //out("GET ITERATOR");
 //out();
     PrintContainer container = new PrintContainer();
-      ((BaseDocument) myDocument).print(
-        container, false, true, 0, myDocument.getLength());
+      ((BaseDocument) document).print(container, false, true, 0, document.getLength());
       return new ComponentDocument(container.getIterators());
     }
-    return new ComponentDocument(getText(myDocument));
+    return new ComponentDocument(getText(document));
   }
 
   private String getText(Document document) {
@@ -94,7 +107,12 @@ public final class TextProvider extends ComponentProvider {
     }
   }
 
-  private static String getName(Document document) {
+  private static String getName(EditorCookie editor) {
+    Document document = editor.getDocument();
+      
+    if (document == null) {
+      return null;
+    }
     return ((String) document.getProperty(
       Document.TitleProperty)).replace('\\', '/'); // NOI18N
   }
@@ -137,6 +155,6 @@ public final class TextProvider extends ComponentProvider {
     private List<AttributedCharacters> myCharactersList;
   }
 
-  private Document myDocument;
+  private EditorCookie myEditor;
   private static final int MAX_ATTR_TEXT_SIZE = 64000;
 }

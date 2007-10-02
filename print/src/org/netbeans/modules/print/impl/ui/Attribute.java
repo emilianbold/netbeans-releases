@@ -176,6 +176,7 @@ final class Attribute extends Dialog
     Util.getOption().setTextFont(myTextFontValue);
     Util.getOption().setBackgroundColor(myBackgroundColorValue);
     Util.getOption().setLineSpacing(getDouble(myLineSpacing.getValue()));
+    Util.getOption().setAsEditor(myAsEditor.isSelected());
 
     double zoom = 0.0;
 
@@ -597,7 +598,13 @@ final class Attribute extends Dialog
     // []
     c.gridy++;
     c.weightx = 1.0;
-    panel.add(new JLabel(), c);
+    c.insets = new Insets(0, 0, 0, 0);
+    myAsEditor = createCheckBox(
+      new ButtonAction(i18n("LBL_As_Editor"), i18n("TLT_As_Editor")) { // NOI18N
+        public void actionPerformed(ActionEvent event) {}
+      }
+    );
+    panel.add(myAsEditor, c);
 
     // []
     panel.add(new JLabel(), c);
@@ -856,6 +863,7 @@ final class Attribute extends Dialog
     myWrapLines.setSelected(Util.getOption().isWrapLines());
     myUseFont.setSelected(Util.getOption().isUseFont());
     myUseColor.setSelected(Util.getOption().isUseColor());
+    myAsEditor.setSelected(Util.getOption().isAsEditor());
   }
 
   @Override
@@ -911,6 +919,7 @@ final class Attribute extends Dialog
   private Font myTextFontValue;
   private Color myTextColorValue;
   private Color myBackgroundColorValue;
+  private JCheckBox myAsEditor;
 
   private Percent myZoomFactor;
   private JTextField myZoomWidth;
