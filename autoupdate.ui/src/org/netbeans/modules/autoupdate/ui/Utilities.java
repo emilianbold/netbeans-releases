@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.autoupdate.ui;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.text.Collator;
@@ -49,8 +50,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -409,6 +412,32 @@ public class Utilities {
                 }
             }
         };
+    }
+    
+    public static List<File> sharedDirs () {
+        List<File> files = new ArrayList<File> ();
+        
+        String dirs = System.getProperty ("netbeans.dirs"); // NOI18N
+        if (dirs != null) {
+            Enumeration en = new StringTokenizer (dirs, File.pathSeparator);
+            while (en.hasMoreElements ()) {
+                File f = new File ((String) en.nextElement ());
+                files.add (f);
+            }
+        }
+        
+        
+        File id = getPlatformDir ();
+        if (id != null) {
+            files.add(id);
+        }
+        
+        return Collections.unmodifiableList (files);
+    }
+    
+    private static File getPlatformDir () {
+        String platform = System.getProperty ("netbeans.home"); // NOI18N
+        return platform == null ? null : new File (platform);
     }
     
     private static Preferences getPreferences () {
