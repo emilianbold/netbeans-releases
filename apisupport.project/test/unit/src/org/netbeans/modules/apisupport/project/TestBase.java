@@ -555,13 +555,13 @@ import org.openide.util.Lookup;
         return new File(destDir);
     }
 
-    private static int getChildrenLenght(final Node node) {
+    private static int getChildrenLength(final Node node) {
         return node.getChildren().getNodes(true).length;
     }
 
     /** Fails with timeout if children are not updated to the required count. */
     public static void assertAsynchronouslyUpdatedChildrenNodes(final Node node, final int n) throws InterruptedException {
-        for (int current = getChildrenLenght(node); current != n; current = getChildrenLenght(node)) {
+        for (int current = getChildrenLength(node); current != n; current = getChildrenLength(node)) {
             System.out.println("Waiting for " + n + " child(ren); having " + current);
             Thread.sleep(400);
         }
