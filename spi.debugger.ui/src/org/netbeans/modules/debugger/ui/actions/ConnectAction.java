@@ -24,10 +24,13 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
+import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.debugger.ui.Utils;
+import org.netbeans.spi.debugger.ui.AttachType;
 import org.netbeans.spi.debugger.ui.Controller;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -66,6 +69,13 @@ public final class ConnectAction extends AbstractAction {
             "iconBase", // NOI18N
             "org/netbeans/modules/debugger/resources/actions/Attach.gif" // NOI18N
         );
+    }
+
+    public boolean isEnabled() {
+        List attachTypes = DebuggerManager.getDebuggerManager ().lookup (
+            null, AttachType.class
+        );
+        return attachTypes.size() > 0;
     }
     
     public void actionPerformed (ActionEvent evt) {

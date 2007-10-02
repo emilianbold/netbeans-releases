@@ -102,12 +102,8 @@ public class DebugMainProjectAction implements Action, Presenter.Toolbar {
                     new Lookup.Template(Action.class, "Actions/Debug/org-netbeans-modules-debugger-ui-actions-ConnectAction", null)) // NOI18N
                     .allInstances().iterator().next();
             item = new JMenuItem(Actions.cutAmpersand((String) ca.getValue(NAME)));
+            Actions.connect(item, ca);
             menu.add(item);
-            item.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    ca.actionPerformed(e);
-                }
-            });
         } catch (java.util.NoSuchElementException nsee) {
             Exceptions.printStackTrace(nsee);
         }
