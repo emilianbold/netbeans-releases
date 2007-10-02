@@ -56,6 +56,7 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -301,6 +302,13 @@ public class RetoucheUtils {
     }
     
     public static boolean isOnSourceClasspath(FileObject fo) {
+        Project p = FileOwnerQuery.getOwner(fo);
+        if (p==null) 
+            return false;
+        Project[] opened = OpenProjects.getDefault().getOpenProjects();
+        if (!Arrays.asList(opened).contains(p)) {
+            return false;
+        }
         return ClassPath.getClassPath(fo, ClassPath.SOURCE)!=null;
     }
 
