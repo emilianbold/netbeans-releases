@@ -76,6 +76,7 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 
 import java.util.*;
+import java.util.concurrent.Callable;
 
 import javax.swing.JButton;
 import javax.swing.JEditorPane;
@@ -92,6 +93,7 @@ import javax.swing.undo.UndoableEdit;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
 import org.openide.util.UserCancelException;
 
 
@@ -368,7 +370,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     /** When openning of a document fails with an UserQuestionException
      * this is the method that is supposed to handle the communication.
      */
-    private void askUserAndDoOpen(UserQuestionException e) {
+    private void askUserAndDoOpen(UserQuestionException e, Callable<Void> run) {
         while (e != null) {
             NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
                     e.getLocalizedMessage(), NotifyDescriptor.YES_NO_OPTION
@@ -392,16 +394,13 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             e = null;
 
             try {
-                getListener().loadExc = null;
-                prepareTask = null;
-                documentStatus = DOCUMENT_NO;
-                openDocument();
-
-                super.open();
+                run.call();
             } catch (UserQuestionException ex) {
                 e = ex;
             } catch (IOException ex) {
                 ERR.log(Level.INFO, null, ex);
+            } catch (Exception ex) {
+                ERR.log(Level.SEVERE, null, ex);
             }
         }
     }
@@ -425,17 +424,26 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             openDocument();
             super.open();
         } catch (final UserQuestionException e) {
-            if (SwingUtilities.isEventDispatchThread()) {
-                askUserAndDoOpen(e);
-            } else {
-                SwingUtilities.invokeLater(
-                    new Runnable() {
-                        public void run() {
-                            askUserAndDoOpen(e);
-                        }
-                    }
-                );
+            class Query implements Runnable, Callable<Void> {
+
+                public void run() {
+                    askUserAndDoOpen(e, this);
+                }
+
+                public Void call() throws IOException {
+                    getListener().loadExc = null;
+                    prepareTask = null;
+                    documentStatus = DOCUMENT_NO;
+                    openDocument();
+
+                    CloneableEditorSupport.super.open();
+                    return null;
+                }
+
             }
+
+            Query query = new Query();
+            Mutex.EVENT.readAccess(query);
         } catch (IOException e) {
             ERR.log(Level.INFO, null, e);
         }
@@ -1398,29 +1406,47 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                          }
                                          documentStatus = DOCUMENT_RELOADING;
                                          prepareDocumentRuntimeException = null;
-                                         int targetStatus = DOCUMENT_NO;
 
-                                         try {
-                                             // #24676. Reloading: Put positions into memory
-                                             // and fire document is closing (little trick
-                                             // to detach annotations).
-                                             getPositionManager().documentClosed();
-                                             updateLineSet(true);
-                                             fireDocumentChange(doc, true);
-                                             ERR.fine("clearDocument");
-                                             clearDocument();
-                                             // uses the listener's run method to initialize whole document
-                                             prepareTask = new Task(getListener());
-                                             ERR.fine("new prepare task: " +
-                                                      prepareTask);
-                                             prepareTask.run();
-                                             ERR.fine("prepareTask finished");
-                                             documentStatus = DOCUMENT_READY;
-                                             fireDocumentChange(doc, false);
-                                             // Confirm that whole loading succeeded
-                                             targetStatus = DOCUMENT_READY;
+                                         class Query implements Runnable, Callable<Void> {
+                                             int targetStatus = DOCUMENT_NO;
+                                             UserQuestionException e;
+
+                                             public void run() {
+                                                askUserAndDoOpen(e, this);
+                                             }
+
+                                             public Void call() {
+                                                 // #24676. Reloading: Put positions into memory
+                                                 // and fire document is closing (little trick
+                                                 // to detach annotations).
+                                                 getPositionManager().documentClosed();
+                                                 updateLineSet(true);
+                                                 fireDocumentChange(doc, true);
+                                                 ERR.fine("clearDocument");
+                                                 clearDocument();
+                                                 // uses the listener's run method to initialize whole document
+                                                 prepareTask = new Task(getListener());
+                                                 ERR.fine("new prepare task: " +
+                                                          prepareTask);
+                                                 prepareTask.run();
+                                                 ERR.fine("prepareTask finished");
+                                                 documentStatus = DOCUMENT_READY;
+                                                 fireDocumentChange(doc, false);
+                                                 // Confirm that whole loading succeeded
+                                                 targetStatus = DOCUMENT_READY;
+                                                 return null;
+                                             }
                                          }
+                                         Query query = new Query();
+                                         try {
+                                             query.call();
+                                         } 
                                          catch (RuntimeException t) {
+                                             if (t.getCause() instanceof UserQuestionException) {
+                                                 query.e = (UserQuestionException)t.getCause();
+                                                 Mutex.EVENT.readAccess(query);
+                                                 return;
+                                             }
                                              prepareDocumentRuntimeException = t;
                                              prepareTask = null;
                                              throw t;
@@ -1432,8 +1458,8 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                          }
                                          finally {
                                              synchronized (getLock()) {
-                                                 if (targetStatus == DOCUMENT_NO) doc = null;
-                                                 documentStatus = targetStatus;
+                                                 if (query.targetStatus == DOCUMENT_NO) doc = null;
+                                                 documentStatus = query.targetStatus;
                                                  getLock().notifyAll();
                                              }
                                          }

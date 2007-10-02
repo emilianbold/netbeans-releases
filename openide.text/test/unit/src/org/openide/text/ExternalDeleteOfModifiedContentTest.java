@@ -40,9 +40,18 @@
  */
 
 package org.openide.text;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.util.Date;
+import org.openide.text.*;
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Stack;
 import javax.swing.JEditorPane;
 import javax.swing.text.Document;
@@ -56,35 +65,55 @@ import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
-import org.openide.loaders.DataObject;
+import org.openide.util.Lookup;
 import org.openide.util.Mutex;
+import org.openide.util.UserQuestionException;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
+import org.openide.windows.CloneableOpenSupport;
 
 /** Modified editor shall not be closed when its file is externally removed.
  *
  * @author Jaroslav Tulach
  */
-public class ExternalDeleteOfModifiedFileTest extends NbTestCase {
+public class ExternalDeleteOfModifiedContentTest extends NbTestCase 
+implements CloneableEditorSupport.Env  {
     static {
         System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
     }
-    private DataObject obj;
-    private EditorCookie edit;
+    /** the support to work with */
+    private CloneableEditorSupport support;
+    /** the content of lookup of support */
+    private InstanceContent ic;
+
+    
+    // Env variables
+    private String content = "";
+    private boolean valid = true;
+    private boolean modified = false;
+    /** if not null contains message why this document cannot be modified */
+    private String cannotBeModified;
+    private Date date = new java.util.Date ();
+    private List<PropertyChangeListener> propL = new ArrayList<PropertyChangeListener>();
+    private java.beans.VetoableChangeListener vetoL;
+    private IOException toThrow;
+    private CloneableEditorSupport edit;
     
     
-    public ExternalDeleteOfModifiedFileTest (java.lang.String testName) {
+    public ExternalDeleteOfModifiedContentTest (java.lang.String testName) {
         super(testName);
     }
     
     public static Test suite() {
-        //TestSuite suite = new NbTestSuite(ExternalDeleteOfModifiedFileTest.class);
-        Test suite = new ExternalDeleteOfModifiedFileTest("testReloadOfABigFile");
+        TestSuite suite = new NbTestSuite(ExternalDeleteOfModifiedContentTest.class);
+        //Test suite = new ExternalDeleteOfModifiedContentTest("testReloadOfABigFile");
         return suite;
     }
     
 
     @Override
     protected void setUp () throws Exception {
-        System.setProperty ("org.openide.util.Lookup", "org.openide.text.ExternalDeleteOfModifiedFileTest$Lkp");
+        System.setProperty ("org.openide.util.Lookup", "org.openide.text.ExternalDeleteOfModifiedContentTest$Lkp");
         
         
         clearWorkDir();
@@ -92,62 +121,14 @@ public class ExternalDeleteOfModifiedFileTest extends NbTestCase {
         fs.setRootDirectory(getWorkDir());
         
         FileObject fo = fs.getRoot().createData("Ahoj", "txt");
-        
-        obj = DataObject.find(fo);
-        edit = obj.getCookie(EditorCookie.class);
+
+        ic = new InstanceContent();
+        support = new CES(this, new AbstractLookup(ic));
+        edit = support;
         assertNotNull("we have editor", edit);
 
         DD.type = -1;
         DD.toReturn = new Stack<Object>();
-    }
-
-    public void testModifyTheFileAndThenPreventItToBeSavedOnFileDisappear() throws Exception {
-        Document doc = edit.openDocument();
-        
-        doc.insertString(0, "Ahoj", null);
-        assertTrue("Modified", edit.isModified());
-        
-        edit.open();
-        waitEQ();
-
-        JEditorPane[] arr = getPanes();
-        assertNotNull("There is one opened pane", arr);
-        
-        java.awt.Component c = arr[0];
-        while (!(c instanceof CloneableEditor)) {
-            c = c.getParent();
-        }
-        CloneableEditor ce = (CloneableEditor)c;
-
-        // select close
-        DD.toReturn.push(DialogDescriptor.CANCEL_OPTION);
-        
-        java.io.File f = FileUtil.toFile(obj.getPrimaryFile());
-        assertNotNull("There is file behind the fo", f);
-        f.delete();
-        obj.getPrimaryFile().getParent().refresh();
-
-        waitEQ();
-        
-        assertNotNull ("Text message was there", DD.message);
-        assertEquals("Ok/cancel type", DialogDescriptor.OK_CANCEL_OPTION, DD.type);
-        
-        String txt = doc.getText(0, doc.getLength());
-        assertEquals("The right text is there", txt, "Ahoj");
-        
-        arr = getPanes();
-        assertNotNull("Panes are still open", arr);
-        assertTrue("Document is remains modified", edit.isModified());
-        
-        // explicit close request, shall show the get another dialog
-        // and now say yes to close
-        DD.clear(DialogDescriptor.OK_OPTION);
-        
-        ce.close();
-        waitEQ();
-        
-        arr = getPanes();
-        assertNull("Now everything is closed", arr);
     }
 
     public void testReloadOfABigFile() throws Exception {
@@ -168,23 +149,41 @@ public class ExternalDeleteOfModifiedFileTest extends NbTestCase {
         }
         CloneableEditor ce = (CloneableEditor)c;
 
-        // select ok first, then Yes
+        // select Yes
         DD.toReturn.push(DialogDescriptor.YES_OPTION);
-        DD.toReturn.push(DialogDescriptor.OK_OPTION);
-        
+
+        toThrow = new UserQuestionException() {
+            @Override
+            public void confirmed() throws IOException {
+                // ok, confirmed
+                toThrow = null;
+                ByteArrayOutputStream os = new ByteArrayOutputStream();
+                for (int i = 0; i < 1024 * 1024 + 50000; i++) {
+                    os.write('A');
+                }
+                os.close();
+                content = os.toString();
+            }
+            public String getLocalizedMessage() {
+                return "Ahoj";
+            }
+        };
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, PROP_TIME, null, null);
+        for (PropertyChangeListener propertyChangeListener : propL) {
+            propertyChangeListener.propertyChange(evt);
+        }
+
+        /*
         java.io.File f = FileUtil.toFile(obj.getPrimaryFile());
         assertNotNull("There is file behind the fo", f);
-        OutputStream os = new BufferedOutputStream(new FileOutputStream(f));
-        for (int i = 0; i < 1024 * 1024 + 50000; i++) {
-            os.write('A');
-        }
-        os.close();
 
         obj.getPrimaryFile().getParent().refresh();
-
+        */
+        
         waitEQ();
         
         assertNotNull ("Text message was there", DD.message);
+        assertEquals ("Text message was there", "Ahoj", DD.message);
 
         if (doc.getLength() < 1024) {
             fail("Should be pretty big: " + doc.getLength());
@@ -260,5 +259,97 @@ public class ExternalDeleteOfModifiedFileTest extends NbTestCase {
         }
         
     } // end of DD
+    //
+    // Implementation of the CloneableEditorSupport.Env
+    //
+    
+    public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener l) {
+        propL.add (l);
+    }    
+    public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
+        propL.remove (l);
+    }
+    
+    public synchronized void addVetoableChangeListener(java.beans.VetoableChangeListener l) {
+        assertNull ("This is the first veto listener", vetoL);
+        vetoL = l;
+    }
+    public void removeVetoableChangeListener(java.beans.VetoableChangeListener l) {
+        assertEquals ("Removing the right veto one", vetoL, l);
+        vetoL = null;
+    }
+    
+    public org.openide.windows.CloneableOpenSupport findCloneableOpenSupport() {
+        return support;
+    }
+    
+    public String getMimeType() {
+        return "text/plain";
+    }
+    
+    public java.util.Date getTime() {
+        return date;
+    }
+    
+    public java.io.InputStream inputStream() throws java.io.IOException {
+        if (toThrow != null) {
+            throw toThrow;
+        }
+        return new java.io.ByteArrayInputStream (content.getBytes ());
+    }
+    public java.io.OutputStream outputStream() throws java.io.IOException {
+        class ContentStream extends java.io.ByteArrayOutputStream {
+            public void close () throws java.io.IOException {
+                super.close ();
+                content = new String (toByteArray ());
+            }
+        }
+        
+        return new ContentStream ();
+    }
+    
+    public boolean isValid() {
+        return valid;
+    }
+    
+    public boolean isModified() {
+        return modified;
+    }
+
+    public void markModified() throws java.io.IOException {
+        modified = true;
+    }
+    
+    public void unmarkModified() {
+        modified = false;
+    }
+
+    /** Implementation of the CES */
+    private static final class CES extends CloneableEditorSupport {
+        public CES (Env env, Lookup l) {
+            super (env, l);
+        }
+        
+        protected String messageName() {
+            return "Name";
+        }
+        
+        protected String messageOpened() {
+            return "Opened";
+        }
+        
+        protected String messageOpening() {
+            return "Opening";
+        }
+        
+        protected String messageSave() {
+            return "Save";
+        }
+        
+        protected String messageToolTip() {
+            return "ToolTip";
+        }
+        
+    } // end of CES
     
 }
