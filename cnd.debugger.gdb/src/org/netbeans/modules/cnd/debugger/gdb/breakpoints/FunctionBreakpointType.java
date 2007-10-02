@@ -76,10 +76,13 @@ public class FunctionBreakpointType extends BreakpointType {
     public boolean isDefault() {
         // First, check for an open file. Is it one of ours?
 	String mime = EditorContextBridge.getContext().getMostRecentMIMEType();
-        if (mime.length() > 0 &&
-                mime.equals("text/x-c++") || mime.equals("text/x-c") || // NOI18N
-                mime.equals("text/x-fortran")) { // NOI18N
-            return true;
+        if (mime.length() > 0) {
+            if (mime.equals("text/x-c++") || mime.equals("text/x-c") || // NOI18N
+                        mime.equals("text/x-fortran")) { // NOI18N
+                return true;
+            } else {
+                return false;
+            }
         }
         
         // Next, check the main project. Is it one of ours?
@@ -88,6 +91,8 @@ public class FunctionBreakpointType extends BreakpointType {
             NativeProject np = (NativeProject) project.getLookup().lookup(NativeProject.class);
             if (np != null) {
                 return true;
+            } else {
+                return false;
             }
         }
         
