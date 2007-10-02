@@ -63,6 +63,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.tasklist.filter.FilterRepository;
+import org.netbeans.modules.tasklist.impl.ScannerList;
 import org.netbeans.modules.tasklist.impl.ScanningScopeList;
 import org.netbeans.modules.tasklist.impl.TaskManagerImpl;
 import org.netbeans.spi.tasklist.TaskScanningScope;
@@ -85,6 +86,7 @@ final class TaskListTopComponent extends TopComponent {
     
     private TaskManagerImpl taskManager;
     private PropertyChangeListener scopeListListener;
+    private PropertyChangeListener scannerListListener;
     private TaskListModel model;
     private FilterRepository filters;
     private TaskListTable table;
@@ -262,7 +264,8 @@ final class TaskListTopComponent extends TopComponent {
             statusBarPanel.add( new StatusBar(taskManager.getTasks()), BorderLayout.CENTER );
         }
         ScanningScopeList.getDefault().addPropertyChangeListener( getScopeListListener() );
-        //TODO listen to scanner lists ?
+        ScannerList.getFileScannerList().addPropertyChangeListener( getScannerListListener() );
+        ScannerList.getPushScannerList().addPropertyChangeListener( getScannerListListener() );
         
         rebuildToolbar();
 
@@ -277,6 +280,8 @@ final class TaskListTopComponent extends TopComponent {
     @Override
     public void componentClosed() {
         ScanningScopeList.getDefault().removePropertyChangeListener( getScopeListListener() );
+        ScannerList.getFileScannerList().removePropertyChangeListener( getScannerListListener() );
+        ScannerList.getPushScannerList().removePropertyChangeListener( getScannerListListener() );
         taskManager.observe( null, null );
         taskManager.removePropertyChangeListener( TaskManagerImpl.PROP_WORKING_STATUS, getChangeListener() );
         if( null != progress )
@@ -318,7 +323,6 @@ final class TaskListTopComponent extends TopComponent {
             scopeListListener = new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent arg0) {
                     ScanningScopeList scopeList = ScanningScopeList.getDefault();
-                    TaskScanningScope currentScope = taskManager.getScope();
                     List<TaskScanningScope> newScopes = scopeList.getTaskScanningScopes();
                     if( newScopes.isEmpty() ) {
                         getLogger().log( Level.INFO, "No task scanning scope found" ); //NOI18N
@@ -328,6 +332,27 @@ final class TaskListTopComponent extends TopComponent {
             };
         }
         return scopeListListener;
+    }
+    
+    private PropertyChangeListener getScannerListListener() {
+        if( null == scannerListListener ) {
+            scannerListListener = new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent e) {
+                    SwingUtilities.invokeLater( new Runnable() {
+                        public void run() {
+                            final TaskScanningScope scopeToObserve = taskManager.getScope();
+                            taskManager.observe( null, null );
+                            SwingUtilities.invokeLater( new Runnable() {
+                                public void run() {
+                                    taskManager.observe( scopeToObserve, filters.getActive() );
+                                }
+                            });
+                        }
+                    });
+                }
+            };
+        }
+        return scannerListListener;
     }
     
     private void rebuildToolbar() {
