@@ -3,8 +3,7 @@ Version: 2.0.58.3
 Description: ant tasks
 License: CDDL-GPL-2-CP
 Origin: https://glassfish.dev.java.net V2 build 58c
-Comment: allows users to run GlassFish/SJSAS ant tasks with the ant bundled with
-   NetBeans
+Comment: allows users to run GlassFish/SJSAS ant tasks with the ant bundled with NetBeans
 
 Use of glassfish ant tasks version 2.0.58.3 is governed by the terms of the license below:
 
