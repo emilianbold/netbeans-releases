@@ -95,7 +95,9 @@ public class SearchFieldPanel extends JPanel
     private JCheckBoxMenuItem regexMenuItem;
     /** List of search listeners. */
     private EventListenerList searchListeners = new EventListenerList();
-
+    /** Last search string. */
+    private String lastSearchString;
+    
     /**
      * Creates new form SearchFieldPanel.
      */
@@ -110,38 +112,21 @@ public class SearchFieldPanel extends JPanel
         typesPopupMenu.addPopupMenuListener(this);
         buttonProviderMap = new HashMap<String, SearchProvider>();
     }
+    
+    String lastSearchString() {
+        return lastSearchString;
+    }
 
+    String currentSearchString() {
+        return searchTextField.getText();
+    }
+    
     public void actionPerformed(ActionEvent e) {
         Object src = e.getSource();
         if (src == typesButton) {
             typesPopupMenu.show(typesButton, 0, typesButton.getHeight());
         } else if (src == searchTextField) {
-            fireSearchEvent(SearchEvent.Type.COMMENCED);
-            // Perform the search.
-            String text = searchTextField.getText();
-            if (text.length() > 0) {
-                ButtonModel model = typeButtonGroup.getSelection();
-                SearchProvider provider = buttonProviderMap.get(
-                        model.getActionCommand());
-                boolean selected = fromSelectedMenuItem.isSelected();
-                boolean regex = regexMenuItem.isSelected();
-                Query query = new Query(text, selected, regex);
-                try {
-                    List<Object> results = provider.search(query);
-                    if (results.isEmpty()) {
-                        indicateFailure();
-                    } else {
-                        clearFailure(false);
-                    }
-                    fireSearchComplete(results);
-                } catch (SearchException se) {
-                    fireSearchFailed(se);
-                }
-            } else {
-                // Notify listeners that the search was empty.
-                List<Object> empty = Collections.emptyList();
-                fireSearchComplete(empty);
-            }
+            newSearch();
         } else if (src instanceof JMenuItem) {
             if (!expectingInput) {
                 // One of the serach type menu items was selected, need to
@@ -154,6 +139,36 @@ public class SearchFieldPanel extends JPanel
                 searchTextField.setToolTipText(sp.getInputDescription());
             }
         }
+    }
+    
+    void newSearch() {
+        fireSearchEvent(SearchEvent.Type.COMMENCED);
+        // Perform the search.
+        String text = searchTextField.getText();
+        if (text.length() > 0) {
+            ButtonModel model = typeButtonGroup.getSelection();
+            SearchProvider provider = buttonProviderMap.get(
+                    model.getActionCommand());
+            boolean selected = fromSelectedMenuItem.isSelected();
+            boolean regex = regexMenuItem.isSelected();
+            Query query = new Query(text, selected, regex);
+            try {
+                List<Object> results = provider.search(query);
+                if (results.isEmpty()) {
+                    indicateFailure();
+                } else {
+                    clearFailure(false);
+                }
+                lastSearchString = text;
+                fireSearchComplete(results);
+            } catch (SearchException se) {
+                fireSearchFailed(se);
+            }
+        } else {
+            // Notify listeners that the search was empty.
+            List<Object> empty = Collections.emptyList();
+            fireSearchComplete(empty);
+        }        
     }
 
     /**

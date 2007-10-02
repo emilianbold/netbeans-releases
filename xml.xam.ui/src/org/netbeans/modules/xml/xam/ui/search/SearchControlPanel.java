@@ -122,16 +122,22 @@ public abstract class SearchControlPanel extends JPanel
             dismissSearch();
             searchField.prepareForInput(true);
         } else if (src == nextButton) {
+            if(!isSameQuery()) {
+                dismissSearch();
+                searchField.newSearch();
+            }
             searchResultIndex++;
-
             if (searchResultIndex >= searchResults.size()) {
                 searchResultIndex = 0;
                 beep();
             }
             showSearchResult(searchResults.get(searchResultIndex));
         } else if (src == prevButton) {
-            searchResultIndex--;
-          
+            if(!isSameQuery()) {
+                dismissSearch();
+                searchField.newSearch();
+            }
+            searchResultIndex--;          
             if (searchResultIndex < 0) {
                 searchResultIndex = searchResults.size() - 1;
                 beep();
@@ -139,6 +145,18 @@ public abstract class SearchControlPanel extends JPanel
             showSearchResult(searchResults.get(searchResultIndex));
             searchField.requestFocus();
         }
+    }
+    
+    private boolean isSameQuery() {
+        String text = searchField.currentSearchString();
+        String lastText = searchField.lastSearchString();
+        if(text == null) text = "";
+        if(lastText == null) lastText = "";
+        if(!searchResults.isEmpty() && !text.equals(lastText)) {
+            return false;
+        }
+        
+        return true;
     }
     
     private void beep() {
