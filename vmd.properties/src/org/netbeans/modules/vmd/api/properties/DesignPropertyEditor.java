@@ -45,7 +45,11 @@ import org.openide.nodes.PropertySupport;
  *
  * @author Karol Harezlak
  */
-
+ 
+/**
+ * 
+ * This class represents custom property editor in the Properties Window.
+ */
  public abstract class DesignPropertyEditor extends PropertyEditorSupport implements ExPropertyEditor, Factory {
     
     private List<String> propertyNames;

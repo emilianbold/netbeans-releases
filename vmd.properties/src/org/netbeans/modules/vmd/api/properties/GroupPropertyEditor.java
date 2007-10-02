@@ -25,6 +25,11 @@ import java.util.Arrays;
  *
  * @author Karol Harezlak
  */
+
+/**
+ * This DesignPropertyEditor provides support when is neccessary to support more that
+ * one DesignComponent property in a single custom property editor.
+ */
 public class GroupPropertyEditor extends DesignPropertyEditor {
 
     private GroupValue value;
@@ -36,7 +41,8 @@ public class GroupPropertyEditor extends DesignPropertyEditor {
     
     @Override
     public void setAsText(String text) throws IllegalArgumentException {}
-   
+    
+    @Override
     public final void setValue(Object value) {
         if (! (value instanceof GroupValue))
             throw new IllegalArgumentException();
@@ -50,7 +56,7 @@ public class GroupPropertyEditor extends DesignPropertyEditor {
         this.value = newValue;
         firePropertyChange();
     }
-    //TODO Its better to check if value is not null because it means that editor is in invalid state;  
+    @Override 
     public GroupValue getValue() {
         return value;
     }

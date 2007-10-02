@@ -42,6 +42,10 @@ import org.openide.util.lookup.InstanceContent;
  *
  * @author Karol Harezlak
  */
+/**
+ * This class contains satic support methods to help maintaince Visual Designer properties shown
+ * in the Properties Window.
+ */
 public final class PropertiesSupport {
     /**
      * DataEditorView Tag. This tag hides Netbeans Property Window
@@ -50,17 +54,34 @@ public final class PropertiesSupport {
     
     private PropertiesSupport() {
     }
-    
+    /**
+     * Returns propertie's Sheet object for given view and DesignComponent.
+     * @param view DataEditor view for searching properties Sheet
+     * @param component given DesignComponent
+     * @return instance of properties Sheet
+     */
     public static Sheet getSheet(DataEditorView view, DesignComponent component) {
         return PropertiesNodesManager.getInstance(view).getSheet(component);
     }
     
+    /**
+     * This method connects DataEditorView with InstnceContect. It means that Instance contect with 
+     * the set of Nodes (PropertiesNode) can be share throug DataEditorViews (TopComponents).
+     * This way developer can share the same InstanteContent (set of Nodes) through more that one DataEditorView.
+     * @param view instance of DataEditorView to connect with given InstanceContent
+     * @param ic InstanceContent to connect with given DataEditorView
+     */
     public static void addInstanceContent(DataEditorView view, InstanceContent ic) {
         PropertiesNodesManager.getInstance(view).add(ic);
     }
     
-    //multi selection not supported
-    //DO NOT invoke this method inside read transaction!
+    /**
+     * It shows custom property editor window for given DesignComponent and the name of the property.
+     * NOTE: Multi selection is not supported.
+     * WARNING: Do NOT invoke this method from inside of the read transaction.
+     * @param component instance of DesignComponent 
+     * @param propertyName property name of the property which contains custom porperty editor to show 
+     */
     public synchronized static void showCustomPropertyEditor(DesignComponent component, String propertyName) {
         boolean propertyEditorExists = false;
         if (component.getDocument().getTransactionManager().isWriteAccess())

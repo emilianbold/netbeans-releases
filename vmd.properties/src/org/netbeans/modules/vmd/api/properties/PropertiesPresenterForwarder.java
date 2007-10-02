@@ -38,9 +38,10 @@ import org.netbeans.modules.vmd.api.model.PresenterEvent;
 
 /**
  * This implemementation of PropertiesPresenter enables forwarding of particular 
- * properties form one DesignComponent to another. For example using this class 
- * it is possible to attache properties from one DesignComponent to another so user
- * sees it as single component collection. 
+ * DesignPropertyDEscriptors from one DesignComponent to another. For example using this class 
+ * it is possible to attache DesignPropertyDescriptors from one DesignComponent to another so user
+ * sees it in the Properties Window as single component's properties collection even though they dont belong
+ * to the same DesignComponent.
  */
 public class PropertiesPresenterForwarder extends PropertiesPresenter {
     
@@ -49,15 +50,24 @@ public class PropertiesPresenterForwarder extends PropertiesPresenter {
     /**
      * Creates PropertiesPresenterForwarder based on the name of 
      * the PropertyDescriptor attached to the DesignComponent which owns this presenter
-     * forwarder. PropertyDescriptor which is indicated by the given property name has to
-     * holds references to the DdsignComponent
-     * @param propertyName property name
-     * @return
+     * forwarder. In this case all DesignPropertyDescriptors are forwarded to this presenter and they are 
+     * taken from the DesignComponent which is referenced through the DesignComponent property (PropertyValue).
+     * @param propertyName property name of the DesignComponent PropertyDescriptor
+     * @return PropertiesPresenter with forwarded DesignPropertyDescriptors
      */
     public static Presenter createByReference(String propertyName) {
         return new PropertiesPresenterForwarder(propertyName);
     }
-    
+    /**
+     * Creates PropertiesPresenterForwarder based on the name of 
+     * the PropertyDescriptor attached to the DesignComponent which owns this presenter
+     * forwarder and the list of the properties names of the DesignComponent properties to forward. In this case chosen
+     * DesignPropertyDescriptors are forwarded to this presenter and they are
+     * taken from the DesignComponent which is referenced through the DesignComponent property (PropertyValue).
+     * @param propertyName property name of the DesignComponent PropertyDescriptor with the DesignComponet references
+     * @param propertyNames properties names of chosen propertires to forward
+     * @return PropertiesPresenter with forwarded DesignPropertyDescriptors
+     */
     public static Presenter createByNames(String propertyName, String... propertyNames) {
         return new PropertiesPresenterForwarder(propertyName, propertyNames);
     }
@@ -66,7 +76,7 @@ public class PropertiesPresenterForwarder extends PropertiesPresenter {
         this.propertyName = propertyName;
         this.propertyNames = propertyNames;
     }
-    
+    @Override
     public List<DesignPropertyDescriptor> getDesignPropertyDescriptors() {
         DesignComponent component = getComponent().readProperty(propertyName).getComponent();
         
@@ -84,7 +94,7 @@ public class PropertiesPresenterForwarder extends PropertiesPresenter {
         
         return descriptors;
     }
-    
+    @Override
     public List<String> getPropertiesCategories() {
         DesignComponent component = getComponent().readProperty(propertyName).getComponent();
         
@@ -113,20 +123,20 @@ public class PropertiesPresenterForwarder extends PropertiesPresenter {
         }
         return list;
     }
-    
+    @Override
     protected void notifyDetached(DesignComponent component) {
     }
-    
+    @Override
     protected DesignEventFilter getEventFilter() {
         return null;
     }
-    
+    @Override
     protected void designChanged(DesignEvent event) {
     }
-    
+    @Override
     protected void presenterChanged(PresenterEvent event) {
     }
-    
+    @Override
     protected void notifyAttached(DesignComponent component) {
     }
     
