@@ -68,7 +68,7 @@ public class WebProjectOperations implements DeleteOperationImplementation, Copy
         List/*<FileObject>*/ files = new ArrayList();
         
         addFile(projectDirectory, "nbproject", files); // NOI18N
-        addFile(projectDirectory, "build.xml", files); // NOI18N
+        addFile(projectDirectory, project.getBuildXmlName(), files);
         addFile(projectDirectory, "catalog.xml", files); //NOI18N
         
         return files;
