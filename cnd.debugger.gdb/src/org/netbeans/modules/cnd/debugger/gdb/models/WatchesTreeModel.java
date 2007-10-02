@@ -77,7 +77,7 @@ public class WatchesTreeModel implements TreeModel, TreeExpansionModel, Property
     private static WatchesTreeModel watchesTreeModel;
     private Listener listener;
     private Vector<ModelListener> listeners = new Vector<ModelListener>();
-    private Map<Watch, GdbWatchVariable> watchToVariable = new WeakHashMap<Watch, GdbWatchVariable>(); 
+    private Map<Watch, AbstractVariable> watchToVariable = new WeakHashMap<Watch, AbstractVariable>(); 
     private Set<Object> expandedNodes = new WeakSet<Object>();
     private Set<Object> collapsedNodes = new WeakSet<Object>();
     private Logger log = Logger.getLogger("gdb.logger"); // NOI18N
@@ -137,9 +137,9 @@ public class WatchesTreeModel implements TreeModel, TreeExpansionModel, Property
             
             // 2) create GdbWatches for Watches
             int i, k = fws.length;
-            GdbWatchVariable[] gws = new GdbWatchVariable[k];
+            AbstractVariable[] gws = new AbstractVariable[k];
             for (i = 0; i < k; i++) {
-                GdbWatchVariable gw = watchToVariable.get(fws[i]);
+                AbstractVariable gw = watchToVariable.get(fws[i]);
                 if (gw == null) {
                     gw = new GdbWatchVariable(this, fws[i]);
                     watchToVariable.put(fws[i], gw);
@@ -151,8 +151,8 @@ public class WatchesTreeModel implements TreeModel, TreeExpansionModel, Property
                 listener = new Listener(this, debugger);
             }
             return gws;
-        } else if (parent instanceof GdbWatchVariable) {
-            return ((GdbWatchVariable) parent).getFields(from, to);
+        } else if (parent instanceof AbstractVariable) {
+            return ((AbstractVariable) parent).getFields(from, to);
         }
         throw new UnknownTypeException(parent);
     }
@@ -171,8 +171,11 @@ public class WatchesTreeModel implements TreeModel, TreeExpansionModel, Property
         if (node instanceof Watch) {
             return true;
         }
-        if (node instanceof GdbWatchVariable) {
-            return ((GdbWatchVariable) node).getFieldsCount() == 0;
+//        if (node instanceof AbstractVariable) {
+//            return ((AbstractVariable) node).getFieldsCount() == 0;
+//        }
+        if (node instanceof AbstractVariable) {
+            return ((AbstractVariable) node).getFieldsCount() == 0;
         }
         throw new UnknownTypeException(node);
     }
@@ -194,8 +197,8 @@ public class WatchesTreeModel implements TreeModel, TreeExpansionModel, Property
     public int getChildrenCount(Object node) throws UnknownTypeException {
         if (node == ROOT) {
             return DebuggerManager.getDebuggerManager().getWatches().length;
-        } else if (node instanceof GdbWatchVariable) {
-            return ((GdbWatchVariable) node).getFieldsCount();
+        } else if (node instanceof AbstractVariable) {
+            return ((AbstractVariable) node).getFieldsCount();
         }
         throw new UnknownTypeException(node);
     }

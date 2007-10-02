@@ -420,7 +420,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     
     /** Handle geb responses starting with '^' */
     public void resultRecord(int token, String msg) {
-        GdbVariable var;
         GdbWatchVariable watch;
         AbstractVariable avar;
         Integer itok = Integer.valueOf(token);
@@ -1510,8 +1509,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             } catch (InterruptedException ex) {
             }
         }
-        if (var.getName().length() > 0) {
-            int token = gdb.symbol_type(var.getName());
+        if (state.equals(STATE_STOPPED) && var.getName().length() > 0) {
+            int token = gdb.whatis(var.getName());
             var.clearTypeBuf();
             watchTypeMap.put(new Integer(token), var);
         }

@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.models;
 
-import java.util.WeakHashMap;
+import javax.swing.JToolTip;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.ui.Constants;
 import org.netbeans.spi.viewmodel.TableModel;
@@ -72,21 +72,29 @@ public class VariablesTableModel implements TableModel, Constants {
         debugger = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
     }
     
-    public Object getValueAt(Object row, String columnID) throws
-            UnknownTypeException {
+    public Object getValueAt(Object row, String columnID) throws UnknownTypeException {
         
         if (columnID.equals(LOCALS_TO_STRING_COLUMN_ID) || columnID.equals(WATCH_TO_STRING_COLUMN_ID)) {
             if (row instanceof Variable) {
                 return ((Variable) row).getValue();
             }
         } else if (columnID.equals(LOCALS_TYPE_COLUMN_ID) || columnID.equals(WATCH_TYPE_COLUMN_ID)) {
-            if (row instanceof Variable)
+            if (row instanceof Variable) {
                 return ((Variable) row).getType();
-            } else if ( columnID.equals(LOCALS_VALUE_COLUMN_ID) || columnID.equals(WATCH_VALUE_COLUMN_ID)) {
-                if (row instanceof Variable) {
-                    return ((Variable) row).getValue();
-                }
             }
+        } else if ( columnID.equals(LOCALS_VALUE_COLUMN_ID) || columnID.equals(WATCH_VALUE_COLUMN_ID)) {
+            if (row instanceof Variable) {
+                return ((Variable) row).getValue();
+            }
+        }
+        if (row instanceof JToolTip) {
+            row = ((JToolTip) row).getClientProperty("getShortDescrption"); // NOI18N
+            if (row instanceof Variable) {
+                return ((Variable) row).getType();
+            } else if (row == null) {
+                return "";
+            }
+        }
         if (row.toString().startsWith("No current thread")) { // NOI18N
             return NbBundle.getMessage(VariablesTableModel.class, "NoCurrentThreadVar"); // NOI18N
         }

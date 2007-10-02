@@ -311,13 +311,35 @@ public class AbstractVariable implements LocalVariable, Customizer {
     public int getFieldsCount() {
         if (fields.length > 0) {
             return fields.length;
-        } else if (type != null && value != null && !type.endsWith(")") && // NOI18N
-                ((type.indexOf('[') != -1 || (type.indexOf("**") != -1 && isValidPointerAddress(value))) || // NOI18N
-                (value.length() > 0 && value.charAt(0) == '{'))) {
+        } else if (mightHaveFields()) {
             return 5;
         } else {
             return 0;
         }
+    }
+    
+    /**
+     * The else-if in getFieldsCount() was getting too complex, so I've factored it out and
+     * made it into multiple if/else-if statements. I think its easier to track this way.
+     * 
+     * @return true if the field should have a turner and false if it shouldn't
+     */
+    private boolean mightHaveFields() {
+        if (type == null || value == null || type.endsWith(")")) { // NOI18N
+            return false;
+        } else if (type.indexOf('[') != -1) { // its an array
+            return true;
+        } else if (value.length() > 0 && value.charAt(0) == '{') {
+            return true;
+        } else if (isValidPointerAddress(value)) {
+            if (type.indexOf("**") != -1) { // NOI18N - double pointers always need a turner
+                return true;
+            } else if (!type.startsWith("char ")) { // NOI18N - Possibly a struct/class pointer
+                return true;
+            }
+        }
+        
+        return false;
     }
     
     private boolean isValidPointerAddress(String info) {
@@ -326,6 +348,13 @@ public class AbstractVariable implements LocalVariable, Customizer {
         if (info.charAt(0) == '(' && pos1 != -1) {
             try {
                 i = Integer.parseInt(info.substring(pos1 + 5), 16);
+            } catch (NumberFormatException ex) {
+                return false;
+            }
+            return i > 0;
+        } else if (info.startsWith("0x")) {
+            try {
+                i = Integer.parseInt(info.substring(2), 16);
             } catch (NumberFormatException ex) {
                 return false;
             }
@@ -520,9 +549,10 @@ public class AbstractVariable implements LocalVariable, Customizer {
                         int max = 100;
                         v = var.derefValue;
                         AbstractField field = new AbstractField(var, var.name + '[' + idx++ + ']', t, v);
-                        while (v.startsWith("0x") && !v.equals("0x0") && // NOI18N
+                        while (v != null && v.startsWith("0x") && !v.equals("0x0") && // NOI18N
                                 v.indexOf('<') == -1) {
                             var.addField(field);
+                            count++;
                             String n = var.name + '[' + idx++ + ']';
                             field = new AbstractField(var, n, t, null);
                             v = getDerefValue(field, n);
