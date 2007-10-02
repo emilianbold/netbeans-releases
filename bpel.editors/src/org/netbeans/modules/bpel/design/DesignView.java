@@ -378,10 +378,8 @@ public class DesignView extends JPanel implements
         if (result == null) {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    if (ToolTipManager.sharedInstance().isEnabled()) {
-                        ToolTipManager.sharedInstance().setEnabled(false);
-                        ToolTipManager.sharedInstance().setEnabled(true);
-                    }
+                    ToolTipManager.sharedInstance().setEnabled(false);
+                    ToolTipManager.sharedInstance().setEnabled(true);
                 }
             });
         }
@@ -1314,8 +1312,10 @@ public class DesignView extends JPanel implements
             // 117432
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    ToolTipManager.sharedInstance().setEnabled(false);
-                    ToolTipManager.sharedInstance().setEnabled(true);
+                    if (ToolTipManager.sharedInstance().isEnabled()) {
+                        ToolTipManager.sharedInstance().setEnabled(false);
+                        ToolTipManager.sharedInstance().setEnabled(true);
+                    }
                 }
             });
             
