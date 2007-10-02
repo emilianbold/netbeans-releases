@@ -21,6 +21,7 @@ package org.netbeans.modules.web.jsf;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.logging.Level;
@@ -35,7 +36,9 @@ import org.netbeans.core.spi.multiview.CloseOperationHandler;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
+import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.jsf.api.editor.JSFConfigEditorContext;
+import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
 import org.netbeans.modules.xml.api.EncodingUtil;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -49,6 +52,7 @@ import org.openide.text.DataEditorSupport;
 import org.openide.cookies.*;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.NbDocument;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.CloneableTopComponent;
@@ -332,6 +336,14 @@ public class JSFConfigEditorSupport extends DataEditorSupport
     protected void notifyClosed() {
         mvtc = null;
         super.notifyClosed();
+        try {
+            // synchronize the model with the document. See issue #116315
+            JSFConfigModel configModel = ConfigurationUtils.getConfigModel(dataObject.getPrimaryFile(), true);
+            configModel.sync();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        
     }
     
     /** Overrides superclass method. Adds removing of save cookie. */
