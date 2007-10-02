@@ -300,9 +300,8 @@ public class Installer implements FinishHandler {
         
         for (int i = 0; i < arguments.length; i++) {
             if (arguments[i].equalsIgnoreCase(LOOK_AND_FEEL_ARG)) {
-                LogManager.logIndent(
-                        "parsing command line parameter \"" + // NOI18N
-                        LOOK_AND_FEEL_ARG + "\""); // NOI18N
+                LogManager.logIndent(StringUtils.format(
+                        PARSING_ARGUMENT_STRING, LOOK_AND_FEEL_ARG));
                 
                 if (i < arguments.length - 1) {
                     final String value = arguments[i + 1];
@@ -328,9 +327,8 @@ public class Installer implements FinishHandler {
             }
             
             if (arguments[i].equalsIgnoreCase(TARGET_ARG)) {
-                LogManager.logIndent(
-                        "parsing command line parameter \"" + // NOI18N
-                        TARGET_ARG + "\""); // NOI18N
+                LogManager.logIndent(StringUtils.format(
+                        PARSING_ARGUMENT_STRING, TARGET_ARG)); 
                 
                 if (i < arguments.length - 2) {
                     final String uid = arguments[i + 1];
@@ -364,8 +362,8 @@ public class Installer implements FinishHandler {
             
             if (arguments[i].equalsIgnoreCase(LOCALE_ARG)) {
                 LogManager.logIndent(
-                        "parsing command line parameter \"" + // NOI18N
-                        LOCALE_ARG + "\""); // NOI18N
+                        StringUtils.format(
+                        PARSING_ARGUMENT_STRING, LOCALE_ARG)); // NOI18N
                 
                 if (i < arguments.length - 1) {
                     final String value = arguments[i + 1];
@@ -423,8 +421,8 @@ public class Installer implements FinishHandler {
             }
             
             if (arguments[i].equalsIgnoreCase(STATE_ARG)) {
-                LogManager.logIndent("parsing command line parameter \"" + // NOI18N
-                        STATE_ARG + "\""); // NOI18N
+                LogManager.logIndent(StringUtils.format(
+                        PARSING_ARGUMENT_STRING, STATE_ARG)); // NOI18N
                 
                 if (i < arguments.length - 1) {
                     String value = arguments[i + 1];
@@ -455,8 +453,8 @@ public class Installer implements FinishHandler {
             }
             
             if (arguments[i].equalsIgnoreCase(RECORD_ARG)) {
-                LogManager.logIndent("parsing command line parameter \"" + // NOI18N
-                        RECORD_ARG + "\""); // NOI18N
+                LogManager.logIndent(StringUtils.format(
+                        PARSING_ARGUMENT_STRING, RECORD_ARG)); // NOI18N
                 
                 if (i < arguments.length - 1) {
                     String value = arguments[i + 1];
@@ -487,8 +485,8 @@ public class Installer implements FinishHandler {
             }
             
             if (arguments[i].equalsIgnoreCase(SILENT_ARG)) {
-                LogManager.logIndent("parsing command line parameter \"" +
-                        SILENT_ARG + "\"");
+                LogManager.logIndent(StringUtils.format(
+                        PARSING_ARGUMENT_STRING, SILENT_ARG));
                 
                 UiMode.setCurrentUiMode(UiMode.SILENT);
                 
@@ -497,8 +495,8 @@ public class Installer implements FinishHandler {
             }
             
             if (arguments[i].equalsIgnoreCase(CREATE_BUNDLE_ARG)) {
-                LogManager.logIndent("parsing command line parameter \"" + // NOI18N
-                        CREATE_BUNDLE_ARG + "\""); // NOI18N
+                LogManager.logIndent(StringUtils.format(
+                        PARSING_ARGUMENT_STRING, CREATE_BUNDLE_ARG)); // NOI18N
                 
                 if (i < arguments.length - 1) {
                     String value = arguments[i + 1];
@@ -531,8 +529,8 @@ public class Installer implements FinishHandler {
             }
             
             if (arguments[i].equalsIgnoreCase(IGNORE_LOCK_ARG)) {
-                LogManager.logIndent("parsing command line parameter \"" + // NOI18N
-                        IGNORE_LOCK_ARG + "\""); // NOI18N
+                LogManager.logIndent(StringUtils.format(
+                        PARSING_ARGUMENT_STRING, IGNORE_LOCK_ARG)); // NOI18N
                 
                 System.setProperty(IGNORE_LOCK_FILE_PROPERTY,
                         UNARY_ARG_VALUE);
@@ -542,8 +540,8 @@ public class Installer implements FinishHandler {
             }
             
             if (arguments[i].equalsIgnoreCase(USERDIR_ARG)) {
-                LogManager.logIndent("parsing command line parameter \"" + // NOI18N
-                        USERDIR_ARG + "\""); // NOI18N
+                LogManager.logIndent(StringUtils.format(
+                        PARSING_ARGUMENT_STRING, USERDIR_ARG)); // NOI18N
                 
                 if (i < arguments.length - 1) {
                     String value = arguments[i + 1];
@@ -565,8 +563,8 @@ public class Installer implements FinishHandler {
             }
             
             if (arguments[i].equalsIgnoreCase(PLATFORM_ARG)) {
-                LogManager.logIndent("parsing command line parameter \"" + // NOI18N
-                        PLATFORM_ARG + "\""); // NOI18N
+                LogManager.logIndent(StringUtils.format(
+                        PARSING_ARGUMENT_STRING, PLATFORM_ARG)); // NOI18N
                 
                 if (i < arguments.length - 1) {
                     String value = arguments[i + 1];
@@ -587,8 +585,8 @@ public class Installer implements FinishHandler {
             }
             
             if (arguments[i].equalsIgnoreCase(SUGGEST_INSTALL_ARG)) {
-                LogManager.logIndent("parsing command line parameter \"" + // NOI18N
-                        SUGGEST_INSTALL_ARG + "\""); // NOI18N
+                LogManager.logIndent(StringUtils.format(
+                        PARSING_ARGUMENT_STRING, SUGGEST_INSTALL_ARG)); // NOI18N
                 
                 System.setProperty(
                         Registry.SUGGEST_INSTALL_PROPERTY,
@@ -599,8 +597,8 @@ public class Installer implements FinishHandler {
             }
             
             if (arguments[i].equalsIgnoreCase(SUGGEST_UNINSTALL_ARG)) {
-                LogManager.logIndent("parsing command line parameter \"" + // NOI18N
-                        SUGGEST_UNINSTALL_ARG + "\""); // NOI18N
+                LogManager.logIndent(StringUtils.format(
+                        PARSING_ARGUMENT_STRING, SUGGEST_UNINSTALL_ARG)); // NOI18N
                 
                 System.setProperty(
                         Registry.SUGGEST_UNINSTALL_PROPERTY,
@@ -611,8 +609,8 @@ public class Installer implements FinishHandler {
             }
             
             if (arguments[i].equalsIgnoreCase(FORCE_INSTALL_ARG)) {
-                LogManager.logIndent("parsing command line parameter \"" + // NOI18N
-                        FORCE_INSTALL_ARG + "\""); // NOI18N
+                LogManager.logIndent(StringUtils.format(
+                        PARSING_ARGUMENT_STRING, FORCE_INSTALL_ARG)); // NOI18N
                 
                 System.setProperty(
                         Registry.FORCE_INSTALL_PROPERTY,
@@ -623,8 +621,8 @@ public class Installer implements FinishHandler {
             }
             
             if (arguments[i].equalsIgnoreCase(FORCE_UNINSTALL_ARG)) {
-                LogManager.logIndent("parsing command line parameter \"" + // NOI18N
-                        FORCE_UNINSTALL_ARG + "\""); // NOI18N
+                LogManager.logIndent(StringUtils.format(
+                        PARSING_ARGUMENT_STRING, FORCE_UNINSTALL_ARG)); // NOI18N
                 
                 System.setProperty(
                         Registry.FORCE_UNINSTALL_PROPERTY,
@@ -635,8 +633,8 @@ public class Installer implements FinishHandler {
             }
             
             if (arguments[i].equalsIgnoreCase(REGISTRY_ARG)) {
-                LogManager.logIndent("parsing command line parameter \"" + // NOI18N
-                        REGISTRY_ARG + "\""); // NOI18N
+                LogManager.logIndent(StringUtils.format(
+                        PARSING_ARGUMENT_STRING, REGISTRY_ARG)); // NOI18N
                 
                 if (i < arguments.length - 1) {
                     final String value = arguments[i + 1];
@@ -669,8 +667,8 @@ public class Installer implements FinishHandler {
                 continue;
             }
             if (arguments[i].equalsIgnoreCase(PROPERTIES_ARG)) {
-                LogManager.logIndent("parsing command line parameter \"" + // NOI18N
-                        PROPERTIES_ARG + "\""); // NOI18N
+                LogManager.logIndent(StringUtils.format(
+                        PARSING_ARGUMENT_STRING, PROPERTIES_ARG)); // NOI18N
                 
                 if (i < arguments.length - 1) {
                     final String value = arguments[i + 1];
@@ -705,8 +703,8 @@ public class Installer implements FinishHandler {
             }
             
             if (arguments[i].equalsIgnoreCase(BUNDLE_PROPERTIES_ARG)) {
-                LogManager.logIndent("parsing command line parameter \"" + // NOI18N
-                        BUNDLE_PROPERTIES_ARG + "\""); // NOI18N
+                LogManager.logIndent(StringUtils.format(
+                        PARSING_ARGUMENT_STRING, BUNDLE_PROPERTIES_ARG)); // NOI18N
                 
                 if (i < arguments.length - 1) {
                     String value = arguments[i + 1];
@@ -1074,6 +1072,9 @@ public class Installer implements FinishHandler {
     
     public static final String UNARY_ARG_VALUE =
             "true"; // NOI18N
+    
+    public static final String PARSING_ARGUMENT_STRING =
+            "parsing command line parameter \"{0}\"";//NOI18N
     
     // lock file ////////////////////////////////////////////////////////////////////
     public static final String LOCK_FILE_NAME =
