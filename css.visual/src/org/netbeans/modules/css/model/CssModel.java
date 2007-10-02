@@ -228,7 +228,7 @@ public final class CssModel {
                         ASTNode selectors = rulesetNode.getNode("selectors"); //NOI18N
                         ASTNode body = rulesetNode.getNode("body"); //NOI18N
                         if(selectors == null || body == null) {
-                            return ; //error?
+                            continue;
                         }
                         
                         List<CssRuleItem> items = new ArrayList<CssRuleItem>();
