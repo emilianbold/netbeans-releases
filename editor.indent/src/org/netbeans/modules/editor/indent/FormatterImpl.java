@@ -107,6 +107,22 @@ public final class FormatterImpl extends ExtFormatter {
         return offset;
     }
 
+    public int getTabSize() {
+        return defaultFormatter.getTabSize();
+    }
+
+    public int getSpacesPerTab() {
+        return defaultFormatter.getSpacesPerTab();
+    }
+
+    public int getShiftWidth() {
+        return defaultFormatter.getShiftWidth();
+    }
+
+    public boolean expandTabs() {
+        return defaultFormatter.expandTabs();
+    }
+
     /** Inserts new line at given position and indents the new line with
     * spaces.
     *
