@@ -602,9 +602,8 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        jLabel4.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("MNE_SourceLevel").charAt(0));
         jLabel4.setLabelFor(sourceLevel);
-        jLabel4.setText(bundle.getString("TXT_SourceLevel")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, bundle.getString("TXT_SourceLevel")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);

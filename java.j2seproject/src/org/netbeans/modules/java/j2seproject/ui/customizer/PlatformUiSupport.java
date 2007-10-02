@@ -41,19 +41,16 @@
 
 package org.netbeans.modules.java.j2seproject.ui.customizer;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
@@ -81,6 +78,7 @@ import org.w3c.dom.NodeList;
  */
 public class PlatformUiSupport {    
     
+    private static final SpecificationVersion JDK_5 = new SpecificationVersion ("1.5");  //NOI18N
     
     private PlatformUiSupport() {
     }
@@ -120,6 +118,7 @@ public class PlatformUiSupport {
         //null means active broken (unresolved) platform, no need to do anything
         if (platform != null) {
             SpecificationVersion jdk13 = new SpecificationVersion ("1.3");  //NOI18N
+            SpecificationVersion jdk16 = new SpecificationVersion ("1.6");  //NOI18N
             String platformAntName = (String) platform.getProperties().get("platform.ant.name");    //NOI18N        
             assert platformAntName != null;
             props.put(J2SEProjectProperties.JAVA_PLATFORM, platformAntName);
@@ -171,7 +170,23 @@ public class PlatformUiSupport {
                 sourceLevel = ((SourceLevelKey)sourceLevelKey).getSourceLevel();
             }
             String javacSource = sourceLevel.toString();
-            String javacTarget = jdk13.compareTo(sourceLevel)>=0 ? "1.1" : javacSource;     //NOI18N
+            String javacTarget = javacSource;
+            
+            //Issue #116490
+            // Customizer value | -source | -targer
+            // JDK 1.2            1.2        1.1
+            // JDK 1.3            1.3        1.3
+            // JDK 1.4            1.4        1.4
+            // JDK 5              1.5        1.5
+            // JDK 6              1.5        1.6
+            // JDK 7              1.7        1.7  - should bring a new language features
+            if (jdk13.compareTo(sourceLevel)>=0) {
+                javacTarget = "1.1";        //NOI18N
+            }
+            else if (jdk16.equals(sourceLevel)) {
+                javacSource = "1.5";        //NOI18N
+            }            
+                        
             if (!javacSource.equals(props.getProperty(J2SEProjectProperties.JAVAC_SOURCE))) {
                 props.setProperty (J2SEProjectProperties.JAVAC_SOURCE, javacSource);
             }
@@ -326,22 +341,30 @@ public class PlatformUiSupport {
             return this.sourceLevel.compareTo(otherKey.sourceLevel);
         }
         
-        public /*@Override*/ boolean equals (final Object other) {
+        public @Override boolean equals (final Object other) {
             return (other instanceof SourceLevelKey) &&
                    ((SourceLevelKey)other).sourceLevel.equals(this.sourceLevel);
         }
         
-        public /*@Override*/ int hashCode () {
+        public @Override int hashCode () {
             return this.sourceLevel.hashCode();
         }
         
-        public /*@Override*/ String toString () {
+        public @Override String toString () {
             StringBuffer buffer = new StringBuffer ();
             if (this.broken) {
                 buffer.append("Broken: ");      //NOI18N
             }
             buffer.append(this.sourceLevel.toString());
             return buffer.toString();
+        }
+        
+        public String getDisplayName () {
+            String _tmp = sourceLevel.toString();
+            if (JDK_5.compareTo(sourceLevel)<=0) {                
+                _tmp = _tmp.replaceFirst("^1\\.([5-9]|\\d\\d+)$", "$1");        //NOI18N
+            }            
+            return NbBundle.getMessage(PlatformUiSupport.class, "LBL_JDK",_tmp);
         }
         
     }
@@ -621,10 +644,10 @@ public class PlatformUiSupport {
                 SourceLevelKey key = (SourceLevelKey) value;            
                 if (key.isBroken()) {                
                     message = "<html><font color=\"#A40000\">" +    //NOI18N
-                        NbBundle.getMessage(PlatformUiSupport.class,"TXT_InvalidSourceLevel",key.getSourceLevel().toString());
+                        NbBundle.getMessage(PlatformUiSupport.class,"TXT_InvalidSourceLevel",key.getDisplayName());
                 }
                 else {
-                    message = key.getSourceLevel().toString();
+                    message = key.getDisplayName();
                 }
             }
             return this.delegate.getListCellRendererComponent(list, message, index, isSelected, cellHasFocus);
