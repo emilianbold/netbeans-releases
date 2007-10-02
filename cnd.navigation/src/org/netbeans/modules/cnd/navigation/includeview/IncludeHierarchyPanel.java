@@ -87,6 +87,11 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
             toolBar.remove(0);
             // separstor
             toolBar.remove(0);
+            // a11n
+            directOnlyButton.setFocusable(true);
+            treeButton.setFocusable(true);
+            whoIncludesButton.setFocusable(true);
+            whoIsIncludedButton.setFocusable(true);
         }
         setName(NbBundle.getMessage(getClass(), "CTL_IncludeViewTopComponent")); // NOI18N
         setToolTipText(NbBundle.getMessage(getClass(), "HINT_IncludeViewTopComponent")); // NOI18N

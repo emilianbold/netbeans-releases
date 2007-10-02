@@ -87,6 +87,11 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
             toolBar.remove(0);
             // separator
             toolBar.remove(0);
+            // a11n
+            directOnlyButton.setFocusable(true);
+            subtypeButton.setFocusable(true);
+            supertypeButton.setFocusable(true);
+            treeButton.setFocusable(true);
         }
         setName(NbBundle.getMessage(getClass(), "CTL_ClassHierarchyTopComponent")); // NOI18N
         setToolTipText(NbBundle.getMessage(getClass(), "HINT_ClassHierarchyTopComponent")); // NOI18N
