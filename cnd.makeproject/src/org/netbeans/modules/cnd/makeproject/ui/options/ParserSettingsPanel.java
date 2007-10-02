@@ -45,6 +45,7 @@ import java.awt.event.ActionEvent;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.makeproject.api.compilers.CCCCompiler;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.HashMap;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
@@ -57,21 +58,21 @@ import org.netbeans.modules.cnd.ui.options.ToolsPanel;
 import org.openide.util.NbBundle;
 
 public class ParserSettingsPanel extends JPanel implements ChangeListener, ActionListener {
-    
+
     private HashMap predefinedPanels = new HashMap();
     private boolean updating = false;
     private boolean modified = false;
     private ToolsPanel tp;
+
     /**
      * Creates new form ParserSettingsPanel
      */
     public ParserSettingsPanel() {
-        setName("TAB_CodeAssistanceTab");// NOI18N
+        setName("TAB_CodeAssistanceTab"); // NOI18N
         initComponents();
-        
+
         //infoTextArea.setBackground(collectionPanel.getBackground());
         //setPreferredSize(new java.awt.Dimension(600, 700));
-        
         // Accessible Description
         getAccessibleContext().setAccessibleDescription(getString("MANAGE_COMPILERS_SETTINGS_AD"));
         compilerCollectionComboBox.getAccessibleContext().setAccessibleDescription(getString("COMPILER_COLLECTION_AD"));
@@ -84,19 +85,19 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
             tp.addCompilerSetChangeListener(this);
         }
     }
-    
+
     public void actionPerformed(ActionEvent evt) {
         if (!updating && isShowing()) {
             updateTabs();
         }
     }
-    
+
     private void updateCompilerCollections(CompilerSet cs) {
         compilerCollectionComboBox.removeAllItems();
         for (CompilerSet cs2 : tp.getCompilerSetManager().getCompilerSets()) {
             compilerCollectionComboBox.addItem(cs2);
         }
-        
+
         if (cs == null) {
             cs = tp.getCompilerSetManager().getCompilerSet(0);
         }
@@ -105,36 +106,47 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
         }
         updateTabs();
     }
-    
+
     private void updateTabs() {
         tabbedPane.removeAll();
-        CompilerSet compilerCollection = (CompilerSet)compilerCollectionComboBox.getSelectedItem();
-        if (compilerCollection == null)
+        CompilerSet compilerCollection = (CompilerSet) compilerCollectionComboBox.getSelectedItem();
+        if (compilerCollection == null) {
             return;
-        for (Tool tool : compilerCollection.getTools()) {
-            if (tool instanceof CCCCompiler) { // FIXUP: should implement/use 'capability' of tool
-                PredefinedPanel predefinedPanel = (PredefinedPanel)predefinedPanels.get(tool.getPath());
-                if (predefinedPanel == null) {
-                    predefinedPanel = new PredefinedPanel((CCCCompiler)tool, this);
-                    predefinedPanels.put(tool.getPath(), predefinedPanel);
-                    modified = true;
-                }
-                tabbedPane.addTab(tool.getDisplayName(), predefinedPanel);
+        }
+        // Show only the selected C and C++ compiler from the compiler collection
+        ArrayList<Tool> toolSet = new ArrayList<Tool>();
+        Tool cCompiler = compilerCollection.getTool(Tool.CCompiler);
+        if (cCompiler != null && cCompiler.getPath().length() > 0) {
+            toolSet.add(cCompiler);
+        }
+        Tool cppCompiler = compilerCollection.getTool(Tool.CCCompiler);
+        if (cppCompiler != null && cppCompiler.getPath().length() > 0) {
+            toolSet.add(cppCompiler);
+        }
+        for (Tool tool : toolSet) {
+            PredefinedPanel predefinedPanel = (PredefinedPanel) predefinedPanels.get(tool.getPath());
+            if (predefinedPanel == null) {
+                predefinedPanel = new PredefinedPanel((CCCCompiler) tool, this);
+                predefinedPanels.put(tool.getPath(), predefinedPanel);
+                modified = true;
             }
+            tabbedPane.addTab(tool.getDisplayName(), predefinedPanel);
         }
     }
-    
+
     public void fireFilesPropertiesChanged() {
-        if (CodeAssistancePanelController.TRACE_CODEASSIST) System.err.println("fireFilesPropertiesChanged for ParserSettingsPanel");
-	Project[] openProjects = OpenProjects.getDefault().getOpenProjects();
-	for (int i = 0; i < openProjects.length; i++) {
-            NativeProjectProvider npv = (NativeProjectProvider)openProjects[i].getLookup().lookup(NativeProjectProvider.class );
+        if (CodeAssistancePanelController.TRACE_CODEASSIST) {
+            System.err.println("fireFilesPropertiesChanged for ParserSettingsPanel");
+        }
+        Project[] openProjects = OpenProjects.getDefault().getOpenProjects();
+        for (int i = 0; i < openProjects.length; i++) {
+            NativeProjectProvider npv = (NativeProjectProvider) openProjects[i].getLookup().lookup(NativeProjectProvider.class );
             if (npv != null) {
                 npv.fireFilesPropertiesChanged();
             }
         }
     }
-    
+
     public void stateChanged(ChangeEvent ev) {
         Object o = ev.getSource();
         if (o instanceof CompilerSet) {
@@ -143,7 +155,7 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
             updateCompilerCollections(null);
         }
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -206,7 +218,6 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
                 .add(tabPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
-    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel collectionPanel;
     private javax.swing.JComboBox compilerCollectionComboBox;
@@ -214,14 +225,15 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
     private javax.swing.JPanel tabPanel;
     private javax.swing.JTabbedPane tabbedPane;
     // End of variables declaration//GEN-END:variables
-    
-    
+
     private static String getString(String s) {
         return NbBundle.getMessage(ParserSettingsPanel.class, s);
     }
 
     void update() {
-        if (CodeAssistancePanelController.TRACE_CODEASSIST) System.err.println("update for ParserSettingsPanel");
+        if (CodeAssistancePanelController.TRACE_CODEASSIST) {
+            System.err.println("update for ParserSettingsPanel");
+        }
         try {
             updating = true;
             compilerCollectionComboBox.removeActionListener(this);
@@ -230,18 +242,20 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
             PredefinedPanel[] viewedPanels = getPredefinedPanels();
             for (int i = 0; i < viewedPanels.length; i++) {
                 viewedPanels[i].update();
-            }    
+            }
         } finally {
             updating = false;
         }
     }
 
     void cancel() {
-        if (CodeAssistancePanelController.TRACE_CODEASSIST) System.err.println("cancel for ParserSettingsPanel");
+        if (CodeAssistancePanelController.TRACE_CODEASSIST) {
+            System.err.println("cancel for ParserSettingsPanel");
+        }
         PredefinedPanel[] viewedPanels = getPredefinedPanels();
         for (int i = 0; i < viewedPanels.length; i++) {
             viewedPanels[i].cancel();
-        }         
+        }
     }
 
     boolean isDataValid() {
@@ -250,7 +264,9 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
         for (int i = 0; i < viewedPanels.length; i++) {
             isDataValid &= viewedPanels[i].isDataValid();
         }
-        if (CodeAssistancePanelController.TRACE_CODEASSIST) System.err.println("isDataValid for ParserSettingsPanel is " + isDataValid);
+        if (CodeAssistancePanelController.TRACE_CODEASSIST) {
+            System.err.println("isDataValid for ParserSettingsPanel is " + isDataValid);
+        }
         return isDataValid;
     }
 
@@ -260,27 +276,35 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
         for (int i = 0; i < viewedPanels.length; i++) {
             isChanged |= viewedPanels[i].isChanged();
         }
-        if (CodeAssistancePanelController.TRACE_CODEASSIST) System.err.println("isChanged for ParserSettingsPanel is " + isChanged);
+        if (CodeAssistancePanelController.TRACE_CODEASSIST) {
+            System.err.println("isChanged for ParserSettingsPanel is " + isChanged);
+        }
         return isChanged;
     }
-        
+
     public void save() {
-        if (CodeAssistancePanelController.TRACE_CODEASSIST) System.err.println("save for ParserSettingsPanel");
+        if (CodeAssistancePanelController.TRACE_CODEASSIST) {
+            System.err.println("save for ParserSettingsPanel");
+        }
         PredefinedPanel[] viewedPanels = getPredefinedPanels();
         boolean wasChanges = false;
         for (int i = 0; i < viewedPanels.length; i++) {
             wasChanges |= viewedPanels[i].save();
         }
         if (wasChanges || modified) {
-            if (CodeAssistancePanelController.TRACE_CODEASSIST) System.err.println("fireFilesPropertiesChanged in save for ParserSettingsPanel");
+            if (CodeAssistancePanelController.TRACE_CODEASSIST) {
+                System.err.println("fireFilesPropertiesChanged in save for ParserSettingsPanel");
+            }
             fireFilesPropertiesChanged();
             modified = false;
         } else {
-            if (CodeAssistancePanelController.TRACE_CODEASSIST) System.err.println("not need to fireFilesPropertiesChanged in save for ParserSettingsPanel");
+            if (CodeAssistancePanelController.TRACE_CODEASSIST) {
+                System.err.println("not need to fireFilesPropertiesChanged in save for ParserSettingsPanel");
+            }
         }
     }
-    
+
     private PredefinedPanel[] getPredefinedPanels() {
-        return (PredefinedPanel[])predefinedPanels.values().toArray(new PredefinedPanel[predefinedPanels.size()]);
+        return (PredefinedPanel[]) predefinedPanels.values().toArray(new PredefinedPanel[predefinedPanels.size()]);
     }
 }
