@@ -777,7 +777,12 @@ FacesDndSupport.UpdateSuspender {
 //                }
                 // Now the original node could be reused (see the tryUpdateOriginalNode).
                 Node parent = rendered.getParentNode();
-                jsfForm.nodeChanged(rendered, parent, changedElements.toArray(new Element[changedElements.size()]));
+                if (parent == null) {
+                    // XXX #117192 The node was most probably removed already (e.g. after undo).
+                    // Do nothing.
+                } else {
+                    jsfForm.nodeChanged(rendered, parent, changedElements.toArray(new Element[changedElements.size()]));
+                }
             } else if (previouslyRendered != null) {
                 // It was just deleted - for example when you change a component by
                 // switching off its "rendered" property
