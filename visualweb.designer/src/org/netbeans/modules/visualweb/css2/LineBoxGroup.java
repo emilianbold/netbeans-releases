@@ -602,7 +602,10 @@ public class LineBoxGroup extends ContainerBox {
         lineBox.height = lineBox.contentHeight;
 
         // Do after setWidth
-        if (!lineBox.isFloated) {
+        // XXX #117399 To render the list within float correctly.
+//        if (!lineBox.isFloated) {
+        ContainerBox parentBox = getParent();
+        if (!lineBox.isFloated && (parentBox != null && parentBox.getBoxType() != BoxType.FLOAT)) {
             int leftEdge = context.getLeftEdge(this, targetY, lineHeight); // Pass in getParent() instead?
             lineBox.applyHorizontalAlignments(leftEdge, lineHeight, context);
         }
