@@ -63,6 +63,7 @@ import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataObject;
@@ -79,12 +80,13 @@ import org.openide.util.Utilities;
  * @author mkleint
  */
 public class ImportantFilesNodeFactory implements NodeFactory {
+
     /** Package private for unit tests. */
     static final String IMPORTANT_FILES_NAME = "important.files"; // NOI18N
+
     /** Package private for unit tests only. */
     static final RequestProcessor RP = new RequestProcessor();
     
-    /** Creates a new instance of ImportantFilesNodeFactory */
     public ImportantFilesNodeFactory() {
     }
     
@@ -133,6 +135,8 @@ public class ImportantFilesNodeFactory implements NodeFactory {
      */
     static final class ImportantFilesNode extends AnnotatedNode {
         
+        private static final String DISPLAY_NAME = NbBundle.getMessage(ModuleLogicalView.class, "LBL_important_files");
+        
         public ImportantFilesNode(NbModuleProject project) {
             super(new ImportantFilesChildren(project));
         }
@@ -141,7 +145,7 @@ public class ImportantFilesNodeFactory implements NodeFactory {
             super(ch);
         }
         
-        public String getName() {
+        public @Override String getName() {
             return IMPORTANT_FILES_NAME;
         }
         
@@ -150,21 +154,19 @@ public class ImportantFilesNodeFactory implements NodeFactory {
             return Utilities.mergeImages(UIUtil.getTreeFolderIcon(opened), badge, 8, 8);
         }
         
-        private static final String DISPLAY_NAME = NbBundle.getMessage(ModuleLogicalView.class, "LBL_important_files");
-        
-        public String getDisplayName() {
+        public @Override String getDisplayName() {
             return annotateName(DISPLAY_NAME);
         }
         
-        public String getHtmlDisplayName() {
+        public @Override String getHtmlDisplayName() {
             return computeAnnotatedHtmlDisplayName(DISPLAY_NAME, getFiles());
         }
         
-        public Image getIcon(int type) {
+        public @Override Image getIcon(int type) {
             return annotateIcon(getIcon(false), type);
         }
         
-        public Image getOpenedIcon(int type) {
+        public @Override Image getOpenedIcon(int type) {
             return annotateIcon(getIcon(true), type);
         }
         
@@ -209,13 +211,13 @@ public class ImportantFilesNodeFactory implements NodeFactory {
             this.project = project;
         }
         
-        protected void addNotify() {
+        protected @Override void addNotify() {
             super.addNotify();
             attachListeners();
             refreshKeys();
         }
         
-        protected void removeNotify() {
+        protected @Override void removeNotify() {
             setKeys(Collections.<String>emptyList());
             removeListeners();
             super.removeNotify();
@@ -280,10 +282,13 @@ public class ImportantFilesNodeFactory implements NodeFactory {
             try {
                 if (fcl == null) {
                     fcl = new FileChangeAdapter() {
-                        public void fileDataCreated(FileEvent fe) {
+                        public @Override void fileRenamed(FileRenameEvent fe) {
                             refreshKeys();
                         }
-                        public void fileDeleted(FileEvent fe) {
+                        public @Override void fileDataCreated(FileEvent fe) {
+                            refreshKeys();
+                        }
+                        public @Override void fileDeleted(FileEvent fe) {
                             refreshKeys();
                         }
                     };
@@ -319,7 +324,7 @@ public class ImportantFilesNodeFactory implements NodeFactory {
             this.displayName = displayName;
         }
         
-        public String getDisplayName() {
+        public @Override String getDisplayName() {
             if (displayName != null) {
                 return displayName;
             } else {
@@ -327,19 +332,19 @@ public class ImportantFilesNodeFactory implements NodeFactory {
             }
         }
         
-        public boolean canRename() {
+        public @Override boolean canRename() {
             return false;
         }
         
-        public boolean canDestroy() {
+        public @Override boolean canDestroy() {
             return false;
         }
         
-        public boolean canCut() {
+        public @Override boolean canCut() {
             return false;
         }
         
-        public String getHtmlDisplayName() {
+        public @Override String getHtmlDisplayName() {
             String result = null;
             DataObject dob = getLookup().lookup(DataObject.class);
             if (dob != null) {
@@ -405,13 +410,13 @@ public class ImportantFilesNodeFactory implements NodeFactory {
             this.project = project;
         }
         
-        protected void addNotify() {
+        protected @Override void addNotify() {
             super.addNotify();
             attachListeners();
             refreshKeys();
         }
         
-        protected void removeNotify() {
+        protected @Override void removeNotify() {
             setKeys(Collections.<String>emptySet());
             removeListeners();
             super.removeNotify();
@@ -460,10 +465,13 @@ public class ImportantFilesNodeFactory implements NodeFactory {
             try {
                 if (fcl == null) {
                     fcl = new FileChangeAdapter() {
-                        public void fileDataCreated(FileEvent fe) {
+                        public @Override void fileRenamed(FileRenameEvent fe) {
                             refreshKeys();
                         }
-                        public void fileDeleted(FileEvent fe) {
+                        public @Override void fileDataCreated(FileEvent fe) {
+                            refreshKeys();
+                        }
+                        public @Override void fileDeleted(FileEvent fe) {
                             refreshKeys();
                         }
                     };
