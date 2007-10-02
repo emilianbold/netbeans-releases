@@ -45,9 +45,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import javax.swing.Action;
-import javax.swing.SwingUtilities;
-import org.netbeans.modules.refactoring.api.RenameRefactoring;
-import org.netbeans.modules.refactoring.api.SafeDeleteRefactoring;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.netbeans.modules.xml.axi.AXIComponent;
 import org.netbeans.modules.xml.axi.AXIComponent.ComponentType;
@@ -58,7 +55,6 @@ import org.netbeans.modules.xml.axi.ContentModel;
 import org.netbeans.modules.xml.axi.Element;
 import org.netbeans.modules.xml.axi.datatype.Datatype;
 import org.netbeans.modules.xml.refactoring.CannotRefactorException;
-import org.netbeans.modules.xml.refactoring.XMLRefactoringTransaction;
 import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
 import org.netbeans.modules.xml.refactoring.ui.ReferenceableProvider;
 import org.netbeans.modules.xml.schema.abe.InstanceDesignConstants;
@@ -72,7 +68,6 @@ import org.netbeans.modules.xml.schema.ui.basic.SchemaGotoType;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Nameable;
 import org.netbeans.modules.xml.xam.NamedReferenceable;
-import org.netbeans.modules.xml.xam.Referenceable;
 import org.netbeans.modules.xml.xam.ui.XAMUtils;
 import org.netbeans.modules.xml.xam.ui.actions.GoToAction;
 import org.netbeans.modules.xml.xam.ui.actions.GotoType;
@@ -89,6 +84,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.Sheet;
+import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
@@ -203,6 +199,17 @@ public abstract class ABEAbstractNode extends AbstractNode
     public void showSuperDefinition(){
         InstanceUIContext context = (InstanceUIContext) getLookup().lookup(InstanceUIContext.class);
         UIUtilities.showDefinition(context, getAXIComponent(), true);
+    }
+    
+    /**
+     *
+     *
+     */
+    @Override
+    public HelpCtx getHelpCtx() {
+        if(this instanceof ABEAbstractNode)
+            return new HelpCtx(ABEAbstractNode.class);
+        return new HelpCtx(getClass());
     }
     
     
