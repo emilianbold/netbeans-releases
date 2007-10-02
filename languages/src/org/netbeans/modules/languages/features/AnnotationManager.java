@@ -215,8 +215,7 @@ public class AnnotationManager extends ASTEvaluator {
                 if(ts == null) {
                     return false;
                 } else {
-                    ts.moveNext();
-                    return testCreateAnnotation(hi, ts, item, la);
+                    return ts.moveNext() ? testCreateAnnotation(hi, ts, item, la) : false;
                 }
             }
     }
