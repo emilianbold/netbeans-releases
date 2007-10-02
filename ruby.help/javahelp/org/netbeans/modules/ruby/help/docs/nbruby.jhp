@@ -22,6 +22,9 @@
 			<file title="newrubyappwiz-nameandloc.html"/>
 			<file title="newrubyappwsourcewiz-nameandloc.html"/>
 			<file title="newrubyappwsourcewiz-srcfiles.html"/>
+			<file title="plugininstallsettingsdialog.html"/>
+			<file title="railsplugininstallationdialog.html"/>
+			<file title="railspluginmanager.html"/>
 			<file title="ruby_quickref.html"/>
 			<file title="rubyhelp.hs"/>
 			<file title="rubyindex.xml"/>

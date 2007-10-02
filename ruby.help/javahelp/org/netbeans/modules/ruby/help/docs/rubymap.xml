@@ -22,4 +22,7 @@
 	<mapID target="nbruby_rubyoptions" url="rubyoptions.html"/>
 	<mapID target="nbruby_create_customize_codetemplates" url="create_customize_codetemplates.html"/>
 	<mapID target="nbruby_editor_shortcuts_codetemplates" url="editor_shortcuts_codetemplates.html"/>
+	<mapID target="org.netbeans.modules.ruby.railsprojects.plugins.PluginPanel" url="plugininstallsettingsdialog.html"/>
+	<mapID target="org.netbeans.modules.ruby.railsprojects.plugins.PluginPanel" url="railsplugininstallationdialog.html"/>
+	<mapID target="org.netbeans.modules.ruby.railsprojects.plugins.PluginAction" url="railspluginmanager.html"/>
 </map>
