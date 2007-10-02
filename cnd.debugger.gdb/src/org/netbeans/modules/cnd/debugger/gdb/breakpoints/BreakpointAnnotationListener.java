@@ -86,11 +86,12 @@ public class BreakpointAnnotationListener extends DebuggerManagerAdapter {
     public void propertyChange(PropertyChangeEvent e) {
         if (listen) {
             String propertyName = e.getPropertyName();
-            if ( (!propertyName.equals(LineBreakpoint.PROP_CONDITION)) &&
-                    (!propertyName.equals(LineBreakpoint.PROP_URL)) &&
-                    (!propertyName.equals(LineBreakpoint.PROP_LINE_NUMBER)) &&
-                    (!propertyName.equals(GdbBreakpoint.PROP_ENABLED))
-                    ) {
+            if (propertyName == null || e.getSource() == null ||
+                   !(e.getSource() instanceof GdbBreakpoint) ||
+                   (!propertyName.equals(LineBreakpoint.PROP_CONDITION) &&
+                    !propertyName.equals(LineBreakpoint.PROP_URL) &&
+                    !propertyName.equals(LineBreakpoint.PROP_LINE_NUMBER) &&
+                    !propertyName.equals(GdbBreakpoint.PROP_ENABLED))) {
                 return;
             }
             if (e.getSource() instanceof LineBreakpoint) {
