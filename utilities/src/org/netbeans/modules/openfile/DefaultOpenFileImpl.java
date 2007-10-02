@@ -62,6 +62,7 @@ import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.cookies.ViewCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
@@ -95,12 +96,7 @@ public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
      *
      * @see  #openDocAtLine
      */
-    private static final int OPEN_EDITOR_TOTAL_TIMEOUT_MS = 1000;
-
-    private static final String ZIP_EXT = "zip"; //NOI18N
-    private static final String JAR_EXT = "jar"; //NOI18N
-    private static final String WAR_EXT = "war"; //NOI18N
-
+    private static final int OPEN_EDITOR_TOTAL_TIMEOUT_MS = 1000;    
     /**
      * parameter of this <code>Runnable</code>
      * - file to open
@@ -496,15 +492,8 @@ public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
         boolean success = openDataObjectByCookie(dataObject, line);
         if (success) {
             return true;
-        }
-        
-        String ext = fileObject.getExt();
-        if (
-            ZIP_EXT.equalsIgnoreCase(ext) || 
-            JAR_EXT.equalsIgnoreCase(ext) ||
-            WAR_EXT.equalsIgnoreCase(ext) ||
-            fileObject.isFolder()
-        ) {
+        }        
+        if (fileObject.isFolder() || FileUtil.isArchiveFile(fileObject)) {
             // select it in explorer:
             Node node = dataObject.getNodeDelegate();
             if (node != null) {

@@ -63,6 +63,8 @@ import org.openide.util.actions.SystemAction;
  */
 public final class JarDataLoader extends UniFileLoader {
     
+    static final String JAR_MIME_TYPE = "application/x-java-archive";   //NOI18N
+    
     private static final long serialVersionUID = 1L;
     
     public JarDataLoader() {
@@ -76,15 +78,10 @@ public final class JarDataLoader extends UniFileLoader {
     protected void initialize() {
         super.initialize();
         ExtensionList extensions = new ExtensionList();
-        extensions.addExtension("jar"); // NOI18N
-        extensions.addExtension("zip"); // NOI18N
-        extensions.addExtension("war"); // NOI18N
-        extensions.addExtension("ear"); // NOI18N
-        // XXX could add others, perhaps...
-        // or could use FileUtil.isArchiveFile, but that might be too slow
+        extensions.addMimeType(JAR_MIME_TYPE);        
         setExtensions(extensions);
     }
-    
+
     protected SystemAction[] defaultActions() {
         return new SystemAction[] {
             SystemAction.get(FileSystemAction.class),
