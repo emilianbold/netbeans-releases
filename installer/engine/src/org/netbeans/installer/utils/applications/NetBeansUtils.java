@@ -71,10 +71,6 @@ public class NetBeansUtils {
     public static FilesList createProductId(File nbLocation) throws IOException {
         File nbCluster = getNbCluster(nbLocation);
         
-        if (nbCluster == null) {
-            throw new IOException("The NetBeans branding cluster does not exist");
-        }
-        
         File productid = new File(nbCluster, PRODUCT_ID);
         
         return FileUtils.writeFile(productid, NB_IDE_ID);
@@ -82,10 +78,6 @@ public class NetBeansUtils {
     
     public static FilesList addPackId(File nbLocation, String packId) throws IOException {
         final File nbCluster = getNbCluster(nbLocation);
-        
-        if (nbCluster == null) {
-            throw new IOException("The NetBeans branding cluster does not exist");
-        }
         
         final File productid = new File(nbCluster, PRODUCT_ID);
         
@@ -124,10 +116,6 @@ public class NetBeansUtils {
     public static void removePackId(File nbLocation, String packId) throws IOException {
         File nbCluster = getNbCluster(nbLocation);
         
-        if (nbCluster == null) {
-            throw new IOException("The NetBeans branding cluster does not exist");
-        }
-        
         File productid = new File(nbCluster, PRODUCT_ID);
         
         String id;
@@ -152,10 +140,6 @@ public class NetBeansUtils {
     public static void removeProductId(File nbLocation) throws IOException {
         File nbCluster = getNbCluster(nbLocation);
         
-        if (nbCluster == null) {
-            throw new IOException("The NetBeans branding cluster does not exist");
-        }
-        
         File productid = new File(nbCluster, PRODUCT_ID);
         
         FileUtils.deleteFile(productid);
@@ -163,10 +147,6 @@ public class NetBeansUtils {
     
     public static FilesList createLicenseAcceptedMarker(File nbLocation) throws IOException {
         File nbCluster = getNbCluster(nbLocation);
-        
-        if (nbCluster == null) {
-            throw new IOException("The NetBeans branding cluster does not exist");
-        }
         
         File license_accepted = new File(nbCluster, LICENSE_ACCEPTED);
         
@@ -179,10 +159,6 @@ public class NetBeansUtils {
     
     public static void removeLicenseAcceptedMarker(File nbLocation) throws IOException {
         File nbCluster = getNbCluster(nbLocation);
-        
-        if (nbCluster == null) {
-            throw new IOException("The NetBeans branding cluster does not exist");
-        }
         
         File license_accepted = new File(nbCluster, LICENSE_ACCEPTED);
         
@@ -370,15 +346,17 @@ public class NetBeansUtils {
     public static void setJvmMemorySize(File nbLocation, String memoryType, long size) throws IOException {
         setJvmOption(nbLocation, memoryType, formatJavaMemoryString(size), false, "");
     }
-    
-    public static File getNbCluster(File nbLocation) {
+    /**
+     * Get NetBeans branding cluster directory
+     * @throws IOException if the no cluster directory exists
+     */
+    public static File getNbCluster(File nbLocation) throws IOException {
         for (File child: nbLocation.listFiles()) {
             if (child.isDirectory() && child.getName().matches(NB_CLUSTER_PATTERN)) {
                 return child;
             }
         }
-        
-        return null;
+        throw new IOException(ERROR_BRANDING_CLUSTER_NOT_EXIS_STRING);
     }
     
     /**
@@ -407,7 +385,8 @@ public class NetBeansUtils {
         if(matcher.find() && matcher.groupCount() == 1) {
             return matcher.group(1);
         } else {
-            throw new IOException("Can`t get netbeans userdir from " + netbeansconf);
+            throw new IOException(StringUtils.format(
+                    ERROR_CANNOT_GET_USERDIR_STRING,netbeansconf));
         }
     }
     
@@ -429,7 +408,8 @@ public class NetBeansUtils {
         if(matcher.find() && matcher.groupCount() == 1) {
             return matcher.group(1);
         } else {
-            throw new IOException("Can`t get netbeans javahome from " + netbeansconf);
+            throw new IOException(StringUtils.format(
+                    ERROR_CANNOT_GET_USERDIR_STRING, netbeansconf));
         }
     }
     
@@ -651,6 +631,12 @@ public class NetBeansUtils {
             "org.netbeans.updater.UpdaterFrame";
     public static final String UPDATER_CLASSNAME = 
             "org.netbeans.upgrade.AutoUpgrade";
+    public static final String ERROR_BRANDING_CLUSTER_NOT_EXIS_STRING =
+            ResourceUtils.getString(NetBeansUtils.class,
+            "NU.error.branding.cluster.not.exists");//NOI18N
+    public static final String ERROR_CANNOT_GET_USERDIR_STRING =
+            ResourceUtils.getString(NetBeansUtils.class,
+            "NU.error.cannot.get.userdir");//NOI18N
     
     public static final long K =
             1024; // NOMAGI

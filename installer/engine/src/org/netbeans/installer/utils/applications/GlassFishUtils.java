@@ -42,8 +42,10 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.helper.ExecutionResults;
 import org.netbeans.installer.utils.FileUtils;
+import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.XMLUtils;
 import org.netbeans.installer.utils.exceptions.XMLException;
@@ -113,7 +115,7 @@ public class GlassFishUtils {
                 domainName
                 );
         
-        return results.getErrorCode() != Integer.MAX_VALUE;
+        return results.getErrorCode() != ExecutionResults.TIMEOUT_ERRORCODE;
     }
     
     public static boolean startDefaultDomain(File location) throws IOException {
@@ -129,7 +131,7 @@ public class GlassFishUtils {
                 domainName
                 );
         
-        return results.getErrorCode() != Integer.MAX_VALUE;
+        return results.getErrorCode() != ExecutionResults.TIMEOUT_ERRORCODE;
     }
     
     public static boolean stopDefaultDomain(File location) throws IOException {
@@ -149,7 +151,7 @@ public class GlassFishUtils {
                 domainName
                 );
         
-        return results.getErrorCode() != Integer.MAX_VALUE;
+        return results.getErrorCode() != ExecutionResults.TIMEOUT_ERRORCODE;
     }
     
     public static File createPasswordFile(String password, File location) throws IOException {
@@ -295,9 +297,9 @@ public class GlassFishUtils {
             
             return Integer.parseInt("4848");
         } catch (ParserConfigurationException e) {
-            throw new XMLException("Cannot configure parser", e);
+            throw new XMLException(ERROR_CANNOT_CONFIGURE_PARSER_STRING, e);
         } catch (SAXException e) {
-            throw new XMLException("Something wrong while parsing", e);
+            throw new XMLException(ERROR_PARSING_STRING, e);
         }
     }
     
@@ -327,9 +329,9 @@ public class GlassFishUtils {
             
             return Integer.parseInt("8080");
         } catch (ParserConfigurationException e) {
-            throw new XMLException("Cannot configure parser", e);
+            throw new XMLException(ERROR_CANNOT_CONFIGURE_PARSER_STRING, e);
         } catch (SAXException e) {
-            throw new XMLException("Something wrong while parsing", e);
+            throw new XMLException(ERROR_PARSING_STRING, e);
         }
     }
     
@@ -359,9 +361,9 @@ public class GlassFishUtils {
             
             return Integer.parseInt("8080");
         } catch (ParserConfigurationException e) {
-            throw new XMLException("Cannot configure parser", e);
+            throw new XMLException(ERROR_CANNOT_CONFIGURE_PARSER_STRING, e);
         } catch (SAXException e) {
-            throw new XMLException("Something wrong while parsing", e);
+            throw new XMLException(ERROR_PARSING_STRING, e);
         }
     }
     
@@ -387,7 +389,7 @@ public class GlassFishUtils {
                     );
             
             if (results.getErrorCode() == ExecutionResults.TIMEOUT_ERRORCODE) {
-                throw new IOException("Deployment failed to finish in a timely manner");
+                throw new IOException(ERROR_DEPLOYMENT_TIMEOUT_STRING);
             }
         } finally {
             FileUtils.deleteFile(passwordFile);
@@ -538,9 +540,9 @@ public class GlassFishUtils {
             
             return builder.parse(getDomainXml(location, domainName));
         } catch (ParserConfigurationException e) {
-            throw new XMLException("Cannot configure parser", e);
+            throw new XMLException(ERROR_CANNOT_CONFIGURE_PARSER_STRING, e);
         } catch (SAXException e) {
-            throw new XMLException("Something wrong while parsing", e);
+            throw new XMLException(ERROR_PARSING_STRING, e);
         }
     }
     
@@ -555,9 +557,9 @@ public class GlassFishUtils {
             
             outputStream.close();
         } catch (TransformerConfigurationException e) {
-            throw new XMLException("Cannot configure transformer", e);
+            throw new XMLException(ERROR_CANNOT_CONFIGURE_TRANSFORMER_STRING, e);
         } catch (TransformerException e) {
-            throw new XMLException("Something wrong with transformer", e);
+            throw new XMLException(ERROR_TRANSFORMER_UNKNOWN_STRING, e);
         }
     }
     
@@ -586,30 +588,28 @@ public class GlassFishUtils {
         
         public DomainCreationException() {
             super();
-            
-            message = "Could not create domain - " +
-                    "failed to create the password file.";
+            setMessage(ERROR_CREATE_DOMAIN_PASSFILE_STRING);            
         }
         
         public DomainCreationException(String errorNumber) {
             super();
-            
-            message = "Could not create domain - " +
-                    "error " + errorNumber + " occurred.";
+            setMessage(StringUtils.format(ERROR_CREATE_DOMAIN_ERROR_STRING, errorNumber));            
         }
         
         public DomainCreationException(int errorCode) {
             super();
             
-            if (errorCode < Integer.MAX_VALUE) {
-                message = "Could not create domain - " +
-                        "the process returned " + errorCode;
+            if (errorCode != ExecutionResults.TIMEOUT_ERRORCODE) {
+                setMessage(StringUtils.format(ERROR_CREATE_DOMAIN_EXIT_CODE_STRING, errorCode));                
             } else {
-                message = "Could not create domain - " +
-                        "the process was killed due to timeout.";
+                setMessage(ERROR_CREATE_DOMAIN_TIMEOUT_STRING);                
             }
         }
-        
+
+        public void setMessage(String message) {
+            this.message = message;
+        }
+
         @Override
         public String getMessage() {
             return message;
@@ -644,5 +644,31 @@ public class GlassFishUtils {
     public static final String COULD_NOT_CREATE_DOMAIN_MARKER =
             CLI_130 + " Could not create domain"; // NOI18N
     
-    
+    public static final String ERROR_CANNOT_CONFIGURE_PARSER_STRING = 
+            ResourceUtils.getString(GlassFishUtils.class,
+            "GU.error.configure.parser");//NOI18N
+    public static final String ERROR_CANNOT_CONFIGURE_TRANSFORMER_STRING = 
+            ResourceUtils.getString(GlassFishUtils.class,
+            "GU.error.configure.transformer");//NOI18N
+    public static final String ERROR_TRANSFORMER_UNKNOWN_STRING = 
+            ResourceUtils.getString(GlassFishUtils.class,
+            "GU.error.transformer.wrong");//NOI18N
+    public static final String ERROR_PARSING_STRING =
+            ResourceUtils.getString(GlassFishUtils.class,
+            "GU.error.parsing");//NOI18N
+    public static final String ERROR_CREATE_DOMAIN_PASSFILE_STRING =
+            ResourceUtils.getString(GlassFishUtils.class,
+            "GU.error.create.domain.passfile");//NOI18N
+    public static final String ERROR_CREATE_DOMAIN_ERROR_STRING =
+            ResourceUtils.getString(GlassFishUtils.class,
+            "GU.error.create.domain.errno");
+    public static final String ERROR_CREATE_DOMAIN_EXIT_CODE_STRING =
+            ResourceUtils.getString(GlassFishUtils.class,
+            "GU.error.create.domain.exitcode");
+    public static final String ERROR_CREATE_DOMAIN_TIMEOUT_STRING =
+            ResourceUtils.getString(GlassFishUtils.class,
+            "GU.error.create.domain.timeout");
+    public static final String ERROR_DEPLOYMENT_TIMEOUT_STRING = 
+            ResourceUtils.getString(GlassFishUtils.class,
+            "GU.error.deployment.timeout");//NOI18N
 }
