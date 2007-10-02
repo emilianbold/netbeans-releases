@@ -13,6 +13,7 @@
 
 <!--Design View-->
 	<mapID target="org.netbeans.modules.xml.schema.multiview.SchemaABEViewMultiViewDesc" url="designview/about.html#about"/>
+	<mapID target="org.netbeans.modules.xml.schema.abe.nodes.ABEAbstractNode" url="designview/about.html#about"/>
 
 <!--Design View Palette-->
 	<mapID target="PALETTE_ITEM_HELP_ID_XML_COMPONENTS" url="designview/palette.html#section_xml_components"/>
@@ -29,6 +30,7 @@
 
 <!--Schema View-->
 	<mapID target="org.netbeans.modules.xml.schema.multiview.SchemaColumnViewMultiViewDesc" url="schemaview/about.html#about"/>
+	<mapID target="org.netbeans.modules.xml.schema.ui.nodes.SchemaComponentNode" url="schemaview/about.html#about"/>
 
 <!--New Retrieve Documents Wizard-->
 	<mapID target="org.netbeans.modules.xml.schema.ui.retriever.RetrieveXMLResourceWizardPanel1" url="wiz/wiz_retrieveschemawsdl.html#retrievedocs"/>

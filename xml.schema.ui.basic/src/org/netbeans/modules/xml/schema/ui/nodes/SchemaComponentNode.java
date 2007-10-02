@@ -537,7 +537,9 @@ public abstract class SchemaComponentNode<T extends SchemaComponent>
      *
      */
     @Override
-            public HelpCtx getHelpCtx() {
+    public HelpCtx getHelpCtx() {
+        if(this instanceof SchemaComponentNode)
+            return new HelpCtx(SchemaComponentNode.class);
         return new HelpCtx(getClass());
     }
     
