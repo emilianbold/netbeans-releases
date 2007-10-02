@@ -458,18 +458,6 @@ public class FacesModelSet extends ModelSet implements FacesDesignProject {
                 if (!m.isValid())
                     i.remove();
             }
-            //We cannot add accessors when each managed bean is modeled during project creation
-            //because we do not know the order of creation of managed beans. Therefore adding
-            //the accessors after syncAll()
-            for (Iterator i = models.values().iterator(); i.hasNext(); ) {
-                Model m = (Model)i.next();
-                if (m instanceof FacesModel) { 
-                    FacesModel facesModel = (FacesModel)m;
-                    if(!facesModel.isBusted()) {
-                         facesModel.addXRefAccessors();
-                    }
-                }
-            }
             
             // run flush once in case any models self-adjusted themselves
             flushAll();

@@ -83,4 +83,5 @@ public class ${name} extends AbstractFragmentBean {
 </#if>
     public void destroy() {
     }
+
 }
