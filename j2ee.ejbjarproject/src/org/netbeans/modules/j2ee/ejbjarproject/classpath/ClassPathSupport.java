@@ -147,7 +147,7 @@ public class ClassPathSupport {
                 }                    
                 
                 if ( f == null || !f.exists() ) {
-                    item = Item.createBroken( Item.TYPE_JAR, pe[i], includedItems.contains ( property ) );
+                    item = Item.createBroken( f, pe[i], includedItems.contains ( property ) );
                 }
                 else {
                     item = Item.create( f, pe[i], includedItems.contains ( property ) );
@@ -434,27 +434,30 @@ public class ClassPathSupport {
         public static final int TYPE_ARTIFACT = 2;
         public static final int TYPE_CLASSPATH = 3;
 
-        // Reference to a broken object
-        private static final String BROKEN = "BrokenReference"; // NOI18N
-        
         private Object object;
         private URI artifactURI;
         private int type;
         private String property;
         private boolean includedInDeployment;
         private String raw;
+        private final boolean broken;
         
-        private Item( int type, Object object, String property, boolean included, String raw ) {
+        private Item(int type, Object object, String property, boolean included, String raw, boolean broken) {
             this.type = type;
             this.object = object;
             this.property = property;
             this.includedInDeployment = included;
             this.raw = raw;
+            this.broken = broken;
         }
         
         private Item( int type, Object object, URI artifactURI, String property, boolean included ) {
-            this( type, object, property, included,null );
+            this(type, object, property, included, null, false);
             this.artifactURI = artifactURI;
+        }
+        
+        private Item(int type, Object object, String property, boolean included, String raw) {
+            this(type, object, property, included, null, false);
         }
               
         // Factory methods -----------------------------------------------------
@@ -496,7 +499,11 @@ public class ClassPathSupport {
             if ( property == null ) {
                 throw new IllegalArgumentException( "property must not be null in broken items" ); // NOI18N
             }
-            return new Item( type, BROKEN, property, included, null );
+            return new Item(type, null, property, included, null, true);
+        }
+        
+        public static Item createBroken(File file, String property, boolean included) {
+            return new Item(TYPE_JAR, file, property, included, null, true);
         }
         
         // Instance methods ----------------------------------------------------
@@ -523,9 +530,7 @@ public class ClassPathSupport {
             if ( getType() != TYPE_JAR ) {
                 throw new IllegalArgumentException( "Item is not of required type - JAR" ); // NOI18N
             }
-            if (isBroken()) {
-                return null;
-            }
+            // for broken item: one will get java.io.File or null (#113390)
             return (File)object;
         }
         
@@ -571,7 +576,7 @@ public class ClassPathSupport {
         }
         
         public boolean isBroken() {
-            return object == BROKEN;
+            return broken;
         }
         
         public String toString() {
@@ -580,15 +585,16 @@ public class ClassPathSupport {
                     + ", property=" + property
                     + ", includedInDeployment=" + includedInDeployment
                     + ", raw=" + raw
-                    + ", object=" + object;
+                    + ", object=" + object
+                    + ", broken=" + broken;
         }
         
         public int hashCode() {
         
             int hash = getType();
 
-            if ( object == BROKEN ) {
-                return BROKEN.hashCode();
+            if (isBroken()) {
+                return 42;
             }
             
             switch ( getType() ) {

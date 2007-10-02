@@ -149,7 +149,7 @@ public class ClassPathSupport {
                 }                    
                 
                 if ( f == null || !f.exists() ) {
-                    item = Item.createBroken( Item.TYPE_JAR, pe[i], (String) warMap.get(property));
+                    item = Item.createBroken( f, pe[i], (String) warMap.get(property));
                 }
                 else {
                     item = Item.create( f, pe[i], (String) warMap.get(property));
@@ -464,9 +464,6 @@ public class ClassPathSupport {
         public static final String PATH_IN_WAR_APPLET = ""; //NOI18N
         public static final String PATH_IN_WAR_NONE = null;
     
-        // Reference to a broken object
-        private static final String BROKEN = "BrokenReference"; // NOI18N
-        
         private Object object;
         private URI artifactURI;
         private int type;
@@ -474,11 +471,13 @@ public class ClassPathSupport {
         private String pathInWar;
         private String raw;
         private String eval;
+        private final boolean broken;
 
-        private Item( int type, Object object, String raw, String eval, String property, String pathInWar) {
+        private Item( int type, Object object, String raw, String eval, String property, String pathInWar, boolean broken) {
             this.type = type;
             this.object = object;
-            if (object == null || type == TYPE_CLASSPATH || object == BROKEN ||
+            this.broken = broken;
+            if (object == null || type == TYPE_CLASSPATH || broken ||
                     (type == TYPE_JAR && object instanceof File) ||
                     (type == TYPE_ARTIFACT && (object instanceof AntArtifact)) ||
                     (type == TYPE_LIBRARY && (object instanceof Library))) {
@@ -494,6 +493,10 @@ public class ClassPathSupport {
         private Item( int type, Object object, String raw, String eval, URI artifactURI, String property, String pathInWar) {
             this( type, object, raw, eval, property, pathInWar);
             this.artifactURI = artifactURI;
+        }
+        
+        private Item(int type, Object object, String raw, String eval, String property, String pathInWar) {
+            this(type, object, raw, eval, property, pathInWar, false);
         }
               
         public String getPathInWAR () {
@@ -556,7 +559,11 @@ public class ClassPathSupport {
             if ( property == null ) {
                 throw new IllegalArgumentException( "property must not be null in broken items" ); // NOI18N
             }
-            return new Item( type, BROKEN, null, null, property, pathInWar);
+            return new Item(type, null, null, null, property, pathInWar, true);
+        }
+        
+        public static Item createBroken(File file, String property, String pathInWar) {
+            return new Item(TYPE_JAR, file, null, null, property, pathInWar, true);
         }
         
         // Instance methods ----------------------------------------------------
@@ -579,9 +586,7 @@ public class ClassPathSupport {
             if ( getType() != TYPE_JAR ) {
                 throw new IllegalArgumentException( "Item is not of required type - JAR" ); // NOI18N
             }
-            if (isBroken()) {
-                return null;
-            }
+            // for broken item: one will get java.io.File or null (#113390)
             return (File)object;
         }
         
@@ -619,15 +624,15 @@ public class ClassPathSupport {
         }
         
         public boolean isBroken() {
-            return object == BROKEN;
+            return broken;
         }
                         
         public int hashCode() {
         
             int hash = getType();
 
-            if ( object == BROKEN ) {
-                return BROKEN.hashCode();
+            if (broken) {
+                return 42;
             }
             
             switch ( getType() ) {
@@ -695,7 +700,8 @@ public class ClassPathSupport {
                     + ", pathInWar=" + pathInWar
                     + ", raw=" + raw
                     + ", eval=" + eval
-                    + ", object=" + object;
+                    + ", object=" + object
+                    + ", broken=" + broken;
         }
         
     }

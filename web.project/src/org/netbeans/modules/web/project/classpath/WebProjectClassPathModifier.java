@@ -145,12 +145,21 @@ public class WebProjectClassPathModifier extends ProjectClassPathModifierImpleme
                                 if (operation == ADD && !resources.contains(item)) {
                                     resources.add (item);
                                     changed = true;
-                                }                            
-                                else if (operation == REMOVE && resources.contains(item)) {
-                                    resources.remove(item);
-                                    changed = true;
+                                } else if (operation == REMOVE) {
+                                    if (resources.remove(item)) {
+                                        changed = true;
+                                    } else {
+                                        // can be broken item
+                                        for (Iterator<ClassPathSupport.Item> it = resources.iterator(); it.hasNext();) {
+                                            ClassPathSupport.Item resource = it.next();
+                                            if (resource.isBroken() && resource.getType() == ClassPathSupport.Item.TYPE_JAR && f.equals(resource.getFile())) {
+                                                it.remove();
+                                                changed = true;
+                                            }
+                                        }
+                                    }
                                 }
-                            }                                                                                                                
+                            }
                             if (changed) {
                                 String itemRefs[] = cs.encodeToStrings( resources.iterator(), webModuleElementName);
                                 props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);  //PathParser may change the EditableProperties
@@ -174,7 +183,7 @@ public class WebProjectClassPathModifier extends ProjectClassPathModifierImpleme
             }
         }
     }
-
+    
     protected boolean removeAntArtifacts(final AntArtifact[] artifacts, final URI[] artifactElements, final SourceGroup sourceGroup, final String type) throws IOException, UnsupportedOperationException {
         return handleAntArtifacts (artifacts, artifactElements, getClassPathProperty(sourceGroup, type), DEFAULT_WEB_MODULE_ELEMENT_NAME, REMOVE);
     }
