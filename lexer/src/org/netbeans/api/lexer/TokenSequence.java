@@ -376,6 +376,16 @@ public final class TokenSequence<T extends TokenId> {
         return EmbeddingContainer.createEmbedding(tokenList, tokenIndex,
                 embeddedLanguage, startSkipLength, endSkipLength, joinSections);
     }
+    
+    /**
+     * Remove previously created language embedding.
+     * <br/>
+     * If the underying text input is mutable then this method should only be called
+     * within a write lock over the text input.
+     */
+    public boolean removeEmbedding(Language<? extends TokenId> embeddedLanguage) {
+        return false;
+    }
 
     /**
      * Move to the next token in this token sequence.
@@ -732,7 +742,8 @@ public final class TokenSequence<T extends TokenId> {
     private void checkTokenNotNull() {
         if (token == null) {
             throw new IllegalStateException(
-                "Caller of TokenSequence forgot to call moveNext(): tokenIndex=" + tokenIndex
+                "Caller of TokenSequence forgot to call moveNext/Previous() " +
+                "or it returned false (no more tokens): tokenIndex=" + tokenIndex
             ); // NOI18N
         }
     }
