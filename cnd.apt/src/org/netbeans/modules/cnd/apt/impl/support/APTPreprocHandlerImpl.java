@@ -44,11 +44,9 @@ package org.netbeans.modules.cnd.apt.impl.support;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.List;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
-import org.netbeans.modules.cnd.apt.support.StartEntry;
 import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 
 /**
@@ -106,7 +104,7 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
     
     public final static class StateImpl implements State {
         private final APTMacroMap.State macroState;
-        private final APTIncludeHandler.State inclState;
+        /*package*/ final APTIncludeHandler.State inclState;
         private final byte attributes;
         
         private final static byte COMPILE_CONTEXT_FLAG = 1 << 0;
@@ -222,10 +220,6 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
             return (this.attributes & VALID_FLAG) == VALID_FLAG;
         }
         
-        /*package*/ List<APTIncludeHandler.IncludeInfo> getIncludeStack() {
-            return APTHandlersSupportImpl.getIncludeStack(this.inclState);
-        }        
-        
         /*package*/ APTPreprocHandler.State copy() {
             return new StateImpl(this, this.isCleaned(), this.isCompileContext(), this.isValid());
         }
@@ -237,18 +231,6 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
         /*package*/ APTPreprocHandler.State copyInvalid() {
             return new StateImpl(this, this.isCleaned(), this.isCompileContext(), false);
         }
-        
-        /*package*/ List<String> getSysIncludePaths() {
-            return APTHandlersSupportImpl.extractSystemIncludePaths(this.inclState);
-        }
-        
-        /*package*/ List<String> getUserIncludePaths() {
-            return APTHandlersSupportImpl.extractUserIncludePaths(this.inclState);
-        }        
-	
-        /* package */ final StartEntry getStartEntry() {
-	    return APTHandlersSupportImpl.extractStartEntry(this.inclState);
-	}
 
         ////////////////////////////////////////////////////////////////////////
         // persistence support

@@ -86,43 +86,33 @@ public class APTHandlersSupportImpl {
     
     public static List<APTIncludeHandler.IncludeInfo> extractIncludeStack(APTPreprocHandler.State state) {
         assert state != null;
-        List<APTIncludeHandler.IncludeInfo> inclStack = ((APTPreprocHandlerImpl.StateImpl)state).getIncludeStack();
+        List<APTIncludeHandler.IncludeInfo> inclStack = getIncludeStack(((APTPreprocHandlerImpl.StateImpl)state).inclState);
         return inclStack == null ? Collections.<APTIncludeHandler.IncludeInfo>emptyList() : 
             new ArrayList<APTIncludeHandler.IncludeInfo>(inclStack);
     }
 
+    public static StartEntry extractStartEntry(APTPreprocHandler.State state) {
+        return (state == null) ? null : extractStartEntry(((APTPreprocHandlerImpl.StateImpl)state).inclState);
+    }
+    
 //    public static APTPreprocHandler.State copyPreprocState(APTPreprocHandler.State orig) {
 //        return ((APTPreprocHandlerImpl.StateImpl)orig).copy();
 //    }
     
-    public static List<String> extractSystemIncludePaths(APTPreprocHandler.State state) {
-        assert state != null;
-        List<String> sysPaths = ((APTPreprocHandlerImpl.StateImpl)state).getSysIncludePaths();
-        return sysPaths;
-    }
+    ////////////////////////////////////////////////////////////////////////////
+    // impl details
     
-    public static List<String> extractUserIncludePaths(APTPreprocHandler.State state) {
-        assert state != null;
-        List<String> usrPaths = ((APTPreprocHandlerImpl.StateImpl)state).getUserIncludePaths();
-        return usrPaths;
-    } 
-    
-    public static StartEntry extractStartEntry(APTPreprocHandler.State state) {
-        return (state == null) ? null : ((APTPreprocHandlerImpl.StateImpl)state).getStartEntry();
-    }
-    
-    
-    /*package*/ static StartEntry extractStartEntry(APTIncludeHandler.State state) {
+    private static StartEntry extractStartEntry(APTIncludeHandler.State state) {
 	return (state == null) ? null : ((APTIncludeHandlerImpl.StateImpl) state).getStartEntry();
+    }
+    
+    private static List<APTIncludeHandler.IncludeInfo> getIncludeStack(APTIncludeHandler.State inclState) {
+        return inclState == null ? null : ((APTIncludeHandlerImpl.StateImpl)inclState).getIncludeStack();
     }
     
     /*package*/ static APTIncludeHandler.State copyIncludeState(APTIncludeHandler.State inclState, boolean cleanState) {
         return inclState == null ? null : ((APTIncludeHandlerImpl.StateImpl)inclState).copy(cleanState);
     }
-    
-    /*package*/ static List<APTIncludeHandler.IncludeInfo> getIncludeStack(APTIncludeHandler.State inclState) {
-        return inclState == null ? null : ((APTIncludeHandlerImpl.StateImpl)inclState).getIncludeStack();
-    }    
 
     /*package*/ static APTMacroMap.State createCleanMacroState(APTMacroMap.State macroState) {
         APTMacroMap.State out = null;
@@ -130,20 +120,5 @@ public class APTHandlersSupportImpl {
             out = ((APTBaseMacroMap.StateImpl)macroState).copyCleaned();
         }
         return out;
-    }
-
-    /*package*/ static boolean isCleanedIncludeState(APTIncludeHandler.State inclState) {
-        assert inclState != null;
-        return ((APTIncludeHandlerImpl.StateImpl)inclState).isCleaned();
-    }     
-
-    /*package*/ static List<String> extractSystemIncludePaths(APTIncludeHandler.State inclState) {
-        assert inclState != null;
-        return ((APTIncludeHandlerImpl.StateImpl)inclState).getSysIncludePaths();
-    }  
-    
-    /*package*/ static List<String> extractUserIncludePaths(APTIncludeHandler.State inclState) {
-        assert inclState != null;
-        return ((APTIncludeHandlerImpl.StateImpl)inclState).getUserIncludePaths();
-    }        
+    }       
 }
