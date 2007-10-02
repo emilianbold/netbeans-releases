@@ -104,22 +104,6 @@ public class WebServiceData {
         this.wsName = that.wsName;
     }
     
-    public boolean isReady() {
-        if (! new File(getURL()).isFile() || getCatalog() == null || ! new File(getCatalog()).isFile()) {
-            return false;
-        }
-        
-        if (getName() == null || getWsdlService() == null) {
-            return false;
-        }
-        
-        if (getJaxWsDescriptor() == null || getJaxWsDescriptor().getJars().isEmpty()) {
-            return false;
-        }
-        
-        return true;
-    }
-    
     private String derivePackageName(String wsdlURL, String subPackage) {
         if (wsdlURL.startsWith("file:")) {
             throw new IllegalArgumentException("URL to access WSDL could not be local");

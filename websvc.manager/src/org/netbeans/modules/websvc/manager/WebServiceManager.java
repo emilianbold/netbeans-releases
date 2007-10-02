@@ -45,7 +45,6 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
 
 import org.netbeans.modules.websvc.manager.model.WebServiceListModel;
 import org.netbeans.modules.websvc.manager.model.WebServiceData;
-import org.netbeans.modules.websvc.manager.model.WebServiceGroup;
 import org.netbeans.modules.xml.retriever.Retriever;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -121,40 +120,6 @@ public final class WebServiceManager {
         wsdlModeler.generateWsdlModel(listener);
     }
     
-    public void ensureWebServiceClientReady(WebServiceData wsData) throws IOException {
-        if (wsData.getURL() == null || ! new File(wsData.getURL()).isFile()) {
-            File localWsdlFile = copyWsdlResources(wsData.getOriginalWsdl());
-            File catalogFile = new File(WEBSVC_HOME, getCatalogForWsdl(wsData.getOriginalWsdl()));
-            wsData.setCatalog(catalogFile.getAbsolutePath());
-            wsData.setURL(localWsdlFile.getAbsolutePath());
-        }
-        
-        URL wsdlLocation = new File(wsData.getURL()).toURL();
-        WsdlModeler wsdlModeler = WsdlModelerFactory.getDefault().getWsdlModeler(wsdlLocation);
-        wsdlModeler.setPackageName(wsData.getPackageName());
-        WsdlModel model = wsdlModeler.getAndWaitForWsdlModel();
-        
-        List<WsdlService> services = model.getServices();
-        if (services.isEmpty()) {
-            throw new IllegalArgumentException(wsdlLocation + " has no services."); //NOI18N
-        }
-
-        for (WsdlService service : services) {
-            if (service.getName().equals(wsData.getName())) {
-                wsData.setWsdlService(service);
-
-                WebServiceListModel.getInstance().addWebService(wsData);
-                WebServiceGroup group = WebServiceListModel.getInstance().getWebServiceGroup(wsData.getGroupId());
-                if (group != null) {
-                    group.add(wsData.getId());
-                }
-
-                compileService(wsData);
-                break;
-            }
-        }
-    }
-
     public void refreshWebService(WebServiceData wsData) throws IOException {
         removeWebService(wsData, false);
         wsData.setURL(null);

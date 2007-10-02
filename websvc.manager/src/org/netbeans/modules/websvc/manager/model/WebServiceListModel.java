@@ -243,42 +243,6 @@ public class WebServiceListModel {
         return null;
     }
     
-    public WebServiceData findWebServiceData(String wsdlUrl, String serviceName) {
-        return findWebServiceData(wsdlUrl, serviceName, true);
-    }
-    
-    public WebServiceData findWebServiceData(String wsdlUrl, String serviceName, boolean strict) {
-        WebServiceData target = null;
-        for (WebServiceData wsd : getWebServiceSet()) {
-            if (wsdlUrl.equals(wsd.getOriginalWsdl())) {
-                target = wsd;
-            }
-            if (serviceName.equals(wsd.getName())) {
-                return wsd;
-            }
-        }
-
-        if (! strict && target != null) {
-            WebServiceData clone = new WebServiceData(target);
-            clone.setName(serviceName);
-            return clone;
-        }
-        
-        return null;
-    }
-    
-    public WebServiceData getWebServiceData(String wsdlUrl, String serviceName) {
-        WebServiceData target = findWebServiceData(wsdlUrl, serviceName, false);
-        if (target != null && ! target.isReady()) {
-            try {
-                WebServiceManager.getInstance().ensureWebServiceClientReady(target);
-            } catch (IOException ex) {
-                Logger.global.log(Level.INFO, ex.getLocalizedMessage(), ex);
-            }
-        }
-        return target;
-    }
-
     public List<WebServiceGroup> getWebServiceGroupSet() {
         initialize();
         return webServiceGroups;
