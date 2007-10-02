@@ -27,7 +27,7 @@ import org.openide.util.WeakSet;
 
 
 /**
- * @author   Jan Jancura
+ * @author   Martin Entlicher
  */
 public class VariablesTreeExpansionModel implements TreeExpansionModel {
 
