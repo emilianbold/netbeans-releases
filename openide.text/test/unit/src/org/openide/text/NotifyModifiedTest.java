@@ -60,6 +60,9 @@ import org.openide.util.lookup.*;
 public class NotifyModifiedTest extends NbTestCase
 implements CloneableEditorSupport.Env {
     static {
+        System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
+    }
+    static {
         System.setProperty("org.openide.util.Lookup", "org.openide.text.NotifyModifiedTest$Lkp");
     }
 

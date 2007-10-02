@@ -68,6 +68,9 @@ import org.openide.windows.CloneableTopComponent;
  * @author  Marek Slama, Yarda Tulach
  */
 public class EmptyCESHidden extends CloneableEditorSupport {
+    static {
+        System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
+    }
 
     private Line.Set pls;
 

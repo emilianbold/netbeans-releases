@@ -60,6 +60,9 @@ import org.openide.util.lookup.*;
  * @author Petr Nejedly
  */
 public class ReusableEditorTest extends NbTestCase {
+    static {
+        System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
+    }
     CES c1, c2, c3;
     
     /**

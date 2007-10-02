@@ -60,6 +60,9 @@ import org.openide.util.lookup.*;
  */
 public class NetworkConnectionLostTest extends NbTestCase
 implements CloneableEditorSupport.Env {
+    static {
+        System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
+    }
     /** the support to work with */
     private CloneableEditorSupport support;
     /** the content of lookup of support */

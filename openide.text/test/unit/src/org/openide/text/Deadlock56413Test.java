@@ -70,6 +70,9 @@ import org.openide.util.RequestProcessor;
  * @author  Petr Nejedly
  */
 public class Deadlock56413Test extends NbTestCase implements CloneableEditorSupport.Env {
+    static {
+        System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
+    }
 
     boolean inCreateKit = false;
     boolean shouldWaitInCreate = true;

@@ -61,6 +61,9 @@ import org.openide.windows.CloneableTopComponent;
  * @author Jaroslav Tulach
  */
 public class CloneableEditorSupportPaneTest extends NbTestCase implements CloneableEditorSupport.Env {
+    static {
+        System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
+    }
     /** the support to work with */
     private CloneableEditorSupport support;
     private CloneableEditorSupport support2;

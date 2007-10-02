@@ -53,6 +53,9 @@ import org.openide.util.lookup.InstanceContent;
  */
 public class CloneableEditorSupportRedirectorTest extends NbTestCase
 implements CloneableEditorSupport.Env {
+    static {
+        System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
+    }
     /** the content of lookup of support */
     private InstanceContent ic;
     Redirector red;

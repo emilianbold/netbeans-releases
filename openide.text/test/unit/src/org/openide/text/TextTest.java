@@ -60,6 +60,9 @@ import org.netbeans.junit.NbTestCase;
  * @author  Marek Slama, Yarda Tulach
  */
 public class TextTest extends NbTestCase {
+    static {
+        System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
+    }
 
     /** Creates new TextTest */
     public TextTest(String s) {

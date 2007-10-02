@@ -58,6 +58,9 @@ import org.openide.util.Lookup;
  * @author  Petr Nejedly, Jaroslav Tulach
  */
 public class DocumentCannotBeClosedWhenAWTBlockedTest extends NbTestCase implements CloneableEditorSupport.Env {
+    static {
+        System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
+    }
     /** the support to work with */
     private CES support;
     // Env variables

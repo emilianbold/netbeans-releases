@@ -56,6 +56,9 @@ import org.openide.util.Exceptions;
  * @author  Petr Nejedly, Jaroslav Tulach
  */
 public class DocumentCannotBeClosedWhenReadLockedTest extends NbTestCase implements CloneableEditorSupport.Env {
+    static {
+        System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
+    }
     /** the support to work with */
     private CES support;
     // Env variables

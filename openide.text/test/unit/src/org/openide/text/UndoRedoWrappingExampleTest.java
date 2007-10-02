@@ -60,6 +60,9 @@ import org.openide.util.RequestProcessor;
  * @author  Jaroslav Tulach
  */
 public class UndoRedoWrappingExampleTest extends NbTestCase implements CloneableEditorSupport.Env {
+    static {
+        System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
+    }
     /** the method of manager that we are testing */
     private Method method;
     

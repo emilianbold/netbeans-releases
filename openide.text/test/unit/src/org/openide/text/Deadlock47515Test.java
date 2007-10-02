@@ -69,6 +69,9 @@ import org.openide.util.RequestProcessor;
  * @author  Petr Nejedly
  */
 public class Deadlock47515Test extends NbTestCase implements CloneableEditorSupport.Env {
+    static {
+        System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
+    }
     private Object myPrivateLock = new Object();
     
     /** the support to work with */

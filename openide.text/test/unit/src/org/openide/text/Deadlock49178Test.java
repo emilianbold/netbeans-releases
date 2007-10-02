@@ -46,11 +46,8 @@ import java.util.Date;
 import java.beans.*;
 import java.io.ByteArrayOutputStream;
 import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
 import javax.swing.text.*;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
 
@@ -60,9 +57,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 
 import org.openide.text.CloneableEditorSupport;
-import org.openide.text.FilterDocument;
 import org.openide.text.NbDocument;
-import org.openide.util.RequestProcessor;
 
 /**
  * Tries closing a document while holding a read lock and adding
@@ -73,6 +68,9 @@ import org.openide.util.RequestProcessor;
  * @author  Petr Nejedly
  */
 public class Deadlock49178Test extends NbTestCase implements CloneableEditorSupport.Env {
+    static {
+        System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
+    }
 
     boolean inWait = false;
     boolean shouldWait = true;

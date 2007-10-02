@@ -58,6 +58,9 @@ import org.openide.windows.*;
  */
 public class ReloadTest extends NbTestCase
 implements CloneableEditorSupport.Env {
+    static {
+        System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
+    }
     /** the support to work with */
     private transient CES support;
 

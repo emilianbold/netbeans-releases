@@ -57,6 +57,9 @@ import org.openide.util.Exceptions;
  */
 public class Starvation37045Test extends NbTestCase
 implements CloneableEditorSupport.Env {
+    static {
+        System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
+    }
     /** the support to work with */
     private CES support;
     // Env variables

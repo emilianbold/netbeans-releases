@@ -60,6 +60,9 @@ import org.openide.util.NbPreferences;
  * @author Radek Matous
  */
 public class PrintPreferencesTest extends NbTestCase {
+    static {
+        System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
+    }
     public PrintPreferencesTest(String testName) {
         super(testName);
     }

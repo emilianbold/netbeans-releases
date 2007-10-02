@@ -53,6 +53,9 @@ import org.netbeans.junit.*;
  * @author Jaroslav Tulach
  */
 public class NbDocumentTest extends NbTestCase {
+    static {
+        System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
+    }
 
     private StyledDocument doc = new DefaultStyledDocument();
 

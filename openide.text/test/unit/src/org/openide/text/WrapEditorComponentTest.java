@@ -60,6 +60,9 @@ import org.openide.windows.CloneableTopComponent;
  */
 public class WrapEditorComponentTest extends NbTestCase
 implements CloneableEditorSupport.Env {
+    static {
+        System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
+    }
     
     private String content = "";
     private boolean valid = true;
