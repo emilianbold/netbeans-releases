@@ -213,6 +213,9 @@ public class DesignView extends JPanel implements
         nameEditor = new NameEditor(this);
         selectionBridge = new SelectionBridge(this);
         setFocusable(true);
+        
+        // register before to get esc action first (117432)
+        ToolTipManager.sharedInstance().registerComponent(this);
         registerActions();
         errorPanel = new ErrorPanel(this);
         decorationManager = new DecorationManager(this);
@@ -224,7 +227,6 @@ public class DesignView extends JPanel implements
         initializeExternalListeners();
         notifyExternalLoadersTopComponentCreated();
         
-        ToolTipManager.sharedInstance().registerComponent(this);
         setFocusCycleRoot(true);
         setFocusTraversalKeysEnabled(false);
 
@@ -376,8 +378,10 @@ public class DesignView extends JPanel implements
         if (result == null) {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    ToolTipManager.sharedInstance().setEnabled(false);
-                    ToolTipManager.sharedInstance().setEnabled(true);
+                    if (ToolTipManager.sharedInstance().isEnabled()) {
+                        ToolTipManager.sharedInstance().setEnabled(false);
+                        ToolTipManager.sharedInstance().setEnabled(true);
+                    }
                 }
             });
         }
@@ -1307,6 +1311,14 @@ public class DesignView extends JPanel implements
         public void actionPerformed(ActionEvent e) {
             mouseHandler.cancel();
             exitPlaceHolderMode();
+            // 117432
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    ToolTipManager.sharedInstance().setEnabled(false);
+                    ToolTipManager.sharedInstance().setEnabled(true);
+                }
+            });
+            
         }
     }
     
