@@ -178,7 +178,14 @@ public class DesignerWebServiceExtImpl implements WebServiceManagerExt {
     }
     
     private Properties createAntProperties(WebServiceDescriptor wsMetadataDesc) throws URISyntaxException {
-        String wsdlFileName = new File(wsMetadataDesc.getWsdlUrl().toURI()).getAbsolutePath();
+        File wsdlFile = null;
+        try {
+            wsdlFile = new File(wsMetadataDesc.getWsdlUrl().toURI());
+        }catch (URISyntaxException ex) {
+            wsdlFile = new File(wsMetadataDesc.getWsdlUrl().getPath());
+        }
+        
+        String wsdlFileName = wsdlFile.getAbsolutePath();
         String serviceName = wsMetadataDesc.getName();
         
         Properties properties = new Properties();

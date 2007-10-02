@@ -584,7 +584,7 @@ public final class WebServiceManager {
                 if (!success) {
                     return;
                 }
-                URL wsdl = new File(wsData.getURL()).toURL();
+                URL wsdl = new File(wsData.getURL()).toURI().toURL();
                 String packageName = wsData.getPackageName();
                 if (wsData.isJaxRpcEnabled()) {
                     WebServiceDescriptor jaxRpcDescriptor = new WebServiceDescriptor(wsData.getName(), packageName, WebServiceDescriptor.JAX_RPC_TYPE, wsdl, new File(WEBSVC_HOME, wsData.getJaxRpcDescriptorPath()), svc);

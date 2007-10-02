@@ -53,6 +53,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -238,11 +239,15 @@ public class DesignerWebServiceTransferManager implements WebServiceTransferMana
             if (wsDescriptor != null) {
                 DesignerWebServiceExtData data =
                         (DesignerWebServiceExtData)wsDescriptor.getConsumerData().get(DesignerWebServiceExtImpl.CONSUMER_ID);
-                beanClassName = data.getPortToProxyBeanNameMap().get(port.getName());
+                if (data != null) {
+                    Map<String, String> proxyMap = data.getPortToProxyBeanNameMap();
+                    if (proxyMap != null)
+                        beanClassName = proxyMap.get(port.getName());
+                }
             }
             
             if (beanClassName != null) {
-                addJarReferences( (wsDescriptor.getWsType() == wsDescriptor.JAX_WS_TYPE), Util.getActiveProject(), wsDescriptor);
+                addJarReferences( (wsDescriptor.getWsType() == WebServiceDescriptor.JAX_WS_TYPE), Util.getActiveProject(), wsDescriptor);
                 return beanClassName;
             }else {
                 return "x";
@@ -317,7 +322,7 @@ public class DesignerWebServiceTransferManager implements WebServiceTransferMana
             }
             
             if (beanClassName != null) {
-                addJarReferences( (wsDescriptor.getWsType() == wsDescriptor.JAX_WS_TYPE), Util.getActiveProject(), wsDescriptor);
+                addJarReferences( (wsDescriptor.getWsType() == WebServiceDescriptor.JAX_WS_TYPE), Util.getActiveProject(), wsDescriptor);
                 return beanClassName;
             }else {
                 // XXX return something that cannot be instantiated by the designer so the drop will be rejected
