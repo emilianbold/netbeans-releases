@@ -1212,7 +1212,7 @@ public class ContainerBox extends CssBox {
                     (box.getBoxType().isNormalFlow() && (context.floats != null))) {
                     positionBox(box, context);
                 }
-
+                
                 layoutChild(box, context, true);
 
 //                if ((box.getBoxType() != BoxType.LINEBOX) &&

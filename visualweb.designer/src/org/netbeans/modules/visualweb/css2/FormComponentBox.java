@@ -1162,6 +1162,13 @@ public class FormComponentBox extends ContainerBox {
             Image image = getImage();
 
             if (image != null) {
+                // XXX #117371.
+                if (hasInitialFocus() && webform.getInitialFocusMarkCssBox() == null) {
+                    webform.setInitialFocusMarkCssBox(this);
+                    Graphics og = image.getGraphics();
+                    paintFocusWaterMark(og, 0, 0);
+                }
+                
                 transform.setToTranslation((float)(px + getX()), (float)(py + getY()));
                 ((Graphics2D)g).drawImage(image, transform, null);
             }
@@ -1258,11 +1265,10 @@ public class FormComponentBox extends ContainerBox {
         rendererPane.removeAll();
 
         // XXX #6277297. This is needed, otherwise it gets overlapped by the image.
-        // FIXME Improve the painting machinery.
-        if (hasInitialFocus()) {
-            paintFocusWaterMark(og, 0, 0);
-        }
-
+//        // FIXME Improve the painting machinery.
+//        if (hasInitialFocus()) {
+//            paintFocusWaterMark(og, 0, 0);
+//        }
         //paintFacesWatermark(og, 0, 0);
         //        String name ="foo";
         //        if (bean != null) {

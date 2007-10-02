@@ -65,6 +65,7 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
+import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -176,6 +177,9 @@ public class WebForm implements Designer {
      * The mask is painted in case the returned body element has width and height properties smaller
      * than the size of the viewport. */
     private boolean paintSizeMask;
+
+    // XXX #117371 Keeping the ref to css box with intial focus mark.
+    private WeakReference<CssBox> initialFocusMarkCssBoxWRef = new WeakReference<CssBox>(null);
     
 //    private static class JspDataObjectListener implements PropertyChangeListener {
 //        private final WebForm webForm;
@@ -3421,5 +3425,13 @@ public class WebForm implements Designer {
         y += root;
 
         return y;
+    }
+    
+    public void setInitialFocusMarkCssBox(CssBox cssBox) {
+        initialFocusMarkCssBoxWRef = new WeakReference<CssBox>(cssBox);
+    }
+    
+    public CssBox getInitialFocusMarkCssBox() {
+        return initialFocusMarkCssBoxWRef.get();
     }
 }

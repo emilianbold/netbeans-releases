@@ -254,6 +254,10 @@ public class CssBox implements Box {
 //        this.initialFocus = isFocus(getDesignBean());
 //        this.initialFocus = isFocus(getMarkupDesignBeanForCssBox(this));
         this.elementFocused = WebForm.getDomProviderService().isFocusedElement(element);
+        if (this.elementFocused) {
+            // XXX #117371, clear it here.
+            webform.setInitialFocusMarkCssBox(null);
+        }
     }
     
 
@@ -1142,6 +1146,11 @@ public class CssBox implements Box {
 
         paintBackground(g, px, py);
 
+        // XXX #117371.
+        if (hasInitialFocus() && webform.getInitialFocusMarkCssBox() == null) {
+            webform.setInitialFocusMarkCssBox(this);
+        }
+        
         // Paint children
         for (int i = 0, n = getBoxCount(); i < n; i++) {
             CssBox box = getBox(i);
@@ -1172,7 +1181,8 @@ public class CssBox implements Box {
             }
         }
 
-        if (hasInitialFocus()) {
+        // XXX #117371.
+        if (this == webform.getInitialFocusMarkCssBox()) {
             paintFocusWaterMark(g, px, py);
         }
         
@@ -1208,24 +1218,24 @@ public class CssBox implements Box {
     }
 
     protected final boolean hasInitialFocus() {
-        return elementFocused && isComponentTopBoxInLayoutHierarchy();
+        return elementFocused /*&& isComponentTopBoxInLayoutHierarchy()*/;
     }
     
-    private final boolean isComponentTopBoxInLayoutHierarchy() {
-        Element element = getElement();
-        if (element == null) {
-            return false;
-        }
-        CssBox parentBox = getParent();
-        if (parentBox == null) {
-            return false;
-        }
-        CssBox grandParent = parentBox.getParent();
-        if (grandParent == null) {
-            return true;
-        }
-        return element != parentBox.getElement();
-    }
+//    private final boolean isComponentTopBoxInLayoutHierarchy() {
+//        Element element = getElement();
+//        if (element == null) {
+//            return false;
+//        }
+//        CssBox parentBox = getParent();
+//        if (parentBox == null) {
+//            return false;
+//        }
+//        CssBox grandParent = parentBox.getParent();
+//        if (grandParent == null) {
+//            return true;
+//        }
+//        return element != parentBox.getElement();
+//    }
     
     protected final void paintFocusWaterMark(Graphics g, int x, int y) {
         Image image = Utilities.loadImage("org/netbeans/modules/visualweb/designer/resources/focus-watermark.gif"); // NOI18N
