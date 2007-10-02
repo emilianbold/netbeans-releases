@@ -163,8 +163,8 @@ public class OptionsPanel extends JPanel {
         }
         
         CategoryModel.getInstance().setCurrent(category);                
+        JComponent component = category.getComponent();                
         category.update(controllerListener, false);
-        JComponent component = category.getComponent();        
         final Dimension size = component.getSize();
         pOptions.add(component, category.getCategoryName());
         cLayout.show(pOptions, category.getCategoryName());
