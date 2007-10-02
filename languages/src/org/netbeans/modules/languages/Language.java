@@ -382,79 +382,14 @@ public class Language extends org.netbeans.api.languages.Language {
     void evaluate (
         State state, 
         List<ASTItem> path, 
-        Map<String,Set<ASTEvaluator>> evaluatorsMap                             ,Map<Object,Long> times
+        Map<String,Set<ASTEvaluator>> evaluatorsMap                             //,Map<Object,Long> times
     ) {
         featureList.evaluate (
             state, 
             path, 
-            evaluatorsMap                                                       ,times
+            evaluatorsMap                                                       //,times
         );
     }
-    
-//    public Feature getFeature (String featureName, ASTPath path) {
-//        List<Feature> r = getFeatures (featureName, path);
-//        if (r.isEmpty ()) return null;
-//        if (r.size () == 1) return r.get (0);
-//        throw new IllegalArgumentException ();
-//    }
-//    
-//    public Feature getFeature (String featureName, String id) {
-//        Map m = (Map) featuresMap.get (featureName);
-//        if (m == null) return null;
-//        Object o = m.get (id);
-//        if (o instanceof Map)
-//            o = ((Map) o).get (BLA);
-//        if (o == null) return null;
-//        if (o instanceof Feature)
-//            return (Feature) o;
-//        List<Feature> r = (List<Feature>) o;
-//        if (r.isEmpty ()) return null;
-//        if (r.size () == 1) return r.get (0);
-//        throw new IllegalArgumentException ();
-//    }
-//    
-//    public List<Feature> getFeatures (String featureName, String id) {
-//        Map m = (Map) featuresMap.get (featureName);
-//        if (m == null) return Collections.<Feature>emptyList ();
-//        Object o = m.get (id);
-//        if (o instanceof Map)
-//            o = ((Map) o).get (BLA);
-//        if (o == null) return Collections.<Feature>emptyList ();
-//        if (o instanceof Feature)
-//            return Collections.<Feature>singletonList ((Feature) o);
-//        return (List<Feature>) o;
-//    }
-//
-//    public List<Feature> getFeatures (String featureName, ASTPath path) {
-//        Map m = (Map) featuresMap.get (featureName);
-//        if (m == null) return Collections.<Feature>emptyList ();
-//        Object last = null;
-//        int i = path.size () - 1;
-//        for (; i >= 0; i--) {
-//            ASTItem item = path.get (i);
-//            String name = item instanceof ASTToken ?
-//                ((ASTToken) item).getType () :
-//                ((ASTNode) item).getNT ();
-//            Object o = m.get (name);
-//            if (m.containsKey (BLA))
-//                last = m.get (BLA);
-//            if (o instanceof Map) {
-//                m = (Map) o;
-//                continue;
-//            }
-//            if (o instanceof List)
-//                return (List<Feature>) o;
-//            if (o != null)
-//                return Collections.<Feature>singletonList ((Feature) o);
-//            if (last != null) {
-//                if (last instanceof List)
-//                    return (List<Feature>) last;
-//                 return Collections.<Feature>singletonList ((Feature) last);
-//            }
-//            break;
-//        }
-//        return Collections.<Feature>emptyList ();
-//    }
     
 
     public ASTNode parse (InputStream is) throws IOException, ParseException {

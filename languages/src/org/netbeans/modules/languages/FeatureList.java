@@ -140,7 +140,7 @@ class FeatureList {
     void evaluate (
         State state, 
         List<ASTItem> path, 
-        Map<String,Set<ASTEvaluator>> evaluatorsMap                             ,Map<Object,Long> times
+        Map<String,Set<ASTEvaluator>> evaluatorsMap                             //,Map<Object,Long> times
     ) {
         FeatureList list = this;
         for (int i = path.size () - 1; i > 0; i--) {
@@ -163,8 +163,10 @@ class FeatureList {
                             while (it3.hasNext ()) {
                                 List<Feature> featureList = it3.next ();
                                 Iterator<Feature> it4 = featureList.iterator ();
-                                while (it4.hasNext ())
+                                while (it4.hasNext ()) {                        //long time = System.currentTimeMillis ();
                                     evaluator.evaluate (state, path, it4.next ());
+                                                                                //Long l = times.get (evaluator);time = System.currentTimeMillis () - time; if (l != null) time += l.longValue (); times.put (evaluator, time);
+                                }
                             }
                         }
                     } else {
@@ -177,8 +179,8 @@ class FeatureList {
                             Feature feature =  it2.next ();
                             Iterator<ASTEvaluator> it3 = evaluators.iterator ();
                             while (it3.hasNext ()) {
-                               ASTEvaluator evaluator = it3.next ();                long time = System.currentTimeMillis ();
-                               evaluator.evaluate (state, path, feature);           Long l = times.get (evaluator);time = System.currentTimeMillis () - time; if (l != null) time += l.longValue (); times.put (evaluator, time);
+                               ASTEvaluator evaluator = it3.next ();            //long time = System.currentTimeMillis ();
+                               evaluator.evaluate (state, path, feature);       //Long l = times.get (evaluator);time = System.currentTimeMillis () - time; if (l != null) time += l.longValue (); times.put (evaluator, time);
                             }
                         }
                     }

@@ -194,25 +194,16 @@ public class ParserManagerImpl extends ParserManager {
         if (state == this.state) return;
         this.state = state;
         this.ast = root;
-        exception = null;   
-                                                                                Map<Object,Long> times = new HashMap<Object,Long> ();
+        exception = null;                                                       //Map<Object,Long> times = new HashMap<Object,Long> ();
         if (listeners != null) {
             Iterator<ParserManagerListener> it = new ArrayList<ParserManagerListener> (listeners).iterator ();
             while (it.hasNext ()) {
-                ParserManagerListener l = it.next ();
-                                                                                long start = System.currentTimeMillis ();
+                ParserManagerListener l = it.next ();                           //long start = System.currentTimeMillis ();
                 l.parsed (state, root);
-                                                                                Long t = times.get (l);
-                                                                                if (t == null) t = new Long (0);
-                                                                                times.put (l, t.longValue () + System.currentTimeMillis () - start);
+                                                                                //Long t = times.get (l);if (t == null) t = new Long (0);times.put (l, t.longValue () + System.currentTimeMillis () - start);
                 if (cancel [0]) return;
             }
-        }
-                                                                                Iterator iit = times.keySet ().iterator ();
-                                                                                while (iit.hasNext()) {
-                                                                                    Object object = iit.next();
-                                                                                    System.out.println("  Listener " + object + " : " + times.get (object));
-                                                                                }
+        }                                                                       //Iterator iit = times.keySet ().iterator ();while (iit.hasNext()) {Object object = iit.next();System.out.println("  Listener " + object + " : " + times.get (object));}
 
         if (state == State.PARSING) return;
         if (evaluators != null) {
@@ -225,18 +216,13 @@ public class ParserManagerImpl extends ParserManager {
                     e.beforeEvaluation (state, root);
                     if (cancel [0]) return;
                 }
-                                                                                times = new HashMap<Object,Long> ();
+                                                                                //times = new HashMap<Object,Long> ();
                 evaluate (
                     state, 
                     root, 
                     new ArrayList<ASTItem> (), 
-                    evaluatorsMap2                                              , times
-                );
-                                                                                iit = times.keySet ().iterator ();
-                                                                                while (iit.hasNext()) {
-                                                                                    Object object = iit.next();
-                                                                                    System.out.println("  Evaluator " + object + " : " + times.get (object));
-                                                                                }
+                    evaluatorsMap2                                              //, times
+                );                                                              //iit = times.keySet ().iterator ();while (iit.hasNext()) {Object object = iit.next();System.out.println("  Evaluator " + object + " : " + times.get (object));}
                 if (cancel [0]) return;
                 it2 = evaluators2.iterator ();
                 while (it2.hasNext ()) {
@@ -252,7 +238,7 @@ public class ParserManagerImpl extends ParserManager {
         State state, 
         ASTItem item, 
         List<ASTItem> path,
-        Map<String,Set<ASTEvaluator>> evaluatorsMap2                            , Map<Object,Long> times                                         
+        Map<String,Set<ASTEvaluator>> evaluatorsMap2                            //, Map<Object,Long> times                                         
     ) {
         path.add (item);
         try {
@@ -260,7 +246,7 @@ public class ParserManagerImpl extends ParserManager {
             l.evaluate (
                  state, 
                  path, 
-                 evaluatorsMap2                                                 , times
+                 evaluatorsMap2                                                 //, times
             );
         } catch (LanguageDefinitionNotFoundException ex) {
         }
@@ -271,7 +257,7 @@ public class ParserManagerImpl extends ParserManager {
                 state, 
                 it2.next (), 
                 path, 
-                evaluatorsMap2                                                  , times
+                evaluatorsMap2                                                  //, times
             );
         }
         path.remove (path.size () - 1);
@@ -300,27 +286,19 @@ public class ParserManagerImpl extends ParserManager {
             if (ast == null) {
                 setChange (new ParseException ("ast is null?!"));
                 return;
-            }
-                                                                                long start = System.currentTimeMillis ();
-            ast = process (ast);
-                                                                                start = System.currentTimeMillis () - start;
-                                                                                if (start > 100)
-                                                                                    System.out.println ("postprocess " + start);
+            }                                                                   //long start = System.currentTimeMillis ();
+            ast = process (ast);                                                //start = System.currentTimeMillis () - start;if (start > 100)System.out.println ("postprocess " + start);
             if (ast == null) {
                 setChange (new ParseException ("ast is null?!"));
                 return;
-            }
-                                                                                start = System.currentTimeMillis ();
-            setChange (State.OK, ast);
-                                                                                System.out.println ("fire " + (System.currentTimeMillis () - start));
+            }                                                                   //start = System.currentTimeMillis ();
+            setChange (State.OK, ast);                                          //System.out.println ("fire " + (System.currentTimeMillis () - start));
         } catch (ParseException ex) {
             if (ex.getASTNode () != null) {
                 ASTNode ast = process (ex.getASTNode ());
                 ex = new ParseException (ex, ast);
-            }
-                                                                                long start = System.currentTimeMillis ();
-            setChange (ex);
-                                                                                System.out.println ("fire " + (System.currentTimeMillis () - start));
+            }                                                                   //long start = System.currentTimeMillis ();
+            setChange (ex);                                                     //System.out.println ("fire " + (System.currentTimeMillis () - start));
             ErrorManager.getDefault ().notify (ex);
         }
     }
@@ -348,14 +326,10 @@ public class ParserManagerImpl extends ParserManager {
     private ASTNode parse () throws ParseException {
         String mimeType = (String) doc.getProperty ("mimeType");
         Language l = getLanguage (mimeType);
-        LLSyntaxAnalyser a = l.getAnalyser ();
-                                                                                long start = System.currentTimeMillis ();
+        LLSyntaxAnalyser a = l.getAnalyser ();                                  //long start = System.currentTimeMillis ();
         TokenInput input = createTokenInput ();
-        if (cancel [0]) return null;
-                                                                                System.out.println ("lex " + (System.currentTimeMillis () - start));
-                                                                                start = System.currentTimeMillis ();
-        ASTNode n = a.read (input, true, cancel);
-                                                                                System.out.println ("syntax " + (System.currentTimeMillis () - start));
+        if (cancel [0]) return null;                                            //System.out.println ("lex " + (System.currentTimeMillis () - start));start = System.currentTimeMillis ();
+        ASTNode n = a.read (input, true, cancel);                               //System.out.println ("syntax " + (System.currentTimeMillis () - start));
         return n;
     }
 

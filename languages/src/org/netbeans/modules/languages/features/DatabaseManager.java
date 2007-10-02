@@ -50,14 +50,13 @@ import javax.swing.text.Document;
 
 import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ASTPath;
+import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
 import org.netbeans.api.languages.ParserManager;
 import org.netbeans.api.languages.ParserManager.State;
-import org.netbeans.api.languages.ParserManagerListener;
 import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.SyntaxContext;
-import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language;
@@ -68,28 +67,16 @@ import org.netbeans.modules.languages.LanguagesManager;
  *
  * @author Jan Jancura
  */
-public class DatabaseManager implements ParserManagerListener {
+public class DatabaseManager {
     
-    private NbEditorDocument            doc;
-    private ParserManager               parser;
+    private NbEditorDocument            document;
 
     
     /** Creates a new instance of AnnotationManager */
-    public DatabaseManager (Document doc) {
-        
-        this.doc = (NbEditorDocument) doc;
-        parser = ParserManager.get (doc);
-        parser.addListener (this);
+    public DatabaseManager (Document document) {
+        this.document = (NbEditorDocument) document;
     }
-
-    public void parsed (State state, ASTNode root) {
-        if (root == null) return;
-        DatabaseContext databaseContext = parse (root, doc, parser);
-        if (databaseContext == null) return;
-        astNodeToDatabaseContext.put (root, databaseContext);
-        //S ystem.out.println (rootContext.getAsText ());
-    }
-
+    
     static DatabaseContext parse (
         ASTNode ast, 
         Document doc,
@@ -194,6 +181,10 @@ public class DatabaseManager implements ParserManagerListener {
     
     public static DatabaseContext getRoot (ASTNode ast) {
         return astNodeToDatabaseContext.get (ast);
+    }
+    
+    static void setRoot (ASTNode node, DatabaseContext databaseContext) {
+        astNodeToDatabaseContext.put (node, databaseContext);
     }
 }
 
