@@ -107,7 +107,6 @@ public class JaxWsClientChildren extends Children.Keys {
     }
     
     void refreshKeys(boolean downloadWsdl, String newWsdlUrl) {
-        System.out.println("newWsdlUrl = "+newWsdlUrl);
         super.addNotify();
         // copy to local wsdl first
         JAXWSClientSupport support = getJAXWSClientSupport();
@@ -132,10 +131,8 @@ public class JaxWsClientChildren extends Children.Keys {
                 if (jaxWsModelChanged) {
                     client.setWsdlUrl(newWsdlUrl);
                     FileObject xmlResourcesFo = support.getLocalWsdlFolderForClient(clientName,false);
-                    System.out.println("localWsdl = "+localWsdl);
                     if (xmlResourcesFo!=null) {
                         String localWsdlUrl = FileUtil.getRelativePath(xmlResourcesFo, localWsdl);
-                        System.out.println("localWsdlUrl = "+localWsdlUrl);
                         client.setLocalWsdlFile(localWsdlUrl);
                     }
                     
@@ -236,9 +233,12 @@ public class JaxWsClientChildren extends Children.Keys {
                 ErrorManager.getDefault().log(ex.getLocalizedMessage());
             }
             // refresh client artifacts directory due to code copletion
-            String packageName = client.getPackageName().replace(".","/"); //NOI18N
-            FileObject clientArtifactsFolder = project.getProjectDirectory().getFileObject("build/generated/wsimport/client/"+packageName); //NOI18N
-            if (clientArtifactsFolder!=null) clientArtifactsFolder.refresh();
+            String packageName = client.getPackageName();
+            if (packageName != null) {
+                packageName = packageName.replace(".","/"); //NOI18N
+                FileObject clientArtifactsFolder = project.getProjectDirectory().getFileObject("build/generated/wsimport/client/"+packageName); //NOI18N
+                if (clientArtifactsFolder!=null) clientArtifactsFolder.refresh();
+            }
         }
     }
     
