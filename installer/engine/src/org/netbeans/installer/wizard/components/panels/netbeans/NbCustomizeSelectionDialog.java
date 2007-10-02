@@ -733,7 +733,8 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
                 checkBox.setToolTipText(tooltip);
                 
                 if (product.getStatus() == Status.INSTALLED) {
-                    titleLabel.setText(titleLabel.getText() + " (Already Installed)");
+                    titleLabel.setText(StringUtils.format(
+                            LIST_INSTALLED_PRODUCT_TEXT, titleLabel.getText()));
                     
                     checkBox.setSelected(true);
                     checkBox.setEnabled(false);
@@ -832,7 +833,9 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
             "NCSD.dialog.width";
     public static final String CUSTOMIZE_DIALOG_HEIGHT_PROPERTY =
             "NCSD.dialog.height";
-    
+    public static final String LIST_INSTALLED_PRODUCT_TEXT =
+            ResourceUtils.getString(NbCustomizeSelectionDialog.class,
+            "NCSD.list.product.installed");//NOI8N
     private static final String CANCEL_ACTION_NAME =
             "evaluate.cancel"; // NOI18N
 }
