@@ -82,7 +82,7 @@ public final class JavaNode extends DataNode implements ChangeListener {
 
     private static final Image NEEDS_COMPILE = Utilities.loadImage("org/netbeans/modules/java/resources/needs-compile.png");
     
-    private final Status status;
+    private Status status;
     private final AtomicBoolean isCompiled;
 
     /** Create a node for the Java data object using the default children.
@@ -91,21 +91,10 @@ public final class JavaNode extends DataNode implements ChangeListener {
     public JavaNode (DataObject jdo, boolean isJavaSource) {
         super (jdo, Children.LEAF);
         this.setIconBaseWithExtension(isJavaSource ? JAVA_ICON_BASE : CLASS_ICON_BASE);
-        
-        if (isJavaSource) {
-            FileObject jf = jdo.getPrimaryFile();
-            
-            this.isCompiled = new AtomicBoolean(true);
-            
-            status = FileBuiltQuery.getStatus(jf);
-            
-            if (status != null) {
-                status.addChangeListener(WeakListeners.change(this, status));
-                
-                WORKER.post(new BuildStatusTask(this));
-            }
+        if (isJavaSource) {            
+            this.isCompiled = new AtomicBoolean(true);                                        
+            WORKER.post(new BuildStatusTask(this));
         } else {
-            this.status = null;
             this.isCompiled = null;
         }
     }
@@ -275,7 +264,22 @@ public final class JavaNode extends DataNode implements ChangeListener {
         }
 
         public void run() {
-            boolean newIsCompiled = node.status != null ? node.status.isBuilt() : true;
+            Status _status = null;
+            synchronized (node) {
+                _status = node.status;
+            }            
+            if (_status == null) {
+                FileObject jf = node.getDataObject().getPrimaryFile();
+                _status = FileBuiltQuery.getStatus(jf);                
+                synchronized (node) {
+                    if (_status != null && node.status == null) {
+                        node.status = _status;
+                        node.status.addChangeListener(WeakListeners.change(node, node.status));
+                    }
+                }
+            }
+            
+            boolean newIsCompiled = _status != null ? _status.isBuilt() : true;
             boolean oldIsCompiled = node.isCompiled.getAndSet(newIsCompiled);
 
             if (newIsCompiled != oldIsCompiled) {
