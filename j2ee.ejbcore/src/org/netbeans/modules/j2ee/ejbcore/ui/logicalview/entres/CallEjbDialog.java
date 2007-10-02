@@ -23,7 +23,10 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
+import javax.lang.model.element.Element;
 import javax.swing.Action;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -119,7 +122,7 @@ public class CallEjbDialog {
         String referencedClassName = _RetoucheUtil.getJavaClassFromNode(ejbNode).getQualifiedName();
 
         CallEjbGenerator generator = CallEjbGenerator.create(ref, referenceNameFromPanel, isDefaultRefName);
-        generator.addReference(
+        ElementHandle<? extends Element> elementHandle = generator.addReference(
                 referencingFO, 
                 referencingClassName, 
                 fileObject, 
@@ -129,6 +132,8 @@ public class CallEjbDialog {
                 throwExceptions, 
                 nodeProject
                 );
+        
+        ElementOpen.open(referencingFO, elementHandle);
         
         return true;
     }

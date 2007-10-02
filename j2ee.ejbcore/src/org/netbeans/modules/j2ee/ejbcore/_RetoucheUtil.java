@@ -22,8 +22,10 @@ package org.netbeans.modules.j2ee.ejbcore;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.Trees;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -35,14 +37,20 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.j2ee.common.method.MethodModel;
+import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.j2ee.common.source.GenerationUtils;
 import org.netbeans.modules.j2ee.common.source.SourceUtils;
@@ -136,7 +144,7 @@ public final class _RetoucheUtil {
         return null;
     }
     
-    public static void generateAnnotatedField(FileObject fileObject, final String className, final String annotationType,
+    public static ElementHandle<VariableElement> generateAnnotatedField(FileObject fileObject, final String className, final String annotationType,
             final String name, final String fieldType, final Map<String, String> attributes, final boolean isStatic) throws IOException {
         JavaSource javaSource = JavaSource.forFileObject(fileObject);
         javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
@@ -175,6 +183,9 @@ public final class _RetoucheUtil {
                 workingCopy.rewrite(classTree, newClassTree);
             }
         }).commit();
+
+        return getFieldHandle(javaSource, className, fieldType, name);
+        
     }
 
     public static boolean isInterface(FileObject fileObject, final ElementHandle<TypeElement> elementHandle) throws IOException {
@@ -302,4 +313,43 @@ public final class _RetoucheUtil {
         return null;
     }
 
+    @SuppressWarnings("unchecked")
+    public static ElementHandle<ExecutableElement> getMethodHandle(JavaSource javaSource, final MethodModel methodModel) throws IOException {
+
+        final ElementHandle[] result = new ElementHandle[1];
+
+        javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                Trees trees = workingCopy.getTrees();
+                MethodTree methodTree = MethodModelSupport.createMethodTree(workingCopy, methodModel);
+                Element element = trees.getElement(trees.getPath(workingCopy.getCompilationUnit(), methodTree));
+                result[0] = ElementHandle.create(element);
+            }
+        });
+
+        return result[0];
+    }
+
+    @SuppressWarnings("unchecked")
+    public static ElementHandle<VariableElement> getFieldHandle(JavaSource javaSource, final String className, final String fieldType, final String fieldName) throws IOException {
+
+        final ElementHandle[] result = new ElementHandle[1];
+
+        javaSource.runUserActionTask(new Task<CompilationController>() {
+            public void run(CompilationController controller) throws IOException {
+                controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                TypeElement typeElement = controller.getElements().getTypeElement(className);
+                for (VariableElement variable : ElementFilter.fieldsIn(typeElement.getEnclosedElements())) {
+                    if (variable.getSimpleName().contentEquals(fieldName) && fieldType.equals(getTypeName(controller, variable.asType()))) {
+                        result[0] = ElementHandle.create(variable);
+                        return;
+                    }
+                }
+            }
+        }, true);
+
+        return result[0];
+    }
+    
 }
