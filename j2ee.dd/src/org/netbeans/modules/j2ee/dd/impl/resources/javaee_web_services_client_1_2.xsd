@@ -1,26 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<!--
- The contents of this file are subject to the terms
- of the Common Development and Distribution License
- (the "License").  You may not use this file except
- in compliance with the License.
-
- You can obtain a copy of the license at
- glassfish/bootstrap/legal/CDDLv1.0.txt or
- https://glassfish.dev.java.net/public/CDDLv1.0.html.
- See the License for the specific language governing
- permissions and limitations under the License.
-
- When distributing Covered Code, include this CDDL
- HEADER in each file and include the License file at
- glassfish/bootstrap/legal/CDDLv1.0.txt.  If applicable,
- add the following below this CDDL HEADER, with the
- fields enclosed by brackets "[]" replaced with your
- own identifying information: Portions Copyright [yyyy]
- [name of copyright owner]
--->
-
 <xsd:schema xmlns="http://www.w3.org/2001/XMLSchema"
 	    targetNamespace="http://java.sun.com/xml/ns/javaee"
 	    xmlns:javaee="http://java.sun.com/xml/ns/javaee"
@@ -30,43 +8,50 @@
 	    version="1.2">
   <xsd:annotation>
     <xsd:documentation>
-      @(#)javaee_web_services_client_1_2.xsds	1.12 08/16/05
+      @(#)javaee_web_services_client_1_2.xsds	1.19 02/13/06
     </xsd:documentation>
   </xsd:annotation>
 
   <xsd:annotation>
     <xsd:documentation>
 
-      Copyright 2003-2005 Sun Microsystems, Inc.
-      4150 Network Circle
-      Santa Clara, California 95054
-      U.S.A
-      All rights reserved.
+      DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-      Sun Microsystems, Inc. has intellectual property rights
-      relating to technology described in this document. In
-      particular, and without limitation, these intellectual
-      property rights may include one or more of the U.S. patents
-      listed at http://www.sun.com/patents and one or more
-      additional patents or pending patent applications in the
-      U.S. and other countries.
+      Copyright 2003-2007 Sun Microsystems, Inc. All rights reserved.
 
-      This document and the technology which it describes are
-      distributed under licenses restricting their use, copying,
-      distribution, and decompilation. No part of this document
-      may be reproduced in any form by any means without prior
-      written authorization of Sun and its licensors, if any.
+      The contents of this file are subject to the terms of either the
+      GNU General Public License Version 2 only ("GPL") or the Common
+      Development and Distribution License("CDDL") (collectively, the
+      "License").  You may not use this file except in compliance with
+      the License. You can obtain a copy of the License at
+      https://glassfish.dev.java.net/public/CDDL+GPL.html or
+      glassfish/bootstrap/legal/LICENSE.txt.  See the License for the
+      specific language governing permissions and limitations under the
+      License.
 
-      Third-party software, including font technology, is
-      copyrighted and licensed from Sun suppliers.
+      When distributing the software, include this License Header
+      Notice in each file and include the License file at
+      glassfish/bootstrap/legal/LICENSE.txt.  Sun designates this
+      particular file as subject to the "Classpath" exception as
+      provided by Sun in the GPL Version 2 section of the License file
+      that accompanied this code.  If applicable, add the following
+      below the License Header, with the fields enclosed by brackets []
+      replaced by your own identifying information:
+      "Portions Copyrighted [year] [name of copyright owner]"
 
-      Sun, Sun Microsystems, the Sun logo, Solaris, Java, J2EE,
-      JavaServer Pages, Enterprise JavaBeans and the Java Coffee
-      Cup logo are trademarks or registered trademarks of Sun
-      Microsystems, Inc. in the U.S. and other countries.
+      Contributor(s):
 
-      Federal Acquisitions: Commercial Software - Government Users
-      Subject to Standard License Terms and Conditions.
+      If you wish your version of this file to be governed by only the
+      CDDL or only the GPL Version 2, indicate your decision by adding
+      "[Contributor] elects to include this software in this
+      distribution under the [CDDL or GPL Version 2] license."  If you
+      don't indicate a single choice of license, a recipient has the
+      option to distribute your version of this file under either the
+      CDDL, the GPL Version 2 or to extend the choice of license to its
+      licensees as provided above.  However, if you add GPL Version 2
+      code and therefore, elected the GPL Version 2 license, then the
+      option applies only if the new code is made subject to such
+      option by the copyright holder.
 
     </xsd:documentation>
   </xsd:annotation>
@@ -107,6 +92,20 @@
 
 	  </xsd:documentation>
 	</xsd:annotation>
+      </xsd:element>
+
+      <xsd:element name="enable-mtom"
+                   type="javaee:true-falseType"
+		   minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>
+
+            Used to enable or disable SOAP MTOM/XOP mechanism on the client
+	    side for a port-component.
+
+	    Not to be specified for JAX-RPC runtime
+          </xsd:documentation>
+        </xsd:annotation>
       </xsd:element>
 
       <xsd:element name="port-component-link"
@@ -188,34 +187,6 @@
 	</xsd:annotation>
       </xsd:element>
 
-      <xsd:element name="mapped-name"
-		   type="javaee:xsdStringType"
-		   minOccurs="0">
-	<xsd:annotation>
-	  <xsd:documentation>
-	    <![CDATA[
-
-	      A product specific name that this resource should be
-	      mapped to.  The name of this resource, as defined by the
-	      resource's name element or defaulted, is a name that is
-	      local to the application component using the resource.
-	      (It's a name in the JNDI java:comp/env namespace.)  Many
-	      application servers provide a way to map these local
-	      names to names of resources known to the application
-	      server.  This mapped name is often a global JNDI name,
-	      but may be a name of any form.
-
-	      Application servers are not required to support any
-	      particular form or type of mapped name, nor the ability
-	      to use mapped names.  The mapped name is
-	      product-dependent and often installation-dependent.  No
-	      use of a mapped name is portable.
-
-	      ]]>
-	  </xsd:documentation>
-	</xsd:annotation>
-      </xsd:element>
-
       <xsd:element name="service-interface"
 		   type="javaee:fully-qualified-classType">
 	<xsd:annotation>
@@ -226,6 +197,27 @@
 	    In most cases the value will be javax.xml.rpc.Service.  A JAX-RPC
 	    generated Service Interface class may also be specified.
 
+	  </xsd:documentation>
+	</xsd:annotation>
+      </xsd:element>
+
+      <xsd:element name="service-ref-type"
+		   type="javaee:fully-qualified-classType"
+		   minOccurs="0" maxOccurs="1">
+	<xsd:annotation>
+	  <xsd:documentation>
+
+	    The service-ref-type element declares the type of the service-ref
+	    element that is injected or returned when a JNDI lookup is done.
+	    This must be either a fully qualified name of Service class or
+	    the fully qualified name of service endpoint interface class.
+	    This is only used with JAX-WS runtime where the corresponding
+	    @WebServiceRef annotation can be used to denote both a Service
+	    or a Port.
+
+	    If this is not specified, then the type of service-ref element
+	    that is injected or returned when a JNDI lookup is done is
+	    always a Service interface/class.
 	  </xsd:documentation>
 	</xsd:annotation>
       </xsd:element>
@@ -319,6 +311,8 @@
 	  </xsd:element>
       </xsd:choice>
 
+      <xsd:group ref="javaee:resourceGroup"/>
+
     </xsd:sequence>
     <xsd:attribute name="id" type="xsd:ID"/>
   </xsd:complexType>
@@ -356,7 +350,7 @@
 
       <xsd:element name="handler"
                    type="javaee:service-ref_handlerType"
-		   minOccurs="0" maxOccurs="unbounded"/>
+		   minOccurs="1" maxOccurs="unbounded"/>
     </xsd:sequence>
 
     <xsd:attribute name="id" type="xsd:ID"/>
@@ -482,7 +476,11 @@
 	   URIs:
 
 	   ##SOAP11_HTTP = "http://schemas.xmlsoap.org/wsdl/soap/http"
+	   ##SOAP11_HTTP_MTOM =
+                 "http://schemas.xmlsoap.org/wsdl/soap/http?mtom=true"
            ##SOAP12_HTTP = "http://www.w3.org/2003/05/soap/bindings/HTTP/"
+           ##SOAP12_HTTP_MTOM =
+                 "http://www.w3.org/2003/05/soap/bindings/HTTP/?mtom=true"
            ##XML_HTTP = "http://www.w3.org/2004/08/wsdl/http"
 
         </xsd:documentation>
@@ -518,7 +516,9 @@
 	   alias the standard binding types:
 
 	    ##SOAP11_HTTP
+	    ##SOAP11_HTTP_MTOM
             ##SOAP12_HTTP
+            ##SOAP12_HTTP_MTOM
             ##XML_HTTP
 
 	   Other specifications could define tokens that start with ##
