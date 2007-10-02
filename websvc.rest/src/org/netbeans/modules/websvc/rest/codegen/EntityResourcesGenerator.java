@@ -81,6 +81,8 @@ public class EntityResourcesGenerator extends AbstractGenerator {
         Constants.HTTP_METHOD,
         Constants.PRODUCE_MIME,
         Constants.CONSUME_MIME,
+        Constants.QUERY_PARAM,
+        Constants.DEFAULT_VALUE,
         Constants.RESPONSE_BUILDER,
         Constants.HTTP_CONTEXT,
         Constants.URI_INFO
@@ -673,8 +675,20 @@ public class EntityResourcesGenerator extends AbstractGenerator {
         
         Object returnType = getConverterType(bean);
         
+        String[] parameters = new String[] {"start", "max"};        //NOI18N
+        Object[] paramTypes = new String[] {"int", "int"};          //NOI18N
+        String[][] paramAnnotations = new String[][] {
+            {Constants.QUERY_PARAM_ANNOTATION, Constants.DEFAULT_VALUE_ANNOTATION},
+            {Constants.QUERY_PARAM_ANNOTATION, Constants.DEFAULT_VALUE_ANNOTATION}
+        };
+        
+        Object[][] paramAnnotationAttrs = new Object[][] {
+            {"start", "0"},
+            {"max", "10"}
+        };
+         
         String bodyText = "{ try {" +
-                "return new $CONVERTER$(getEntities(), context.getAbsolute());" +
+                "return new $CONVERTER$(getEntities(start, max), context.getAbsolute());" +
                 "} finally {" +
                 "PersistenceService.getInstance().close();" +
                 "}" +
@@ -688,7 +702,8 @@ public class EntityResourcesGenerator extends AbstractGenerator {
         
         return JavaSourceHelper.addMethod(copy, tree,
                 modifiers, annotations, annotationAttrs,
-                methodName, returnType, null, null, null, null,
+                methodName, returnType, parameters, paramTypes,
+                paramAnnotations, paramAnnotationAttrs,
                 bodyText, comment);      //NOI18N
     }
     
@@ -757,7 +772,7 @@ public class EntityResourcesGenerator extends AbstractGenerator {
         
         return JavaSourceHelper.addMethod(copy, tree,
                 modifiers, annotations, annotationAttrs,
-                methodName, returnType, null, null, null, null,
+                methodName, returnType, null, null, null, null, 
                 bodyText, comment);
     }
     
@@ -771,8 +786,12 @@ public class EntityResourcesGenerator extends AbstractGenerator {
                 new String[] {getEntityClassType(bean)});
         
         String bodyText = "{" +
-                "return PersistenceService.getInstance().createQuery(\"SELECT e FROM $CLASS$ e\").getResultList();" +
+                "return PersistenceService.getInstance().createQuery(\"SELECT e FROM $CLASS$ e\")." +
+                "setFirstResult(start).setMaxResults(max).getResultList();" +
                 "}";
+        
+        String[] parameters = new String[] {"start", "max"};
+        Object[] paramTypes = new Object[] {"int", "int"};
         
         bodyText = bodyText.replace("$CLASS$", getEntityClassName(bean));
         
@@ -782,7 +801,7 @@ public class EntityResourcesGenerator extends AbstractGenerator {
         
         return JavaSourceHelper.addMethod(copy, tree,
                 modifiers, null, null,
-                "getEntities", returnType, null, null, null, null,
+                "getEntities", returnType, parameters, paramTypes, null, null,
                 bodyText, comment);
     }
     
@@ -1028,8 +1047,16 @@ public class EntityResourcesGenerator extends AbstractGenerator {
             bodyText = "{" +
                     "final $CLASS$ parent = getEntity($ID_LIST$);" +
                     "return new $RESOURCE$(context) {" +
-                    "@Override protected Collection<$SUBCLASS$> getEntities() {" +
-                    "return parent.$GETTER$();" +
+                    "@Override protected Collection<$SUBCLASS$> getEntities(int start, int max) {" +
+                    "Collection<$SUBCLASS$> result = new java.util.ArrayList<$SUBCLASS$>();" +
+                    "int index = 0;" +
+                    "for ($SUBCLASS$ e : parent.$GETTER$()) {" +
+                    "if (index >= start && (index - start) < max) {" +
+                    "result.add(e);" +
+                    "}" +
+                    "index++;" +
+                    "}" +
+                    "return result;" +
                     "}" +
                     "@Override protected void createEntity($SUBCLASS$ entity) {" +
                     "super.createEntity(entity);";
