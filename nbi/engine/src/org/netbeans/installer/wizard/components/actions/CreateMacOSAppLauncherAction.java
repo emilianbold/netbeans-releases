@@ -50,12 +50,18 @@ import org.netbeans.installer.wizard.components.WizardAction;
 public class CreateMacOSAppLauncherAction extends WizardAction {
     // Constants
     public static final String DEFAULT_TITLE = ResourceUtils.getString(
-            CreateNativeLauncherAction.class,
+            CreateMacOSAppLauncherAction.class,
             "CMALA.title"); // NOI18N
     
     public static final String DEFAULT_DESCRIPTION = ResourceUtils.getString(
-            CreateNativeLauncherAction.class,
+            CreateMacOSAppLauncherAction.class,
             "CMALA.description"); // NOI18N
+    public static final String DEFAULT_ERROR_FAILED_CREATE_LAUNCHER =
+            ResourceUtils.getString(
+            CreateMacOSAppLauncherAction.class,
+            "CMALA.error.failed.create.launcher");//NOI18N
+    public static final String ERROR_FAILED_CREATE_LAUNCHER_PROPERTY =
+            "error.failed.create.launcher";//NOI18N
     
     public static final String APP_NAME_PROPERTY =
             "nbi.macosx.application.directory.name"; // NOI18N
@@ -66,11 +72,14 @@ public class CreateMacOSAppLauncherAction extends WizardAction {
     public static final String DEFAULT_ICNS_ICON_NAME =
             "icon.icns"; //NOI18N
     
+    
     public CreateMacOSAppLauncherAction() {
         setProperty(TITLE_PROPERTY,
                 DEFAULT_TITLE);
         setProperty(DESCRIPTION_PROPERTY,
                 DEFAULT_DESCRIPTION);
+        setProperty(ERROR_FAILED_CREATE_LAUNCHER_PROPERTY,
+                DEFAULT_ERROR_FAILED_CREATE_LAUNCHER);
     }
     
     public void execute() {
@@ -192,9 +201,9 @@ public class CreateMacOSAppLauncherAction extends WizardAction {
                 
             }
         } catch (IOException e) {
-            ErrorManager.notifyError("Failed to create the app launcher", e);
+            ErrorManager.notifyError(getProperty(ERROR_FAILED_CREATE_LAUNCHER_PROPERTY), e);
         } catch (DownloadException e) {
-            ErrorManager.notifyError("Failed to create the app launcher", e);
+            ErrorManager.notifyError(getProperty(ERROR_FAILED_CREATE_LAUNCHER_PROPERTY), e);
         }
         
         LogManager.logExit("finished creating the app launcher");

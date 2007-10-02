@@ -48,6 +48,12 @@ public class CreateNativeLauncherAction extends WizardAction {
     public static final String DEFAULT_DESCRIPTION = ResourceUtils.getString(
             CreateNativeLauncherAction.class,
             "CNLA.description"); // NOI18N
+    public static final String DEFAULT_ERROR_FAILED_CREATE_LAUNCHER =
+            ResourceUtils.getString(
+            CreateNativeLauncherAction.class,
+            "CNLA.error.failed.create.launcher");//NOI18N
+    public static final String ERROR_FAILED_CREATE_LAUNCHER_PROPERTY =
+            "error.failed.create.launcher";//NOI18N
     
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
@@ -56,6 +62,8 @@ public class CreateNativeLauncherAction extends WizardAction {
                 DEFAULT_TITLE);
         setProperty(DESCRIPTION_PROPERTY,
                 DEFAULT_DESCRIPTION);
+        setProperty(ERROR_FAILED_CREATE_LAUNCHER_PROPERTY,
+                DEFAULT_ERROR_FAILED_CREATE_LAUNCHER);
     }
     
     public void execute() {
@@ -90,7 +98,8 @@ public class CreateNativeLauncherAction extends WizardAction {
                 
             }
         } catch (IOException e) {
-            ErrorManager.notifyError("Failed to create the launcher", e);
+            ErrorManager.notifyError(
+                    getProperty(ERROR_FAILED_CREATE_LAUNCHER_PROPERTY), e);
         } 
         LogManager.logExit("finished creating the native launcher");
     }

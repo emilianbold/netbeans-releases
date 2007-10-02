@@ -65,7 +65,9 @@ public class CacheEngineAction extends WizardAction {
             getWizardUi().setProgress(progress);
             Installer.cacheInstallerEngine(progress);            
         } catch (IOException e) {
-            ErrorManager.notifyCritical("Cannot cache engine", e);
+            ErrorManager.notifyCritical(ResourceUtils.getString(
+                    CacheEngineAction.class,
+                    ERROR_CANNOT_CACHE_ENGINE_KEY), e);
         } 
     }
     
@@ -83,4 +85,6 @@ public class CacheEngineAction extends WizardAction {
     public static final String DEFAULT_DESCRIPTION = ResourceUtils.getString(
             CacheEngineAction.class,
             "CEA.description"); // NOI18N
+    public static final String ERROR_CANNOT_CACHE_ENGINE_KEY = 
+            "CEA.error.cannot.cache.engine";// NOI18N
 }

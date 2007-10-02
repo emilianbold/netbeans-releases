@@ -80,6 +80,8 @@ public class PreInstallSummaryPanel extends ErrorMessagePanel {
                 DEFAULT_DOWNLOAD_SIZE_LABEL_TEXT);
         setProperty(REQUIRED_DISK_SPACE_LABEL_TEXT_PROPERTY,
                 DEFAULT_REQUIRED_DISK_SPACE_LABEL_TEXT);
+        setProperty(INSTALL_BUTTON_TEXT_PROPERTY,
+                DEFAULT_INSTALL_BUTTON_TEXT);
         
         setProperty(ERROR_NOT_ENOUGH_SPACE_PROPERTY,
                 DEFAULT_ERROR_NOT_ENOUGH_SPACE);
@@ -163,7 +165,8 @@ public class PreInstallSummaryPanel extends ErrorMessagePanel {
         // protected ////////////////////////////////////////////////////////////////
         @Override
         protected void initializeContainer() {
-            container.getNextButton().setText("&Install");
+            container.getNextButton().setText(
+                    panel.getProperty(INSTALL_BUTTON_TEXT_PROPERTY));
         }
         
         @Override
@@ -181,13 +184,18 @@ public class PreInstallSummaryPanel extends ErrorMessagePanel {
                 componentsToUninstallLabel.setVisible(true);
                 componentsToUninstallPane.setVisible(true);
                 
-                final String componentsToUninstallLabelText = panel.getProperty(COMPONENTS_TO_UNINSTALL_LABEL_TEXT_PROPERTY);
+                final String componentsToUninstallLabelText = panel.getProperty(
+                        COMPONENTS_TO_UNINSTALL_LABEL_TEXT_PROPERTY);
                 componentsToUninstallLabel.setText(componentsToUninstallLabelText);
                 
-                final String componentsToUninstallContentType = panel.getProperty(COMPONENTS_TO_UNINSTALL_CONTENT_TYPE_PROPERTY);
+                final String componentsToUninstallContentType = panel.getProperty(
+                        COMPONENTS_TO_UNINSTALL_CONTENT_TYPE_PROPERTY);
                 componentsToUninstallPane.setContentType(componentsToUninstallContentType);
                 
-                final String componentsToUninstallText = StringUtils.format(panel.getProperty(COMPONENTS_TO_UNINSTALL_TEXT_PROPERTY),org.netbeans.installer.utils.StringUtils.asString(componentsToUninstall, panel.getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY)));
+                final String componentsToUninstallText = StringUtils.format(
+                        panel.getProperty(COMPONENTS_TO_UNINSTALL_TEXT_PROPERTY),
+                        StringUtils.asString(componentsToUninstall, 
+                        panel.getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY)));
                 componentsToUninstallPane.setText(componentsToUninstallText);
             } else {
                 componentsToUninstallLabel.setVisible(false);
@@ -200,13 +208,19 @@ public class PreInstallSummaryPanel extends ErrorMessagePanel {
                 downloadSizeLabel.setVisible(true);
                 requiredDiskSpaceLabel.setVisible(true);
                 
-                final String componentsToInstallLabelText = panel.getProperty(COMPONENTS_TO_INSTALL_LABEL_TEXT_PROPERTY);
+                final String componentsToInstallLabelText = panel.getProperty(
+                        COMPONENTS_TO_INSTALL_LABEL_TEXT_PROPERTY);
                 componentsToInstallLabel.setText(componentsToInstallLabelText);
                 
-                final String componentsToInstallContentType = panel.getProperty(COMPONENTS_TO_INSTALL_CONTENT_TYPE_PROPERTY);
+                final String componentsToInstallContentType = panel.getProperty(
+                        COMPONENTS_TO_INSTALL_CONTENT_TYPE_PROPERTY);
                 componentsToInstallPane.setContentType(componentsToInstallContentType);
                 
-                final String componentsToInstallText = StringUtils.format(panel.getProperty(COMPONENTS_TO_INSTALL_TEXT_PROPERTY),org.netbeans.installer.utils.StringUtils.asString(componentsToInstall, panel.getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY)));
+                final String componentsToInstallText = StringUtils.format(
+                        panel.getProperty(COMPONENTS_TO_INSTALL_TEXT_PROPERTY),
+                        StringUtils.asString(componentsToInstall, 
+                        panel.getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY)));
+                
                 componentsToInstallPane.setText(componentsToInstallText);
                 
                 long downloadSize = 0;
@@ -219,10 +233,16 @@ public class PreInstallSummaryPanel extends ErrorMessagePanel {
                     requiredDiskSpace += component.getRequiredDiskSpace();
                 }
                 
-                final String downloadSizeLabelText = StringUtils.format(panel.getProperty(DOWNLOAD_SIZE_LABEL_TEXT_PROPERTY), StringUtils.formatSize(downloadSize));
+                final String downloadSizeLabelText = StringUtils.format(
+                        panel.getProperty(DOWNLOAD_SIZE_LABEL_TEXT_PROPERTY), 
+                        StringUtils.formatSize(downloadSize));
+                
                 downloadSizeLabel.setText(downloadSizeLabelText);
                 
-                final String requiredDiskSpaceLabelText = StringUtils.format(panel.getProperty(REQUIRED_DISK_SPACE_LABEL_TEXT_PROPERTY), StringUtils.formatSize(requiredDiskSpace));
+                final String requiredDiskSpaceLabelText = StringUtils.format(
+                        panel.getProperty(REQUIRED_DISK_SPACE_LABEL_TEXT_PROPERTY), 
+                        StringUtils.formatSize(requiredDiskSpace));
+                
                 requiredDiskSpaceLabel.setText(requiredDiskSpaceLabelText);
             } else {
                 componentsToInstallLabel.setVisible(false);
@@ -445,6 +465,9 @@ public class PreInstallSummaryPanel extends ErrorMessagePanel {
             "download.size.label.text";
     public static final String REQUIRED_DISK_SPACE_LABEL_TEXT_PROPERTY =
             "required.disk.space.label.text";
+    public static final String INSTALL_BUTTON_TEXT_PROPERTY =
+            "install.button.text";
+    
     
     public static final String ERROR_NOT_ENOUGH_SPACE_PROPERTY =
             "error.not.enough.space"; // NOI18N
@@ -492,7 +515,9 @@ public class PreInstallSummaryPanel extends ErrorMessagePanel {
     public static final String DEFAULT_REQUIRED_DISK_SPACE_LABEL_TEXT =
             ResourceUtils.getString(PreInstallSummaryPanel.class,
             "PrISP.required.disk.space.label.text");
-    
+    public static final String DEFAULT_INSTALL_BUTTON_TEXT =
+            ResourceUtils.getString(PreInstallSummaryPanel.class,
+            "PrISP.install.button.text");
     public static final String DEFAULT_ERROR_NOT_ENOUGH_SPACE =
             ResourceUtils.getString(PreInstallSummaryPanel.class,
             "PrISP.error.not.enough.space"); // NOI18N

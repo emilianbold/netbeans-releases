@@ -69,6 +69,32 @@ public class CreateBundleAction extends WizardAction {
     public static final String DEFAULT_DESCRIPTION = ResourceUtils.getString(
             CreateBundleAction.class,
             "CBA.description"); // NOI18N
+    public static final String DEFAULT_PROGRESS_CREATE_BUNDLE_TITLE = 
+            ResourceUtils.getString(CreateBundleAction.class,
+            "CBA.progress.create.bundle.title");//NOI18N
+    public static final String DEFAULT_PROGRESS_ADD_ENGINE_DETAIL = 
+            ResourceUtils.getString(CreateBundleAction.class,
+            "CBA.progress.add.engine.detail");//NOI18N
+    public static final String DEFAULT_PROGRESS_ADD_PRODUCT_DETAIL = 
+            ResourceUtils.getString(CreateBundleAction.class,
+            "CBA.progress.add.product.detail");//NOI18N
+    public static final String DEFAULT_PROGRESS_ADD_GROUP_DETAIL = 
+            ResourceUtils.getString(CreateBundleAction.class,
+            "CBA.progress.add.group.detail");//NOI18N
+    public static final String DEFAULT_ERROR_FAILED_CREATE_BUNDLE = 
+            ResourceUtils.getString(CreateBundleAction.class,
+            "CBA.error.failed.create.bundle");//NOI18N
+    
+    public static final String PROGRESS_CREATE_BUNDLE_TITLE_PROPERTY =             
+            "progress.create.bundle.title";//NOI18N
+    public static final String PROGRESS_ADD_ENGINE_DETAIL_PROPERTY = 
+            "progress.add.engine.detail";//NOI18N
+    public static final String PROGRESS_ADD_PRODUCT_DETAIL_PROPERTY = 
+            "progress.add.product.detail";//NOI18N
+    public static final String PROGRESS_ADD_GROUP_DETAIL_PROPERTY = 
+            "progress.add.group.detail";//NOI18N
+    public static final String ERROR_FAILED_CREATE_BUNDLE_PROPERTY = 
+            "error.failed.create.bundle";//NOI18N
     
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
@@ -77,6 +103,14 @@ public class CreateBundleAction extends WizardAction {
     public CreateBundleAction() {
         setProperty(TITLE_PROPERTY, DEFAULT_TITLE);
         setProperty(DESCRIPTION_PROPERTY, DEFAULT_DESCRIPTION);
+        setProperty(PROGRESS_CREATE_BUNDLE_TITLE_PROPERTY,
+                DEFAULT_PROGRESS_CREATE_BUNDLE_TITLE);
+        setProperty(PROGRESS_ADD_ENGINE_DETAIL_PROPERTY,
+                DEFAULT_PROGRESS_ADD_ENGINE_DETAIL);
+        setProperty(PROGRESS_ADD_PRODUCT_DETAIL_PROPERTY,
+                DEFAULT_PROGRESS_ADD_PRODUCT_DETAIL);
+        setProperty(PROGRESS_ADD_GROUP_DETAIL_PROPERTY,
+                DEFAULT_PROGRESS_ADD_GROUP_DETAIL);
     }
     
     public void execute() {
@@ -118,8 +152,10 @@ public class CreateBundleAction extends WizardAction {
         try {
             LogManager.indent();
             LogManager.log("... creating bundle file at " + targetFile);
-            progress.setTitle("Creating a redistributable bundle at " + targetFile);
-            progress.setDetail("Adding installer engine...");
+            progress.setTitle(StringUtils.format(
+                    getProperty(PROGRESS_CREATE_BUNDLE_TITLE_PROPERTY), targetFile));
+            progress.setDetail(StringUtils.format(
+                    getProperty(PROGRESS_ADD_ENGINE_DETAIL_PROPERTY)));
             
             engine = new JarFile(Installer.cacheInstallerEngine(new Progress()));
             output = new JarOutputStream(new FileOutputStream(targetFile));
@@ -195,8 +231,10 @@ public class CreateBundleAction extends WizardAction {
                 // check for cancel status
                 if (isCanceled()) return;
                 
-                progress.setDetail(
-                        "Adding " + product.getDisplayName() + "...");
+                progress.setDetail(StringUtils.format(
+                        getProperty(PROGRESS_ADD_PRODUCT_DETAIL_PROPERTY), 
+                        product.getDisplayName()));
+                
                 LogManager.log("... adding product : " + product.getDisplayName());
                 
                 final List<Platform> platforms = product.getPlatforms();
@@ -319,8 +357,9 @@ public class CreateBundleAction extends WizardAction {
                     continue;
                 }
                 
-                progress.setDetail(
-                        "Adding " + group.getDisplayName() + "...");
+                progress.setDetail(StringUtils.format(
+                        getProperty(PROGRESS_ADD_GROUP_DETAIL_PROPERTY), 
+                        group.getDisplayName()));                        
                 LogManager.log("... adding group : " + group.getDisplayName());
                 final String entryPrefix =
                         EngineResources.DATA_DIRECTORY + "/" +
@@ -377,13 +416,13 @@ public class CreateBundleAction extends WizardAction {
                 product.setStatus(Status.INSTALLED);
             }
         } catch (IOException e) {
-            ErrorManager.notifyError("Failed to create the bundle", e);
+            ErrorManager.notifyError(getProperty(ERROR_FAILED_CREATE_BUNDLE_PROPERTY), e);
         } catch (XMLException e) {
-            ErrorManager.notifyError("Failed to create the bundle", e);
+            ErrorManager.notifyError(getProperty(ERROR_FAILED_CREATE_BUNDLE_PROPERTY), e);
         } catch (FinalizationException e) {
-            ErrorManager.notifyError("Failed to create the bundle", e);
+            ErrorManager.notifyError(getProperty(ERROR_FAILED_CREATE_BUNDLE_PROPERTY), e);
         } catch (URISyntaxException e) {
-            ErrorManager.notifyError("Failed to create the bundle", e);
+            ErrorManager.notifyError(getProperty(ERROR_FAILED_CREATE_BUNDLE_PROPERTY), e);
         } finally {
             if (engine != null) {
                 try {

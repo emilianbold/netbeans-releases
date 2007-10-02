@@ -65,6 +65,8 @@ public class PreCreateBundleSummaryPanel extends WizardPanel {
                 DEFAULT_DOWNLOAD_SIZE_LABEL_TEXT);
         setProperty(REQUIRED_DISK_SPACE_LABEL_TEXT_PROPERTY, 
                 DEFAULT_REQUIRED_DISK_SPACE_LABEL_TEXT);
+        setProperty(CREATE_BUTTON_TEXT_PROPERTY,
+                DEFAULT_CREATE_BUTTON_TEXT);
     }
     
     @Override
@@ -131,7 +133,8 @@ public class PreCreateBundleSummaryPanel extends WizardPanel {
         // protected ////////////////////////////////////////////////////////////////
         @Override
         protected void initializeContainer() {
-            container.getNextButton().setText("&Create");
+            container.getNextButton().setText(
+                    component.getProperty(CREATE_BUTTON_TEXT_PROPERTY));
         }
         
         @Override
@@ -149,13 +152,18 @@ public class PreCreateBundleSummaryPanel extends WizardPanel {
             downloadSizeLabel.setVisible(true);
             requiredDiskSpaceLabel.setVisible(true);
             
-            final String componentsToInstallLabelText = component.getProperty(COMPONENTS_TO_BUNDLE_LABEL_TEXT_PROPERTY);
+            final String componentsToInstallLabelText = component.getProperty(
+                    COMPONENTS_TO_BUNDLE_LABEL_TEXT_PROPERTY);
             componentsToBundleLabel.setText(componentsToInstallLabelText);
             
-            final String componentsToInstallContentType = component.getProperty(COMPONENTS_TO_BUNDLE_CONTENT_TYPE_PROPERTY);
+            final String componentsToInstallContentType = component.getProperty(
+                    COMPONENTS_TO_BUNDLE_CONTENT_TYPE_PROPERTY);
             componentsToBundlePane.setContentType(componentsToInstallContentType);
             
-            final String componentsToInstallText = StringUtils.format(component.getProperty(COMPONENTS_TO_BUNDLE_TEXT_PROPERTY), StringUtils.asString(componentsToBundle, component.getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY)));
+            final String componentsToInstallText = StringUtils.format(
+                    component.getProperty(COMPONENTS_TO_BUNDLE_TEXT_PROPERTY), 
+                    StringUtils.asString(componentsToBundle,
+                    component.getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY)));
             componentsToBundlePane.setText(componentsToInstallText);
             
             long downloadSize = 0;
@@ -168,10 +176,14 @@ public class PreCreateBundleSummaryPanel extends WizardPanel {
                 requiredDiskSpace += component.getRequiredDiskSpace();
             }
             
-            final String downloadSizeLabelText = StringUtils.format(component.getProperty(DOWNLOAD_SIZE_LABEL_TEXT_PROPERTY), StringUtils.formatSize(downloadSize));
+            final String downloadSizeLabelText = StringUtils.format(
+                    component.getProperty(DOWNLOAD_SIZE_LABEL_TEXT_PROPERTY),
+                    StringUtils.formatSize(downloadSize));
             downloadSizeLabel.setText(downloadSizeLabelText);
             
-            final String requiredDiskSpaceLabelText = StringUtils.format(component.getProperty(REQUIRED_DISK_SPACE_LABEL_TEXT_PROPERTY), StringUtils.formatSize(requiredDiskSpace));
+            final String requiredDiskSpaceLabelText = StringUtils.format(
+                    component.getProperty(REQUIRED_DISK_SPACE_LABEL_TEXT_PROPERTY), 
+                    StringUtils.formatSize(requiredDiskSpace));
             requiredDiskSpaceLabel.setText(requiredDiskSpaceLabelText);
         }
         
@@ -268,6 +280,8 @@ public class PreCreateBundleSummaryPanel extends WizardPanel {
             "download.size.label.text"; // NOI18N
     public static final String REQUIRED_DISK_SPACE_LABEL_TEXT_PROPERTY =
             "required.disk.space.label.text"; // NOI18N
+    public static final String CREATE_BUTTON_TEXT_PROPERTY = 
+            "create.button.text"; // NOI18N
     
     public static final String DEFAULT_MESSAGE_TEXT =
             ResourceUtils.getString(PreCreateBundleSummaryPanel.class,
@@ -293,6 +307,10 @@ public class PreCreateBundleSummaryPanel extends WizardPanel {
     public static final String DEFAULT_REQUIRED_DISK_SPACE_LABEL_TEXT =
             ResourceUtils.getString(PreCreateBundleSummaryPanel.class,
             "PrCBSPrequired.disk.space.label.text"); // NOI18N
+    public static final String DEFAULT_CREATE_BUTTON_TEXT =
+            ResourceUtils.getString(PreCreateBundleSummaryPanel.class,
+            "PrCBSPcreate.button.text");//NOI18N
+    
     
     public static final String DEFAULT_TITLE =
             ResourceUtils.getString(PreCreateBundleSummaryPanel.class,

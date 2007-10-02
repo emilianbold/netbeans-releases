@@ -85,10 +85,12 @@ public class PostInstallSummaryPanel extends WizardPanel {
         setProperty(FAILED_TO_UNINSTALL_WARNINGS_LABEL_TEXT_PROPERTY, DEFAULT_FAILED_TO_UNINSTALL_WARNINGS_LABEL_TEXT);
         setProperty(FAILED_TO_UNINSTALL_TEXT_PROPERTY, DEFAULT_FAILED_TO_UNINSTALL_TEXT);
         setProperty(FAILED_TO_UNINSTALL_CONTENT_TYPE_PROPERTY, DEFAULT_FAILED_TO_UNINSTALL_CONTENT_TYPE);
-        setProperty(VIEW_DETAILS_BUTTON_TEXT_PROPERTY, DEFAULT_VIEW_DETAILS_BUTTON_TEXT);
+        setProperty(MESSAGE_FILES_REMAINING_PROPERTY, DEFAULT_MESSAGE_FILES_REMAINING);
+        setProperty(VIEW_DETAILS_BUTTON_TEXT_PROPERTY, DEFAULT_VIEW_DETAILS_BUTTON_TEXT);        
         setProperty(VIEW_LOG_BUTTON_TEXT_PROPERTY, DEFAULT_VIEW_LOG_BUTTON_TEXT);
         setProperty(SEND_LOG_BUTTON_TEXT_PROPERTY, DEFAULT_SEND_LOG_BUTTON_TEXT);
         setProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY, DEFAULT_COMPONENTS_LIST_SEPARATOR);
+        setProperty(ERROR_LOGFILE_UNAVAILABLE_PROPERTY, DEFAULT_ERROR_LOGFILE_UNAVAILABLE_TEXT);
         
         setProperty(TITLE_PROPERTY, DEFAULT_DIALOG_TITLE);
     }
@@ -263,7 +265,7 @@ public class PostInstallSummaryPanel extends WizardPanel {
             if (notCompletelyRemoved.size() > 0) {
                 final String text = successfullyUninstalledComponentsPane.getText();
                 successfullyUninstalledComponentsPane.setText(text + StringUtils.format(
-                        panel.getProperty(MESSAGE_FILES_REMAINING_PROPERTY),
+                        component.getProperty(MESSAGE_FILES_REMAINING_PROPERTY),
                         StringUtils.asString(notCompletelyRemoved)));
             }
             
@@ -290,7 +292,7 @@ public class PostInstallSummaryPanel extends WizardPanel {
             if (notCompletelyRemoved.size() > 0) {
                 final String text = componentsUninstalledWithWarningsPane.getText();
                 componentsUninstalledWithWarningsPane.setText(text + StringUtils.format(
-                        panel.getProperty(MESSAGE_FILES_REMAINING_PROPERTY),
+                        component.getProperty(MESSAGE_FILES_REMAINING_PROPERTY),
                         StringUtils.asString(notCompletelyRemoved)));
             }
             
@@ -555,7 +557,8 @@ public class PostInstallSummaryPanel extends WizardPanel {
                 logDialog.setVisible(true);
                 logDialog.loadLogFile();
             } else {
-                ErrorManager.notify(ErrorLevel.ERROR, "Log file is not available.");
+                ErrorManager.notify(ErrorLevel.ERROR, 
+                        component.getProperty(ERROR_LOGFILE_UNAVAILABLE_PROPERTY));
             }
         }
         
@@ -624,6 +627,8 @@ public class PostInstallSummaryPanel extends WizardPanel {
             "send.log.button.text"; // NOI18N
     public static final String COMPONENTS_LIST_SEPARATOR_PROPERTY =
             "components.list.separator"; // NOI18N
+    public static final String ERROR_LOGFILE_UNAVAILABLE_PROPERTY =
+            "error.logfile.unavailable";//NOI18N
     
     public static final String DEFAULT_MESSAGE_SUCCESS_TEXT =
             ResourceUtils.getString(PostInstallSummaryPanel.class,
@@ -712,6 +717,9 @@ public class PostInstallSummaryPanel extends WizardPanel {
     public static final String DEFAULT_COMPONENTS_LIST_SEPARATOR =
             ResourceUtils.getString(PostInstallSummaryPanel.class,
             "PoISP.components.list.separator"); // NOI18N
+    public static final String DEFAULT_ERROR_LOGFILE_UNAVAILABLE_TEXT =
+            ResourceUtils.getString(PostInstallSummaryPanel.class,
+            "PoISP.error.logfile.unavailable");//NOI18N 
     
     public static final String DEFAULT_DIALOG_TITLE =
             ResourceUtils.getString(PostInstallSummaryPanel.class,

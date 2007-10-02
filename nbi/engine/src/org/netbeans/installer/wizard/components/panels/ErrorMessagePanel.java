@@ -28,6 +28,7 @@ import javax.swing.ImageIcon;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.installer.utils.ErrorManager;
+import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.UiUtils;
 import org.netbeans.installer.utils.helper.NbiThread;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
@@ -46,7 +47,9 @@ public class ErrorMessagePanel extends WizardPanel {
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     public ErrorMessagePanel() {
-        // does nothing
+        setProperty(CANCEL_DIALOG_MESSAGE_PROPERTY, DEFAULT_CANCEL_DIALOG_MESSAGE_TEXT);
+        setProperty(CANCEL_DIALOG_TITLE_PROPERTY, DEFAULT_CANCEL_DIALOG_TITLE_TEXT);
+        setProperty(ERROR_FAILED_VERIFY_INPUT_PROPERTY,DEFAULT_ERROR_FAILED_VERIFY_INPUT_TEXT);
     }
     
     @Override
@@ -180,8 +183,8 @@ public class ErrorMessagePanel extends WizardPanel {
             }
             
             if (!UiUtils.showYesNoDialog(
-                    "Cancel",
-                    "Are you sure you want to cancel?")) {
+                    component.getProperty(CANCEL_DIALOG_TITLE_PROPERTY),
+                    component.getProperty(CANCEL_DIALOG_MESSAGE_PROPERTY))) {
                 if (validatingThread != null) {
                     validatingThread.play();
                 }
@@ -257,7 +260,8 @@ public class ErrorMessagePanel extends WizardPanel {
                 // propagate unexpected exceptions that could otherwise be handled
                 // normally
                 
-                ErrorManager.notifyError("Failed to verify input", e);
+                ErrorManager.notifyError(
+                        component.getProperty(ERROR_FAILED_VERIFY_INPUT_PROPERTY), e);
             }
         }
         
@@ -342,4 +346,22 @@ public class ErrorMessagePanel extends WizardPanel {
             }
         }
     }
+    
+    public static final String CANCEL_DIALOG_MESSAGE_PROPERTY =     
+            "cancel.dialog.message";//NOI18N
+    public static final String CANCEL_DIALOG_TITLE_PROPERTY = 
+            "cancel.dialog.title";//NOI18N
+    public static final String ERROR_FAILED_VERIFY_INPUT_PROPERTY = 
+            "error.failed.verify.input";//NOI18N
+    
+    
+    public static final String DEFAULT_CANCEL_DIALOG_MESSAGE_TEXT = 
+            ResourceUtils.getString(ErrorMessagePanel.class,
+            "EMP.cancel.dialog.message");//NOI18N
+    public static final String DEFAULT_CANCEL_DIALOG_TITLE_TEXT = 
+            ResourceUtils.getString(ErrorMessagePanel.class,
+            "EMP.cancel.dialog.title");//NOI18N
+    public static final String DEFAULT_ERROR_FAILED_VERIFY_INPUT_TEXT =
+            ResourceUtils.getString(ErrorMessagePanel.class,
+            "EMP.error.failed.input.verify");//NOI18N
 }
