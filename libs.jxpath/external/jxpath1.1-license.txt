@@ -2,6 +2,8 @@ Name: JXPath
 Version: 1.1
 License: Apache-1.1
 OSR: 4282
+Origin: http://commons.apache.org/jxpath/
+Description: XPath applies XPath  expressions to graphs of objects of all kinds: JavaBeans, Maps, Servlet contexts, DOM etc, including mixtures thereof.
 
 The Apache Software License, Version 1.1
 
