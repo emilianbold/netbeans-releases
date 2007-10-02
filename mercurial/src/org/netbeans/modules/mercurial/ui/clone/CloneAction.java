@@ -31,6 +31,7 @@ import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.mercurial.util.HgRepositoryContextCache;
 import org.netbeans.modules.mercurial.util.HgProjectUtils;
+import org.netbeans.modules.mercurial.ui.clone.Clone;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.DialogDisplayer;
@@ -76,10 +77,14 @@ public class CloneAction extends AbstractAction {
                 break;
             }
         }
+        Clone clone = new Clone(root, tmp);
+        if (!clone.showDialog()) {
+            return;
+        }
 
         final File prjFile = projFile;
         final Boolean prjIsRepos = projIsRepos;
-        final File cloneFolder = tmp;
+        final File cloneFolder = new File (clone.getOutputFileName());
         final File normalizedCloneFolder = FileUtil.normalizeFile(cloneFolder);
         
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root.getAbsolutePath());
@@ -118,7 +123,8 @@ public class CloneAction extends AbstractAction {
             };
             public void perform() {
                 try {
-                    // TODO: set prject name to <name>_clone0
+                    // TODO: We need to annotate the cloned project 
+                    // See http://qa.netbeans.org/issues/show_bug.cgi?id=112870
                     List<String> list = HgCommand.doClone(root, cloneFolder.getAbsolutePath());
                     if(list != null && !list.isEmpty()){
                         HgUtils.createIgnored(cloneFolder);
