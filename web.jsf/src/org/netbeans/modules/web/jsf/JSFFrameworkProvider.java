@@ -32,6 +32,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.dd.api.web.*;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
@@ -41,14 +42,11 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileLock;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.project.api.WebProjectLibrariesModifier;
 import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
 import org.openide.util.NbBundle;
 
@@ -105,9 +103,10 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
 
         try {
             FileObject fileObject = webModule.getDocumentBase();
-            if (jsfLibrary != null){
-                Project project = FileOwnerQuery.getOwner(fileObject);
-                WebProjectLibrariesModifier projectLibraryModifier = project.getLookup().lookup(WebProjectLibrariesModifier.class);
+            if (jsfLibrary != null 
+                    && webModule.getJavaSources() != null 
+                    && webModule.getJavaSources().length > 0){
+                
                 Library[] libraries;
                 if (jstlLibrary != null) {
                     libraries = new Library[]{jsfLibrary, jstlLibrary};
@@ -115,8 +114,11 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                 else {
                     libraries = new Library[]{jsfLibrary};
                 }
-                projectLibraryModifier.addCompileLibraries(libraries);
+                // This is a way how to add libraries to the project classpath and
+                // packed them to the war file by default.
+                ProjectClassPathModifier.addLibraries(libraries, webModule.getJavaSources()[0], ClassPath.COMPILE);
             }
+            
             ClassPath cp = ClassPath.getClassPath(fileObject, ClassPath.COMPILE);
             boolean isMyFaces = cp.findResource("org/apache/myfaces/webapp/StartupServletContextListener.class") != null; //NOI18N
             FileSystem fileSystem = webModule.getWebInf().getFileSystem();
