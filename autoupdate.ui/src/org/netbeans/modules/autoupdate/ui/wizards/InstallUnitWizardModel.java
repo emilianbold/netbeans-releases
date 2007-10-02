@@ -63,8 +63,14 @@ public class InstallUnitWizardModel extends OperationWizardModel {
     private static Set<String> approvedLicences = new HashSet<String> ();
     private InstallSupport support;
     private InstallSupport additionallySupport = null;
+    private OperationContainer<InstallSupport> updateContainer = null;
     
     /** Creates a new instance of InstallUnitWizardModel */
+    public InstallUnitWizardModel (OperationType doOperation, OperationContainer<InstallSupport> updateContainer) {
+        this.doOperation = doOperation;
+        this.updateContainer = updateContainer;
+    }
+    
     public InstallUnitWizardModel (OperationType doOperation) {
         this.doOperation = doOperation;
         assert getBaseContainer () != null : "The base container for operation " + doOperation + " must exist!";
@@ -75,6 +81,10 @@ public class InstallUnitWizardModel extends OperationWizardModel {
     }
     
     public OperationContainer getBaseContainer () {
+        if (updateContainer != null) {
+            support = updateContainer.getSupport ();
+            return updateContainer;
+        }
         OperationContainer<InstallSupport> c = null;
         switch (getOperation ()) {
         case INSTALL :

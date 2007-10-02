@@ -43,14 +43,28 @@ package org.netbeans.modules.autoupdate.ui.actions;
 
 import java.io.IOException;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.HashSet;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.autoupdate.OperationContainer;
+import org.netbeans.api.autoupdate.UpdateElement;
+import org.netbeans.api.autoupdate.UpdateManager;
+import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.api.autoupdate.UpdateUnitProvider;
 import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
+import org.netbeans.modules.autoupdate.ui.InstallUnitWizard;
 import org.netbeans.modules.autoupdate.ui.PluginManagerUI;
+import org.netbeans.modules.autoupdate.ui.Unit;
+import org.netbeans.modules.autoupdate.ui.UnitCategory;
+import org.netbeans.modules.autoupdate.ui.Utilities;
+import org.netbeans.modules.autoupdate.ui.wizards.InstallUnitWizardModel;
+import org.netbeans.modules.autoupdate.ui.wizards.OperationWizardModel.OperationType;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.WindowManager;
 
@@ -78,6 +92,13 @@ public class AutoupdateCheckScheduler {
                     RequestProcessor.getDefault ().post (doCheck, 5000);
                 }
             });
+        } else {
+            // install update checker when UI is ready (main window shown)
+            WindowManager.getDefault().invokeWhenUIReady(new Runnable () {
+                public void run () {
+                    RequestProcessor.getDefault ().post (doCheckAvailableUpdates, 5000);
+                }
+            });
         }
     }
     
@@ -93,8 +114,48 @@ public class AutoupdateCheckScheduler {
             } catch (IOException ioe) {
                 err.log (Level.INFO, ioe.getMessage (), ioe);
             }
+            RequestProcessor.getDefault ().post (doCheckAvailableUpdates);
         }
     }
+    
+    private static Runnable doCheckAvailableUpdates = new Runnable () {
+        public void run () {
+            if (SwingUtilities.isEventDispatchThread ()) {
+                RequestProcessor.getDefault ().post (doCheckAvailableUpdates);
+            }
+            // check
+            /*ProgressHandle handle = ProgressHandleFactory.createHandle (
+                    NbBundle.getMessage (AutoupdateCheckScheduler.class, "AutoupdateCheckScheduler_CheckingForUpdates"));
+            handle.setInitialDelay (0);
+            handle.start ();
+            try {*/
+            List<UpdateUnit> units = UpdateManager.getDefault ().getUpdateUnits (Utilities.getUnitTypes ());
+            List<UnitCategory> cats = Utilities.makeUpdateCategories (units, false);
+            if (cats == null || cats.isEmpty ()) {
+                return ;
+            }
+            OperationContainer oc = OperationContainer.createForUpdate ();
+            Collection<UpdateElement> updates = new HashSet<UpdateElement> ();
+            for (UnitCategory cat : cats) {
+                for (Unit u : cat.getUnits ()) {
+                    UpdateElement element = ((Unit.Update) u).getRelevantElement ();
+                    UpdateUnit unit = element.getUpdateUnit ();
+                    if (oc.canBeAdded (unit, element)) {
+                        oc.add (element);
+                        updates.add (element);
+                    }
+                }
+            }
+            /*} finally {
+                if (handle != null) {
+                    handle.finish ();
+                }
+            }*/
+            
+            // if any then notify updates
+            notifyUpdates (updates);
+        }
+    };
     
     public static boolean timeToCheck () {
         if (getReqularlyTimerTask () != null) {
@@ -195,4 +256,38 @@ public class AutoupdateCheckScheduler {
                 return 0;
         }
     }
+    
+    private static AvailableUpdatesNotification.UpdatesFlasher flasher;
+    
+    private static void notifyUpdates (final Collection<UpdateElement> elems) {
+        // Some modules found
+        Runnable onMouseClick = new Runnable () {
+            @SuppressWarnings("unchecked")
+            public void run () {
+                boolean wizardFinished = false;
+                try {
+                    OperationContainer oc = OperationContainer.createForUpdate ();
+                    oc.add (elems);
+                    wizardFinished = new InstallUnitWizard ().invokeWizard (new InstallUnitWizardModel (OperationType.UPDATE, oc));
+                } finally {
+                    if (wizardFinished) {
+                        PluginManagerUI pluginManagerUI = PluginManagerAction.getPluginManagerUI ();
+                        if (pluginManagerUI != null) {
+                            pluginManagerUI.updateUnitsChanged();
+                        }
+                        if (flasher != null) {
+                            flasher.disappear ();
+                        }
+                    } else {
+                        // store available updates for future
+                    }
+                }
+            }
+        };
+        flasher = AvailableUpdatesNotification.getFlasher (onMouseClick);
+        assert flasher != null : "Updates Flasher cannot be null.";
+        flasher.setToolTipText (NbBundle.getMessage (AutoupdateCheckScheduler.class, "AutoupdateCheckScheduler_UpdatesFound_ToolTip"));
+        flasher.startFlashing ();
+    }
+    
 }

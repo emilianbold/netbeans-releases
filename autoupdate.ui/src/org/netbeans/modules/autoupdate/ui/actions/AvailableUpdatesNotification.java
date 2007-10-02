@@ -39,49 +39,72 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.autoupdate.ui;
+package org.netbeans.modules.autoupdate.ui.actions;
 
-import java.awt.Dialog;
-import java.text.MessageFormat;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.modules.autoupdate.ui.wizards.OperationWizardModel.OperationType;
-import org.netbeans.modules.autoupdate.ui.wizards.InstallUnitWizardIterator;
-import org.netbeans.modules.autoupdate.ui.wizards.InstallUnitWizardModel;
-import org.openide.DialogDisplayer;
-import org.openide.WizardDescriptor;
-import org.openide.util.NbBundle;
+import java.awt.Component;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import org.openide.awt.StatusLineElementProvider;
+import org.openide.util.Utilities;
 
 /**
  *
- * @author Jiri Rechtacek
+ * @author  Jiri Rechtacek
  */
-public class InstallUnitWizard {
+public final class AvailableUpdatesNotification implements StatusLineElementProvider {
+
+    public Component getStatusLineElement () {
+        return getUpdatesVisualizer ();
+    }
+
+    private static UpdatesFlasher flasher = null;
     
-    private final Logger log = Logger.getLogger (this.getClass ().getName ());
-    
-    /** Creates a new instance of InstallUnitWizard */
-    public InstallUnitWizard () {}
-    
-    public boolean invokeWizard (OperationType doOperation) {
-        InstallUnitWizardModel model = new InstallUnitWizardModel (doOperation);
-        return invokeWizard (model);
+    private static Runnable onMouseClick = null;
+
+    /**
+     * Return an icon that is flashing when a new internal exception occurs. 
+     * Clicking the icon opens the regular exception dialog box. The icon
+     * disappears (is hidden) after a short period of time and the exception
+     * list is cleared.
+     *
+     * @return A flashing icon component or null if console logging is switched on.
+     */
+    private static Component getUpdatesVisualizer () {
+        if (null == flasher) {
+            ImageIcon img1 = new ImageIcon (Utilities.loadImage ("org/netbeans/modules/autoupdate/ui/resources/newUpdates.gif", false)); // NOI18N
+            assert img1 != null : "Icon cannot be null.";
+            flasher = new UpdatesFlasher (img1);
+        }
+        return flasher;
     }
     
-    public boolean invokeWizard (InstallUnitWizardModel model) {
-        WizardDescriptor.Iterator<WizardDescriptor> iterator = new InstallUnitWizardIterator (model);
-        WizardDescriptor wizardDescriptor = new WizardDescriptor (iterator);
-        wizardDescriptor.setModal (true);
+    static UpdatesFlasher getFlasher (Runnable whatRunOnMouseClick) {
+        onMouseClick = whatRunOnMouseClick;
+        return flasher;
+    }
+    
+    static class UpdatesFlasher extends FlashingIcon {
+        public UpdatesFlasher (Icon img1) {
+            super (img1);
+            DISAPPEAR_DELAY_MILLIS = -1;
+            // don't flashing by http://ui.netbeans.org/docs/ui/AutoUpdate/AutoUpdate.html
+            STOP_FLASHING_DELAY = 0;
+        }
+
+        /**
+         * User clicked the flashing icon, display the exception window.
+         */
+        protected void onMouseClick () {
+            if (onMouseClick != null) {
+                onMouseClick.run ();
+            }
+        }
         
-        wizardDescriptor.setTitleFormat (new MessageFormat(NbBundle.getMessage (InstallUnitWizard.class, "InstallUnitWizard_MessageFormat")));
-        wizardDescriptor.setTitle (NbBundle.getMessage (InstallUnitWizard.class, "InstallUnitWizard_Title"));
-        
-        Dialog dialog = DialogDisplayer.getDefault ().createDialog (wizardDescriptor);
-        dialog.setVisible (true);
-        dialog.toFront ();
-        boolean cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;
-        log.log (Level.FINE, "InstallUnitWizard returns with value " + wizardDescriptor.getValue ());
-        return !cancelled;
+        /**
+         * The flashing icon disappeared (timed-out), clear the current
+         * exception list.
+         */
+        protected void timeout () {}
     }
     
 }

@@ -144,7 +144,7 @@ public class Utilities {
         }
         logger.log(Level.FINER, "makeUpdateCategories (" + units.size () + ") returns " + res.size ());
         return res;
-        };
+    };
 
     public static List<UnitCategory> makeAvailableCategories (final List<UpdateUnit> units, boolean isNbms) {
         List<UnitCategory> res = new ArrayList<UnitCategory> ();
