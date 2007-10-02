@@ -275,7 +275,7 @@ public class ValidateBPELProject extends Task {
                 String relativePath = RelativePath.getRelativePath(this.mSourceDir, bpelFile);
                 File bpelFileInBuildDir = (File) this.mBpelFileNamesToFileInBuildDir.get(relativePath);
                 
-                if(bpelFileInBuildDir != null) {
+                if (bpelFileInBuildDir != null) {
                         if(bpelFileInBuildDir.lastModified() == bpelFile.lastModified()) {
                                 modified = false;
                         }
@@ -293,11 +293,14 @@ public class ValidateBPELProject extends Task {
 //System.out.println("333");
             }
             catch (Exception e) {
+//e.printStackTrace();
                 throw new RuntimeException("Error while trying to create BPEL Model", e);
             }
 //System.out.println("444");
             Validation validation = new Validation();
+//System.out.println("444.1");
             validation.validate((org.netbeans.modules.xml.xam.Model) model, ValidationType.COMPLETE);
+//System.out.println("444.2");
             Collection col = validation.getValidationResult();
             boolean isError = false;
 
@@ -373,15 +376,12 @@ public class ValidateBPELProject extends Task {
                 try {
                     validateBPEL(bpelFile);
                 } catch (Throwable e) {
-//System.out.println();
-//System.out.println();
-//System.out.println("---------");
-//System.out.println();
-//System.out.println();
+                  System.out.println();
+                  System.out.println("Error: " + e);
 //e.printStackTrace();
-                        if ( !mAllowBuildWithError) {
-                            throw new BuildException(e);
-                        }
+                  if ( !mAllowBuildWithError) {
+                      throw new BuildException(e);
+                  }
                 }
         }
 }

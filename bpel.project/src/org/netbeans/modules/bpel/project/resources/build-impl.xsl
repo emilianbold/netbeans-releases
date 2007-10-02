@@ -167,6 +167,7 @@ made subject to such option by the copyright holder.
                 can use them in ant tasks. for now we need to add the jars of this modules 
                 -->
       <path id="ant.task.classpath.models">
+          <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-soa-xpath.jar"/>
           <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-bpel-project.jar"/>
           <pathelement location="${{netbeans.home}}/../soa1/ant/nblib/org-netbeans-modules-bpel-project.jar"/>
           <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-bpel-model.jar"/>
@@ -181,6 +182,7 @@ made subject to such option by the copyright holder.
           <pathelement location="${{netbeans.home}}/../ide8/modules/ext/resolver-1_1_nb.jar"/> 
       </path>
       <path id="ant.task.classpath.validation">
+          <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-soa-xpath.jar"/>
           <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-bpel-core.jar"/>
           <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-bpel-project.jar"/>
           <pathelement location="${{netbeans.home}}/../soa1/ant/nblib/org-netbeans-modules-bpel-project.jar"/>

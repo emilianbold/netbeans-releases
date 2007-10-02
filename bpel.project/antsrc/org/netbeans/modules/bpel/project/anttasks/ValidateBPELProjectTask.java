@@ -150,7 +150,7 @@ public class ValidateBPELProjectTask extends Task {
             driver = antTaskClass.getMethod("setBuildDependentProjectDir", new Class[] { java.lang.String.class });
             param = new Object[] { this.mBuildDependentProjectFilesDirectory};
             driver.invoke(validateBPELObj, param);
-//System.out.println("=========");
+//System.out.println("7777");
             
             driver = antTaskClass.getMethod("execute", null);
             driver.invoke(validateBPELObj, null);                    
@@ -161,8 +161,7 @@ public class ValidateBPELProjectTask extends Task {
 //System.out.println("isErrors: " + isErrors);
          }
          catch (Throwable e) {
-//e.printStackTrace();
-                 throw new BuildException("Found error: " + e.getMessage());
+           throw new BuildException("Found error: " + e.getMessage());
          }
          if (isErrors != null && isErrors.booleanValue()) {
              if ( !mAllowBuildWithError) {
