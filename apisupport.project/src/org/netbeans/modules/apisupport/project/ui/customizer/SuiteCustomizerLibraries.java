@@ -161,8 +161,7 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     }
     
     private void refreshPlatforms() {
-        platformValue.setModel(new PlatformComponentFactory.NbPlatformListModel()); // refresh
-        platformValue.setSelectedItem(getProperties().getActivePlatform());
+        platformValue.setModel(new PlatformComponentFactory.NbPlatformListModel(getProperties().getActivePlatform())); // refresh
         platformValue.requestFocus();
     }
     

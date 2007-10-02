@@ -181,7 +181,7 @@ public final class PlatformComponentFactory {
         }
         
         // #93658: GTK needs name to render cell renderer "natively"
-        public String getName() {
+        public @Override String getName() {
             String name = super.getName();
             return name == null ? "ComboBox.renderer" : name;  // NOI18N
         }
@@ -196,8 +196,11 @@ public final class PlatformComponentFactory {
     public static class NbPlatformListModel extends AbstractListModel
             implements ComboBoxModel {
         
-        private static NbPlatform[] getSortedPlatforms() {
+        private static NbPlatform[] getSortedPlatforms(NbPlatform extra) {
             Set<NbPlatform> _platforms = NbPlatform.getPlatforms();
+            if (extra != null) {
+                _platforms.add(extra);
+            }
             NbPlatform[] platforms = _platforms.toArray(new NbPlatform[_platforms.size()]);
             Arrays.sort(platforms, new Comparator<NbPlatform>() {
                 public int compare(NbPlatform p1, NbPlatform p2) {
@@ -216,10 +219,15 @@ public final class PlatformComponentFactory {
         private Object selectedPlaf;
         
         public NbPlatformListModel() {
-            nbPlafs = getSortedPlatforms();
+            nbPlafs = getSortedPlatforms(null);
             if (nbPlafs.length > 0) {
                 selectedPlaf = nbPlafs[0];
             }
+        }
+        
+        public NbPlatformListModel(NbPlatform initiallySelected) {
+            nbPlafs = getSortedPlatforms(initiallySelected);
+            selectedPlaf = initiallySelected;
         }
         
         public int getSize() {
@@ -245,7 +253,7 @@ public final class PlatformComponentFactory {
         void removePlatform(NbPlatform plaf) {
             try {
                 NbPlatform.removePlatform(plaf);
-                nbPlafs = getSortedPlatforms(); // refresh
+                nbPlafs = getSortedPlatforms(null); // refresh
                 fireContentsChanged(this, 0, nbPlafs.length - 1);
             } catch (IOException e) {
                 // tell the user that something goes wrong
@@ -260,7 +268,7 @@ public final class PlatformComponentFactory {
                     NbPlatform.addPlatform(id, new File(destdir), /* #71629 */ def.getHarnessLocation(), label) :
                     // Installation somehow corrupted, but try to behave gracefully:
                     NbPlatform.addPlatform(id, new File(destdir), label);
-                nbPlafs = getSortedPlatforms(); // refresh
+                nbPlafs = getSortedPlatforms(null); // refresh
                 fireContentsChanged(this, 0, nbPlafs.length - 1);
                 return plaf;
             } catch (IOException e) {
@@ -490,7 +498,7 @@ public final class PlatformComponentFactory {
      */
     static final class URLListRenderer extends DefaultListCellRenderer {
         
-        public Component getListCellRendererComponent(JList list, Object value,
+        public @Override Component getListCellRendererComponent(JList list, Object value,
                 int index, boolean isSelected, boolean cellHasFocus) {
             URL u = (URL) value;
             String text = u.toExternalForm();
