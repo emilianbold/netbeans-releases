@@ -32,30 +32,33 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import org.netbeans.api.project.Project;
+import java.io.PrintWriter;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.util.Exceptions;
-import org.openide.windows.OutputWriter;
 import org.netbeans.modules.groovy.grails.settings.Settings;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 /**
  *
  * @author schmidtm
  */
 public class GrailsServerRunnable implements Runnable {
-    OutputWriter writer = null;
+    PrintWriter writer = null;
     String grailsExecutable;
     Settings settings;
-    Project project;
+    String cwdName;
     String cmd;
+    private  final Logger LOG = Logger.getLogger(GrailsServerRunnable.class.getName());
     
-    public GrailsServerRunnable(OutputWriter writer, Project project, String cmd){
+    public GrailsServerRunnable(PrintWriter writer, String cwdName, String cmd){
         this.writer = writer;
         this.settings = Settings.getInstance();
-        // FIXME: will this run on Windows as well ??? slash/backslash?
-        this.grailsExecutable = settings.getGrailsBase() + "/bin/grails";
-        this.project = project; 
+        this.cwdName = cwdName; 
         this.cmd = cmd;
+        
+        String sep = System.getProperty("file.separator");
+        this.grailsExecutable = settings.getGrailsBase() + sep + "bin"+ sep +"grails";
         }
     
     
@@ -64,13 +67,9 @@ public class GrailsServerRunnable implements Runnable {
             try {
                 NbProcessDescriptor grailsProcessDesc = new NbProcessDescriptor(grailsExecutable, cmd);
                 
-                String cwdName = "/" + project.getProjectDirectory().getPath();
-                // writer.print("Working Dir: " + cwdName + "\n");
-                
                 File cwd = new File(cwdName);
                 Process process = grailsProcessDesc.exec(null, null, cwd);
-                
-                // Process process = grailsProcessDesc.exec();
+ 
                 readOutput(process.getInputStream());
 
                 // process.waitFor();
@@ -78,31 +77,24 @@ public class GrailsServerRunnable implements Runnable {
                 Exceptions.printStackTrace(ex);
             }
         } else {
-        
-            System.out.println("Executable doesn't exist...");
+            LOG.log(Level.WARNING, "Executable doesn't exist...");
             }
     }
 
     /**
     * Parse the output.
     */
-    void readOutput(InputStream outStream) {
+    void readOutput(InputStream inStream) {
         try {
-            BufferedReader error = new BufferedReader(new InputStreamReader(outStream));
+            BufferedReader error = new BufferedReader(new InputStreamReader(inStream));
             String errString = null;
             
             while ((errString = error.readLine()) != null) {
                 writer.print(errString + "\n");
             }
                 } catch (Exception e) {
-                    System.out.println("Could not read Process output " +e);
+                    LOG.log(Level.WARNING, "Could not read Process output " +e);
                     }
     }
-    
-    
-    
-    
-    
-    
     
 }

@@ -31,8 +31,11 @@ package org.netbeans.modules.groovy.grails.api;
 import org.netbeans.api.project.Project;
 
 /**
- *
+ * @param prj
+ * @param cmd
+ * @param value
  * @author schmidtm
+ * @return 
  */
 public interface GrailsServer {
     public int runCommand(Project prj, String cmd);

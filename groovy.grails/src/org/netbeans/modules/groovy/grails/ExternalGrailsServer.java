@@ -44,24 +44,28 @@ public class ExternalGrailsServer implements GrailsServer{
 
     public int runCommand(Project prj, String cmd) {
         
-        String tabName = "Grails Server for: " + prj.getProjectDirectory().getName();
-        InputOutput io = IOProvider.getDefault().getIO(tabName, true);
-        io.select (); //Tree tab is selected
-        OutputWriter writer = io.getOut ();
-                
-        ExecutionEngine engine = ExecutionEngine.getDefault();
-        ExecutorTask exTask = engine.execute(tabName, new GrailsServerRunnable(writer, prj, cmd), io);
+        if(cmd.startsWith("create-app")) {
+            // in this case we don't have a Project yet, therefore i should be null
+            assert prj == null;
         
-        GrailsServerState serverState = prj.getLookup().lookup(GrailsServerState.class);
-        
-        serverState.setRunning(true);
-        serverState.setExTask(exTask);
-        exTask.addTaskListener(serverState);
-       
-//        if (exTask.result() == 0 ) {
-//            writer.print("Execution was successful");
-//        }
-        
+            }
+        else if(cmd.startsWith("run-app")) {
+            String tabName = "Grails Server for: " + prj.getProjectDirectory().getName();
+            InputOutput io = IOProvider.getDefault().getIO(tabName, true);
+            io.select (); //Tree tab is selected
+            OutputWriter writer = io.getOut ();
+
+            ExecutionEngine engine = ExecutionEngine.getDefault();
+
+            String cwdName = "/" + prj.getProjectDirectory().getPath();
+            ExecutorTask exTask = engine.execute(tabName, new GrailsServerRunnable(writer, cwdName, cmd), io);
+
+            GrailsServerState serverState = prj.getLookup().lookup(GrailsServerState.class);
+
+            serverState.setRunning(true);
+            serverState.setExTask(exTask);
+            exTask.addTaskListener(serverState);
+        }
         
         return 0;
     }
