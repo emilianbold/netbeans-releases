@@ -156,7 +156,7 @@ public class EntityNode extends AbstractNode implements OpenCookie {
     }
     
     public boolean canDestroy() {
-        return true;
+        return false;
     }
     
     public void destroy() throws java.io.IOException {

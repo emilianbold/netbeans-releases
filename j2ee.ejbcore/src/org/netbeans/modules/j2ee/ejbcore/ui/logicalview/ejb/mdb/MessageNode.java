@@ -36,7 +36,6 @@ import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.DeleteEJBDialog;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.EjbViewController;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
-import org.openide.actions.DeleteAction;
 import org.openide.actions.OpenAction;
 import org.openide.cookies.OpenCookie;
 import org.openide.nodes.AbstractNode;
@@ -110,7 +109,7 @@ public class MessageNode extends AbstractNode implements OpenCookie {
     }
     
     public boolean canDestroy() {
-        return true;
+        return false;
     }
     
     public void destroy() throws java.io.IOException {

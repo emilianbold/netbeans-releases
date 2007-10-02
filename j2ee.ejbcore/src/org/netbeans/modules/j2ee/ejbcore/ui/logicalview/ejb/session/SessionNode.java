@@ -123,7 +123,7 @@ public final class SessionNode extends AbstractNode implements OpenCookie {
     private void setDisplayName() {
         setDisplayName(ejbViewController.getDisplayName());
     }
-    
+
     public Action[] getActions(boolean context) {
         int nodesCount = Utilities.actionsGlobalContext().lookup(new Lookup.Template<Node>(Node.class)).allInstances().size();
         List<SystemAction> list = new ArrayList<SystemAction>();
@@ -142,7 +142,7 @@ public final class SessionNode extends AbstractNode implements OpenCookie {
     }
     
     public boolean canDestroy() {
-        return true;
+        return false;
     }
     
     public void destroy() throws IOException {
