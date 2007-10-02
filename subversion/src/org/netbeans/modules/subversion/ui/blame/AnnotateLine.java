@@ -64,7 +64,7 @@ public class AnnotateLine {
      * Returns the author of this line.
      */
     public String getAuthor() {
-        return author;
+        return author != null ? author : "";
     }
 
     /**
