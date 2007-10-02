@@ -43,6 +43,7 @@ package org.netbeans.modules.uml.core.support.umlutils;
 
 import org.netbeans.modules.uml.core.metamodel.core.constructs.PartFacade;
 import java.lang.reflect.Method;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Vector;
 import org.dom4j.Attribute;
@@ -74,6 +75,7 @@ public class PropertyDefinitionFactory implements IPropertyDefinitionFactory{
   private Document m_Doc = null;
   private Object m_ModelElement = null;
   private Hashtable<String, IPropertyDefinition> m_DefinitionMap = new Hashtable<String, IPropertyDefinition>();
+  private HashSet<String> m_NoDefinitionSet = new HashSet<String>();
   private Hashtable<String, Node> m_NodeMap = new Hashtable<String, Node>();
   private Hashtable<String, Node> m_NamedNodeMap = new Hashtable<String, Node>();
 
@@ -1264,11 +1266,19 @@ public class PropertyDefinitionFactory implements IPropertyDefinitionFactory{
       def = getFromDefinitionMap(name);
       if (def == null)
       {
+        if (m_NoDefinitionSet.contains(name)) 
+        {
+          return null;
+        }
         def = createDefinition(name);
       }
       if (def != null)
       {
         addToDefinitionMap(name, def);
+      }
+      else 
+      {
+        m_NoDefinitionSet.add(name);
       }
     }
     return def;
