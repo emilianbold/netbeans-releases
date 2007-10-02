@@ -267,6 +267,7 @@ made subject to such option by the copyright holder.
                     <attr name="position" intvalue="200"/>
                 </file>
                 <folder name="Build">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.ui.customizer.Bundle"/>
                     <attr name="position" intvalue="300"/>
                     <file name="Self.instance">
                             <attr name="instanceCreate" newvalue="org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizerBasicBrandingFactory"/>
