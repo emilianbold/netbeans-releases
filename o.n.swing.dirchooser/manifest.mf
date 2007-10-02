@@ -1,8 +1,8 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.swing.dirchooser
 OpenIDE-Module-Localizing-Bundle: org/netbeans/swing/dirchooser/Bundle.properties
+OpenIDE-Module-Layer: org/netbeans/swing/dirchooser/resources/layer.xml
 OpenIDE-Module-Specification-Version: 1.0
 OpenIDE-Module-Install: org/netbeans/swing/dirchooser/Module.class
-Main-Class: org.netbeans.swing.dirchooser.Install
 AutoUpdate-Show-In-Client: false
 
