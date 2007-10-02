@@ -157,7 +157,7 @@ public final class HDataLoader extends CndAbstractDataLoader {
         InputStreamReader isr = null;
         BufferedReader br = null;
         try {
-            if (fo.canRead() && fo.getExt().length() == 0) {
+            if ((fo.getExt().length() == 0) && fo.canRead()) {
                 isr = new InputStreamReader(fo.getInputStream());
                 br = new BufferedReader(isr);
                 String line = null;
