@@ -67,6 +67,7 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.pretty.VeryPretty;
 import org.openide.util.NbBundle;
+import static java.util.logging.Level.*;
 import static org.netbeans.modules.java.source.save.ListMatcher.*;
 import static com.sun.tools.javac.code.Flags.*;
 import static org.netbeans.modules.java.source.save.PositionEstimator.*;
@@ -2767,10 +2768,11 @@ public class CasualDiff {
             return;
         } else if (from > to || from < 0 || to < 0) {
             // #104107 - log the source when this problem occurs.
-            LOG.warning("-----\n" + origText + "-----\n");
-            LOG.warning("Illegal values: from = " + from + "; to = " + to + "." +
+            LOG.log(INFO, "-----\n" + origText + "-----\n");
+            LOG.log(INFO, "Illegal values: from = " + from + "; to = " + to + "." +
                 "Please, attach your messages.log to new issue!");
             printer.eatChars(from-to);
+            return;
         } else if (to > origText.length()) {
             // #99333, #97801: Debug message for the issues.
             LOG.severe("-----\n" + origText + "-----\n");

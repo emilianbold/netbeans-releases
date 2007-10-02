@@ -259,10 +259,10 @@ public final class CharBuffer {
     
     public void eatAwayChars(int count) {
         if (used <= 0) return;
-        used = count;
         int nCol = 0;
-        while (used > nCol && chars[used-nCol] != '\n') nCol++;
+        while (count > nCol && chars[used-nCol] != '\n') nCol++;
         col = nCol;
+        used -= nCol;
     }
     
     public void blanklines(int n) {
