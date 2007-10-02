@@ -278,6 +278,14 @@ Microsystems, Inc. All Rights Reserved.
                         <xsl:attribute name="optional">true</xsl:attribute>
                     </element>
                     <sequential>
+                        <depend> <!-- #77666 -->
+                            <xsl:attribute name="srcdir">@{srcdir}</xsl:attribute>
+                            <xsl:attribute name="destdir">@{destdir}</xsl:attribute>
+                            <xsl:attribute name="cache">${build.dir}/depcache</xsl:attribute>
+                            <classpath>
+                                <path path="@{{classpath}}"/>
+                            </classpath>
+                        </depend>
                         <javac>
                             <xsl:attribute name="srcdir">@{srcdir}</xsl:attribute>
                             <xsl:attribute name="destdir">@{destdir}</xsl:attribute>
