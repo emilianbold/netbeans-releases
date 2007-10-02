@@ -44,6 +44,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import com.sun.source.tree.*;
+import java.util.List;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
 import org.netbeans.api.java.source.*;
@@ -66,6 +67,8 @@ public class RefactoringRegressionsTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new RefactoringRegressionsTest("testRenameTypeParameterInInvocation"));
 //        suite.addTest(new RefactoringRegressionsTest("testRenameInNewClassExpressionWithSpaces"));
 //        suite.addTest(new RefactoringRegressionsTest("testMoveEmptyReturnStatement"));
+//        suite.addTest(new RefactoringRegressionsTest("testAddNewClassInvocParameter1"));
+//        suite.addTest(new RefactoringRegressionsTest("testAddNewClassInvocParameter2"));
         return suite;
     }
 
@@ -269,6 +272,120 @@ public class RefactoringRegressionsTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(method.getBody(), make.Block(Collections.<StatementTree>singletonList(make.Return(null)), false));
             }
             
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    /**
+      * http://java.netbeans.org/issues/show_bug.cgi?id=117326
+     */
+    public void testAddNewClassInvocParameter1() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package javaapplication1;\n" +
+            "\n" +
+            "import java.util.ArrayList;\n" +
+            "import java.util.Arrays;\n" +
+            "import java.util.List;\n" +
+            "\n" +
+            "public class Mnozina {\n" +
+            "    \n" +
+            "    void metoda(int a) {\n" +
+            "        List l = new ArrayList();\n" +
+            "        return;\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package javaapplication1;\n" +
+            "\n" +
+            "import java.util.ArrayList;\n" +
+            "import java.util.Arrays;\n" +
+            "import java.util.List;\n" +
+            "\n" +
+            "public class Mnozina {\n" +
+            "    \n" +
+            "    void metoda(int a) {\n" +
+            "        List l = new ArrayList(5);\n" +
+            "        return;\n" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                List<? extends StatementTree> stmts = method.getBody().getStatements();
+                VariableTree stmt = (VariableTree) stmts.get(0);
+                //ExpressionStatementTree stmt = (ExpressionStatementTree) stmts.get(0);
+                NewClassTree nct = (NewClassTree) stmt.getInitializer();
+                //NewClassTree nct = (NewClassTree) stmt.getExpression();
+                workingCopy.rewrite(nct, make.addNewClassArgument(nct, null, make.Literal(5)));
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    /**
+     * http://java.netbeans.org/issues/show_bug.cgi?id=117326
+     */
+    public void testAddNewClassInvocParameter2() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package javaapplication1;\n" +
+            "\n" +
+            "import java.util.ArrayList;\n" +
+            "import java.util.Arrays;\n" +
+            "import java.util.List;\n" +
+            "\n" +
+            "public class Mnozina {\n" +
+            "    \n" +
+            "    void metoda(int a) {\n" +
+            "        new java.util.ArrayList();\n" +
+            "        return;\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package javaapplication1;\n" +
+            "\n" +
+            "import java.util.ArrayList;\n" +
+            "import java.util.Arrays;\n" +
+            "import java.util.List;\n" +
+            "\n" +
+            "public class Mnozina {\n" +
+            "    \n" +
+            "    void metoda(int a) {\n" +
+            "        new java.util.ArrayList(5);\n" +
+            "        return;\n" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                List<? extends StatementTree> stmts = method.getBody().getStatements();
+                ExpressionStatementTree stmt = (ExpressionStatementTree) stmts.get(0);
+                NewClassTree nct = (NewClassTree) stmt.getExpression();
+                workingCopy.rewrite(nct, make.addNewClassArgument(nct, null, make.Literal(5)));
+            }
         };
         src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
