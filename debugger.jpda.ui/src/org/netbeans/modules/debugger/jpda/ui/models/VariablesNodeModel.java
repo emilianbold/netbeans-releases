@@ -38,6 +38,7 @@ import org.netbeans.api.debugger.jpda.LocalVariable;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Super;
 import org.netbeans.api.debugger.jpda.This;
+import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 import org.netbeans.spi.viewmodel.ExtendedNodeModel;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.TreeModel;
@@ -109,6 +110,15 @@ public class VariablesNodeModel implements ExtendedNodeModel {
         if (o instanceof ReturnVariable) {
             return "return "+((ReturnVariable) o).methodName()+"()";
         }
+        if (o instanceof Operation) {
+            Operation op = (Operation) o;
+            boolean isDone = op.getReturnValue() != null;
+            if (isDone) {
+                return NbBundle.getMessage(VariablesNodeModel.class, "afterOperation", op.getMethodName());
+            } else {
+                return NbBundle.getMessage(VariablesNodeModel.class, "beforeOperation", op.getMethodName());
+            }
+        }
         if (o == "lastOperations") { // NOI18N
             return NbBundle.getMessage(VariablesNodeModel.class, "lastOperationsNode");
         }
@@ -148,6 +158,15 @@ public class VariablesNodeModel implements ExtendedNodeModel {
         }
         if (o instanceof ReturnVariable) {
             return NbBundle.getMessage(VariablesNodeModel.class, "MSG_VariablesFilter_Return_descr", ((ReturnVariable) o).methodName()+"()");    // NOI18N
+        }
+        if (o instanceof Operation) {
+            Operation op = (Operation) o;
+            boolean isDone = op.getReturnValue() != null;
+            if (isDone) {
+                return NbBundle.getMessage(VariablesNodeModel.class, "afterOperation_descr", op.getMethodName());
+            } else {
+                return NbBundle.getMessage(VariablesNodeModel.class, "beforeOperation_descr", op.getMethodName());
+            }
         }
         if (o == "lastOperations") { // NOI18N
             return NbBundle.getMessage(VariablesNodeModel.class, "MSG_LastOperations_descr");
@@ -264,6 +283,7 @@ public class VariablesNodeModel implements ExtendedNodeModel {
         if (o instanceof JPDAClassType) return ;
         if (o instanceof ClassVariable) return ;
         if (o instanceof ReturnVariable) return ;
+        if (o instanceof Operation) return ;
         throw new UnknownTypeException (o);
     }
     
@@ -321,6 +341,9 @@ public class VariablesNodeModel implements ExtendedNodeModel {
         }
         if (node instanceof ClassVariable) {
             return STATIC;
+        }
+        if (node instanceof Operation) {
+            return EXPR_ARGUMENTS;
         }
         if (node instanceof ReturnVariable || node == "lastOperations") {
             return RETURN;

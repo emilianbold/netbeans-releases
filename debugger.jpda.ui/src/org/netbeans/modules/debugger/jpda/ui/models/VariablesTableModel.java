@@ -32,6 +32,7 @@ import org.netbeans.api.debugger.jpda.Super;
 import org.netbeans.api.debugger.jpda.This;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.spi.debugger.ContextProvider;
+import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 import org.netbeans.spi.debugger.ui.Constants;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.ModelListener;
@@ -72,10 +73,10 @@ public class VariablesTableModel implements TableModel, Constants {
             else
             if (row instanceof Variable)
                 return ((Variable) row).getValue ();
-            if (row == "lastOperations") { // NOI18N
-                return ""; // NOI18N
-            }
-            if (row instanceof String && ((String) row).startsWith("operationArguments ")) { // NOI18N
+            if (row instanceof Operation ||
+                row == "lastOperations" || // NOI18N
+                row instanceof String && ((String) row).startsWith("operationArguments ")) { // NOI18N
+                
                 return ""; // NOI18N
             }
         } else
@@ -113,10 +114,10 @@ public class VariablesTableModel implements TableModel, Constants {
         if (row.toString().startsWith("SubArray")) { // NOI18N
             return ""; // NOI18N
         }
-        if (row == "lastOperations") { // NOI18N
-            return ""; // NOI18N
-        }
-        if (row instanceof String && ((String) row).startsWith("operationArguments ")) { // NOI18N
+        if (row instanceof Operation ||
+            row == "lastOperations" || // NOI18N
+            row instanceof String && ((String) row).startsWith("operationArguments ")) { // NOI18N
+
             return ""; // NOI18N
         }
         throw new UnknownTypeException (row);
@@ -154,6 +155,9 @@ public class VariablesTableModel implements TableModel, Constants {
             return true;
         }
         if (row.toString().startsWith("SubArray")) {
+            return true;
+        }
+        if (row instanceof Operation) {
             return true;
         }
         throw new UnknownTypeException (row);
