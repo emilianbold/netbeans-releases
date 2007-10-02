@@ -80,9 +80,11 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
         this.watch = watch;
         
         if (watch.getExpression().length() > 0) {
-            setTypeInvalid();
-            setValueInvalid();
-            getDebugger().addPropertyChangeListener(this);
+            if (getDebugger() != null) {
+                setTypeInvalid();
+                setValueInvalid();
+                getDebugger().addPropertyChangeListener(this);
+            }
             watch.addPropertyChangeListener(this);
         } else {
             type = "";
@@ -155,9 +157,11 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
     }
     
     private void setTypeInvalid() {
-        synchronized (invalidType) {
-            invalidType[0] = true;
-            getDebugger().requestWatchType(this);
+        if (getDebugger() != null) {
+            synchronized (invalidType) {
+                invalidType[0] = true;
+                getDebugger().requestWatchType(this);
+            }
         }
     }
     
@@ -210,9 +214,11 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
     }
     
     private void setValueInvalid() {
-        synchronized (invalidValue) {
-            invalidValue[0] = true;
-            getDebugger().requestWatchValue(this);
+        if (getDebugger() != null) {
+            synchronized (invalidValue) {
+                invalidValue[0] = true;
+                getDebugger().requestWatchValue(this);
+            }
         }
     }
     

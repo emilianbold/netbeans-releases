@@ -148,12 +148,12 @@ public class AbstractVariable implements LocalVariable, Customizer {
                     // Strip a cast
                     value = value.substring(pos + 1).trim();
                 }
-                if (type.equals("char")) { // NOI18N
+                if (type.equals("char") || type.equals("unsigned char")) { // NOI18N
                     value = setValueChar(value);
                     if (value == null) { // Invalid input
                         msg = NbBundle.getMessage(AbstractVariable.class, "ERR_SetValue_Invalid_Char"); // NOI18N
                     }
-                } else if (type.equals("char *")) { // NOI18N
+                } else if (type.equals("char *") || type.equals("unsigned char *")) { // NOI18N
                     value = setValueCharStar(value);
                     if (value == null) { // Invalid input
                         msg = NbBundle.getMessage(AbstractVariable.class, "ERR_SetValue_Invalid_Char*"); // NOI18N
@@ -334,7 +334,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
         } else if (isValidPointerAddress(value)) {
             if (type.indexOf("**") != -1) { // NOI18N - double pointers always need a turner
                 return true;
-            } else if (!type.startsWith("char ")) { // NOI18N - Possibly a struct/class pointer
+            } else if (!isCharString(type)) { // Possibly a struct/class pointer
                 return true;
             }
         }
@@ -471,9 +471,10 @@ public class AbstractVariable implements LocalVariable, Customizer {
     protected int expandChildrenFromValue(AbstractVariable var) {
         String v;
         String t;
+        String rt;
         int count = 0; // we really only care if its 0 or >0
         int start, end;
-        
+
         if (var.fields.length == 0) {
             if (var.derefValue != null) {
                 v = var.derefValue;
@@ -490,6 +491,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
             }
 
             if (v != null && v.length() > 0) {
+                rt = resolveType(t);
                 if (v.charAt(0) == '{') {
                     if (GdbUtils.isArray(t)) {
                         count += parseArray(var, var.name, t, v.substring(1, v.length() - 1));
@@ -539,7 +541,8 @@ public class AbstractVariable implements LocalVariable, Customizer {
                             }
                         }
                     }
-                } else if (GdbUtils.isArray(t) && t.startsWith("char [")) { // NOI18N
+                } else if (GdbUtils.isArray(rt) && 
+                        (rt.startsWith("char [") || rt.startsWith("unsigned char ["))) { // NOI18N
                     // gdb puts them in string
                     count += parseCharArray(var, var.name, t, v.substring(1, v.length() - 1));
                 } else if (var.derefValue != null) {
@@ -571,6 +574,24 @@ public class AbstractVariable implements LocalVariable, Customizer {
         return count;
     }
     
+    private String resolveType(String t) {
+        if (getCurrentCallStackFrame() != null) {
+            String base = GdbUtils.getBaseType(t);
+            String extra;
+            
+            if (!base.equals(t)) {
+                extra = t.substring(base.length());
+            } else {
+                extra = "";
+            }
+            Object o = getCurrentCallStackFrame().getType(base);
+            if (o instanceof String) {
+                return o.toString() + extra;
+            }
+        }
+        return t;
+    }
+    
     /**
      * Check the type. Does it resolve to a char *? If so then we don't want to
      * expand it further. But if its not a char * then we (probably) do.
@@ -583,7 +604,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
             t = GdbUtils.getBaseType(t);
             if (t.equals("char") || t.equals("unsigned char")) { // NOI18N
                 return true;
-            } else {
+            } else if (getCurrentCallStackFrame() != null) {
                 Object o = getCurrentCallStackFrame().getType(t);
                 if (o instanceof String) {
                     String t2 = o.toString();
@@ -722,11 +743,12 @@ public class AbstractVariable implements LocalVariable, Customizer {
     }
     
     private int parseCharArray(AbstractVariable var, String basename, String type, String value) {
-        int pos = type.indexOf(']');
+        int start = type.indexOf('[');
+        int end = type.indexOf(']');
         int vidx = 1;
         
         try {
-            int count = Integer.parseInt(type.substring(6, pos));
+            int count = Integer.parseInt(type.substring(start + 1, end));
             for (int i = 0; i < count; i++) {
                 String val;
                 if (vidx < (value.length() - 2) && value.substring(vidx, vidx + 2).equals("\\\\")) { // NOI18N
@@ -744,8 +766,8 @@ public class AbstractVariable implements LocalVariable, Customizer {
                     val = value.substring(vidx, vidx + 1);
                     vidx++;
                 }
-                var.addField(new AbstractField(var, basename + "[" + i + "]", "char", // NOI18N
-                    '\'' + val + '\''));
+                var.addField(new AbstractField(var, basename + "[" + i + "]", // NOI18N
+                    type.substring(0, start).trim(), '\'' + val + '\''));
             }
             return count;
         } catch (NumberFormatException nfe) {
@@ -764,6 +786,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
         int count = 0;
         int nextbrace = type.indexOf('[', rbpos);
         String extra;
+        
         if (nextbrace == -1) {
             extra = "";
         } else {

@@ -690,6 +690,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     } catch (NumberFormatException ex) {
                     }
                 }
+//            } else if (watchValueMap.get(Integer.valueOf(token)) != null) {
+//                System.err.println("");
             }
         }
     }
