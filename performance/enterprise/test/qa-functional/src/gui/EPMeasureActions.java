@@ -41,7 +41,7 @@ public class EPMeasureActions  {
         suite.addTest(new AddNewBpelProcess("measureTime", "Add New Bpel Process")); 
 
         suite.addTest(new OpenSchemaView("testOpenSchemaView", "Open Schema View")); 
-        suite.addTest(new OpenSchemaView("testOpenComplexSchemaView", "Open Complex Schema View"));
+
 //TODO it's the same as SwitchSchemaView, isn't it ?                                     suite.addTest(new SchemaViewSwitchTest("measureTime", "Schema View Switch"));
         
         suite.addTest(new BuildComplexProject("measureTime", "Build Complex Project"));
@@ -58,6 +58,7 @@ public class EPMeasureActions  {
          suite.addTest(new OpenBPELproject("measureTime","OpenBPELproject"));
 
         suite.addTest(new StartAppserver("measureTime","Start Appserver"));
+        suite.addTest(new OpenSchemaView("testOpenComplexSchemaView", "Open Complex Schema View"));
         return suite;
     }
     
