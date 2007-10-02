@@ -29,11 +29,15 @@ import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 import org.w3c.dom.Document;
 import org.xml.sax.*;
 import org.netbeans.api.xml.cookies.ValidateXMLCookie;
 import org.netbeans.api.xml.cookies.CheckXMLCookie;
+import org.netbeans.modules.xml.api.XmlFileEncodingQueryImpl;
+import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.netbeans.spi.xml.cookies.*;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -276,6 +280,12 @@ public class JSFConfigDataObject extends MultiDataObject
     }
     org.openide.nodes.CookieSet getCookieSet0() {
         return getCookieSet();
+    }
+
+    @Override
+    public Lookup getLookup() {
+        getCookieSet().assign(FileEncodingQueryImplementation.class, XmlFileEncodingQueryImpl.singleton());
+        return getCookieSet().getLookup();
     }
     
     public static class J2eeErrorHandler implements ErrorHandler {
