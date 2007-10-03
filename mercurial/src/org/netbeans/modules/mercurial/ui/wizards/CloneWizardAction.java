@@ -53,37 +53,7 @@ public final class CloneWizardAction extends CallableSystemAction implements Cha
         if (!cancelled) {
             final String repository = (String) wizardDescriptor.getProperty("repository"); // NOI18N
             final String directory = (String) wizardDescriptor.getProperty("directory"); // NOI18N
-            RequestProcessor rp = Mercurial.getInstance().getRequestProcessor();
-            HgProgressSupport support = new HgProgressSupport() {
-                public void perform() {
-                    try {
-                        List<String> list = HgCommand.doClone(repository, directory);
-                        if(list != null && !list.isEmpty()){
-                            //HgUtils.createIgnored(directory);
-                            HgUtils.outputMercurialTabInRed(
-                                    NbBundle.getMessage(CloneAction.class,
-                                    "MSG_CLONE_TITLE")); // NOI18N
-                            HgUtils.outputMercurialTabInRed(
-                                    NbBundle.getMessage(CloneAction.class,
-                                    "MSG_CLONE_TITLE_SEP")); // NOI18N
-                            HgUtils.outputMercurialTab(list);
-
-                            HgUtils.outputMercurialTabInRed(
-                                    NbBundle.getMessage(CloneAction.class,
-                                    "MSG_EXTERNAL_CLONE_FROM", repository)); // NOI18N
-                            HgUtils.outputMercurialTabInRed(
-                                    NbBundle.getMessage(CloneAction.class,
-                                    "MSG_EXTERNAL_CLONE_TO", directory)); // NOI18N
-                            HgUtils.outputMercurialTab(""); // NOI18N
-                        }
-                    } catch (HgException ex) {
-                        NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
-                        DialogDisplayer.getDefault().notifyLater(e);
-                    }
-                }
-            };
-            support.start(rp, null, org.openide.util.NbBundle.getMessage(CloneWizardAction.class, "LBL_Clone_Progress")); // NOI18N
-        }
+            CloneAction.performClone(repository, directory, true, null);
     }
     
     public void stateChanged(ChangeEvent e) {
