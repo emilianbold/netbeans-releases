@@ -540,45 +540,51 @@ final class MIMESupport extends Object {
             internalClose();
         }
 
-        public int read() throws IOException {
-            if (eof) {
-                return -1;
-            }
-
-            int c;
-            int n;
-
-            if (pos < len) {
-                c = buffer[pos++];
-                c = (c < 0) ? (c + 256) : c;
-
-                return c;
-            }
-
-            int buflen = (len > 0) ? (len * 2) : 256;
-            byte[] buf = new byte[buflen];
-
+       private int readIntoBuffer(int blen) throws IOException {
+            int growingBufLen = blen + pos;
+            byte[] buf = new byte[len + growingBufLen];
             if (len > 0) {
                 System.arraycopy(buffer, 0, buf, 0, len);
             }
-
-            n = inputStream.read(buf, len, buflen - len);
-
-            if (n <= 0) {
-                eof = true;
-
-                return -1;
-            }
-
+            int readLen = inputStream.read(buf, len, growingBufLen);
             buffer = buf;
-            len += n;
-
-            c = buffer[pos++];
-            c = (c < 0) ? (c + 256) : c;
-
-            return c;
+            len += (readLen > 0) ? readLen : 0;
+            eof = (readLen < pos) ? true : false;
+            return Math.min(readLen, blen);
         }
+        
+        @Override
+        public int read(byte[] b, int off, int blen) throws IOException {
+            int retval = -1;
+            if (!eof) {
+                boolean isCached = (pos + blen <= len);
+                if (isCached) {
+                    retval = blen;
+                } else {
+                    retval = readIntoBuffer(blen);
+                }
+                if (retval > 0) {
+                    System.arraycopy(buffer, pos, b, off, retval);
+                    pos += retval;
+                }                
+            }
+            return retval;
+        }
+        
 
+        public int read() throws IOException {
+            int retval = -1;            
+            if (!eof) {
+                boolean isCached = (pos + 1 <= len);
+                retval = (isCached) ? 1 : readIntoBuffer(1);
+                if (retval > 0) {
+                    retval = buffer[pos++];
+                    retval = (retval < 0) ? (retval + 256) : retval;
+                }
+            }
+            return retval;
+        }
+        
         void cacheToStart() {
             pos = 0;
             eof = false;
