@@ -103,9 +103,8 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
 
         try {
             FileObject fileObject = webModule.getDocumentBase();
-            if (jsfLibrary != null 
-                    && webModule.getJavaSources() != null 
-                    && webModule.getJavaSources().length > 0){
+            FileObject[] javaSources = webModule.getJavaSources();
+            if (jsfLibrary != null  && javaSources.length > 0) {
                 
                 Library[] libraries;
                 if (jstlLibrary != null) {
@@ -116,7 +115,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                 }
                 // This is a way how to add libraries to the project classpath and
                 // packed them to the war file by default.
-                ProjectClassPathModifier.addLibraries(libraries, webModule.getJavaSources()[0], ClassPath.COMPILE);
+                ProjectClassPathModifier.addLibraries(libraries, javaSources[0], ClassPath.COMPILE);
             }
             
             ClassPath cp = ClassPath.getClassPath(fileObject, ClassPath.COMPILE);
