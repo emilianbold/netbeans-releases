@@ -28,11 +28,11 @@ Microsystems, Inc. All Rights Reserved.
         <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/antlr.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/commons-beanutils.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/commons-digester.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/commons-fileupload.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/commons-logging.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/commons-validator.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/jakarta-oro.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.web.struts/modules/ext/struts/struts.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.libs.commons_fileupload/modules/ext/commons-fileupload-1.0.jar!/</resource>
     </volume>
     <volume>
         <type>javadoc</type>
