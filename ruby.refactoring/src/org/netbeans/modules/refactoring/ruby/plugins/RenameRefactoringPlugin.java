@@ -360,7 +360,9 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
         }
         
         // TODO
-        System.out.println("TODO - look for variable clashes etc");
+//        System.out.println("TODO - look for variable clashes etc");
+        
+        
 //        if (kind.isClass() && !((TypeElement) element).getNestingKind().isNested()) {
 //            if (doCheckName) {
 //                String oldfqn = RetoucheUtils.getQualifiedName(treePathHandle);
@@ -416,10 +418,12 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
         
         Problem checkProblem = null;
         int steps = 0;
-        if (overriddenByMethods != null)
+        if (overriddenByMethods != null) {
             steps += overriddenByMethods.size();
-        if (overridesMethods != null)
+        }
+        if (overridesMethods != null) {
             steps += overridesMethods.size();
+        }
         
         fireProgressListenerStart(refactoring.PARAMETERS_CHECK, 8 + 3*steps);
         
@@ -431,7 +435,9 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
         String msg;
         
         // TODO - check more parameters
-        System.out.println("TODO - need to check parameters for hiding etc.");
+        //System.out.println("TODO - need to check parameters for hiding etc.");
+        
+        
 //        if (treePathHandle.getKind() == ElementKind.METHOD) {
 //            checkProblem = checkMethodForOverriding((ExecutableElement)element, refactoring.getNewName(), checkProblem, info);
 //            fireProgressListenerStep();
@@ -488,7 +494,7 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
                 
                 public void run(CompilationController info) throws Exception {
                     // TODO if getSearchInComments I -should- search all files
-                    System.out.println("TODO - compute a full set of files to be checked... for now just lamely using the project files");
+//                    System.out.println("TODO - compute a full set of files to be checked... for now just lamely using the project files");
                     if (treePathHandle.getKind() == ElementKind.VARIABLE || treePathHandle.getKind() == ElementKind.PARAMETER) {
                         // For local variables, only look in the current file!
                         set.add(info.getFileObject());
@@ -544,8 +550,9 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
     private Set<RubyElementCtx> allMethods;
     
     public Problem prepare(RefactoringElementsBag elements) {
-        if (treePathHandle == null)
+        if (treePathHandle == null) {
             return null;
+        }
         Set<FileObject> a = getRelevantFiles();
         fireProgressListenerStart(ProgressEvent.START, a.size());
         if (!a.isEmpty()) {
@@ -799,7 +806,7 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
                     }
                     int start = 0;
                     int end = 0;
-                    String desc = "Parse error in file which contains " + oldName + " reference - skipping it"; 
+                    String desc = NbBundle.getMessage(RenameRefactoringPlugin.class, "ParseErrorFile", oldName);
                     List<Error> errors = workingCopy.getDiagnostics();
                     if (errors.size() > 0) {
                         for (Error e : errors) {
@@ -888,7 +895,7 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
                                 }
                                 PositionRef startPos = ces.createPositionRef(start, Bias.Forward);
                                 PositionRef endPos = ces.createPositionRef(end, Bias.Forward);
-                                String desc = "Change comment";
+                                String desc = getString("ChangeComment");
                                 Difference diff = new Difference(Difference.Kind.CHANGE, startPos, endPos, oldName, newName, desc);
                                 diffs.add(diff);
                             }
@@ -911,25 +918,25 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
             if (desc == null) {
                 // TODO - insert "method call", "method definition", "class definition", "symbol", "attribute" etc. and from and too?
                 if (node instanceof MethodDefNode) {
-                    desc = "Update method definition";
+                    desc = getString("UpdateMethodDef");
                 } else if (AstUtilities.isCall(node)) {
-                    desc = "Update method call";
+                    desc = getString("UpdateCall");
                 } else if (node instanceof SymbolNode) {
-                    desc = "Update symbol reference";
+                    desc = getString("UpdateSymbol");
                 } else if (node instanceof ClassNode || node instanceof SClassNode) {
-                    desc = "Update class definition";
+                    desc = getString("UpdateClassDef");
                 } else if (node instanceof ModuleNode) {
-                    desc = "Update module definition";
+                    desc = getString("UpdateModule");
                 } else if (node instanceof LocalVarNode || node instanceof LocalAsgnNode || node instanceof DVarNode || node instanceof DAsgnNode) {
-                    desc = "Update local variable definition";
+                    desc = getString("UpdateLocalvar");
                 } else if (node instanceof GlobalVarNode || node instanceof GlobalAsgnNode) {
-                    desc = "Update global variable reference";
+                    desc = getString("UpdateGlobal");
                 } else if (node instanceof InstVarNode || node instanceof InstAsgnNode) {
-                    desc = "Update instance variable reference";
+                    desc = getString("UpdateInstance");
                 } else if (node instanceof ClassVarNode || node instanceof ClassVarDeclNode || node instanceof ClassVarAsgnNode) {
-                    desc = "Update class variable reference";
+                    desc = getString("UpdateClassvar");
                 } else {
-                    desc = "Update reference to " + oldCode;
+                    desc = NbBundle.getMessage(RenameRefactoringPlugin.class, "UpdateRef", oldCode);
                 }
             }
 
@@ -1031,7 +1038,7 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
                 // "foo" method name!
                 if (((ArgumentNode)node).getName().equals(name)) {
                     RubyElementCtx matchCtx = new RubyElementCtx(fileCtx, node);
-                    rename(node, name, null, "Rename parameter");
+                    rename(node, name, null, getString("RenameParam"));
                 }
 // I don't have alias nodes within a method, do I?                
 //            } else if (node instanceof AliasNode) { 
@@ -1043,7 +1050,7 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
             } else if (node instanceof LocalVarNode || node instanceof LocalAsgnNode) {
                 if (((INameNode)node).getName().equals(name)) {
                     RubyElementCtx matchCtx = new RubyElementCtx(fileCtx, node);
-                    rename(node, name, null, "Rename local variable");
+                    rename(node, name, null, getString("UpdateLocalvar"));
                 }
             } else if (node instanceof DVarNode || node instanceof DAsgnNode) {
                  if (((INameNode)node).getName().equals(name)) {
@@ -1051,13 +1058,13 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
                     // TODO - make a node on the same line
                     // TODO - check arity - see OccurrencesFinder
                     RubyElementCtx matchCtx = new RubyElementCtx(fileCtx, node);
-                    rename(node, name, null, "Rename dynamic variable");
+                    rename(node, name, null, getString("UpdateDynvar"));
                  }                 
             } else if (node instanceof SymbolNode) {
                 // XXX Can I have symbols to local variables? Try it!!!
                 if (((SymbolNode)node).getName().equals(name)) {
                     RubyElementCtx matchCtx = new RubyElementCtx(fileCtx, node);
-                    rename(node, name, null, "Rename symbol");
+                    rename(node, name, null, getString("UpdateSymbol"));
                 }
             }
 
@@ -1126,7 +1133,7 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
                             // Found a method match
                             // TODO - check arity - see OccurrencesFinder
                             node = AstUtilities.getDefNameNode((MethodDefNode)node);
-                            rename(node, name, null, "Rename method");
+                            rename(node, name, null, getString("UpdateMethodDef"));
                         }
                     }
                 } else if (AstUtilities.isCall(node)) {
