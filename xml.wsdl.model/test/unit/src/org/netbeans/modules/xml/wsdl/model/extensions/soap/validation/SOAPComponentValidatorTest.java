@@ -167,7 +167,21 @@ public class SOAPComponentValidatorTest extends TestCase {
     public void testSOAPBodyMultipleElements() throws Exception {
         HashSet<String> expectedErrors = new HashSet<String>();
         expectedErrors.add(mMessages.getString("SOAPBodyValidator.Only_one_body_allowed"));
-                
+        expectedErrors.add(java.text.MessageFormat.format(
+                mMessages.getString("SOAPBodyValidator.Part_already_in_use_by_elem"),
+                new Object[] {
+                    "result",
+                    "HelloIF_sayHelloResponse",
+                    "{http://schemas.xmlsoap.org/wsdl/soap/}body"
+                }));
+        expectedErrors.add(java.text.MessageFormat.format(
+                mMessages.getString("SOAPBodyValidator.Part_already_in_use_by_elem"),
+                new Object[] {
+                    "body",
+                    "HelloIF_sayHello",
+                    "{http://schemas.xmlsoap.org/wsdl/soap/}body"
+                }));
+
         String relativePath = "extensions/soap/validation/resources/invalid/SOAPBodyMultipleElements.wsdl";
         validate(relativePath, expectedErrors);
         
@@ -178,6 +192,7 @@ public class SOAPComponentValidatorTest extends TestCase {
     public void testSOAPFaultBadUse() throws Exception {
         HashSet<String> expectedErrors = new HashSet<String>();
         expectedErrors.add(mMessages.getString("SOAPFaultValidator.Unsupported_use_attribute"));
+        expectedErrors.add(mMessages.getString("SOAPFaultValidator.Fault_name_not_match"));
                 
         String relativePath = "extensions/soap/validation/resources/invalid/SOAPFaultBadUse.wsdl";
         validate(relativePath, expectedErrors);         
@@ -194,6 +209,7 @@ public class SOAPComponentValidatorTest extends TestCase {
     public void testSOAPFaultMultipleElements() throws Exception {
         HashSet<String> expectedErrors = new HashSet<String>();
         expectedErrors.add(mMessages.getString("SOAPFaultValidator.Only_one_fault_allowed"));
+        expectedErrors.add(mMessages.getString("SOAPFaultValidator.Fault_name_not_match"));
                 
         String relativePath = "extensions/soap/validation/resources/invalid/SOAPFaultMultipleElements.wsdl";
         validate(relativePath, expectedErrors);        
@@ -234,6 +250,13 @@ public class SOAPComponentValidatorTest extends TestCase {
     public void testSOAPHeaderFaultBadUse() throws Exception {
         HashSet<String> expectedErrors = new HashSet<String>();
         expectedErrors.add(mMessages.getString("SOAPHeaderFaultValidator.Unsupported_header_fault_use_attribute"));
+        expectedErrors.add(java.text.MessageFormat.format(
+                mMessages.getString("SOAPHeaderValidator.Part_already_in_use_by_elem"),
+                new Object[] {
+                    "tns:body",
+                    "HelloIF_sayHello",
+                    "{http://schemas.xmlsoap.org/wsdl/soap/}header"
+                }));
                 
         String relativePath = "extensions/soap/validation/resources/invalid/SOAPHeaderFaultBadUse.wsdl";
         validate(relativePath, expectedErrors);              
@@ -258,6 +281,13 @@ public class SOAPComponentValidatorTest extends TestCase {
     public void testSOAPHeaderFaultMissingUse() throws Exception {
         HashSet<String> expectedErrors = new HashSet<String>();
         expectedErrors.add(mMessages.getString("SOAPHeaderFaultValidator.Missing_header_fault_use"));
+        expectedErrors.add(java.text.MessageFormat.format(
+                mMessages.getString("SOAPHeaderValidator.Part_already_in_use_by_elem"),
+                new Object[] {
+                    "tns:body",
+                    "HelloIF_sayHello",
+                    "{http://schemas.xmlsoap.org/wsdl/soap/}header"
+                }));
                 
         String relativePath = "extensions/soap/validation/resources/invalid/SOAPHeaderFaultMissingUse.wsdl";
         validate(relativePath, expectedErrors);         
