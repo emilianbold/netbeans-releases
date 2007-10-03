@@ -47,11 +47,6 @@ content = (ruby | html)*;
 html = <HTML>;
 ruby = <DELIMITER> <RUBY> (<DELIMITER, "%>">);
 
-COMMENT_LINE {
-    prefix:"<%# ";
-    suffix:" %>";
-}
-
 ######### navigator
 
 NAVIGATOR:ruby: {

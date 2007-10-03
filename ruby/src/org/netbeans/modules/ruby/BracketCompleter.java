@@ -1672,13 +1672,48 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
 
         AstPath path = new AstPath(root, astOffset);
         List<OffsetRange> ranges = new ArrayList<OffsetRange>();
+        
+        /** Furthest we can go back in the buffer (in RHTML documents, this
+         * may be limited to the surrounding &lt;% starting tag
+         */
+        int min = 0;
+        int max = Integer.MAX_VALUE;
+        int length;
 
         // Check if the caret is within a comment, and if so insert a new
         // leaf "node" which contains the comment line and then comment block
         try {
             BaseDocument doc = (BaseDocument)info.getDocument();
-            Token<?extends GsfTokenId> token = LexUtilities.getToken(doc, caretOffset);
+            length = doc.getLength();
 
+            if (RubyUtils.isRhtmlDocument(doc)) {
+                TokenHierarchy th = TokenHierarchy.get(doc);
+                TokenSequence ts = th.tokenSequence();
+                ts.move(caretOffset);
+                if (ts.moveNext() || ts.movePrevious()) {
+                    Token t = ts.token();
+                    if (t.id().primaryCategory().startsWith("ruby")) { // NOI18N
+                        min = ts.offset();
+                        max = min+t.length();
+                        // Try to extend with delimiters too
+                        if (ts.movePrevious()) {
+                            t = ts.token();
+                            if ("ruby-delimiter".equals(t.id().primaryCategory())) { // NOI18N
+                                min = ts.offset();
+                                if (ts.moveNext() && ts.moveNext()) {
+                                    t = ts.token();
+                                    if ("ruby-delimiter".equals(t.id().primaryCategory())) { // NOI18N
+                                        max = ts.offset()+t.length();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            Token<?extends GsfTokenId> token = LexUtilities.getToken(doc, caretOffset);
+            
             if ((token != null) && (token.id() == RubyTokenId.LINE_COMMENT)) {
                 // First add a range for the current line
                 int begin = Utilities.getRowStart(doc, caretOffset);
@@ -1701,8 +1736,6 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
 
                         begin = newBegin;
                     }
-
-                    int length = doc.getLength();
 
                     while (true) {
                         int newEnd = Utilities.getRowEnd(doc, end + 1);
@@ -1733,8 +1766,10 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
             }
         } catch (BadLocationException ble) {
             Exceptions.printStackTrace(ble);
+            return ranges;
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
+            return ranges;
         }
 
         Iterator<Node> it = path.leafToRoot();
@@ -1749,12 +1784,17 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
             }
 
             OffsetRange range = AstUtilities.getRange(node);
-
+            
             // The contains check should be unnecessary, but I end up getting
             // some weird positions for some JRuby AST nodes
             if (range.containsInclusive(astOffset) && !range.equals(previous)) {
                 range = LexUtilities.getLexerOffsets(info, range);
                 if (range != OffsetRange.NONE) {
+                    if (range.getStart() < min) {
+                        ranges.add(new OffsetRange(min, max));
+                        ranges.add(new OffsetRange(0, length));
+                        break;
+                    }
                     ranges.add(range);
                     previous = range;
                 }
