@@ -428,9 +428,9 @@
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="methodCombo" alignment="0" pref="209" max="32767" attributes="0"/>
+                      <Component id="failCombo" pref="209" max="32767" attributes="0"/>
+                      <Component id="methodCombo" pref="209" max="32767" attributes="0"/>
                       <Component id="tableNameField" alignment="0" pref="209" max="32767" attributes="0"/>
-                      <Component id="failCombo" alignment="0" pref="209" max="32767" attributes="0"/>
                       <Component id="validationCombo" pref="209" max="32767" attributes="0"/>
                       <Component id="nonTransactionalCombo" alignment="0" pref="209" max="32767" attributes="0"/>
                       <Component id="allowCallersCombo" alignment="0" pref="209" max="32767" attributes="0"/>
@@ -448,8 +448,8 @@
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
-                      <Component id="methodCombo" alignment="3" min="-2" pref="18" max="-2" attributes="0"/>
                       <Component id="methodLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="methodCombo" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace min="-2" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
@@ -458,8 +458,8 @@
                   </Group>
                   <EmptySpace min="-2" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
-                      <Component id="failCombo" alignment="3" min="-2" pref="18" max="-2" attributes="0"/>
                       <Component id="failLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="failCombo" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
