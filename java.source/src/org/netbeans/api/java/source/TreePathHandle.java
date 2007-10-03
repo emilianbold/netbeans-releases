@@ -338,9 +338,13 @@ public final class TreePathHandle {
                     if (fo != null) {
                         URL url = fo.getURL();
                         URL sourceRoot = Index.getSourceRootForClassFolder(url);
-                        FileObject root = URLMapper.findFileObject(sourceRoot);
-                        String resourceName = FileUtil.getRelativePath(fo, URLMapper.findFileObject(clsSym.classfile.toUri().toURL()));
-                        file = root.getFileObject(resourceName.replace(".sig", ".class")); //NOI18N
+                        if (sourceRoot!=null) {
+                            FileObject root = URLMapper.findFileObject(sourceRoot);
+                            String resourceName = FileUtil.getRelativePath(fo, URLMapper.findFileObject(clsSym.classfile.toUri().toURL()));
+                            file = root.getFileObject(resourceName.replace(".sig", ".class")); //NOI18N
+                        } else {
+                            Logger.getLogger(TreePathHandle.class.getName()).fine("Index.getSourceRootForClassFolder(url) returned null for url=" + url);//NOI18N
+                        }
                     }
                 }
             }
