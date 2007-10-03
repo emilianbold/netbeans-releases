@@ -207,6 +207,12 @@ public class ProgressHandleTest extends NbTestCase {
                 }
             });
             Thread.sleep(600);
+            SwingUtilities.invokeAndWait(new Runnable() {
+                public void run() {
+                    //oh well, anything that posts to other threads is not really testable
+                    //this could help in corner cases when sleep alone doesn't help
+                }
+            });
         } catch (InterruptedException exc) {
             System.out.println("interrupted");
         }
