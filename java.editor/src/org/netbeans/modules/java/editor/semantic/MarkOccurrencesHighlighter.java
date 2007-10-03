@@ -143,6 +143,8 @@ public class MarkOccurrencesHighlighter implements CancellableTask<CompilationIn
         if (isCancelled())
             return;
         
+        caretPosition = info.getPositionConverter().getJavaSourcePosition(caretPosition);
+        
         List<int[]> bag = processImpl(info, node, doc, caretPosition);
         
         if (isCancelled())
@@ -192,7 +194,12 @@ public class MarkOccurrencesHighlighter implements CancellableTask<CompilationIn
         AttributeSet attributes = ColoringManager.getColoringImpl(MO);
         
         for (int[] span : result) {
-            obag.addHighlight(span[0], span[1], attributes);
+            int convertedStart = info.getPositionConverter().getOriginalPosition(span[0]);
+            int convertedEnd   = info.getPositionConverter().getOriginalPosition(span[1]);
+            
+            if (convertedStart != (-1) && convertedEnd != (-1)) {
+                obag.addHighlight(convertedStart, convertedEnd, attributes);
+            }
         }
         
         getHighlightsBag(doc).setHighlights(obag);
