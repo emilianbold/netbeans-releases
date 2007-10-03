@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
+import javax.swing.SwingUtilities;
 import org.netbeans.spi.palette.DragAndDropHandler;
 import org.openide.nodes.Index;
 import org.openide.nodes.Node;
@@ -131,14 +132,18 @@ public class DefaultCategory implements Category, NodeListener {
     }
 
     protected void notifyListeners() {
-        CategoryListener[] listeners;
-        synchronized( categoryListeners ) {
-            listeners = new CategoryListener[categoryListeners.size()];
-            listeners = categoryListeners.toArray( listeners );
-        }
-        for( int i=0; i<listeners.length; i++ ) {
-            listeners[i].categoryModified( this );
-        }
+        SwingUtilities.invokeLater( new Runnable() {
+            public void run() {
+                CategoryListener[] listeners;
+                synchronized( categoryListeners ) {
+                    listeners = new CategoryListener[categoryListeners.size()];
+                    listeners = categoryListeners.toArray( listeners );
+                }
+                for( int i=0; i<listeners.length; i++ ) {
+                    listeners[i].categoryModified( DefaultCategory.this );
+                }
+            }
+        });
     }
     
     /** Fired when a set of new children is added.
@@ -178,6 +183,7 @@ public class DefaultCategory implements Category, NodeListener {
         }
     }
 
+    @Override
     public boolean equals(Object obj) {
         if( !(obj instanceof DefaultCategory) )
             return false;
@@ -202,9 +208,9 @@ public class DefaultCategory implements Category, NodeListener {
         if( null == item ) {
             return -1;
         }
-        Node node = (Node)item.getLookup().lookup( Node.class );
+        Node node = item.getLookup().lookup(Node.class);
         if( null != node ) {
-            Index order = (Index)categoryNode.getCookie( Index.class );
+            Index order = categoryNode.getCookie(Index.class);
             if( null != order ) {
                 return order.indexOf( node );
             }
@@ -229,9 +235,10 @@ public class DefaultCategory implements Category, NodeListener {
     }
     
     private DragAndDropHandler getDragAndDropHandler() {
-        return (DragAndDropHandler)categoryNode.getLookup().lookup( DragAndDropHandler.class );
+        return categoryNode.getLookup().lookup(DragAndDropHandler.class);
     }
     
+    @Override
     public String toString() {
         return categoryNode.getDisplayName();
     }
