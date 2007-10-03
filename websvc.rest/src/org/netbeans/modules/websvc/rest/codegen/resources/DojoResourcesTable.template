@@ -1,0 +1,121 @@
+dojo.provide("jersey.widget.ResourcesTable");
+dojo.require("dojo.widget.FilteringTable");
+dojo.require("dojo.lang.declare");
+dojo.widget.defineWidget("jersey.widget.ResourcesTable", dojo.widget.FilteringTable, {
+    createRow: function(obj){
+        var row=document.createElement("tr");
+        dojo.html.disableSelection(row);
+        if(obj.key != null){
+            row.setAttribute("value", obj.key);
+        }
+        for(var j=0; j<this.columns.length; j++){
+            var cell=document.createElement("td");
+            cell.setAttribute("align", this.columns[j].align);
+            cell.setAttribute("valign", this.columns[j].valign);
+            dojo.html.disableSelection(cell);
+            var val = this.store.getField(obj.src, this.columns[j].getField());
+            if(typeof(val)=="undefined"){
+                val="";
+            }
+            this.fillCell(cell, this.columns[j], val, true, j, obj.key );
+            row.appendChild(cell);
+        }
+        return row;
+    },        
+    fillCell: function(cell, meta, val, editable, row, column){
+        var _val = ""; 
+        if(meta.sortType=="__markup__"){
+            _val =val;
+        } else {
+            if(meta.getType()==Date) {
+                val=new Date(val);
+                if(!isNaN(val)){
+                    var format = this.defaultDateFormat;
+                    if(meta.format){
+                            format = meta.format;
+                    }
+                    _val = dojo.date.strftime(val, format);
+                } else {
+                    _val = val;
+                }
+            } else if ("Number number int Integer float Float".indexOf(meta.getType())>-1){
+                if(val.length == 0){
+                        val="0";
+                }
+                var n = parseFloat(val, 10) + "";
+                if(n.indexOf(".")>-1){
+                        n = dojo.math.round(parseFloat(val,10),2);
+                }
+                _val = n;
+            } else {
+                _val = val;
+            }
+            var _d = document.createElement("div");
+            cell.id = "_cell_" + row + "_" + column;
+            var formElement = document.createElement("form");
+            formElement.className = "eTableEditForm";
+            formElement.onsubmit = function() {
+                return false;
+            }
+            dojo.event.connect(formElement, "onsubmit", this, "updateCell");
+            var inputElement = document.createElement("input");
+            inputElement.setAttribute("type", "text");
+            inputElement.className = "eTableEditable";
+            inputElement.value = _val;
+
+            formElement.appendChild(inputElement);
+            _d.className = "etableEditCell";
+            _d.innerHTML = _val;
+            cell.appendChild(_d);
+            formElement.style.display = "none";
+            cell.appendChild(formElement);
+            dojo.event.connect(cell, "ondblclick", this, "makeCellEditable");
+        }
+    },
+    makeCellEditable : function(e) {
+        var cell = (typeof window.event == 'undefined') ? e.target : window.event.srcElement;
+        if (cell.nodeName.toLowerCase().indexOf("div") != -1) {
+            var _bw = cell.clientWidth;
+            var _bh = cell.clientHeight;
+            cell = cell.parentNode;
+            //remove the onclick listener
+            dojo.event.disconnect(cell, "ondblclick",this, "makeCellEditable");
+            var div = cell.childNodes[0];
+            div.style.display = "none";
+            var form = cell.childNodes[1];
+            form.style.display = "";
+            form.style.height =   "0px";
+            cell.style.width = _bw + "px";
+            form.firstChild.focus();
+        }
+    },
+    updateCell: function(e){
+        var form = (typeof window.event == 'undefined') ? e.target : window.event.srcElement;
+        if (form.nodeName.toLowerCase().indexOf("form") == -1) {
+            form = form.parentNode;
+        }
+        var value = form.firstChild.value;
+        var cell = form.parentNode;
+        form.style.display = "none";
+        var d = cell.firstChild;
+        d.innerHTML = value;
+        d.style.display = "";
+        // get the row key and column and call onAddRow
+        var id = cell.id.split("_cell_")[1];
+        var sp = id.split("_");
+        this.onCellUpdate(sp[0], sp[1], value);
+        // add event back
+        dojo.event.connect(cell, "ondblclick", this, "makeCellEditable");
+        return false;
+    },
+    onCellUpdate: function(col,row, value) { 
+        var attribute = this.columns[col].getField();
+        for(var i=0;i<jerseyStore.getSize();i++) {
+        var id = jerseyStore._data[i][0]['Id'];
+        if(id == row) {
+            jerseyStore._data[i][0][attribute] = value;
+            var data = this.getSelectedData();
+            data[attribute] = value;
+        }
+    }
+}});

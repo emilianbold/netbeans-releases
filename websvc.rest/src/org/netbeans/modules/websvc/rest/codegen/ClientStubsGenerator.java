@@ -53,6 +53,25 @@ public class ClientStubsGenerator extends AbstractGenerator {
     public static final String CONTAINERSTUB_TEMPLATE = "Templates/WebServices/containerstub.js"; //NOI18N
     public static final String GENERICSTUB_TEMPLATE = "Templates/WebServices/genericstub.js"; //NOI18N
     public static final String STUB_ONLY_TEMPLATE = "Templates/WebServices/stubonly.js"; //NOI18N
+    
+    //Dojo templates
+    public static final String DOJO_JERSEYSTORE = "JerseyStore";
+    public static final String DOJO_COLLECTIONSTORE = "CollectionStore";
+    public static final String DOJO_RESOURCESTABLE = "ResourcesTable";
+    public static final String DOJO_JERSEYGLUE = "glue";
+    public static final String DOJO_SAMPLE = "DojoSample"; //NOI18N
+    public static final String DOJO_SUPPORT = "DojoSupport"; //NOI18N
+    public static final String DOJO_JERSEYSTORE_TEMPLATE = "Templates/WebServices/DojoJerseyStore.js"; //NOI18N
+    public static final String DOJO_COLLECTIONSTORE_TEMPLATE = "Templates/WebServices/DojoCollectionStore.js"; //NOI18N
+    public static final String DOJO_RESOURCESTABLE_TEMPLATE = "Templates/WebServices/DojoResourcesTable.js"; //NOI18N
+    public static final String DOJO_JERSEYGLUE_TEMPLATE = "Templates/WebServices/DojoGlue.js"; //NOI18N
+    public static final String DOJO_SAMPLE_TEMPLATE = "Templates/WebServices/DojoSample.html"; //NOI18N
+    public static final String DOJO_SUPPORT_TEMPLATE = "Templates/WebServices/DojoSupport.js"; //NOI18N
+    public static final String DOJO_PROJECTSTUB_TEMPLATE = "Templates/WebServices/DojoProjectStub.js"; //NOI18N
+    public static final String DOJO_CONTAINERSTUB_TEMPLATE = "Templates/WebServices/DojoContainerStub.js"; //NOI18N
+    public static final String DOJO_GENERICSTUB_TEMPLATE = "Templates/WebServices/DojoGenericStub.js"; //NOI18N
+    public static final String DOJO_STUB_ONLY_TEMPLATE = "Templates/WebServices/DojoStubOnly.js"; //NOI18N
+    
     public static final String COMMON = "common"; //NOI18N
     public static final String JS = "js"; //NOI18N
     public static final String HTML = "html"; //NOI18N
@@ -62,6 +81,8 @@ public class ClientStubsGenerator extends AbstractGenerator {
     private boolean overwrite;
     private String projectName;
     private ClientStubModel model;
+    private FileObject dojoReststubsDir;
+    private FileObject jerseyDataDir;
     
     public ClientStubsGenerator(FileObject root, Project p, boolean overwrite) throws IOException {
         assert root != null;
@@ -100,10 +121,35 @@ public class ClientStubsGenerator extends AbstractGenerator {
         if(getRootDir().getFileObject(RESTSTUB+"."+HTML) == null)
             RestUtils.createDataObjectFromTemplate(RESTSTUB_TEMPLATE, getRootDir(), RESTSTUB);
         if(commonJsDir.getFileObject(SUPPORT+"."+JS) == null)
-            RestUtils.createDataObjectFromTemplate(STUBSUPPORT_TEMPLATE, commonJsDir, SUPPORT);
+            RestUtils.createDataObjectFromTemplate(STUBSUPPORT_TEMPLATE, commonJsDir, SUPPORT.toLowerCase());
+        
+        initDojo(p);
         
         this.model = new ClientStubModel();
         this.model.buildModel(p);
+    }
+    
+    private void initDojo(Project p) throws IOException {
+        //create support js files
+        FileObject dojoDir = createFolder(getRootDir(), "dojo");//NoI18n
+        FileObject jerseyDir = createFolder(dojoDir, "jersey");//NoI18n
+        jerseyDataDir = createFolder(jerseyDir, "data");//NoI18n
+        dojoReststubsDir = createFolder(jerseyDir, "reststubs");//NoI18n
+        FileObject widgetDir = createFolder(jerseyDir, "widget");//NoI18n
+        if(jerseyDataDir.getFileObject(DOJO_JERSEYSTORE+"."+JS) == null)
+            RestUtils.createDataObjectFromTemplate(DOJO_JERSEYSTORE_TEMPLATE, jerseyDataDir, DOJO_JERSEYSTORE);
+        if(widgetDir.getFileObject(DOJO_RESOURCESTABLE+"."+JS) == null)
+            RestUtils.createDataObjectFromTemplate(DOJO_RESOURCESTABLE_TEMPLATE, widgetDir, DOJO_RESOURCESTABLE);
+        if(jerseyDir.getFileObject(DOJO_JERSEYGLUE+"."+JS) == null)
+            RestUtils.createDataObjectFromTemplate(DOJO_JERSEYGLUE_TEMPLATE, jerseyDir, DOJO_JERSEYGLUE);
+        
+        if(getRootDir().getFileObject(DOJO_SAMPLE+"."+HTML) == null)
+            RestUtils.createDataObjectFromTemplate(DOJO_SAMPLE_TEMPLATE, getRootDir(), DOJO_SAMPLE);
+        if(dojoReststubsDir.getFileObject(DOJO_SUPPORT+"."+JS) == null)
+            RestUtils.createDataObjectFromTemplate(DOJO_SUPPORT_TEMPLATE, dojoReststubsDir, DOJO_SUPPORT);
+        String prjName = ProjectUtils.getInformation(getProject()).getName();
+        if(dojoReststubsDir.getFileObject(prjName+"."+JS) == null)
+            RestUtils.createDataObjectFromTemplate(DOJO_PROJECTSTUB_TEMPLATE, dojoReststubsDir, prjName);
     }
     
     public Set<FileObject> generate(ProgressHandle pHandle) throws IOException {
@@ -125,6 +171,10 @@ public class ClientStubsGenerator extends AbstractGenerator {
             FileObject fo = new ResourceJavaScript(r, jsDir).generate();
             if(fo != null)
                 files.add(fo);
+            
+            //Generate the resource dojo script
+            new ResourceDojoJavaScript(r, dojoReststubsDir).generate();
+            new ResourceDojoStore(r, jerseyDataDir).generate();
         }
         updateRestStub(getRootDir().getFileObject(RESTSTUB, HTML), resourceList);
         return files;
@@ -234,8 +284,8 @@ public class ClientStubsGenerator extends AbstractGenerator {
     
     public class ResourceJavaScript {
         
-        private Resource r;
-        private FileObject jsFolder;
+        protected Resource r;
+        protected FileObject jsFolder;
         
         public ResourceJavaScript(Resource r, FileObject jsFolder) {
             this.r = r;
@@ -250,13 +300,14 @@ public class ClientStubsGenerator extends AbstractGenerator {
                 else
                     throw new IOException("File: "+jsFolder.getPath()+"/"+r.getFileNameExt()+" already exists.");
             }
+            String fileName = r.getFileName();
             if(r.isContainer())
-                RestUtils.createDataObjectFromTemplate(CONTAINERSTUB_TEMPLATE, jsFolder, r.getFileName());
+                RestUtils.createDataObjectFromTemplate(CONTAINERSTUB_TEMPLATE, jsFolder, fileName);
             else if(r.getRepresentation().getRoot() != null)
-                RestUtils.createDataObjectFromTemplate(GENERICSTUB_TEMPLATE, jsFolder, r.getFileName());
+                RestUtils.createDataObjectFromTemplate(GENERICSTUB_TEMPLATE, jsFolder, fileName);
             else //generate only stub for no representation
-                RestUtils.createDataObjectFromTemplate(STUB_ONLY_TEMPLATE, jsFolder, r.getFileName());
-            fo = jsFolder.getFileObject(r.getFileNameExt());
+                RestUtils.createDataObjectFromTemplate(STUB_ONLY_TEMPLATE, jsFolder, fileName);
+            fo = jsFolder.getFileObject(fileName+".js");
             FileLock lock = fo.lock();
             try {
                 BufferedReader reader = new BufferedReader(new FileReader(FileUtil.toFile(fo)));
@@ -279,7 +330,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
             return fo;
         }
         
-        private String replaceTokens(Resource r, String line) {
+        protected String replaceTokens(Resource r, String line) {
             RepresentationNode root = r.getRepresentation().getRoot();
             String replacedLine = line;
             String[] containerStubTokens = {
@@ -467,13 +518,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
             if(repName.contains("Ref"))
                 return repName.substring(0, repName.indexOf("Ref"));
             return repName;
-        }        
-        
-        /*private String findResourceName(String repName) {
-            if(repName.contains("Ref"))
-                repName = repName.substring(0, repName.indexOf("Ref"));
-            return repName.substring(0,1).toUpperCase()+repName.substring(1);
-        }*/
+        }
 
         private String createGetterMethod(RepresentationNode n) {
             String mName = RestUtils.createGetterMethodName(n);
@@ -596,4 +641,91 @@ public class ClientStubsGenerator extends AbstractGenerator {
         
     }
     
+    public class ResourceDojoJavaScript extends ResourceJavaScript {
+        
+        public ResourceDojoJavaScript(Resource r, FileObject jsFolder) {
+            super(r, jsFolder);
+        }
+        
+        public FileObject generate() throws IOException {        
+            FileObject fo = jsFolder.getFileObject(r.getFileNameExt());
+            if (fo != null) {
+                if(isOverwrite())
+                    fo.delete();
+                else
+                    throw new IOException("File: "+jsFolder.getPath()+"/"+r.getFileNameExt()+" already exists.");
+            }
+            String fileName = r.getName();
+            if(r.isContainer())
+                RestUtils.createDataObjectFromTemplate(DOJO_CONTAINERSTUB_TEMPLATE, jsFolder, fileName);
+            else if(r.getRepresentation().getRoot() != null)
+                RestUtils.createDataObjectFromTemplate(DOJO_GENERICSTUB_TEMPLATE, jsFolder, fileName);
+            else //generate only stub for no representation
+                RestUtils.createDataObjectFromTemplate(DOJO_STUB_ONLY_TEMPLATE, jsFolder, fileName);
+            fo = jsFolder.getFileObject(fileName+".js");
+            FileLock lock = fo.lock();
+            try {
+                BufferedReader reader = new BufferedReader(new FileReader(FileUtil.toFile(fo)));
+                String line;
+                StringBuffer sb = new StringBuffer();
+                while ((line = reader.readLine()) != null) {
+                    line = replaceTokens(r, line);
+                    sb.append(line);
+                    sb.append("\n");
+                }
+                OutputStreamWriter writer = new OutputStreamWriter(fo.getOutputStream(lock), "UTF-8");
+                try {
+                    writer.write(sb.toString());
+                } finally {
+                    writer.close();
+                }
+            } finally {
+                lock.releaseLock();
+            }
+            return fo;
+        }        
+    }
+    
+    public class ResourceDojoStore extends ResourceDojoJavaScript {
+        
+        public ResourceDojoStore(Resource r, FileObject jsFolder) {
+            super(r, jsFolder);
+        }
+        
+        public FileObject generate() throws IOException {        
+            FileObject fo = jsFolder.getFileObject(r.getFileNameExt());
+            if (fo != null) {
+                if(isOverwrite())
+                    fo.delete();
+                else
+                    throw new IOException("File: "+jsFolder.getPath()+"/"+r.getFileNameExt()+" already exists.");
+            }
+            String fileName = r.getFileName()+"Store";
+            if(r.isContainer())
+                RestUtils.createDataObjectFromTemplate(DOJO_COLLECTIONSTORE_TEMPLATE, jsFolder, fileName);
+            else
+                return null;
+            fo = jsFolder.getFileObject(fileName+".js");
+            FileLock lock = fo.lock();
+            try {
+                BufferedReader reader = new BufferedReader(new FileReader(FileUtil.toFile(fo)));
+                String line;
+                StringBuffer sb = new StringBuffer();
+                while ((line = reader.readLine()) != null) {
+                    line = replaceTokens(r, line);
+                    sb.append(line);
+                    sb.append("\n");
+                }
+                OutputStreamWriter writer = new OutputStreamWriter(fo.getOutputStream(lock), "UTF-8");
+                try {
+                    writer.write(sb.toString());
+                } finally {
+                    writer.close();
+                }
+            } finally {
+                lock.releaseLock();
+            }
+            return fo;
+        }        
+    }
 }

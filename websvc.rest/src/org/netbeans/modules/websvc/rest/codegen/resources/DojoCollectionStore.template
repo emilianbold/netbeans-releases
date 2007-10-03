@@ -1,0 +1,72 @@
+dojo.provide("jersey.data.__COLLECTIONSTORE__");
+dojo.require("dojo.data.core.RemoteStore");
+dojo.require("dojo.lang.declare");
+dojo.require("dojo.io.ScriptSrcIO");
+dojo.require("jersey.reststubs.CustomerDB");
+dojo.declare("jersey.data.__COLLECTIONSTORE__", jersey.data.JerseyStore, {
+    _setupQueryRequest:function (result, requestKw) {
+	var start = 1;
+	var count = 1;
+	if (result) {
+		start = result.start || start;
+		count = result.count || count;
+	}
+	requestKw.url = this._serverQueryUrl;
+        var method = "GET";
+        if(method == 'GET') {
+            requestKw.headers = {"Accept" : "application/json"};
+        }
+}, _resultToQueryMetadata:function (json) {
+        var myObj = eval('('+json+')');
+	return myObj.customers.customerRef;
+}, _resultToQueryData:function (json) {
+        __RESULTTOQUERYDATA__
+}, _setupSaveRequest:function (saveKeywordArgs, requestKw) {
+        var id = 1000+this.getSize()+1;
+        var method = "put";
+        var data = null;
+        if(saveKeywordArgs) {
+            var id = saveKeywordArgs.Id || id;
+            method = saveKeywordArgs.method || method;
+            data = saveKeywordArgs.data || data;
+        }
+        var jsonStr = '';
+        if(method == 'put') {
+             __SETUP_SAVE_REQUEST_PUT__
+             
+             //Hack: Since dojo 0.4.3 do not support PUT and DELETE methods, we are
+            //using the generated Javascript to achieve these instead of dojo.io.bind
+            var status = cust.flush();
+            if(status) {
+                alert('Update succeeded for customer with Id: \''+id+'\'.');
+            } else {
+                alert('Update failed for customer with Id: \''+id+'\'.');
+            }
+            requestKw.url = this._serverSaveUrl+id+'/';
+            method = 'get';
+            requestKw.headers = {"Accept" : "application/json"};
+            /*requestKw.contentType = 'text/json';
+            requestKw.headers = {
+                "Content-Type" : "application/json",
+                "Content-Length": jsonStr.length,//TODO - put actual length
+                "Connection": "close"//,
+                //"X-Method-Override" : "PUT"
+            };*/  
+            requestKw.mimetype = "application/json";          
+        } else {
+            for(var item in this._added) {
+                 __SETUP_SAVE_REQUEST_POST__
+            }            
+            requestKw.url = this._serverSaveUrl;
+            requestKw.headers = {
+                "Content-Type" : "application/json",
+                "Content-Length": jsonStr.length,//TODO - put actual length
+                "Connection": "close"
+            };   
+            requestKw.postContent = jsonStr;//TODO  
+            requestKw.method = method;     
+            requestKw.mimetype = "application/json";  
+        }        
+}, deleteItem:function (item) {
+        __DELETE_ITEM__
+}});

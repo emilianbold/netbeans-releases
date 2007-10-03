@@ -71,6 +71,36 @@
             <file name="stubonly.js" url="/org/netbeans/modules/websvc/rest/codegen/resources/stubonly.template">
                 <attr name="position" intvalue="0"/>
             </file>
+            <file name="DojoJerseyStore.js" url="/org/netbeans/modules/websvc/rest/codegen/resources/DojoJerseyStore.template">
+                <attr name="position" intvalue="0"/>
+            </file>
+            <file name="DojoCollectionStore.js" url="/org/netbeans/modules/websvc/rest/codegen/resources/DojoCollectionStore.template">
+                <attr name="position" intvalue="0"/>
+            </file>
+            <file name="DojoResourcesTable.js" url="/org/netbeans/modules/websvc/rest/codegen/resources/DojoResourcesTable.template">
+                <attr name="position" intvalue="0"/>
+            </file>
+            <file name="DojoGlue.js" url="/org/netbeans/modules/websvc/rest/codegen/resources/DojoGlue.template">
+                <attr name="position" intvalue="0"/>
+            </file>
+            <file name="DojoProjectStub.js" url="/org/netbeans/modules/websvc/rest/codegen/resources/DojoProjectStub.template">
+                <attr name="position" intvalue="0"/>
+            </file>
+            <file name="DojoSupport.js" url="/org/netbeans/modules/websvc/rest/codegen/resources/DojoSupport.template">
+                <attr name="position" intvalue="0"/>
+            </file>
+            <file name="DojoSample.html" url="/org/netbeans/modules/websvc/rest/codegen/resources/DojoSample.template">
+                <attr name="position" intvalue="0"/>
+            </file>
+            <file name="DojoContainerStub.js" url="/org/netbeans/modules/websvc/rest/codegen/resources/DojoContainerStub.template">
+                <attr name="position" intvalue="0"/>
+            </file>
+            <file name="DojoGenericStub.js" url="/org/netbeans/modules/websvc/rest/codegen/resources/DojoGenericStub.template">
+                <attr name="position" intvalue="0"/>
+            </file>
+            <file name="DojoStubOnly.js" url="/org/netbeans/modules/websvc/rest/codegen/resources/DojoStubOnly.template">
+                <attr name="position" intvalue="0"/>
+            </file>
         </folder>
     </folder>
     
