@@ -1324,11 +1324,24 @@ public class DesignView extends JPanel implements
     
     class CopyAction extends DesignModeAction {
         private static final long serialVersionUID = 1L;
+
+        @Override
+        public boolean isEnabled() {
+            if (!super.isEnabled()) {
+                return false;
+            }
+            
+            Pattern selPattern = getSelectionModel().getSelectedPattern();
+            return selPattern != null && !(selPattern instanceof ProcessPattern); 
+        }
         
         public void actionPerformed(ActionEvent e) {
 //            if (getModel().isReadOnly()) {
 //                return;
 //            }
+            if (!isEnabled()) {
+                return;
+            }
             
             Pattern copiedPattern = getPatternCopy(getSelectionModel().getSelectedPattern());
             goPlaceHolderMode(copiedPattern, true);
@@ -1355,11 +1368,25 @@ public class DesignView extends JPanel implements
 
     class CutAction extends DesignModeAction {
         private static final long serialVersionUID = 1L;
+
+        @Override
+        public boolean isEnabled() {
+            if (!super.isEnabled()) {
+                return false;
+            }
+
+            Pattern selPattern = getSelectionModel().getSelectedPattern();
+            return selPattern != null && !(selPattern instanceof ProcessPattern); 
+        }
         
         public void actionPerformed(ActionEvent e) {
 //            if (getModel().isReadOnly() || !isDesignMode()) {
 //                return;
 //            }
+            if (!isEnabled()) {
+                return;
+            }
+            
             Pattern cuttedPattern = getPatternCut(getSelectionModel().getSelectedPattern());
     
             goPlaceHolderMode(cuttedPattern, false);
