@@ -50,8 +50,9 @@ public class TestInstallerAndUninstallerJavaEE extends NbTestCase {
 
         Utils.phaseOne(this, data, "javaee");
 
-        //select apache
-        Utils.stepChooseComponet("Apache Tomcat");
+        //select apache 
+        //apache selected by default
+        //Utils.stepChooseComponet("Apache Tomcat");
 
         //welcome, license and set NB dir
         Utils.phaseTwo(data);
