@@ -51,6 +51,7 @@ import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.*;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
@@ -165,7 +166,7 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
                 ClassTree outerTree = (ClassTree) workingCopy.getTrees().getTree(outer);
                 ClassTree outerouterTree = (ClassTree) workingCopy.getTrees().getTree(outerouter);
                 ClassTree newOuter = make.removeClassMember(outerTree, innerClass);
-                ClassTree newOuterOuter = make.addClassMember(outerouterTree, newInnerClass);
+                ClassTree newOuterOuter = GeneratorUtilities.get(workingCopy).insertClassMember(outerouterTree, newInnerClass);
                 workingCopy.rewrite(outerTree, newOuter);
                 JavaRefactoringUtils.cacheTreePathInfo(workingCopy.getTrees().getPath(outer), workingCopy);
                 workingCopy.rewrite(outerouterTree, newOuterOuter);
@@ -268,7 +269,7 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
         String referenceName = refactoring.getReferenceName();
         if (referenceName != null) {
             VariableTree variable = make.Variable(make.Modifiers(Collections.<Modifier>emptySet()), refactoring.getReferenceName(), make.Type(outer.asType()), null);
-            newInnerClass = make.insertClassMember(newInnerClass, 0, variable);
+            newInnerClass = GeneratorUtilities.get(workingCopy).insertClassMember(newInnerClass, variable);
             Set <Modifier> mods = new HashSet(newInnerClass.getModifiers().getFlags());
             mods.remove(Modifier.STATIC);
             mods.remove(Modifier.PRIVATE);
@@ -295,7 +296,7 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
                                 block);
 
                         newInnerClass = make.removeClassMember(newInnerClass, m);
-                        newInnerClass = make.addClassMember(newInnerClass, newConstructor);
+                        newInnerClass = GeneratorUtilities.get(workingCopy).insertClassMember(newInnerClass, newConstructor);
                     }
                 }
             }

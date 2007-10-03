@@ -83,6 +83,7 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreePathHandle;
@@ -817,7 +818,7 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
                         Collections.<ExpressionTree>emptyList(),
                         getterBody,
                         null);
-                newNode = make.addClassMember(node, getter);
+                newNode = GeneratorUtilities.get(workingCopy).insertClassMember(node, getter);
             }
             
             ExecutableElement setterElm = null;
@@ -840,7 +841,7 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
                         Collections.<ExpressionTree>emptyList(),
                         setterBody,
                         null);
-                newNode = make.addClassMember(newNode == null? node: newNode, setter);
+                newNode = GeneratorUtilities.get(workingCopy).insertClassMember(newNode == null? node: newNode, setter);
             }
             if (newNode != null) {
                 rewrite(node, newNode);

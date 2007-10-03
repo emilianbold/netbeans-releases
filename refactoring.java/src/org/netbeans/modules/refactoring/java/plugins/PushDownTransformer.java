@@ -49,6 +49,7 @@ import java.util.Set;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.api.MemberInfo;
@@ -140,7 +141,7 @@ public class PushDownTransformer extends RefactoringVisitor {
                         if (RetoucheUtils.elementExistsIn((TypeElement) el, member, workingCopy)) {
                             problem = MoveTransformer.createProblem(problem, false, org.openide.util.NbBundle.getMessage(PushDownTransformer.class, "ERR_PushDown_AlreadyExists", member.getSimpleName(), el.getSimpleName()));
                         }
-                        njuClass = make.addClassMember(njuClass, workingCopy.getTrees().getTree(member));
+                        njuClass = GeneratorUtilities.get(workingCopy).insertClassMember(njuClass, workingCopy.getTrees().getTree(member));
                     }
                 }
                 rewrite(tree, njuClass);

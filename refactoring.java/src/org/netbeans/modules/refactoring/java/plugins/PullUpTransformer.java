@@ -48,6 +48,7 @@ import java.util.HashSet;
 import java.util.Set;
 import javax.lang.model.element.*;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.refactoring.java.api.MemberInfo;
 import org.netbeans.modules.refactoring.java.api.PullUpRefactoring;
@@ -116,10 +117,10 @@ public class PullUpTransformer extends RefactoringVisitor {
                                 method.getThrows(),
                                 (BlockTree) null,
                                 (ExpressionTree)method.getDefaultValue());
-                        njuClass = make.addClassMember(njuClass, nju);
+                        njuClass = GeneratorUtilities.get(workingCopy).insertClassMember(njuClass, nju);
                         rewrite(tree, njuClass);
                     } else {
-                        njuClass = make.addClassMember(njuClass, workingCopy.getTrees().getTree(members[i].getElementHandle().resolve(workingCopy)));
+                        njuClass = GeneratorUtilities.get(workingCopy).insertClassMember(njuClass, workingCopy.getTrees().getTree(members[i].getElementHandle().resolve(workingCopy)));
                         rewrite(tree, njuClass);
                     }
                 }
