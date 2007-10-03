@@ -94,6 +94,10 @@ public class PersistentClassIndex extends ClassIndexImpl {
     public SourceAnalyser getSourceAnalyser () {        
         return new SourceAnalyser (this.index);        
     }
+
+    public boolean isSource () {
+        return this.isSource;
+    }
     
     public FileObject[] getSourceRoots () {
         FileObject[] rootFos;

@@ -99,6 +99,8 @@ public abstract class ClassIndexImpl {
     public abstract String getSourceName (String binaryName);
     
     public abstract void setDirty (JavaSource js);
+
+    public abstract boolean isSource ();
     
     protected abstract void close () throws IOException;
     

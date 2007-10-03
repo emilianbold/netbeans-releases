@@ -148,6 +148,15 @@ public final class ClassIndexManager {
                 added.add (root);
             }
         }
+        else if (source && !qi.isSource()){
+            //Wrongly set up freeform project, which is common for it, prefer source
+            qi.close ();
+            qi = PersistentClassIndex.create (root, Index.getDataFolder(root), source);
+            this.instances.put(root,qi);
+            if (added != null) {
+                added.add (root);
+            }
+        }
         return qi;
     }
     
