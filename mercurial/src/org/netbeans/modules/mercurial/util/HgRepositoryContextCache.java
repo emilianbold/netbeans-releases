@@ -29,8 +29,8 @@ import org.netbeans.modules.versioning.spi.VCSContext;
 public class HgRepositoryContextCache {
     private static boolean hasHistory;
     private static boolean hasHeads;
-    private static File pushDefault;
-    private static File pullDefault;
+    private static String pushDefault;
+    private static String pullDefault;
     private static File root;
     
     private static VCSContext rootCtx;
@@ -70,7 +70,7 @@ public class HgRepositoryContextCache {
         pullCtx = null;
     }
 
-    public static File getPullDefault(VCSContext ctx) {
+    public static String getPullDefault(VCSContext ctx) {
         if(ctx == pullCtx && ctx != null){
             return pullDefault;
         }else{
@@ -85,7 +85,7 @@ public class HgRepositoryContextCache {
         pushCtx = null;
     }
 
-    public static File getPushDefault(VCSContext ctx) {
+    public static String getPushDefault(VCSContext ctx) {
         if(ctx == pushCtx && ctx != null){
             return pushDefault;
         }else{

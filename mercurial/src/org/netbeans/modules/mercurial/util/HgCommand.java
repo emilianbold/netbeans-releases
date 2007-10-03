@@ -426,11 +426,11 @@ public class HgCommand {
      * was requested to the specified local source repository
      *
      * @param File repository of the mercurial repository's root directory
-     * @param File source repository to query
+     * @param String source repository to query
      * @return hg outgoing output
      * @throws org.netbeans.modules.mercurial.HgException
      */
-    public static List<String> doOutgoing(File repository, File to) throws HgException {
+    public static List<String> doOutgoing(File repository, String to) throws HgException {
         if (repository == null ) return null;
         List<String> command = new ArrayList<String>();
 
@@ -439,7 +439,7 @@ public class HgCommand {
         command.add(HG_VERBOSE_CMD);
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
-        command.add(to.getAbsolutePath());
+        command.add(to);
 
         return exec(command);
     }
@@ -454,7 +454,7 @@ public class HgCommand {
      * @return hg push output
      * @throws org.netbeans.modules.mercurial.HgException
      */
-    public static List<String> doPush(File repository, File to) throws HgException {
+    public static List<String> doPush(File repository, String to) throws HgException {
         if (repository == null || to == null ) return null;
         List<String> command = new ArrayList<String>();
 
@@ -463,6 +463,7 @@ public class HgCommand {
         command.add(HG_PUSH_FORCE_CMD);
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
+        command.add(to);
 
         return exec(command);
     }
@@ -964,9 +965,9 @@ public class HgCommand {
      * destination for hg pull commmands.
      *
      * @param File repository of the mercurial repository's root directory
-     * @return File for pull default
+     * @return String for pull default
      */
-    public static File getPullDefault(File repository) {
+    public static String getPullDefault(File repository) {
         return getPathDefault(repository, HG_PATH_DEFAULT_OPT);
     }
 
@@ -975,13 +976,13 @@ public class HgCommand {
      * destination for hg push commmands.
      *
      * @param File repository of the mercurial repository's root directory
-     * @return File for push default
+     * @return String for push default
      */
-    public static File getPushDefault(File repository) {
+    public static String getPushDefault(File repository) {
         return getPathDefault(repository, HG_PATH_DEFAULT_PUSH_OPT);
     }
 
-    private static File getPathDefault(File repository, String type) {
+    private static String getPathDefault(File repository, String type) {
         if (repository == null) return null;
         List<String> command = new ArrayList<String>();
 
@@ -1003,7 +1004,7 @@ public class HgCommand {
                     && (!isErrorNotFound(list.get(0)))) {
             res = list.get(0);
         }
-        return res != null ? new File(res): null;
+        return res;
     }
     
     /**
@@ -1087,11 +1088,21 @@ public class HgCommand {
      * Returns the revision number for the heads in a repository
      *
      * @param File repository of the mercurial repository's root directory
-     * @param File file of the file whose last revision number is to be returned.
      * @return List<String> of revision numbers.
      * @throws org.netbeans.modules.mercurial.HgException
      */
     public static List<String> getHeadRevisions(File repository) throws HgException {
+        return  getHeadInfo(repository, HG_REV_TEMPLATE_CMD);
+    }
+
+    /**
+     * Returns the revision number for the heads in a repository
+     *
+     * @param String repository of the mercurial repository
+     * @return List<String> of revision numbers.
+     * @throws org.netbeans.modules.mercurial.HgException
+     */
+    public static List<String> getHeadRevisions(String repository) throws HgException {
         return  getHeadInfo(repository, HG_REV_TEMPLATE_CMD);
     }
 
@@ -1107,8 +1118,7 @@ public class HgCommand {
         return  getHeadInfo(repository, HG_CSET_TARGET_TEMPLATE_CMD);
     }
 
-    private static List<String> getHeadInfo(File repository, String template) throws HgException {
-
+    private static List<String> getHeadInfo(String repository, String template) throws HgException {
         if (repository == null) return null;
         
         List<String> command = new ArrayList<String>();
@@ -1116,10 +1126,15 @@ public class HgCommand {
         command.add(getHgCommand());
         command.add(HG_HEADS_CMD);
         command.add(HG_OPT_REPOSITORY);
-        command.add(repository.getAbsolutePath());
+        command.add(repository);
         command.add(template);
 
         return exec(command);
+    }
+
+    private static List<String> getHeadInfo(File repository, String template) throws HgException {
+        if (repository == null) return null;
+        return getHeadInfo(repository.getAbsolutePath(), template);
     }
 
     /**

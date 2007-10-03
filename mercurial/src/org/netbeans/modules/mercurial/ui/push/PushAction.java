@@ -67,24 +67,25 @@ public class PushAction extends AbstractAction {
         final File root = HgUtils.getRootFile(ctx);
         if (root == null) return;
         String repository = root.getAbsolutePath();
-        final File pushFile = HgCommand.getPushDefault(root);
-        if(pushFile == null) return;
+        final String pushPath = HgCommand.getPushDefault(root);
+        if(pushPath == null) return;
         final String fromPrjName = HgProjectUtils.getProjectName(root);
-        final String toPrjName = HgProjectUtils.getProjectName(pushFile);
+        final String toPrjName = HgProjectUtils.getProjectName(new File(pushPath));
 
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
         HgProgressSupport support = new HgProgressSupport() {
-            public void perform() { performPush(root, pushFile, fromPrjName, toPrjName); } };
+            public void perform() { performPush(root, pushPath, fromPrjName, toPrjName); } };
         support.start(rp, repository, 
                 org.openide.util.NbBundle.getMessage(PushAction.class, "MSG_PUSH_PROGRESS")); // NOI18N
         
     }
                 
-    static void performPush(File root, File pushFile, String fromPrjName, String toPrjName) {
+    static void performPush(File root, String pushPath, String fromPrjName, String toPrjName) {
         try {
-            List<String> listOutgoing = HgCommand.doOutgoing(root, pushFile);
+            List<String> listOutgoing = HgCommand.doOutgoing(root, pushPath);
             if ((listOutgoing == null) || listOutgoing.isEmpty()) return;
 
+            File pushFile = new File (pushPath);
             boolean bLocalPush = (FileUtil.toFileObject(FileUtil.normalizeFile(pushFile)) != null);
             boolean bNoChanges = HgCommand.isNoChanges(listOutgoing.get(listOutgoing.size()-1));
 
@@ -101,7 +102,12 @@ public class PushAction extends AbstractAction {
                 }
             }
 
-            List<String> list = HgCommand.doPush(root, pushFile);
+            List<String> list;
+            if (bNoChanges) {
+                list= listOutgoing;
+            } else {
+                list = HgCommand.doPush(root, pushPath);
+            }
                     
             if (list != null && !list.isEmpty()) {
                         
@@ -128,11 +134,11 @@ public class PushAction extends AbstractAction {
                 if (toPrjName == null) {
                     HgUtils.outputMercurialTabInRed(
                                 NbBundle.getMessage(PushAction.class,
-                                "MSG_PUSH_TO_NONAME", pushFile)); // NOI18N
+                                "MSG_PUSH_TO_NONAME", pushPath)); // NOI18N
                 } else {
                     HgUtils.outputMercurialTabInRed(
                                 NbBundle.getMessage(PushAction.class,
-                                "MSG_PUSH_TO", toPrjName, pushFile)); // NOI18N
+                                "MSG_PUSH_TO", toPrjName, pushPath)); // NOI18N
                 }
                 HgUtils.outputMercurialTabInRed(
                             NbBundle.getMessage(PushAction.class,
@@ -143,21 +149,22 @@ public class PushAction extends AbstractAction {
                 // Push does not do an Update of the target Working Dir
                 if(!bMergeNeeded){
                     HgUtils.outputMercurialTab(""); // NOI18N
+                    if (bNoChanges) return;
                     if (!bLocalPush) {
                         HgUtils.outputMercurialTabInRed(
                                     NbBundle.getMessage(PushAction.class,
-                                    "MSG_PUSH_UPDATE_NEEDED_NONAME", toPrjName, pushFile)); // NOI18N
+                                    "MSG_PUSH_UPDATE_NEEDED_NONAME", toPrjName, pushPath)); // NOI18N
                     } else {
                         list = HgCommand.doUpdateAll(pushFile, false, null, false);                    
                         HgUtils.outputMercurialTab(list);
                         if (toPrjName != null) {
                             HgUtils.outputMercurialTabInRed(
                                         NbBundle.getMessage(PushAction.class,
-                                        "MSG_PUSH_UPDATE_DONE", toPrjName, pushFile)); // NOI18N
+                                        "MSG_PUSH_UPDATE_DONE", toPrjName, pushPath)); // NOI18N
                         } else {
                             HgUtils.outputMercurialTabInRed(
                                         NbBundle.getMessage(PushAction.class,
-                                        "MSG_PUSH_UPDATE_DONE_NONAME", pushFile)); // NOI18N
+                                        "MSG_PUSH_UPDATE_DONE_NONAME", pushPath)); // NOI18N
                         }
                         boolean bOutStandingUncommittedMerges = HgCommand.isErrorOutStandingUncommittedMerges(list.get(list.size() -1));
                         if (bOutStandingUncommittedMerges) {
@@ -175,7 +182,7 @@ public class PushAction extends AbstractAction {
                                "MSG_PUSH_MERGE_DO")); // NOI18N
                     MergeAction.doMergeAction(pushFile, null);
                 } else {
-                    List<String> headRevList = HgCommand.getHeadRevisions(pushFile);
+                    List<String> headRevList = HgCommand.getHeadRevisions(pushPath);
                     if (headRevList != null && headRevList.size() > 1) {
                         MergeAction.printMergeWarning(headRevList);
                     }

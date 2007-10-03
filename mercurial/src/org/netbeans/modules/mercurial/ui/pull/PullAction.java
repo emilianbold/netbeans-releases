@@ -143,12 +143,11 @@ public class PullAction extends AbstractAction {
         final File root = HgUtils.getRootFile(ctx);
         if (root == null) return;
         String repository = root.getAbsolutePath();
-        File pullFile = HgCommand.getPullDefault(root);
-        final String pullPath = pullFile.getAbsolutePath();
+        final String pullPath = HgCommand.getPullDefault(root);
         // We assume that if fromPrjName is null that it is a remote pull.
         // This is not true as a project which is in a subdirectory of a
         // repository will report a project name of null. This does no harm.
-        final String fromPrjName = HgProjectUtils.getProjectName(pullFile);
+        final String fromPrjName = HgProjectUtils.getProjectName(new File(pullPath));
         Project proj = HgUtils.getProject(ctx);
         final String toPrjName = HgProjectUtils.getProjectName(proj);
         
