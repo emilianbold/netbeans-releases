@@ -141,8 +141,9 @@ class AbstractVariable implements JDIVariable, Customizer, Cloneable {
         Value oldV = getInnerValue();
         if (oldV instanceof CharValue && expression.startsWith("'") && expression.endsWith("'") && expression.length() > 1) {
             value = oldV.virtualMachine().mirrorOf(expression.charAt(1));
-        } else if (oldV instanceof StringReference && expression.startsWith("\"") && expression.endsWith("\"") && expression.length() > 1) {
-            value = oldV.virtualMachine().mirrorOf(expression.substring(1, expression.length() - 1));
+        } else if ((oldV instanceof StringReference || oldV == null) &&
+                   expression.startsWith("\"") && expression.endsWith("\"") && expression.length() > 1) {
+            value = debugger.getVirtualMachine().mirrorOf(expression.substring(1, expression.length() - 1));
         } else if (oldV instanceof ObjectReference &&
                    ((ObjectReference) oldV).referenceType() instanceof ClassType &&
                    ((ClassType) ((ObjectReference) oldV).referenceType()).isEnum()) {
@@ -153,6 +154,8 @@ class AbstractVariable implements JDIVariable, Customizer, Cloneable {
             } else {
                 throw new InvalidExpressionException(expression);
             }
+        } else if ("null".equals(expression)) {
+            value = null;
         } else {
             // evaluate expression to Value
             Value evaluatedValue = debugger.evaluateIn (expression);
