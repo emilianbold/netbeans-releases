@@ -78,6 +78,7 @@ import org.openide.util.lookup.ProxyLookup;
  */
 public final class HighlightingManager {
 
+    // -J-Dorg.netbeans.modules.editor.lib2.highlighting.HighlightingManager.level=300
     private static final Logger LOG = Logger.getLogger(HighlightingManager.class.getName());
     
     public static synchronized HighlightingManager getInstance() {
