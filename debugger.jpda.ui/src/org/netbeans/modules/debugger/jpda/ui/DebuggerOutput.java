@@ -48,6 +48,7 @@ import java.net.UnknownHostException;
 import java.text.MessageFormat;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.MissingResourceException;
 import java.util.Set;
 import org.netbeans.api.debugger.ActionsManager;
@@ -67,6 +68,7 @@ import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.LaunchingDICookie;
 import org.netbeans.api.debugger.jpda.ListeningDICookie;
 import org.netbeans.spi.debugger.ContextProvider;
+import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 
 import org.openide.util.NbBundle;
 
@@ -287,6 +289,8 @@ PropertyChangeListener {
             String methodName = t.getMethodName ();
             String className = t.getClassName ();
             int lineNumber = t.getLineNumber (language);
+            Operation op = t.getCurrentOperation();
+            List<Operation> lastOperations = t.getLastOperations();
             try {
                 String sourceName = t.getSourceName (language);
                 String relativePath = EditorContextBridge.getRelativePath 
@@ -305,7 +309,32 @@ PropertyChangeListener {
                         debugger
                     );
 
-                if (lineNumber > 0)
+                if (op != null) {
+                    boolean done = op.getReturnValue() != null;
+                    if (!done) {
+                        print("CTL_Thread_stopped_before_op",
+                            new String[] {
+                                threadName,
+                                sourceName,
+                                methodName,
+                                String.valueOf(lineNumber),
+                                op.getMethodName()
+                            },
+                            line
+                        );
+                    } else {
+                        print("CTL_Thread_stopped_after_op",
+                            new String[] {
+                                threadName,
+                                sourceName,
+                                methodName,
+                                String.valueOf(lineNumber),
+                                lastOperations.get(lastOperations.size() - 1).getMethodName()
+                            },
+                            line
+                        );
+                    }
+                } else if (lineNumber > 0)
                     print (
                         "CTL_Thread_stopped",
                       //  IOManager.DEBUGGER_OUT + IOManager.STATUS_OUT,
