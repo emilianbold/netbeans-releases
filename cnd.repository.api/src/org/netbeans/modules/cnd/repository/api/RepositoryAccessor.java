@@ -70,7 +70,7 @@ public class RepositoryAccessor
                 // double check is necessary because 
                 // it is possible to have concurrent creators serialized on lock
                 if (repository == null) {
-                    repository = (Repository)Lookup.getDefault().lookup(Repository.class);
+                    repository = Lookup.getDefault().lookup(Repository.class);
                 }
             }
             assert(repository != null);
@@ -90,7 +90,7 @@ public class RepositoryAccessor
                 // double check is necessary because 
                 // it is possible to have concurrent creators serialized on lock
                 if (translator == null) {
-                    translator = (RepositoryTranslation)Lookup.getDefault().lookup(RepositoryTranslation.class);
+                    translator = Lookup.getDefault().lookup(RepositoryTranslation.class);
                 }
             }
             assert(translator != null);
