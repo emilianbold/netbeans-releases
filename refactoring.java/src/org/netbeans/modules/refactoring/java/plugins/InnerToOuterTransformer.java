@@ -99,9 +99,29 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
     public Tree visitNewClass(NewClassTree arg0, Element arg1) {
         Element currentElement = workingCopy.getTrees().getElement(getCurrentPath());
         if (currentElement!=null && workingCopy.getTypes().isSubtype(getCurrentElement().getEnclosingElement().asType(), inner.asType())) {
-            rewrite(arg0,make.addNewClassArgument(arg0, null, make.Identifier(getCurrentClass()==inner?refactoring.getReferenceName():"this")));
+            String thisString;
+            if (getCurrentClass()==inner) {
+                thisString = refactoring.getReferenceName();
+            } else if (workingCopy.getTypes().isSubtype(getCurrentClass().asType(),outer.asType())) {
+                thisString = "this";
+            } else {
+                TypeElement thisOuter = getOuter(getCurrentClass());
+                if (thisOuter!=null)
+                    thisString = getOuter(getCurrentClass()).getQualifiedName().toString() + ".this";
+                else 
+                    thisString = "this";
+            
+            }
+            rewrite(arg0,make.addNewClassArgument(arg0, null, make.Identifier(thisString)));
         }
         return super.visitNewClass(arg0, arg1);
+    }
+    
+    private TypeElement getOuter(TypeElement element) {
+        while (element != null && !workingCopy.getTypes().isSubtype(element.asType(),outer.asType())) {
+            element = SourceUtils.getEnclosingTypeElement(element);
+        }
+        return element;
     }
 
     @Override
@@ -200,7 +220,7 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
                 MemberSelectTree m = make.MemberSelect(((MemberSelectTree) ex).getExpression(),refactoring.getClassName());
                 rewrite(memberSelect,m);
             }
-        } else if (isThisReferenceToOuter()) {
+        } else if (isThisReferenceToOuter()&& !"class".equals(memberSelect.getIdentifier().toString())) { //NOI18N
             MemberSelectTree m = make.MemberSelect(memberSelect, refactoring.getReferenceName());
             rewrite(memberSelect, m);
         }
