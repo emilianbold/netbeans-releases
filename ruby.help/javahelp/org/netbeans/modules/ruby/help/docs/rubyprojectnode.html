@@ -1,0 +1,177 @@
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright (c) 2007 Sun Microsystems, Inc.
+* All rights reserved. 
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Ruby Project or Ruby on Rails Project Node</title>
+<link href="nbdocs:/org/netbeans/modules/usersguide/ide.css"  rel="stylesheet" type="text/css">
+</head>
+<body>
+<h2>Ruby Project or Ruby on Rails Project Node</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>The Projects window is the main entry point to your project sources. It shows a logical view of important project contents such as Source Files and Test Files (for Ruby Projects) or Controllers, Models, and Views (for Ruby on Rails projects). You can open the Projects window by choosing Window &gt; Projects (Ctrl-1).</p>
+<p>There are two types of Ruby projects that can be open in this window:</p>
+<table border="0" cellpadding="5">
+  <tr valign="top">
+    <td><img src="images/rubyprojicon.gif" alt="Ruby Project icon"></td>
+    <td><span class="rubybullet"><b>Ruby Projects.</b> Fairly simple projects that have only Source Files and Test Files folders for the files. If you right-click the main project node for a Ruby project, you have a few Ruby project choices, such as New (add files), Generate RDoc, and Run Rake Task.</span></td>
+  </tr>
+  <tr valign="top">
+    <td><img src="images/railsprojicon.gif" width="13" height="16"></td>
+    <td><span class="railsbullet"><b>Ruby on Rails Projects.</b> Projects with Rails support for models, views, controllers, and databases that you can run in the WEBrick server and display in a browser. You can right-click the main project node and perform tasks like adding new files, generating models, views, and controllers, migrating databases, running Rake tasks, and so on.</span></td>
+  </tr>
+</table>
+<ul class="note">
+<li>For a more traditional file view of your project, use the Files window, usually available on a tab next to the Projects window or by choosing Windows &gt; Files (Ctrl-2). </li>
+</ul>
+<p>The following list of tasks shows you some of the things you can do in this window with a Ruby or Ruby on Rails project node. For a complete list of tasks, see <a href="ruby_quickref.html">Working With NetBeans Ruby</a>.</p>
+<table border="1" cellpadding="5" cellspacing="0" summary="The left column lists the task name. The right column lists the steps to perform.">
+  <tr valign="top"> 
+    <th scope="col" align="left">To perform this task...</th>
+    <th scope="col" align="left">Follow these steps</th>
+  </tr>
+<tr valign="top">
+  <td>Add files to your project</td>
+  <td><ol>
+    <li>In the Projects window, select the main project node and right-click<a href="usingirb.html"></a> it.</li>
+  <li>Select New and choose the type of file you would like to add.</li>
+  <li>In the New File wizard, specify the file name, location, and so on as needed, and then click Finish to create the file.</li>
+  </ol></td>
+</tr>
+<tr valign="top">
+  <td>Edit files </td>
+  <td><ol>
+      <li>In the Projects window, select the node for your project and, if necessary, double-click it to open the node.</li>
+      <li>Navigate to the file you want to edit and double-click it to open it in the editor. </li>
+    </ol>
+      <p>For more information on the editor, see: </p>
+      <ul>
+        <li><a href="editor_shortcuts_codetemplates.html">Ruby Editor Shortcut Keys and Code Templates</a></li>
+        <li>
+          <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+            <param name="viewerActivator" value="javax.help.LinkButton">
+            <param name="content" value=
+        "http://wiki.netbeans.org/wiki/view/RubyEditing">
+            <param name="text" value="<html><u>Ruby Editing</u></html>">
+            <param name="textFontSize" value="medium">
+            <param name="textColor" value="blue">
+          </object>
+        </li>
+    </ul></td>
+</tr>
+<tr valign="top">
+  <td>Generate a model, a controller, a migration, an integration test, and so on</td>
+  <td><ol>
+    <li>In the Projects window, select the main node for your Ruby on Rails project and right-click<a href="usingirb.html"></a> it.</li>
+    <li>Select Generate to open the Rails Generator dialog box.</li>
+    <li>Expand the Generate drop-down list and choose the item you would like to generate.
+</li>
+  </ol>
+<p>For examples of generating a model and a controller, see  &nbsp;
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="viewerActivator" value="javax.help.LinkButton">
+    <param name="content" value=
+        "http://www.netbeans.org/kb/60/ruby/rapid-ruby-weblog.html">
+    <param name="text" value="<html><u>Creating a Ruby Weblog in 10 Minutes</u></html>.">
+         <param name="textFontSize" value="medium">
+        <param name="textColor" value="blue">
+   </object></p>
+</td>
+</tr>
+<tr valign="top">
+  <td>Migrate a database </td>
+  <td><ul>
+      <li>To migrate a database  for a Ruby on Rails project (for example, add tables that you have defined in a model), right-click the main project node in the Projects window and choose Migrate Database &gt; To Current Version.</li>
+  <li>You can also revert the database to an earlier version by choosing one of the other To Version choices.</li>
+  <li>For an example, see&nbsp;
+    <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+      <param name="viewerActivator" value="javax.help.LinkButton">
+      <param name="content" value=
+        "http://www.netbeans.org/kb/60/ruby/rapid-ruby-weblog.html#06">
+      <param name="text" value="<html><u>Migrating the Database</u></html>">
+         <param name="textFontSize" value="medium">
+        <param name="textColor" value="blue">
+   </object>in the tutorial "Creating a Ruby Weblog in 10 Minutes".
+&nbsp; </li>
+  </ul></td>
+</tr>
+<tr valign="top">
+  <td>Run a Ruby or Rails application</td>
+  <td><ol>
+    <li>If your project is not the main one, right-click the project node and choose Set as Main Project</li>
+    <li>Click the Run Main Project <img src="images/runprojicon.gif" alt="Run Project button" width="11" height="20" align="texttop">&nbsp;toolbar button or press F6 or choose Run &gt; Run Main Project from the main menu. </li>
+  </ol>
+    <ul>
+      <ul>
+          <li>You see a Ruby project's output in a window at the bottom of the IDE.</li>
+          <li>A Ruby on Rails project runs in the WEBrick server and displays in your default browser.</li>
+    <ul class="note">        
+    <li>To stop the WEBrick server, click the  X button <img src="images/redx.gif" alt="Red X icon" width="15" height="16" align="texttop">&nbsp;to the left of the WEBrick window.</li>
+    </ul>
+        </ul>
+    </ul></td>
+</tr>
+<tr valign="top">
+  <td>Test a Ruby or Rails application</td>
+  <td><ul>
+      <li>See 
+          <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+            <param name="viewerActivator" value="javax.help.LinkButton">
+            <param name="content" value=
+        "http://www.netbeans.org/kb/60/ruby/unittest.html">
+            <param name="text" value="<html><u>Test Driven Rails Development</u></html>.">
+         <param name="textFontSize" value="medium">
+        <param name="textColor" value="blue">
+   </object>
+      </li>
+  </ul></td>
+</tr>
+<tr valign="top">
+  <td>Manage your Rails plugins</td>
+  <td><ul>
+      <li>Choose Tools &gt; Rail Plugins to open the <a href="railspluginmanager.html">Rails Plugins Manager</a>.</li>
+  </ul></td>
+</tr>
+<tr valign="top">
+  <td>Run Rake tasks </td>
+  <td><ol>
+      <li>In the Projects window, select the name of your project and right-click<a href="usingirb.html"></a> it.</li>
+      <li>Select Run Rake Task and choose the type of task you would like to run.</li>
+      <li>Check the progress of the task in the Output window at the bottom of the IDE.</li>
+  </ol></td>
+</tr>
+</table>
+
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="about_ruby.html">About Ruby Development in NetBeans</a></dd>
+</dl>
+
+
+
+<hr>
+
+<!-- Start Customer Feedback Link -->
+<!-- <p><b>Comments or questions?</b><br>
+Use the link below to connect to the Visual Web Development contact page. </p>
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="viewerActivator" value="javax.help.LinkButton">
+    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Component Tasks: Quick Reference">
+    <param name="text" value="<html><u><html><u>Click here to send feedback</u></html>">
+         <param name="textFontSize" value="medium">
+        <param name="textColor" value="blue">
+   </object><br> --> 
+<!-- End Customer Feedback Link -->
+  <small><a href="../../credits.html">Legal Notices</a></small> 
+<table cellpadding="50" border="0">
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+</table>
+</body>
+</html>
+
