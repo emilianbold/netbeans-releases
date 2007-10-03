@@ -445,4 +445,57 @@ public class TestUtils {
             return this.topClassMap;
         }
     }
+    
+    static class TestableTypeFinder implements CancellableTask<CompilationController>
+    {
+        private volatile boolean cancelled;
+        private boolean  testable = true;
+
+        public void run(CompilationController parameter) throws Exception 
+        {
+            parameter.toPhase(Phase.ELEMENTS_RESOLVED);
+            if (cancelled) {
+                return;
+            }
+
+            List<? extends Tree> typeDecls = parameter.getCompilationUnit().getTypeDecls();
+            if ((typeDecls == null) || typeDecls.isEmpty()) {
+                return;
+            }
+
+            List<TypeElement> result = new ArrayList<TypeElement>(typeDecls.size());
+
+            Trees trees = parameter.getTrees();
+            for (Tree typeDecl : typeDecls) {
+                if (typeDecl.getKind() == Tree.Kind.CLASS) {
+                    TypeElement element = (TypeElement)trees.getElement(new TreePath(new TreePath(parameter.getCompilationUnit()), typeDecl));
+                    ElementKind elemKind = element.getKind();
+                    if (elemKind.isInterface())
+                    {
+                        testable = false;
+                        return;
+                    }
+
+                    TypeElement midlet=parameter.getElements().getTypeElement("javax.microedition.midlet.MIDlet");
+
+                    if (parameter.getTypeUtilities().isCastable(element.asType(),midlet.asType()))
+                    {
+                        testable = false;
+                        return;
+                    }
+
+                }
+            }
+        }
+
+        public boolean isTestable()
+        {
+            return testable;
+        }
+
+        public void cancel()
+        {
+            this.cancelled = true;
+        }
+    };
 }

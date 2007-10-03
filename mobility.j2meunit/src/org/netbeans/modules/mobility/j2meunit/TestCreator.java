@@ -257,10 +257,16 @@ public class TestCreator {
 
         try {
             JavaSource javaSource = JavaSource.forFileObject(file2test);
+            TestUtils.TestableTypeFinder finder=new TestUtils.TestableTypeFinder();
+            javaSource.runUserActionTask(finder, true);
+            if (!finder.isTestable())
+                return Collections.EMPTY_LIST;
+            
             testable = TestUtils.findTopClasses(javaSource,testPkgPrivateMethods);            
         } catch (IOException ex) {
             System.out.println(ex.getMessage());
             ex.printStackTrace();
+            return Collections.EMPTY_LIST;
         }
 
         if (testable != null && !testable.isEmpty()) {
