@@ -1001,16 +1001,45 @@ public final class FileUtils {
         final File target = new File(source.getParentFile(),
                 name.substring(0, name.length() - PACK_GZ_SUFFIX.length()));
         
-        ExecutionResults er = SystemUtils.executeCommand(
-                SystemUtils.getUnpacker().getAbsolutePath(),
-                source.getAbsolutePath(),
-                target.getAbsolutePath());
-        if (er.getErrorCode() != 0) {
-            throw new IOException(ResourceUtils.getString(FileUtils.class,
-                    ERROR_UNPACK200_FAILED_KEY,
-                    er.getErrorCode(), er.getStdOut(),er.getStdErr()));
+        if(SystemUtils.isWindows() && source.getAbsolutePath().length() > 255) {
+            /*
+             * WORKAROUND for two issues:
+             * http://www.netbeans.org/issues/show_bug.cgi?id=96548
+             * http://www.netbeans.org/issues/show_bug.cgi?id=97984
+             * The issue is that unpack200/pack200 doesn`t support long path names
+             * Copy source to tmp dir, unpack it there and copy to target.
+             */
+            File tmpSource = null;
+            File tmpTarget = null;
+            try {
+                tmpSource = File.createTempFile(target.getName(),
+                        ".tmp" + PACK_GZ_SUFFIX);
+                copyFile(source, tmpSource);
+                tmpTarget = unpack(tmpSource);
+                deleteFile(tmpSource);
+                tmpSource = null;
+                copyFile(tmpTarget,target);
+                deleteFile(tmpTarget);
+                tmpTarget = null;                
+            } finally {
+                if(tmpSource!=null) {
+                    deleteFile(tmpSource);
+                }
+                if(tmpTarget!=null) {
+                    deleteFile(tmpTarget);
+                }
+            }
+        } else {
+            ExecutionResults er = SystemUtils.executeCommand(
+                    SystemUtils.getUnpacker().getAbsolutePath(),
+                    source.getAbsolutePath(),
+                    target.getAbsolutePath());
+            if (er.getErrorCode() != 0) {
+                throw new IOException(ResourceUtils.getString(FileUtils.class,
+                        ERROR_UNPACK200_FAILED_KEY,
+                        er.getErrorCode(), er.getStdOut(),er.getStdErr()));
+            }
         }
-        
         return target;
     }
     
@@ -1098,7 +1127,7 @@ public final class FileUtils {
     
     public static boolean isUNCPath(String path) {
         return SystemUtils.getNativeUtils().isUNCPath(path);
-    }    
+    }
     
     public static File eliminateRelativity(
             final String path) {
@@ -1693,7 +1722,7 @@ public final class FileUtils {
     public static final String MD5_DIGEST_NAME =
             "MD5";//NOI18N
     public static final String INFO_PLIST_STUB =
-    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
             "<!DOCTYPE plist SYSTEM \"file://localhost/System/Library/DTDs/PropertyList.dtd\">\n" +
             "<plist version=\"0.9\">\n" +
             "  <dict>\n" +
