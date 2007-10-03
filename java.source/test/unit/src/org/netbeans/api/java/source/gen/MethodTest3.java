@@ -151,7 +151,7 @@ public class MethodTest3 extends GeneratorTest {
                         (ExpressionTree) node.getDefaultValue()
                         );
                 model.setElement(njuMethod, al);
-                changes.rewrite(node, njuMethod);
+                copy.rewrite(node, njuMethod);
             }
             return null;
         }
@@ -188,7 +188,7 @@ public class MethodTest3 extends GeneratorTest {
                 
                 model.setElement(tr, el);
                 model.setType(tr, el.asType());
-                changes.rewrite(node, njuMethod);
+                copy.rewrite(node, njuMethod);
             }
             return null;
         }

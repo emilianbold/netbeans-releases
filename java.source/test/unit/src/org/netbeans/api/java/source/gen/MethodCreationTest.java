@@ -138,7 +138,7 @@ public class MethodCreationTest extends GeneratorTestMDRCompat {
                         ClassTree copy = make.addClassMember(
                             node, newMethod
                         );
-                        changes.rewrite(node, copy);
+                        this.copy.rewrite(node, copy);
                     }
                     return null;
                 }

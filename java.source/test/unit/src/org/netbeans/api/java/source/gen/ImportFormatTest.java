@@ -94,7 +94,7 @@ public class ImportFormatTest extends GeneratorTestMDRCompat {
                         node.getTypeDecls(),
                         node.getSourceFile()
                 );
-                changes.rewrite(node, unit);
+                copy.rewrite(node, unit);
                 return null;
             }
         });
@@ -113,7 +113,7 @@ public class ImportFormatTest extends GeneratorTestMDRCompat {
                         node.getTypeDecls(),
                         node.getSourceFile()
                 );
-                changes.rewrite(node, unit);
+                copy.rewrite(node, unit);
                 return null;
             }
         });
@@ -132,7 +132,7 @@ public class ImportFormatTest extends GeneratorTestMDRCompat {
                         node.getTypeDecls(),
                         node.getSourceFile()
                 );
-                changes.rewrite(node, unit);
+                copy.rewrite(node, unit);
                 return null;
             }
         });
@@ -150,7 +150,7 @@ public class ImportFormatTest extends GeneratorTestMDRCompat {
                         node.getTypeDecls(),
                         node.getSourceFile()
                 );
-                changes.rewrite(node, unit);
+                copy.rewrite(node, unit);
                 return null;
             }
         });
@@ -168,7 +168,7 @@ public class ImportFormatTest extends GeneratorTestMDRCompat {
                         node.getTypeDecls(),
                         node.getSourceFile()
                 );
-                changes.rewrite(node, unit);
+                copy.rewrite(node, unit);
                 return null;
             }
         });
@@ -186,7 +186,7 @@ public class ImportFormatTest extends GeneratorTestMDRCompat {
                         node.getTypeDecls(),
                         node.getSourceFile()
                 );
-                changes.rewrite(node, unit);
+                copy.rewrite(node, unit);
                 return null;
             }
         });
@@ -202,7 +202,7 @@ public class ImportFormatTest extends GeneratorTestMDRCompat {
                         node.getTypeDecls(),
                         node.getSourceFile()
                 );
-                changes.rewrite(node, unit);
+                copy.rewrite(node, unit);
                 return null;
             }
         });
@@ -210,14 +210,6 @@ public class ImportFormatTest extends GeneratorTestMDRCompat {
     }
 
     
-    static class T extends Transformer<Void, Object> {
-            public Void visitImport(ImportTree node, Object p) {
-                make.Identifier("java.util.List");
-                System.err.println(getParent(node, model));
-                return null;
-            }
-    }
-
     public void testAddSeveral() throws IOException, FileStateInvalidException {
         process(new Transformer<Void, Object>() {
             public Void visitCompilationUnit(CompilationUnitTree node, Object p) {
@@ -237,7 +229,7 @@ public class ImportFormatTest extends GeneratorTestMDRCompat {
                         node.getTypeDecls(),
                         node.getSourceFile()
                 );
-                changes.rewrite(node, unit);
+                copy.rewrite(node, unit);
                 return null;
             }
         });
@@ -255,7 +247,7 @@ public class ImportFormatTest extends GeneratorTestMDRCompat {
                         node.getTypeDecls(),
                         node.getSourceFile()
                 );
-                changes.rewrite(node, unit);
+                copy.rewrite(node, unit);
                 return null;
             }
         });
@@ -274,7 +266,7 @@ public class ImportFormatTest extends GeneratorTestMDRCompat {
                         node.getTypeDecls(),
                         node.getSourceFile()
                 );
-                changes.rewrite(node, unit);
+                copy.rewrite(node, unit);
                 return null;
             }
         });
@@ -293,7 +285,7 @@ public class ImportFormatTest extends GeneratorTestMDRCompat {
                         node.getTypeDecls(),
                         node.getSourceFile()
                 );
-                changes.rewrite(node, unit);
+                copy.rewrite(node, unit);
                 return null;
             }
         });
@@ -312,7 +304,7 @@ public class ImportFormatTest extends GeneratorTestMDRCompat {
                         node.getTypeDecls(),
                         node.getSourceFile()
                 );
-                changes.rewrite(node, unit);
+                copy.rewrite(node, unit);
                 return null;
             }
         });
@@ -346,7 +338,7 @@ public class ImportFormatTest extends GeneratorTestMDRCompat {
                         node.getTypeDecls(),
                         node.getSourceFile()
                 );
-                changes.rewrite(node, unit);
+                copy.rewrite(node, unit);
                 return null;
             }
         });
@@ -361,16 +353,4 @@ public class ImportFormatTest extends GeneratorTestMDRCompat {
         return "org/netbeans/test/codegen/indent/imports/";
     }
     
-    private static Tree getParent(Tree t, ASTService model) {
-        Tree root = model.getRoot();
-        Tree[] tp = model.makePath(root, t);
-        if (tp.length == 0)
-            return null;           // tree not found
-        if (tp.length == 1) {
-            assert t == root;
-            return t;
-        }
-        return tp[tp.length - 2];
-    }
-
 }

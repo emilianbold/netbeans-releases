@@ -109,7 +109,7 @@ class DiffFacility {
         return list;
     }
     
-    public List<Diff> makeListMatch(String text1, String text2) {
+    public List<Diff> makeListMatch(String text1, String text2, int offset) {
         List<Line> list1 = getLines(text1);
         List<Line> list2 = getLines(text2);
         Line[] lines1 = list1.toArray(new Line[list1.size()]);
@@ -132,15 +132,15 @@ class DiffFacility {
                     builder.append(lines2[i].data);
                 }
                 gdiff.append(Diff.insert(delEnd == Difference.NONE ? 
-                        delStart < lines1.length ? lines1[delStart].start : (lines1.length != 0 ? lines1[lines1.length-1].end : 0)
-                        : lines1[delEnd].end,
+                        delStart < lines1.length ? lines1[delStart].start + offset : (lines1.length != 0 ? lines1[lines1.length-1].end + offset : offset)
+                        : lines1[delEnd].end + offset,
                         builder.toString()));
                 
             }
 
             // deletion
             else if (type == 'd') {
-                gdiff.append(Diff.delete(lines1[delStart].start, lines1[delEnd].end));
+                gdiff.append(Diff.delete(lines1[delStart].start + offset, lines1[delEnd].end + offset));
             }
             
             // change
@@ -159,14 +159,14 @@ class DiffFacility {
                         builder.append(lines2[i].data);
                     }
                     String match2 = builder.toString();
-                    makeTokenListMatch(match1, match2, lines1[delStart].start);
+                    makeTokenListMatch(match1, match2, lines1[delStart].start + offset);
                     builder = new StringBuilder();
                     for (int i = addStart + delEnd - delStart + 1; i <= addEnd; i++) {
                         builder.append(lines2[i].data);
                     }
                     String s = builder.toString();
                     if (!"".equals(s)) {
-                        gdiff.append(Diff.insert(lines1[delEnd].end, s));
+                        gdiff.append(Diff.insert(lines1[delEnd].end + offset, s));
                     }
                 } else {
                     //one step change
@@ -180,7 +180,7 @@ class DiffFacility {
                         builder.append(lines2[i].data);
                     }
                     String match2 = builder.toString();
-                    makeTokenListMatch(match1, match2, lines1[delStart].start);
+                    makeTokenListMatch(match1, match2, lines1[delStart].start + offset);
                 }
             }
         }

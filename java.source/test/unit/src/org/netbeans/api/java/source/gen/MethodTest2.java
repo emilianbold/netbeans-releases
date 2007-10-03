@@ -162,7 +162,7 @@ public class MethodTest2 extends GeneratorTest {
                         node.getBody(),
                         (ExpressionTree) node.getDefaultValue()
                         );
-                changes.rewrite(node, njuMethod);
+                copy.rewrite(node, njuMethod);
                 method = njuMethod;
             }
             return null;
@@ -193,7 +193,7 @@ public class MethodTest2 extends GeneratorTest {
                         (ExpressionTree) node.getDefaultValue()
                         );
                 method = njuMethod;
-                changes.rewrite(node, njuMethod);
+                copy.rewrite(node, njuMethod);
             }
             return null;
         }
@@ -220,7 +220,7 @@ public class MethodTest2 extends GeneratorTest {
                         node.getBody(),
                         (ExpressionTree) node.getDefaultValue()
                         );
-                changes.rewrite(node, njuMethod);
+                copy.rewrite(node, njuMethod);
                 method = njuMethod;
             }
             return null;
@@ -245,7 +245,7 @@ public class MethodTest2 extends GeneratorTest {
                 ClassTree decl = make.Class(node.getModifiers(), node.getSimpleName(), node.getTypeParameters(), node.getExtendsClause(), (List<ExpressionTree>)node.getImplementsClause(), members);
                 model.setElement(decl, te);
                 model.setType(decl, model.getType(node));
-                changes.rewrite(node, decl);
+                copy.rewrite(node, decl);
             }
             return null;
         }

@@ -102,7 +102,7 @@ public class Field6Test extends GeneratorTest {
                     PrimitiveTypeTree type = make.PrimitiveType(TypeKind.INT);
                     VariableTree var = make.Variable(mods, "field1", type, null);
                     ClassTree copy = make.addClassMember(node, var);
-                    changes.rewrite(node, copy);
+                    this.copy.rewrite(node, copy);
                     return null;
                 }
             }
@@ -137,7 +137,7 @@ public class Field6Test extends GeneratorTest {
                                 node.getName(),
                                 node.getType(),
                                 null);
-                        changes.rewrite(node, vt);
+                        copy.rewrite(node, vt);
                     }
                     return null;
                 }
@@ -177,7 +177,7 @@ public class Field6Test extends GeneratorTest {
                                 make.PrimitiveType(TypeKind.INT),
                                 null);
                         MethodTree copy = make.addMethodParameter(node, vt);
-                        changes.rewrite(node, copy);
+                        this.copy.rewrite(node, copy);
                     }
                     return null;
                 }

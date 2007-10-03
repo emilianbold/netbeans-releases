@@ -88,7 +88,7 @@ public class LabelsTest extends GeneratorTest {
             System.err.println("visitMethod: " + node.getName());
             super.visitMethod(node, p);
             MethodTree copy = make.setLabel(node, node.getName() + "0");
-            changes.rewrite(node, copy);
+            this.copy.rewrite(node, copy);
             return null;
         }
 
@@ -96,7 +96,7 @@ public class LabelsTest extends GeneratorTest {
             System.err.println("visitBreak: " + node.getLabel());
             super.visitBreak(node, p);
             BreakTree copy = make.setLabel(node, node.getLabel() + "0");
-            changes.rewrite(node, copy);
+            this.copy.rewrite(node, copy);
             return null;
         }
 
@@ -104,7 +104,7 @@ public class LabelsTest extends GeneratorTest {
             System.err.println("visitContinue: " + node.getLabel());
             super.visitContinue(node, p);
             ContinueTree copy = make.setLabel(node, node.getLabel() + "0");
-            changes.rewrite(node, copy);
+            this.copy.rewrite(node, copy);
             return null;
         }
 
@@ -112,7 +112,7 @@ public class LabelsTest extends GeneratorTest {
             System.err.println("visitClass: " + node.getSimpleName());
             super.visitClass(node, p);
             ClassTree copy = make.setLabel(node, node.getSimpleName() + "0");
-            changes.rewrite(node, copy);
+            this.copy.rewrite(node, copy);
             return null;
         }
 
@@ -120,7 +120,7 @@ public class LabelsTest extends GeneratorTest {
             System.err.println("visitLabeledStatement: " + node.getLabel());
             super.visitLabeledStatement(node, p);
             LabeledStatementTree copy = make.setLabel(node, node.getLabel() + "0");
-            changes.rewrite(node, copy);
+            this.copy.rewrite(node, copy);
             return null;
         }
 
@@ -128,7 +128,7 @@ public class LabelsTest extends GeneratorTest {
             System.err.println("visitMemberSelect: " + node.getIdentifier());
             super.visitMemberSelect(node, p);
             MemberSelectTree copy = make.setLabel(node, node.getIdentifier() + "0");
-            changes.rewrite(node, copy);
+            this.copy.rewrite(node, copy);
             return null;
         }
         
@@ -137,7 +137,7 @@ public class LabelsTest extends GeneratorTest {
             super.visitIdentifier(node, p);
             System.err.println("I: " + node);
             IdentifierTree copy = make.setLabel(node, node.getName() + "0");
-            changes.rewrite(node, copy);
+            this.copy.rewrite(node, copy);
             return null;
         }
 
@@ -145,7 +145,7 @@ public class LabelsTest extends GeneratorTest {
             System.err.println("visitTypeParameter: " + node.getName());
             super.visitTypeParameter(node, p);
             TypeParameterTree copy = make.setLabel(node, node.getName() + "0");
-            changes.rewrite(node, copy);
+            this.copy.rewrite(node, copy);
             return null;
         }
 
@@ -153,7 +153,7 @@ public class LabelsTest extends GeneratorTest {
             System.err.println("visitVariable: " + node.getName());
             super.visitVariable(node, p);
             VariableTree copy = make.setLabel(node, node.getName() + "0");
-            changes.rewrite(node, copy);
+            this.copy.rewrite(node, copy);
             return null;
         }
 

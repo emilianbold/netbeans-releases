@@ -41,7 +41,6 @@
 package org.netbeans.modules.java.source.builder;
 
 import org.netbeans.modules.java.source.engine.TreeFinder;
-import org.netbeans.modules.java.source.engine.RootTree;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
@@ -49,9 +48,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.java.source.*;
-import org.netbeans.modules.java.source.engine.RootTree;
 import org.netbeans.modules.java.source.engine.TreeFinder;
-import org.netbeans.modules.java.source.engine.ReattributionException;
 
 import com.sun.source.tree.*;
 
@@ -69,8 +66,6 @@ import static com.sun.tools.javac.tree.JCTree.*;
  */
 public final class ASTService {
     
-    private RootTree root;
-    private RootTree oldRoot;
     private Map<JavaFileObject, Map<JCTree, Integer>> endPosTables;
 
     private static final Context.Key<ASTService> treeKey = new Context.Key<ASTService>();
@@ -91,42 +86,20 @@ public final class ASTService {
     }
     
     /**
-     * Return the current root tree.
-     */
-    public Tree getRoot() {
-        return root;
-    }
-    
-    public Tree getOldRoot() {
-        return oldRoot;
-    }
-    
-    /**
-     * Replace the current root tree.
-     */
-    @SuppressWarnings("unchecked")
-    public void setRoot(final RootTree tree) throws ReattributionException {
-        if (tree == root)
-            return;
-        oldRoot = root;
-        root = tree;
-    }
-    
-    /**
      * Return the JCCompilationUnit parent of a specified tree.
      *
      * @return the JCCompilationUnit, or null if tree is a PackageDef.
      */
-    public CompilationUnitTree getTopLevel(Tree tree) {
-        if (tree == null)
-            return null;
-        Tree[] path = makePath(root, tree);
-        for (int i = 0; i < path.length; i++)
-            if (path[i] instanceof CompilationUnitTree)
-                return (CompilationUnitTree)path[i];
-        assert tree instanceof RootTree;
-        return null;
-    }
+//    public CompilationUnitTree getTopLevel(Tree tree) {
+//        if (tree == null)
+//            return null;
+//        Tree[] path = makePath(root, tree);
+//        for (int i = 0; i < path.length; i++)
+//            if (path[i] instanceof CompilationUnitTree)
+//                return (CompilationUnitTree)path[i];
+//        assert tree instanceof RootTree;
+//        return null;
+//    }
     
     /**
      * Returns the element for a specified tree.  Null is returned if the
@@ -150,7 +123,7 @@ public final class ASTService {
     }
     
     public TypeMirror getType(Tree tree) {
-        if (tree == null || tree instanceof RootTree)
+        if (tree == null)
             return null;
         TypeMirror type = ((JCTree)tree).type;
         if (type == null) {
@@ -446,8 +419,6 @@ public final class ASTService {
     }
 
     public java.util.List<? extends Tree> getChildren(Tree tree) {
-        if (tree instanceof RootTree)
-            return ((RootTree)tree).getCompilationUnits();
         if (tree instanceof CompilationUnitTree)
             return ((CompilationUnitTree)tree).getTypeDecls();
         if (tree instanceof ClassTree)

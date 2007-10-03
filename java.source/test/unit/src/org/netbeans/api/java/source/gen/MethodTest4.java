@@ -88,7 +88,7 @@ public class MethodTest4 extends GeneratorTestMDRCompat {
                     super.visitMethod(node, p);
                     if ("fooMethod".contentEquals(node.getName())) {
                         MethodTree copy = make.addMethodThrows(node, make.Identifier("java.io.IOException"));
-                        changes.rewrite(node, copy);
+                        this.copy.rewrite(node, copy);
                     }
                     return null;
                 }
@@ -105,7 +105,7 @@ public class MethodTest4 extends GeneratorTestMDRCompat {
                     super.visitMethod(node, p);
                     if ("fooMethod".contentEquals(node.getName())) {
                         MethodTree copy = make.addMethodThrows(node, make.Identifier("java.io.FileNotFoundException"));
-                        changes.rewrite(node, copy);
+                        this.copy.rewrite(node, copy);
                     }
                     return null;
                 }
@@ -122,7 +122,7 @@ public class MethodTest4 extends GeneratorTestMDRCompat {
                     super.visitMethod(node, p);
                     if ("fooMethod".contentEquals(node.getName())) {
                         MethodTree copy = make.insertMethodThrows(node, 0, make.Identifier("java.io.WriteAbortedException"));
-                        changes.rewrite(node, copy);
+                        this.copy.rewrite(node, copy);
                     }
                     return null;
                 }
@@ -139,7 +139,7 @@ public class MethodTest4 extends GeneratorTestMDRCompat {
                     super.visitMethod(node, p);
                     if ("fooMethod".contentEquals(node.getName())) {
                         MethodTree copy = make.removeMethodThrows(node, 0);
-                        changes.rewrite(node, copy);
+                        this.copy.rewrite(node, copy);
                     }
                     return null;
                 }
@@ -158,7 +158,7 @@ public class MethodTest4 extends GeneratorTestMDRCompat {
                         // just to test the method
                         ExpressionTree lastThrows = node.getThrows().get(1);
                         MethodTree copy = make.removeMethodThrows(node, lastThrows);
-                        changes.rewrite(node, copy);
+                        this.copy.rewrite(node, copy);
                     }
                     return null;
                 }
@@ -176,7 +176,7 @@ public class MethodTest4 extends GeneratorTestMDRCompat {
                     if ("fooMethod".contentEquals(node.getName())) {
                         // there will be nothing in throws section.
                         MethodTree copy = make.removeMethodThrows(node, 0);
-                        changes.rewrite(node, copy);
+                        this.copy.rewrite(node, copy);
                     }
                     return null;
                 }
@@ -199,9 +199,9 @@ public class MethodTest4 extends GeneratorTestMDRCompat {
                                 Collections.<ExpressionTree>emptyList()
                             )
                         );
-                        changes.rewrite(node.getModifiers(), newMods);
+                        this.copy.rewrite(node.getModifiers(), newMods);
                         MethodTree copy = make.addMethodThrows(node, make.Identifier("java.io.IOException"));
-                        changes.rewrite(node, copy);
+                        this.copy.rewrite(node, copy);
                     }
                     return null;
                 }
@@ -218,9 +218,9 @@ public class MethodTest4 extends GeneratorTestMDRCompat {
                     super.visitMethod(node, p);
                     if ("fooMethod".contentEquals(node.getName())) {
                         ModifiersTree newMods = make.removeModifiersAnnotation(node.getModifiers(), 0);
-                        changes.rewrite(node.getModifiers(), newMods);
+                        this.copy.rewrite(node.getModifiers(), newMods);
                         MethodTree copy = make.insertMethodThrows(node, 0, make.Identifier("java.io.WriteAbortedException"));
-                        changes.rewrite(node, copy);
+                        this.copy.rewrite(node, copy);
                     }
                     return null;
                 }
@@ -240,7 +240,7 @@ public class MethodTest4 extends GeneratorTestMDRCompat {
                             node, 
                             make.TypeParameter("T", Collections.<ExpressionTree>emptyList())
                         );
-                        changes.rewrite(node, copy);
+                        this.copy.rewrite(node, copy);
                     }
                     return null;
                 }

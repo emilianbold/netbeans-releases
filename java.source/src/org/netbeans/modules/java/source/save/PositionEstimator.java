@@ -888,12 +888,23 @@ public abstract class PositionEstimator {
     static class MembersEstimator extends PositionEstimator {
         
         private List<int[]> data;
+        private int minimalLeftPosition;
         
         public MembersEstimator(final List<? extends Tree> oldL, 
                                 final List<? extends Tree> newL, 
                                 final WorkingCopy copy)
         {
             super(oldL, newL, copy);
+            this.minimalLeftPosition = (-1);
+        }
+        
+        public MembersEstimator(final List<? extends Tree> oldL, 
+                                final List<? extends Tree> newL, 
+                                final int minimalLeftPosition,
+                                final WorkingCopy copy)
+        {
+            super(oldL, newL, copy);
+            this.minimalLeftPosition = minimalLeftPosition;
         }
         
         @Override()
@@ -954,6 +965,9 @@ public abstract class PositionEstimator {
                         break;
                     }
                     if (!seq.moveNext()) break;
+                }
+                if (minimalLeftPosition != (-1) && minimalLeftPosition > previousEnd) {
+                    previousEnd = minimalLeftPosition;
                 }
                 seq.move(treeEnd);
                 int wideEnd = treeEnd;

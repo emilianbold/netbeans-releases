@@ -94,7 +94,7 @@ public class CompareTreeTest extends GeneratorTest {
                         Set<Modifier> njuMods = new HashSet<Modifier>();
                         njuMods.add(Modifier.PRIVATE);
                         njuMods.add(Modifier.STATIC);
-                        changes.rewrite(origMods, make.Modifiers(njuMods));
+                        copy.rewrite(origMods, make.Modifiers(njuMods));
                     }
                     return null;
                 }
@@ -128,7 +128,7 @@ public class CompareTreeTest extends GeneratorTest {
                     super.visitMethod(node, p);
                     if ("secondMethod".contentEquals(node.getName())) {
                         MethodTree njuMethod = make.setLabel(node, "druhaMetoda");
-                        changes.rewrite(node, njuMethod);
+                        copy.rewrite(node, njuMethod);
                     }
                     return null;
                 }

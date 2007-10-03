@@ -252,7 +252,7 @@ public class MemberAdditionTest extends NbTestCase {
                 model.setElement(decl, te);
                 model.setType(decl, model.getType(node));
                 model.setPos(decl, model.getPos(node));
-                changes.rewrite(node, decl);
+                copy.rewrite(node, decl);
             }
             
             return null;
@@ -298,7 +298,7 @@ public class MemberAdditionTest extends NbTestCase {
                 model.setElement(decl, te);
                 model.setType(decl, model.getType(node));
                 model.setPos(decl, model.getPos(node));
-                changes.rewrite(node, decl);
+                copy.rewrite(node, decl);
             }
             return null;
         }

@@ -66,6 +66,7 @@ import com.sun.tools.javac.util.Name;
 import com.sun.tools.javadoc.DocEnv;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -84,7 +85,6 @@ import org.netbeans.modules.java.source.builder.ASTService;
 
 import org.netbeans.modules.java.source.builder.ElementsService;
 import org.netbeans.modules.java.source.JavadocEnv;
-import org.netbeans.modules.java.source.engine.RootTree;
 
 /**
  *
@@ -94,13 +94,12 @@ public final class ElementUtilities {
     
     private Context ctx;
     private ElementsService delegate;
+    private CompilationInfo info;
     
     /** Creates a new instance of ElementUtilities */
     ElementUtilities(CompilationInfo info) {
-        this(info.getJavacTask());
-    }
-    
-    public ElementUtilities(JavacTask task) {
+        JavacTask task = info.getJavacTask();
+        this.info = info;
         this.ctx = ((JavacTaskImpl)task).getContext();
         this.delegate = ElementsService.instance(ctx);
     }
@@ -360,8 +359,7 @@ public final class ElementUtilities {
         HashMap<String, ArrayList<Element>> hiders = new HashMap<String, ArrayList<Element>>();
         Trees trees = JavacTrees.instance(ctx);
         Types types = JavacTypes.instance(ctx);
-        RootTree root = (RootTree)ASTService.instance(ctx).getRoot();
-        for (CompilationUnitTree unit : root.getCompilationUnits()) {
+        for (CompilationUnitTree unit : Collections.singletonList(info.getCompilationUnit())) {
             TreePath path = new TreePath(unit);
             Scope scope = trees.getScope(path);
             while (scope != null && scope instanceof JavacScope && !((JavacScope)scope).isStarImportScope()) {

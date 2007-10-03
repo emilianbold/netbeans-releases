@@ -42,6 +42,7 @@ package org.netbeans.modules.java.source.save;
 
 import java.util.*;
 import com.sun.source.tree.*;
+import com.sun.source.util.TreePath;
 import java.util.logging.Logger;
 import org.netbeans.api.java.source.Comment.Style;
 import org.netbeans.modules.java.source.transform.FieldGroupTree;
@@ -110,14 +111,99 @@ public class CasualDiff {
     
     public static com.sun.tools.javac.util.List<Diff> diff(Context context,
             WorkingCopy copy,
-            JCTree oldTree,
-            JCTree newTree) 
+            TreePath oldTreePath,
+            JCTree newTree,
+            Map<Integer, String> userInfo)
     {
         CasualDiff td = new CasualDiff(context, copy);
-        td.diffTree(oldTree, newTree, new int[] { -1, -1});
+        JCTree oldTree = (JCTree) oldTreePath.getLeaf();
+        td.oldTopLevel =  (JCCompilationUnit) (oldTree.getKind() == Kind.COMPILATION_UNIT ? oldTree : copy.getCompilationUnit());
+        
+        for (Tree t : oldTreePath) {
+            if (t != oldTree && (t.getKind() == Kind.CLASS || t.getKind() == Kind.BLOCK)) {
+                td.printer.indent();
+            }
+        }
+        
+        if (oldTree.getKind() == Kind.CLASS && oldTreePath.getParentPath().getLeaf().getKind() == Kind.NEW_CLASS) {
+            td.anonClass = true;
+        }
+        
+        int[] bounds = td.getBounds(oldTree);
+        boolean isCUT = oldTree.getKind() == Kind.COMPILATION_UNIT;
+        int start = isCUT ? 0 : bounds[0];
+        int end   = isCUT ? td.workingCopy.getText().length() : bounds[1];
+        
+        Tree current = oldTree;
+        
+        for (Tree t : oldTreePath) {
+            if (t.getKind() == Kind.METHOD) {
+                MethodTree mt = (MethodTree) t;
+                
+                for (Tree p : mt.getParameters()) {
+                    if (p == current) {
+                        td.parameterPrint = true;
+                    }
+                }
+                break;
+            }
+            
+            current = t;
+        }
+        
+        if (oldTree.getKind() == Kind.METHOD || (!td.parameterPrint && oldTree.getKind() == Kind.VARIABLE)) {
+            td.tokenSequence.move(start);
+            if (td.tokenSequence.movePrevious() && td.tokenSequence.token().id() == JavaTokenId.WHITESPACE) {
+                String text = td.tokenSequence.token().text().toString();
+                int index = text.lastIndexOf('\n');
+                start = td.tokenSequence.offset();
+                if (index > -1) {
+                    start += index + 1;
+                }
+            }
+        }
+        
+        int ln = td.oldTopLevel.lineMap.getLineNumber(start);
+        int lineStart = td.oldTopLevel.lineMap.getStartPosition(ln);
+
+        td.printer.print(td.workingCopy.getText().substring(lineStart, start));
+        td.diffTree(oldTree, newTree, (JCTree) (oldTreePath.getParentPath() != null ? oldTreePath.getParentPath().getLeaf() : null), new int[] {start, bounds[1]});
+        String resultSrc = td.printer.toString().substring(start - lineStart);
+        String originalText = isCUT ? td.workingCopy.getText() : td.workingCopy.getText().substring(start, end);
+        new DiffFacility(td).makeListMatch(originalText, resultSrc, start);
+        userInfo.putAll(td.diffInfo);
+        
+        return td.getDiffs();
+    }
+    
+    public static com.sun.tools.javac.util.List<Diff> diff(Context context,
+            WorkingCopy copy,
+            List<? extends ImportTree> original,
+            List<? extends ImportTree> nue,
+            Map<Integer, String> userInfo)
+    {
+        CasualDiff td = new CasualDiff(context, copy);
+        td.oldTopLevel = (JCCompilationUnit) copy.getCompilationUnit();
+        int start = td.oldTopLevel.getPackageName() != null ? td.endPos(td.oldTopLevel.getPackageName()) : 0;
+        
+        List<JCImport> originalJC = new LinkedList<JCImport>();
+        List<JCImport> nueJC = new LinkedList<JCImport>();
+        
+        for (ImportTree i : original) {
+            originalJC.add((JCImport) i);
+        }
+        
+        for (ImportTree i : nue) {
+            nueJC.add((JCImport) i);
+        }
+        
+        PositionEstimator est = EstimatorFactory.imports(originalJC, nueJC, td.workingCopy);
+        int end = td.diffList(originalJC, nueJC, start, est, Measure.DEFAULT, td.printer);
+        
         String resultSrc = td.printer.toString();
-        new DiffFacility(td).makeListMatch(td.workingCopy.getText(), resultSrc);
-        JavaSourceAccessor.INSTANCE.getCommandEnvironment(td.workingCopy).setResult(td.diffInfo, "user-info");
+        String originalText = td.workingCopy.getText().substring(start, end);
+        new DiffFacility(td).makeListMatch(originalText, resultSrc, start);
+        userInfo.putAll(td.diffInfo);
         
         return td.getDiffs();
     }
@@ -133,8 +219,8 @@ public class CasualDiff {
     
     public int endPos(JCTree t) {
         return TreeInfo.getEndPos(t, oldTopLevel.endPositions);
-    }
-    
+        }
+        
     private int endPos(com.sun.tools.javac.util.List<? extends JCTree> trees) {
         int result = -1;
 	if (trees.nonEmpty()) {
@@ -1209,9 +1295,11 @@ public class CasualDiff {
             copyTo(localPointer, localPointer = tokenSequence.offset());
         } else {
             tokenSequence.move(selectedBounds[1]);
-            moveToSrcRelevant(tokenSequence, Direction.FORWARD); // go to dot (.)
-            moveToSrcRelevant(tokenSequence, Direction.FORWARD); // go to oldT.name token
-            copyTo(localPointer, localPointer = tokenSequence.offset());
+            if (oldT.name != Name.Table.instance(context).error) {
+                moveToSrcRelevant(tokenSequence, Direction.FORWARD); // go to dot (.)
+                moveToSrcRelevant(tokenSequence, Direction.FORWARD); // go to oldT.name token
+                copyTo(localPointer, localPointer = tokenSequence.offset());
+            }
         }
         if (nameChanged(oldT.name, newT.name)) {
             printer.print(newT.name);
@@ -2292,6 +2380,10 @@ public class CasualDiff {
      * @return position in original source
      */
     protected int diffTree(JCTree oldT, JCTree newT, int[] elementBounds) {
+        return diffTree(oldT, newT, null, elementBounds);
+    }
+    
+    protected int diffTree(JCTree oldT, JCTree newT, JCTree parent /*used only for modifiers*/, int[] elementBounds) {
         if (oldT == null && newT != null)
             throw new IllegalArgumentException("Null is not allowed in parameters.");
  
@@ -2488,6 +2580,10 @@ public class CasualDiff {
               break;
           case JCTree.ERRONEOUS:
               diffErroneous((JCErroneous)oldT, (JCErroneous)newT);
+              break;
+          case JCTree.MODIFIERS:
+              retVal = diffModifiers((JCModifiers) oldT, (JCModifiers) newT, parent, elementBounds[0]);
+              copyTo(retVal, elementBounds[1]);
               break;
           default:
               // handle special cases like field groups and enum constants
@@ -2830,7 +2926,7 @@ public class CasualDiff {
     }
 
     public static class Diff {
-        protected DiffTypes type;
+        public DiffTypes type;
         int pos;
         int endOffset;
         protected JCTree oldTree;

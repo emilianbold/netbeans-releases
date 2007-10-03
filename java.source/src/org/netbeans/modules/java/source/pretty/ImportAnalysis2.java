@@ -268,6 +268,11 @@ public class ImportAnalysis2 {
             //may happen for package clause
             return orig;
         }
+        
+        if (element.getKind() == ElementKind.PACKAGE) {
+            return make.MemberSelect(orig.getExpression(), orig.getIdentifier());
+        }
+        
         //if type is already accessible, do not import:
         for (Set<Element> els : visibleThroughClasses) {
             if (els.contains(element)) {

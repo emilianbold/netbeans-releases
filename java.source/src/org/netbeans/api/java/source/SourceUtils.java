@@ -274,7 +274,7 @@ public class SourceUtils {
         
         //not imported/visible so far by any means:
         if (info instanceof WorkingCopy) {
-            CompilationUnitTree nue = (CompilationUnitTree) ((WorkingCopy)info).getChangeSet().getChange(cut);
+            CompilationUnitTree nue = (CompilationUnitTree) ((WorkingCopy)info).getChangeSet().get(cut);
             cut = nue != null ? nue : cut;
             ((WorkingCopy)info).rewrite(info.getCompilationUnit(), addImports(cut, Collections.singletonList(fqn), ((WorkingCopy)info).getTreeMaker()));
         } else {

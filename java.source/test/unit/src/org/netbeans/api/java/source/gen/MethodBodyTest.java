@@ -42,12 +42,15 @@ package org.netbeans.api.java.source.gen;
 
 import com.sun.source.tree.*;
 import com.sun.source.util.SourcePositions;
+import com.sun.source.util.TreeScanner;
 import java.io.File;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -284,6 +287,124 @@ public class MethodBodyTest extends GeneratorTest {
                 cases.add(treeMaker.Case(null, Collections.singletonList(treeMaker.Break(null))));
                 
                 workingCopy.rewrite(switchStatement, treeMaker.Switch(switchStatement.getExpression(), cases));
+            }
+            
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void test117054a() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public void method() {\n" +
+            "        new Runnable() {}.\n" + 
+            "    }\n" +
+            "}\n");
+        
+         String golden = 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public void method() {\n" +
+            "        new Runnable() {\n" + 
+            "\n" + 
+            "            public void run() {\n" +
+            "            }\n" +
+            "        }.\n" +
+            "    }\n" +
+            "}\n";
+                 
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker treeMaker = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                final NewClassTree[] nctFin = new NewClassTree[1];
+                
+                new TreeScanner() {
+                    @Override
+                    public Object visitNewClass(NewClassTree node, Object p) {
+                        nctFin[0] = node;
+                        return null;
+                    }
+                }.scan(method.getBody().getStatements().get(0), null);
+                
+                assertNotNull(nctFin[0]);
+                
+                NewClassTree nct = nctFin[0];
+                ModifiersTree mods = treeMaker.Modifiers(EnumSet.of(Modifier.PUBLIC));
+                Tree returnType = treeMaker.Type(workingCopy.getTypes().getNoType(TypeKind.VOID));
+                MethodTree nueMethod = treeMaker.Method(mods, "run", returnType, Collections.<TypeParameterTree>emptyList(), Collections.<VariableTree>emptyList(), Collections.<ExpressionTree>emptyList(), "{}", null);
+                
+                workingCopy.rewrite(nct.getClassBody(), treeMaker.addClassMember(nct.getClassBody(), nueMethod));
+            }
+            
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void test117054b() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public void method() {\n" +
+            "        Runnable r = new Runnable() {}.\n" + 
+            "    }\n" +
+            "}\n");
+        
+         String golden = 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public void method() {\n" +
+            "        Runnable r = new Runnable() {\n" + 
+            "\n" + 
+            "            public void run() {\n" +
+            "            }\n" +
+            "        }.\n" +
+            "    }\n" +
+            "}\n";
+                 
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker treeMaker = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                final NewClassTree[] nctFin = new NewClassTree[1];
+                
+                new TreeScanner() {
+                    @Override
+                    public Object visitNewClass(NewClassTree node, Object p) {
+                        nctFin[0] = node;
+                        return null;
+                    }
+                }.scan(method.getBody().getStatements().get(0), null);
+                
+                assertNotNull(nctFin[0]);
+                
+                NewClassTree nct = nctFin[0];
+                ModifiersTree mods = treeMaker.Modifiers(EnumSet.of(Modifier.PUBLIC));
+                Tree returnType = treeMaker.Type(workingCopy.getTypes().getNoType(TypeKind.VOID));
+                MethodTree nueMethod = treeMaker.Method(mods, "run", returnType, Collections.<TypeParameterTree>emptyList(), Collections.<VariableTree>emptyList(), Collections.<ExpressionTree>emptyList(), "{}", null);
+                
+                workingCopy.rewrite(nct.getClassBody(), treeMaker.addClassMember(nct.getClassBody(), nueMethod));
             }
             
         };

@@ -95,7 +95,7 @@ public class FieldTest1 extends GeneratorTestMDRCompat {
                 public Void visitVariable(VariableTree node, Object p) {
                     super.visitVariable(node, p);
                     if ("modifiersField".contentEquals(node.getName())) {
-                        changes.rewrite(node.getModifiers(), make.Modifiers(Collections.EMPTY_SET));
+                        copy.rewrite(node.getModifiers(), make.Modifiers(Collections.EMPTY_SET));
                     }
                     return null;
                 }
@@ -124,8 +124,8 @@ public class FieldTest1 extends GeneratorTestMDRCompat {
                         model.setElement(vt, model.getElement(node));
                         model.setType(vt, model.getType(node));
                         model.setPos(vt, model.getPos(node));
-                        //changes.rewrite(node.getType(), tree);
-                        changes.rewrite(node, vt);
+                        //copy.rewrite(node.getType(), tree);
+                        copy.rewrite(node, vt);
                     }
                     return null;
                 }
@@ -157,7 +157,7 @@ public class FieldTest1 extends GeneratorTestMDRCompat {
     }
     
     /**
-     * Changes the initial value text.
+     * copy the initial value text.
      */
     public void testFieldInitialValueText() throws IOException {
         System.err.println("testFieldInitialValueText");
@@ -166,7 +166,7 @@ public class FieldTest1 extends GeneratorTestMDRCompat {
                 public Void visitVariable(VariableTree node, Object p) {
                     super.visitVariable(node, p);
                     if ("initialValueTextTester".contentEquals(node.getName())) {
-                        changes.rewrite(node.getInitializer(), make.Literal("This is a new text."));
+                        copy.rewrite(node.getInitializer(), make.Literal("This is a new text."));
                     }
                     return null;
                 }
@@ -185,7 +185,7 @@ public class FieldTest1 extends GeneratorTestMDRCompat {
                 public Void visitVariable(VariableTree node, Object p) {
                     super.visitVariable(node, p);
                     if ("initialValueChanger".contentEquals(node.getName())) {
-                        changes.rewrite(node.getInitializer(), make.Literal(Long.valueOf(78)));
+                        copy.rewrite(node.getInitializer(), make.Literal(Long.valueOf(78)));
                     }
                     return null;
                 }
@@ -195,7 +195,7 @@ public class FieldTest1 extends GeneratorTestMDRCompat {
     }
     
     /**
-     * Changes the initialization 'new String("NetBeers")' to 'new String()'.
+     * copy the initialization 'new String("NetBeers")' to 'new String()'.
      * It tests only change in expression, no expression swap.
      */
     public void testFieldChangeInInitValue() throws IOException {
@@ -214,7 +214,7 @@ public class FieldTest1 extends GeneratorTestMDRCompat {
                                     Collections.singletonList(make.Literal("NetBeans")),
                                     nct.getClassBody()
                             );
-                            changes.rewrite(nct, njuNct);
+                            copy.rewrite(nct, njuNct);
                         }
                     }
                     return null;
@@ -239,7 +239,7 @@ public class FieldTest1 extends GeneratorTestMDRCompat {
                                 node.getName(),
                                 node.getType(),
                                 null);
-                        changes.rewrite(node, vt);
+                        copy.rewrite(node, vt);
                     }
                     return null;
                 }

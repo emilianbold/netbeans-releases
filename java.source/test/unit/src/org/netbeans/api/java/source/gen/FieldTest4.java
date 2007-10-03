@@ -104,7 +104,7 @@ public class FieldTest4 extends GeneratorTest {
                     model.setElement(ct, model.getElement(node));
                     model.setType(ct, model.getType(node));
                     copyCommentTo(node, ct);
-                    changes.rewrite(node, ct);
+                    copy.rewrite(node, ct);
                     return null;
                 }
             }

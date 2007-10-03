@@ -93,14 +93,6 @@ public abstract class JavaSourceAccessor {
     public abstract JavacTaskImpl getJavacTask (CompilationInfo compilationInfo);
     
     /**
-     * Returns {@link QueryEnvironment} associated with the given {@link WorkingCopy}.
-     * 
-     * @param copy {@link WorkingCopy} for which {@link QueryEnvironment} should be obtained
-     * @return {@link CQueryEnvironment associated with the given working copy
-     */
-    public abstract ApplicationContext getCommandEnvironment(WorkingCopy copy);
-    
-    /**
      * Returns a cached compilation info when available or null
      * @param js {@link JavaSource} which {@CompilationInfo} should be returned
      * @param phase to which the compilation info should be moved

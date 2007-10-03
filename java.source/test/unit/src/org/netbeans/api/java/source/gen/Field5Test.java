@@ -87,7 +87,7 @@ public class Field5Test extends GeneratorTest {
                     super.visitClass(node, p);
                     if ("Test".contentEquals(node.getSimpleName())) {
                         System.err.println("visitClass");
-                        changes.rewrite(node, make.setLabel(node, "Test2"));
+                        copy.rewrite(node, make.setLabel(node, "Test2"));
                     }
                     return null;
                 }
@@ -96,7 +96,7 @@ public class Field5Test extends GeneratorTest {
                     super.visitIdentifier(node, p);
                     if ("Test".contentEquals(node.getName())) {
                         System.err.println("visitIdentifier");
-                        changes.rewrite(node, make.setLabel(node, "Test2"));
+                        copy.rewrite(node, make.setLabel(node, "Test2"));
                     }
                     return null;
                 }

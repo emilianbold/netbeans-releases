@@ -125,8 +125,6 @@ import org.netbeans.modules.java.source.JavaFileFilterQuery;
 import org.netbeans.modules.java.source.builder.ASTService;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.JavadocEnv;
-import org.netbeans.modules.java.source.engine.ReattributionException;
-import org.netbeans.modules.java.source.engine.RootTree;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaSourceProvider;
@@ -1173,9 +1171,6 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                 if (tree.endPositions != null) {
                     s.setEndPosTable(tree.sourcefile, tree.endPositions);
                 }
-                List<CompilationUnitTree> units = new ArrayList<CompilationUnitTree>();
-                units.add(tree);
-                s.setRoot(new RootTree(units));
                 assert !it.hasNext();
                 currentPhase = Phase.PARSED;
                 long end = System.currentTimeMillis();
@@ -1234,11 +1229,6 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
             currentPhase = Phase.MODIFIED;
             dumpSource(currentInfo, ex);
             throw ex;
-        } catch (ReattributionException ex) {
-            parserError = true;
-            currentPhase = Phase.MODIFIED;
-            dumpSource(currentInfo, ex);
-            throw new RuntimeException(ex);
         } catch (RuntimeException ex) {
             parserError = true;
             currentPhase = Phase.MODIFIED;
@@ -1895,12 +1885,6 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         public JavacTaskImpl getJavacTask (final CompilationInfo compilationInfo) {
             assert compilationInfo != null;
             return compilationInfo.getJavacTask();
-        }
-        
-        @Override
-        public ApplicationContext getCommandEnvironment(WorkingCopy copy) {
-            assert copy != null;
-            return copy.getCommandEnvironment();
         }
         
         @Override

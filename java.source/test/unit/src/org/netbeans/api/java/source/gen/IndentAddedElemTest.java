@@ -118,7 +118,7 @@ public class IndentAddedElemTest extends GeneratorTest {
                             );
                     
                     ClassTree copy = make.addClassMember(node, member);
-                    changes.rewrite(node, copy);
+                    this.copy.rewrite(node, copy);
                 }
                 return null;
             }
@@ -162,7 +162,7 @@ public class IndentAddedElemTest extends GeneratorTest {
                             );
                     
                     ClassTree copy = make.addClassMember(node, member);
-                    changes.rewrite(node, copy);
+                    this.copy.rewrite(node, copy);
                 }
                 return null;
             }

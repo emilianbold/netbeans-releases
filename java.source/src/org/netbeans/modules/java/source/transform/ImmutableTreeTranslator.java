@@ -42,7 +42,6 @@
 package org.netbeans.modules.java.source.transform;
 
 import org.netbeans.modules.java.source.query.CommentHandler;
-import org.netbeans.modules.java.source.engine.RootTree;
 
 import com.sun.source.tree.*;
 import com.sun.source.tree.Tree.Kind;
@@ -87,11 +86,16 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
     private CompilationUnitTree topLevel;
     private ImportAnalysis2 importAnalysis;
 
-    public void attach(Context context) {
+    public void attach(Context context, ImportAnalysis2 importAnalysis, CompilationUnitTree topLevel) {
         make = TreeFactory.instance(context);
         comments = CommentHandlerService.instance(context);
         model = ASTService.instance(context);
-        importAnalysis = new ImportAnalysis2(context);
+        this.importAnalysis = importAnalysis;
+        this.topLevel = topLevel;
+    }
+    
+    public void attach(Context context) {
+        attach(context, new ImportAnalysis2(context), null);
     }
     
     public void release() {
@@ -107,8 +111,6 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
     public Tree translate(Tree tree) {
 	if (tree == null)
 	    return null;
-        else if (tree instanceof RootTree)
-            return rewriteChildren((RootTree)tree);
 	else
 	    return tree.accept(this, null);
     }
@@ -305,6 +307,7 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
 	topLevel = tree;
 	CompilationUnitTree result = rewriteChildren(topLevel);
 	topLevel = null;
+        System.err.println("result=" + result);
         return result;
     }
     public Tree visitImport(ImportTree tree, Object p) {
@@ -492,13 +495,6 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
 	return tree;
     }
 
-    protected final RootTree rewriteChildren(RootTree tree) {
-        List<CompilationUnitTree> units = translate(tree.getCompilationUnits());
-	if (!units.equals(tree.getCompilationUnits()))
-	    tree = new RootTree(units);
-	return tree;
-    }
-
     protected final ImportTree rewriteChildren(ImportTree tree) {
 	Tree qualid = translateClassRef(tree.getQualifiedIdentifier());
         if (qualid == tree.getQualifiedIdentifier())
@@ -600,8 +596,9 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
 		 * from its parent's.  Instead, just mark the topLevel so
 		 * Commit knows to save it.
 		 */
-                if (topLevel == null)
-                    topLevel = model.getTopLevel(tree);
+                assert topLevel != null;
+//                if (topLevel == null)
+//                    topLevel = model.getTopLevel(tree);
                 model.setPos(topLevel, NOPOS);
             } else
                 copyPosTo(tree,n);

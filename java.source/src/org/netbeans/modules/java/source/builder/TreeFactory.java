@@ -74,7 +74,6 @@ import static org.netbeans.modules.java.source.save.PositionEstimator.*;
 import static com.sun.tools.javac.code.Flags.*;
 import static com.sun.tools.javac.code.Kinds.*;
 import static com.sun.tools.javac.code.TypeTags.*;
-import org.netbeans.modules.java.source.engine.RootTree;
 
 /**
  * Factory for creating new com.sun.source.tree instances.
@@ -484,10 +483,6 @@ public class TreeFactory {
         return make.NewClass((JCExpression)enclosingExpression, typeargs.toList(),
                              (JCExpression)identifier, args.toList(),
                              (JCClassDecl)classBody);
-    }
-    
-    public RootTree Root(List<CompilationUnitTree> units) {
-        return new RootTree(units);
     }
     
     public ParameterizedTypeTree ParameterizedType(Tree type,
