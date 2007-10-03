@@ -185,17 +185,27 @@ public class JsfProjectUtils {
         JsfProjectDir.put(projDir, set);
     }
 
+    public static void setJsfProjectDir(ArrayList<FileObject> projDirs, Boolean set) {
+        for (FileObject projDir : projDirs) {
+            JsfProjectDir.put(projDir, set);
+        }
+    }
+
     /**
      * Check for Creator project file. Note: For DataLoader only when 'Project' is not available.
      * @param fo FileObject to be checked
      */
     public static boolean isJsfProjectFile(FileObject fo) {
+        ArrayList<FileObject> dirs = new ArrayList();
+
         while (fo != null) {
             if (fo.isFolder()) {
                 Boolean ret = isJsfProjectDir(fo);
                 if (ret != null) {
                     return ret.booleanValue();
                 }
+
+                dirs.add(fo);
 
                 final FileObject projXml = fo.getFileObject("nbproject/project.xml"); // NOI18N
                 // Found the project root directory and got the project.xml file
@@ -209,7 +219,7 @@ public class JsfProjectUtils {
                             });
                         NodeList nlist = doc.getElementsByTagNameNS(RAVE_AUX_NAMESPACE, RAVE_AUX_NAME);
                         if (nlist.getLength() > 0) {
-                            setJsfProjectDir(fo, Boolean.TRUE);
+                            setJsfProjectDir(dirs, Boolean.TRUE);
                             return true;
 			}
                     } catch (Exception e) {
@@ -229,10 +239,10 @@ public class JsfProjectUtils {
 
                         // Check Creator property
                         boolean isJsf = prop.getProperty("jsf.pagebean.package") != null; // NOI18N
-                        setJsfProjectDir(fo, Boolean.valueOf(isJsf));
+                        setJsfProjectDir(dirs, Boolean.valueOf(isJsf));
                         return isJsf;
                     } catch (Exception e) {
-                        setJsfProjectDir(fo, Boolean.FALSE);
+                        setJsfProjectDir(dirs, Boolean.FALSE);
                         return false;
                     }
                 }
