@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.websvc.core.webservices.action;
 
+import java.awt.Dialog;
 import org.netbeans.modules.websvc.core.InvokeOperationCookie;
 import org.netbeans.modules.websvc.core.WebServiceActionProvider;
 import org.netbeans.modules.websvc.core.webservices.ui.panels.ClientExplorerPanel;
@@ -76,7 +77,10 @@ public class InvokeOperationAction extends NodeAction {
                 serviceExplorer.setDescriptor(descriptor);
                 // !PW FIXME put help context here when known to get a displayed help button on the panel.
 //                descriptor.setHelpCtx(new HelpCtx("HelpCtx_J2eePlatformInstallRootQuery"));
-                if(DialogDisplayer.getDefault().notify(descriptor).equals(NotifyDescriptor.OK_OPTION)) {
+                Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
+                dlg.getAccessibleContext().setAccessibleDescription(dlg.getTitle());
+                dlg.setVisible(true);
+                if(descriptor.getValue().equals(NotifyDescriptor.OK_OPTION)) {
                     // !PW FIXME refactor this as a method implemented in a cookie
                     // on the method node.
                     InvokeOperationCookie invokeCookie = WebServiceActionProvider.getInvokeOperationAction(currentFO);

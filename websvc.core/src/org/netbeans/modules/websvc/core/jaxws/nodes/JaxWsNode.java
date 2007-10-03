@@ -633,6 +633,7 @@ public class JaxWsNode extends AbstractNode implements WsWsdlCookie, JaxWsTester
         dialogDesc.setButtonListener(new HandlerButtonListener( panel,
                 handlerChains, handlerFO, implBeanFo, service, isNew[0]));
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDesc);
+        dialog.getAccessibleContext().setAccessibleDescription(dialog.getTitle());
         dialog.setVisible(true);
     }
     

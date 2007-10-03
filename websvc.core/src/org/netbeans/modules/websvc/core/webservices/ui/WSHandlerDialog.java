@@ -75,6 +75,7 @@ public class WSHandlerDialog {
         sPanel = new SelectHandlerPanel(project);
         dlgDesc = new AddMessageHandlerDialogDesc(sPanel);
         dialog = DialogDisplayer.getDefault().createDialog(dlgDesc);
+        dialog.getAccessibleContext().setAccessibleDescription(dialog.getTitle());
         handlerMap = new TreeMap<String, Integer>();
     }
     

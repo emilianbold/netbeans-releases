@@ -29,6 +29,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import java.awt.Component;
+import java.awt.Dialog;
 
 import javax.swing.JPanel;
 import javax.swing.JFileChooser;
@@ -1307,7 +1308,13 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
         DialogDescriptor descriptor = new DialogDescriptor(explorerPanel,
                 NbBundle.getMessage(ClientInfo.class,"TTL_SelectService")); //NOI18N
         explorerPanel.setDescriptor(descriptor);
-        if(DialogDisplayer.getDefault().notify(descriptor).equals(NotifyDescriptor.OK_OPTION)) {
+//        if(DialogDisplayer.getDefault().notify(descriptor).equals(NotifyDescriptor.OK_OPTION)) {
+        Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
+        dlg.getAccessibleContext().setAccessibleDescription(dlg.getTitle());
+        dlg.setVisible(true);
+ 
+        if (descriptor.getValue() == DialogDescriptor.OK_OPTION) {
+        
             Node serviceNode = explorerPanel.getSelectedService();
             WsWsdlCookie wsdlCookie = (WsWsdlCookie)serviceNode.getCookie(WsWsdlCookie.class);
             if (wsdlCookie!=null){

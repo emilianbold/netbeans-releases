@@ -344,6 +344,7 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, JaxWsRe
         dialogDesc.setButtonListener(new ClientHandlerButtonListener(panel,
                 bindingsModel, client, this, jaxWsModel));
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDesc);
+        dialog.getAccessibleContext().setAccessibleDescription(dialog.getTitle());
         dialog.setVisible(true);
     }
     

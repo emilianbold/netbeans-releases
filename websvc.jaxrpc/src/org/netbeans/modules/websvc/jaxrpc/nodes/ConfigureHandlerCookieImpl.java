@@ -111,6 +111,7 @@ public class ConfigureHandlerCookieImpl implements ConfigureHandlerCookie {
                 }
             });
             Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDesc);
+            dialog.getAccessibleContext().setAccessibleDescription(dialog.getTitle());
             dialog.setVisible(true);
         }catch(IOException e){
             ErrorManager.getDefault().notify(e);

@@ -514,6 +514,7 @@ public class WebServiceNode extends AbstractNode implements WSRegisterCookie, Ws
             }
         });
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDesc);
+        dialog.getAccessibleContext().setAccessibleDescription(dialog.getTitle());
         dialog.setVisible(true);
     }
     

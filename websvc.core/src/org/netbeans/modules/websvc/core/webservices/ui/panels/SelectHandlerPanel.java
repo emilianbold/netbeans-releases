@@ -104,7 +104,9 @@ public class SelectHandlerPanel extends JPanel implements ExplorerManager.Provid
         String projectName = project.getProjectDirectory().getName();
         String classesLabel = projectName + " " +
                 NbBundle.getMessage(SelectHandlerPanel.class, "LBL_PROJECT_CLASSES") + ":";
-        JLabel label = new JLabel(classesLabel);
+        JLabel label = new JLabel();
+        org.openide.awt.Mnemonics.setLocalizedText(label, classesLabel);
+        label.setLabelFor(btv.getViewport().getView());
         panel.add(label, BorderLayout.NORTH);
         panel.add(btv, BorderLayout.CENTER);   //NOI18N
         panel.validate();
