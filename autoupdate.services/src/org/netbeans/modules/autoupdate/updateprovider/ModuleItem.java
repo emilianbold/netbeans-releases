@@ -98,13 +98,13 @@ public class ModuleItem extends UpdateItemImpl {
         this.distribution = distribution;
         this.manifest = manifest;
         this.deployImpl = new UpdateItemDeploymentImpl (needsRestart, isGlobal, targetCluster, null, null);
-        if (publishDate != null) {
+        if (publishDate != null && publishDate.length () > 0) {
             try {
                 this.publishDate = Utilities.DATE_FORMAT.parse (publishDate);
             } catch (ParseException pe) {
-                Logger.getLogger (ModuleItem.class.getName ()).log (Level.INFO, pe.getMessage (), pe);
-            } catch (NumberFormatException nfe) {
-                Logger.getLogger (ModuleItem.class.getName ()).log (Level.INFO, nfe.getMessage (), nfe);
+                Logger.getLogger (ModuleItem.class.getName ()).log (Level.INFO, "Parsing " + publishDate + " of " + codeName + " throws " + pe.getMessage (), pe);
+            } catch (RuntimeException re) {
+                Logger.getLogger (ModuleItem.class.getName ()).log (Level.INFO, "Parsing " + publishDate + " of " + codeName + " throws " + re.getMessage (), re);
             }
         }
         this.licenseImpl = licenseImpl;
