@@ -107,12 +107,29 @@ public class LifelineData extends ElementDataObject
             out.write("<DT>" + getVisibility(getElement()) + " " +
                     getElementType().toLowerCase() + " <B>" + getElement().getName() +
                     "</B></DT>");
-            if (rClassifier!=null)
+            
+            if(rClassifier==null)
             {
-                out.write("<DT>" + NbBundle.getMessage(LifelineData.class, "represents") + ": ");
+                Logger.getLogger(LifelineData.class.getName()).
+                        log(Level.WARNING, NbBundle.getMessage(LifelineData.class,
+                        "MSG_InvalidRepresentingClassifier", getElementType(), getElement().toString())); // NOI18N
+                return false;
+            }
+            
+            out.write("<DT>" + NbBundle.getMessage(LifelineData.class, "represents") + ": ");
+            if (rClassifier.getOwningPackage() != null)
+            {
                 out.write("<A HREF=\"" + getLinkTo(rClassifier) + "\" title=\"interface in " +
                         rClassifier.getOwningPackage().getFullyQualifiedName(false) +
                         "\">" + rClassifier.getName() + "</A>");
+            }
+            else
+            {
+                out.write(rClassifier.getName());
+                Logger.getLogger(LifelineData.class.getName()).
+                        log(Level.WARNING,
+                        NbBundle.getMessage(LifelineData.class,
+                        "MSG_InvalidPackage", rClassifier.getElementType(), rClassifier.getName()));
             }
             out.write("</DL>\r\n\r\n");
             
@@ -134,76 +151,76 @@ public class LifelineData extends ElementDataObject
             out.write(getConstraintsSummary());
             
             // events summary
-//			if (events.size()>0)
-//			{
-//				out.write("<!-- =========== EVENT SUMMARY =========== -->\r\n\r\n");
-//				out.write(getSummaryHeader("event_summary", "Event Summary"));
-//				for (int i=0; i<events.size(); i++)
-//				{
-//					IEventOccurrence event = (IEventOccurrence)events.get(i);
-//					out.write("<TR BGCOLOR=\"white\" CLASS=\"TableRowColor\">\r\n");
-//					out.write("<TD><CODE><B><A HREF=\"" + "#" + event.getName() + "\">" + event.getName() + "</A></B>");
-////					out.write("<TD ALIGN=\"left\" VALIGN=\"top\" WIDTH=\"1%\"><FONT SIZE=\"-1\">\r\n");
-////					out.write("<CODE><B>" + event.getName() + "</B></CODE>\r\n");
-//					out.write("</TD>\r\n</TR>\r\n");
-//				}
-//				out.write("</TABLE>\r\n&nbsp;\r\n");
-//			}
-//
-//
-//			// event detail
-//			if (events.size()>0)
-//			{
-//				out.write("<!-- =========== EVENT DETAIL =========== -->\r\n\r\n");
-//				out.write(getDetailHeader("event_detail", "Event Detail"));
-//				for (int i=0; i<events.size(); i++)
-//				{
-//					IEventOccurrence event = events.get(i);
-//					IEvent e = event.getEventType();
-//
-//					IMessage receive = event.getReceiveMessage();
-//					IMessage send = event.getSendMessage();
-//					ETList<IGeneralOrdering> beforeOrdering = event.getBeforeOrderings();
-//					ETList<IGeneralOrdering> afterOrdering = event.getAfterOrderings();
-//
-//					out.write("<A NAME=\"" + event.getName() + "\"></A><H3>" + event.getName() + "</H3>\r\n");
-//					out.write("<B>" + event.getName() + "</B>");
-//					out.write("<DL>\r\n");
-//					out.write("<DD>" + StringUtilities.unescapeHTML(
-//                                            event.getDocumentation()) + "\r\n<P>\r\n");
-//					out.write("<DL>\r\n");
-//					if (receive!=null)
-//						out.write("<DT><B>Receive Message:</B><DD><CODE>" + receive.getName() +
-//							"</CODE>\r\n");
-//					if (send!=null)
-//						out.write("<DT><B>Send Message:</B><DD><CODE>" + send.getName() +
-//							"</CODE>\r\n");
-//					out.write("<DL>\r\n");
-//					out.write("<DT><B>Before Ordering:</B>");
-//
-//					for (int j=0; j<beforeOrdering.size(); j++)
-//					{
-//						out.write("<DD>" + beforeOrdering.get(j).getBefore().getName());
-//					}
-//
-//					out.write("</DL>\r\n");
-//					out.write("<DT><B>After Ordering:</B>");
-//
-//					for (int j=0; j<afterOrdering.size(); j++)
-//					{
-//						out.write("<DD>" + afterOrdering.get(j).getAfter().getName());
-//					}
-//					out.write("</DL>\r\n");
-//					out.write("</DL>\r\n");
-//
-//					if (i<events.size()-1)
-//						out.write("<HR>\r\n\r\n");
-//					else
-//						out.write("\r\n");
-//				}
+            //			if (events.size()>0)
+            //			{
+            //				out.write("<!-- =========== EVENT SUMMARY =========== -->\r\n\r\n");
+            //				out.write(getSummaryHeader("event_summary", "Event Summary"));
+            //				for (int i=0; i<events.size(); i++)
+            //				{
+            //					IEventOccurrence event = (IEventOccurrence)events.get(i);
+            //					out.write("<TR BGCOLOR=\"white\" CLASS=\"TableRowColor\">\r\n");
+            //					out.write("<TD><CODE><B><A HREF=\"" + "#" + event.getName() + "\">" + event.getName() + "</A></B>");
+            ////					out.write("<TD ALIGN=\"left\" VALIGN=\"top\" WIDTH=\"1%\"><FONT SIZE=\"-1\">\r\n");
+            ////					out.write("<CODE><B>" + event.getName() + "</B></CODE>\r\n");
+            //					out.write("</TD>\r\n</TR>\r\n");
+            //				}
+            //				out.write("</TABLE>\r\n&nbsp;\r\n");
+            //			}
+            //
+            //
+            //			// event detail
+            //			if (events.size()>0)
+            //			{
+            //				out.write("<!-- =========== EVENT DETAIL =========== -->\r\n\r\n");
+            //				out.write(getDetailHeader("event_detail", "Event Detail"));
+            //				for (int i=0; i<events.size(); i++)
+            //				{
+            //					IEventOccurrence event = events.get(i);
+            //					IEvent e = event.getEventType();
+            //
+            //					IMessage receive = event.getReceiveMessage();
+            //					IMessage send = event.getSendMessage();
+            //					ETList<IGeneralOrdering> beforeOrdering = event.getBeforeOrderings();
+            //					ETList<IGeneralOrdering> afterOrdering = event.getAfterOrderings();
+            //
+            //					out.write("<A NAME=\"" + event.getName() + "\"></A><H3>" + event.getName() + "</H3>\r\n");
+            //					out.write("<B>" + event.getName() + "</B>");
+            //					out.write("<DL>\r\n");
+            //					out.write("<DD>" + StringUtilities.unescapeHTML(
+            //                                            event.getDocumentation()) + "\r\n<P>\r\n");
+            //					out.write("<DL>\r\n");
+            //					if (receive!=null)
+            //						out.write("<DT><B>Receive Message:</B><DD><CODE>" + receive.getName() +
+            //							"</CODE>\r\n");
+            //					if (send!=null)
+            //						out.write("<DT><B>Send Message:</B><DD><CODE>" + send.getName() +
+            //							"</CODE>\r\n");
+            //					out.write("<DL>\r\n");
+            //					out.write("<DT><B>Before Ordering:</B>");
+            //
+            //					for (int j=0; j<beforeOrdering.size(); j++)
+            //					{
+            //						out.write("<DD>" + beforeOrdering.get(j).getBefore().getName());
+            //					}
+            //
+            //					out.write("</DL>\r\n");
+            //					out.write("<DT><B>After Ordering:</B>");
+            //
+            //					for (int j=0; j<afterOrdering.size(); j++)
+            //					{
+            //						out.write("<DD>" + afterOrdering.get(j).getAfter().getName());
+            //					}
+            //					out.write("</DL>\r\n");
+            //					out.write("</DL>\r\n");
+            //
+            //					if (i<events.size()-1)
+            //						out.write("<HR>\r\n\r\n");
+            //					else
+            //						out.write("\r\n");
+            //				}
             
             
-//			}
+            //			}
             
             
             out.write("<HR>\r\n");

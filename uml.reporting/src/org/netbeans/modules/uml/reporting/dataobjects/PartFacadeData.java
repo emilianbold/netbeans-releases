@@ -136,23 +136,61 @@ public class PartFacadeData extends ClassData
                 for (int i=0; i<includesList.size(); i++)
                 {
                     IInclude include = includesList.get(i);
-                    out.write("<A HREF=\"" + getLinkTo(include.getAddition()) + "\" title=\"" +
-                            getElementType() +" in " +
-                            include.getOwningPackage().getFullyQualifiedName(false) +
-                            "\">" + include.getAddition().getName() + "</A>");
+                    if(include == null || include.getAddition() == null)
+                    {
+                        Logger.getLogger(PartFacadeData.class.getName()).
+                                log(Level.WARNING,
+                                NbBundle.getMessage(LifelineData.class,
+                                "MSG_InvalidPartFacade", getElementType(), getElementName()));
+                        continue;
+                    }
+                    
+                    if (include.getOwningPackage()!=null)
+                    {
+                        out.write("<A HREF=\"" + getLinkTo(include.getAddition()) + "\" title=\"" +
+                                getElementType() +" in " +
+                                include.getOwningPackage().getFullyQualifiedName(false) +
+                                "\">" + include.getAddition().getName() + "</A>");
+                    }
+                    else
+                    {
+                        out.write(include.getAddition().getName());
+                        
+                        Logger.getLogger(PartFacadeData.class.getName()).
+                                log(Level.WARNING,
+                                NbBundle.getMessage(LifelineData.class,
+                                "MSG_InvalidPackage", include.getAddition().getElementType(), include.getAddition().getName()));
+                    }
                     if (i < includesList.size()-1)
                         out.write(", ");
                 }
             }
             
             IClassifier classifier = getElement().getFeaturingClassifier();
-            if (classifier!=null)
+            if (classifier == null)
+            {
+                Logger.getLogger(PartFacadeData.class.getName()).
+                        log(Level.WARNING,
+                        NbBundle.getMessage(LifelineData.class,
+                        "MSG_InvalidPartFacade", getElementType(), getElementName()));
+                return false;
+            }
+            
+            if (classifier.getOwningPackage()!=null)
             {
                 out.write("<DT>" + NbBundle.getMessage(PartFacadeData.class, "features") + " " + "<A HREF=\"" +
                         getLinkTo(classifier)+ "\" title=\"" +
                         getElement().getExpandedElementType() +" in " +
                         classifier.getOwningPackage().getFullyQualifiedName(false) +
                         "\">" + classifier.getName() + "</A>");
+            }
+            else
+            {
+                out.write("<DT>" + NbBundle.getMessage(PartFacadeData.class, "features") + " " + classifier.getName());
+                Logger.getLogger(PartFacadeData.class.getName()).
+                        log(Level.WARNING,
+                        NbBundle.getMessage(LifelineData.class,
+                        "MSG_InvalidPackage", classifier.getElementType(), classifier.getName()));
             }
             
             out.write("</DL>\r\n\r\n");
@@ -187,7 +225,12 @@ public class PartFacadeData extends ClassData
                     if (type!=null)
                         out.write("<CODE>" + "<A HREF=\"" + getLinkTo(type) + "\">" + type.getName() + "</A></CODE></FONT></TD>\r\n");
                     else
+                    {
                         out.write("<CODE>&nbsp;</CODE></FONT></TD>\r\n");
+                        Logger.getLogger(PartFacadeData.class.getName()).
+                                log(Level.WARNING, NbBundle.getMessage(ClassData.class,
+                                "MSG_InvalidType", attr.getElementType(), attr.getName())); // NOI18N
+                    }
                     out.write("<TD><CODE><B><A HREF=\"#" + attr.getName() + "\">" + attr.getName() + "</A></B></CODE>\r\n");
                     out.write("<BR>\r\n");
                     out.write("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" +
@@ -269,8 +312,8 @@ public class PartFacadeData extends ClassData
                     out.write("" + formatAttribute(attr) + "<B>" + attr.getName() + "</B>");
                     out.write("<DL>\r\n");
                     
-                    out.write("<DD>" + attr.getDocumentation() + 
-                        "\r\n<P>\r\n</DD>\r\n</DL>\r\n");
+                    out.write("<DD>" + attr.getDocumentation() +
+                            "\r\n<P>\r\n</DD>\r\n</DL>\r\n");
                     
                     if (i<attrs.size()-1)
                         out.write("<HR>\r\n\r\n");

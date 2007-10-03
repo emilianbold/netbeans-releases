@@ -251,12 +251,12 @@ public class ElementDataObject implements Report
         if (doc == null || doc.equals(""))
             return HTML_NBSP;
         // return (doc.indexOf(".")>0)?doc.substring(0, doc.indexOf(".")):doc;
-
+        
         StringBuffer docBuff = new StringBuffer(doc);
         
         Stack<String> tags = new Stack<String>();
         String tag = "";
-
+        
         int i = 0;
         while(i > -1 && i < docBuff.length())
         {
@@ -268,19 +268,19 @@ public class ElementDataObject implements Report
                 {
                     // start tag
                     int nextCloseAnglePos = docBuff.indexOf(
-                        ANGLE_BRACKET_CLOSE, i+1);
+                            ANGLE_BRACKET_CLOSE, i+1);
                     
                     int nextSpacePos = docBuff.indexOf(SPACE, i+1);
-                    int endpos = nextSpacePos < nextCloseAnglePos 
-                        ? nextSpacePos : nextCloseAnglePos;
+                    int endpos = nextSpacePos < nextCloseAnglePos
+                            ? nextSpacePos : nextCloseAnglePos;
                     
                     // note this is a nested trinary if/then operation
                     // looking for the lesser of the two indexes, but
                     // if the lesser is -1 then we want the greater of the two
-                    endpos = endpos < 0 
-                        ? (nextSpacePos > nextCloseAnglePos 
-                            ? nextSpacePos : nextCloseAnglePos) 
-                        : endpos;
+                    endpos = endpos < 0
+                            ? (nextSpacePos > nextCloseAnglePos
+                            ? nextSpacePos : nextCloseAnglePos)
+                            : endpos;
                     
                     tag = docBuff.substring(i+1, endpos);
                     tags.push(tag);
@@ -302,7 +302,7 @@ public class ElementDataObject implements Report
                 int index = docBuff.indexOf(ANGLE_BRACKET_CLOSE, i+1);
                 // tags.push(tag);
             }
-
+            
             // we found a period not inside an html tag; truncate and return
             else if (ch == '.')
             {
@@ -313,7 +313,7 @@ public class ElementDataObject implements Report
             else
                 i++;
         }
-
+        
         return docBuff.append(resolveTags(tags)).toString();
     }
     
@@ -327,7 +327,7 @@ public class ElementDataObject implements Report
         for (String tag: tags)
         {
             tagBuff.append(ANGLE_BRACKET_OPEN).append(SLASH)
-                .append(tag).append(ANGLE_BRACKET_CLOSE);
+                    .append(tag).append(ANGLE_BRACKET_CLOSE);
         }
         
         return tagBuff.toString();
@@ -506,32 +506,32 @@ public class ElementDataObject implements Report
             buff.append("<!-- =========== DIAGRAM SUMMARY =========== -->\r\n\r\n"); // NOI18N
             
             buff.append(getSummaryHeader("diagram_summary", // NOI18N
-                NbBundle.getMessage(ElementDataObject.class, "Diagram_Summary"))); // NOI18N
+                    NbBundle.getMessage(ElementDataObject.class, "Diagram_Summary"))); // NOI18N
             
             for (int i=0; i<diagrams.length; i++)
             {
-                IDiagram diagram = 
-                    diagrams[i].getData().getDiagram().getDiagram();
+                IDiagram diagram =
+                        diagrams[i].getData().getDiagram().getDiagram();
                 
                 if (diagram == null)
                 {
                     diagram = ReportTask.loadDiagram(
-                        diagrams[i].getData().getDiagram().getFilename());
+                            diagrams[i].getData().getDiagram().getFilename());
                 }
                 
                 buff.append("<TR BGCOLOR=\"white\" CLASS=\"TableRowColor\">\r\n"); // NOI18N
                 
                 String imageName = ImageUtil.instance()
-                    .getDiagramTypeImageName(diagram.getDiagramKind());
-
-                buff.append("<TD WIDTH=\"25%\"><IMG src=\"" +  // NOI18N
-                    ReportTask.getPathToReportRoot(getElement()) +
-                    "images/" + imageName + "\" border=n>&nbsp;<B><A HREF=\"" + // NOI18N
-                    getLinkToDiagram(diagrams[i].getData().getDiagram()) +
-                    "\">" + diagram.getName() + "</A></B></TD>\r\n"); // NOI18N
+                        .getDiagramTypeImageName(diagram.getDiagramKind());
                 
-                buff.append("<TD>" + getBriefDocumentation(diagram.getDocumentation()) 
-                    + "</TD>\r\n"); // NOI18N
+                buff.append("<TD WIDTH=\"25%\"><IMG src=\"" +  // NOI18N
+                        ReportTask.getPathToReportRoot(getElement()) +
+                        "images/" + imageName + "\" border=n>&nbsp;<B><A HREF=\"" + // NOI18N
+                        getLinkToDiagram(diagrams[i].getData().getDiagram()) +
+                        "\">" + diagram.getName() + "</A></B></TD>\r\n"); // NOI18N
+                
+                buff.append("<TD>" + getBriefDocumentation(diagram.getDocumentation())
+                        + "</TD>\r\n"); // NOI18N
                 
                 buff.append("</TR>\r\n"); // NOI18N
             }
@@ -638,7 +638,7 @@ public class ElementDataObject implements Report
             buff.append("<DL>\r\n"); // NOI18N
             
             buff.append("<DT><B>" + NbBundle.getMessage(ElementDataObject.class,
-                "All_Enclosing_Diagrams") + ":</B><DD>"); // NOI18N
+                    "All_Enclosing_Diagrams") + ":</B><DD>"); // NOI18N
             
             for (int i=0; i<targets.size(); i++)
             {
@@ -647,7 +647,7 @@ public class ElementDataObject implements Report
                 if (!diagrams.contains(proxy.getFilename()))
                 {
                     // 86682, filter out diagrams that don't belong to this project
-                    if (FileOwnerQuery.getOwner(FileUtil.toFileObject(new File(proxy.getFilename()))) != 
+                    if (FileOwnerQuery.getOwner(FileUtil.toFileObject(new File(proxy.getFilename()))) !=
                             ProjectUtil.findElementOwner(getElement()))
                         continue;
                     
@@ -657,16 +657,16 @@ public class ElementDataObject implements Report
                         ReportTask.loadDiagram(proxy.getFilename());
                     
                     String imageName = ImageUtil.instance()
-                        .getDiagramTypeImageName(
-                        proxy.getDiagram().getDiagramKind());
-
+                            .getDiagramTypeImageName(
+                            proxy.getDiagram().getDiagramKind());
+                    
                     ReportTask.addToImageList(imageName);
-
+                    
                     buff.append("<IMG src=\"" + // NOI18N
-                        ReportTask.getPathToReportRoot(getElement()) +
-                        "images/" + imageName + "\" border=n>&nbsp;<A HREF=\"" + // NOI18N
-                        getLinkToDiagram(proxy) + "\" >" + // NOI18N
-                        proxy.getName() + "</A>&nbsp;&nbsp"); // NOI18N
+                            ReportTask.getPathToReportRoot(getElement()) +
+                            "images/" + imageName + "\" border=n>&nbsp;<A HREF=\"" + // NOI18N
+                            getLinkToDiagram(proxy) + "\" >" + // NOI18N
+                            proxy.getName() + "</A>&nbsp;&nbsp"); // NOI18N
                 }
             }
             
@@ -684,11 +684,11 @@ public class ElementDataObject implements Report
         
         StringBuilder buff = new StringBuilder();
         
-        HashMap<INamedElement, ArrayList<String>> clients = 
-            new HashMap<INamedElement, ArrayList<String>>();
+        HashMap<INamedElement, ArrayList<String>> clients =
+                new HashMap<INamedElement, ArrayList<String>>();
         
-        HashMap<INamedElement, ArrayList<String>> suppliers = 
-            new HashMap<INamedElement, ArrayList<String>>();
+        HashMap<INamedElement, ArrayList<String>> suppliers =
+                new HashMap<INamedElement, ArrayList<String>>();
         
         // client dependency
         ETList<IDependency> dependencies = ((INamedElement)getElement()).getClientDependencies();
@@ -696,16 +696,23 @@ public class ElementDataObject implements Report
         {
             for (int i=0; i < dependencies.size(); i++)
             {
+                if (dependencies.get(i) == null)
+                {
+                    Logger.getLogger(ElementDataObject.class.getName()).
+                            log(Level.WARNING, NbBundle.getMessage(ClassData.class,
+                            "MSG_InvalidDependency", getElementType(), getElement().toString())); // NOI18N
+                    continue;
+                }
                 INamedElement dependent = dependencies.get(i).getSupplier();
-
+                
                 // filter out self
                 if (dependent != null && !dependent.getXMIID().equals(getElement().getXMIID()))
                 {
                     if (suppliers.get(dependent) == null)
                         suppliers.put(dependent, new ArrayList<String>());
-                            
+                    
                     suppliers.get(dependent).add(
-                        dependencies.get(i).getExpandedElementType());
+                            dependencies.get(i).getExpandedElementType());
                 }
             }
         }
@@ -716,16 +723,23 @@ public class ElementDataObject implements Report
         {
             for (int i=0; i<dependencies.size(); i++)
             {
+                if (dependencies.get(i) == null)
+                {
+                    Logger.getLogger(ElementDataObject.class.getName()).
+                            log(Level.WARNING, NbBundle.getMessage(ClassData.class,
+                            "MSG_InvalidDependency", getElementType(), getElement().toString())); // NOI18N
+                    continue;
+                }
                 INamedElement dependent = dependencies.get(i).getClient();
-
+                
                 // filter out self
                 if (dependent != null && !dependent.getXMIID().equals(getElement().getXMIID()))
                 {
                     if (clients.get(dependent) == null)
                         clients.put(dependent, new ArrayList<String>());
-                            
+                    
                     clients.get(dependent).add(
-                        dependencies.get(i).getExpandedElementType());
+                            dependencies.get(i).getExpandedElementType());
                 }
             }
         }
@@ -736,8 +750,8 @@ public class ElementDataObject implements Report
             buff.append("<DL>\r\n"); // NOI18N
             
             buff.append("<DT><B>" + // NOI18N
-                NbBundle.getMessage(ElementDataObject.class, 
-                "All_Dependency_Clients") + ":</B>"); // NOI18N
+                    NbBundle.getMessage(ElementDataObject.class,
+                    "All_Dependency_Clients") + ":</B>"); // NOI18N
             
             Iterator<INamedElement> keys = clients.keySet().iterator();
             
@@ -745,34 +759,44 @@ public class ElementDataObject implements Report
             {
                 INamedElement client = keys.next();
                 ArrayList<String> links = clients.get(client);
-                                
+                
                 for (String type: links)
-                { 
+                {
                     String name = client.getName();
-
+                    
                     if (name == null || name.equals("")) // NOI18N
                         name = client.getExpandedElementType();
-
+                    
                     String imageName = CommonResourceManager.instance()
-                        .getIconDetailsForElementType(type);
-
+                            .getIconDetailsForElementType(type);
+                    
                     if (imageName.lastIndexOf("/") > -1) // NOI18N
                         imageName = imageName.substring(imageName.lastIndexOf("/")+1); // NOI18N
-
+                    
                     ReportTask.addToImageList(imageName);
-
+                    
                     String img = "<DD><IMG SRC=\"" + ReportTask.getPathToReportRoot( // NOI18N
-                        getElement()) + "images/" + imageName + // NOI18N
-                        "\" ALT=\"(" + type + ") \">"; // NOI18N
-
-                    buff.append(img + "&nbsp;" + type + "&nbsp;<A HREF=\"" +  // NOI18N
-                        getLinkTo(client) + "\" title=\"dependency in " + // NOI18N
-                        client.getOwningPackage().getFullyQualifiedName(false) +
-                        "\">" + name + "</A>"); // NOI18N
+                            getElement()) + "images/" + imageName + // NOI18N
+                            "\" ALT=\"(" + type + ") \">"; // NOI18N
+                    
+                    if (client.getOwningPackage()!=null)
+                    {
+                        buff.append(img + "&nbsp;" + type + "&nbsp;<A HREF=\"" +  // NOI18N
+                                getLinkTo(client) + "\" title=\"dependency in " + // NOI18N
+                                client.getOwningPackage().getFullyQualifiedName(false) +
+                                "\">" + name + "</A>"); // NOI18N
+                    }
+                    else
+                    {
+                        buff.append(img + "&nbsp;" + type + "&nbsp;" + name);
+                        Logger.getLogger(ElementDataObject.class.getName()).
+                            log(Level.WARNING, NbBundle.getMessage(ClassData.class,
+                            "MSG_InvalidPackage", client.getElementType(), client.getName())); // NOI18N
+                    }
                     
                     buff.append("</DD>\r\n"); // NOI18N
                 }
-            }         
+            }
             
             buff.append("</DL>\r\n"); // NOI18N
         }
@@ -783,7 +807,7 @@ public class ElementDataObject implements Report
             buff.append("<DL>\r\n"); // NOI18N
             
             buff.append("<DT><B>" + NbBundle.getMessage(ElementDataObject.class,  // NOI18N
-                "All_Dependency_Suppliers") + ":</B>"); // NOI18N
+                    "All_Dependency_Suppliers") + ":</B>"); // NOI18N
             
             Iterator<INamedElement> keys = suppliers.keySet().iterator();
             
@@ -795,26 +819,36 @@ public class ElementDataObject implements Report
                 for (String type: links)
                 {
                     String name = supplier.getName();
-
+                    
                     if (name==null || name.equals(""))// NOI18N
                         name = supplier.getExpandedElementType();
-
+                    
                     String imageName = CommonResourceManager.instance()
-                        .getIconDetailsForElementType(type);
-
+                            .getIconDetailsForElementType(type);
+                    
                     if (imageName.lastIndexOf("/") > -1) // NOI18N
                         imageName = imageName.substring(imageName.lastIndexOf("/")+1); // NOI18N
-
+                    
                     ReportTask.addToImageList(imageName);
-
+                    
                     String img = "<DD><IMG SRC=\"" + ReportTask.getPathToReportRoot( // NOI18N
-                        getElement()) + "images/" + imageName +  // NOI18N
-                        "\" ALT=\"(" + type + ") \">"; // NOI18N
-
-                    buff.append(img + "&nbsp;" + type + "&nbsp;<A HREF=\"" +  // NOI18N
-                        getLinkTo(supplier) + "\" title=\"dependency in " + // NOI18N
-                        supplier.getOwningPackage().getFullyQualifiedName(false) +
-                        "\">" + name + "</A>"); // NOI18N    
+                            getElement()) + "images/" + imageName +  // NOI18N
+                            "\" ALT=\"(" + type + ") \">"; // NOI18N
+                    
+                    if (supplier.getOwningPackage()!=null)
+                    {
+                        buff.append(img + "&nbsp;" + type + "&nbsp;<A HREF=\"" +  // NOI18N
+                                getLinkTo(supplier) + "\" title=\"dependency in " + // NOI18N
+                                supplier.getOwningPackage().getFullyQualifiedName(false) +
+                                "\">" + name + "</A>"); // NOI18N
+                    }
+                    else
+                    {
+                        buff.append(img + "&nbsp;" + type + "&nbsp;" + name);
+                        Logger.getLogger(ElementDataObject.class.getName()).
+                            log(Level.WARNING, NbBundle.getMessage(ClassData.class,
+                            "MSG_InvalidPackage", supplier.getElementType(), supplier.getName())); // NOI18N
+                    }
                     buff.append("</DD>\r\n"); // NOI18N
                 }
             }

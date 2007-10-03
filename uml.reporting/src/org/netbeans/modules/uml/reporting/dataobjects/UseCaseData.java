@@ -100,7 +100,7 @@ public class UseCaseData extends ClassData
         ETList<IExtend> extendedByList = getElement().getExtendedBy();
         ETList<IInclude> includesList = getElement().getIncludes();
         ETList<IInclude> includedByList = getElement().getIncludedBy();
-//		ETList<IUseCaseDetail> detailList = getElement().getDetails();
+        //		ETList<IUseCaseDetail> detailList = getElement().getDetails();
         ETList<IExtensionPoint> points = getElement().getExtensionPoints();
         
         try
@@ -128,14 +128,29 @@ public class UseCaseData extends ClassData
                 for (int i=0; i<extendsList.size(); i++)
                 {
                     IExtend extend = extendsList.get(i);
-                    if (extend!=null && extend.getBase()!=null)
+                    if (extend == null || extend.getBase() == null)
+                    {
+                        Logger.getLogger(UseCaseData.class.getName()).
+                                log(Level.WARNING, NbBundle.getMessage(ClassData.class,
+                                "MSG_InvalidUseCaseBase", getElementType(), getElementName())); // NOI18N
+                        continue;
+                    }
+                    
+                    if (extend.getBase().getOwningPackage()!=null)
                     {
                         out.write("<A HREF=\"" + getLinkTo(extend.getBase()) +
-                                "\" title=\"" + getElementType() + " in" + getOwningPackageName() +
+                                "\" title=\"" + getElementType() + " in" + extend.getBase().getOwningPackage().getFullyQualifiedName(false) +
                                 "\">" + extend.getBase().getName() + "</A>");
-                        if (i < extendsList.size()-1)
-                            out.write(", ");
                     }
+                    else
+                    {
+                        out.write(extend.getBase().getName());
+                        Logger.getLogger(UseCaseData.class.getName()).
+                                log(Level.WARNING, NbBundle.getMessage(ClassData.class,
+                                "MSG_InvalidPackage", extend.getBase().getElementType(), extend.getBase().getName())); // NOI18N
+                    }
+                    if (i < extendsList.size()-1)
+                        out.write(", ");
                 }
             }
             
@@ -145,9 +160,26 @@ public class UseCaseData extends ClassData
                 for (int i=0; i<extendedByList.size(); i++)
                 {
                     IExtend extend = extendedByList.get(i);
-                    out.write("<A HREF=\"" + getLinkTo(extend.getExtension()) +
-                            "\" title=\"" + getElementType() + " in" + getOwningPackageName() +
-                            "\">" + extend.getExtension().getName() + "</A>");
+                    if (extend == null || extend.getExtension() == null)
+                    {
+                        Logger.getLogger(UseCaseData.class.getName()).
+                                log(Level.WARNING, NbBundle.getMessage(ClassData.class,
+                                "MSG_InvalidUseCaseExtension", getElementType(), getElementName())); // NOI18N
+                        continue;
+                    }
+                    if (extend.getExtension().getOwningPackage()!=null)
+                    {
+                        out.write("<A HREF=\"" + getLinkTo(extend.getExtension()) +
+                                "\" title=\"" + getElementType() + " in" + extend.getExtension().getOwningPackage().getFullyQualifiedName(false) +
+                                "\">" + extend.getExtension().getName() + "</A>");
+                    }
+                    else
+                    {
+                        out.write(extend.getExtension().getName());
+                        Logger.getLogger(UseCaseData.class.getName()).
+                                log(Level.WARNING, NbBundle.getMessage(ClassData.class,
+                                "MSG_InvalidPackage", extend.getExtension().getElementType(), extend.getExtension().getName())); // NOI18N
+                    }
                     if (i < extendedByList.size()-1)
                         out.write(", ");
                 }
@@ -159,15 +191,30 @@ public class UseCaseData extends ClassData
                 for (int i=0; i<includesList.size(); i++)
                 {
                     IInclude include = includesList.get(i);
-                    if (include!=null && include.getAddition()!=null)
+                    if (include == null || include.getAddition() == null)
+                    {
+                        Logger.getLogger(UseCaseData.class.getName()).
+                                log(Level.WARNING, NbBundle.getMessage(ClassData.class,
+                                "MSG_InvalidUseCaseExtension", getElementType(), getElementName())); // NOI18N
+                        continue;
+                    }
+                    if (include.getAddition().getOwningPackage()!=null)
                     {
                         out.write("<A HREF=\"" + getLinkTo(include.getAddition()) + "\" title=\"" +
                                 getElementType() +" in " +
-                                include.getOwningPackage().getFullyQualifiedName(false) +
+                                include.getAddition().getOwningPackage().getFullyQualifiedName(false) +
                                 "\">" + include.getAddition().getName() + "</A>");
-                        if (i < includesList.size()-1)
-                            out.write(", ");
                     }
+                    else
+                    {
+                        out.write(include.getAddition().getName());
+                        Logger.getLogger(UseCaseData.class.getName()).
+                                log(Level.WARNING, NbBundle.getMessage(ClassData.class,
+                                "MSG_InvalidPackage", include.getAddition().getElementType(), include.getAddition().getName())); // NOI18N
+                    }
+                    
+                    if (i < includesList.size()-1)
+                        out.write(", ");
                 }
             }
             
@@ -177,10 +224,27 @@ public class UseCaseData extends ClassData
                 for (int i=0; i<includedByList.size(); i++)
                 {
                     IInclude include = includedByList.get(i);
-                    out.write("<A HREF=\"" + getLinkTo(include.getBase()) + "\" title=\"" +
-                            getElementType() +" in " +
-                            include.getOwningPackage().getFullyQualifiedName(false) +
-                            "\">" + include.getBase().getName() + "</A>");
+                    if (include == null || include.getBase() == null)
+                    {
+                        Logger.getLogger(UseCaseData.class.getName()).
+                                log(Level.WARNING, NbBundle.getMessage(ClassData.class,
+                                "MSG_InvalidUseCaseBase", getElementType(), getElementName())); // NOI18N
+                        continue;
+                    }
+                    if (include.getBase().getOwningPackage()!=null)
+                    {
+                        out.write("<A HREF=\"" + getLinkTo(include.getBase()) + "\" title=\"" +
+                                getElementType() +" in " +
+                                include.getBase().getOwningPackage().getFullyQualifiedName(false) +
+                                "\">" + include.getBase().getName() + "</A>");
+                    }
+                    else
+                    {
+                        out.write(include.getBase().getName());
+                        Logger.getLogger(UseCaseData.class.getName()).
+                                log(Level.WARNING, NbBundle.getMessage(ClassData.class,
+                                "MSG_InvalidPackage", include.getBase().getElementType(), include.getBase().getName())); // NOI18N
+                    }
                     if (i < includedByList.size()-1)
                         out.write(", ");
                 }

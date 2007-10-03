@@ -374,11 +374,17 @@ public class ReportTask extends Thread implements Cancellable
         if (elementFileMap.get(pItem.getData().getModelElement().getXMIID())!=null)
             return;
         
-//		if (pItem.getParentItem()!=null)
-//		{
-//			if (pItem.getParentItem().getData().isSameModelElement(pItem.getData().getModelElement()))
-//				return;
-//		}
+        IElement e = pItem.getData().getModelElement();
+        if (e.getOwningPackage() == null)
+        {
+            if (!e.isClone())
+            {
+                Logger.getLogger(ReportTask.class.getName()).log(Level.WARNING,
+                                NbBundle.getMessage(ReportTask.class, 
+                                "MSG_InvalidPackage", e.getElementType(), e.toString()));
+            }
+            return;
+        }
         
         ElementDataObject dataObject = DataObjectFactory.getDataObject(pItem.getData().getModelElement());
         if (dataObject==null)
@@ -396,8 +402,9 @@ public class ReportTask extends Thread implements Cancellable
         else
         {
             success = false;
+            IElement element = pItem.getData().getModelElement();
             log(NbBundle.getMessage(ReportTask.class, "Log_error_creating_file",
-                    pItem.getData().getModelElement()));
+                    element.getElementType(), element.toString()));
         }
     }
     

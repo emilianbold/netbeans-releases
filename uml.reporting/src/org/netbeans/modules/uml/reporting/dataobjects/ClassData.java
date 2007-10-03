@@ -135,8 +135,8 @@ public class ClassData extends ElementDataObject
         {
             INamedElement element = owned.get(i);
             if (element.getElementType().equals("Class") || // NOI18N
-                element.getElementType().equals("Interface") || // NOI18N
-                element.getElementType().equals("Enumeration")) // NOI18N
+                    element.getElementType().equals("Interface") || // NOI18N
+                    element.getElementType().equals("Enumeration")) // NOI18N
             {
                 list.add((IClassifier)element);
             }
@@ -147,11 +147,11 @@ public class ClassData extends ElementDataObject
     
     
     public String getEnclosingClassSection()
-    {    
+    {
         StringBuilder buffer = new StringBuilder();
         IElement enclosingClass = getElement().getOwner();
         if (enclosingClass instanceof IClassifier)
-        {   
+        {
             buffer.append("<DL>\r\n"); // NOI18N
             buffer.append("<DT><B>" + // NOI18N
                     NbBundle.getMessage(ClassData.class, "Enclosing_class") + // NOI18N
@@ -159,7 +159,7 @@ public class ClassData extends ElementDataObject
                     ((IClassifier)enclosingClass).getName() + "</A></DD>\r\n"); // NOI18N
             buffer.append("</DL>\r\n"); // NOI18N
         }
-        return buffer.toString();   
+        return buffer.toString();
     }
     
     
@@ -221,7 +221,13 @@ public class ClassData extends ElementDataObject
                     buff.append("</CODE></FONT></TD>\r\n"); // NOI18N
                 }
                 else
+                {
                     buff.append("<CODE>&nbsp;</CODE></FONT></TD>\r\n"); // NOI18N
+                    Logger.getLogger(ClassData.class.getName()).
+                            log(Level.WARNING, NbBundle.getMessage(ClassData.class,
+                            "MSG_InvalidType", returnType.getElementType(), returnType.getName())); // NOI18N
+                }
+                
                 buff.append("<TD><CODE><B><A HREF=\"#" + op.getName() + "\">" + op.getName() + "</A></B>("); // NOI18N
             }
             for (int j=0; j<params.size(); j++)
@@ -229,22 +235,27 @@ public class ClassData extends ElementDataObject
                 IParameter param = params.get(j);
                 if (param.getDirection() == BaseElement.PDK_RESULT)
                     continue;
+                
                 if (param.getType()!=null)
                     buff.append("<A HREF=\"" + getLinkTo(param.getType()) + "\">" + // NOI18N
                             param.getType().getName() + "</A>"); // NOI18N
+                else
+                    Logger.getLogger(ClassData.class.getName()).
+                            log(Level.WARNING, NbBundle.getMessage(ClassData.class,
+                            "MSG_InvalidType", param.getElementType(), param.getName())); // NOI18N
                 buff.append("&nbsp;" + param.getName()); // NOI18N
                 IMultiplicity mul = param.getMultiplicity();
                 if (mul != null)
                     buff.append(mul.getRangeAsString(true));
-
+                
                 if (j!=params.size()-1)
                     buff.append(",&nbsp;"); // NOI18N
             }
             buff.append(")</CODE>"); // NOI18N
             buff.append("<BR>\r\n"); // NOI18N
-    
+            
             buff.append("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" +
-                getBriefDocumentation(ops[i].getDocumentation()) + "</TD>\r\n");
+                    getBriefDocumentation(ops[i].getDocumentation()) + "</TD>\r\n");
             
             buff.append("</TR>\r\n"); // NOI18N
         }
@@ -265,8 +276,8 @@ public class ClassData extends ElementDataObject
             buff.append("<TR BGCOLOR=\"#CCCCFF\" CLASS=\"TableHeadingColor\">\r\n"); // NOI18N
             buff.append("<TH ALIGN=\"left\" COLSPAN=\"5\"><FONT SIZE=\"+2\">\r\n"); // NOI18N
             
-            buff.append("<B>" + NbBundle.getMessage(ClassData.class, 
-                "Template_Parameter_Summary") + "</B></FONT></TH>\r\n"); // NOI18N
+            buff.append("<B>" + NbBundle.getMessage(ClassData.class,
+                    "Template_Parameter_Summary") + "</B></FONT></TH>\r\n"); // NOI18N
             
             buff.append("</TR>\r\n"); // NOI18N
             
@@ -336,6 +347,10 @@ public class ClassData extends ElementDataObject
                     if (param.getType()!=null)
                         buff.append("<A HREF=\"" + getLinkTo(param.getType()) + "\">" + // NOI18N
                                 param.getType().getName() + "</A>"); // NOI18N
+                    else
+                        Logger.getLogger(ClassData.class.getName()).
+                                log(Level.WARNING, NbBundle.getMessage(ClassData.class,
+                                "MSG_InvalidType", param.getElementType(), param.getName())); // NOI18N
                     
                     buff.append("&nbsp;" + param.getName()); // NOI18N
                     IMultiplicity mul = param.getMultiplicity();
@@ -368,8 +383,11 @@ public class ClassData extends ElementDataObject
         if (attr.getType()!=null)
             return getVisibility(attr) + " " + "<A HREF=\"" + // NOI18N
                     getLinkTo(attr.getType()) + "\">" + attr.getType().getName() + "</A>" + " "; // NOI18N
-        else
-            return getVisibility(attr) + " ";
+        
+        Logger.getLogger(ClassData.class.getName()).
+                log(Level.WARNING, NbBundle.getMessage(ClassData.class,
+                "MSG_InvalidType", attr.getElementType(), attr.getName())); // NOI18N
+        return getVisibility(attr) + " ";
     }
     
     
@@ -380,18 +398,26 @@ public class ClassData extends ElementDataObject
         String finalString = op.getIsFinal()?" final":""; // NOI18N
         String abstractString = op.getIsAbstract()?" abstract":""; // NOI18N
         String returnType = ""; // NOI18N
-        if (op.getReturnType() != null && op.getReturnType().getType() != null)
+        if (op.getReturnType() != null)
         {
-            returnType = " <A HREF=\"" + // NOI18N
-                    getLinkTo(op.getReturnType().getType()) + "\">" + // NOI18N
-                    op.getReturnType().getType().getName() + "</A>"; // NOI18N
-            
-            IMultiplicity mul = op.getReturnType().getMultiplicity();
-            if (mul != null)
-                returnType += mul.getRangeAsString(true);
-            
+            if (op.getReturnType().getType() == null)
+            {
+                Logger.getLogger(ClassData.class.getName()).
+                        log(Level.WARNING, NbBundle.getMessage(ClassData.class,
+                        "MSG_InvalidType", op.getReturnType().getElementType(), op.getReturnType().getName())); // NOI18N
+            }
+            else
+            {
+                returnType = " <A HREF=\"" + // NOI18N
+                        getLinkTo(op.getReturnType().getType()) + "\">" + // NOI18N
+                        op.getReturnType().getType().getName() + "</A>"; // NOI18N
+                
+                IMultiplicity mul = op.getReturnType().getMultiplicity();
+                if (mul != null)
+                    returnType += mul.getRangeAsString(true);
+            }
         }
-   
+        
         return visibility + staticString + finalString + abstractString + returnType;
     }
     
@@ -438,26 +464,26 @@ public class ClassData extends ElementDataObject
             buff.append("<DL>\r\n"); // NOI18N
             
             buff.append("<DT><B>" + NbBundle.getMessage( // NOI18N
-                ClassData.class, "All_Known_Associations") + ": </B>"); // NOI18N
+                    ClassData.class, "All_Known_Associations") + ": </B>"); // NOI18N
             
             for (int i=0; i<associations.size(); i++)
             {
                 IAssociation association = associations.get(i);
                 String type = association.getExpandedElementType();
-
+                
                 String imageName = CommonResourceManager.instance()
-                    .getIconDetailsForElementType(type);
-
+                        .getIconDetailsForElementType(type);
+                
                 if (imageName.lastIndexOf("/") > -1)
                     imageName = imageName.substring(imageName.lastIndexOf("/")+1); // NOI18N
                 
                 ReportTask.addToImageList(imageName);
-
+                
                 buff.append("<DD><IMG SRC=\"" +  // NOI18N
-                    ReportTask.getPathToReportRoot(getElement()) +
-                    "images/" + imageName + "\" ALT=\"" + "(" + // NOI18N
-                    type + ") \"> " + "<A HREF=\"" + // NOI18N
-                    getLinkTo(association) + "\">" + type +  "</A>: "); // NOI18N
+                        ReportTask.getPathToReportRoot(getElement()) +
+                        "images/" + imageName + "\" ALT=\"" + "(" + // NOI18N
+                        type + ") \"> " + "<A HREF=\"" + // NOI18N
+                        getLinkTo(association) + "\">" + type +  "</A>: "); // NOI18N
                 
                 ETList<IElement> participants = association.getAllParticipants();
                 participants.remove(getElement());
@@ -465,16 +491,27 @@ public class ClassData extends ElementDataObject
                 for (int j=0; j<participants.size(); j++)
                 {
                     IElement parti = participants.get(j);
-
+                    
                     if (association.getIsReflexive() ||
                             !parti.getXMIID().equals(getElement().getXMIID()))
                     {
                         if (displayLink(parti) && parti instanceof INamedElement)
                         {
-                            buff.append("<A HREF=\"" + getLinkTo(parti) + // NOI18N
-                                "\" title=\"association in " + // NOI18N
-                                parti.getOwningPackage().getFullyQualifiedName(false) +
-                                "\">" + ((INamedElement)parti).getName() + "</A>"); // NOI18N
+                            if (parti.getOwningPackage()!=null)
+                            {
+                                buff.append("<A HREF=\"" + getLinkTo(parti) + // NOI18N
+                                        "\" title=\"association in " + // NOI18N
+                                        parti.getOwningPackage().getFullyQualifiedName(false) +
+                                        "\">" + ((INamedElement)parti).getName() + "</A>"); // NOI18N
+                            }
+                            else
+                            {
+                                buff.append(((INamedElement)parti).getName());
+                                
+                                Logger.getLogger(ClassData.class.getName()).
+                                        log(Level.WARNING, NbBundle.getMessage(ClassData.class,
+                                        "MSG_InvalidPackage", parti.getElementType(), parti.toString())); // NOI18N
+                            }
                         }
                         
                         else
@@ -509,9 +546,19 @@ public class ClassData extends ElementDataObject
             for (int i=0; i<specializations.size(); i++)
             {
                 IClassifier sp = specializations.get(i).getSpecific();
-                buff.append("<A HREF=\"" + getLinkTo(sp) + "\" title=\"specifications in " + // NOI18N
-                        sp.getOwningPackage().getFullyQualifiedName(false) + "\">" + // NOI18N
-                        sp.getName() + "</A>"); // NOI18N
+                if (sp.getOwningPackage()!=null)
+                {
+                    buff.append("<A HREF=\"" + getLinkTo(sp) + "\" title=\"specifications in " + // NOI18N
+                            sp.getOwningPackage().getFullyQualifiedName(false) + "\">" + // NOI18N
+                            sp.getName() + "</A>"); // NOI18N
+                }
+                else
+                {
+                    buff.append(sp.getName());
+                    Logger.getLogger(ClassData.class.getName()).
+                            log(Level.WARNING, NbBundle.getMessage(ClassData.class,
+                            "MSG_InvalidPackage", sp.getElementType(), sp.getName())); // NOI18N
+                }
                 if (i < specializations.size()-1)
                     buff.append(", ");
             }
@@ -535,9 +582,19 @@ public class ClassData extends ElementDataObject
             for (int i=0; i<generalizations.size(); i++)
             {
                 IClassifier sp = generalizations.get(i).getGeneral();
-                buff.append("<A HREF=\"" + getLinkTo(sp) + "\" title=\"specifications in " + // NOI18N
-                        sp.getOwningPackage().getFullyQualifiedName(false) + "\">" + // NOI18N
-                        sp.getName() + "</A>"); // NOI18N
+                if (sp.getOwningPackage()!=null)
+                {
+                    buff.append("<A HREF=\"" + getLinkTo(sp) + "\" title=\"specifications in " + // NOI18N
+                            sp.getOwningPackage().getFullyQualifiedName(false) + "\">" + // NOI18N
+                            sp.getName() + "</A>"); // NOI18N
+                }
+                else
+                {
+                    buff.append(sp.getName());
+                    Logger.getLogger(ClassData.class.getName()).
+                            log(Level.WARNING, NbBundle.getMessage(ClassData.class,
+                            "MSG_InvalidPackage", sp.getElementType(), sp.getName())); // NOI18N
+                }
                 if (i < generalizations.size()-1)
                     buff.append(", "); // NOI18N
             }
@@ -580,7 +637,12 @@ public class ClassData extends ElementDataObject
                     // just avoid them until the root issue is solved
                     // i.e. - not a web report generation issue
                     if (classifier == null)
+                    {
+                        Logger.getLogger(ClassData.class.getName()).
+                                log(Level.WARNING, NbBundle.getMessage(ClassData.class,
+                                "MSG_InvalidSuperClass", getElementType(), getElementName())); // NOI18N
                         continue;
+                    }
                     
                     out.write("<A HREF=\"" + getLinkTo(classifier) + // NOI18N
                             "\" title=\"" + getElementType() + " in" + getOwningPackageName() + // NOI18N
@@ -604,8 +666,22 @@ public class ClassData extends ElementDataObject
                 for (int i=0; i<infs.length; i++)
                 {
                     IInterface inf = infs[i];
-                    if (inf != null)
+                    if (inf == null)
+                    {
+                        Logger.getLogger(ClassData.class.getName()).
+                                log(Level.WARNING, NbBundle.getMessage(ClassData.class,
+                                "MSG_InvalidSuperClass", getElementType(), getElementName())); // NOI18N
+                        continue;
+                    }
+                    if (inf.getOwningPackage()!=null)
                         out.write("<A HREF=\"" + getLinkTo(inf) + "\" title=\"interface in " + inf.getOwningPackage().getFullyQualifiedName(false) + "\">" + inf.getName() + "</A>"); // NOI18N
+                    else
+                    {
+                        out.write(inf.getName());
+                        Logger.getLogger(ClassData.class.getName()).
+                                log(Level.WARNING, NbBundle.getMessage(ClassData.class,
+                                "MSG_InvalidPackage", inf.getElementType(), inf.getName())); // NOI18N
+                    }
                     
                     if (i < infs.length-1)
                         out.write(", "); // NOI18N
@@ -623,7 +699,22 @@ public class ClassData extends ElementDataObject
                 for (int i=0; i<specializations.size(); i++)
                 {
                     IClassifier sp = specializations.get(i).getSpecific();
-                    out.write("<A HREF=\"" + getLinkTo(sp) + "\" title=\"subclass in " + sp.getOwningPackage().getFullyQualifiedName(false) + "\">" + sp.getName() + "</A>"); // NOI18N
+                    if(sp==null)
+                    {
+                        Logger.getLogger(ClassData.class.getName()).
+                                log(Level.WARNING, NbBundle.getMessage(ClassData.class,
+                                "MSG_InvalidSubClass", getElementType(), getElementName())); // NOI18N
+                        continue;
+                    }
+                    if (sp.getOwningPackage()!=null)
+                        out.write("<A HREF=\"" + getLinkTo(sp) + "\" title=\"subclass in " + sp.getOwningPackage().getFullyQualifiedName(false) + "\">" + sp.getName() + "</A>"); // NOI18N
+                    else
+                    {
+                        out.write(sp.getName());
+                        Logger.getLogger(ClassData.class.getName()).
+                                log(Level.WARNING, NbBundle.getMessage(ClassData.class,
+                                "MSG_InvalidPackage", sp.getElementType(), sp.getName())); // NOI18N
+                    }
                     
                     if (i < specializations.size()-1)
                         out.write(", "); // NOI18N
@@ -658,7 +749,12 @@ public class ClassData extends ElementDataObject
                     // just avoid them until the root issue is solved
                     // i.e. - not a web report generation issue
                     if (classifier == null)
+                    {
+                        Logger.getLogger(ClassData.class.getName()).
+                                log(Level.WARNING, NbBundle.getMessage(ClassData.class,
+                                "MSG_InvalidSuperClass", getElementType(), getElementName())); // NOI18N
                         continue;
+                    }
                     
                     out.write("<A HREF=\"" + getLinkTo(classifier) + // NOI18N
                             "\" title=\"" + getElementType() + " in" + getOwningPackageName() + // NOI18N
@@ -674,8 +770,22 @@ public class ClassData extends ElementDataObject
                 for (int i=0; i<infs.length; i++)
                 {
                     IClassifier classifier = infs[i];
-                    if (classifier != null)
+                    if (classifier == null)
+                    {
+                        Logger.getLogger(ClassData.class.getName()).
+                                log(Level.WARNING, NbBundle.getMessage(ClassData.class,
+                                "MSG_InvalidSuperClass", getElementType(), getElementName())); // NOI18N
+                        continue;
+                    }
+                    if (classifier.getOwningPackage()!=null)
                         out.write("<A HREF=\"" + getLinkTo(classifier) + "\" title=\"interface in " + classifier.getOwningPackage().getFullyQualifiedName(false) + "\">" + classifier.getName() + "</A>"); // NOI18N
+                    else
+                    {
+                        out.write(classifier.getName());
+                        Logger.getLogger(ClassData.class.getName()).
+                                log(Level.WARNING, NbBundle.getMessage(ClassData.class,
+                                "MSG_InvalidPackage", classifier.getElementType(), classifier.getName())); // NOI18N
+                    }
                     
                     if (i < infs.length-1)
                         out.write(", ");
@@ -707,8 +817,8 @@ public class ClassData extends ElementDataObject
                     out.write("<TD><CODE><B><A HREF=\"" + getLinkTo(classifier) + "\">" + classifier.getName() + "</A></B></CODE>\r\n"); // NOI18N
                     out.write("<BR>\r\n"); // NOI18N
                     
-                    out.write("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" 
-                        + getBriefDocumentation(classifier.getDocumentation()) + "</TD>\r\n");
+                    out.write("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
+                            + getBriefDocumentation(classifier.getDocumentation()) + "</TD>\r\n");
                     
                     out.write("</TR>\r\n\r\n"); // NOI18N
                 }
@@ -734,7 +844,12 @@ public class ClassData extends ElementDataObject
                     if (type!=null)
                         out.write("<CODE>" + "<A HREF=\"" + getLinkTo(type) + "\">" + type.getName() + "</A></CODE></FONT></TD>\r\n"); // NOI18N
                     else
+                    {
                         out.write("<CODE>&nbsp;</CODE></FONT></TD>\r\n"); // NOI18N
+                        Logger.getLogger(ClassData.class.getName()).
+                                log(Level.WARNING, NbBundle.getMessage(ClassData.class,
+                                "MSG_InvalidType", attr.getElementType(), attr.getName())); // NOI18N
+                    }
                     out.write("<TD><CODE><B><A HREF=\"#" + attr.getName() + "\">" + attr.getName() + "</A></B>"); // NOI18N
                     
                     IMultiplicity mul = attr.getMultiplicity();
@@ -743,7 +858,7 @@ public class ClassData extends ElementDataObject
                     out.write("</CODE>\r\n");
                     out.write("<BR>\r\n");
                     out.write("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" +
-                        getBriefDocumentation(attr.getDocumentation()) + "</TD>\r\n</TR>\r\n");
+                            getBriefDocumentation(attr.getDocumentation()) + "</TD>\r\n</TR>\r\n");
                 }
                 out.write("</TABLE>\r\n&nbsp;\r\n"); // NOI18N
             }
@@ -776,7 +891,7 @@ public class ClassData extends ElementDataObject
             out.write(getStereoTypesSummary());
             
             // tagged value summary
-
+            
             out.write(getTaggedValueSummary());
             
             // constraint summary
@@ -810,7 +925,7 @@ public class ClassData extends ElementDataObject
                     out.write("<DL>\r\n");
                     
                     out.write("<DD>" + attr.getDocumentation()
-                        + "\r\n<P>\r\n</DD>\r\n</DL>\r\n");
+                            + "\r\n<P>\r\n</DD>\r\n</DL>\r\n");
                     
                     if (i<attrs.size()-1)
                         out.write("<HR>\r\n\r\n"); // NOI18N
@@ -850,7 +965,7 @@ public class ClassData extends ElementDataObject
                     Level.SEVERE, getElement().getElementType() + " - " +  getElement().getNameWithAlias(), e);
             result = false;
         }
-       
+        
         return result;
     }
     
