@@ -38,8 +38,8 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.bpel.core.multiview;
+
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
@@ -330,28 +330,12 @@ public class BPELSourceMultiViewElement extends CloneableEditor
     }
     
     private void initialize() {
-            
-        /**
-         * only thing which works to make the XmlNav show for this MVElement see
-         * (http://www.netbeans.org/issues/show_bug.cgi?id=67257)
-         */
-        associateLookup(new ProxyLookup(new Lookup[] {
-        // Lookups.singleton(getDataObject().getNodeDelegate())
-                Lookups.fixed(new Object[] {
-                        // Need ActionMap in lookup so editor actions work.
-                        // Fix for #85512.
-                        getActionMap(),
-                        getDataObject(),
-                        getDataObject().getNodeDelegate() }) }));
-        /*
-         * getDataObject() is put here because method createMultiView in 
-         * BpelMultiviewSupport is create TopComponent with lookup
-         * that retrieved from defaultDesc . This defaultDesc is source 
-         * description. So I put into lookup dataOject.
-         * It will be used later for activate Design view.
-         * Second object in lookup is "hack" that described above.
-         */
-        
+      associateLookup(new ProxyLookup(new Lookup[] { // # 67257
+        Lookups.fixed(new Object[] {
+          getActionMap(), // # 85512
+          getDataObject(),
+          getDataObject().getNodeDelegate() }),
+          getDataObject().getLookup() })); // # 117029
     }
     
     private BPELValidationController getValidationController() {

@@ -116,27 +116,12 @@ public class TMapSourceMultiViewElement extends CloneableEditor
     }
     
     private void initialize() {
-        /**
-         * only thing which works to make the XmlNav show for this MVElement see
-         * (http://www.netbeans.org/issues/show_bug.cgi?id=67257)
-         */
-        associateLookup(new ProxyLookup(new Lookup[] {
-            // Lookups.singleton(getDataObject().getNodeDelegate())
-            Lookups.fixed(new Object[] {
-                // Need ActionMap in lookup so editor actions work.
-                // Fix for #85512.
-                getActionMap(),
-                getDataObject(),
-                getDataObject().getNodeDelegate() }) }));
-        /*
-         * getDataObject() is put here because method createMultiView in
-         * TMapMultiviewSupport is create TopComponent with lookup
-         * that retrieved from defaultDesc . This defaultDesc is source
-         * description. So I put into lookup dataOject.
-         * It will be used later for activate Design view.
-         * Second object in lookup is "hack" that described above.
-         */
-        
+      associateLookup(new ProxyLookup(new Lookup[] { // # 67257
+        Lookups.fixed(new Object[] {
+          getActionMap(), // # 85512
+          getDataObject(),
+          getDataObject().getNodeDelegate() }),
+          getDataObject().getLookup() })); // # 117029
     }
     
     public void writeExternal(ObjectOutput out) throws IOException {
@@ -388,7 +373,3 @@ public class TMapSourceMultiViewElement extends CloneableEditor
         return false;
     }
 }
-
-
-
-
