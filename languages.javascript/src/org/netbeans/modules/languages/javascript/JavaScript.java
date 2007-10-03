@@ -173,7 +173,7 @@ public class JavaScript {
             }
         }
         if (
-            newLineDetected || (!input.eof () && regExp.contains (new Integer (input.next ())))
+            newLineDetected || input.eof () || regExp.contains (new Integer (input.next ()))
         ) {
             input.setIndex (end);
             return new Object[] {
