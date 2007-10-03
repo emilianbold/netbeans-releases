@@ -843,19 +843,15 @@ public class Utilities {
         return res;
     }
 
-    private static SimpleDateFormat getDateFormat() {
-        return DATE_FORMAT;
-    }    
-    
     public static String formatDate(Date date) {
         synchronized(DATE_FORMAT) {
-            return getDateFormat().format(date);
+            return DATE_FORMAT.format(date);
         }
     }
 
     public static Date parseDate(String date) throws ParseException {
         synchronized(DATE_FORMAT) {
-            return getDateFormat().parse(date);
+            return DATE_FORMAT.parse(date);
         }
     }    
 }
