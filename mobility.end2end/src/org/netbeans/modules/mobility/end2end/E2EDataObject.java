@@ -239,7 +239,7 @@ public class E2EDataObject extends XmlMultiViewDataObject {
         }
         // TODO: fix 
 //        System.err.println(" - classpathInfos: " + classpathInfos.size());
-        final ClassDataRegistry registry = ClassDataRegistry.getRegistry( "default", classpathInfos );  
+        final ClassDataRegistry registry = ClassDataRegistry.getRegistry( ClassDataRegistry.DEFAULT_PROFILE, classpathInfos );  
 //        final ClassDataRegistry registry =
 //                getClassDataRegistryFactory().create( classPath );
 //        mapping = new MutableJavonMapping( registry );

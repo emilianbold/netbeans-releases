@@ -146,11 +146,11 @@ public class ArrayTypeSerializer implements JavonSerializer {
         throw new IllegalArgumentException( "Invalid type: " + type.getName());        
     }
     
-    public Set<ClassData> getReferencesTypes( ClassData rootClassData, Set<ClassData> usedTypes ) {
+    public Set<ClassData> getReferencedTypes( ClassData rootClassData, Set<ClassData> usedTypes ) {
         Set<ClassData> result = new HashSet<ClassData>();
         result.add( rootClassData );
         result.addAll( rootClassData.getComponentType().getSerializer().
-                getReferencesTypes( rootClassData.getComponentType(), usedTypes ));
+                getReferencedTypes( rootClassData.getComponentType(), usedTypes ));
         return result;
     }
 }

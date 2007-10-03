@@ -73,6 +73,7 @@ public class BeanTypeSerializer implements JavonSerializer {
             String shortName = clazz.getSimpleName().toString();
             String classFullQualifiedName = clazz.getQualifiedName().toString();
             if( "java.lang.Object".equals( classFullQualifiedName )) return false;
+            if( classFullQualifiedName.startsWith( "java.util" )) return false;
             String packageName = "";
             if( shortName.length() != classFullQualifiedName.length()) {
                 int fqnLength = classFullQualifiedName.length();
@@ -270,14 +271,14 @@ public class BeanTypeSerializer implements JavonSerializer {
         return "get" + field.getName().substring( 0, 1 ).toUpperCase() + field.getName().substring( 1 );
     }
     
-    public Set<ClassData> getReferencesTypes( ClassData rootClassData, Set<ClassData> usedTypes ) {
+    public Set<ClassData> getReferencedTypes( ClassData rootClassData, Set<ClassData> usedTypes ) {
         Set<ClassData> result = new HashSet<ClassData>();
         result.add( rootClassData );
         usedTypes.add( rootClassData );
         for( FieldData fieldCD : rootClassData.getFields()) {
             ClassData cd = fieldCD.getType();
             if( !usedTypes.contains( cd )) {
-                result.addAll( cd.getSerializer().getReferencesTypes( cd, usedTypes ));
+                result.addAll( cd.getSerializer().getReferencedTypes( cd, usedTypes ));
                 usedTypes.add( cd );
             }
         }

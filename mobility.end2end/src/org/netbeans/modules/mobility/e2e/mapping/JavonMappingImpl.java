@@ -423,7 +423,7 @@ public class JavonMappingImpl implements JavonMapping {
 //                System.err.println(" - method = " + method.getName());
                 for( MethodParameter param : method.getParameters()) {
                     ClassData cd = param.getType();
-                    paramTypes.addAll( cd.getSerializer().getReferencesTypes( cd, paramTypes ));
+                    paramTypes.addAll( cd.getSerializer().getReferencedTypes( cd, paramTypes ));
                 }
             }
             return Collections.unmodifiableSet( paramTypes );
@@ -438,7 +438,7 @@ public class JavonMappingImpl implements JavonMapping {
             Set<ClassData> returnTypes = new HashSet<ClassData>();
             for( MethodData method : methods ) {
                 ClassData cd = method.getReturnType();
-                returnTypes.addAll( cd.getSerializer().getReferencesTypes( cd, returnTypes ));
+                returnTypes.addAll( cd.getSerializer().getReferencedTypes( cd, returnTypes ));
             }
             return Collections.unmodifiableSet( returnTypes );
         }

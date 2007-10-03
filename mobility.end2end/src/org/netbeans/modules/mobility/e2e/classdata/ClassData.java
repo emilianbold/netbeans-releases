@@ -23,6 +23,7 @@ import org.netbeans.modules.mobility.javon.JavonSerializer;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -196,7 +197,15 @@ public class ClassData {
     }
 
     public String toString() {
-        String result = getName() + " ";
+        String result = getName();
+        if( typeParameters.size() > 0 ) {
+            result += "<";
+            for( Iterator<ClassData> it = typeParameters.iterator(); it.hasNext();  ) {
+                result += it.next().toString();
+                if( it.hasNext()) result += ", ";
+            }
+            result += ">";
+        }
         if( fields.size() > 0 ) {
             result += "[";
             for( FieldData field : fields ) {
@@ -223,7 +232,10 @@ public class ClassData {
             if( !getFullyQualifiedName().equals( cd.getFullyQualifiedName())) return false;
             if( primitive != cd.isPrimitive()) return false;
             if( array != cd.isArray()) return false;
-            
+            if( typeParameters.size() != cd.getParameterTypes().size()) return false;
+            for( int i = 0; i < typeParameters.size(); i++ ) {
+                if( !typeParameters.get( i ).equals( cd.getParameterTypes().get( i ))) return false;
+            }
             return true;
         }
         return false;

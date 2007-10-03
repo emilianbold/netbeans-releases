@@ -88,7 +88,7 @@ public class MethodCheckedTreeBeanView extends BeanTreeView {
         if (n != null) forceState(n.getChildren(), (MultiStateCheckBox.State)n.getValue(ServiceNodeManager.NODE_SELECTION_ATTRIBUTE));
         updateMixedStates(root);
         validateTree();
-        fireChange();
+        fireChange();        
     }
     
     private void forceState(Children ch, MultiStateCheckBox.State state) {

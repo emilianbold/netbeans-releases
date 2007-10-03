@@ -5,6 +5,7 @@
 package ${proxyClassPackage};
 </#if>
 
+import java.util.*;
 import javax.xml.ws.WebServiceRef;
 import ${servicePackage}.*;
 
@@ -16,10 +17,10 @@ public class ${proxyClassName} {
     public ${service} service;
 
 <#list methods as method>
-    public ${method.getReturnType().getName()} ${method.getName()}(<#rt>
-    <#lt><#list method.getParameters() as parameter>${parameter.getType().getName()} ${parameter.getName()}<#if parameter_has_next>, </#if></#list>) throws Exception {
+    public ${method.getReturnType().getSerializer().instanceOf( mapping, method.getReturnType())} ${method.getName()}(<#rt>
+    <#lt><#list method.getParameters() as parameter>${parameter.getType().getSerializer().instanceOf( mapping, parameter.getType())} ${parameter.getName()}<#if parameter_has_next>, </#if></#list>) throws Exception {
         <#if method.getReturnType().getName() != "void"><#rt>
-            ${method.getReturnType().getName()} _result;
+            ${method.getReturnType().getSerializer().instanceOf( mapping, method.getReturnType())} _result;
         </#if>
         try { // Call Web Service Operation
             ${portClassName} port = getService().${portGetterName}();

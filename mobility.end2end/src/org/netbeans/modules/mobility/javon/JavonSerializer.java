@@ -110,7 +110,7 @@ public interface JavonSerializer {
      * @param rootClassData root class data
      * @return Set<ClassData> of all referenced types
      */
-    public Set<ClassData> getReferencesTypes( ClassData rootClassData, Set<ClassData> usedTypes );
+    public Set<ClassData> getReferencedTypes( ClassData rootClassData, Set<ClassData> usedTypes );
     
     
 }

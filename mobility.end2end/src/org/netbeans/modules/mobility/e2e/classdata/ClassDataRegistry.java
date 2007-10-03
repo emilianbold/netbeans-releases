@@ -49,7 +49,7 @@ public class ClassDataRegistry {
 
     private List<ClasspathInfo> classpaths;
 
-    private Map<String, ClassData> typeMap = null;
+    private Set<ClassData> typeMap = null;
     private Map<String, ClassData> baseClasses = null;
 
     private Map<ClassData, Integer> idMapping = new HashMap<ClassData, Integer>();
@@ -102,7 +102,8 @@ public class ClassDataRegistry {
         Lookup.Result<JavonProfileProvider> providersResult =
                 Lookup.getDefault().lookup( new Lookup.Template<JavonProfileProvider>(
                         JavonProfileProvider.class ) );
-        List<JavonProfileProvider> providers = new ArrayList( providersResult.allInstances() );
+        List<JavonProfileProvider> providers = 
+                new ArrayList<JavonProfileProvider>( providersResult.allInstances() );
 
         for ( JavonProfileProvider provider : providers ) {
             if ( profileName.equals( provider.getName() ) ) {
@@ -161,7 +162,7 @@ public class ClassDataRegistry {
     public boolean isRegisteredType( ClassData clsData ) {
         if ( typeMap == null )
             updateClassDataTree();
-        return this.typeMap.values().contains( clsData );
+        return this.typeMap.contains( clsData );
     }
 
 
@@ -177,10 +178,10 @@ public class ClassDataRegistry {
 
         HashSet<ClassData> result = new HashSet<ClassData>();
 
-        Set<String> fqClassNames = this.typeMap.keySet();
-        for ( String fqClassName : fqClassNames )
-            if ( fqClassName.startsWith( packageName ) )
-                result.add( this.typeMap.get( fqClassName ) );
+        for( ClassData cd : typeMap ) {
+            if( cd.getPackage().equals( packageName ))
+                result.add( cd );
+        }
 
         return result;
     }
@@ -221,7 +222,7 @@ public class ClassDataRegistry {
      */
     public void updateClassDataTree() {
         if (typeMap==null)
-            typeMap = new HashMap<String,ClassData>();
+            typeMap = new HashSet<ClassData>();
         if (baseClasses==null)
             baseClasses = new HashMap<String, ClassData>();
 
@@ -235,8 +236,8 @@ public class ClassDataRegistry {
 
                 // Assign id to all types
                 idMapping = new HashMap<ClassData, Integer>();
-                for ( ClassData cd : typeMap.values() ) {
-//                    System.err.println( " - " + cd.getName() + " = " + id );
+                for ( ClassData cd : typeMap ) {
+                    System.err.println( " - " + cd.getFullyQualifiedName() + " = " + id );
                     idMapping.put( cd, id );
                     id++;
                 }
@@ -253,7 +254,7 @@ public class ClassDataRegistry {
      */
     public Set<ClassData> getRegisteredTypes() {
         if (typeMap == null) updateClassDataTree();
-        return Collections.unmodifiableSet(new HashSet<ClassData>(typeMap.values()));
+        return Collections.unmodifiableSet( typeMap );
     }
 
     /**
@@ -264,7 +265,7 @@ public class ClassDataRegistry {
     public Set<ClassData> getReturnTypes() {
         if (typeMap == null) updateClassDataTree();
         Set<ClassData> result=new HashSet<ClassData>();
-        for (ClassData clsData: typeMap.values()) {
+        for( ClassData clsData: typeMap ) {
             for (MethodData mthData : clsData.getMethods())
                 result.add( mthData.getReturnType());
         }
@@ -279,7 +280,7 @@ public class ClassDataRegistry {
     public Set<ClassData> getParameterTypes() {
         if (typeMap == null) updateClassDataTree();
         Set<ClassData> result = new HashSet<ClassData>();
-        for (ClassData clsData:typeMap.values())
+        for( ClassData clsData : typeMap )
             for (MethodData mthData : clsData.getMethods())
                 result.addAll( mthData.getReturnType().getParameterTypes());
         return Collections.unmodifiableSet( result );
@@ -288,6 +289,7 @@ public class ClassDataRegistry {
     public int getRegisteredTypeId( ClassData type ) {
         if ( typeMap == null )
             updateClassDataTree();
+        System.err.println(" ~ " + type );
         return idMapping.get( type );
     }
 
@@ -310,7 +312,7 @@ public class ClassDataRegistry {
             this.cpi = cpi;
 
             if (typeMap==null)
-                typeMap=new HashMap<String,ClassData>();
+                typeMap = new HashSet<ClassData>();
         }
 
         public void cancel() {
@@ -348,7 +350,7 @@ public class ClassDataRegistry {
                         ClassData returnClass = traverseType( e.getReturnType(), typeCache );
 
                         if ( returnClass != null ) {
-                            typeMap.put( returnClass.getFullyQualifiedName(), returnClass );
+                            typeMap.add( returnClass );
                             validReturnType=true;
                         } else {
                             validReturnType=false;
@@ -358,7 +360,7 @@ public class ClassDataRegistry {
                             typeCache = new HashMap<String, ClassData>();
                             ClassData paramClass = traverseType( var.asType(), typeCache );
                             if ( paramClass != null ) {
-                                typeMap.put( paramClass.getFullyQualifiedName(), paramClass);
+                                typeMap.add( paramClass );
                                 parameters.add( new MethodParameter( var.getSimpleName().toString(), paramClass));
                                 validParameters=true;
                             } else {
@@ -415,7 +417,7 @@ public class ClassDataRegistry {
             if (type.getSerializer()==null)
                 return null;
             else {
-                typeMap.put( type.getFullyQualifiedName(), type);
+                typeMap.add( type );
                 return type.getSerializer();
             }
         }

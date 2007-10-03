@@ -106,6 +106,7 @@ public class ClientJavonTemplate extends JavonTemplate {
                     }
                     if( cd.isPrimitive()) continue;
                     if( cd.getPackage().equals( "java.lang" )) continue;
+                    if( cd.getFullyQualifiedName().equals( "java.util.List" )) continue;
                     imports.add( cd.getFullyQualifiedName());
                 }
                 for( ClassData cd : returnTypes ) {
@@ -114,7 +115,7 @@ public class ClientJavonTemplate extends JavonTemplate {
                     }
                     if( cd.isPrimitive()) continue;
                     if( cd.getPackage().equals( "java.lang" )) continue;
-                    
+                    if( cd.getFullyQualifiedName().equals( "java.util.List" )) continue;
                     imports.add( cd.getFullyQualifiedName());
                 }
                 bind.put( "imports", imports );

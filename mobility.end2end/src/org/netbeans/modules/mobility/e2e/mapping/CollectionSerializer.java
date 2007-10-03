@@ -117,7 +117,7 @@ public class CollectionSerializer implements JavonSerializer {
         throw new IllegalArgumentException( "Invalid type: " + type.getName());        
     }
 
-    public Set<ClassData> getReferencesTypes( ClassData rootClassData, Set<ClassData> usedTypes ) {
+    public Set<ClassData> getReferencedTypes( ClassData rootClassData, Set<ClassData> usedTypes ) {
         return Collections.singleton( rootClassData );
     }
 }

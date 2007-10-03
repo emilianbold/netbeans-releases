@@ -58,6 +58,7 @@ import org.netbeans.modules.mobility.end2end.classdata.WSDLService;
 import org.netbeans.modules.mobility.end2end.client.config.Configuration;
 import org.netbeans.modules.mobility.end2end.client.config.ServerConfiguration;
 import org.netbeans.modules.mobility.end2end.util.Util;
+import org.netbeans.modules.mobility.javon.JavonMapping;
 import org.netbeans.modules.mobility.javon.OutputFileFormatter;
 import org.netbeans.modules.websvc.api.client.ClientStubDescriptor;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
@@ -121,9 +122,9 @@ public class ProxyGenerator {
             
             generatedProxyName = pkgName.length() > 0 ? pkgName + "." + proxyClassName : proxyClassName;
                 
-            FileObject outputFile = targetFolder.getFileObject( proxyClassName, "java" );
+            FileObject outputFile = targetFolder.getFileObject( proxyClassName, "java" ); // NOI18N
             if( outputFile == null ) {
-                outputFile = targetFolder.createData( proxyClassName, "java" );
+                outputFile = targetFolder.createData( proxyClassName, "java" ); // NOI18N
             }
             
             // Get Nodes from the J2EE
@@ -136,7 +137,7 @@ public class ProxyGenerator {
             }
                         
             FileObject generatedClientFO = 
-                    serverProject.getProjectDirectory().getFileObject( "build/generated/wsimport/client/" );
+                    serverProject.getProjectDirectory().getFileObject( "build/generated/wsimport/client/" ); // NOI18N
             // Add all paths to the ClasspathInfo structure
             List<ClasspathInfo> classpaths = Collections.singletonList( ClasspathInfo.create( generatedClientFO ));
             // Get the registry for all available classes
@@ -173,19 +174,25 @@ public class ProxyGenerator {
             OutputFileFormatter off = new OutputFileFormatter( outputFile );
 
             ScriptEngineManager mgr = new ScriptEngineManager();
-            ScriptEngine eng = mgr.getEngineByName( "freemarker" );
+            ScriptEngine eng = mgr.getEngineByName( "freemarker" ); // NOI18N
             Bindings bind = eng.getContext().getBindings( ScriptContext.ENGINE_SCOPE );
 
-            FileObject template = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject( "Templates/Server/Proxy.java" );
+            FileObject template = Repository.getDefault().getDefaultFileSystem().
+                    getRoot().getFileObject( "Templates/Server/Proxy.java" ); // NOI18N
             
-            bind.put( "proxyClassPackage", sc.getClassDescriptor().getPackageName());
-            bind.put( "proxyClassName", proxyClassName );
-            bind.put( "servicePackage", servicePackage );
-            bind.put( "service", serviceClassName );
+            // Set code generation for server part
+            JavonMapping mapping = dataObject.getMapping();
+            mapping.setProperty( "target", "server" );  // NOI18N
             
-            bind.put( "methods", methodList );
-            bind.put( "portGetterName", portGetterName );
-            bind.put( "portClassName", portClassName );
+            bind.put( "mapping", mapping ); // NOI18N
+            bind.put( "proxyClassPackage", sc.getClassDescriptor().getPackageName()); // NOI18N
+            bind.put( "proxyClassName", proxyClassName ); // NOI18N
+            bind.put( "servicePackage", servicePackage ); // NOI18N
+            bind.put( "service", serviceClassName ); // NOI18N
+            
+            bind.put( "methods", methodList ); // NOI18N
+            bind.put( "portGetterName", portGetterName ); // NOI18N
+            bind.put( "portClassName", portClassName ); // NOI18N
             
             Writer w = null;
             Reader is = null;

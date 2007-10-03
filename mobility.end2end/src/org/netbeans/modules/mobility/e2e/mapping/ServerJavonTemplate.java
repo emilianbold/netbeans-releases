@@ -61,7 +61,7 @@ public class ServerJavonTemplate extends JavonTemplate {
     private static final Set<String> outputSet;
     
     static {
-        outputSet = new HashSet();
+        outputSet = new HashSet<String>();
         for( String output : OUTPUTS ) {
             outputSet.add( output );
         }        
@@ -76,7 +76,7 @@ public class ServerJavonTemplate extends JavonTemplate {
     }
     
     public Set<String> getTargets() {
-        return new HashSet( Arrays.asList( OUTPUTS ));
+        return new HashSet<String>( Arrays.asList( OUTPUTS ));
     }
 
     public boolean generateTarget( ProgressHandle ph, String target ) {

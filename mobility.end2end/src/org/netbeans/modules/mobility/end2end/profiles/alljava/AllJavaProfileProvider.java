@@ -1,54 +1,1 @@
-package org.netbeans.modules.mobility.end2end.profiles.alljava;
-
-
-
-import org.netbeans.modules.mobility.javon.JavonProfileProvider;
-import org.netbeans.modules.mobility.javon.JavonTemplate;
-import org.netbeans.modules.mobility.javon.JavonSerializer;
-import org.netbeans.modules.mobility.e2e.mapping.JavonMappingImpl;
-import org.netbeans.modules.mobility.e2e.mapping.RealTypeSerializer;
-import org.netbeans.modules.mobility.e2e.mapping.PrimitiveTypeSerializer;
-import org.netbeans.modules.mobility.e2e.mapping.ArrayTypeSerializer;
-
-
-import java.util.List;
-import java.util.Collections;
-import java.util.Arrays;
-
-
-
-/**
-
- *
-
- * User: bohemius
-
- * Date: Apr 19, 2007
-
- * Time: 3:08:49 PM
-
- *
-
- */
-
-public class AllJavaProfileProvider implements JavonProfileProvider {
-
-    public String getName() {
-        return "alljava"; //NOI18N
-    }
-
-    public String getDisplayName() {
-        return "All Java Profile";//NOI18N
-    }
-
-    public List<JavonTemplate> getTemplates(JavonMappingImpl mapping) {
-        return Collections.<JavonTemplate>emptyList();
-    }
-
-
-
-    public List<JavonSerializer> getSerializers() {
-        return Arrays.asList(new JavonSerializer[] {new RealTypeSerializer(), new PrimitiveTypeSerializer(), new ArrayTypeSerializer(), new AllJavaSerializer()});
-    }
-}
-
+/* * The contents of this file are subject to the terms of the Common Development * and Distribution License (the License). You may not use this file except in * compliance with the License. * * You can obtain a copy of the License at http://www.netbeans.org/cddl.html * or http://www.netbeans.org/cddl.txt. * * When distributing Covered Code, include this CDDL Header Notice in each file * and include the License file at http://www.netbeans.org/cddl.txt. * If applicable, add the following below the CDDL Header, with the fields * enclosed by brackets [] replaced by your own identifying information: * "Portions Copyrighted [year] [name of copyright owner]" * * The Original Software is NetBeans. The Initial Developer of the Original * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun * Microsystems, Inc. All Rights Reserved. */package org.netbeans.modules.mobility.end2end.profiles.alljava;import java.util.ArrayList;import org.netbeans.modules.mobility.javon.JavonProfileProvider;import org.netbeans.modules.mobility.javon.JavonTemplate;import org.netbeans.modules.mobility.javon.JavonSerializer;import org.netbeans.modules.mobility.e2e.mapping.JavonMappingImpl;import org.netbeans.modules.mobility.e2e.mapping.RealTypeSerializer;import org.netbeans.modules.mobility.e2e.mapping.PrimitiveTypeSerializer;import org.netbeans.modules.mobility.e2e.mapping.ArrayTypeSerializer;import java.util.List;import java.util.Collections;import java.util.Arrays;import org.netbeans.modules.mobility.e2e.mapping.BeanTypeSerializer;import org.netbeans.modules.mobility.e2e.mapping.CollectionSerializer;import org.netbeans.modules.mobility.e2e.mapping.GenericTypeSerializer;/** * * @author bohemius */public class AllJavaProfileProvider implements JavonProfileProvider {    public String getName() {        return "alljava"; //NOI18N    }    public String getDisplayName() {        return "All Java Profile"; //NOI18N    }    public List<JavonTemplate> getTemplates(JavonMappingImpl mapping) {        return Collections.<JavonTemplate>emptyList();    }    public List<JavonSerializer> getSerializers() {        List<JavonSerializer> serializers = new ArrayList<JavonSerializer>();        serializers.add( new PrimitiveTypeSerializer());        serializers.add( new RealTypeSerializer());        serializers.add( new ArrayTypeSerializer());        serializers.add( new CollectionSerializer());        serializers.add( new GenericTypeSerializer());        serializers.add( new BeanTypeSerializer());        serializers.add( new AllJavaSerializer());                return Collections.unmodifiableList( serializers );            }}

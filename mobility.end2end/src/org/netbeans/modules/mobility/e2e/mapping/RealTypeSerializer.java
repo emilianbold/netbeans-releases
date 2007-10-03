@@ -203,11 +203,11 @@ public class RealTypeSerializer implements JavonSerializer {
             if( floatClassData.equals( type )) {
                 result += stream + ".readFloat()";
             } else if( FloatClassData.equals( type )) {
-                result += toObject( null,floatClassData, stream + ".readFloat()"  );
+                result += toObject( mapping, floatClassData, stream + ".readFloat()"  );
             } else if ( doubleClassData.equals( type )) {
                 result += stream + ".readDouble()";
             } else if( DoubleClassData.equals( type )) {
-                result += toObject( null,doubleClassData, stream + ".readDouble()"  );
+                result += toObject( mapping, doubleClassData, stream + ".readDouble()"  );
             }
         } else {
             if( mapping.getProperty( JavonMapping.TARGET ).equals( JavonMapping.SERVER )) {
@@ -240,7 +240,7 @@ public class RealTypeSerializer implements JavonSerializer {
         return result;
     }
 
-    public Set<ClassData> getReferencesTypes( ClassData rootClassData, Set<ClassData> usedTypes ) {
+    public Set<ClassData> getReferencedTypes( ClassData rootClassData, Set<ClassData> usedTypes ) {
         return Collections.singleton( rootClassData );
     }
 }
