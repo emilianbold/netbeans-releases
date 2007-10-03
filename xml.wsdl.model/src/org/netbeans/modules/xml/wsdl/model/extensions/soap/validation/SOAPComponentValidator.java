@@ -174,14 +174,15 @@ public class SOAPComponentValidator
                                     bindingFault.getExtensibilityElements(SOAPFault.class).iterator();
                             while(soapFaults.hasNext()) {
                                 SOAPFault soapFault = (SOAPFault) soapFaults.next();   // should be only one defined
-                                if (!soapFault.getName().equals(bindingFault.getName()))  {                       
+                                if (soapFault.getName() != null
+                                        && !soapFault.getName().equals(bindingFault.getName()))  {
                                     results.add(
                                         new Validator.ResultItem(this,
                                         Validator.ResultType.ERROR,
                                         bindingFault,
                                         NbBundle.getMessage(SOAPComponentValidator.class, "SOAPFaultValidator.Fault_name_not_match")));
-                                 }
-                                 soapFault.accept(this);
+                                }
+                                soapFault.accept(this);
                             }
 
                         }
@@ -735,6 +736,12 @@ public class SOAPComponentValidator
     private void ensureUniqueParts(Map<MessagePart, SOAPMessageBase> partsMap, SOAPHeaderBase elem) {
         Collection<ResultItem> results = mValidationResult.getValidationResult();
         NamedComponentReference<Message> comp = elem.getMessage();
+        
+        // Let wsdl validator catch undefined message for operation input or output
+        if (elem == null || elem.getMessage() == null || elem.getMessage().get() == null) {
+            return;
+        }
+        
         Message msg = comp.get();
         String part = elem.getPart();
         if (part != null && !"".equals(part)) {
