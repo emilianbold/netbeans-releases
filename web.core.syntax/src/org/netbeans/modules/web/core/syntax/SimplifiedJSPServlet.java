@@ -80,6 +80,7 @@ public class SimplifiedJSPServlet {
     private String importStatements = null;
     private int expressionIndex = 1;
     private static final Logger logger = Logger.getLogger(SimplifiedJSPServlet.class.getName());
+    private boolean processingSuccessful = true;
 
     /** Creates a new instance of ScripletsBodyExtractor */
     public SimplifiedJSPServlet(Document doc) {
@@ -213,8 +214,10 @@ public class SimplifiedJSPServlet {
     private String createImportStatements() {
         StringBuilder importsBuff = new StringBuilder();
         String[] imports = getImports();
-
-        if (imports != null) {
+        
+        if (imports == null || imports.length == 0){
+            processingSuccessful = false;
+        } else {
             // TODO: better support for situation when imports is null
             // (JSP doesn't belong to a project)
             for (String pckg : imports) {
@@ -266,11 +269,13 @@ public class SimplifiedJSPServlet {
     public int getRealOffset(int offset) {
         assureProcessCalled();
 
-        for (CodeBlockData codeBlock : codeBlocks) {
-            int len = codeBlock.getEndOffset() - codeBlock.getStartOffset();
+        if (processingSuccessful) {
+            for (CodeBlockData codeBlock : codeBlocks) {
+                int len = codeBlock.getEndOffset() - codeBlock.getStartOffset();
 
-            if (codeBlock.getNewBlockStart() <= offset && codeBlock.getNewBlockStart() + len >= offset) {
-                return codeBlock.getStartOffset() + offset - codeBlock.getNewBlockStart();
+                if (codeBlock.getNewBlockStart() <= offset && codeBlock.getNewBlockStart() + len >= offset) {
+                    return codeBlock.getStartOffset() + offset - codeBlock.getNewBlockStart();
+                }
             }
         }
 
@@ -279,6 +284,11 @@ public class SimplifiedJSPServlet {
 
     public String getVirtualClassBody() {
         assureProcessCalled();
+        
+        if (!processingSuccessful){
+            return ""; //NOI18N
+        }
+        
         return importStatements + header + mergedDeclarations + METHOD_HEADER + mergedScriptlets + CLASS_FOOTER;
     }
 
