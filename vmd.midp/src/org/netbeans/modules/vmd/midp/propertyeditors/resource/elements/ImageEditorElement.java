@@ -31,6 +31,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.imageio.ImageIO;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComponent;
@@ -58,7 +60,7 @@ import org.openide.util.NbBundle;
  *
  * @author Anton Chechel
  */
-public class ImageEditorElement extends PropertyEditorResourceElement {
+public class ImageEditorElement extends PropertyEditorResourceElement implements Runnable {
 
     private static final String[] EXTENSIONS = {"png", "gif", "jpg", "jpeg"}; // NOI18N
     private long componentID;
@@ -69,11 +71,14 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
     private Image image;
     private DefaultComboBoxModel comboBoxModel;
     private Map<String, FileObject> paths;
+    private final AtomicBoolean requiresModelUpdate = new AtomicBoolean(false);
+    private DesignComponentWrapper wrapper;
 
     public ImageEditorElement() {
         paths = new HashMap<String, FileObject>();
         comboBoxModel = new DefaultComboBoxModel();
         initComponents();
+        progressBar.setVisible(false);
         imagePreview = new ImagePreview();
         previewPanel.add(imagePreview, BorderLayout.CENTER);
     }
@@ -91,6 +96,7 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
     }
 
     public void setDesignComponentWrapper(final DesignComponentWrapper wrapper) {
+        this.wrapper = wrapper;
         DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
         if (document != null) {
             project = ProjectUtils.getProject(document);
@@ -187,40 +193,28 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
         chooserButton.setEnabled(isEnabled);
     }
 
-    private void updateModel() {
-        DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
-        if (document == null) {
-            return;
-        }
-        
+    private void updateModel(DesignDocument document) {
+        boolean isEnabled = pathTextComboBox.isEnabled();
         pathTextComboBox.setEnabled(false);
         doNotFireEvent = true;
         comboBoxModel.removeAllElements();
         doNotFireEvent = false;
         paths.clear();
-//        FileObject sourceFolder = getSourceFolder();
-//        searchImagesInDirectory(sourceFolder);
+
         Map<FileObject, String> fileMap = MidpProjectSupport.getImagesForProject(document, false);
-        for (FileObject fo : fileMap.keySet()) {
-            checkFile(fo);
+        for (Entry<FileObject, String> entry : fileMap.entrySet()) {
+            checkFile(entry.getKey(), entry.getValue());
         }
-        pathTextComboBox.setEnabled(true);
+
+        if (isEnabled) {
+            pathTextComboBox.setEnabled(true);
+        }
     }
 
-//    private void searchImagesInDirectory(FileObject dir) {
-//        for (FileObject fo : dir.getChildren()) {
-//            if (fo.isFolder()) {
-//                searchImagesInDirectory(fo);
-//            } else {
-//                checkFile(fo);
-//            }
-//        }
-//    }
-
-    private void checkFile(FileObject fo) {
+    private void checkFile(FileObject fo, String relativePath) {
         for (String ext : EXTENSIONS) {
             if (ext.equals(fo.getExt().toLowerCase())) {
-                String path = convertFile(fo, false);
+                String path = convertFile(fo, relativePath, false);
                 if (path != null) {
                     addImage(path);
                 }
@@ -273,52 +267,83 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
         return ProjectUtils.getSourceGroups(projectID).iterator().next().getRootFolder();
     }
 
-    private String convertFile(FileObject fo, boolean needCopy) {
-        File file = FileUtil.toFile(fo);
-        String fullPath = file != null ? file.getAbsolutePath() : fo.getPath();
+    private String convertFile(FileObject fo, String relPath, boolean needCopy) {
+        String relativePath;
         FileObject sourceFolder = getSourceFolder();
         String sourcePath = sourceFolder.getPath();
 
-        if (needCopy && !fullPath.contains(sourcePath)) {
-            File possible = new File(sourcePath + File.separator + fo.getNameExt());
-            if (possible.exists()) {
-                return null;
-            }
-
-            try {
-                fo = fo.copy(sourceFolder, fo.getName(), fo.getExt());
-            } catch (IOException ex) {
-                Debug.warning("ImageEditorElement.convertFile()", fullPath, ex); // NOI18N
-            }
-        }
-
-        String relativePath;
-        if (needCopy || fullPath.contains(sourcePath)) { // file was copied or is in some package, not in roof folder in sources
-            fullPath = fo.getPath();
-            int i = fullPath.indexOf(sourcePath) + sourcePath.length();
-            relativePath = fullPath.substring(i);
+        File file = FileUtil.toFile(fo);
+        if (file == null) {
+            // abstract FO - zip/jar...
+            relativePath = "/" + fo.getPath(); // NOI18N
         } else {
-            relativePath = "/" + fo.getNameExt(); // NOI18N
+            String fullPath = file.getAbsolutePath();
+            if (fullPath.contains(sourcePath)) {
+                // file is inside sources
+                fullPath = fo.getPath();
+                int i = fullPath.indexOf(sourcePath) + sourcePath.length();
+                relativePath = fullPath.substring(i);
+            } else if (needCopy) {
+                // somewhere outside sources - need to copy (export image)
+                File possible = new File(sourcePath + File.separator + fo.getNameExt());
+                if (possible.exists()) {
+                    // file exists, do not convert
+                    return null;
+                }
+                
+                try {
+                    fo = fo.copy(sourceFolder, fo.getName(), fo.getExt());
+                } catch (IOException ex) {
+                    Debug.warning("SVGImageEditorElement.convertFile()", "can't copy file", fullPath, ex); // NOI18N
+                }
+                relativePath = "/" + fo.getNameExt(); // NOI18N
+            } else {
+                // somewhere outside sources, no need to copy - folder attached to resources
+                relativePath = relPath;
+            }
         }
         paths.put(relativePath, fo);
 
         return relativePath;
     }
 
+    public void run() {
+        DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
+        if (document != null) {
+            updateModel(document);
+        }
+
+        showProgressBar(false);
+        setDesignComponentWrapper(wrapper);
+        requiresModelUpdate.set(false);
+    }
+
     @Override
     public void addNotify() {
+        super.addNotify();
+
+        if (requiresModelUpdate.getAndSet(true)) {
+            return;
+        }
+
+        showProgressBar(true);
+        new Thread(this).start();
+    }
+
+    private void showProgressBar(final boolean isShowing) {
         SwingUtilities.invokeLater(new Runnable() {
+
             public void run() {
-                updateModel();
+                progressBar.setVisible(isShowing);
             }
         });
-        super.addNotify();
     }
 
     @Override
     public void removeNotify() {
         paths.clear();
         project = null;
+        wrapper = null;
         super.removeNotify();
     }
 
@@ -404,7 +429,7 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
      * WARNING: Do NOT modify this code. The content of this method is
      * always regenerated by the Form Editor.
      */
-    // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
         pathLabel = new javax.swing.JLabel();
@@ -418,6 +443,7 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
         pathTextComboBox = new javax.swing.JComboBox();
         sizeLabel = new javax.swing.JLabel();
         sizeTextField = new javax.swing.JTextField();
+        progressBar = new javax.swing.JProgressBar();
 
         org.openide.awt.Mnemonics.setLocalizedText(pathLabel, org.openide.util.NbBundle.getMessage(ImageEditorElement.class, "ImageEditorElement.pathLabel.text")); // NOI18N
         pathLabel.setEnabled(false);
@@ -468,6 +494,8 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
         sizeTextField.setEditable(false);
         sizeTextField.setEnabled(false);
 
+        progressBar.setIndeterminate(true);
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -483,14 +511,17 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
                         .add(previewPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 0, Short.MAX_VALUE)
                         .add(18, 18, 18)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(heightLabel)
-                            .add(widthLabel)
-                            .add(sizeLabel))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                            .add(widthTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 107, Short.MAX_VALUE)
-                            .add(heightTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 107, Short.MAX_VALUE)
-                            .add(sizeTextField)))
+                            .add(layout.createSequentialGroup()
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(heightLabel)
+                                    .add(widthLabel)
+                                    .add(sizeLabel))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                                    .add(widthTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 107, Short.MAX_VALUE)
+                                    .add(heightTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 107, Short.MAX_VALUE)
+                                    .add(sizeTextField)))
+                            .add(progressBar, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                     .add(pathTextComboBox, 0, 310, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(chooserButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 30, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -517,7 +548,9 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                             .add(sizeTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                             .add(sizeLabel))
-                        .addContainerGap())
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(progressBar, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(3, 3, 3))
                     .add(previewLabel)
                     .add(previewPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE)))
         );
@@ -530,7 +563,7 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(chooser.getSelectedFile()));
             lastDir = chooser.getSelectedFile().getParentFile().getPath();
-            String relativePath = convertFile(fo, true);
+            String relativePath = convertFile(fo, null, true);
             if (relativePath != null) {
                 setText(relativePath);
                 pathTextComboBoxActionPerformed(null);
@@ -561,6 +594,7 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
     private javax.swing.JComboBox pathTextComboBox;
     private javax.swing.JLabel previewLabel;
     private javax.swing.JPanel previewPanel;
+    private javax.swing.JProgressBar progressBar;
     private javax.swing.JLabel sizeLabel;
     private javax.swing.JTextField sizeTextField;
     private javax.swing.JLabel widthLabel;
