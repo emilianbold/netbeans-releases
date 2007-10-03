@@ -233,13 +233,13 @@
 
 
 <!-- J2SE Desktop App name and location:-->
-<mapID target="org.netbeans.modules.swingapp.templates.ConfigureProjectPanel" url="pending.html" />
+<mapID target="org.netbeans.modules.swingapp.templates.ConfigureProjectPanel" url="project/csh/proj_j2se-desktopapp_wiz.html" />
 
 <!-- J2SE Desktop App master table:-->
-<mapID target="org.netbeans.modules.form.j2ee.wizard.MasterPanel" url="pending.html" />
+<mapID target="org.netbeans.modules.form.j2ee.wizard.MasterPanel" url="project/csh/proj_j2se-desktopapp_wiz1.html" />
 
 <!-- J2SE Desktop App detail options:-->
-<mapID target="org.netbeans.modules.form.j2ee.wizard.DetailPanel" url="pending.html" />
+<mapID target="org.netbeans.modules.form.j2ee.wizard.DetailPanel" url="project/csh/proj_j2se-desktopapp_wiz2.html" />
 
 
 <!-- Standard J2SE Project Properties dialog:-->

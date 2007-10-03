@@ -5,13 +5,13 @@
 -->
 <html>
 <head>
-<title>New  Java Application Wizard: Name and Location</title>
+<title>New Java Desktop Application Wizard: Detail Options</title>
 	<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
 <body>
-<h2>New  Java Application Wizard: Name and Location </h2>
+<h2>New Java Desktop Application Wizard: Detail Options </h2>
 <p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
-<p>The New Java Application wizard enables you to create a new 
+<p>The New Java Desktop Application wizard enables you to create a new 
 	<object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
     <param name="content" value="./glossary_standard.html">
     <param name="viewerActivator" value="javax.help.LinkLabel">
@@ -23,24 +23,24 @@
     <param name="textFontStyle" value="italic">
     <param name="textFontWeight" value="bold">
     <param name="textColor" value="blue">
-  </object> with a main class. 
+  </object> that is based on the Swing Application Framework. 
   You open the wizard by opening the New Project wizard 
-  and selecting the Java Application template  
+  and selecting the Java Desktop Application template  
   from the General category. 
-<p>In the Name and Location page, you have to set the following properties:
+<p>In the Detail Options page, you specify which database columns the user can edit in 
+the application. You have to set the following properties:
 <ul>
-  <li><b>Project Name. </b>Specifies the display name of the project. This name 
-    is also used to create the project folder.</li>
-  <li><b>Project Location. </b>Specifies the folder where you want to store the 
-    project metadata and source code. When you create an empty Java project, you 
-    cannot store the project folder and the project source code in separate locations 
-    like you can with projects from existing source code.</li>
-  <li><b>Set as Main Project.</b> Sets the newly created project as the <a href="../proj_main.html">main 
-    project</a>.</li>
-  <li><b>Create Main Class.</b> Specifies the package and name of the main class. 
-    You should enter the fully qualified name of the class without the <tt>.java 
-    </tt>extension (for example, <tt>com.me.MyClass</tt>).</li>
-</ul>
+  <li><b>Create Detail Area As. </b>. Specifies whether the detail area of the 
+  application view is represented as a table or as a series of text fields.
+  </li>
+  <li><b>Available Columns. </b>. Shows the database table columns that are available for 
+inclusion in the detail area of the view but which are not selected 
+for inclusion.  If you want a column to be included, select the column and 
+click the &gt; button.</li>
+  <li><b>Columns to Include. </b> Specifies the database table columns 
+      to be included in the detail area of the view. If you do not 
+  want a column to be included, select the column and click the &lt; button.</li>
+  </ul>
 <p>When you click Finish, the project is created on your computer and opened in both 
 the Projects window and the Files window. </p>
 <dl>
