@@ -31,13 +31,13 @@ public final class MoveToBottomActionFactory extends AbstractComposerActionFacto
         new AbstractSVGAction("svg_move_to_bottom") {  //NOI18N
             public void actionPerformed(ActionEvent e) {
                 SVGObject [] selected = m_sceneMgr.getSelected();
+                assert selected != null : "No selection, button should be disabled"; //NOI18N
+
                 if (selected != null) {
                     assert selected.length > 0;
                     assert selected[0] != null;
                     selected[0].moveToBottom();
-                } else {
-                    System.err.println("No selection, button should be disabled");
-                }
+                } 
             }
     };            
     

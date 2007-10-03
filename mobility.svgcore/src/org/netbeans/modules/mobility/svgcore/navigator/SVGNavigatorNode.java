@@ -106,7 +106,7 @@ final class SVGNavigatorNode implements TreeNode, DocumentElementListener {
             node = this;
         } else if (m_children != null) {
             for (int i = m_children.size() - 1; i >= 0; i--) {
-                if ( (node=((SVGNavigatorNode) m_children.get(i)).findNode(docElem)) != null) {
+                if ( (node=(m_children.get(i)).findNode(docElem)) != null) {
                     break;
                 }
             }
@@ -149,7 +149,7 @@ final class SVGNavigatorNode implements TreeNode, DocumentElementListener {
         int index;
         
         if ((index=getChildTreeNodeIndex(de)) != -1) {
-            return (SVGNavigatorNode) m_children.get(index);
+            return m_children.get(index);
         }
         return null;
     }
@@ -158,7 +158,7 @@ final class SVGNavigatorNode implements TreeNode, DocumentElementListener {
         checkChildrenAdapters();
         int childNum = m_children.size();
         for (int i = 0; i < childNum; i++) {
-            SVGNavigatorNode node = (SVGNavigatorNode) m_children.get(i);
+            SVGNavigatorNode node = m_children.get(i);
             if(node.getDocumentElement().equals(de)) {
                 return i;
             }
@@ -506,7 +506,7 @@ final class SVGNavigatorNode implements TreeNode, DocumentElementListener {
             }
             
             for( int i = childNum - 1; i >= 0; i--) {
-                SVGNavigatorNode childNode = (SVGNavigatorNode) m_children.get(i);
+                SVGNavigatorNode childNode = m_children.get(i);
 
                 for (int j = 0; j < elemNum; j++) {
                     if (!processed[j]) {
@@ -557,13 +557,13 @@ final class SVGNavigatorNode implements TreeNode, DocumentElementListener {
                 main_loop : while( childIndex < childNum || elemIndex < elemNum) {
                     DocumentElement childNodeElem;
                     if (childIndex < childNum) {
-                        childNodeElem = ((SVGNavigatorNode) m_children.get(childIndex)).m_de;
+                        childNodeElem = (m_children.get(childIndex)).m_de;
                     } else {
                         childNodeElem = null;
                     }
 
                     while(elemIndex < elemNum) {
-                        DocumentElement childElem = (DocumentElement) m_de.getElement(elemIndex);
+                        DocumentElement childElem = m_de.getElement(elemIndex);
                         if (childElem.equals(childNodeElem)) {
                             childIndex++;
                             elemIndex++;
@@ -626,41 +626,8 @@ final class SVGNavigatorNode implements TreeNode, DocumentElementListener {
                     markNodeAsError(this);
                 } 
             }
-            //update text text content of the node
-            //if(textElementAdded) childTextElementChanged();
         }
     }
-/*
-    private void childTextElementChanged() {
-        nodeTree.getTreeModel().nodeChanged(this);
-    }
-    
-    private final class TextElementWrapper implements DocumentElementListener {        
-        private final DocumentElement de;
-        
-        public TextElementWrapper(DocumentElement de) {
-            this.de = de;
-            de.addDocumentElementListener(TextElementWrapper.this);
-        }
-        
-        public DocumentElement getDocumentElement() {
-            return de;
-        }
-        
-        public void contentChanged(DocumentElementEvent e) {
-            SVGNavigatorNode.this.childTextElementChanged();
-        }
-        
-        //no need to implement these methods
-        public void elementAdded(DocumentElementEvent e) {
-            //just a test
-            System.err.println("????? a child node added into a text element!!!!");
-        }
-        public void elementRemoved(DocumentElementEvent e) {}
-        public void childrenReordered(DocumentElementEvent e) {}
-        public void attributesChanged(DocumentElementEvent e) {}        
-    }
-*/    
     private static final boolean debug = Boolean.getBoolean("org.netbeans.modules.xml.text.structure.debug");  //NOI18N
     
     private static final int ATTRIBS_MAX_LEN = 100;

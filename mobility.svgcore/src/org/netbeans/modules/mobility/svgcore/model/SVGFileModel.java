@@ -55,7 +55,6 @@ import org.netbeans.modules.mobility.svgcore.view.source.SVGSourceMultiViewEleme
 import org.netbeans.modules.xml.multiview.XmlMultiViewEditorSupport;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -127,6 +126,7 @@ public final class SVGFileModel {
 
         protected abstract void transaction() throws Exception;
     }
+    
     private final XmlMultiViewEditorSupport m_edSup;
     private final ElementMapping      m_mapping;
     private final List<ModelListener> m_modelListeners = new ArrayList<ModelListener>();
@@ -186,7 +186,7 @@ public final class SVGFileModel {
         public void documentElementAdded(DocumentElement de) {
             if (isTagElement(de)) {
                 if ( SceneManager.isEnabled(Level.FINEST)) {
-                    SceneManager.log(Level.FINEST, "Element added: " +de); //NOI18N
+                    SceneManager.log(Level.FINEST, "Element added: " + de); //NOI18N
                 }
                 m_mapping.add(de);
                 fireModelChange();
@@ -250,20 +250,20 @@ public final class SVGFileModel {
     }
 
     public synchronized void attachToOpenedDocument() {
-        assert SwingUtilities.isEventDispatchThread() : "Model initialisation must be called from AWT thread!";
+        assert SwingUtilities.isEventDispatchThread() : "Model initialisation must be called from AWT thread!"; //NOI18N
         if (m_bDoc == null) {
             m_bDoc = getOpenedDoc();
             SceneManager.log(Level.INFO, "Using already opened document."); //NOI18N
             assert m_bDoc != null;
             m_bDoc.addDocumentListener(m_docListener);
         } else {
-            assert m_bDoc == getOpenedDoc() : "Model mismatch";
+            assert m_bDoc == getOpenedDoc() : "Model mismatch"; //NOI18N
         }
     }
 
     public synchronized void detachDocument() {
         m_model = null;
-        m_bDoc = null;
+        m_bDoc  = null;
         m_modelListeners.clear();
         SceneManager.log(Level.INFO, "Removing the document."); //NOI18N
     }
@@ -313,7 +313,7 @@ public final class SVGFileModel {
                 assert m_bDoc != null;
                 m_bDoc.addDocumentListener(m_docListener);
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                SceneManager.error("Could not open the document", ex); //NOI18N
             }
         }
         return m_bDoc;
@@ -333,13 +333,13 @@ public final class SVGFileModel {
 
 /*
     private void verifyModel() {
-    updateModel();
-    System.out.println("Veryfying model ...");
-    if ( !verifyModel( m_model.getRootElement())) {
-    System.out.println("Model OK.");
+        updateModel();
+        System.out.println("Veryfying model ...");
+        if ( !verifyModel( m_model.getRootElement())) {
+        System.out.println("Model OK.");
+        }
     }
-    }
-     */
+ 
     private boolean verifyModel(DocumentElement de) {
         List<DocumentElement> children = de.getChildren();
 
@@ -358,7 +358,8 @@ public final class SVGFileModel {
         }
         return false;
     }
-
+*/
+    
     public SVGDataObject getDataObject() {
         return (SVGDataObject) m_edSup.getDataObject();
     }
@@ -680,8 +681,6 @@ public final class SVGFileModel {
                     if (id != null) {
                         idsToDelete.add(id);
                     }
-                    //System.out.println("Removing DE: " + elemToDelete);
-                    //doc.remove(startOff, endOff - startOff + 1);
                     removeFragment(doc, chars, startOff, endOff);
                 }
 
@@ -784,7 +783,7 @@ public final class SVGFileModel {
         } else {
             String tag = de.getName();
             startOffset += 1 + tag.length();
-            StringBuilder sb = new StringBuilder("<");
+            StringBuilder sb = new StringBuilder("<"); //NOI18N
             sb.append(tag);
             sb.append(' ');
             injectId(sb, id);
@@ -807,7 +806,7 @@ public final class SVGFileModel {
 
             protected void transaction() throws BadLocationException {
                 DocumentElement elem = checkIntegrity(id);
-                assert isTagElement(elem) : "Attribute change allowed only for tag elements";
+                assert isTagElement(elem) : "Attribute change allowed only for tag elements"; //NOI18N
 
                 int startOff = elem.getStartOffset() + 1 + elem.getName().length();
                 int endOff;
@@ -835,7 +834,7 @@ public final class SVGFileModel {
                                     p++;
                                     if (injectId) {
                                         StringBuilder sb = new StringBuilder(attrValue);
-                                        sb.append("\" ");
+                                        sb.append("\" "); //NOI18N
                                         injectId(sb, id);
                                         doc.replace(startOff + p, q - p + 1, sb.toString(), null);
                                     } else {
@@ -846,10 +845,9 @@ public final class SVGFileModel {
                             }
                         }
                     }
-                    //TODO
-                    System.err.println("Attribute " + attrName + " not changed: \"" + fragment + "\"");
+                    SceneManager.log(Level.SEVERE, "Attribute " + attrName + " not changed: \"" + fragment + "\""); //NOI18N
                 } else {
-                    StringBuilder sb = new StringBuilder(" ");
+                    StringBuilder sb = new StringBuilder(" "); //NOI18N
                     if (injectId) {
                         injectId(sb, id);
                     }
@@ -876,11 +874,10 @@ public final class SVGFileModel {
                     BaseDocument doc = getDoc();
                     int startOffset = de.getStartOffset();
                     int length = de.getEndOffset() - startOffset + 1;
-                    //String elemText    = getElementText(de, id);
                     String elemText = getElemTextWithId(doc, de, id);
 
                     int insertOffset = firstChild.getStartOffset();
-                    assert insertOffset < startOffset : "Offset overlap #1" + insertOffset + "," + startOffset;
+                    assert insertOffset < startOffset : "Offset overlap #1" + insertOffset + "," + startOffset; //NOI18N
 
                     doc.remove(startOffset, length);
                     doc.insertString(insertOffset, elemText, null);
@@ -902,11 +899,10 @@ public final class SVGFileModel {
                     BaseDocument doc = getDoc();
                     int startOffset = de.getStartOffset();
                     int length = de.getEndOffset() - startOffset + 1;
-                    //String       elemText    = getElementText(de, id);
                     String elemText = getElemTextWithId(doc, de, id);
 
                     int insertOffset = lastChild.getEndOffset() + 1;
-                    assert startOffset < insertOffset : "Offset overlap #2" + insertOffset + "," + startOffset;
+                    assert startOffset < insertOffset : "Offset overlap #2" + insertOffset + "," + startOffset; //NOI18N
 
                     doc.insertString(insertOffset, elemText, null);
                     doc.remove(startOffset, length);
@@ -929,11 +925,10 @@ public final class SVGFileModel {
                     BaseDocument doc = getDoc();
                     int startOffset = de.getStartOffset();
                     int length = de.getEndOffset() - startOffset + 1;
-                    //String       elemText    = doc.getText(startOffset, length);
                     String elemText = getElemTextWithId(doc, de, id);
 
                     int insertOffset = nextChild.getEndOffset() + 1;
-                    assert startOffset < insertOffset : "Offset overlap #3" + insertOffset + "," + startOffset;
+                    assert startOffset < insertOffset : "Offset overlap #3" + insertOffset + "," + startOffset; //NOI18N
 
                     doc.insertString(insertOffset, elemText, null);
                     doc.remove(startOffset, length);
@@ -957,10 +952,9 @@ public final class SVGFileModel {
 
                     int startOffset = de.getStartOffset();
                     int length = de.getEndOffset() - startOffset + 1;
-                    //String       elemText    = doc.getText(startOffset, length);
                     String elemText = getElemTextWithId(doc, de, id);
                     int insertOffset = previousChild.getStartOffset();
-                    assert startOffset > insertOffset : "Offset overlap #4" + insertOffset + "," + startOffset;
+                    assert startOffset > insertOffset : "Offset overlap #4" + insertOffset + "," + startOffset; //NOI18N
 
                     doc.remove(startOffset, length);
                     doc.insertString(insertOffset, elemText, null);
@@ -972,8 +966,7 @@ public final class SVGFileModel {
     public static DocumentElement getSVGRoot(final DocumentModel model) {
         DocumentElement root = model.getRootElement();
         for (DocumentElement de : root.getChildren()) {
-            if (isTagElement(de) && "svg".equals(de.getName())) {
-                //NOI18N
+            if (isTagElement(de) && "svg".equals(de.getName())) {   //NOI18N
                 return de;
             }
         }
@@ -1022,7 +1015,6 @@ public final class SVGFileModel {
                     m_lock.wait();
                     SceneManager.log(Level.FINE, "Wait ended."); //NOI18N
                 } catch (InterruptedException ex) {
-                    SceneManager.log( Level.SEVERE, "Wait interrupted.", ex); //NOI18N
                 }
             }
         }
@@ -1321,7 +1313,7 @@ public final class SVGFileModel {
                             }
                         }
 
-                        System.err.println("Attribute value " + value + " not found at the DE " + elem);
+                        SceneManager.log(Level.INFO, "Attribute value " + value + " not found at the DE " + elem); //NOI18N
                     }
                 }
             }

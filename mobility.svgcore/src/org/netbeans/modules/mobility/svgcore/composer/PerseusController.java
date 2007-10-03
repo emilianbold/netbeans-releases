@@ -688,7 +688,7 @@ public final class PerseusController {
         SVGRect bBox = elem.getScreenBBox();
         if ( bBox == null) {
             //TODO solve the issue with null bounding box
-            System.err.println("Null screen BBox for element:" + elem);
+            SceneManager.log(Level.SEVERE, "Null screen BBox for element:" + elem); //NOI18N
             ModelNode child = ((ModelNode)elem).getFirstChildNode();
             if (child != null && child instanceof SVGLocatableElement) {
                 bBox = ((SVGLocatableElement) child).getScreenBBox();
@@ -701,7 +701,7 @@ public final class PerseusController {
         SVGRect bBox = elem.getBBox();
         if ( bBox == null) {
             //TODO solve the issue with null bounding box
-            System.err.println("Null BBox for element:" + elem);
+            SceneManager.log(Level.SEVERE, "Null BBox for element:" + elem); //NOI18N
             ModelNode child = ((ModelNode)elem).getFirstChildNode();
             if (child != null && child instanceof SVGLocatableElement) {
                 bBox = ((SVGLocatableElement) child).getBBox();

@@ -30,12 +30,11 @@ public final class MoveBackwardActionFactory extends AbstractComposerActionFacto
         new AbstractSVGAction("svg_move_backward") {  //NOI18N
             public void actionPerformed(ActionEvent e) {
                 SVGObject [] selected = m_sceneMgr.getSelected();
+                assert selected != null : "No selection, button should be disabled";
                 if (selected != null) {
                     assert selected.length > 0;
                     assert selected[0] != null;
                     selected[0].moveBackward();
-                } else {
-                    System.err.println("No selection, button should be disabled");
                 }
             }
     };            

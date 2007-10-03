@@ -87,12 +87,12 @@ public final class ElementMapping {
 
                     int startOffset = elem.getStartOffset();
                     startOffset += elem.getName().length() + 1;
-                    String str = " id=\"" + id + "\" ";
+                    String str = " id=\"" + id + "\" "; //NOI18N
                     sb.insert(startOffset, str);
 
                     checkRemovedElement(elem);
                     if (m_ids.put(id, elem) != null) {
-                        System.err.println("Duplicated id: " + id);
+                        SceneManager.log(Level.SEVERE, "Duplicated id: " + id); //NOI18N
                     }
                 }
             } finally {

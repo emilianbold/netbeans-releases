@@ -29,14 +29,14 @@ public final class DeleteActionFactory extends AbstractComposerActionFactory imp
         new AbstractSVGAction("svg_delete") {  //NOI18N
             public void actionPerformed(ActionEvent e) {
                 SVGObject [] selected = m_sceneMgr.getSelected();
+                assert selected != null : "No selection, button should be disabled"; //NOI18N
+                
                 if (selected != null) {
                     assert selected.length > 0;
                     assert selected[0] != null;
                     SVGObject deleted = selected[0];
                     deleted.repaint();
                     m_sceneMgr.deleteObject(deleted);
-                } else {
-                    System.err.println("No selection, button should be disabled");
                 }
             }
     };            
@@ -53,7 +53,6 @@ public final class DeleteActionFactory extends AbstractComposerActionFactory imp
 
     public void selectionChanged(SVGObject[] newSelection, SVGObject[] oldSelection, boolean isReadOnly) {
         m_deleteAction.setEnabled(newSelection != null && !isReadOnly);
-        //m_deleteAction.setEnabled(true);
     }
     
     public void updateActionState() {

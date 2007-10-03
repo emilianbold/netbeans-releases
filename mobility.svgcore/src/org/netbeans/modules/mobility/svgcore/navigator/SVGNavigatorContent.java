@@ -21,6 +21,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.logging.Level;
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -130,7 +131,7 @@ public class SVGNavigatorContent extends JPanel implements SceneManager.Selectio
         }
     }
 
-    public synchronized void setContent( final SVGDataObject obj, final NavigatorContentPanel panel) {
+    synchronized void setContent( final SVGDataObject obj, final NavigatorContentPanel panel) {
         //peerDO         = obj;
         navigatorPanel = panel;
                 
@@ -193,7 +194,7 @@ public class SVGNavigatorContent extends JPanel implements SceneManager.Selectio
             if ( de.getStartOffset() < de.getEndOffset()) {
                 return m_doj.getModel().getElementId(de);
             } else {
-                System.err.println("Deleted element found: " + de);
+                SceneManager.log(Level.SEVERE, "Deleted element found: " + de); //NOI18N
                 return null;
             }
         }
@@ -220,7 +221,7 @@ public class SVGNavigatorContent extends JPanel implements SceneManager.Selectio
 
                                 if ( tc != null) {
                                     Lookup           lkp    = tc.getLookup();                                
-                                    SelectionCookie  cookie = (SelectionCookie)lkp.lookup(SelectionCookie.class);
+                                    SelectionCookie  cookie = lkp.lookup(SelectionCookie.class);
                                     String           id     = getElementId(de);
                                     if ( cookie != null && id != null) {
                                         cookie.updateSelection(m_doj, id, de.getStartOffset(), false);
@@ -404,11 +405,12 @@ public class SVGNavigatorContent extends JPanel implements SceneManager.Selectio
             if ( (selected=filters.isSelected(ID_FILTER)) != SVGNavigatorTree.showIdOnly) {
                 filterChanged = true;
                 SVGNavigatorTree.showIdOnly = selected;
-            };
+            }
+            
             if ( (selected=filters.isSelected(ANIMATION_FILTER)) != SVGNavigatorTree.showAnimationsOnly) {
                 filterChanged = true;
                 SVGNavigatorTree.showAnimationsOnly = selected;
-            };
+            }
             
             if (filterChanged) {
                 tree.filterChanged();

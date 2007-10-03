@@ -13,8 +13,10 @@
 package org.netbeans.modules.mobility.svgcore.navigator;
 
 import java.util.Collection;
+import java.util.logging.Level;
 import javax.swing.JComponent;
 import org.netbeans.modules.mobility.svgcore.SVGDataObject;
+import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
 import org.netbeans.spi.navigator.NavigatorPanel;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -99,7 +101,7 @@ public class SVGNavigatorPanel implements NavigatorPanel {
     public void navigate(Collection selectedFiles) {
         switch( selectedFiles.size()) {
             default:
-                System.err.println("Multiple selection not allowed; using first node ...");
+                SceneManager.log(Level.SEVERE, "Multiple selection not allowed; using first node ..."); //NOI18N
             case 1:
                 final SVGDataObject d = (SVGDataObject) selectedFiles.iterator().next();
                 navigator.navigate(d);        

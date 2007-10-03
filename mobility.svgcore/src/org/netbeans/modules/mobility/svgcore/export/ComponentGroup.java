@@ -14,12 +14,14 @@ package org.netbeans.modules.mobility.svgcore.export;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.logging.Level;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JSlider;
 import javax.swing.JSpinner;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
 
 /**
  * Simple data binding between Swing components
@@ -133,7 +135,7 @@ public class ComponentGroup implements ActionListener, ChangeListener {
                 return valueChanged(i);
             }
         }
-        System.err.println("Component not found!");
+        SceneManager.log(Level.SEVERE, "Component " + comp + " not found!"); //NOI18N
         return false;
     }
 
