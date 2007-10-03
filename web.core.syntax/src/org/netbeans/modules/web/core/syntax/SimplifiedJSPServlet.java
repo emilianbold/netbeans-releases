@@ -115,6 +115,13 @@ public class SimplifiedJSPServlet {
             return;
         }
         
+        JspParserAPI.ParseResult parseResult = JspUtils.getCachedParseResult(doc, fobj, false, false);
+        
+        if (!parseResult.isParsingSuccess()){
+            processingSuccessful = false;
+            return;
+        }
+        
         final StringBuilder buffScriplets = new StringBuilder();
         final StringBuilder buffDeclarations = new StringBuilder();
         final BadLocationException[] ex = new BadLocationException[1];
@@ -243,17 +250,13 @@ public class SimplifiedJSPServlet {
         return null;
     }
     
-    private PageInfo getPageInfo(){
+    private PageInfo getPageInfo() {
         JspParserAPI.ParseResult parseResult = JspUtils.getCachedParseResult(doc, fobj, true, false);
-        
+
         if (parseResult != null) {
-            parseResult = JspUtils.getCachedParseResult(doc, fobj, false, false);
-            
-            if (parseResult != null){
-                return parseResult.getPageInfo();
-            }
+            return parseResult.getPageInfo();
         }
-        
+
         return null;
     }
 
