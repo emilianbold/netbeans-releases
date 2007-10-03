@@ -106,30 +106,41 @@ public class AddDriverDialog extends javax.swing.JPanel {
         this();
         customizer = true;
         
-        String fileName = "";
+        String fileName = null;
         URL[] urls = drv.getURLs();
         for (int i = 0; i < urls.length; i++) {
-            FileObject fo = URLMapper.findFileObject(urls[i]);
-            if (fo == null) {
+            URL url = urls[i];
+            URL archiveURL = FileUtil.getArchiveFile(url);
+            if (archiveURL != null) {
+                url = archiveURL;
+            }
+            if ("nbinst".equals(url.getProtocol())) { // NOI18N
+                // try to get a file: URL for the nbinst: URL
+                FileObject fo = URLMapper.findFileObject(url);
+                if (fo != null) {
+                    URL localURL = URLMapper.findURL(fo, URLMapper.EXTERNAL);
+                    if (localURL != null) {
+                        url = localURL;
+                    }
+                }
+            }
+            FileObject fo = URLMapper.findFileObject(url);
+            if (fo != null) {
+                File diskFile = FileUtil.toFile(fo);
+                if (diskFile != null) {
+                    fileName = diskFile.getAbsolutePath();
+                }
+            } else {
                 try {
-                    fileName = new File(new URI(urls[i].toExternalForm())).getAbsolutePath();
+                    fileName = new File(new URI(url.toExternalForm())).getAbsolutePath();
                 } catch (URISyntaxException e) {
                     Exceptions.printStackTrace(e);
                     fileName = null;
                 }
-            } 
-            // 117005  AddDriverDialog NPE occurs if registering driver using a layer file 
-            else if (!fo.isData()) {
-                try {
-                    fileName = fo.getFileSystem().getDisplayName();
-                } catch (FileStateInvalidException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            } else {
-                fileName = FileUtil.toFile(fo).getAbsolutePath();
             }
             if (fileName != null) {
                 dlm.addElement(fileName);
+                // use urls[i], not url, because we want to add the original URL
                 drvs.add(urls[i]);
             }
         }
