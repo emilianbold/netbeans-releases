@@ -23,6 +23,7 @@ import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -30,6 +31,9 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.modules.css.visual.api.CssRuleContext;
 import org.netbeans.modules.css.visual.ui.preview.CssPreviewable;
 import org.openide.filesystems.FileObject;
@@ -39,6 +43,8 @@ import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.openide.util.Utilities;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * Css preview top component.
@@ -82,7 +88,7 @@ public final class CssPreviewTopComponent extends TopComponent {
         public void deactivate() {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    showNoSelectedRulePanel();
+                    setNoSelectedRule();
                     LOGGER.log(Level.FINE, "Preview deactivated");//NOI18N
                 }
             });
@@ -92,18 +98,34 @@ public final class CssPreviewTopComponent extends TopComponent {
     
     private static final String DEFAULT_TC_NAME = NbBundle.getMessage(CssPreviewTopComponent.class, "CTL_CssPreviewTopComponent");
     
-    private JPanel NO_PREVIEW_PANEL;
-    private boolean previewing;
+    private JPanel NO_PREVIEW_PANEL, PREVIEW_ERROR_PANEL;
+    private boolean previewing, error;
+    
+    private SAXParser parser = null;
     
     private CssPreviewTopComponent() {
         initComponents();
-        setToolTipText(NbBundle.getMessage(CssPreviewTopComponent.class, "HINT_CssPreviewTopComponent"));//NOI18N
+        setToolTipText(NbBundle.getMessage(CssPreviewTopComponent.class, "HINT_CssPreviewTopComponent")); //NOI18N
         setIcon(Utilities.loadImage(ICON_PATH, true));
-        
+
         NO_PREVIEW_PANEL = makeMsgPanel(java.util.ResourceBundle.getBundle("org/netbeans/modules/css/visual/ui/preview/Bundle").getString("No_Preview"));
-        
         add(NO_PREVIEW_PANEL, BorderLayout.CENTER);
         previewing = false;
+        error = false;
+
+        PREVIEW_ERROR_PANEL = makeMsgPanel(java.util.ResourceBundle.getBundle("org/netbeans/modules/css/visual/ui/preview/Bundle").getString("Preview_Error"));
+
+        //init SAX parser
+        try {
+            SAXParserFactory factory = SAXParserFactory.newInstance();
+            factory.setValidating(false);
+            parser = factory.newSAXParser();
+        } catch (ParserConfigurationException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (SAXException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        
     }
     
     private void checkPreview(TopComponent tc) {
@@ -134,16 +156,41 @@ public final class CssPreviewTopComponent extends TopComponent {
     }
     
     //run in AWT!
-    private void showNoSelectedRulePanel() {
-        if(previewing) {
+    private void setNoSelectedRule() {
+        if(previewing || error) {
             setName(DEFAULT_TC_NAME); //set default TC name
             LOGGER.log(Level.FINE, "Previewable deactivated");//NOI18N
-            remove(previewPanel);
+            removeAll();
             add(NO_PREVIEW_PANEL, BorderLayout.CENTER);
             previewing = false;
+            error = false;
+            
             revalidate();
             repaint();
         }
+    }
+    
+    //run in AWT!
+    //always called from preview() - revalidation done there
+    private void setError() {
+        if(!error) {
+            setName(DEFAULT_TC_NAME); //set default TC name
+            LOGGER.log(Level.FINE, "Previewable error occured.");//NOI18N
+            removeAll();
+            add(PREVIEW_ERROR_PANEL, BorderLayout.CENTER);
+            previewing = false;
+            error = true;
+        }
+    }
+    
+    //run in AWT!
+    //always called from preview() - revalidation done there
+    private void setPreviewing(String title) {
+        setName(title);
+        removeAll();
+        add(previewPanel, BorderLayout.CENTER);
+        previewing = true;
+        error = false;
     }
     
     /** This method is called from within the constructor to
@@ -204,45 +251,56 @@ public final class CssPreviewTopComponent extends TopComponent {
     }
     
     private void preview(CssRuleContext content) {
-        //set window title according to the selected rule
-        setName(getTitle(content));
         
-        //show the preview panel if hasn't been shown before
-        if(!previewing) {
-            remove(NO_PREVIEW_PANEL);
-            add(previewPanel, BorderLayout.CENTER);
-            previewing = true;
-        }
+        assert SwingUtilities.isEventDispatchThread() : "Must be run in event dispatch thread!";
         
-        CharSequence htmlCode = CssPreviewGenerator.getPreviewCode(content);
-//        System.out.println("\n---------------------" + htmlCode + "\n---------------------");
         try {
-            String relativeURL = null;
-            FileObject source = content.fileObject();
-            if(source != null) {
-                if(!source.isFolder()) {
-                    source = source.getParent();
+            //get the generated sample XHTML code
+            CharSequence htmlCode = CssPreviewGenerator.getPreviewCode(content);
+
+            //parse it first to find potential errors in the code
+            if (parser != null) {
+                try {
+                    DefaultHandler handler = new DefaultHandler();
+                    parser.parse(new ByteArrayInputStream(htmlCode.toString().getBytes()), handler);
+                } catch (SAXException ex) {
+                    LOGGER.log(Level.INFO, "There is an error in the generated sample document.", ex);
+                    LOGGER.log(Level.INFO, "Errorneous preview sample code:\n---------------------------------\n" + htmlCode); //NOI18N
+                    setError();
+                    return;
+                } catch (IOException ex) {
+                    LOGGER.log(Level.INFO, null, ex); //NOI18N
                 }
-                relativeURL = source.getURL().toExternalForm();
             }
-            setPreviewContent(htmlCode, relativeURL);
-        }catch(Exception e) {
-            //an error - show message into the preview
-            //TODO change this ugly thing
+
+            //set the UI to the previewing state
+            setPreviewing(getTitle(content));
+
             try {
-                String errorMessage = "<html> <body> <div style=\"color: red\">" + e.getMessage() + "</div> </body> </html>"; //NOI18N
-                setPreviewContent(errorMessage, null);
-            }catch(Exception ex) {
-                Exceptions.printStackTrace(ex);
+                //resolve relative URL base for the preview component
+                String relativeURL = null;
+                FileObject source = content.fileObject();
+                if (source != null) {
+                    if (!source.isFolder()) {
+                        source = source.getParent();
+                    }
+                    relativeURL = source.getURL().toExternalForm();
+                }
+
+                LOGGER.log(Level.FINE, "preview - setting content " + htmlCode); //NOI18N
+                
+                //set XHTML preview panel content - the generated sample
+                previewPanel.panel().setDocument(new ByteArrayInputStream(htmlCode.toString().getBytes()), relativeURL);
+            } catch (Throwable e) {
+                //an error - show message into the preview
+                setError();
+                LOGGER.log(Level.INFO, "An error occured in the preview component.", e); //NOI18N
+                LOGGER.log(Level.INFO, "Errorneous preview sample code:\n---------------------------------\n" + htmlCode); //NOI18N
             }
+        } finally {
+            revalidate();
+            repaint();
         }
-        revalidate();
-        repaint();
-    }
-    
-    private void setPreviewContent(CharSequence content, String relativeURL) throws Exception {
-        LOGGER.log(Level.FINE, "preview - setting content " + content);//NOI18N
-        previewPanel.panel().setDocument(new ByteArrayInputStream(content.toString().getBytes()), relativeURL);
     }
     
     private void previewableSelected(final CssPreviewable previewable) {
@@ -267,7 +325,7 @@ public final class CssPreviewTopComponent extends TopComponent {
             });
         } else {
             //no content to preview
-            showNoSelectedRulePanel();
+            setNoSelectedRule();
         }
         
     }
