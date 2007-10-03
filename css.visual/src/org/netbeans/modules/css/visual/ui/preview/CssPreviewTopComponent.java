@@ -108,12 +108,12 @@ public final class CssPreviewTopComponent extends TopComponent {
         setToolTipText(NbBundle.getMessage(CssPreviewTopComponent.class, "HINT_CssPreviewTopComponent")); //NOI18N
         setIcon(Utilities.loadImage(ICON_PATH, true));
 
-        NO_PREVIEW_PANEL = makeMsgPanel(java.util.ResourceBundle.getBundle("org/netbeans/modules/css/visual/ui/preview/Bundle").getString("No_Preview"));
+        NO_PREVIEW_PANEL = makeMsgPanel(NbBundle.getBundle("org/netbeans/modules/css/visual/ui/preview/Bundle").getString("No_Preview"));
         add(NO_PREVIEW_PANEL, BorderLayout.CENTER);
         previewing = false;
         error = false;
 
-        PREVIEW_ERROR_PANEL = makeMsgPanel(java.util.ResourceBundle.getBundle("org/netbeans/modules/css/visual/ui/preview/Bundle").getString("Preview_Error"));
+        PREVIEW_ERROR_PANEL = makeMsgPanel(NbBundle.getBundle("org/netbeans/modules/css/visual/ui/preview/Bundle").getString("Preview_Error"));
 
         //init SAX parser
         try {
