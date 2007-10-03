@@ -1,8 +1,6 @@
 <#if licenseFirst??>
 ${licenseFirst}
 </#if>
-${licensePrefix}${nameAndExt}
-${licensePrefix}
 ${licensePrefix}Created on ${date}, ${time}
 ${licensePrefix}
 ${licensePrefix}To change this template, choose Tools | Templates
