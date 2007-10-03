@@ -980,17 +980,44 @@ public final class FileUtils {
             final File source) throws IOException {
         final File target = new File(source.getParentFile(),
                 source.getName() + PACK_GZ_SUFFIX);
-        
-        ExecutionResults er = SystemUtils.executeCommand(
-                SystemUtils.getPacker().getAbsolutePath(),
-                target.getAbsolutePath(),
-                source.getAbsolutePath());
-        if( er.getErrorCode() != 0) {
-            throw new IOException(ResourceUtils.getString(FileUtils.class,
-                    ERROR_PACK200_FAILED_KEY,
-                    er.getErrorCode(), er.getStdOut(),er.getStdErr()));
+        if(SystemUtils.isWindows() && source.getAbsolutePath().length() > 255) {
+            /*
+             * WORKAROUND for two issues (and 6612389 in BugTrack):
+             * http://www.netbeans.org/issues/show_bug.cgi?id=96548
+             * http://www.netbeans.org/issues/show_bug.cgi?id=97984
+             * The issue is that unpack200/pack200 doesn`t support long path names
+             * Copy source to tmp dir, unpack it there and copy to target.
+             */
+            File tmpSource = null;
+            File tmpTarget = null;
+            try {
+                tmpSource = File.createTempFile(source.getName(), ".jar");
+                copyFile(source, tmpSource);
+                tmpTarget = pack(tmpSource);
+                deleteFile(tmpSource);
+                tmpSource = null;
+                copyFile(tmpTarget,target);
+                deleteFile(tmpTarget);
+                tmpTarget = null;
+            } finally {
+                if(tmpSource!=null) {
+                    deleteFile(tmpSource);
+                }
+                if(tmpTarget!=null) {
+                    deleteFile(tmpTarget);
+                }
+            }
+        } else {
+            ExecutionResults er = SystemUtils.executeCommand(
+                    SystemUtils.getPacker().getAbsolutePath(),
+                    target.getAbsolutePath(),
+                    source.getAbsolutePath());
+            if( er.getErrorCode() != 0) {
+                throw new IOException(ResourceUtils.getString(FileUtils.class,
+                        ERROR_PACK200_FAILED_KEY,
+                        er.getErrorCode(), er.getStdOut(),er.getStdErr()));
+            }
         }
-        
         
         return target;
     }
@@ -1003,7 +1030,7 @@ public final class FileUtils {
         
         if(SystemUtils.isWindows() && source.getAbsolutePath().length() > 255) {
             /*
-             * WORKAROUND for two issues:
+             * WORKAROUND for two issues (and 6612389 in BugTrack):
              * http://www.netbeans.org/issues/show_bug.cgi?id=96548
              * http://www.netbeans.org/issues/show_bug.cgi?id=97984
              * The issue is that unpack200/pack200 doesn`t support long path names
@@ -1020,7 +1047,7 @@ public final class FileUtils {
                 tmpSource = null;
                 copyFile(tmpTarget,target);
                 deleteFile(tmpTarget);
-                tmpTarget = null;                
+                tmpTarget = null;
             } finally {
                 if(tmpSource!=null) {
                     deleteFile(tmpSource);
