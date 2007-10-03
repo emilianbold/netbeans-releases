@@ -307,7 +307,6 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
 	topLevel = tree;
 	CompilationUnitTree result = rewriteChildren(topLevel);
 	topLevel = null;
-        System.err.println("result=" + result);
         return result;
     }
     public Tree visitImport(ImportTree tree, Object p) {
