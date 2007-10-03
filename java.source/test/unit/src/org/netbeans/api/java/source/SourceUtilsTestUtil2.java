@@ -59,11 +59,23 @@ public final class SourceUtilsTestUtil2 {
     }
 
     public static <R, P> void run(WorkingCopy wc, Transformer<R, P> t) {
-        wc.run(t);
+//        if (afterCommit)
+//            throw new IllegalStateException ("The run method can't be called on a WorkingCopy instance after the commit");   //NOI18N
+        t.init();
+        t.attach(wc.getJavacTask().getContext(), wc);
+        t.apply(wc.getCompilationUnit());
+        t.release();
+        t.destroy();
     }
     
     public static <R, P> void run(WorkingCopy wc, Transformer<R, P> t, Tree tree) {
-        wc.run(t, tree);
+//        if (afterCommit)
+//            throw new IllegalStateException ("The run method can't be called on a WorkingCopy instance after the commit");   //NOI18N
+        t.init();
+        t.attach(wc.getJavacTask().getContext(), wc);
+        t.apply(tree);
+        t.release();
+        t.destroy();
     }
     
     public static void disableLocks() {

@@ -50,7 +50,6 @@ import java.util.Comparator;
 import java.util.List;
 import org.netbeans.modules.java.source.transform.Transformer;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.modules.java.source.builder.ASTService;
 import org.openide.filesystems.FileStateInvalidException;
 
 /**

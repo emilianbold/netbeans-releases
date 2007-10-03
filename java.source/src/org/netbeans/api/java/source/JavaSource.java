@@ -129,7 +129,6 @@ import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaSourceProvider;
 import org.netbeans.modules.java.source.TreeLoader;
-import org.netbeans.modules.java.source.engine.ApplicationContext;
 import org.netbeans.modules.java.source.tasklist.CompilerSettings;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
@@ -1166,11 +1165,6 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                 assert it.hasNext();
                 CompilationUnitTree unit = it.next();
                 currentInfo.setCompilationUnit(unit);
-                JCCompilationUnit tree = (JCCompilationUnit) unit;
-                ASTService s = ASTService.instance(currentInfo.getJavacTask().getContext());
-                if (tree.endPositions != null) {
-                    s.setEndPosTable(tree.sourcefile, tree.endPositions);
-                }
                 assert !it.hasNext();
                 currentPhase = Phase.PARSED;
                 long end = System.currentTimeMillis();

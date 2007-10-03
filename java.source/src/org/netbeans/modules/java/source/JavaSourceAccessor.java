@@ -52,8 +52,6 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.PositionConverter;
-import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.java.source.engine.ApplicationContext;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 

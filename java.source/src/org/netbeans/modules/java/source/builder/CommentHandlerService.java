@@ -81,10 +81,8 @@ public class CommentHandlerService implements CommentHandler {
     }
 
     private Map<Tree, CommentSetImpl> map = new WeakHashMap<Tree, CommentSetImpl>();
-    protected ASTService model;
     
     private CommentHandlerService(Context context) {
-        model = ASTService.instance(context);
     }
     
     public boolean hasComments(Tree tree) {

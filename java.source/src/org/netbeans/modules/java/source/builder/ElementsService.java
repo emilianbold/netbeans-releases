@@ -52,6 +52,7 @@ import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.TypeTags;
+import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.util.Context;
 import javax.lang.model.element.*;
 import javax.lang.model.type.*;
@@ -80,7 +81,7 @@ public class ElementsService {
         context.put(KEY, this);
         jctypes = com.sun.tools.javac.code.Types.instance(context);
         names = Name.Table.instance(context);
-        types = TypesService.instance(context);
+        types = JavacTypes.instance(context);
     }
 
     /**

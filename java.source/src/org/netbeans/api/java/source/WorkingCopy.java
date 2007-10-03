@@ -66,7 +66,6 @@ import javax.swing.text.Position.Bias;
 import javax.tools.JavaFileObject;
 import static org.netbeans.api.java.source.ModificationResult.*;
 import org.netbeans.modules.java.source.save.CasualDiff.Diff;
-import org.netbeans.modules.java.source.transform.Transformer;
 import org.netbeans.modules.java.source.builder.TreeFactory;
 import org.netbeans.modules.java.source.engine.SourceReader;
 import org.netbeans.modules.java.source.engine.SourceRewriter;
@@ -125,26 +124,6 @@ public class WorkingCopy extends CompilationController {
         if (treeMaker == null)
             throw new IllegalStateException("Cannot call getTreeMaker before toPhase.");
         return treeMaker;
-    }
-    
-    void run(Transformer t) {
-        if (afterCommit)
-            throw new IllegalStateException ("The run method can't be called on a WorkingCopy instance after the commit");   //NOI18N
-        t.init();
-        t.attach(getContext(), this);
-        t.apply(getCompilationUnit());
-        t.release();
-        t.destroy();
-    }
-    
-    void run(Transformer t, Tree tree) {
-        if (afterCommit)
-            throw new IllegalStateException ("The run method can't be called on a WorkingCopy instance after the commit");   //NOI18N
-        t.init();
-        t.attach(getContext(), this);
-        t.apply(tree);
-        t.release();
-        t.destroy();
     }
     
     Map<Tree, Tree> getChangeSet() {

@@ -140,7 +140,7 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
     public <T extends Tree> T translateStable(T tree) {
 	Tree t2 = translate(tree);
 	if(t2!=null && t2.getClass()!=tree.getClass()) {
-	    t2 = Transformer.deblock(t2);
+	    t2 = deblock(t2);
 	    if(t2.getClass()!=tree.getClass()) {
                 //possibly import analysis rewrote QualIdentTree->IdentifierTree or QIT->MemberSelectTree:
                 if (   tree.getClass() != QualIdentTree.class
@@ -1145,4 +1145,39 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
 	}
 	return tree;
     }
+
+    /**
+     * Removes unnecessary surrounding braces or parentheses.  For
+     * a TreeBlock with a single statement this will return that
+     * statement.  For a ParenthesizedExpression, the expression
+     * will be returned.  For all other cases the specified tree
+     * will be returned.
+     */
+    public static Tree deblock(Tree t) {
+        while (t != null) {
+            switch (t.getKind()) {
+                case BLOCK:
+                    {
+                        BlockTree b = (BlockTree) t;
+                        if (b.isStatic()) {
+                            return t;
+                        }
+                        List<? extends StatementTree> stats = b.getStatements();
+                        if (stats.size() == 1) {
+                            t = stats.get(0);
+                        } else {
+                            return t;
+                        }
+                        break;
+                    }
+                case PARENTHESIZED:
+                    t = ((ParenthesizedTree) t).getExpression();
+                    break;
+                default:
+                    return t;
+            }
+        }
+        return null;
+    }
+
 }
