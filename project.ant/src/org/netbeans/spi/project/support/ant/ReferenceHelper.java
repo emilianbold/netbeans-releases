@@ -1331,7 +1331,7 @@ public final class ReferenceHelper {
 		//#65141: in private.properties, a full path into originalPath may be given, fix:
 		String relative = PropertyUtils.relativizeFile(originalPath, absolutePath);
 		
-		absolutePath = new File(projectDir, relative);
+		absolutePath = FileUtil.normalizeFile(new File(projectDir, relative));
 		
 		privRemove.add(key);
 		privAdd.put(key, absolutePath.getAbsolutePath());
