@@ -67,7 +67,10 @@ public final class MissingDatabaseConnectionWarning extends JPanel {
     
     private void initDatasourceList() {
         datasourceList.setCellRenderer(new DatasourceRenderer());
-        datasourceList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);             
+        datasourceList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION); 
+        if ((datasourceList.isSelectionEmpty()) && (datasourceList.getModel().getSize() > 0)) {
+            datasourceList.setSelectedIndex(0);
+        }
     }
     
     /**
@@ -242,20 +245,27 @@ public final class MissingDatabaseConnectionWarning extends JPanel {
          * Return the datasource corresponding to the selected position in datasourceList
          */
         public synchronized Object getElementAt(int index) {
-            Iterator it = datasources.iterator();
-            int i = 0;
-            while (it.hasNext()) {
-                if (index >= 0 && index <= datasources.size()) {
-                    if (i == index) {
-                        return it.next();
-                    }
-                    
-                    // get the next datasource from the set of datasources
-                    it.next();
-                    i++;
+            if (!datasourceList.isSelectionEmpty()) {
+                if (!jButtonAddConnection.isEnabled()) {
+                    jButtonAddConnection.setEnabled(true);
                 }
+                Iterator it = datasources.iterator();
+                int i = 0;
+                while (it.hasNext()) {
+                    if (index >= 0 && index <= datasources.size()) {
+                        if (i == index) {
+                            return it.next();
+                        }
+
+                        // get the next datasource from the set of datasources
+                        it.next();
+                        i++;
+                    }
+                }
+            } else {
+                jButtonAddConnection.setEnabled(false);
             }
-            
+                        
             return null;
         }
         
@@ -279,6 +289,7 @@ public final class MissingDatabaseConnectionWarning extends JPanel {
             });
             
             if (datasources.isEmpty()) {
+                jButtonAddConnection.setEnabled(false);
                 removeConnectionListener();
             }
         }
