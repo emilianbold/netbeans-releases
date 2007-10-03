@@ -25,8 +25,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.jsp.lexer.JspTokenId;
@@ -37,10 +40,13 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.PageInfo;
 import org.netbeans.spi.editor.completion.CompletionItem;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.NbBundle;
 import static org.netbeans.api.jsp.lexer.JspTokenId.JavaCodeType;
 
 /**
@@ -94,9 +100,21 @@ public class SimplifiedJSPServlet {
             fobj = null;
         }
     }
-
+    
     public void process() throws BadLocationException {
         processCalled = true;
+        
+        if (!isServletAPIOnClasspath()){
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    displayServletAPIMissingWarning();
+                }
+            });
+            
+            processingSuccessful = false;
+            return;
+        }
+        
         final StringBuilder buffScriplets = new StringBuilder();
         final StringBuilder buffDeclarations = new StringBuilder();
         final BadLocationException[] ex = new BadLocationException[1];
@@ -155,6 +173,34 @@ public class SimplifiedJSPServlet {
         importStatements = createImportStatements();
         mergedDeclarations = buffDeclarations + "\n" + createBeanVarDeclarations();
         mergedScriptlets = buffScriplets.toString();
+    }
+    
+    private boolean isServletAPIOnClasspath() {
+        ClassPath cp = ClassPath.getClassPath(fobj, ClassPath.COMPILE);
+
+        if (cp != null && cp.findResource("javax/servlet/http/HttpServlet.class") != null) { //NOI18N
+            return true;
+        }
+        
+        return false;
+    }
+
+    private void displayServletAPIMissingWarning() {
+        try {
+            DataObject doJsp = DataObject.find(fobj);
+            EditorCookie editor = doJsp.getCookie(EditorCookie.class);
+
+            if (editor != null && editor.getOpenedPanes() != null) {
+
+                JTextComponent component = editor.getOpenedPanes()[0];
+                if (component != null) {
+                    org.netbeans.editor.Utilities.setStatusBoldText(component, 
+                            NbBundle.getMessage(SimplifiedJSPServlet.class, "MSG_MissingServletAPI"));
+                }
+            }
+        } catch (DataObjectNotFoundException e) {
+            // ignore
+        }
     }
 
     private String createBeanVarDeclarations() {
