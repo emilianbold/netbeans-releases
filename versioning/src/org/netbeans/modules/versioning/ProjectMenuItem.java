@@ -71,7 +71,7 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
                 Lookup.Result<VersioningSystem> result = Lookup.getDefault().lookup(new Lookup.Template<VersioningSystem>(VersioningSystem.class));
                 Collection<? extends VersioningSystem> vcs = result.allInstances();
                 for (VersioningSystem vs : vcs) {
-                    if (vs == localHistory) continue;
+                    if (vs.getProperty(VersioningSystem.PROP_LOCALHISTORY_VCS) != null) continue;
                     JComponent [] items = createVersioningSystemItems(vs, nodes);
                     if (items != null) {
                         for (JComponent item : items) {
