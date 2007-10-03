@@ -675,9 +675,13 @@ public class EditorContextImpl extends EditorContext {
                 public void cancel() {
                 }
                 public void run(CompilationController ci) throws Exception {
-                    if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) //TODO: ELEMENTS_RESOLVED may be sufficient
+                    if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {//TODO: ELEMENTS_RESOLVED may be sufficient
+                        ErrorManager.getDefault().log(ErrorManager.WARNING,
+                                "Unable to resolve "+ci.getFileObject()+" to phase "+Phase.RESOLVED+", current phase = "+ci.getPhase()+
+                                "\nDiagnostics = "+ci.getDiagnostics()+
+                                "\nFree memory = "+Runtime.getRuntime().freeMemory());
                         return;
-                    
+                    }
                     Elements elms = ci.getElements();
                     TypeElement classElement = getTypeElement(ci, className, null);
                     if (classElement == null) return ;
@@ -781,9 +785,13 @@ public class EditorContextImpl extends EditorContext {
                 public void cancel() {
                 }
                 public void run(CompilationController ci) throws Exception {
-                    if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) //TODO: ELEMENTS_RESOLVED may be sufficient
+                    if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {//TODO: ELEMENTS_RESOLVED may be sufficient
+                        ErrorManager.getDefault().log(ErrorManager.WARNING,
+                                "Unable to resolve "+ci.getFileObject()+" to phase "+Phase.RESOLVED+", current phase = "+ci.getPhase()+
+                                "\nDiagnostics = "+ci.getDiagnostics()+
+                                "\nFree memory = "+Runtime.getRuntime().freeMemory());
                         return;
-                    
+                    }
                     TypeElement classElement = getTypeElement(ci, className, classExcludeNames);
                     if (classElement == null) return ;
                     List classMemberElements = ci.getElements().getAllMembers(classElement);
@@ -851,8 +859,13 @@ public class EditorContextImpl extends EditorContext {
                 public void cancel() {
                 }
                 public void run(CompilationController ci) throws Exception {
-                    if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) //TODO: ELEMENTS_RESOLVED may be sufficient
+                    if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {//TODO: ELEMENTS_RESOLVED may be sufficient
+                        ErrorManager.getDefault().log(ErrorManager.WARNING,
+                                "Unable to resolve "+ci.getFileObject()+" to phase "+Phase.RESOLVED+", current phase = "+ci.getPhase()+
+                                "\nDiagnostics = "+ci.getDiagnostics()+
+                                "\nFree memory = "+Runtime.getRuntime().freeMemory());
                         return;
+                    }
                     int offset = currentOffset;
                     //Scope scope = ci.getTreeUtilities().scopeFor(offset);
                     String text = ci.getText();
@@ -1010,13 +1023,20 @@ public class EditorContextImpl extends EditorContext {
                 public void cancel() {
                 }
                 public void run(CompilationController ci) throws Exception {
-                    if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) //TODO: ELEMENTS_RESOLVED may be sufficient
+                    if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {//TODO: ELEMENTS_RESOLVED may be sufficient
+                        ErrorManager.getDefault().log(ErrorManager.WARNING,
+                                "Unable to resolve "+ci.getFileObject()+" to phase "+Phase.RESOLVED+", current phase = "+ci.getPhase()+
+                                "\nDiagnostics = "+ci.getDiagnostics()+
+                                "\nFree memory = "+Runtime.getRuntime().freeMemory());
                         return;
-                    
+                    }
                     Scope scope = ci.getTreeUtilities().scopeFor(offset);
                     TypeElement te = scope.getEnclosingClass();
                     if (te != null) {
                         result[0] = ElementUtilities.getBinaryName(te);
+                    } else {
+                        ErrorManager.getDefault().log(ErrorManager.WARNING,
+                                "No enclosing class for "+ci.getFileObject()+", offset = "+offset);
                     }
                 }
             }, true);
@@ -1081,9 +1101,13 @@ public class EditorContextImpl extends EditorContext {
                 public void cancel() {
                 }
                 public void run(CompilationController ci) throws Exception {
-                    if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) //TODO: ELEMENTS_RESOLVED may be sufficient
+                    if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {//TODO: ELEMENTS_RESOLVED may be sufficient
+                        ErrorManager.getDefault().log(ErrorManager.WARNING,
+                                "Unable to resolve "+ci.getFileObject()+" to phase "+Phase.RESOLVED+", current phase = "+ci.getPhase()+
+                                "\nDiagnostics = "+ci.getDiagnostics()+
+                                "\nFree memory = "+Runtime.getRuntime().freeMemory());
                         return;
-                    
+                    }
                     Scope scope = ci.getTreeUtilities().scopeFor(offset);
                     Element method = scope.getEnclosingMethod();
                     if (method == null) {
@@ -1236,6 +1260,10 @@ public class EditorContextImpl extends EditorContext {
                 }
                 public void run(CompilationController ci) throws Exception {
                     if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
+                        ErrorManager.getDefault().log(ErrorManager.WARNING,
+                                "Unable to resolve "+ci.getFileObject()+" to phase "+Phase.RESOLVED+", current phase = "+ci.getPhase()+
+                                "\nDiagnostics = "+ci.getDiagnostics()+
+                                "\nFree memory = "+Runtime.getRuntime().freeMemory());
                         return;
                     }
                     int offset = operation.getMethodEndPosition().getOffset();
@@ -1282,6 +1310,10 @@ public class EditorContextImpl extends EditorContext {
                 }
                 public void run(CompilationController ci) throws Exception {
                     if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
+                        ErrorManager.getDefault().log(ErrorManager.WARNING,
+                                "Unable to resolve "+ci.getFileObject()+" to phase "+Phase.RESOLVED+", current phase = "+ci.getPhase()+
+                                "\nDiagnostics = "+ci.getDiagnostics()+
+                                "\nFree memory = "+Runtime.getRuntime().freeMemory());
                         return;
                     }
                     Scope scope = ci.getTreeUtilities().scopeFor(offset);
@@ -1325,9 +1357,13 @@ public class EditorContextImpl extends EditorContext {
                 public void cancel() {
                 }
                 public void run(CompilationController ci) throws Exception {
-                    if (ci.toPhase(Phase.PARSED).compareTo(Phase.PARSED) < 0)
+                    if (ci.toPhase(Phase.PARSED).compareTo(Phase.PARSED) < 0) {
+                        ErrorManager.getDefault().log(ErrorManager.WARNING,
+                                "Unable to resolve "+ci.getFileObject()+" to phase "+Phase.RESOLVED+", current phase = "+ci.getPhase()+
+                                "\nDiagnostics = "+ci.getDiagnostics()+
+                                "\nFree memory = "+Runtime.getRuntime().freeMemory());
                         return;
-                    
+                    }
                     List importDecl = ci.getCompilationUnit().getImports();
                     int i = 0;
                     for (Iterator it = importDecl.iterator(); it.hasNext(); i++) {
@@ -1457,9 +1493,13 @@ public class EditorContextImpl extends EditorContext {
                 public void cancel() {
                 }
                 public void run(CompilationController ci) throws Exception {
-                    if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) //TODO: ELEMENTS_RESOLVED may be sufficient
+                    if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {//TODO: ELEMENTS_RESOLVED may be sufficient
+                        ErrorManager.getDefault().log(ErrorManager.WARNING,
+                                "Unable to resolve "+ci.getFileObject()+" to phase "+Phase.RESOLVED+", current phase = "+ci.getPhase()+
+                                "\nDiagnostics = "+ci.getDiagnostics()+
+                                "\nFree memory = "+Runtime.getRuntime().freeMemory());
                         return;
-
+                    }
                     Element el = null;
                     if (kind == ElementKind.CLASS) {
                         boolean isMemberClass = false;
