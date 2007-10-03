@@ -1449,9 +1449,9 @@ public class JsfProjectUtils {
             return addLibraryReferences(project, libraries);
         }
 
-        if (type == ClassPath.COMPILE) {
+        if (ClassPath.COMPILE.equals(type)) {
             return wplm.addCompileLibraries(libraries);
-        } else if (type == ClassPath.EXECUTE) {
+        } else if (ClassPath.EXECUTE.equals(type)) {
             return wplm.addPackageLibraries(libraries, PATH_IN_WAR_LIB);
         }
 
@@ -1491,9 +1491,9 @@ public class JsfProjectUtils {
             return removeLibraryReferences(project, libraries);
         }
 
-        if (type == ClassPath.COMPILE) {
+        if (ClassPath.COMPILE.equals(type)) {
             return wplm.removeCompileLibraries(libraries);
-        } else if (type == ClassPath.EXECUTE) {
+        } else if (ClassPath.EXECUTE.equals(type)) {
             return wplm.removePackageLibraries(libraries, PATH_IN_WAR_LIB);
         }
 
@@ -1570,9 +1570,9 @@ public class JsfProjectUtils {
             return addRootReferences(project, rootFiles);
         }
 
-        if (type == ClassPath.COMPILE) {
+        if (ClassPath.COMPILE.equals(type)) {
             return wplm.addCompileRoots(rootFiles);
-        } else if (type == ClassPath.EXECUTE) {
+        } else if (ClassPath.EXECUTE.equals(type)) {
             return wplm.addPackageRoots(rootFiles, PATH_IN_WAR_LIB);
         }
 
@@ -1612,9 +1612,9 @@ public class JsfProjectUtils {
             return removeRootReferences(project, rootFiles);
         }
 
-        if (type == ClassPath.COMPILE) {
+        if (ClassPath.COMPILE.equals(type)) {
             return wplm.removeCompileRoots(rootFiles);
-        } else if (type == ClassPath.EXECUTE) {
+        } else if (ClassPath.EXECUTE.equals(type)) {
             return wplm.removePackageRoots(rootFiles, PATH_IN_WAR_LIB);
         }
 
