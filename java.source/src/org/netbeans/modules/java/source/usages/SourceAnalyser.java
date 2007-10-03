@@ -52,6 +52,7 @@ import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.api.JavacTaskImpl;
+import com.sun.tools.javac.code.Kinds;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
@@ -316,7 +317,7 @@ public class SourceAnalyser {
             }
             return null;
         }
-        
+
         public @Override Void visitMemberSelect(final MemberSelectTree node,  final Map<Pair<String,String>,Map<String, Set<ClassIndexImpl.UsageType>>> p) {
             handleVisitIdentSelect (((JCTree.JCFieldAccess)node).sym, p);
             State oldState = this.state;
@@ -334,6 +335,15 @@ public class SourceAnalyser {
         private void handleVisitIdentSelect (Symbol sym, final Map<Pair<String,String>,Map<String, Set<ClassIndexImpl.UsageType>>> p) {
             if (!activeClass.empty()) {               
                 if (sym != null) {
+                    if (sym.kind == Kinds.ERR) {
+                        final Symbol owner = sym.getEnclosingElement();
+                        if (owner.getKind().isClass() || owner.getKind().isInterface()) {
+                            final String className = encodeClassName(owner);
+                            if (className != null) {
+                                addUsage(activeClass.peek(), className, p, ClassIndexImpl.UsageType.TYPE_REFERENCE);
+                            }
+                        }
+                    }
                     if (sym.getKind().isClass() || sym.getKind().isInterface()) {
                         final String className = encodeClassName(sym);
                         if (className != null) {
