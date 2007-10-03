@@ -2023,10 +2023,10 @@ A custom widget can be created by extending <code>Widget</code> class. For prope
 Following example create a new custom widget that renders a circle:
 <pre>
 public class CircleWidget extends Widget {
-    private int radius;
+    private int r;
     public CustomWidgetTest (Scene scene, int radius) {
         super (scene);
-        this.radius = radius;
+        r = radius;
     }
     protected Rectangle calculateClientArea () {
         return new Rectangle (- r, - r, 2 * r + 1, 2 * r + 1);
