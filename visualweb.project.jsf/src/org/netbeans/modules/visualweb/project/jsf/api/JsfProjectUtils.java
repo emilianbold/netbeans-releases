@@ -76,7 +76,6 @@ import javax.swing.JFileChooser ;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
-import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -110,7 +109,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.modules.InstalledFileLocator;
-import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 
 import org.openide.xml.XMLUtil;
@@ -210,45 +208,45 @@ public class JsfProjectUtils {
                 final FileObject projXml = fo.getFileObject("nbproject/project.xml"); // NOI18N
                 // Found the project root directory and got the project.xml file
                 if (projXml != null) {
-                    try {
-                        Document doc = XMLUtil.parse(new InputSource(FileUtil.toFile(projXml).toURI().toString()), false, true, null,
-                            new EntityResolver() {
-                                public InputSource resolveEntity(String pubid, String sysid) throws SAXException, IOException {
-                                    return new InputSource(new ByteArrayInputStream(new byte[0]));
-                                }
-                            });
-                        NodeList nlist = doc.getElementsByTagNameNS(RAVE_AUX_NAMESPACE, RAVE_AUX_NAME);
-                        if (nlist.getLength() > 0) {
-                            setJsfProjectDir(dirs, Boolean.TRUE);
-                            return true;
-			}
-                    } catch (Exception e) {
-                        // Try the old Creator format later
+                    if (fileContains(projXml, RAVE_AUX_NAMESPACE)) {
+                        setJsfProjectDir(dirs, Boolean.TRUE);
+                        return true;
                     }
                 }
 
                 final FileObject propFile = fo.getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                 // Found the project root directory and got the project.properties file
                 if (propFile != null) {
-                    try {
-                        EditableProperties prop = new EditableProperties();
-                        InputStream is = propFile.getInputStream();
-                        
-                        prop.load(is);
-                        is.close();
-
-                        // Check Creator property
-                        boolean isJsf = prop.getProperty("jsf.pagebean.package") != null; // NOI18N
-                        setJsfProjectDir(dirs, Boolean.valueOf(isJsf));
-                        return isJsf;
-                    } catch (Exception e) {
-                        setJsfProjectDir(dirs, Boolean.FALSE);
-                        return false;
-                    }
+                    // Check Creator property
+                    boolean isJsf = fileContains(propFile, "jsf.pagebean.package"); // NOI18N
+                    setJsfProjectDir(dirs, Boolean.valueOf(isJsf));
+                    return isJsf;
                 }
             }
 
             fo = fo.getParent();
+        }
+
+        return false;
+    }
+
+    public static boolean fileContains(FileObject fo, String str) {
+        BufferedReader in = null;
+        try {
+            try {
+                in = new BufferedReader(new InputStreamReader(fo.getInputStream()));
+                String s;
+                while ((s = in.readLine()) != null) {
+                    if (s.indexOf(str) != -1) {
+                        return true;
+                    }
+                }
+            } finally {
+                if (in != null) {
+                    in.close();
+                }
+            }
+        } catch (IOException ioe) {
         }
 
         return false;
