@@ -114,8 +114,8 @@ public class AutoupdateCheckScheduler {
             } catch (IOException ioe) {
                 err.log (Level.INFO, ioe.getMessage (), ioe);
             }
-            RequestProcessor.getDefault ().post (doCheckAvailableUpdates);
         }
+        RequestProcessor.getDefault ().post (doCheckAvailableUpdates, 500);
     }
     
     private static Runnable doCheckAvailableUpdates = new Runnable () {
