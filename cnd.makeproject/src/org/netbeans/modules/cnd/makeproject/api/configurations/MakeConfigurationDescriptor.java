@@ -72,6 +72,7 @@ import org.netbeans.modules.cnd.makeproject.NativeProjectProvider;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.FolderEntry;
+import org.netbeans.modules.cnd.ui.options.ToolsPanel;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -86,7 +87,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-public class MakeConfigurationDescriptor extends ConfigurationDescriptor {
+public class MakeConfigurationDescriptor extends ConfigurationDescriptor implements ChangeListener {
     public static final String EXTERNAL_FILES_FOLDER = "ExternalFiles"; // NOI18N
     public static final String SOURCE_FILES_FOLDER = "SourceFiles"; // NOI18N
     public static final String HEADER_FILES_FOLDER = "HeaderFiles"; // NOI18N
@@ -115,16 +116,32 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor {
         rootFolder = new Folder(this, null, "root", "root", true); // NOI18N
         projectItems = new HashMap();
         setModified(true);
+        ToolsPanel.addCompilerSetModifiedListener(this);
+    }
+    
+    /*
+     * Called when project is being closed
+     */
+    public void closed() {
+        ToolsPanel.removeCompilerSetModifiedListener(this);
     }
     
     public static MakeConfigurationDescriptor getMakeConfigurationDescriptor(Project project) {
-        ConfigurationDescriptorProvider pdp = (ConfigurationDescriptorProvider)project.getLookup().lookup(ConfigurationDescriptorProvider.class );
+        ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
         if (pdp != null) {
             MakeConfigurationDescriptor makeConfigurationDescriptor = (MakeConfigurationDescriptor)pdp.getConfigurationDescriptor();
             return makeConfigurationDescriptor;
         } else {
             return null;
         }
+    }
+    
+    /*
+     * One of the compiler sets have changed.
+     * Mark project modified. This will trigger all makefiles to be regenerated.
+     */
+    public void stateChanged(ChangeEvent e) {
+        setModified();
     }
     
     public Project getProject() {

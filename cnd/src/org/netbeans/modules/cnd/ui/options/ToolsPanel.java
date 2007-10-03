@@ -678,6 +678,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             }
             currentCompilerSet = cs;
             fireCompilerSetChange();
+            fireCompilerSetModified();
         }
         
         if (model != null) { // model is null for Tools->Options if we don't look at C/C++ panel
@@ -839,19 +840,36 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         jc.addItemListener(this);
     }
     
-    Set<ChangeListener> listener = new HashSet();
+    static Set<ChangeListener> listenerChanged = new HashSet();
     
-    public void addCompilerSetChangeListener(ChangeListener l) {
-        listener.add(l);
+    public static void addCompilerSetChangeListener(ChangeListener l) {
+        listenerChanged.add(l);
     }
     
-    public void removeCompilerSetChangeListener(ChangeListener l) {
-        listener.remove(l);
+    public static void removeCompilerSetChangeListener(ChangeListener l) {
+        listenerChanged.remove(l);
     }
     
     public void fireCompilerSetChange() {
         ChangeEvent ev = new ChangeEvent(currentCompilerSet);
-        for (ChangeListener l : listener) {
+        for (ChangeListener l : listenerChanged) {
+            l.stateChanged(ev);
+        }
+    }
+    
+    static Set<ChangeListener> listenerModified = new HashSet();
+    
+    public static void addCompilerSetModifiedListener(ChangeListener l) {
+        listenerModified.add(l);
+    }
+    
+    public static void removeCompilerSetModifiedListener(ChangeListener l) {
+        listenerModified.remove(l);
+    }
+    
+    public void fireCompilerSetModified() {
+        ChangeEvent ev = new ChangeEvent(currentCompilerSet);
+        for (ChangeListener l : listenerModified) {
             l.stateChanged(ev);
         }
     }

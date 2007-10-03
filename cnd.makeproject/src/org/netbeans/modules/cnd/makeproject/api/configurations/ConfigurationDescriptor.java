@@ -102,4 +102,5 @@ public abstract class ConfigurationDescriptor {
     public abstract boolean save();
     public abstract boolean save(String extraMessage);
     public abstract void setModified();
+    public abstract void closed();
 }

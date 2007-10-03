@@ -103,9 +103,8 @@ import org.w3c.dom.Text;
  * Represents one plain Make project.
  */
 public final class MakeProject implements Project, AntProjectListener {
-    
+
     private static final Icon MAKE_PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif")); // NOI18N
-        
     private final AntProjectHelper helper;
     private final PropertyEvaluator eval;
     private final ReferenceHelper refHelper;
@@ -114,25 +113,25 @@ public final class MakeProject implements Project, AntProjectListener {
     private ConfigurationDescriptorProvider projectDescriptorProvider;
     private int projectType = -1;
     private MakeProject thisMP;
-    
+
     MakeProject(AntProjectHelper helper) throws IOException {
         this.helper = helper;
         eval = createEvaluator();
         AuxiliaryConfiguration aux = helper.createAuxiliaryConfiguration();
         refHelper = new ReferenceHelper(helper, aux, eval);
-	projectDescriptorProvider = new ConfigurationDescriptorProvider(helper.getProjectDirectory());
+        projectDescriptorProvider = new ConfigurationDescriptorProvider(helper.getProjectDirectory());
         genFilesHelper = new GeneratedFilesHelper(helper);
         lookup = createLookup(aux);
         helper.addAntProjectListener(this);
         thisMP = this;
 
-	// Find the project type from project.xml
+        // Find the project type from project.xml
         Element data = helper.getPrimaryConfigurationData(true);
         NodeList nl = data.getElementsByTagName("make-project-type"); // NOI18N
         if (nl.getLength() == 1) {
-	    nl = nl.item(0).getChildNodes();
-	    String typeTxt = (String)nl.item(0).getNodeValue();
-	    projectType = new Integer(typeTxt).intValue();
+            nl = nl.item(0).getChildNodes();
+            String typeTxt = (String) nl.item(0).getNodeValue();
+            projectType = new Integer(typeTxt).intValue();
         }
     }
 
@@ -143,20 +142,20 @@ public final class MakeProject implements Project, AntProjectListener {
     public String toString() {
         return "MakeProject[" + getProjectDirectory() + "]"; // NOI18N
     }
-    
+
     private PropertyEvaluator createEvaluator() {
         // XXX might need to use a custom evaluator to handle active platform substitutions... TBD
         return helper.getStandardPropertyEvaluator();
     }
-    
+
     PropertyEvaluator evaluator() {
         return eval;
     }
 
-    ReferenceHelper getReferenceHelper () {
+    ReferenceHelper getReferenceHelper() {
         return this.refHelper;
     }
-    
+
     public AntProjectHelper getAntProjectHelper() {
         return helper;
     }
@@ -167,36 +166,16 @@ public final class MakeProject implements Project, AntProjectListener {
 
     private Lookup createLookup(AuxiliaryConfiguration aux) {
         SubprojectProvider spp = new MakeSubprojectProvider(); //refHelper.createSubprojectProvider();
-        return Lookups.fixed(new Object[] {
-            new Info(),
-            aux,
-            helper.createCacheDirectoryProvider(),
-            spp,
-            new MakeActionProvider( this),
-            new MakeLogicalViewProvider(this, spp),
-            new MakeCustomizerProvider(this, projectDescriptorProvider),
-            new MakeArtifactProviderImpl(),
-	    //new CustomActionsHookImpl(),
-            new ProjectXmlSavedHookImpl(),
-            new ProjectOpenedHookImpl(),
-	    new MakeSharabilityQuery(FileUtil.toFile(getProjectDirectory())),
-	    new MakeSources(this, helper),
-            new AntProjectHelperProvider (),
-	    projectDescriptorProvider,
-            new MakeProjectConfigurationProvider(this, projectDescriptorProvider),
-            new NativeProjectProvider(this, projectDescriptorProvider),
-	    new RecommendedTemplatesImpl(),
-            new MakeProjectOperations(this),
-            new FolderSearchInfo(projectDescriptorProvider),
-            new MakeProjectType()
-        
-        });
+        return Lookups.fixed(new Object[]{new Info(), aux, helper.createCacheDirectoryProvider(), spp, new MakeActionProvider(this), new MakeLogicalViewProvider(this, spp), new MakeCustomizerProvider(this, projectDescriptorProvider), new MakeArtifactProviderImpl(), new //new CustomActionsHookImpl(),
+        ProjectXmlSavedHookImpl(), new ProjectOpenedHookImpl(), new MakeSharabilityQuery(FileUtil.toFile(getProjectDirectory())), new MakeSources(this, helper), new AntProjectHelperProvider(), projectDescriptorProvider, new MakeProjectConfigurationProvider(this, projectDescriptorProvider), new NativeProjectProvider(this, projectDescriptorProvider), new RecommendedTemplatesImpl(), new MakeProjectOperations(this), new FolderSearchInfo(projectDescriptorProvider), new MakeProjectType
+
+        ()});
     }
 
     public void configurationXmlChanged(AntProjectEvent ev) {
         if (ev.getPath().equals(AntProjectHelper.PROJECT_XML_PATH)) {
             // Could be various kinds of changes, but name & displayName might have changed.
-            Info info = (Info)getLookup().lookup(ProjectInformation.class);
+            Info info = (Info) getLookup().lookup(ProjectInformation.class);
             info.firePropertyChange(ProjectInformation.PROP_NAME);
             info.firePropertyChange(ProjectInformation.PROP_DISPLAY_NAME);
         }
@@ -205,81 +184,39 @@ public final class MakeProject implements Project, AntProjectListener {
     public void propertiesChanged(AntProjectEvent ev) {
         // currently ignored (probably better to listen to evaluator() if you need to)
     }
-    
     // Package private methods -------------------------------------------------
-    
+
     final class AntProjectHelperProvider {
-        AntProjectHelper getAntProjectHelper () {
+
+        AntProjectHelper getAntProjectHelper() {
             return helper;
         }
     }
 
-    private static final class RecommendedTemplatesImpl
-		    implements RecommendedTemplates, PrivilegedTemplates {
+    private static final class RecommendedTemplatesImpl implements RecommendedTemplates, PrivilegedTemplates {
 
-        private static final String[] RECOMMENDED_TYPES = new String[] { 
-	    "c-types",         // NOI18N
-            "cpp-types",       // NOI18N
-            "shell-types",     // NOI18N
-            "makefile-types",  // NOI18N
-            "c-types",         // NOI18N
-            "simple-files",    // NOI18N
-	};
-        
-        private static final String[] RECOMMENDED_TYPES_FORTRAN = new String[] { 
-	    "c-types",         // NOI18N
-            "cpp-types",       // NOI18N
-            "shell-types",     // NOI18N
-            "makefile-types",  // NOI18N
-            "c-types",         // NOI18N
-            "simple-files",    // NOI18N
-            "fortran-types",   // NOI18N
-	};
+        private static final String[] RECOMMENDED_TYPES = new String[]{"c-types", "cpp-types", "shell-types", "makefile-types", "c-types", "simple-files"};
+        private static final String[] RECOMMENDED_TYPES_FORTRAN = new String[]{"c-types", "cpp-types", "shell-types", "makefile-types", "c-types", "simple-files", "fortran-types"};
+        private static final String[] PRIVILEGED_NAMES = new String[]{"Templates/cFiles/main.c", "Templates/cFiles/file.c", "Templates/cFiles/file.h", "Templates/cppFiles/main.cc", "Templates/cppFiles/file.cc", "Templates/cppFiles/file.h", "Templates/MakeTemplates/ComplexMakefile", "Templates/MakeTemplates/SimpleMakefile/ExecutableMakefile", "Templates/MakeTemplates/SimpleMakefile/SharedLibMakefile", "Templates/MakeTemplates/SimpleMakefile/StaticLibMakefile"};
+        private static final String[] PRIVILEGED_NAMES_FORTRAN = new String[]{"Templates/cFiles/main.c", "Templates/cFiles/file.c", "Templates/cFiles/file.h", "Templates/cppFiles/main.cc", "Templates/cppFiles/file.cc", "Templates/cppFiles/file.h", "Templates/fortranFiles/fortranEmptyFile.f90", "Templates/fortranFiles/fortranFixedFormatFile.f", "Templates/fortranFiles/fortranFreeFormatFile.f90", "Templates/MakeTemplates/ComplexMakefile", "Templates/MakeTemplates/SimpleMakefile/ExecutableMakefile", "Templates/MakeTemplates/SimpleMakefile/SharedLibMakefile", "Templates/MakeTemplates/SimpleMakefile/StaticLibMakefile"};
 
-        private static final String[] PRIVILEGED_NAMES = new String[] { 
-            "Templates/cFiles/main.c",                                      // NOI18N
-            "Templates/cFiles/file.c",                                      // NOI18N
-            "Templates/cFiles/file.h",                                      // NOI18N
-            "Templates/cppFiles/main.cc",                                   // NOI18N
-            "Templates/cppFiles/file.cc",                                   // NOI18N
-            "Templates/cppFiles/file.h",                                    // NOI18N
-            "Templates/MakeTemplates/ComplexMakefile",			    // NOI18N
-            "Templates/MakeTemplates/SimpleMakefile/ExecutableMakefile",    // NOI18N
-            "Templates/MakeTemplates/SimpleMakefile/SharedLibMakefile",     // NOI18N
-            "Templates/MakeTemplates/SimpleMakefile/StaticLibMakefile",     // NOI18N
-	};
-        
-        private static final String[] PRIVILEGED_NAMES_FORTRAN = new String[] { 
-            "Templates/cFiles/main.c",                                      // NOI18N
-            "Templates/cFiles/file.c",                                      // NOI18N
-            "Templates/cFiles/file.h",                                      // NOI18N
-            "Templates/cppFiles/main.cc",                                   // NOI18N
-            "Templates/cppFiles/file.cc",                                   // NOI18N
-            "Templates/cppFiles/file.h",                                    // NOI18N
-            "Templates/fortranFiles/fortranEmptyFile.f90",                  // NOI18N
-            "Templates/fortranFiles/fortranFixedFormatFile.f",              // NOI18N
-            "Templates/fortranFiles/fortranFreeFormatFile.f90",             // NOI18N
-            "Templates/MakeTemplates/ComplexMakefile",			    // NOI18N
-            "Templates/MakeTemplates/SimpleMakefile/ExecutableMakefile",    // NOI18N
-            "Templates/MakeTemplates/SimpleMakefile/SharedLibMakefile",     // NOI18N
-            "Templates/MakeTemplates/SimpleMakefile/StaticLibMakefile",     // NOI18N
-	};
-
-	public String[] getRecommendedTypes() {
-            if (CppSettings.getDefault().isFortranEnabled())
+        public String[] getRecommendedTypes() {
+            if (CppSettings.getDefault().isFortranEnabled()) {
                 return RECOMMENDED_TYPES_FORTRAN;
-            else
+            } else {
                 return RECOMMENDED_TYPES;
-	}
-        
+            }
+        }
+
         public String[] getPrivilegedTemplates() {
-            if (CppSettings.getDefault().isFortranEnabled())
+            if (CppSettings.getDefault().isFortranEnabled()) {
                 return PRIVILEGED_NAMES_FORTRAN;
-            else
+            } else {
                 return PRIVILEGED_NAMES;
+            }
         }
     }
-    
+
     /** Return configured project name. */
     public String getName() {
         return (String) ProjectManager.mutex().readAccess(new Mutex.Action() {
@@ -297,9 +234,10 @@ public final class MakeProject implements Project, AntProjectListener {
             }
         });
     }
-    
+
     public void setName(final String name) {
         ProjectManager.mutex().writeAccess(new Mutex.Action() {
+
             public Object run() {
                 Element data = helper.getPrimaryConfigurationData(true);
                 // XXX replace by XMLUtil when that has findElement, findText, etc.
@@ -313,7 +251,7 @@ public final class MakeProject implements Project, AntProjectListener {
                     }
                 } else {
                     nameEl = data.getOwnerDocument().createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
-                    data.insertBefore(nameEl, /* OK if null */data.getChildNodes().item(0));
+                    data.insertBefore(nameEl, data.getChildNodes().item(0));
                 }
                 nameEl.appendChild(data.getOwnerDocument().createTextNode(name));
                 helper.putPrimaryConfigurationData(data, true);
@@ -321,44 +259,39 @@ public final class MakeProject implements Project, AntProjectListener {
             }
         });
     }
-    
     // Private innerclasses ----------------------------------------------------
 
-    /*
+/*
     private class CustomActionsHookImpl implements CustomActionsHook {
-	private Vector customActions = null;
-
-	public CustomActionsHookImpl() {
-	    customActions = new Vector();
-	}
-
-	public void addCustomAction(Action action) {
-	    synchronized (customActions) {
-		customActions.add(action);
-	    }
-	}
-
-	public void removeCustomAction(Action action) {
-	    synchronized (customActions) {
-		customActions.add(action);
-	    }
-	}
-
-	public Vector getCustomActions() {
-	    return customActions;
-	}
+    private Vector customActions = null;
+    public CustomActionsHookImpl() {
+    customActions = new Vector();
     }
-    */
-
+    public void addCustomAction(Action action) {
+    synchronized (customActions) {
+    customActions.add(action);
+    }
+    }
+    public void removeCustomAction(Action action) {
+    synchronized (customActions) {
+    customActions.add(action);
+    }
+    }
+    public Vector getCustomActions() {
+    return customActions;
+    }
+    }
+     */
     private class MakeSubprojectProvider implements SubprojectProvider {
-        // Add a listener to changes in the set of subprojects.
-	public void addChangeListener(ChangeListener listener) {
-	}
 
-	// Get a set of projects which this project can be considered to depend upon somehow.
-	public Set getSubprojects() {
-	    Set subProjects = new HashSet();
-	    Set<String> subProjectLocations = new HashSet();
+        // Add a listener to changes in the set of subprojects.
+        public void addChangeListener(ChangeListener listener) {
+        }
+
+        // Get a set of projects which this project can be considered to depend upon somehow.
+        public Set getSubprojects() {
+            Set subProjects = new HashSet();
+            Set<String> subProjectLocations = new HashSet();
 
             // Try project.xml first (this is cheap)
             Element data = helper.getPrimaryConfigurationData(true);
@@ -369,160 +302,157 @@ public final class MakeProject implements Project, AntProjectListener {
                         Node node = nl4.item(i);
                         NodeList nl2 = node.getChildNodes();
                         for (int j = 0; j < nl2.getLength(); j++) {
-                            String typeTxt = (String)nl2.item(j).getNodeValue();
+                            String typeTxt = (String) nl2.item(j).getNodeValue();
                             subProjectLocations.add(typeTxt);
                         }
                     }
                 }
-            }
-            else {
+            } else {
                 // Then read subprojects from configuration.zml (expensive)
                 ConfigurationDescriptor projectDescriptor = projectDescriptorProvider.getConfigurationDescriptor();
                 if (projectDescriptor == null) {
                     // Something serious wrong. Return nothing...
                     return subProjects;
                 }
-                subProjectLocations = ((MakeConfigurationDescriptor)projectDescriptor).getSubprojectLocations();
+                subProjectLocations = ((MakeConfigurationDescriptor) projectDescriptor).getSubprojectLocations();
             }
-            
+
             String baseDir = FileUtil.toFile(getProjectDirectory()).getPath();
             for (String loc : subProjectLocations) {
-		String location = IpeUtils.toAbsolutePath(baseDir, loc);
-		location = FilePathAdaptor.mapToLocal(location); // PC path
-		try {
-		    FileObject fo = FileUtil.toFileObject(new File(location).getCanonicalFile()); 
-		    Project project = ProjectManager.getDefault().findProject(fo);
+                String location = IpeUtils.toAbsolutePath(baseDir, loc);
+                location = FilePathAdaptor.mapToLocal(location); // PC path
+                try {
+                    FileObject fo = FileUtil.toFileObject(new File(location).getCanonicalFile());
+                    Project project = ProjectManager.getDefault().findProject(fo);
                     subProjects.add(project);
-		}
-		catch (Exception e) {
-		    System.err.println(e); // FIXUP
-		}
+                } catch (Exception e) {
+                    System.err.println(e); // FIXUP
+                }
             }
-            
-	    return subProjects;
-	}
 
-	//Remove a listener to changes in the set of subprojects.
-	public void removeChangeListener(ChangeListener listener)  {
-	}
+            return subProjects;
+        }
+
+        //Remove a listener to changes in the set of subprojects.
+        public void removeChangeListener(ChangeListener listener) {
+        }
     }
-    
+
     private final class Info implements ProjectInformation {
-        
+
         private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-        
-        Info() {}
-        
+
+        Info() {
+        }
+
         void firePropertyChange(String prop) {
             pcs.firePropertyChange(prop, null, null);
         }
-        
+
         public String getName() {
             String name = PropertyUtils.getUsablePropertyName(MakeProject.this.getName());
             return name;
         }
-        
+
         public String getDisplayName() {
             String name = MakeProject.this.getName();
             return name;
         }
-        
+
         public Icon getIcon() {
-	    Icon icon = null;
-	    icon = MakeConfigurationDescriptor.MAKEFILE_ICON;
-	    // First 'projectType' (from project.xml)
-	    /*
-	    switch (projectType) {
-	    case ProjectDescriptor.TYPE_APPLICATION :
-		icon = NeoProjectDescriptor.MAKE_NEW_APP_ICON;
-		break;
-	    case ProjectDescriptor.TYPE_DYNAMIC_LIB :
-		icon = NeoProjectDescriptor.MAKE_NEW_LIB_ICON;
-		break;
-	    case ProjectDescriptor.TYPE_MAKEFILE :
-		icon = MakeProjectDescriptor.MAKE_EXT_APP_ICON;
-		break;
-	    case ProjectDescriptor.TYPE_STATIC_LIB :
-		icon = MakeProjectDescriptor.MAKE_EXT_LIB_ICON;
-		break;
-	    };
-
-	    // Then lookup the projectDescriptor and get it from there
-	    if (icon == null) {
-		ProjectDescriptorProvider pdp = (ProjectDescriptorProvider)getLookup().lookup(ProjectDescriptorProvider.class);
-		if (pdp != null) {
-		    icon = pdp.getProjectDescriptor().getIcon();
-		    projectType = pdp.getProjectDescriptor().getProjectType();
-		}
-	    }
-
-	    // Then ...
-	    if (icon == null) {
-		icon = MAKE_PROJECT_ICON;
-		System.err.println("Cannot recognize make project type!"); // NOI18N
-	    }
-	    */
+            Icon icon = null;
+            icon = MakeConfigurationDescriptor.MAKEFILE_ICON;
+            // First 'projectType' (from project.xml)
+            /*
+            switch (projectType) {
+            case ProjectDescriptor.TYPE_APPLICATION :
+            icon = NeoProjectDescriptor.MAKE_NEW_APP_ICON;
+            break;
+            case ProjectDescriptor.TYPE_DYNAMIC_LIB :
+            icon = NeoProjectDescriptor.MAKE_NEW_LIB_ICON;
+            break;
+            case ProjectDescriptor.TYPE_MAKEFILE :
+            icon = MakeProjectDescriptor.MAKE_EXT_APP_ICON;
+            break;
+            case ProjectDescriptor.TYPE_STATIC_LIB :
+            icon = MakeProjectDescriptor.MAKE_EXT_LIB_ICON;
+            break;
+            };
+            // Then lookup the projectDescriptor and get it from there
+            if (icon == null) {
+            ProjectDescriptorProvider pdp = (ProjectDescriptorProvider)getLookup().lookup(ProjectDescriptorProvider.class);
+            if (pdp != null) {
+            icon = pdp.getProjectDescriptor().getIcon();
+            projectType = pdp.getProjectDescriptor().getProjectType();
+            }
+            }
+            // Then ...
+            if (icon == null) {
+            icon = MAKE_PROJECT_ICON;
+            System.err.println("Cannot recognize make project type!"); // NOI18N
+            }
+             */
             return icon;
         }
-        
+
         public Project getProject() {
             return MakeProject.this;
         }
-        
+
         public void addPropertyChangeListener(PropertyChangeListener listener) {
             pcs.addPropertyChangeListener(listener);
         }
-        
+
         public void removePropertyChangeListener(PropertyChangeListener listener) {
             pcs.removePropertyChangeListener(listener);
         }
-        
     }
-    
+
     private final class ProjectXmlSavedHookImpl extends ProjectXmlSavedHook {
-        
-        ProjectXmlSavedHookImpl() {}
-        
-        protected void projectXmlSaved() throws IOException {
-	    /*
-            genFilesHelper.refreshBuildScript(
-                GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                MakeProject.class.getResource("resources/build-impl.xsl"),
-                false);
-            genFilesHelper.refreshBuildScript(
-                GeneratedFilesHelper.BUILD_XML_PATH,
-                MakeProject.class.getResource("resources/build.xsl"),
-                false);
-	    */
+
+        ProjectXmlSavedHookImpl() {
         }
-        
+
+        protected void projectXmlSaved() throws IOException {
+            /*
+            genFilesHelper.refreshBuildScript(
+            GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
+            MakeProject.class.getResource("resources/build-impl.xsl"),
+            false);
+            genFilesHelper.refreshBuildScript(
+            GeneratedFilesHelper.BUILD_XML_PATH,
+            MakeProject.class.getResource("resources/build.xsl"),
+            false);
+             */
+        }
     }
-    
     private List<Runnable> openedTasks;
-    public void addOpenedTask(Runnable task){
+
+    public void addOpenedTask(Runnable task) {
         if (openedTasks == null) {
             openedTasks = new ArrayList<Runnable>();
         }
         openedTasks.add(task);
     }
-    
+
     private final class ProjectOpenedHookImpl extends ProjectOpenedHook {
-        
-        ProjectOpenedHookImpl() {}
-        
+
+        ProjectOpenedHookImpl() {
+        }
+
         protected void projectOpened() {
-            
-            if (openedTasks != null){
-                for(Runnable runnable : openedTasks){
+
+            if (openedTasks != null) {
+                for (Runnable runnable : openedTasks) {
                     runnable.run();
                 }
                 openedTasks.clear();
                 openedTasks = null;
             }
-            
+
             ConfigurationDescriptor projectDescriptor = null;
             int count = 15;
-            
+
             // The code to wait on projectDescriptor is due to a synchronization problem in makeproject.
             // If it gets fixed then projectDescriptorProvider.getConfigurationDescriptor() will never
             // return null and we can remove this change.
@@ -540,10 +470,10 @@ public final class MakeProject implements Project, AntProjectListener {
                 ErrorManager.getDefault().log(ErrorManager.WARNING, "Skipping project open validation"); // NOI18N
                 return;
             }
-            
+
             Configuration[] confs = projectDescriptor.getConfs().getConfs();
             for (int i = 0; i < confs.length; i++) {
-		MakeConfiguration makeConfiguration = (MakeConfiguration) confs[i];
+                MakeConfiguration makeConfiguration = (MakeConfiguration) confs[i];
                 CompilerSetConfiguration csconf = makeConfiguration.getCompilerSet();
                 if (!csconf.isValid()) {
                     CompilerSet cs = CompilerSet.getCompilerSet(csconf.getOldName());
@@ -552,54 +482,59 @@ public final class MakeProject implements Project, AntProjectListener {
                         csconf.setValue(cs.getName());
                     }
                 }
-	    }
+            }
         }
-        
+
         protected void projectClosed() {
-            if (projectDescriptorProvider.getConfigurationDescriptor() != null)
+            if (projectDescriptorProvider.getConfigurationDescriptor() != null) {
+                // FIXUP: Should be moved to MakeonfigurationDescriptor but can't now due to l10n freeze.
                 projectDescriptorProvider.getConfigurationDescriptor().save(NbBundle.getMessage(MakeProject.class, "ProjectNotSaved"));
+                projectDescriptorProvider.getConfigurationDescriptor().closed();
+            }
         }
     }
-    
+
     private final class MakeArtifactProviderImpl implements MakeArtifactProvider {
 
         public MakeArtifact[] getBuildArtifacts() {
-	    ArrayList artifacts = new ArrayList();
-	    
-	    MakeConfigurationDescriptor projectDescriptor = (MakeConfigurationDescriptor)projectDescriptorProvider.getConfigurationDescriptor();
-	    Configuration[] confs = projectDescriptor.getConfs().getConfs();
+            ArrayList artifacts = new ArrayList();
 
-	    String projectLocation = null;
-	    int configurationType = 0;
-	    String configurationName = null;
-	    boolean active = false;;
-	    String workingDirectory = null;
-	    String buildCommand = null;
-	    String cleanCommand = null;
-	    String output = null;
-	    
-	    projectLocation = FileUtil.toFile(helper.getProjectDirectory()).getPath();
-	    for (int i = 0; i < confs.length; i++) {
-		MakeConfiguration makeConfiguration = (MakeConfiguration)confs[i];
-		artifacts.add(new MakeArtifact(projectDescriptor, makeConfiguration));
-	    }
-	    return (MakeArtifact[]) artifacts.toArray(new MakeArtifact[artifacts.size()]);
+            MakeConfigurationDescriptor projectDescriptor = (MakeConfigurationDescriptor) projectDescriptorProvider.getConfigurationDescriptor();
+            Configuration[] confs = projectDescriptor.getConfs().getConfs();
+
+            String projectLocation = null;
+            int configurationType = 0;
+            String configurationName = null;
+            boolean active = false;
+            ;
+            String workingDirectory = null;
+            String buildCommand = null;
+            String cleanCommand = null;
+            String output = null;
+
+            projectLocation = FileUtil.toFile(helper.getProjectDirectory()).getPath();
+            for (int i = 0; i < confs.length; i++) {
+                MakeConfiguration makeConfiguration = (MakeConfiguration) confs[i];
+                artifacts.add(new MakeArtifact(projectDescriptor, makeConfiguration));
+            }
+            return (MakeArtifact[]) artifacts.toArray(new MakeArtifact[artifacts.size()]);
         }
     }
-    
+
     class FolderSearchInfo implements SearchInfo {
+
         private ConfigurationDescriptorProvider projectDescriptorProvider;
-        
+
         FolderSearchInfo(ConfigurationDescriptorProvider projectDescriptorProvider) {
             this.projectDescriptorProvider = projectDescriptorProvider;
         }
-        
+
         public boolean canSearch() {
             return true;
         }
-        
+
         public Iterator objectsToSearch() {
-            MakeConfigurationDescriptor projectDescriptor = (MakeConfigurationDescriptor)projectDescriptorProvider.getConfigurationDescriptor();
+            MakeConfigurationDescriptor projectDescriptor = (MakeConfigurationDescriptor) projectDescriptorProvider.getConfigurationDescriptor();
             Folder rootFolder = projectDescriptor.getLogicalFolders();
             return rootFolder.getAllItemsAsDataObjectSet(false, "text/").iterator(); // NOI18N
         }
