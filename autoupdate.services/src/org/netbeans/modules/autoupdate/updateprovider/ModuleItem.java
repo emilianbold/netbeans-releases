@@ -82,7 +82,7 @@ public class ModuleItem extends UpdateItemImpl {
             String specificationVersion,
             URL distribution,
             String author,
-            String publishDate,
+            String publishDateString,
             String downloadSize,
             String homepage,
             String category,
@@ -98,13 +98,13 @@ public class ModuleItem extends UpdateItemImpl {
         this.distribution = distribution;
         this.manifest = manifest;
         this.deployImpl = new UpdateItemDeploymentImpl (needsRestart, isGlobal, targetCluster, null, null);
-        if (publishDate != null && publishDate.length () > 0) {
+        if (publishDateString != null && publishDateString.length () > 0) {
             try {
-                this.publishDate = Utilities.DATE_FORMAT.parse (publishDate);
+                this.publishDate = Utilities.DATE_FORMAT.parse (publishDateString);
             } catch (ParseException pe) {
-                Logger.getLogger (ModuleItem.class.getName ()).log (Level.INFO, "Parsing " + publishDate + " of " + codeName + " throws " + pe.getMessage (), pe);
+                Logger.getLogger (ModuleItem.class.getName ()).log (Level.INFO, "Parsing \"" + publishDateString + "\" of " + codeName + " throws " + pe.getMessage (), pe);
             } catch (RuntimeException re) {
-                Logger.getLogger (ModuleItem.class.getName ()).log (Level.INFO, "Parsing " + publishDate + " of " + codeName + " throws " + re.getMessage (), re);
+                Logger.getLogger (ModuleItem.class.getName ()).log (Level.INFO, "Parsing \"" + publishDateString + "\" of " + codeName + " throws " + re.getMessage (), re);
             }
         }
         this.licenseImpl = licenseImpl;
