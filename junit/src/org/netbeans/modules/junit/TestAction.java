@@ -90,7 +90,7 @@ abstract class TestAction extends NodeAction {
 
     /**
      */
-    private static SourceGroup getSourceGroup(FileObject file, Project prj) {
+    static SourceGroup getSourceGroup(FileObject file, Project prj) {
         Sources src = ProjectUtils.getSources(prj);
         SourceGroup[] srcGrps = src.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         for (SourceGroup srcGrp : srcGrps) {

@@ -80,6 +80,22 @@ public abstract class JUnitPluginTrampoline {
             Location testLocation);
     
     /**
+     * Determines whether the given plugin is capable of creating tests
+     * for the given files at the moment.
+     * The default implementation returns {@code true}.
+     *
+     * @param  plugin  plugin to be queried
+     * @param  fileObjects  {@code FileObject}s for which the tests are about
+     *                      to be created
+     * @return  {@code true} if the given plugin is able of creating tests
+     *          for the given {@code FileObject}s, {@code false} otherwise
+     * @see  #createTests
+     */
+    public abstract boolean canCreateTests(
+            JUnitPlugin plugin,
+            FileObject... fileObjects);
+
+    /**
      * Creates test classes for given source classes.
      *
      * @param  filesToTest  source files for which test classes should be

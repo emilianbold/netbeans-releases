@@ -68,6 +68,11 @@ public abstract class JUnitPlugin {
                     Location testLocation) {
                 return plugin.getTestedLocation(testLocation);
             }
+            public boolean canCreateTests(
+                    JUnitPlugin plugin,
+                    FileObject... fileObjects) {
+                return plugin.canCreateTests(fileObjects);
+            }
         };
     }
     
@@ -265,17 +270,17 @@ public abstract class JUnitPlugin {
      */
     protected abstract Location getTestedLocation(Location testLocation);
     
-//    /**
-//     * Informs whether the plugin is capable of creating tests at the moment.
-//     * The default implementation returns {@code true}.
-//     *
-//     * @return  {@code true} if the plugin is able of creating tests,
-//     *          {@code false} otherwise
-//     * @see  #createTests
-//     */
-//    protected boolean canCreateTests() {
-//        return true;
-//    }
+    /**
+     * Informs whether the plugin is capable of creating tests at the moment.
+     * The default implementation returns {@code true}.
+     *
+     * @return  {@code true} if the plugin is able of creating tests
+     *          for the given {@code FileObject}s, {@code false} otherwise
+     * @see  #createTests
+     */
+    protected boolean canCreateTests(FileObject... fileObjects) {
+        return true;
+    }
     
     /**
      * Creates test classes for given source classes.

@@ -21,6 +21,7 @@ package org.netbeans.modules.junit;
 
 import java.awt.EventQueue;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import javax.swing.Action;
@@ -40,6 +41,7 @@ import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.cookies.EditorCookie;
+import org.openide.loaders.DataFolder;
 import org.openide.util.RequestProcessor;
 
 /** Action sensitive to some cookie that does something useful.
@@ -76,6 +78,78 @@ public final class CreateTestAction extends TestAction {
     protected String iconResource() {
         return "org/netbeans/modules/junit/resources/"                  //NOI18N
                + "CreateTestActionIcon.gif";                            //NOI18N
+    }
+
+    @Override
+    protected boolean enable(Node[] nodes) {
+        if (nodes.length == 0) {
+            return false;
+        }
+
+        /*
+         * In most cases, there is just one node selected - that is why
+         * this case is handled in a special, more effective way
+         * (no collections and iterators created).
+         */
+        if (nodes.length == 1) {
+            final Node node = nodes[0];
+            DataObject dataObj;
+            FileObject fileObj;
+            Project project;
+            if (((dataObj = node.getCookie(DataObject.class)) != null)
+                && ((fileObj = dataObj.getPrimaryFile()) != null)
+                && fileObj.isValid()
+                && ((project = FileOwnerQuery.getOwner(fileObj)) != null)
+                && (getSourceGroup(fileObj, project) != null)
+                && (TestUtil.isJavaFile(fileObj)
+                    || (node.getCookie(DataFolder.class) != null))) {
+
+                JUnitPlugin plugin = TestUtil.getPluginForProject(project);
+                return JUnitPluginTrampoline.DEFAULT.canCreateTests(plugin,
+                                                                    fileObj);
+            } else {
+                return false;
+            }
+        }
+
+        final Collection<FileObject> fileObjs
+                = new ArrayList<FileObject>(nodes.length);
+        Project theProject = null;
+        boolean result = false;
+        for (Node node : nodes) {
+            DataObject dataObj = node.getCookie(DataObject.class);
+            if (dataObj != null) {
+                FileObject fileObj = dataObj.getPrimaryFile();
+                if ((fileObj == null) || !fileObj.isValid()) {
+                    continue;
+                }
+
+                fileObjs.add(fileObj);
+                
+                Project prj = FileOwnerQuery.getOwner(fileObj);
+                if (prj != null) {
+                    if (theProject == null) {
+                        theProject = prj;
+                    }
+                    if (prj != theProject) {
+                        return false;        /* files from different projects */
+                    }
+
+                    if ((getSourceGroup(fileObj, prj) != null)
+                        && (TestUtil.isJavaFile(fileObj)
+                            || (node.getCookie(DataFolder.class) != null))) {
+                        result = true;
+                    }
+                }
+            }
+        }
+
+        JUnitPlugin plugin = TestUtil.getPluginForProject(theProject);
+        result &= JUnitPluginTrampoline.DEFAULT.canCreateTests(
+                        plugin,
+                        fileObjs.toArray(new FileObject[fileObjs.size()]));
+
+        return result;
     }
 
     /**
