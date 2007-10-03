@@ -23,12 +23,8 @@ import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
-import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.items.ChoiceGroupCD;
-import org.netbeans.modules.vmd.midp.components.items.ChoiceSupport;
 import javax.swing.*;
-import javax.swing.border.Border;
-import javax.swing.border.BevelBorder;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -39,8 +35,8 @@ import java.util.Collection;
  */
 public class ChoiceGroupDisplayPresenter extends ItemDisplayPresenter {
 
-    private static final Border POPUP_BORDER = BorderFactory.createBevelBorder(BevelBorder.RAISED);
-    private static final Border EMPTY_BORDER = BorderFactory.createEmptyBorder();
+//    private static final Border POPUP_BORDER = BorderFactory.createBevelBorder(BevelBorder.RAISED);
+//    private static final Border EMPTY_BORDER = BorderFactory.createEmptyBorder();
     private JPanel panel;
 
     public ChoiceGroupDisplayPresenter() {
@@ -56,13 +52,13 @@ public class ChoiceGroupDisplayPresenter extends ItemDisplayPresenter {
         ArrayList<DesignComponent> elements = new ArrayList<DesignComponent>();
         Debug.collectAllComponentReferences(elementsValue, elements);
 
-        PropertyValue typeValue = getComponent().readProperty(ChoiceGroupCD.PROP_CHOICE_TYPE);
-        if (!PropertyValue.Kind.USERCODE.equals(typeValue.getKind())) {
-            int type = MidpTypes.getInteger(typeValue);
-            if (type == ChoiceSupport.VALUE_POPUP && elements.size() > 0) {
-                return elements.subList(0, 1);
-            }
-        }
+//        PropertyValue typeValue = getComponent().readProperty(ChoiceGroupCD.PROP_CHOICE_TYPE);
+//        if (!PropertyValue.Kind.USERCODE.equals(typeValue.getKind())) {
+//            int type = MidpTypes.getInteger(typeValue);
+//            if (type == ChoiceSupport.VALUE_POPUP && elements.size() > 0) {
+//                return elements.subList(0, 1);
+//            }
+//        }
         return elements;
     }
 
@@ -70,12 +66,12 @@ public class ChoiceGroupDisplayPresenter extends ItemDisplayPresenter {
     public void reload(ScreenDeviceInfo deviceInfo) {
         super.reload(deviceInfo);
 
-        PropertyValue value = getComponent().readProperty(ChoiceGroupCD.PROP_CHOICE_TYPE);
-        if (!PropertyValue.Kind.USERCODE.equals(value.getKind()) && MidpTypes.getInteger(value) == ChoiceSupport.VALUE_POPUP) {
-            panel.setBorder(POPUP_BORDER);
-        } else {
-            panel.setBorder(EMPTY_BORDER);
-        }
+//        PropertyValue value = getComponent().readProperty(ChoiceGroupCD.PROP_CHOICE_TYPE);
+//        if (!PropertyValue.Kind.USERCODE.equals(value.getKind()) && MidpTypes.getInteger(value) == ChoiceSupport.VALUE_POPUP) {
+//            panel.setBorder(POPUP_BORDER);
+//        } else {
+//            panel.setBorder(EMPTY_BORDER);
+//        }
 
         panel.removeAll();
         for (DesignComponent item : getChildren()) {
