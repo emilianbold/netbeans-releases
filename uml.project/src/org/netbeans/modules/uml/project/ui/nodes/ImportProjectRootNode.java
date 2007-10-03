@@ -94,7 +94,7 @@ public class ImportProjectRootNode extends AbstractNode
     ////////////////////////////////////////////////////////////////////////////
     // ImportElementListener methods
     
-    public void elementImported(UMLProject project,
+    public void elementImported(IProject project,
         IElement element,
         IElementImport importElement)
     {
@@ -102,15 +102,15 @@ public class ImportProjectRootNode extends AbstractNode
         children.addNewImportedElement(project, element, importElement, true);
     }
     
-    public void packageImported(UMLProject project,
+    public void packageImported(IProject project,
         IElement element,
         IPackageImport importElement)
     {
         ImportedProjectChildren children = (ImportedProjectChildren)getChildren();
-        children.addNewImportedPackage(project, element, importElement, true);
+        children.addNewImportedElement(project, element, importElement, true);
     }
     
-    public void elementDeleted(UMLProject project, IElement element)
+    public void elementDeleted(IProject project, IElement element)
     {
         this.project.removeElementImport(element);
         ImportedProjectChildren children = (ImportedProjectChildren)getChildren();

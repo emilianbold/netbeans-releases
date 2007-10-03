@@ -207,10 +207,32 @@ public class ExternalFileManager
 		}
 		return retNode;
 	}
-
-	/**
-	 *
-	 * Fires the pre event before loading an external element into the current DOM tree.
+        
+        
+        public static org.dom4j.Node getExternalNode(org.dom4j.Node n)
+        {
+            org.dom4j.Node retNode = null;
+            if (n != null && n.getNodeType() == org.dom4j.Node.ELEMENT_NODE)
+            {
+                org.dom4j.Element element = (org.dom4j.Element)n;
+                
+                // The href attribute holds the location of the actual node
+                // that we need
+                String value = element.attributeValue("href");
+                if (value != null && value.length() > 0)
+                {
+                    String actualHref = retrieveDocLocation(element);   
+                    retNode = URILocator.retrieveNode(actualHref);
+                }
+            }
+            return retNode;
+        }
+        
+        
+        
+        /**
+         *
+         * Fires the pre event before loading an external element into the current DOM tree.
 	 *
 	 * @param href[in] The location of the element to load
 	 * @param dispatcher[in] The retrieved dispatcher

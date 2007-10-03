@@ -55,6 +55,7 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IElementImport;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPackageImport;
 import org.netbeans.modules.uml.project.UMLProject;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
+import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 
 /**
  *
@@ -62,9 +63,9 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
  */
 public interface ImportElementListener
 {
-    public void elementImported(UMLProject project, IElement element, IElementImport importElement);
+    public void elementImported(IProject project, IElement element, IElementImport importElement);
     
-    public void elementDeleted(UMLProject project, IElement element);
+    public void elementDeleted(IProject project, IElement element);
 
-    public void packageImported(UMLProject project, IElement element, IPackageImport importElement);
+    public void packageImported(IProject project, IElement element, IPackageImport importElement);
 }

@@ -162,7 +162,7 @@ public class UMLImportsUiSupport
         mImportListeners.remove(listener);
     }
     
-    public void fireElementImported(UMLProject project, 
+    public void fireElementImported(IProject project, 
                                     IElement element,
                                     IElementImport importElement)
     {
@@ -172,7 +172,7 @@ public class UMLImportsUiSupport
         }
     }
     
-    public void firePackageImported(UMLProject project, 
+    public void firePackageImported(IProject project, 
                                     IElement element,
                                     IPackageImport importElement)
     {
@@ -182,7 +182,7 @@ public class UMLImportsUiSupport
         }
     }
     
-    public void fireElementDeleted(UMLProject project, IElement element)
+    public void fireElementDeleted(IProject project, IElement element)
     {
         for(ImportElementListener listener : mImportListeners)
         {
@@ -337,7 +337,7 @@ public class UMLImportsUiSupport
             {
                 UMLProject umlProject = (UMLProject)foundProject;   
                 UMLProject umlRefProject = (UMLProject)referencingProject;
-                fireElementImported(umlProject, element, importedElement);
+                fireElementImported(element.getProject(), element, importedElement);
 
                 // Check if a reference to the refrence project already
                 // exist.  If a reference already exist do not create a new
@@ -383,7 +383,7 @@ public class UMLImportsUiSupport
             {
                 UMLProject umlProject = (UMLProject)foundProject;   
                 UMLProject umlRefProject = (UMLProject)referencingProject;
-                firePackageImported(umlProject, element, importedElement);
+                firePackageImported(element.getProject(), element, importedElement);
 
                 // Check if a reference to the refrence project already
                 // exist.  If a reference already exist do not create a new
@@ -448,12 +448,12 @@ public class UMLImportsUiSupport
         if (element == null)
             return;
         
-        Project foundProject = ProjectUtil.findElementOwner(element);
+//        Project foundProject = ProjectUtil.findElementOwner(element);
 
-        if (foundProject instanceof UMLProject) {
-            UMLProject umlProject = (UMLProject)foundProject;   
-            fireElementDeleted(umlProject, element);
-        }
+//        if (foundProject instanceof UMLProject) {
+//            UMLProject umlProject = (UMLProject)foundProject;   
+            fireElementDeleted(element.getProject(), element);
+//        }
     }
     
     protected synchronized Map getImportedElements() {

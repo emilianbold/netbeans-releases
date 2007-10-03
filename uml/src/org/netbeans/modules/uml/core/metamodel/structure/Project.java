@@ -54,7 +54,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
-
 import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.DocumentFactory;
@@ -66,7 +65,6 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IElementLifeTimeE
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPackage;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPreferenceManager;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.PreferenceManager;
-
 import org.netbeans.modules.uml.common.generics.ETTripleT;
 import org.netbeans.modules.uml.core.IApplication;
 import org.netbeans.modules.uml.core.IQueryManager;
@@ -94,6 +92,7 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElementChangeDispatchHelper;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElementChangeEventDispatcher;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElementDisposal;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.IElementImport;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElementModifiedEventsSink;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPackageImport;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.ITransitionElement;
@@ -108,7 +107,6 @@ import org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframe
 import org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.ILanguageManager;
 import org.netbeans.modules.uml.core.support.umlmessagingcore.UMLMessagingHelper;
 import org.netbeans.modules.uml.core.support.umlsupport.FileManip;
-
 import org.netbeans.modules.uml.core.support.umlsupport.IResultCell;
 import org.netbeans.modules.uml.core.support.umlsupport.Log;
 import org.netbeans.modules.uml.core.support.umlsupport.PathManip;
@@ -2508,4 +2506,29 @@ public class Project extends org.netbeans.modules.uml.core.metamodel.structure.M
         if (changeSupport != null)
             changeSupport.firePropertyChange(name, oldValue, newValue);
     }
+    
+    
+    public long getElementImportCount()
+    {
+        return UMLXMLManip.queryCount(m_Node, "//UML:Package.elementImport/*", false);
+    }
+    
+    public long getPackageImportCount()
+    {
+        return UMLXMLManip.queryCount(m_Node, "//UML:Package.packageImport/*", false);
+    }
+    
+    public ETList<IPackageImport> getPackageImports()
+    {
+        IPackageImport dummy = null;
+        return retrieveElementCollection(dummy, "//UML:Package.packageImport/*", IPackageImport.class);
+    }
+    
+    public ETList<IElementImport> getElementImports()
+    {
+        IElementImport dummy = null;
+        return retrieveElementCollection(dummy, "//UML:Package.elementImport/*", IElementImport.class);
+    }
+    
+
 }

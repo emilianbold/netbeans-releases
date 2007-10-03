@@ -84,7 +84,7 @@ public class URILocator {
 		int pos = docLoc.indexOf(URIDECL);
 		if (pos >= 0)
 		{
-		  doc = docLoc.substring(URIDECL.length());
+		  doc = docLoc.substring(pos+URIDECL.length());
 		}
     }
     return doc;
@@ -227,7 +227,9 @@ public static ETPairT<String,String> uriparts(String href)
 	Document doc = retrieveDocument(docLoc);
 	if (doc != null)
 	{
-		retNode = XMLManip.selectSingleNode(doc, nodeLoc);
+            String xmiid = retrieveRawID(nodeLoc);
+            String query = ".//*[@xmi.id=\"" + xmiid + "\"]";
+		retNode = XMLManip.selectSingleNode(doc, query);
 	}
 	return retNode;
   }
@@ -266,7 +268,7 @@ public static String retrieveRawID(String uri)
 		if (pos < 0)
 		{
 			// Make one more check, looking for "#id('"
-			pos = actual.indexOf("#id('");
+			pos = actual.indexOf("id('");
 		}
 		
 		if (pos >= 0)
