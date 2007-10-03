@@ -305,7 +305,7 @@ public class MakeProjectModule extends ModuleInstall {
                 ERR.log(ErrorManager.INFORMATIONAL, "in project = " + p.getProjectDirectory()); // NOI18N
             }
             
-            if (owner != null && owner.getProjectDirectory() == p.getProjectDirectory()) {
+            if (owner != null /*&& owner.getProjectDirectory() == p.getProjectDirectory()*/) {
                 File ioFile = FileUtil.toFile(file);
                 if (ioFile.isDirectory())
                     return; // don't add directories. 

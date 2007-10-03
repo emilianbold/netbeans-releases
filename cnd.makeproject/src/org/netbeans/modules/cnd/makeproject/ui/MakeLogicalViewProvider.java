@@ -72,7 +72,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
@@ -82,12 +81,14 @@ import org.netbeans.modules.cnd.makeproject.api.actions.AddExistingFolderItemsAc
 import org.netbeans.modules.cnd.makeproject.api.actions.AddExistingItemAction;
 import org.netbeans.modules.cnd.makeproject.api.actions.NewFolderAction;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakefileConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.ui.BrokenIncludes;
 import org.netbeans.modules.cnd.makeproject.api.ui.LogicalViewNodeProvider;
@@ -104,7 +105,6 @@ import org.openide.actions.CutAction;
 import org.openide.actions.DeleteAction;
 import org.openide.actions.PasteAction;
 import org.openide.actions.RenameAction;
-import org.openide.actions.ToolsAction;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
@@ -442,7 +442,25 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         
         private void updateAnnotationFiles() {
             HashSet set = new HashSet();
+            // Add project directory
             set.add(project.getProjectDirectory());
+            // Add buildfolder from makefile projects to sources. See IZ 90190.
+            Configuration[] confs = getMakeConfigurationDescriptor().getConfs().getConfs();
+            for (int i = 0; i < confs.length; i++) {
+                MakeConfiguration makeConfiguration = (MakeConfiguration) confs[i];
+                if (makeConfiguration.isMakefileConfiguration()) {
+                    MakefileConfiguration makefileConfiguration = makeConfiguration.getMakefileConfiguration();
+                    String path = makefileConfiguration.getAbsBuildCommandWorkingDir();
+                    File file = new File(path);
+                    if (file.exists()) {
+                        try {
+                            set.add(FileUtil.toFileObject(file.getCanonicalFile()));
+                        }
+                        catch (IOException ioe) {
+                        }
+                    }
+                }
+            }
             setFiles(set);
             Vector allFolders = new Vector();
             allFolders.add(folder);
