@@ -128,7 +128,7 @@ public final class LoginScreenCD extends ComponentDescriptor {
                    .addProperty(NbBundle.getMessage(LoginScreenCD.class, "DISP_LoginScreen_ForegroundColor"), // NOI18N
                         new PropertyEditorColorChooser(true), PROP_FRG_COLOR)
                    .addProperty(NbBundle.getMessage(LoginScreenCD.class, "DISP_LoginScreen_LoginButtonText"), // NOI18N
-                        PropertyEditorString.createInstance(NbBundle.getMessage(LoginScreenCD.class, "DISP_LoginScreen_LoginButtonText")), PROP_LOGIN_BUTTON_TEXT); //NOI18N
+                        PropertyEditorString.createInstance(NbBundle.getMessage(LoginScreenCD.class, "DISP_LoginScreen_LoginButtonText_LABEL")), PROP_LOGIN_BUTTON_TEXT); //NOI18N
     }
     
     private Presenter createSetterPresenter () {
