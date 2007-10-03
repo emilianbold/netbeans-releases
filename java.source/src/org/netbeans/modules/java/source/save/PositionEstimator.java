@@ -46,11 +46,15 @@ import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.SourcePositions;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.swing.text.StyledDocument;
+import org.netbeans.api.editor.guards.GuardedSection;
+import org.netbeans.api.editor.guards.GuardedSectionManager;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.modules.java.source.transform.FieldGroupTree;
 import static org.netbeans.api.java.lexer.JavaTokenId.*;
@@ -58,6 +62,7 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.source.save.CasualDiff.LineInsertionType;
+import org.openide.util.Exceptions;
 
 /**
  * Estimates the position for given element or element set. Offsets are
@@ -80,12 +85,22 @@ public abstract class PositionEstimator {
     final WorkingCopy copy;
     boolean initialized;
     final TokenSequence<JavaTokenId> seq;
+    GuardedSectionManager guards;
 
     PositionEstimator(final List<? extends Tree> oldL, final List<? extends Tree> newL, final WorkingCopy copy) {
         this.oldL = oldL;
         this.newL = newL;
         this.copy = copy;
         this.seq = copy != null ? copy.getTokenHierarchy().tokenSequence(JavaTokenId.language()) : null;
+        try {
+            if (copy.getDocument() != null) {
+                this.guards = GuardedSectionManager.getInstance((StyledDocument) copy.getDocument());
+            } else {
+                this.guards = null;
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
         initialized = false;
     }
         
@@ -971,7 +986,8 @@ public abstract class PositionEstimator {
             if (data.isEmpty()) {
                 return -1;
             } else {
-                return index == data.size() ? data.get(index-1)[2] : data.get(index)[0];
+                int pos = (index == data.size() ? data.get(index-1)[1] : data.get(index)[0]);
+                return moveBelowGuarded(pos);
             }
         }
 
@@ -1473,7 +1489,19 @@ public abstract class PositionEstimator {
     }
     ////////////////////////////////////////////////////////////////////////////
     // Utility methods
-    
+    int moveBelowGuarded(int pos) {
+        if (guards != null) {
+            for (GuardedSection section : guards.getGuardedSections()) {
+                if (pos > section.getStartPosition().getOffset() && 
+                    pos <= section.getEndPosition().getOffset()) 
+                {
+                    return section.getEndPosition().getOffset()+1;
+                }
+            }
+        }
+        return pos;
+    }
+
     /**
      * Moves in specified direction to java source relevant token.
      *

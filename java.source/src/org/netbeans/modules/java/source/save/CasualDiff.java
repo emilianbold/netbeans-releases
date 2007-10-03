@@ -76,8 +76,8 @@ public class CasualDiff {
     protected ListBuffer<Diff> diffs;
     protected CommentHandler comments;
     protected JCCompilationUnit oldTopLevel;
+    protected WorkingCopy workingCopy;
     
-    private WorkingCopy workingCopy;
     private TokenSequence<JavaTokenId> tokenSequence;
     private String origText;
     private VeryPretty printer;
@@ -2061,6 +2061,9 @@ public class CasualDiff {
                 }
                 case INSERT: {
                     int pos = estimator.getInsertPos(i);
+                    if (pos > localPointer) {
+                        copyTo(localPointer, localPointer = pos);
+                    }
                     int oldPos = item.element.getKind() != Kind.VARIABLE ? getOldPos(item.element) : item.element.pos;
                     boolean found = false;
                     if (oldPos > 0) {

@@ -40,11 +40,15 @@
  */
 package org.netbeans.modules.java.source.save;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.logging.Logger;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.editor.GuardedDocument;
 import org.netbeans.modules.java.source.save.CasualDiff.Diff;
 
 /**
@@ -198,8 +202,37 @@ class DiffFacility {
         }
         Line[] lines1 = list1.toArray(new Line[list1.size()]);
         Line[] lines2 = list2.toArray(new Line[list2.size()]);
-        
-        List<Difference> diffs = new ComputeDiff<Line>(lines1, lines2).diff();
+        Comparator<Line> comparator = null;
+        // if the document is guarded, we need special comparator to ignore
+        // reformatting of redundant spaces. They shouldn't be changed.
+        try {
+            if (gdiff.workingCopy.getDocument() instanceof GuardedDocument) {
+
+                comparator = new Comparator<Line>() {
+
+                    public int compare(Line o1, Line o2) {
+                        if (o1.equals(o2)) 
+                            return 0;
+                        
+                        if (o1.data.startsWith("//") && o2.data.startsWith("//"))
+                            return 0;
+                        
+                        if (o1.data.trim().length() == 0 || o2.data.trim().length() == 0) {
+                            int sep = o1.data.indexOf('\n');
+                            if (sep > -1 && o2.data.indexOf('\n') > 0) {
+                                o2.data = o1.data.substring(0, sep) + o2.data.substring(o2.data.indexOf('\n'));
+                                o2.start += sep;
+                            }
+                        }
+
+                        return 100;
+                    }
+                };
+            }
+        } catch (IOException e) {
+            Logger.getLogger(DiffFacility.class.getName()).severe("Error!");
+        }
+        List<Difference> diffs = new ComputeDiff<Line>(lines1, lines2, comparator).diff();
         for (Difference diff : diffs) {
             int delStart = diff.getDeletedStart();
             int delEnd   = diff.getDeletedEnd();
