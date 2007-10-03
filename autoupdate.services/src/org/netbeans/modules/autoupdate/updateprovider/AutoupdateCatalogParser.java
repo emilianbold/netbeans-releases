@@ -99,7 +99,7 @@ public class AutoupdateCatalogParser {
         Date d = getAutoupdateCatalogDate (url, providerUrl);
         String catalogDate = null;
         if (d != null) {
-            catalogDate = Utilities.DATE_FORMAT.format (d);
+            catalogDate = Utilities.formatDate(d);
         }
         
         try {

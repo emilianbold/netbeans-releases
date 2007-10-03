@@ -100,7 +100,7 @@ public class ModuleItem extends UpdateItemImpl {
         this.deployImpl = new UpdateItemDeploymentImpl (needsRestart, isGlobal, targetCluster, null, null);
         if (publishDateString != null && publishDateString.length () > 0) {
             try {
-                this.publishDate = Utilities.DATE_FORMAT.parse (publishDateString);
+                this.publishDate = Utilities.parseDate(publishDateString);
             } catch (ParseException pe) {
                 Logger.getLogger (ModuleItem.class.getName ()).log (Level.INFO, "Parsing \"" + publishDateString + "\" of " + codeName + " throws " + pe.getMessage (), pe);
             } catch (RuntimeException re) {
@@ -165,7 +165,7 @@ public class ModuleItem extends UpdateItemImpl {
     }
     
     public String getDate () {
-        return publishDate == null ? null : Utilities.DATE_FORMAT.format (publishDate);
+        return publishDate == null ? null : Utilities.formatDate(publishDate);
     }
     
     public boolean isAutoload () {

@@ -175,7 +175,7 @@ public class FeatureUpdateElementImpl extends UpdateElementImpl {
             String sd = impl.getDate ();
             if (sd != null) {
                 try {
-                    Date d = Utilities.DATE_FORMAT.parse (sd);
+                    Date d = Utilities.parseDate(sd);
                     date = date == null ? d : new Date (Math.max (date.getTime (), d.getTime ()));
                 } catch (ParseException pe) {
                     assert false : pe + " cannot happened.";
@@ -183,7 +183,7 @@ public class FeatureUpdateElementImpl extends UpdateElementImpl {
             }
         }
         if (date != null) {
-            res = Utilities.DATE_FORMAT.format (date);
+            res = Utilities.formatDate(date);
         }
         return res;
     }

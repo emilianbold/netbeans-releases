@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.autoupdate.services;
 
+import java.text.ParseException;
 import org.netbeans.modules.autoupdate.updateprovider.UpdateItemImpl;
 import org.netbeans.modules.autoupdate.updateprovider.InstalledModuleProvider;
 import java.io.ByteArrayInputStream;
@@ -107,7 +108,7 @@ public class Utilities {
     public static final String FILE_SEPARATOR = System.getProperty("file.separator");
     public static final String DOWNLOAD_DIR = UPDATE_DIR + FILE_SEPARATOR + "download"; // NOI18N
     public static final String NBM_EXTENTSION = ".nbm";
-    public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat ("yyyy/MM/dd"); // NOI18N
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat ("yyyy/MM/dd"); // NOI18N
     public static final String ATTR_VISIBLE = "AutoUpdate-Show-In-Client";
     public static final String ATTR_ESSENTIAL = "AutoUpdate-Essential-Module";
     
@@ -841,5 +842,20 @@ public class Utilities {
         }
         return res;
     }
+
+    private static SimpleDateFormat getDateFormat() {
+        return DATE_FORMAT;
+    }    
     
+    public static String formatDate(Date date) {
+        synchronized(DATE_FORMAT) {
+            return getDateFormat().format(date);
+        }
+    }
+
+    public static Date parseDate(String date) throws ParseException {
+        synchronized(DATE_FORMAT) {
+            return getDateFormat().parse(date);
+        }
+    }    
 }

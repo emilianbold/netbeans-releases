@@ -183,7 +183,7 @@ public class UpdateItemTest extends NbTestCase {
         ModuleItem mimpl = (ModuleItem) impl;
         assertNotNull ("Release date is not null.", mimpl.getDate());
         try {
-            Date d = Utilities.DATE_FORMAT.parse (mimpl.getDate ());
+            Date d = Utilities.parseDate(mimpl.getDate ());
             assertEquals ("2007/05/22", mimpl.getDate ());
         } catch (ParseException pe) {
             fail (pe.getMessage ());

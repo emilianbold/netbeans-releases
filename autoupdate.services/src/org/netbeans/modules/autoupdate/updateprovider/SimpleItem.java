@@ -211,7 +211,7 @@ public abstract class SimpleItem {
         
         @Override
         public UpdateItem toUpdateItem(Map<String, String> licenses, File nbm) {
-            String fileLastModified = Utilities.DATE_FORMAT.format (new Date (nbm.lastModified ()));
+            String fileLastModified = Utilities.formatDate(new Date (nbm.lastModified ()));
             return toUpdateItem(licenses, nbm, fileLastModified);
         }
         

@@ -119,7 +119,7 @@ public class InstalledModuleProvider implements InstalledUpdateProvider {
             Date time = null; // XXX: it's too expensive, should be extracted lazy - Utilities.readInstallTimeFromUpdateTracking (info);
             String installTime = null;
             if (time != null) {
-                installTime = Utilities.DATE_FORMAT.format (time);
+                installTime = Utilities.formatDate(time);
             }
             UpdateItem updateItem = simpleItem.toUpdateItem (null, installTime);
             res.put (simpleItem.getId (), updateItem);
