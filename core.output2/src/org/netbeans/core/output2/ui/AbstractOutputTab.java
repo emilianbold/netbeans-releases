@@ -227,7 +227,6 @@ public abstract class AbstractOutputTab extends JComponent implements Accessible
         this.outputPane.textView.setEditable(val);
         validate();
         getOutputPane().ensureCaretPosition();
-        getOutputPane().requestFocusInWindow();
     }
 
     protected abstract void inputEof();
