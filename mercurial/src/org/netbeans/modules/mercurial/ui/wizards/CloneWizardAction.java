@@ -54,6 +54,7 @@ public final class CloneWizardAction extends CallableSystemAction implements Cha
             final String repository = (String) wizardDescriptor.getProperty("repository"); // NOI18N
             final String directory = (String) wizardDescriptor.getProperty("directory"); // NOI18N
             CloneAction.performClone(repository, directory, true, null);
+        }
     }
     
     public void stateChanged(ChangeEvent e) {
