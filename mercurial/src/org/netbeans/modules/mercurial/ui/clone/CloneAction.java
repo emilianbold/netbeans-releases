@@ -122,6 +122,9 @@ public class CloneAction extends AbstractAction {
                             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(new HgException(ex.toString()));
                             DialogDisplayer.getDefault().notifyLater(e);
                         } 
+                    } else {
+                        JOptionPane.showMessageDialog(null,
+                            NbBundle.getMessage(CloneAction.class,"MSG_NO_PROJECT")); // NOI18N
                     }
                 }
             };
