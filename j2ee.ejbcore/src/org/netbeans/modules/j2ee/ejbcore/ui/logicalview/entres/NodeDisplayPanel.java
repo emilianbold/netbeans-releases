@@ -62,10 +62,6 @@ public class NodeDisplayPanel extends JPanel implements ExplorerManager.Provider
         btv.setRootVisible(false);
         btv.setDefaultActionAllowed(false);
         manager.setRootContext(rootNode);
-        Node[] rootChildren = rootNode.getChildren().getNodes();
-        for (int i = 0; i < rootChildren.length; i++) {
-            btv.expandNode(rootChildren[i]);
-        }
         manager.addPropertyChangeListener(
         new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent pce) {
