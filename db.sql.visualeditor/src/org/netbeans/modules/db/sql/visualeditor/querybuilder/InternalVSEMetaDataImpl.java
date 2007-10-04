@@ -60,6 +60,9 @@ import org.netbeans.api.db.explorer.DatabaseConnection;
 
 import org.netbeans.modules.db.sql.visualeditor.Log;
 import org.netbeans.modules.db.sql.visualeditor.api.VisualSQLEditorMetaData;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 
 /**
  * Database meta data cache for the QueryBuilder.
@@ -87,6 +90,7 @@ public class InternalVSEMetaDataImpl implements VisualSQLEditorMetaData {
         try {
             // JDTODO:  add listeners for MetaData changes.
             // dataSourceInfo.addConnectionListener(listener) ;
+            
             initMetaData();
         } catch (SQLException sqle) {
             // TODO: Better error handling
@@ -396,8 +400,16 @@ public class InternalVSEMetaDataImpl implements VisualSQLEditorMetaData {
     }
 
     private DatabaseMetaData getMetaData() throws SQLException {
-        if (databaseMetaData == null) {
-            databaseMetaData = dbconn.getJDBCConnection().getMetaData();
+        if (databaseMetaData == null) {            
+            Connection conn = dbconn.getJDBCConnection();
+            if (conn == null) {                
+                String msg = NbBundle.getMessage(QueryBuilder.class, "CANNOT_ESTABLISH_CONNECTION");     // NOI18N
+                NotifyDescriptor d =
+                    new NotifyDescriptor.Message(msg + "\n\n", NotifyDescriptor.ERROR_MESSAGE); // NOI18N
+                DialogDisplayer.getDefault().notify(d);                
+            } else {
+                databaseMetaData = dbconn.getJDBCConnection().getMetaData();
+            }
         }
         return databaseMetaData;
     }
