@@ -205,6 +205,10 @@ public class BindingCustomizer extends JPanel {
         conversionLabel.setMaximumSize(conversionLabel.getPreferredSize());
         validatorLabel.setMaximumSize(validatorLabel.getPreferredSize());
         specialValuesLabel.setMaximumSize(specialValuesLabel.getPreferredSize());
+        
+        // Help IDs
+        HelpCtx.setHelpIDString(bindingPanel, "gui.binding-customizer.basic"); // NOI18N
+        HelpCtx.setHelpIDString(advancedPanel, "gui.binding-customizer.advanced"); // NOI18N
     }
 
     /**
@@ -287,7 +291,7 @@ public class BindingCustomizer extends JPanel {
                 this, title, true,
                 new JButton[] { okButton, cancelButton },
                 okButton,
-                DialogDescriptor.DEFAULT_ALIGN, HelpCtx.DEFAULT_HELP,
+                DialogDescriptor.DEFAULT_ALIGN, new HelpCtx("gui.binding-customizer"), // NOI18N
                 null
             );
             dd.setClosingOptions(new JButton[] { okButton, cancelButton });
