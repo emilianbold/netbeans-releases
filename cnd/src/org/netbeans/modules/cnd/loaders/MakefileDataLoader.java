@@ -87,6 +87,7 @@ public class MakefileDataLoader extends UniFileLoader {
         /* initialize the extensions list */
         ExtensionList extensionsList = new ExtensionList();
         extensionsList.addExtension("mk"); // NOI18N
+        extensionsList.addMimeType(MIMENames.MAKEFILE_MIME_TYPE);
         setExtensions(extensionsList);
         
         /* initialize the well known extensions list */
@@ -123,11 +124,13 @@ public class MakefileDataLoader extends UniFileLoader {
         return instance;
     }
     
+    @Override
     protected String actionsContext () {
         return "Loaders/text/x-make/Actions/"; // NOI18N
     }
 
     /** set the default display name */
+    @Override
     protected String defaultDisplayName() {
 	return NbBundle.getMessage(MakefileDataLoader.class,
 			    "PROP_MakefileDataLoader_Name"); // NOI18N
@@ -138,19 +141,10 @@ public class MakefileDataLoader extends UniFileLoader {
                 throws DataObjectExistsException, IOException {
 	return new MakefileDataObject(primaryFile, this);
     }
-  
-
-    /**
-     *  Create the primary Entry in the MultiDataObject.
-     */
-    protected MultiDataObject.Entry createPrimaryEntry(MultiDataObject obj,
-			    FileObject primaryFile) {
-	return new CndAbstractDataLoader.CndFormat(obj, primaryFile);
-    }
 
     /** Find the primary file */
+    @Override
     protected FileObject findPrimaryFile(FileObject fo) {
-        
         if (fo.isFolder()) {
             return null;
         }
@@ -164,27 +158,13 @@ public class MakefileDataLoader extends UniFileLoader {
 	    return fo;
 	}
 
-	if (wellKnownExtensionsList.isRegistered(fo)) {
-            return null;
-        }
-
-	// Check if its an SCCS file. Ignore it (return NULL) if it is
-	FileObject parent = fo.getParent();
-	if (parent != null && parent.getName().equals("SCCS")) {    // NOI18N
-		return null;
-	}
-
 	// Check for various (somewhat) standard Makefile names.
 	String name = fo.getName().toLowerCase();
 	if (name.startsWith("makefile") || name.endsWith("makefile") ||name.startsWith("gnumakefile")) { // NOI18N
-	    return fo;
+            return fo;
 	}
         
 	return super.findPrimaryFile(fo);
-    }
-
-    protected String getMimeType(){
-        return MIMENames.MAKEFILE_MIME_TYPE;
     }
 }
 

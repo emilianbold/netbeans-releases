@@ -76,21 +76,19 @@ public class ExeLoader extends UniFileLoader {
     public ExeLoader(String representationClassName) {
 	super(representationClassName);
     }
-
-    /** @deprecated Use {@link #ExeLoader(String)} instead */
-    public ExeLoader(Class recognizedClass) {
-	super(recognizedClass);
-    }
     
+    @Override
     protected String actionsContext() {
         return "Loaders/application/x-executable+elf/Actions/"; // NOI18N
     }
 
     /** set the default display name */
+    @Override
     protected String defaultDisplayName() {
-	return NbBundle.getMessage(MakefileDataLoader.class, "PROP_ExeLoader_Name"); // NOI18N
+	return NbBundle.getMessage(ExeLoader.class, "PROP_ExeLoader_Name"); // NOI18N
     }
 
+    @Override
     protected FileObject findPrimaryFile(FileObject fo) {
 	String mime;
 
@@ -153,8 +151,6 @@ public class ExeLoader extends UniFileLoader {
 
 	if (mime.equals(MIMENames.EXE_MIME_TYPE)) {
 	    return new ExeObject(primaryFile, this);
-//	} else if (mime.equals(MIMENames.DLL_MIME_TYPE)) {
-//	    return new ExeDllObject(primaryFile, this);
 	} else if (mime.equals(MIMENames.ELF_EXE_MIME_TYPE)) {
 	    return new ExeElfObject(primaryFile, this);
 	} else if (mime.equals(MIMENames.ELF_CORE_MIME_TYPE)) {

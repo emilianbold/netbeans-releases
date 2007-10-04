@@ -69,8 +69,6 @@ public abstract class CndAbstractDataLoader extends UniFileLoader {
 
     /** Serial version number */
     static final long serialVersionUID = 6801389470714975682L;
-    protected static final boolean CASE_INSENSITIVE =
-            (Utilities.isWindows () || (Utilities.getOperatingSystem () == Utilities.OS_OS2)) || Utilities.getOperatingSystem() == Utilities.OS_VMS;
 
     protected CndAbstractDataLoader(String representationClassName) {
 	super(representationClassName);
@@ -79,67 +77,24 @@ public abstract class CndAbstractDataLoader extends UniFileLoader {
     protected final void createExtentions(String [] extensions) {
 	ExtensionList extensionList = new ExtensionList();
 	for (int i = 0; i < extensions.length; i++) {
-	    extensionList.addExtension(extensions[i]);
+            extensionList.addExtension(extensions[i]);
 	}
 	setExtensions(extensionList);
     }
 
     protected abstract String getMimeType();
 
-    protected boolean resolveMimeType(String ext){
-        ExtensionList extensions = getExtensions();
-        for (Enumeration e = extensions.extensions(); e != null &&  e.hasMoreElements();) {
-            String ex = (String) e.nextElement();
-            if (ex != null && (!CASE_INSENSITIVE && ex.equals(ext) || CASE_INSENSITIVE && ex.equalsIgnoreCase(ext))) {
-                return true;
-            }
-        }
-        return false;
+    @Override
+    protected void initialize() {
+        super.initialize();
+        getExtensions().addMimeType(getMimeType());
     }
-    
+
     @Override
     protected String actionsContext () {
         return "Loaders/text/x-cnd-sourcefile/Actions/"; // NOI18N
     }
-    
-    @Override
-    protected FileObject findPrimaryFile(FileObject fo) {
-	// Never recognize folders...
-	if (fo.isFolder()) {
-	    return null;
-	}
-        
-        String ext = fo.getExt();
-        if (ext != null && ext.length() > 0) {
-            Enumeration e = getExtensions().extensions();
-            while (e.hasMoreElements()) {
-                String ex = (String) e.nextElement();
-                if (!CASE_INSENSITIVE && ext.equals(ex) || CASE_INSENSITIVE && ext.equalsIgnoreCase(ex)) {
-                    return fo;
-                }
-            }
-        }
-        
-	return findSecondaryFile(fo);
-    }
-
-    protected FileObject findSecondaryFile(FileObject fo){
-        FileObject fb = null;
-            
-      	// Check for the secondary extension
-	if (fo.hasExt("o")) { // NOI18N
-            Enumeration e = getExtensions().extensions();
-            while (e.hasMoreElements()) {
-                String ex = (String) e.nextElement();
-                fb = FileUtil.findBrother(fo, ex);
-                if (fb != null) {
-                    break;
-		}
-            }
-	}
-        return fb;
-    }
- 
+     
     @Override
     protected MultiDataObject.Entry createPrimaryEntry(
 			    MultiDataObject obj,
@@ -148,13 +103,6 @@ public abstract class CndAbstractDataLoader extends UniFileLoader {
 	// during all operations.
 	return new CndFormat(obj, primaryFile);
     }
-    
-    @Override
-    protected MultiDataObject.Entry createSecondaryEntry(
-					MultiDataObject obj,
-					FileObject secondaryFile) {
-	return new FileEntry.Numb(obj, secondaryFile);
-    }
 
     // Inner class: Substitute important template parameters...
     public static class CndFormat extends FileEntry.Format {
@@ -162,6 +110,7 @@ public abstract class CndAbstractDataLoader extends UniFileLoader {
 	public CndFormat(MultiDataObject obj, FileObject primaryFile) {
 	    super(obj, primaryFile);
 	}
+        
 	protected java.text.Format createFormat(FileObject target, String name, String ext) {
 	    
 	    Map map = (CppSettings.findObject(CppSettings.class, true)).getReplaceableStringsProps();

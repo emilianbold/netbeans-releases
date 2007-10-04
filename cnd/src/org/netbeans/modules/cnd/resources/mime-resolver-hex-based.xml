@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+
+
+The contents of this file are subject to the terms of either the GNU
+General Public License Version 2 only ("GPL") or the Common
+Development and Distribution License("CDDL") (collectively, the
+"License"). You may not use this file except in compliance with the
+License. You can obtain a copy of the License at
+http://www.netbeans.org/cddl-gplv2.html
+or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+specific language governing permissions and limitations under the
+License.  When distributing the software, include this License Header
+Notice in each file and include the License file at
+nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+particular file as subject to the "Classpath" exception as provided
+by Sun in the GPL Version 2 section of the License file that
+accompanied this code. If applicable, add the following below the
+License Header, with the fields enclosed by brackets [] replaced by
+your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+Contributor(s):
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Microsystems, Inc. All Rights Reserved.
+
+If you wish your version of this file to be governed by only the CDDL
+or only the GPL Version 2, indicate your decision by adding
+"[Contributor] elects to include this software in this distribution
+under the [CDDL or GPL Version 2] license." If you do not indicate a
+single choice of license, a recipient has the option to distribute
+your version of this file under either the CDDL, the GPL Version 2 or
+to extend the choice of license to its licensees as provided above.
+However, if you add GPL Version 2 code and therefore, elected the GPL
+Version 2 license, then the option applies only if the new code is
+made subject to such option by the copyright holder.
+-->
+<!DOCTYPE MIME-Resolver PUBLIC "-//NetBeans//DTD MIME Resolver 1.0//EN"
+		    "http://www.netbeans.org/dtds/mime-resolver-1_0.dtd">
+
+<MIME-resolver >
+    <file>
+	<!-- Mach-O executable i386 -->
+	<!--                  v       v       v       v-->
+	<magic   hex="cefaedfe0000000000000000020000000000"
+	        mask="ffffffff0000000000000000ff0000000000"/>
+        <resolver mime="application/x-exe"/>
+    </file>
+    
+    <file>
+	<!-- Mach-O universal binary with 2 architectures-->
+        <!-- FIXUP: this mask matches too many files and doesn't
+                    check for right architecture -->
+	<!--                  v       v       v       v-->
+	<magic   hex="cafebabe0000000000000000000000000000"
+	        mask="ffffffff0000000000000000000000000000"/>
+        <resolver mime="application/x-exe"/>
+    </file>
+    
+    <file>
+	<!-- MSB Executable   v       v       v       v-->
+	<magic   hex="7f454C460002000000000000000000000002"
+	        mask="ffffffff00ff00000000000000000000ffff"/>
+        <resolver mime="application/x-executable+elf"/>
+    </file>
+
+    <file>
+	<!-- LSB Executable   v       v       v       v-->
+	<magic   hex="7f454C460001000000000000000000000200"
+	        mask="ffffffff00ff00000000000000000000ffff"/>
+        <resolver mime="application/x-executable+elf"/>
+    </file>
+
+    <file>
+	<!-- MSB Object file  v       v       v       v-->
+	<magic   hex="7f454C460002000000000000000000000001"
+	        mask="ffffffff00ff00000000000000000000ffff"/>
+        <resolver mime="application/x-object+elf"/>
+    </file>
+
+    <file>
+	<!-- LSB Object file  v       v       v       v-->
+	<magic   hex="7f454C460001000000000000000000000100"
+	        mask="ffffffff00ff00000000000000000000ffff"/>
+        <resolver mime="application/x-object+elf"/>
+    </file>
+
+    <file>
+	<!-- MSB core file    v       v       v       v-->
+	<magic   hex="7f454C460002000000000000000000000004"
+	        mask="ffffffff00ff00000000000000000000ffff"/>
+        <resolver mime="application/x-core+elf"/>
+    </file>
+
+    <file>
+	<!-- LSB core file    v       v       v       v-->
+	<magic   hex="7f454C460001000000000000000000000400"
+	        mask="ffffffff00ff00000000000000000000ffff"/>
+        <resolver mime="application/x-core+elf"/>
+    </file>
+
+    <file>
+	<!-- MSB Shared Obj   v       v       v       v-->
+	<magic   hex="7f454C460002000000000000000000000003"
+	        mask="ffffffff00ff00000000000000000000ffff"/>
+        <resolver mime="application/x-shobj+elf"/>
+    </file>
+
+    <file>
+	<!-- LSB Shared Obj   v       v       v       v-->
+	<magic   hex="7f454C460001000000000000000000000300"
+	        mask="ffffffff00ff00000000000000000000ffff"/>
+        <resolver mime="application/x-shobj+elf"/>
+    </file>
+
+    <file>
+	<!-- Uset this shortened hex string to test. It should indescriminately
+	     recognize all elf files as executable -->
+	<magic hex="7f454c46"/>
+        <resolver mime="application/x-elf"/>
+    </file>
+
+    <file>
+	<magic hex="2321"/> <!-- #! -->
+        <resolver mime="text/x-shell"/>
+    </file>
+        
+</MIME-resolver>

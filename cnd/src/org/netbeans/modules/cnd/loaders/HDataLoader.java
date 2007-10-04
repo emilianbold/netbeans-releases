@@ -46,7 +46,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Collection;
-import java.util.Enumeration;
 
 import org.netbeans.modules.cnd.MIMENames;
 import org.openide.filesystems.FileObject;
@@ -102,19 +101,13 @@ public final class HDataLoader extends CndAbstractDataLoader {
     }
     
     protected String getMimeType(){
-        return MIMENames.CHEADER_MIME_TYPE;
+        return MIMENames.CPLUSPLUS_MIME_TYPE;
     }
 
     /** set the default display name */
     @Override
     protected String defaultDisplayName() {
 	return NbBundle.getMessage(HDataLoader.class, "PROP_HDataLoader_Name"); // NOI18N
-    }
-
-    /** Override because we don't have secondary files */
-    @Override
-    protected FileObject findSecondaryFile(FileObject fo){
-	return null;
     }
     
     @Override
@@ -195,12 +188,6 @@ public final class HDataLoader extends CndAbstractDataLoader {
     protected MultiDataObject createMultiObject(FileObject primaryFile)
 	throws DataObjectExistsException, IOException {
 	return new HDataObject(primaryFile, this);
-    }
-  
-    @Override
-    protected MultiDataObject.Entry createPrimaryEntry(MultiDataObject obj,
-			    FileObject primaryFile) {
-	return new CndAbstractDataLoader.CndFormat(obj, primaryFile);
     }
 }
 

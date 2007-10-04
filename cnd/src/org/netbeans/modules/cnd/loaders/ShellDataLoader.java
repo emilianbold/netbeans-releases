@@ -90,6 +90,7 @@ public class ShellDataLoader extends CndAbstractDataLoader {
 	return instance;
     }
     
+    @Override
     protected String actionsContext () {
         return "Loaders/text/x-shell/Actions/"; // NOI18N
     }
@@ -98,12 +99,8 @@ public class ShellDataLoader extends CndAbstractDataLoader {
         return MIMENames.SHELL_MIME_TYPE;
     }
 
-    /** Override because we don't have secondary files */
-    protected FileObject findSecondaryFile(FileObject fo){
-	return null;
-    }
-
     /** set the default display name */
+    @Override
     protected String defaultDisplayName() {
 	return NbBundle.getMessage(ShellDataLoader.class, "PROP_ShellDataLoader_Name"); // NOI18N
     }
@@ -121,6 +118,7 @@ public class ShellDataLoader extends CndAbstractDataLoader {
   
 
     /** Call the method we use to find the primary file */
+    @Override
     protected FileObject findPrimaryFile(FileObject fo) {
 	if (fo.isFolder()) {
 	    return null;
@@ -153,6 +151,7 @@ public class ShellDataLoader extends CndAbstractDataLoader {
         // This method was taken fom base class to replace "new line" string.
         // Shell scripts shouldn't contains "\r"
         // API doesn't provide method to replace platform dependant "new line" string.
+        @Override
         public FileObject createFromTemplate(FileObject f, String name) throws IOException {
             String ext = getFile().getExt();
             if (name == null) {
