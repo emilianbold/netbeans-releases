@@ -316,7 +316,7 @@ made subject to such option by the copyright holder.
         </condition>
     </target>
     <target name="-init-run-jvmargs-value" if="run.jvmargs.set">
-        <property name="run.jvmargs.value" value=' java-wm-args="${run.jvmargs}"'/>
+        <property name="run.jvmargs.value" value=' java-vm-args="${run.jvmargs}"'/>
     </target>
     <target name="-init-initial-heap-size-value" if="jnlp.initial-heap-size.set">
         <property name="initial-heap-size.value" value=' initial-heap-size="${jnlp.initial-heap-size}"'/>
