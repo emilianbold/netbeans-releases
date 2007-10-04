@@ -288,7 +288,8 @@ public class ForLoopTest extends GeneratorTestMDRCompat {
     }
     
     /**
-     * Regression test.
+     * Regression test for 117774.
+     * while statement test.
      * 
      * @throws java.lang.Exception
      */
@@ -317,7 +318,127 @@ public class ForLoopTest extends GeneratorTestMDRCompat {
             "}\n" +
             "\n";
         JavaSource src = getJavaSource(testFile);
-        
+
+        CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                List<? extends StatementTree> stmts = method.getBody().getStatements();
+                WhileLoopTree wlt = (WhileLoopTree) stmts.get(0);
+                ExpressionStatementTree statement = (ExpressionStatementTree) wlt.getStatement();
+                VariableTree var = make.Variable(
+                        make.Modifiers(Collections.<Modifier>emptySet()), 
+                        "properties",
+                        make.Identifier("Properties"),
+                        statement.getExpression()
+                );
+                workingCopy.rewrite(statement, var);
+            }
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    /**
+     * Regression test for 117774.
+     * for statement test.
+     * 
+     * @throws java.lang.Exception
+     */
+    public void test117774_2() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package javaapplication1;\n" +
+            "\n" +
+            "public class Main {\n" +
+            "\n" +
+            "    public void actionPerformed(ActionEvent e) {\n" +
+            "        for (int i = 0; i < 10; i++)\n" +
+            "            System.getProperties();\n" +
+            "    }\n" +
+            "}\n" +
+            "\n");
+        String golden =
+            "package javaapplication1;\n" +
+            "\n" +
+            "public class Main {\n" +
+            "\n" +
+            "    public void actionPerformed(ActionEvent e) {\n" +
+            "        for (int i = 0; i < 10; i++)\n" +
+            "            Properties properties = System.getProperties();\n" +
+            "    }\n" +
+            "}\n" +
+            "\n";
+        JavaSource src = getJavaSource(testFile);
+
+        CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                List<? extends StatementTree> stmts = method.getBody().getStatements();
+                WhileLoopTree wlt = (WhileLoopTree) stmts.get(0);
+                ExpressionStatementTree statement = (ExpressionStatementTree) wlt.getStatement();
+                VariableTree var = make.Variable(
+                        make.Modifiers(Collections.<Modifier>emptySet()), 
+                        "properties",
+                        make.Identifier("Properties"),
+                        statement.getExpression()
+                );
+                workingCopy.rewrite(statement, var);
+            }
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    /**
+     * Regression test for 117774.
+     * while statement test no whitespace.
+     * 
+     * @throws java.lang.Exception
+     */
+    public void test117774_3() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package javaapplication1;\n" +
+            "\n" +
+            "public class Main {\n" +
+            "\n" +
+            "    public void actionPerformed(ActionEvent e) {\n" +
+            "        while (true)System.getProperties();\n" +
+            "    }\n" +
+            "}\n" +
+            "\n");
+        String golden =
+            "package javaapplication1;\n" +
+            "\n" +
+            "public class Main {\n" +
+            "\n" +
+            "    public void actionPerformed(ActionEvent e) {\n" +
+            "        while (true)Properties properties = System.getProperties();\n" +
+            "    }\n" +
+            "}\n" +
+            "\n";
+        JavaSource src = getJavaSource(testFile);
+
         CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
