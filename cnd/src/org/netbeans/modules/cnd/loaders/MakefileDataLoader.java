@@ -52,7 +52,6 @@ import org.openide.loaders.UniFileLoader;
 import org.openide.util.NbBundle;
 import org.openide.util.SharedClassObject;
 
-import org.netbeans.modules.cnd.MIMENames;
 
 /** Recognizes single files in the Repository as being of a certain type */
 public class MakefileDataLoader extends UniFileLoader {
@@ -62,14 +61,6 @@ public class MakefileDataLoader extends UniFileLoader {
 
     /** Mark a file as a Makefile */
     public static final String PROP_MAKEFILE_TYPE = "MAKEFILE_TYPE";	// NOI18N
-    
-    /** the list of well known extensions which are <b>not</b> Makefiles */
-    private ExtensionList wellKnownExtensionsList;
-    
-    /** list of suffixes which are <b>not</b> Makefiles and not cnd file types */
-    private String otherWellKnownExtensionsList[] = {
-        "java", "gif", "png", "xml", "properties", "html", "instance", "settings" // NOI18N
-    };
     
     private static MakefileDataLoader instance = null;
 
@@ -89,31 +80,6 @@ public class MakefileDataLoader extends UniFileLoader {
         extensionsList.addExtension("mk"); // NOI18N
         setExtensions(extensionsList);
         
-        /* initialize the well known extensions list */
-        wellKnownExtensionsList = new ExtensionList();
-
-        /* add C extensions */
-        en = CDataLoader.getInstance().getExtensions().extensions();
-        while (en.hasMoreElements()) {
-            wellKnownExtensionsList.addExtension((String) en.nextElement());
-        }
-        
-        /* add C++ extensions */
-        en = CCDataLoader.getInstance().getExtensions().extensions();
-        while (en.hasMoreElements()) {
-            wellKnownExtensionsList.addExtension((String) en.nextElement());
-        }
-        
-        /* add C/C++ Header extensions */
-        en = HDataLoader.getInstance().getExtensions().extensions();
-        while (en.hasMoreElements()) {
-            wellKnownExtensionsList.addExtension((String) en.nextElement());
-        }
-        
-        /* Add various miscelaneous suffixes to the list */
-        for (int i = 0; i < otherWellKnownExtensionsList.length; i++) {
-            wellKnownExtensionsList.addExtension(otherWellKnownExtensionsList[i]);
-        }
     }
 
     public static MakefileDataLoader getInstance(){
@@ -147,15 +113,6 @@ public class MakefileDataLoader extends UniFileLoader {
         if (fo.isFolder()) {
             return null;
         }
-
-	/*
-	 * Some Makefiles don't follow standard Makefile naming conventions.
-	 * If they have a PROP_MAKEFILE_TYPE property we still recognise them
-	 * as a Makefile.
-	 */
-	if (fo.getAttribute(PROP_MAKEFILE_TYPE) != null) {
-	    return fo;
-	}
 
 	// Check for various (somewhat) standard Makefile names.
 	String name = fo.getName().toLowerCase();

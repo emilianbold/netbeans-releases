@@ -41,10 +41,8 @@
 
 package org.netbeans.modules.cnd.loaders;
 
-import java.io.IOException;
 
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileLock;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.nodes.Node;
@@ -66,47 +64,7 @@ public class MakefileDataObject extends CndDataObject {
     public MakefileDataObject(FileObject pf, MultiFileLoader loader)
 		throws DataObjectExistsException {
 	super(pf, loader);
-	try {
-	    pf.setAttribute(MakefileDataLoader.PROP_MAKEFILE_TYPE, pf);
-	} catch (IOException ex) {		    // ignore this exception
-	    if (Boolean.getBoolean("netbeans.debug.exceptions")) { // NOI18N
-		ex.printStackTrace();
-	    }
-	}
     }
-
-//    /*
-//     * Return name with extension so renaming etc works
-//     * But this breaks creating makefile with names xxx.mk from templates, so
-//     * check if name starts with "__", then return name without the 'extension'
-//     * (4899051)
-//     */
-//    public String getName() {
-//	String ename = null;
-//	ename = super.getName();
-//	 if (!ename.startsWith("__")) // NOI18N
-//	    ename = getPrimaryFile().getNameExt();
-//	return ename;
-//    }
-//
-//    protected FileObject handleRename(String name) throws IOException {
-//        FileLock lock = getPrimaryFile().lock();
-//        int pos = name.lastIndexOf('.');
-//
-//        try {
-//            if (pos <= 0){
-//                // file without separator
-//                getPrimaryFile().rename(lock, name, null);
-//            } else {
-//		getPrimaryFile().rename(lock, name.substring(0, pos), 
-//                        name.substring(pos + 1, name.length()));
-//            }
-//        } finally {
-//            lock.releaseLock ();
-//        }
-//        return getPrimaryFile ();
-//    }
-  
 
     /**
      *  The init method is called from CndDataObject's constructor.
