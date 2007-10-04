@@ -81,11 +81,6 @@ public class CndMIMEResolver extends MIMEResolver {
             return MIMENames.CPLUSPLUS_MIME_TYPE;
         }
 
-        // Recognize c++ file without extension
-	if (HDataLoader.getInstance().detectCPPByComment(fo)) {
-             return MIMENames.CPLUSPLUS_MIME_TYPE;
-	}
-
 	// Recognize makefiles
 	if (MakefileDataLoader.getInstance().findPrimaryFile(fo) != null) {
             return MIMENames.MAKEFILE_MIME_TYPE;
@@ -105,7 +100,7 @@ public class CndMIMEResolver extends MIMEResolver {
         if (AsmDataLoader.getInstance().getExtensions().isRegistered(ext)){
             return MIMENames.ASM_MIME_TYPE;
         }
-      
+        
 	return null;
     }
 }
