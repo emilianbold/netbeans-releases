@@ -77,6 +77,7 @@ public class IfTest extends GeneratorTest {
 //        suite.addTest(new IfTest("testEmptyThenBlock"));
 //        suite.addTest(new IfTest("testEmptyElseBlock"));
 //        suite.addTest(new IfTest("testReplaceCondition"));
+//        suite.addTest(new IfTest("testModifyingIf"));
         return suite;
     }
 
