@@ -738,10 +738,6 @@ public class J2EEUtils {
                                 String parameterName = parameter.getName().toString();
                                 String oldParameterName = "old" + Character.toUpperCase(parameterName.charAt(0)) + parameterName.substring(1); // NOI18N
                                 Tree parameterTree = parameter.getType();
-                                if (parameterTree.getKind() != Tree.Kind.PRIMITIVE_TYPE) {
-                                    Element parameterType = wc.getTrees().getElement(wc.getTrees().getPath(cu, parameterTree));
-                                    parameterTree = make.QualIdent(parameterType);
-                                }
                                 VariableTree oldParameter = make.Variable(make.Modifiers(Collections.EMPTY_SET), oldParameterName, parameterTree, persistentVariable);
                                 BlockTree newBlock = make.insertBlockStatement(block, 0, oldParameter);
 

@@ -1217,7 +1217,40 @@ public class BindingDesignSupport {
                                 columnClass = columnClass.substring(0, columnClass.length()-6);
                             }
                             if (columnClass.indexOf('.') == -1) {
-                                columnClass = "java.lang." + columnClass; // NOI18N
+                                String prefix = ""; // NOI18N
+                                while (columnClass.endsWith("[]")) { // NOI18N
+                                    columnClass = columnClass.substring(0, columnClass.length()-2);
+                                    prefix += "["; // NOI18N
+                                }
+                                if ("".equals(prefix)) { // NOI18N
+                                    columnClass = "java.lang." + columnClass; // NOI18N
+                                } else {
+                                    String suffix = columnClass;
+                                    if (columnClass.equals("boolean")) { // NOI18N
+                                        suffix = "Z"; // NOI18N
+                                    } else if (columnClass.equals("byte")) { // NOI18N
+                                        suffix = "B"; // NOI18N
+                                    } else if (columnClass.equals("char")) { // NOI18N
+                                        suffix = "C"; // NOI18N
+                                    } else if (columnClass.equals("char")) { // NOI18N
+                                        suffix = "D"; // NOI18N
+                                    } else if (columnClass.equals("float")) { // NOI18N
+                                        suffix = "F"; // NOI18N
+                                    } else if (columnClass.equals("int")) { // NOI18N
+                                        suffix = "I"; // NOI18N
+                                    } else if (columnClass.equals("long")) { // NOI18N
+                                        suffix = "J"; // NOI18N
+                                    } else if (columnClass.equals("short")) { // NOI18N
+                                        suffix = "S"; // NOI18N
+                                    } else {
+                                        prefix += "L"; // NOI18N
+                                        if (suffix.indexOf('.') == -1) {
+                                            suffix = "java.lang." + suffix; // NOI18N
+                                        }
+                                        suffix += ";"; // NOI18N
+                                    }
+                                    columnClass = prefix + suffix;
+                                }
                             }
                             Class<?> clazz = FormUtils.loadClass(columnClass, bindingDef.getSource().getFormModel());
                             columnBinding.setColumnClass(clazz);
