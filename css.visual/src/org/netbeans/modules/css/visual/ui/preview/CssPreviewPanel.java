@@ -40,6 +40,9 @@
  */
 package org.netbeans.modules.css.visual.ui.preview;
 
+import java.awt.Graphics;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.xhtmlrenderer.simple.XHTMLPanel;
 
 /**
@@ -48,7 +51,18 @@ import org.xhtmlrenderer.simple.XHTMLPanel;
  */
 public class CssPreviewPanel extends javax.swing.JPanel {
     
-    private XHTMLPanel xhtmlPanel = new XHTMLPanel();
+    private XHTMLPanel xhtmlPanel = new XHTMLPanel() {
+        //workaround for FlyingSaucer bug (reported as netbeans issue #117499 (NullPointerException for unreachable url))
+        @Override
+        public void paintComponent(Graphics g) {
+            try {
+                super.paintComponent(g);
+            } catch (Exception e) {
+                Logger.getLogger(CssPreviewPanel.class.getName()).log(Level.INFO, "It seems there is a bug in FlyinSaucer XHTML renderer.", e);
+                CssPreviewTopComponent.getDefault().setError();
+            }
+        }
+    };
     
     /** Creates new form CssPreviewPanel2 */
     public CssPreviewPanel() {

@@ -193,8 +193,7 @@ public final class CssPreviewTopComponent extends TopComponent {
     }
     
     //run in AWT!
-    //always called from preview() - revalidation done there
-    private void setError() {
+    void setError() {
         if(!error) {
             setName(DEFAULT_TC_NAME); //set default TC name
             LOGGER.log(Level.FINE, "Previewable error occured.");//NOI18N
@@ -202,17 +201,23 @@ public final class CssPreviewTopComponent extends TopComponent {
             add(PREVIEW_ERROR_PANEL, BorderLayout.CENTER);
             previewing = false;
             error = true;
+            
+            revalidate();
+            repaint();
+
         }
     }
     
     //run in AWT!
-    //always called from preview() - revalidation done there
     private void setPreviewing(String title) {
         setName(title);
         removeAll();
         add(previewPanel, BorderLayout.CENTER);
         previewing = true;
         error = false;
+        
+        revalidate();
+        repaint();
     }
     
     /** This method is called from within the constructor to
@@ -273,55 +278,49 @@ public final class CssPreviewTopComponent extends TopComponent {
     }
     
     private void preview(CssRuleContext content) {
-        
+
         assert SwingUtilities.isEventDispatchThread() : "Must be run in event dispatch thread!";
-        
-        try {
-            //get the generated sample XHTML code
-            CharSequence htmlCode = CssPreviewGenerator.getPreviewCode(content);
 
-            //parse it first to find potential errors in the code
-            if (parser != null) {
-                try {
-                    DefaultHandler handler = new DefaultHandler();
-                    parser.parse(new ByteArrayInputStream(htmlCode.toString().getBytes()), handler);
-                } catch (SAXException ex) {
-                    LOGGER.log(Level.INFO, "There is an error in the generated sample document.", ex);
-                    LOGGER.log(Level.INFO, "Errorneous preview sample code:\n---------------------------------\n" + htmlCode); //NOI18N
-                    setError();
-                    return;
-                } catch (IOException ex) {
-                    LOGGER.log(Level.INFO, null, ex); //NOI18N
-                }
-            }
+        //get the generated sample XHTML code
+        CharSequence htmlCode = CssPreviewGenerator.getPreviewCode(content);
 
-            //set the UI to the previewing state
-            setPreviewing(getTitle(content));
-
+        //parse it first to find potential errors in the code
+        if (parser != null) {
             try {
-                //resolve relative URL base for the preview component
-                String relativeURL = null;
-                FileObject source = content.fileObject();
-                if (source != null) {
-                    if (!source.isFolder()) {
-                        source = source.getParent();
-                    }
-                    relativeURL = source.getURL().toExternalForm();
-                }
-
-                LOGGER.log(Level.FINE, "preview - setting content " + htmlCode); //NOI18N
-                
-                //set XHTML preview panel content - the generated sample
-                previewPanel.panel().setDocument(new ByteArrayInputStream(htmlCode.toString().getBytes()), relativeURL);
-            } catch (Throwable e) {
-                //an error - show message into the preview
-                setError();
-                LOGGER.log(Level.INFO, "An error occured in the preview component.", e); //NOI18N
+                DefaultHandler handler = new DefaultHandler();
+                parser.parse(new ByteArrayInputStream(htmlCode.toString().getBytes()), handler);
+            } catch (SAXException ex) {
+                LOGGER.log(Level.INFO, "There is an error in the generated sample document.", ex);
                 LOGGER.log(Level.INFO, "Errorneous preview sample code:\n---------------------------------\n" + htmlCode); //NOI18N
+                setError();
+                return;
+            } catch (IOException ex) {
+                LOGGER.log(Level.INFO, null, ex); //NOI18N
             }
-        } finally {
-            revalidate();
-            repaint();
+        }
+
+        //set the UI to the previewing state
+        setPreviewing(getTitle(content));
+
+        try {
+            //resolve relative URL base for the preview component
+            String relativeURL = null;
+            FileObject source = content.fileObject();
+            if (source != null) {
+                if (!source.isFolder()) {
+                    source = source.getParent();
+                }
+                relativeURL = source.getURL().toExternalForm();
+            }
+
+            LOGGER.log(Level.FINE, "preview - setting content " + htmlCode); //NOI18N
+            //set XHTML preview panel content - the generated sample
+            previewPanel.panel().setDocument(new ByteArrayInputStream(htmlCode.toString().getBytes()), relativeURL);
+        } catch (Throwable e) {
+            //an error - show message into the preview
+            setError();
+            LOGGER.log(Level.INFO, "An error occured in the preview component.", e); //NOI18N
+            LOGGER.log(Level.INFO, "Errorneous preview sample code:\n---------------------------------\n" + htmlCode); //NOI18N
         }
     }
     

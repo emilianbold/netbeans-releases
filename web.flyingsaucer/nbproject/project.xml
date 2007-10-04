@@ -46,16 +46,17 @@ made subject to such option by the copyright holder.
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
             <code-name-base>org.netbeans.modules.web.flyingsaucer</code-name-base>
             <module-dependencies/>
-            <class-path-extension>
-                <runtime-relative-path>ext/core-renderer.jar</runtime-relative-path>
-                <binary-origin>external/core-renderer-R7final.jar</binary-origin>
-            </class-path-extension>
             <friend-packages>
                 <friend>org.netbeans.modules.css.visual</friend>
+                <package>org.xhtmlrenderer.extend</package>
                 <package>org.xhtmlrenderer.simple</package>
                 <package>org.xhtmlrenderer.swing</package>
                 <package>org.xhtmlrenderer.util</package>
             </friend-packages>
+            <class-path-extension>
+                <runtime-relative-path>ext/core-renderer.jar</runtime-relative-path>
+                <binary-origin>external/core-renderer-R7final.jar</binary-origin>
+            </class-path-extension>
         </data>
     </configuration>
 </project>
