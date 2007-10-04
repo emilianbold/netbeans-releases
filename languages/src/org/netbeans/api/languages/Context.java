@@ -43,7 +43,6 @@ package org.netbeans.api.languages;
 
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
@@ -70,40 +69,36 @@ public abstract class Context {
      */
     public abstract Document getDocument ();
     
-    /**
-     * Returns instance of {@link org.netbeans.api.lexer.TokenSequence}.
-     * 
-     * @return instance of {@link org.netbeans.api.lexer.TokenSequence}
-     */
-    public abstract TokenSequence getTokenSequence ();
+    public abstract int getOffset ();
+    
     
     /**
      * Creates a new Context.
      * 
      * @return a new Context
      */
-    public static Context create (Document doc, TokenSequence tokenSequence) {
-        return new CookieImpl (doc, tokenSequence);
+    public static Context create (Document doc, int offset) {
+        return new CookieImpl (doc, offset);
     }
     
     private static class CookieImpl extends Context {
         
         private Document        doc;
         private JTextComponent  component;
-        private TokenSequence   tokenSequence;
+        private int             offset;
         
         CookieImpl (
             Document        doc,
-            TokenSequence   tokenSequence
+            int             offset
         ) {
             this.doc = doc;
-            this.tokenSequence = tokenSequence;
+            this.offset = offset;
         }
         
         public JTextComponent getJTextComponent () {
             if (component == null) {
                 DataObject dob = NbEditorUtilities.getDataObject (doc);
-                EditorCookie ec = (EditorCookie) dob.getLookup ().lookup (EditorCookie.class);
+                EditorCookie ec = dob.getLookup ().lookup (EditorCookie.class);
                 if (ec.getOpenedPanes ().length > 0)
                     component = ec.getOpenedPanes () [0];
             }
@@ -114,8 +109,8 @@ public abstract class Context {
             return doc;
         }
         
-        public TokenSequence getTokenSequence () {
-            return tokenSequence;
+        public int getOffset () {
+            return offset;
         }
     }
 }

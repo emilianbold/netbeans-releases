@@ -65,17 +65,21 @@ public class ColorsASTEvaluator extends ASTEvaluator {
     private static Map<Document,WeakReference<ColorsASTEvaluator>> cache = new WeakHashMap<Document,WeakReference<ColorsASTEvaluator>> ();
     
     static void register (Document document) {
-        if (cache.containsKey (document)) return;
+        if (get (document) != null) return;
         cache.put (document, new WeakReference<ColorsASTEvaluator> (new ColorsASTEvaluator (document)));
     }
     
     static void unregister (Document document) {
-        WeakReference<ColorsASTEvaluator> reference = cache.get (document);
-        if (reference == null) return;
-        ColorsASTEvaluator evaluator = reference.get ();
+        ColorsASTEvaluator evaluator = get (document);
         if (evaluator != null)
             ParserManager.get (document).removeASTEvaluator (evaluator);
         cache.remove (document);
+    }
+    
+    static ColorsASTEvaluator get (Document document) {
+        WeakReference<ColorsASTEvaluator> weakReference = cache.get (document);
+        if (weakReference == null) return null;
+        return weakReference.get ();
     }
     
     private Document document;

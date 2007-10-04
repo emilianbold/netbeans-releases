@@ -63,17 +63,21 @@ public class DeclarationASTEvaluator extends ASTEvaluator {
     private static Map<Document,WeakReference<DeclarationASTEvaluator>> cache = new WeakHashMap<Document,WeakReference<DeclarationASTEvaluator>> ();
     
     static void register (Document document) {
-        if (cache.containsKey (document)) return;
+        if (get (document) != null) return;
         cache.put (document, new WeakReference<DeclarationASTEvaluator> (new DeclarationASTEvaluator (document)));
     }
     
     static void unregister (Document document) {
-        WeakReference<DeclarationASTEvaluator> reference = cache.get (document);
-        if (reference == null) return;
-        DeclarationASTEvaluator evaluator = reference.get ();
+        DeclarationASTEvaluator evaluator = get (document);
         if (evaluator != null)
             ParserManager.get (document).removeASTEvaluator (evaluator);
         cache.remove (document);
+    }
+    
+    static DeclarationASTEvaluator get (Document document) {
+        WeakReference<DeclarationASTEvaluator> weakReference = cache.get (document);
+        if (weakReference == null) return null;
+        return weakReference.get ();
     }
     
     

@@ -56,6 +56,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -67,6 +68,7 @@ import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ASTPath;
 import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.languages.Context;
 import org.netbeans.api.languages.LibrarySupport;
@@ -286,39 +288,57 @@ public class JavaScript {
             return merge (result);
         }
         
-        List<CompletionItem> result = new ArrayList<CompletionItem> ();
-        TokenSequence ts = context.getTokenSequence ();
-        Token token = previousToken (ts);
-        String tokenText = token.text ().toString ();
-        String libraryContext = null;
-        if (tokenText.equals ("new")) {
-            result.addAll (getLibrary ().getCompletionItems ("constructor"));
-            return merge (result);
-        }
-        if (tokenText.equals (".")) {
-            token = previousToken (ts);
-            if (token.id ().name ().endsWith ("identifier"))
-                libraryContext = token.text ().toString ();
-        } else
-        if (token.id ().name ().endsWith ("identifier") ) {
-            token = previousToken (ts);
-            if (token.text ().toString ().equals (".")) {
-                token = previousToken (ts);
-                if (token.id ().name ().endsWith ("identifier"))
-                    libraryContext = token.text ().toString ();
-            } else
-            if (token.text ().toString ().equals ("new")) {
+        AbstractDocument document = (AbstractDocument) context.getDocument ();
+        document.readLock ();
+        try {
+            TokenSequence tokenSequence = getTokenSequence (context);
+            List<CompletionItem> result = new ArrayList<CompletionItem> ();
+            Token token = previousToken (tokenSequence);
+            String tokenText = token.text ().toString ();
+            String libraryContext = null;
+            if (tokenText.equals ("new")) {
                 result.addAll (getLibrary ().getCompletionItems ("constructor"));
                 return merge (result);
             }
+            if (tokenText.equals (".")) {
+                token = previousToken (tokenSequence);
+                if (token.id ().name ().endsWith ("identifier"))
+                    libraryContext = token.text ().toString ();
+            } else
+            if (token.id ().name ().endsWith ("identifier") ) {
+                token = previousToken (tokenSequence);
+                if (token.text ().toString ().equals (".")) {
+                    token = previousToken (tokenSequence);
+                    if (token.id ().name ().endsWith ("identifier"))
+                        libraryContext = token.text ().toString ();
+                } else
+                if (token.text ().toString ().equals ("new")) {
+                    result.addAll (getLibrary ().getCompletionItems ("constructor"));
+                    return merge (result);
+                }
+            }
+
+            if (libraryContext != null) {
+                result.addAll (getLibrary ().getCompletionItems (libraryContext));
+                result.addAll (getLibrary ().getCompletionItems ("member"));
+            } else
+                result.addAll (getLibrary ().getCompletionItems ("root"));
+            return merge (result);
+        } finally {
+            document.readUnlock ();
         }
-        
-        if (libraryContext != null) {
-            result.addAll (getLibrary ().getCompletionItems (libraryContext));
-            result.addAll (getLibrary ().getCompletionItems ("member"));
-        } else
-            result.addAll (getLibrary ().getCompletionItems ("root"));
-        return merge (result);
+    }
+    
+    private static TokenSequence getTokenSequence (Context context) {
+        TokenHierarchy tokenHierarchy = TokenHierarchy.get (context.getDocument ());
+        TokenSequence ts = tokenHierarchy.tokenSequence ();
+        while (true) {
+            ts.move (context.getOffset ());
+            if (!ts.moveNext ()) return ts;
+            TokenSequence ts2 = ts.embedded ();
+            if (ts2 == null) return ts;
+            ts = ts2;
+        }
     }
     
     private static List<CompletionItem> merge (List<CompletionItem> items) {

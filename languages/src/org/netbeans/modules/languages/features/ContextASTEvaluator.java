@@ -64,23 +64,21 @@ public class ContextASTEvaluator extends ASTEvaluator {
     private static Map<Document,WeakReference<ContextASTEvaluator>> cache = new WeakHashMap<Document,WeakReference<ContextASTEvaluator>> ();
     
     static void register (Document document) {
-        if (cache.containsKey (document)) return;
+        if (get (document) != null) return;
         cache.put (document, new WeakReference<ContextASTEvaluator> (new ContextASTEvaluator (document)));
     }
     
     static void unregister (Document document) {
-        WeakReference<ContextASTEvaluator> reference = cache.get (document);
-        if (reference == null) return;
-        ContextASTEvaluator evaluator = reference.get ();
+        ContextASTEvaluator evaluator = get (document);
         if (evaluator != null)
             ParserManager.get (document).removeASTEvaluator (evaluator);
         cache.remove (document);
     }
     
-    private static ContextASTEvaluator get (Document document) {
-        WeakReference<ContextASTEvaluator> reference = cache.get (document);
-        if (reference == null) return null;
-        return reference.get ();
+    static ContextASTEvaluator get (Document document) {
+        WeakReference<ContextASTEvaluator> weakReference = cache.get (document);
+        if (weakReference == null) return null;
+        return weakReference.get ();
     }
     
     static DatabaseContext getRootContext (Document document) {

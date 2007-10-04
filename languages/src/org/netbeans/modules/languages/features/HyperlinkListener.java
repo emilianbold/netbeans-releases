@@ -126,21 +126,20 @@ MouseListener {
     public void mouseDragged (MouseEvent e) {}
     
     private void highlight (
-        final NbEditorDocument  doc,
+        final NbEditorDocument  document,
         int                     offset
     ) {
         try {
             ASTNode ast = null;
             try {
-                ast = ParserManagerImpl.get (doc).getAST ();
+                ast = ParserManagerImpl.get (document).getAST ();
             } catch (ParseException ex) {
                 ast = ex.getASTNode ();
             }
             if (ast == null) {
-                String mimeType = (String) doc.getProperty ("mimeType");
-                TokenHierarchy tokenHierarchy = TokenHierarchy.get (doc);
-                if (doc instanceof NbEditorDocument)
-                    ((NbEditorDocument) doc).readLock ();
+                String mimeType = (String) document.getProperty ("mimeType");
+                TokenHierarchy tokenHierarchy = TokenHierarchy.get (document);
+                document.readLock ();
                 try {
                     TokenSequence tokenSequence = tokenHierarchy.tokenSequence ();
                     tokenSequence.move (offset);
@@ -156,14 +155,13 @@ MouseListener {
                         token.text ().toString (),
                         tokenSequence.offset ()
                     );
-                    highlight = Highlighting.getHighlighting (doc).highlight (
+                    highlight = Highlighting.getHighlighting (document).highlight (
                         stoken,
                         getHyperlinkAS ()
                     );
-                    runnable = (Runnable) hyperlinkFeature.getValue (Context.create (doc, tokenSequence));
+                    runnable = (Runnable) hyperlinkFeature.getValue (Context.create (document, offset));
                 } finally {
-                    if (doc instanceof NbEditorDocument)
-                        ((NbEditorDocument) doc).readUnlock ();
+                    document.readUnlock ();
                 }
                 return;
             }
@@ -175,17 +173,17 @@ MouseListener {
                 Language language = LanguagesManager.getDefault ().getLanguage (p.getLeaf ().getMimeType ());
                 Feature hyperlinkFeature = language.getFeature ("HYPERLINK", p);
                 if (hyperlinkFeature == null) continue;
-                highlight = Highlighting.getHighlighting (doc).highlight (
+                highlight = Highlighting.getHighlighting (document).highlight (
                     p.getLeaf (),
                     getHyperlinkAS ()
                 );
-                runnable = (Runnable) hyperlinkFeature.getValue (SyntaxContext.create (doc, p));
+                runnable = (Runnable) hyperlinkFeature.getValue (SyntaxContext.create (document, p));
             }
             DatabaseContext root = DatabaseManager.getRoot (ast);
             if (root != null) {
                 final DatabaseItem item = root.getDatabaseItem (offset);
                 if (item != null && item instanceof DatabaseUsage) {
-                    highlight = Highlighting.getHighlighting (doc).highlight (
+                    highlight = Highlighting.getHighlighting (document).highlight (
                         path.getLeaf (),
                         getHyperlinkAS ()
                     );
@@ -193,17 +191,17 @@ MouseListener {
                         public void run () {
                             DatabaseDefinition definition = ((DatabaseUsage) item).getDefinition ();
                             int definitionOffset = definition.getOffset ();
-                            DataObject dobj = NbEditorUtilities.getDataObject (doc);
-                            LineCookie lc = (LineCookie) dobj.getCookie (LineCookie.class);
+                            DataObject dobj = NbEditorUtilities.getDataObject (document);
+                            LineCookie lc = dobj.getCookie (LineCookie.class);
                             Line.Set lineSet = lc.getLineSet ();
-                            Line line = lineSet.getCurrent (NbDocument.findLineNumber (doc, definitionOffset));
-                            int column = NbDocument.findLineColumn (doc, definitionOffset);
+                            Line line = lineSet.getCurrent (NbDocument.findLineNumber (document, definitionOffset));
+                            int column = NbDocument.findLineColumn (document, definitionOffset);
                             line.show (Line.SHOW_GOTO, column);
                         }
                     };
                 }
                 if (item == null) {
-                    FileObject fileObject = NbEditorUtilities.getFileObject (doc);
+                    FileObject fileObject = NbEditorUtilities.getFileObject (document);
                     ASTItem leaf = path.getLeaf ();
                     if (!(leaf instanceof ASTToken)) return;
                     String name = ((ASTToken) leaf).getIdentifier ();
@@ -212,7 +210,7 @@ MouseListener {
                         if (!map.isEmpty ()) {
                             final FileObject fo = map.keySet ().iterator ().next ();
                             final DatabaseDefinition definition = map.get (fo).iterator ().next ();
-                            highlight = Highlighting.getHighlighting (doc).highlight (
+                            highlight = Highlighting.getHighlighting (document).highlight (
                                 path.getLeaf (),
                                 getHyperlinkAS ()
                             );
@@ -221,9 +219,9 @@ MouseListener {
                                     int definitionOffset = definition.getOffset ();
                                     try {
                                         DataObject dobj = DataObject.find (fo);
-                                        EditorCookie ec = (EditorCookie) dobj.getCookie (EditorCookie.class);
+                                        EditorCookie ec = dobj.getCookie (EditorCookie.class);
                                         StyledDocument doc2 = ec.openDocument ();
-                                        LineCookie lc = (LineCookie) dobj.getCookie (LineCookie.class);
+                                        LineCookie lc = dobj.getCookie (LineCookie.class);
                                         Line.Set lineSet = lc.getLineSet ();
                                         Line line = lineSet.getCurrent (NbDocument.findLineNumber (doc2, definitionOffset));
                                         int column = NbDocument.findLineColumn (doc2, definitionOffset);

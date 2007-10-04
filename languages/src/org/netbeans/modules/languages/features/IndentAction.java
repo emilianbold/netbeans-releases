@@ -146,7 +146,7 @@ public class IndentAction extends InsertBreakAction {
             } else
             if (indentValue instanceof Feature) {
                 Feature m = (Feature) indentValue;
-                m.getValue (Context.create (doc, ts));
+                m.getValue (Context.create (doc, ts.offset ()));
             }
             
         } catch (LanguageDefinitionNotFoundException ldnfe) {

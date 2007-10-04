@@ -29,12 +29,18 @@ package org.netbeans.modules.languages.features;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
+import org.netbeans.api.languages.ASTEvaluator;
+import org.netbeans.api.languages.ParseException;
+import org.netbeans.modules.languages.ParserManagerImpl;
 
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
@@ -49,35 +55,6 @@ import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 class SemanticHighlightsLayer extends AbstractHighlightsContainer {
 
     private static Map<Document,List<WeakReference<SemanticHighlightsLayer>>> cache = new WeakHashMap<Document,List<WeakReference<SemanticHighlightsLayer>>> ();
-            
-    private Document            document;
-    private OffsetsBag          offsetsBag;
-    private OffsetsBag          offsetsBag1;
-    
-    SemanticHighlightsLayer (Document document) {
-        this.document = document;
-        ColorsASTEvaluator.register (document);
-        DeclarationASTEvaluator.register (document);
-        ContextASTEvaluator.register (document);
-        UsagesASTEvaluator.register (document);
-        
-        offsetsBag = new OffsetsBag (document);
-        List<WeakReference<SemanticHighlightsLayer>> layers = cache.get (document);
-        if (layers == null) {
-            layers = new ArrayList<WeakReference<SemanticHighlightsLayer>> ();
-            cache.put (document, layers);
-        }
-        layers.add (new WeakReference<SemanticHighlightsLayer> (this));
-    }
-    
-    public HighlightsSequence getHighlights (int startOffset, int endOffset) {
-                                                                                //S ystem.out.println("SemanticHighlightsLayer.getHighlights " + startOffset + " : " + endOffset);
-        if (offsetsBag == null) {
-            return HighlightsSequence.EMPTY;
-        } else {
-            return offsetsBag.getHighlights (startOffset, endOffset);
-        }
-    }
 
     static void addHighlight (
         Document document, 
@@ -133,5 +110,64 @@ class SemanticHighlightsLayer extends AbstractHighlightsContainer {
             ContextASTEvaluator.unregister (document);
             UsagesASTEvaluator.unregister (document);
         }
+    }
+
+    
+    private Document            document;
+    private OffsetsBag          offsetsBag;
+    private OffsetsBag          offsetsBag1;
+    
+    SemanticHighlightsLayer (Document document) {
+        this.document = document;
+        ColorsASTEvaluator.register (document);
+        DeclarationASTEvaluator.register (document);
+        ContextASTEvaluator.register (document);
+        UsagesASTEvaluator.register (document);
+        
+        List<WeakReference<SemanticHighlightsLayer>> layers = cache.get (document);
+        if (layers == null) {
+            layers = new ArrayList<WeakReference<SemanticHighlightsLayer>> ();
+            cache.put (document, layers);
+        }
+        layers.add (new WeakReference<SemanticHighlightsLayer> (this));
+    }
+    
+    public HighlightsSequence getHighlights (int startOffset, int endOffset) {
+                                                                                //S ystem.out.println("SemanticHighlightsLayer.getHighlights " + startOffset + " : " + endOffset);
+        if (offsetsBag == null) {
+            offsetsBag = new OffsetsBag (document);
+            refresh ();
+        }
+        return offsetsBag.getHighlights (startOffset, endOffset);
+    }
+    
+    private void refresh () {
+        ParserManagerImpl parserManager = (ParserManagerImpl) ParserManagerImpl.get (document);
+        try {
+            parserManager.fire (
+                parserManager.getState (), 
+                null, 
+                getEvaluators (), 
+                parserManager.getAST ()
+            );
+        } catch (ParseException ex) {
+        }
+    }
+    
+    private Map<String,Set<ASTEvaluator>> evaluators;
+    
+    private Map<String,Set<ASTEvaluator>> getEvaluators () {
+        if (evaluators == null) {
+            evaluators = new HashMap<String,Set<ASTEvaluator>> ();
+            ColorsASTEvaluator colorsASTEvaluator = ColorsASTEvaluator.get (document);
+            evaluators.put (colorsASTEvaluator.getFeatureName (), Collections.<ASTEvaluator>singleton (colorsASTEvaluator));
+            UsagesASTEvaluator usagesASTEvaluator = UsagesASTEvaluator.get (document);
+            evaluators.put (usagesASTEvaluator.getFeatureName (), Collections.<ASTEvaluator>singleton (usagesASTEvaluator));
+            DeclarationASTEvaluator declarationASTEvaluator = DeclarationASTEvaluator.get (document);
+            evaluators.put (declarationASTEvaluator.getFeatureName (), Collections.<ASTEvaluator>singleton (declarationASTEvaluator));
+            ContextASTEvaluator contextASTEvaluator = ContextASTEvaluator.get (document);
+            evaluators.put (contextASTEvaluator.getFeatureName (), Collections.<ASTEvaluator>singleton (contextASTEvaluator));
+        }
+        return evaluators;
     }
 }

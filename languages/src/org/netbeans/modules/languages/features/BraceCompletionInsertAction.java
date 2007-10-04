@@ -132,7 +132,7 @@ public class BraceCompletionInsertAction extends ExtDefaultKeyTypedAction {
             if (methodCall != null) {
                 if (caret.getDot () < doc.getLength ())
                     ts.movePrevious ();
-                String s = (String) methodCall.getValue (Context.create (doc, ts));
+                String s = (String) methodCall.getValue (Context.create (doc, caret.getDot ()));
                 if (s != null) {
                     int pos = caret.getDot ();
                     doc.insertString (pos, s, null);

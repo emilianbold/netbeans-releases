@@ -81,7 +81,6 @@ public abstract class SyntaxContext extends Context {
         private Document        doc;
         private ASTPath         path;
         private JTextComponent  component;
-        private TokenSequence   tokenSequence;
         
         CookieImpl (
             Document doc,
@@ -94,7 +93,7 @@ public abstract class SyntaxContext extends Context {
         public JTextComponent getJTextComponent () {
             if (component == null) {
                 DataObject dob = NbEditorUtilities.getDataObject (doc);
-                EditorCookie ec = (EditorCookie) dob.getLookup ().lookup (EditorCookie.class);
+                EditorCookie ec = dob.getLookup ().lookup (EditorCookie.class);
                 if (ec.getOpenedPanes ().length > 0)
                     component = ec.getOpenedPanes () [0];
             }
@@ -108,19 +107,9 @@ public abstract class SyntaxContext extends Context {
         public Document getDocument () {
             return doc;
         }
-        
-        public TokenSequence getTokenSequence () {
-            if (tokenSequence == null) {
-                TokenHierarchy th = TokenHierarchy.get (doc);
-                tokenSequence = th.tokenSequence ();
-            }
-            Object leaf = path.getLeaf ();
-            if (leaf instanceof ASTToken)
-                tokenSequence.move (((ASTToken) leaf).getOffset ());
-            else
-                tokenSequence.move (((ASTNode) leaf).getOffset ());
-            tokenSequence.moveNext();
-            return tokenSequence;
+
+        public int getOffset() {
+            return path.getLeaf ().getOffset ();
         }
     }
 }

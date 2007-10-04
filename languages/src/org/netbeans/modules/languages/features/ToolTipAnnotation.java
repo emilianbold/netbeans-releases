@@ -81,18 +81,17 @@ public class ToolTipAnnotation extends Annotation {
             if (lp == null) return null;
             Line line = lp.getLine ();
             DataObject dob = DataEditorSupport.findDataObject (line);
-            EditorCookie ec = (EditorCookie) dob.getCookie (EditorCookie.class);
-            NbEditorDocument doc = (NbEditorDocument) ec.getDocument ();
-            String mimeType = (String) doc.getProperty ("mimeType");
+            EditorCookie ec = dob.getCookie (EditorCookie.class);
+            NbEditorDocument document = (NbEditorDocument) ec.getDocument ();
+            String mimeType = (String) document.getProperty ("mimeType");
             int offset = NbDocument.findLineOffset ( 
                     ec.getDocument (),
                     lp.getLine ().getLineNumber ()
                 ) + lp.getColumn ();
-            TokenHierarchy tokenHierarchy = TokenHierarchy.get (doc);
+            TokenHierarchy tokenHierarchy = TokenHierarchy.get (document);
             if (tokenHierarchy == null) return null;
             Language l = LanguagesManager.getDefault ().getLanguage (mimeType);
-            if (doc instanceof NbEditorDocument)
-                ((NbEditorDocument) doc).readLock ();
+            document.readLock ();
             try {
                 TokenSequence tokenSequence = tokenHierarchy.tokenSequence ();
                 tokenSequence.move (offset);
@@ -100,16 +99,15 @@ public class ToolTipAnnotation extends Annotation {
                 Token token = tokenSequence.token ();
                 Feature tooltip = l.getFeature (TOOLTIP, token.id ().name ());
                 if (tooltip != null) {
-                    String s = c ((String) tooltip.getValue (Context.create (doc, tokenSequence)));
+                    String s = c ((String) tooltip.getValue (Context.create (document, offset)));
                     return s;
                 }
             } finally {
-                if (doc instanceof NbEditorDocument)
-                    ((NbEditorDocument) doc).readUnlock ();
+                document.readUnlock ();
             }
             ASTNode ast = null;
             try {
-                ParserManager parserManager = ParserManagerImpl.get(doc);
+                ParserManager parserManager = ParserManagerImpl.get (document);
                 if (parserManager == null) {
                     return null;
                 }
@@ -125,7 +123,7 @@ public class ToolTipAnnotation extends Annotation {
                 ASTPath p = path.subPath (i);
                 Feature tooltip = l.getFeature (TOOLTIP, p);
                 if (tooltip == null) continue;
-                String s = c ((String) tooltip.getValue (SyntaxContext.create (doc, p)));
+                String s = c ((String) tooltip.getValue (SyntaxContext.create (document, p)));
                 return s;
             }
         } catch (ParseException ex) {

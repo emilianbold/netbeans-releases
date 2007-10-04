@@ -50,6 +50,9 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import javax.swing.text.Document;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor.Message;
@@ -169,5 +172,17 @@ public class Utils {
             next = text.indexOf ('\n', current);
         }
         throw new ArrayIndexOutOfBoundsException ();
+    }
+    
+    public static TokenSequence getTokenSequence (Document document, int offset) {
+        TokenHierarchy tokenHierarchy = TokenHierarchy.get (document);
+        TokenSequence ts = tokenHierarchy.tokenSequence ();
+        while (true) {
+            ts.move (offset);
+            if (!ts.moveNext ()) return ts;
+            TokenSequence ts2 = ts.embedded ();
+            if (ts2 == null) return ts;
+            ts = ts2;
+        }
     }
 }

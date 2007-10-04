@@ -90,7 +90,6 @@ public class ParserManagerImpl extends ParserManager {
     private State                           state = State.NOT_PARSED;
     private boolean[]                       cancel = new boolean[] {false};
     private Set<ParserManagerListener>      listeners;
-    private Set<ASTEvaluator>               evaluators;
     private Map<String,Set<ASTEvaluator>>   evaluatorsMap;
     private static RequestProcessor         rp = new RequestProcessor ("Parser");
     
@@ -140,9 +139,6 @@ public class ParserManagerImpl extends ParserManager {
     }
     
     public void addASTEvaluator (ASTEvaluator e) {
-        if (evaluators == null) evaluators = new HashSet<ASTEvaluator> ();
-        evaluators.add (e);
-        
         if (evaluatorsMap == null)
             evaluatorsMap = new HashMap<String,Set<ASTEvaluator>> ();
         Set<ASTEvaluator> evaluatorsSet = evaluatorsMap.get (e.getFeatureName ());
@@ -154,23 +150,13 @@ public class ParserManagerImpl extends ParserManager {
     }
     
     public void removeASTEvaluator (ASTEvaluator e) {
-        if (evaluators != null) evaluators.remove (e);
         if (evaluatorsMap != null) {
             Set<ASTEvaluator> evaluatorsSet = evaluatorsMap.get (e.getFeatureName ());
             if (evaluatorsSet != null) 
                 evaluatorsSet.remove (e);
         }
     }
-    
-//    public synchronized void forceEvaluation (ASTEvaluator e) {
-//        if (state != State.ERROR && state != State.OK) {
-//            return;
-//        }
-//        
-//        e.beforeEvaluation (state, ast);
-//        evaluate (state, ast, new ArrayList<ASTItem> (), new ArrayList<ASTEvaluator> (evaluators));
-//        e.afterEvaluation (state, ast);
-//    }
+
     
     // private methods .........................................................
     
@@ -194,12 +180,48 @@ public class ParserManagerImpl extends ParserManager {
         if (state == this.state) return;
         this.state = state;
         this.ast = root;
-        exception = null;                                                       //Map<Object,Long> times = new HashMap<Object,Long> ();
+        exception = null;
+        List<ParserManagerListener> listeners = this.listeners == null ?
+            null : new ArrayList<ParserManagerListener> (this.listeners);
+        Map<String,Set<ASTEvaluator>> evaluatorsMap = this.evaluatorsMap == null ?
+            null : new HashMap<String,Set<ASTEvaluator>> (this.evaluatorsMap);
+        fire2 (state, listeners, evaluatorsMap, root);
+    }
+    
+    public void fire (
+        final State                           state, 
+        final List<ParserManagerListener>     listeners,
+        final Map<String,Set<ASTEvaluator>>   evaluators,
+        final ASTNode                         root
+    ) {
+        cancel [0] = true;
+        if (parsingTask != null) {
+            parsingTask.cancel ();
+        }
+        parsingTask = rp.post (new Runnable () {
+            public void run () {
+                cancel [0] = false;
+                fire2 (
+                    state,
+                    listeners,
+                    evaluators,
+                    root
+                );
+            }
+        });
+    }
+    
+    private void fire2 (
+        State                           state, 
+        List<ParserManagerListener>     listeners,
+        Map<String,Set<ASTEvaluator>>   evaluators,
+        ASTNode                         root
+    ) {
         if (listeners != null) {
-            Iterator<ParserManagerListener> it = new ArrayList<ParserManagerListener> (listeners).iterator ();
+            Iterator<ParserManagerListener> it = listeners.iterator ();
             while (it.hasNext ()) {
                 ParserManagerListener l = it.next ();                           //long start = System.currentTimeMillis ();
-                l.parsed (state, root);
+                l.parsed (state, ast);
                                                                                 //Long t = times.get (l);if (t == null) t = new Long (0);times.put (l, t.longValue () + System.currentTimeMillis () - start);
                 if (cancel [0]) return;
             }
@@ -207,28 +229,32 @@ public class ParserManagerImpl extends ParserManager {
 
         if (state == State.PARSING) return;
         if (evaluators != null) {
-            List<ASTEvaluator> evaluators2 = new ArrayList<ASTEvaluator> (evaluators);
-            Map<String,Set<ASTEvaluator>> evaluatorsMap2 = new HashMap<String,Set<ASTEvaluator>> (evaluatorsMap);
-            if (!evaluators2.isEmpty ()) {
-                Iterator<ASTEvaluator> it2 = evaluators2.iterator ();
-                while (it2.hasNext ()) {
-                    ASTEvaluator e = it2.next ();
-                    e.beforeEvaluation (state, root);
-                    if (cancel [0]) return;
+            if (!evaluators.isEmpty ()) {
+                Iterator<Set<ASTEvaluator>> it = evaluators.values ().iterator ();
+                while (it.hasNext ()) {
+                    Iterator<ASTEvaluator> it2 = it.next ().iterator ();
+                    while (it2.hasNext ()) {
+                        ASTEvaluator e = it2.next ();
+                        e.beforeEvaluation (state, root);
+                        if (cancel [0]) return;
+                    }
                 }
                                                                                 //times = new HashMap<Object,Long> ();
                 evaluate (
                     state, 
                     root, 
                     new ArrayList<ASTItem> (), 
-                    evaluatorsMap2                                              //, times
+                    evaluators                                                  //, times
                 );                                                              //iit = times.keySet ().iterator ();while (iit.hasNext()) {Object object = iit.next();System.out.println("  Evaluator " + object + " : " + times.get (object));}
                 if (cancel [0]) return;
-                it2 = evaluators2.iterator ();
-                while (it2.hasNext ()) {
-                    ASTEvaluator e = it2.next ();
-                    e.afterEvaluation (state, root);
-                    if (cancel [0]) return;
+                it = evaluators.values ().iterator ();
+                while (it.hasNext ()) {
+                    Iterator<ASTEvaluator> it2 = it.next ().iterator ();
+                    while (it2.hasNext ()) {
+                        ASTEvaluator e = it2.next ();
+                        e.afterEvaluation (state, root);
+                        if (cancel [0]) return;
+                    }
                 }
             }
         }

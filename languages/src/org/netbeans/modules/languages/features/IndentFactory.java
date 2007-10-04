@@ -148,7 +148,7 @@ public class IndentFactory implements IndentTask.Factory {
                 } else
                 if (indentValue instanceof Feature) {
                     Feature m = (Feature) indentValue;
-                    m.getValue (Context.create (doc, ts));
+                    m.getValue (Context.create (doc, offset));
                 }
 
             } catch (LanguageDefinitionNotFoundException ldnfe) {

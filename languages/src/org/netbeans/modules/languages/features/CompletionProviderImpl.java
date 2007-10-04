@@ -321,7 +321,7 @@ public class CompletionProviderImpl implements CompletionProvider {
                 if (f != null)
                     ignoreCase = f.getBoolean ("ignoreCase", false);
                 if (ignoreCase) start = start.toLowerCase ();
-                addTags (feature, start, Context.create (doc, tokenSequence), resultSet);
+                addTags (feature, start, Context.create (doc, offset), resultSet);
             }
         }
 

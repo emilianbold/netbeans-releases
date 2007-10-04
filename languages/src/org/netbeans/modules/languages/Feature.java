@@ -48,6 +48,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.Document;
 import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ASTNode;
@@ -55,6 +56,7 @@ import org.netbeans.api.languages.ASTToken;
 import org.netbeans.api.languages.Context;
 import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.languages.parser.Pattern;
@@ -315,22 +317,20 @@ public class Feature {
                 if (l instanceof ASTToken)
                     return evaluate ((ASTToken) l);
             } else {
-                Document doc = context.getDocument ();
-                if (doc instanceof NbEditorDocument)
-                    ((NbEditorDocument) doc).readLock ();
-                ASTToken stoken;
+                AbstractDocument document = (AbstractDocument) context.getDocument ();
+                document.readLock ();
+                ASTToken stoken = null;
                 try {
-                    TokenSequence ts = context.getTokenSequence ();
-                    Token t = ts.token ();
+                    TokenSequence tokenSequence = Utils.getTokenSequence (document, context.getOffset ());
+                    Token token = tokenSequence.token ();
                     stoken = ASTToken.create (
-                        ts.language ().mimeType (),
-                        t.id ().name (),
-                        t.text ().toString (),
-                        ts.offset ()
+                        tokenSequence.language ().mimeType (),
+                        token.id ().name (),
+                        token.text ().toString (),
+                        tokenSequence.offset ()
                     );
                 } finally {
-                    if (doc instanceof NbEditorDocument)
-                        ((NbEditorDocument) doc).readUnlock ();
+                    document.readUnlock ();
                 }
                 return evaluate (stoken);
             }

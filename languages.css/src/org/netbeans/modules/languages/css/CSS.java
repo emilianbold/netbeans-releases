@@ -19,11 +19,12 @@
 
 package org.netbeans.modules.languages.css;
 
+import javax.swing.text.AbstractDocument;
 import org.netbeans.api.languages.ASTNode;
-import org.netbeans.api.languages.ASTPath;
 import org.netbeans.api.languages.SyntaxContext;
-import org.netbeans.api.lexer.Token;
 import org.netbeans.api.languages.Context;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -31,6 +32,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
+
 
 /**
  *
@@ -61,25 +63,39 @@ public class CSS {
     }
     
     public static Runnable hyperlink (Context context) {
-        Token t = context.getTokenSequence ().token ();
-        String s = t.id ().name ();
-        s = s.substring (1, s.length () - 1);
-        s = s.replace ("%20", " "); // HACK
-        Lookup l = TopComponent.getRegistry ().getActivated ().getLookup ();
-        DataObject dob = (DataObject) l.lookup (DataObject.class);
-        FileObject fo = dob.getPrimaryFile ().getParent ();
-        final FileObject file = fo.getFileObject (s);
-        if (file != null)
-            return new Runnable () {
-                public void run () {
-                    try {
-                        DataObject d = DataObject.find (file);
-                        OpenCookie oc = (OpenCookie) d.getCookie (OpenCookie.class);
-                        oc.open ();
-                    } catch (DataObjectNotFoundException ex) {
+        AbstractDocument document = (AbstractDocument) context.getDocument ();
+        document.readLock ();
+        try {
+            TokenHierarchy tokenHierarchy = TokenHierarchy.get (document);
+            TokenSequence ts = tokenHierarchy.tokenSequence ();
+            while (true) {
+                ts.move (context.getOffset ());
+                if (!ts.moveNext ()) break;
+                TokenSequence ts2 = ts.embedded ();
+                if (ts2 == null) break;
+                ts = ts2;
+            }
+            String s = ts.token ().id ().name ();
+            s = s.substring (1, s.length () - 1);
+            s = s.replace ("%20", " "); // HACK
+            Lookup l = TopComponent.getRegistry ().getActivated ().getLookup ();
+            DataObject dob = l.lookup (DataObject.class);
+            FileObject fo = dob.getPrimaryFile ().getParent ();
+            final FileObject file = fo.getFileObject (s);
+            if (file != null)
+                return new Runnable () {
+                    public void run () {
+                        try {
+                            DataObject d = DataObject.find (file);
+                            OpenCookie oc = d.getCookie (OpenCookie.class);
+                            oc.open ();
+                        } catch (DataObjectNotFoundException ex) {
+                        }
                     }
-                }
-            };
-        return null;
+                };
+            return null;
+        } finally {
+            document.readUnlock ();
+        }
     }
 }

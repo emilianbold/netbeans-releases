@@ -53,6 +53,7 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
+import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.languages.ASTEvaluator;
 import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ASTNode;
@@ -72,23 +73,21 @@ class UsagesASTEvaluator extends ASTEvaluator {
     private static Map<Document,WeakReference<UsagesASTEvaluator>> cache = new WeakHashMap<Document,WeakReference<UsagesASTEvaluator>> ();
     
     static void register (Document document) {
-        if (cache.containsKey (document)) return;
+        if (get (document) != null) return;
         cache.put (document, new WeakReference<UsagesASTEvaluator> (new UsagesASTEvaluator (document)));
     }
     
     static void unregister (Document document) {
-        WeakReference<UsagesASTEvaluator> reference = cache.get (document);
-        if (reference == null) return;
-        UsagesASTEvaluator evaluator = reference.get ();
+        UsagesASTEvaluator evaluator = get (document);
         if (evaluator != null)
             ParserManager.get (document).removeASTEvaluator (evaluator);
         cache.remove (document);
     }
     
-    private static UsagesASTEvaluator get (Document document) {
-        WeakReference<UsagesASTEvaluator> reference = cache.get (document);
-        if (reference == null) return null;
-        return reference.get ();
+    static UsagesASTEvaluator get (Document document) {
+        WeakReference<UsagesASTEvaluator> weakReference = cache.get (document);
+        if (weakReference == null) return null;
+        return weakReference.get ();
     }
     
     static void addDatabaseDefinition (Document document, DatabaseDefinition definition) {
@@ -257,7 +256,7 @@ class UsagesASTEvaluator extends ASTEvaluator {
     private static AttributeSet getUnusedParameterAttributes () {
         if (unusedParameterAttributeSet == null) {
             SimpleAttributeSet sas = new SimpleAttributeSet ();
-            StyleConstants.setForeground (sas, new Color (115, 115, 115));
+            sas.addAttribute (EditorStyleConstants.WaveUnderlineColor, new Color (153, 153, 153));
             unusedParameterAttributeSet = sas;
         }
         return unusedParameterAttributeSet;
@@ -268,7 +267,6 @@ class UsagesASTEvaluator extends ASTEvaluator {
     private static AttributeSet getParameterAttributes () {
         if (parameterAttributeSet == null) {
             SimpleAttributeSet sas = new SimpleAttributeSet ();
-            StyleConstants.setForeground (sas, new Color (160, 96, 1));
             parameterAttributeSet = sas;
         }
         return parameterAttributeSet;
@@ -279,7 +277,7 @@ class UsagesASTEvaluator extends ASTEvaluator {
     private static AttributeSet getUnusedLocalVariableAttributes () {
         if (unusedLocalVariableAttributeSet == null) {
             SimpleAttributeSet sas = new SimpleAttributeSet ();
-            StyleConstants.setForeground (sas, new Color (115, 115, 115));
+            sas.addAttribute (EditorStyleConstants.WaveUnderlineColor, new Color (153, 153, 153));
             unusedLocalVariableAttributeSet = sas;
         }
         return unusedLocalVariableAttributeSet;
@@ -300,8 +298,8 @@ class UsagesASTEvaluator extends ASTEvaluator {
     private static AttributeSet getUnusedFieldAttributes () {
         if (unusedFieldAttributeSet == null) {
             SimpleAttributeSet sas = new SimpleAttributeSet ();
-            StyleConstants.setForeground (sas, new Color (115, 115, 115));
-            StyleConstants.setBold (sas, true);
+            sas.addAttribute (EditorStyleConstants.WaveUnderlineColor, new Color (153, 153, 153));
+            StyleConstants.setForeground (sas, new Color (0, 153, 0));
             unusedFieldAttributeSet = sas;
         }
         return unusedFieldAttributeSet;
@@ -312,8 +310,7 @@ class UsagesASTEvaluator extends ASTEvaluator {
     private static AttributeSet getFieldAttributes () {
         if (fieldAttributeSet == null) {
             SimpleAttributeSet sas = new SimpleAttributeSet ();
-            StyleConstants.setForeground (sas, new Color (9, 134, 24));
-            StyleConstants.setBold (sas, true);
+            StyleConstants.setForeground (sas, new Color (0, 153, 0));
             fieldAttributeSet = sas;
         }
         return fieldAttributeSet;
