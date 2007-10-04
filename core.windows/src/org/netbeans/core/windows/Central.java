@@ -1091,7 +1091,9 @@ final class Central implements ControllerHandler {
                     }
                 }
                 model.addModeOpenedTopComponent(mode, tc);
-                
+                if (tc.getClientProperty(GROUP_SELECTED) != null) {
+                    tc.requestVisible();
+                }                
                 if( isEditorMaximized() && mode.getState() != Constants.MODE_STATE_SEPARATED ) {
                     String tcID = wm.findTopComponentID( tc );
                     if( !isTopComponentDockedInMaximizedMode( tcID ) && mode.getKind() != Constants.MODE_KIND_SLIDING ) {
@@ -1124,6 +1126,11 @@ final class Central implements ControllerHandler {
             WindowManagerImpl.getInstance().notifyTopComponentOpened(tc);
         }
     }
+    
+    /** Used to remember selected group member TC in mode so that it can be
+     *  selected when group is opened.
+     */
+    private static final Object GROUP_SELECTED = new Object();
     
     /** Closes TopComponentGroup. */
     public void closeGroup(TopComponentGroupImpl tcGroup) {
@@ -1205,6 +1212,11 @@ final class Central implements ControllerHandler {
                 // Now you can close it.
                 ModeImpl mode = (ModeImpl)WindowManagerImpl.getInstance().findMode(tc);
                 if(mode != null) {
+                    if (mode.getSelectedTopComponent() == tc) {
+                        tc.putClientProperty(GROUP_SELECTED, Boolean.TRUE);
+                    } else {
+                        tc.putClientProperty(GROUP_SELECTED, null);
+                    }
                     if(WindowManagerImpl.getInstance().isTopComponentPersistentWhenClosed(tc)) {
                         model.addModeClosedTopComponent(mode, tc);
                     } else {
