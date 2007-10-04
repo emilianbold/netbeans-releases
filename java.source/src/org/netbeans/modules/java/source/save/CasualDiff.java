@@ -65,7 +65,6 @@ import com.sun.tools.javac.util.Position;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.pretty.VeryPretty;
 import org.openide.util.NbBundle;
 import static java.util.logging.Level.*;
@@ -2890,6 +2889,8 @@ public class CasualDiff {
             printer.printBlock(oldT, newT, parentKind);
             return endPos(oldT);
         } else {
+            // next statement can to seem redundant, but is not, see 117774
+            copyTo(elementBounds[0], elementBounds[0] = getBounds(oldT)[0]);
             return diffTree(oldT, newT, elementBounds);
         }
     }
