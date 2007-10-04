@@ -43,10 +43,9 @@ package org.netbeans.modules.refactoring.java;
 
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.Dictionary;
-import java.util.Hashtable;
 import javax.swing.Action;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.refactoring.api.ui.ExplorerContext;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.netbeans.modules.refactoring.java.plugins.RenameRefactoringPlugin;
 import org.netbeans.spi.java.project.support.ui.PackageRenameHandler;
@@ -98,8 +97,8 @@ public class PackageRenameHandlerImpl implements PackageRenameHandler {
 
         InstanceContent ic = new InstanceContent();
         ic.add(node);
-        Dictionary d = new Hashtable();
-        d.put("name", newName);
+        ExplorerContext d = new ExplorerContext();
+        d.setNewName(newName);
         ic.add(d);
         Lookup l = new AbstractLookup(ic);
         Action a = RefactoringActionsFactory.renameAction().createContextAwareInstance(l);

@@ -42,9 +42,9 @@ package org.netbeans.modules.refactoring.impl;
 
 import java.awt.datatransfer.Transferable;
 import java.io.IOException;
-import java.util.Hashtable;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.refactoring.api.ui.ExplorerContext;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.netbeans.modules.refactoring.spi.impl.Util;
 import org.openide.nodes.Node;
@@ -72,14 +72,13 @@ public class ClipboardConvertor implements Convertor {
             for (Node n:nodes) {
                 ic.add((n));
             }
-            Hashtable d = new Hashtable();
-            ic.add(d);
-            d.put("DnD", true);//NOI18N
+            ExplorerContext td = new ExplorerContext();
+            ic.add(td);
             Lookup l = new AbstractLookup(ic);
             Action move = RefactoringActionsFactory.moveAction().createContextAwareInstance(l);
             if (move.isEnabled()) {
                 ExTransferable tr = ExTransferable.create(t);
-                tr.put(NodeTransfer.createPaste(new RefactoringPaste(t, ic, move, d)));
+                tr.put(NodeTransfer.createPaste(new RefactoringPaste(t, ic, move, td)));
                 return tr;
             }
         }
@@ -90,13 +89,13 @@ public class ClipboardConvertor implements Convertor {
             for (Node n:nodes) {
                 ic.add((n));
             }
-            Hashtable d = new Hashtable();
-            ic.add(d);
+            ExplorerContext td = new ExplorerContext();
+            ic.add(td);
             Lookup l = new AbstractLookup(ic);
             Action copy = RefactoringActionsFactory.copyAction().createContextAwareInstance(l);
             if (copy.isEnabled()) {
                 ExTransferable tr = ExTransferable.create(t);
-                tr.put(NodeTransfer.createPaste(new RefactoringPaste(t, ic, copy, d)));
+                tr.put(NodeTransfer.createPaste(new RefactoringPaste(t, ic, copy, td)));
                 return tr;
             }
         }
@@ -108,8 +107,8 @@ public class ClipboardConvertor implements Convertor {
         private Transferable delegate;
         private InstanceContent ic;
         private Action refactor;
-        private Hashtable d;
-        RefactoringPaste(Transferable t, InstanceContent ic, Action refactor, Hashtable d) {
+        private ExplorerContext d;
+        RefactoringPaste(Transferable t, InstanceContent ic, Action refactor, ExplorerContext d) {
             delegate = t;
             this.ic = ic;
             this.refactor = refactor;
@@ -125,9 +124,8 @@ public class ClipboardConvertor implements Convertor {
         
         private class RefactoringPasteType extends PasteType {
             RefactoringPasteType(Transferable orig, Node target) {
-                d.clear();
-                d.put("target", target); //NOI18N
-                d.put("transferable", orig); //NOI18N
+                d.setTargetNode(target);
+                d.setTransferable(orig);
             }
             
             public boolean canHandle() {

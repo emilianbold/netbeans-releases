@@ -44,7 +44,6 @@ package org.netbeans.modules.refactoring.java.ui;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.util.Collection;
-import java.util.Dictionary;
 import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -155,7 +154,6 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
     public void doPushDown(final Lookup lookup) {
         Runnable task;
         EditorCookie ec = lookup.lookup(EditorCookie.class);
-        final Dictionary dictionary = lookup.lookup(Dictionary.class);
         if (RefactoringActionsProvider.isFromEditor(ec)) {
             task = new RefactoringActionsProvider.TextComponentTask(ec) {
                 @Override
@@ -209,7 +207,6 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
     public void doPullUp(final Lookup lookup) {
         Runnable task;
         EditorCookie ec = lookup.lookup(EditorCookie.class);
-        final Dictionary dictionary = lookup.lookup(Dictionary.class);
         if (RefactoringActionsProvider.isFromEditor(ec)) {
             task = new RefactoringActionsProvider.TextComponentTask(ec) {
                 @Override
@@ -280,7 +277,6 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
     public void doUseSuperType(Lookup lookup) {
         Runnable task;
         EditorCookie ec = lookup.lookup(EditorCookie.class);
-        final Dictionary dictionary = lookup.lookup(Dictionary.class);
         if (RefactoringActionsProvider.isFromEditor(ec)) {
             task = new RefactoringActionsProvider.TextComponentTask(ec){
                 protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,

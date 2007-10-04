@@ -42,9 +42,8 @@
 package org.netbeans.modules.refactoring.java;
 
 import java.io.IOException;
-import java.util.Dictionary;
-import java.util.Hashtable;
 import javax.swing.Action;
+import org.netbeans.modules.refactoring.api.ui.ExplorerContext;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.netbeans.spi.java.loaders.RenameHandler;
 import org.openide.ErrorManager;
@@ -63,8 +62,8 @@ public class RenameHandlerImpl implements RenameHandler {
     public void handleRename(Node node, String newName) {
         InstanceContent ic = new InstanceContent();
         ic.add(node);
-        Dictionary d = new Hashtable();
-        d.put("name", newName);
+        ExplorerContext d = new ExplorerContext();
+        d.setNewName(newName);
         ic.add(d);
         Lookup l = new AbstractLookup(ic);
         DataObject dob = node.getCookie(DataObject.class);

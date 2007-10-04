@@ -40,14 +40,16 @@
  */
 package org.netbeans.modules.refactoring.spi.impl;
 
-import java.util.Dictionary;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.refactoring.api.impl.ActionsImplementationFactory;
+import org.netbeans.modules.refactoring.api.ui.ExplorerContext;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.explorer.ExtendedDelete;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /** 
  * @author Jan Becicka
@@ -81,7 +83,14 @@ public class SafeDeleteAction extends RefactoringGlobalAction implements Extende
     protected Lookup getLookup(Node[] n) {
         Lookup l = super.getLookup(n);
         if (regularDelete) {
-            l.lookup(Dictionary.class).put("DnD", true);
+            ExplorerContext con = l.lookup(ExplorerContext.class);
+            if (con!=null) {
+                con.setDelete(true);
+            } else {
+                con = new ExplorerContext();
+                con.setDelete(true);
+                return new ProxyLookup(l, Lookups.singleton(con));
+            }
         }
         return l;
     }

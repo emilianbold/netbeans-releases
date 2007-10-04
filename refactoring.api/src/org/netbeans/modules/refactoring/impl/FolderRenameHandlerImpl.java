@@ -42,10 +42,8 @@
 package org.netbeans.modules.refactoring.impl;
 
 import java.io.IOException;
-import java.util.Dictionary;
-import java.util.Hashtable;
 import javax.swing.Action;
-import javax.swing.Action;
+import org.netbeans.modules.refactoring.api.ui.ExplorerContext;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -64,8 +62,8 @@ public class FolderRenameHandlerImpl implements FolderRenameHandler {
     public void handleRename(DataFolder folder, String newName) {
         InstanceContent ic = new InstanceContent();
         ic.add(folder.getNodeDelegate());
-        Dictionary d = new Hashtable();
-        d.put("name", newName);
+        ExplorerContext d = new ExplorerContext();
+        d.setNewName(newName);
         ic.add(d);
         Lookup l = new AbstractLookup(ic);
         Action a = RefactoringActionsFactory.renameAction().createContextAwareInstance(l);

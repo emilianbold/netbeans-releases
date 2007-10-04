@@ -51,7 +51,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Dictionary;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
@@ -71,6 +70,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.modules.refactoring.api.ui.ExplorerContext;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
@@ -104,7 +104,6 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
     public void doRename(final Lookup lookup) {
         Runnable task;
         EditorCookie ec = lookup.lookup(EditorCookie.class);
-        final Dictionary dictionary = lookup.lookup(Dictionary.class);
         if (isFromEditor(ec)) {
             task = new TextComponentTask(ec) {
                 @Override
@@ -139,7 +138,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
             task = new NodeToFileObjectTask(lookup.lookupAll(Node.class)) {
                 @Override
                 protected RefactoringUI createRefactoringUI(FileObject[] selectedElements, Collection<TreePathHandle> handles) {
-                    String newName = getName(dictionary);
+                    String newName = getName(lookup);
                     if (newName!=null) {
                         if (pkg[0]!= null)
                             return new RenameRefactoringUI(pkg[0], newName);
@@ -194,7 +193,6 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
     public void doCopy(final Lookup lookup) {
         Runnable task;
         EditorCookie ec = lookup.lookup(EditorCookie.class);
-        final Dictionary dictionary = lookup.lookup(Dictionary.class);
 //        if (isFromEditor(ec)) {
 //            return new TextComponentRunnable(ec) {
 //                @Override
@@ -212,7 +210,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
             task = new NodeToFileObjectTask(lookup.lookupAll(Node.class)) {
                 @Override
                 protected RefactoringUI createRefactoringUI(FileObject[] selectedElements, Collection<TreePathHandle> handle) {
-                    return new CopyClassRefactoringUI(selectedElements[0], getTarget(dictionary), getPaste(dictionary));
+                    return new CopyClassRefactoringUI(selectedElements[0], getTarget(lookup), getPaste(lookup));
                 }
             };
 //        }
@@ -234,9 +232,9 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
             return false;
         }
         
-        Dictionary dict = lookup.lookup(Dictionary.class);
-        FileObject fob = getTarget(dict);
-        if (dict!=null && dict.get("target") != null && fob==null) { //NOI18N
+        ExplorerContext dict = lookup.lookup(ExplorerContext.class);
+        FileObject fob = getTarget(lookup);
+        if (dict!=null && dict.getTargetNode() != null && fob==null) { //NOI18N
             //unknown target
             return false;
         }
@@ -318,7 +316,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
     public void doDelete(final Lookup lookup) {
         Runnable task;
         EditorCookie ec = lookup.lookup(EditorCookie.class);
-        final Boolean b = (Boolean) lookup.lookup(Dictionary.class).get("DnD");
+        final boolean b = lookup.lookup(ExplorerContext.class)!=null;
         if (isFromEditor(ec)) {
             task = new TextComponentTask(ec) {
                 @Override
@@ -330,7 +328,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                             return null;
                         }
                         if (file.getName().equals(selected.getSimpleName().toString())) {
-                            return new SafeDeleteUI(new FileObject[]{file}, Collections.singleton(selectedElement), b!=null && b==true);
+                            return new SafeDeleteUI(new FileObject[]{file}, Collections.singleton(selectedElement), b);
                         }
                     }
                     return new SafeDeleteUI(new TreePathHandle[]{selectedElement}, info);
@@ -340,7 +338,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
             task = new NodeToFileObjectTask(lookup.lookupAll(Node.class)) {
                 @Override
                 protected RefactoringUI createRefactoringUI(FileObject[] selectedElements, Collection<TreePathHandle> handles) {
-                    return new SafeDeleteUI(selectedElements, handles, b!=null && b==true);
+                    return new SafeDeleteUI(selectedElements, handles, b);
                 }
                 
             };
@@ -348,10 +346,11 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         RetoucheUtils.invokeAfterScanFinished(task, getActionName(RefactoringActionsFactory.safeDeleteAction()));
     }
     
-    private FileObject getTarget(Dictionary dict) {
-        if (dict==null)
+    private FileObject getTarget(Lookup look) {
+        ExplorerContext drop = look.lookup(ExplorerContext.class);
+        if (drop==null)
             return null;
-        Node n = (Node) dict.get("target"); //NOI18N
+        Node n = (Node) drop.getTargetNode();
         if (n==null)
             return null;
         DataObject dob = n.getCookie(DataObject.class);
@@ -360,13 +359,14 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         return null;
     }
     
-    private PasteType getPaste(Dictionary dict) {
-        if (dict==null) 
+    private PasteType getPaste(Lookup look) {
+        ExplorerContext drop = look.lookup(ExplorerContext.class);
+        if (drop==null)
             return null;
-        Transferable orig = (Transferable) dict.get("transferable"); //NOI18N
+        Transferable orig = drop.getTransferable();
         if (orig==null)
             return null;
-        Node n = (Node) dict.get("target");
+        Node n = drop.getTargetNode();
         if (n==null)
             return null;
         PasteType[] pt = n.getPasteTypes(orig);
@@ -376,10 +376,11 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         return pt[1];
     }
 
-    static String getName(Dictionary dict) {
-        if (dict==null) 
+    static String getName(Lookup look) {
+        ExplorerContext ren = look.lookup(ExplorerContext.class); 
+        if (ren==null) 
             return null;
-        return (String) dict.get("name"); //NOI18N
+        return ren.getNewName(); //NOI18N
     }
     
     /**
@@ -389,8 +390,8 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
     @Override
     public boolean canMove(Lookup lookup) {
         Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
-        Dictionary dict = lookup.lookup(Dictionary.class);
-        FileObject fo = getTarget(dict);
+        ExplorerContext drop = lookup.lookup(ExplorerContext.class);
+        FileObject fo = getTarget(lookup);
         if (fo != null) {
             if (!fo.isFolder())
                 return false;
@@ -435,8 +436,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                     return false;
                 }
                 if (dob instanceof DataFolder) {
-                    Object b = dict.get("DnD"); //NOI18N
-                    return b==null?false: (Boolean) b;
+                    return drop!=null;
                 }
                 if (!RetoucheUtils.isOnSourceClasspath(dob.getPrimaryFile())) {
                     return false;
@@ -453,7 +453,6 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
     public void doMove(final Lookup lookup) {
         Runnable task;
         EditorCookie ec = lookup.lookup(EditorCookie.class);
-        final Dictionary dictionary = lookup.lookup(Dictionary.class);
         if (isFromEditor(ec)) {
             task = new TextComponentTask(ec) {
                 @Override
@@ -492,8 +491,8 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
             task = new NodeToFileObjectTask(lookup.lookupAll(Node.class)) {
                 @Override
                 protected RefactoringUI createRefactoringUI(FileObject[] selectedElements, Collection<TreePathHandle> handles) {
-                    PasteType paste = getPaste(dictionary);
-                    FileObject tar=getTarget(dictionary);
+                    PasteType paste = getPaste(lookup);
+                    FileObject tar=getTarget(lookup);
                     if (selectedElements.length == 1) {
                         if (!selectedElements[0].isFolder()) {
                             try {

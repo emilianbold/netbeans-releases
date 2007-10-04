@@ -44,8 +44,6 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.Method;
-import java.util.Dictionary;
-import java.util.Hashtable;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JMenuItem;
@@ -61,8 +59,6 @@ import org.openide.util.actions.NodeAction;
 import org.openide.util.actions.Presenter;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.TopComponent;
 
 /**
@@ -109,7 +105,6 @@ public abstract class RefactoringGlobalAction extends NodeAction {
                 ic.add(tc);
             }
         }
-        ic.add(new Hashtable(0));
         return new AbstractLookup(ic);
     }
 
@@ -151,11 +146,7 @@ public abstract class RefactoringGlobalAction extends NodeAction {
         Lookup context;
 
         public ContextAction(Lookup context) {
-            if (context.lookup(Dictionary.class)==null) {
-                this.context = new ProxyLookup(context, Lookups.singleton(new Hashtable()));
-            } else {
-                this.context=context;
-            }
+            this.context=context;
         }
         
         public Object getValue(String arg0) {
