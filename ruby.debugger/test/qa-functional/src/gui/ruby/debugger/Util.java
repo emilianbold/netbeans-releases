@@ -68,7 +68,12 @@ public final class Util {
     //collection of static methods
     private Util(){}
 
-    public static String detectNativeRuby() {
+    static void waitForDebuggingActions() {
+        Action a = new Action("Run|Step Over", null);
+        while (!a.isEnabled());
+    }
+    
+    static String detectNativeRuby() {
         String rubyPath = null;
         String path = System.getenv("PATH"); // NOI18N
         if (path == null) {

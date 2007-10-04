@@ -54,6 +54,7 @@ import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.ide.ProjectSupport;
+import org.openide.util.Utilities;
 
 /**
  * Basic ruby debugger test.
@@ -104,7 +105,13 @@ public class BasicTests extends JellyTestCase {
         Util.invokeDebugMainProject();
         OutputTabOperator outOp = new OutputTabOperator(SAMPLE_RUBY_PROJECT_NAME + " (debug)");
         outOp.waitText("ruby 1.8.5 debugger listens");
-        Util.invokeFinishDebuggerSession();
+        Util.waitForDebuggingActions();
+        if (Utilities.isWindows()){
+            // see issue #113007, cannot kill session, so invoking Continue for now
+            Util.invokeContinue();
+        } else {
+            Util.invokeFinishDebuggerSession();
+        }
         outOp.waitText("");
         Thread.sleep(2000);
         assertFalse("debugger is not running now", new Action("Run|Continue", null).isEnabled());
@@ -115,6 +122,7 @@ public class BasicTests extends JellyTestCase {
         debuggeeOp.setCaretPositionToLine(11);
         debuggeeOp.insert("require 'date' \n d = Date.today \n puts d");
         Util.invokeDebugMainProject();
+        Util.waitForDebuggingActions();
         Util.invokeStepOver(); //move to puts helloworld
         Util.invokeStepOver(); //move to d = Date.new
         Thread.sleep(500);
@@ -130,10 +138,12 @@ public class BasicTests extends JellyTestCase {
     
     public void testNativeRubyDebugging() throws InterruptedException{
         String nativeRuby = Util.detectNativeRuby();
+        ProjectSupport.waitScanFinished();
         if (nativeRuby != null){
             OutputTabOperator outOp = new OutputTabOperator(SAMPLE_RUBY_PROJECT_NAME + " (debug)");
             Util.setRuby(nativeRuby);
             Util.invokeDebugMainProject();
+            Util.waitForDebuggingActions();
             Util.invokeStepOver(); 
             outOp.waitText("Hello World");
             Util.invokeContinue();
