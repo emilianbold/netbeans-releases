@@ -97,6 +97,7 @@ import org.netbeans.modules.db.sql.visualeditor.Log;
 
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.sql.support.SQLIdentifiers;
+import org.openide.util.Exceptions;
 
 /**
  * The top-level class for the QueryBuilder.
@@ -1022,7 +1023,13 @@ public class QueryBuilder extends TopComponent
     // JDTODO - use dbconn
     String getConnectionInfo() {
 //	return sqlStatement.getConnectionInfo();
-	return null;
+        String conn = "";
+        try {
+            conn = getConnection().getMetaData().getURL();
+        } catch (SQLException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return conn;
     }
     
     /**
