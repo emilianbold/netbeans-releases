@@ -2150,8 +2150,8 @@ public class QueryBuilderGraphFrame extends JPanel
                                 NbBundle.getMessage(QueryBuilderGraphFrame.class,
                                 "DRAG_AND_DROP_FROM_CURRENT_DATASOURCE");
                         NotifyDescriptor d = new NotifyDescriptor.Message(
-                                msg + " = " +
-                                _queryBuilder. getConnectionInfo() +
+                                msg + ", " +
+                                _queryBuilder.getConnectionInfo() +
                                 "\n\n", // NOI18N
                                 NotifyDescriptor.ERROR_MESSAGE);
                         DialogDisplayer.getDefault().notify(d);
