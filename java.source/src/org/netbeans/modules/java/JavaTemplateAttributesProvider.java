@@ -43,6 +43,7 @@ package org.netbeans.modules.java;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.CreateFromTemplateAttributesProvider;
@@ -58,9 +59,7 @@ import org.openide.loaders.DataObject;
  */
 public final class JavaTemplateAttributesProvider implements CreateFromTemplateAttributesProvider {
     
-    public Map<String, ? extends Object> attributesFor(DataObject template,
-                                                          DataFolder target,
-                                                          String name) {
+    public Map<String,?> attributesFor(DataObject template, DataFolder target, String name) {
         FileObject templateFO = template.getPrimaryFile();
         if (!JavaDataLoader.JAVA_EXTENSION.equals(templateFO.getExt()) || templateFO.isFolder()) {
             return null;
@@ -69,7 +68,8 @@ public final class JavaTemplateAttributesProvider implements CreateFromTemplateA
         FileObject targetFO = target.getPrimaryFile();
         ClassPath cp = ClassPath.getClassPath(targetFO, ClassPath.SOURCE);
         if (cp == null) {
-            throw new IllegalStateException("No classpath was found for folder: " + target.getPrimaryFile()); // NOI18N
+            Logger.getLogger(JavaTemplateAttributesProvider.class.getName()).warning("No classpath was found for folder: " + target.getPrimaryFile()); // NOI18N
+            return Collections.emptyMap();
         }
         return Collections.<String, Object>singletonMap("package", cp.getResourceName(targetFO, '.', false)); // NOI18N
     }
