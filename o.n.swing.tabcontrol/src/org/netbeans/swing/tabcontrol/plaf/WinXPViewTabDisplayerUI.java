@@ -113,6 +113,7 @@ public final class WinXPViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
         return new WinXPViewTabDisplayerUI((TabDisplayer)c);
     }
      
+    @Override
     public void installUI (JComponent c) {
         super.installUI(c);
         initColors();
@@ -120,10 +121,12 @@ public final class WinXPViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
         c.setOpaque(true);
     }
 
+    @Override
     protected AbstractViewTabDisplayerUI.Controller createController() {
         return new OwnController();
     }
 
+    @Override
     public Dimension getPreferredSize(JComponent c) {
         FontMetrics fm = getTxtFontMetrics();
         int height = fm == null ?
@@ -219,8 +222,11 @@ public final class WinXPViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
     /**
      * Override to bold font
      */
+    @Override
     protected Font getTxtFont() {
-        Font font = super.getTxtFont();
+        Font font = UIManager.getFont("Label.font");
+        if( null == font )
+            font = super.getTxtFont();
         if (!font.isBold()) {
             font = font.deriveFont(Font.BOLD);
         }
@@ -315,6 +321,7 @@ public final class WinXPViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
         }
     }
 
+    @Override
     public Icon getButtonIcon(int buttonId, int buttonState) {
         Icon res = null;
         initIcons();
@@ -325,6 +332,7 @@ public final class WinXPViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
         return res;
     }
 
+    @Override
     public void postTabAction(TabActionEvent e) {
         super.postTabAction(e);
         if( TabDisplayer.COMMAND_MAXIMIZE.equals( e.getActionCommand() ) ) {
@@ -355,6 +363,7 @@ public final class WinXPViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
          * Triggers visual tab header change when mouse enters/leaves tab in
          * advance to superclass functionality.
          */
+        @Override
         public void mouseMoved(MouseEvent e) {
             super.mouseMoved(e);
             Point pos = e.getPoint();
@@ -367,6 +376,7 @@ public final class WinXPViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
         /**
          * Resets tab header in advance to superclass functionality
          */
+        @Override
         public void mouseExited(MouseEvent e) {
             super.mouseExited(e);
             if( !inControlButtonsRect(e.getPoint())) {
@@ -412,6 +422,7 @@ public final class WinXPViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
             lastIndex = curIndex;
         }
 
+        @Override
         public void mouseEntered(MouseEvent e) {
             super.mouseEntered(e);
             mouseMoved( e );

@@ -42,6 +42,7 @@
 package org.netbeans.swing.tabcontrol.plaf;
 
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Insets;
@@ -73,6 +74,7 @@ public final class WinXPEditorTabDisplayerUI extends BasicScrollingTabDisplayerU
         return new WinXPEditorTabDisplayerUI ((TabDisplayer) c);
     }    
 
+    @Override
     public Dimension getPreferredSize(JComponent c) {
         int prefHeight = 24;
         Graphics g = BasicScrollingTabDisplayerUI.getOffscreenGraphics();
@@ -84,11 +86,18 @@ public final class WinXPEditorTabDisplayerUI extends BasicScrollingTabDisplayerU
         return new Dimension(displayer.getWidth(), prefHeight);
     }
     
+    @Override
+    protected Font createFont() {
+        return UIManager.getFont("Label.font"); //NOI18N
+    }
+    
+    @Override
     public void paintBackground (Graphics g) {
         g.setColor (displayer.getBackground());
         g.fillRect (0, 0, displayer.getWidth(), displayer.getHeight());
     }
 
+    @Override
     protected void paintAfterTabs(Graphics g) {
         Rectangle r = new Rectangle();
         getTabsVisibleArea(r);
@@ -221,6 +230,7 @@ public final class WinXPEditorTabDisplayerUI extends BasicScrollingTabDisplayerU
         }
     }
 
+    @Override
     public Icon getButtonIcon(int buttonId, int buttonState) {
         Icon res = null;
         initIcons();
