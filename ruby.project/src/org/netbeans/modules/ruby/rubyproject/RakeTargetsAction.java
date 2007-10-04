@@ -387,7 +387,7 @@ public class RakeTargetsAction extends SystemAction implements ContextAwareActio
 
     private static String hiddenRakeRunner(Project project) {
         File pwd;
-        FileObject rakeFile = RakeSupport.getRakeFile(project);
+        FileObject rakeFile = RakeSupport.findRakeFile(project);
         if (rakeFile == null) {
             pwd = FileUtil.toFile(project.getProjectDirectory());
         } else {
@@ -701,7 +701,7 @@ public class RakeTargetsAction extends SystemAction implements ContextAwareActio
 
             File pwd = null;
 
-            FileObject rakeFile = RakeSupport.getRakeFile(project);
+            FileObject rakeFile = RakeSupport.findRakeFile(project);
             if (rakeFile == null) {
                 pwd = FileUtil.toFile(project.getProjectDirectory());
             }

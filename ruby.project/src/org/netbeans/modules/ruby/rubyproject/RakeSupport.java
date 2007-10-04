@@ -91,7 +91,7 @@ public class RakeSupport {
      * @param project project to be searched
      * @return found Rakefile or <code>null</code> if not found
      */
-    public static FileObject getRakeFile(final Project project) {
+    public static FileObject findRakeFile(final Project project) {
         FileObject pwd = project.getProjectDirectory();
 
         // See if we're in the right directory

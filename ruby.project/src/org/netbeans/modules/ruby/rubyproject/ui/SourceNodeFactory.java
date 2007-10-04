@@ -104,7 +104,7 @@ public final class SourceNodeFactory implements NodeFactory {
             for( int i = 0; i < groups.length; i++ ) {
                 result.add(new SourceGroupKey(groups[i]));
             }
-            FileObject rakeFile = RakeSupport.getRakeFile(project);
+            FileObject rakeFile = RakeSupport.findRakeFile(project);
             if (rakeFile != null && project.getProjectDirectory().equals(rakeFile.getParent())) {
                 result.add(new SourceGroupKey(rakeFile));
             }
