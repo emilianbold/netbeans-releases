@@ -77,6 +77,7 @@ public class TestFileUtils {
             Thread.sleep(pause);
             ff.setLastModified(System.currentTimeMillis());
             if (ff.lastModified() > older) {
+                f.refresh();
                 return;
             }
         }
