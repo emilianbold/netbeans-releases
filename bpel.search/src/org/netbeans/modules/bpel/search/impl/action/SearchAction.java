@@ -54,7 +54,6 @@ import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.NodeAction;
-import org.openide.windows.TopComponent;
 
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ui.ModelCookie;
