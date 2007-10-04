@@ -54,10 +54,12 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TryTree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
+import java.lang.annotation.ElementType;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Element;
@@ -65,7 +67,6 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeKind;
@@ -95,18 +96,21 @@ public final class UncaughtException implements ErrorRule<Void> {
     public UncaughtException() {
     }
 
-    private List<? extends TypeMirror> findUncauchedExceptions(CompilationInfo info, TreePath path, List<? extends TypeMirror> exceptions) {
+    private List<? extends TypeMirror> findUncaughtExceptions(CompilationInfo info, TreePath path, List<? extends TypeMirror> exceptions) {
         List<TypeMirror> result = new ArrayList<TypeMirror>();
         
         result.addAll(exceptions);
         
         while (path != null) {
-            Element currentElement = info.getTrees().getElement(path);
+
+            TypeMirror tm = info.getTrees().getTypeMirror(path);
             
-            if (currentElement != null && EXECUTABLE_ELEMENTS.contains(currentElement.getKind())) {
-                ExecutableElement ee = (ExecutableElement) currentElement;
-                
-                result.removeAll(ee.getThrownTypes());
+            if (tm != null && tm.getKind() == TypeKind.EXECUTABLE) {
+                for (TypeMirror mirr : ((ExecutableType) tm).getThrownTypes()) {
+                    for (Iterator<TypeMirror> it = result.iterator(); it.hasNext();)
+                        if (info.getTypes().isSameType(it.next(), mirr))
+                            it.remove();
+                }
                 break;
             }
             
@@ -193,7 +197,7 @@ public final class UncaughtException implements ErrorRule<Void> {
         }
         
         if (uncought != null) {
-            uncought = findUncauchedExceptions(info, path, uncought);
+            uncought = findUncaughtExceptions(info, path, uncought);
             
             TreePath pathRec = path;
             

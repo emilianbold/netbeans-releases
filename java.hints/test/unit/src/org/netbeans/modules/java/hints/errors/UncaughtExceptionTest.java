@@ -109,4 +109,8 @@ public class UncaughtExceptionTest extends HintsTestBase {
 	performTestDoNotPerform("TestBug113380", 14, 17);
     }
     
+    public void testBug88923() throws Exception {
+        performTestDoNotPerform("TestBug88923", 8, 11);
+    }
+    
 }
