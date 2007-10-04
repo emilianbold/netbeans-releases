@@ -46,7 +46,9 @@ import org.openide.util.NbBundle;
  */
 public class ClientStubsGenerator extends AbstractGenerator {
     
+    public static final String README = "ReadMe"; //NOI18N
     public static final String RESTSTUB = "reststub"; //NOI18N
+    public static final String README_TEMPLATE = "Templates/WebServices/ReadMe.html"; //NOI18N
     public static final String RESTSTUB_TEMPLATE = "Templates/WebServices/reststub.html"; //NOI18N
     public static final String STUBSUPPORT_TEMPLATE = "Templates/WebServices/support.js"; //NOI18N
     public static final String PROJECTSTUB_TEMPLATE = "Templates/WebServices/projectstub.js"; //NOI18N
@@ -55,12 +57,13 @@ public class ClientStubsGenerator extends AbstractGenerator {
     public static final String STUB_ONLY_TEMPLATE = "Templates/WebServices/stubonly.js"; //NOI18N
     
     //Dojo templates
-    public static final String DOJO_JERSEYSTORE = "JerseyStore";
-    public static final String DOJO_COLLECTIONSTORE = "CollectionStore";
-    public static final String DOJO_RESOURCESTABLE = "ResourcesTable";
-    public static final String DOJO_JERSEYGLUE = "glue";
+    public static final String DOJO_JERSEYSTORE = "JerseyStore";//NOI18N
+    public static final String DOJO_COLLECTIONSTORE = "CollectionStore";//NOI18N
+    public static final String DOJO_RESOURCESTABLE = "ResourcesTable";//NOI18N
+    public static final String DOJO_JERSEYGLUE = "glue";//NOI18N
     public static final String DOJO_SAMPLE = "DojoSample"; //NOI18N
-    public static final String DOJO_SUPPORT = "DojoSupport"; //NOI18N
+    public static final String DOJO_SUPPORT = "Support"; //NOI18N
+    public static final String JERSEY_PACKAGE = "jersey.reststubs.";//NOI18N
     public static final String DOJO_JERSEYSTORE_TEMPLATE = "Templates/WebServices/DojoJerseyStore.js"; //NOI18N
     public static final String DOJO_COLLECTIONSTORE_TEMPLATE = "Templates/WebServices/DojoCollectionStore.js"; //NOI18N
     public static final String DOJO_RESOURCESTABLE_TEMPLATE = "Templates/WebServices/DojoResourcesTable.js"; //NOI18N
@@ -118,21 +121,23 @@ public class ClientStubsGenerator extends AbstractGenerator {
         //create support js files
         FileObject commonDir = createFolder(getRootDir(), COMMON);
         FileObject commonJsDir = createFolder(commonDir, JS);
+        if(getRootDir().getParent().getFileObject(README+"."+HTML) == null)
+            RestUtils.createDataObjectFromTemplate(README_TEMPLATE, getRootDir().getParent(), README);
         if(getRootDir().getFileObject(RESTSTUB+"."+HTML) == null)
             RestUtils.createDataObjectFromTemplate(RESTSTUB_TEMPLATE, getRootDir(), RESTSTUB);
         if(commonJsDir.getFileObject(SUPPORT+"."+JS) == null)
-            RestUtils.createDataObjectFromTemplate(STUBSUPPORT_TEMPLATE, commonJsDir, SUPPORT.toLowerCase());
-        
-        initDojo(p);
+            RestUtils.createDataObjectFromTemplate(STUBSUPPORT_TEMPLATE, commonJsDir, SUPPORT.toLowerCase());       
         
         this.model = new ClientStubModel();
         this.model.buildModel(p);
+        
+        initDojo(p);
     }
     
     private void initDojo(Project p) throws IOException {
         //create support js files
-        FileObject dojoDir = createFolder(getRootDir(), "dojo");//NoI18n
-        FileObject jerseyDir = createFolder(dojoDir, "jersey");//NoI18n
+        //FileObject dojoDir = createFolder(getRootDir(), "dojo");//NoI18n
+        FileObject jerseyDir = createFolder(getRootDir().getParent(), "jersey");//NoI18n
         jerseyDataDir = createFolder(jerseyDir, "data");//NoI18n
         dojoReststubsDir = createFolder(jerseyDir, "reststubs");//NoI18n
         FileObject widgetDir = createFolder(jerseyDir, "widget");//NoI18n
@@ -143,13 +148,14 @@ public class ClientStubsGenerator extends AbstractGenerator {
         if(jerseyDir.getFileObject(DOJO_JERSEYGLUE+"."+JS) == null)
             RestUtils.createDataObjectFromTemplate(DOJO_JERSEYGLUE_TEMPLATE, jerseyDir, DOJO_JERSEYGLUE);
         
-        if(getRootDir().getFileObject(DOJO_SAMPLE+"."+HTML) == null)
-            RestUtils.createDataObjectFromTemplate(DOJO_SAMPLE_TEMPLATE, getRootDir(), DOJO_SAMPLE);
+        if(getRootDir().getParent().getFileObject(DOJO_SAMPLE+"."+HTML) == null)
+            RestUtils.createDataObjectFromTemplate(DOJO_SAMPLE_TEMPLATE, getRootDir().getParent(), DOJO_SAMPLE);
         if(dojoReststubsDir.getFileObject(DOJO_SUPPORT+"."+JS) == null)
             RestUtils.createDataObjectFromTemplate(DOJO_SUPPORT_TEMPLATE, dojoReststubsDir, DOJO_SUPPORT);
         String prjName = ProjectUtils.getInformation(getProject()).getName();
         if(dojoReststubsDir.getFileObject(prjName+"."+JS) == null)
             RestUtils.createDataObjectFromTemplate(DOJO_PROJECTSTUB_TEMPLATE, dojoReststubsDir, prjName);
+        updateProjectStub(dojoReststubsDir.getFileObject(prjName, JS), prjName, JERSEY_PACKAGE);
     }
     
     public Set<FileObject> generate(ProgressHandle pHandle) throws IOException {
@@ -160,7 +166,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
         FileObject jsDir = createFolder(projStubDir, JS);
         if(jsDir.getFileObject(prjName+"."+JS) == null)
             RestUtils.createDataObjectFromTemplate(PROJECTSTUB_TEMPLATE, jsDir, prjName);
-        updateProjectStub(jsDir.getFileObject(prjName, JS), prjName);
+        updateProjectStub(jsDir.getFileObject(prjName, JS), prjName, "");
         
         Set<FileObject> files = new HashSet<FileObject>();
         List<Resource> resourceList = model.getResources();
@@ -169,14 +175,15 @@ public class ClientStubsGenerator extends AbstractGenerator {
             reportProgress(NbBundle.getMessage(ClientStubsGenerator.class,
                     "MSG_GeneratingClass", r.getFileName()));            
             FileObject fo = new ResourceJavaScript(r, jsDir).generate();
-            if(fo != null)
-                files.add(fo);
+            //if(fo != null)
+                //files.add(fo);
             
             //Generate the resource dojo script
             new ResourceDojoJavaScript(r, dojoReststubsDir).generate();
             new ResourceDojoStore(r, jerseyDataDir).generate();
         }
-        updateRestStub(getRootDir().getFileObject(RESTSTUB, HTML), resourceList);
+        updateRestStub(getRootDir().getFileObject(RESTSTUB, HTML), resourceList, "");
+        files.add(getRootDir().getParent().getFileObject(README+"."+HTML));
         return files;
     }
     
@@ -187,7 +194,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
         return folder;
     }
     
-    private void updateProjectStub(FileObject projectStub, String prjName) throws IOException {
+    private void updateProjectStub(FileObject projectStub, String prjName, String pkg) throws IOException {
         FileLock lock = projectStub.lock();
         try {
             BufferedReader reader = new BufferedReader(new FileReader(FileUtil.toFile(projectStub)));
@@ -204,7 +211,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
                     for(int i=0;i<resourceList.size();i++) {
                         Resource r = resourceList.get(i);
                         if(r.isContainer())
-                            initBody += "      this.resources["+i+"] = new "+r.getName()+"(this.uri+'"+r.getPath()+"');\n";
+                            initBody += "      this.resources["+i+"] = new "+pkg+r.getName()+"(this.uri+'"+r.getPath()+"');\n";
                     }
                     sb.append(initBody);                    
                 } else {                    
@@ -223,7 +230,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
         }
     }
     
-    private void updateRestStub(FileObject restStub, List<Resource> resourceList) throws IOException {
+    private void updateRestStub(FileObject restStub, List<Resource> resourceList, String pkg) throws IOException {
         String prjName = getProjectName();
         StringBuffer sb1 = new StringBuffer();
         sb1.append("\t<script type='text/javascript' src='./" + prjName + "/js/" + prjName + ".js'></script>\n");
@@ -236,7 +243,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
         sb2.append("\t\tvar str = '';\n");
         sb2.append("\t\t//Example test code for " + prjName + "\n");
         sb2.append("\t\tstr = '<h2>Resources for " + prjName + ":</h2><br><table border=\"1\">';\n");
-        sb2.append("\t\tvar app = new " + prjName + "();\n");
+        sb2.append("\t\tvar app = new " + pkg+prjName + "();\n");
         sb2.append("\t\tvar resources = app.getResources();\n");
         sb2.append("\t\tfor(i=0;i<resources.length;i++) {\n");
         sb2.append("\t\t  var resource = resources[i];\n");
@@ -314,7 +321,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
                 String line;
                 StringBuffer sb = new StringBuffer();
                 while ((line = reader.readLine()) != null) {
-                    line = replaceTokens(r, line);
+                    line = replaceTokens(r, line, "", "");
                     sb.append(line);
                     sb.append("\n");
                 }
@@ -330,7 +337,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
             return fo;
         }
         
-        protected String replaceTokens(Resource r, String line) {
+        protected String replaceTokens(Resource r, String line, String object, String pkg) {
             RepresentationNode root = r.getRepresentation().getRoot();
             String replacedLine = line;
             String[] containerStubTokens = {
@@ -373,7 +380,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
                     else if("__CONTAINER_ITEM_PATH_NAME__".equals(token))
                         replacedLine = replacedLine.replaceAll("__CONTAINER_ITEM_PATH_NAME__", containerItemRepName);
                     else if("__STUB_METHODS__".equals(token))
-                        replacedLine = replacedLine.replace("__STUB_METHODS__", createStubJSMethods(r));
+                        replacedLine = replacedLine.replace("__STUB_METHODS__", createStubJSMethods(r, object, pkg));
                 }
             } else if(root != null){
                 String resourceName = r.getName();
@@ -388,7 +395,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
                     } else if("__GETTER_SETTER_METHODS__".equals(token)) {
                         replacedLine = replacedLine.replace("__GETTER_SETTER_METHODS__", createGetterSetterMethods(root, true));
                     } else if("__FIELDS_INIT__".equals(token)) {
-                        replacedLine = replacedLine.replace("__FIELDS_INIT__", createFieldsInitBody(root, true));
+                        replacedLine = replacedLine.replace("__FIELDS_INIT__", createFieldsInitBody(root, true, pkg));
                     } else if("__SUB_RESOURCE_NAME__".equals(token)) {
                         replacedLine = replacedLine.replaceAll("__SUB_RESOURCE_NAME__", "");
                     } else if("__SUB_RESOURCE_PATH_NAME__".equals(token)) {
@@ -399,7 +406,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
                             fieldsToString = fieldsToString.substring(0, fieldsToString.length()-4)+"'+\n";
                         replacedLine = replacedLine.replace("__FIELDS_TOSTRING__", fieldsToString);
                     } else if("__STUB_METHODS__".equals(token)) {
-                        replacedLine = replacedLine.replace("__STUB_METHODS__", createStubJSMethods(r));
+                        replacedLine = replacedLine.replace("__STUB_METHODS__", createStubJSMethods(r, object, pkg));
                     }
                 }
             } else {
@@ -408,16 +415,16 @@ public class ClientStubsGenerator extends AbstractGenerator {
                     if("__RESOURCE_NAME__".equals(token))
                         replacedLine = replacedLine.replaceAll("__RESOURCE_NAME__", resourceName);
                     else if("__STUB_METHODS__".equals(token))
-                        replacedLine = replacedLine.replace("__STUB_METHODS__", createStubJSMethods(r));
+                        replacedLine = replacedLine.replace("__STUB_METHODS__", createStubJSMethods(r, object, pkg));
                 }
             }
             return replacedLine;
         }
         
-        protected String createStubJSMethods(Resource r) {
+        protected String createStubJSMethods(Resource r, String object, String pkg) {
             StringBuffer sb = new StringBuffer();
             for (Method m : r.getMethods()) {
-                sb.append(createMethod(m)+",\n\n");
+                sb.append(createMethod(m, object, pkg)+",\n\n");
             }
             String s = sb.toString();
             if(s.length() > 3)
@@ -468,7 +475,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
             return sb.toString();
         }
         
-        private String createFieldsInitBody(RepresentationNode root, boolean skipUri) {
+        private String createFieldsInitBody(RepresentationNode root, boolean skipUri, String pkg) {
             String repName = root.getName();
             StringBuffer sb = new StringBuffer();
             for(RepresentationNode child:root.getAttributes()) {
@@ -480,7 +487,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
                 String childName = child.getName();
                 if(child.isReference() || child.isRoot()) {
                     String childRepName = findRepresentationName(childName);
-                    sb.append("         this."+childName+" = new "+findResourceName(childName)+"("+repName+"['"+childName+"']['@uri']);\n");
+                    sb.append("         this."+childName+" = new "+pkg+findResourceName(childName)+"("+repName+"['"+childName+"']['@uri']);\n");
                 } else {
                     sb.append("         this."+childName+" = "+repName+"['"+childName+"']['$'];\n");
                 }
@@ -550,17 +557,17 @@ public class ClientStubsGenerator extends AbstractGenerator {
             return mName;
         }
         
-        private String createMethod(Method m) {
+        private String createMethod(Method m, String object, String pkg) {
             if (m.getType() == MethodType.GET) {
-                return createGetMethod(m);
+                return createGetMethod(m, object);
             } else if (m.getType() == MethodType.POST) {
-                return createPostMethod(m);
+                return createPostMethod(m, object);
             } else if (m.getType() == MethodType.PUT) {
-                return createPutMethod(m);
+                return createPutMethod(m, object);
             } else if (m.getType() == MethodType.DELETE) {
-                return createDeleteMethod(m);
+                return createDeleteMethod(m, object);
             } else if (m instanceof NavigationMethod) {
-                return createNavigationMethod((NavigationMethod) m);
+                return createNavigationMethod((NavigationMethod) m, pkg);
             } else {
                 return "";
             }
@@ -575,14 +582,14 @@ public class ClientStubsGenerator extends AbstractGenerator {
             return m.getName();
         }
         
-        private String createGetMethod(Method m) {
+        private String createGetMethod(Method m, String object) {
             StringBuffer sb = new StringBuffer();
             String mimeTypes[] = m.getResponse().getRepresentation().getMime().split(",");
             int length = mimeTypes.length;
             for(String mimeType:mimeTypes) {
                 mimeType = mimeType.replaceAll("\"", "").trim();
                 sb.append("   " + createMethodName(m, mimeType, length) + " : function() {\n" +
-                        "      return get_(this.uri, '" +mimeType+ "');\n" +
+                        "      return "+object+"get_(this.uri, '" +mimeType+ "');\n" +
                         "   },\n\n");
             }
             String s = sb.toString();
@@ -592,14 +599,14 @@ public class ClientStubsGenerator extends AbstractGenerator {
                 return s;
         }
         
-        private String createPostMethod(Method m) {
+        private String createPostMethod(Method m, String object) {
             StringBuffer sb = new StringBuffer();
             String mimeTypes[] = m.getRequest().getRepresentation().getMime().split(",");
             int length = mimeTypes.length;
             for(String mimeType:mimeTypes) {
                 mimeType = mimeType.replaceAll("\"", "").trim();
                 sb.append("   " + createMethodName(m, mimeType, length) + " : function(content) {\n" +
-                        "      return post_(this.uri, '" + mimeType + "', content);\n" +
+                        "      return "+object+"post_(this.uri, '" + mimeType + "', content);\n" +
                         "   },\n\n");
             }
             String s = sb.toString();
@@ -609,14 +616,14 @@ public class ClientStubsGenerator extends AbstractGenerator {
                 return s;
         }
         
-        private String createPutMethod(Method m) {
+        private String createPutMethod(Method m, String object) {
             StringBuffer sb = new StringBuffer();
             String mimeTypes[] = m.getRequest().getRepresentation().getMime().split(",");
             int length = mimeTypes.length;
             for(String mimeType:mimeTypes) {
                 mimeType = mimeType.replaceAll("\"", "").trim();
                 sb.append("   " + createMethodName(m, mimeType, length) + " : function(content) {\n" +
-                        "      return put_(this.uri, '" + mimeType + "', content);\n" +
+                        "      return "+object+"put_(this.uri, '" + mimeType + "', content);\n" +
                         "   },\n\n");
             }
             String s = sb.toString();
@@ -626,15 +633,15 @@ public class ClientStubsGenerator extends AbstractGenerator {
                 return s;
         }
         
-        private String createDeleteMethod(Method m) {
+        private String createDeleteMethod(Method m, String object) {
             return "   " + RestUtils.escapeJSReserved(m.getName()) + " : function() {\n" +
-                    "      return delete__(this.uri);\n" +
+                    "      return "+object+"delete__(this.uri);\n" +
                     "   }";
         }
         
-        private String createNavigationMethod(NavigationMethod m) {
+        private String createNavigationMethod(NavigationMethod m, String pkg) {
             return "   " + m.getName() + " : function(" + m.getNavigationUri() + ") {\n" +
-                    "      var link = new " + m.getLinkName() + "(this.uri+'/'+" + m.getNavigationUri() + ")()\n" +
+                    "      var link = new " + pkg+m.getLinkName() + "(this.uri+'/'+" + m.getNavigationUri() + ")()\n" +
                     "      return link;\n" +
                     "   }";
         }
@@ -669,7 +676,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
                 String line;
                 StringBuffer sb = new StringBuffer();
                 while ((line = reader.readLine()) != null) {
-                    line = replaceTokens(r, line);
+                    line = replaceTokens(r, line, "this.", JERSEY_PACKAGE);
                     sb.append(line);
                     sb.append("\n");
                 }
@@ -700,7 +707,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
                 else
                     throw new IOException("File: "+jsFolder.getPath()+"/"+r.getFileNameExt()+" already exists.");
             }
-            String fileName = r.getFileName()+"Store";
+            String fileName = r.getName()+"Store";
             if(r.isContainer())
                 RestUtils.createDataObjectFromTemplate(DOJO_COLLECTIONSTORE_TEMPLATE, jsFolder, fileName);
             else
@@ -712,7 +719,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
                 String line;
                 StringBuffer sb = new StringBuffer();
                 while ((line = reader.readLine()) != null) {
-                    line = replaceTokens(r, line);
+                    line = replaceTokens(r, line, "this.", JERSEY_PACKAGE);
                     sb.append(line);
                     sb.append("\n");
                 }

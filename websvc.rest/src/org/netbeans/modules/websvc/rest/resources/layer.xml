@@ -59,6 +59,9 @@
             <file name="support.js" url="/org/netbeans/modules/websvc/rest/codegen/resources/stubsupport.template">
                 <attr name="position" intvalue="0"/>
             </file>
+            <file name="ReadMe.html" url="/org/netbeans/modules/websvc/rest/codegen/resources/ReadMe.template">
+                <attr name="position" intvalue="0"/>
+            </file>
             <file name="reststub.html" url="/org/netbeans/modules/websvc/rest/codegen/resources/reststub.template">
                 <attr name="position" intvalue="0"/>
             </file>
