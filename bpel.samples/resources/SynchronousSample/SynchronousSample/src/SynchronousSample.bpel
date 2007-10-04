@@ -28,7 +28,7 @@
   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
   THE POSSIBILITY OF SUCH DAMAGE.
 -->
-<process name="SynchronousSample" 
+<process name="SynchronousSample"
          targetNamespace="http://enterprise.netbeans.org/bpel/SynchronousSample/SynchronousSample_1"
          xmlns="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
          xmlns:xsd="http://www.w3.org/2001/XMLSchema"
@@ -37,16 +37,16 @@
          xmlns:ns1="http://localhost/SynchronousSample/SynchronousSample"
          xmlns:ns2="http://xml.netbeans.org/schema/SynchronousSample">
     
-    <import namespace="http://xml.netbeans.org/schema/SynchronousSample" 
-            location="SynchronousSample.xsd" 
+    <import namespace="http://xml.netbeans.org/schema/SynchronousSample"
+            location="SynchronousSample.xsd"
             importType="http://www.w3.org/2001/XMLSchema"/>
-    <import namespace="http://localhost/SynchronousSample/SynchronousSample" 
-            location="SynchronousSample.wsdl" 
+    <import namespace="http://localhost/SynchronousSample/SynchronousSample"
+            location="SynchronousSample.wsdl"
             importType="http://schemas.xmlsoap.org/wsdl/"/>
     
     <partnerLinks>
-        <partnerLink name="SynchronousSample" 
-                     partnerLinkType="ns1:partnerlinktype1" 
+        <partnerLink name="SynchronousSample"
+                     partnerLinkType="ns1:partnerlinktype1"
                      myRole="partnerlinktyperole1"/>
     </partnerLinks>
     
@@ -56,11 +56,11 @@
     </variables>
     
     <sequence>
-        <receive name="start" 
-                 partnerLink="SynchronousSample" 
-                 operation="operation1" 
-                 portType="ns1:portType1" 
-                 variable="inputVar" 
+        <receive name="start"
+                 partnerLink="SynchronousSample"
+                 operation="operation1"
+                 portType="ns1:portType1"
+                 variable="inputVar"
                  createInstance="yes">
         </receive>
         <assign name="Assign1">
@@ -69,10 +69,10 @@
                 <to>$outputVar.resultType/ns2:paramA</to>
             </copy>
         </assign>
-        <reply name="end" 
-               partnerLink="SynchronousSample" 
-               operation="operation1" 
-               portType="ns1:portType1" 
+        <reply name="end"
+               partnerLink="SynchronousSample"
+               operation="operation1"
+               portType="ns1:portType1"
                variable="outputVar"/>
     </sequence>
 </process>
