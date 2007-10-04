@@ -181,9 +181,9 @@ public final class SamplesWebVisualPanel extends JPanel implements DocumentListe
             }
         });
 
-        setAsMainProject.setMnemonic(org.openide.util.NbBundle.getMessage(SamplesWebVisualPanel.class, "LBL_NWP1_ProjectNameCheck_LabelMnemonic").charAt(0));
+        setAsMainProject.setMnemonic(org.openide.util.NbBundle.getMessage(SamplesWebVisualPanel.class, "LBL_NWP1_SetAsMain_CheckBoxMnemonic").charAt(0));
         setAsMainProject.setSelected(true);
-        setAsMainProject.setText(org.openide.util.NbBundle.getMessage(SamplesWebVisualPanel.class, "LBL_NWP1_ProjectNameCheck_Label")); // NOI18N
+        setAsMainProject.setText(org.openide.util.NbBundle.getMessage(SamplesWebVisualPanel.class, "LBL_NWP1_SetAsMain_CheckBox")); // NOI18N
         setAsMainProject.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         setAsMainProject.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
@@ -249,8 +249,8 @@ public final class SamplesWebVisualPanel extends JPanel implements DocumentListe
         projectFolderField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SamplesWebVisualPanel.class, "ACSD_createdFolderTextfield")); // NOI18N
         browseButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SamplesWebVisualPanel.class, "ACSN_browseButton")); // NOI18N
         browseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SamplesWebVisualPanel.class, "ACSD_browseButton")); // NOI18N
-        setAsMainProject.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SamplesWebVisualPanel.class, "ACSN_projectNameLabel")); // NOI18N
-        setAsMainProject.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SamplesWebVisualPanel.class, "ACSD_projectNameLabel")); // NOI18N
+        setAsMainProject.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SamplesWebVisualPanel.class, "ACSN_SetAsMain_CheckBox")); // NOI18N
+        setAsMainProject.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SamplesWebVisualPanel.class, "ACSD_SetAsMain_CheckBox")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
