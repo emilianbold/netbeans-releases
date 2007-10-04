@@ -44,6 +44,8 @@ import java.io.File;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
+import org.netbeans.modules.versioning.util.VersioningEvent;
+import org.netbeans.modules.versioning.util.VersioningListener;
 import org.openide.util.NbBundle;
 
 /**
@@ -58,13 +60,21 @@ public class LocalHistoryVCS extends VersioningSystem {
         putProperty(PROP_DISPLAY_NAME, NbBundle.getMessage(LocalHistoryVCS.class, "CTL_DisplayName"));
         putProperty(PROP_MENU_LABEL, NbBundle.getMessage(LocalHistoryVCS.class, "CTL_MainMenuItem"));
         putProperty(PROP_LOCALHISTORY_VCS, Boolean.TRUE);
+        
+        LocalHistory.getInstance().addVersioningListener(new VersioningListener() {
+            public void versioningEvent(VersioningEvent event) {
+                if(event.getId().equals(LocalHistory.EVENT_PROJECTS_CHANGED)) {
+                    fireVersionedFilesChanged();   
+                }                
+            }
+        });
     }
     
     public File getTopmostManagedAncestor(File file) {    
         if(file == null) {
             return null;
         }                
-        return LocalHistory.getInstance().isManagedByParent(file);                             
+        return LocalHistory.getInstance().isManagedByParent(file);        
     }
     
     public VCSAnnotator getVCSAnnotator() {

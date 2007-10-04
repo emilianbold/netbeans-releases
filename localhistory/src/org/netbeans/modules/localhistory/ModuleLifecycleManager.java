@@ -47,7 +47,7 @@ import org.openide.modules.ModuleInstall;
  * @author Tomas Stupka
  */
 public class ModuleLifecycleManager extends ModuleInstall {        
-    public void restored() {        
-        LocalHistory.getInstance().getLocalHistoryStore().cleanUp(LocalHistorySettings.getInstance().getTTLMillis());
+    public void restored() {      
+        LocalHistory.getInstance().init();        
     }
 }

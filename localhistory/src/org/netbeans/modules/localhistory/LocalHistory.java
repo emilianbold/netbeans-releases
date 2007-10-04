@@ -39,18 +39,32 @@
  * made subject to such option by the copyright holder.
  */
 package org.netbeans.modules.localhistory;
-
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.regex.Pattern;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.localhistory.store.LocalHistoryStore;
 import org.netbeans.modules.localhistory.store.LocalHistoryStoreFactory;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.util.ListenersSupport;
 import org.netbeans.modules.versioning.util.VersioningListener;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 
 /** 
  * 
- * A singleton Local Hisotry manager class, center of the Local History module. 
+ * A singleton Local History manager class, center of the Local History module. 
  * Use {@link #getInstance()} to get access to Local History module functionality.
  * @author Tomas Stupka
  */  
@@ -61,9 +75,51 @@ public class LocalHistory {
     private VCSAnnotator vcsAnnotator;
     private LocalHistoryStore store;
 
-    private static String userDir;    
+    private ListenersSupport listenerSupport = new ListenersSupport(this);
     
+    private Set<File> roots = new HashSet<File>();
+           
     public final static Object EVENT_FILE_CREATED = new Object();
+    final static Object EVENT_PROJECTS_CHANGED = new Object();
+       
+    void init() {
+        getLocalHistoryStore().cleanUp(LocalHistorySettings.getInstance().getTTLMillis());
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {                       
+                setRoots(OpenProjects.getDefault().getOpenProjects());                                
+                OpenProjects.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(openProjectsListener, null));                                  
+            }
+        });        
+    }
+
+    private void setRoots(Project[] projects) {        
+        Set<File> newRoots = new HashSet<File>();
+        for(Project project : projects) {
+            Sources sources = ProjectUtils.getSources(project);
+            SourceGroup[] groups = sources.getSourceGroups(Sources.TYPE_GENERIC);
+            for(SourceGroup group : groups) {
+                FileObject fo = group.getRootFolder();
+                addRootFile(newRoots, fo);
+            }
+            addRootFile(newRoots, project.getProjectDirectory());
+        }                
+        synchronized(roots) {
+            roots = newRoots;
+        }        
+        fireFileEvent(EVENT_PROJECTS_CHANGED, null);
+    }
+    
+    private void addRootFile(Set<File> set, FileObject fo) {
+        addRootFile(set, FileUtil.toFile(fo));
+    }
+    
+    private void addRootFile(Set<File> set, File file) {
+        if(file == null) {
+            return;
+        }
+        set.add(file);
+        return;        
+    }
     
     public static synchronized LocalHistory getInstance() {
         if(instance == null) {
@@ -93,37 +149,33 @@ public class LocalHistory {
         return store;
     }   
     
-    private String getUserDir() {
-        if(userDir == null) {
-            userDir = System.getProperty("netbeans.user");                      // NOI18N
-        }
-        return userDir;
-    }
-    
     File isManagedByParent(File file) {
-        File parent = file.getParentFile();
-        while(parent != null) {
-            
-            if(parent.getAbsolutePath().equals(getUserDir())) {
-                // ignore userdir
-                return null;
+        if(roots == null) {
+            // init not finnished yet 
+            return file;
+        }        
+        File parent = null;
+        while(file != null) {
+            synchronized(roots) {
+                if(roots.contains(file)) {
+                    parent = file;
+                }            
             }                        
-            
-            file = parent;
-            parent = file.getParentFile();       
-        }
-        return file;    
+            file = file.getParentFile();            
+        }        
+        return parent;    
     }
     
     boolean isManaged(File file) {
         if(Diagnostics.ON) {
             Diagnostics.println(".isManaged() " + file);
         }
+        if(file == null) {
+            return false;
+        }                        
         return true;
-    }
-
-    private ListenersSupport listenerSupport = new ListenersSupport(this);
-    
+    }        
+      
     public void addVersioningListener(VersioningListener listener) {
         listenerSupport.addListener(listener);
     }
@@ -135,4 +187,18 @@ public class LocalHistory {
     void fireFileEvent(Object id, File file) {
         listenerSupport.fireVersioningEvent(id, new Object[]{file});
     }    
+    
+    PropertyChangeListener openProjectsListener = new PropertyChangeListener() {
+        public void propertyChange(PropertyChangeEvent evt) {
+            if(evt.getPropertyName().equals(OpenProjects.PROPERTY_OPEN_PROJECTS) ) {
+                final Project[] projects = (Project[]) evt.getNewValue();
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {               
+                        setRoots(projects);
+                    }
+                });                               
+            }                    
+        }            
+    };
+        
 }
