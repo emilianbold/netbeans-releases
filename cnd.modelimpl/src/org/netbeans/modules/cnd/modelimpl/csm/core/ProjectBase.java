@@ -1569,7 +1569,7 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
     public static FileImpl getStartFile(final APTPreprocHandler.State state) {
         StartEntry startEntry = APTHandlersSupport.extractStartEntry(state);
 	ProjectBase startProject = getStartProject(startEntry);
-        FileImpl csmFile = startProject.getFile(new File(startEntry.getStartFile()));
+        FileImpl csmFile = startProject == null ? null : startProject.getFile(new File(startEntry.getStartFile()));
         return csmFile;
     }
     
