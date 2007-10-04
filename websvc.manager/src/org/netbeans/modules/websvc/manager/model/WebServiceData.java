@@ -122,7 +122,7 @@ public class WebServiceData {
     
     private String derivePackageName(String wsdlURL, String subPackage) {
         if (wsdlURL.startsWith("file:")) {
-            throw new IllegalArgumentException("URL to access WSDL could not be local");
+            return DEFAULT_PACKAGE_NAME + ((subPackage != null) ? subPackage : "");
         }
         int iStart = wsdlURL.indexOf("://") + 3;
         int iEnd = wsdlURL.indexOf('/', iStart);
