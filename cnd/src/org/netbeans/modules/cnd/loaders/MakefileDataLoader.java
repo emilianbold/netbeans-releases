@@ -87,7 +87,6 @@ public class MakefileDataLoader extends UniFileLoader {
         /* initialize the extensions list */
         ExtensionList extensionsList = new ExtensionList();
         extensionsList.addExtension("mk"); // NOI18N
-        extensionsList.addMimeType(MIMENames.MAKEFILE_MIME_TYPE);
         setExtensions(extensionsList);
         
         /* initialize the well known extensions list */

@@ -45,10 +45,8 @@ import java.io.File;
 import java.util.Date;
 import java.util.Map;
 import java.text.DateFormat;
-import java.util.Enumeration;
 
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.ExtensionList;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.FileEntry;
@@ -56,7 +54,6 @@ import org.openide.loaders.UniFileLoader;
 import org.openide.modules.InstalledFileLocator;
 
 import org.netbeans.modules.cnd.settings.CppSettings;
-import org.openide.util.Utilities;
 
 /**
  * DataLoader for recognising C/C++/Fortran (C-C-F) source files.
@@ -87,7 +84,7 @@ public abstract class CndAbstractDataLoader extends UniFileLoader {
     @Override
     protected void initialize() {
         super.initialize();
-        getExtensions().addMimeType(getMimeType());
+//        getExtensions().addMimeType(getMimeType());
     }
 
     @Override
