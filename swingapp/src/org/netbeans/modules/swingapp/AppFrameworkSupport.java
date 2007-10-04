@@ -58,9 +58,9 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Types;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
@@ -333,21 +333,17 @@ class AppFrameworkSupport {
                                 Tree superT = classT.getExtendsClause();
                                 if (superT != null) {
                                     Trees trees = controller.getTrees();
-                                    TreePath superTPath = trees.getPath(controller.getCompilationUnit(), superT);
-                                    Element superEl = trees.getElement(superTPath);
-                                    if (superEl != null && superEl.getKind() == ElementKind.CLASS) {
-                                        String superClassName = ((TypeElement)superEl).getQualifiedName().toString();
-                                        for (String appCls : getKnownAppClassNames()) {
-                                            if (appCls.equals(superClassName)) {
-                                                TreePath classTPath = trees.getPath(controller.getCompilationUnit(), classT);
-                                                TypeElement classEl = (TypeElement) trees.getElement(classTPath);
-                                                result[0] = classEl.getQualifiedName().toString();
-                                                return;
-                                            }
-                                        }
-                                        // TODO need a general way to recognize Application subclass
-                                        break;
+                                    TreePath classTPath = trees.getPath(controller.getCompilationUnit(), classT);
+                                    TypeElement classEl = (TypeElement) trees.getElement(classTPath);
+                                    TypeElement appEl = controller.getElements().getTypeElement("org.jdesktop.application.Application");
+                                    Types types = controller.getTypes();
+                                    TypeMirror tm1 = types.erasure(classEl.asType());
+                                    TypeMirror tm2 = types.erasure(appEl.asType());
+                                    if (types.isSubtype(tm1, tm2) && !types.isSameType(tm1, tm2)) {
+                                        result[0] = classEl.getQualifiedName().toString();
+                                        return;
                                     }
+                                    break;
                                 }
                             }
                         }
@@ -360,13 +356,4 @@ class AppFrameworkSupport {
         return result[0];
     }
 
-    private static List<String> knownAppClassNames;
-    private static List<String> getKnownAppClassNames() {
-        if (knownAppClassNames == null) {
-            knownAppClassNames = new LinkedList<String>();
-            knownAppClassNames.add(org.jdesktop.application.Application.class.getName());
-            knownAppClassNames.add(org.jdesktop.application.SingleFrameApplication.class.getName());
-        }
-        return knownAppClassNames;
-    }
 }
