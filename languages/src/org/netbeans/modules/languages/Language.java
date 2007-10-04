@@ -346,6 +346,9 @@ public class Language extends org.netbeans.api.languages.Language {
         if (feature.getFeatureName().equals (SKIP))
             addSkipTokenType (feature.getSelector ().getAsString ());
         else
+        if (feature.getFeatureName ().equals (IMPORT))
+            importLanguage (feature);
+        else
             featureList.add (feature);
     }
 
