@@ -80,6 +80,20 @@ public class BeanTypeSerializer implements JavonSerializer {
                 int shortLength = shortName.length();
                 packageName = classFullQualifiedName.substring( fqnLength - shortLength - 1 );
             }
+            
+            // Check for default non static constructor
+            List<ExecutableElement> constructors = ElementFilter.constructorsIn( clazz.getEnclosedElements());
+            boolean validConstructor = false;
+            for( ExecutableElement ee : constructors ) {
+                if( ee.getParameters().size() == 0 ) {
+                    if( ee.getModifiers().contains( Modifier.PUBLIC ) && 
+                            !ee.getModifiers().contains( Modifier.STATIC )) {
+                        validConstructor = true;
+                        break;
+                    }
+                }
+            }
+            if( !validConstructor ) return false;
             return true;
         }
         return false;
