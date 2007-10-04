@@ -183,7 +183,11 @@ public class HgConfigFiles {
         if (reload) {
             doReload();
         }
-        return getProperty("paths", "default-push"); // NOI18N
+        String value = getProperty("paths", "default-push"); // NOI18N
+        if (value.length() == 0) {
+            value = getProperty("paths", "default"); // NOI18N
+        }
+        return value;
     }
 
     public String getUserName(Boolean reload) {

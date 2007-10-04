@@ -89,8 +89,12 @@ public class PushAction extends AbstractAction {
         final File root = HgUtils.getRootFile(ctx);
         if (root == null) return;
         String repository = root.getAbsolutePath();
-        final String pushPath = HgCommand.getPushDefault(root);
-        if(pushPath == null) return;
+        String tmpPushPath = HgCommand.getPushDefault(root);
+        if(tmpPushPath == null) {
+            tmpPushPath = HgCommand.getPullDefault(root);
+        }
+        if(tmpPushPath == null) return;
+        final String pushPath = tmpPushPath;
         final String fromPrjName = HgProjectUtils.getProjectName(root);
         final String toPrjName = HgProjectUtils.getProjectName(new File(pushPath));
 
@@ -227,7 +231,13 @@ public class PushAction extends AbstractAction {
     }
     
     public boolean isEnabled() {
-        // If the repository has a default push path then enable action
-        return HgRepositoryContextCache.getPushDefault(context) == null ? false: true;
+        // If the repository has a default push or pull path then enable action
+        if (HgRepositoryContextCache.getPushDefault(context) != null) {
+            return true;
+        } else if (HgRepositoryContextCache.getPullDefault(context) != null) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }
