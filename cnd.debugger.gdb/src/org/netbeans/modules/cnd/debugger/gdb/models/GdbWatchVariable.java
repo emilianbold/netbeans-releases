@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.debugger.gdb.models;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.logging.Logger;
 import org.netbeans.api.debugger.Watch;
 import org.netbeans.modules.cnd.debugger.gdb.Field;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
@@ -70,8 +71,8 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
     private Watch watch;
     private WatchesTreeModel model;
     private StringBuilder typeBuf = new StringBuilder();
-    private boolean[] invalidType = new boolean[] { false };
-    private boolean[] invalidValue = new boolean[] { false };
+    private Object LOCK = new Object();
+    protected Logger log = Logger.getLogger("gdb.logger"); // NOI18N
     
     /** Creates a new instance of GdbWatchVariable */
     public GdbWatchVariable(WatchesTreeModel model, Watch watch) {
@@ -79,17 +80,16 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
         this.model = model;
         this.watch = watch;
         
-        if (watch.getExpression().length() > 0) {
-            if (getDebugger() != null) {
-                setTypeInvalid();
-                setValueInvalid();
-                getDebugger().addPropertyChangeListener(this);
-            }
-            watch.addPropertyChangeListener(this);
-        } else {
-            type = "";
-            value = "";
+        if (getDebugger() != null) {
+            getDebugger().addPropertyChangeListener(this);
         }
+        setType(null);
+        setValue(null);
+        watch.addPropertyChangeListener(this);
+    }
+    
+    public Watch getWatch() {
+        return watch;
     }
     
     public void remove() {
@@ -112,11 +112,11 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
     public void propertyChange(PropertyChangeEvent ev) {
         if (ev.getPropertyName().equals(GdbDebugger.PROP_STATE) &&
                 ev.getNewValue().equals(GdbDebugger.STATE_STOPPED)) {
-            setTypeInvalid();
-            setValueInvalid();
+            setType(null);
+            setValue(null);
         } else if (ev.getPropertyName().equals(Watch.PROP_EXPRESSION)) {
-            setTypeInvalid();
-            setValueInvalid();
+            setType(null);
+            setValue(null);
         }
     }
     
@@ -128,40 +128,27 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
     @Override
     public String getType() {
         if (type == null || type.length() == 0) {
-            synchronized (invalidType) {
-                if (invalidType[0]) {
-                    try {
-                        invalidType.wait(200);
-                        expandChildrenFromValue(this);
-                    } catch (InterruptedException ex) {
-                        return "";
-                    }
-                } else {
-                    invalidType[0] = true;
-                    getDebugger().requestWatchType(this);
-                }
-            }
+            log.fine("GWV.getType[" + Thread.currentThread().getName() +
+                    "]: Requesting type for \"" + // NOI18N
+                    getFullName(false) + "\" from GdbDebugger"); // NOI18N
+            requestWatchType();
+            log.fine("GWV.getType[" + Thread.currentThread().getName() + "]: Got type"); // NOI18N
+        }
+        else {
+            log.fine("GWV.getType[" + Thread.currentThread().getName() + "]: Using existing type"); // NOI18N
         }
         return type;
     }
     
     @Override
     public void setType(String type) {
-        synchronized (invalidType) {
+        if (type == null) {
+            this.type = "";
+            this.value = "";
+//            fields = new Field[0];
+//            derefValue = null;
+        } else {
             this.type = type;
-            if (invalidType[0]) {
-                invalidType.notifyAll();
-                invalidType[0] = false;
-            }
-        }
-    }
-    
-    private void setTypeInvalid() {
-        if (getDebugger() != null) {
-            synchronized (invalidType) {
-                invalidType[0] = true;
-                getDebugger().requestWatchType(this);
-            }
         }
     }
     
@@ -171,55 +158,57 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
             msg = msg.substring(0, msg.length() - 1);
         }
         setType('>' + msg + '<');
+        log.fine("GWV.setTypeToError[" + Thread.currentThread().getName() + "]: " + getName()); // NOI18N
+    }
+    
+    private void requestWatchType() {
+        synchronized (LOCK) {
+                try {
+                    getDebugger().requestWatchType(this);
+                    LOCK.wait(200);
+                } catch (InterruptedException ex) {
+                }
+        }
+    }
+    
+    public void setWatchType(String type) {
+        synchronized (LOCK) {
+            this.type = type; // don't use setType, it causes an infinite loop
+            log.fine("GWV.setWatchType[" + Thread.currentThread().getName() + // NOI18N
+                    "]: Setting \"" + getName() + "\" to \"" + type + "\""); // NOI18N
+            LOCK.notifyAll();
+        }
     }
     
     @Override
     public String getValue() {
-        if (value == null) {
-            synchronized (invalidValue) {
-                if (invalidValue[0]) {
-                    try {
-                        invalidValue.wait(200);
-                    } catch (InterruptedException ex) {
-                        invalidValue[0] = false;
-                        return "";
-                    }
-                } else {
-                    invalidValue[0] = true;
-                    getDebugger().requestWatchValue(this);
-                }
-            }
+        if (value == null || value.length() == 0) {
+            log.fine("GWV.getValue[" + Thread.currentThread().getName() +
+                    "]: Requesting value for \"" + // NOI18N
+                    getFullName(false) + "\" from GdbDebugger"); // NOI18N
+            requestWatchValue();
+            log.fine("GWV.getValue[" + Thread.currentThread().getName() + "]: Got value"); // NOI18N
+        }
+        else {
+            log.fine("GWV.getValue[" + Thread.currentThread().getName() + // NOI18N
+                    "]: Using existing value"); // NOI18N
         }
         return value;
     }
     
     @Override
     public void setValue(String value) {
-        synchronized (invalidValue) {
+        if (value == null) {
+            this.value = "";
+//            fields = new Field[0];
+//            derefValue = null;
+        } else {
             this.value = value;
-            if (invalidValue[0]) {
-                invalidValue.notifyAll();
-                invalidValue[0] = false;
-            }
-            if (fields.length > 0) {
-                fields = new Field[0];
-                expandChildren();
-            }
         }
     }
     
     public void setValueAt(String value) {
-        super.setValue(value);
-        setValueInvalid();
-    }
-    
-    private void setValueInvalid() {
-        if (getDebugger() != null) {
-            synchronized (invalidValue) {
-                invalidValue[0] = true;
-                getDebugger().requestWatchValue(this);
-            }
-        }
+        setValue(value);
     }
     
     public void setValueToError(String msg) {
@@ -228,6 +217,31 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
             msg = msg.substring(0, msg.length() - 1);
         }
         setValue('>' + msg + '<');
+        log.fine("GWV.setValueToError[" + Thread.currentThread().getName() + "]: " + getName()); // NOI18N
+        fields = new Field[0];
+        derefValue = null;
+    }
+    
+    private void requestWatchValue() {
+        synchronized (LOCK) {
+                try {
+                    getDebugger().requestWatchValue(this);
+                    LOCK.wait(200);
+                } catch (InterruptedException ex) {
+                }
+        }
+    }
+    
+    public void setWatchValue(String value) {
+        synchronized (LOCK) {
+            this.value = value;
+            log.fine("GWV.setWatchValue[" + Thread.currentThread().getName() + // NOI18N
+                    "]: Setting \"" + getName() + "\" to \"" + value + "\""); // NOI18N
+            LOCK.notifyAll();
+            fields = new Field[0];
+            derefValue = null;
+            expandChildren();
+        }
     }
     
 //    private boolean expressionIsSimpleVariable() {

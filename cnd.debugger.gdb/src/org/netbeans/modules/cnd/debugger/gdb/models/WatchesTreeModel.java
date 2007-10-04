@@ -221,9 +221,10 @@ public class WatchesTreeModel implements TreeModel, TreeExpansionModel, Property
         listeners.remove(l);
     }
     
-    private void fireTreeChanged() {
+    protected void fireTreeChanged() {
         Vector v = (Vector) listeners.clone();
         int i, k = v.size();
+        log.fine("WTM.fireTreeChanged[" + Thread.currentThread().getName() + "]:");
         ModelEvent event = new ModelEvent.TreeChanged(this);
         for (i = 0; i < k; i++) {
             ((ModelListener) v.get(i)).modelChanged (event);
@@ -241,6 +242,7 @@ public class WatchesTreeModel implements TreeModel, TreeExpansionModel, Property
         
     void fireTableValueChanged(Object node, String propertyName) {
         Vector v = (Vector) listeners.clone();
+        log.fine("WTM.fireTableValueChanged[" + Thread.currentThread().getName() + "]:");
         int i, k = v.size();
         for (i = 0; i < k; i++) {
             ((ModelListener) v.get(i)).modelChanged(new ModelEvent.TableValueChanged(this, node, propertyName));
@@ -374,7 +376,11 @@ public class WatchesTreeModel implements TreeModel, TreeExpansionModel, Property
                     node = m.watchToVariable.get(evt.getSource());
                 }
                 if (node != null) {
-                    m.fireTableValueChanged(node, null);
+                    if (node instanceof AbstractVariable && ((AbstractVariable) node).getFieldsCount() > 0) {
+                        m.fireTreeChanged();
+                    } else {
+                        m.fireTableValueChanged(node, null);
+                    }
                     return;
                 }
             }

@@ -172,7 +172,8 @@ public class GdbUtils {
      * function pointers.
      */
     public static boolean isPointer(Object type) {
-        return type instanceof String && type.toString().endsWith("*"); // NOI18N
+        return type instanceof String &&
+                (type.toString().endsWith("*") || type.toString().endsWith("* const")); // NOI18N
     }
     
     /** Test if a variable is a function pointer */
@@ -287,41 +288,26 @@ public class GdbUtils {
     }
     
     public static String gdbToUserEncoding(String string) {
-        String lang = System.getenv("LANG") + System.getenv("LC_ALL"); // NOI18N
-        
-        if (lang != null && (lang.contains("UTF-8") || lang.contains("UTF8"))) { // NOI18N
-            Charset cs = Charset.forName("UTF-8"); // NOI18N
-            CharsetDecoder decoder = cs.newDecoder();
-            GdbDecoder gpd = new GdbDecoder(cs, decoder);
-            ByteBuffer in = ByteBuffer.wrap(string.getBytes());
-            CharBuffer out = CharBuffer.allocate(string.length());
-            CoderResult cres = gpd.decode(in, out, true);
-            
-            if (!cres.isError()) {
-                string = new String(out.array()).substring(0, out.position());
+        // The first part transforms string to byte array
+        char[] chars = string.toCharArray();
+        ArrayList<Byte> _bytes = new ArrayList<Byte>();
+        for (int i = 0; i < chars.length; i++) {
+            char ch = chars[i];
+            if (ch == '\\') {
+                char[] charVal = {chars[++i], chars[++i], chars[++i]};
+                ch = (char) Integer.valueOf(String.valueOf(charVal), 8).intValue();
             }
-        } else if (System.getProperty("sun.jnu.encoding").toLowerCase().contains("cp12151")) {
-            // The first part transforms string to byte array
-            char[] chars = string.toCharArray();
-            ArrayList<Byte> _bytes = new ArrayList<Byte>();
-            for (int i = 0; i < chars.length; i++) {
-                char ch = chars[i];
-                if (ch == '\\') {
-                    char[] charVal = {chars[++i], chars[++i], chars[++i]};
-                    ch = (char) Integer.valueOf(String.valueOf(charVal), 8).intValue();
-                }
-                _bytes.add((byte) ch);
-            }
-            byte[] bytes = new byte[_bytes.size()];
-            for (int i = 0; i < bytes.length; i++) {
-                bytes[i] = _bytes.get(i);
-            }
+            _bytes.add((byte) ch);
+        }
+        byte[] bytes = new byte[_bytes.size()];
+        for (int i = 0; i < bytes.length; i++) {
+            bytes[i] = _bytes.get(i);
+        }
 
-            // The second part performs encoding to current coding system
-            try {
-                string = new String(bytes, System.getProperty("sun.jnu.encoding"));
-            } catch (UnsupportedEncodingException e) {
-            }
+        // The second part performs encoding to current coding system
+        try {
+            string = new String(bytes, System.getProperty("sun.jnu.encoding"));
+        } catch (UnsupportedEncodingException e) {
         }
         return string;
     }

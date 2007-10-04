@@ -112,7 +112,9 @@ public class AbstractVariable implements LocalVariable, Customizer {
         
         if (getDebugger() != null) {
             getDebugger().waitForTypeCompletionCompletion();
-            expandChildrenFromValue(this);
+            if (!(this instanceof GdbWatchVariable)) { // not fully constructed yet...
+                expandChildrenFromValue(this);
+            }
         }
     }
     
@@ -198,7 +200,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
                         fullname = ((GdbWatchVariable) this).getExpression();
                     } else {
                         if (this instanceof AbstractField) {
-                            fullname = ((AbstractField) this).getFullName();
+                            fullname = ((AbstractField) this).getFullName(false);
                         } else {
                             fullname = name;
                         }
@@ -308,7 +310,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
     *
     * @return 0 if the variable shouldn't have a turner and 5 if it should
     */
-    public int getFieldsCount() {
+    public synchronized int getFieldsCount() {
         if (fields.length > 0) {
             return fields.length;
         } else if (mightHaveFields()) {
@@ -343,22 +345,36 @@ public class AbstractVariable implements LocalVariable, Customizer {
     }
     
     private boolean isValidPointerAddress(String info) {
-        int pos1 = info.indexOf("*) 0x"); // NOI18N
+        String frag = "";
+        int pos1;
         int i;
-        if (info.charAt(0) == '(' && pos1 != -1) {
-            try {
-                i = Integer.parseInt(info.substring(pos1 + 5), 16);
-            } catch (NumberFormatException ex) {
-                return false;
+        if (info.length() > 0) {
+            if (info.charAt(0) == '(') {
+                pos1 = info.indexOf("*) 0x"); // NOI18N
+                if (pos1 == -1) {
+                    pos1 = info.indexOf("* const) 0x"); // NOI18N
+                    if (pos1 != -1) {
+                        frag = info.substring(pos1 + 11);
+                    }
+                } else {
+                    frag = info.substring(pos1 + 5);
+                }
+                if (pos1 != -1) {
+                    try {
+                        i = Integer.parseInt(frag, 16);
+                    } catch (NumberFormatException ex) {
+                        return false;
+                    }
+                    return i > 0;
+                }
+            } else if (info.startsWith("0x")) { // NOI18N
+                try {
+                    i = Integer.parseInt(info.substring(2), 16);
+                } catch (NumberFormatException ex) {
+                    return false;
+                }
+                return i > 0;
             }
-            return i > 0;
-        } else if (info.startsWith("0x")) {
-            try {
-                i = Integer.parseInt(info.substring(2), 16);
-            } catch (NumberFormatException ex) {
-                return false;
-            }
-            return i > 0;
         }
         return false;
     }
@@ -425,7 +441,8 @@ public class AbstractVariable implements LocalVariable, Customizer {
     
     @Override
     public boolean equals(Object o) {
-        return (o instanceof AbstractVariable) && (name.equals(((AbstractVariable) o).name));
+        return o instanceof AbstractVariable &&
+                    getFullName(true).equals(((AbstractVariable) o).getFullName(true));
     }
     
     @Override
@@ -474,104 +491,125 @@ public class AbstractVariable implements LocalVariable, Customizer {
         String rt;
         int count = 0; // we really only care if its 0 or >0
         int start, end;
-
-        if (var.fields.length == 0) {
-            if (var.derefValue != null) {
-                v = var.derefValue;
-                t = var.type.substring(0, var.type.length() - 1).trim();
-            } else if (GdbUtils.isPointer(var.type) && !isCharString(var.type) &&
-                        uncast(var.value).startsWith("0x") && // NOI18N
-                        !uncast(var.value).equals("0x0")) { // NOI18N
-                var.derefValue = getDerefValue(var, '*' + var.getFullName());
-                v = var.derefValue;
-                t = var.type.substring(0, var.type.length() - 1).trim();
-            } else {
-                v = var.value;
-                t = var.type;
-            }
-
-            if (v != null && v.length() > 0) {
-                rt = resolveType(t);
-                if (v.charAt(0) == '{') {
-                    if (GdbUtils.isArray(t)) {
-                        count += parseArray(var, var.name, t, v.substring(1, v.length() - 1));
+        
+        synchronized (var) {
+            log.fine("AV.expandChildrenFromValue[" + Thread.currentThread().getName() +
+                    "]: " + var.getName());
+            if (var.fields.length == 0) {
+                if (var.derefValue != null) {
+                    v = var.derefValue;
+                    if (var.type.endsWith("*")) { // NOI18N
+                        t = var.type.substring(0, var.type.length() - 1).trim();
+                    } else if (var.type.endsWith("* const")) { // NOI18N
+                        t = var.type.substring(0, var.type.length() - 7).trim();
                     } else {
-                        Object o;
-                        try {
-                        o = getCurrentCallStackFrame().getType(t);
-                        if (o == null) {
-                            o = getCurrentCallStackFrame().getType('$' + var.name);
-                        }
-                        } catch (IllegalStateException ex) {
-                            // This happens when the debug session is killed while processing input...
-                            return 0;
-                        }
-                        if (o instanceof Map && ((Map) o).size() > 0) {
-                            @SuppressWarnings("unchecked")
-                            Map<String, Object> map = (Map<String, Object>) o;
-                            String val = v.substring(1, v.length() - 1);
-                            start = 0;
-                            end = GdbUtils.findNextComma(val, 0);
-                            while (end != -1) {
-                                String vfrag = val.substring(start, end).trim();
-                                var.addField(completeFieldDefinition(var, map, vfrag));
-                                start = end + 1;
-                                end = GdbUtils.findNextComma(val, end + 1);
-                            }
-                            var.addField(completeFieldDefinition(var, map, val.substring(start).trim()));
-                            count++;
-                        } else if (o instanceof String) {
-                            if (GdbUtils.isArray(o.toString())) {
-                                count += parseArray(var, var.name, o.toString(), var.value.substring(1, var.value.length() - 1));
-                            }
-                        } else if (o == null && t.endsWith("{...}")) { // NOI18N
-                            // An anonymous class/struct/union, but we can still show children (from value) without type info
-                            if (v.charAt(0) == '{' && v.endsWith("}")) { // NOI18N
-                                v = v.substring(1, v.length() - 1);
-                                start = 0;
-                                end = GdbUtils.findNextComma(v, 0);
-                                while (end != -1) {
-                                    String vfrag = v.substring(start, end).trim();
-                                    var.addField(completeFieldDefinition(var, null, vfrag));
-                                    start = end + 1;
-                                    end = GdbUtils.findNextComma(v, end + 1);
-                                }
-                                var.addField(completeFieldDefinition(var, null, v.substring(start).trim()));
-                                count++;
-                            }
-                        }
+                        log.fine("Unexpected type of dereferenced variable");
+                        t = var.type; // Is this an error? Shouldn't happen...
                     }
-                } else if (GdbUtils.isArray(rt) && 
-                        (rt.startsWith("char [") || rt.startsWith("unsigned char ["))) { // NOI18N
-                    // gdb puts them in string
-                    count += parseCharArray(var, var.name, t, v.substring(1, v.length() - 1));
-                } else if (var.derefValue != null) {
-                    if (var.type.endsWith(" **") && // NOI18N
-                            isCharString(var.type.substring(0, var.type.length() - 1))) {
-                        int idx = 0;
-                        int max = 100;
-                        v = var.derefValue;
-                        AbstractField field = new AbstractField(var, var.name + '[' + idx++ + ']', t, v);
-                        while (v != null && v.startsWith("0x") && !v.equals("0x0") && // NOI18N
-                                v.indexOf('<') == -1) {
-                            var.addField(field);
-                            count++;
-                            String n = var.name + '[' + idx++ + ']';
-                            field = new AbstractField(var, n, t, null);
-                            v = getDerefValue(field, n);
-                            field.value = v;
-                            if (idx > max) {
-                                break;
+                } else if (var.value != null && GdbUtils.isPointer(var.type) && !isCharString(var.type) &&
+                            uncast(var.value).startsWith("0x") && // NOI18N
+                            !uncast(var.value).equals("0x0")) { // NOI18N
+                    var.derefValue = getDerefValue(var, '*' + var.getFullName(false));
+                    v = var.derefValue;
+                    if (var.type.endsWith("*")) { // NOI18N
+                        t = var.type.substring(0, var.type.length() - 1).trim();
+                    } else if (var.type.endsWith("* const")) { // NOI18N
+                        t = var.type.substring(0, var.type.length() - 7).trim();
+                    } else {
+                        log.fine("Unexpected type of pointer variable");
+                        t = var.type; // Is this an error? Shouldn't happen...
+                    }
+                } else {
+                    v = var.value;
+                    t = var.type;
+                }
+
+                if (v != null && v.length() > 0) {
+                    rt = resolveType(t);
+                    if (v.charAt(0) == '{') {
+                        if (GdbUtils.isArray(t)) {
+                            count += parseArray(var, var.name, t, v.substring(1, v.length() - 1));
+                        } else {
+                            Object o;
+                            try {
+                            o = getCurrentCallStackFrame().getType(t);
+                            if (o == null) {
+                                o = getCurrentCallStackFrame().getType('$' + var.name);
+                            }
+                            } catch (IllegalStateException ex) {
+                                // This happens when the debug session is killed while processing input...
+                                return 0;
+                            }
+                            if (o instanceof Map && ((Map) o).size() > 0) {
+                                @SuppressWarnings("unchecked")
+                                Map<String, Object> map = (Map<String, Object>) o;
+                                String val = v.substring(1, v.length() - 1);
+                                start = 0;
+                                end = GdbUtils.findNextComma(val, 0);
+                                while (end != -1) {
+                                    String vfrag = val.substring(start, end).trim();
+                                    var.addField(completeFieldDefinition(var, map, vfrag));
+                                    start = end + 1;
+                                    end = GdbUtils.findNextComma(val, end + 1);
+                                }
+                                var.addField(completeFieldDefinition(var, map, val.substring(start).trim()));
+                                count++;
+                            } else if (o instanceof String) {
+                                if (GdbUtils.isArray(o.toString())) {
+                                    count += parseArray(var, var.name, o.toString(), var.value.substring(1, var.value.length() - 1));
+                                }
+                            } else if (o == null && t.endsWith("{...}")) { // NOI18N
+                                // An anonymous class/struct/union, but we can still show children (from value) without type info
+                                if (v.charAt(0) == '{' && v.endsWith("}")) { // NOI18N
+                                    v = v.substring(1, v.length() - 1);
+                                    start = 0;
+                                    end = GdbUtils.findNextComma(v, 0);
+                                    while (end != -1) {
+                                        String vfrag = v.substring(start, end).trim();
+                                        var.addField(completeFieldDefinition(var, null, vfrag));
+                                        start = end + 1;
+                                        end = GdbUtils.findNextComma(v, end + 1);
+                                    }
+                                    var.addField(completeFieldDefinition(var, null, v.substring(start).trim()));
+                                    count++;
+                                }
                             }
                         }
-                    } else if (!isCharString(var.type)) {
-                        var.addField(new AbstractField(var, '*' + var.name, t, v));
-                        count ++;
+                    } else if (GdbUtils.isArray(rt) && 
+                            (rt.startsWith("char [") || rt.startsWith("unsigned char ["))) { // NOI18N
+                        // gdb puts them in string
+                        count += parseCharArray(var, var.name, t, v.substring(1, v.length() - 1));
+                    } else if (var.derefValue != null) {
+                        if (var.type.endsWith(" **") && // NOI18N
+                                isCharString(var.type.substring(0, var.type.length() - 1))) {
+                            int idx = 0;
+                            int max = 100;
+                            v = var.derefValue;
+                            AbstractField field = new AbstractField(var, var.name + '[' + idx++ + ']', t, v);
+                            while (v != null && v.startsWith("0x") && !v.equals("0x0") && // NOI18N
+                                    v.indexOf('<') == -1) {
+                                var.addField(field);
+                                count++;
+                                String n = var.name + '[' + idx++ + ']';
+                                field = new AbstractField(var, n, t, null);
+                                v = getDerefValue(field, n);
+                                field.value = v;
+                                if (idx > max) {
+                                    break;
+                                }
+                            }
+                        } else if (!isCharString(var.type)) {
+                            var.addField(new AbstractField(var, '*' + var.name, t, v));
+                            count ++;
+                        }
                     }
                 }
             }
+//            if (count > 0 && this instanceof GdbWatchVariable) {
+//                WatchesTreeModel.getWatchesTreeModel().fireTreeChanged();
+//            }
+            return count;
         }
-        return count;
     }
     
     private String resolveType(String t) {
@@ -579,14 +617,16 @@ public class AbstractVariable implements LocalVariable, Customizer {
             String base = GdbUtils.getBaseType(t);
             String extra;
             
-            if (!base.equals(t)) {
-                extra = t.substring(base.length());
-            } else {
-                extra = "";
-            }
-            Object o = getCurrentCallStackFrame().getType(base);
-            if (o instanceof String) {
-                return o.toString() + extra;
+            if (base != null) {
+                if (!base.equals(t)) {
+                    extra = t.substring(base.length());
+                } else {
+                    extra = "";
+                }
+                Object o = getCurrentCallStackFrame().getType(base);
+                if (o instanceof String) {
+                    return o.toString() + extra;
+                }
             }
         }
         return t;
@@ -600,7 +640,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
      * @return true if t is some kind of a character pointer
      */
     private boolean isCharString(String t) {
-        if (t.endsWith("*") && !t.endsWith("**")) { // NOI18N
+        if (t != null && t.endsWith("*") && !t.endsWith("**")) { // NOI18N
             t = GdbUtils.getBaseType(t);
             if (t.equals("char") || t.equals("unsigned char")) { // NOI18N
                 return true;
@@ -853,9 +893,9 @@ public class AbstractVariable implements LocalVariable, Customizer {
         }
     }
         
-        public String getFullName() {
+        public String getFullName(boolean showBase) {
             if (this instanceof AbstractField) {
-                return ((AbstractField) this).getFullName();
+                return ((AbstractField) this).getFullName(showBase);
             } else {
                 return getName();
             }
@@ -884,19 +924,23 @@ public class AbstractVariable implements LocalVariable, Customizer {
         }
         
         @Override
-        public String getFullName() {
+        public String getFullName(boolean showBaseClass) {
             String n;
             String pname; // parent part of name
             int pos;
             
             if (parent instanceof AbstractField) {
-                pname = ((AbstractField) parent).getFullName();
+                pname = ((AbstractField) parent).getFullName(showBaseClass);
             } else {
                 pname = parent.getName();
             }
             
             if (name.equals("<Base class>")) { // NOI18N
-                return pname;
+                if (showBaseClass) {
+                    return pname + ".<" + type + ">"; // NOI18N
+                } else {
+                    return pname;
+                }
             } else if (name.indexOf('[') != -1) {
                 if ((pos = pname.lastIndexOf('.')) != -1) {
                     return pname.substring(0, pos) + '.' + name;
