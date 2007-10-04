@@ -77,8 +77,9 @@ public class DalpBuilder extends Task {
             pw.println("    <vendor>"     + getProject().getProperty("application.vendor")    + "</vendor>");
             if ("true".equals((getProject().getProperty("ricoh.dalp.information.is-icon-used"))) && (iconName != null))
             {
-                  pw.println("    <icon href=\"./" + getProject().getProperty("dist.jar") + "\" basepath=\"current\" location=\"jar\">" + iconName + "</icon>");
-//                pw.println("    <icon href=\"" + iconName + "\" location=\"jar\"/>");
+                if ("false".equals(getProject().getProperty("ricoh.icon.invalid"))){
+                    pw.println("    <icon href=\"./" + getProject().getProperty("dist.jar") + "\" basepath=\"current\" location=\"jar\">" + iconName + "</icon>");
+                }
             }
             else
             {
@@ -103,8 +104,9 @@ public class DalpBuilder extends Task {
             
             // we support just local installation
             {
+                String version = getProject().getProperty("application.version") != null ? "version=\"" + getProject().getProperty("application.version") + "\"" : "";
                 pw.println("    <jar href=\"./"   + getProject().getProperty("dist.jar") + 
-                                 "\" version=\""  + getProject().getProperty("application.version") + 
+                                 "\" "  + version + 
                                  "\" basepath=\"current\" main=\"true\" />");
             }
 
@@ -187,9 +189,10 @@ public class DalpBuilder extends Task {
             File basedir = ds.getBasedir();
             String[] files = ds.getIncludedFiles();
 
+            String version = getProject().getProperty("application.version") != null ? "version=\"" + getProject().getProperty("application.version") + "\"" : "";
             for (int i = 0; i < files.length; i++)
             {
-                pw.println("    <jar href=\"./" + files[i] + "\" version=\"" + getProject().getProperty("application.version") + "\" basepath=\"current\" />");                
+                pw.println("    <jar href=\"./" + files[i] + "\" " + version + " basepath=\"current\" />");                
             }
         }        
     }

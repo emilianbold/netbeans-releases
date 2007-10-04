@@ -94,7 +94,7 @@ public class DalpParserHandlerImpl implements DalpParserHandler {
     public void handle_application_desc(final Attributes meta) throws SAXException {
         if (DEBUG) System.err.println("handle_application_desc: " + meta);
         if (meta.getValue("main-class") != null){
-            p.put("main.class.xlet", "true");
+            p.put("main.class.class", "xlet");
             p.put("main.class", meta.getValue("main-class"));
         }
     }

@@ -22,6 +22,7 @@
 package org.netbeans.modules.j2me.cdc.project.ricoh;
 
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -163,6 +164,18 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
 
     @Override
     public void addNotify() {
+        updateLocationsSelection();
+        startListening();
+        super.addNotify();
+    }    
+    
+    @Override
+    public void removeNotify() {
+        super.removeNotify();
+        stopListening();
+    }
+    
+    private void updateLocationsSelection(){
         String selection = installLocationTextField.getText();
         if ("hdd".equals(selection)){
             installHDDRadioButton.setSelected(true);
@@ -177,7 +190,7 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
             } catch (Exception e){}
             installOtherSDRadioButton.setSelected(true);
             installLocationComboBox.setSelectedIndex(index);
-            installLocationComboBox.setEnabled(true);            
+            installLocationComboBox.setEnabled(true);
         } else {
             installHDDRadioButton.setSelected(true);
             installLocationComboBox.setEnabled(false);
@@ -202,14 +215,6 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
             workingDirHDDRadioButton.setSelected(true);
             workingDirComboBox.setEnabled(false);
         }
-        startListening();
-        super.addNotify();
-    }
-
-    @Override
-    public void removeNotify() {
-        super.removeNotify();
-        stopListening();
     }
     
     /** This method is called from within the constructor to
@@ -1055,22 +1060,25 @@ private void useAbbreviationCheckBoxActionPerformed(java.awt.event.ActionEvent e
 
 private void disableDalpManagementCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_disableDalpManagementCheckBoxActionPerformed
 
-    if (disableDalpManagementCheckBox.isSelected()) {
-        //disable all components and set ant variable to disable dalp generation in favor of dalp copying
-        Component[] compArr = advancedOptionConfigPanel.getComponents();
-        for (int i = 0; i < compArr.length; i++) {
-            compArr[i].setEnabled(false);
-        }
-    } else {
-        //enable all components; we will update their corresponding status next
-        Component[] compArr = advancedOptionConfigPanel.getComponents();
-        for (int i = 0; i < compArr.length; i++) {
-            compArr[i].setEnabled(true);
-        }
+    panelEnabler(!disableDalpManagementCheckBox.isSelected(), advancedOptionConfigPanel);
+    if (!disableDalpManagementCheckBox.isSelected()) {
+        updateLocationsSelection();
         //checkboxes (which auto check state before setting ant properties)
         this.useAbbreviationCheckBoxActionPerformed(evt);
     }
 }//GEN-LAST:event_disableDalpManagementCheckBoxActionPerformed
+
+    private void panelEnabler(boolean enable, Container comp){
+        Component[] compArr = comp.getComponents();
+        for (int i = 0; i < compArr.length; i++) {
+            if (compArr[i] != disableDalpManagementCheckBox){
+                compArr[i].setEnabled(enable);
+            }
+            if (compArr[i] instanceof Container && ((Container)compArr[i]).getComponentCount() != 0){
+                panelEnabler(enable, ((Container)compArr[i]));
+            }
+        }
+    }
 
     private void startListening(){
         installLocationComboBox.addActionListener(aListener);
