@@ -90,7 +90,6 @@ import javax.swing.event.InternalFrameAdapter;
 import javax.swing.table.DefaultTableModel;
 
 import java.sql.*;
-import org.netbeans.api.db.explorer.DatabaseException;
 
 import org.openide.util.NbBundle;
 import org.openide.nodes.Node;
