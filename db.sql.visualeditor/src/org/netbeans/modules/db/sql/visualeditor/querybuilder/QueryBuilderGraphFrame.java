@@ -90,6 +90,7 @@ import javax.swing.event.InternalFrameAdapter;
 import javax.swing.table.DefaultTableModel;
 
 import java.sql.*;
+import org.netbeans.api.db.explorer.DatabaseException;
 
 import org.openide.util.NbBundle;
 import org.openide.nodes.Node;
@@ -2140,11 +2141,9 @@ public class QueryBuilderGraphFrame extends JPanel
                         // enough to redraw. this causes the edges not to get
                         // drawn, as well as the scroll bars not getting
                         // updated.
-                        QueryBuilderInternalFrame currentSelectedFrame =
-                                (QueryBuilderInternalFrame)_desktopPane.getSelectedFrame();
-                        if ( currentSelectedFrame  != null ) {
-                            redrawFrameWithMove( currentSelectedFrame );
-                        }
+                            
+                        // 117724  DnD table null pointer exception occurs - removed code to get the currentSelectedFrame
+                        // (QueryBuilderInternalFrame)_desktopPane.getSelectedFrame();                        
                     } else {
                         String msg =
                                 NbBundle.getMessage(QueryBuilderGraphFrame.class,
@@ -2162,7 +2161,7 @@ public class QueryBuilderGraphFrame extends JPanel
             }
             e.rejectDrop();
         } catch (Exception ex) {
-            System.out.println("Data transfer exception: " + ex);    //NOI18N
+            Log.getLogger().finest("Data transfer exception:  " + ex.getLocalizedMessage()); // NOI18N
         }
     }
     
