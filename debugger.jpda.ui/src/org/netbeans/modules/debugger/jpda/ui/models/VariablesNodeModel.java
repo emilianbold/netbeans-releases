@@ -56,6 +56,7 @@ import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.Field;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.LocalVariable;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Super;
@@ -134,7 +135,17 @@ public class VariablesNodeModel implements ExtendedNodeModel {
         }
         if (o instanceof Operation) {
             Operation op = (Operation) o;
-            boolean isDone = op.getReturnValue() != null;
+            Operation lastOperation = null;
+            {
+                JPDAThread t = debugger.getCurrentThread();
+                if (t != null) {
+                    java.util.List<Operation> lastOperations = t.getLastOperations();
+                    if (lastOperations != null && lastOperations.size() > 0) {
+                        lastOperation = lastOperations.get(lastOperations.size() - 1);
+                    }
+                }
+            }
+            boolean isDone = op == lastOperation;
             if (isDone) {
                 return NbBundle.getMessage(VariablesNodeModel.class, "afterOperation", op.getMethodName());
             } else {

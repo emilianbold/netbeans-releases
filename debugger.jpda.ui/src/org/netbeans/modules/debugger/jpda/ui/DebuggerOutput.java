@@ -291,6 +291,8 @@ PropertyChangeListener {
             int lineNumber = t.getLineNumber (language);
             Operation op = t.getCurrentOperation();
             List<Operation> lastOperations = t.getLastOperations();
+            Operation lastOperation = (lastOperations != null && lastOperations.size() > 0) ?
+                                      lastOperations.get(lastOperations.size() - 1) : null;
             try {
                 String sourceName = t.getSourceName (language);
                 String relativePath = EditorContextBridge.getRelativePath 
@@ -310,7 +312,7 @@ PropertyChangeListener {
                     );
 
                 if (op != null) {
-                    boolean done = op.getReturnValue() != null;
+                    boolean done = op == lastOperation;
                     if (!done) {
                         print("CTL_Thread_stopped_before_op",
                             new String[] {
@@ -329,7 +331,7 @@ PropertyChangeListener {
                                 sourceName,
                                 methodName,
                                 String.valueOf(lineNumber),
-                                lastOperations.get(lastOperations.size() - 1).getMethodName()
+                                lastOperation.getMethodName()
                             },
                             line
                         );
