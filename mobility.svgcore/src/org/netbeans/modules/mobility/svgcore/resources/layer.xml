@@ -418,9 +418,11 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="MIMEResolver">
             <file name="SVGPaletteItemResolver.xml" url="SVGPaletteItemResolver.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.svgcore.Bundle"/>
+                <attr name="position" intvalue="250"/>
             </file>
             <file name="SVGResolver.xml" url="SVGResolver.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.svgcore.Bundle"/>
+                <attr name="position" intvalue="260"/>
             </file>
         </folder>
     </folder>

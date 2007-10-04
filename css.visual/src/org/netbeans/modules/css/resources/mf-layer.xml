@@ -108,6 +108,7 @@ made subject to such option by the copyright holder.
         <folder name="MIMEResolver">
             <file name="CssResolver.xml" url="CssResolver.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.css.resources.Bundle"/>
+                <attr name="position" intvalue="170"/>
             </file>
         </folder>
     </folder>

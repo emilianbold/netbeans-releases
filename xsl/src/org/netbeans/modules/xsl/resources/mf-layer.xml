@@ -53,6 +53,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="xslt-mime-resolver.xml" url="xslt-mime-resolver.xml">
                 &localize-it;
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xsl/resources/xslObject.gif"/>
+                <attr name="position" intvalue="450"/>
             </file>
         </folder> <!-- MIMEResolver -->
 

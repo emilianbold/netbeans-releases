@@ -207,6 +207,7 @@ made subject to such option by the copyright holder.
         <folder name="MIMEResolver">
             <file name="PUResolver.xml" url="../../unit/PUResolver.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.persistence.unit.Bundle"/>
+                <attr name="position" intvalue="220"/>
             </file>
         </folder>
     </folder>

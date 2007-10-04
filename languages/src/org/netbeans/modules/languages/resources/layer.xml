@@ -177,6 +177,7 @@ made subject to such option by the copyright holder.
         <folder name="MIMEResolver">
             <file name="Languagesresolver.xml" url="Languagesresolver.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.Bundle"/>
+                <attr name="position" intvalue="210"/>
             </file>
         </folder>
     </folder>

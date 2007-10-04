@@ -110,6 +110,7 @@ made subject to such option by the copyright holder.
         <folder name="MIMEResolver">
             <file name="JnlpResolver.xml" url="JnlpResolver.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javawebstart.Bundle"/>
+                <attr name="position" intvalue="200"/>
             </file>
         </folder>
     </folder>

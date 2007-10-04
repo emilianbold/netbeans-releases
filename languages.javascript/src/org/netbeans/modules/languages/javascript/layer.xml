@@ -95,6 +95,7 @@ made subject to such option by the copyright holder.
         <folder name="MIMEResolver">
             <file name="JavaScript.xml" url="JavaScript.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.javascript.Bundle"/>
+                <attr name="position" intvalue="190"/>
             </file>
         </folder>
     </folder>

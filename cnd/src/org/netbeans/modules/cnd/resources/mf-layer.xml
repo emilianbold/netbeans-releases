@@ -402,13 +402,14 @@ made subject to such option by the copyright holder.
         <folder name="MIMEResolver">
             
             <file name="cnd-ext-based-mime-resolver.xml" url="mime-resolver-ext-based.xml">
-                <!--<attr name="position" intvalue="10000"/>-->
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/MakefileDataIcon.gif"/>
+                <attr name="position" intvalue="215"/>
             </file>             
             <file name="org-netbeans-modules-cnd-loaders-CndMIMEResolver.instance">
                 <attr name="instanceOf" stringvalue="org.openide.filesystems.MIMEResolver"/>
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.loaders.CndMIMEResolver"/>
+                <attr name="position" intvalue="460"/>
             </file>  
             <!--
             <file name="zxa-cnd-attr-based-mime-resolver.xml" url="mime-resolver-attr-based.xml">
@@ -417,9 +418,9 @@ made subject to such option by the copyright holder.
             </file>
             -->
             <file name="zy-cnd-hex-based-mime-resolver.xml" url="mime-resolver-hex-based.xml">
-                <!--<attr name="position" intvalue="10500"/>-->
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/MakefileDataIcon.gif"/>
+                <attr name="position" intvalue="470"/>
             </file>
         </folder>
         

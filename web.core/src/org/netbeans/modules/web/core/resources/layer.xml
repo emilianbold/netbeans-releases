@@ -220,6 +220,7 @@ made subject to such option by the copyright holder.
       <file name="org-netbeans-modules-web-core-resources-mime-resolver.xml" url="mime-resolver.xml">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/servletSettings.gif"/>
+        <attr name="position" intvalue="390"/>
       </file>
     </folder>
 

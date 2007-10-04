@@ -49,6 +49,7 @@ made subject to such option by the copyright holder.
         <folder name="MIMEResolver">
             <file name="org-netbeans-modules-editor-settings-storage-mime-resolver.xml" url="mime-resolvers.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.editor.settings.storage.Bundle"/>
+                <attr name="position" intvalue="330"/>
             </file>
         </folder>
 

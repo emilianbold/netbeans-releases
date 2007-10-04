@@ -23,6 +23,7 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="MIMEResolver">
             <file name="CSS.xml" url="CSS.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.css.Bundle"/>
+                <attr name="position" intvalue="160"/>
             </file>
         </folder>
     </folder>

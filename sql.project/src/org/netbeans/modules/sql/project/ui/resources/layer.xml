@@ -116,6 +116,7 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="MIMEResolver">
             <file name="SQLResolver.xml" url="SQLResolver.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.sql.project.ui.resources.Bundle"/>
+                <attr name="position" intvalue="240"/>
             </file>
         </folder>
     </folder>

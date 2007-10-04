@@ -93,6 +93,7 @@ made subject to such option by the copyright holder.
             <file name="org-apache-tools-ant-module-mime-resolver.xml" url="mime-resolver.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/AntIcon.gif"/>
+                <attr name="position" intvalue="310"/>
             </file>
         </folder>
 

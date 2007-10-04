@@ -128,6 +128,7 @@ made subject to such option by the copyright holder.
   <folder name="Services">    
     <folder name="MIMEResolver">
         <file name="org-netbeans-modules-java-mime-resolver.xml" url="mime-resolver.xml">
+            <attr name="position" intvalue="100"/>
         </file>
     </folder>
   </folder>

@@ -57,7 +57,9 @@ made subject to such option by the copyright holder.
             <attr name="helpID" stringvalue="org.netbeans.core.services.IndentEngines"/>
         </folder>
         <folder name="MIMEResolver">
-            <file name="plain-text-resolver.xml" url="plain-text-resolver.xml"/>
+            <file name="plain-text-resolver.xml" url="plain-text-resolver.xml">
+                <attr name="position" intvalue="140"/>
+            </file>
         </folder>
     </folder>
     

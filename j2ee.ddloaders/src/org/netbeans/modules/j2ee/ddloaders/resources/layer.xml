@@ -89,6 +89,7 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-j2ee-ddloaders-resources-mime-resolver.xml" url="mime-resolver.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ddloaders.Bundle"/>
                 <!---attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/servletSettings.gif" /-->
+                <attr name="position" intvalue="340"/>
             </file>
         </folder>    
     </folder>

@@ -146,6 +146,7 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-xml-schema-services-SchemaMIMEResolver.xml" url="schema-mime-resolver.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.schema.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/resources/Schema_File.png"/>
+                <attr name="position" intvalue="420"/>
             </file>
         </folder>
         

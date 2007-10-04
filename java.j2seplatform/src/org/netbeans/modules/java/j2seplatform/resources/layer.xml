@@ -76,6 +76,7 @@ made subject to such option by the copyright holder.
         <folder name="MIMEResolver">
             <file name="org-netbeans-modules-jar-mime-resolver.xml" url="mime-resolver.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.j2seplatform.resources.Bundle"/>
+                <attr name="position" intvalue="480"/>
             </file>
         </folder>
     </folder>

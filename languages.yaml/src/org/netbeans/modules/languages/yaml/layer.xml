@@ -23,6 +23,7 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="MIMEResolver">
             <file name="YAML.xml" url="YAML.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.yaml.Bundle"/>
+                <attr name="position" intvalue="280"/>
             </file>
         </folder>
     </folder>

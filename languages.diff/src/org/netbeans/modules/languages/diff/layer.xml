@@ -23,6 +23,7 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="MIMEResolver">
             <file name="Diff.xml" url="Diff.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.diff.Bundle"/>
+                <attr name="position" intvalue="180"/>
             </file>
         </folder>
     </folder>

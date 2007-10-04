@@ -69,6 +69,7 @@ made subject to such option by the copyright holder.
             <file name="html.xml" url="resolver.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.html.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/html/htmlObject.png"/>
+                <attr name="position" intvalue="300"/>
             </file>
         </folder>
     </folder>
