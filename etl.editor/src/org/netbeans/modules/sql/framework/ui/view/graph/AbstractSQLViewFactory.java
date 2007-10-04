@@ -138,6 +138,7 @@ public abstract class AbstractSQLViewFactory implements IOperatorManager {
             toolBar.setGraphView(graphView);
             toolBar.setActions(getToolBarActions());
             toolBar.initializeToolBar();
+            toolBar.initializeSQLToolBar();//For SQL Operators
             //set toolbar on graph
             if (graphView != null) {
                 graphView.setToolBar(toolBar);
