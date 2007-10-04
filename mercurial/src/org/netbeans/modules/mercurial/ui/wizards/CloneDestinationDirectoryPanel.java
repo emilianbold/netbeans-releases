@@ -48,6 +48,7 @@ import java.awt.event.ActionListener;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.versioning.util.AccessibleJFileChooser;
+import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.util.NbBundle;
 
 public final class CloneDestinationDirectoryPanel extends JPanel implements ActionListener {
@@ -130,7 +131,7 @@ public final class CloneDestinationDirectoryPanel extends JPanel implements Acti
     }
 
     private void onBrowseClick() {
-        File oldFile = null;
+        File oldFile = defaultWorkingDirectory();
         JFileChooser fileChooser = new AccessibleJFileChooser(NbBundle.getMessage(CloneDestinationDirectoryPanel.class, "ACSD_BrowseFolder"), oldFile);   // NO I18N
         fileChooser.setDialogTitle(NbBundle.getMessage(CloneDestinationDirectoryPanel.class, "Browse_title"));                                            // NO I18N
         fileChooser.setMultiSelectionEnabled(false);
@@ -155,6 +156,46 @@ public final class CloneDestinationDirectoryPanel extends JPanel implements Acti
         }
     }
     
+    /**
+     * Returns file to be initally used.
+     * <ul>
+     * <li>first is takes text in workTextField
+     * <li>then recent project folder
+     * <li>finally <tt>user.home</tt>
+     * <ul>
+     */
+    private File defaultWorkingDirectory() {
+        File defaultDir = null;
+        String current = directoryField.getText();
+        if (current != null && !(current.trim().equals(""))) {  // NOI18N
+            File currentFile = new File(current);
+            while (currentFile != null && currentFile.exists() == false) {
+                currentFile = currentFile.getParentFile();
+            }
+            if (currentFile != null) {
+                if (currentFile.isFile()) {
+                    defaultDir = currentFile.getParentFile();
+                } else {
+                    defaultDir = currentFile;
+                }
+            }
+        }
+
+        if (defaultDir == null) {
+            File projectFolder = ProjectChooser.getProjectsFolder();
+            if (projectFolder.exists() && projectFolder.isDirectory()) {
+                defaultDir = projectFolder;
+            }
+
+        }
+
+        if (defaultDir == null) {
+            defaultDir = new File(System.getProperty("user.home"));  // NOI18N
+        }
+
+        return defaultDir;
+    }
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel destinationDirectoryPanel;
     private javax.swing.JButton directoryBrowseButton;
