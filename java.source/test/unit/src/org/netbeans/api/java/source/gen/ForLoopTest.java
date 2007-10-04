@@ -43,6 +43,8 @@ package org.netbeans.api.java.source.gen;
 import com.sun.source.tree.*;
 import java.io.*;
 import java.util.Collections;
+import java.util.List;
+import javax.lang.model.element.Modifier;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.junit.NbTestSuite;
@@ -274,6 +276,66 @@ public class ForLoopTest extends GeneratorTestMDRCompat {
                 StatementTree statement = flt.getStatement();
                 BlockTree block = make.Block(Collections.<StatementTree>singletonList(statement), false);
                 workingCopy.rewrite(statement, block);
+            }
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    /**
+     * Regression test.
+     * 
+     * @throws java.lang.Exception
+     */
+    public void test117774_1() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package javaapplication1;\n" +
+            "\n" +
+            "public class Main {\n" +
+            "\n" +
+            "    public void actionPerformed(ActionEvent e) {\n" +
+            "        while (true)\n" +
+            "            System.getProperties();\n" +
+            "    }\n" +
+            "}\n" +
+            "\n");
+        String golden =
+            "package javaapplication1;\n" +
+            "\n" +
+            "public class Main {\n" +
+            "\n" +
+            "    public void actionPerformed(ActionEvent e) {\n" +
+            "        while (true)\n" +
+            "            Properties properties = System.getProperties();\n" +
+            "    }\n" +
+            "}\n" +
+            "\n";
+        JavaSource src = getJavaSource(testFile);
+        
+        CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                List<? extends StatementTree> stmts = method.getBody().getStatements();
+                WhileLoopTree wlt = (WhileLoopTree) stmts.get(0);
+                ExpressionStatementTree statement = (ExpressionStatementTree) wlt.getStatement();
+                VariableTree var = make.Variable(
+                        make.Modifiers(Collections.<Modifier>emptySet()), 
+                        "properties",
+                        make.Identifier("Properties"),
+                        statement.getExpression()
+                );
+                workingCopy.rewrite(statement, var);
             }
 
             public void cancel() {

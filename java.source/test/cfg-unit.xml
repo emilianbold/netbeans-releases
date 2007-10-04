@@ -147,7 +147,7 @@ made subject to such option by the copyright holder.
     <testbag testattribs="single" executor="unit-executor" name="modifying sources">
         <testset dir="unit/src">
             <patternset>
-                <include name="org/netbeans/api/java/source/gen/RefactoringRegressionsTest.class"/>
+                <include name="org/netbeans/api/java/source/gen/ForLoopTest.class"/>
             </patternset>
         </testset>
     </testbag>
