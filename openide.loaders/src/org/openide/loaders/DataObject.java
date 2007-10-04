@@ -964,7 +964,17 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
      * general replacement for {@link #getCookie} and should preferably
      * be used instead of the old method. The default implementation 
      * inside a data object 
-     * returns the <code>getNodeDelegate().getLookup()</code>.
+     * returns the <code>getNodeDelegate().getLookup()</code> - which is
+     * the most compatible behaviour with previous versions. However
+     * this code has significant potential to deadlocks. That is why the
+     * preferred advice is to override the method to:
+     * <pre>
+     * class MyDataObject extends {@link MultiDataObject} {
+     *   public Lookup getLookup() {
+     *     return getCookieSet().getLookup();
+     *   }
+     * }
+     * </pre>
      * <p>
      * <b>Warning:</b> the {@link #getCookie} method and {@link #getLookup}
      * method are ment to be interchangable - e.g. if you override one of them

@@ -58,6 +58,8 @@ import org.openide.nodes.*;
 import org.openide.nodes.Node.*;
 import org.openide.util.*;
 import org.openide.util.datatransfer.ExTransferable;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 import org.openide.xml.XMLUtil;
 
 /** Default implementation of a shortcut to another data object.
@@ -74,6 +76,7 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
     private OrigL origL = null;
     /** List of nodes created for the DataShadow. */
     private LinkedList<ShadowNode> nodes = new LinkedList<ShadowNode> ();
+    private DSLookup lookup;
 
     /** Extension name. */
     static final String SHADOW_EXTENSION = "shadow"; // NOI18N
@@ -550,6 +553,20 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
         return original.getCookie (this, c);
     }
 
+    @Override
+    public Lookup getLookup() {
+        if (getClass() == DataShadow.class) {
+            synchronized (DataShadow.class) {
+                if (lookup == null) {
+                    lookup = new DSLookup(this, original);
+                }
+                return lookup;
+            }
+        } else {
+            return super.getLookup();
+        }
+    }
+
     /* Try to refresh link to original file */
     public void refresh() {
         refresh(false);
@@ -558,8 +575,9 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
     private void refresh(boolean moved) {        
         try {
             /* Link isn't broken */            
-            if (moved)
+            if (moved) {
                 tryUpdate();
+            }
             FileObject obj = checkOriginal(original);
             if (obj != null) {
                 if (obj != this.original.getPrimaryFile ()) {
@@ -597,12 +615,16 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
         DataObject oldOriginal = original;
         
         o.addPropertyChangeListener (origL);
+        
         original = o;
+        if (lookup != null) {
+            lookup.refresh(this, original);
+        }
 
         // update nodes
         ShadowNode n [] = null;
         synchronized (nodes) {
-            n = (ShadowNode [])nodes.toArray (new ShadowNode [nodes.size ()]);
+            n = nodes.toArray(new ShadowNode[nodes.size()]);
         }
         
         try {
@@ -1145,6 +1167,20 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
                     BrokenDataShadow.getDataShadowsSet().remove(this); // XXX this is wrong - key is String (URL of broken shadow)
                 }
             }
+        }
+    }
+    
+    private static class DSLookup extends ProxyLookup {
+        public DSLookup(DataShadow ds, DataObject original) {
+            super(compute(ds, original));
+        }
+        
+        public void refresh(DataShadow ds, DataObject original) {
+            setLookups(compute(ds, original));
+        }
+        
+        private static Lookup[] compute(DataShadow ds, DataObject original) {
+            return new Lookup[] { Lookups.singleton(ds), original.getLookup() };
         }
     }
 }

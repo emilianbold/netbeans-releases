@@ -1207,6 +1207,9 @@ public class MultiDataObject extends DataObject {
     final void updateFilesInCookieSet() {
         getCookieSet().assign(FileObject.class, files().toArray(new FileObject[0]));
     }
+
+    void checkCookieSet(Class<?> c) {
+    }
     
     /** Change listener and implementation of before.
      */
@@ -1219,6 +1222,7 @@ public class MultiDataObject extends DataObject {
             if (clazz.isAssignableFrom(FileObject.class)) {
                 updateFilesInCookieSet();
             }
+            checkCookieSet(clazz);
         }
     }
 

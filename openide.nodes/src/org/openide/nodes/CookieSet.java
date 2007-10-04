@@ -159,10 +159,6 @@ public final class CookieSet extends Object implements Lookup.Provider {
         }
     }
     
-    /** Associates a given set of instances with
-     */
-    
-
     /** Get a cookie.
     *
     * @param clazz the representation class
@@ -172,7 +168,11 @@ public final class CookieSet extends Object implements Lookup.Provider {
         if (ic != null) {
             ic.beforeLookupImpl(clazz);
         }
-        
+        return lookupCookie(clazz);
+    }
+    
+    
+    private <T extends Node.Cookie> T lookupCookie(Class<T> clazz) {
         Node.Cookie ret = null;
         Object queryMode = QUERY_MODE.get();
 
@@ -473,7 +473,7 @@ public final class CookieSet extends Object implements Lookup.Provider {
         if (Node.Cookie.class.isAssignableFrom(clazz)) {
             Class<? extends Node.Cookie> cookieClazz = clazz.asSubclass(Node.Cookie.class);
             for(;;) {
-                Node.Cookie cookie = getCookie(cookieClazz);
+                Node.Cookie cookie = lookupCookie(cookieClazz);
                 if (cookie != null) {
                     removeImpl(cookie);
                 } else {

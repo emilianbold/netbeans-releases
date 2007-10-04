@@ -398,6 +398,23 @@ public class CookieSetTest extends NbTestCase {
         assertEquals("One item", 1, res.allItems().size());
         assertEquals("Yet one change", 1, listener.cnt());
     }
+
+    public void testStackOverFlowOnAssign() throws Exception {
+        class B implements CookieSet.Before {
+            CookieSet g = CookieSet.createGeneric(this);
+            
+            public void beforeLookup(Class<?> clazz) {
+                Class<? extends Node.Cookie> c = clazz.asSubclass(Node.Cookie.class);
+                g.getCookie(c);
+            }
+        }
+        B b = new B();
+        
+        class C implements Node.Cookie {
+        }
+        
+        b.g.assign(C.class, new C());
+    }
     
     /** Change listener.
      */

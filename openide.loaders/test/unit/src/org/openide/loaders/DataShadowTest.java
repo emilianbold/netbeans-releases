@@ -304,7 +304,7 @@ implements java.net.URLStreamHandlerFactory {
         
         original.rename ("newname.txt");
         
-        WeakReference ref = new WeakReference (shade);
+        WeakReference<Object> ref = new WeakReference<Object>(shade);
         shade = null;
         assertGC ("Shadow can disappear", ref);
         
@@ -313,6 +313,12 @@ implements java.net.URLStreamHandlerFactory {
         shade = (DataShadow)obj;
         
         assertEquals ("And points to original with updated name", original, shade.getOriginal ());
+        
+        assertEquals("Shadow is own data object2", shade, shade.getCookie(DataObject.class));
+        assertEquals("Shadow is own data object", shade, shade.getLookup().lookup(DataObject.class));
+        assertEquals("Shadow is has the other object2", original, shade.getCookie(original.getClass()));
+        assertEquals("Shadow is has the other object", original, shade.getLookup().lookup(original.getClass()));
+        
     }
     
     public void testRenameDoesNotUpdateTheShadowIfItDoesNotExist () throws Exception {

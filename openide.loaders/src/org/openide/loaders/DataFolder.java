@@ -253,6 +253,15 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
     private FolderOrder getOrder () {
         return FolderOrder.findFor (getPrimaryFile ());
     }
+    
+    @Override
+    public Lookup getLookup() {
+        if (DataFolder.class == getClass()) {
+            return getCookieSet().getLookup();
+        } else {
+            return super.getLookup();
+        }
+    }
 
     /** Get the name of the data folder.
     * <p>This implementation uses the name and extension of the primary file.

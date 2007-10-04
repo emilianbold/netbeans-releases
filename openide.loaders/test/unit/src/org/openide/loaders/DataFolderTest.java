@@ -52,6 +52,7 @@ import java.util.logging.Level;
 import junit.framework.Test;
 
 import org.netbeans.junit.*;
+import org.openide.nodes.Index;
 import org.openide.nodes.Node;
 import org.openide.util.test.MockPropertyChangeListener;
 
@@ -85,12 +86,26 @@ public class DataFolderTest extends LoggingTestCaseHid {
         FileSystem lfs = TestUtilHid.createLocalFileSystem(getWorkDir(), fsstruct);
 
         FileObject fo = lfs.findResource ("AA");
-        DataObject df = DataLoaderPool.getFolderLoader().findDataObject(fo, new DataLoader.RecognizedFiles () {  
+        DataFolder df = (DataFolder)DataLoaderPool.getFolderLoader().findDataObject(fo, new DataLoader.RecognizedFiles () {  
             public void markRecognized (FileObject fo) {
             }
         });
-        
         assertEquals ("Found the right one", fo, df.getPrimaryFile());
+        
+        CharSequence log = Log.enable("org.openide.loaders", Level.WARNING);
+        Object index = df.getLookup().lookup(Index.class);
+        assertEquals("Check folder", "", log.toString());
+        assertNull("No index on DataFolder itself", index);
+        
+        
+        DataObject obj = DataObject.find(FileUtil.createData(fo, "x.txt"));
+        obj.getLookup();
+        assertEquals("Check default", "", log.toString());
+        
+        DataObject shadow = obj.createShadow(df);
+        shadow.getLookup();
+        assertEquals("Check shadow", "", log.toString());
+        
     }
 
     public void testMoveFolderWithReadOnlyFile () throws Exception {

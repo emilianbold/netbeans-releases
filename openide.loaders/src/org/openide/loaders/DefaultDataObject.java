@@ -59,11 +59,14 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 
 /** An implementation of a data object which consumes file objects not recognized by any other loaders.
 */
 final class DefaultDataObject extends MultiDataObject implements OpenCookie {
     static final long serialVersionUID =-4936309935667095746L;
+    /** editor for default editor support */
+    private DefaultES support;
     
     /** generated Serialized Version UID */
     //  static final long serialVersionUID = 6305590675982925167L;
@@ -78,6 +81,7 @@ final class DefaultDataObject extends MultiDataObject implements OpenCookie {
  
     /* Creates node delegate.
     */
+    @Override
     protected Node createNodeDelegate () {
         DataNode dn = new DataNode (this, org.openide.nodes.Children.LEAF);
         
@@ -92,6 +96,7 @@ final class DefaultDataObject extends MultiDataObject implements OpenCookie {
     * @return the name
     */
     
+    @Override
     public String getName() {
         return getPrimaryFile ().getNameExt ();
     }
@@ -99,6 +104,7 @@ final class DefaultDataObject extends MultiDataObject implements OpenCookie {
     /* Help context for this object.
     * @return help context
     */
+    @Override
     public HelpCtx getHelpCtx () {
         return HelpCtx.DEFAULT_HELP;
     }
@@ -111,6 +117,7 @@ final class DefaultDataObject extends MultiDataObject implements OpenCookie {
     * @return new primary file of the object
     * @exception IOException if an error occures
     */
+    @Override
     protected FileObject handleRename (String name) throws IOException {
         FileLock lock = getPrimaryFile ().lock ();
         int pos = name.lastIndexOf('.');
@@ -139,12 +146,15 @@ final class DefaultDataObject extends MultiDataObject implements OpenCookie {
     /* Creates new object from template.
     * @exception IOException
     */
+    @Override
     protected DataObject handleCreateFromTemplate (
         DataFolder df, String name
     ) throws IOException {
         // avoid doubling of extension
-        if (name != null && name.endsWith("." + getPrimaryFile ().getExt ())) // NOI18N
-            name = name.substring(0, name.lastIndexOf("." + getPrimaryFile ().getExt ())); // NOI18N
+        if (name != null && name.endsWith("." + getPrimaryFile ().getExt ())) {
+            // NOI18N
+            name = name.substring(0, name.lastIndexOf("." + getPrimaryFile().getExt())); // NOI18N
+        } // NOI18N
         
         return super.handleCreateFromTemplate (df, name);
     }
@@ -182,11 +192,25 @@ final class DefaultDataObject extends MultiDataObject implements OpenCookie {
             c.open ();
         }
     }
+    
+    @Override
+    public Lookup getLookup() {
+        return getCookieSet().getLookup();
+    }
 
     /** We implement OpenCookie and sometimes we also have cloneable
      * editor cookie */
+    @Override
     public <T extends Node.Cookie> T getCookie(Class<T> c) {
         return getCookie (c, false);
+    }
+
+    @Override
+    final void checkCookieSet(Class<?> c) {
+        if (Node.Cookie.class.isAssignableFrom(c) && support == null) {
+            Class<? extends Node.Cookie> cookie = c.asSubclass(Node.Cookie.class);
+            fixCookieSet(cookie, false);
+        }
     }
     
     /** Getter for cookie.
@@ -201,7 +225,15 @@ final class DefaultDataObject extends MultiDataObject implements OpenCookie {
         if (cook != null) {
             return cook;
         }
-            
+        fixCookieSet(c, force);
+        return getCookieSet ().getCookie(c);
+    }
+    
+    private void fixCookieSet(Class<?> c, boolean force) {
+        if (support != null) {
+            return;
+        }
+        
         if (
             c.isAssignableFrom(EditCookie.class)
             ||
@@ -223,22 +255,20 @@ final class DefaultDataObject extends MultiDataObject implements OpenCookie {
                         int len = is.read (arr);
                         for (int i = 0; i < len; i++) {
                             if (arr[i] >= 0 && arr[i] <= 31 && arr[i] != '\n' && arr[i] != '\r' && arr[i] != '\t') {
-                                return null;
+                                return;
                             }
                         }
                     } finally {
                         is.close ();
                     }
                 }
-                DefaultES support = new DefaultES (
+                support = new DefaultES (
                     this, getPrimaryEntry(), getCookieSet ()
                 );
-                getCookieSet().add(support);
-                return getCookieSet ().getCookie(c);
+                getCookieSet().assign(DefaultES.class, support);
             } catch (IOException ex) {
                 LOG.log(Level.INFO, "Cannot read " + getPrimaryEntry(), ex); // NOI18N
             }
         }
-        return null;
     }
 }
