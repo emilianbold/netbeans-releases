@@ -218,14 +218,14 @@ public class SchemaColumn extends JPanel
 
      private String getDefaultDisplayName(Node n) {
 	String displayName = null;
-	ReadOnlySchemaComponentNode roNode = (ReadOnlySchemaComponentNode)
-	    n.getLookup().lookup(ReadOnlySchemaComponentNode.class);
+	ReadOnlySchemaComponentNode roNode = 
+                n.getLookup().lookup(ReadOnlySchemaComponentNode.class);
 	    
 	if (roNode != null) {
 	    displayName = roNode.getDefaultDisplayName();
 	} else {
-	    SchemaComponentNode scn = (SchemaComponentNode)
-		n.getLookup().lookup(SchemaComponentNode.class);
+	    SchemaComponentNode scn = 
+                    n.getLookup().lookup(SchemaComponentNode.class);
 	    if (scn != null) {
 		displayName = scn.getDefaultDisplayName();
 	    } else {
@@ -283,7 +283,7 @@ public class SchemaColumn extends JPanel
     protected void addDetailColumn(final Node node) {
         Column column = null;
         // Give the node a chance to return its own column component
-        ColumnProvider provider = (ColumnProvider) node.getLookup().lookup(
+        ColumnProvider provider = node.getLookup().lookup(
                 ColumnProvider.class);
         final SchemaColumnsView view = getColumnView();
         if (provider != null) {
@@ -319,12 +319,16 @@ public class SchemaColumn extends JPanel
         if (tc != null) {
             // Find the selected node in this column and activate it.
             JList list = (JList) nodeView.getViewport().getView();
-            Object comp = list.getSelectedValue();
-            if (comp != null) {
-                Node node = Visualizer.findNode(comp);
-                if (node != null) {
-                    tc.setActivatedNodes(new Node[] { node });
+            Object[] items = list.getSelectedValues();
+            if (items != null && items.length > 1) {
+                Node[] nodes = new Node[items.length];
+                for(int i=0; i<items.length; i++) {
+                    Node n = Visualizer.findNode(items[i]);
+                    if(n != null) {
+                        nodes[i] = n;
+                    }
                 }
+                tc.setActivatedNodes(nodes);
             }
             getColumnView().scrollToColumn(this,true);
         }
