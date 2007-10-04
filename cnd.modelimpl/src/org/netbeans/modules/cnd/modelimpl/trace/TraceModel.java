@@ -802,15 +802,19 @@ public class TraceModel {
 		FileImpl file = (FileImpl) it.next();
 		if (!file.isParsed()) {
 		    wasWait = true;
-		    try {
-			Thread.sleep(100);
-		    } catch (InterruptedException ex) {
-			ex.printStackTrace();
-		    }
+		    sleep(100);
 		}
 	    }
 	}
 	return wasWait;
+    }
+    
+    private void sleep(int timeout) {
+	try {
+	    Thread.sleep(timeout);
+	} catch (InterruptedException ex) {
+	    //ex.printStackTrace();
+	}
     }
 	
     private static final boolean C_SYS_INCLUDE = Boolean.getBoolean("cnd.modelimpl.c.include");
@@ -1527,7 +1531,6 @@ public class TraceModel {
 	}
 
 	AST tree = null;
-	FileImpl fileImpl = null;
 	int errCount = 0;
 
 	final Map<CsmFile, APTPreprocHandler> states = new HashMap<CsmFile, APTPreprocHandler>();
@@ -1546,20 +1549,21 @@ public class TraceModel {
 	APTPreprocHandler.State state = preprocHandler.getState();
 
 	int fileType = getFileTypeByPath(file.getAbsolutePath(), file);
-	fileImpl = (FileImpl) getProject().testAPTParseFile(file.getAbsolutePath(), fileType, preprocHandler);
+	FileImpl fileImpl = (FileImpl) getProject().testAPTParseFile(file.getAbsolutePath(), fileType, preprocHandler);
 	try {
-	    fileImpl.scheduleParsing(true, state);
+	    //fileImpl.scheduleParsing(true, state);
 	    waitProjectParsed(false);
 	    if (dumpAst || writeAst || showAstWindow) {
 		tree = fileImpl.parse(getPreprocHandler(file));
 	    }
-	} catch (InterruptedException e) {
-	    // nothing to do
+//	} catch (InterruptedException e) {
+//	    // nothing to do
 	} finally {
 	    model.removeProgressListener(progressListenerEx);
 	}
 	errCount = fileImpl.getErrorCount();
 	if (dumpPPState) {
+	    sleep(100); // so that we don't run ahead of fileParsingFinished event
 	    preprocHandler = states.get(fileImpl);
 	    assert preprocHandler != null;
 	    dumpMacroMap(preprocHandler.getMacroMap());
