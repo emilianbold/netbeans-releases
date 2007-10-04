@@ -70,13 +70,15 @@ public class PortTypeProperty extends BaseCasaProperty {
         if(component instanceof CasaPort) {
             CasaPort casaPort = (CasaPort) component;
             PortType pt = getModel().getCasaPortType(casaPort);
-            CasaEndpointRef endPointRef = getEndPointRef(casaPort);
-            if(endPointRef != null) {
-                if(!CasaWrapperModel.isDummyPortType(pt)) {
-                    retValue = endPointRef.getInterfaceQName();
-                 }
-            } else {
-                retValue = pt.getName();
+            if (pt != null) {
+                CasaEndpointRef endPointRef = getEndPointRef(casaPort);
+                if(endPointRef != null) {
+                    if(!CasaWrapperModel.isDummyPortType(pt)) {
+                        retValue = endPointRef.getInterfaceQName();
+                     }
+                } else {
+                    retValue = pt.getName();
+                }
             }
         } 
         return retValue;
