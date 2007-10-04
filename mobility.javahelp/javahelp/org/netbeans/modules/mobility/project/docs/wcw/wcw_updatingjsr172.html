@@ -43,42 +43,24 @@ The Web Services Settings File opens in the Editor window. </p>
         each exported service. Method names are incorporated in the class name. Using<tt> HelloService</tt> for
         example, the <tt>sayHello()</tt> method is exported. The generated stub method
         creates a method on the client called <tt>example_HelloService_sayHello().</tt> If
-      this option is not selected, only one method is generated on the client.</li>
-      <li><strong>Generate grouped calls. </strong>Generates additional code
-        to support making multiple calls to server-side services in a single
-        HTTP request or
-        response. When turned on with the Generate Stub Methods option also turned
-        on, a generated method is created on the client for each exported service
-        with the stub method name ending in <tt>Grouped</tt>. Using <tt>HelloService</tt> for
-        example, the <tt>sayHello()</tt> method is exported. The generated stub
-        method<br>
-        creates a method on the client called <tt>example_HelloService_sayHelloGrouped()</tt>.
+      this option is not selected, only one method is generated on the client.
         <p> When the option is selected, the server is called only after several
           grouped calls are made and the <tt>getGroupedResults() </tt>method on the
           client class is called. All the method calls are invoked in a single HTTP
           request and response. Methods are invoked in the order they were called.
-          Results are returned in an enumeration object. </p>
+          Results are returned in an enumeration object.</p>
         <p>If a server call causes an exception, the exception is thrown when <tt>getGroupedResults()</tt> is
           called. When an exception is thrown in a sequence of grouped calls, the calls
           following the exception are not processed. </p>
       </li>
       <li><strong>Allow floating point.</strong> Activates support for float and
         double data types.</li>
-      <li><strong>Generate tracing code.</strong> Generates tracing code that
-        provides runtime information during the execution of remote calls. Client
-        tracing
-        output goes to the MIDP implementation standard output. Server tracing
-        output goes to the server log file. Turn this option on to generate versions
-        of
-        client and server tracing code to help you if connection problems occur
-        between the client and the server. </li>
     </ul>
   </li>
+<br>
   <li>If you  need to convert CLDC 1.1 types
         to CLDC 1.0 types, you will need to convert Float and Double types to
-        String variables. To make the conversion, check the Convert Floating
-          Point to
-        String checkbox  in the settings panel. (This field might not be available
+        String variables. To make the conversion, check the Allow floating point checkbox  in the Settings panel. (This field might not be available
     in all instances.)</li>
 </ul>
 <p><strong>To regenerate the application: </strong></p>
@@ -93,7 +75,9 @@ The Web Services Settings File opens in the Editor window. </p>
 <ul>
 <li>Click the Refresh WSDL button. <br>
   If you have changed the WSDL file, you will be asked to if you want to change
-  your local WSDL file and update the stub files. </li></ul>
+  your local WSDL file and update the stub files.
+  </li>
+</ul>
 <ul class="note"> <li>If you are using a proxy server, you must set the proxy by choosing Tools>Options
     in the Main Menu.</li></ul>
 <ul class="note">
