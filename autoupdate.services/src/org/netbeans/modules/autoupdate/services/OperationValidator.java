@@ -388,17 +388,26 @@ abstract class OperationValidator {
         Set<Module> extendReqToDeactivate = new HashSet<Module> (requestedToDeactivate);
         boolean inscreasing = true;
         while (inscreasing) {
+            inscreasing = false;
             Set<Module> tmp = new HashSet<Module> (extendReqToDeactivate);
-            for (Module req : tmp) {
-                Set<Module> deps = Utilities.findDependingModules (req, mm);
-                inscreasing = extendReqToDeactivate.addAll (deps);
+            for (Module dep : tmp) {
+                Set<Module> deps = Utilities.findDependingModules (dep, mm);
+                inscreasing |= extendReqToDeactivate.addAll (deps);
             }
         }
 
         // go down and find all modules (except for other kits) which can be deactivated
         Set<Module> moreToDeactivate = new HashSet<Module> (extendReqToDeactivate);
-        for (Module req : extendReqToDeactivate) {
-            moreToDeactivate.addAll (Utilities.findRequiredModules (req, mm));
+        inscreasing = true;
+        while (inscreasing) {
+            inscreasing = false;
+            Set<Module> tmp = new HashSet<Module> (moreToDeactivate);
+            for (Module req : tmp) {
+                if ((! Utilities.isKitModule (req) && ! Utilities.isEssentialModule (req)) || extendReqToDeactivate.contains (req)) {
+                    Set<Module> reqs = Utilities.findRequiredModules (req, mm);
+                    inscreasing |= moreToDeactivate.addAll (reqs);
+                }
+            }
         }
 
         return filterCandidatesToDeactivate (extendReqToDeactivate, moreToDeactivate, mm);
@@ -406,7 +415,8 @@ abstract class OperationValidator {
     
     private static Set<Module> filterCandidatesToDeactivate (final Collection<Module> requested, final Collection<Module> candidates, ModuleManager mm) {
         // go down and find all modules (except other kits) which can be deactivated
-        Set<Module> result = new HashSet<Module> (candidates);
+        Set<Module> result = new HashSet<Module> ();
+        Set<Module> compactSet = new HashSet<Module> (candidates);
         
         // create collection of all installed eagers
         Set<Module> installedEagers = new HashSet<Module> ();
@@ -418,9 +428,9 @@ abstract class OperationValidator {
             installedEagers.add (Utilities.toModule (mi));
         }
         // add installedEagers into affected modules to don't break uninstall of candidates
-        result.addAll (installedEagers);
+        compactSet.addAll (installedEagers);
         
-        Set<Module> canSkip = new HashSet<Module> ();
+        Set<Module> mustRemain = new HashSet<Module> ();
         Set<Module> affectedEagers = new HashSet<Module> ();
         for (Module depM : candidates) {
             if ((Utilities.isKitModule (depM) || Utilities.isEssentialModule (depM)) && ! requested.contains (depM)) {
@@ -428,23 +438,22 @@ abstract class OperationValidator {
                     LOGGER.log(Level.FINE, "The module " + depM.getCodeNameBase() +
                         " is KIT_MODULE and won't be deactivated now not even " + Utilities.findRequiredModules(depM, mm));
                 }
-                canSkip.add (depM);
-                canSkip.addAll (Utilities.findRequiredModules(depM, mm));
-            } else if (canSkip.contains (depM)) {
+                mustRemain.add (depM);
+            } else if (mustRemain.contains (depM)) {
                 LOGGER.log (Level.FINE, "The module " + depM.getCodeNameBase () + " was investigated already and won't be deactivated now.");
             } else {
                 Set<Module> depends = Utilities.findDependingModules (depM, mm);
-                if (! result.containsAll (depends)) {
-                    canSkip.addAll (Utilities.findRequiredModules (depM, mm));
+                if (! compactSet.containsAll (depends)) {
+                    mustRemain.add (depM);
+                    mustRemain.addAll (Utilities.findRequiredModules (depM, mm));
                     LOGGER.log (Level.FINE, "The module " + depM.getCodeNameBase () + " is shared and cannot be deactivated now.");
                     if (LOGGER.isLoggable (Level.FINER)) {
                         Set<Module> outsideModules = new HashSet<Module> (depends);
-                        outsideModules.removeAll (result);
+                        outsideModules.removeAll (compactSet);
                         LOGGER.log (Level.FINER, "On " + depM.getCodeNameBase () + " depending modules outside of set now deactivating modules: " + outsideModules);
                     }
-                    result.remove (depM);
                 } else {
-                    LOGGER.log (Level.FINEST, "The module " + depM.getCodeNameBase () + " is not needed anymore and can be deactivated.");
+                    result.add (depM);
                     depends.retainAll (installedEagers);
                     if (! depends.isEmpty ()) {
                         affectedEagers.addAll (depends);
@@ -452,16 +461,29 @@ abstract class OperationValidator {
                 }
             }
         }
-        result.removeAll (canSkip);
-        
-        // removed eagers
         result.removeAll (installedEagers);
-        
+
         // add only affected eagers again
         LOGGER.log (Level.FINE, "Affected eagers are " + affectedEagers);
         result.addAll (affectedEagers);
-        
+
+        result.removeAll (findDeepRequired (mustRemain, mm));
+
         return result;
+    }
+    
+    private static Set<Module> findDeepRequired (Set<Module> orig, ModuleManager mm) {
+        Set<Module> more = new HashSet<Module> (orig);
+        boolean inscreasing = true;
+        while (inscreasing) {
+            Set<Module> tmp = new HashSet<Module> (more);
+            inscreasing = false;
+            for (Module req : tmp) {
+                Set<Module> reqs = Utilities.findRequiredModules (req, mm);
+                inscreasing |= more.addAll (reqs);
+            }
+        }
+        return more;
     }
     
 }

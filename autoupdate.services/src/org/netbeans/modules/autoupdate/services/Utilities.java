@@ -52,8 +52,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
 import java.security.KeyStore;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -61,7 +59,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -116,8 +113,6 @@ public class Utilities {
     private static Lookup.Result<KeyStoreProvider> result;
     private static Logger err = null;
     private static ModuleManager mgr = null;
-    private static Reference<Map<Module, Set<Module>>> mapModule2dependingModules = new WeakReference<Map<Module, Set<Module>>> (new HashMap<Module, Set<Module>> ());
-    private static Reference<Map<Module, Set<Module>>> mapModule2requiredModules = new WeakReference<Map<Module, Set<Module>>> (new HashMap<Module, Set<Module>> ());
     
     
     public static Collection<KeyStore> getKeyStore () {
@@ -785,55 +780,25 @@ public class Utilities {
         return err;
     }
     
-    /** Finds modules depending on given module and recursive over module's dependencies.
-     * @param m a module to start from; may be enabled or not, but must be owned by this manager
-     * @return a set (possibly empty) of modules managed by this manager, never including m
-     */
-    public static Set<Module> findDependingModules (Module m, ModuleManager mm) {
-        synchronized (Utilities.class) {
-            if (mapModule2dependingModules.get () == null) {
-                mapModule2dependingModules = new WeakReference<Map<Module, Set<Module>>> (new HashMap<Module, Set<Module>> ());
-                getLogger ().log (Level.FINEST, "Was created new reference for mapModule2dependingModules");
-            }
-        }
-        if (! mapModule2dependingModules.get ().containsKey (m)) {
-            mapModule2dependingModules.get ().put (m, doFindDependingModules (m, mm));
-        }
-        return mapModule2dependingModules.get ().get (m);
-    }
-
-    /** Finds for modules given module depends upon. Finding is recursive over module's dependencies.
-     * Finding ends on KIT_MODULE or ESSENTIAL_MODULE. Found KIT_MODULE is also included.
+    /** Finds modules depending on given module.
      * @param m a module to start from; may be enabled or not, but must be owned by this manager
      * @return a set (possibly empty) of modules managed by this manager, never including m
      */
     public static Set<Module> findRequiredModules (Module m, ModuleManager mm) {
-        synchronized (Utilities.class) {
-            if (mapModule2requiredModules.get () == null) {
-                mapModule2requiredModules = new WeakReference<Map<Module, Set<Module>>> (new HashMap<Module, Set<Module>> ());
-                getLogger ().log (Level.FINEST, "Was created new reference for mapModule2requiredModules");
-            }
-        }
-        if (! mapModule2requiredModules.get ().containsKey (m)) {
-            mapModule2requiredModules.get ().put (m, doFindRequiredModules (m, mm));
-        }
-        return mapModule2requiredModules.get ().get (m);
-    }
-
-    private static Set<Module> doFindRequiredModules (Module m, ModuleManager mm) {
         Set<Module> res = new HashSet<Module> ();
         for (Object depO : mm.getModuleInterdependencies (m, false, false)) {
             assert depO instanceof Module : depO + " is instanceof Module";
             Module depM = (Module) depO;
             res.add (depM);
-            if (! isEssentialModule (depM) && ! isKitModule (depM) && ! res.contains (depM)) {
-                res.addAll (findRequiredModules (depM, mm));
-            }
         }
         return res;
     }
     
-    private static Set<Module> doFindDependingModules (Module m, ModuleManager mm) {
+    /** Finds for modules given module depends upon.
+     * @param m a module to start from; may be enabled or not, but must be owned by this manager
+     * @return a set (possibly empty) of modules managed by this manager, never including m
+     */
+    public static Set<Module> findDependingModules (Module m, ModuleManager mm) {
         Set<Module> res = new HashSet<Module> ();
         for (Object depO : mm.getModuleInterdependencies (m, true, false)) {
             assert depO instanceof Module : depO + " is instanceof Module";
