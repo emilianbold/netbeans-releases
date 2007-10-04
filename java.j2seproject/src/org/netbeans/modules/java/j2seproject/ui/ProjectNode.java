@@ -62,6 +62,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.java.j2seproject.classpath.ClassPathSupport;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -234,7 +235,12 @@ class ProjectNode extends AbstractNode {
         protected void performAction(Node[] activatedNodes) {
             Project[] projects = new Project[activatedNodes.length];
             for (int i=0; i<projects.length;i++) {
-                projects[i] = activatedNodes[i].getLookup().lookup(org.netbeans.api.project.Project.class);
+                final Project p = getProject(activatedNodes[i]);
+                if (p == null) {
+                    //Should not happen, only for case when project is deleted after enabled called
+                    return;
+                }
+                projects[i] = p;
             }
             OpenProjects.getDefault().open(projects, false);
         }
@@ -242,8 +248,8 @@ class ProjectNode extends AbstractNode {
         protected boolean enable(Node[] activatedNodes) {
             final Collection<Project> openedProjects =Arrays.asList(OpenProjects.getDefault().getOpenProjects());
             for (int i=0; i<activatedNodes.length; i++) {
-                Project p;
-                if ((p = activatedNodes[i].getLookup().lookup(org.netbeans.api.project.Project.class)) == null) {
+                final Project p = getProject (activatedNodes[i]);
+                if (p == null) {
                     return false;
                 }
                 if (openedProjects.contains(p)) {
@@ -251,6 +257,18 @@ class ProjectNode extends AbstractNode {
                 }
             }
             return true;
+        }
+        
+        private static Project getProject (final Node node) {
+            assert node != null;
+            final Project p = node.getLookup().lookup(Project.class);
+            if (p != null) {
+                final FileObject projectRoot = p.getProjectDirectory();
+                if (projectRoot == null || !projectRoot.isValid()) {
+                    return null;
+                }
+            }
+            return p;
         }
 
         public String getName() {
