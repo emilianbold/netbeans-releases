@@ -63,6 +63,13 @@ public class ForLoopTest extends GeneratorTestMDRCompat {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTestSuite(ForLoopTest.class);
+//        suite.addTest(new ForLoopTest("test117774_1"));
+//        suite.addTest(new ForLoopTest("test117774_2"));
+//        suite.addTest(new ForLoopTest("test117774_3"));
+//        suite.addTest(new ForLoopTest("testDoWhileBlockReplacement"));
+//        suite.addTest(new ForLoopTest("testRenameInInfiniteFor"));
+//        suite.addTest(new ForLoopTest("testReplaceStmtWithBlock1"));
+//        suite.addTest(new ForLoopTest("testReplaceStmtWithBlock2"));
         return suite;
     }
 
