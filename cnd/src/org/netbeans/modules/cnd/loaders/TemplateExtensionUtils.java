@@ -45,9 +45,9 @@ import org.openide.util.Exceptions;
  */
 public class TemplateExtensionUtils {
 
-    public static final String CPP_TEMPLATE_PREFIX = "Templates/cppFiles";
-    public static final String C_TEMPLATE_PREFIX = "Templates/cFiles";
-    public static final String NAME_ATTRIBUTE = "name";
+    public static final String CPP_TEMPLATE_PREFIX = "Templates/cppFiles"; // NOI18N
+    public static final String C_TEMPLATE_PREFIX = "Templates/cFiles"; // NOI18N
+    public static final String NAME_ATTRIBUTE = "name"; // NOI18N
 
     public static String getCppExtension() {
         return findExtension(CPP_TEMPLATE_PREFIX, CCDataLoader.getInstance());
@@ -101,10 +101,10 @@ public class TemplateExtensionUtils {
                             HDataLoader.getInstance().getExtensions().isRegistered(nameExt) ||
                             loader.getExtensions().isRegistered(fo) &&
                             loader.getExtensions().isRegistered(nameExt)) {
-                        template = folder + "/" + fo.getNameExt();
+                        template = folder + "/" + fo.getNameExt(); // NOI18N
                         try {
                             DataObject dao = DataObject.find(fo);
-                            String displayName = (String) fo.getAttribute("name");
+                            String displayName = (String) fo.getAttribute("name"); // NOI18N
                             if (dao != null && displayName != null && dao.getNodeDelegate() != null) {
                                 dao.getNodeDelegate().setDisplayName(displayName);
                             }
