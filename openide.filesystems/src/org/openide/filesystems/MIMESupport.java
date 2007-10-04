@@ -540,45 +540,46 @@ final class MIMESupport extends Object {
             internalClose();
         }
 
-        public int read() throws IOException {
-            if (eof) {
-                return -1;
-            }
-
-            int c;
-            int n;
-
-            if (pos < len) {
-                c = buffer[pos++];
-                c = (c < 0) ? (c + 256) : c;
-
-                return c;
-            }
-
-            int buflen = (len > 0) ? (len * 2) : 256;
-            byte[] buf = new byte[buflen];
-
-            if (len > 0) {
-                System.arraycopy(buffer, 0, buf, 0, len);
-            }
-
-            n = inputStream.read(buf, len, buflen - len);
-
-            if (n <= 0) {
-                eof = true;
-
-                return -1;
-            }
-
-            buffer = buf;
-            len += n;
-
-            c = buffer[pos++];
-            c = (c < 0) ? (c + 256) : c;
-
-            return c;
+       private boolean ensureBufferLength(int newLen) throws IOException {
+           if (!eof && newLen > len) {
+                byte[] tmpBuffer = new byte[len + newLen];
+                if (len > 0) {
+                    System.arraycopy(buffer, 0, tmpBuffer, 0, len);
+                }
+                int readLen = inputStream.read(tmpBuffer, len, newLen);
+                if ((readLen > 0)) {
+                    buffer = tmpBuffer;
+                    len += readLen;                                    
+                } else {
+                    eof = true;
+                }
+           }
+           return len >= newLen;
         }
+        
+        @Override
+        public int read(byte[] b, int off, int blen) throws IOException {
+            ensureBufferLength(pos + blen);
+            int readPos = Math.min(len, pos + blen);
+            int retval = (readPos > pos) ? (readPos - pos) : -1;
+            if (retval != -1) {
+                System.arraycopy(buffer, pos, b, off, retval);
+                pos += retval;
+            }
+            return retval;
+        }
+        
 
+        public int read() throws IOException {
+            int retval = -1;
+            ensureBufferLength(pos + 1);
+            if (len > pos) {
+                retval = buffer[pos++];
+                retval = (retval < 0) ? (retval + 256) : retval;
+            }
+            return retval;
+        }
+        
         void cacheToStart() {
             pos = 0;
             eof = false;
