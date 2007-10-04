@@ -370,8 +370,7 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
         
         public void performChange() {
             // for classes the change can be anywhere;
-            String nm = fqname.substring(fqname.lastIndexOf('.'));
-
+            String nm = fqname.substring(fqname.lastIndexOf('.') + 1);
             if (oldAttrName == null) {
                 // no attribute -> it's a filename change. eg. org-milos-kleint-MyInstance.instance
                 newFileName = oldFileName.replaceAll("\\-" + nm + "$", "-" + rename.getNewName());
