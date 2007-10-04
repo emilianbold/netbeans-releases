@@ -46,6 +46,8 @@ import javax.swing.plaf.basic.BasicSplitPaneDivider;
 import javax.swing.plaf.basic.BasicSplitPaneUI;
 import javax.swing.border.Border;
 import javax.swing.*;
+import javax.accessibility.Accessible;
+import javax.accessibility.AccessibleContext;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
@@ -60,7 +62,7 @@ import java.util.List;
  * 
  * @author Maros Sandor
  */
-class DiffSplitPaneDivider extends BasicSplitPaneDivider implements MouseMotionListener, MouseListener {
+class DiffSplitPaneDivider extends BasicSplitPaneDivider implements MouseMotionListener, MouseListener, Accessible {
     
     private final Image insertAllImage = org.openide.util.Utilities.loadImage("org/netbeans/modules/diff/builtin/visualizer/editable/move_all.png"); // NOI18N
     private final Image insertAllActiveImage = org.openide.util.Utilities.loadImage("org/netbeans/modules/diff/builtin/visualizer/editable/move_all_active.png"); // NOI18N
@@ -157,7 +159,7 @@ class DiffSplitPaneDivider extends BasicSplitPaneDivider implements MouseMotionL
         return null;
     }
     
-    private class DiffSplitDivider extends JComponent {
+    private class DiffSplitDivider extends JPanel {
     
         private Map renderingHints;
 

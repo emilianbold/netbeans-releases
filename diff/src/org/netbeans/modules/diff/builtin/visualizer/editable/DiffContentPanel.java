@@ -61,7 +61,7 @@ import java.util.List;
  *
  * @author Maros Sandor
  */
-class DiffContentPanel extends JComponent implements HighlightsContainer {
+class DiffContentPanel extends JPanel implements HighlightsContainer {
 
     private final EditableDiffView master;
     private final boolean isFirst;

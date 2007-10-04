@@ -61,7 +61,7 @@ import java.beans.PropertyChangeEvent;
  * 
  * @author Maros Sandor
  */
-class LineNumbersActionsBar extends JComponent implements Scrollable, MouseMotionListener, MouseListener, PropertyChangeListener {
+class LineNumbersActionsBar extends JPanel implements Scrollable, MouseMotionListener, MouseListener, PropertyChangeListener {
 
     private static final int ACTIONS_BAR_WIDTH = 16;
     private static final int LINES_BORDER_WIDTH = 4;
