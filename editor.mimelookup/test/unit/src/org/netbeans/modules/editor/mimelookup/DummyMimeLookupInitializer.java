@@ -20,18 +20,29 @@ import org.openide.util.lookup.Lookups;
  */
 public class DummyMimeLookupInitializer implements MimeLookupInitializer {
     
+    private final MimePath mimePath;
+    
     /** Creates a new instance of DummyMimeDataProvider */
     public DummyMimeLookupInitializer() {
 //        System.out.println("Creating DummyMimeLookupInitializer");
+        this.mimePath = MimePath.EMPTY;
     }
 
+    private DummyMimeLookupInitializer(MimePath mimePath) {
+        this.mimePath = mimePath;
+    }
+    
     public Lookup.Result child(String mimeType) {
-        return Lookups.singleton(this).lookupResult(MimeLookupInitializer.class);
+        return Lookups.singleton(new DummyMimeLookupInitializer(MimePath.get(mimePath, mimeType))).lookupResult(MimeLookupInitializer.class);
     }
 
     public Lookup lookup() {
 //        System.out.println("DummyMimeLookupInitializer creating Marker");
-        return Lookups.singleton(new Marker());
+        if (mimePath.size() == 1) {
+            return Lookups.singleton(new Marker());
+        } else {
+            return null;
+        }
     }
     
     public static final class Marker {

@@ -259,8 +259,8 @@ public class SettingsProviderTest extends NbTestCase {
         assertEquals("Wrong bgColor in coloring defined for text/x-type-A", new Color(0xAA0000), attribsTypeA.getAttribute(StyleConstants.Background));
         
         AttributeSet attribsTypeB = fcs.getTokenFontColors("test-inheritance-typeB-specific");
-        assertNotNull("Can't find coloring defined for text/x-type-B", attribsTypeB);
-        assertEquals("Wrong bgColor in coloring defined for text/x-type-B", new Color(0xBB0000), attribsTypeB.getAttribute(StyleConstants.Background));
+        assertNull("Shouldn't find coloring defined for text/x-type-B", attribsTypeB);
+//        assertEquals("Wrong bgColor in coloring defined for text/x-type-B", new Color(0xBB0000), attribsTypeB.getAttribute(StyleConstants.Background));
         
         AttributeSet attribsBoth = fcs.getTokenFontColors("test-inheritance-typeA-typeB");
         assertNotNull("Can't find coloring defined for both typeA and typeB", attribsBoth);

@@ -41,6 +41,8 @@
 
 package org.netbeans.api.editor.mimelookup;
 
+import java.util.Arrays;
+import java.util.List;
 import org.netbeans.junit.NbTestCase;
 
 
@@ -131,6 +133,101 @@ public class MimePathTest extends NbTestCase {
             } catch (IllegalArgumentException iae) {
                 // passed
             }
+        }
+    }
+
+    // Test mime path -> path[] conversion
+    
+    public void testNoMapper() {
+        MimePath mimePath = MimePath.parse("text/x-jsp/text/x-java/text/x-javadoc");
+        List paths = mimePath.getInheritedPaths(null, null);
+        checkPaths(
+            Arrays.asList(new String [] {
+                "text/x-jsp/text/x-java/text/x-javadoc",
+                "text/x-java/text/x-javadoc",
+                "text/x-javadoc",
+                ""
+            }),
+            paths
+        );
+    }
+
+    public void testNoMapperCompoundMimeType1() {
+        MimePath mimePath = MimePath.parse("text/x-ant+xml/text/x-java/text/x-javadoc");
+        List paths = mimePath.getInheritedPaths(null, null);
+        checkPaths(
+            Arrays.asList(new String [] {
+                "text/x-ant+xml/text/x-java/text/x-javadoc",
+                "text/xml/text/x-java/text/x-javadoc",
+                "text/x-java/text/x-javadoc",
+                "text/x-javadoc",
+                ""
+            }),
+            paths
+        );
+    }
+    
+    public void testNoMapperCompoundMimeType2() {
+        MimePath mimePath = MimePath.parse("text/x-ant+xml/text/x-ant+xml");
+        List paths = mimePath.getInheritedPaths(null, null);
+        checkPaths(
+            Arrays.asList(new String [] {
+                "text/x-ant+xml/text/x-ant+xml",
+                "text/xml/text/x-ant+xml",
+                "text/x-ant+xml",
+                "text/xml",
+                ""
+            }),
+            paths
+        );
+    }
+
+    public void testNoMapperCompoundMimeType3() {
+        MimePath mimePath = MimePath.parse("text/x-ant+xml/text/x-java/text/x-ant+xml");
+        List paths = mimePath.getInheritedPaths(null, null);
+        checkPaths(
+            Arrays.asList(new String [] {
+                "text/x-ant+xml/text/x-java/text/x-ant+xml",
+                "text/xml/text/x-java/text/x-ant+xml",
+                "text/x-java/text/x-ant+xml",
+                "text/x-ant+xml",
+                "text/xml",
+                ""
+            }),
+            paths
+        );
+    }
+    
+    public void testDummyMapper() throws Exception {
+        MimePath mimePath = MimePath.parse("text/x-jsp/text/x-java/text/x-javadoc");
+        List paths = mimePath.getInheritedPaths("PrefixFolder", "SuffixFolder");
+        checkPaths(
+            Arrays.asList(new String [] {
+                "PrefixFolder/text/x-jsp/text/x-java/text/x-javadoc/SuffixFolder",
+                "PrefixFolder/text/x-java/text/x-javadoc/SuffixFolder",
+                "PrefixFolder/text/x-javadoc/SuffixFolder",
+                "PrefixFolder/SuffixFolder"
+            }), 
+            paths
+        );
+    }
+    
+    public void testGetGenericPartOfCompoundMimeType() {
+        String generic = MimePath.getGenericPartOfCompoundMimeType("text/x-ant+xml");
+        assertNotNull("Didn't detect compound mime type", generic);
+        assertEquals("Wrong generic part", "text/xml", generic);
+        
+        generic = MimePath.getGenericPartOfCompoundMimeType("text/c++");
+        assertNull("text/c++ is not a compound mime type", generic);
+    }
+    
+    private void checkPaths(List expectedPaths, List paths) {
+        assertEquals("Wrong number of paths", expectedPaths.size(), paths.size());
+        
+        for (int i = 0; i < expectedPaths.size(); i++) {
+            String expectedPath = (String) expectedPaths.get(i);
+            String path = (String) paths.get(i);
+            assertEquals("Invalid path", expectedPath, path);
         }
     }
 }

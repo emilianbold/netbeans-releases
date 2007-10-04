@@ -49,6 +49,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -528,4 +529,102 @@ public final class MimePath {
         
         return true;
     }
+    
+    // XXX: This is currently called from editor/settings/storage (SettingsProvider)
+    // and editor/mimelookup/impl via reflection.
+    // We will eventually make it friend API. In the meantime just
+    // make sure that any changes here still work for those modules.
+
+    /* package */ List<String> getInheritedPaths(String prefixPath, String suffixPath) {
+        synchronized (LOCK) {
+            List<String[]> arrays = new ArrayList<String[]>(size());
+            String [] mimePathArray = split(this);
+
+            for(int i = 0; i <= mimePathArray.length; i++) {
+                // Create array for the i-th suffix and fill it with mime types
+                String [] arr = new String [mimePathArray.length - i];
+                for(int j = 0; j < arr.length; j++) {
+                    arr[j] = mimePathArray[i + j];
+                }
+
+                // Add the array to the list
+                arrays.add(arr);
+
+                if (arr.length > 0) {
+                    // For compound mime types fork the existing path and add its
+                // variant for the generic part of the mime type as well.
+                // E.g. text/x-ant+xml adds both text/x-ant+xml and text/xml
+                    String genericMimeType = getGenericPartOfCompoundMimeType(arr[0]);
+                    if (genericMimeType != null) {
+                        String arr2[] = new String [arr.length];
+                        System.arraycopy(arr, 0, arr2, 0, arr.length);
+                        arr2[0] = genericMimeType;
+
+                        // Add the generic version to the list
+                        arrays.add(arr2);
+                    }
+                }
+            }
+
+            List<String> paths = new ArrayList<String>(arrays.size());
+
+            for (String[] p : arrays) {
+                StringBuffer sb = new StringBuffer(10 * p.length + 20);
+
+                if (prefixPath != null && prefixPath.length() > 0) {
+                    sb.append(prefixPath);
+                }
+                for (int ii = 0; ii < p.length; ii++) {
+                    if (p[ii].length() > 0) {
+                        if (sb.length() > 0) {
+                            sb.append('/'); //NOI18N
+                        }
+                        sb.append(p[ii]);
+                    }
+                }
+                if (suffixPath != null && suffixPath.length() > 0) {
+                    if (sb.length() > 0) {
+                        sb.append('/'); //NOI18N
+                    }
+                    sb.append(suffixPath);
+                }
+
+                paths.add(sb.toString());
+            }
+
+            return paths;
+        }
+    }
+
+    // See http://tools.ietf.org/html/rfc4288#section-4.2 for the structure of
+    // mime type strings.
+    // package private just for tests
+    /* package */ static String getGenericPartOfCompoundMimeType(String mimeType) {
+        int plusIdx = mimeType.lastIndexOf('+'); //NOI18N
+        if (plusIdx != -1 && plusIdx < mimeType.length() - 1) {
+            int slashIdx = mimeType.indexOf('/'); //NOI18N
+            String prefix = mimeType.substring(0, slashIdx + 1);
+            String suffix = mimeType.substring(plusIdx + 1);
+
+            // fix for #61245
+            if (suffix.equals("xml")) { //NOI18N
+                prefix = "text/"; //NOI18N
+            }
+
+            return prefix + suffix;
+        } else {
+            return null;
+        }
+    }
+
+    private static String [] split(MimePath mimePath) {
+        String [] array = new String[mimePath.size()];
+        
+        for (int i = 0; i < mimePath.size(); i++) {
+            array[i] = mimePath.getMimeType(i);
+        }
+        
+        return array;
+    }
+
 }

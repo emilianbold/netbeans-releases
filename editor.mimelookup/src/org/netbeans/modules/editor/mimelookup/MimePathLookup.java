@@ -41,8 +41,13 @@
 
 package org.netbeans.modules.editor.mimelookup;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.spi.editor.mimelookup.MimeDataProvider;
 import org.netbeans.spi.editor.mimelookup.MimeLookupInitializer;
@@ -58,6 +63,8 @@ import org.openide.util.lookup.ProxyLookup;
  */
 @SuppressWarnings("deprecation")
 public final class MimePathLookup extends ProxyLookup implements LookupListener {
+    
+    private static final Logger LOG = Logger.getLogger(MimePathLookup.class.getName());
     
     private MimePath mimePath;
     private Lookup.Result<MimeDataProvider> dataProviders;
@@ -88,21 +95,53 @@ public final class MimePathLookup extends ProxyLookup implements LookupListener 
     
     private void rebuild() {
         ArrayList<Lookup> lookups = new ArrayList<Lookup>();
-        
+
+        // Add lookups from MimeDataProviders
         for (MimeDataProvider provider : dataProviders.allInstances()) {
             Lookup mimePathLookup = provider.getLookup(mimePath);
             if (mimePathLookup != null) {
                 lookups.add(mimePathLookup);
             }
         }
-        
-        for (MimeLookupInitializer initializer : mimeInitializers.allInstances()) {
-            for (int j = 0; j < mimePath.size(); j++) {
-                for (MimeLookupInitializer mli : initializer.child(mimePath.getMimeType(j)).allInstances()) {
-                    Lookup mimePathLookup = mli.lookup();
-                    if (mimePathLookup != null) {
-                        lookups.add(mimePathLookup);
-                    }
+
+        // XXX: This hack here is to make GSF and Schliemann frameworks work.
+        // Basically we should somehow enforce the composition of lookups 
+        // for MimeDataProviders too. But some providers such as the one from
+        // editor/mimelookup/impl do the composition in their own way. So we
+        // will probably have to extend the SPI somehow to accomodate both simple
+        // providers and the composing ones.
+
+        // Add lookups from deprecated MimeLookupInitializers
+        List<String> paths;
+        try {
+            Method m = MimePath.class.getDeclaredMethod("getInheritedPaths", String.class, String.class); //NOI18N
+            m.setAccessible(true);
+            @SuppressWarnings("unchecked")
+            List<String> ret = (List<String>) m.invoke(mimePath, null, null);
+            paths = ret;
+        } catch (Exception e) {
+            LOG.log(Level.WARNING, "Can't call org.netbeans.api.editor.mimelookup.MimePath.getInheritedPaths method.", e); //NOI18N
+            paths = Collections.singletonList(mimePath.getPath());
+        }
+
+        for(String path : paths) {
+            MimePath mp = MimePath.parse(path);
+            Collection<? extends MimeLookupInitializer> initializers = mimeInitializers.allInstances();
+
+            for(int i = 0; i < mp.size(); i++) {
+                Collection<MimeLookupInitializer> children = new ArrayList<MimeLookupInitializer>(initializers.size());
+
+                for(MimeLookupInitializer mli : initializers) {
+                    children.addAll(mli.child(mp.getMimeType(i)).allInstances());
+                }
+
+                initializers = children;
+            }
+
+            for(MimeLookupInitializer mli : initializers) {
+                Lookup mimePathLookup = mli.lookup();
+                if (mimePathLookup != null) {
+                    lookups.add(mimePathLookup);
                 }
             }
         }

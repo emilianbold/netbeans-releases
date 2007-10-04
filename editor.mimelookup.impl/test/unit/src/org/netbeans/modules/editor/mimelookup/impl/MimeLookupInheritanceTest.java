@@ -49,7 +49,6 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.junit.NbTestCase;
 import org.openide.actions.CopyAction;
 import org.openide.actions.CutAction;
-import org.openide.actions.DeleteAction;
 import org.openide.actions.PasteAction;
 import org.openide.actions.ReplaceAction;
 import org.openide.actions.FindAction;
@@ -68,7 +67,7 @@ public class MimeLookupInheritanceTest extends NbTestCase {
         super(testName);
     }
     
-    protected void setUp() throws java.lang.Exception {
+    protected @Override void setUp() throws java.lang.Exception {
         // Set up the default lookup, repository, etc.
         EditorTestLookup.setLookup(
             new URL[] {
@@ -111,8 +110,7 @@ public class MimeLookupInheritanceTest extends NbTestCase {
     public void testMimeLevelPopups(){
         MimePath mp = MimePath.parse("text/x-java/text/html"); //NOI18N
         Lookup lookup = MimeLookup.getLookup(mp);
-        Class layerObjects[] = {CutAction.class, DeleteAction.class, CopyAction.class,
-                NewAction.class, PasteAction.class};
+        Class layerObjects[] = {CutAction.class, CopyAction.class, NewAction.class, PasteAction.class};
         testPopupItems(lookup, layerObjects);
     }
 
@@ -120,8 +118,7 @@ public class MimeLookupInheritanceTest extends NbTestCase {
     public void testMimeLevelPopupsWithStringAndSeparator(){
         MimePath mp = MimePath.parse("text/x-java/text/html/text/xml"); //NOI18N
         Lookup lookup = MimeLookup.getLookup(mp);
-        Class layerObjects[] = {CutAction.class, DeleteAction.class, CopyAction.class,
-                NewAction.class, PasteAction.class, ReplaceAction.class, JSeparator.class, String.class};
+        Class layerObjects[] = {CutAction.class, CopyAction.class, PasteAction.class, ReplaceAction.class, JSeparator.class, String.class};
         testPopupItems(lookup, layerObjects);
     }
 
@@ -181,7 +178,7 @@ public class MimeLookupInheritanceTest extends NbTestCase {
                 return true;
             }
             try {
-                Thread.currentThread().sleep(100);
+                Thread.sleep(100);
             } catch (InterruptedException ex) {
                 time=0;
             }

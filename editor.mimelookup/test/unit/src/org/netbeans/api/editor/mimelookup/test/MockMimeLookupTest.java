@@ -27,6 +27,8 @@
  */
 package org.netbeans.api.editor.mimelookup.test;
 
+import java.util.Collection;
+import java.util.Iterator;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.junit.MockServices;
@@ -53,5 +55,22 @@ public class MockMimeLookupTest extends NbTestCase {
         MockMimeLookup.setInstances(mimePath);
         assertEquals("cleared lookup works", null, MimeLookup.getLookup(mimePath).lookup(String.class));
         
+    }
+    
+    public void testComposition() {
+        MockServices.setServices(MockMimeLookup.class);
+        
+        MimePath mimePath = MimePath.parse("text/x-whatever");
+        MockMimeLookup.setInstances(mimePath, "inherited");
+        
+        mimePath = MimePath.parse("text/x-something-else/text/x-whatever");
+        MockMimeLookup.setInstances(mimePath, "top");
+        
+        Collection<? extends String> all = MimeLookup.getLookup(mimePath).lookupAll(String.class);
+        assertEquals("Wrong number of instances", 2, all.size());
+        
+        Iterator<? extends String> iterator = all.iterator();
+        assertEquals("Wrong top item", "top", iterator.next());
+        assertEquals("Wrong inherited item", "inherited", iterator.next());
     }
 }

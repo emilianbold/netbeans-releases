@@ -94,11 +94,11 @@ public class MimePathLookupTest extends NbTestCase {
     }
 
     public void testAddingMimeDataProvider2() throws Exception {
-        checkAddingMimeDataProvider(
+        checkAddingMimeDataProvider2(
             "Services/org-netbeans-modules-editor-mimelookup-DummyMimeDataProvider.instance",
             DummyMimeDataProvider.Marker.class
         );
-        checkAddingMimeDataProvider(
+        checkAddingMimeDataProvider2(
             "Services/org-netbeans-modules-editor-mimelookup-DummyMimeLookupInitializer.instance",
             DummyMimeLookupInitializer.Marker.class
         );

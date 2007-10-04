@@ -43,12 +43,14 @@ package org.netbeans.modules.editor.mimelookup.impl;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
+import java.lang.reflect.Method;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.spi.editor.mimelookup.InstanceProvider;
@@ -192,134 +194,35 @@ public class SwitchLookup extends Lookup {
         }
     }
     
-    // XXX: This is currently called from editor/settings/storage (SettingsProvider)
-    // via reflection. We will eventually make it friend API. In the meantime just
-    // make sure that any changes here still work for e/s/s module.
-
-    /* package */ static List<String> computePaths(MimePath mimePath, String prefixPath, String suffixPath) {
-        List<String[]> arrays = new ArrayList<String[]>(mimePath.size());
-        String innerMimeType = null;
-
-        if (mimePath.size() > 1) {
-            innerMimeType = mimePath.getMimeType(mimePath.size() - 1);
+    private static List<String> computePaths(MimePath mimePath, String prefixPath, String suffixPath) {
+        try {
+            Method m = MimePath.class.getDeclaredMethod("getInheritedPaths", String.class, String.class); //NOI18N
+            m.setAccessible(true);
+            @SuppressWarnings("unchecked")
+            List<String> paths = (List<String>) m.invoke(mimePath, prefixPath, suffixPath);
+            return paths;
+        } catch (Exception e) {
+            LOG.log(Level.WARNING, "Can't call org.netbeans.api.editor.mimelookup.MimePath.getInheritedPaths method.", e); //NOI18N
         }
         
-        for (int i = mimePath.size(); i >= 0 ; i--) {
-            MimePath currentPath = mimePath.getPrefix(i);
-
-            // Skip the top level mime type if it's the same as the inner mime type
-            // to avoid duplicities.
-            if (currentPath.size() != 1 || innerMimeType == null ||
-                !currentPath.getMimeType(0).equals(innerMimeType)
-            ) {
-                // Add the current mime path
-                arrays.add(split(currentPath));
-            }
-
-            // For compound mime types fork the existing paths and add their
-            // variant for the generic part of the mime type as well.
-            // E.g. text/x-ant+xml adds both text/x-ant+xml and text/xml
-            if (currentPath.size() > 0) {
-                String mimeType = currentPath.getMimeType(currentPath.size() - 1);
-                String genericMimeType = getGenericPartOfCompoundMimeType(mimeType);
-
-                if (genericMimeType != null) {
-                    List<String[]> genericPaths = forkPaths(arrays, genericMimeType, i - 1);
-                    arrays.addAll(genericPaths);
-                }
-            }
+        // No inherited mimepaths, provide at least something
+        StringBuilder sb = new StringBuilder();
+        if (prefixPath != null && prefixPath.length() > 0) {
+            sb.append(prefixPath);
         }
-
-        // Add the inner type on a prominent position
-        if (innerMimeType != null) {
-            arrays.add(1, new String [] { innerMimeType });
-            
-            String genericInnerMimeType = getGenericPartOfCompoundMimeType(innerMimeType);
-            if (genericInnerMimeType != null) {
-                arrays.add(2, new String [] { genericInnerMimeType });
+        if (mimePath.size() > 0) {
+            if (sb.length() > 0) {
+                sb.append('/'); //NOI18N
             }
+            sb.append(mimePath.getPath());
         }
-        
-        List<String> paths = new ArrayList<String>(arrays.size());
-
-        for (String[] path : arrays) {
-            StringBuffer sb = new StringBuffer(10 * path.length + 20);
-
-            if (prefixPath != null && prefixPath.length() > 0) {
-                sb.append(prefixPath);
+        if (suffixPath != null && suffixPath.length() > 0) {
+            if (sb.length() > 0) {
+                sb.append('/'); //NOI18N
             }
-            for (int ii = 0; ii < path.length; ii++) {
-                if (path[ii].length() > 0) {
-                    if (sb.length() > 0) {
-                        sb.append('/'); //NOI18N
-                    }
-                    sb.append(path[ii]);
-                }
-            }
-            if (suffixPath != null && suffixPath.length() > 0) {
-                if (sb.length() > 0) {
-                    sb.append('/'); //NOI18N
-                }
-                sb.append(suffixPath);
-            }
-
-            paths.add(sb.toString());
+            sb.append(suffixPath);
         }
-
-        return paths;
-    }
-
-    // See http://tools.ietf.org/html/rfc4288#section-4.2 for the structure of
-    // mime type strings.
-    // package private just for tests
-    /* package */ static String getGenericPartOfCompoundMimeType(String mimeType) {
-        int plusIdx = mimeType.lastIndexOf('+'); //NOI18N
-        if (plusIdx != -1 && plusIdx < mimeType.length() - 1) {
-            int slashIdx = mimeType.indexOf('/'); //NOI18N
-            String prefix = mimeType.substring(0, slashIdx + 1);
-            String suffix = mimeType.substring(plusIdx + 1);
-
-            // fix for #61245
-            if (suffix.equals("xml")) { //NOI18N
-                prefix = "text/"; //NOI18N
-            }
-
-            return prefix + suffix;
-        } else {
-            return null;
-        }
-    }
-
-    private static String [] split(MimePath mimePath) {
-        String [] array = new String[mimePath.size()];
-        
-        for (int i = 0; i < mimePath.size(); i++) {
-            array[i] = mimePath.getMimeType(i);
-        }
-        
-        return array;
-    }
-    
-    // Remember the paths list contains string arrays such as { 'text/x-jsp', 'text/x-ant+xml', 'text/x-java' },
-    // the elementIdx points to the 'text/x-ant+xml' part and genericMimeType is 'text/xml'.
-    private static List<String[]> forkPaths(List<String[]> paths, String genericMimeType, int elementIdx) {
-        List<String[]> forkedPaths = new ArrayList<String[]>(paths.size());
-        
-        for (String[] path : paths) {
-            String [] forkedPath = new String [path.length];
-            
-            for (int ii = 0; ii < path.length; ii++) {
-                if (ii != elementIdx) {
-                    forkedPath[ii] = path[ii];
-                } else {
-                    forkedPath[ii] = genericMimeType;
-                }
-            }
-            
-            forkedPaths.add(forkedPath);
-        }
-        
-        return forkedPaths;
+        return Collections.singletonList(sb.toString());
     }
     
     /**

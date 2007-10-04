@@ -44,10 +44,7 @@ package org.netbeans.modules.editor.settings.storage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
@@ -133,12 +130,11 @@ public final class SettingsProvider implements MimeDataProvider {
     private static final class MyLookup extends AbstractLookup implements PropertyChangeListener {
         
         private final MimePath mimePath;
-        private final MimePath [] allMimePaths;
         private final boolean specialFcsProfile;
         private String fcsProfile;
         
         private final InstanceContent ic;
-        private Object fontColorSettings = null;
+        private CompositeFCS fontColorSettings = null;
         private Object keyBindingSettings = null;
         private Object codeTemplateSettings = null;
         
@@ -153,7 +149,6 @@ public final class SettingsProvider implements MimeDataProvider {
             super(ic);
 
             this.mimePath = mimePath;
-            this.allMimePaths = computeInheritedMimePaths(mimePath);
             
             if (profile == null) {
                 // Use the selected current profile
@@ -183,7 +178,7 @@ public final class SettingsProvider implements MimeDataProvider {
         @Override
         protected void initialize() {
             synchronized (this) {
-                fontColorSettings = new CompositeFCS(allMimePaths, fcsProfile);
+                fontColorSettings = new CompositeFCS(mimePath, fcsProfile);
                 keyBindingSettings = this.kbsi.createInstanceForLookup();
                 codeTemplateSettings = this.ctsi.createInstanceForLookup();
                 
@@ -232,7 +227,7 @@ public final class SettingsProvider implements MimeDataProvider {
                     String changedProfile = (String) evt.getNewValue();
                     if (changedProfile.equals(fcsProfile)) {
                         MimePath changedMimePath = (MimePath) evt.getOldValue();
-                        if (isDerivedFromMimePath(changedMimePath)) {
+                        if (fontColorSettings.isDerivedFromMimePath(changedMimePath)) {
                             fcsChanged = true;
                         }
                     }
@@ -249,7 +244,7 @@ public final class SettingsProvider implements MimeDataProvider {
                 boolean updateContents = false;
                 
                 if (fcsChanged && fontColorSettings != null) {
-                    fontColorSettings = new CompositeFCS(allMimePaths, fcsProfile);
+                    fontColorSettings = new CompositeFCS(mimePath, fcsProfile);
                     updateContents = true;
                 }
                 
@@ -273,44 +268,5 @@ public final class SettingsProvider implements MimeDataProvider {
             }
         }
 
-        private boolean isDerivedFromMimePath(MimePath mimePath) {
-            for(MimePath mp : allMimePaths) {
-                if (mp == mimePath) {
-                    return true;
-                }
-            }
-            return false;
-        }
-        
-        private static MimePath [] computeInheritedMimePaths(MimePath mimePath) {
-            List<String> paths = callSwitchLookupComputePaths(mimePath);
-
-            if (paths != null) {
-                ArrayList<MimePath> mimePaths = new ArrayList<MimePath>(paths.size());
-
-                for (String path : paths) {
-                    mimePaths.add(MimePath.parse(path));
-                }
-
-                return mimePaths.toArray(new MimePath[mimePaths.size()]);
-            } else {
-                return new MimePath [] { mimePath, MimePath.EMPTY };
-            }
-        }
-
-        @SuppressWarnings("unchecked")
-        private static List<String> callSwitchLookupComputePaths(MimePath mimePath) {
-            try {
-                ClassLoader classLoader = Lookup.getDefault().lookup(ClassLoader.class);
-                Class clazz = classLoader.loadClass("org.netbeans.modules.editor.mimelookup.impl.SwitchLookup"); //NOI18N
-                Method method = clazz.getDeclaredMethod("computePaths", MimePath.class, String.class, String.class); //NOI18N
-                method.setAccessible(true);
-                List<String> paths = (List<String>) method.invoke(null, mimePath, null, null);
-                return paths;
-            } catch (Exception e) {
-                LOG.log(Level.WARNING, "Can't call org.netbeans.modules.editor.mimelookup.impl.SwitchLookup.computePath(MimeLookup, String, String).", e); //NOI18N
-                return null;
-            }
-        }
     } // End of MyLookup class
 }

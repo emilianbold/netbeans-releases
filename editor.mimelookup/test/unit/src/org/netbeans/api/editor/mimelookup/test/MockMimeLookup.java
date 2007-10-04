@@ -27,8 +27,13 @@
  */
 package org.netbeans.api.editor.mimelookup.test;
 
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.spi.editor.mimelookup.MimeDataProvider;
 import org.openide.util.Lookup;
@@ -95,7 +100,30 @@ public final class MockMimeLookup implements MimeDataProvider {
     /** You can call it, but it's probably not what you want. */
     public Lookup getLookup(MimePath mimePath) {
         synchronized (MAP) {
-            return MAP.get(mimePath);
+            List<String> paths = Collections.singletonList(mimePath.getPath());
+            
+            try {
+                Method m = MimePath.class.getDeclaredMethod("getInheritedPaths", String.class, String.class); //NOI18N
+                m.setAccessible(true);
+                @SuppressWarnings("unchecked")
+                List<String> ret = (List<String>) m.invoke(mimePath, null, null);
+                paths = ret;
+            } catch (Exception e) {
+                throw new IllegalStateException("Can't call org.netbeans.api.editor.mimelookup.MimePath.getInheritedPaths method.", e); //NOI18N
+            }
+
+            List<Lookup> lookups = new ArrayList<Lookup>(paths.size());
+            for(String path : paths) {
+                MimePath mp = MimePath.parse(path);
+                Lkp lookup = MAP.get(mp);
+                if (lookup == null) {
+                    lookup = new Lkp();
+                    MAP.put(mp, lookup);
+                }
+                lookups.add(lookup);
+            }
+            
+            return new ProxyLookup(lookups.toArray(new Lookup [lookups.size()]));
         }
     }
     

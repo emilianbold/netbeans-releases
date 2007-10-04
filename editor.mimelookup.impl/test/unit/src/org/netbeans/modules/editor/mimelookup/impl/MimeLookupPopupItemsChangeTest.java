@@ -49,7 +49,6 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.junit.NbTestCase;
 import org.openide.actions.CutAction;
 import org.openide.actions.FindAction;
-import org.openide.actions.NewAction;
 import org.openide.actions.RenameAction;
 import org.openide.actions.ReplaceAction;
 import org.openide.util.Lookup;
@@ -70,15 +69,15 @@ public class MimeLookupPopupItemsChangeTest extends NbTestCase {
         super(testName);
     }
     
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         clearWorkDir();
         fsstruct = new String [] {
             "Editors/Popup/org-openide-actions-CutAction.instance", //NOI18N
             "Editors/Popup/org-openide-actions-CopyAction.instance", //NOI18N
             "Editors/Popup/org-openide-actions-PasteAction.instance", //NOI18N
-            "Editors/text/x-java/Popup/org-openide-actions-DeleteAction.instance", //NOI18N
-            "Editors/text/x-java/Popup/org-openide-actions-RenameAction.instance", //NOI18N
-            "Editors/text/x-java/text/xml/Popup/org-openide-actions-PrintAction.instance", //NOI18N
+            "Editors/text/html/Popup/org-openide-actions-DeleteAction.instance", //NOI18N
+            "Editors/text/html/Popup/org-openide-actions-RenameAction.instance", //NOI18N
+            "Editors/text/xml/text/html/Popup/org-openide-actions-PrintAction.instance", //NOI18N
             "Editors/text/x-java/text/xml/text/html/Popup/org-openide-actions-NewAction.instance", //NOI18N
         };
 
@@ -110,7 +109,7 @@ public class MimeLookupPopupItemsChangeTest extends NbTestCase {
 
         //delete RenameAction
         TestUtilities.deleteFile(getWorkDir(),
-                "Editors/text/x-java/Popup/org-openide-actions-RenameAction.instance");
+                "Editors/text/html/Popup/org-openide-actions-RenameAction.instance");
         checkPopupItemPresence(lookup, RenameAction.class, false);
 
         // check firing the change
@@ -151,7 +150,7 @@ public class MimeLookupPopupItemsChangeTest extends NbTestCase {
         checkPopupItemPresence(lookup, FindAction.class, true);
         
         // lookup for ReplaceAction in the folder that doesn't exist
-        lookup = MimeLookup.getMimeLookup("text/html"); //NOI18N
+        lookup = MimeLookup.getLookup("text/html"); //NOI18N
         checkPopupItemPresence(lookup, ReplaceAction.class, false); 
         // create folder with ReplaceAction
         TestUtilities.createFile(getWorkDir(), 

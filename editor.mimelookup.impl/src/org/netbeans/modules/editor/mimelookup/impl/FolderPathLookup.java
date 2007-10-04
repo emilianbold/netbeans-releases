@@ -145,14 +145,14 @@ public final class FolderPathLookup extends AbstractLookup {
         
         private transient InstanceCookie ic;
         /** source data object */
-        private transient DataObject obj;
+        private transient DataObject dataObject;
         /** reference to created object */
         private transient Reference<Object> ref;
 
         /** Constructs new item. */
         public ICItem (DataObject obj, InstanceCookie ic) {
             this.ic = ic;
-            this.obj = obj;
+            this.dataObject = obj;
             this.fo = obj.getPrimaryFile();
             
             if (ERR.isLoggable(Level.FINE)) ERR.fine("New ICItem: " + obj); // NOI18N
@@ -166,16 +166,16 @@ public final class FolderPathLookup extends AbstractLookup {
             ICItem prev = DANGEROUS.get ();
             try {
                 DANGEROUS.set (this);
-                if (obj == null) {
+                if (dataObject == null) {
                     try {
-                        obj = DataObject.find(fo);
+                        dataObject = DataObject.find(fo);
                     } catch (DataObjectNotFoundException donfe) {
                         ic = new BrokenInstance("No DataObject for " + fo.getPath(), donfe); // NOI18N
                         return;
                     }
                 }
 
-                ic = obj.getCookie (InstanceCookie.class);
+                ic = dataObject.getCookie (InstanceCookie.class);
                 if (ic == null) {
                     ic = new BrokenInstance("No cookie for " + fo.getPath(), null); // NOI18N
                 }
@@ -224,7 +224,7 @@ public final class FolderPathLookup extends AbstractLookup {
         protected boolean instanceOf (Class clazz) {
             init ();
             
-            if (ERR.isLoggable(Level.FINE)) ERR.fine("instanceOf: " + clazz.getName() + " obj: " + obj); // NOI18N
+            if (ERR.isLoggable(Level.FINE)) ERR.fine("instanceOf: " + clazz.getName() + " obj: " + dataObject); // NOI18N
             
             if (ic instanceof InstanceCookie.Of) {
                 // special handling for special cookies
@@ -236,6 +236,7 @@ public final class FolderPathLookup extends AbstractLookup {
 
             // handling of normal instance cookies
             try {
+                @SuppressWarnings("unchecked")
                 boolean res = clazz.isAssignableFrom (ic.instanceClass ());
                 if (ERR.isLoggable(Level.FINE)) ERR.fine("  plain: " + res); // NOI18N
                 return res;
@@ -255,7 +256,7 @@ public final class FolderPathLookup extends AbstractLookup {
             
             try {
                 Object obj = ic.instanceCreate();
-                if (ERR.isLoggable(Level.FINE)) ERR.fine("  getInstance: " + obj + " for " + this.obj); // NOI18N
+                if (ERR.isLoggable(Level.FINE)) ERR.fine("  getInstance: " + obj + " for " + this.dataObject); // NOI18N
                 ref = new WeakReference<Object> (obj);
                 return obj;
             } catch (ClassNotFoundException ex) {
@@ -267,14 +268,14 @@ public final class FolderPathLookup extends AbstractLookup {
         }
 
         /** Hash code is the <code>InstanceCookie</code>'s code. */
-        public int hashCode () {
+        public @Override int hashCode () {
             init ();
             
             return System.identityHashCode (ic);
         }
 
         /** Two items are equal if they point to the same cookie. */
-        public boolean equals (Object obj) {
+        public @Override boolean equals (Object obj) {
             if (obj instanceof ICItem) {
                 ICItem i = (ICItem)obj;
                 i.init ();
@@ -290,24 +291,24 @@ public final class FolderPathLookup extends AbstractLookup {
         public String getId() {
             init ();
 
-            if (obj == null) {
+            if (dataObject == null) {
                 // Deser problems.
                 return "<broken: " + fo.getPath() + ">"; // NOI18N
             }
             
-            return obj.getName();
+            return dataObject.getName();
         }
 
         /** Display name is extracted from name of the objects node. */
         public String getDisplayName () {
             init ();
             
-            if (obj == null) {
+            if (dataObject == null) {
                 // Deser problems.
                 return "<broken: " + fo.getPath() + ">"; // NOI18N
             }
             
-            return obj.getNodeDelegate ().getDisplayName ();
+            return dataObject.getNodeDelegate ().getDisplayName ();
         }
 
         /** Method that can test whether an instance of a class has been created
@@ -322,10 +323,10 @@ public final class FolderPathLookup extends AbstractLookup {
             if (w != null && w.get () == obj) {
                 return true;
             }
-            if (this.obj instanceof InstanceDataObject) {
+            if (this.dataObject instanceof InstanceDataObject) {
                 try {
                     Method m = InstanceDataObject.class.getDeclaredMethod("creatorOf", Object.class); //NOI18N
-                    return (Boolean) m.invoke(this.obj, obj);
+                    return (Boolean) m.invoke(this.dataObject, obj);
                 } catch (Exception e) {
                     // ignore
                 }

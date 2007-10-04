@@ -41,9 +41,7 @@
 
 package org.netbeans.modules.editor.mimelookup.impl;
 
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.Lookup;
@@ -61,7 +59,7 @@ public class SwitchLookupTest extends NbTestCase {
         super(name);
     }
 
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         clearWorkDir();
         // Set up the default lookup, repository, etc.
         EditorTestLookup.setLookup(new String[0], getWorkDir(), new Object[] {},
@@ -70,7 +68,7 @@ public class SwitchLookupTest extends NbTestCase {
         );
     }
     
-    protected void tearDown() {
+    protected @Override void tearDown() {
         TestUtilities.gc();
     }
     
@@ -149,23 +147,23 @@ public class SwitchLookupTest extends NbTestCase {
     
     public void testHierarchyInheritance() throws Exception {
         // Create the mime path folders and add some instance
-        TestUtilities.createFile(getWorkDir(), "Editors/text/x-jsp/org-netbeans-modules-editor-mimelookup-impl-DummySettingImpl.instance");
+        TestUtilities.createFile(getWorkDir(), "Editors/text/x-java/org-netbeans-modules-editor-mimelookup-impl-DummySettingImpl.instance");
         TestUtilities.createFile(getWorkDir(), "Editors/text/x-jsp/text/x-java/");
         TestUtilities.sleepForWhile();
 
         {
-            Lookup jspLookup = new SwitchLookup(MimePath.parse("text/x-jsp"));
-            Collection jspInstances = jspLookup.lookupAll(DummySetting.class);
-            assertEquals("Wrong number of instances", 1, jspInstances.size());
-            assertEquals("Wrong instance", DummySettingImpl.class, jspInstances.iterator().next().getClass());
-        }
-        
-        {
-            Lookup javaLookup = new SwitchLookup(MimePath.parse("text/x-jsp/text/x-java"));
+            Lookup javaLookup = new SwitchLookup(MimePath.parse("text/x-java"));
             Collection javaInstances = javaLookup.lookupAll(DummySetting.class);
             assertEquals("Wrong number of instances", 1, javaInstances.size());
             assertEquals("Wrong instance", DummySettingImpl.class, javaInstances.iterator().next().getClass());
         }
+        
+        {
+            Lookup jspJavaLookup = new SwitchLookup(MimePath.parse("text/x-jsp/text/x-java"));
+            Collection jspJavaInstances = jspJavaLookup.lookupAll(DummySetting.class);
+            assertEquals("Wrong number of instances", 1, jspJavaInstances.size());
+            assertEquals("Wrong instance", DummySettingImpl.class, jspJavaInstances.iterator().next().getClass());
+    }
     }
 
     public void testHierarchyRootInheritance() throws Exception {
@@ -234,7 +232,7 @@ public class SwitchLookupTest extends NbTestCase {
     // test that instances of a class with a Class2LayerFolder provider are really read from the proper folder
     
     public void testReadFromSpecialFolders() throws Exception {
-        TestUtilities.createFile(getWorkDir(), "Editors/text/x-jsp/DummyFolder/org-netbeans-modules-editor-mimelookup-impl-DummySettingImpl.instance");
+        TestUtilities.createFile(getWorkDir(), "Editors/text/x-java/DummyFolder/org-netbeans-modules-editor-mimelookup-impl-DummySettingImpl.instance");
         TestUtilities.createFile(getWorkDir(), "Services/org-netbeans-modules-editor-mimelookup-impl-DummyClass2LayerFolder.instance");
         TestUtilities.sleepForWhile();
 
@@ -248,7 +246,7 @@ public class SwitchLookupTest extends NbTestCase {
     // test that adding/removing a Class2LayerFolder provider updates the lookup for its class
     
     public void testChangeInMappers() throws Exception {
-        TestUtilities.createFile(getWorkDir(), "Editors/text/x-jsp/DummyFolder/org-netbeans-modules-editor-mimelookup-impl-DummySettingImpl.instance");
+        TestUtilities.createFile(getWorkDir(), "Editors/text/x-java/DummyFolder/org-netbeans-modules-editor-mimelookup-impl-DummySettingImpl.instance");
         TestUtilities.sleepForWhile();
 
         Lookup lookup = new SwitchLookup(MimePath.parse("text/x-jsp/text/x-java"));
@@ -282,121 +280,6 @@ public class SwitchLookupTest extends NbTestCase {
         assertEquals("Wrong number of instances", 0, instances.size());
     }
 
-    // Test mime path -> path[] conversion
-    
-    public void testNoMapper() {
-        MimePath mimePath = MimePath.parse("text/x-jsp/text/x-java/text/x-javadoc");
-        List paths = SwitchLookup.computePaths(mimePath, null, ClassInfoStorage.getInstance().getInfo(DummySetting.class.getName()).getExtraPath());
-        checkPaths(
-            Arrays.asList(new String [] {
-                "text/x-jsp/text/x-java/text/x-javadoc",
-                "text/x-javadoc",
-                "text/x-jsp/text/x-java",
-                "text/x-jsp",
-                ""
-            }),
-            paths
-        );
-    }
-
-    public void testNoMapperCompoundMimeType1() {
-        MimePath mimePath = MimePath.parse("text/x-ant+xml/text/x-java/text/x-javadoc");
-        List paths = SwitchLookup.computePaths(mimePath, null, ClassInfoStorage.getInstance().getInfo(DummySetting.class.getName()).getExtraPath());
-        checkPaths(
-            Arrays.asList(new String [] {
-                "text/x-ant+xml/text/x-java/text/x-javadoc",
-                "text/x-javadoc",
-                "text/x-ant+xml/text/x-java",
-                "text/x-ant+xml",
-                "text/xml/text/x-java/text/x-javadoc",
-                "text/xml/text/x-java",
-                "text/xml",
-                ""
-            }),
-            paths
-        );
-    }
-    
-    public void testNoMapperCompoundMimeType2() {
-        MimePath mimePath = MimePath.parse("text/x-ant+xml/text/x-ant+xml");
-        List paths = SwitchLookup.computePaths(mimePath, null, ClassInfoStorage.getInstance().getInfo(DummySetting.class.getName()).getExtraPath());
-        checkPaths(
-            Arrays.asList(new String [] {
-                "text/x-ant+xml/text/x-ant+xml",
-                "text/x-ant+xml",
-                "text/xml",
-                "text/x-ant+xml/text/xml",
-                "text/xml/text/x-ant+xml",
-                "text/xml/text/xml",
-                ""
-            }),
-            paths
-        );
-    }
-
-    public void testNoMapperCompoundMimeType3() {
-        MimePath mimePath = MimePath.parse("text/x-ant+xml/text/x-java/text/x-ant+xml");
-        List paths = SwitchLookup.computePaths(mimePath, null, ClassInfoStorage.getInstance().getInfo(DummySetting.class.getName()).getExtraPath());
-        checkPaths(
-            Arrays.asList(new String [] {
-                "text/x-ant+xml/text/x-java/text/x-ant+xml",
-                "text/x-ant+xml",
-                "text/xml",
-                "text/x-ant+xml/text/x-java/text/xml",
-                "text/x-ant+xml/text/x-java",
-                "text/xml/text/x-java/text/x-ant+xml",
-                "text/xml/text/x-java/text/xml",
-                "text/xml/text/x-java",
-                ""
-            }),
-            paths
-        );
-    }
-    
-    public void testDummyMapper() throws Exception {
-        TestUtilities.createFile(getWorkDir(), "Services/org-netbeans-modules-editor-mimelookup-impl-DummyClass2LayerFolder.instance");
-        TestUtilities.sleepForWhile();
-        
-        MimePath mimePath = MimePath.parse("text/x-jsp/text/x-java/text/x-javadoc");
-        List paths = SwitchLookup.computePaths(mimePath, SwitchLookup.ROOT_FOLDER, ClassInfoStorage.getInstance().getInfo(DummySetting.class.getName()).getExtraPath());
-        checkPaths(
-            Arrays.asList(new String [] {
-                SwitchLookup.ROOT_FOLDER + "/text/x-jsp/text/x-java/text/x-javadoc/DummyFolder",
-                SwitchLookup.ROOT_FOLDER + "/text/x-javadoc/DummyFolder",
-                SwitchLookup.ROOT_FOLDER + "/text/x-jsp/text/x-java/DummyFolder",
-                SwitchLookup.ROOT_FOLDER + "/text/x-jsp/DummyFolder",
-                SwitchLookup.ROOT_FOLDER + "/DummyFolder"
-            }), 
-            paths
-        );
-    }
-    
-    public void testGetGenericPartOfCompoundMimeType() {
-        String generic = SwitchLookup.getGenericPartOfCompoundMimeType("text/x-ant+xml");
-        assertNotNull("Didn't detect compound mime type", generic);
-        assertEquals("Wrong generic part", "text/xml", generic);
-        
-        generic = SwitchLookup.getGenericPartOfCompoundMimeType("text/c++");
-        assertNull("text/c++ is not a compound mime type", generic);
-    }
-    
-    private void checkPaths(List expectedPaths, List paths) {
-//        for(Iterator i = expectedPaths.iterator(); i.hasNext(); ) {
-//            System.out.println("Expected: " + i.next());
-//        }
-//        for(Iterator i = paths.iterator(); i.hasNext(); ) {
-//            System.out.println("Current: " + i.next());
-//        }
-//        
-        assertEquals("Wrong number of paths", expectedPaths.size(), paths.size());
-        
-        for (int i = 0; i < expectedPaths.size(); i++) {
-            String expectedPath = (String) expectedPaths.get(i);
-            String path = (String) paths.get(i);
-            assertEquals("Invalid path", expectedPath, path);
-        }
-    }
-    
     private static final class L implements LookupListener {
         public int resultChangedCnt = 0;
         public void resultChanged(LookupEvent ev) {

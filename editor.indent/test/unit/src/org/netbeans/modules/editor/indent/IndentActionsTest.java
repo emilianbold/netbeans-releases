@@ -47,10 +47,12 @@ import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.editor.indent.*;
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.editor.BaseKit;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.editor.NbEditorKit;
-import org.netbeans.modules.editor.indent.IndentTestMimeDataProvider;
 import org.netbeans.spi.editor.indent.Context;
 import org.netbeans.spi.editor.indent.ExtraLock;
 import org.netbeans.spi.editor.indent.IndentTask;
@@ -82,7 +84,10 @@ public class IndentActionsTest extends NbTestCase {
 
         assertTrue(SwingUtilities.isEventDispatchThread());
         TestIndentTask.TestFactory factory = new TestIndentTask.TestFactory();
-        IndentTestMimeDataProvider.addInstances(MIME_TYPE, factory);
+        
+        MockServices.setServices(MockMimeLookup.class);
+        MockMimeLookup.setInstances(MimePath.parse(MIME_TYPE), factory);
+        
         TestKit kit = new TestKit();
         JEditorPane pane = new JEditorPane();
         pane.setEditorKit(kit);
@@ -94,7 +99,7 @@ public class IndentActionsTest extends NbTestCase {
         assertNotNull(a);
         a.actionPerformed(new ActionEvent(pane, 0, ""));
         // Check that the factory was used
-        assertTrue(factory.lastCreatedTask.indentPerformed);
+        assertTrue(TestIndentTask.TestFactory.lastCreatedTask.indentPerformed);
 
         // Test reformat action
          a = kit.getActionByName(BaseKit.formatAction);
@@ -160,7 +165,7 @@ public class IndentActionsTest extends NbTestCase {
     
     private static final class TestKit extends NbEditorKit {
         
-        public String getContentType() {
+        public @Override String getContentType() {
             return MIME_TYPE;
         }
         

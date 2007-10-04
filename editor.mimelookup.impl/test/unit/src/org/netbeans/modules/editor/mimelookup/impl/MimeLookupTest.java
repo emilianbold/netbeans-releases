@@ -70,17 +70,16 @@ public class MimeLookupTest extends NbTestCase {
         clearWorkDir();
         String fsstruct [] = new String [] {
             "Editors/text/xml/text/html/java-lang-StringBuffer.instance", //NOI18N
+            "Editors/text/x-java/text/xml/testLookupTwo/org-netbeans-modules-editor-mimelookup-impl-TestLookupObjectTwo.instance", //NOI18N
             "Editors/text/jsp/testLookup/org-netbeans-modules-editor-mimelookup-impl-TestLookupObject.instance", //NOI18N
-            "Editors/text/x-java/text/xml/testLookupTwo/org-netbeans-modules-editor-mimelookup-impl-TestLookupObjectTwo.instance", //NOI18N 
-            "Editors/text/html/text/xml/testLookup/org-netbeans-modules-editor-mimelookup-impl-TestLookupObject.instance", //NOI18N 
+            "Editors/text/html/text/xml/testLookup/org-netbeans-modules-editor-mimelookup-impl-TestLookupObject.instance", //NOI18N
             "Editors/text/html/text/xml/testLookupTwo/org-netbeans-modules-editor-mimelookup-impl-TestLookupObjectTwo.instance", //NOI18N 
+            "Editors/text/jsp/text/html/testLookup/org-netbeans-modules-editor-mimelookup-impl-TestLookupObject.instance", //NOI18N
             "Editors/text/xml/org-netbeans-modules-editor-mimelookup-impl-TestLookupObjectInstantiation.instance", //NOI18N
-            "Editors/text/xml/text/jsp/testLookup/org-netbeans-modules-editor-mimelookup-impl-TestLookupObject.instance", //NOI18N
             // testing "compound mime types like application/x-ant+xml"
-            "Editors/application/dtd/text/x-java/java-lang-String.instance", //NOI18N
             "Editors/application/dtd/testLookup/org-netbeans-modules-editor-mimelookup-impl-TestLookupObject.instance", //NOI18N                     
             "Editors/application/x-ant+dtd/java-lang-StringBuffer.instance", //NOI18N
-            "Editors/application/x-ant+dtd/text/x-java/testLookupTwo/org-netbeans-modules-editor-mimelookup-impl-TestLookupObjectTwo.instance", //NOI18N 
+            "Editors/text/x-java/application/x-ant+dtd/testLookupTwo/org-netbeans-modules-editor-mimelookup-impl-TestLookupObjectTwo.instance", //NOI18N 
         };
 
         EditorTestLookup.setLookup(fsstruct, getWorkDir(), new Object[] {},
@@ -116,7 +115,6 @@ public class MimeLookupTest extends NbTestCase {
         
         mp = MimePath.parse("text/html/text/xml");
         lookup = MimeLookup.getLookup(mp);
-        
         checkLookupObject(lookup, TestLookupObject.class, true);
         checkLookupObject(lookup, TestLookupObjectTwo.class, true);
         
@@ -124,9 +122,9 @@ public class MimeLookupTest extends NbTestCase {
         mp = MimePath.parse("text/xml/text/jsp/text/html"); //NOI18N
         lookup = MimeLookup.getLookup(mp);
         checkLookupObject(lookup, TestLookupObject.class, true);
-        lookup = MimeLookup.getLookup("text/xml");
+        lookup = MimeLookup.getLookup("text/html");
         checkLookupObject(lookup, TestLookupObject.class, false);        
-        mp = MimePath.parse("text/xml/text/jsp");
+        mp = MimePath.parse("text/jsp/text/html");
         lookup = MimeLookup.getLookup(mp);
         checkLookupObject(lookup, TestLookupObject.class, true);
         
@@ -296,11 +294,10 @@ public class MimeLookupTest extends NbTestCase {
         checkLookupObject(lookup, String.class, false);
         checkLookupObject(lookup, TestLookupObjectTwo.class, false);
         
-        mp = MimePath.parse("application/x-ant+dtd/text/x-java"); //NOI18N
+        mp = MimePath.parse("text/x-java/application/x-ant+dtd"); //NOI18N
         lookup = MimeLookup.getLookup(mp);
         checkLookupObject(lookup, TestLookupObject.class, true); //it is inherited from parent
         checkLookupObject(lookup, StringBuffer.class, true); //it is inherited from parent
-        checkLookupObject(lookup, String.class, true);
         checkLookupObject(lookup, TestLookupObjectTwo.class, true);
         //----------------------------------------------------------------------
 
@@ -414,16 +411,16 @@ public class MimeLookupTest extends NbTestCase {
         checkResultChange(0);
 
         //simulate module installation, new file will be added
-        createFile("Editors/message/dtd/" +
+        createFile("Editors/message/dtd/audio/wav/" +
                 "java-lang-InstantiationException.instance");
-        
+
         checkResultChange(0);
         checkLookupObject(lookup, IllegalStateException.class, false);
         checkLookupObject(lookup, InstantiationException.class, true);
         
         // now install TestLookupObject, firing should happen
         //simulate module installation, new file will be added
-        createFile("Editors/message/dtd/" +
+        createFile("Editors/message/dtd/audio/wav/" +
                 "java-lang-IllegalStateException.instance");
 
         checkResultChange(1);

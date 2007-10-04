@@ -51,9 +51,7 @@ import org.netbeans.junit.MemoryFilter;
 import org.netbeans.junit.NbTestCase;
 import org.openide.actions.CutAction;
 import org.openide.actions.FindAction;
-import org.openide.actions.NewAction;
 import org.openide.actions.RenameAction;
-import org.openide.actions.ReplaceAction;
 import org.openide.util.Lookup.Result;
 import org.openide.util.Lookup.Template;
 
@@ -73,15 +71,15 @@ public class Depr_MimeLookupPerformanceTest extends NbTestCase {
         super(testName);
     }
     
-    protected void setUp() throws java.lang.Exception {
+    protected @Override void setUp() throws java.lang.Exception {
         fsstruct = new String [] {
             "Editors/Popup/org-openide-actions-CutAction.instance", //NOI18N
             "Editors/Popup/org-openide-actions-CopyAction.instance", //NOI18N
             "Editors/Popup/org-openide-actions-PasteAction.instance", //NOI18N
-            "Editors/text/x-java/Popup/org-openide-actions-DeleteAction.instance", //NOI18N
-            "Editors/text/x-java/Popup/org-openide-actions-RenameAction.instance", //NOI18N
-            "Editors/text/x-java/text/xml/Popup/org-openide-actions-PrintAction.instance", //NOI18N
-            "Editors/text/x-java/text/xml/text/html/Popup/org-openide-actions-NewAction.instance", //NOI18N
+            "Editors/text/xml/Popup/org-openide-actions-DeleteAction.instance", //NOI18N
+            "Editors/text/xml/Popup/org-openide-actions-RenameAction.instance", //NOI18N
+            "Editors/text/html/text/xml/Popup/org-openide-actions-PrintAction.instance", //NOI18N
+            "Editors/text/x-java/text/html/text/xml/Popup/org-openide-actions-NewAction.instance", //NOI18N
         };
 
         EditorTestLookup.setLookup(fsstruct, getWorkDir(), new Object[] {},
@@ -107,8 +105,8 @@ public class Depr_MimeLookupPerformanceTest extends NbTestCase {
     }
 
     public void testMimeLookupObjectInstallingUninstallingSize() throws IOException{
-        MimeLookup lookup = MimeLookup.getMimeLookup("text/x-java").childLookup("text/xml"). //NOI18N
-                childLookup("text/html"); //NOI18N
+        MimeLookup lookup = MimeLookup.getMimeLookup("text/x-java").childLookup("text/html"). //NOI18N
+                childLookup("text/xml"); //NOI18N
         PopupActions popup = (PopupActions) lookup.lookup(PopupActions.class);
         List list = popup.getPopupActions();
         checkPopupItemPresence(lookup, RenameAction.class, true);
@@ -117,7 +115,7 @@ public class Depr_MimeLookupPerformanceTest extends NbTestCase {
         for (int i=0; i<30; i++){
             //delete RenameAction
             TestUtilities.deleteFile(getWorkDir(),
-                    "Editors/text/x-java/Popup/org-openide-actions-RenameAction.instance");
+                    "Editors/text/xml/Popup/org-openide-actions-RenameAction.instance");
             checkPopupItemPresence(lookup, RenameAction.class, false);
 
             //delete base CutAction
@@ -134,14 +132,14 @@ public class Depr_MimeLookupPerformanceTest extends NbTestCase {
 
             //simulate module installation, new action will be added
             TestUtilities.createFile(getWorkDir(), 
-                    "Editors/text/x-java/Popup/org-openide-actions-RenameAction.instance"); //NOI18N      
+                    "Editors/text/xml/Popup/org-openide-actions-RenameAction.instance"); //NOI18N      
             checkPopupItemPresence(lookup, RenameAction.class, true);
 
             TestUtilities.createFile(getWorkDir(), 
                     "Editors/Popup/org-openide-actions-CutAction.instance"); //NOI18N      
             checkPopupItemPresence(lookup, CutAction.class, true);
 
-            //delete RenameAction
+            //delete FindAction
             TestUtilities.deleteFile(getWorkDir(),
                     "Editors/Popup/org-openide-actions-FindAction.instance");
             checkPopupItemPresence(lookup, FindAction.class, false);
@@ -156,8 +154,8 @@ public class Depr_MimeLookupPerformanceTest extends NbTestCase {
     }
     
     public void testClassLookup() throws IOException{
-        MimeLookup lookup = MimeLookup.getMimeLookup("text/x-java").childLookup("text/xml"). //NOI18N
-                childLookup("text/html"); //NOI18N
+        MimeLookup lookup = MimeLookup.getMimeLookup("text/x-java").childLookup("text/html"). //NOI18N
+                childLookup("text/xml"); //NOI18N
         PopupActions popup = (PopupActions) lookup.lookup(PopupActions.class);
         List list = popup.getPopupActions();
         checkPopupItemPresence(lookup, RenameAction.class, true);
@@ -173,8 +171,8 @@ public class Depr_MimeLookupPerformanceTest extends NbTestCase {
     }
 
     public void testTemplateLookup() throws IOException{
-        MimeLookup lookup = MimeLookup.getMimeLookup("text/x-java").childLookup("text/xml"). //NOI18N
-                childLookup("text/html"); //NOI18N
+        MimeLookup lookup = MimeLookup.getMimeLookup("text/x-java").childLookup("text/html"). //NOI18N
+                childLookup("text/xml"); //NOI18N
         Result result = lookup.lookup(new Template(PopupActions.class));
         Collection col = result.allInstances();
         checkPopupItemPresence(lookup, RenameAction.class, true);

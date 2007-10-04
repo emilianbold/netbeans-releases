@@ -42,13 +42,11 @@
 package org.netbeans.modules.editor.indent;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -59,8 +57,6 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenHierarchyEvent;
-import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.spi.editor.indent.Context;
 import org.netbeans.spi.editor.indent.ExtraLock;
@@ -75,18 +71,14 @@ import org.openide.util.Lookup;
  */
 public final class TaskHandler {
     
-    // -J-Dorg.netbeans.modules.editor.indent.TaskHandler=FINE
+    // -J-Dorg.netbeans.modules.editor.indent.TaskHandler.level=300
     private static final Logger LOG = Logger.getLogger(TaskHandler.class.getName());
     
-    private boolean indent;
+    private final boolean indent;
     
-    private Document doc;
+    private final Document doc;
 
     private List<MimeItem> items;
-
-    private Map<MimePath,MimeItem> mime2Item;
-
-    private int maxMimePathSize;
 
     /**
      * Start position of the currently formatted chunk.
@@ -98,7 +90,7 @@ public final class TaskHandler {
      */
     private Position endPos;
     
-    private Set<Object> existingFactories = new HashSet<Object>();
+    private final Set<Object> existingFactories = new HashSet<Object>();
     
 
     TaskHandler(boolean indent, Document doc) {
@@ -122,49 +114,50 @@ public final class TaskHandler {
         return endPos;
     }
 
-    int maxMimePathSize() {
-        return maxMimePathSize;
-    }
-
     void setGlobalBounds(Position startPos, Position endPos) {
         this.startPos = startPos;
         this.endPos = endPos;
     }
 
     boolean collectTasks() {
-        String mimeType = docMimeType();
-        if (mimeType != null) {
-            // Get base indent task for the document.
-            // Only if it exists also get the ones for possible embedded sections.
-            MimePath mimePath = MimePath.get(mimeType);
-            if (addItem(mimePath)) {
-                // Also add the embedded ones
-                TokenHierarchy<?> hi = TokenHierarchy.get(document());
-                if (hi != null) {
-                    LanguagePath[] languagePaths = sort(hi.languagePaths());
-                    // Don't know the range yet :(
-                    // TokenSequence<?> ts = hi.tokenSequence().subSequence(startPos.getOffset(), endPos.getOffset());
-                    // Collection<LanguagePath> activeEmbeddedPaths = getActiveEmbeddedPaths();
-                    for (LanguagePath lp : languagePaths) {
-                        mimePath = MimePath.parse(lp.mimePath());
-                        // Temporary fix until #108173 gets resolved: take only rightmost mime-type
-                        mimePath = MimePath.get(mimePath.getMimeType(mimePath.size() - 1));
-
-                        addItem(mimePath);
-                    }
-                }
+        TokenHierarchy<?> th = TokenHierarchy.get(document());
+        List<MimePath> mimePaths;
+        
+        if (th != null) {
+            Set<LanguagePath> languagePaths = th.languagePaths();
+            mimePaths = new ArrayList<MimePath>(languagePaths.size());
+            
+            for(LanguagePath languagePath : languagePaths) {
+                mimePaths.add(MimePath.parse(languagePath.mimePath()));
             }
+            
+            Collections.sort(mimePaths, MimePathSizeComparator.ASCENDING);
+        } else {
+            mimePaths = Collections.singletonList(MimePath.parse(docMimeType()));
+        }
+        
+        assert mimePaths.size() > 0 : "Each document must have at least one mime path"; //NOI18N
+        assert mimePaths.get(0).size() == 1  : "The first mime path should be document's mime type"; //NOI18N
+        
+        for(MimePath mp : mimePaths) {
+            addItem(mp);
         }
 
-        // HACK TODO PENDING WORKAROUND
+        // XXX: HACK TODO PENDING WORKAROUND
         // Temporary Workaround: the HTML formatter clobbers the Ruby formatter's
         // work so make sure the Ruby formatter gets to work last in RHTML files
-        if (items != null && "application/x-httpd-eruby".equals(mimeType)) {
+        //
+        // The problem is that both html and ruby formatters have language paths
+        // of the same lenght and therefore their ordering is undefined.
+        // This will be solved in the infrastructure by segmenting the formatted
+        // area by the language paths. And calling each formatter task only
+        // with the segments that belong to it.
+        if (items != null && "application/x-httpd-eruby".equals(docMimeType())) { //NOI18N
             // Copy list, except for Ruby element, which we then add at the end
             List<MimeItem> newItems = new ArrayList<MimeItem>(items.size());
             MimeItem rubyItem = null;
             for (MimeItem item : items) {
-                if (item.mimePath().getPath().equals("text/x-ruby")) { // NOI18N
+                if (item.mimePath().getPath().endsWith("text/x-ruby")) { // NOI18N
                     rubyItem = item;
                 } else {
                     newItems.add(item);
@@ -175,18 +168,10 @@ public final class TaskHandler {
             }
             items = newItems;
         }
-
-
+        
         return (items != null);
     }
     
-    private LanguagePath[] sort(Set<LanguagePath> lps) {
-        LanguagePath[] arr = new LanguagePath[lps.size()];
-        lps.toArray(arr);
-        Arrays.sort(arr, LanguagePathSizeComparator.INSTANCE);
-        return arr;
-    }
-
     void lock() {
         if (items != null) {
             int i = 0;
@@ -237,28 +222,19 @@ public final class TaskHandler {
     }
 
     private boolean addItem(MimePath mimePath) {
-        // Only add if not added yet (doc's mime-type always added as first)
-        if (mime2Item != null && mime2Item.containsKey(mimePath))
-            return false;
-        
-        maxMimePathSize = Math.max(maxMimePathSize, mimePath.size());
         MimeItem item = new MimeItem(this, mimePath);
         if (item.createTask(existingFactories)) {
             if (items == null) {
                 items = new ArrayList<MimeItem>();
-                mime2Item = new HashMap<MimePath,MimeItem>();
             }
             items.add(item);
-            mime2Item.put(item.mimePath(), item);
             if (LOG.isLoggable(Level.FINE)) {
-                StringBuilder sb = new StringBuilder(isIndent() ? "INDENT" : "REFORMAT");
-                sb.append(": ");
-                sb.append(item);
-                LOG.fine(sb.toString());
+                LOG.fine("Adding MimeItem: " + item); //NOI18N
             }
             return true;
+        } else {
+            return false;
         }
-        return false;
     }
     
     /**
@@ -292,7 +268,7 @@ public final class TaskHandler {
     }
 
     private String docMimeType() {
-        return (String)document().getProperty("mimeType");
+        return (String)document().getProperty("mimeType"); //NOI18N
     }
         
     /**
@@ -342,6 +318,9 @@ public final class TaskHandler {
             Lookup lookup = MimeLookup.getLookup(mimePath);
             if (!handler.isIndent()) { // Attempt reformat task first
                 ReformatTask.Factory factory = lookup.lookup(ReformatTask.Factory.class);
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("'" + mimePath.getPath() + "' supplied ReformatTask.Factory: " + factory); //NOI18N
+                }
                 if (factory != null && (reformatTask = factory.createTask(context())) != null
                 && !existingFactories.contains(factory)) {
                     extraLock = reformatTask.reformatLock();
@@ -352,6 +331,9 @@ public final class TaskHandler {
             
             if (handler.isIndent() || reformatTask == null) { // Possibly fallback to reindent for reformatting
                 IndentTask.Factory factory = lookup.lookup(IndentTask.Factory.class);
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("'" + mimePath.getPath() + "' supplied IndentTask.Factory: " + factory); //NOI18N
+                }
                 if (factory != null && (indentTask = factory.createTask(context())) != null
                 && !existingFactories.contains(factory)) {
                     extraLock = indentTask.indentLock();
@@ -380,35 +362,24 @@ public final class TaskHandler {
                 extraLock.unlock();
         }
         
-        @Override 
-        public String toString() {
-            return mimePath + ": " +
-                    ((indentTask != null)
-                        ? "IT: " + indentTask
-                        : "RT: " + reformatTask);
+        public @Override String toString() {
+            return mimePath + ": " + ((indentTask != null) ? "IT: " + indentTask : "RT: " + reformatTask); //NOI18N
         }
-
     }
     
-    private final class TokenHierarchyL implements TokenHierarchyListener {
+    private static final class MimePathSizeComparator implements Comparator<MimePath> {
         
-        boolean modified;
-        
-        public void tokenHierarchyChanged(TokenHierarchyEvent evt) {
-            modified = true;
-        }
-        
-    }
-    
-    private static final class LanguagePathSizeComparator implements Comparator<LanguagePath> {
-        
-        static final LanguagePathSizeComparator INSTANCE = new LanguagePathSizeComparator();
+        static final MimePathSizeComparator ASCENDING = new MimePathSizeComparator(false);
 
-        public int compare(LanguagePath o1, LanguagePath o2) {
-            return o1.size() - o2.size();
+        private final boolean reverse;
+        
+        public MimePathSizeComparator(boolean reverse) {
+            this.reverse = reverse;
         }
         
-        
-    }
+        public int compare(MimePath o1, MimePath o2) {
+            return reverse ? o2.size() - o1.size() : o1.size() - o2.size();
+        }
+    } // End of MimePathSizeComparator class
     
 }

@@ -28,6 +28,7 @@
 package org.netbeans.modules.gsf;
 
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.gsf.Formatter;
 import org.netbeans.api.gsf.FormattingPreferences;
 import org.netbeans.spi.editor.indent.Context;
@@ -58,7 +59,19 @@ public class GsfIndentTask implements IndentTask {
 
     private synchronized Formatter getFormatter() {
         if(formatter == null) {
-            String mimeType = context.mimePath();
+            // XXX: Carefull here, generally context.mimePath() != mimeType. This
+            // task's factory was created for a top level language (mimeType), but the task
+            // itself can be used for an embedded language.
+            // If the task is used for the document itself (not an embedded
+            // section) Context.mimePath() == mimeType.
+            // However, if it is used for an embedded section the Context.mimePath() gives
+            // the mime path (languege path) of that section. Which is generally
+            // something like 'application/x-httpd-eruby/text/x-ruby'. While the
+            // task was registered for 'text/x-ruby'.
+            // Therefore with the __current__ implementation of MimeLookupInitializerImpl
+            // we can simply take the last component of Context.mimePath().
+            MimePath mimePath = MimePath.parse(context.mimePath());
+            String mimeType = mimePath.size() > 1 ? mimePath.getMimeType(mimePath.size() - 1) : mimePath.getPath();
             Language language = LanguageRegistry.getInstance().getLanguageByMimeType(mimeType);
             formatter = language.getFormatter();
         }
