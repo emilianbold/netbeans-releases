@@ -88,6 +88,7 @@ import org.openide.filesystems.FileStatusEvent;
 import org.openide.filesystems.FileStatusListener;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -150,28 +151,30 @@ public class RubyLogicalViewProvider implements LogicalViewProvider {
         }
         
         if (target instanceof FileObject) {
-            FileObject fo = (FileObject) target;
-            Project owner = FileOwnerQuery.getOwner(fo);
+            FileObject targetFO = (FileObject) target;
+            Project owner = FileOwnerQuery.getOwner(targetFO);
             if (!project.equals(owner)) {
                 return null; // Don't waste time if project does not own the fo
             }
             
-            Node[] nodes = root.getChildren().getNodes(true);
-            for (int i = 0; i < nodes.length; i++) {
-                TreeRootNode.PathFinder pf2 = nodes[i].getLookup().lookup(TreeRootNode.PathFinder.class);
+            Node[] rootChildren = root.getChildren().getNodes(true);
+            for (int i = 0; i < rootChildren.length; i++) {
+                TreeRootNode.PathFinder pf2 = rootChildren[i].getLookup().lookup(TreeRootNode.PathFinder.class);
                 if (pf2 != null) {
-                    Node n =  pf2.findPath(nodes[i], target);
+                    Node n =  pf2.findPath(rootChildren[i], target);
                     if (n != null) {
                         return n;
                     }
+                }
+                FileObject childFO = rootChildren[i].getLookup().lookup(DataObject.class).getPrimaryFile();
+                if (targetFO.equals(childFO)) {
+                    return rootChildren[i];
                 }
             }
         }
         
         return null;
     }
-    
-    
     
     public synchronized void addChangeListener(ChangeListener l) {
         if (this.changeListeners == null) {
