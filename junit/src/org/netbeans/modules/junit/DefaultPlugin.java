@@ -2110,6 +2110,7 @@ public final class DefaultPlugin extends JUnitPlugin {
     /**
      * Error thrown by failed test creation.
      */
+    @SuppressWarnings("serial")
     private static final class CreationError extends Exception {
         CreationError() {};
         CreationError(Throwable cause) {
