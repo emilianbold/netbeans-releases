@@ -41,8 +41,6 @@ import javax.swing.text.Document;
 import org.netbeans.api.languages.ASTEvaluator;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.modules.languages.ParserManagerImpl;
-
-import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.support.AbstractHighlightsContainer;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
@@ -100,6 +98,8 @@ class SemanticHighlightsLayer extends AbstractHighlightsContainer {
                 remove = false;
                 layer.offsetsBag = layer.offsetsBag1;
                 layer.offsetsBag1 = null;
+                if (layer.offsetsBag == null)
+                    layer.offsetsBag = new OffsetsBag (document);
                 layer.fireHighlightsChange (0, document.getLength ());
             }
         }
