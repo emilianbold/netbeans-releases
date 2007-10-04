@@ -21,11 +21,7 @@
 #include <windows.h>
 #include <wchar.h>
 
-typedef UINT  (WINAPI * WAIT_PROC)(HANDLE, DWORD);
-typedef BOOL  (WINAPI * CLOSE_PROC)(HANDLE);
-typedef BOOL  (WINAPI * DELETE_PROC)(LPCWSTR);
-typedef VOID  (WINAPI * EXIT_PROC)(DWORD);
-typedef VOID  (WINAPI * SLEEP_PROC)(DWORD);
+
 
 const DWORD SLEEP_DELAY   = 200;
 const DWORD MAX_ATTEPTS   = 15;
@@ -35,18 +31,32 @@ const WCHAR * LINE_SEPARATOR = L"\r\n";
 const WCHAR * UNC_PREFIX     = L"\\\\?\\";
 const DWORD UNC_PREFIX_LENGTH = 4;
 
-typedef struct {
-    WAIT_PROC	waitObject;
-    CLOSE_PROC	closeHandle;
-    DELETE_PROC	deleteFile;
-    EXIT_PROC	exitProcess;
-    SLEEP_PROC  sleep;
-    
-    HANDLE		hProcess;
-    WCHAR		szFileName[MAX_PATH];
-    
-} INJECT;
+#ifdef _MSC_VER
+#define ZERO(x,y) SecureZeroMemory((x),(y));
+#else
+#define ZERO(x,y) ZeroMemory((x),(y));
+#endif
 
+/*
+ * typedef UINT  (WINAPI * WAIT_PROC)(HANDLE, DWORD);
+ * typedef BOOL  (WINAPI * CLOSE_PROC)(HANDLE);
+ * typedef BOOL  (WINAPI * DELETE_PROC)(LPCWSTR);
+ * typedef VOID  (WINAPI * EXIT_PROC)(DWORD);
+ * typedef VOID  (WINAPI * SLEEP_PROC)(DWORD);
+ *
+ *
+ * typedef struct {
+ * WAIT_PROC	waitObject;
+ * CLOSE_PROC	closeHandle;
+ * DELETE_PROC	deleteFile;
+ * EXIT_PROC	exitProcess;
+ * SLEEP_PROC  sleep;
+ *
+ * HANDLE		hProcess;
+ * WCHAR		szFileName[MAX_PATH];
+ *
+ * } INJECT;
+ */
 WCHAR * search( const WCHAR * wcs1, const WCHAR * wcs2) {
     WCHAR *cp = (WCHAR *) wcs1;
     WCHAR *s1, *s2;
@@ -70,95 +80,91 @@ WCHAR * search( const WCHAR * wcs1, const WCHAR * wcs2) {
     return(NULL);
 }
 
-
-DWORD WINAPI RemoteThread(INJECT *remote) {
-    DWORD count = 0 ;
-    
-    remote->waitObject(remote->hProcess, INFINITE);
-    remote->closeHandle(remote->hProcess);
-    while(!remote->deleteFile(remote->szFileName) && (count++) < MAX_ATTEPTS) {
-        remote->sleep(SLEEP_DELAY);
-    }
-    remote->exitProcess(0);
-    return 0;
-}
-
-HANDLE GetRemoteProcess() {
-    STARTUPINFO si;
-    
-    PROCESS_INFORMATION pi;
-#ifdef _MSC_VER
-    SecureZeroMemory( &si, sizeof(si) );
-    SecureZeroMemory( &pi, sizeof(pi) );
-#else
-    ZeroMemory( &si, sizeof(si) );
-    ZeroMemory( &pi, sizeof(pi) );
-#endif
-    si.cb = sizeof(si);
-    if(CreateProcess(0, "explorer.exe", 0, 0, FALSE, CREATE_SUSPENDED|CREATE_NO_WINDOW|IDLE_PRIORITY_CLASS, 0, 0, &si, &pi)) {
-        CloseHandle(pi.hThread);
-        return pi.hProcess;
-    }
-    else {
-        return 0;
-    }
-}
-
-BOOL removeItself() {
-    
-    INJECT local, *remote;
-    BYTE   *code;
-    HMODULE hKernel32;
-    HANDLE  hRemoteProcess;
-    HANDLE  hCurProc;
-    
-    DWORD	dwThreadId;
-    HANDLE	hThread = 0;
-    DWORD sizeOfCode = 200;
-    
-    hRemoteProcess = GetRemoteProcess();
-    
-    if(hRemoteProcess == 0) {
-        return FALSE;
-    }
-    
-    code = VirtualAllocEx(hRemoteProcess, 0, sizeof(INJECT) + sizeOfCode, MEM_RESERVE|MEM_COMMIT, PAGE_EXECUTE_READWRITE);
-    
-    if(code == 0) {
-        CloseHandle(hRemoteProcess);
-        return FALSE;
-    }
-    
-    hKernel32 = GetModuleHandleW(L"kernel32.dll");
-    remote = (INJECT *)(code + sizeOfCode);
-    
-    local.waitObject      = (WAIT_PROC)  GetProcAddress(hKernel32, "WaitForSingleObject");
-    local.closeHandle	  = (CLOSE_PROC) GetProcAddress(hKernel32, "CloseHandle");
-    local.exitProcess	  = (EXIT_PROC)  GetProcAddress(hKernel32, "ExitProcess");
-    local.deleteFile      = (DELETE_PROC)GetProcAddress(hKernel32, "DeleteFileW");
-    local.sleep           = (SLEEP_PROC) GetProcAddress(hKernel32, "Sleep");
-    
-    // duplicate our own process handle for remote process to wait on
-    hCurProc = GetCurrentProcess();
-    
-    DuplicateHandle(hCurProc, hCurProc, hRemoteProcess, &local.hProcess, 0, FALSE, DUPLICATE_SAME_ACCESS);
-    
-    // find name of current executable
-    
-    GetModuleFileNameW(NULL, local.szFileName, MAX_PATH);
-    
-    // write in code to execute, and the remote structure
-    WriteProcessMemory(hRemoteProcess, (LPVOID) code,   RemoteThread, sizeOfCode, 0);
-    WriteProcessMemory(hRemoteProcess, (LPVOID) remote, &local, sizeof(local), 0);
-    
-    // execute the code in remote process
-    hThread = CreateRemoteThread(hRemoteProcess, 0, 0, (LPTHREAD_START_ROUTINE) code, remote, 0, &dwThreadId);
-    
-    if(hThread != 0) {
-        CloseHandle(hThread);
-    }
-    return TRUE;
-}
+/*
+ * DWORD WINAPI RemoteThread(INJECT *remote) {
+ * DWORD count = 0 ;
+ *
+ * remote->waitObject(remote->hProcess, INFINITE);
+ * remote->closeHandle(remote->hProcess);
+ * while(!remote->deleteFile(remote->szFileName) && (count++) < MAX_ATTEPTS) {
+ * remote->sleep(SLEEP_DELAY);
+ * }
+ * remote->exitProcess(0);
+ * return 0;
+ * }
+ *
+ * HANDLE GetRemoteProcess() {
+ * STARTUPINFO si;
+ *
+ * PROCESS_INFORMATION pi;
+ * ZERO( &si, sizeof(si) );
+ * ZERO( &pi, sizeof(pi) );
+ * si.cb = sizeof(si);
+ * if(CreateProcess(0, "explorer.exe", 0, 0, FALSE, CREATE_SUSPENDED|CREATE_NO_WINDOW|IDLE_PRIORITY_CLASS, 0, 0, &si, &pi)) {
+ * CloseHandle(pi.hThread);
+ * return pi.hProcess;
+ * }
+ * else {
+ * return 0;
+ * }
+ * }
+ *
+ * BOOL removeItself() {
+ *
+ * INJECT local, *remote;
+ * BYTE   *code;
+ * HMODULE hKernel32;
+ * HANDLE  hRemoteProcess;
+ * HANDLE  hCurProc;
+ *
+ * DWORD	dwThreadId;
+ * HANDLE	hThread = 0;
+ * DWORD sizeOfCode = 200;
+ *
+ * hRemoteProcess = GetRemoteProcess();
+ *
+ * if(hRemoteProcess == 0) {
+ * return FALSE;
+ * }
+ *
+ * code = VirtualAllocEx(hRemoteProcess, 0, sizeof(INJECT) + sizeOfCode, MEM_RESERVE|MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+ *
+ * if(code == 0) {
+ * CloseHandle(hRemoteProcess);
+ * return FALSE;
+ * }
+ *
+ * hKernel32 = GetModuleHandleW(L"kernel32.dll");
+ * remote = (INJECT *)(code + sizeOfCode);
+ *
+ * local.waitObject      = (WAIT_PROC)  GetProcAddress(hKernel32, "WaitForSingleObject");
+ * local.closeHandle	  = (CLOSE_PROC) GetProcAddress(hKernel32, "CloseHandle");
+ * local.exitProcess	  = (EXIT_PROC)  GetProcAddress(hKernel32, "ExitProcess");
+ * local.deleteFile      = (DELETE_PROC)GetProcAddress(hKernel32, "DeleteFileW");
+ * local.sleep           = (SLEEP_PROC) GetProcAddress(hKernel32, "Sleep");
+ *
+ * // duplicate our own process handle for remote process to wait on
+ * hCurProc = GetCurrentProcess();
+ *
+ * DuplicateHandle(hCurProc, hCurProc, hRemoteProcess, &local.hProcess, 0, FALSE, DUPLICATE_SAME_ACCESS);
+ *
+ * // find name of current executable
+ *
+ * GetModuleFileNameW(NULL, local.szFileName, MAX_PATH);
+ *
+ * // write in code to execute, and the remote structure
+ * WriteProcessMemory(hRemoteProcess, (LPVOID) code,   RemoteThread, sizeOfCode, 0);
+ * WriteProcessMemory(hRemoteProcess, (LPVOID) remote, &local, sizeof(local), 0);
+ *
+ * // execute the code in remote process
+ * hThread = CreateRemoteThread(hRemoteProcess, 0, 0, (LPTHREAD_START_ROUTINE) code, remote, 0, &dwThreadId);
+ *
+ * if(hThread != 0) {
+ * CloseHandle(hThread);
+ * }
+ * return TRUE;
+ * }
+ */
 
 typedef struct _list {
     WCHAR * item;
@@ -318,8 +324,54 @@ void getFreeIndexForNextThread(HANDLE * list, DWORD max, DWORD * counter) {
     }
 }
 
-
-
+#define BUFSIZE 512
+void removeItselfUsingCmd() {
+    char * currentFile = LocalAlloc(LPTR, sizeof(char) * BUFSIZE);    
+    if (GetModuleFileNameA(0, currentFile, MAX_PATH)) {
+        char * tempFile = LocalAlloc(LPTR, sizeof(char) * BUFSIZE);    
+        HANDLE hTempFile;
+        int index = 0;
+        int i = 0;
+        char cleanerSuffix [] = ".bat";
+        for( i = 0; i < (lstrlenA(currentFile) - lstrlenA(cleanerSuffix)); i++) {
+            tempFile[index++] = currentFile[i];
+        }
+        for(i=0;i<lstrlenA(cleanerSuffix);i++) {
+            tempFile[index++] = cleanerSuffix[i];
+        }
+        hTempFile = CreateFileA(tempFile, GENERIC_READ | GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);        
+        if (hTempFile != INVALID_HANDLE_VALUE) {
+            DWORD bytesNumber = 0 ;
+            STARTUPINFO si;
+            PROCESS_INFORMATION pi;   
+            
+            char * strings [7] = {":Repeat\ndel \"", 
+                                currentFile,
+                                "\"\nif exist \"",
+                                currentFile,
+                                "\" goto Repeat\ndel \"",
+                                tempFile,
+                                "\""
+            };
+            for(i=0;i<7;i++) {
+                WriteFile(hTempFile, strings[i], lstrlenA(strings[i]), &bytesNumber, NULL);
+            }
+            
+            CloseHandle(hTempFile);
+            
+            ZERO( &si, sizeof(si) );
+            si.cb = sizeof(si);
+            ZERO( &pi, sizeof(pi) );
+            CreateProcess(0, tempFile, 0, 0, FALSE, CREATE_NO_WINDOW | IDLE_PRIORITY_CLASS, 0, 0, &si, &pi);
+            
+            CloseHandle( pi.hProcess );
+            CloseHandle( pi.hThread );            
+        }
+        LocalFree(tempFile);
+    }
+    LocalFree(currentFile);
+    
+}
 
 
 // should be less or equals to MAXIMUM_WAIT_OBJECTS
@@ -376,6 +428,7 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hi, PSTR pszCmdLine, int nCmd
     }
     LocalFree(commandLine);
     LocalFree(runningThreads);
-    removeItself();
+    //removeItself();
+    removeItselfUsingCmd();
     return 0;
 }
