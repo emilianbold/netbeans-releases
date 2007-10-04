@@ -1533,6 +1533,9 @@ public class JsfProjectUtils {
         // XXX NetBeans API not finished yet
         type = ClassPath.COMPILE;
         ClassPath cp = ClassPath.getClassPath(getSourceRoot(project), type);
+        if (cp == null) {
+            return false;
+        }
 
         return cp.contains(obj);
     }
