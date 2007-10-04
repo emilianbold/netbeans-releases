@@ -860,24 +860,6 @@ public abstract class PositionEstimator {
 
     }
 
-    // todo (#pf): remove - used for debugging reasons, doesn't do good job
-    public void tablePrint(int[][] matrix, TokenSequence seq) {
-        for (int i = 0; i < matrix.length; i++) {
-            for (int j = 0; j < matrix[i].length; j++) {
-                int item = matrix[i][j];
-                String s = "(nothing)";
-                if (item > -1) {
-                    seq.moveIndex(item);
-                    seq.moveNext();
-                    s = "'" + seq.token().text();
-                }
-                s += "'                                           ";
-    //            System.err.print(s.substring(0, 25));
-                System.err.print(item + "\t");
-            }
-            System.err.println("");
-        }
-    }
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
