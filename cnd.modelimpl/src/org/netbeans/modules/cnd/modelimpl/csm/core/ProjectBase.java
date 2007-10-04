@@ -784,15 +784,16 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
     }
     
     protected static int getFileType(NativeFileItem nativeFile) {
-        Language lang = nativeFile.getLanguage();
-        if (lang == NativeFileItem.Language.C){
-            return FileImpl.SOURCE_C_FILE;
-        } else if (lang == NativeFileItem.Language.CPP){
-            return FileImpl.SOURCE_CPP_FILE;
-        } else if (lang == NativeFileItem.Language.C_HEADER){
-            return FileImpl.HEADER_FILE;
-        }
-        return FileImpl.UNDEFINED_FILE;
+	switch(nativeFile.getLanguage())  {
+	    case C:
+		return FileImpl.SOURCE_C_FILE;
+	    case CPP:
+		return FileImpl.SOURCE_CPP_FILE;
+	    case C_HEADER:
+		return FileImpl.HEADER_FILE;
+	    default:
+		return FileImpl.UNDEFINED_FILE;
+	}	
     }
     
     private APTMacroMap getSysMacroMap(List<String> sysMacros) {
@@ -831,20 +832,9 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
     /**
      * This method for testing purpose only. Used from TraceModel
      */
-    public CsmFile testAPTParseFile(String path, int fileType, APTPreprocHandler preprocHandler) {
-        File file = new File(path);
-        APTPreprocHandler.State state = getPreprocState(file);
-        if( state == null ) {
-            // remember the first state
-            return findFile(file, fileType, preprocHandler, true, preprocHandler.getState(), null);
-        } else {
-	    if( state.isCleaned() ) {
-                preprocHandler = restorePreprocHandler(file, preprocHandler, state);
-	    } else {
-		preprocHandler.setState(state);
-	    }
-            return findFile(file, fileType, preprocHandler, true, null, null);
-        }
+    public CsmFile testAPTParseFile(NativeFileItem item) {
+	APTPreprocHandler preprocHandler = this.createPreprocHandler(item);
+	return findFile(item.getFile(), getFileType(item), preprocHandler, true, preprocHandler.getState(), item);
     }
     
     /**

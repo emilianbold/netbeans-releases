@@ -64,6 +64,8 @@ import antlr.collections.*;
 
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.util.*;
+import org.netbeans.modules.cnd.api.project.NativeFileItem;
+import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.apt.debug.DebugUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.apt.support.APTMacroExpandedStream;
@@ -171,6 +173,7 @@ public class TraceModel {
     // only one of project/projectUID must be used 
     private ProjectBase project;
     private CsmUID<CsmProject> projectUID;
+    private NativeProject nativeProject;
 
     private Cache cache;
 
@@ -213,8 +216,6 @@ public class TraceModel {
     private List<String> currentIncludePaths = null;
 
     private List<String> macros = new ArrayList<String>();
-
-    private List<File> fileList = new ArrayList<File>();
 
     private boolean dumpStatistics = false;
     private static final int DEFAULT_TRACEMODEL_STATISTICS_LEVEL = 1;
@@ -261,7 +262,6 @@ public class TraceModel {
 	    model = new ModelImpl();
 	}
 	model.startup();
-	initProject();
 	currentIncludePaths = quoteIncludePaths;
     }
 
@@ -278,15 +278,6 @@ public class TraceModel {
 	RepositoryUtils.cleanCashes();
     }
 
-    private void initProject() {
-	if (getProject() != null) {
-	    Object platformProject = getProject().getPlatformProject();
-	    getProject().dispose(true);
-	    ((ModelImpl) CsmModelAccessor.getModel()).removeProject(platformProject);
-	}
-	setProject(model.addProject("DummyProject", "DummyProject", true)); // NOI18N
-    }
-	
     private boolean processFlag(char flag, String argRest) {
 	boolean argHasBeenEaten = false;
 	switch( flag ) {
@@ -394,49 +385,57 @@ public class TraceModel {
 	return argHasBeenEaten;
     }
 	
-	protected void processFlag(String flag) {
-		if( "dumplib".equals(flag) ) { // NOI18N
-			dumpLib = true;
-		} else if( "relpath".equals(flag) ) { // NOI18N
-			pathsRelCurFile = true;
-		} else if( "listfiles".equals(flag) ) { // NOI18N
-			listFilesAtEnd = true;
-		} else if( "raw".equals(flag) ) { // NOI18N
-			testRawPerformance = true;
-			//TraceFlags.DO_NOT_RENDER = true;
-		} else if( "listfiles".equals(flag) ) { // NOI18N
-			printUserFileList = true;
-		} else if( "mbs".equals(flag) ) { // NOI18N
-			memBySize = true;
-		} else if( "cleanrepository".equals(flag) ) { // NOI18N
-			doCleanRepository = true;
-		} else if ( "folding".equals(flag)) { // NOI18N
-			testFolding = true;
-		} else if ( "clean4dump".equals(flag)) { // NOI18N
-                        dumpModelAfterCleaningCache = true;
-                }
+    protected void processFlag(String flag) {
+	if ("dumplib".equals(flag)) {
+	    // NOI18N
+	    dumpLib = true;
+	} else if ("relpath".equals(flag)) {
+	    // NOI18N
+	    pathsRelCurFile = true;
+	} else if ("listfiles".equals(flag)) {
+	    // NOI18N
+	    listFilesAtEnd = true;
+	} else if ("raw".equals(flag)) {
+	    // NOI18N
+	    testRawPerformance = true;
+	    //TraceFlags.DO_NOT_RENDER = true;
+	} else if ("listfiles".equals(flag)) {
+	    // NOI18N
+	    printUserFileList = true;
+	} else if ("mbs".equals(flag)) {
+	    // NOI18N
+	    memBySize = true;
+	} else if ("cleanrepository".equals(flag)) {
+	    // NOI18N
+	    doCleanRepository = true;
+	} else if ("folding".equals(flag)) {
+	    // NOI18N
+	    testFolding = true;
+	} else if ("clean4dump".equals(flag)) {
+	    // NOI18N
+	    dumpModelAfterCleaningCache = true;
 	}
+    }
 	
-	private void addFile(List<File> files, File file) {
-		if (file.isDirectory()) {
-			String[] list = file.list();
-			for (int i = 0; i < list.length; i++) {
-				addFile(files, new File(file, list[i]));
-			}
-		} else {
-			files.add(file);
-		}
+    private void addFile(List<File> files, File file) {
+	if (file.isDirectory()) {
+	    String[] list = file.list();
+	    for (int i = 0; i < list.length; i++) {
+		addFile(files, new File(file, list[i]));
+	    }
+	} else {
+	    files.add(file);
 	}
+    }
 	
-	private void test(String[] args) {
-	    try {
-                processArguments(args);
-		doTest();
-	    }
-	    finally {
-		model.shutdown();
-	    }
+    private void test(String[] args) {
+	try {
+	    processArguments(args);
+	    doTest();
+	} finally {
+	    model.shutdown();
 	}
+    }
 	
     /*package*/
     void doTest() {
@@ -499,7 +498,11 @@ public class TraceModel {
 	}
 
 	if (printUserFileList) {
-	    print("Processing files:\n" + fileList.toString() + '\n'); // NOI18N
+	    print("Processing files:\n"); // NOI18N
+	    for( NativeFileItem file : getFileItems() ) {
+		print(file.getFile().getAbsolutePath() + ' ', false);
+	    }
+	    print("");
 	}
 
 	long memUsed = 0;
@@ -527,7 +530,7 @@ public class TraceModel {
 	    //		showMemoryUsage(memUsed);
 	    //	    }
 	    print("\nTesting raw performance: parsing project, take two\n"); // NOI18N
-	    initProject();
+	    resetProject();
 	    if (stopBeforeAll) {
 		waitAnyKey();
 	    }
@@ -681,6 +684,7 @@ public class TraceModel {
 
     /*package*/
     void processArguments(final String[] args) {
+	List<File> files = new ArrayList<File>();
 	for (int i = 0; i < args.length; i++) {
 	    if (args[i].startsWith("--")) {
 		// NOI18N
@@ -694,9 +698,13 @@ public class TraceModel {
 		    }
 		}
 	    } else {
-		addFile(fileList, new File(args[i]));
+		addFile(files, new File(args[i]));
 	    }
 	}
+	
+	nativeProject = NativeProjectProvider.createProject("DummyProject", files, // NOI18N
+		systemIncludePaths, quoteIncludePaths, getSysMacros(), macros);
+	
     }
 	
     private void anyKey(String message) {
@@ -739,13 +747,14 @@ public class TraceModel {
     private TestResult test() {
 	lap++;
 	TestResult total = new TestResult();
-	for (int i = 0; i < fileList.size(); i++) {
+	//for (int i = 0; i < fileList.size(); i++) {
+	for( NativeFileItem item : getFileItems() ) {
 	    try {
 		if (!testFolding) {
-		    TestResult res = test(fileList.get(i));
+		    TestResult res = test(item);
 		    total.accumulate(res);
 		} else {
-		    testFolding(fileList.get(i));
+		    testFolding(item.getFile());
 		}
 	    } catch (Exception e) {
 		e.printStackTrace(System.err);
@@ -1150,54 +1159,6 @@ public class TraceModel {
 	return new ArrayList<String>(all);
     }
     
-    //    // generates NativeProject using input project info
-    //    private NativeProject getNativeProject(File file, ProjectBase prj) {
-    //
-    //
-    //    }
-    //
-    //    // generates NativeFileItem object using input params info
-    //    private NativeFileItem getFileItem(File file, ProjectBase prj) {
-    //
-    //        class NFI implements NativeFileItem {
-    //            File file;
-    //            NativeProject prj;
-    //            List sysIncludes;
-    //            List quoteIncludes;
-    //            List macros;
-    //
-    //            NFI(File file, NativeProject prj,
-    //                    List sysIncludes, List quoteIncludes, List macros) {
-    //                this.file = file;
-    //                this.prj = prj;
-    //                this.sysIncludes = sysIncludes;
-    //                this.quoteIncludes = quoteIncludes;
-    //                this.macros = macros;
-    //            }
-    //
-    //            public NativeProject getNativeProject() {
-    //                return prj;
-    //            }
-    //
-    //            public File getFile() {
-    //                return file;
-    //            }
-    //
-    //            public List getIncludePaths() {
-    //                List includes = new ArrayList();
-    //                includes.addAll(sysIncludes);
-    //                includes.addAll(quoteIncludes);
-    //                return includes;
-    //            }
-    //
-    //            public List getMacroDefinitions() {
-    //                return macros;
-    //            }
-    //        };
-    //
-    //        return new NFI(file, prj, systemIncludePaths, quoteIncludePaths, Collections.EMPTY_LIST);
-    //    }
-	
     private long testAPTLexer(File file, boolean printTokens) throws FileNotFoundException, RecognitionException, TokenStreamException, IOException, ClassNotFoundException {
 	print("Testing APT lexer:"); // NOI18N
 	long time = System.currentTimeMillis();
@@ -1295,7 +1256,8 @@ public class TraceModel {
 	return time;
     }
 
-    private long testAPTParser(FileBuffer buffer, boolean cleanAPT) throws IOException, RecognitionException, TokenStreamException {
+    private long testAPTParser(NativeFileItem item, boolean cleanAPT) throws IOException, RecognitionException, TokenStreamException {
+	FileBuffer buffer = new FileBufferFile(item.getFile());
 	print("Testing APT Parser"); // NOI18N
 	int flags = CPPParserEx.CPP_CPLUSPLUS;
 	File file = buffer.getFile();
@@ -1305,16 +1267,8 @@ public class TraceModel {
 	    time = System.currentTimeMillis();
 	}
 	FileImpl fileImpl = null;
-	APTPreprocHandler preprocHandler = getPreprocHandler(file);
-	APTPreprocHandler.State state = preprocHandler.getState();
-	int fileType = getFileTypeByPath(file.getAbsolutePath(), file);
-	fileImpl = (FileImpl) getProject().testAPTParseFile(file.getAbsolutePath(), fileType, preprocHandler);
-	try {
-	    fileImpl.scheduleParsing(true, state);
-	} catch (InterruptedException e) {
-	    // nothing to do
-	    print("Interrupted parsing"); // NOI18N
-	}
+	fileImpl = (FileImpl) getProject().testAPTParseFile(item);
+	getProject().waitParse();
 	time = System.currentTimeMillis() - time;
 
 	if (isShowTime()) {
@@ -1323,7 +1277,8 @@ public class TraceModel {
 	return time;
     }
 
-    private void testAPT(File file) throws FileNotFoundException, RecognitionException, TokenStreamException, IOException, ClassNotFoundException {
+    private void testAPT(NativeFileItem item) throws FileNotFoundException, RecognitionException, TokenStreamException, IOException, ClassNotFoundException {
+	File file = item.getFile();
 	FileBuffer buffer = new FileBufferFile(file);
 	print("Testing APT:" + file); // NOI18N
 	long minLexer = Long.MAX_VALUE;
@@ -1390,7 +1345,7 @@ public class TraceModel {
 	long maxAPTParsing = Long.MIN_VALUE;
 	if (testAPTParser) {
 	    for (int i = -1; i < APT_REPEAT_TEST; i++) {
-		long val = testAPTParser(buffer, cleanAPT);
+		long val = testAPTParser(item, cleanAPT);
 		minAPTParsing = Math.min(minAPTParsing, val);
 		maxAPTParsing = Math.max(maxAPTParsing, val);
 	    }
@@ -1499,17 +1454,17 @@ public class TraceModel {
     /*package*/
     void test(File file, PrintStream out, PrintStream err) throws Exception {
 	tracer.setPrintStream(out);
-	addFile(fileList, file);
+	processArguments(new String[] { file.getAbsolutePath() });
 	doTest();
     }
     
-    private TestResult test(File file)
+    private TestResult test(NativeFileItem item)
 		    throws FileNotFoundException, RecognitionException, TokenStreamException, IOException, ClassNotFoundException {
 	
 	TestResult result = new TestResult();
 
 	if (testAPT) {
-	    testAPT(file);
+	    testAPT(item);
 	    if (breakAfterAPT) {
 		return new TestResult();
 	    }
@@ -1518,14 +1473,14 @@ public class TraceModel {
 	AST ast = null;
 
 	if (dumpStatistics) {
-	    Diagnostic.initFileStatistics(file.getAbsolutePath());
+	    Diagnostic.initFileStatistics(item.getFile().getAbsolutePath());
 	}
 
 	long time = System.currentTimeMillis();
 
 	if (readAst) {
 	    long t2 = System.currentTimeMillis();
-	    ast = cache.readAst(file);
+	    ast = cache.readAst(item.getFile());
 	    t2 = System.currentTimeMillis() - t2;
 	    print("AST read; time: " + t2 + " ms"); // NOI18N
 	}
@@ -1545,16 +1500,12 @@ public class TraceModel {
 	CsmProgressListenerEx progressListenerEx = new ProgressListenerExImpl();
 	model.addProgressListener(progressListenerEx);
 
-	APTPreprocHandler preprocHandler = getPreprocHandler(file);
-	APTPreprocHandler.State state = preprocHandler.getState();
-
-	int fileType = getFileTypeByPath(file.getAbsolutePath(), file);
-	FileImpl fileImpl = (FileImpl) getProject().testAPTParseFile(file.getAbsolutePath(), fileType, preprocHandler);
+	FileImpl fileImpl = (FileImpl) getProject().testAPTParseFile(item);
 	try {
 	    //fileImpl.scheduleParsing(true, state);
 	    waitProjectParsed(false);
 	    if (dumpAst || writeAst || showAstWindow) {
-		tree = fileImpl.parse(getPreprocHandler(file));
+		tree = fileImpl.parse(null);
 	    }
 //	} catch (InterruptedException e) {
 //	    // nothing to do
@@ -1564,7 +1515,7 @@ public class TraceModel {
 	errCount = fileImpl.getErrorCount();
 	if (dumpPPState) {
 	    sleep(100); // so that we don't run ahead of fileParsingFinished event
-	    preprocHandler = states.get(fileImpl);
+	    APTPreprocHandler preprocHandler = states.get(fileImpl);
 	    assert preprocHandler != null;
 	    dumpMacroMap(preprocHandler.getMacroMap());
 	}
@@ -1573,7 +1524,7 @@ public class TraceModel {
 	    result.setTime(time);
 	    result.setLineCount(countLines(fileImpl));
 	    if (!quiet) {
-		print("Processing " + file.getName() + " took " + time + " ms; LPS=" + result.getLPS() + "; error count: " + errCount); // NOI18N
+		print("Processing " + item.getFile().getName() + " took " + time + " ms; LPS=" + result.getLPS() + "; error count: " + errCount); // NOI18N
 	    }
 	}
 
@@ -1583,7 +1534,7 @@ public class TraceModel {
 		if (Diagnostic.getStatisticsLevel() > 1) {
 		    postfix += "." + Diagnostic.getStatisticsLevel(); // NOI18N
 		}
-		String name = file.getName() + postfix;
+		String name = item.getFile().getName() + postfix;
 		String theDumpFile = new File(this.dumpDir, name).getAbsolutePath();
 		Diagnostic.dumpFileStatistics(theDumpFile);
 	    }
@@ -1593,17 +1544,17 @@ public class TraceModel {
 	}
 
 	if (testCache) {
-	    cacheTimes.put(file.getName(), new Long(time));
+	    cacheTimes.put(item.getFile().getName(), new Long(time));
 	}
 	if (dumpAst) {
-	    System.out.println("AST DUMP for file " + file.getName()); // NOI18N
+	    System.out.println("AST DUMP for file " + item.getFile().getName()); // NOI18N
 	    dumpAst(tree);
 	}
 
 	if (writeAst && tree != null) {
 	    long t2 = System.currentTimeMillis();
 	    t2 = System.currentTimeMillis() - t2;
-	    cache.writeAst(tree, file);
+	    cache.writeAst(tree, item.getFile());
 	    print("AST stored; time: " + t2 + " ms"); // NOI18N
 	}
 
@@ -1629,7 +1580,7 @@ public class TraceModel {
 	}
 
 	if (showAstWindow) {
-	    test(tree, file.getName());
+	    test(tree, item.getFile().getName());
 	}
 
 	return result;
@@ -1818,13 +1769,36 @@ public class TraceModel {
     };
 
     /*package*/ ProjectBase getProject() {
-        ProjectBase prj;
         if (TraceFlags.USE_REPOSITORY) {
-            prj = projectUID == null ? null : (ProjectBase)projectUID.getObject();
+	    synchronized( this ) {
+		if( projectUID == null ) {
+		    projectUID = createProject().getUID();
+		}
+	    }
+            return (projectUID == null) ? null : (ProjectBase) projectUID.getObject();
         } else {
-            prj = this.project;
+	    if( this.project == null ) {
+		this.project = createProject();
+	    }
+            return this.project;
         }
-        return prj;
+    }
+    
+    private void resetProject() {
+	if (getProject() != null) {
+	    Object platformProject = getProject().getPlatformProject();
+	    getProject().dispose(true);
+	    ((ModelImpl) CsmModelAccessor.getModel()).removeProject(platformProject);
+	}
+	projectUID = null;
+	project = null;
+	getProject();
+    }
+    
+    
+    private ProjectBase createProject() {
+	ProjectBase project = model.addProject(nativeProject, "DummyProject", true); // NOI18N
+	return project;
     }
 
     private void setProject(ProjectBase project) {
@@ -1843,34 +1817,12 @@ public class TraceModel {
         return showTime;
     }
     
-    private static int getFileTypeByPath(String path, File file) {
-        DataObject dobj = null;
-        try {
-            FileObject fo = FileUtil.toFileObject(file.getCanonicalFile());
-            if (fo!=null) {
-                dobj = DataObject.find(fo);
-            }
-        }
-        catch (IOException ioe) {}
-        
-        if (dobj == null) {
-            if (CCDataLoader.getInstance().getExtensions().isRegistered(path)) {
-                return FileImpl.SOURCE_CPP_FILE;
-            } else if (CDataLoader.getInstance().getExtensions().isRegistered(path)) {
-                return FileImpl.SOURCE_C_FILE;
-            } else if (HDataLoader.getInstance().getExtensions().isRegistered(path)) {
-                return FileImpl.HEADER_FILE;
-            } else {
-                return FileImpl.UNDEFINED_FILE;
-            }
-        } else if (dobj instanceof CCDataObject) {
-            return FileImpl.SOURCE_CPP_FILE;
-        } else if (dobj instanceof HDataObject) {
-            return FileImpl.HEADER_FILE;
-        } else if (dobj instanceof CDataObject) {
-            return FileImpl.SOURCE_C_FILE;
-        } else {
-            return FileImpl.UNDEFINED_FILE;
-        }
+    private List<NativeFileItem> getFileItems() {
+	List<NativeFileItem> result = new ArrayList<NativeFileItem>();
+	if( nativeProject != null ) {
+	    result.addAll(nativeProject.getAllSourceFiles());
+	    result.addAll(nativeProject.getAllHeaderFiles());
+	}
+	return result;
     }
 }
