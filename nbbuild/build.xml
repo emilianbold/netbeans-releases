@@ -1773,11 +1773,11 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   <target name="findbugs">
     <echo message="Running findbugs for ${cluster.config} modules"/>
     <taskdef name="resolvelist" classname="org.netbeans.nbbuild.ResolveList" classpath="nbantext.jar"/>
-    <resolvelist name="modules.for.sigtests.list" list="${nb.clusters.list}"/>
+    <resolvelist name="modules.for.findbugs.list" list="${nb.clusters.list}"/>
 
     <pathconvert property="modules.fullpath" >
         <path>
-            <dirset dir="${nb_all}" includes="${modules.for.sigtests.list}" />
+            <dirset dir="${nb_all}" includes="${modules.for.findbugs.list}" />
         </path>
         <mapper type="identity" />
     </pathconvert>
