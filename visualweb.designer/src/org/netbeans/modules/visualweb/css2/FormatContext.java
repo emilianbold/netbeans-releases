@@ -162,7 +162,7 @@ public class FormatContext {
      * rightmost coordinate of any float overlapping this line that is
      * floated to the left.
      */
-    int getLeftEdge(CssBox parent, int y, int height) {
+    int getLeftEdge(CssBox cssBox, CssBox parent, int y, int height) {
         // When formatting a floating box, don't look for other floating
         // boxes!
         if (floating) {
@@ -182,6 +182,11 @@ public class FormatContext {
 
             CssBox box = info.box;
 
+            // XXX #117400 Skip if the cssBox is parent of this float.
+            if (isParentOf(cssBox, box)) {
+                continue;
+            }
+            
             // Find out if y, in the "parent" coordinate system, 
             // "intersect" the box (which is in its own coordinate system
             // which may be different from the parent one)
@@ -270,7 +275,7 @@ public class FormatContext {
      * leftmost coordinate of any float overlapping this line that is
      * floated to the right.
      */
-    int getRightEdge(CssBox parent, int y, int height) {
+    int getRightEdge(CssBox cssBox, CssBox parent, int y, int height) {
         // When formatting a floating box, don't look for other floating
         // boxes!
         if (floating) {
@@ -289,6 +294,12 @@ public class FormatContext {
             }
 
             CssBox box = info.box;
+            
+            // XXX #117400 Skip if the cssBox is parent of the float.
+            if (isParentOf(cssBox, box)) {
+                continue;
+            }
+            
             int yp = adjustY(y, parent, box.getParent());
 
             if (((yp + height) > info.y) && (yp < (info.y + box.getHeight()))) {
@@ -301,6 +312,21 @@ public class FormatContext {
         }
 
         return rightEdge - parent.rightMargin - parent.rightBorderWidth - parent.rightPadding;
+    }
+    
+    private static boolean isParentOf(CssBox parentBox, CssBox cssBox) {
+        if (parentBox == null || cssBox == null) {
+            return false;
+        }
+        
+        CssBox parent = cssBox.getParent();
+        while (parent != null) {
+            if (parent == parentBox) {
+                return true;
+            }
+            parent = parent.getParent();
+        }
+        return false;
     }
 
     /**
@@ -503,12 +529,16 @@ public class FormatContext {
         CssBox result = null;
         for (int i = 0; i < n; i++) {
             FloatingBoxInfo info = floats.get(i);
-            if(info.box == box) {
+            // XXX #117400 If this is parent of the float stop.
+//            if(info.box == box) {
+            if(info.box == box || isParentOf(box, info.box)) {
                 return(result);
             }
             if(canAdjustY(info.box, box.getPositionedBy())) {
                 yAdj = adjustY(0, info.box, box.getPositionedBy());
-                if(yAdj > maxNextPosition) {
+                // XXX #117400 Use the parent float.
+//                if(yAdj > maxNextPosition) {
+                if(yAdj > maxNextPosition || isParentOf(info.box, result)) {
                     maxNextPosition = yAdj;
                     result = info.box;
                 }

@@ -603,10 +603,10 @@ public class LineBoxGroup extends ContainerBox {
 
         // Do after setWidth
         // XXX #117399 To render the list within float correctly.
+        // XXX #117400 If there is float parent, skip.
 //        if (!lineBox.isFloated) {
-        ContainerBox parentBox = getParent();
-        if (!lineBox.isFloated && (parentBox != null && parentBox.getBoxType() != BoxType.FLOAT)) {
-            int leftEdge = context.getLeftEdge(this, targetY, lineHeight); // Pass in getParent() instead?
+        if (!lineBox.isFloated && (!hasFloatParent(lineBox))) {
+            int leftEdge = context.getLeftEdge(lineBox, this, targetY, lineHeight); // Pass in getParent() instead?
             lineBox.applyHorizontalAlignments(leftEdge, lineHeight, context);
         }
 
@@ -637,6 +637,21 @@ public class LineBoxGroup extends ContainerBox {
         } else {
             lineBox = null;
         }
+    }
+    
+    private static boolean hasFloatParent(CssBox cssBox) {
+        if (cssBox == null) {
+            return false;
+        }
+        
+        CssBox parentBox = cssBox.getParent();
+        while (parentBox != null) {
+            if (parentBox.getBoxType() == BoxType.FLOAT) {
+                return true;
+            }
+            parentBox = parentBox.getParent();
+        }
+        return false;
     }
     
     void finishRelatives(FormatContext context) {
@@ -819,9 +834,9 @@ public class LineBoxGroup extends ContainerBox {
         int px;
 
         if (leftSide) {
-            px = context.getLeftEdge(this, py, box.getHeight());
+            px = context.getLeftEdge(box, this, py, box.getHeight());
         } else {
-            px = context.getRightEdge(this, py, box.getHeight()) - box.getWidth();
+            px = context.getRightEdge(box, this, py, box.getHeight()) - box.getWidth();
         }
 
         box.setLocation(px, py);
