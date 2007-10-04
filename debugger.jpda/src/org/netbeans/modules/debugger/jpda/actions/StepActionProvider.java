@@ -187,7 +187,7 @@ implements Executor {
                     }
                     logger.fine("JDI Request (action "+action+"): " + stepRequest);
                     if (action == ActionsManager.ACTION_STEP_OUT) {
-                        addMethodExitBP(tr);
+                        addMethodExitBP(tr, resumeThread);
                     }
                     resumeThread.disableMethodInvokeUntilResumed();
                 }
@@ -209,7 +209,7 @@ implements Executor {
         }
     }
     
-    private void addMethodExitBP(ThreadReference tr) {
+    private void addMethodExitBP(ThreadReference tr, JPDAThread jtr) {
         if (!MethodBreakpointImpl.canGetMethodReturnValues(tr.virtualMachine())) {
             return ;
         }
@@ -227,6 +227,7 @@ implements Executor {
         mb.setBreakpointType(MethodBreakpoint.TYPE_METHOD_EXIT);
         mb.setHidden(true);
         mb.setSuspend(JPDABreakpoint.SUSPEND_NONE);
+        mb.setThreadFilters(getDebuggerImpl(), new JPDAThread[] { jtr });
         lastMethodExitBreakpointListener = new MethodExitBreakpointListener(mb);
         mb.addJPDABreakpointListener(lastMethodExitBreakpointListener);
         DebuggerManager.getDebuggerManager().addBreakpoint(mb);

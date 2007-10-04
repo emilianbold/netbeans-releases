@@ -160,6 +160,9 @@ public class PersistenceManager implements LazyDebuggerManagerListener {
                     r.storeCachedClassName((JPDABreakpoint) evt.getSource(), null);
                 }
             }
+            if (Breakpoint.PROP_VALIDITY.equals(evt.getPropertyName())) {
+                return ;
+            }
             storeBreakpoints();
         }
     }
