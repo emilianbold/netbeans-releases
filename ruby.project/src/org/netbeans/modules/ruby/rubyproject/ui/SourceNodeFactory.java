@@ -55,6 +55,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.ruby.rubyproject.RakeSupport;
 import org.netbeans.modules.ruby.rubyproject.RubyProject;
 import org.netbeans.modules.ruby.rubyproject.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
@@ -65,16 +66,15 @@ import org.openide.actions.FindAction;
 import org.openide.actions.PasteAction;
 import org.openide.actions.ToolsAction;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 
-/**
- *
- * @author mkleint
- */
 public final class SourceNodeFactory implements NodeFactory {
     
     public NodeList createNodes(Project p) {
@@ -104,6 +104,10 @@ public final class SourceNodeFactory implements NodeFactory {
             for( int i = 0; i < groups.length; i++ ) {
                 result.add(new SourceGroupKey(groups[i]));
             }
+            FileObject rakeFile = RakeSupport.getRakeFile(project);
+            if (rakeFile != null && project.getProjectDirectory().equals(rakeFile.getParent())) {
+                result.add(new SourceGroupKey(rakeFile));
+            }
             return result;
         }
         
@@ -116,7 +120,7 @@ public final class SourceNodeFactory implements NodeFactory {
         }
         
         private void fireChange() {
-            ArrayList<ChangeListener> list = new ArrayList<ChangeListener>();
+            List<ChangeListener> list = new ArrayList<ChangeListener>();
             synchronized (this) {
                 list.addAll(listeners);
             }
@@ -126,11 +130,19 @@ public final class SourceNodeFactory implements NodeFactory {
                 elem.stateChanged(new ChangeEvent( this ));
             }
         }
-        
+
         public Node node(SourceGroupKey key) {
+            if (key.group == null) {
+                try {
+                    DataObject dobj = DataObject.find(key.fileObject);
+                    return new FilterNode(dobj.getNodeDelegate());
+                } catch (DataObjectNotFoundException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
             return new PackageViewFilterNode(key.group, project);
         }
-        
+
         public void addNotify() {
             getSources().addChangeListener(this);
         }
@@ -165,6 +177,11 @@ public final class SourceNodeFactory implements NodeFactory {
             this.fileObject = group.getRootFolder();
         }
         
+        SourceGroupKey(FileObject fileObject) {
+            this.group = null;
+            this.fileObject = fileObject;
+        }
+        
         public @Override int hashCode() {
             return fileObject.hashCode();
         }
@@ -174,6 +191,15 @@ public final class SourceNodeFactory implements NodeFactory {
                 return false;
             } else {
                 SourceGroupKey otherKey = (SourceGroupKey) obj;
+                if (group == null || otherKey.group == null) {
+                    if (group == null) {
+                        return otherKey.group == null;
+                    } else if (otherKey.group == null) {
+                        return false;
+                    } else {
+                        return fileObject.equals(otherKey.fileObject);
+                    }
+                }
                 String thisDisplayName = this.group.getDisplayName();
                 String otherDisplayName = otherKey.group.getDisplayName();
                 // XXX what is the operator binding order supposed to be here??

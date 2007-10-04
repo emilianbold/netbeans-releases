@@ -75,8 +75,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.modules.ruby.rubyproject.api.RubyExecution;
 import org.netbeans.modules.ruby.rubyproject.execution.ExecutionDescriptor;
@@ -95,7 +93,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.Presenter;
 import org.openide.util.actions.SystemAction;
-
 
 /**
  * Run Rake targets defined in the Rails project.
@@ -388,40 +385,9 @@ public class RakeTargetsAction extends SystemAction implements ContextAwareActio
         refreshing = false;
     }
 
-    private static FileObject getRakeFile(Project project) {
-        FileObject pwd = project.getProjectDirectory();
-
-        // See if we're in the right directory
-        String[] rakeFiles = new String[] {"rakefile", "Rakefile", "rakefile.rb", "Rakefile.rb" }; // NOI18N
-        for (String s : rakeFiles) {
-            FileObject f = pwd.getFileObject(s);
-            if (f != null) {
-                return f;
-            }
-        }
-        
-        // Try to adjust the directory to a folder which contains a rakefile
-        Sources src = ProjectUtils.getSources(project);
-        //TODO: needs to be generified
-        SourceGroup[] rubygroups = src.getSourceGroups(RubyProject.SOURCES_TYPE_RUBY);
-        if (rubygroups != null && rubygroups.length > 0) {
-            for (SourceGroup group : rubygroups) {
-                FileObject f = group.getRootFolder();
-                for (String s : rakeFiles) {
-                    FileObject r = f.getFileObject(s);
-                    if (r != null) {
-                        return r;
-                    }
-                }
-            }
-        }
-        
-        return null;
-    }
-    
     private static String hiddenRakeRunner(Project project) {
         File pwd;
-        FileObject rakeFile = getRakeFile(project);
+        FileObject rakeFile = RakeSupport.getRakeFile(project);
         if (rakeFile == null) {
             pwd = FileUtil.toFile(project.getProjectDirectory());
         } else {
@@ -735,7 +701,7 @@ public class RakeTargetsAction extends SystemAction implements ContextAwareActio
 
             File pwd = null;
 
-            FileObject rakeFile = getRakeFile(project);
+            FileObject rakeFile = RakeSupport.getRakeFile(project);
             if (rakeFile == null) {
                 pwd = FileUtil.toFile(project.getProjectDirectory());
             }

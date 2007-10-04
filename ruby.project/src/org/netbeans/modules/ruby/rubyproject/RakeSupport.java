@@ -44,6 +44,9 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.modules.ruby.rubyproject.api.RubyExecution;
@@ -56,13 +59,18 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
-
 /**
- * Various methods for supporting Rake execution
+ * Various methods for supporting Rake execution.
  *
  * @author Tor Norbye
  */
 public class RakeSupport {
+    
+    /** Standard names used for Rakefile. */
+    static final String[] RAKEFILE_NAMES = new String[] {
+        "rakefile", "Rakefile", "rakefile.rb", "Rakefile.rb" // NOI18N
+    };
+    
     private boolean test;
     private Project project;
 
@@ -76,7 +84,43 @@ public class RakeSupport {
     public void setTest(boolean test) {
         this.test = test;
     }
-    
+
+    /**
+     * Tries to find Rakefile for a given project.
+     * 
+     * @param project project to be searched
+     * @return found Rakefile or <code>null</code> if not found
+     */
+    public static FileObject getRakeFile(final Project project) {
+        FileObject pwd = project.getProjectDirectory();
+
+        // See if we're in the right directory
+        for (String s : RakeSupport.RAKEFILE_NAMES) {
+            FileObject f = pwd.getFileObject(s);
+            if (f != null) {
+                return f;
+            }
+        }
+
+        // Try to adjust the directory to a folder which contains a rakefile
+        Sources src = ProjectUtils.getSources(project);
+        //TODO: needs to be generified
+        SourceGroup[] rubygroups = src.getSourceGroups(RubyProject.SOURCES_TYPE_RUBY);
+        if (rubygroups != null && rubygroups.length > 0) {
+            for (SourceGroup group : rubygroups) {
+                FileObject f = group.getRootFolder();
+                for (String s : RakeSupport.RAKEFILE_NAMES) {
+                    FileObject r = f.getFileObject(s);
+                    if (r != null) {
+                        return r;
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
     public static boolean isRakeFile(FileObject fo) {
         if (!fo.getMIMEType().equals(RubyInstallation.RUBY_MIME_TYPE)) {
             return false;
