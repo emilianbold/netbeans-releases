@@ -134,7 +134,7 @@ public class DesignMultiViewElement extends TopComponent
         if (toolbar == null) {
             toolbar = new JToolBar();
             toolbar.setFloatable(false);
-            designView.addToolbarActions(toolbar);
+            if(designView!=null) designView.addToolbarActions(toolbar);
         }
         return toolbar;
     }
