@@ -59,13 +59,13 @@ import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 import javax.swing.text.TextAction;
 import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
-import org.netbeans.editor.Acceptor;
 
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.ext.ToolTipSupport;
 import org.netbeans.editor.PopupManager;
+import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.NbEditorUI;
 import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language;
@@ -90,31 +90,32 @@ import org.netbeans.modules.languages.parser.Pattern;
  */
 public class LanguagesEditorKit extends NbEditorKit {
 
-    private String mimeType;
+    private final String mimeType;
     
+    // XXX: Never use this to initialize settings that are mime type specific.
+    // This is a know deficiency in the editor settings API; not all settings
+    // can be initialized in the mime type friendly way.
+    // See http://www.netbeans.org/nonav/issues/show_bug.cgi?id=114747,
+    //     http://www.netbeans.org/nonav/issues/show_bug.cgi?id=114234
+    //
+    // Also, the INITIALIZER is added from the Install class to make this class
+    // and the whole module unloadable.
+    /* package */ static final Settings.Initializer INITIALIZER = new Settings.AbstractInitializer("LanguagesEditorKit.Settings.Initializer") { //NOI18N
+        public void updateSettingsMap (Class kitClass, Map settingsMap) {
+            if (kitClass != null && kitClass.equals (LanguagesEditorKit.class)) {
+                settingsMap.put (SettingsNames.CODE_FOLDING_ENABLE, Boolean.TRUE);
+            }
+        }
+    };
+        
     /** 
      * Creates a new instance of LanguagesEditorKit 
      */
-    public LanguagesEditorKit (final String mimeType) { 
+    public LanguagesEditorKit (String mimeType) { 
         this.mimeType = mimeType;
-        if (mimeType == null)
+        if (mimeType == null) {
             throw new NullPointerException ();
-        //Settings.setValue (LanguagesEditorKit.class, SettingsNames.CODE_FOLDING_ENABLE, Boolean.TRUE);
-        
-        Settings.addInitializer (new Settings.Initializer () {
-            public String getName() {
-                return mimeType;
-            }
-
-            public void updateSettingsMap (Class kitClass, Map settingsMap) {
-                if (kitClass != null && kitClass.equals (LanguagesEditorKit.class)) {
-                    settingsMap.put (SettingsNames.CODE_FOLDING_ENABLE, Boolean.TRUE);
-                    Acceptor original = (Acceptor) settingsMap.get (SettingsNames.IDENTIFIER_ACCEPTOR);
-                    Acceptor acceptor = new LanguagesAcceptor(mimeType, original);
-                    settingsMap.put (SettingsNames.IDENTIFIER_ACCEPTOR, acceptor);
-                }
-            }
-        });
+        }
     }
     
     private JLabel label;
@@ -122,7 +123,7 @@ public class LanguagesEditorKit extends NbEditorKit {
     private JLabel createToolTipComponent () {
         if (label == null) {
             label = new JLabel () {
-                public void setSize(int width, int height) {
+                public @Override void setSize(int width, int height) {
                     if (getText () == null) {
                         super.setSize (width, height);
                         return;
@@ -189,7 +190,7 @@ public class LanguagesEditorKit extends NbEditorKit {
         return label;
     }
 
-    protected Action[] createActions() {
+    protected @Override Action[] createActions() {
         Action[] myActions = new Action[] {
             new BraceCompletionInsertAction (),
             new BraceCompletionDeleteAction (),
@@ -204,7 +205,7 @@ public class LanguagesEditorKit extends NbEditorKit {
         );
     }
     
-    public Action getActionByName(String name) {
+    public @Override Action getActionByName(String name) {
         if (name == null)
             return super.getActionByName (name);
         if (name.startsWith(LanguagesGenerateFoldPopupAction.EXPAND_PREFIX)) {
@@ -218,13 +219,13 @@ public class LanguagesEditorKit extends NbEditorKit {
         return super.getActionByName (name);
     }
     
-    protected EditorUI createEditorUI () {
+    protected @Override EditorUI createEditorUI () {
         return new NbEditorUI () {
             private ToolTipSupport toolTipSupport;
-            public ToolTipSupport getToolTipSupport() {
+            public @Override ToolTipSupport getToolTipSupport() {
                 if (toolTipSupport == null) {
                     toolTipSupport = new ToolTipSupport (this) {
-                        public void setToolTipText (String text) {
+                        public @Override void setToolTipText (String text) {
                             if (text == null) return;
                             JLabel l = createToolTipComponent ();
                             l.setText (text);
@@ -237,8 +238,8 @@ public class LanguagesEditorKit extends NbEditorKit {
         };
     }
     
-    public Document createDefaultDocument() {
-        Document doc = super.createDefaultDocument ();
+    public @Override Document createDefaultDocument() {
+        Document doc = new LanguagesDocument();
         initDocument (doc);
         return doc;
     }
@@ -269,7 +270,7 @@ public class LanguagesEditorKit extends NbEditorKit {
 //        return new BraceHighlighting (doc);
 //    }
 //    
-    public void install (JEditorPane c) {
+    public @Override void install (JEditorPane c) {
         super.install (c);
         HyperlinkListener hl = new HyperlinkListener ();
         c.addMouseMotionListener (hl);
@@ -281,28 +282,25 @@ public class LanguagesEditorKit extends NbEditorKit {
         c.getInputMap ().put (KeyStroke.getKeyStroke (KeyEvent.VK_SLASH, InputEvent.CTRL_DOWN_MASK), "comment");
     }
     
-    public String getContentType() {
+    public @Override String getContentType() {
         return mimeType;
     }
     
-    public Object clone () {
+    public @Override Object clone () {
         return new LanguagesEditorKit (mimeType);
     }
 
-    private static class LanguagesAcceptor implements Acceptor {
+    private static final class LanguagesDocument extends NbEditorDocument {
         
-        private String mimeType;
-        private Acceptor original;
-
-        LanguagesAcceptor(String mimeType, Acceptor original) {
-            this.mimeType = mimeType;
-            this.original = original;
+        public LanguagesDocument() {
+            super(LanguagesEditorKit.class);
         }
 
-        public boolean accept(char ch) {
+        public @Override boolean isIdentifierPart(char ch) {
             try {
+                String mimeType = (String) getProperty("mimeType"); //NOI18N
                 Language language = LanguagesManager.getDefault ().getLanguage (mimeType);
-                Feature f = language.getFeature("SELECTION");
+                Feature f = language.getFeature("SELECTION"); //NOI18N
                 if (f != null) {
                     Pattern pat = f.getPattern();
                     if (pat != null) {
@@ -313,10 +311,8 @@ public class LanguagesEditorKit extends NbEditorKit {
                 }
             } catch (LanguageDefinitionNotFoundException e) {
             }
-            return original != null ? original.accept(ch) : false;
+            return super.isIdentifierPart(ch);
         }
-
-    }
-
+    } // End of LanguagesDocument class
 }
 
