@@ -201,8 +201,7 @@ public class CreateAction extends AbstractAction {
                         HgUtils.outputMercurialTab(
                                 NbBundle.getMessage(CreateAction.class,
                                 "MSG_CREATE_ADD", repositoryFiles.keySet().size(), rootFile.getAbsolutePath())); // NOI18N
-                        start = Calendar.getInstance();
-                        cache.addToCache(repositoryFiles.keySet());
+                        start = Calendar.getInstance(); cache.addToCache(repositoryFiles.keySet());
                         end = Calendar.getInstance();
                         Mercurial.LOG.log(Level.FINE, "addUnknownsToCache took {0} millisecs", end.getTimeInMillis() - start.getTimeInMillis()); // NOI18N
                         if (repositoryFiles.keySet().size() < 20) {
@@ -217,6 +216,9 @@ public class CreateAction extends AbstractAction {
                     NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
                     DialogDisplayer.getDefault().notifyLater(e);
                 }
+                HgUtils.outputMercurialTabInRed(NbBundle.getMessage(CreateAction.class, "MSG_CREATE_DONE_WARNING")); // NOI18N
+                HgUtils.outputMercurialTabInRed(NbBundle.getMessage(CreateAction.class, "MSG_CREATE_DONE")); // NOI18N
+                HgUtils.outputMercurialTab(""); // NOI18N
             }
         };
         supportAdd.start(rp, rootToManage.getAbsolutePath(), 
