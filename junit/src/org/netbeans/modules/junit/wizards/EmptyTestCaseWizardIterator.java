@@ -74,6 +74,7 @@ import org.openide.util.NbBundle;
 /**
  * @author  Marian Petras
  */
+@SuppressWarnings("serial")
 public class EmptyTestCaseWizardIterator
         implements TemplateWizard.Iterator {
 
