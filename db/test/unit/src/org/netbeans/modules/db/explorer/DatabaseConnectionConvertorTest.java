@@ -93,10 +93,14 @@ public class DatabaseConnectionConvertorTest extends TestBase {
         assertEquals("jdbc:foo:localhost", conn.getDatabase());
         assertEquals("schema", conn.getSchema());
         assertEquals("user", conn.getUser());
+        assertEquals("password", conn.getPassword());
+        assertTrue(conn.rememberPassword());
     }
     
     public void testWriteXml() throws Exception {
-        DatabaseConnection conn = new DatabaseConnection("org.bar.BarDriver", "bar_driver", "jdbc:bar:localhost", "schema", "user", null);
+        DatabaseConnection conn = new DatabaseConnection("org.bar.BarDriver", 
+                "bar_driver", "jdbc:bar:localhost", "schema", "user", "password");
+        conn.setRememberPassword(true);
         DatabaseConnectionConvertor.create(conn);
         
         FileObject fo = Util.getConnectionsFolder().getChildren()[0];
@@ -127,7 +131,9 @@ public class DatabaseConnectionConvertorTest extends TestBase {
      * Tests that the instance retrieved from the DO created by DCC.create(DCI dbconn) is the same object as dbconn.
      */
     public void testSameInstanceAfterCreate() throws Exception {
-        DatabaseConnection dbconn = new DatabaseConnection("org.bar.BarDriver", "bar_driver", "jdbc:bar:localhost", "schema", "user", null);
+        DatabaseConnection dbconn = new DatabaseConnection("org.bar.BarDriver", 
+                "bar_driver", "jdbc:bar:localhost", "schema", "user", "password");
+        dbconn.setRememberPassword(true);
         DataObject dobj = DatabaseConnectionConvertor.create(dbconn);
         assertSame(dbconn, ((InstanceCookie)dobj.getCookie(InstanceCookie.class)).instanceCreate());
     }
@@ -157,6 +163,8 @@ public class DatabaseConnectionConvertorTest extends TestBase {
         dbconn.setDatabase("jdbc:bar:localhost");
         dbconn.setSchema("schema");
         dbconn.setUser("user");
+        dbconn.setPassword("password");
+        dbconn.setRememberPassword(true);
         
         fcl.await();
         
@@ -190,7 +198,8 @@ public class DatabaseConnectionConvertorTest extends TestBase {
     }
     
     public void testImportOldConnections() throws Exception {
-        DatabaseConnection conn = new DatabaseConnection("org.foo.FooDriver", "foo_driver", "jdbc:foo:localhost", "schema", "user", null);
+        DatabaseConnection conn = new DatabaseConnection("org.foo.FooDriver", 
+                "foo_driver", "jdbc:foo:localhost", "schema", "user", null);
         RootNode.getOption().getConnections().add(conn);
         
         DatabaseConnectionConvertor.importOldConnections();
@@ -221,6 +230,8 @@ public class DatabaseConnectionConvertorTest extends TestBase {
                 writer.write("<database-url value='jdbc:foo:localhost'/>");
                 writer.write("<schema value='schema'/>");
                 writer.write("<user value='user'/>");
+                // This is the Base64 encoded value for the string 'password'
+                writer.write("<password value='rO0ABXQACHBhc3N3b3Jk'/>");
                 writer.write("</connection>");
             } finally {
                 writer.close();

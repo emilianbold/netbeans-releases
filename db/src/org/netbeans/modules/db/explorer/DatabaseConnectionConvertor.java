@@ -74,6 +74,7 @@ import org.openide.xml.EntityCatalog;
 import org.openide.xml.XMLUtil;
 import org.openide.filesystems.Repository;
 import org.netbeans.modules.db.explorer.nodes.RootNode;
+import org.netbeans.modules.db.util.Base64;
 import org.openide.util.Exceptions;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -211,7 +212,9 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
                 handler.connectionUrl,
                 handler.schema,
                 handler.user,
-                null);
+                handler.password, 
+                handler.rememberPassword);
+
         return dbconn;
     }
 
@@ -348,7 +351,7 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
 
         void write(PrintWriter pw) throws IOException {
             pw.println("<?xml version='1.0'?>"); //NOI18N
-            pw.println("<!DOCTYPE connection PUBLIC '-//NetBeans//DTD Database Connection 1.0//EN' 'http://www.netbeans.org/dtds/connection-1_0.dtd'>"); //NOI18N
+            pw.println("<!DOCTYPE connection PUBLIC '-//NetBeans//DTD Database Connection 1.1//EN' 'http://www.netbeans.org/dtds/connection-1_1.dtd'>"); //NOI18N
             pw.println("<connection>"); //NOI18N
             pw.println("  <driver-class value='" + XMLUtil.toAttributeValue(instance.getDriver()) + "'/>"); //NOI18N
             pw.println("  <driver-name value='" + XMLUtil.toAttributeValue(instance.getDriverName()) + "'/>"); // NOI18N
@@ -359,8 +362,12 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
             if (instance.getUser() != null) {
                 pw.println("  <user value='" + XMLUtil.toAttributeValue(instance.getUser()) + "'/>"); //NOI18N
             }
+            if (instance.rememberPassword() ) {
+                pw.println("  <password value='" + 
+                        Base64.encodeObject(instance.getPassword()) + "'/>"); // NO18N
+            }
             pw.println("</connection>"); //NOI18N
-        }
+        }        
     }
 
     /**
@@ -373,6 +380,7 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
         private static final String ELEMENT_DATABASE_URL = "database-url"; // NOI18N
         private static final String ELEMENT_SCHEMA = "schema"; // NOI18N
         private static final String ELEMENT_USER = "user"; // NOI18N
+        private static final String ELEMENT_PASSWORD = "password"; // NOI18N
         private static final String ATTR_PROPERTY_VALUE = "value"; // NOI18N
         
         String driverClass;
@@ -380,6 +388,8 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
         String connectionUrl;
         String schema;
         String user;
+        String password;
+        boolean rememberPassword;
 
         public void startDocument() throws SAXException {
         }
@@ -399,6 +409,13 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
                 schema = value;
             } else if (ELEMENT_USER.equals(qName)) {
                 user = value;
+            } else if (ELEMENT_PASSWORD.equals(qName)) {
+                password = (String)Base64.decodeToObject(value);
+                
+                // If the password was saved, then it means the user checked
+                // the box to say the password should be remembered.  This is
+                // true even if the password is null.
+                rememberPassword = true;
             }
         }
     }

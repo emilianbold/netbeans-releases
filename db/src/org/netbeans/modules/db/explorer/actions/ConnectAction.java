@@ -118,22 +118,8 @@ public class ConnectAction extends DatabaseAction {
         Node node = activatedNodes[0];
         DatabaseNodeInfo info = (DatabaseNodeInfo) node.getCookie(DatabaseNodeInfo.class);
         ConnectionNodeInfo nfo = (ConnectionNodeInfo) info.getParent(DatabaseNode.CONNECTION);
-        
-//commented out for 3.6 release, need to solve for next Studio release
-//        if (PointbasePlus.DATABASE_URL.equals(nfo.getDatabase()) && PointbasePlus.DRIVER.equals(nfo.getDriver()) && PointbasePlus.USER_NAME.equals(nfo.getUser()))
-//            try {
-//                // add the connection (if needed) and connect to Pointbase SAMPLE database
-//                PointbasePlus.addOrConnectAccordingToOption();
-//                user = nfo.getUser();
-//                pwd = nfo.getPassword();
-//                rpwd = (Boolean) nfo.get(DatabaseNodeInfo.REMEMBER_PWD);
-//                remember = ((rpwd != null) ? rpwd.booleanValue() : false);
-//            } catch(Exception ex) {
-//                //ignore the exception and open connect dialog
-////                org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
-//            }        
-        
-        new ConnectionDialogDisplayer().showDialog(nfo, false);
+                
+        new ConnectionDialogDisplayer().showDialog(nfo, true);
     }
     
     public static final class ConnectionDialogDisplayer extends ConnectionDialogMediator {
@@ -148,7 +134,7 @@ public class ConnectAction extends DatabaseAction {
             Boolean rpwd = (Boolean) nfo.get(DatabaseNodeInfo.REMEMBER_PWD);
             boolean remember = ((rpwd != null) ? rpwd.booleanValue() : false);
             
-            final DatabaseConnection dbcon = (DatabaseConnection) nfo.getDatabaseConnection();
+            final DatabaseConnection dbcon = nfo.getDatabaseConnection();
 
             final ExceptionListener excListener = new ExceptionListener() {
                 public void exceptionOccurred(Exception exc) {
@@ -179,7 +165,9 @@ public class ConnectAction extends DatabaseAction {
 
             dbcon.addExceptionListener(excListener);
 
-            if (user == null || pwd == null || !remember) {
+            // If showDialog is true, show the dialog even if we have all 
+            // the connection info
+            if (user == null || pwd == null || !remember || showDialog) {
                 final ConnectPanel basePanel = new ConnectPanel(this, dbcon);
                 final SchemaPanel schemaPanel = new SchemaPanel(this, dbcon);
 
@@ -237,7 +225,11 @@ public class ConnectAction extends DatabaseAction {
                             DatabaseConnection realDbcon = ConnectionList.getDefault().getConnection(dbcon);
                             if (realDbcon != null) {
                                 realDbcon.setPassword(dbcon.getPassword());
+                                realDbcon.setRememberPassword(dbcon.rememberPassword());
                             }
+                            
+                            nfo.put(DatabaseNodeInfo.REMEMBER_PWD,
+                                    Boolean.valueOf(basePanel.rememberPassword()));
                             if (basePanel.rememberPassword()) {
                                 nfo.put(DatabaseNodeInfo.REMEMBER_PWD, Boolean.TRUE);
                             }
@@ -260,6 +252,7 @@ public class ConnectAction extends DatabaseAction {
                             nfo.setPassword(basePanel.getPassword());
                             dbcon.setUser(basePanel.getUser());
                             dbcon.setPassword(basePanel.getPassword());
+                            dbcon.setRememberPassword(basePanel.rememberPassword());
 
                             try {
                                 if (dbcon.getConnection() == null || dbcon.getConnection().isClosed())
@@ -279,10 +272,11 @@ public class ConnectAction extends DatabaseAction {
                                     DatabaseConnection realDbcon = ConnectionList.getDefault().getConnection(dbcon);
                                     if (realDbcon != null) {
                                         realDbcon.setPassword(dbcon.getPassword());
+                                        realDbcon.setRememberPassword(
+                                                basePanel.rememberPassword());
                                     }
-                                    if (basePanel.rememberPassword()) {
-                                        nfo.put(DatabaseNodeInfo.REMEMBER_PWD, Boolean.TRUE);
-                                    }
+                                    nfo.put(DatabaseNodeInfo.REMEMBER_PWD,
+                                            Boolean.valueOf(basePanel.rememberPassword()));
                                     if (dlg != null)
                                         dlg.close();
                                 }
@@ -309,21 +303,19 @@ public class ConnectAction extends DatabaseAction {
 
                 dlg = new ConnectionDialog(this, basePanel, schemaPanel, basePanel.getTitle(), actionListener, changeTabListener);
                 dlg.setVisible(true);
-            } else // without dialog with connection data (username, password), just with progress dlg based on the showDialog parameter
+            } else // without dialog with connection data (username, password), just with progress dlg
                 try {
                     DialogDescriptor descriptor = null;
                     ProgressHandle progress = null;
                     
-                    if (showDialog) {
-                        progress = ProgressHandleFactory.createHandle("handle");
-                        JComponent progressComponent = ProgressHandleFactory.createProgressComponent(progress);
-                        progressComponent.setPreferredSize(new Dimension(250, 20));
-                        ConnectProgressDialog panel = new ConnectProgressDialog();
-                        panel.add(progressComponent);
-                        descriptor = new DialogDescriptor(panel, bundle().getString("ConnectDialogTitle"), true, new Object[] { DialogDescriptor.CANCEL_OPTION }, 
-                                DialogDescriptor.CANCEL_OPTION, DialogDescriptor.DEFAULT_ALIGN, null, null);
-                    } 
-                    final Dialog dialog = showDialog ? DialogDisplayer.getDefault().createDialog(descriptor) : null;
+                    progress = ProgressHandleFactory.createHandle("handle");
+                    JComponent progressComponent = ProgressHandleFactory.createProgressComponent(progress);
+                    progressComponent.setPreferredSize(new Dimension(250, 20));
+                    ConnectProgressDialog panel = new ConnectProgressDialog();
+                    panel.add(progressComponent);
+                    descriptor = new DialogDescriptor(panel, bundle().getString("ConnectDialogTitle"), true, new Object[] { DialogDescriptor.CANCEL_OPTION }, 
+                            DialogDescriptor.CANCEL_OPTION, DialogDescriptor.DEFAULT_ALIGN, null, null);
+                    final Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
                     
                     final PropertyChangeListener connectionListener = new PropertyChangeListener() {
                         public void propertyChange(PropertyChangeEvent event) {
@@ -350,13 +342,11 @@ public class ConnectAction extends DatabaseAction {
                     dbcon.addPropertyChangeListener(connectionListener);
                     dbcon.connect();
                     
-                    if (showDialog) {
-                        progress.start();
-                        progress.switchToIndeterminate();
-                        dialog.setVisible(true);
-                        progress.finish();
-                        dialog.dispose();
-                    }
+                    progress.start();
+                    progress.switchToIndeterminate();
+                    dialog.setVisible(true);
+                    progress.finish();
+                    dialog.dispose();
                 } catch (Exception exc) {
                     String message = MessageFormat.format(bundle().getString("ERR_UnableToConnect"), new String[] {exc.getMessage()}); // NOI18N
                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));

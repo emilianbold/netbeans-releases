@@ -84,7 +84,7 @@ public class RootNodeInfo extends DatabaseNodeInfo implements ConnectionOwnerOpe
             }
 
         } catch (Exception e) {
-            throw new DatabaseException(e.getMessage());
+            throw new DatabaseException(e);
         }
     }
 

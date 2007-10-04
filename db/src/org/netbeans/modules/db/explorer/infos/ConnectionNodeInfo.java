@@ -213,25 +213,27 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
     }
 
     public Object put(Object key, Object obj) {
-        if (key.equals(USER) || key.equals(DRIVER) || key.equals(DATABASE) || key.equals(SCHEMA)) {
-            String newVal = (String)obj;
-            updateConnection((String)key, newVal);
+        if (key.equals(USER) || key.equals(DRIVER) || key.equals(DATABASE)
+                || key.equals(SCHEMA) || key.equals(REMEMBER_PWD)) {
+            updateConnection((String)key, obj);
         }
         return super.put(key, obj);
     }
     
-    private void updateConnection(String key, String newVal) {
+    private void updateConnection(String key, Object newVal) {
         DatabaseConnection infoConn = getDatabaseConnection();
         DatabaseConnection connFromList = ConnectionList.getDefault().getConnection(infoConn);
         if (connFromList != null) {
             if (key.equals(SCHEMA))
-                connFromList.setSchema(newVal);
+                connFromList.setSchema((String)newVal);
             else if (key.equals(USER))
-                connFromList.setUser(newVal);
+                connFromList.setUser((String)newVal);
             else if (key.equals(DRIVER)) {
-                connFromList.setDriver(newVal);
+                connFromList.setDriver((String)newVal);
             } else if (key.equals(DATABASE)) {
-                connFromList.setDatabase(newVal);
+                connFromList.setDatabase((String)newVal);
+            } else if ( key.equals(REMEMBER_PWD)) {
+                connFromList.setRememberPassword(((Boolean)newVal).booleanValue());
             }
         }
         setName(infoConn.getName());

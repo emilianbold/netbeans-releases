@@ -142,6 +142,7 @@ public class DatabaseConnection implements DBConnection {
     public static final String PROP_DATABASE = "database"; //NOI18N
     public static final String PROP_USER = "user"; //NOI18N
     public static final String PROP_PASSWORD = "password"; //NOI18N
+    public static final String PROP_REMEMBER_PASSWORD = "rememberpwd";
     public static final String PROP_SCHEMA = "schema"; //NOI18N
     public static final String PROP_DRIVERNAME = "drivername"; //NOI18N
     public static final String PROP_NAME = "name"; //NOI18N
@@ -175,16 +176,17 @@ public class DatabaseConnection implements DBConnection {
      * @param password User password
      */
     public DatabaseConnection(String driver, String database, String user, String password) {
-        this();
-        drv = driver;
-        db = database;
-        usr = user;
-        pwd = password;
-        name = null;
-        name = getName();
+        this(driver, null, database, null, user, password, false);
     }
     
-    public DatabaseConnection(String driver, String driverName, String database, String theschema, String user, String password) {
+    public DatabaseConnection(String driver, String driverName, String database,
+            String theschema, String user, String password) {
+        this(driver, driverName, database, theschema, user, password, false);
+    }
+    
+    public DatabaseConnection(String driver, String driverName, String database, 
+            String theschema, String user, String password,
+            boolean rememberPassword) {
         this();
         drv = driver;
         drvname = driverName;
@@ -192,8 +194,8 @@ public class DatabaseConnection implements DBConnection {
         usr = user;
         schema = theschema;
         pwd = password;
-        name = null;
         name = getName();
+        rpwd = Boolean.valueOf(rememberPassword);
     }
     
     public JDBCDriver findJDBCDriver() {
@@ -377,14 +379,18 @@ public class DatabaseConnection implements DBConnection {
 
     /** Returns if password should be remembered */
     public boolean rememberPassword() {
-        return rpwd.equals(Boolean.TRUE);
+        return rpwd.booleanValue();
     }
 
     /** Sets password should be remembered
      * @param flag New flag
      */
     public void setRememberPassword(boolean flag) {
-        rpwd = (flag ? Boolean.TRUE : Boolean.FALSE);
+        Boolean oldrpwd = rpwd;
+        rpwd = Boolean.valueOf(flag);
+        if(propertySupport!=null)
+            propertySupport.firePropertyChange(
+                    PROP_REMEMBER_PASSWORD, oldrpwd, rpwd);
     }
 
     /** Returns password */

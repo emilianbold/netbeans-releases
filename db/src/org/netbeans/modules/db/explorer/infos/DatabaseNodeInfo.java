@@ -535,8 +535,9 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
     public DatabaseConnection getDatabaseConnection()
     {
         DatabaseConnection con = new DatabaseConnection(getDriver(), getDatabase(), getUser(), getPassword());
-        if(get(REMEMBER_PWD)!=null)
+        if(get(REMEMBER_PWD)!=null) {
             con.setRememberPassword(((Boolean)get(REMEMBER_PWD)).booleanValue());
+        }
         else
             con.setRememberPassword(Boolean.FALSE.booleanValue());
         con.setSchema(getSchema());
@@ -558,7 +559,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
         put(SCHEMA, cinfo.getSchema());
         if (pwd != null)
             put(PASSWORD, pwd);
-        put(REMEMBER_PWD, (cinfo.rememberPassword() ? Boolean.TRUE : Boolean.FALSE));
+        put(REMEMBER_PWD, (Boolean.valueOf(cinfo.rememberPassword())));
         put("drivername", cinfo.getDriverName());
     }
 

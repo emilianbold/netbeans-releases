@@ -92,6 +92,10 @@ public class ConnectPanel extends ConnectionDialog.FocusablePanel implements Doc
         mediator.addConnectionProgressListener(progressListener);
 
         userTextField.setText(connection.getUser());
+        if (connection.rememberPassword()) {
+            passwordField.setText(connection.getPassword());
+            passwordCheckBox.setSelected(true);
+        }
 
         userTextField.getDocument().addDocumentListener(this);
         passwordField.getDocument().addDocumentListener(this);
