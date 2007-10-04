@@ -102,7 +102,7 @@ public class LanguagesEditorKit extends NbEditorKit {
     // and the whole module unloadable.
     /* package */ static final Settings.Initializer INITIALIZER = new Settings.AbstractInitializer("LanguagesEditorKit.Settings.Initializer") { //NOI18N
         public void updateSettingsMap (Class kitClass, Map settingsMap) {
-            if (kitClass != null && kitClass.equals (LanguagesEditorKit.class)) {
+            if (kitClass != null && LanguagesEditorKit.class.isAssignableFrom(kitClass)) {
                 settingsMap.put (SettingsNames.CODE_FOLDING_ENABLE, Boolean.TRUE);
             }
         }
@@ -239,7 +239,7 @@ public class LanguagesEditorKit extends NbEditorKit {
     }
     
     public @Override Document createDefaultDocument() {
-        Document doc = new LanguagesDocument();
+        Document doc = new LanguagesDocument(getClass());
         initDocument (doc);
         return doc;
     }
@@ -292,8 +292,8 @@ public class LanguagesEditorKit extends NbEditorKit {
 
     private static final class LanguagesDocument extends NbEditorDocument {
         
-        public LanguagesDocument() {
-            super(LanguagesEditorKit.class);
+        public LanguagesDocument(Class kitClass) {
+            super(kitClass);
         }
 
         public @Override boolean isIdentifierPart(char ch) {
