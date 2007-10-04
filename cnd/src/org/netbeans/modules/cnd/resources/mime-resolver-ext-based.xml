@@ -53,4 +53,16 @@ made subject to such option by the copyright holder.
 	<ext name="dll"/>
         <resolver mime="application/x-exe+dll"/>
     </file>
+    <file>
+	<ext name="o"/>
+        <resolver mime="application/x-object+elf"/>
+    </file>
+    <file>
+	<ext name="so"/>
+        <resolver mime="application/x-shobj+elf"/>
+    </file>    
+    <file>
+	<ext name="core"/>
+        <resolver mime="application/x-core+elf"/>
+    </file>  
 </MIME-resolver>

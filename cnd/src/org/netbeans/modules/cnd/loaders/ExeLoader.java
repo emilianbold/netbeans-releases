@@ -42,6 +42,8 @@
 package org.netbeans.modules.cnd.loaders;
 
 import java.io.IOException;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.UniFileLoader;
@@ -64,7 +66,7 @@ public class ExeLoader extends UniFileLoader {
     private static String lastMime;
     
     /** Single depth cache of FileObjects */
-    private static FileObject lastFo;
+    private static Reference<FileObject> lastFo;
 
     private static final String KNOWN_EXEFILE_TYPE =
 	    "org.netbeans.modules.cnd.ExeLoader.KNOWN_EXEFILE_TYPE"; // NOI18N
@@ -96,25 +98,23 @@ public class ExeLoader extends UniFileLoader {
 	    return null;
 	}
 
-	Object o = fo.getAttribute(KNOWN_EXEFILE_TYPE);
-	if (o != null) {
-	    mime = o.toString();
-	} else {
+//	Object o = fo.getAttribute(KNOWN_EXEFILE_TYPE);
+//	if (o != null) {
+//	    mime = o.toString();
+//	} else {
 	    mime = fo.getMIMEType();
 	    if (MIMENames.ELF_GENERIC_MIME_TYPE.equals(mime)) {
 		// Fallback matching. We shouldn't see this anymore.
 		String name = fo.getNameExt();
-		if (name.equals("core") || name.endsWith(".core")) { // NOI18N
+		if (name.equals("core")) { // NOI18N
 		    mime = MIMENames.ELF_CORE_MIME_TYPE;
-		} else if (name.endsWith(".o")) { // NOI18N
-		    mime = MIMENames.ELF_OBJECT_MIME_TYPE;
-		} else if (name.endsWith(".so") || name.indexOf(".so.") >= 0) { // NOI18N
+		} else if (name.indexOf(".so.") >= 0) { // NOI18N
 		    mime = MIMENames.ELF_SHOBJ_MIME_TYPE;
 		} else {
 		    mime = MIMENames.ELF_EXE_MIME_TYPE;
 		}
 	    }
-	}
+//	}
 
 	if (MIMENames.EXE_MIME_TYPE.equals(mime) ||
                     MIMENames.DLL_MIME_TYPE.equals(mime) ||
@@ -123,15 +123,15 @@ public class ExeLoader extends UniFileLoader {
 		    MIMENames.ELF_SHOBJ_MIME_TYPE.equals(mime) ||
 		    MIMENames.ELF_OBJECT_MIME_TYPE.equals(mime)) {
 	    lastMime = mime;
-	    lastFo = fo;
+	    lastFo = new WeakReference(fo);
 
-	    try {
-		fo.setAttribute(KNOWN_EXEFILE_TYPE, mime);
-	    } catch (IOException ex) {
-		// We've figured out the mime type, which is the main thing this
-		// method needed to do. Its much less important that we couldn't
-		// save it. So we just ignore the exception!
-	    }
+//	    try {
+//		fo.setAttribute(KNOWN_EXEFILE_TYPE, mime);
+//	    } catch (IOException ex) {
+//		// We've figured out the mime type, which is the main thing this
+//		// method needed to do. Its much less important that we couldn't
+//		// save it. So we just ignore the exception!
+//	    }
 
 	    return fo;
 	} else {
@@ -142,8 +142,8 @@ public class ExeLoader extends UniFileLoader {
     protected MultiDataObject createMultiObject(FileObject primaryFile)
 			throws DataObjectExistsException, IOException {
 	String mime;
-
-	if (lastFo.equals(primaryFile)) {
+        FileObject last = lastFo.get();
+	if (primaryFile.equals(last)) {
 	    mime = lastMime;
 	} else {
 	    mime = primaryFile.getMIMEType();
