@@ -95,6 +95,8 @@ public class CssPreviewGenerator {
         CssRule selected = content.selectedRule();
         String ruleName = selected.name();
         
+        ruleName = ruleName.replace('\n', ' '); //hotfix #117690 (selectors on multiple lines break the css previrew)
+        
         //We do not support preview of multiple elements in selector e.g.
         //h1 h2 h3 { color: red; }
         //
