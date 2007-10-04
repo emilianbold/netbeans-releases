@@ -21,6 +21,7 @@
   
 
   <tocitem text="Basic File Features" >
+    <tocitem text="Source Editor General Tasks: Quick Reference" target="editor.quickref"/>  
     <tocitem text="Searching Files" target="files.search" />
     <tocitem text="Comparing Two Files in the IDE" target="files.diff" />
     <tocitem text="Accessing Files Outside of a Project" target="files_favorite" />
@@ -30,6 +31,15 @@
     <tocitem text="Setting Character Encoding" target="files.encoding" />
   </tocitem>
 
+ <tocitem text="Keyboard Shortcuts" >
+    <tocitem text="About Keyboard Shortcuts" target="shortcuts.kybd" />
+    <tocitem text="Menu Shortcuts" target="shortcuts.menus" />
+    <tocitem text="Window Navigation Shortcuts" target="shortcuts.window" />
+    <tocitem text="Help Viewer Shortcuts" target="accessibility.jhshortcuts" />
+    <tocitem text="Setting Keyboard Shortcuts" target="shortcuts.menucuts-setting" />
+    <tocitem text="General Editor Shortcuts" target="shortcuts.editor" />
+  </tocitem>
+  
     <tocitem text="Version Control and File History">
       <tocitem text="Local History">
           <tocitem text="About Local File History" target="hist_about" />
@@ -62,14 +72,6 @@
       <tocitem text="Updating a Multi-User IDE Installation" target="update.globally" />
       <tocitem text="Activating and Deactivating a Plugin" target="configure.enable.module" />
     </tocitem>
-  <tocitem text="Keyboard Shortcuts" >
-    <tocitem text="About Keyboard Shortcuts" target="shortcuts.kybd" />
-    <tocitem text="Menu Shortcuts" target="shortcuts.menus" />
-    <tocitem text="General Editor Shortcuts" target="shortcuts.editor" />
-    <tocitem text="Window Navigation Shortcuts" target="shortcuts.window" />
-    <tocitem text="Help Viewer Shortcuts" target="accessibility.jhshortcuts" />
-    <tocitem text="Setting Keyboard Shortcuts" target="shortcuts.menucuts-setting" />
-  </tocitem>
   
      <tocitem text="XML Documents" >
       <tocitem text="About Editing XML Documents" target="xml_about" />

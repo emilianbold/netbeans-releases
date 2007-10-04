@@ -18,7 +18,7 @@
 
 <!--begin Projects section-->
 
-
+<mapID target="editor.quickref" url="editing/editor_quickref.html" />
 <mapID target="files.diff" url="files/files_diff.html" />
 <mapID target="files.icons" url="files/files_icons.html" />
 <mapID target="files_favorite" url="files/files_favorite.html" />
