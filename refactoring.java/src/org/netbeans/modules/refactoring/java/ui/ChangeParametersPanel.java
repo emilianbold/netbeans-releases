@@ -100,10 +100,6 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
     };
 
     // modifier items in combo - indexes
-
-    // modifier items in combo - indexes
-
-    // modifier items in combo - indexes
     private static final int MOD_PUBLIC_INDEX = 0;
     private static final int MOD_PROTECTED_INDEX = 1;
     private static final int MOD_DEFAULT_INDEX = 2;
@@ -355,8 +351,6 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
         add(previewChange, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
-    // </editor-fold>                        
-    // </editor-fold>                        
 
     private void modifiersComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_modifiersComboActionPerformed
         previewChange.setText(genDeclarationString());
