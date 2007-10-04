@@ -699,7 +699,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
     private void setOKorRefactor() {
         if (rui instanceof RefactoringUIBypass) {
             if (((RefactoringUIBypass) rui).isRefactoringBypassRequired()) {
-                next.setText(UIManager.getDefaults().get("OptionPane.okButtonText").toString());
+                next.setText(NbBundle.getMessage(DialogDisplayer.class, "CTL_OK"));
                 previewButton.setVisible(false);
             } else {
                 Mnemonics.setLocalizedText(next, NbBundle.getMessage(ParametersPanel.class, rui.isQuery()?"CTL_Find": "CTL_Finish"));
