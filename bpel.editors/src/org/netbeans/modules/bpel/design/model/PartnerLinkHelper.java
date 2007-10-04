@@ -72,6 +72,7 @@ import org.netbeans.modules.bpel.design.model.connections.MessageConnection;
 import org.netbeans.modules.bpel.design.model.elements.VisualElement;
 import org.netbeans.modules.bpel.design.model.patterns.PartnerlinkPattern;
 import org.netbeans.modules.bpel.design.model.patterns.Pattern;
+import org.netbeans.modules.bpel.properties.ResolverUtility;
 import org.netbeans.modules.xml.retriever.Retriever;
 import org.netbeans.modules.xml.schema.model.Schema;
 
@@ -315,6 +316,8 @@ public class PartnerLinkHelper {
         }
     }
     public FileObject retrieveWSDL(URL url, String name, boolean retrieveToFlat ){
+        
+        
         FileObject bpel_fo = (FileObject) model
                 .getView()
                 .getBPELModel()
@@ -352,11 +355,17 @@ public class PartnerLinkHelper {
         FileObject wsdl_fo = null;
         WSDLModel wsdl_model = null;
         try {
+            URI uri = new URI (ResolverUtility.encodeLocation(url.toString()));
+        
+            
             Retriever retr = Retriever.getDefault();
             retr.setOverwriteFilesWithSameName(true);
+
+            
+            
             wsdl_fo  = (retrieveToFlat)?
-                retr.retrieveResourceClosureIntoSingleDirectory(service_folder, url.toURI())
-                : retr.retrieveResource(service_folder, url.toURI());
+                retr.retrieveResourceClosureIntoSingleDirectory(service_folder, uri)
+                : retr.retrieveResource(service_folder, uri);
             
             
             if (wsdl_fo == null){
