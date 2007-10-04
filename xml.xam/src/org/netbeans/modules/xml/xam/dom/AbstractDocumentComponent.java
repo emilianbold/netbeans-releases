@@ -262,7 +262,7 @@ public abstract class AbstractDocumentComponent<C extends DocumentComponent<C>>
         if (newVal == null) {
             removeAttribute(node, type.getName());
         } else {
-            String stringValue = newVal.toString();
+            String stringValue = null;
             if (newVal instanceof NamedComponentReference) {
                 NamedComponentReference ref = (NamedComponentReference) newVal;
                 QName q = ref.getQName();
@@ -273,6 +273,7 @@ public abstract class AbstractDocumentComponent<C extends DocumentComponent<C>>
                 }
                 ((AbstractNamedComponentReference) ref).refresh();
             }
+            stringValue = (stringValue == null ? newVal.toString() : stringValue);
             setAttribute(node, type.getName(), stringValue);
         }
     }
