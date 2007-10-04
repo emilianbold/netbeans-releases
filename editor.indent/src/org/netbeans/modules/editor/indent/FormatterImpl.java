@@ -51,7 +51,6 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Formatter;
 import org.netbeans.editor.GuardedException;
 import org.netbeans.editor.ext.ExtFormatter;
-import org.netbeans.spi.editor.indent.Context;
 
 /**
  * Indentation and code reformatting services for a swing text document.
@@ -72,28 +71,34 @@ public final class FormatterImpl extends ExtFormatter {
         
     }
     
+    @Override
     public int[] getReformatBlock(JTextComponent target, String typedText) {
         return (defaultFormatter instanceof ExtFormatter)
                 ? ((ExtFormatter)defaultFormatter).getReformatBlock(target, typedText)
                 : null;
     }
     
+    @Override
     public void indentLock() {
         indentImpl.indentLock();
     }
     
+    @Override
     public void indentUnlock() {
         indentImpl.indentUnlock();
     }
     
+    @Override
     public void reformatLock() {
         indentImpl.reformatLock();
     }
     
+    @Override
     public void reformatUnlock() {
         indentImpl.reformatUnlock();
     }
 
+    @Override
     public int indentLine(Document doc, int offset) {
         try {
             Position pos = doc.createPosition(offset);
@@ -107,18 +112,22 @@ public final class FormatterImpl extends ExtFormatter {
         return offset;
     }
 
+    @Override
     public int getTabSize() {
         return defaultFormatter.getTabSize();
     }
 
+    @Override
     public int getSpacesPerTab() {
         return defaultFormatter.getSpacesPerTab();
     }
 
+    @Override
     public int getShiftWidth() {
         return defaultFormatter.getShiftWidth();
     }
 
+    @Override
     public boolean expandTabs() {
         return defaultFormatter.expandTabs();
     }
@@ -130,6 +139,7 @@ public final class FormatterImpl extends ExtFormatter {
     * @param offset the offset of a character on the line
     * @return new offset to place cursor to
     */
+    @Override
     public int indentNewLine(Document doc, int offset) {
         try {
             doc.insertString(offset, "\n", null); // NOI18N
@@ -143,6 +153,7 @@ public final class FormatterImpl extends ExtFormatter {
         return offset;
     }
 
+    @Override
     public Writer reformat(BaseDocument doc, int startOffset, int endOffset,
     boolean indentOnly) throws BadLocationException, IOException {
         // TBD delegate somehow
@@ -151,6 +162,7 @@ public final class FormatterImpl extends ExtFormatter {
                 : null;
     }
     
+    @Override
     public int reformat(BaseDocument doc, int startOffset, int endOffset)
     throws BadLocationException {
         if (doc != indentImpl.document())
@@ -160,6 +172,14 @@ public final class FormatterImpl extends ExtFormatter {
         return (handler != null && handler.hasItems())
                 ? Math.max(handler.endPos().getOffset() - startOffset, 0)
                 : endOffset - startOffset;
+    }
+
+    @Override
+    public Writer createWriter(Document doc, int offset, Writer writer) {
+        if (doc != indentImpl.document()) {
+            throw new IllegalStateException("Unexpected document doc=" + doc);
+        }
+        return new FormatterWriterImpl(indentImpl, offset, writer);
     }
 
 }

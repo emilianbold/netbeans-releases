@@ -52,7 +52,6 @@ import org.netbeans.api.editor.indent.Indent;
 import org.netbeans.api.editor.indent.Reformat;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Formatter;
-import org.netbeans.spi.editor.indent.Context;
 
 /**
  * Indentation and code reformatting services for a swing text document.
@@ -210,7 +209,7 @@ public final class IndentImpl {
                 // Create context from begining of the start line till the end of the end line.
                 indentHandler.setGlobalBounds(
                         doc.createPosition(startLineOffset),
-                        doc.createPosition(lineElem.getEndOffset()));
+                        doc.createPosition(lineElem.getEndOffset() - 1));
 
                 // Perform whole reindent on top and possibly embedded levels
                 indentHandler.runTasks();
