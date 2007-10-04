@@ -64,7 +64,7 @@ public class PullUpTest extends RefactoringTestCase {
         js.runUserActionTask(fieldSelector,true);
         js.runUserActionTask(srcClassSelector,true);
         jsDest.runUserActionTask(destClassSelector,true);
-        final PullUpRefactoring pullUp = new PullUpRefactoring(Lookups.fixed(test,destClassSelector.tph));
+        final PullUpRefactoring pullUp = new PullUpRefactoring(destClassSelector.tph);
         perform(pullUp,new ParameterSetter() {
             public void setParameters() {
                 MemberInfo[] mi = new MemberInfo[]{ MemberInfo.create(fieldSelector.tph.resolveElement(fieldSelector.info),fieldSelector.info)};

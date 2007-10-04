@@ -90,7 +90,7 @@ public class PullUpRefactoringUI implements RefactoringUI {
         TreePath tp = info.getTrees().getPath(selected);
         TreePathHandle sourceType = TreePathHandle.create(tp, info);
         description = UiUtils.getHeader(tp, info, UiUtils.PrintPart.NAME);
-        refactoring = new PullUpRefactoring(Lookups.singleton(sourceType));
+        refactoring = new PullUpRefactoring(sourceType);
         refactoring.getContext().add(info.getClasspathInfo());
         
     }

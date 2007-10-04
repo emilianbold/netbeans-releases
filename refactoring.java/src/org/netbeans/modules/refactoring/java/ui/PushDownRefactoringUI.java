@@ -92,7 +92,7 @@ public class PushDownRefactoringUI implements RefactoringUI {
         TreePath tp = info.getTrees().getPath(selected);
         TreePathHandle sourceType = TreePathHandle.create(tp, info);
         description = UiUtils.getHeader(tp, info, UiUtils.PrintPart.NAME);
-        refactoring = new PushDownRefactoring(Lookups.singleton(sourceType));
+        refactoring = new PushDownRefactoring(sourceType);
         refactoring.getContext().add(RetoucheUtils.getClasspathInfoFor(sourceType));
     }
     

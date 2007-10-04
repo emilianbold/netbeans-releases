@@ -44,7 +44,7 @@ import javax.lang.model.element.Element;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
-import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  * Push Down Refactoring implementation class.
@@ -60,8 +60,8 @@ public class PushDownRefactoring extends AbstractRefactoring {
     /** Creates a new instance of PushDownRefactoring 
      * @param sourceType 
      */
-    public PushDownRefactoring(Lookup sourceType) {
-        super(sourceType);
+    public PushDownRefactoring(TreePathHandle sourceType) {
+        super(Lookups.singleton(sourceType));
     }
     
     

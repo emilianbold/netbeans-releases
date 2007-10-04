@@ -90,31 +90,44 @@ public class JavaRefactoringsFactory implements RefactoringPluginFactory {
                 return new SafeDeleteRefactoringPlugin((SafeDeleteRefactoring)refactoring);
             }
         } else if (refactoring instanceof MoveRefactoring) {
-            return new MoveRefactoringPlugin((MoveRefactoring) refactoring);
+            if (checkMove(refactoring.getRefactoringSource())) {
+                return new MoveRefactoringPlugin((MoveRefactoring) refactoring);
+            }
         } else if (refactoring instanceof SingleCopyRefactoring) {
             if (checkCopy(refactoring.getRefactoringSource())) {
                 return new CopyClassRefactoringPlugin((SingleCopyRefactoring) refactoring);
             }
-        } else if (refactoring instanceof ExtractInterfaceRefactoring) {
-            return new ExtractInterfaceRefactoringPlugin((ExtractInterfaceRefactoring) refactoring);
-        } else if (refactoring instanceof ExtractSuperclassRefactoring) {
-            return new ExtractSuperclassRefactoringPlugin((ExtractSuperclassRefactoring) refactoring);
-        } else if (refactoring instanceof PullUpRefactoring) {
-            return new PullUpRefactoringPlugin((PullUpRefactoring)refactoring);
-        } else if (refactoring instanceof PushDownRefactoring) {
-            return new PushDownRefactoringPlugin((PushDownRefactoring) refactoring);
-        } else if (refactoring instanceof UseSuperTypeRefactoring) {
-            return new UseSuperTypeRefactoringPlugin((UseSuperTypeRefactoring) refactoring);
-        } else if (refactoring instanceof InnerToOuterRefactoring) {
-            return new InnerToOuterRefactoringPlugin((InnerToOuterRefactoring) refactoring);
-        } else if (refactoring instanceof ChangeParametersRefactoring) {
-            return new ChangeParametersPlugin((ChangeParametersRefactoring) refactoring);
-        } else if (refactoring instanceof EncapsulateFieldRefactoring) {
-            return new EncapsulateFieldRefactoringPlugin((EncapsulateFieldRefactoring) refactoring);
-        } else if (refactoring instanceof EncapsulateFieldsRefactoring) {
-            return new EncapsulateFieldsPlugin((EncapsulateFieldsRefactoring) refactoring);
+        } else if (handle!=null) {
+            if (refactoring instanceof ExtractInterfaceRefactoring) {
+                return new ExtractInterfaceRefactoringPlugin((ExtractInterfaceRefactoring) refactoring);
+            } else if (refactoring instanceof ExtractSuperclassRefactoring) {
+                return new ExtractSuperclassRefactoringPlugin((ExtractSuperclassRefactoring) refactoring);
+            } else if (refactoring instanceof PullUpRefactoring) {
+                return new PullUpRefactoringPlugin((PullUpRefactoring)refactoring);
+            } else if (refactoring instanceof PushDownRefactoring) {
+                return new PushDownRefactoringPlugin((PushDownRefactoring) refactoring);
+            } else if (refactoring instanceof UseSuperTypeRefactoring) {
+                return new UseSuperTypeRefactoringPlugin((UseSuperTypeRefactoring) refactoring);
+            } else if (refactoring instanceof InnerToOuterRefactoring) {
+                return new InnerToOuterRefactoringPlugin((InnerToOuterRefactoring) refactoring);
+            } else if (refactoring instanceof ChangeParametersRefactoring) {
+                return new ChangeParametersPlugin((ChangeParametersRefactoring) refactoring);
+            } else if (refactoring instanceof EncapsulateFieldRefactoring) {
+                return new EncapsulateFieldRefactoringPlugin((EncapsulateFieldRefactoring) refactoring);
+            } else if (refactoring instanceof EncapsulateFieldsRefactoring) {
+                return new EncapsulateFieldsPlugin((EncapsulateFieldsRefactoring) refactoring);
+            }
         }
         return null;
+    }
+
+    private boolean checkMove(Lookup refactoringSource) {
+        for (FileObject f:refactoringSource.lookupAll(FileObject.class)) {
+            if (RetoucheUtils.isJavaFile(f)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     //TODO: should be implemented better

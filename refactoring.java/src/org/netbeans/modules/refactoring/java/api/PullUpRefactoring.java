@@ -45,7 +45,7 @@ import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
-import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /** 
  * Pull Up Refactoring
@@ -68,8 +68,8 @@ public final class PullUpRefactoring extends AbstractRefactoring {
     /** Creates a new instance of PullUpRefactoring 
      * @param sourceType Type the members of which should be pulled up.
      */
-    public PullUpRefactoring(Lookup sourceType) {
-        super(sourceType);
+    public PullUpRefactoring(TreePathHandle sourceType) {
+        super(Lookups.singleton(sourceType));
     }
     
 
