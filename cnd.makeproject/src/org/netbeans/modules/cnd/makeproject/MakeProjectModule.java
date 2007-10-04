@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerRootNodeProvider;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.runprofiles.RunProfileNodeProvider;
+import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.FileSensitiveActions;
 import org.openide.ErrorManager;
@@ -305,11 +306,20 @@ public class MakeProjectModule extends ModuleInstall {
                 ERR.log(ErrorManager.INFORMATIONAL, "in project = " + p.getProjectDirectory()); // NOI18N
             }
             
-            if (owner != null /*&& owner.getProjectDirectory() == p.getProjectDirectory()*/) {
+            if (owner != null && owner.getProjectDirectory() == p.getProjectDirectory()) {
                 File ioFile = FileUtil.toFile(file);
                 if (ioFile.isDirectory())
-                    return; // don't add directories. 
-                String itemPath = IpeUtils.toAbsoluteOrRelativePath(makeConfigurationDescriptor.getBaseDir(), ioFile.getPath());
+                    return; // don't add directories.
+                String itemPath;
+                if (PathPanel.getMode() == PathPanel.REL_OR_ABS) {
+                    itemPath = IpeUtils.toAbsoluteOrRelativePath(makeConfigurationDescriptor.getBaseDir(), ioFile.getPath());
+                }
+                else if (PathPanel.getMode() == PathPanel.REL) {
+                    itemPath = IpeUtils.toRelativePath(makeConfigurationDescriptor.getBaseDir(), ioFile.getPath());
+                }
+                else {
+                    itemPath = ioFile.getPath();
+                }
                 itemPath = FilePathAdaptor.mapToRemote(itemPath);
                 itemPath = FilePathAdaptor.normalize(itemPath);
                 Item item = new Item(itemPath);

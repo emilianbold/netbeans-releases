@@ -83,8 +83,7 @@ public class MakeSources implements Sources, AntProjectListener {
     private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
 
     public synchronized SourceGroup[] getSourceGroups(String str) {
-        if (!str.equals("generic")) {
-            // NOI18N
+        if (!str.equals("generic")) { // NOI18N
             return new SourceGroup[0];
         }
         if (delegate == null) {
