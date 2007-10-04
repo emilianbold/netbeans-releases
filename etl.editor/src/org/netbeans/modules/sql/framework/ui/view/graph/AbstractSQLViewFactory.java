@@ -47,6 +47,7 @@ import org.netbeans.modules.sql.framework.ui.graph.IGraphController;
 import org.netbeans.modules.sql.framework.ui.graph.IGraphView;
 import org.netbeans.modules.sql.framework.ui.graph.IOperatorManager;
 import org.netbeans.modules.sql.framework.ui.graph.IToolBar;
+import org.netbeans.modules.sql.framework.ui.graph.view.impl.SQLToolBar;
 import org.netbeans.modules.sql.framework.ui.graph.view.impl.OperatorPaletteDialog;
 import org.netbeans.modules.sql.framework.ui.graph.view.impl.OperatorSelectionPanel;
 import org.netbeans.modules.sql.framework.ui.model.SQLUIModel;
@@ -137,14 +138,19 @@ public abstract class AbstractSQLViewFactory implements IOperatorManager {
         if (toolBar != null) {
             toolBar.setGraphView(graphView);
             toolBar.setActions(getToolBarActions());
-            toolBar.initializeToolBar();
-            toolBar.initializeSQLToolBar();//For SQL Operators
+            toolBar.initializeToolBar();  
+            
+            SQLToolBar sqlToolbar = (SQLToolBar) toolBar;
+            sqlToolbar.initializeSQLToolBar();
+            
             //set toolbar on graph
             if (graphView != null) {
                 graphView.setToolBar(toolBar);
+                graphView.setToolBar(sqlToolbar);
             }
         }        
 
+        
         //set up controller
         if (controller != null) {
             controller.setDataModel(model);
@@ -152,6 +158,21 @@ public abstract class AbstractSQLViewFactory implements IOperatorManager {
         }
     }
 
+  /*  public void initializeSQLToolBar() {
+        // Add SQL operators
+        IOperatorXmlInfoModel model = getOperatorXmlInfoModel();
+        Node node = model.getRootNode();
+        Children children = node.getChildren();
+        Node[] nodes = children.getNodes();
+
+        for (int i = 0; i < nodes.length; i++) {
+            IOperatorXmlInfoCategory catNode = (IOperatorXmlInfoCategory) nodes[i];
+            if (shouldDisplay(catNode.getToolbarType())) {
+                createOperatorCategories(catNode);
+            }
+        }
+     }*/
+         
     /**
      * Show the operator palette dialog, initially displaying the category panel
      * associated with the given node.

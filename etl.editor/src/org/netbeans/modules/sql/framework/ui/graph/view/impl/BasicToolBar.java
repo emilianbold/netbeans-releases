@@ -188,9 +188,5 @@ public class BasicToolBar extends JToolBar implements IToolBar {
             }
         }
     }
-
-    public void initializeSQLToolBar() {        
-    }
-
 }
 

@@ -99,9 +99,7 @@ public interface IToolBar {
      */
     public IGraphView getGraphView();
 
-    public void initializeToolBar();
-    
-    public void initializeSQLToolBar();
+    public void initializeToolBar(); 
 
     public void enableToolBar(boolean enable);
 }
