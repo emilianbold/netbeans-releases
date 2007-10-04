@@ -27,11 +27,13 @@
  */
 package org.netbeans.modules.ruby.rhtml;
 
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.api.languages.SyntaxContext;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
@@ -55,60 +57,65 @@ public class RhtmlHelper {
         ASTItem leaf = context.getASTPath().getLeaf();
         if (leaf != null) {
             int offset = leaf.getOffset();
-            Document doc = context.getDocument();
-            TokenSequence ts = context.getTokenSequence();
-            ts.move(offset);
-            if (ts.moveNext()) {
-                TokenId id = ts.token().id();
-                if (id == RhtmlTokenId.DELIMITER) {
-                    if (ts.moveNext()) {
-                        id = ts.token().id();
-                        if (RhtmlTokenId.isRuby(id)) {
-                            TokenSequence t = ts.embedded();
-                            if (t != null) {
-                                t.moveStart();
-                                t.moveNext();
-                                while (t.token().id() == RubyTokenId.WHITESPACE) {
-                                    if (!t.moveNext()) {
-                                        break;
-                                    }
-                                }
-                                int begin = t.offset();
-                                id = t.token().id();
-
-                                if (id == RubyTokenId.WHITESPACE) {
-                                    // Empty tag
-                                    return DEFAULT_LABEL;
-                                }
-
-                                if (id == RubyTokenId.STRING_BEGIN || id == RubyTokenId.QUOTED_STRING_BEGIN || id == RubyTokenId.REGEXP_BEGIN) {
-                                    while (t.moveNext()) {
-                                        id = t.token().id();
-                                        if (id == RubyTokenId.STRING_END || id == RubyTokenId.QUOTED_STRING_END || id == RubyTokenId.REGEXP_END) {
-                                            int end = t.offset() + t.token().length();
-
-                                            return createName(doc, begin, end);
+            AbstractDocument doc = (AbstractDocument) context.getDocument();
+            doc.readLock ();
+            try {
+                TokenSequence ts = TokenHierarchy.get (doc).tokenSequence ();
+                ts.move(offset);
+                if (ts.moveNext()) {
+                    TokenId id = ts.token().id();
+                    if (id == RhtmlTokenId.DELIMITER) {
+                        if (ts.moveNext()) {
+                            id = ts.token().id();
+                            if (RhtmlTokenId.isRuby(id)) {
+                                TokenSequence t = ts.embedded();
+                                if (t != null) {
+                                    t.moveStart();
+                                    t.moveNext();
+                                    while (t.token().id() == RubyTokenId.WHITESPACE) {
+                                        if (!t.moveNext()) {
+                                            break;
                                         }
                                     }
-                                }
-
-                                int end = t.offset() + t.token().length();
-
-                                // See if this is a "foo.bar" expression and if so, include ".bar"
-                                if (t.moveNext()) {
+                                    int begin = t.offset();
                                     id = t.token().id();
-                                    if (id == RubyTokenId.DOT) {
-                                        if (t.moveNext()) {
-                                            end = t.offset() + t.token().length();
+
+                                    if (id == RubyTokenId.WHITESPACE) {
+                                        // Empty tag
+                                        return DEFAULT_LABEL;
+                                    }
+
+                                    if (id == RubyTokenId.STRING_BEGIN || id == RubyTokenId.QUOTED_STRING_BEGIN || id == RubyTokenId.REGEXP_BEGIN) {
+                                        while (t.moveNext()) {
+                                            id = t.token().id();
+                                            if (id == RubyTokenId.STRING_END || id == RubyTokenId.QUOTED_STRING_END || id == RubyTokenId.REGEXP_END) {
+                                                int end = t.offset() + t.token().length();
+
+                                                return createName(doc, begin, end);
+                                            }
                                         }
                                     }
-                                }
 
-                                return createName(doc, begin, end);
+                                    int end = t.offset() + t.token().length();
+
+                                    // See if this is a "foo.bar" expression and if so, include ".bar"
+                                    if (t.moveNext()) {
+                                        id = t.token().id();
+                                        if (id == RubyTokenId.DOT) {
+                                            if (t.moveNext()) {
+                                                end = t.offset() + t.token().length();
+                                            }
+                                        }
+                                    }
+
+                                    return createName(doc, begin, end);
+                                }
                             }
                         }
                     }
                 }
+            } finally {
+                doc.readUnlock ();
             }
 
             // Fallback mechanism - just pull text out of the document
