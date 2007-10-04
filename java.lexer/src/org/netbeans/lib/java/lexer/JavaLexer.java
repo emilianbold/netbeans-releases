@@ -276,7 +276,7 @@ public class JavaLexer implements Lexer<JavaTokenId> {
                     return token(JavaTokenId.CARET);
 
                 case '!':
-                    if (input.read() == '!')
+                    if (input.read() == '=')
                         return token(JavaTokenId.BANGEQ);
                     input.backup(1);
                     return token(JavaTokenId.BANG);

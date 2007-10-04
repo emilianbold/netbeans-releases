@@ -90,9 +90,9 @@ public class JavaFlyTokensTest extends NbTestCase {
                 + "\nDistribution: " + LexerTestUtilities.flyweightDistribution(ts)
         );
 
-        assertEquals(LexerTestUtilities.flyweightTokenCount(ts), 13884);
-        assertEquals(LexerTestUtilities.flyweightTextLength(ts), 21741);
-        assertEquals(ts.tokenCount(), 21481);
+        assertEquals(LexerTestUtilities.flyweightTokenCount(ts), 13786);
+        assertEquals(LexerTestUtilities.flyweightTextLength(ts), 21710);
+        assertEquals(ts.tokenCount(), 21379);
         
     }
     
