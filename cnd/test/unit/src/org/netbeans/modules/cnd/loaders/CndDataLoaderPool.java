@@ -53,7 +53,13 @@ import org.openide.util.Enumerations;
 public class CndDataLoaderPool extends DataLoaderPool {
     private final DataLoader[] loaders;
     public CndDataLoaderPool() {
-        loaders = new DataLoader[] { new CCDataLoader(), new CDataLoader(), new HDataLoader()};
+        loaders = new DataLoader[] { CCDataLoader.getInstance(), 
+                                        CDataLoader.getInstance(),
+                                        HDataLoader.getInstance(),
+                                        MakefileDataLoader.getInstance(), 
+                                        ShellDataLoader.getInstance(),  
+                                        FortranDataLoader.getInstance(),
+                                        new ExeLoader()};
     }
     
     protected Enumeration loaders() {

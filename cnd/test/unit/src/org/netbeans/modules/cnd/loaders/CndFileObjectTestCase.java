@@ -45,7 +45,6 @@ import java.io.File;
 import org.netbeans.modules.cnd.test.BaseTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 
 /**
  *
@@ -57,10 +56,12 @@ public class CndFileObjectTestCase extends BaseTestCase {
         super(testName);
     }
 
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
     }
 
+    @Override
     protected void tearDown() throws Exception {
         super.tearDown();
     }

@@ -50,7 +50,6 @@ import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.cnd.editor.cplusplus.CCKit;
 import org.netbeans.modules.cnd.editor.cplusplus.CKit;
-import org.openide.filesystems.FileUtil;
 
 /**
  * IMPORTANT NOTE:
@@ -92,14 +91,9 @@ public abstract class BaseTestCase extends NbTestCase {
         super.tearDown();
     }
     
-    @SuppressWarnings("deprecation")
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        // this is the only way to init extension-based recognizer
-        FileUtil.setMIMEType("cc", "text/x-c++");
-        FileUtil.setMIMEType("h", "text/x-c++");
-        FileUtil.setMIMEType("c", "text/x-c");
         
         MockServices.setServices(MockMimeLookup.class);
         MimePath mimePath = MimePath.parse("text/x-c++");
