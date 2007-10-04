@@ -113,4 +113,13 @@ public class UncaughtExceptionTest extends HintsTestBase {
         performTestDoNotPerform("TestBug88923", 8, 11);
     }
     
+    /**
+     * Duplicate entries should not be offered
+     * (ie, two same exception thrown on same line, like:<br>
+     * <code>new Filereader("").read();</code>
+     */
+    public void testDuplicateHintEntries() throws Exception {
+        performTestDoNotPerform("TestDuplicate", 5, 15);
+    }
+    
 }

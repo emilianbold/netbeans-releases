@@ -64,11 +64,13 @@ import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreeMaker;
@@ -89,11 +91,15 @@ final class MagicSurroundWithTryCatchFix implements Fix {
     private JavaSource js;
     private List<TypeMirrorHandle> thandles;
     private int offset;
+    private ElementHandle<ExecutableElement> method;
+    List<String> fqns;
     
-    public MagicSurroundWithTryCatchFix(JavaSource js, List<TypeMirrorHandle> thandles, int offset) {
+    public MagicSurroundWithTryCatchFix(JavaSource js, List<TypeMirrorHandle> thandles, int offset, ElementHandle<ExecutableElement> method, List<String> fqns) {
         this.js = js;
         this.thandles = thandles;
         this.offset = offset;
+        this.method = method;
+        this.fqns = fqns;
     }
     
     public String getText() {
@@ -387,5 +393,40 @@ final class MagicSurroundWithTryCatchFix implements Fix {
         }
         
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final MagicSurroundWithTryCatchFix other = (MagicSurroundWithTryCatchFix) obj;
+        if (this.js != other.js && (this.js == null || !this.js.equals(other.js))) {
+            return false;
+        }
+        if (!this.fqns.equals(other.fqns)) {
+            return false;
+        }
+        if (this.method != other.method && (this.method == null || !this.method.equals(other.method))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 23 * hash + (this.js != null ? this.js.hashCode() : 0);
+        hash = 23 * hash + (this.method != null ? this.method.hashCode() : 0);
+        return hash;
+    }
+
+    
+    
+
+    
+
     
 }

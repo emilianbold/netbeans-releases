@@ -54,7 +54,6 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TryTree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
-import java.lang.annotation.ElementType;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -141,7 +140,7 @@ public final class UncaughtException implements ErrorRule<Void> {
     public List<Fix> run(CompilationInfo info, String diagnosticKey, int offset, TreePath treePath, Data<Void> data) {
         List<Fix> result = new ArrayList<Fix>();
         TreePath path = info.getTreeUtilities().pathFor(offset + 1);
-        List<? extends TypeMirror> uncought = null;
+        List<? extends TypeMirror> uncaught = null;
         boolean disableSurroundWithTryCatch = false;
         Element el;
         
@@ -181,23 +180,23 @@ public final class UncaughtException implements ErrorRule<Void> {
 			    uncaughtException = info.getTrees().getTypeMirror(new TreePath(path, ((MethodInvocationTree) leaf).getMethodSelect()));
 			
 			if(uncaughtException != null && uncaughtException.getKind() == TypeKind.EXECUTABLE)
-			    uncought = ((ExecutableType) uncaughtException).getThrownTypes();
+			    uncaught = ((ExecutableType) uncaughtException).getThrownTypes();
 			else
-			    uncought = ((ExecutableElement) el).getThrownTypes();
+			    uncaught = ((ExecutableElement) el).getThrownTypes();
                     }
                     path = path.getParentPath();
                     break OUTTER;
                 case THROW:
                     TypeMirror uncaughtException = info.getTrees().getTypeMirror(new TreePath(path, ((ThrowTree) leaf).getExpression()));
-                    uncought = Collections.singletonList(uncaughtException);
+                    uncaught = Collections.singletonList(uncaughtException);
                     break OUTTER;
             }
             
             path = path.getParentPath();
         }
         
-        if (uncought != null) {
-            uncought = findUncaughtExceptions(info, path, uncought);
+        if (uncaught != null) {
+            uncaught = findUncaughtExceptions(info, path, uncaught);
             
             TreePath pathRec = path;
             
@@ -210,7 +209,7 @@ public final class UncaughtException implements ErrorRule<Void> {
             if (method != null) {
                 //if the method header is inside a guarded block, do nothing:
                 if (!org.netbeans.modules.java.hints.errors.Utilities.isMethodHeaderInsideGuardedBlock(info, (MethodTree) pathRec.getLeaf())) {
-                    for (TypeMirror tm : uncought) {
+                    for (TypeMirror tm : uncaught) {
                         if (tm.getKind() != TypeKind.ERROR) {
                             result.add(new AddThrowsClauseHintImpl(info.getJavaSource(), Utilities.getTypeName(tm, true).toString(), TypeMirrorHandle.create(tm), ElementHandle.create(method)));
                         }
@@ -218,14 +217,17 @@ public final class UncaughtException implements ErrorRule<Void> {
                 }
             }
             
-            if (!uncought.isEmpty() && !disableSurroundWithTryCatch) {
+            if (!uncaught.isEmpty() && !disableSurroundWithTryCatch) {
                 List<TypeMirrorHandle> thandles = new ArrayList<TypeMirrorHandle>();
+                List<String> fqns = new ArrayList<String>();
                 
-                for (TypeMirror tm : uncought) {
-                    if (tm.getKind() != TypeKind.ERROR)
+                for (TypeMirror tm : uncaught) {
+                    if (tm.getKind() != TypeKind.ERROR) {
                         thandles.add(TypeMirrorHandle.create(tm));
+                        fqns.add(Utilities.getTypeName(tm, true).toString());
+                    }
                 }
-                result.add(new MagicSurroundWithTryCatchFix(info.getJavaSource(), thandles, offset));
+                result.add(new MagicSurroundWithTryCatchFix(info.getJavaSource(), thandles, offset, ElementHandle.create(method), fqns));
             }
         }
         
@@ -282,7 +284,7 @@ public final class UncaughtException implements ErrorRule<Void> {
     private static final Set<ElementKind> EXECUTABLE_ELEMENTS = EnumSet.of(ElementKind.CONSTRUCTOR, ElementKind. METHOD);
     
     private static final class AddThrowsClauseHintImpl implements Fix {
-        
+
         private JavaSource js;
         private String fqn;
         private TypeMirrorHandle thandle;
@@ -319,6 +321,35 @@ public final class UncaughtException implements ErrorRule<Void> {
                 ErrorManager.getDefault().notify(e);
             }
             return null;
+        }
+        
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final AddThrowsClauseHintImpl other = (AddThrowsClauseHintImpl) obj;
+            if (this.js != other.js && (this.js == null || !this.js.equals(other.js))) {
+                return false;
+            }
+            if (this.fqn == null || !this.fqn.equals(other.fqn)) {
+                return false;
+            }
+            if (this.method != other.method && (this.method == null || !this.method.equals(other.method))) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 13 * hash + (this.fqn != null ? this.fqn.hashCode() : 0);
+            hash = 13 * hash + (this.method != null ? this.method.hashCode() : 0);
+            return hash;
         }
         
     }
