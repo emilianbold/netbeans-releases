@@ -49,7 +49,6 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.DnDConstants;
 import java.io.IOException;
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -259,7 +258,7 @@ public class BasicSQLGraphController implements IGraphController {
                             if(rtModel == null) {
                                 rtModel = new RuntimeDatabaseModelImpl();
                             }
-                            RuntimeOutput rtOut = rtModel.getRuntimeOutput();
+                            RuntimeOutput rtOut = rtModel.getRuntimeOutput(); 
                             SQLDBColumn column = null;
                             if(rtOut == null) {
                                 rtOut = new RuntimeOutputImpl();
@@ -283,7 +282,7 @@ public class BasicSQLGraphController implements IGraphController {
                             column = SQLModelObjectFactory.getInstance().createTargetColumn(
                                     argName, Types.INTEGER, 0, 0, true);
                             column.setEditable(false);
-                            rtOut.addColumn(column);
+                            rtOut.addColumn(column);                            
                             rtModel.addTable(rtOut);
                             sqlModel.getSQLDefinition().addObject(rtModel);
                         }
@@ -1012,6 +1011,7 @@ public class BasicSQLGraphController implements IGraphController {
             return target.isSelected() ? SQLConstants.TARGET_TABLE : SQLConstants.SOURCE_TABLE;
         }
         
+        @Override
         public void addNotify() {
             super.addNotify();
             
