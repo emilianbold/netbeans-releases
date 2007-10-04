@@ -696,4 +696,30 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
                  failonerror="${sigtest.fail.on.error}"
         />
     </target>
+
+    <target name="findbugs" depends="build-init">
+        <property name="report.dir" location="${nb_all}/nbbuild/build/findbugs"/>
+        <mkdir dir="${report.dir}"/>
+        <property name="report.file" location="${report.dir}/${code.name.base.dashes}.xml"/>
+        <property name="findbugs.home" location="${nb_all}/nbbuild/external/findbugs"/>
+        <taskdef name="findbugs" classname="edu.umd.cs.findbugs.anttask.FindBugsTask" classpath="${findbugs.home}/lib/findbugs-ant.jar"/>
+
+        <property name="cp.extra" value=""/>
+        <path id="findbugs.class.path.ref">
+            <path path="${module.run.classpath}"/>
+            <path path="${cp.extra}"/>
+            <path path="${cluster}/${module.jar}"/>
+        </path>
+        <pathconvert refid="findbugs.class.path.ref" property="findbugs.class.path">
+            
+        </pathconvert>    
+        <echo>Findbugs module: ${module.name}</echo>
+        <findbugs home="${findbugs.home}"
+              output="xml"
+              outputFile="${report.file}" >
+            <auxClasspath path="${findbugs.class.path}" />
+            <sourcePath path="${src.dir}" />
+            <class location="${build.classes.dir}" />
+        </findbugs>
+    </target>
 </project>
