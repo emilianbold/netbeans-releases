@@ -389,8 +389,8 @@ public class ForLoopTest extends GeneratorTestMDRCompat {
                 ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
                 MethodTree method = (MethodTree) clazz.getMembers().get(1);
                 List<? extends StatementTree> stmts = method.getBody().getStatements();
-                WhileLoopTree wlt = (WhileLoopTree) stmts.get(0);
-                ExpressionStatementTree statement = (ExpressionStatementTree) wlt.getStatement();
+                ForLoopTree foor = (ForLoopTree) stmts.get(0);
+                ExpressionStatementTree statement = (ExpressionStatementTree) foor.getStatement();
                 VariableTree var = make.Variable(
                         make.Modifiers(Collections.<Modifier>emptySet()), 
                         "properties",
