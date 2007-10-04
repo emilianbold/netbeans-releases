@@ -80,6 +80,7 @@ public abstract class GeneratorTestMDRCompat extends NbTestCase {
         super(aName);
     }
     
+    @Override
     protected void setUp() throws Exception {
         XMLFileSystem system = new XMLFileSystem();
         system.setXmlUrls(new URL[] {
@@ -120,7 +121,7 @@ public abstract class GeneratorTestMDRCompat extends NbTestCase {
         printFile();
     }
     
-    private static ClassPath createClassPath(String classpath) {
+    static ClassPath createClassPath(String classpath) {
         StringTokenizer tokenizer = new StringTokenizer(classpath, File.pathSeparator);
         List/*<PathResourceImplementation>*/ list = new ArrayList();
         while (tokenizer.hasMoreTokens()) {
