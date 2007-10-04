@@ -724,6 +724,7 @@ public class HgCommand {
 
         command.add(getHgCommand());
         command.add(HG_CLONE_CMD);
+        command.add(HG_VERBOSE_CMD);
         command.add(repository);
         command.add(target);
 

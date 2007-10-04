@@ -105,6 +105,7 @@ public class HgUtils {
     
     private static final String FILENAME_HGIGNORE = ".hgignore"; // NOI18N
 
+    private static final int MAX_LINES_TO_PRINT = 500;
 
     /**
      * confirmDialog - display a confirmation dialog
@@ -752,7 +753,13 @@ itor tabs #66700).
         io.select();
         OutputWriter out = io.getOut();
         
+        int lines = 0;
         for (String s : list){
+            if (++lines > MAX_LINES_TO_PRINT) {
+                out.println("...");
+                out.println(list.get(list.size() -1));
+                break;
+            }
             out.println(s);
         }
         out.close();
