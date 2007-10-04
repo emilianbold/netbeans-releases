@@ -57,6 +57,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.TreeSet;
 import java.util.regex.Pattern;
 import javax.swing.JButton;
 import javax.swing.event.ChangeEvent;
@@ -65,7 +66,9 @@ import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.java.source.ui.ScanDialog;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
@@ -84,9 +87,15 @@ import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.MouseUtils;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -146,13 +155,15 @@ class J2SEActionProvider implements ActionProvider {
     
     /**Set of commands which are affected by background scanning*/
     final Set<String> bkgScanSensitiveActions;
+
+    /** Set of Java source files (as relative path from source root) known to have been modified. See issue #104508. */
+    private final Set<String> dirty = new TreeSet<String>();
     
-    public J2SEActionProvider( J2SEProject project, UpdateHelper updateHelper ) {
+    public J2SEActionProvider(J2SEProject project, UpdateHelper updateHelper) {
         
         commands = new HashMap<String,String[]>();
-        commands.put(COMMAND_BUILD, new String[] {"jar"}); // NOI18N
+        // treated specially: COMMAND_{,RE}BUILD
         commands.put(COMMAND_CLEAN, new String[] {"clean"}); // NOI18N
-        commands.put(COMMAND_REBUILD, new String[] {"clean", "jar"}); // NOI18N
         commands.put(COMMAND_COMPILE_SINGLE, new String[] {"compile-single"}); // NOI18N
         // commands.put(COMMAND_COMPILE_TEST_SINGLE, new String[] {"compile-test-single"}); // NOI18N
         commands.put(COMMAND_RUN, new String[] {"run"}); // NOI18N
@@ -176,8 +187,43 @@ class J2SEActionProvider implements ActionProvider {
             
         this.updateHelper = updateHelper;
         this.project = project;
+
+        try {
+            FileSystem fs = project.getProjectDirectory().getFileSystem();
+            // XXX would be more efficient to only listen while DO_DEPEND=false (not the default)
+            fs.addFileChangeListener(FileUtil.weakFileChangeListener(modificationListener, fs));
+        } catch (FileStateInvalidException x) {
+            Exceptions.printStackTrace(x);
+        }
     }
-    
+    private final FileChangeListener modificationListener = new FileChangeAdapter() {
+        public @Override void fileChanged(FileEvent fe) {
+            modification(fe.getFile());
+        }
+        public @Override void fileDataCreated(FileEvent fe) {
+            modification(fe.getFile());
+        }
+    };
+    private void modification(FileObject f) {
+        // XXX would be more efficient to precompute non-test source roots (need to listen to changes in Sources though)
+        if (FileOwnerQuery.getOwner(f) != project) {
+            return;
+        }
+        ClassPath src = ClassPath.getClassPath(f, ClassPath.SOURCE);
+        if (src == null) {
+            return;
+        }
+        if (UnitTestForSourceQuery.findSources(src.findOwnerRoot(f)).length > 0) {
+            // These are tests, and we do not track dirty tests currently.
+            return;
+        }
+        String path = src.getResourceName(f);
+        assert path != null : "no path for " + f + " in " + src;
+        synchronized (dirty) {
+            dirty.add(path);
+        }
+    }
+
     private FileObject findBuildXml() {
         return project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
     }
@@ -356,6 +402,7 @@ class J2SEActionProvider implements ActionProvider {
             if (targetNames == null) {
                 throw new IllegalArgumentException(command);
             }
+            prepareDirtyList(p, false);
         } else if (command.equals (COMMAND_RUN_SINGLE) || command.equals (COMMAND_DEBUG_SINGLE)) {
             FileObject[] files = findTestSources(context, false);
             if (files != null) {
@@ -434,7 +481,15 @@ class J2SEActionProvider implements ActionProvider {
             String[] targets = targetsFromConfig.get(command);
             targetNames = (targets != null) ? targets : commands.get(command);
             if (targetNames == null) {
-                throw new IllegalArgumentException(command);
+                String buildTarget = "false".equalsIgnoreCase(project.evaluator().getProperty(J2SEProjectProperties.DO_JAR)) ? "compile" : "jar"; // NOI18N
+                if (command.equals(COMMAND_BUILD)) {
+                    targetNames = new String[] {buildTarget};
+                    prepareDirtyList(p, true);
+                } else if (command.equals(COMMAND_REBUILD)) {
+                    targetNames = new String[] {"clean", buildTarget}; // NOI18N
+                } else {
+                    throw new IllegalArgumentException(command);
+                }
             }
         }
         J2SEConfigurationProvider.Config c = context.lookup(J2SEConfigurationProvider.Config.class);
@@ -449,6 +504,32 @@ class J2SEActionProvider implements ActionProvider {
             p.setProperty(J2SEConfigurationProvider.PROP_CONFIG, config);
         }
         return targetNames;
+    }
+    private void prepareDirtyList(Properties p, boolean isExplicitBuildTarget) {
+        synchronized (dirty) {
+            for (DataObject d : DataObject.getRegistry().getModified()) {
+                // Treat files modified in memory as dirty as well.
+                // (If you make an edit and press F11, the save event happens *after* Ant is launched.)
+                modification(d.getPrimaryFile());
+            }
+            if ("false".equalsIgnoreCase(project.evaluator().getProperty(J2SEProjectProperties.DO_DEPEND)) && !(isExplicitBuildTarget && dirty.isEmpty())) { // NOI18N
+                // #104508: if not using <depend>, try to compile just those files known to have been touched since the last build.
+                // (In case there are none such, yet the user invoked build anyway, probably they know what they are doing.)
+                if (dirty.isEmpty()) {
+                    // includes="" apparently is ignored.
+                    dirty.add("nothing whatsoever"); // NOI18N
+                }
+                StringBuilder dirtyList = new StringBuilder();
+                for (String f : dirty) {
+                    if (dirtyList.length() > 0) {
+                        dirtyList.append(',');
+                    }
+                    dirtyList.append(f);
+                }
+                p.setProperty(J2SEProjectProperties.INCLUDES, dirtyList.toString());
+            }
+            dirty.clear();
+        }
     }
     
     // loads targets for specific commands from shared config property file

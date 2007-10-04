@@ -47,6 +47,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -67,12 +68,15 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.TestUtil;
+import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.modules.java.platform.JavaPlatformProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.filesystems.test.TestFileUtils;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.modules.SpecificationVersion;
@@ -710,7 +714,49 @@ public class J2SEActionProviderTest extends NbTestCase {
         enabled = actionProvider.isActionEnabled(ActionProvider.COMMAND_DEBUG_SINGLE, context);
         assertFalse("COMMAND_DEBUG_SINGLE must be disabled on mixed multiple test files", enabled);
     }
-    
+
+    public void testBuildWithDirtyList() throws Exception { // #104508
+        Properties p = new Properties();
+        assertEquals("[jar]", Arrays.toString(actionProvider.getTargetNames(ActionProvider.COMMAND_BUILD, Lookup.EMPTY, p)));
+        assertEquals("{}", p.toString());
+        TestFileUtils.touch(someSource1.getPrimaryFile(), null);
+        assertEquals("[jar]", Arrays.toString(actionProvider.getTargetNames(ActionProvider.COMMAND_BUILD, Lookup.EMPTY, p)));
+        assertEquals("{}", p.toString());
+        EditableProperties ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+        ep.put(J2SEProjectProperties.DO_JAR, "false");
+        helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
+        assertEquals("[compile]", Arrays.toString(actionProvider.getTargetNames(ActionProvider.COMMAND_BUILD, Lookup.EMPTY, p)));
+        assertEquals("{}", p.toString());
+        ep.put(J2SEProjectProperties.DO_DEPEND, "false");
+        helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
+        assertEquals("[compile]", Arrays.toString(actionProvider.getTargetNames(ActionProvider.COMMAND_BUILD, Lookup.EMPTY, p)));
+        assertEquals("{}", p.toString());
+        TestFileUtils.touch(someSource1.getPrimaryFile(), null);
+        assertEquals("[compile]", Arrays.toString(actionProvider.getTargetNames(ActionProvider.COMMAND_BUILD, Lookup.EMPTY, p)));
+        assertEquals("{includes=foo/Bar.java}", p.toString());
+        p.clear();
+        TestFileUtils.touch(someSource2.getPrimaryFile(), null);
+        TestFileUtils.touch(someSource1.getPrimaryFile(), null);
+        assertEquals("[compile]", Arrays.toString(actionProvider.getTargetNames(ActionProvider.COMMAND_BUILD, Lookup.EMPTY, p)));
+        assertEquals("{includes=foo/Bar.java,foo/Main.java}", p.toString());
+        p.clear();
+        assertEquals("[compile]", Arrays.toString(actionProvider.getTargetNames(ActionProvider.COMMAND_BUILD, Lookup.EMPTY, p)));
+        assertEquals("{}", p.toString());
+        TestFileUtils.touch(someTest1.getPrimaryFile(), null);
+        assertEquals("[compile]", Arrays.toString(actionProvider.getTargetNames(ActionProvider.COMMAND_BUILD, Lookup.EMPTY, p)));
+        assertEquals("{}", p.toString());
+        sources.createData("x.properties");
+        assertEquals("[compile]", Arrays.toString(actionProvider.getTargetNames(ActionProvider.COMMAND_BUILD, Lookup.EMPTY, p)));
+        assertEquals("{includes=x.properties}", p.toString());
+        p.clear();
+        someSource1.setModified(true);
+        assertEquals("[compile]", Arrays.toString(actionProvider.getTargetNames(ActionProvider.COMMAND_BUILD, Lookup.EMPTY, p)));
+        assertEquals("{includes=foo/Bar.java}", p.toString());
+        p.clear();
+        TestFileUtils.touch(someSource1.getPrimaryFile(), null);
+        assertEquals("[clean, compile]", Arrays.toString(actionProvider.getTargetNames(ActionProvider.COMMAND_REBUILD, Lookup.EMPTY, p)));
+        assertEquals("{}", p.toString());
+    }
     
     private static final class NonRecursiveFolderImpl implements NonRecursiveFolder {
         
@@ -802,14 +848,4 @@ public class J2SEActionProviderTest extends NbTestCase {
         os.close();
     }
     
-    private static Collection<? extends ProjectConfiguration> getConfigurations(ProjectConfigurationProvider<?> pcp) {
-        return pcp.getConfigurations();
-    }
-
-    @SuppressWarnings("unchecked")
-    private static void setActiveConfiguration(ProjectConfigurationProvider<?> pcp, ProjectConfiguration pc) throws IOException {
-        ProjectConfigurationProvider _pcp = pcp;
-        _pcp.setActiveConfiguration(pc);
-    }
-
 }

@@ -214,6 +214,10 @@ is divided into following sections:
                 <property name="javadoc.encoding.used" value="${{source.encoding}}"/>
                 <property name="includes" value="**"/>
                 <property name="excludes" value=""/>
+                <property name="do.depend" value="true"/>
+                <condition property="do.depend.true">
+                    <istrue value="${{do.depend}}"/>
+                </condition>
             </target>
             
             <target name="-post-init">
@@ -688,8 +692,10 @@ is divided into following sections:
                         </xsl:for-each>
                     </xsl:attribute>
                 </target>
-                <target name="web-service-client-compile" depends="web-service-client-generate">
+                <target name="-web-service-client-compile-depend" if="do.depend.true">
                     <j2seproject3:depend srcdir="${{build.generated.dir}}/wsclient" classpath="${{wscompile.classpath}}:${{javac.classpath}}" destdir="${{build.classes.dir}}"/>
+                </target>
+                <target name="web-service-client-compile" depends="web-service-client-generate,-web-service-client-compile-depend">
                     <j2seproject3:javac srcdir="${{build.generated.dir}}/wsclient" classpath="${{wscompile.classpath}}:${{javac.classpath}}" destdir="${{build.classes.dir}}"/>
                 </target>
             </xsl:if>
@@ -704,14 +710,17 @@ is divided into following sections:
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
             
-            <target name="-do-compile">
-                <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile,-pre-compile<xsl:if test="/p:project/p:configuration/jaxrpc:web-service-clients/jaxrpc:web-service-client">,web-service-client-compile</xsl:if></xsl:attribute>
-                <xsl:attribute name="if">have.sources</xsl:attribute>
+            <target name="-compile-depend" if="do.depend.true">
                 <j2seproject3:depend/>
+            </target>
+            <target name="-do-compile">
+                <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile,-pre-compile<xsl:if test="/p:project/p:configuration/jaxrpc:web-service-clients/jaxrpc:web-service-client">,web-service-client-compile</xsl:if>,-compile-depend</xsl:attribute>
+                <xsl:attribute name="if">have.sources</xsl:attribute>
                 <j2seproject3:javac/>
                 <copy todir="${{build.classes.dir}}">
                     <xsl:call-template name="createFilesets">
                         <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject3:data/j2seproject3:source-roots"/>
+                        <!-- XXX should perhaps use ${includes} and ${excludes} -->
                         <xsl:with-param name="excludes">${build.classes.excludes}</xsl:with-param>
                     </xsl:call-template>
                 </copy>
@@ -1022,9 +1031,7 @@ is divided into following sections:
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
             
-            <target name="-do-compile-test">
-                <xsl:attribute name="if">have.tests</xsl:attribute>
-                <xsl:attribute name="depends">init,compile,-pre-pre-compile-test,-pre-compile-test</xsl:attribute>
+            <target name="-compile-test-depend" if="do.depend.true">
                 <xsl:element name="j2seproject3:depend">
                     <xsl:attribute name="srcdir">
                         <xsl:call-template name="createPath">
@@ -1034,6 +1041,10 @@ is divided into following sections:
                     <xsl:attribute name="destdir">${build.test.classes.dir}</xsl:attribute>
                     <xsl:attribute name="classpath">${javac.test.classpath}</xsl:attribute>
                 </xsl:element>
+            </target>
+            <target name="-do-compile-test">
+                <xsl:attribute name="if">have.tests</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,-pre-pre-compile-test,-pre-compile-test,-compile-test-depend</xsl:attribute>
                 <xsl:element name="j2seproject3:javac">
                     <xsl:attribute name="srcdir">
                         <xsl:call-template name="createPath">

@@ -50,7 +50,6 @@ import java.nio.charset.UnsupportedCharsetException;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -100,6 +99,8 @@ public class J2SEProjectProperties {
     private static final Integer BOOLEAN_KIND_YN = new Integer( 1 );
     private static final Integer BOOLEAN_KIND_ED = new Integer( 2 );
     private Integer javacDebugBooleanKind;
+    private Integer doDependBooleanKind;
+    private Integer doJarBooleanKind;
     private Integer javadocPreviewBooleanKind;
     
     // Special properties of the project
@@ -136,6 +137,10 @@ public class J2SEProjectProperties {
     public static final String INCLUDES = "includes"; // NOI18N
     /** @since org.netbeans.modules.java.j2seproject/1 1.11 */
     public static final String EXCLUDES = "excludes"; // NOI18N
+    /** @since org.netbeans.modules.java.j2seproject/1 1.12 */
+    public static final String DO_DEPEND = "do.depend"; // NOI18N
+    /** @since org.netbeans.modules.java.j2seproject/1 1.12 */
+    public static final String DO_JAR = "do.jar"; // NOI18N
     
     public static final String JAVADOC_PRIVATE="javadoc.private"; // NOI18N
     public static final String JAVADOC_NO_TREE="javadoc.notree"; // NOI18N
@@ -203,6 +208,7 @@ public class J2SEProjectProperties {
     // CustomizerCompile
     ButtonModel JAVAC_DEPRECATION_MODEL; 
     ButtonModel JAVAC_DEBUG_MODEL;
+    ButtonModel DO_DEPEND_MODEL;
     ButtonModel NO_DEPENDENCIES_MODEL;
     Document JAVAC_COMPILER_ARG_MODEL;
     
@@ -212,6 +218,7 @@ public class J2SEProjectProperties {
     Document DIST_JAR_MODEL; 
     Document BUILD_CLASSES_EXCLUDES_MODEL; 
     ButtonModel JAR_COMPRESS_MODEL;
+    ButtonModel DO_JAR_MODEL;
                 
     // CustomizerJavadoc
     ButtonModel JAVADOC_PRIVATE_MODEL;
@@ -295,10 +302,10 @@ public class J2SEProjectProperties {
         // CustomizerLibraries
         EditableProperties projectProperties = updateHelper.getProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH );                
         
-        JAVAC_CLASSPATH_MODEL = ClassPathUiSupport.createListModel( cs.itemsIterator( (String)projectProperties.get( JAVAC_CLASSPATH )  ) );
-        JAVAC_TEST_CLASSPATH_MODEL = ClassPathUiSupport.createListModel( cs.itemsIterator( (String)projectProperties.get( JAVAC_TEST_CLASSPATH ) ) );
-        RUN_CLASSPATH_MODEL = ClassPathUiSupport.createListModel( cs.itemsIterator( (String)projectProperties.get( RUN_CLASSPATH ) ) );
-        RUN_TEST_CLASSPATH_MODEL = ClassPathUiSupport.createListModel( cs.itemsIterator( (String)projectProperties.get( RUN_TEST_CLASSPATH ) ) );
+        JAVAC_CLASSPATH_MODEL = ClassPathUiSupport.createListModel(cs.itemsIterator(projectProperties.get(JAVAC_CLASSPATH)));
+        JAVAC_TEST_CLASSPATH_MODEL = ClassPathUiSupport.createListModel(cs.itemsIterator(projectProperties.get(JAVAC_TEST_CLASSPATH)));
+        RUN_CLASSPATH_MODEL = ClassPathUiSupport.createListModel(cs.itemsIterator(projectProperties.get(RUN_CLASSPATH)));
+        RUN_TEST_CLASSPATH_MODEL = ClassPathUiSupport.createListModel(cs.itemsIterator(projectProperties.get(RUN_TEST_CLASSPATH)));
         PLATFORM_MODEL = PlatformUiSupport.createPlatformComboBoxModel (evaluator.getProperty(JAVA_PLATFORM));
         PLATFORM_LIST_RENDERER = PlatformUiSupport.createPlatformListCellRenderer();
         JAVAC_SOURCE_MODEL = PlatformUiSupport.createSourceLevelComboBoxModel (PLATFORM_MODEL, evaluator.getProperty(JAVAC_SOURCE));
@@ -312,7 +319,10 @@ public class J2SEProjectProperties {
         Integer[] kind = new Integer[1];
         JAVAC_DEBUG_MODEL = createToggleButtonModel( evaluator, JAVAC_DEBUG, kind);
         javacDebugBooleanKind = kind[0];
-        
+
+        DO_DEPEND_MODEL = createToggleButtonModel(evaluator, DO_DEPEND, kind);
+        doDependBooleanKind = kind[0];
+
         NO_DEPENDENCIES_MODEL = projectGroup.createInverseToggleButtonModel( evaluator, NO_DEPENDENCIES );
         JAVAC_COMPILER_ARG_MODEL = projectGroup.createStringDocument( evaluator, JAVAC_COMPILER_ARG );
         
@@ -320,6 +330,8 @@ public class J2SEProjectProperties {
         DIST_JAR_MODEL = projectGroup.createStringDocument( evaluator, DIST_JAR );
         BUILD_CLASSES_EXCLUDES_MODEL = projectGroup.createStringDocument( evaluator, BUILD_CLASSES_EXCLUDES );
         JAR_COMPRESS_MODEL = projectGroup.createToggleButtonModel( evaluator, JAR_COMPRESS );
+        DO_JAR_MODEL = createToggleButtonModel(evaluator, DO_JAR, kind);
+        doJarBooleanKind = kind[0];
         
         // CustomizerJavadoc
         JAVADOC_PRIVATE_MODEL = projectGroup.createToggleButtonModel( evaluator, JAVADOC_PRIVATE );
@@ -448,6 +460,8 @@ public class J2SEProjectProperties {
         //Should use the StoreGroup when the StoreGroup SPI will be extended to allow false default value in ToggleButtonModel
         //Save javac.debug
         privateProperties.setProperty(JAVAC_DEBUG, encodeBoolean (JAVAC_DEBUG_MODEL.isSelected(), javacDebugBooleanKind));
+        privateProperties.setProperty(DO_DEPEND, encodeBoolean(DO_DEPEND_MODEL.isSelected(), doDependBooleanKind));
+        privateProperties.setProperty(DO_JAR, encodeBoolean(DO_JAR_MODEL.isSelected(), doJarBooleanKind));
                 
         //Hotfix of the issue #70058
         //Should use the StoreGroup when the StoreGroup SPI will be extended to allow false default value in ToggleButtonModel
@@ -493,29 +507,28 @@ public class J2SEProjectProperties {
     private void resolveProjectDependencies() {
             
         // Create a set of old and new artifacts.
-        Set oldArtifacts = new HashSet();
+        Set<ClassPathSupport.Item> oldArtifacts = new HashSet<ClassPathSupport.Item>();
         EditableProperties projectProperties = updateHelper.getProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH );        
         oldArtifacts.addAll( cs.itemsList( projectProperties.get( JAVAC_CLASSPATH ) ) );
         oldArtifacts.addAll( cs.itemsList( projectProperties.get( JAVAC_TEST_CLASSPATH ) ) );
         oldArtifacts.addAll( cs.itemsList( projectProperties.get( RUN_CLASSPATH ) ) );
         oldArtifacts.addAll( cs.itemsList( projectProperties.get( RUN_TEST_CLASSPATH ) ) );
                    
-        Set newArtifacts = new HashSet();
+        Set<ClassPathSupport.Item> newArtifacts = new HashSet<ClassPathSupport.Item>();
         newArtifacts.addAll( ClassPathUiSupport.getList( JAVAC_CLASSPATH_MODEL ) );
         newArtifacts.addAll( ClassPathUiSupport.getList( JAVAC_TEST_CLASSPATH_MODEL ) );
         newArtifacts.addAll( ClassPathUiSupport.getList( RUN_CLASSPATH_MODEL ) );
         newArtifacts.addAll( ClassPathUiSupport.getList( RUN_TEST_CLASSPATH_MODEL ) );
                 
         // Create set of removed artifacts and remove them
-        Set removed = new HashSet( oldArtifacts );
+        Set<ClassPathSupport.Item> removed = new HashSet<ClassPathSupport.Item>(oldArtifacts);
         removed.removeAll( newArtifacts );
-        Set added = new HashSet(newArtifacts);
+        Set<ClassPathSupport.Item> added = new HashSet<ClassPathSupport.Item>(newArtifacts);
         added.removeAll(oldArtifacts);
         
         // 1. first remove all project references. The method will modify
         // project property files, so it must be done separately
-        for( Iterator it = removed.iterator(); it.hasNext(); ) {
-            ClassPathSupport.Item item = (ClassPathSupport.Item)it.next();
+        for (ClassPathSupport.Item item : removed) {
             if ( item.getType() == ClassPathSupport.Item.TYPE_ARTIFACT ||
                     item.getType() == ClassPathSupport.Item.TYPE_JAR ) {
                 refHelper.destroyReference(item.getReference());
@@ -526,8 +539,7 @@ public class J2SEProjectProperties {
         EditableProperties ep = updateHelper.getProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH );
         boolean changed = false;
         
-        for( Iterator it = removed.iterator(); it.hasNext(); ) {
-            ClassPathSupport.Item item = (ClassPathSupport.Item)it.next();
+        for (ClassPathSupport.Item item : removed) {
             if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY) {
                 // remove helper property pointing to library jar if there is any
                 String prop = item.getReference();
@@ -536,8 +548,7 @@ public class J2SEProjectProperties {
                 changed = true;
             }
         }
-        for( Iterator it = added.iterator(); it.hasNext(); ) {
-            ClassPathSupport.Item item = (ClassPathSupport.Item)it.next();
+        for (ClassPathSupport.Item item : added) {
             if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY && !item.isBroken()) {
                 // add property to project.properties pointing to relativized 
                 // library jar(s) if possible                
