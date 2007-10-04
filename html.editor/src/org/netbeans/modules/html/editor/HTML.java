@@ -42,11 +42,11 @@
 package org.netbeans.modules.html.editor;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
+import javax.swing.text.AbstractDocument;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.lexer.Token;
@@ -68,38 +68,6 @@ public class HTML {
     private static final String HTML401 = "org/netbeans/modules/html/editor/resources/HTML401.xml";
     
     
-    
-    //workaround for #117351 Invalid livecycle of Context object
-    //must be removed once the issue is really fixed.
-    private static TokenSequence findTokenSequence(int offset, Context ctx) {
-        TokenSequence ts = null;
-        try {
-            ts = ctx.getTokenSequence();
-        } catch (ConcurrentModificationException cme) {
-            TokenHierarchy th = TokenHierarchy.get(ctx.getDocument());
-            ts = th.tokenSequence();
-        }
-        return findTokenSequence(offset, ts);
-    }
-    
-    private static TokenSequence findTokenSequence(int offset, TokenSequence ts) {
-        if("text/html".equals(ts.language().mimeType())) {
-            return ts;
-        } else {
-            TokenSequence em = ts.embedded();
-            if(em == null) {
-                return null; //no embedded token sequence
-            } else {
-                em.move(offset);
-                if(em.moveNext() || em.movePrevious()) {
-                    return findTokenSequence(offset, em);
-                } else {
-                    return null; //no token
-                }
-            }
-        }
-    }
-    
     private static int dt = 0; 
     private static int da = 0;
     
@@ -109,17 +77,23 @@ public class HTML {
         }
         SyntaxContext scontext = (SyntaxContext)context;
         int item_offset = scontext.getASTPath().getLeaf().getOffset();
-        TokenSequence ts = findTokenSequence(item_offset, context);
-        if(ts == null) return false;
-        Token t = ts.token ();
-        if (t == null) return false;
-        if (t.id() != HTMLTokenId.ARGUMENT) {
-            return false;
+        AbstractDocument document = (AbstractDocument) context.getDocument ();
+        document.readLock ();
+        try {
+            TokenSequence tokenSequence = getTokenSequence (context);
+            if(tokenSequence == null) return false;
+            Token t = tokenSequence.token ();
+            if (t == null) return false;
+            if (t.id() != HTMLTokenId.ARGUMENT) {
+                return false;
+            }
+            String attribName = t.text ().toString ().toLowerCase ();
+            String tagName = tagName (tokenSequence);
+            if (tagName == null) return false;
+            return "true".equals (getLibrary ().getProperty (tagName, attribName, "deprecated"));
+        } finally {
+            document.readUnlock ();
         }
-        String attribName = t.text ().toString ().toLowerCase ();
-        String tagName = tagName (context.getTokenSequence ());
-        if (tagName == null) return false;
-        return "true".equals (getLibrary ().getProperty (tagName, attribName, "deprecated"));
     }
 
     public static boolean isDeprecatedTag (Context context) {
@@ -128,25 +102,37 @@ public class HTML {
         }
         SyntaxContext scontext = (SyntaxContext)context;
         int item_offset = scontext.getASTPath().getLeaf().getOffset();
-        TokenSequence ts = findTokenSequence(item_offset, context);
-        if(ts == null) return false;
-        Token t = ts.token ();
-        if (t == null) return false;
-        if (t.id() != HTMLTokenId.TAG_OPEN && t.id() != HTMLTokenId.TAG_CLOSE) {
-            return false;
+        AbstractDocument document = (AbstractDocument) context.getDocument ();
+        document.readLock ();
+        try {
+            TokenSequence tokenSequence = getTokenSequence (context);
+            if(tokenSequence == null) return false;
+            Token t = tokenSequence.token ();
+            if (t == null) return false;
+            if (t.id() != HTMLTokenId.TAG_OPEN && t.id() != HTMLTokenId.TAG_CLOSE) {
+                return false;
+            }
+            String tagName = t.text ().toString ().toLowerCase ();
+            return "true".equals (getLibrary ().getProperty ("TAG", tagName, "deprecated"));
+        } finally {
+            document.readUnlock ();
         }
-        String tagName = t.text ().toString ().toLowerCase ();
-        return "true".equals (getLibrary ().getProperty ("TAG", tagName, "deprecated"));
     }
 
     public static boolean isEndTagRequired (Context context) {
-        TokenSequence ts = context.getTokenSequence ();
-        if(!ts.language().mimeType().equals("text/html")) {
-            return false;
+        AbstractDocument document = (AbstractDocument) context.getDocument ();
+        document.readLock ();
+        try {
+            TokenSequence tokenSequence = getTokenSequence (context);
+            if(!tokenSequence.language().mimeType().equals("text/html")) {
+                return false;
+            }
+            Token t = tokenSequence.token ();
+            if (t == null) return false;
+            return isEndTagRequired (t.id ().name ().toLowerCase ());
+        } finally {
+            document.readUnlock ();
         }
-        Token t = ts.token ();
-        if (t == null) return false;
-        return isEndTagRequired (t.id ().name ().toLowerCase ());
     }
 
     static boolean isEndTagRequired (String tagName) {
@@ -301,6 +287,18 @@ public class HTML {
             }
 //            l.add (clone (node));
             l.add(node);
+        }
+    }
+    
+    private static TokenSequence getTokenSequence (Context context) {
+        TokenHierarchy tokenHierarchy = TokenHierarchy.get (context.getDocument ());
+        TokenSequence ts = tokenHierarchy.tokenSequence ();
+        while (true) {
+            ts.move (context.getOffset ());
+            if (!ts.moveNext ()) return ts;
+            TokenSequence ts2 = ts.embedded ();
+            if (ts2 == null) return ts;
+            ts = ts2;
         }
     }
 }
