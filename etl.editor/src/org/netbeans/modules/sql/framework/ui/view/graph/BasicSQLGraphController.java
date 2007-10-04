@@ -164,10 +164,11 @@ public class BasicSQLGraphController implements IGraphController {
      *
      * @param e DropTargetDropEvent
      */
-    public void handleDrop(java.awt.dnd.DropTargetDropEvent e) {
+    public void handleDrop(java.awt.dnd.DropTargetDropEvent e) {        
         if (!isEditAllowed()) {
             return;
         }
+        
         boolean dropStatus = false;
         Point loc = e.getLocation();
         if (e.isDataFlavorSupported(mDataFlavorArray[0])) {
@@ -177,15 +178,14 @@ public class BasicSQLGraphController implements IGraphController {
                 Object o = t.getTransferData(mDataFlavorArray[0]);
                 if (o instanceof DatabaseMetaDataTransfer.Table) {
                     DatabaseConnection dbConn = ((DatabaseMetaDataTransfer.Table)o).getDatabaseConnection();
-                    conn = ((DatabaseMetaDataTransfer.Table)o).getDatabaseConnection().getJDBCConnection();
+                    conn = ((DatabaseMetaDataTransfer.Table)o).getDatabaseConnection().getJDBCConnection();                    
                     String tableName = ((DatabaseMetaDataTransfer.Table)o).getTableName();
                     String schema = ((DatabaseMetaDataTransfer.Table)o).getDatabaseConnection().getSchema();
                     String url = ((DatabaseMetaDataTransfer.Table)o).getDatabaseConnection().getDatabaseURL();
                     String catalog = null;
                     try {
                         catalog = conn.getCatalog();
-                    } catch (Exception ex) {
-                        //ignore
+                    } catch (Exception ex) {                      
                     }
                     String dlgTitle = null;
                     try {
@@ -210,24 +210,22 @@ public class BasicSQLGraphController implements IGraphController {
                         boolean isSource = false;
                         if (SQLConstants.SOURCE_TABLE == tableTypeSelected) {
                             isSource = true;
+                        }                        
+                        String[][] tableList = null;                        
+                        try {                           
+                            dbMeta.connectDB(conn);                            
+                            schema = (schema == null)? "" : schema;                            
+                            catalog = (catalog == null)? "" : catalog;                            
+                            tableList = dbMeta.getTablesOnly(catalog, schema, "", false);                              
+                        } catch (Exception ex) { 
                         }
-                        String[][] tableList = null;
-                        try {
-                            dbMeta.connectDB(conn);
-                            schema = (schema == null)? "" : schema;
-                            catalog = (catalog == null)? "" : catalog;
-                            tableList = dbMeta.getTablesOnly(catalog, schema, "", false);
-                        } catch (Exception ex) {
-                            //ignore
-                        }
-                        Object dbTable = createTable(tableList, tableName, isSource);
+                        Object dbTable = createTable(tableList, tableName, isSource);                        
                         List tbls = null;
                         if(isSource) {
                             tbls = sqlModel.getSQLDefinition().getSourceTables();
                         } else {
                             tbls = sqlModel.getSQLDefinition().getTargetTables();
-                        }
-                        
+                        }  
                         ((SQLDBTable)dbTable).setAliasUsed(true);
                         ((SQLDBTable)dbTable).setAliasName(generateTableAliasName(isSource, tbls));
                         DBConnectionDefinition def = null;
@@ -251,7 +249,8 @@ public class BasicSQLGraphController implements IGraphController {
                         dbTable = addTableColumns(dbMeta, dbTable, isSource);
                         ((SQLDBTable)dbTable).setEditable(true);
                         ((SQLDBTable)dbTable).setSelected(true);
-                        model.addTable((SQLDBTable)dbTable);
+                        model.addTable((SQLDBTable)dbTable);                       
+                       
                         if(isSource) {
                             sTable = (SQLDBTable) collabModel.addSourceTable((SQLDBTable)dbTable, loc);
                         } else {
@@ -345,14 +344,15 @@ public class BasicSQLGraphController implements IGraphController {
                 Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Caught Exception while handling DnD.", ex);
                 e.rejectDrop();
             } finally {
-                e.dropComplete(dropStatus);
-                try {
+                e.dropComplete(dropStatus); 
+                conn = null;
+              /* try {
                     if(conn != null) {
-                        conn.close();
+                        conn.close();                       
                     }
                 } catch (SQLException ex) {
                     conn = null;
-                }
+                }*/
             }
         } else {
             e.rejectDrop();

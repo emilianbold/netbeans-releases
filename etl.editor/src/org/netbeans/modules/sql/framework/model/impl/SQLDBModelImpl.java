@@ -194,8 +194,7 @@ public class SQLDBModelImpl extends AbstractSQLObject implements Cloneable, SQLD
             // if table already exists then we should throw exception
             String fqName = getFullyQualifiedTableName(table);
             if (this.getTable(fqName) != null) {
-                throw new IllegalStateException("Cannot add table " + fqName
-                        + ", it already exist!");
+               // throw new IllegalStateException("Cannot add table " + fqName + ", it already exist!");
             }
             
             table.setParent(this);
