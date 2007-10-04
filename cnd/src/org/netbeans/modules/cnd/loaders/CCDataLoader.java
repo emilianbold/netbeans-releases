@@ -50,6 +50,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.SharedClassObject;
 
 import org.netbeans.modules.cnd.MIMENames;
+import org.openide.util.io.SafeException;
 
 /**
  *
@@ -80,6 +81,7 @@ public class CCDataLoader extends CndAbstractDataLoader {
     }
 
     /** set the default display name */
+    @Override
     protected String defaultDisplayName() {
 	return NbBundle.getMessage(CndAbstractDataLoader.class, "PROP_CCDataLoader_Name"); // NOI18N
     }
@@ -91,5 +93,35 @@ public class CCDataLoader extends CndAbstractDataLoader {
     protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {
         return new CCDataObject(primaryFile, this);
     }
-    
+
+    public String getDefaultExtension() {
+        String l = (String)getProperty (PROP_DEFAULT_EXTENSIONS);
+        if (l == null) {
+            l = cppExtensions[0];
+            putProperty (PROP_DEFAULT_EXTENSIONS, l, false);
+        }
+        return l;
+    }
+
+    public void setDefaultExtension(String defaultExtension) {
+        String oldExtension = getDefaultExtension();
+        if (!defaultExtension.equals(oldExtension) && getExtensions().isRegistered("a."+defaultExtension)){ // NOI18N
+            TemplateExtensionUtils.renameCppExtension(defaultExtension);
+            putProperty (PROP_DEFAULT_EXTENSIONS, defaultExtension, true);
+        }
+    }
+
+    @Override
+    public void writeExternal (java.io.ObjectOutput oo) throws IOException {
+        super.writeExternal (oo);
+        oo.writeObject (getProperty (PROP_DEFAULT_EXTENSIONS));
+    }
+
+    @Override
+    public void readExternal (java.io.ObjectInput oi)  throws IOException, ClassNotFoundException {
+        super.readExternal (oi);
+        setDefaultExtension((String)oi.readObject ());
+    }
+
+    public static final String PROP_DEFAULT_EXTENSIONS = "defaultExtension"; // NOI18N
 }

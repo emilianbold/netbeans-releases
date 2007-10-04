@@ -114,7 +114,7 @@ public class CCFSrcFileIterator implements TemplateWizard.Iterator {
 	return Collections.singleton(result);
     }
 
-    private transient Set listeners = new HashSet(1); // Set<ChangeListener>
+    private /*transient*/ Set listeners = new HashSet(1); // Set<ChangeListener>
     public final void addChangeListener(ChangeListener l) {
         synchronized(listeners) {
             listeners.add(l);

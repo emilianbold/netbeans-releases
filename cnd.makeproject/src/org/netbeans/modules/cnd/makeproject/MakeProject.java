@@ -59,6 +59,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.loaders.TemplateExtensionUtils;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifactProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSetConfiguration;
@@ -139,6 +140,7 @@ public final class MakeProject implements Project, AntProjectListener {
         return helper.getProjectDirectory();
     }
 
+    @Override
     public String toString() {
         return "MakeProject[" + getProjectDirectory() + "]"; // NOI18N
     }
@@ -210,10 +212,17 @@ public final class MakeProject implements Project, AntProjectListener {
 
         public String[] getPrivilegedTemplates() {
             if (CppSettings.getDefault().isFortranEnabled()) {
-                return PRIVILEGED_NAMES_FORTRAN;
+                return checkNames(PRIVILEGED_NAMES_FORTRAN);
             } else {
-                return PRIVILEGED_NAMES;
+                return checkNames(PRIVILEGED_NAMES);
             }
+        }
+
+        private String[] checkNames(String[] templates){
+            for(int i = 0; i < templates.length; i++){
+                templates[i] = TemplateExtensionUtils.checkTemplate(templates[i]);
+            }
+            return templates;
         }
     }
 
@@ -539,4 +548,4 @@ public final class MakeProject implements Project, AntProjectListener {
             return rootFolder.getAllItemsAsDataObjectSet(false, "text/").iterator(); // NOI18N
         }
     }
-}
+    }

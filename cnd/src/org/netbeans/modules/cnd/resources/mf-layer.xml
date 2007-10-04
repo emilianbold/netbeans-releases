@@ -457,6 +457,7 @@ made subject to such option by the copyright holder.
             
             <file name="file.c" url="templates/c/empty-c.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/CSrcIcon.gif"/>
                 <attr name="position" intvalue="100"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/empty-c.html"/>
@@ -466,6 +467,7 @@ made subject to such option by the copyright holder.
             
             <file name="main.c" url="templates/c/simple-c.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/CSrcIcon.gif"/>
                 <attr name="position" intvalue="200"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/simple-c.html"/>
@@ -475,6 +477,7 @@ made subject to such option by the copyright holder.
             
             <file name="file.h" url="templates/c/simple-h.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/HDataIcon.gif"/>
                 <attr name="position" intvalue="300"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/simple-c-h.html"/>
@@ -490,6 +493,7 @@ made subject to such option by the copyright holder.
             
             <file name="file.cc" url="templates/cpp/empty-cc.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/CCSrcIcon.gif"/>
                 <attr name="position" intvalue="100"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/empty-cc.html"/>
@@ -499,6 +503,7 @@ made subject to such option by the copyright holder.
             
             <file name="main.cc" url="templates/cpp/simple-cc.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/CCSrcIcon.gif"/>
                 <attr name="position" intvalue="200"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/simple-cc.html"/>
@@ -508,6 +513,7 @@ made subject to such option by the copyright holder.
             
             <file name="file.h" url="templates/cpp/header-h.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/HDataIcon.gif"/>
                 <attr name="position" intvalue="300"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/simple-cc-h.html"/>
