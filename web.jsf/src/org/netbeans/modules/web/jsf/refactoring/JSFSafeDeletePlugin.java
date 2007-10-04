@@ -43,6 +43,7 @@ package org.netbeans.modules.web.jsf.refactoring;
 
 import com.sun.source.tree.Tree.Kind;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -103,33 +104,39 @@ public class JSFSafeDeletePlugin implements RefactoringPlugin{
     public Problem prepare(RefactoringElementsBag refactoringElements) {
         if (semafor.get() == null) {
             semafor.set(new Object());
-            TreePathHandle treePathHandle = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
-            if (treePathHandle != null && treePathHandle.getKind() == Kind.CLASS){
-                WebModule webModule = WebModule.getWebModule(treePathHandle.getFileObject());
-                if (webModule != null){
-                    CompilationInfo info = refactoring.getContext().lookup(CompilationInfo.class);
-                    if (refactoring.getContext().lookup(CompilationInfo.class) == null){
-                        final ClasspathInfo cpInfo = refactoring.getContext().lookup(ClasspathInfo.class);
-                        JavaSource source = JavaSource.create(cpInfo, new FileObject[]{treePathHandle.getFileObject()});
-                        try{
-                            source.runUserActionTask(new Task<CompilationController>() {
-                                
-                                public void run(CompilationController co) throws Exception {
-                                    co.toPhase(JavaSource.Phase.RESOLVED);
-                                    refactoring.getContext().add(co);
+            Collection<? extends TreePathHandle> treePathHandles = refactoring.getRefactoringSource().lookupAll(TreePathHandle.class);
+            WebModule webModule;
+            
+            if (treePathHandles != null) {
+                for (TreePathHandle treePathHandle : treePathHandles) {
+                    if (treePathHandle.getKind() == Kind.CLASS) {
+                        webModule = WebModule.getWebModule(treePathHandle.getFileObject());
+                        if (webModule != null) {
+                            CompilationInfo info = refactoring.getContext().lookup(CompilationInfo.class);
+                            if (refactoring.getContext().lookup(CompilationInfo.class) == null) {
+                                final ClasspathInfo cpInfo = refactoring.getContext().lookup(ClasspathInfo.class);
+                                JavaSource source = JavaSource.create(cpInfo, new FileObject[]{treePathHandle.getFileObject()});
+                                try{
+                                    source.runUserActionTask(new Task<CompilationController>() {
+
+                                        public void run(CompilationController compilationController) throws Exception {
+                                            compilationController.toPhase(JavaSource.Phase.RESOLVED);
+                                            refactoring.getContext().add(compilationController);
+                                        }
+                                    }, false);
+                                } catch (IOException exception) {
+                                    LOGGER.log(Level.WARNING, "Exception in JSFSafeDeletePlugin", exception); //NOI18NN
                                 }
-                            }, false);
-                        } catch (IOException ex) {
-                            LOGGER.log(Level.WARNING, "Exception in JSFSafeDeletePlugin", ex); //NOI18NN
+                                info = refactoring.getContext().lookup(CompilationInfo.class);
+                            }
+                            Element resElement = treePathHandle.resolveElement(info);
+                            TypeElement type = (TypeElement) resElement;
+                            String fqcn = type.getQualifiedName().toString();
+                            List <Occurrences.OccurrenceItem> items = Occurrences.getAllOccurrences(webModule, fqcn, null);
+                            for (Occurrences.OccurrenceItem item : items) {
+                                refactoringElements.add(refactoring, new JSFSafeDeleteClassElement(item));
+                            }
                         }
-                        info = refactoring.getContext().lookup(CompilationInfo.class);
-                    }
-                    Element resElement = treePathHandle.resolveElement(info);
-                    TypeElement type = (TypeElement) resElement;
-                    String fqcn = type.getQualifiedName().toString();
-                    List <Occurrences.OccurrenceItem> items = Occurrences.getAllOccurrences(webModule, fqcn, null);
-                    for (Occurrences.OccurrenceItem item : items) {
-                        refactoringElements.add(refactoring, new JSFSafeDeleteClassElement(item));
                     }
                 }
             }
