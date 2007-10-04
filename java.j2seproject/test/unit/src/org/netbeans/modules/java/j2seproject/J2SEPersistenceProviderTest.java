@@ -64,6 +64,7 @@ import org.netbeans.modules.j2ee.persistence.spi.support.PersistenceScopesHelper
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.Mutex;
 
 /**
  *
@@ -98,18 +99,23 @@ public class J2SEPersistenceProviderTest extends NbTestCase {
         Logger.getLogger(PersistenceScopesHelper.class.getName()).setLevel(Level.FINEST);
         // setup the project
         FileObject scratch = TestUtil.makeScratchDir(this);
-        FileObject projdir = scratch.createFolder("proj");
-        J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.5"));
-        J2SEProjectGenerator.createProject(FileUtil.toFile(projdir), "proj", "foo.Main", "manifest.mf");
-        J2SEProjectGenerator.setDefaultSourceLevel(null);
+        final FileObject projdir = scratch.createFolder("proj");
+        // issue 90762: prevent AntProjectHelper from firing changes in a RP thread, which interferes with tests
+        // see APH.fireExternalChange
+        ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+            public Void run() throws Exception{
+                J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.5"));
+                J2SEProjectGenerator.createProject(FileUtil.toFile(projdir), "proj", "foo.Main", "manifest.mf");
+                J2SEProjectGenerator.setDefaultSourceLevel(null);
+                return null;
+            }
+        });
         project = ProjectManager.getDefault().findProject(projdir);
         Sources src = (Sources)project.getLookup().lookup(Sources.class);
         SourceGroup[] groups = src.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         root = groups[0].getRootFolder();
         provider = (J2SEPersistenceProvider)project.getLookup().lookup(J2SEPersistenceProvider.class);
         persistenceLocation = new File(FileUtil.toFile(project.getProjectDirectory().getFileObject("src")), "META-INF");
-        System.out.println(Arrays.asList(ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)));
-        System.out.println(persistenceLocation);
     }
 
     public void testPersistenceLocation() throws Exception {
