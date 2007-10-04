@@ -115,11 +115,41 @@ public class ImportedProjectChildren extends Children.Keys //Children.Array
             final boolean refresh,
             final ITreeElement node)
     {
+        // keep the logic for the moment to filter out duplicate elements, as UMLImportsUiSupport fires
+        // multiple events for one import, 
+        // For some reason I am getting the event more than one time.  So, I have
+        // to make sure that the node is only added to the collection once.
         Node projectNode = getOwningProject(project);
         
+        boolean foundOne = false;
         Children children = projectNode.getChildren();
-        Node[] nodes = { (Node)node };
-        children.add(nodes);
+        for(Node child : children.getNodes())
+        {
+            if(node.equals(child) == true)
+            {
+                foundOne = true;
+                /*
+                children.remove(new Node[] {child});
+                children.add(new Node[] {(Node)node});
+                if (refresh)
+                    refreshKeys();
+                 */
+                break;
+            }
+        }
+        
+        if(foundOne == false)
+        {
+            Node[] nodes = { (Node)node };
+            if(children != null)
+            {
+                children.add(nodes);
+                if(refresh == true)
+                {
+                    refreshKeys();
+                }
+            }
+        }     
     }
     
     public void removeImportElement(IProject project, IElement element)

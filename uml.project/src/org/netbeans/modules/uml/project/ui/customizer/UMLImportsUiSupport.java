@@ -337,7 +337,7 @@ public class UMLImportsUiSupport
             {
                 UMLProject umlProject = (UMLProject)foundProject;   
                 UMLProject umlRefProject = (UMLProject)referencingProject;
-                fireElementImported(element.getProject(), element, importedElement);
+                fireElementImported(umlProject.getLookup().lookup(UMLProjectHelper.class).getProject(), element, importedElement);
 
                 // Check if a reference to the refrence project already
                 // exist.  If a reference already exist do not create a new
@@ -383,7 +383,7 @@ public class UMLImportsUiSupport
             {
                 UMLProject umlProject = (UMLProject)foundProject;   
                 UMLProject umlRefProject = (UMLProject)referencingProject;
-                firePackageImported(element.getProject(), element, importedElement);
+                firePackageImported(umlProject.getLookup().lookup(UMLProjectHelper.class).getProject(), element, importedElement);
 
                 // Check if a reference to the refrence project already
                 // exist.  If a reference already exist do not create a new
