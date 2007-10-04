@@ -22,6 +22,7 @@ import java.awt.Component;
 import java.awt.Component;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
@@ -208,6 +209,7 @@ public class NewFileNameLocationStepOperator extends NewFileWizardOperator {
      * @param packageName name of package to be selected
      */
     public void selectPackage(String packageName) {
+        new EventTool().waitNoEvent(500);
         cboPackage().selectItem(packageName);
     }
     
@@ -215,6 +217,7 @@ public class NewFileNameLocationStepOperator extends NewFileWizardOperator {
      * @param packageName name of package
      */
     public void setPackage(String packageName) {
+        new EventTool().waitNoEvent(500);
         cboPackage().clearText();
         cboPackage().typeText(packageName);
     }
