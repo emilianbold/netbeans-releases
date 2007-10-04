@@ -193,9 +193,21 @@ public class FormatContext {
             int yp = adjustY(y, parent, box.getParent());
 
             if (((yp + height) > info.y) && (yp < (info.y + box.getHeight()))) {
+                // XXX #117789 One needs to take into account also the margins, borders, paddings.
+                CssBox closest = findCommonAncestor(cssBox, box);
+                int cssBoxAccumulatedLefts = 0;
+                int floatBoxAccumulatedHorizontals = 0;
+                if (closest != null) {
+                    cssBoxAccumulatedLefts = computeAccumulatedLefts(cssBox, closest);
+                    floatBoxAccumulatedHorizontals = computeAccumulatedHorizontals(box, closest);
+                }
+                
                 int boxRightEdge = info.x + box.getWidth();
 
-                if (boxRightEdge > leftEdge) {
+//                if (boxRightEdge > leftEdge) {
+//                    leftEdge = boxRightEdge;
+//                }
+                if ((boxRightEdge + floatBoxAccumulatedHorizontals) > (leftEdge + cssBoxAccumulatedLefts)) {
                     leftEdge = boxRightEdge;
                 }
             }
@@ -203,6 +215,68 @@ public class FormatContext {
 
         // XXX should I add these in before the comparisons?
         return leftEdge + parent.leftMargin + parent.leftBorderWidth + parent.leftPadding;
+    }
+    
+    /** Get accumulated left margins, border widths, padding 
+     * up to the parentBox (excluding). */
+    private static int computeAccumulatedLefts(CssBox cssBox, CssBox parentBox) {
+        int accumulatedLefts = 0;
+        while (cssBox != null) {
+            if (cssBox == parentBox) {
+                break;
+            }
+            int leftM = cssBox.leftMargin;
+            if (leftM != CssBox.UNINITIALIZED && leftM != CssBox.AUTO) {
+                accumulatedLefts += leftM;
+            }
+            int leftB = cssBox.leftBorderWidth;
+            if (leftB != CssBox.UNINITIALIZED && leftB != CssBox.AUTO) {
+                accumulatedLefts += leftB;
+            }
+            int leftP = cssBox.leftPadding;
+            if (leftP != CssBox.UNINITIALIZED && leftP != CssBox.AUTO) {
+                accumulatedLefts += leftP;
+            }
+            cssBox = cssBox.getParent();
+        }
+        return accumulatedLefts;
+    }
+
+    /** Gets accumulated horizontal (left and right) margins, border widths, padding 
+     * up to the parentBox (excluding). */
+    private static int computeAccumulatedHorizontals(CssBox cssBox, CssBox parentBox) {
+        int accumulatedHorizontals = 0;
+        while (cssBox != null) {
+            if (cssBox == parentBox) {
+                break;
+            }
+            int leftM = cssBox.leftMargin;
+            if (leftM != CssBox.UNINITIALIZED && leftM != CssBox.AUTO) {
+                accumulatedHorizontals += leftM;
+            }
+            int rightM = cssBox.rightMargin;
+            if (rightM != CssBox.UNINITIALIZED && rightM != CssBox.AUTO) {
+                accumulatedHorizontals += rightM;
+            }
+            int leftB = cssBox.leftBorderWidth;
+            if (leftB != CssBox.UNINITIALIZED && leftB != CssBox.AUTO) {
+                accumulatedHorizontals += leftB;
+            }
+            int rightB = cssBox.rightBorderWidth;
+            if (rightB != CssBox.UNINITIALIZED && rightB != CssBox.AUTO) {
+                accumulatedHorizontals += rightB;
+            }
+            int leftP = cssBox.leftPadding;
+            if (leftP != CssBox.UNINITIALIZED && leftP != CssBox.AUTO) {
+                accumulatedHorizontals += leftP;
+            }
+            int rightP = cssBox.rightPadding;
+            if (rightP != CssBox.UNINITIALIZED && rightP != CssBox.AUTO) {
+                accumulatedHorizontals += rightP;
+            }
+            cssBox = cssBox.getParent();
+        }
+        return accumulatedHorizontals;
     }
 
     /**
@@ -303,9 +377,18 @@ public class FormatContext {
             int yp = adjustY(y, parent, box.getParent());
 
             if (((yp + height) > info.y) && (yp < (info.y + box.getHeight()))) {
+                // XXX #117789 One needs to take into account also the margins, borders, paddings.
+                CssBox closest = findCommonAncestor(cssBox, box);
+                int cssBoxAccumulatedHorizontals = 0;
+                int floatBoxAccumulatedLefts = 0;
+                if (closest != null) {
+                    cssBoxAccumulatedHorizontals = computeAccumulatedHorizontals(cssBox, closest);
+                    floatBoxAccumulatedLefts = computeAccumulatedLefts(box, closest);
+                }
+                
                 int boxLeftEdge = info.x;
 
-                if (boxLeftEdge < rightEdge) {
+                if ((boxLeftEdge + floatBoxAccumulatedLefts) < (rightEdge + cssBoxAccumulatedHorizontals)) {
                     rightEdge = boxLeftEdge;
                 }
             }
