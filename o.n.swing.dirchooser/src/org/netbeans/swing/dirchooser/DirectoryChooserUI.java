@@ -683,7 +683,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         tree.setCellRenderer(new DirectoryTreeRenderer());
         JScrollPane scrollBar = new JScrollPane(tree);
         scrollBar.setViewportView(tree);
-        //tree.setToolTipText(getBundle().getString(saveButtonText));
+        tree.setInvokesStopCellEditing(true);
         
         return scrollBar;
     }
