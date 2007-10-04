@@ -42,15 +42,18 @@
 package org.netbeans.modules.j2ee.jpa.refactoring;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.modules.j2ee.jpa.refactoring.moveclass.PersistenceXmlMoveClass;
 import org.netbeans.modules.j2ee.jpa.refactoring.rename.EntityRename;
 import org.netbeans.modules.j2ee.jpa.refactoring.rename.PersistenceXmlPackageRename;
 import org.netbeans.modules.j2ee.jpa.refactoring.rename.PersistenceXmlRename;
 import org.netbeans.modules.j2ee.jpa.refactoring.safedelete.PersistenceXmlSafeDelete;
 import org.netbeans.modules.j2ee.jpa.refactoring.whereused.PersistenceXmlWhereUsed;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
+import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.api.SafeDeleteRefactoring;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
@@ -92,11 +95,19 @@ public class JPARefactoringFactory implements RefactoringPluginFactory{
             }
             return new JPARefactoringPlugin(refactorings);
         }
+        
+        if (refactoring instanceof MoveRefactoring) {
+            MoveRefactoring move = (MoveRefactoring) refactoring;
+            refactorings.add(new PersistenceXmlMoveClass(move));
+            return new JPARefactoringPlugin(refactorings);
+        }
+
         if (refactoring instanceof SafeDeleteRefactoring) {
             SafeDeleteRefactoring safeDeleteRefactoring = (SafeDeleteRefactoring) refactoring;
             refactorings.add(new PersistenceXmlSafeDelete(safeDeleteRefactoring));
             return new JPARefactoringPlugin(refactorings);
         }
+        
         if (refactoring instanceof WhereUsedQuery) {
             WhereUsedQuery whereUsedQuery = (WhereUsedQuery) refactoring;
             refactorings.add(new PersistenceXmlWhereUsed(whereUsedQuery));

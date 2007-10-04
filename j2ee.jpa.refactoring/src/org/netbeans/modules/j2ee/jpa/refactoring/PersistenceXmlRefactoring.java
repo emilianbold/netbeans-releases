@@ -44,13 +44,13 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.modules.j2ee.jpa.refactoring.JPARefactoring;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
@@ -85,118 +85,107 @@ import org.openide.util.lookup.Lookups;
 public abstract class PersistenceXmlRefactoring implements JPARefactoring{
     
     /**
-     *@return the file object for the object being refactored.
+     * The file objects representing the refactoring sources.
+     */ 
+    private Collection<? extends FileObject> refactoringSources;
+    
+    /**
+     * Gets the refactoring sources for this refactoring. Move class and safe delete
+     * refactorings may be invoked on multiple files, for other refactorings there 
+     * is be just one refactoring source.
+     * 
+     *@return the file objects representing the refactoring sources, i.e. the objects
+     * being refactored.
      */
-    protected FileObject getRefactoringSource() {
-        
-        FileObject result = getRefactoring().getRefactoringSource().lookup(FileObject.class);
-        if (result != null){
+    protected Collection<? extends FileObject> getRefactoringSources() {
+        if (refactoringSources == null){
+            refactoringSources = lookupRefactoringSources();
+        }
+        return refactoringSources;
+    }
+    
+    private Collection<? extends FileObject> lookupRefactoringSources() {
+        // move class and safe delete refactorings may be invoked on multiple files
+        Collection<? extends FileObject> result = getRefactoring().getRefactoringSource().lookupAll(FileObject.class);
+        if (!result.isEmpty()){
             return result;
         }
         NonRecursiveFolder folder = getRefactoring().getRefactoringSource().lookup(NonRecursiveFolder.class);
         if (folder != null){
-            return folder.getFolder();
+            return Collections.singleton(folder.getFolder());
         }
-        try{
-            TreePathHandle treePathHandle = resolveTreePathHandle();
-            if (treePathHandle != null) {
-                result = treePathHandle.getFileObject();
-            }
-        }catch(IOException ioe){
-            Exceptions.printStackTrace(ioe);
+
+        TreePathHandle treePathHandle = getRefactoring().getRefactoringSource().lookup(TreePathHandle.class);
+        if (treePathHandle != null) {
+            return Collections.singleton(treePathHandle.getFileObject());
         }
-        return result;
-        
+
+        return Collections.<FileObject>emptySet();
     }
     
     /**
-     *@return the project owning the object being refactored or null if
-     * does not belong to any project.
-     */
-    protected Project getProject() {
-        FileObject refactoringSource = getRefactoringSource();
-        return refactoringSource == null ? null : FileOwnerQuery.getOwner(refactoringSource);
-    }
-    
-    /**
-     * Resolves the TreePathHandle for the object being refactored.
+     * Checks whether any of the objects being refactored should be handled by
+     * this refactoring. Override in subclasses as needed, the
+     * default implementation returns true if any of the refactored objects
+     * is a Java class.
      *
-     * @return the TreePathHandle or null if no handle could be resolved
-     * the refactored object.
-     */
-    private TreePathHandle resolveTreePathHandle() throws IOException {
-        TreePathHandle tph = getRefactoring().getRefactoringSource().lookup(TreePathHandle.class);
-        if (tph != null) {
-            return tph;
-        }
-        FileObject sourceFO = getRefactoring().getRefactoringSource().lookup(FileObject.class);
-        if (sourceFO == null){
-            return null;
-        }
-        
-        final TreePathHandle[] result = new TreePathHandle[1];
-        JavaSource source = JavaSource.forFileObject(sourceFO);
-        
-        source.runUserActionTask(new CancellableTask<CompilationController>() {
-            public void cancel() {
-                // can't cancel
-            }
-            public void run(CompilationController co) throws Exception {
-                co.toPhase(JavaSource.Phase.RESOLVED);
-                CompilationUnitTree cut = co.getCompilationUnit();
-                if (cut.getTypeDecls().isEmpty()){
-                    return;
-                }
-                result[0] = TreePathHandle.create(TreePath.getPath(cut, cut.getTypeDecls().get(0)), co);
-            }
-            
-        }, true);
-        
-        return result[0];
-    }
-    
-    /**
-     * Checks whether the object being refactored should be handled by
-     * this refactoring. Override in subclasses as appropriated, the
-     * default implementation returns true if the refactored object
-     * is a class.
-     *
-     * @return true if the refactoring source represents a class that
-     * should be handled by persistence.xml refactorings.
+     * @return true if the any of the refactoring sources represents a Java class.
      */
     protected boolean shouldHandle(){
         
-        final boolean[] result = new boolean[] { false };
+        for (FileObject refactoringSource : getRefactoringSources()){
+            if (shouldHandle(refactoringSource)){
+                return true;
+            }
+        }
+        return false;
         
-        FileObject refactoringSource = getRefactoringSource();
-        if (refactoringSource != null && RefactoringUtil.isJavaFile(refactoringSource)) {
+    }
+    
+    /**
+     * Checks whether the given <code>refactoringSource</code> should be handled by
+     * this refactoring. Override in subclasses as needed, the
+     * default implementation returns true if the given <code>refactoringSource</code>
+     * is a class.
+     * @param refactoringSource the object being refactored.
+     * 
+     * @return true if the <code>refactoringSource<code> represents a class that
+     * should be handled by persistence.xml refactorings.
+     */
+    protected boolean shouldHandle(FileObject refactoringSource) {
+        final boolean[] result = new boolean[]{false};
+
+        if (RefactoringUtil.isJavaFile(refactoringSource)) {
             JavaSource source = JavaSource.forFileObject(refactoringSource);
-            try{
-                source.runUserActionTask(new CancellableTask<CompilationController>(){
+            try {
+                source.runUserActionTask(new CancellableTask<CompilationController>() {
 
                     public void cancel() {
                     }
 
                     public void run(CompilationController info) throws Exception {
                         info.toPhase(JavaSource.Phase.RESOLVED);
-                        TreePathHandle treePathHandle = resolveTreePathHandle();
-                        if (treePathHandle == null){
+                        TreePathHandle treePathHandle = null;
+                        CompilationUnitTree cut = info.getCompilationUnit();
+                        if (!cut.getTypeDecls().isEmpty()) {
+                            treePathHandle = TreePathHandle.create(TreePath.getPath(cut, cut.getTypeDecls().get(0)), info);
+                        }
+                        if (treePathHandle == null) {
                             result[0] = false;
                         } else {
                             Element element = treePathHandle.resolveElement(info);
-                            if (element != null){
+                            if (element != null) {
                                 result[0] = element.getKind() == ElementKind.CLASS;
                             }
                         }
                     }
                 }, true);
-            } catch(IOException ex){
+            } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
         }
-        
+
         return result[0];
-        
     }
     
     public final Problem preCheck() {
@@ -207,17 +196,16 @@ public abstract class PersistenceXmlRefactoring implements JPARefactoring{
         
         Problem result = null;
         
-        for (FileObject each : getPersistenceXmls()){
-            try {
-                PUDataObject pUDataObject = ProviderUtil.getPUDataObject(each);
-            } catch (InvalidPersistenceXmlException ex) {
-                Problem newProblem =
-                        new Problem(false, NbBundle.getMessage(PersistenceXmlRefactoring.class, "TXT_PersistenceXmlInvalidProblem", ex.getPath()));
-                
-                result = RefactoringUtil.addToEnd(newProblem, result);
+        for (FileObject refactoringSource : getRefactoringSources()){
+            for (FileObject persistenceXml : getPersistenceXmls(refactoringSource)) {
+                try {
+                    ProviderUtil.getPUDataObject(persistenceXml);
+                } catch (InvalidPersistenceXmlException ex) {
+                    Problem newProblem = new Problem(false, NbBundle.getMessage(PersistenceXmlRefactoring.class, "TXT_PersistenceXmlInvalidProblem", ex.getPath()));
+                    result = RefactoringUtil.addToEnd(newProblem, result);
+                }
             }
         }
-        
         return result;
         
     }
@@ -229,16 +217,17 @@ public abstract class PersistenceXmlRefactoring implements JPARefactoring{
         }
         
         Problem result = null;
-        Project project = getProject();
-        if (project == null){
-            return null;
-        }
-        
-        FileObject refactoringSource = getRefactoringSource();
-        if (refactoringSource != null) {
+        for (FileObject refactoringSource : getRefactoringSources()) {
+            Project project = FileOwnerQuery.getOwner(refactoringSource);
+            if (project == null) {
+                continue;
+            }
+            if (!shouldHandle(refactoringSource)){
+                continue;
+            }
             String classNameFQN = RefactoringUtil.getQualifiedName(refactoringSource);
 
-            for (FileObject each : getPersistenceXmls()){
+            for (FileObject each : getPersistenceXmls(refactoringSource)){
                 try {
                     PUDataObject pUDataObject = ProviderUtil.getPUDataObject(each);
                     List<PersistenceUnit> punits = getAffectedPersistenceUnits(pUDataObject, classNameFQN);
@@ -267,7 +256,6 @@ public abstract class PersistenceXmlRefactoring implements JPARefactoring{
      */
     protected abstract RefactoringElementImplementation getRefactoringElement(PersistenceUnit persistenceUnit,
             String clazz, PUDataObject pUDataObject, FileObject persistenceXml);
-    
     
     /**
      * Gets the persistence unit from the given <code>PUDataObject</code> that contain
@@ -299,11 +287,14 @@ public abstract class PersistenceXmlRefactoring implements JPARefactoring{
     }
     
     /**
+     * Gets the persistence.xml files in the project to which the given 
+     * <code>refactoringSource</code> belongs.
+     * @param refactoringSource 
      * @return the persistence.xml files in the project to which the refactored
      * class belongs or an empty list if the class does not belong to any project.
      */
-    protected final List<FileObject> getPersistenceXmls(){
-        Project project = getProject();
+    protected final List<FileObject> getPersistenceXmls(FileObject refactoringSource){
+        Project project = FileOwnerQuery.getOwner(refactoringSource);
         if (project == null){
             return Collections.<FileObject>emptyList();
         }

@@ -44,15 +44,9 @@ package org.netbeans.modules.j2ee.jpa.refactoring.whereused;
 
 
 import com.sun.source.tree.Tree.Kind;
-import java.io.IOException;
 import java.text.MessageFormat;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
@@ -67,7 +61,6 @@ import org.netbeans.modules.j2ee.jpa.refactoring.RefactoringUtil;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
-import org.openide.util.Exceptions;
 
 /**
  * Handles renaming of the classes that are listed in <code>persistence.xml</code>.
@@ -92,7 +85,7 @@ public final class PersistenceXmlWhereUsed extends PersistenceXmlRefactoring {
         Element resElement = handle.resolveElement(RefactoringUtil.getCompilationInfo(handle, whereUsedQuery));
         TypeElement type = (TypeElement) resElement;
         String clazz = type.getQualifiedName().toString();
-        for (FileObject each : getPersistenceXmls()){
+        for (FileObject each : getPersistenceXmls(handle.getFileObject())){
             try{
                 PUDataObject pUDataObject = ProviderUtil.getPUDataObject(each);
                 for (PersistenceUnit persistenceUnit : getAffectedPersistenceUnits(pUDataObject, clazz)){
@@ -139,12 +132,9 @@ public final class PersistenceXmlWhereUsed extends PersistenceXmlRefactoring {
             return MessageFormat.format(NbBundle.getMessage(PersistenceXmlWhereUsedRefactoringElement.class, "TXT_PersistenceXmlClassWhereUsed"), args);
         }
         
-        
         public void performChange() {
             // nothing to do here
         }
         
     }
-    
-    
 }

@@ -47,7 +47,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
@@ -64,6 +63,8 @@ import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlExcep
 import org.openide.filesystems.FileUtil;
 
 /**
+ * Handles renaming of entity classes declared 
+ * in a persistence.xml file when their package is renamed.
  *
  * @author Erno Mononen
  */
@@ -127,7 +128,7 @@ public class PersistenceXmlPackageRename extends PersistenceXmlRefactoring{
     private Problem doPrepare(RefactoringElementsBag refactoringElementsBag, FileObject folder, String oldName, String newName){
         Problem result = null;
         
-        for (FileObject each : getPersistenceXmls()){
+        for (FileObject each : getPersistenceXmls(folder)){
             try {
                 PUDataObject pUDataObject = ProviderUtil.getPUDataObject(each);
                 for (String clazz : getClasses(folder, new ArrayList<String>())){

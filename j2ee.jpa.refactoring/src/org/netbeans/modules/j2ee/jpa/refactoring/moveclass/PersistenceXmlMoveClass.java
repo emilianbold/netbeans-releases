@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.j2ee.jpa.refactoring.moveclass;
 
+import java.net.URL;
 import java.text.MessageFormat;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
@@ -55,6 +56,8 @@ import org.netbeans.modules.j2ee.jpa.refactoring.RefactoringUtil;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
 
 /**
+ * Handles move class refactoring for entities, i.e. renames the reference
+ * of entities in persistence.xml.
  *
  * @author Erno Mononen
  */
@@ -75,14 +78,14 @@ public class PersistenceXmlMoveClass extends PersistenceXmlRefactoring{
                                                                      PUDataObject pUDataObject,
                                                                      FileObject persistenceXml) {
 
-
         
-        String newName = RefactoringUtil.renameClass(clazz, "name");
+        String pkg = RefactoringUtil.getPackageName(moveRefactoring.getTarget().lookup(URL.class));
+        String newName = pkg + "." + RefactoringUtil.unqualify(clazz);
         return new PersistenceXmlMoveClassRefactoringElement(persistenceUnit, clazz, newName, pUDataObject, persistenceXml);
     }
     
     /**
-     * A rename element for persistence.xml
+     * Move class element for persistence.xml
      */
     private static class PersistenceXmlMoveClassRefactoringElement extends PersistenceXmlRefactoringElement {
         

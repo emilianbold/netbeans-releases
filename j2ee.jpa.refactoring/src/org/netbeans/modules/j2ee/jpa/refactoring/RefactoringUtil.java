@@ -43,7 +43,11 @@ package org.netbeans.modules.j2ee.jpa.refactoring;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.util.TreePath;
+import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLDecoder;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -288,6 +292,56 @@ public abstract class RefactoringUtil {
         
         return result[0];
     }
+
+    /**
+     * Unqualifies the given FQN.
+     *
+     * @param fqn the fully qualified name.
+     * @return the unqualified name.
+     */
+    public static String unqualify(String fqn) {
+        int lastDot = fqn.lastIndexOf(".");
+        if (lastDot < 0) {
+            return fqn;
+        }
+        return fqn.substring(lastDot + 1);
+    }
+
+    // copied from o.n.m.java.refactoring.RetoucheUtils
+    // XXX use j2ee/core/utilities
+    public static String getPackageName(URL url) {
+        File f = null;
+        try {
+            f = FileUtil.normalizeFile(new File(url.toURI()));
+        } catch (URISyntaxException uRISyntaxException) {
+            throw new IllegalArgumentException("Cannot create package name for url " + url);
+        }
+        String suffix = "";
+        
+        do {
+            FileObject fo = FileUtil.toFileObject(f);
+            if (fo != null) {
+                if ("".equals(suffix))
+                    return getPackageName(fo);
+                String prefix = getPackageName(fo);
+                return prefix + ("".equals(prefix)?"":".") + suffix;
+            }
+            if (!"".equals(suffix)) {
+                suffix = "." + suffix;
+            }
+            suffix = URLDecoder.decode(f.getPath().substring(f.getPath().lastIndexOf(File.separatorChar)+1)) + suffix;
+            f = f.getParentFile();
+        } while (f!=null);
+        throw new IllegalArgumentException("Cannot create package name for url " + url);
+    }
     
+    // copied from o.n.m.java.refactoring.RetoucheUtils
+    // XXX use j2ee/core/utilities
+    private static String getPackageName(FileObject folder) {
+        assert folder.isFolder() : "argument must be folder";
+        return ClassPath.getClassPath(
+                folder, ClassPath.SOURCE)
+                .getResourceName(folder, '.', false);
+    }
     
 }
