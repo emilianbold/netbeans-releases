@@ -53,6 +53,8 @@ import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import org.netbeans.modules.openfile.RecentFiles.HistoryItem;
@@ -61,6 +63,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.util.actions.Presenter;
 
 /**
@@ -68,7 +71,7 @@ import org.openide.util.actions.Presenter;
  *
  * @author Dafe Simonek
  */
-public class RecentFileAction extends AbstractAction implements Presenter.Menu, PopupMenuListener {
+public class RecentFileAction extends AbstractAction implements Presenter.Menu, PopupMenuListener, ChangeListener {
 
     /** property of menu items where we store fileobject to open */
     private static final String FO_PROP = "RecentFileAction.Recent_FO";
@@ -89,22 +92,44 @@ public class RecentFileAction extends AbstractAction implements Presenter.Menu, 
             menu = new UpdatingMenu(this);
             menu.setMnemonic(NbBundle.getMessage(RecentFileAction.class,
                                                  "MNE_RecentFileAction_Name").charAt(0));
-            menu.getPopupMenu().addPopupMenuListener(this);
+            // #115277 - workaround, PopupMenuListener don't work on Mac 
+            if (!Utilities.isMac()) {
+                menu.getPopupMenu().addPopupMenuListener(this);
+            } else {
+                menu.addChangeListener(this);
+            }
         }
         return menu;
     }
     
     /******* PopupMenuListener impl *******/
     
+    /* Fills submenu when popup is about to be displayed.
+     * Note that argument may be null on Mac due to #115277 fix
+     */
     public void popupMenuWillBecomeVisible(PopupMenuEvent arg0) {
         fillSubMenu();
     }
     
+    /* Clears submenu when popup is about to be hidden.
+     * Note that argument may be null on Mac due to #115277 fix
+     */
     public void popupMenuWillBecomeInvisible(PopupMenuEvent arg0) {
         menu.removeAll();
     }
     
     public void popupMenuCanceled(PopupMenuEvent arg0) {
+    }
+
+    /******** ChangeListener impl *********/
+
+    /** Delegates to popupMenuListener based on menu current selection status */ 
+    public void stateChanged(ChangeEvent e) {
+        if (menu.isSelected()) {
+            popupMenuWillBecomeVisible(null);
+        } else {
+            popupMenuWillBecomeInvisible(null);
+        }
     }
     
     /** Fills submenu with recently closed files got from RecentFiles support */
@@ -159,7 +184,7 @@ public class RecentFileAction extends AbstractAction implements Presenter.Menu, 
     }
     
     /** Menu that checks its enabled state just before is populated */
-    private static class UpdatingMenu extends JMenu implements DynamicMenuContent {
+    private class UpdatingMenu extends JMenu implements DynamicMenuContent {
         
         private final JComponent[] content = new JComponent[] { this };
         
@@ -176,5 +201,5 @@ public class RecentFileAction extends AbstractAction implements Presenter.Menu, 
             return getMenuPresenters();
         }
     }
-    
+
 }
