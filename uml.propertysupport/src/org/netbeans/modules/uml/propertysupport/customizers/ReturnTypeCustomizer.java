@@ -445,6 +445,7 @@ private void returnTypeChangedHandler(java.awt.event.ItemEvent evt) {//GEN-FIRST
         }
     }
 
+    @Override
     public void setVisible(boolean aFlag)
     {
         super.setVisible(aFlag);
@@ -737,6 +738,7 @@ private void returnTypeChangedHandler(java.awt.event.ItemEvent evt) {//GEN-FIRST
             super(new JComboBox());
         }
         
+        @Override
         public Component getTableCellEditorComponent(JTable table,
                                                      Object value,
                                                      boolean isSelected,
@@ -757,8 +759,9 @@ private void returnTypeChangedHandler(java.awt.event.ItemEvent evt) {//GEN-FIRST
                 retVal.addItem(s);
             }
             
-            String t = PropertyDataFormatter.translateFullyQualifiedName((String)value);
-            retVal.setSelectedItem(t);
+            // IZ=117383: the value is already in the format that is desired
+            // String t = PropertyDataFormatter.translateFullyQualifiedName((String)value);
+            retVal.setSelectedItem(value);
             
             return retVal;
         }
@@ -769,10 +772,12 @@ private void returnTypeChangedHandler(java.awt.event.ItemEvent evt) {//GEN-FIRST
      */
     public class CollectionTypeRender extends DefaultTableCellRenderer
     {
+        @Override
         protected void setValue(Object value)
         {
-            Object realValue = PropertyDataFormatter.translateFullyQualifiedName((String)value);;
-            super.setValue(realValue);
+            // IZ=117383: the value is already in the format that is desired
+            // Object realValue = PropertyDataFormatter.translateFullyQualifiedName((String)value);
+            super.setValue(value);
         }
     }
 }
