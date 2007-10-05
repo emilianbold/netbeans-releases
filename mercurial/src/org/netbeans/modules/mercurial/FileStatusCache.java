@@ -478,7 +478,12 @@ public class FileStatusCache {
                 for (int i = 0; i < files.length; i++) {
                     File file = files[i];
                     FileInformation fi = allFiles.get(file);
-                    refreshFileStatus(file, fi);
+                    if (fi == null) {
+                        // We have a file in the cache which seems to have disappeared
+                        refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+                    } else {
+                        refreshFileStatus(file, fi);
+                    }
                 }
             } catch (HgException ex) {
                 Mercurial.LOG.log(Level.FINE, "refreshCached() file: {0} {1} { 2} ", new Object[] {repository.getAbsolutePath(), root.getAbsolutePath(), ex.toString()}); // NOI18N
