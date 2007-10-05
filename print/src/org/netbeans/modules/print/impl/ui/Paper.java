@@ -51,7 +51,7 @@ import java.util.Date;
 import javax.swing.JComponent;
 
 import org.netbeans.modules.print.spi.PrintPage;
-import org.netbeans.modules.print.impl.util.Pattern;
+import org.netbeans.modules.print.impl.util.Macro;
 import org.netbeans.modules.print.impl.util.Util;
 import static org.netbeans.modules.print.api.PrintUtil.*;
 
@@ -73,7 +73,8 @@ final class Paper extends JComponent {
     myCount = String.valueOf(count);
     myRow = row;
     myColumn = column;
-    myPageNumber = String.valueOf(row + 1) + "." + String.valueOf(column + 1); // NOI18N
+    myRowNumber = String.valueOf(row + 1);
+    myColumnNumber = String.valueOf(column + 1);
   }
 
   void setInfo(
@@ -288,18 +289,18 @@ final class Paper extends JComponent {
     g.drawString(text, x, y);
   }
 
-  private String expandTitle(String title) {
-    String t = title;
+  private String expandTitle(String t) {
     Date printed = new Date(System.currentTimeMillis());
 
-    t = Util.replace(t, Pattern.NAME.getName(), myName);
-    t = Util.replace(t, Pattern.PAGE.getName(), myPageNumber);
-    t = Util.replace(t, Pattern.USER.getName(), USER_NAME);
-    t = Util.replace(t, Pattern.COUNT.getName(), myCount);
-    t = Util.replace(t, Pattern.MODIFIED_DATE.getName(),getDate(myLastModifiedDate));
-    t = Util.replace(t, Pattern.MODIFIED_TIME.getName(),getTime(myLastModifiedDate));
-    t = Util.replace(t, Pattern.PRINTED_DATE.getName(), getDate(printed));
-    t = Util.replace(t, Pattern.PRINTED_TIME.getName(), getTime(printed));
+    t = Util.replace(t, Macro.NAME.getName(), myName);
+    t = Util.replace(t, Macro.ROW.getName(), myRowNumber);
+    t = Util.replace(t, Macro.COLUMN.getName(), myColumnNumber);
+    t = Util.replace(t, Macro.USER.getName(), USER_NAME);
+    t = Util.replace(t, Macro.COUNT.getName(), myCount);
+    t = Util.replace(t, Macro.MODIFIED_DATE.getName(),getDate(myLastModifiedDate));
+    t = Util.replace(t, Macro.MODIFIED_TIME.getName(),getTime(myLastModifiedDate));
+    t = Util.replace(t, Macro.PRINTED_DATE.getName(), getDate(printed));
+    t = Util.replace(t, Macro.PRINTED_TIME.getName(), getTime(printed));
 
     return t;
   }
@@ -353,7 +354,8 @@ final class Paper extends JComponent {
   private Color myBorderColor;
   private String myName;
   private String myCount;
-  private String myPageNumber;
+  private String myRowNumber;
+  private String myColumnNumber;
   private Date myLastModifiedDate;
 
   private int myRow;

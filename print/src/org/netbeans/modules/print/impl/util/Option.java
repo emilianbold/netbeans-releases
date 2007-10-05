@@ -471,15 +471,15 @@ public final class Option {
   private static final String COMMA = ","; // NOI18N
   private static final String EMPTY = ""; // NOI18N
 
-  private static final String HEADER_LEFT_TEXT = Pattern.NAME.getName();
+  private static final String HEADER_LEFT_TEXT = Macro.NAME.getName();
   private static final String HEADER_CENTER_TEXT = EMPTY;
   private static final String HEADER_RIGHT_TEXT = EMPTY;
 
-  private static final String FOOTER_LEFT_TEXT =
-    Util.getPageOfCount(Pattern.PAGE.getName(), Pattern.COUNT.getName());
+  private static final String FOOTER_LEFT_TEXT = Util.getPageOfCount(
+    Util.getRowColumn(Macro.ROW.getName(),Macro.COLUMN.getName()),Macro.COUNT.getName());
   private static final String FOOTER_CENTER_TEXT = EMPTY;
-  private static final String FOOTER_RIGHT_TEXT = Pattern.MODIFIED_DATE.getName() +
-    "  " + Pattern.MODIFIED_TIME.getName(); // NOI18N
+  private static final String FOOTER_RIGHT_TEXT = Macro.MODIFIED_DATE.getName() +
+    "  " + Macro.MODIFIED_TIME.getName(); // NOI18N
 
   private static final String AS_EDITOR = "print.text.as.editor"; // NOI18N
   private static final String WRAP_LINES = "print.text.wrap.lines"; // NOI18N
@@ -489,8 +489,7 @@ public final class Option {
   private static final String TEXT_COLOR = "print.text.color"; // NOI18N
   private static final String TEXT_FONT = "print.text.font"; // NOI18N
   private static final String LINE_SPACING = "print.text.line.spacing"; // NOI18N
-  private static final String BACKGROUND_COLOR =
-    "print.text.background.color"; // NOI18N
+  private static final String BACKGROUND_COLOR = "print.text.background.color"; // NOI18N
 
   private static final String SCALE = "print.scale"; // NOI18N
   private static final String ZOOM = "print.zoom"; // NOI18N

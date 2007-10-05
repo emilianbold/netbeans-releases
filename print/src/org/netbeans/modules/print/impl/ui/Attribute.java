@@ -67,8 +67,8 @@ import javax.swing.SpinnerNumberModel;
 import org.openide.DialogDescriptor;
 import org.openide.util.HelpCtx;
 
-import org.netbeans.modules.print.impl.util.Pattern;
 import org.netbeans.modules.print.impl.util.Percent;
+import org.netbeans.modules.print.impl.util.Macro;
 import org.netbeans.modules.print.impl.util.Util;
 import static org.netbeans.modules.print.api.PrintUtil.*;
 
@@ -77,7 +77,7 @@ import static org.netbeans.modules.print.api.PrintUtil.*;
  * @version 2006.02.14
  */
 final class Attribute extends Dialog
-  implements FocusListener, Pattern.Listener, Percent.Listener
+  implements FocusListener, Macro.Listener, Percent.Listener
 {
   Attribute(Preview preview) {
     myPreview = preview;
@@ -98,7 +98,7 @@ final class Attribute extends Dialog
   {
     myDescriptor = new DialogDescriptor(
       getResizable(createPanel()),
-      i18n("LBL_Options"), // NOI18N
+      i18n("LBL_Print_Options"), // NOI18N
       true,
       getButtons(),
       DialogDescriptor.OK_OPTION,
@@ -225,7 +225,7 @@ final class Attribute extends Dialog
     c.gridx = 0;
 
     // border
-    panel.add(createSeparator(i18n("LBL_Print_Options")), c); // NOI18N
+    panel.add(createSeparator(i18n("LBL_Border")), c); // NOI18N
     panel.add(getBorderPanel(), c);
 
     // header & footer
@@ -274,19 +274,6 @@ final class Attribute extends Dialog
     );
     panel.add(myBorderColor, c);
 
-    // page setup
-    c.anchor = GridBagConstraints.EAST;
-    JButton button = createButton(
-      new ButtonAction(i18n("LBL_PageSetup"), i18n("TLT_Page_Setup")) { // NOI18N
-        public void actionPerformed(ActionEvent event) {
-          if (Util.getOption().showPageSetup()) {
-            updatePreview();
-          }
-        }
-      }
-    );
-    panel.add(button, c);
-
     return panel;
   }
 
@@ -297,7 +284,7 @@ final class Attribute extends Dialog
     setLabelPanel(panel, c);
     setHeaderPanel(panel, c);
     setFooterPanel(panel, c);
-    setPatternPanel(panel, c);
+    setMacroPanel(panel, c);
 //  panel.setBorder(new javax.swing.border.LineBorder(java.awt.Color.red));
 
     return panel;
@@ -443,41 +430,41 @@ final class Attribute extends Dialog
     panel.add(myFooterFont, c);
   }
 
-  private void setPatternPanel(JPanel panel, GridBagConstraints c) {
+  private void setMacroPanel(JPanel panel, GridBagConstraints c) {
     JPanel p = new JPanel(new GridBagLayout());
 
     // []
     c.gridy++;
     c.insets = new Insets(0, 0, 0, 0);
     c.anchor = GridBagConstraints.CENTER;
-    panel.add(new JLabel(), c);
+    panel.add(createLabel(i18n("LBL_Insert_Macros")), c); // NOI18N
 
     // buttons
-    for (Pattern pattern : Pattern.values()) {
-      JButton button = pattern.getButton(this);
+    for (Macro macro : Macro.values()) {
+      JButton button = macro.getButton(this);
       button.setEnabled(false);
       p.add(button, c);
     }
 
-    // patterns
+    // macros
     c.weightx = 1.0;
     c.insets = new Insets(SMALL_INSET, SMALL_INSET, TINY_INSET, 0);
     c.gridwidth = 1 + 1 + 1;
     panel.add(p, c);
   }
 
-  public void pressed(Pattern pattern) {
+  public void pressed(Macro macro) {
     mySelectedField = getSelectedTextField();
 //out(field);
 
     if (mySelectedField != null) {
-//out("Set pattern: " + pattern);
-//out("     select: " + mySelectedField.getSelectionStart() + " " + mySelectedField.getSelectionEnd());
+//out("Set macro: " + macro);
+//out("   select: " + mySelectedField.getSelectionStart() + " " + mySelectedField.getSelectionEnd());
       String text = mySelectedField.getText();
       String head = text.substring(0, mySelectedField.getSelectionStart());
       String tail = text.substring(mySelectedField.getSelectionEnd(), text.length());
 
-      mySelectedField.setText(head + pattern.getName() + tail);
+      mySelectedField.setText(head + macro.getName() + tail);
     }
   }
 
@@ -532,8 +519,9 @@ final class Attribute extends Dialog
     );
     panel.add(myUseColor, c);
 
-    // text label
-    panel.add(createLabel(i18n("LBL_Text_Font_and_Color")), c); // NOI18N
+    // font and color label
+    myTextFontColorLabel = createLabel(i18n("LBL_Text_Font_and_Color")); // NOI18N
+    panel.add(myTextFontColorLabel, c);
 
     // text color
     c.insets = new Insets(0, SMALL_INSET, TINY_INSET, 0);
@@ -579,7 +567,8 @@ final class Attribute extends Dialog
     // background label
     c.anchor = GridBagConstraints.EAST;
     c.insets = new Insets(TINY_INSET, SMALL_INSET, TINY_INSET, 0);
-    panel.add(createLabel(i18n("LBL_Background")), c); // NOI18N
+    myBackgroundColorLabel = createLabel(i18n("LBL_Background_Color")); // NOI18N
+    panel.add(myBackgroundColorLabel, c);
 
     // background color
     c.anchor = GridBagConstraints.WEST;
@@ -604,6 +593,11 @@ final class Attribute extends Dialog
         public void actionPerformed(ActionEvent event) {}
       }
     );
+    myAsEditor.addItemListener(new ItemListener() {
+      public void itemStateChanged(ItemEvent event) {
+        updateText();
+      }
+    });
     panel.add(myAsEditor, c);
 
     // []
@@ -613,8 +607,8 @@ final class Attribute extends Dialog
     c.weightx = 0.0;
     c.anchor = GridBagConstraints.EAST;
     c.insets = new Insets(TINY_INSET, SMALL_INSET, TINY_INSET, 0);
-    JLabel label = createLabel(i18n("LBL_Line_Spacing")); // NOI18N
-    panel.add(label, c);
+    myLineSpacingLabel = createLabel(i18n("LBL_Line_Spacing")); // NOI18N
+    panel.add(myLineSpacingLabel, c);
 
     c.anchor = GridBagConstraints.WEST;
     c.insets = new Insets(0, SMALL_INSET, TINY_INSET, 0);
@@ -632,7 +626,7 @@ final class Attribute extends Dialog
     int height = myLineSpacing.getPreferredSize().height;
     setHeight(myLineSpacing, Util.round(height * SPACING_FTR));
 
-    label.setLabelFor(myLineSpacing);
+    myLineSpacingLabel.setLabelFor(myLineSpacing);
     panel.add(myLineSpacing, c);
   }
 
@@ -729,6 +723,22 @@ final class Attribute extends Dialog
     };
   }
 
+  private void updateText() {
+    boolean enabled = !myAsEditor.isSelected();
+
+    myLineNumbers.setEnabled(enabled);
+    myWrapLines.setEnabled(enabled);
+    myUseColor.setEnabled(enabled);
+    myUseFont.setEnabled(enabled);
+    myTextFont.setEnabled(enabled);
+    myTextColor.setEnabled(enabled);
+    myTextFontColorLabel.setEnabled(enabled);
+    myBackgroundColor.setEnabled(enabled);
+    myBackgroundColorLabel.setEnabled(enabled);
+    myLineSpacing.setEnabled(enabled);
+    myLineSpacingLabel.setEnabled(enabled);
+  }
+
   private String getString(int value) {
     if (value < 0) {
       return Integer.toString(-value);
@@ -743,17 +753,17 @@ final class Attribute extends Dialog
 
   public void focusGained(FocusEvent event) {
 //out("FOCUS GAINED");
-    setPatternEnabled(true);
+    setMacroEnabled(true);
   }
 
   public void focusLost(FocusEvent event) {
 //out("FOCUS LOST");
-    setPatternEnabled(false);
+    setMacroEnabled(false);
   }
 
-  private void setPatternEnabled(boolean enabled) {
-    for (Pattern pattern : Pattern.values()) {
-      pattern.getButton().setEnabled(enabled);
+  private void setMacroEnabled(boolean enabled) {
+    for (Macro macro : Macro.values()) {
+      macro.getButton().setEnabled(enabled);
     }
   }
 
@@ -864,6 +874,8 @@ final class Attribute extends Dialog
     myUseFont.setSelected(Util.getOption().isUseFont());
     myUseColor.setSelected(Util.getOption().isUseColor());
     myAsEditor.setSelected(Util.getOption().isAsEditor());
+
+    updateText();
   }
 
   @Override
@@ -920,6 +932,9 @@ final class Attribute extends Dialog
   private Color myTextColorValue;
   private Color myBackgroundColorValue;
   private JCheckBox myAsEditor;
+  private JLabel myTextFontColorLabel;
+  private JLabel myBackgroundColorLabel;
+  private JLabel myLineSpacingLabel;
 
   private Percent myZoomFactor;
   private JTextField myZoomWidth;

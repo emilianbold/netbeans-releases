@@ -422,7 +422,6 @@ public final class Preview extends Dialog implements Percent.Listener {
     myIncrease.setEnabled(enabled);
     myDecrease.setEnabled(enabled);
     myPrintButton.setEnabled(enabled);
-    myOptionButton.setEnabled(enabled);
   }
 
   private void scrollTo() {
@@ -678,26 +677,27 @@ public final class Preview extends Dialog implements Percent.Listener {
   }
 
   private String getPaper(int value) {
-    return Util.getPageOfCount(
-      String.valueOf(value), String.valueOf(getPaperCount()));
+    return Util.getPageOfCount(String.valueOf(value), String.valueOf(getPaperCount()));
   }
       
   @Override
   protected DialogDescriptor createDescriptor()
   {
-    Object [] buttons = getButtons();
+    Object [] rightButtons = getRightButtons();
+    Object [] leftButtons = getLeftButtons();
+
     DialogDescriptor descriptor = new DialogDescriptor(
       getResizable(createPanel()),
       i18n("LBL_Print_Preview"), // NOI18N
       true,
-      buttons,
+      rightButtons,
       myPrintButton,
       DialogDescriptor.DEFAULT_ALIGN,
       null,
       null
     );
-    descriptor.setClosingOptions(
-      new Object [] { myPrintButton, myCloseButton });
+    descriptor.setClosingOptions(new Object [] { myPrintButton, myCloseButton });
+    descriptor.setAdditionalOptions(leftButtons);
 
     return descriptor;
   }
@@ -717,7 +717,36 @@ public final class Preview extends Dialog implements Percent.Listener {
     }
   }
 
-  private Object [] getButtons() {
+  private Object [] getLeftButtons() {
+    JButton pageSetup = createButton(
+      new ButtonAction(
+        i18n("LBL_Page_Setup_Button"), // NOI18N
+        i18n("TLT_Page_Setup_Button")) { // NOI18N
+        public void actionPerformed(ActionEvent event) {
+          if (Util.getOption().showPageSetup()) {
+            updated();
+          }
+        }
+      }
+    );
+    JButton printOption = createButton(
+      new ButtonAction(
+        i18n("LBL_Print_Option_Button"), // NOI18N
+        i18n("TLT_Print_Option_Button")) { // NOI18N
+        public void actionPerformed(ActionEvent event) {
+          option();
+        }
+      }
+    );
+    printOption.addKeyListener(myKeyListener);
+
+    return new Object [] {
+      pageSetup,
+      printOption,
+    };
+  }
+
+  private Object [] getRightButtons() {
     myPrintButton = createButton(
       new ButtonAction(
         i18n("LBL_Print_Button"), // NOI18N
@@ -728,17 +757,6 @@ public final class Preview extends Dialog implements Percent.Listener {
       }
     );
     myPrintButton.addKeyListener(myKeyListener);
-
-    myOptionButton = createButton(
-      new ButtonAction(
-        i18n("LBL_Option_Button"), // NOI18N
-        i18n("TLT_Option_Button")) { // NOI18N
-        public void actionPerformed(ActionEvent event) {
-          option();
-        }
-      }
-    );
-    myOptionButton.addKeyListener(myKeyListener);
 
     myCloseButton = createButton(
       new ButtonAction(
@@ -753,7 +771,6 @@ public final class Preview extends Dialog implements Percent.Listener {
 
     return new Object [] {
       myPrintButton,
-      myOptionButton,
       myCloseButton,
     };
   }
@@ -850,7 +867,6 @@ public final class Preview extends Dialog implements Percent.Listener {
   private JButton myDecrease;
 
   private JButton myPrintButton;
-  private JButton myOptionButton;
   private JButton myCloseButton;
 
   private Percent myScale;
