@@ -62,7 +62,7 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.websvc.rest.component.strikeiron</code-name-base>
+                    <code-name-base>org.netbeans.modules.websvc.components.strikeiron</code-name-base>
                     <run-dependency>
                         <release-version>0</release-version>
                         <specification-version>0.2</specification-version>

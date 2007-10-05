@@ -5,6 +5,7 @@
 
     <target name="allrest">
         <ant dir="../rest"/>
+        <ant dir="../components/google"/>
         <ant dir="../swdp"/>
         <ant dir="../restsamples"/>
     </target>
