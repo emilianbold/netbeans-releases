@@ -30,6 +30,6 @@ public class ClientWizardProperties {
     public static final String WSDL_DOWNLOAD_SCHEMAS = "wsdlDownloadedSchemas"; // NOI18N
     public static final String JAX_VERSION = "jaxVersion"; // NOI18N
     
-    public static final String JAX_WS = "JAX-WS"; // NOI18N
-    public static final String JAX_RPC = "JAX-RPC"; // NOI18N    
+    public static final String JAX_WS = "JAX-WS Style"; // NOI18N
+    public static final String JAX_RPC = "JAX-RPC Style"; // NOI18N    
 }
