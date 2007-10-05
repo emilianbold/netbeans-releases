@@ -565,7 +565,10 @@ private void includesExcludesButtonActionPerformed(java.awt.event.ActionEvent ev
         for (JavaProjectGenerator.SourceFolder folder : model.getSourceFolders()) {
             v.setIncludePattern(folder.includes != null ? folder.includes : "**");
             v.setExcludePattern(folder.excludes != null ? folder.excludes : "");
-            roots.add(Util.resolveFile(model.getEvaluator(), model.getNBProjectFolder(), folder.location));
+            File f = Util.resolveFile(model.getEvaluator(), model.getNBProjectFolder(), folder.location);
+            if (f.isDirectory()) {
+                roots.add(f);
+            }
         }
         v.setRoots(roots.toArray(new File[roots.size()]));
         DialogDescriptor dd = new DialogDescriptor(v.getVisualizerPanel(),
