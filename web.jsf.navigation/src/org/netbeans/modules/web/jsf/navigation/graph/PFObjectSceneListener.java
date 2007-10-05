@@ -33,7 +33,6 @@ import java.util.Set;
 import org.netbeans.api.visual.model.ObjectSceneEvent;
 import org.netbeans.api.visual.model.ObjectSceneListener;
 import org.netbeans.api.visual.model.ObjectState;
-import org.netbeans.api.visual.vmd.VMDNodeWidget;
 import org.netbeans.modules.web.jsf.navigation.NavigationCaseEdge;
 import org.netbeans.modules.web.jsf.navigation.Page;
 import org.netbeans.modules.web.jsf.navigation.PageFlowView;
