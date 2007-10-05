@@ -1222,7 +1222,19 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 
 
         public void stateChanged(ChangeEvent e) {
-            setKeys( getKeys() );
+            if (e.getSource() instanceof Item ) {
+                // update single item (it may be broken)
+                Item[] items = getFolder().getItemsAsArray();
+                for (int i = 0; i < items.length; i++) {
+                    if (e.getSource() == items[i]) {
+                        refreshItem(items[i]);
+                    }
+                }
+            }
+            else {
+                // update folder. Items may have been added or deleted
+                setKeys(getKeys());
+            }
         }
 
         abstract protected Collection getKeys();

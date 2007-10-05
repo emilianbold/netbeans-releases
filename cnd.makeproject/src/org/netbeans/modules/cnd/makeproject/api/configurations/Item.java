@@ -200,10 +200,11 @@ public class Item implements NativeFileItem, PropertyChangeListener {
             rename((String)evt.getNewValue());
         } else if (evt.getPropertyName().equals("valid")) { // NOI18N
             // File has been deleted
-            // Do nothing (IZ 94935 )
-//            if (!((Boolean)evt.getNewValue()).booleanValue()) {
+            // Do nothing (IZ 87557, 94935)
+            if (!((Boolean)evt.getNewValue()).booleanValue()) {
 //                getFolder().removeItemAction(this);
-//            }
+                getFolder().refresh(this);
+            }
         } else if (evt.getPropertyName().equals("primaryFile")) { // NOI18N
             // File has been moved
             FileObject fo = (FileObject)evt.getNewValue();

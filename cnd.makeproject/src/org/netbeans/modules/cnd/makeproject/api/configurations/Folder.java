@@ -679,13 +679,25 @@ public class Folder {
         }
     }
     
+    public void refresh() {
+        fireChangeEvent(this);
+    }
+    
+    public void refresh(Object source) {
+        fireChangeEvent(source);
+    }
+    
     public void fireChangeEvent() {
+        fireChangeEvent(this);
+    }
+    
+    public void fireChangeEvent(Object source) {
         Iterator it;
         
         synchronized (changeListenerList) {
             it = new HashSet(changeListenerList).iterator();
         }
-        ChangeEvent ev = new ChangeEvent(this);
+        ChangeEvent ev = new ChangeEvent(source);
         while (it.hasNext()) {
             ((ChangeListener)it.next()).stateChanged(ev);
         }
