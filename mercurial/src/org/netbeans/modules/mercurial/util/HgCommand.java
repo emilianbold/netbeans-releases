@@ -178,8 +178,7 @@ public class HgCommand {
     private static final String HG_CANNOT_READ_COMMIT_MESSAGE_ERR = "abort: can't read commit message"; // NOI18N
     private static final String HG_UNABLE_EXECUTE_COMMAND_ERR = "unable to execute hg command"; // NOI18N
     private static final String HG_CANCELLED_COMMAND_ERR = "command has been cancelled"; // NOI18N
-    private static final String HG_UNABLE_CLONE_ERR = "abort: "; // NOI18N
-    private static final String HG_NODE_NAME_ERR = "abort: node name or service name not known"; // NOI18N
+    private static final String HG_ABORT_ERR = "abort: "; // NOI18N
     private static final String HG_NO_CHANGE_NEEDED_ERR = "no change needed"; // NOI18N
     private static final String HG_NO_ROLLBACK_ERR = "no rollback information available"; // NOI18N
     private static final String HG_NO_UPDATES_ERR = "0 files updated, 0 files merged, 0 files removed, 0 files unresolved"; // NOI18N
@@ -463,7 +462,11 @@ public class HgCommand {
         command.add(repository.getAbsolutePath());
         command.add(to);
 
-        return exec(command);
+        List<String> list = exec(command);
+        if (!list.isEmpty() && 
+             isErrorAbort(list.get(0)))
+            throw new HgException( list.get(0));
+        return list;
     }
 
     /**
@@ -487,7 +490,11 @@ public class HgCommand {
         command.add(repository.getAbsolutePath());
         command.add(to);
 
-        return exec(command);
+        List<String> list = exec(command);
+        if (!list.isEmpty() && 
+             isErrorAbort(list.get(0)))
+            throw new HgException( list.get(0));
+        return list;
     }
 
     /**
@@ -730,7 +737,7 @@ public class HgCommand {
 
         List<String> list = exec(command);
         if (!list.isEmpty() && 
-             isErrorUnableClone(list.get(0)) || isErrorNodeName(list.get(0)))
+             isErrorAbort(list.get(0)))
             throw new HgException( list.get(0));
         return list;
     }
@@ -1743,12 +1750,8 @@ public class HgCommand {
         return msg.indexOf(HG_CANNOT_READ_COMMIT_MESSAGE_ERR) > -1; // NOI18N
     }
     
-    private static boolean isErrorUnableClone(String msg) {
-        return msg.indexOf(HG_UNABLE_CLONE_ERR) > -1; // NOI18N
-    }
-    
-    private static boolean isErrorNodeName(String msg) {
-        return msg.indexOf(HG_NODE_NAME_ERR) > -1; // NOI18N
+    private static boolean isErrorAbort(String msg) {
+        return msg.indexOf(HG_ABORT_ERR) > -1; // NOI18N
     }
     
     private static boolean isErrorNoChangeNeeded(String msg) {
