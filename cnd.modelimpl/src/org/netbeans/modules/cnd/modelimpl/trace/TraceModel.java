@@ -78,18 +78,9 @@ import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.editor.parser.FoldingParser;
-import org.netbeans.modules.cnd.loaders.CCDataLoader;
-import org.netbeans.modules.cnd.loaders.CCDataObject;
-import org.netbeans.modules.cnd.loaders.CDataLoader;
-import org.netbeans.modules.cnd.loaders.CDataObject;
-import org.netbeans.modules.cnd.loaders.HDataLoader;
-import org.netbeans.modules.cnd.loaders.HDataObject;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 
@@ -173,7 +164,6 @@ public class TraceModel {
     // only one of project/projectUID must be used 
     private ProjectBase project;
     private CsmUID<CsmProject> projectUID;
-    private NativeProject nativeProject;
 
     private Cache cache;
 
@@ -210,9 +200,12 @@ public class TraceModel {
     private boolean stopAfterAll = false;
     private boolean printTokens = false;
     private boolean dumpModelAfterCleaningCache = false; // --clean4dump
+    
+    private int repeatCount = 1; // --repeat
 
     private List<String> quoteIncludePaths = new ArrayList<String>();
     private List<String> systemIncludePaths = new ArrayList<String>();
+    private List<File> files = new ArrayList<File>();
     private List<String> currentIncludePaths = null;
 
     private List<String> macros = new ArrayList<String>();
@@ -415,6 +408,15 @@ public class TraceModel {
 	    // NOI18N
 	    dumpModelAfterCleaningCache = true;
 	}
+	else if ( "repeat".equals(flag) || flag.startsWith("repeat:")) { // NOI18N
+	    int len = "repeat".length();
+	    if( flag.length() == len ) {
+		repeatCount = 2;
+	    }
+	    else {
+		repeatCount = Integer.parseInt(flag.substring(len + 1));
+	    }
+	}
     }
 	
     private void addFile(List<File> files, File file) {
@@ -436,9 +438,22 @@ public class TraceModel {
 	    model.shutdown();
 	}
     }
-	
+
     /*package*/
     void doTest() {
+	if( repeatCount > 1 ) {
+	    for (int i = 0; i < repeatCount; i++) {
+		print("\n\n==================== Pass " + i + "====================\n");
+		doTest2();
+		resetProject();
+	    }
+	} else {
+	    doTest2();
+	}
+    }
+    
+    /*package*/
+    void doTest2() {
 	if (stopBeforeAll) {
 	    waitAnyKey();
 	}
@@ -673,7 +688,6 @@ public class TraceModel {
 
     /*package*/
     void processArguments(final String[] args) {
-	List<File> files = new ArrayList<File>();
 	for (int i = 0; i < args.length; i++) {
 	    if (args[i].startsWith("--")) { // NOI18N
 		// NOI18N
@@ -690,10 +704,6 @@ public class TraceModel {
 		addFile(files, new File(args[i]));
 	    }
 	}
-	
-	nativeProject = NativeProjectProvider.createProject("DummyProject", files, // NOI18N
-		systemIncludePaths, quoteIncludePaths, getSysMacros(), macros, pathsRelCurFile);
-	
     }
 	
     private void anyKey(String message) {
@@ -1485,7 +1495,6 @@ public class TraceModel {
 		states.put(file, preprocHandler);
 	    }
 	}
-	;
 	CsmProgressListenerEx progressListenerEx = new ProgressListenerExImpl();
 	model.addProgressListener(progressListenerEx);
 
@@ -1776,18 +1785,19 @@ public class TraceModel {
     private void resetProject() {
 	if (getProject() != null) {
 	    Object platformProject = getProject().getPlatformProject();
-	    getProject().dispose(true);
-	    ((ModelImpl) CsmModelAccessor.getModel()).removeProject(platformProject);
+	    ((ModelImpl) CsmModelAccessor.getModel()).closeProject(platformProject);
 	}
 	projectUID = null;
 	project = null;
-	getProject();
+	//getProject();
     }
     
     
     private ProjectBase createProject() {
-	ProjectBase project = model.addProject(nativeProject, "DummyProject", true); // NOI18N
-	return project;
+	NativeProject nativeProject = NativeProjectProvider.createProject("DummyProject", files, // NOI18N
+		systemIncludePaths, quoteIncludePaths, getSysMacros(), macros, pathsRelCurFile);
+	ProjectBase result = model.addProject(nativeProject, "DummyProject", true); // NOI18N
+	return result;
     }
 
     private void setProject(ProjectBase project) {
@@ -1808,10 +1818,16 @@ public class TraceModel {
     
     private List<NativeFileItem> getFileItems() {
 	List<NativeFileItem> result = new ArrayList<NativeFileItem>();
-	if( nativeProject != null ) {
-	    result.addAll(nativeProject.getAllSourceFiles());
-	    result.addAll(nativeProject.getAllHeaderFiles());
+
+	Object platformProject = getProject().getPlatformProject();
+	if( platformProject instanceof NativeProject ) {
+	    NativeProject nativeProject = (NativeProject) platformProject;
+	    if( nativeProject != null ) {
+		result.addAll(nativeProject.getAllSourceFiles());
+		result.addAll(nativeProject.getAllHeaderFiles());
+	    }
 	}
 	return result;
     }
 }
+
