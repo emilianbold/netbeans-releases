@@ -1027,7 +1027,7 @@ public class QueryBuilder extends TopComponent
         try {
             conn = getConnection().getMetaData().getURL();
         } catch (SQLException ex) {
-            Log.getLogger().info("Connection is not available: " + ex.getLocalizedMessage()); // NOI18N
+            Exceptions.printStackTrace(ex);
         }
         return conn;
     }
