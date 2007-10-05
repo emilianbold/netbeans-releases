@@ -2937,11 +2937,11 @@ public class CasualDiff {
         private String text;
         boolean trailing;
         
-        static Diff insert(int pos, String text) {
+        public static Diff insert(int pos, String text) {
             return new Diff(DiffTypes.INSERT, pos, Position.NOPOS /* does not matter */, text);
         }
         
-        static Diff delete(int startOffset, int endOffset) {
+        public static Diff delete(int startOffset, int endOffset) {
             return new Diff(DiffTypes.DELETE, startOffset, endOffset, null);
         }
         

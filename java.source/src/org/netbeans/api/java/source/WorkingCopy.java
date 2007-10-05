@@ -64,7 +64,9 @@ import java.util.Set;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Position.Bias;
 import javax.tools.JavaFileObject;
+import org.netbeans.api.java.lexer.JavaTokenId;
 import static org.netbeans.api.java.source.ModificationResult.*;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.source.save.CasualDiff.Diff;
 import org.netbeans.modules.java.source.builder.TreeFactory;
 import org.netbeans.modules.java.source.engine.SourceReader;
@@ -78,6 +80,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.util.NbBundle;
 
 /**XXX: extends CompilationController now, finish method delegation
  *
@@ -87,6 +90,8 @@ public class WorkingCopy extends CompilationController {
     
     private Map<Tree, Tree> changes;
     private Map<JavaFileObject, CompilationUnitTree> externalChanges;
+    private Set<Diff> textualChanges;
+    private Map<Integer, String> userInfo;
     private boolean afterCommit = false;
     private TreeMaker treeMaker;
     
@@ -101,6 +106,8 @@ public class WorkingCopy extends CompilationController {
         treeMaker = new TreeMaker(this, TreeFactory.instance(getContext()));
         changes = new IdentityHashMap<Tree, Tree>();
         externalChanges = null;
+        textualChanges = new HashSet<Diff>();
+        userInfo = new HashMap<Integer, String>();
     }
     
     private Context getContext() {
@@ -159,6 +166,62 @@ public class WorkingCopy extends CompilationController {
         changes.put(oldTree, newTree);
     }
               
+    /**
+     * Replace a part of a comment token with the given text.
+     * 
+     * Please note that this is a special purpose method to handle eg.
+     * "Apply Rename in Comments" option in the Rename refactoring.
+     * 
+     * It is caller's responsibility to ensure that replacements done by this method
+     * will not clash with replacements done by the general-purpose method
+     * {@link #rewrite(Tree,Tree)}.
+     * 
+     * @param start absolute offset in the original text to start the replacement
+     * @param length how many characters should be deleted from the original text
+     * @param newText new text to be inserted at the specified offset
+     * @throws java.lang.IllegalArgumentException when an attempt is made to replace non-comment text
+     * @since 0.23
+     */
+    public synchronized void rewriteInComment(int start, int length, String newText) throws IllegalArgumentException {
+        TokenSequence<JavaTokenId> ts = getTokenHierarchy().tokenSequence(JavaTokenId.language());
+        
+        ts.move(start);
+        
+        if (!ts.moveNext()) {
+            throw new IllegalArgumentException("Cannot rewriteInComment start=" + start + ", text length=" + getText().length());
+        }
+        
+        if (ts.token().id() != JavaTokenId.LINE_COMMENT && ts.token().id() != JavaTokenId.BLOCK_COMMENT && ts.token().id() != JavaTokenId.JAVADOC_COMMENT) {
+            throw new IllegalArgumentException("Cannot rewriteInComment: attempt to rewrite non-comment token: " + ts.token().id());
+        }
+        
+        if (ts.offset() + ts.token().length() <= start + length) {
+            throw new IllegalArgumentException("Cannot rewriteInComment: attempt to rewrite text after comment token. Token end offset: " + (ts.offset() + ts.token().length()) + ", rewrite end offset: " + (start + length));
+        }
+        
+        int commentPrefix;
+        int commentSuffix;
+        
+        switch (ts.token().id()) {
+            case LINE_COMMENT: commentPrefix = 2; commentSuffix = 0; break;
+            case BLOCK_COMMENT: commentPrefix = 2; commentSuffix = 2; break;
+            case JAVADOC_COMMENT: commentPrefix = 3; commentSuffix = 2; break;
+            default: throw new IllegalStateException("Internal error");
+        }
+        
+        if (ts.offset() + commentPrefix > start) {
+            throw new IllegalArgumentException("Cannot rewriteInComment: attempt to rewrite comment prefix");
+        }
+        
+        if (ts.offset() + ts.token().length() - commentSuffix < start + length) {
+            throw new IllegalArgumentException("Cannot rewriteInComment: attempt to rewrite comment suffix");
+        }
+        
+        textualChanges.add(Diff.delete(start, start + length));
+        textualChanges.add(Diff.insert(start + length, newText));
+        userInfo.put(start, NbBundle.getMessage(CasualDiff.class,"TXT_RenameInComment")); //NOI18N
+    }
+    
     // Package private methods -------------------------------------------------        
     
     private static void commit(Context context, CompilationUnitTree topLevel, List<Diff> diffs, SourceRewriter out) throws IOException, BadLocationException {
@@ -210,7 +273,7 @@ public class WorkingCopy extends CompilationController {
             return newRepl;
         }
     }
-    
+            
     private static boolean REWRITE_WHOLE_FILE = Boolean.getBoolean(WorkingCopy.class.getName() + ".rewrite-whole-file");
     
     private List<Difference> processCurrentCompilationUnit() throws IOException, BadLocationException {
@@ -327,6 +390,10 @@ public class WorkingCopy extends CompilationController {
                 diffs.addAll(CasualDiff.diff(getContext(), this, getCompilationUnit().getImports(), nueImports, userInfo));
             }
         }
+        
+        diffs.addAll(textualChanges);
+        
+        userInfo.putAll(this.userInfo);
         
         Collections.sort(diffs, new Comparator<Diff>() {
             public int compare(Diff o1, Diff o2) {
