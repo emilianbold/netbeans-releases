@@ -72,6 +72,7 @@ import javax.swing.tree.TreeModel;
 import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.ColumnModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
+import org.openide.ErrorManager;
 import org.openide.explorer.ExplorerUtils;
 
 import org.openide.explorer.ExplorerManager;
@@ -310,7 +311,8 @@ ExplorerManager.Provider, PropertyChangeListener, TreeExpansionListener {
     
     void updateColumnWidths () {
         int i, k = columns.length;
-        int d = 0;
+        int d = (isDefaultColumnAdded) ? 1 : 0;
+        TableColumnModel tcm = treeTable.getTable().getColumnModel();
         for (i = 0; i < k; i++) {
             if (Boolean.TRUE.equals (columns [i].getValue 
                 ("InvisibleInTreeTableView"))
@@ -320,10 +322,20 @@ ExplorerManager.Provider, PropertyChangeListener, TreeExpansionListener {
                 if (column.isDefault ()) {
                     int width = column.getColumnWidth ();
                     treeTable.setTreePreferredWidth (width);
-                    d = 1;
                 } else {
-                    int width = column.getColumnWidth ();
-                    treeTable.setTableColumnPreferredWidth (i - d, width);
+                    int order = column.getModelOrderNumber();
+                    if (order < 0) order = i;
+                    order = getColumnVisibleIndex(column, order);
+                    TableColumn tc;
+                    try {
+                        tc = tcm.getColumn (order + d);
+                    } catch (ArrayIndexOutOfBoundsException aioobex) {
+                        ErrorManager.getDefault().notify(
+                                ErrorManager.getDefault().annotate(aioobex,
+                                "Column("+i+") "+column.getName()+" model order = "+column.getModelOrderNumber()+" visible index = "+order+" => column index = "+(order + d)));
+                        continue ;
+                    }
+                    tc.setPreferredWidth(column.getColumnWidth());
                 }
             }
         }
@@ -347,6 +359,7 @@ ExplorerManager.Provider, PropertyChangeListener, TreeExpansionListener {
             // It's very likely that the table was not fully initialized => do not save anything.
             return ;
         }
+        int d = (isDefaultColumnAdded) ? 1 : 0;
         for (i = 0; i < k; i++) {
             if (Boolean.TRUE.equals (columns [i].getValue 
                 ("InvisibleInTreeTableView"))
@@ -355,14 +368,22 @@ ExplorerManager.Provider, PropertyChangeListener, TreeExpansionListener {
             Column column = (Column) columns [i];
             if (column.isDefault ()) {
                 TableColumn tc = tcm.getColumn (0);
-                if (tc == null) continue;
                 int width = tc.getWidth ();
                 column.setColumnWidth (width);
             } else {
-                int order = getColumnVisibleIndex(column, i);
-
-                TableColumn tc = tcm.getColumn (order + 1);
-                if (tc == null) continue;
+                int order = column.getModelOrderNumber();
+                if (order < 0) order = i;
+                order = getColumnVisibleIndex(column, order);
+                //System.err.println("  Column("+i+") "+column.getName()+" visible index = "+order+" => column index = "+(order + d));
+                TableColumn tc;
+                try {
+                    tc = tcm.getColumn (order + d);
+                } catch (ArrayIndexOutOfBoundsException aioobex) {
+                    ErrorManager.getDefault().notify(
+                            ErrorManager.getDefault().annotate(aioobex,
+                            "Column("+i+") "+column.getName()+" model order = "+column.getModelOrderNumber()+" visible index = "+order+" => column index = "+(order + d)));
+                    continue ;
+                }
                 int width = tc.getWidth ();
                 column.setColumnWidth (width);
             }

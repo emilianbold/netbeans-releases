@@ -101,6 +101,10 @@ public class Column extends PropertySupport.ReadWrite {
         return ((Integer) o).intValue ();
     }
     
+    int getModelOrderNumber() {
+        return columnModel.getCurrentOrderNumber();
+    }
+    
     boolean isDefault () {
         return columnModel.getType () == null;
     }
