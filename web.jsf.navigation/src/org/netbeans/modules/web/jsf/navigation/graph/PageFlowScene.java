@@ -399,15 +399,15 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
      * @param pinNode
      * @return the widget attached to the pin, null, if it is a default pin
      */
-    protected Widget attachPinWidget(Page node, Pin pinNode) {
-        assert node != null;
+    protected Widget attachPinWidget(Page pageNode, Pin pinNode) {
+        assert pageNode != null;
 
         if (pinNode.isDefault()) {
             return null;
         }
 
         VMDPinWidget widget = new VMDPinWidget(this, scheme);
-        VMDNodeWidget nodeWidget = (VMDNodeWidget) findWidget(node);
+        VMDNodeWidget nodeWidget = (VMDNodeWidget) findWidget(pageNode);
         if (nodeWidget != null) {
             nodeWidget.attachPinWidget(widget);
             widget.setProperties(pinNode.getName(), Arrays.asList(pinNode.getIcon(0)));
