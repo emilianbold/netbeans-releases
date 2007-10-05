@@ -605,10 +605,14 @@ public class LineBoxGroup extends ContainerBox {
         // XXX #117399 To render the list within float correctly.
         // XXX #117400 If there is float parent, skip.
 //        if (!lineBox.isFloated) {
-        if (!lineBox.isFloated && (!hasFloatParent(lineBox))) {
-            int leftEdge = context.getLeftEdge(lineBox, this, targetY, lineHeight); // Pass in getParent() instead?
-            lineBox.applyHorizontalAlignments(leftEdge, lineHeight, context);
+        int leftEdge;
+        if (lineBox.isFloated || hasFloatParent(lineBox)) {
+            // XXX #117871 Fixing the alignments inside floats.
+            leftEdge = 0;
+        } else {
+            leftEdge = context.getLeftEdge(lineBox, this, targetY, lineHeight); // Pass in getParent() instead?
         }
+        lineBox.applyHorizontalAlignments(leftEdge, lineHeight, context);
 
         if (lineBox.contentWidth > contentWidth) {
             contentWidth = lineBox.contentWidth;
