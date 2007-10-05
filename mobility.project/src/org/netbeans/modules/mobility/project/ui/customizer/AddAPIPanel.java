@@ -45,7 +45,6 @@ import org.openide.util.Utilities;
 public class AddAPIPanel extends javax.swing.JPanel implements ActionListener, DocumentListener {
     
     final private static String[] availableDefaultPermissions = {
-        "javax.bluetooth.RemoteDevice.authorize", //NOI18N
         "javax.microedition.amms.control.camera.enableShutterFeedback", //NOI18N
         "javax.microedition.amms.control.tuner.setPreset", //NOI18N
         "javax.microedition.apdu.aid", //NOI18N
