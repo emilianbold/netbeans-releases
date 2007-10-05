@@ -67,7 +67,10 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.visualweb.insync.beans.Bean;
+import org.netbeans.modules.visualweb.insync.beans.BeansUnit;
 import org.netbeans.modules.visualweb.insync.beans.Naming;
+import org.netbeans.modules.visualweb.insync.faces.FacesBean;
+import org.netbeans.modules.visualweb.insync.faces.HtmlBean;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -304,13 +307,23 @@ public class JavaClass {
                 TypeElement typeElement = typeElementHandle.resolve(wc);
                 ClassTree ctree = wc.getTrees().getTree(typeElement);
                 ClassTree oldTree = ctree;
+                BeansUnit beansUnit = null;
                 for (Bean bean : beans) {
-                    ctree = removeProperty(bean.getName(), ctree, wc);
-                    bean.getUnit().getPropertiesInitMethod().removeSetStatements(wc, bean);
+                    if(!(bean instanceof HtmlBean)) {
+                        ctree = removeProperty(bean.getName(), ctree, wc);
+                        beansUnit = bean.getUnit();
+                        if (beansUnit != null) {
+                            beansUnit.getPropertiesInitMethod().removeSetStatements(wc, bean);
+                        }
+                    }
                     bean.removeEntry();
                 }
-                beans.get(0).getUnit().getCleanupMethod().removeCleanupStatements(wc, beans);
-                wc.rewrite(oldTree, ctree);
+                if(beansUnit != null) {
+                   beansUnit.getCleanupMethod().removeCleanupStatements(wc, beans);
+                }
+                if(oldTree != ctree) {
+                    wc.rewrite(oldTree, ctree);
+                }
                 return null;
             }
         }, fObj);
