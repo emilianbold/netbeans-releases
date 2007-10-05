@@ -41,6 +41,8 @@
 
 package org.netbeans.lib.lexer.test.simple;
 
+import java.util.List;
+import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.lib.lexer.lang.TestTokenId;
 import org.netbeans.api.lexer.TokenChange;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -138,6 +140,23 @@ public class CustomEmbeddingTest extends NbTestCase {
         assertTrue(ets.moveNext());
         LexerTestUtilities.assertTokenEquals(ets,TestPlainTokenId.WHITESPACE, " ", 12);
         assertFalse(ets.moveNext());
+        
+
+        // Test removal of the embedding
+        assertTrue(ts.removeEmbedding(TestTokenId.language()));
+        // Repetitive removal should return false
+        assertFalse(ts.removeEmbedding(TestTokenId.language()));
+
+        
+        // Check token sequence list
+        // Create custm embedding again
+        assertTrue(ts.createEmbedding(TestTokenId.language(), 2, 2));
+        LanguagePath lpe = LanguagePath.get(TestTokenId.language()).embedded(TestTokenId.language());
+        List<TokenSequence<?>> tsl = hi.tokenSequenceList(lpe, 0, Integer.MAX_VALUE);
+        assertEquals(2, tsl.size());
+        ts.removeEmbedding(TestTokenId.language());
+        tsl = hi.tokenSequenceList(lpe, 0, Integer.MAX_VALUE);
+        assertEquals(1, tsl.size());
     }
     
     public void testEmbeddingCaching() throws Exception {

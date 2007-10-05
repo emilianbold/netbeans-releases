@@ -384,7 +384,7 @@ public final class TokenSequence<T extends TokenId> {
      * within a write lock over the text input.
      */
     public boolean removeEmbedding(Language<? extends TokenId> embeddedLanguage) {
-        return false;
+        return EmbeddingContainer.removeEmbedding(tokenList, tokenIndex, embeddedLanguage);
     }
 
     /**
@@ -723,6 +723,19 @@ public final class TokenSequence<T extends TokenId> {
         return new TokenSequence<T>(new SubSequenceTokenList<T>(tl, startOffset, endOffset));
     }
     
+    /**
+     * Check whether this token sequence is valid and can be iterated.
+     * <br/>
+     * If this method returns false then the underlying token hierarchy was modified
+     * and this token sequence should be abandoned.
+     * 
+     * @return true if this token sequence is ready for use or false if it should be abandoned.
+     */
+    public boolean isValid() {
+        return (tokenList.modCount() != this.modCount);
+    }
+    
+    @Override
     public String toString() {
         return LexerUtilsConstants.appendTokenList(null, tokenList,
                 tokenIndex, 0, Integer.MAX_VALUE, true, 0).toString();

@@ -214,6 +214,11 @@ public final class TokenSequenceList extends AbstractList<TokenSequence<? extend
             );
     }
 
+    @Override
+    public String toString() {
+        return tokenListList.toString();
+    }
+
     private class Itr implements Iterator<TokenSequence<?>> {
         
         private int cursor = 0;

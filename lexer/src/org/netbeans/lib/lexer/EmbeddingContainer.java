@@ -206,7 +206,7 @@ public final class EmbeddingContainer<T extends TokenId> {
         if (tokenHierarchyOperation == null) {
             return false;
         }
-        TokenList<? extends TokenId> rootTokenList = tokenList.root();
+        TokenList<?> rootTokenList = tokenList.root();
         // Only create embedddings for valid operations so not e.g. for removed token list
         Object tokenOrEmbeddingContainer = tokenList.tokenOrEmbeddingContainer(index);
         AbstractToken<T> token;
@@ -241,7 +241,6 @@ public final class EmbeddingContainer<T extends TokenId> {
 
         EmbeddedTokenList<ET> etl;
         LanguageEmbedding<ET> embedding;
-        TokenListList tll = null;
         synchronized (rootTokenList) {
             if (startSkipLength + endSkipLength > token.length()) // Check for appropriate size
                 return false;
@@ -255,13 +254,8 @@ public final class EmbeddingContainer<T extends TokenId> {
             etl = new EmbeddedTokenList<ET>(
                     ec, embeddedLanguagePath, embedding, ec.firstEmbeddedTokenList());
             ec.setFirstEmbeddedTokenList(etl);
-            // When joining sections ensure that the token list list gets created
-            // and the embedded tokens get created because they must exist
-            // before possible next updating of the token list.
-            if (embedding.joinSections()) {
-                // Ask for token count to force tokens creation
-                etl.tokenCount();
-            }
+            // Increase version of the hierarchy
+            // TBD
         }
 
         // Fire the embedding creation to the clients
@@ -269,8 +263,11 @@ public final class EmbeddingContainer<T extends TokenId> {
         int aOffset = ec.tokenStartOffset();
         TokenHierarchyEventInfo eventInfo = new TokenHierarchyEventInfo(
                 tokenHierarchyOperation,
-                TokenHierarchyEventType.EMBEDDING,
+                TokenHierarchyEventType.EMBEDDING_CREATED,
                 aOffset, 0, "", 0
+        
+        
+        
         );
         eventInfo.setMaxAffectedEndOffset(aOffset + token.length());
         // Construct outer token change info
@@ -287,9 +284,22 @@ public final class EmbeddingContainer<T extends TokenId> {
         //  - would prevent further lazy embedded lexing so leave to zero for now
         //info.setAddedTokenCount(0);
         info.addEmbeddedChange(embeddedInfo);
-        
+
+        // Check presence of token list list for the embedded language path
+        // When joining sections ensure that the token list list gets created
+        // and the embedded tokens get created because they must exist
+        // before possible next updating of the token list.
+        TokenListList tll = tokenHierarchyOperation.existingTokenListList(etl.languagePath());
         if (tll != null) {
+            // Ask for token count to force tokens creation
+            etl.tokenCount();
+            // Update tll by embedding creation
             new TokenHierarchyUpdate(eventInfo).updateCreateEmbedding(etl);
+        } else { // tll == null
+            if (embedding.joinSections()) {
+                // Force token list list creation only when joining sections
+                tll = tokenHierarchyOperation.tokenListList(etl.languagePath());
+            }
         }
 
         // Fire the change
@@ -298,6 +308,80 @@ public final class EmbeddingContainer<T extends TokenId> {
         return true;
     }
     
+    public static <T extends TokenId, ET extends TokenId> boolean removeEmbedding(
+    TokenList<T> tokenList, int index, Language<ET> embeddedLanguage) {
+        TokenHierarchyOperation<?,?> tokenHierarchyOperation = tokenList.tokenHierarchyOperation();
+        if (tokenHierarchyOperation == null) {
+            return false;
+        }
+        TokenList<? extends TokenId> rootTokenList = tokenList.root();
+        // Only create embedddings for valid operations so not e.g. for removed token list
+        Object tokenOrEmbeddingContainer = tokenList.tokenOrEmbeddingContainer(index);
+        EmbeddingContainer<T> ec;
+        synchronized (rootTokenList) {
+            if (tokenOrEmbeddingContainer.getClass() == EmbeddingContainer.class) {
+                // Embedding container exists
+                @SuppressWarnings("unchecked")
+                EmbeddingContainer<T> ecUC = (EmbeddingContainer<T>)tokenOrEmbeddingContainer;
+                ec = ecUC;
+                EmbeddedTokenList<?> etl = ec.firstEmbeddedTokenList();
+                EmbeddedTokenList<?> prevEtl = null;
+                while (etl != null) {
+                    if (embeddedLanguage == etl.languagePath().innerLanguage()) {
+                        // The embedding with the given language exists
+                        // Remove it from the chain
+                        if (prevEtl != null) {
+                            prevEtl = etl.nextEmbeddedTokenList();
+                        } else { // etl was first
+                            ec.setFirstEmbeddedTokenList(etl.nextEmbeddedTokenList());
+                        }
+                        // Increase the version of the hierarchy
+                        // TBD
+
+                        // Fire the embedding creation to the clients
+                        int startOffset = ec.tokenStartOffset();
+                        TokenHierarchyEventInfo eventInfo = new TokenHierarchyEventInfo(
+                                tokenHierarchyOperation,
+                                TokenHierarchyEventType.EMBEDDING_REMOVED,
+                                startOffset, 0, "", 0
+                        
+                        
+                        
+                        );
+                        eventInfo.setMaxAffectedEndOffset(startOffset + ec.token().length());
+                        // Construct outer token change info
+                        TokenChangeInfo<T> info = new TokenChangeInfo<T>(tokenList);
+                        info.setIndex(index);
+                        info.setOffset(startOffset);
+                        //info.setAddedTokenCount(0);
+                        eventInfo.setTokenChangeInfo(info);
+
+                        @SuppressWarnings("unchecked")
+                        EmbeddedTokenList<ET> etlET = (EmbeddedTokenList<ET>)etl;
+                        TokenChangeInfo<ET> embeddedInfo = new TokenChangeInfo<ET>(etlET);
+                        embeddedInfo.setIndex(0);
+                        embeddedInfo.setOffset(startOffset + etl.embedding().startSkipLength());
+                        // For now do not set the removed contents (requires RemovedTokenList)
+                        info.addEmbeddedChange(embeddedInfo);
+
+                        // Check for presence of etl in a token list list
+                        TokenListList tll = tokenHierarchyOperation.existingTokenListList(etl.languagePath());
+                        if (tll != null) {
+                            new TokenHierarchyUpdate(eventInfo).updateRemoveEmbedding(etl);
+                        }
+
+                        // Fire the change
+                        tokenHierarchyOperation.fireTokenHierarchyChanged(
+                                    LexerApiPackageAccessor.get().createTokenChangeEvent(eventInfo));
+                        return true;
+                    }
+                    etl = etl.nextEmbeddedTokenList();
+                }
+            }
+        }
+        return false;
+    }
+
     private AbstractToken<T> token; // 12 bytes (8-super + 4)
     
     /**

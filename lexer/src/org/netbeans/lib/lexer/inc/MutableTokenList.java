@@ -81,5 +81,11 @@ public interface MutableTokenList<T extends TokenId> extends TokenList<T> {
      * Update the token list by replacing tokens according to the given change.
      */
     void replaceTokens(TokenListChange<T> change, int removeTokenCount, int diffLength);
-    
+
+    /**
+     * Token list updater increments modification count of this token list
+     * by using this method.
+     */
+//    void incrementModCount();
+
 }

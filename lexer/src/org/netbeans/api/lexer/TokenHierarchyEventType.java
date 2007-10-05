@@ -112,7 +112,18 @@ public enum TokenHierarchyEventType {
      * {@link TokenChange#embeddedChange(int)} that describes the added
      * embedded language.
      */
-    EMBEDDING,
+    EMBEDDING_CREATED,
+    
+    /**
+     * Custom language embedding was removed by
+     * {@link TokenSequence#removeEmbedding(Language)}.
+     * <br/>
+     * The {@link TokenHierarchyEvent#tokenChange()} contains the token
+     * where the embedding was created and the embedded change
+     * {@link TokenChange#embeddedChange(int)} that describes the added
+     * embedded language.
+     */
+    EMBEDDING_REMOVED,
     
     /**
      * Notification that result of

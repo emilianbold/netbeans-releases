@@ -152,6 +152,14 @@ public final class TokenHierarchyUpdate {
         }
     }
     
+    public void updateRemoveEmbedding(EmbeddedTokenList<?> removedTokenList) {
+        TLLInfo info = info(removedTokenList.languagePath());
+        if (info != NO_INFO) {
+            info.markRemoved(removedTokenList);
+            processLevelInfos();
+        }
+    }
+    
     void processBoundsChangeEmbeddings(TokenListChange<?> change, TokenListChange<?> parentChange) {
         // Add an embedded change to the parent change (if exists)
         if (parentChange != null) {
@@ -387,15 +395,17 @@ public final class TokenHierarchyUpdate {
          * on the corresponding embedding container.
          */
         public void markRemoved(TokenList<?> removedTokenList) {
+            int offset = removedTokenList.startOffset();
             if (index == -1) {
-                index = tokenListList.findIndex(removedTokenList.startOffset());
+                index = tokenListList.findIndex(offset);
                 assert (index >= 0) : "index=" + index + " < 0"; // NOI18N
             }
             TokenList<?> expected = tokenListList.getOrNull(index + removeCount);
             if (expected != removedTokenList) {
-                throw new IllegalStateException("Expected to remove " + expected + // NOI18N
-                        "\nbut removing " + removedTokenList + // NOI18N
-                        "\nfrom tokenListList=" + tokenListList);
+                throw new IllegalStateException("Removing at offset=" + offset + // NOI18N
+                        ". Expected to remove tokenList\n" + expected + // NOI18N
+                        "\nbut removing tokenList\n" + removedTokenList + // NOI18N
+                        "\nfrom tokenListList\n" + tokenListList);
             }
             removeCount++;
         }
