@@ -81,7 +81,7 @@ public class WsdlComponentGenerator extends RestComponentGenerator {
 
     @Override
     public void addSupportingMethods() throws IOException {
-        if (! getBean().needsHtmlRepresentation()) {
+        if (getBean().getHeaderParameters().isEmpty()) {
             return;
         }
         ModificationResult result = wrapperResourceJS.runModificationTask(new AbstractTask<WorkingCopy>() {
@@ -347,7 +347,7 @@ public class WsdlComponentGenerator extends RestComponentGenerator {
         }
     }
     
-    public static final String HTML_REPRESENTATION = SET_HEADER_PARAMS + "(port); \n";
+    public static final String SET_HEADER_PARAMS_CALL = SET_HEADER_PARAMS + "(port); \n";
 
     private String getJavaInvocationBody(WsdlOperation operation, 
             boolean insertServiceDef, String serviceJavaName, String portJavaName, 
@@ -356,7 +356,7 @@ public class WsdlComponentGenerator extends RestComponentGenerator {
             String serviceFieldName, String printerName, String responseType) {
 
         String invocationBody = "";
-        String setHeaderParams = getBean().needsHtmlRepresentation() ? HTML_REPRESENTATION : "" ;
+        String setHeaderParams = getBean().getHeaderParameters().size() > 0 ? SET_HEADER_PARAMS_CALL : "" ;
         Object[] args = new Object[]{serviceJavaName, portJavaName, portGetterMethod, argumentInitializationPart, returnTypeName, operationJavaName, argumentDeclarationPart, serviceFieldName, printerName};
         switch (operation.getOperationType()) {
             case WsdlOperation.TYPE_NORMAL:

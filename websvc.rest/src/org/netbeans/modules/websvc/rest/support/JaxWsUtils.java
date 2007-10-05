@@ -111,7 +111,7 @@ public class JaxWsUtils {
                 continue;
             }
             Part part = header.getPartRef().get();
-            if (header.getPartRef().get().getElement() != null) {
+            if (part != null && part.getElement() != null) {
                 GlobalElement element = part.getElement().get();
                 paramMap.put(part.getElement().getQName(), guessSimpleJavaType(element));
             }
