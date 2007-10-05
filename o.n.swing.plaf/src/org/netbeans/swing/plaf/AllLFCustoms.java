@@ -133,6 +133,7 @@ final class AllLFCustoms extends LFCustoms {
         UIManager.put("ComboBox.font", nbDialogPlain); // NOI18N
         UIManager.put("Label.font", nbDialogPlain); // NOI18N
         UIManager.put("List.font", nbDialogPlain); // NOI18N
+        UIManager.put("FileChooser.listFont", nbDialogPlain); // NOI18N
         UIManager.put("MenuBar.font", nbDialogPlain); // NOI18N
         UIManager.put("MenuItem.font", nbDialogPlain); // NOI18N
         UIManager.put("MenuItem.acceleratorFont", nbDialogPlain); // NOI18N
