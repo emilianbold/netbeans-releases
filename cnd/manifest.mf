@@ -15,9 +15,11 @@ OpenIDE-Module-Class: Loader
 
 Name: org/netbeans/modules/cnd/loaders/CCDataLoader.class
 OpenIDE-Module-Class: Loader
+Install-After: org.netbeans.modules.cnd.loaders.CDataObject
 
 Name: org/netbeans/modules/cnd/loaders/HDataLoader.class
 OpenIDE-Module-Class: Loader
+Install-After: org.netbeans.modules.cnd.loaders.CCDataObject
 
 Name: org/netbeans/modules/cnd/loaders/ShellDataLoader.class
 OpenIDE-Module-Class: Loader

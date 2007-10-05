@@ -66,16 +66,16 @@ public class CndMIMEResolver extends MIMEResolver {
 
 	String ext = fo.getExt();
 	
-	// Recognize c++ files by extension
-        if (CCDataLoader.getInstance().getExtensions().isRegistered(ext)){
-            return MIMENames.CPLUSPLUS_MIME_TYPE;
-        }
-	
         // Recognize c files by extension
         if (CDataLoader.getInstance().getExtensions().isRegistered(ext)){
             return MIMENames.C_MIME_TYPE;
         }
 
+	// Recognize c++ files by extension
+        if (CCDataLoader.getInstance().getExtensions().isRegistered(ext)){
+            return MIMENames.CPLUSPLUS_MIME_TYPE;
+        }
+	
         // Recognize c files by extension
         if (HDataLoader.getInstance().getExtensions().isRegistered(ext)){
             return MIMENames.CPLUSPLUS_MIME_TYPE;
