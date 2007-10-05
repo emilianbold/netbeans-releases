@@ -518,9 +518,11 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
                         }
                         
                         // Find implementors
-                        ClassPath classPath =ClassPathSupport.createClassPath(new FileObject[] {rootFileObject});
+                        ClassPath classPath =ClassPathSupport.createClassPath(new FileObject[] {rootFileObject});                        
+                        ClassPath bootClassPath =ClassPath.getClassPath(rootFileObject, ClassPath.BOOT);
+                        ClassPath compileClassPath =ClassPath.getClassPath(rootFileObject, ClassPath.COMPILE);                            
                         if (classPath != null) {                            
-                            ClasspathInfo classpathInfo = ClasspathInfo.create(EMPTY_CLASSPATH, EMPTY_CLASSPATH, classPath);
+                            ClasspathInfo classpathInfo = ClasspathInfo.create(bootClassPath, compileClassPath, classPath);
                             if (classpathInfo != null) {
                                 ClassIndex classIndex = classpathInfo.getClassIndex();
                                 if (classIndex != null) {
