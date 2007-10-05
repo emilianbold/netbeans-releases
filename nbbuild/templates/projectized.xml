@@ -716,10 +716,19 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
         <echo>Findbugs module: ${module.name}</echo>
         <findbugs home="${findbugs.home}"
               output="xml"
-              outputFile="${report.file}" >
+              outputFile="${report.file}">
             <auxClasspath path="${findbugs.class.path}" />
             <sourcePath path="${src.dir}" />
             <class location="${build.classes.dir}" />
         </findbugs>
+        <condition property="findbugs.error" value="true">
+            <isfileselected file="${report.file}">
+                <size value="0"/>
+            </isfileselected>
+        </condition>
+        <antcall target="findbugs.delete"/>
+    </target>
+    <target name="findbugs.delete" if="findbugs.error">
+        <delete file="${report.file}" failonerror="false"/>
     </target>
 </project>
