@@ -15,7 +15,7 @@
 <h2>Working With NetBeans Ruby<a name="toclink"></a></h2>
 <p><small><a href="#seealso">See Also</a></small></p>
 <p>
-This topic describes common tasks that you can perform with NetBeans Ruby. For more detailed information, click the links in the right column. </p>
+This topic describes common tasks that you can perform with NetBeans Ruby and Ruby on Rails projects that are open in the <a href="rubyprojectnode.html">Projects Window</a>. For more detailed information, click the links in the right column. </p>
 
 <table border="1" cellpadding="5" cellspacing="0" summary="The left column lists the task name. The right column lists the steps to perform.">
   <tr valign="top"> 
@@ -180,33 +180,43 @@ This topic describes common tasks that you can perform with NetBeans Ruby. For m
   </ul></td>
 </tr>
 <tr valign="top">
-  <td>Run a Ruby or Rails application</td>
-  <td><ol>
-    <li>If your project is not the main one, right-click the project node and choose Set as Main Project</li>
-    <li>Click the Run Main Project <img src="images/runprojicon.gif" alt="Run Project button" width="11" height="20" align="texttop">&nbsp;toolbar button or press F6 or choose Run &gt; Run Main Project from the main menu. </li>
-  </ol>
-    <ul>
+  <td>Run a Ruby or Rails application from the IDE.</td>
+  <td>
+    <ol>
+      <li>If your project is not the main one, right-click the project node and choose Set as Main Project.</li>
+      <li>Click the Run Main Project <img src="images/runprojicon.gif" alt="Run Project button" width="11" height="20" align="texttop">&nbsp;toolbar button or press F6 or choose Run &gt; Run Main Project from the main menu. </li>
+    </ol>    <ul>
       <ul>
           <li>You see a Ruby project's output in a window at the bottom of the IDE.</li>
-          <li>A Ruby on Rails project runs in the WEBrick server and displays in your default browser.</li>
+          <li>A Ruby on Rails project runs in the server configured for Rails  and displays in your default browser.</li>
           <ul class="note">        
-            <li>To stop the WEBrick server, click the  X button <img src="images/redx.gif" alt="Red X icon" width="15" height="16" align="texttop">&nbsp;to the left of the WEBrick window.</li>
+            <li>To stop the  server, click the  X button <img src="images/redx.gif" alt="Red X icon" width="15" height="16" align="texttop">&nbsp;to the left of the server window at the bottom of the IDE.</li>
           </ul>
         </ul>
     </ul></td>
 </tr>
 <tr valign="top">
-  <td>Test a Ruby or Rails application</td>
+  <td>Run  a controller or view file</td>
   <td><ul>
-      <li>See 
-          <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-            <param name="viewerActivator" value="javax.help.LinkButton">
-            <param name="content" value=
+    <li>
+    
+      If you're in a controller or view file, press Shift-F6 to run the current file. Doing so starts the web server unless it's already running, then opens the browser on the URL corresponding to the current file.</li>
+  </ul></td>
+</tr>
+<tr valign="top">
+  <td>Run tests on your project </td>
+  <td><ul>
+      <li>.For quick testing when editing a  view or controller file, use Ctrl-F6, or Command-F6 on a Mac platform, to run the tests associated with the file.
+        <p>For full details on testing Ruby and Rails projects, see
+            <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+              <param name="viewerActivator" value="javax.help.LinkButton">
+              <param name="content" value=
         "http://www.netbeans.org/kb/60/ruby/unittest.html">
-            <param name="text" value="<html><u>Test Driven Rails Development</u></html>.">
-         <param name="textFontSize" value="medium">
-        <param name="textColor" value="blue">
-   </object>
+              <param name="text" value="<html><u>Test Driven Rails Development</u></html>.">
+              <param name="textFontSize" value="medium">
+              <param name="textColor" value="blue">
+            </object>
+        </p>
       </li>
   </ul></td>
 </tr>

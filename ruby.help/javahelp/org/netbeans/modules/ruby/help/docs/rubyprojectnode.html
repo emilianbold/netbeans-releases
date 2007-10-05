@@ -18,15 +18,15 @@
 <table border="0" cellpadding="5">
   <tr valign="top">
     <td><img src="images/rubyprojicon.gif" alt="Ruby Project icon"></td>
-    <td><span class="rubybullet"><b>Ruby Projects.</b> Fairly simple projects that have only Source Files and Test Files folders for the files. If you right-click the main project node for a Ruby project, you have a few Ruby project choices, such as New (add files), Generate RDoc, and Run Rake Task.</span></td>
+    <td><span class="rubybullet"><b>Ruby Projects.</b> Projects without Rails support that have only Source Files and Test Files folders for the files. If you right-click the main project node for a Ruby project, you have a few Ruby project choices, such as New (add files), Generate RDoc, and Run Rake Task.</span></td>
   </tr>
   <tr valign="top">
     <td><img src="images/railsprojicon.gif" width="13" height="16"></td>
-    <td><span class="railsbullet"><b>Ruby on Rails Projects.</b> Projects with Rails support for models, views, controllers, and databases that you can run in the WEBrick server and display in a browser. You can right-click the main project node and perform tasks like adding new files, generating models, views, and controllers, migrating databases, running Rake tasks, and so on.</span></td>
+    <td><span class="railsbullet"><b>Ruby on Rails Projects.</b> Projects with Rails support for models, views, controllers, and databases that you can test quickly from the IDE and run in the server configured with Rails. You can right-click the main project node and perform tasks like adding new files, generating models, views, and controllers, migrating databases, running Rake tasks, and so on.</span></td>
   </tr>
 </table>
 <ul class="note">
-<li>For a more traditional file view of your project, use the Files window, usually available on a tab next to the Projects window or by choosing Windows &gt; Files (Ctrl-2). </li>
+<li>For a  view of your project that shows the actual directory structure, you can use the Files window, usually available on a tab next to the Projects window or by choosing Windows &gt; Files (Ctrl-2). You can also change the default Projects window view from a logical view to a file view by choosing Tools &gt; Options &gt; Ruby &gt; Platform tab to display that tab of the <a href="rubyoptions.html">Ruby Options Window</a>. Then  uncheck Show Logical Project View, click OK, and  restart the IDE to apply the new window setting.</li>
 </ul>
 <p>The following list of tasks shows you some of the things you can do in this window with a Ruby or Ruby on Rails project node. For a complete list of tasks, see <a href="ruby_quickref.html">Working With NetBeans Ruby</a>.</p>
 <table border="1" cellpadding="5" cellspacing="0" summary="The left column lists the task name. The right column lists the steps to perform.">
@@ -102,31 +102,39 @@
 <tr valign="top">
   <td>Run a Ruby or Rails application</td>
   <td><ol>
-    <li>If your project is not the main one, right-click the project node and choose Set as Main Project</li>
+    <li>If your project is not the main one, right-click the project node and choose Set as Main Project.</li>
     <li>Click the Run Main Project <img src="images/runprojicon.gif" alt="Run Project button" width="11" height="20" align="texttop">&nbsp;toolbar button or press F6 or choose Run &gt; Run Main Project from the main menu. </li>
   </ol>
     <ul>
       <ul>
           <li>You see a Ruby project's output in a window at the bottom of the IDE.</li>
-          <li>A Ruby on Rails project runs in the WEBrick server and displays in your default browser.</li>
+          <li>A Ruby on Rails project runs in the server configured with Rails and displays in your default browser.</li>
     <ul class="note">        
-    <li>To stop the WEBrick server, click the  X button <img src="images/redx.gif" alt="Red X icon" width="15" height="16" align="texttop">&nbsp;to the left of the WEBrick window.</li>
+    <li>To stop the  server, click the  X button <img src="images/redx.gif" alt="Red X icon" width="15" height="16" align="texttop">&nbsp;to the left of the server window at the bottom of the IDE.</li>
     </ul>
         </ul>
     </ul></td>
 </tr>
 <tr valign="top">
-  <td>Test a Ruby or Rails application</td>
+  <td>Run a controller or view file</td>
   <td><ul>
-      <li>See 
-          <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-            <param name="viewerActivator" value="javax.help.LinkButton">
-            <param name="content" value=
+      <li>If you're in a controller or view file, press Shift-F6 to run the current file. Doing so starts the web server unless it's already running, then opens the browser on the URL corresponding to the current file.</li>
+  </ul></td>
+</tr>
+<tr valign="top">
+  <td>Run tests on your project </td>
+  <td><ul>
+      <li>.For quick testing when editing a view or controller file, use Ctrl-F6, or Command-F6 on a Mac platform, to run the tests associated with the file.
+          <p>For full details on testing Ruby and Rails projects, see
+              <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                <param name="viewerActivator" value="javax.help.LinkButton">
+                <param name="content" value=
         "http://www.netbeans.org/kb/60/ruby/unittest.html">
-            <param name="text" value="<html><u>Test Driven Rails Development</u></html>.">
-         <param name="textFontSize" value="medium">
-        <param name="textColor" value="blue">
-   </object>
+                <param name="text" value="<html><u>Test Driven Rails Development</u></html>.">
+                <param name="textFontSize" value="medium">
+                <param name="textColor" value="blue">
+              </object>
+          </p>
       </li>
   </ul></td>
 </tr>

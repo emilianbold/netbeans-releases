@@ -22,12 +22,25 @@
 <p>You can set the following options:
 <ul>
   <li><b>Name.</b> Specifies the name of the plugin. If you want to install a different plugin, it's easier to close the dialog box, select another plugin in the New plugins tab, and click Install.</li>
-<li><b>Use Subversion.</b> Use the Subversion version control system to check out the plugin.  
+<li><b>Use Subversion.</b> Use the Subversion version control system to check out the plugin. 
+<ul class="note">
+<li>You must have the path to your svn command in your system PATH variable to be able to use this feature.
+</li>
+</ul> 
   <ul>
-    <li><b>Use svn checkout to grab the plugin. </b></li>
-    <li><b>Use svn:externals to grab the plugin. </b></li>
-    <li><b>Specific revision.</b> Indicate the revision if you want a version other than the latest one. </li>
+    <li><b>Use svn checkout to grab the plugin.</b> Use the standard chekcout command.</li>
+    <li><b>Use svn:externals to grab the plugin.</b> Use this option if you want to include external directories, such as parts of other repositories, in a Subversion checkout. For more information, see the following web page:<br>
+        <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+        <param name="viewerActivator" value="javax.help.LinkButton">
+        <param name="content" value=
+        "http://svnbook.red-bean.com/en/1.0/ch07s03.html">
+        <param name="text" value="<html><u>Externals Definitions</u></html>">
+         <param name="textFontSize" value="medium">
+        <param name="textColor" value="blue">
+   </object>
+    <li><b>Specific revision.</b> Indicate the revision if you want a revision other than the latest one. </li>
   </ul>
+</li>
 </li>
 </ul>
 <dl>
@@ -38,7 +51,7 @@
 </dl>
 
 <hr>
-<p><font size=-2><a href="../../../credits.html">Legal Notices</a></font>
+<p><font size=-2><a href="credits.html">Legal Notices</a></font>
 </p>
 <table cellpadding="50" border="0">
   <tr>
