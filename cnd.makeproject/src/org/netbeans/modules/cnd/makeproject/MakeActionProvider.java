@@ -376,7 +376,10 @@ public class MakeActionProvider implements ActionProvider {
                             String location = FilePathAdaptor.naturalize((String)iter.next());
                             path = location + ";" + path; // NOI18N
                         }
-                        path = path + ";" + CppSettings.getDefault().getPath(); // NOI18N
+                        String userPath = runProfile.getEnvironment().getenv(Path.getPathName());
+                        if (userPath == null)
+                            userPath = System.getenv(Path.getPathName());
+                        path = path + ";" + userPath; // NOI18N
                         runProfile.getEnvironment().putenv(Path.getPathName(), path);
                     } else if (Platforms.getPlatform(conf.getPlatform().getValue()).getId() == Platform.PLATFORM_MACOSX) {
                         // On Mac OS X we need to add paths to dynamic libraries from subprojects to DYLD_LIBRARY_PATH
