@@ -125,7 +125,7 @@ public class MakeJNLPTest extends NbTestCase {
         String res = ModuleDependenciesTest.readFile (jnlp);
         
         assertTrue ("Component JNLP type: " + res, res.indexOf ("<component-desc/>") >= 0);
-        assertTrue ("We support all permitions by default: " + res, res.indexOf ("<all-permissions/>") >= 0);
+        assertTrue ("We support all permissions by default: " + res, res.indexOf ("<all-permissions/>") >= 0);
         
         Matcher match = Pattern.compile(".*codebase=['\\\"]([^'\\\"]*)['\\\"]").matcher(res);
         assertTrue("codebase is there", match.find());
@@ -181,7 +181,7 @@ public class MakeJNLPTest extends NbTestCase {
         String res = ModuleDependenciesTest.readFile (jnlp);
         
         assertTrue ("Component JNLP type: " + res, res.indexOf ("<component-desc/>") >= 0);
-        assertTrue ("We support all permitions by default: " + res, res.indexOf ("<all-permissions/>") >= 0);
+        assertTrue ("We support all permissions by default: " + res, res.indexOf ("<all-permissions/>") >= 0);
         
         Matcher match = Pattern.compile(".*codebase=['\\\"]([^'\\\"]*)['\\\"]").matcher(res);
         assertTrue("codebase is there", match.find());
@@ -237,7 +237,7 @@ public class MakeJNLPTest extends NbTestCase {
         
         assertTrue ("Component JNLP type: " + res, res.indexOf ("<component-desc/>") >= 0);
         assertTrue ("Resource is os dependant: " + res, res.indexOf ("<resources os='Mac OS X'>") >= 0);
-        assertTrue ("We support all permitions by default: " + res, res.indexOf ("<all-permissions/>") >= 0);
+        assertTrue ("We support all permissions by default: " + res, res.indexOf ("<all-permissions/>") >= 0);
         
         Matcher match = Pattern.compile(".*codebase=['\\\"]([^'\\\"]*)['\\\"]").matcher(res);
         assertTrue("codebase is there", match.find());
@@ -342,7 +342,7 @@ public class MakeJNLPTest extends NbTestCase {
         
         
         assertTrue ("Component JNLP type: " + res, res.indexOf ("<component-desc/>") >= 0);
-        assertTrue ("We support all permitions by default: " + res, res.indexOf ("<all-permissions/>") >= 0);
+        assertTrue ("We support all permissions by default: " + res, res.indexOf ("<all-permissions/>") >= 0);
         
         Matcher match = Pattern.compile(".*codebase=['\\\"]([^'\\\"]*)['\\\"]").matcher(res);
         assertTrue("codebase is there", match.find());
@@ -728,7 +728,7 @@ public class MakeJNLPTest extends NbTestCase {
         String res = ModuleDependenciesTest.readFile (jnlp);
         
         assertTrue ("Component JNLP type: " + res, res.indexOf ("<component-desc/>") >= 0);
-        assertTrue ("We support all permitions by default: " + res, res.indexOf ("<all-permissions/>") >= 0);
+        assertTrue ("We support all permissions by default: " + res, res.indexOf ("<all-permissions/>") >= 0);
         
         Matcher match = Pattern.compile(".*codebase=['\\\"]([^'\\\"]*)['\\\"]").matcher(res);
         assertTrue("codebase is there", match.find());
