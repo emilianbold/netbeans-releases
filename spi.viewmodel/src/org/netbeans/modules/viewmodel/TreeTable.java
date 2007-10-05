@@ -61,6 +61,7 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.tree.TreeNode;
 
@@ -129,15 +130,15 @@ ExplorerManager.Provider, PropertyChangeListener, TreeExpansionListener {
     }
     
     public void setModel (Models.CompoundModel model) {
+        // 2) save current settings (like columns, expanded paths)
+        //List ep = treeTable.getExpandedPaths ();
+        saveWidths ();
+        
         this.model = model;
         
         // 1) destroy old model
         if (currentTreeModelRoot != null) 
             currentTreeModelRoot.destroy ();
-        
-        // 2) save current settings (like columns, expanded paths)
-        //List ep = treeTable.getExpandedPaths ();
-        saveWidths ();
         
         // 3) no model => set empty root node & return
         if (model == null) {
@@ -331,6 +332,21 @@ ExplorerManager.Provider, PropertyChangeListener, TreeExpansionListener {
     private void saveWidths () {
         if (columns == null) return;
         int i, k = columns.length;
+        if (k == 0) return ;
+        TableColumnModel tcm = treeTable.getTable().getColumnModel();
+        Enumeration<TableColumn> etc = tcm.getColumns();
+        boolean defaultState = true;
+        while(etc.hasMoreElements()) {
+            if (etc.nextElement().getWidth() != 75) {
+                defaultState = false;
+                break;
+            }
+        }
+        if (defaultState) {
+            // All columns have the default width 75.
+            // It's very likely that the table was not fully initialized => do not save anything.
+            return ;
+        }
         for (i = 0; i < k; i++) {
             if (Boolean.TRUE.equals (columns [i].getValue 
                 ("InvisibleInTreeTableView"))
@@ -338,17 +354,14 @@ ExplorerManager.Provider, PropertyChangeListener, TreeExpansionListener {
             if (!(columns [i] instanceof Column)) continue;
             Column column = (Column) columns [i];
             if (column.isDefault ()) {
-                TableColumn tc = treeTable.getTable ().getColumnModel ().
-                    getColumn (0);
+                TableColumn tc = tcm.getColumn (0);
                 if (tc == null) continue;
                 int width = tc.getWidth ();
                 column.setColumnWidth (width);
             } else {
-                int order = column.getOrderNumber ();
-                if (order == -1) continue;
+                int order = getColumnVisibleIndex(column, i);
 
-                TableColumn tc = treeTable.getTable ().getColumnModel ().
-                    getColumn (order + 1);
+                TableColumn tc = tcm.getColumn (order + 1);
                 if (tc == null) continue;
                 int width = tc.getWidth ();
                 column.setColumnWidth (width);
