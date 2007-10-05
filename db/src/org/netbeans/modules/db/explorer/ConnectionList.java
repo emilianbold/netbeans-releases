@@ -84,6 +84,11 @@ public class ConnectionList {
     }
     
     private ConnectionList() {
+        // issue 75204: forces the DataObject's corresponding to the DatabaseConnection's
+        // to be initialized and held strongly so the same DatabaseConnection is
+        // returns as long as it is held strongly
+        result.allInstances();
+        
         result.addLookupListener(new LookupListener() {
             public void resultChanged(LookupEvent e) {
                 fireListeners();

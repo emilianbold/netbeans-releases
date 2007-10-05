@@ -59,8 +59,8 @@ public class DatabaseExplorerUIsTest extends TestBase {
     }
 
     private void initConnections() throws Exception {
-        assertEquals(0, ConnectionManager.getDefault().getConnections().length);
         JDBCDriver driver = JDBCDriverManager.getDefault().getDrivers("sun.jdbc.odbc.JdbcOdbcDriver")[0];
+        assertEquals(0, ConnectionManager.getDefault().getConnections().length);
         dbconn1 = DatabaseConnection.create(driver, "db", "dbuser", "dbschema", "dbpassword", true);
         dbconn2 = DatabaseConnection.create(driver, "database", "user", "schema", "password", true);
         ConnectionManager.getDefault().addConnection(dbconn1);
@@ -85,6 +85,7 @@ public class DatabaseExplorerUIsTest extends TestBase {
         JComboBox combo = connect();
 
         assertTrue("Wrong number of items in the combobox", combo.getItemCount() == 4);
+
         assertSame(dbconn2, combo.getItemAt(0));
         assertSame(dbconn1, combo.getItemAt(1));
     }
