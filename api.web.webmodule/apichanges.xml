@@ -103,6 +103,20 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="Making_WebModuleAPI_Public">
+            <api name="WebModuleAPI"/>
+            <summary>Making the WebModule API public</summary>
+            <version major="1" minor="10"/>
+            <date day="28" month="9" year="2007"/>
+            <author login="abadea@netbeans.org"/>
+            <compatibility modification="yes"/>
+            <description>
+                <p>
+                    Made the WebModule API public with the stability level "under development".
+                </p>
+            </description>
+            <issue number="112441"/>
+        </change>
         <change id="Deprecating_WebFrameworkProvider_Methods">
             <api name="WebModuleAPI"/>
             <summary>Deprecating <code>WebFrameworkProvider.extend()</code> and <code>WebFrameworkProvider.getConfigurationPanel()</code></summary>
