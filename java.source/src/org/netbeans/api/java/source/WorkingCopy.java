@@ -210,7 +210,7 @@ public class WorkingCopy extends CompilationController {
             return newRepl;
         }
     }
-            
+    
     private static boolean REWRITE_WHOLE_FILE = Boolean.getBoolean(WorkingCopy.class.getName() + ".rewrite-whole-file");
     
     private List<Difference> processCurrentCompilationUnit() throws IOException, BadLocationException {
@@ -253,12 +253,18 @@ public class WorkingCopy extends CompilationController {
 
                         Map<Tree, Tree> rewrites = parent2Rewrites.get(currentParent);
 
-                        rewrites.put(tree, changes.get(tree));
+                        Tree rev = changes.remove(tree);
+                        
+                        rewrites.put(tree, rev);
+                        
+                        scan(rev, p);
+                        
+                        if (clearCurrentParent) {
+                            currentParent = null;
+                        }
+                    } else {
+                        super.scan(tree, p);
                     }
-                    super.scan(tree, p);
-
-                    if (clearCurrentParent)
-                        currentParent = null;
 
                     return null;
                 }
@@ -381,7 +387,7 @@ public class WorkingCopy extends CompilationController {
     }
     
     // Innerclasses ------------------------------------------------------------
-    public static class Rewriter implements SourceRewriter {
+    private static class Rewriter implements SourceRewriter {
 
         private int offset = 0;
         private CloneableEditorSupport ces;
