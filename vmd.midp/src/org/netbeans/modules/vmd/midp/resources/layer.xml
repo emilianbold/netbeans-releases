@@ -38,8 +38,6 @@
 
     <folder name="Templates">
         <folder name="MIDP">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.vmd.midp.resources.Bundle"/>
-
             <file name="VisualMIDlet.java" url="templates/emptyvisualmidlet_java.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.vmd.midp.resources.Bundle"/>
                 <attr name="position" intvalue="400"/>
