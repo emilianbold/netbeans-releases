@@ -141,9 +141,9 @@ public final class DefaultPlugin extends JUnitPlugin {
     /** name of FreeMarker template property - generate {@code &#64;AfterClass} method? */
     private static final String templatePropAfterClass = "classTearDown";//NOI18N
     /** name of FreeMarker template property - generate {@code &#64;Before} method? */
-    private static final String templatePropBefore = "setUp";           //NOI18N
+    private static final String templatePropBefore = "methodSetUp";     //NOI18N
     /** name of FreeMarker template property - generate {@code &#64;After} method? */
-    private static final String templatePropAfter = "tearDown";         //NOI18N
+    private static final String templatePropAfter = "methodTearDown";   //NOI18N
     /** name of FreeMarker template property - generate in-method source code hints? */
     private static final String templatePropCodeHints = "sourceCodeHint";   //NOI18N
     /** name of FreeMarker template property - generate hints - method placeholders? */
