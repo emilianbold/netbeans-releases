@@ -51,6 +51,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.MessageFormat;
 
+import java.util.Random;
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 
@@ -111,7 +112,7 @@ public class TrackCoupling extends TrackItem implements ActionListener
    {
       return true;
    }
-   
+      
    public void paint(Graphics g)
    {
       Color curColor = g.getColor();
@@ -124,6 +125,11 @@ public class TrackCoupling extends TrackItem implements ActionListener
       {
         g.setColor(getBackground());
       }
+      
+//      kris richards - uncomment the following to paint the couplings in randow colors
+//              this helps to see what the couplings are really doing.
+//      private Random random = new Random() ;
+//      g.setColor(new Color (random.nextInt(255), random.nextInt(255), random.nextInt(255)));
       
       Rectangle bounds = getBounds();
       g.fillRect(0, 0, bounds.width, bounds.height);

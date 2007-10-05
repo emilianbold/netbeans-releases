@@ -913,10 +913,10 @@ public class JTrackBar extends JPanel implements ITrackBar, FocusListener
          if (prevItem != null)
          {
             prevItem.setNextItem(nextItem);
-            if (nextItem == null) {
+            
                 retVal.setPreviousItem (null) ;
                 remove (retVal);
-            }
+            
          }
 
          // Update the next car's next car
