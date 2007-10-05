@@ -76,7 +76,7 @@ import org.netbeans.modules.j2ee.sun.share.configbean.Utils;
 public class GenericTableDialogPanel extends JPanel implements GenericTableDialogPanelAccessor {
 
 	/** resource bundle */
-	private static final ResourceBundle bundle = ResourceBundle.getBundle(
+	private final ResourceBundle bundle = ResourceBundle.getBundle(
 		"org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.Bundle");	// NOI18N		
 
 	private List fieldEntries;

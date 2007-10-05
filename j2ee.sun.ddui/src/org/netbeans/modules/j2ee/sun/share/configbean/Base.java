@@ -88,7 +88,7 @@ public abstract class Base implements Constants, DConfigBean, XpathListener, DCo
 
     /** Resource bundle 
      */
-    protected static final ResourceBundle bundle = ResourceBundle.getBundle(
+    protected final ResourceBundle bundle = ResourceBundle.getBundle(
         "org.netbeans.modules.j2ee.sun.share.configbean.Bundle");	// NOI18N
 
     /** Property event names 

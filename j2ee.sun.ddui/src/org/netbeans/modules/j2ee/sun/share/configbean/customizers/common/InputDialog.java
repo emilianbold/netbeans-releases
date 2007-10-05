@@ -101,7 +101,7 @@ public abstract class InputDialog extends JDialog implements HelpCtx.Provider {
 	 */
 	public static final int HELP_OPTION = 2;
 
-	private static final ResourceBundle bundle = ResourceBundle.getBundle(
+	private final ResourceBundle bundle = ResourceBundle.getBundle(
 		"org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.Bundle"); //NOI18N
 
     

@@ -70,7 +70,7 @@ import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.Customi
  */
 public abstract class EjbCustomizer extends BaseCustomizer implements TableModelListener {
 
-    static final ResourceBundle bundle = ResourceBundle.getBundle(
+    protected final ResourceBundle bundle = ResourceBundle.getBundle(
             "org.netbeans.modules.j2ee.sun.share.configbean.customizers.ejbmodule.Bundle"); // NOI18N
     
     /** Tabbed panels on the ejb customizer are very dynamic, so we'll use a property

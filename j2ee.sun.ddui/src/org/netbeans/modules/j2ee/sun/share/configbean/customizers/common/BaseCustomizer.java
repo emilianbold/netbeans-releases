@@ -92,7 +92,7 @@ public abstract class BaseCustomizer extends JPanel implements Customizer,
 			
 	/** Reference to the resource bundle in customizers/common
 	 */
-	protected static final ResourceBundle commonBundle = ResourceBundle.getBundle(
+	protected final ResourceBundle commonBundle = ResourceBundle.getBundle(
 		"org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.Bundle");	// NOI18N
 
 	/** Path for help button image resource

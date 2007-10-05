@@ -47,6 +47,7 @@
 package org.netbeans.modules.j2ee.sun.share.configbean.customizers.webservice;
 
 import org.netbeans.modules.j2ee.sun.dd.api.common.WebserviceEndpoint;
+import org.openide.util.NbBundle;
 
 
 /** Class that associates a web service endpoint with a string so we can do combobox
@@ -94,7 +95,9 @@ public class EndpointMapping {
 		if(name != null && name.length() > 0) {
 			resultBuf.append(name);
 		} else {
-			resultBuf.append(WebServiceDescriptorCustomizer.bundle.getString("LBL_UntitledEndpoint"));
+			resultBuf.append(
+                                NbBundle.getBundle("org.netbeans.modules.j2ee.sun.share.configbean.customizers.webservice.Bundle")
+                                .getString("LBL_UntitledEndpoint"));
         }
 
 		textOutOfDate = false;

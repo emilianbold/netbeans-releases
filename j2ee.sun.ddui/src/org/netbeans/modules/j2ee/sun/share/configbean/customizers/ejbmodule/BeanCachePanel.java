@@ -63,7 +63,7 @@ public class BeanCachePanel extends JPanel {
 
     private EjbCustomizer masterPanel;
     
-    static final ResourceBundle bundle = ResourceBundle.getBundle(
+    private final ResourceBundle bundle = ResourceBundle.getBundle(
             "org.netbeans.modules.j2ee.sun.share.configbean.customizers.ejbmodule.Bundle"); // NOI18N
 
     /** Creates new form BeanCachePanel */

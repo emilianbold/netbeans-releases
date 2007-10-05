@@ -57,6 +57,7 @@ import org.netbeans.modules.j2ee.sun.dd.api.common.MethodParams;
 import org.netbeans.modules.j2ee.sun.share.configbean.Utils;
 
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.GenericTableModel;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -68,9 +69,6 @@ public class MessageEntry extends GenericTableModel.TableEntry {
     public static final String OPERATION_ENTRY = "OperationName"; // NOI18N
     public static final String METHOD_ENTRY = "MethodName"; // NOI18N
     
-    private static final ResourceBundle webserviceBundle = ResourceBundle.getBundle(
-        "org.netbeans.modules.j2ee.sun.share.configbean.customizers.webservice.Bundle"); // NOI18N
-
     /** Pattern to split a string representing a JavaMethod up into it's component parts.
      *  This simply breaks the string up on whitespace, commas, left/right parentheses
      *  and left/right square brackets.
@@ -80,7 +78,8 @@ public class MessageEntry extends GenericTableModel.TableEntry {
     private boolean saveAsOperation;
     
     public MessageEntry(boolean useOperations) {
-        super(null, MessageSecurity.MESSAGE, webserviceBundle, 
+        super(null, MessageSecurity.MESSAGE, NbBundle.getBundle(
+                "org.netbeans.modules.j2ee.sun.share.configbean.customizers.webservice.Bundle"),
                 useOperations ? OPERATION_ENTRY : METHOD_ENTRY, true, true);
         
         saveAsOperation = useOperations;

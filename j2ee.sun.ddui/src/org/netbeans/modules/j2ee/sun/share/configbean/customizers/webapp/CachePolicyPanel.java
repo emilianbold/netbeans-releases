@@ -84,6 +84,7 @@ import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.TextMap
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.GenericTableModel;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.GenericTablePanel;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.HelpContext;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -93,10 +94,10 @@ import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.HelpCon
 public class CachePolicyPanel extends JPanel implements TableModelListener {
 	
 	/** resource bundle */
-	private static final ResourceBundle commonBundle = ResourceBundle.getBundle(
+	private final ResourceBundle commonBundle = NbBundle.getBundle(
 		"org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.Bundle");	// NOI18N
 	
-	private static final ResourceBundle webappBundle = ResourceBundle.getBundle(
+	private final ResourceBundle webappBundle = NbBundle.getBundle(
 		"org.netbeans.modules.j2ee.sun.share.configbean.customizers.webapp.Bundle");	// NOI18N
 
 	private static final TextMapping [] scopeTypes = ScopeMapping.getScopeMappings();
@@ -840,6 +841,9 @@ public class CachePolicyPanel extends JPanel implements TableModelListener {
 	 *  public and put it in common.
 	 */
 	private static class BetterInputDialog extends InputDialog {
+		private final ResourceBundle webappBundle = NbBundle.getBundle(
+			"org.netbeans.modules.j2ee.sun.share.configbean.customizers.webapp.Bundle");	// NOI18N
+                
 		private final CachePolicyPanel dialogPanel;
 		
 		public BetterInputDialog(JPanel parent, String title, CachePolicyPanel childPanel) {

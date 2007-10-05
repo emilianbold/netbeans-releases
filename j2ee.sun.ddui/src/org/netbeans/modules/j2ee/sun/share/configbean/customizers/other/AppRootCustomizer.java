@@ -67,11 +67,11 @@ import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.BaseCus
 public class AppRootCustomizer extends BaseCustomizer {
 	
 	/** Resource bundle */
-	private static final ResourceBundle bundle = ResourceBundle.getBundle(
+	private final ResourceBundle bundle = ResourceBundle.getBundle(
 		"org.netbeans.modules.j2ee.sun.share.configbean.customizers.other.Bundle"); // NOI18N
         
 	/** xml <--> ui mapping for pass by reference combo box */
-	private static final TextMapping [] passByReferenceValues = {
+	private final TextMapping [] passByReferenceValues = {
 		new TextMapping("", ""),
 		new TextMapping("true", commonBundle.getString("LBL_True")),
 		new TextMapping("false", commonBundle.getString("LBL_False"))

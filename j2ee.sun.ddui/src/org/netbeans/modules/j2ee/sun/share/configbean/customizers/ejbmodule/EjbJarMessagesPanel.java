@@ -74,7 +74,7 @@ import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.HelpCon
  */
 public class EjbJarMessagesPanel extends javax.swing.JPanel implements TableModelListener {
 	
-	private static final ResourceBundle ejbjarBundle = ResourceBundle.getBundle(
+	private final ResourceBundle ejbjarBundle = ResourceBundle.getBundle(
 		"org.netbeans.modules.j2ee.sun.share.configbean.customizers.ejbmodule.Bundle");	// NOI18N
 	
 	private EjbJarRootCustomizer masterPanel;

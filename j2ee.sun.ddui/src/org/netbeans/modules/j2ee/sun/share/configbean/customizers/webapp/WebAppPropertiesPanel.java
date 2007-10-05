@@ -66,6 +66,7 @@ import org.netbeans.modules.j2ee.sun.share.configbean.StorageBeanFactory;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.GenericTableModel;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.GenericTablePanel;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.HelpContext;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -73,7 +74,7 @@ import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.HelpCon
  */
 public class WebAppPropertiesPanel extends javax.swing.JPanel implements TableModelListener {
 	
-	private static final ResourceBundle webappBundle = ResourceBundle.getBundle(
+	private final ResourceBundle webappBundle = NbBundle.getBundle(
 		"org.netbeans.modules.j2ee.sun.share.configbean.customizers.webapp.Bundle");	// NOI18N
 	
 	private WebAppRootCustomizer masterPanel;

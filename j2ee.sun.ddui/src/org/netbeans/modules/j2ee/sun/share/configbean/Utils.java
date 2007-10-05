@@ -58,6 +58,7 @@ import org.openide.util.Lookup;
 import org.netbeans.api.javahelp.Help;
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
 import org.openide.ErrorManager;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -72,8 +73,6 @@ public class Utils implements org.netbeans.modules.j2ee.sun.share.Constants {
     
     private static final String KEYSEPSTR = "|"; // NOI18N
     
-    private static ResourceBundle ubundle =
-        ResourceBundle.getBundle("org.netbeans.modules.j2ee.sun.share.configbean.Bundle"); // NOI18N
             
     public static String getFQNKey(String uri, String fname) {
         String key = ""; 
@@ -383,12 +382,14 @@ public class Utils implements org.netbeans.modules.j2ee.sun.share.Constants {
         String format = null;
         boolean poorFormat = false;
         try {
-            format = ubundle.getString(messageKey);
+            // !PW FIXME rewrite this to use NbBundle.getMessage() for formatting.
+            format = NbBundle.getBundle("org.netbeans.modules.j2ee.sun.share.configbean.Bundle").getString(messageKey);
         }
         catch (RuntimeException re) {
             poorFormat = true;
             jsr88Logger.throwing(Utils.class.getName(), "makeCE", re);
-            format = ubundle.getString("DEF_ConfigurationExceptionFormat");
+            // !PW FIXME rewrite this to use NbBundle.getMessage() for formatting.
+            format = NbBundle.getBundle("org.netbeans.modules.j2ee.sun.share.configbean.Bundle").getString("DEF_ConfigurationExceptionFormat");
             int len = 1;
             if (null != params)
                 len += params.length;

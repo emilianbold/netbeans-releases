@@ -63,6 +63,7 @@ import org.netbeans.modules.j2ee.sun.share.configbean.ValidationError;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.CustomizerErrorPanel;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.CustomizerTitlePanel;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.BaseCustomizer;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -71,7 +72,7 @@ import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.BaseCus
  */
 public class ServiceRefCustomizer extends BaseCustomizer {
 
-    static final ResourceBundle bundle = ResourceBundle.getBundle(
+    final ResourceBundle bundle = NbBundle.getBundle(
             "org.netbeans.modules.j2ee.sun.share.configbean.customizers.webservice.Bundle"); // NOI18N
 
 	/** The bean currently being customized, or null if there isn't one

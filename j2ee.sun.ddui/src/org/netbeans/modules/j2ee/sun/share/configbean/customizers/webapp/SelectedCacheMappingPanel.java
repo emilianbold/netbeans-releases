@@ -69,6 +69,7 @@ import org.netbeans.modules.j2ee.sun.share.configbean.Utils;
 import org.netbeans.modules.j2ee.sun.share.configbean.ServletRef;
 import org.netbeans.modules.j2ee.sun.share.configbean.WebAppCache;
 import org.netbeans.modules.j2ee.sun.share.configbean.WebAppRoot;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -76,10 +77,10 @@ import org.netbeans.modules.j2ee.sun.share.configbean.WebAppRoot;
  */
 public class SelectedCacheMappingPanel extends javax.swing.JPanel {
 	
-	private static final ResourceBundle webappBundle = ResourceBundle.getBundle(
+	private final ResourceBundle webappBundle = NbBundle.getBundle(
 		"org.netbeans.modules.j2ee.sun.share.configbean.customizers.webapp.Bundle");	// NOI18N
 
-	private static final ResourceBundle commonBundle = ResourceBundle.getBundle(
+	private final ResourceBundle commonBundle = NbBundle.getBundle(
 		"org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.Bundle");	// NOI18N
 	
 	private WebAppRootCustomizer masterPanel;

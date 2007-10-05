@@ -122,7 +122,7 @@ public class DynamicPropertyPanel extends JPanel
 	private String description;
 	
 	// Standard resource bundle to use for non-property list fields
-	private static final ResourceBundle localBundle = ResourceBundle.getBundle(
+	private final ResourceBundle localBundle = ResourceBundle.getBundle(
 		"org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.Bundle");	// NOI18N
 
 	// Special resource bundle to use for this property list

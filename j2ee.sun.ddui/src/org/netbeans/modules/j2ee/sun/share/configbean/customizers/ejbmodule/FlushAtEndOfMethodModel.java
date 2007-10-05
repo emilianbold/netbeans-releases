@@ -61,13 +61,13 @@ import org.netbeans.modules.j2ee.sun.share.configbean.StorageBeanFactory;
  */
 public class FlushAtEndOfMethodModel extends MultiMethodTableModel{
 
-    static final ResourceBundle bundle = 
+    private final ResourceBundle bundle = 
         ResourceBundle.getBundle(
             "org.netbeans.modules.j2ee.sun.share.configbean.customizers.ejbmodule.Bundle"); //NOI18N
 
     private CmpEntityEjb cmpEntityEjb;
 
-    private static final String[] columnNames = {
+    private final String[] columnNames = {
         bundle.getString("LBL_Method"),                                 //NOI18N
         bundle.getString("LBL_Flush"),                                  //NOI18N
         bundle.getString("LBL_Description")                             //NOI18N

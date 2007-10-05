@@ -48,9 +48,9 @@ package org.netbeans.modules.j2ee.sun.share;
 
 import java.util.Arrays;
 import java.util.Vector;
-import java.util.ResourceBundle;
 import java.text.MessageFormat;
 import javax.swing.table.AbstractTableModel;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -58,19 +58,18 @@ import javax.swing.table.AbstractTableModel;
  */
 public class SecurityMasterListModel extends AbstractTableModel {
 
-    private static final ResourceBundle bundle = ResourceBundle.getBundle(
-        "org.netbeans.modules.j2ee.sun.share.Bundle");	// NOI18N
-
-    public static final String DUPLICATE_PRINCIPAL = bundle.getString("ERR_PrincipalExists");	// NOI18N
-    public static final String DUPLICATE_GROUP = bundle.getString("ERR_GroupExists");	// NOI18N
+    public static final String DUPLICATE_PRINCIPAL = NbBundle.getBundle(
+            "org.netbeans.modules.j2ee.sun.share.Bundle").getString("ERR_PrincipalExists");	// NOI18N
+    public static final String DUPLICATE_GROUP =  NbBundle.getBundle(
+            "org.netbeans.modules.j2ee.sun.share.Bundle").getString("ERR_GroupExists");	// NOI18N
 
     public static final String [] PRINCIPAL_COLUMN_NAMES = {
-        bundle.getString("LBL_PrincipalColumnName"),
-        bundle.getString("LBL_PrincipalClassColumnName")
+         NbBundle.getBundle("org.netbeans.modules.j2ee.sun.share.Bundle").getString("LBL_PrincipalColumnName"),
+         NbBundle.getBundle("org.netbeans.modules.j2ee.sun.share.Bundle").getString("LBL_PrincipalClassColumnName")
     };
 
     public static final String [] GROUP_COLUMN_NAMES = {
-        bundle.getString("LBL_GroupColumnName")
+         NbBundle.getBundle("org.netbeans.modules.j2ee.sun.share.Bundle").getString("LBL_GroupColumnName")
     };
 
     // !PW FIXME will likely have to replace this with LinkedHashMap to have

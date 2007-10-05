@@ -71,7 +71,7 @@ public abstract class BeanTablePanel extends javax.swing.JPanel {
 	protected BeanTableModel model;
 	private boolean isSource;
 
-	static final ResourceBundle bundle =
+	private final ResourceBundle bundle =
 		ResourceBundle.getBundle(
 			"org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.Bundle"); //NOI18N
 

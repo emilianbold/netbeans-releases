@@ -195,9 +195,9 @@ public class SRMPrincipalTableModel extends SRMBaseTableModel implements Princip
     public String getColumnName(int columnIndex) {
         switch(columnIndex) {
             case 0:
-                return SecurityRoleMappingPanel.customizerBundle.getString("LBL_PrincipalName"); // NOI18N
+                return customizerBundle.getString("LBL_PrincipalName"); // NOI18N
             case 1:
-                return SecurityRoleMappingPanel.customizerBundle.getString("LBL_ClassName"); // NOI18N
+                return customizerBundle.getString("LBL_ClassName"); // NOI18N
         }
         return null;
     }

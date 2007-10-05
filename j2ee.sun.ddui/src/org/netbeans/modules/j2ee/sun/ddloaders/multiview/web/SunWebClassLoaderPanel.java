@@ -64,7 +64,7 @@ import org.openide.util.NbBundle;
  */
 public class SunWebClassLoaderPanel extends BaseSectionNodeInnerPanel {
 	
-    private static final ResourceBundle webappBundle = ResourceBundle.getBundle(
+    private final ResourceBundle webappBundle = ResourceBundle.getBundle(
             "org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.Bundle");	// NOI18N
     
     private SunWebApp sunWebApp;

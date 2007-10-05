@@ -61,6 +61,7 @@ import org.netbeans.modules.j2ee.sun.share.configbean.ErrorMessageDB;
 import org.netbeans.modules.j2ee.sun.share.configbean.ValidationError;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.BaseCustomizer;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.GenericTableModel;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -76,7 +77,7 @@ public class WebAppRootCustomizer extends BaseCustomizer implements PropertyChan
 	public static final String SERVLET_LIST_CHANGED = "ServletListChanged"; //NOI18N
 
 	
-	private static final ResourceBundle webappBundle = ResourceBundle.getBundle(
+	private final ResourceBundle webappBundle = NbBundle.getBundle(
 		"org.netbeans.modules.j2ee.sun.share.configbean.customizers.webapp.Bundle");	// NOI18N
 		
 	private static final int NUM_SERVLET24_PANELS = 1;

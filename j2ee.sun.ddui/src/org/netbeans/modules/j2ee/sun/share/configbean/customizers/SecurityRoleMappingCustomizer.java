@@ -67,7 +67,7 @@ import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.BaseCus
 public class SecurityRoleMappingCustomizer extends BaseCustomizer 
         implements ListSelectionListener, TableModelListener {
 
-    public static final ResourceBundle customizerBundle = ResourceBundle.getBundle(
+    public final ResourceBundle customizerBundle = ResourceBundle.getBundle(
         "org.netbeans.modules.j2ee.sun.share.configbean.customizers.Bundle");	// NOI18N
 
     private SecurityRoleMapping theBean;

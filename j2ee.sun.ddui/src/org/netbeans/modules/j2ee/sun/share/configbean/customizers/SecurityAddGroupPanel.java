@@ -69,6 +69,7 @@ import org.netbeans.modules.j2ee.sun.share.configbean.Utils;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.FixedHeightJTable;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.HelpContext;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.InputDialog;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -76,7 +77,7 @@ import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.InputDi
  */
 public class SecurityAddGroupPanel extends JPanel implements ListSelectionListener {
     
-	private static final ResourceBundle customizerBundle = ResourceBundle.getBundle(
+	private final ResourceBundle customizerBundle = ResourceBundle.getBundle(
 		"org.netbeans.modules.j2ee.sun.share.configbean.customizers.Bundle"); // NOI18N
     
 	private final GroupTableModel groupModel;
@@ -283,7 +284,8 @@ public class SecurityAddGroupPanel extends JPanel implements ListSelectionListen
      */
     static void addGroupName(JPanel parent, GroupTableModel model) {
         SecurityAddGroupPanel addGroupPanel = new SecurityAddGroupPanel(model);
-        addGroupPanel.displayDialog(parent, customizerBundle.getString("TITLE_AddGroup"), // NOI18N 
+        addGroupPanel.displayDialog(parent, NbBundle.getBundle(
+            "org.netbeans.modules.j2ee.sun.share.configbean.customizers.Bundle").getString("TITLE_AddGroup"), // NOI18N 
             HelpContext.HELP_SECURITY_NEW_GROUP); // NOI18N
     }
     

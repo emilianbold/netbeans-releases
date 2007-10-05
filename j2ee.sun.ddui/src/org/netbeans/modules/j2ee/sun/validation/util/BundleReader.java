@@ -62,6 +62,9 @@ public class BundleReader {
     /**
      * A resource bundle of this reader.
      */
+    // !PW FIXME Get rid of this, probably requires eliminating this entire class
+    //     and upgrading callers to use some NbBundle variant for bundle management.
+    //     See IZ 96422
     private static ResourceBundle resourceBundle;
 
     

@@ -74,7 +74,7 @@ public class PrefetchDisabledPanel extends MethodTablePanel {
 
     private PrefetchDisabledModel model;
 
-    static final ResourceBundle bundle = 
+    private final ResourceBundle bundle = 
         ResourceBundle.getBundle(
             "org.netbeans.modules.j2ee.sun.share.configbean.customizers.ejbmodule.Bundle"); // NOI18N
 

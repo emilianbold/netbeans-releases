@@ -62,6 +62,7 @@ import org.netbeans.modules.j2ee.sun.share.PrincipalNameMapping;
 import org.netbeans.modules.j2ee.sun.share.configbean.Utils;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.HelpContext;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.InputDialog;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -69,7 +70,7 @@ import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.InputDi
  */
 public class SecurityEditPrincipalPanel extends JPanel {
     
-	private static final ResourceBundle customizerBundle = ResourceBundle.getBundle(
+	private final ResourceBundle customizerBundle = ResourceBundle.getBundle(
 		"org.netbeans.modules.j2ee.sun.share.configbean.customizers.Bundle"); // NOI18N
     
 	private final PrincipalTableModel principalModel;
@@ -271,7 +272,8 @@ public class SecurityEditPrincipalPanel extends JPanel {
 	 */
     static void editPrincipalName(JPanel parent, PrincipalNameMapping entry, PrincipalTableModel model, ASDDVersion asVersion) {
         SecurityEditPrincipalPanel editPrincipalPanel = new SecurityEditPrincipalPanel(entry, model, asVersion);
-        editPrincipalPanel.displayDialog(parent, customizerBundle.getString("TITLE_EditPrincipal"),	// NOI18N 
+        editPrincipalPanel.displayDialog(parent, NbBundle.getBundle(
+            "org.netbeans.modules.j2ee.sun.share.configbean.customizers.Bundle").getString("TITLE_EditPrincipal"),	// NOI18N 
             HelpContext.HELP_SECURITY_EDIT_PRINCIPAL);
     }
     

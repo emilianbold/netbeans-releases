@@ -92,7 +92,7 @@ public class DCBGroupTableModel extends SecurityMappingTableModel implements Gro
     /** TableModel interface methods
      */
     public String getColumnName(int column) {
-        return SecurityRoleMappingCustomizer.customizerBundle.getString("LBL_GroupName"); // NOI18N
+        return customizerBundle.getString("LBL_GroupName"); // NOI18N
     }
 
     /** SecurityMappingTableModel methods

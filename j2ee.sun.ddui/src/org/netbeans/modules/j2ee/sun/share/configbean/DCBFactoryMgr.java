@@ -63,7 +63,7 @@ import javax.enterprise.deploy.model.DeployableObject;
  */
 public class DCBFactoryMgr {
 	
-	protected static final ResourceBundle bundle = ResourceBundle.getBundle(
+	protected final ResourceBundle bundle = ResourceBundle.getBundle(
 		"org.netbeans.modules.j2ee.sun.share.configbean.Bundle");	// NOI18N
 	
 	private Map factoryMap;

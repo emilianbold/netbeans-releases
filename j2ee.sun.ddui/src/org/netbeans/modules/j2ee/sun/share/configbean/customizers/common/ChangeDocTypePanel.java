@@ -69,6 +69,7 @@ import org.netbeans.modules.j2ee.sun.share.configbean.Base;
 import org.netbeans.modules.j2ee.sun.share.configbean.BaseRoot;
 import org.netbeans.modules.j2ee.sun.share.configbean.SunONEDeploymentConfiguration;
 import org.openide.cookies.OpenCookie;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -78,7 +79,7 @@ public class ChangeDocTypePanel extends javax.swing.JPanel {
     
 	/** Reference to the resource bundle in customizers/common
 	 */
-	protected static final ResourceBundle commonBundle = ResourceBundle.getBundle(
+	protected final ResourceBundle commonBundle = ResourceBundle.getBundle(
 		"org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.Bundle");	// NOI18N
 
     private final JPanel customizerPanel;
@@ -334,7 +335,8 @@ public class ChangeDocTypePanel extends javax.swing.JPanel {
 	 */
 	public static void editASVersion(JPanel parent, Base theBean) {
 		ChangeDocTypePanel docTypePanel = new ChangeDocTypePanel(parent, theBean);
-		docTypePanel.displayDialog(parent, commonBundle.getString("TITLE_ChangeDocType"),	// NOI18N
+		docTypePanel.displayDialog(parent, NbBundle.getBundle(
+                        "org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.Bundle").getString("TITLE_ChangeDocType"),	// NOI18N
 			"AS_CFG_ChangeDocTypePanelHelp"); // NOI18N
 	}	
 	

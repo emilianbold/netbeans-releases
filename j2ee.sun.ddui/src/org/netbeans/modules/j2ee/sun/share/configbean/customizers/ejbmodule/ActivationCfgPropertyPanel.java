@@ -60,7 +60,7 @@ import org.netbeans.modules.j2ee.sun.share.configbean.MDEjb;
 public class ActivationCfgPropertyPanel extends BeanTablePanel{
     /* A class implementation comment can go here. */
     
-    static final ResourceBundle bundle = 
+    private final ResourceBundle bundle = 
         ResourceBundle.getBundle(
             "org.netbeans.modules.j2ee.sun.share.configbean.customizers.ejbmodule.Bundle"); //NOI18N
 

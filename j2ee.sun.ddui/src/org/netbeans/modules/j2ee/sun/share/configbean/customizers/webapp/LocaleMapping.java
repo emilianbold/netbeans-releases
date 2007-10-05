@@ -54,6 +54,7 @@ import java.util.TreeMap;
 import java.util.StringTokenizer;
 
 import java.text.MessageFormat;
+import org.openide.util.NbBundle;
 
 /** Object for nice usage of Locales in comboboxes, sorted lists, etc.
  *  Provides same equality properties as Locale (but with LocaleMapping)
@@ -66,7 +67,7 @@ import java.text.MessageFormat;
  */
 public class LocaleMapping implements Comparable {
 	
-	private static final ResourceBundle webappBundle = ResourceBundle.getBundle(
+	private final ResourceBundle webappBundle = NbBundle.getBundle(
 		"org.netbeans.modules.j2ee.sun.share.configbean.customizers.webapp.Bundle");	// NOI18N
 
 	private Locale locale;

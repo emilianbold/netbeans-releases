@@ -66,6 +66,7 @@ import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.Validat
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.GenericTableDialogPanelAccessor;
 
 import org.netbeans.modules.j2ee.sun.share.CharsetMapping;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -74,10 +75,10 @@ import org.netbeans.modules.j2ee.sun.share.CharsetMapping;
  */
 public class LocaleCharsetMapEntryPanel extends JPanel implements GenericTableDialogPanelAccessor {
 
-	private static final ResourceBundle webappBundle = ResourceBundle.getBundle(
+	private final ResourceBundle webappBundle = NbBundle.getBundle(
 		"org.netbeans.modules.j2ee.sun.share.configbean.customizers.webapp.Bundle");	// NOI18N
 
-	private static final ResourceBundle commonBundle = ResourceBundle.getBundle(
+	private final ResourceBundle commonBundle = NbBundle.getBundle(
 		"org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.Bundle");	// NOI18N
 
 	private static final String DEFAULT_CHARSET="UTF8";	// NOI18N

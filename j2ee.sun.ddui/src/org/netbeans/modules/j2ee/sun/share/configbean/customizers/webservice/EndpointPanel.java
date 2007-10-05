@@ -63,6 +63,7 @@ import org.netbeans.modules.xml.multiview.ItemEditorHelper;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataSynchronizer;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 import org.openide.ErrorManager;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -75,18 +76,18 @@ public class EndpointPanel extends BaseSectionNodeInnerPanel {
     private static final int SECURITY_AUTHENTICATION = 1; // login-config/authentication is set
     private static final int SECURITY_MESSAGE = 2; // message level security is set.
     
-    private static final ResourceBundle webserviceBundle = ResourceBundle.getBundle(
+    private final ResourceBundle webserviceBundle = NbBundle.getBundle(
        "org.netbeans.modules.j2ee.sun.share.configbean.customizers.webservice.Bundle"); // NOI18N
 
     /** xml <--> ui mapping for authorization method combo box */
-    private static final TextMapping [] authMethodTypes = {
+    private final TextMapping [] authMethodTypes = {
         new TextMapping("", ""), // NOI18N
         new TextMapping("BASIC", webserviceBundle.getString("AUTHORIZATION_Basic")),	// NOI18N
         new TextMapping("CLIENT-CERT", webserviceBundle.getString("AUTHORIZATION_ClientCert")),	// NOI18N
     };
 
     /** xml <--> ui mapping for transport guarantee combo box */
-    private static final TextMapping [] transportTypes = {
+    private final TextMapping [] transportTypes = {
         new TextMapping("", ""), // NOI18N
         new TextMapping("NONE", webserviceBundle.getString("TRANSPORT_None")),	// NOI18N
         new TextMapping("INTEGRAL", webserviceBundle.getString("TRANSPORT_Integral")),	// NOI18N

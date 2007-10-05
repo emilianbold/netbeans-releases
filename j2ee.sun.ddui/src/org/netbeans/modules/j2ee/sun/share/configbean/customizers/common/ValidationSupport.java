@@ -63,7 +63,7 @@ import org.netbeans.modules.j2ee.sun.validation.ValidationManagerFactory;
  */
 public class ValidationSupport {
 
-    static final ResourceBundle bundle = 
+    private final ResourceBundle bundle = 
         ResourceBundle.getBundle(
             "org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.Bundle"); // NOI18N
     

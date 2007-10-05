@@ -64,7 +64,7 @@ import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.Customi
  */
 public class EjbJarRootCustomizer extends BaseCustomizer {
 
-    static final ResourceBundle bundle = ResourceBundle.getBundle(
+    private final ResourceBundle bundle = ResourceBundle.getBundle(
             "org.netbeans.modules.j2ee.sun.share.configbean.customizers.ejbmodule.Bundle"); // NOI18N
     
     private EjbJarRoot theBean;

@@ -132,7 +132,7 @@ public class WebAppCache {
     
 	/** Resource bundle 
 	 */
-	private static final ResourceBundle bundle = ResourceBundle.getBundle(
+	private final ResourceBundle bundle = ResourceBundle.getBundle(
 		"org.netbeans.modules.j2ee.sun.share.configbean.Bundle");	// NOI18N
 	
 	private static final String SunWebFileName = "sun-web.xml";	// NOI18N

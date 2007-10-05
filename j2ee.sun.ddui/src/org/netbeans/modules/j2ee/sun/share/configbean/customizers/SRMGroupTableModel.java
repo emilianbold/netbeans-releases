@@ -167,7 +167,7 @@ public class SRMGroupTableModel extends SRMBaseTableModel implements GroupTableM
 
     public String getColumnName(int columnIndex) {
         if(columnIndex == 0) {
-            return SecurityRoleMappingPanel.customizerBundle.getString("LBL_GroupName"); // NOI18N
+            return customizerBundle.getString("LBL_GroupName"); // NOI18N
         }
         return null;
     }

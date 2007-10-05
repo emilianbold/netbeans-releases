@@ -53,6 +53,7 @@ import javax.swing.JTabbedPane;
 import org.netbeans.modules.j2ee.sun.share.configbean.ValidationError;
 import org.netbeans.modules.j2ee.sun.share.configbean.WebAppRoot;
 import org.netbeans.modules.j2ee.sun.share.configbean.WebAppCache;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -60,7 +61,7 @@ import org.netbeans.modules.j2ee.sun.share.configbean.WebAppCache;
  */
 public class WebAppCachePanel extends JTabbedPane {
 	
-	private static final ResourceBundle webappBundle = ResourceBundle.getBundle(
+	private final ResourceBundle webappBundle = NbBundle.getBundle(
 		"org.netbeans.modules.j2ee.sun.share.configbean.customizers.webapp.Bundle");	// NOI18N
 		
 	private WebAppRootCustomizer masterPanel;

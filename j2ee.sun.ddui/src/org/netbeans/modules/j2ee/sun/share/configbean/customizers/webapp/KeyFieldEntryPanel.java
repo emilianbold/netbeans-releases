@@ -62,6 +62,7 @@ import org.netbeans.modules.j2ee.sun.share.configbean.Utils;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.GenericTableDialogPanelAccessor;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.TextMapping;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.ValidationSupport;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -69,10 +70,10 @@ import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.Validat
  */
 public class KeyFieldEntryPanel extends JPanel implements GenericTableDialogPanelAccessor {
 	
-	private static final ResourceBundle webappBundle = ResourceBundle.getBundle(
+	private final ResourceBundle webappBundle = NbBundle.getBundle(
 		"org.netbeans.modules.j2ee.sun.share.configbean.customizers.webapp.Bundle");	// NOI18N
 
-	private static final ResourceBundle commonBundle = ResourceBundle.getBundle(
+	private final ResourceBundle commonBundle = NbBundle.getBundle(
 		"org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.Bundle");	// NOI18N
 
 	private static final TextMapping [] keyScopeTypes = ScopeMapping.getKeyScopeMappings();	

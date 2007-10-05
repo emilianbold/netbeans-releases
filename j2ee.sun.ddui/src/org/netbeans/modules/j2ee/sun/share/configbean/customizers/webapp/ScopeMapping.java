@@ -46,9 +46,9 @@
 
 package org.netbeans.modules.j2ee.sun.share.configbean.customizers.webapp;
 
-import java.util.ResourceBundle;
-
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.TextMapping;
+import org.openide.util.NbBundle;
+
 
 /**
  *
@@ -62,39 +62,35 @@ public final class ScopeMapping {
 		// TextMapping objects that represent various request scopes.
 	}
 	
-	/** resource bundle */
-	static final ResourceBundle webappBundle = ResourceBundle.getBundle(
-		"org.netbeans.modules.j2ee.sun.share.configbean.customizers.webapp.Bundle");	// NOI18N
-
 	// http scopes
 	private static final TextMapping scopeBlank =
 		new TextMapping("", ""); // NOI18N
 	private static final TextMapping scopeContextAttribute = 
-		new TextMapping("context.attribute", webappBundle.getString("SCOPE_CONTEXT_ATTRIBUTE"));	// NOI18N
+		new TextMapping("context.attribute", NbBundle.getBundle("org.netbeans.modules.j2ee.sun.share.configbean.customizers.webapp.Bundle").getString("SCOPE_CONTEXT_ATTRIBUTE"));	// NOI18N
 	private static final TextMapping scopeRequestHeader = 
-		new TextMapping("request.header", webappBundle.getString("SCOPE_REQUEST_HEADER"));		// NOI18N
+		new TextMapping("request.header", NbBundle.getBundle("org.netbeans.modules.j2ee.sun.share.configbean.customizers.webapp.Bundle").getString("SCOPE_REQUEST_HEADER"));		// NOI18N
 	private static final TextMapping scopeRequestParameter = 
-		new TextMapping("request.parameter", webappBundle.getString("SCOPE_REQUEST_PARAMETER"));	// NOI18N
+		new TextMapping("request.parameter", NbBundle.getBundle("org.netbeans.modules.j2ee.sun.share.configbean.customizers.webapp.Bundle").getString("SCOPE_REQUEST_PARAMETER"));	// NOI18N
 	private static final TextMapping scopeRequestCookie = 
-		new TextMapping("request.cookie", webappBundle.getString("SCOPE_REQUEST_COOKIE"));		// NOI18N
+		new TextMapping("request.cookie", NbBundle.getBundle("org.netbeans.modules.j2ee.sun.share.configbean.customizers.webapp.Bundle").getString("SCOPE_REQUEST_COOKIE"));		// NOI18N
 	private static final TextMapping scopeRequestAttribute = 
-		new TextMapping("request.attribute", webappBundle.getString("SCOPE_REQUEST_ATTRIBUTE"));	// NOI18N
+		new TextMapping("request.attribute", NbBundle.getBundle("org.netbeans.modules.j2ee.sun.share.configbean.customizers.webapp.Bundle").getString("SCOPE_REQUEST_ATTRIBUTE"));	// NOI18N
 	private static final TextMapping scopeSessionAttribute = 
-		new TextMapping("session.attribute", webappBundle.getString("SCOPE_SESSION_ATTRIBUTE"));	// NOI18N
+		new TextMapping("session.attribute", NbBundle.getBundle("org.netbeans.modules.j2ee.sun.share.configbean.customizers.webapp.Bundle").getString("SCOPE_SESSION_ATTRIBUTE"));	// NOI18N
 	private static final TextMapping scopeSessionId = 
-		new TextMapping("session.id", webappBundle.getString("SCOPE_SESSION_ID"));				// NOI18N
+		new TextMapping("session.id", NbBundle.getBundle("org.netbeans.modules.j2ee.sun.share.configbean.customizers.webapp.Bundle").getString("SCOPE_SESSION_ID"));				// NOI18N
 	
 	// match expressions
 	private static final TextMapping matchEquals = 
-		new TextMapping("equals", webappBundle.getString("EXPR_EQUALS"));				// NOI18N
+		new TextMapping("equals", NbBundle.getBundle("org.netbeans.modules.j2ee.sun.share.configbean.customizers.webapp.Bundle").getString("EXPR_EQUALS"));				// NOI18N
 	private static final TextMapping matchGreater = 
-		new TextMapping("greater", webappBundle.getString("EXPR_GREATER"));			// NOI18N
+		new TextMapping("greater", NbBundle.getBundle("org.netbeans.modules.j2ee.sun.share.configbean.customizers.webapp.Bundle").getString("EXPR_GREATER"));			// NOI18N
 	private static final TextMapping matchLesser = 
-		new TextMapping("lesser", webappBundle.getString("EXPR_LESSER"));				// NOI18N
+		new TextMapping("lesser", NbBundle.getBundle("org.netbeans.modules.j2ee.sun.share.configbean.customizers.webapp.Bundle").getString("EXPR_LESSER"));				// NOI18N
 	private static final TextMapping matchNotEquals = 
-		new TextMapping("not-equals", webappBundle.getString("EXPR_NOT_EQUALS"));		// NOI18N
+		new TextMapping("not-equals", NbBundle.getBundle("org.netbeans.modules.j2ee.sun.share.configbean.customizers.webapp.Bundle").getString("EXPR_NOT_EQUALS"));		// NOI18N
 	private static final TextMapping matchInRange = 
-		new TextMapping("in-range", webappBundle.getString("EXPR_IN_RANGE"));			// NOI18N
+		new TextMapping("in-range", NbBundle.getBundle("org.netbeans.modules.j2ee.sun.share.configbean.customizers.webapp.Bundle").getString("EXPR_IN_RANGE"));			// NOI18N
 	
 	/** xml <--> ui mapping for timeout scopes combo box */
 	private static final TextMapping [] scopeTypes = {

@@ -1,16 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<Form version="1.2" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+<Form version="1.2" maxVersion="1.2" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <AccessibilityProperties>
     <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-      <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webservice/Bundle.properties" key="ACSN_PortInfoTab" replaceFormat="ServiceRefCustomizer.bundle.getString(&quot;{key}&quot;)"/>
+      <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webservice/Bundle.properties" key="ACSN_PortInfoTab" replaceFormat="webserviceBundle.getString(&quot;{key}&quot;)"/>
     </Property>
     <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-      <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webservice/Bundle.properties" key="ACSD_PortInfoTab" replaceFormat="ServiceRefCustomizer.bundle.getString(&quot;{key}&quot;)"/>
+      <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webservice/Bundle.properties" key="ACSD_PortInfoTab" replaceFormat="webserviceBundle.getString(&quot;{key}&quot;)"/>
     </Property>
   </AccessibilityProperties>
   <AuxValues>
+    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
@@ -22,7 +24,7 @@
     <Component class="javax.swing.JLabel" name="jLblPortInfoUsageDescription">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webservice/Bundle.properties" key="LBL_ServicePortInfoDescription" replaceFormat="ServiceRefCustomizer.bundle.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webservice/Bundle.properties" key="LBL_ServicePortInfoDescription" replaceFormat="webserviceBundle.getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Constraints>
@@ -53,7 +55,7 @@
               <ComponentRef name="jComboPortInfo"/>
             </Property>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webservice/Bundle.properties" key="LBL_PortInfo_1" replaceFormat="ServiceRefCustomizer.bundle.getString(&quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webservice/Bundle.properties" key="LBL_PortInfo_1" replaceFormat="webserviceBundle.getString(&quot;{key}&quot;)"/>
             </Property>
           </Properties>
           <Constraints>
@@ -70,10 +72,10 @@
           </Properties>
           <AccessibilityProperties>
             <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webservice/Bundle.properties" key="ACSN_PortInfo" replaceFormat="ServiceRefCustomizer.bundle.getString(&quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webservice/Bundle.properties" key="ACSN_PortInfo" replaceFormat="webserviceBundle.getString(&quot;{key}&quot;)"/>
             </Property>
             <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webservice/Bundle.properties" key="ACSD_PortInfo" replaceFormat="ServiceRefCustomizer.bundle.getString(&quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webservice/Bundle.properties" key="ACSD_PortInfo" replaceFormat="webserviceBundle.getString(&quot;{key}&quot;)"/>
             </Property>
           </AccessibilityProperties>
           <Events>
@@ -97,15 +99,15 @@
             <Component class="javax.swing.JButton" name="jBtnAddPortInfo">
               <Properties>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webservice/Bundle.properties" key="LBL_Add" replaceFormat="ServiceRefCustomizer.bundle.getString(&quot;{key}&quot;)"/>
+                  <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webservice/Bundle.properties" key="LBL_Add" replaceFormat="webserviceBundle.getString(&quot;{key}&quot;)"/>
                 </Property>
               </Properties>
               <AccessibilityProperties>
                 <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webservice/Bundle.properties" key="ACSN_Add" replaceFormat="ServiceRefCustomizer.bundle.getString(&quot;{key}&quot;)"/>
+                  <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webservice/Bundle.properties" key="ACSN_Add" replaceFormat="webserviceBundle.getString(&quot;{key}&quot;)"/>
                 </Property>
                 <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webservice/Bundle.properties" key="ACSD_Add" replaceFormat="ServiceRefCustomizer.bundle.getString(&quot;{key}&quot;)"/>
+                  <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webservice/Bundle.properties" key="ACSD_Add" replaceFormat="webserviceBundle.getString(&quot;{key}&quot;)"/>
                 </Property>
               </AccessibilityProperties>
               <Events>
@@ -120,15 +122,15 @@
             <Component class="javax.swing.JButton" name="jBtnRemovePortInfo">
               <Properties>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webservice/Bundle.properties" key="LBL_Remove" replaceFormat="ServiceRefCustomizer.bundle.getString(&quot;{key}&quot;)"/>
+                  <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webservice/Bundle.properties" key="LBL_Remove" replaceFormat="webserviceBundle.getString(&quot;{key}&quot;)"/>
                 </Property>
               </Properties>
               <AccessibilityProperties>
                 <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webservice/Bundle.properties" key="ACSN_Remove" replaceFormat="ServiceRefCustomizer.bundle.getString(&quot;{key}&quot;)"/>
+                  <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webservice/Bundle.properties" key="ACSN_Remove" replaceFormat="webserviceBundle.getString(&quot;{key}&quot;)"/>
                 </Property>
                 <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webservice/Bundle.properties" key="ACSD_Remove" replaceFormat="ServiceRefCustomizer.bundle.getString(&quot;{key}&quot;)"/>
+                  <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webservice/Bundle.properties" key="ACSD_Remove" replaceFormat="webserviceBundle.getString(&quot;{key}&quot;)"/>
                 </Property>
               </AccessibilityProperties>
               <Events>

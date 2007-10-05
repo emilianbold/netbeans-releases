@@ -60,6 +60,7 @@ import java.text.MessageFormat;
 
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyChangeListener;
+import org.openide.util.NbBundle;
 
 /** Object for nice usage of Charsets in comboboxes, sorted lists, etc.
  *  Provides same equality properties as Charset (but with CharsetMapping)
@@ -72,7 +73,7 @@ import java.beans.PropertyChangeListener;
  */
 public class CharsetMapping implements Comparable {
 	
-    private static final ResourceBundle webappBundle = ResourceBundle.getBundle(
+    private final ResourceBundle bundle = NbBundle.getBundle(
 		"org.netbeans.modules.j2ee.sun.share.Bundle");	// NOI18N	
 	
 	private Charset charset;
@@ -192,11 +193,11 @@ public class CharsetMapping implements Comparable {
 			Object [] args = new Object [] { chosenAlias, aliasList.toString() };
 			
 			result = MessageFormat.format(
-				webappBundle.getString("LBL_CharsetComboBoxDisplayText"), args);	// NOI18N
+				bundle.getString("LBL_CharsetComboBoxDisplayText"), args);	// NOI18N
 		}
 		
 		if(result == null || result.length() == 0) {
-			result = webappBundle.getString("LBL_UnnamedCharset");	// NOI18N
+			result = bundle.getString("LBL_UnnamedCharset");	// NOI18N
 		}
 		
 		textOutOfDate = false;

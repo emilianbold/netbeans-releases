@@ -65,7 +65,7 @@ import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.BaseCus
 public class ModuleRefCustomizer extends BaseCustomizer {
 	
 	/** Resource bundle */
-	private static final ResourceBundle bundle = ResourceBundle.getBundle(
+	private final ResourceBundle bundle = ResourceBundle.getBundle(
 		"org.netbeans.modules.j2ee.sun.share.configbean.customizers.other.Bundle"); // NOI18N
 
 	private BaseModuleRef theBean;

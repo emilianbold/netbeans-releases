@@ -49,9 +49,11 @@
 
 package org.netbeans.modules.j2ee.sun.share.configbean.customizers;
 
+import java.util.ResourceBundle;
 import javax.swing.table.AbstractTableModel;
 import org.netbeans.modules.j2ee.sun.dd.api.common.SecurityRoleMapping;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataSynchronizer;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -59,6 +61,9 @@ import org.netbeans.modules.xml.multiview.XmlMultiViewDataSynchronizer;
  * @author Peter Williams
  */
 public abstract class SRMBaseTableModel extends AbstractTableModel {
+    
+    protected final ResourceBundle customizerBundle = NbBundle.getBundle(
+            "org.netbeans.modules.j2ee.sun.share.configbean.customizers.Bundle"); // NOI18N
     
     /** Model synchronizer
      */

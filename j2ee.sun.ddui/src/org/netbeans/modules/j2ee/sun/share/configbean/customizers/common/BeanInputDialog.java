@@ -78,7 +78,7 @@ public abstract class BeanInputDialog extends InputDialog {
 	 */
 	public static final String USER_DATA_CHANGED = Constants.USER_DATA_CHANGED;	// NOI18N
 	
-	private static final ResourceBundle bundle = ResourceBundle.getBundle(
+	private final ResourceBundle bundle = ResourceBundle.getBundle(
 		"org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.Bundle"); //NOI18N
 
 	// Owner & child panels

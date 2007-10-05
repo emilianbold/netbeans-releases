@@ -46,13 +46,9 @@
 
 package org.netbeans.modules.j2ee.sun.share.configbean.customizers.webservice;
 
-import java.util.ResourceBundle;
-
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
-import org.netbeans.modules.j2ee.sun.dd.api.common.Message;
-import org.netbeans.modules.j2ee.sun.dd.api.common.MessageSecurity;
-
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.GenericTableModel;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -61,24 +57,22 @@ import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.Generic
  */
 public class AuthorizationEntry extends GenericTableModel.TableEntry {
 
-    private static final ResourceBundle webserviceBundle = ResourceBundle.getBundle(
-        "org.netbeans.modules.j2ee.sun.share.configbean.customizers.webservice.Bundle"); // NOI18N
-
     private String childAttributeName;
-    
+
     public AuthorizationEntry(String propName, String attrName, String resBase) {
-        super(null, propName, webserviceBundle, resBase, false, false);
-        
+        super(null, propName, NbBundle.getBundle("org.netbeans.modules.j2ee.sun.share.configbean.customizers.webservice.Bundle"),
+                resBase, false, false);
+
         childAttributeName = attrName;
     }
 
     public Object getEntry(CommonDDBean parent) {
         Object result = null;
 
-		if(parent.size(propertyName) > 0) {
-			result = parent.getAttributeValue(propertyName, childAttributeName);
-		}
-        
+        if(parent.size(propertyName) > 0) {
+            result = parent.getAttributeValue(propertyName, childAttributeName);
+        }
+
         return result;
     }
 
@@ -89,11 +83,11 @@ public class AuthorizationEntry extends GenericTableModel.TableEntry {
             value = null;
         }
 
-		if(parent.size(propertyName) == 0) {
-			parent.setValue(propertyName, Boolean.TRUE);
-		}
-        
-		parent.setAttributeValue(propertyName, childAttributeName, (String) value);
+        if(parent.size(propertyName) == 0) {
+            parent.setValue(propertyName, Boolean.TRUE);
+        }
+
+        parent.setAttributeValue(propertyName, childAttributeName, (String) value);
     }
 
     public Object getEntry(CommonDDBean parent, int row) {

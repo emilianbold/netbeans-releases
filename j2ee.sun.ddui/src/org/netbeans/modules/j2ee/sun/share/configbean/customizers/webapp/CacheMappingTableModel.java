@@ -56,6 +56,7 @@ import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.dd.api.web.CacheMapping;
 
 import org.netbeans.modules.j2ee.sun.share.configbean.StorageBeanFactory;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -64,22 +65,22 @@ import org.netbeans.modules.j2ee.sun.share.configbean.StorageBeanFactory;
  */
 public class CacheMappingTableModel extends AbstractTableModel {
 	
-	private static final ResourceBundle webappBundle = ResourceBundle.getBundle(
+	private final ResourceBundle webappBundle = NbBundle.getBundle(
 		"org.netbeans.modules.j2ee.sun.share.configbean.customizers.webapp.Bundle");	// NOI18N
 		
-	private static final String [] columnNames = { 
+	private final String [] columnNames = { 
 		webappBundle.getString("LBL_CacheTarget"),		// NOI18N
 		webappBundle.getString("LBL_TargetValue"),		// NOI18N
 		webappBundle.getString("LBL_CacheReference"), 	// NOI18N
 		webappBundle.getString("LBL_ReferenceValue"), 	// NOI18N
 	};
 	
-	private static final String [] cacheTargetType = { 
+	private final String [] cacheTargetType = { 
 		webappBundle.getString("LBL_ServletName"),		// NOI18N
 		webappBundle.getString("LBL_URLPattern"),		// NOI18N
 	};
 	
-	private static final String [] cacheReferenceType = { 
+	private final String [] cacheReferenceType = { 
 		webappBundle.getString("LBL_CacheHelperReference"),		// NOI18N
 		webappBundle.getString("LBL_CachePolicyDefinition"),	// NOI18N
 	};

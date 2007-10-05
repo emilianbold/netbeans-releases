@@ -65,10 +65,10 @@ import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
 public class BeanListMapping {
 	
 	// Standard resource bundle to use for non-property list fields
-	private static final ResourceBundle bundle = ResourceBundle.getBundle(
+	private final ResourceBundle bundle = ResourceBundle.getBundle(
 		"org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.Bundle");	// NOI18N
 	
-	private static final String formatPattern = bundle.getString("LBL_SizeOfListText");	// NOI18N
+	private final String formatPattern = bundle.getString("LBL_SizeOfListText");	// NOI18N
 	
 	private CommonDDBean theBean;
 	private String listPropertyName;

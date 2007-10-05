@@ -67,6 +67,7 @@ import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.Generic
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.HelpContext;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.data.DynamicPropertyPanel;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.data.PropertyListMapping;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -75,10 +76,10 @@ import org.netbeans.modules.j2ee.sun.share.configbean.customizers.data.PropertyL
  */
 public class WebAppClassloaderPanel extends javax.swing.JPanel implements TableModelListener {
 	
-	private static final ResourceBundle webappBundle = ResourceBundle.getBundle(
+	private final ResourceBundle webappBundle = NbBundle.getBundle(
 		"org.netbeans.modules.j2ee.sun.share.configbean.customizers.webapp.Bundle");	// NOI18N
 
-	private static final ResourceBundle commonBundle = ResourceBundle.getBundle(
+	private final ResourceBundle commonBundle = NbBundle.getBundle(
 		"org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.Bundle");	// NOI18N
 
 	private WebAppRootCustomizer masterPanel;

@@ -81,7 +81,7 @@ import org.openide.util.Utilities;
  */
 public class EjbJarPmDescriptorsPanel extends javax.swing.JPanel implements TableModelListener, ListDataListener {
 
-    private static final ResourceBundle ejbjarBundle = ResourceBundle.getBundle(
+    private final ResourceBundle ejbjarBundle = ResourceBundle.getBundle(
         "org.netbeans.modules.j2ee.sun.share.configbean.customizers.ejbmodule.Bundle");	// NOI18N
 
     private EjbJarRootCustomizer masterPanel;

@@ -55,6 +55,7 @@ import java.util.SortedMap;
 import javax.swing.DefaultComboBoxModel;
 import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.share.CharsetMapping;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -63,7 +64,7 @@ import org.netbeans.modules.j2ee.sun.share.CharsetMapping;
  */
 public class ParameterEncodingPanel extends javax.swing.JPanel {
 
-    private static final ResourceBundle webappBundle = ResourceBundle.getBundle(
+    private final ResourceBundle webappBundle = NbBundle.getBundle(
         "org.netbeans.modules.j2ee.sun.share.configbean.customizers.webapp.Bundle");	// NOI18N
     
     public static final String PROP_FORM_HINT_FIELD = "formHintField"; // NOI18N

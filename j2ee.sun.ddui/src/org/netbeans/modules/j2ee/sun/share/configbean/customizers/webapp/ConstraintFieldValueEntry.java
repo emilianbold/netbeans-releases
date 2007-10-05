@@ -55,6 +55,7 @@ import org.netbeans.modules.j2ee.sun.dd.api.web.ConstraintField;
 import org.netbeans.modules.j2ee.sun.share.configbean.Utils;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.BeanListMapping;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.GenericTableModel;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -62,12 +63,12 @@ import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.Generic
  */
 public class ConstraintFieldValueEntry extends GenericTableModel.TableEntry {
 
-	private static final ResourceBundle webappBundle = ResourceBundle.getBundle(
+	private final ResourceBundle webappBundle = NbBundle.getBundle(
 		"org.netbeans.modules.j2ee.sun.share.configbean.customizers.webapp.Bundle");	// NOI18N
 	
 	public ConstraintFieldValueEntry() {
 		super(ConstraintField.CONSTRAINT_FIELD_VALUE, 
-			webappBundle.getString("LBL_ConstraintFieldValues"));	// NOI18N
+			NbBundle.getBundle("org.netbeans.modules.j2ee.sun.share.configbean.customizers.webapp.Bundle").getString("LBL_ConstraintFieldValues"));	// NOI18N
 	}
 	
 	/**	The parent is the ConstraintField being edited.  The expected return

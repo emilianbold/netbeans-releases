@@ -79,7 +79,7 @@ public class FlushAtEndOfMethodPanel extends MultiMethodTablePanel{
     public static final String LOCAL = "Local";                         //NOI18N
     public static final String LOCAL_HOME = "LocalHome";                //NOI18N
 
-    static final ResourceBundle bundle = 
+    private final ResourceBundle bundle = 
         ResourceBundle.getBundle(
             "org.netbeans.modules.j2ee.sun.share.configbean.customizers.ejbmodule.Bundle"); // NOI18N
 

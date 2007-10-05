@@ -55,6 +55,7 @@ import org.netbeans.modules.j2ee.sun.dd.api.common.LoginConfig;
 import org.netbeans.modules.j2ee.sun.share.configbean.ServletRef;
 import org.netbeans.modules.j2ee.sun.share.configbean.StorageBeanFactory;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.GenericTableModel;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -63,11 +64,9 @@ import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.Generic
  */
 public class LoginConfigEntry extends GenericTableModel.TableEntry {
 
-	private static final ResourceBundle customizerBundle = ResourceBundle.getBundle(
-		"org.netbeans.modules.j2ee.sun.share.configbean.customizers.Bundle");	// NOI18N
-
 	public LoginConfigEntry() {
-		super(WebserviceEndpoint.LOGIN_CONFIG, customizerBundle.getString("LBL_AuthenticationMethod"));	// NOI18N
+		super(WebserviceEndpoint.LOGIN_CONFIG, NbBundle.getBundle(
+		"org.netbeans.modules.j2ee.sun.share.configbean.customizers.Bundle").getString("LBL_AuthenticationMethod"));	// NOI18N
 	}
 
 	public Object getEntry(CommonDDBean parent) {

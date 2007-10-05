@@ -66,6 +66,7 @@ import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.Generic
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.GenericTablePanel;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.HelpContext;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.InputDialog;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -73,7 +74,7 @@ import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.InputDi
  */
 public class EditBindingMultiview extends JPanel implements TableModelListener {
     
-    private static final ResourceBundle webserviceBundle = ResourceBundle.getBundle(
+    private final ResourceBundle webserviceBundle = NbBundle.getBundle(
        "org.netbeans.modules.j2ee.sun.share.configbean.customizers.webservice.Bundle"); // NOI18N
     
     private final ASDDVersion asVersion;
@@ -466,8 +467,9 @@ public class EditBindingMultiview extends JPanel implements TableModelListener {
     static void editMessageSecurityBinding(JPanel parent, boolean editMethodAsOperation, 
             MessageSecurityBinding binding, ASDDVersion asDDVersion, String stringVersion) {
         EditBindingMultiview bindingPanel = new EditBindingMultiview(binding, editMethodAsOperation, asDDVersion, stringVersion);
-        bindingPanel.displayDialog(parent, webserviceBundle.getString("TITLE_EditBindings"), // NOI18N 
-            HelpContext.HELP_SERVICE_ENDPOINT_SECURITY); // NOI18N
+        bindingPanel.displayDialog(parent, 
+                NbBundle.getBundle("org.netbeans.modules.j2ee.sun.share.configbean.customizers.webservice.Bundle").getString("TITLE_EditBindings"), // NOI18N
+                HelpContext.HELP_SERVICE_ENDPOINT_SECURITY); // NOI18N
     }
     
     private void displayDialog(JPanel parent, String title, String helpId) {

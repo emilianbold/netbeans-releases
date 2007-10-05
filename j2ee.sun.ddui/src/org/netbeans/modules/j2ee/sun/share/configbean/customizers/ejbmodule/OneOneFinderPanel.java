@@ -62,7 +62,7 @@ import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.BeanTab
 public class OneOneFinderPanel extends BeanTablePanel{
     /* A class implementation comment can go here. */
     
-    static final ResourceBundle bundle = 
+    private final ResourceBundle bundle = 
         ResourceBundle.getBundle(
             "org.netbeans.modules.j2ee.sun.share.configbean.customizers.ejbmodule.Bundle"); //NOI18N
 

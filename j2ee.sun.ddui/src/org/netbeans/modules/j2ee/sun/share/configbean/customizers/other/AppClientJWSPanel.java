@@ -62,7 +62,7 @@ import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
  */
 public class AppClientJWSPanel extends BaseSectionNodeInnerPanel {
 	
-    private static final ResourceBundle otherBundle = ResourceBundle.getBundle(
+    private final ResourceBundle otherBundle = ResourceBundle.getBundle(
         "org.netbeans.modules.j2ee.sun.share.configbean.customizers.other.Bundle"); // NOI18N
 
     private SunApplicationClient sunAppClient;

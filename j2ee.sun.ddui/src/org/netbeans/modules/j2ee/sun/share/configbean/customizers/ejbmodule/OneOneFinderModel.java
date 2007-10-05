@@ -61,12 +61,12 @@ import org.netbeans.modules.j2ee.sun.share.configbean.StorageBeanFactory;
 public class OneOneFinderModel extends BeanTableModel {
     /* A class implementation comment can go here. */
 
-    static final ResourceBundle bundle = 
+    private final ResourceBundle bundle = 
         ResourceBundle.getBundle(
             "org.netbeans.modules.j2ee.sun.share.configbean.customizers.ejbmodule.Bundle"); //NOI18N
 
 
-    private static final String[] columnNames = {
+    private final String[] columnNames = {
         bundle.getString("LBL_Method_Name"),                            //NOI18N
         bundle.getString("LBL_Query_Params"),                           //NOI18N
         bundle.getString("LBL_Query_Filter"),                           //NOI18N

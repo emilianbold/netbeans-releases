@@ -52,7 +52,9 @@ package org.netbeans.modules.j2ee.sun.share.configbean.customizers;
 import java.util.Collections;
 import java.util.List;
 
+import java.util.ResourceBundle;
 import javax.swing.table.AbstractTableModel;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -60,6 +62,9 @@ import javax.swing.table.AbstractTableModel;
  * @author Peter Williams
  */
 public abstract class SecurityMappingTableModel extends AbstractTableModel {
+    
+    protected final ResourceBundle customizerBundle = NbBundle.getBundle(
+            "org.netbeans.modules.j2ee.sun.share.configbean.customizers.Bundle"); // NOI18N
     
     /** Number of columns in table.
      */

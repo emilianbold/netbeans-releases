@@ -56,6 +56,7 @@ import org.netbeans.modules.j2ee.sun.dd.api.web.WebProperty;
 import org.netbeans.modules.j2ee.sun.share.configbean.Utils;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.ListMapping;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.GenericTableModel;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -64,11 +65,8 @@ import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.Generic
  */
 public class PropertiesEntry extends GenericTableModel.TableEntry {
 	
-	static final ResourceBundle bundle = ResourceBundle.getBundle(
-		"org.netbeans.modules.j2ee.sun.share.configbean.customizers.webapp.Bundle");	// NOI18N
-	
 	public PropertiesEntry() {
-		this(SunWebApp.PROPERTY, bundle.getString("LBL_Properties"));	// NOI18N
+		this(SunWebApp.PROPERTY, NbBundle.getBundle("org.netbeans.modules.j2ee.sun.share.configbean.customizers.webapp.Bundle").getString("LBL_Properties"));	// NOI18N
 	}
 	
 	public PropertiesEntry(String propertyName, String captionName) {

@@ -73,7 +73,7 @@ import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.HelpCon
  */
 public class AppClientRootCustomizer extends BaseCustomizer implements TableModelListener {
 	
-    private static final ResourceBundle otherBundle = ResourceBundle.getBundle(
+    private final ResourceBundle otherBundle = ResourceBundle.getBundle(
         "org.netbeans.modules.j2ee.sun.share.configbean.customizers.other.Bundle"); // NOI18N
 
     private AppClientRoot theBean;

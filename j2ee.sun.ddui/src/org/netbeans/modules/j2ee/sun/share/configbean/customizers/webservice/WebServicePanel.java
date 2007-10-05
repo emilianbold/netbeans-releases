@@ -51,6 +51,7 @@ import org.netbeans.modules.j2ee.sun.ddloaders.multiview.webservice.WebServiceNo
 import org.netbeans.modules.xml.multiview.ItemEditorHelper;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataSynchronizer;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -59,7 +60,7 @@ import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
  */
 public class WebServicePanel extends BaseSectionNodeInnerPanel {
 
-    static final ResourceBundle bundle = ResourceBundle.getBundle(
+    final ResourceBundle bundle = NbBundle.getBundle(
        "org.netbeans.modules.j2ee.sun.share.configbean.customizers.webservice.Bundle"); // NOI18N
 
     // data model & version

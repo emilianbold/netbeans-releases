@@ -60,6 +60,7 @@ import org.netbeans.modules.j2ee.sun.share.Constants;
 import org.netbeans.modules.j2ee.sun.share.configbean.Utils;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.HelpContext;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.InputDialog;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -67,7 +68,7 @@ import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.InputDi
  */
 public class SecurityEditGroupPanel extends JPanel {
     
-	private static final ResourceBundle customizerBundle = ResourceBundle.getBundle(
+	private final ResourceBundle customizerBundle = ResourceBundle.getBundle(
 		"org.netbeans.modules.j2ee.sun.share.configbean.customizers.Bundle"); // NOI18N
     
 	private final GroupTableModel groupModel;
@@ -191,7 +192,8 @@ public class SecurityEditGroupPanel extends JPanel {
 	 */
     static void editGroupName(JPanel parent, String entry, GroupTableModel model) {
         SecurityEditGroupPanel editGroupPanel = new SecurityEditGroupPanel(entry, model);
-        editGroupPanel.displayDialog(parent, customizerBundle.getString("TITLE_EditGroup"),	// NOI18N 
+        editGroupPanel.displayDialog(parent, NbBundle.getBundle(
+            "org.netbeans.modules.j2ee.sun.share.configbean.customizers.Bundle").getString("TITLE_EditGroup"),	// NOI18N 
             HelpContext.HELP_SECURITY_EDIT_GROUP);
     }
     

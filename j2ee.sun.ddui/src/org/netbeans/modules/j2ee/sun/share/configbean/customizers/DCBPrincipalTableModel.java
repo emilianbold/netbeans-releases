@@ -95,9 +95,9 @@ public class DCBPrincipalTableModel extends SecurityMappingTableModel implements
     public String getColumnName(int column) {
         switch(column) {
             case 0:
-                return SecurityRoleMappingCustomizer.customizerBundle.getString("LBL_PrincipalName"); // NOI18N
+                return customizerBundle.getString("LBL_PrincipalName"); // NOI18N
             case 1:
-                return SecurityRoleMappingCustomizer.customizerBundle.getString("LBL_ClassName"); // NOI18N
+                return customizerBundle.getString("LBL_ClassName"); // NOI18N
         }
         return null;
     }

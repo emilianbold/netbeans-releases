@@ -48,6 +48,7 @@ package org.netbeans.modules.j2ee.sun.share.configbean.customizers.webservice;
 
 import org.netbeans.modules.j2ee.sun.dd.api.common.PortInfo;
 import org.netbeans.modules.j2ee.sun.dd.api.common.WsdlPort;
+import org.openide.util.NbBundle;
 
 
 /** Class that associates a PortInfo with a string so we can do combobox
@@ -125,7 +126,9 @@ public class PortInfoMapping {
 		}
 
 		if(resultBuf.length() == 0) {
-			resultBuf.append(ServiceRefCustomizer.bundle.getString("LBL_UntitledPortInfo"));
+			resultBuf.append(
+                                NbBundle.getBundle("org.netbeans.modules.j2ee.sun.share.configbean.customizers.webservice.Bundle")
+                                .getString("LBL_UntitledPortInfo"));
 		}
 
 		textOutOfDate = false;

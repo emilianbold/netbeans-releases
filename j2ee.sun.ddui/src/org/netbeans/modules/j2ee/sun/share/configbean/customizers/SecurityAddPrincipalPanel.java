@@ -73,6 +73,7 @@ import org.netbeans.modules.j2ee.sun.share.configbean.Utils;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.FixedHeightJTable;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.HelpContext;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.InputDialog;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -80,7 +81,7 @@ import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.InputDi
  */
 public class SecurityAddPrincipalPanel extends JPanel implements ListSelectionListener {
     
-	private static final ResourceBundle customizerBundle = ResourceBundle.getBundle(
+	private final ResourceBundle customizerBundle = ResourceBundle.getBundle(
 		"org.netbeans.modules.j2ee.sun.share.configbean.customizers.Bundle"); // NOI18N
     
 	private final PrincipalTableModel principalModel;
@@ -358,7 +359,8 @@ public class SecurityAddPrincipalPanel extends JPanel implements ListSelectionLi
      */
     static void addPrincipalName(JPanel parent, PrincipalTableModel model, ASDDVersion asVersion) {
         SecurityAddPrincipalPanel addPrincipalPanel = new SecurityAddPrincipalPanel(model, asVersion);
-        addPrincipalPanel.displayDialog(parent, customizerBundle.getString("TITLE_AddPrincipal"),	// NOI18N 
+        addPrincipalPanel.displayDialog(parent, NbBundle.getBundle(
+            "org.netbeans.modules.j2ee.sun.share.configbean.customizers.Bundle").getString("TITLE_AddPrincipal"),	// NOI18N 
             HelpContext.HELP_SECURITY_NEW_PRINCIPAL);
     }
 

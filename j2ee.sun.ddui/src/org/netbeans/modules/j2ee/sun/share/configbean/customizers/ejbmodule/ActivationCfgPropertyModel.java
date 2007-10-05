@@ -67,11 +67,11 @@ public class ActivationCfgPropertyModel extends BeanTableModel {
     }
 
 
-    static final ResourceBundle bundle = 
+    private final ResourceBundle bundle = 
         ResourceBundle.getBundle(
             "org.netbeans.modules.j2ee.sun.share.configbean.customizers.ejbmodule.Bundle"); //NOI18N
 
-    private static final String[] columnNames = {
+    private final String[] columnNames = {
         bundle.getString("LBL_Activation_Config_Property_Name"),        //NOI18N
         bundle.getString("LBL_Activation_Config_Property_Value")        //NOI18N
     };

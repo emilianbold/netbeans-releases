@@ -67,7 +67,7 @@ import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.BaseCus
  */
 public class MessageDestinationRefCustomizer extends BaseCustomizer implements PropertyChangeListener {
 	
-	private static final ResourceBundle customizerBundle = ResourceBundle.getBundle(
+	private final ResourceBundle customizerBundle = ResourceBundle.getBundle(
 		"org.netbeans.modules.j2ee.sun.share.configbean.customizers.Bundle");	// NOI18N
 
 	private MessageDestinationRef theBean;

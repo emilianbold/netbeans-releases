@@ -67,9 +67,10 @@ import org.netbeans.modules.j2ee.sun.share.configbean.Utils;
 public class PmDescriptorMapping {
 	
 	// Standard resource bundle to use for non-property list fields
-	private static final ResourceBundle bundle = ResourceBundle.getBundle(
+	private final ResourceBundle bundle = ResourceBundle.getBundle(
 		"org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.Bundle");	// NOI18N
 	
+        // !PW FIXME needs localization (FYI not used in NB6.0 yet, so no rush).
 	private static final String formatPattern = "(id={0}, version={1})";
 	
 	private final PmDescriptor pmDescriptor;

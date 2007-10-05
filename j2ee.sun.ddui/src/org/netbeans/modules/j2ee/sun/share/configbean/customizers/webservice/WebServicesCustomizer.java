@@ -44,6 +44,7 @@ import java.util.ResourceBundle;
 
 import org.netbeans.modules.j2ee.sun.share.configbean.WebServices;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.BaseCustomizer;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -52,7 +53,7 @@ import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.BaseCus
  */
 public class WebServicesCustomizer extends BaseCustomizer {
 
-    static final ResourceBundle bundle = ResourceBundle.getBundle(
+    final ResourceBundle bundle = NbBundle.getBundle(
        "org.netbeans.modules.j2ee.sun.share.configbean.customizers.webservice.Bundle"); // NOI18N
 
 	/** The bean currently being customized, or null if there isn't one

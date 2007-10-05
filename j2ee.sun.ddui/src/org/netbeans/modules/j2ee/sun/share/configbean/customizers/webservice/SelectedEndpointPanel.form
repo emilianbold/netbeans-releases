@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<Form version="1.2" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+<Form version="1.2" maxVersion="1.2" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <NonVisualComponents>
     <Component class="javax.swing.ButtonGroup" name="bgSecurity">
     </Component>
@@ -13,7 +13,9 @@
     </Property>
   </Properties>
   <AuxValues>
+    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
@@ -28,7 +30,7 @@
           <ComponentRef name="jTxtEndpointAddressURI"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webservice/Bundle.properties" key="LBL_EndpointAddressURI_1" replaceFormat="WebServiceDescriptorCustomizer.bundle.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webservice/Bundle.properties" key="LBL_EndpointAddressURI_1" replaceFormat="webserviceBundle.getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Constraints>
@@ -40,10 +42,10 @@
     <Component class="javax.swing.JTextField" name="jTxtEndpointAddressURI">
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webservice/Bundle.properties" key="ACSN_EndpointAddressURI" replaceFormat="WebServiceDescriptorCustomizer.bundle.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webservice/Bundle.properties" key="ACSN_EndpointAddressURI" replaceFormat="webserviceBundle.getString(&quot;{key}&quot;)"/>
         </Property>
         <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webservice/Bundle.properties" key="ACSD_EndpointAddressURI" replaceFormat="WebServiceDescriptorCustomizer.bundle.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webservice/Bundle.properties" key="ACSD_EndpointAddressURI" replaceFormat="webserviceBundle.getString(&quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
       <Events>
@@ -61,7 +63,7 @@
           <ComponentRef name="jCbxTransportGuarantee"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webservice/Bundle.properties" key="LBL_TransportGuarantee_1" replaceFormat="WebServiceDescriptorCustomizer.bundle.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webservice/Bundle.properties" key="LBL_TransportGuarantee_1" replaceFormat="webserviceBundle.getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Constraints>
@@ -78,10 +80,10 @@
       </Properties>
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webservice/Bundle.properties" key="ACSN_TransportGuarantee" replaceFormat="WebServiceDescriptorCustomizer.bundle.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webservice/Bundle.properties" key="ACSN_TransportGuarantee" replaceFormat="webserviceBundle.getString(&quot;{key}&quot;)"/>
         </Property>
         <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webservice/Bundle.properties" key="ACSD_TransportGuarantee" replaceFormat="WebServiceDescriptorCustomizer.bundle.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webservice/Bundle.properties" key="ACSD_TransportGuarantee" replaceFormat="webserviceBundle.getString(&quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
       <Events>
@@ -99,7 +101,7 @@
           <ComponentRef name="jChkDebugEnabled"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webservice/Bundle.properties" key="LBL_DebugEnabled_1" replaceFormat="WebServiceDescriptorCustomizer.bundle.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webservice/Bundle.properties" key="LBL_DebugEnabled_1" replaceFormat="webserviceBundle.getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Constraints>
@@ -121,10 +123,10 @@
       </Properties>
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webservice/Bundle.properties" key="ACSN_DebugEnabled" replaceFormat="WebServiceDescriptorCustomizer.bundle.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webservice/Bundle.properties" key="ACSN_DebugEnabled" replaceFormat="webserviceBundle.getString(&quot;{key}&quot;)"/>
         </Property>
         <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webservice/Bundle.properties" key="ACSD_DebugEnabled" replaceFormat="WebServiceDescriptorCustomizer.bundle.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webservice/Bundle.properties" key="ACSD_DebugEnabled" replaceFormat="webserviceBundle.getString(&quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
       <Events>
@@ -200,7 +202,7 @@
           <ComponentRef name="jChkEnableMsgSecurity"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webservice/Bundle.properties" key="LBL_EnableMsgSecurity_1" replaceFormat="WebServiceDescriptorCustomizer.bundle.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webservice/Bundle.properties" key="LBL_EnableMsgSecurity_1" replaceFormat="webserviceBundle.getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Constraints>
@@ -222,10 +224,10 @@
       </Properties>
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webservice/Bundle.properties" key="ACSN_EnableMsgSecurity" replaceFormat="WebServiceDescriptorCustomizer.bundle.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webservice/Bundle.properties" key="ACSN_EnableMsgSecurity" replaceFormat="webserviceBundle.getString(&quot;{key}&quot;)"/>
         </Property>
         <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webservice/Bundle.properties" key="ACSD_EnableMsgSecurity" replaceFormat="WebServiceDescriptorCustomizer.bundle.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webservice/Bundle.properties" key="ACSD_EnableMsgSecurity" replaceFormat="webserviceBundle.getString(&quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
       <Events>
@@ -240,15 +242,15 @@
     <Component class="javax.swing.JButton" name="jBtnEditBindings">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webservice/Bundle.properties" key="LBL_EditMsgSecBindings" replaceFormat="WebServiceDescriptorCustomizer.bundle.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webservice/Bundle.properties" key="LBL_EditMsgSecBindings" replaceFormat="webserviceBundle.getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webservice/Bundle.properties" key="ACSN_EditMsgSecBindings" replaceFormat="WebServiceDescriptorCustomizer.bundle.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webservice/Bundle.properties" key="ACSN_EditMsgSecBindings" replaceFormat="webserviceBundle.getString(&quot;{key}&quot;)"/>
         </Property>
         <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webservice/Bundle.properties" key="ACSD_EditMsgSecBindings" replaceFormat="WebServiceDescriptorCustomizer.bundle.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webservice/Bundle.properties" key="ACSD_EditMsgSecBindings" replaceFormat="webserviceBundle.getString(&quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
       <Events>
