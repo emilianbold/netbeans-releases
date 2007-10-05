@@ -31,6 +31,7 @@ import java.util.List;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.refactoring.TldRefactoring;
 import org.netbeans.modules.web.taglib.model.FunctionType;
 import org.netbeans.modules.web.taglib.model.ListenerType;
@@ -47,10 +48,10 @@ import org.openide.util.NbBundle;
  */
 abstract class BaseTldRename extends TldRefactoring{
     
-    protected final FileObject source;
+    protected final WebModule webModule;
     
-    public BaseTldRename(FileObject source) {
-        this.source = source;
+    public BaseTldRename(WebModule webModule) {
+        this.webModule = webModule;
     }
     
     /**
@@ -63,8 +64,7 @@ abstract class BaseTldRename extends TldRefactoring{
     
     public Problem prepare(RefactoringElementsBag refactoringElements) {
         
-        
-        for(TaglibHandle taglibHandle : getTaglibs(source)){
+        for(TaglibHandle taglibHandle : getTaglibs(webModule)){
             Taglib taglib = taglibHandle.getTaglib();
             for (RenameItem item : getAffectedClasses()){
                 

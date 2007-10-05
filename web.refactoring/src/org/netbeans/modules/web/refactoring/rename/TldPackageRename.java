@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.refactoring.RefactoringUtil;
 import org.openide.filesystems.FileObject;
 
@@ -42,16 +43,18 @@ import org.openide.filesystems.FileObject;
 public class TldPackageRename extends BaseTldRename{
     
     private final RenameRefactoring rename;
+    private final FileObject pkg;
     
-    public TldPackageRename(RenameRefactoring rename, FileObject source) {
-        super(source);
+    public TldPackageRename(RenameRefactoring rename, WebModule webModule, FileObject pkg) {
+        super(webModule);
         this.rename = rename;
+        this.pkg = pkg;
     }
 
     
     protected List<RenameItem> getAffectedClasses() {
         List<FileObject> affectedClasses = new ArrayList<FileObject>();
-        RefactoringUtil.collectChildren(source, affectedClasses);
+        RefactoringUtil.collectChildren(pkg, affectedClasses);
         List<RenameItem> result = new ArrayList<RenameItem>();
         for (FileObject affected : affectedClasses){
             String oldName = RefactoringUtil.getQualifiedName(affected);

@@ -31,8 +31,8 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.refactoring.RefactoringUtil;
-import org.openide.filesystems.FileObject;
 
 /**
  * Handles rename refactoring in tld files.
@@ -44,8 +44,8 @@ public class TldRename extends BaseTldRename{
     private final String clazz;
     private final RenameRefactoring rename;
     
-    public TldRename(String clazz, RenameRefactoring rename, FileObject source) {
-        super(source);
+    public TldRename(String clazz, RenameRefactoring rename, WebModule webModule) {
+        super(webModule);
         this.rename = rename;
         this.clazz = clazz;
     }

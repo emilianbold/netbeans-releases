@@ -30,7 +30,6 @@ package org.netbeans.modules.web.refactoring.safedelete;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
 import org.netbeans.modules.j2ee.dd.api.web.Filter;
 import org.netbeans.modules.j2ee.dd.api.web.FilterMapping;
 import org.netbeans.modules.j2ee.dd.api.web.Listener;
@@ -40,6 +39,7 @@ import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.SafeDeleteRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
+import org.netbeans.modules.web.refactoring.RefactoringUtil;
 import org.netbeans.modules.web.refactoring.WebXmlRefactoring;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -53,33 +53,34 @@ import org.openide.util.NbBundle;
 public class WebXmlSafeDelete extends WebXmlRefactoring{
     
     private final SafeDeleteRefactoring safeDelete;
-    private final String clazzFqn;
+    private final List<String> classes;
     
-    public WebXmlSafeDelete(FileObject webDD, WebApp webModel, String clazzFqn, SafeDeleteRefactoring safeDelete) {
+    public WebXmlSafeDelete(FileObject webDD, WebApp webModel, SafeDeleteRefactoring safeDelete) {
         super(webDD, webModel);
-        this.clazzFqn = clazzFqn;
         this.safeDelete = safeDelete;
+        this.classes = RefactoringUtil.getRefactoredClasses(safeDelete);
     }
     
     
     public Problem prepare(RefactoringElementsBag refactoringElements) {
-        
-        for (Servlet servlet : getServlets(clazzFqn)){
-            refactoringElements.add(safeDelete, new ServletRemoveElement(webModel, webDD, servlet));
-            for (ServletMapping mapping : getServletMappings(servlet)){
-                refactoringElements.add(safeDelete, new ServletMappingRemoveElement(webModel, webDD, mapping));
+        for (String clazzFqn : classes) {
+            for (Servlet servlet : getServlets(clazzFqn)) {
+                refactoringElements.add(safeDelete, new ServletRemoveElement(webModel, webDD, servlet));
+                for (ServletMapping mapping : getServletMappings(servlet)) {
+                    refactoringElements.add(safeDelete, new ServletMappingRemoveElement(webModel, webDD, mapping));
+                }
             }
-        }
 
-        for (Filter filter : getFilters(clazzFqn)){
-            refactoringElements.add(safeDelete, new FilterRemoveElement(webModel, webDD, filter));
-            for (FilterMapping mapping : getFilterMappings(filter)){
-                refactoringElements.add(safeDelete, new FilterMappingRemoveElement(webModel, webDD, mapping));
+            for (Filter filter : getFilters(clazzFqn)) {
+                refactoringElements.add(safeDelete, new FilterRemoveElement(webModel, webDD, filter));
+                for (FilterMapping mapping : getFilterMappings(filter)) {
+                    refactoringElements.add(safeDelete, new FilterMappingRemoveElement(webModel, webDD, mapping));
+                }
             }
-        }
 
-        for (Listener listener : getListeners(clazzFqn)){
-            refactoringElements.add(safeDelete, new ListenerRemoveElement(webModel, webDD, listener));
+            for (Listener listener : getListeners(clazzFqn)) {
+                refactoringElements.add(safeDelete, new ListenerRemoveElement(webModel, webDD, listener));
+            }
         }
 
         return null;

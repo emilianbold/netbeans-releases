@@ -56,11 +56,7 @@ public abstract class TldRefactoring implements WebRefactoring{
         return null;
     }
     
-    protected List<TaglibHandle> getTaglibs(FileObject source){
-        WebModule wm = WebModule.getWebModule(source);
-        if (wm == null){
-            return Collections.<TaglibHandle>emptyList();
-        }
+    protected List<TaglibHandle> getTaglibs(WebModule wm){
         FileObject webInf = wm.getWebInf();
         if (webInf == null){
             return Collections.<TaglibHandle>emptyList();

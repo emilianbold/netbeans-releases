@@ -27,19 +27,14 @@
  */
 package org.netbeans.modules.web.refactoring.rename;
 
-import java.io.File;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLDecoder;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.web.refactoring.RefactoringUtil;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  * Handles moving of a class.
@@ -49,12 +44,12 @@ import org.openide.filesystems.FileUtil;
 public class WebXmlMove extends BaseWebXmlRename{
     
     private final MoveRefactoring move;
-    private final String oldFqn;
+    private final List<String> classes;
     
-    public WebXmlMove(FileObject webDD, WebApp webModel, String clazz, MoveRefactoring move) {
+    public WebXmlMove(FileObject webDD, WebApp webModel, MoveRefactoring move) {
         super(webDD, webModel);
-        this.oldFqn = clazz;
         this.move = move;
+        this.classes = RefactoringUtil.getRefactoredClasses(move);
     }
     
     protected AbstractRefactoring getRefactoring() {
@@ -62,7 +57,12 @@ public class WebXmlMove extends BaseWebXmlRename{
     }
     
     protected List<RenameItem> getRenameItems() {
-        String newName = RefactoringUtil.constructNewName(move);
-        return Collections.singletonList(new RenameItem(newName, oldFqn));
+        String pkg = RefactoringUtil.getPackageName(move.getTarget().lookup(URL.class));
+        List<RenameItem> result = new ArrayList<RenameItem>();
+        for (String clazz : classes) {
+            String newName = pkg + "." + RefactoringUtil.unqualify(clazz);
+            result.add(new RenameItem(newName, clazz));
+        }
+        return result;
     }
-    }
+}

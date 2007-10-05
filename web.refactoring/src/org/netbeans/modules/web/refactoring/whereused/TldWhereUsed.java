@@ -31,6 +31,7 @@ import java.text.MessageFormat;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.refactoring.RefactoringUtil;
 import org.netbeans.modules.web.refactoring.TldRefactoring;
 import org.netbeans.modules.web.taglib.model.FunctionType;
@@ -50,19 +51,18 @@ import org.openide.util.NbBundle;
 public class TldWhereUsed extends TldRefactoring{
     
     private final WhereUsedQuery whereUsedQuery;
+    private final WebModule webModule;
     private final String clazz;
-    private final FileObject source;
     
-    public TldWhereUsed(String clazz, FileObject source, WhereUsedQuery whereUsedQuery) {
+    public TldWhereUsed(String clazz, WebModule wm, WhereUsedQuery whereUsedQuery) {
         this.clazz = clazz;
         this.whereUsedQuery = whereUsedQuery;
-        this.source = source;
+        this.webModule = wm;
     }
     
     public Problem prepare(RefactoringElementsBag refactoringElements) {
         
-        
-        for(TaglibHandle taglibHandle : getTaglibs(source)){
+        for(TaglibHandle taglibHandle : getTaglibs(webModule)){
             Taglib taglib = taglibHandle.getTaglib();
             for (TagType tagType : taglib.getTag()){
                 if (clazz.equals(tagType.getTagClass())){

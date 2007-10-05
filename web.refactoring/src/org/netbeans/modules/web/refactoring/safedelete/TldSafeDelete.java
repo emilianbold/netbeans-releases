@@ -27,17 +27,16 @@
  */
 package org.netbeans.modules.web.refactoring.safedelete;
 
-import java.io.IOException;
+import java.util.List;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.SafeDeleteRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
+import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.refactoring.RefactoringUtil;
 import org.netbeans.modules.web.refactoring.TldRefactoring;
-import org.netbeans.modules.web.taglib.TLDDataObject;
 import org.netbeans.modules.web.taglib.model.TagType;
 import org.netbeans.modules.web.taglib.model.Taglib;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -47,27 +46,28 @@ import org.openide.util.NbBundle;
  */
 public class TldSafeDelete extends TldRefactoring{
     
-    private final String clazz;
-    private final FileObject source;
+    private final List<String> classes;
+    private final WebModule webModule;
     private final SafeDeleteRefactoring safeDelete;
     
-    public TldSafeDelete(String clazz, SafeDeleteRefactoring safeDelete, FileObject source) {
-        this.clazz = clazz;
+    public TldSafeDelete(SafeDeleteRefactoring safeDelete, WebModule webModule) {
         this.safeDelete = safeDelete;
-        this.source = source;
+        this.webModule = webModule;
+        this.classes = RefactoringUtil.getRefactoredClasses(safeDelete);
     }
     
     
     public Problem prepare(RefactoringElementsBag refactoringElements) {
-        for(TaglibHandle taglibHandle : getTaglibs(source)){
-            Taglib taglib = taglibHandle.getTaglib();
-            for (TagType tagType : taglib.getTag()){
-                if (clazz.equals(tagType.getTagClass())){
-                    refactoringElements.add(safeDelete, new TagClassSafeDeleteElement(clazz, taglib, taglibHandle.getTldFile(), tagType));
+        for (String clazz : classes){
+            for (TaglibHandle taglibHandle : getTaglibs(webModule)) {
+                Taglib taglib = taglibHandle.getTaglib();
+                for (TagType tagType : taglib.getTag()) {
+                    if (clazz.equals(tagType.getTagClass())) {
+                        refactoringElements.add(safeDelete, new TagClassSafeDeleteElement(clazz, taglib, taglibHandle.getTldFile(), tagType));
+                    }
                 }
             }
         }
-        
         return null;
     }
     
@@ -79,7 +79,6 @@ public class TldSafeDelete extends TldRefactoring{
             super(clazz, taglib, tldFile);
             this.tagType = tagType;
         }
-        
         
         public String getDisplayText() {
             return NbBundle.getMessage(TldSafeDelete.class, "TXT_TaglibTagClassSafeDelete", tagType.getName());

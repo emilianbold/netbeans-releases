@@ -27,12 +27,13 @@
  */
 package org.netbeans.modules.web.refactoring.rename;
 
-import java.util.Collections;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.refactoring.RefactoringUtil;
-import org.openide.filesystems.FileObject;
 
 /**
  * Handles move refactoring in tld files.
@@ -42,24 +43,26 @@ import org.openide.filesystems.FileObject;
 public class TldMove extends BaseTldRename{
     
     private final MoveRefactoring move;
-    private final String clazz;
+    private final List<String> classes;
     
-    public TldMove(MoveRefactoring move, FileObject source, String clazz) {
-        super(source);
-        this.clazz = clazz;
+    public TldMove(MoveRefactoring move, WebModule webModule) {
+        super(webModule);
         this.move = move;
+        this.classes = RefactoringUtil.getRefactoredClasses(move);
     }
     
-    
     protected List<RenameItem> getAffectedClasses() {
-        String newName = RefactoringUtil.constructNewName(move);
-        return Collections.<RenameItem>singletonList(new RenameItem(newName, clazz));
+        String pkg = RefactoringUtil.getPackageName(move.getTarget().lookup(URL.class));
+        List<RenameItem> result = new ArrayList<RenameItem>();
+        for (String clazz : classes) {
+            String newName = pkg + "." + RefactoringUtil.unqualify(clazz);
+            result.add(new RenameItem(newName, clazz));
+        }
+        return result;
     }
     
     protected AbstractRefactoring getRefactoring() {
         return move;
     }
-    
-    
     
 }

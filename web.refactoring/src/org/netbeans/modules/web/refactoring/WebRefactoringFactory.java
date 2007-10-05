@@ -31,6 +31,8 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.Element;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
@@ -111,29 +113,29 @@ public class WebRefactoringFactory implements RefactoringPluginFactory{
             RenameRefactoring rename = (RenameRefactoring) refactoring;
             if (javaPackage || folder){
                 refactorings.add(new WebXmlPackageRename(ddFile, webApp, sourceFO, rename));
-                refactorings.add(new TldPackageRename(rename, sourceFO));
+                refactorings.add(new TldPackageRename(rename, wm, sourceFO));
             } else if (javaFile) {
                 refactorings.add(new WebXmlRename(clazz, rename, webApp, ddFile));
-                refactorings.add(new TldRename(clazz, rename, sourceFO));
+                refactorings.add(new TldRename(clazz, rename, wm));
             }
         } 
-        
-        if (refactoring instanceof SafeDeleteRefactoring && javaFile){
-            SafeDeleteRefactoring safeDelete = (SafeDeleteRefactoring) refactoring;
-            refactorings.add(new WebXmlSafeDelete(ddFile, webApp, clazz, safeDelete));
-            refactorings.add(new TldSafeDelete(clazz, safeDelete, sourceFO));
-        }
         
         if (refactoring instanceof WhereUsedQuery && javaFile){
             WhereUsedQuery whereUsedQuery = (WhereUsedQuery) refactoring;
             refactorings.add(new WebXmlWhereUsed(ddFile, webApp, clazz, whereUsedQuery));
-            refactorings.add(new TldWhereUsed(clazz,sourceFO, whereUsedQuery));
+            refactorings.add(new TldWhereUsed(clazz, wm, whereUsedQuery));
         } 
+        
+        if (refactoring instanceof SafeDeleteRefactoring && javaFile){
+            SafeDeleteRefactoring safeDelete = (SafeDeleteRefactoring) refactoring;
+            refactorings.add(new WebXmlSafeDelete(ddFile, webApp, safeDelete));
+            refactorings.add(new TldSafeDelete(safeDelete, wm));
+        }
         
         if (refactoring instanceof MoveRefactoring && javaFile){
             MoveRefactoring move = (MoveRefactoring) refactoring;
-            refactorings.add(new WebXmlMove(ddFile, webApp, clazz, move));
-            refactorings.add(new TldMove(move, sourceFO, clazz));
+            refactorings.add(new WebXmlMove(ddFile, webApp, move));
+            refactorings.add(new TldMove(move, wm));
         }
         
         return refactorings.isEmpty() ? null : new WebRefactoringPlugin(refactorings);

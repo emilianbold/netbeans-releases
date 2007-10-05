@@ -27,25 +27,37 @@
  */
 package org.netbeans.modules.web.refactoring;
 
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.util.TreePath;
 import java.io.File;
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import javax.lang.model.element.Element;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.refactoring.api.MoveRefactoring;
+import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 
 /**
@@ -220,17 +232,8 @@ public class RefactoringUtil {
         return prefix + "." + name;
     }
     
-    /**
-     *@return the new fully qualified name for the given refactoring.
-     */
-    public static String constructNewName(MoveRefactoring move){
-        String newPkg = getPackageName(move.getTarget().lookup(URL.class));
-        String uqn = move.getRefactoringSource().lookup(FileObject.class).getName();
-        return newPkg + "." + uqn;
-    }
-    
     // copied from o.n.m.java.refactoring.RetoucheUtils
-    private static String getPackageName(URL url) {
+    public static String getPackageName(URL url) {
         File f = null;
         try {
             f = FileUtil.normalizeFile(new File(url.toURI()));
@@ -264,5 +267,66 @@ public class RefactoringUtil {
                 .getResourceName(folder, '.', false);
     }
     
+
+    /**
+     * Gets the fully qualified names of the classes that are being refactored 
+     * by the given <code>refactoring</code>.
+     * @return the fully qualified names of the classes being refactored, never null.
+     */ 
+    public static List<String> getRefactoredClasses(AbstractRefactoring refactoring) {
+        // XXX the whole method is not very performant 
+        Collection<TreePathHandle> tphs = new HashSet<TreePathHandle>();
+        tphs.addAll(refactoring.getRefactoringSource().lookupAll(TreePathHandle.class));
+        if (tphs.isEmpty()) {
+            //XXX handles are there for safe delete, but not for move
+            Collection<? extends FileObject> fos = refactoring.getRefactoringSource().lookupAll(FileObject.class);
+            for (FileObject each : fos){
+                TreePathHandle handle = resolveHandle(each);
+                if (handle != null){
+                    tphs.add(handle);
+                }
+            }
+        }
+
+        final List<String> result = new ArrayList<String>();
+        for (final TreePathHandle handle : tphs) {
+            JavaSource source = JavaSource.forFileObject(handle.getFileObject());
+            try {
+                source.runUserActionTask(new Task<CompilationController>() {
+                    public void run(CompilationController parameter) throws Exception {
+                        parameter.toPhase(JavaSource.Phase.RESOLVED);
+                        Element element = handle.resolveElement(parameter);
+                        result.add(element.asType().toString());
+                    }
+                }, true);
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+            }
+        }
+        return result;
+    }
     
+    private static TreePathHandle resolveHandle(FileObject fileObject){
+        final TreePathHandle[] result = new TreePathHandle[1];
+        if (!isJavaFile(fileObject)){
+            return null;
+        }
+        JavaSource source = JavaSource.forFileObject(fileObject);
+        try {
+            source.runUserActionTask(new Task<CompilationController>() {
+                public void run(CompilationController co) throws Exception {
+                    co.toPhase(JavaSource.Phase.RESOLVED);
+                    CompilationUnitTree cut = co.getCompilationUnit();
+                    if (cut.getTypeDecls().isEmpty()) {
+                        return;
+                    }
+                    result[0] = TreePathHandle.create(TreePath.getPath(cut, cut.getTypeDecls().get(0)), co);
+                }
+            }, true);
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
+        }
+        return result[0];
+
+    }
 }
