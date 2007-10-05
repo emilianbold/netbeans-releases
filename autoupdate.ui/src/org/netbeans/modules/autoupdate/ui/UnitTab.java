@@ -54,6 +54,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -84,6 +85,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableModel;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
 import org.netbeans.api.autoupdate.UpdateElement;
+import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
 import org.netbeans.modules.autoupdate.ui.wizards.OperationWizardModel.OperationType;
@@ -576,12 +578,13 @@ public class UnitTab extends javax.swing.JPanel {
                 final int row = getSelectedRow ();
                 final Map<String, Boolean> state = UnitCategoryTableModel.captureState (model.getUnits ());
                 Utilities.presentRefreshProviders (manager, force);
+                final List<UpdateUnit> units = UpdateManager.getDefault ().getUpdateUnits (Utilities.getUnitTypes ());
                 SwingUtilities.invokeLater (new Runnable () {
                     public void run () {
                         fireUpdataUnitChange ();
                         UnitCategoryTableModel.restoreState (model.getUnits (), state, model.isMarkedAsDefault ());
                         restoreSelectedRow (row);
-                        refreshState ();
+                        refreshState ();                        
                         setWaitingState (false);
                     }
                 });
@@ -1477,13 +1480,16 @@ public class UnitTab extends javax.swing.JPanel {
         public void performerImpl () {
             if (getLocalDownloadSupport ().selectNbmFiles ()) {
                 final Map<String, Boolean> state = UnitCategoryTableModel.captureState (model.getUnits ());
+                
                 final Runnable addUpdates = new Runnable (){
                     public void run () {
+                        final LocallyDownloadedTableModel downloadedTableModel = ((LocallyDownloadedTableModel)model);
+                        List<UpdateUnit> empty = Collections.emptyList();
+                        downloadedTableModel.setUnits(empty);
                         SwingUtilities.invokeLater (new Runnable () {
                             public void run () {
                                 fireUpdataUnitChange();
-                                UnitCategoryTableModel.restoreState (model.getUnits (), state, model.isMarkedAsDefault ());
-                                LocallyDownloadedTableModel downloadedTableModel = ((LocallyDownloadedTableModel)model);
+                                UnitCategoryTableModel.restoreState (model.getUnits (), state, model.isMarkedAsDefault ());                                
                                 List<UpdateUnit> installed = downloadedTableModel.getAlreadyInstalled ();
                                 if (!installed.isEmpty ())  {
                                     showMessage (installed);

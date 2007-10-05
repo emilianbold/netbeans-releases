@@ -59,6 +59,7 @@ public class LocallyDownloadedTableModel extends UnitCategoryTableModel {
     private OperationContainer<InstallSupport> updateNbmsContainer = Containers.forUpdateNbms();
     private LocalDownloadSupport localDownloadSupport = null;
     private List<UpdateUnit> installed = new ArrayList<UpdateUnit>();
+    List<UpdateUnit> cachedUnits;
         
     /** Creates a new instance of InstalledTableModel */
     public LocallyDownloadedTableModel (LocalDownloadSupport localDownloadSupport) {        
@@ -67,9 +68,13 @@ public class LocallyDownloadedTableModel extends UnitCategoryTableModel {
     
     public final void setUnits(final List<UpdateUnit> unused) {
         List<UpdateUnit> units = getLocalDownloadSupport().getUpdateUnits();
-        List<Unit> oldUnits = getUnits();        
-        setData(makeCategories(units));
-        computeInstalled(units, oldUnits);
+        //do not compute if not necessary
+        if (cachedUnits == null || !units.containsAll(cachedUnits) || !cachedUnits.containsAll(units)) {
+            List<Unit> oldUnits = getUnits();
+            setData(makeCategories(units));
+            computeInstalled(units, oldUnits);
+            cachedUnits = new ArrayList<UpdateUnit>(units);
+        }
     }
     
     List<UpdateUnit> getAlreadyInstalled() {

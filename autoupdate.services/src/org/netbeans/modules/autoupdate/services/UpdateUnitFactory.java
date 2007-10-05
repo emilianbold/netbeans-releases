@@ -99,6 +99,8 @@ public class UpdateUnitFactory {
     }
     
     public Map<String, UpdateUnit> getUpdateUnits () {
+        //TODO: this call should be forced not to be called from AWT
+        //assert !SwingUtilities.isEventDispatchThread();
         resetRunTime ("Measuring of UpdateUnitFactory.getUpdateUnits()"); // NOI18N
         List<UpdateUnitProvider> updates = UpdateUnitProviderImpl.getUpdateUnitProviders (true);
         
@@ -145,6 +147,8 @@ public class UpdateUnitFactory {
     }
     
     public Map<String, UpdateUnit> getUpdateUnits (UpdateProvider provider) {
+        //TODO: this call should be forced not to be called from AWT
+        //assert !SwingUtilities.isEventDispatchThread();
         resetRunTime ("Measuring UpdateUnitFactory.getUpdateUnits (" + provider.getDisplayName () + ")"); // NOI18N
         
         // prepare items accessible in provider
