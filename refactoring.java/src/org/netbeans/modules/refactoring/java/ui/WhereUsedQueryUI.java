@@ -118,7 +118,12 @@ public class WhereUsedQueryUI implements RefactoringUI {
         query.putValue(query.SEARCH_IN_COMMENTS,panel.isSearchInComments());
         if (panel.getScope()==WhereUsedPanel.Scope.ALL) {
             if (kind==ElementKind.METHOD && panel.isMethodFromBaseClass()) {
-                query.getContext().add(RetoucheUtils.getClasspathInfoFor(panel.getBaseMethod()));
+                TreePathHandle basem = panel.getBaseMethod();
+                if (basem!=null && (basem.getFileObject()==null || basem.getFileObject().getNameExt().endsWith("class"))) { //NOI18N
+                    query.getContext().add(RetoucheUtils.getClasspathInfoFor(element, basem));
+                } else {
+                    query.getContext().add(RetoucheUtils.getClasspathInfoFor(basem));
+                }
             } else {
                 query.getContext().add(RetoucheUtils.getClasspathInfoFor(element));
             }
