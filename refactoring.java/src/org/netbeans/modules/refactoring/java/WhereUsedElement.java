@@ -69,7 +69,8 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
         this.bounds = bounds;
         this.displayText = displayText;
         this.parentFile = parentFile;
-        ElementGripFactory.getDefault().put(parentFile, tp, info);
+        if (tp!=null)
+            ElementGripFactory.getDefault().put(parentFile, tp, info);
     }
 
     public String getDisplayText() {
@@ -162,6 +163,41 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
         TreePath tr = getEnclosingTree(tree);
         return new WhereUsedElement(bounds, sb.toString().trim(), compiler.getFileObject(), tr, compiler);
     }
+    
+    public static WhereUsedElement create(int start, int end, CompilationInfo compiler) {
+        CompilationUnitTree unit = compiler.getCompilationUnit();
+        CharSequence content = null;
+        try {
+            content = unit.getSourceFile().getCharContent(true);
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        SourcePositions sp = compiler.getTrees().getSourcePositions();
+        LineMap lm = compiler.getCompilationUnit().getLineMap();
+        long line = lm.getLineNumber(start);
+        long endLine = lm.getLineNumber(end);
+        long sta = lm.getStartPosition(line);
+        long en = lm.getStartPosition(endLine+1)-1;
+        StringBuffer sb = new StringBuffer();
+        sb.append(RetoucheUtils.getHtml(content.subSequence((int)sta,(int)start).toString().trim()));
+        sb.append(" <b>");
+        sb.append(content.subSequence((int)start,(int)end));
+        sb.append("</b> ");
+        sb.append(RetoucheUtils.getHtml(content.subSequence((int)end,(int)en).toString().trim()));
+        
+        DataObject dob = null;
+        try {
+            dob = DataObject.find(compiler.getFileObject());
+        } catch (DataObjectNotFoundException ex) {
+            ex.printStackTrace();
+        }
+        CloneableEditorSupport ces = JavaWhereUsedQueryPlugin.findCloneableEditorSupport(dob);
+        PositionRef ref1 = ces.createPositionRef(start, Bias.Forward);
+        PositionRef ref2 = ces.createPositionRef(end, Bias.Forward);
+        PositionBounds bounds = new PositionBounds(ref1, ref2);
+        return new WhereUsedElement(bounds, sb.toString().trim(), compiler.getFileObject(), null, compiler);
+    }
+    
     
     private static TreePath getEnclosingTree(TreePath tp) {
         while(tp != null) {

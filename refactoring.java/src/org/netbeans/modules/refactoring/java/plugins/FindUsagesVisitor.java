@@ -44,9 +44,15 @@ package org.netbeans.modules.refactoring.java.plugins;
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
+import java.util.ArrayList;
+import java.util.Collection;
 import javax.lang.model.element.*;
 import javax.lang.model.util.ElementFilter;
+import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenSequence;
+import org.openide.text.PositionBounds;
 
 /**
  *
@@ -54,8 +60,48 @@ import org.netbeans.api.java.source.WorkingCopy;
  */
 public class FindUsagesVisitor extends FindVisitor {
 
+    private boolean findInComments = false;
+    private Collection<UsageInComment> usagesInComments;
     public FindUsagesVisitor(WorkingCopy workingCopy) {
         super(workingCopy);
+    }
+
+    public Collection<UsageInComment> getUsagesInComments() {
+        return usagesInComments;
+    }
+
+    public FindUsagesVisitor(WorkingCopy workingCopy, boolean findInComments) {
+        super(workingCopy);
+        this.findInComments = findInComments;
+        if (findInComments) {
+            usagesInComments = new ArrayList<UsageInComment>();
+        }
+    }
+
+    @Override
+    public Tree visitCompilationUnit(CompilationUnitTree node, Element p) {
+        if (findInComments) {
+            String originalName = p.getSimpleName().toString();
+            TokenSequence<JavaTokenId> ts = workingCopy.getTokenHierarchy().tokenSequence(JavaTokenId.language());
+            
+            while (ts.moveNext()) {
+                Token t = ts.token();
+                
+                if (t.id() == JavaTokenId.BLOCK_COMMENT || t.id() == JavaTokenId.LINE_COMMENT || t.id() == JavaTokenId.JAVADOC_COMMENT) {
+                    int index = -1;
+                    String text = t.text().toString();
+                            
+                    while ((index = text.indexOf(originalName, index + 1)) != (-1)) {
+                        if (index > 0 && !Character.isJavaIdentifierPart(text.charAt(index)))
+                            continue;
+                        if (index + 1 < text.length() && !Character.isJavaIdentifierPart(text.charAt(index +1)))
+                            continue;
+                        usagesInComments.add(new UsageInComment(ts.offset() + index, ts.offset() + index + originalName.length()));
+                    }
+                }
+            }
+        }
+        return super.visitCompilationUnit(node, p);
     }
 
     @Override
@@ -106,6 +152,15 @@ public class FindUsagesVisitor extends FindVisitor {
         } else if (el.equals(elementToFind)) {
             addUsage(getCurrentPath());
             return;
+        }
+    }
+    
+    public static class UsageInComment {
+        int from;
+        int to;
+        public UsageInComment(int from, int to) {
+            this.from = from;
+            this.to = to;
         }
     }
 }

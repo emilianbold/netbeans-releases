@@ -261,9 +261,12 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
             assert element != null;
             Collection<TreePath> result = new ArrayList<TreePath>();
             if (isFindUsages()) {
-                FindUsagesVisitor findVisitor = new FindUsagesVisitor(compiler);
+                FindUsagesVisitor findVisitor = new FindUsagesVisitor(compiler, refactoring.getBooleanValue(refactoring.SEARCH_IN_COMMENTS));
                 findVisitor.scan(compiler.getCompilationUnit(), element);
                 result.addAll(findVisitor.getUsages());
+                for (FindUsagesVisitor.UsageInComment usageInComment : findVisitor.getUsagesInComments()) {
+                    elements.add(refactoring, WhereUsedElement.create(usageInComment.from, usageInComment.to, compiler));
+                }
             }
             if (element.getKind() == ElementKind.METHOD && isFindOverridingMethods()) {
                 FindOverridingVisitor override = new FindOverridingVisitor(compiler);
