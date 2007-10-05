@@ -49,6 +49,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Logger;
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
 import javax.swing.JButton;
@@ -63,7 +64,6 @@ import org.netbeans.modules.java.j2seproject.J2SEProjectType;
 import org.netbeans.modules.java.j2seproject.UpdateHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlRenderer;
 import org.openide.modules.SpecificationVersion;
@@ -79,6 +79,8 @@ import org.w3c.dom.NodeList;
 public class PlatformUiSupport {    
     
     private static final SpecificationVersion JDK_5 = new SpecificationVersion ("1.5");  //NOI18N
+    private static final SpecificationVersion JDK_6 = new SpecificationVersion ("1.6");  //NOI18N
+    private static final Logger LOGGER = Logger.getLogger(PlatformUiSupport.class.getName());
     
     private PlatformUiSupport() {
     }
@@ -118,7 +120,6 @@ public class PlatformUiSupport {
         //null means active broken (unresolved) platform, no need to do anything
         if (platform != null) {
             SpecificationVersion jdk13 = new SpecificationVersion ("1.3");  //NOI18N
-            SpecificationVersion jdk16 = new SpecificationVersion ("1.6");  //NOI18N
             String platformAntName = (String) platform.getProperties().get("platform.ant.name");    //NOI18N        
             assert platformAntName != null;
             props.put(J2SEProjectProperties.JAVA_PLATFORM, platformAntName);
@@ -175,7 +176,7 @@ public class PlatformUiSupport {
             //Issue #116490
             // Customizer value | -source | -targer
             // JDK 1.2            1.2        1.1
-            // JDK 1.3            1.3        1.3
+            // JDK 1.3            1.3        1.1
             // JDK 1.4            1.4        1.4
             // JDK 5              1.5        1.5
             // JDK 6              1.5        1.6
@@ -183,8 +184,8 @@ public class PlatformUiSupport {
             if (jdk13.compareTo(sourceLevel)>=0) {
                 javacTarget = "1.1";        //NOI18N
             }
-            else if (jdk16.equals(sourceLevel)) {
-                javacSource = "1.5";        //NOI18N
+            else if (JDK_6.equals(sourceLevel)) {
+                javacSource = JDK_5.toString();
             }            
                         
             if (!javacSource.equals(props.getProperty(J2SEProjectProperties.JAVAC_SOURCE))) {
@@ -226,8 +227,8 @@ public class PlatformUiSupport {
      * @param initialValue initial source level value
      * @return {@link ComboBoxModel} of {@link SpecificationVersion}
      */
-    public static ComboBoxModel createSourceLevelComboBoxModel (ComboBoxModel platformComboBoxModel, String initialValue) {
-        return new SourceLevelComboBoxModel (platformComboBoxModel, initialValue);
+    public static ComboBoxModel createSourceLevelComboBoxModel (ComboBoxModel platformComboBoxModel, String initialSourceLevel, String initinalTargetLevel) {
+        return new SourceLevelComboBoxModel (platformComboBoxModel, initialSourceLevel, initinalTargetLevel);
     }
     
     
@@ -494,18 +495,30 @@ public class PlatformUiSupport {
         private final ComboBoxModel platformComboBoxModel;
         private PlatformKey activePlatform;
         
-        public SourceLevelComboBoxModel (ComboBoxModel platformComboBoxModel, String initialValue) {            
+        public SourceLevelComboBoxModel (ComboBoxModel platformComboBoxModel, String initialSourceLevel, String initialTargetLevel) {            
             this.platformComboBoxModel = platformComboBoxModel;
             this.activePlatform = (PlatformKey) this.platformComboBoxModel.getSelectedItem();
             this.platformComboBoxModel.addListDataListener (this);
-            if (initialValue != null && initialValue.length()>0) {
+            if (initialSourceLevel != null && initialSourceLevel.length() > 0) {
                 try {
-                    this.originalSourceLevel = this.selectedSourceLevel = new SpecificationVersion (initialValue);
+                    this.originalSourceLevel = new SpecificationVersion (initialSourceLevel);
                 } catch (NumberFormatException nfe) {
                     //If the javac.source has invalid value, do not preselect and log it
-                    ErrorManager.getDefault().log("Invalid javac.source: "+initialValue);
+                    LOGGER.warning("Invalid javac.source: "+initialSourceLevel);        //NO18N
                 }
-            }            
+            }
+            if (initialTargetLevel != null && initialTargetLevel.length() > 0) {
+                try {
+                    SpecificationVersion originalTargetLevel = new SpecificationVersion (initialTargetLevel);
+                    if (this.originalSourceLevel == null || this.originalSourceLevel.compareTo(originalTargetLevel)<0) {
+                        this.originalSourceLevel = originalTargetLevel;
+                    }
+                } catch (NumberFormatException nfe) {
+                    //If the javac.target has invalid value, do not preselect and log it
+                    LOGGER.warning("Invalid javac.target: "+initialTargetLevel);        //NOI18N
+                }
+            }
+            this.selectedSourceLevel = this.originalSourceLevel;
         }
                 
         public int getSize () {
