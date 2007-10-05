@@ -509,7 +509,9 @@ public class CustomIconEditor extends javax.swing.JPanel {
 
         public Component getListCellRendererComponent(JList list, Object value,
                 int index, boolean isSelected, boolean cellHasFocus) {
-            super.getListCellRendererComponent(list, value.toString(), index, isSelected, cellHasFocus);
+            super.getListCellRendererComponent(list,
+                    value != null ? value.toString() : value,
+                    index, isSelected, cellHasFocus);
             setIcon(value instanceof IconFileItem ? (IconFileItem) value : null);
             return this;
         }
