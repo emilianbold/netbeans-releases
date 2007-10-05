@@ -211,15 +211,6 @@ public class JavaUnit extends SourceUnit {
         return JavaClass.getJavaClass(fobj);
     }
 
-
-    public String getPackageName() {
-       return (String)ReadTaskWrapper.execute( new ReadTaskWrapper.Read() {
-            public Object run(CompilationInfo cinfo) {
-                return getPackageName(cinfo);
-            }
-        }, fobj);
-    }
-
     private String getPackageName(CompilationInfo cinfo) {
         Element e = cinfo.getTrees().getElement(new TreePath(cinfo.getCompilationUnit()));
         if (e != null && e.getKind() == ElementKind.PACKAGE) {

@@ -107,6 +107,10 @@ public class JavaClass {
         return name;
     }
     
+    public String getPackageName() {
+        return name == null ? null : name.substring(0, name.lastIndexOf('.'));
+    }
+    
     /*
      * Return the file which contains this java class
      */     

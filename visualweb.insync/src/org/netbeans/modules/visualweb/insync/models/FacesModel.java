@@ -840,7 +840,7 @@ public class FacesModel extends Model {
         }
         
         if (javaPackage == null)
-            javaPackage = javaUnit.getPackageName();
+            javaPackage = javaClass.getPackageName();
         
         String rootPackage = JsfProjectUtils.getProjectProperty(project, JsfProjectConstants.PROP_JSF_PAGEBEAN_PACKAGE);
         if (markupUnit != null) {
