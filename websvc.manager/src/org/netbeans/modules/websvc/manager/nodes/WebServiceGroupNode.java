@@ -33,10 +33,12 @@ import org.netbeans.modules.websvc.manager.model.WebServiceGroup;
 import org.netbeans.modules.websvc.manager.model.WebServiceListModel;
 import java.awt.Image;
 import java.io.IOException;
+import java.util.ArrayList;
 import javax.swing.Action;
+import org.netbeans.modules.websvc.manager.spi.WebServiceManagerExt;
+import org.netbeans.modules.websvc.manager.util.ManagerUtil;
 import org.openide.nodes.AbstractNode;
 import org.openide.util.Utilities; 
-import org.openide.util.datatransfer.ExTransferable;
 import org.openide.util.datatransfer.PasteType;
 
 /**
@@ -50,6 +52,11 @@ public class WebServiceGroupNode extends AbstractNode implements Node.Cookie {
         super(new WebServiceGroupNodeChildren(wsGroup));
         websvcGroup = wsGroup;
         setName(websvcGroup.getName());
+    }
+    
+    @Override
+    public boolean canRename() {
+        return websvcGroup.isUserDefined();
     }
     
     @Override
@@ -67,11 +74,6 @@ public class WebServiceGroupNode extends AbstractNode implements Node.Cookie {
     }
     
     @Override
-    public boolean canRename() {
-        return true;
-    }
-    
-    @Override
     public void setName(String name){
         websvcGroup.setName(name);
         super.setName(name);
@@ -79,11 +81,16 @@ public class WebServiceGroupNode extends AbstractNode implements Node.Cookie {
     
     @Override
     public Action[] getActions(boolean context) {
-        return new Action[] {
-            SystemAction.get(AddWebServiceAction.class),
-            SystemAction.get(DeleteWebServiceGroupAction.class),
-            SystemAction.get(RenameWebServiceGroupAction.class)
-        };
+        List<Action> actions = new ArrayList<Action>();
+        for (WebServiceManagerExt ext : ManagerUtil.getExtensions()) {
+            for (Action a : ext.getGroupActions(this)) {
+                actions.add(a);
+            }
+        }
+        actions.add(SystemAction.get(AddWebServiceAction.class));
+        actions.add(SystemAction.get(DeleteWebServiceGroupAction.class));
+        actions.add(SystemAction.get(RenameWebServiceGroupAction.class));
+        return actions.toArray(new Action[actions.size()]);
     }
     
     @Override

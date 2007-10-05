@@ -25,6 +25,7 @@ import org.netbeans.modules.websvc.manager.*;
 import org.openide.nodes.Node;
 
 public interface WebServiceManagerExt {
+    public static final Action[] EMPTY_ACTIONS = new Action[0];
     
     public boolean wsServiceAddedExt(WebServiceDescriptor wsMetadataDesc);
     public boolean wsServiceRemovedExt(WebServiceDescriptor wsMetadataDesc);

@@ -241,6 +241,7 @@ public class WebServicePersistenceManager implements ExceptionListener {
                     
                     WebServiceGroup newGroup = new WebServiceGroup(WebServiceListModel.getInstance().getUniqueWebServiceGroupId());
                     newGroup.setName(groupName);
+                    newGroup.setUserDefined(false);
                     
                     for (String url : currentUrls) {
                         WebServiceData wsData = new WebServiceData(url, url, newGroup.getId());

@@ -39,6 +39,7 @@ public class WebServiceGroup {
     Set listeners = new HashSet();
     String groupId = null;
     String groupName = null;
+    boolean userDefined = true;
     
     Set<String> webserviceIds = new HashSet<String>();
     
@@ -73,6 +74,14 @@ public class WebServiceGroup {
     public void setName(String name) {
         modelDirty();
         groupName = name;
+    }
+    
+    public boolean isUserDefined() {
+        return userDefined;
+    }
+    
+    public void setUserDefined(boolean v) {
+        userDefined = v;
     }
     
     public void add(String webServiceId) {

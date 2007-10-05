@@ -31,9 +31,12 @@ import org.netbeans.modules.websvc.manager.model.WebServiceGroup;
 import org.netbeans.modules.websvc.manager.model.WebServiceListModel;
 import java.awt.Image;
 import java.awt.datatransfer.Transferable;
+import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
 import org.netbeans.modules.websvc.manager.model.WebServiceData;
+import org.netbeans.modules.websvc.manager.spi.WebServiceManagerExt;
+import org.netbeans.modules.websvc.manager.util.ManagerUtil;
 import org.openide.util.Utilities;
 import org.openide.util.datatransfer.PasteType;
 
@@ -66,10 +69,15 @@ public class WebServicesRootNode extends AbstractNode implements Node.Cookie {
     
     @Override
     public Action[] getActions(boolean context) {
-        return new Action[] {
-            SystemAction.get(AddWebServiceAction.class),
-            SystemAction.get(AddWebServiceGroupAction.class)
-        };
+        List<Action> actions = new ArrayList<Action>();
+        for (WebServiceManagerExt ext : ManagerUtil.getExtensions()) {
+            for (Action a : ext.getWebServicesRootActions(this)) {
+                actions.add(a);
+            }
+        }
+        actions.add(SystemAction.get(AddWebServiceAction.class));
+        actions.add(SystemAction.get(AddWebServiceGroupAction.class));
+        return actions.toArray(new Action[actions.size()]);
     }
 
     @Override
