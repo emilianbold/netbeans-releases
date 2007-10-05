@@ -129,7 +129,7 @@ public class FormJavaSource {
     
     private List<String> findMethodsByReturnType(CompilationController controller, TypeElement celem, Class returnType) {
         List<String> methods = new ArrayList<String>();
-        String returnTypeName = returnType.getName();
+        String returnTypeName = returnType.getCanonicalName();
         TypeElement returnTypeElm = controller.getElements().getTypeElement(returnTypeName);
         for (Element el: celem.getEnclosedElements()) {
             if (el.getKind() == ElementKind.METHOD) {
