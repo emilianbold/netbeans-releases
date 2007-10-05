@@ -74,11 +74,7 @@ public class ListValue extends AbstractValue {
     /**
      * The list separator.
      */
-// <rave> NB #94274 The default separator should be space.
-//    protected char separator = ',';
-// ====
-    protected char separator = ' ';
-// </rave>
+    protected char separator = ',';
     /**
      * Creates a ListValue.
      */
