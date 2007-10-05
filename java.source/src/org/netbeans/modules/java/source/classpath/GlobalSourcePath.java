@@ -616,7 +616,7 @@ public class GlobalSourcePath {
             this.listeners.add (listener);        
         }
 
-        public void removePropertyChangeListener(PropertyChangeListener listener) {
+        public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
             assert listener != null;
             if (this.listeners == null) {
                 return;
@@ -753,7 +753,7 @@ public class GlobalSourcePath {
             this.listeners.add (listener);        
         }
 
-        public void removePropertyChangeListener(PropertyChangeListener listener) {
+        public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
             assert listener != null;
             if (this.listeners == null) {
                 return;
