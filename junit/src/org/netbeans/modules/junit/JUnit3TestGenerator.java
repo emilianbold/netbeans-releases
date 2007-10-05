@@ -57,6 +57,7 @@ import com.sun.source.util.Trees;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -69,7 +70,6 @@ import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.openide.ErrorManager;
 import static javax.lang.model.element.Modifier.ABSTRACT;
 import static javax.lang.model.element.Modifier.PRIVATE;
 import static javax.lang.model.element.Modifier.PROTECTED;
@@ -82,11 +82,20 @@ import static javax.lang.model.element.Modifier.STATIC;
  * @author  vstejskal
  */
 final class JUnit3TestGenerator extends AbstractTestGenerator {
+
+    private static final String TEST = "junit.framework.Test";
+    private static final String TEST_CASE = "junit.framework.TestCase";
+    private static final String TEST_SUITE = "junit.framework.TestSuite";
+    private static final String OVERRIDE = "java.lang.Override";
+
+    /** whether Java annotations should be generated */
+    private final boolean useAnnotations;
     
     /**
      */
-    JUnit3TestGenerator(TestGeneratorSetup setup) {
+    JUnit3TestGenerator(TestGeneratorSetup setup, String sourceLevel) {
         super(setup);
+        useAnnotations = TestUtil.areAnnotationsSupported(sourceLevel);
     }
     
     /**
@@ -94,18 +103,12 @@ final class JUnit3TestGenerator extends AbstractTestGenerator {
     JUnit3TestGenerator(TestGeneratorSetup setup,
                         List<ElementHandle<TypeElement>> srcTopClassHandles,
                         List<String>suiteMembers,
-                        boolean isNewTestClass) {
+                        boolean isNewTestClass,
+                        String sourceLevel) {
         super(setup, srcTopClassHandles, suiteMembers, isNewTestClass);
+        useAnnotations = TestUtil.areAnnotationsSupported(sourceLevel);
     }
     
-    
-    /** element representing type {@code junit.framework.Test} */
-    private TypeElement testTypeElem;
-    /** */
-    private TypeElement testCaseTypeElem;
-    /** element representing type {@code junit.framework.TestSuite} */
-    private TypeElement testSuiteTypeElem;
-        
     
     /**
      */
@@ -115,10 +118,7 @@ final class JUnit3TestGenerator extends AbstractTestGenerator {
         final TreeMaker maker = workingCopy.getTreeMaker();
         ModifiersTree modifiers = maker.Modifiers(
                                       Collections.<Modifier>singleton(PUBLIC));
-        TypeElement testCaseType = getTestCaseTypeElem(workingCopy.getElements());
-        Tree extendsClause = (testCaseType != null)
-                             ? maker.QualIdent(testCaseType)
-                             : maker.Identifier("junit.framework.TestCase");//NOI18N
+        Tree extendsClause = getClassIdentifierTree(TEST_CASE, workingCopy);
         return maker.Class(
                     modifiers,                                 //modifiers
                     name,                                      //name
@@ -138,10 +138,10 @@ final class JUnit3TestGenerator extends AbstractTestGenerator {
         final TreeMaker maker = workingCopy.getTreeMaker();
         List<MethodTree> result = new ArrayList<MethodTree>(2);
         if (setup.isGenerateSetUp()) {
-            result.add(generateInitMethod("setUp", maker));             //NOI18N
+            result.add(generateInitMethod("setUp", maker, workingCopy));    //NOI18N
         }
         if (setup.isGenerateTearDown()) {
-            result.add(generateInitMethod("tearDown", maker));          //NOI18N
+            result.add(generateInitMethod("tearDown", maker, workingCopy)); //NOI18N
         }
         return result;
     }
@@ -195,7 +195,8 @@ final class JUnit3TestGenerator extends AbstractTestGenerator {
                           clsMap.getTearDownIndex(),
                           tstMembers,
                           clsMap,
-                          treeMaker);
+                          treeMaker,
+                          workingCopy);
             modified = true;
         }
         if (setup.isGenerateTearDown() && !clsMap.containsTearDown()) {
@@ -204,7 +205,8 @@ final class JUnit3TestGenerator extends AbstractTestGenerator {
                           (setUpIndex != -1) ? setUpIndex + 1 : -1,
                           tstMembers,
                           clsMap,
-                          treeMaker);
+                          treeMaker,
+                          workingCopy);
             modified = true;
         }
         return modified;
@@ -230,8 +232,11 @@ final class JUnit3TestGenerator extends AbstractTestGenerator {
                                int targetIndex,
                                List<Tree> clsMembers,
                                ClassMap clsMap,
-                               TreeMaker treeMaker) {
-        MethodTree initMethod = generateInitMethod(methodName, treeMaker);
+                               TreeMaker treeMaker,
+                               WorkingCopy workingCopy) {
+        MethodTree initMethod = generateInitMethod(methodName,
+                                                   treeMaker,
+                                                   workingCopy);
         
         if (targetIndex == -1) {
             targetIndex = getPlaceForFirstInitMethod(clsMap);
@@ -259,9 +264,13 @@ final class JUnit3TestGenerator extends AbstractTestGenerator {
      *       methods {@code setUp()} and {@code tearDown()}
      */
     protected MethodTree generateInitMethod(String methodName,
-                                            TreeMaker maker) {
-        ModifiersTree modifiers = maker.Modifiers(
-                Collections.<Modifier>singleton(PROTECTED));
+                                            TreeMaker maker,
+                                            WorkingCopy workingCopy) {
+        Set<Modifier> modifiers = Collections.<Modifier>singleton(PROTECTED);
+        ModifiersTree modifiersTree
+                = useAnnotations
+                  ? createModifiersTree(OVERRIDE, modifiers, workingCopy)
+                  : maker.Modifiers(modifiers);
         ExpressionTree superMethodCall = maker.MethodInvocation(
                 Collections.<ExpressionTree>emptyList(),    // type params.
                 maker.MemberSelect(
@@ -272,7 +281,7 @@ final class JUnit3TestGenerator extends AbstractTestGenerator {
                         maker.ExpressionStatement(superMethodCall)),
                 false);
         MethodTree method = maker.Method(
-                modifiers,              // modifiers
+                modifiersTree,          // modifiers
                 methodName,             // name
                 maker.PrimitiveType(TypeKind.VOID),         // return type
                 Collections.<TypeParameterTree>emptyList(), // type params
@@ -384,10 +393,8 @@ final class JUnit3TestGenerator extends AbstractTestGenerator {
         final Elements elements = workingCopy.getElements();
         final TreeMaker maker = workingCopy.getTreeMaker();
 
-        TypeElement testSuiteElem = getTestSuiteTypeElem(elements);
-        if (testSuiteElem == null) {
-            return null;
-        }
+        ExpressionTree testSuiteIdentifier
+                = getClassIdentifierTree(TEST_SUITE, workingCopy);
 
         TypeElement testTypeElem = getTestTypeElem(elements);
         if (testTypeElem == null) {
@@ -403,11 +410,11 @@ final class JUnit3TestGenerator extends AbstractTestGenerator {
         VariableTree suiteObjInit = maker.Variable(
                 maker.Modifiers(noModifiers()),
                 "suite",                                                //NOI18N
-                maker.QualIdent(testSuiteElem),
+                testSuiteIdentifier,
                 maker.NewClass(
                         null,                           //enclosing instance
                         Collections.<ExpressionTree>emptyList(), //type args
-                        maker.QualIdent(testSuiteElem), //class name
+                        testSuiteIdentifier,            //class name
                         Collections.singletonList(      //params
                                 maker.Literal(TestUtil.getSimpleName(suiteName))),
                         null));                         //class body
@@ -511,11 +518,11 @@ final class JUnit3TestGenerator extends AbstractTestGenerator {
         VariableTree suiteVar = maker.Variable(
                 maker.Modifiers(noModifiers()),
                 "suite",                                                //NOI18N
-                maker.QualIdent(getTestSuiteTypeElem(elements)),
+                getClassIdentifierTree(TEST_SUITE, workingCopy),
                 maker.NewClass(
                         null,           //enclosing instance
                         Collections.<ExpressionTree>emptyList(),
-                        maker.QualIdent(getTestSuiteTypeElem(elements)),
+                        getClassIdentifierTree(TEST_SUITE, workingCopy),
                         Collections.singletonList(
                                 maker.MemberSelect(maker.QualIdent(tstClassElem),
                                                    "class")),           //NOI18N
@@ -565,7 +572,7 @@ final class JUnit3TestGenerator extends AbstractTestGenerator {
         MethodTree suiteMethod = maker.Method(
                 maker.Modifiers(createModifierSet(PUBLIC, STATIC)),
                 "suite",                                                //NOI18N
-                maker.QualIdent(getTestTypeElem(elements)), //ret. type
+                getClassIdentifierTree(TEST, workingCopy),
                 Collections.<TypeParameterTree>emptyList(), //type params
                 Collections.<VariableTree>emptyList(),      //parameters
                 Collections.<ExpressionTree>emptyList(),    //throws ...
@@ -591,6 +598,9 @@ final class JUnit3TestGenerator extends AbstractTestGenerator {
         return true;
     }
     
+    /** element representing type {@code junit.framework.Test} */
+    private TypeElement testTypeElem;
+        
     /**
      */
     private TypeElement getTestTypeElem(Elements elements) {
@@ -600,41 +610,6 @@ final class JUnit3TestGenerator extends AbstractTestGenerator {
                                         elements);
         }
         return testTypeElem;
-    }
-
-    /**
-     */
-    private TypeElement getTestCaseTypeElem(Elements elements) {
-        if (testCaseTypeElem == null) {
-            testCaseTypeElem = getElemForClassName(
-                                        "junit.framework.TestCase",     //NOI18N
-                                        elements);
-        }
-        return testCaseTypeElem;
-    }
-
-    /**
-     */
-    private TypeElement getTestSuiteTypeElem(Elements elements) {
-        if (testSuiteTypeElem == null) {
-            testSuiteTypeElem = getElemForClassName(
-                                        "junit.framework.TestSuite",//NOI18N
-                                        elements);
-        }
-        return testSuiteTypeElem;
-    }
-
-    /**
-     */
-    private static TypeElement getElemForClassName(String className,
-                                            Elements elements) {
-        TypeElement elem = elements.getTypeElement(className);
-        if (elem == null) {
-            ErrorManager.getDefault().log(
-                    ErrorManager.ERROR,
-                    "Could not find TypeElement for " + className);     //NOI18N
-        }
-        return elem;
     }
 
 }

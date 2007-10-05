@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.junit;
 
+import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
@@ -60,9 +61,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -77,6 +80,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -86,6 +90,7 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import static javax.lang.model.element.Modifier.ABSTRACT;
 import static javax.lang.model.element.Modifier.PUBLIC;
@@ -1448,6 +1453,59 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
         return initialMainMethodBody;
     }
     
+    /**
+     */
+    protected ModifiersTree createModifiersTree(String annotationClassName,
+                                                Set<Modifier> modifiers,
+                                                WorkingCopy workingCopy) {
+        TreeMaker maker = workingCopy.getTreeMaker();
+        AnnotationTree annotation = maker.Annotation(
+                getClassIdentifierTree(annotationClassName, workingCopy),
+                Collections.<ExpressionTree>emptyList());
+        return maker.Modifiers(modifiers,
+                               Collections.<AnnotationTree>singletonList(
+                                                                   annotation));
+    }
+
+    /** */
+    private Map<String, ExpressionTree> classIdentifiers;
+
+    /**
+     */
+    protected ExpressionTree getClassIdentifierTree(String className,
+                                                    WorkingCopy workingCopy) {
+        ExpressionTree classIdentifier;
+        if (classIdentifiers == null) {
+            classIdentifier = null;
+            classIdentifiers = new HashMap<String, ExpressionTree>(13);
+        } else {
+            classIdentifier = classIdentifiers.get(className);
+        }
+        if (classIdentifier == null) {
+            TypeElement typeElement
+                    = getElemForClassName(className, workingCopy.getElements());
+            TreeMaker maker = workingCopy.getTreeMaker();
+            classIdentifier = (typeElement != null)
+                               ? maker.QualIdent(typeElement)
+                               : maker.Identifier(className);
+            classIdentifiers.put(className, classIdentifier);
+        }
+        return classIdentifier;
+    }
+
+    /**
+     */
+    protected static TypeElement getElemForClassName(String className,
+                                                     Elements elements) {
+        TypeElement elem = elements.getTypeElement(className);
+        if (elem == null) {
+            ErrorManager.getDefault().log(
+                    ErrorManager.ERROR,
+                    "Could not find TypeElement for " + className);     //NOI18N
+        }
+        return elem;
+    }
+
     /**
      * Creates a {@code Set} of {@code Modifier}s from the given list
      * of modifiers.

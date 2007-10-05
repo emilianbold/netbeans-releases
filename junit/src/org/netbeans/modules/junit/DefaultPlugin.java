@@ -68,7 +68,6 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
-import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
@@ -149,6 +148,8 @@ public final class DefaultPlugin extends JUnitPlugin {
     private static final String templatePropCodeHints = "sourceCodeHint";   //NOI18N
     /** name of FreeMarker template property - generate hints - method placeholders? */
     private static final String templatePropMethodPH = "testMethodsPlaceholder"; //NOI18N
+    /** name of FreeMarker template property - use Java annotations? */
+    private static final String templatePropUseAnnotations = "useAnnotations"; //NOI18N
     /** name of FreeMarker template property - list of class names */
     private static final String templatePropClassNames = "classNames";  //NOI18N
     /**
@@ -747,23 +748,27 @@ public final class DefaultPlugin extends JUnitPlugin {
                     = (filesToTest != null)
                       && (filesToTest.length != 0)
                       && ((filesToTest.length > 1) || !filesToTest[0].isData());
+            final boolean useAnnotations;
             switch (junitVer) {
                 case JUNIT3:
                     templateId = "PROP_junit3_testClassTemplate";       //NOI18N
                     suiteTemplateId = forTestSuite
                                       ? "PROP_junit3_testSuiteTemplate" //NOI18N
                                       : null;
+                    useAnnotations = TestUtil.areAnnotationsSupported(targetRoot);
                     break;
                 case JUNIT4:
                     templateId = "PROP_junit4_testClassTemplate";       //NOI18N
                     suiteTemplateId = forTestSuite
                                       ? "PROP_junit4_testSuiteTemplate" //NOI18N
                                       : null;
+                    useAnnotations = true;
                     break;
                 default:
                     assert false;
                     templateId = null;
                     suiteTemplateId = null;
+                    useAnnotations = false;
                     break;
             }
             DataObject doTestTempl = (templateId != null)
@@ -779,13 +784,14 @@ public final class DefaultPlugin extends JUnitPlugin {
                 return null;
             }
             
+            Map<String, Boolean> templateParams = createTemplateParams(params);
+            if (useAnnotations) {
+                templateParams.put(templatePropUseAnnotations, useAnnotations);
+            }
+
             if ((filesToTest == null) || (filesToTest.length == 0)) {
                 //XXX: Not documented that filesToTest may be <null>
                 
-                Map<String, Boolean> templateParams
-                        = createTemplateParams(params);
-                addTemplateParamEntry(params, CreateTestParam.INC_CODE_HINT,
-                                      templateParams, templatePropCodeHints);
                 addTemplateParamEntry(params, CreateTestParam.INC_CODE_HINT,
                                       templateParams, templatePropMethodPH);
 
@@ -804,10 +810,6 @@ public final class DefaultPlugin extends JUnitPlugin {
             } else {
                 ClassPath testClassPath = ClassPathSupport.createClassPath(
                                                 new FileObject[] {targetRoot});
-                Map<String, Boolean> templateParams = createTemplateParams(params);
-                addTemplateParamEntry(params, CreateTestParam.INC_CODE_HINT,
-                                      templateParams, templatePropCodeHints);
-                
                 if (!forTestSuite) {
                     String testClassName = (String) params.get(CreateTestParam.CLASS_NAME);
                     if (testClassName == null) {
@@ -927,6 +929,8 @@ public final class DefaultPlugin extends JUnitPlugin {
                               result, templatePropBefore);
         addTemplateParamEntry(params, CreateTestParam.INC_TEAR_DOWN,
                               result, templatePropAfter);
+        addTemplateParamEntry(params, CreateTestParam.INC_CODE_HINT,
+                              result, templatePropCodeHints);
 
         return result;
     }
@@ -983,7 +987,7 @@ public final class DefaultPlugin extends JUnitPlugin {
                 case JUNIT3:
                     return true;
                 case JUNIT4:
-                    String sourceLevel = getSourceLevel(selectedFiles);
+                    String sourceLevel = TestUtil.getSourceLevel(selectedFiles[0]);
                     if (sourceLevel == null) {    //could not get source level
                         return true;
                     }
@@ -1013,7 +1017,7 @@ public final class DefaultPlugin extends JUnitPlugin {
                     }
                     return true;
                 case JUNIT4:
-                    String sourceLevel = getSourceLevel(selectedFiles);
+                    String sourceLevel = TestUtil.getSourceLevel(selectedFiles[0]);
                     if ((sourceLevel != null)
                             && (sourceLevel.compareTo("1.5")) >= 0) {   //NOI18N
                         if (storeSettings) {
@@ -1045,7 +1049,7 @@ public final class DefaultPlugin extends JUnitPlugin {
         String msgKey;
         boolean offerJUnit4;
         boolean showSourceLevelReqs;
-        String sourceLevel = getSourceLevel(selectedFiles);
+        String sourceLevel = TestUtil.getSourceLevel(selectedFiles[0]);
         if (sourceLevel == null) {
             msgKey = "MSG_select_junit_version_srclvl_unknown";         //NOI18N
             offerJUnit4 = true;
@@ -1567,22 +1571,6 @@ public final class DefaultPlugin extends JUnitPlugin {
     }
     
     /**
-     */
-    private String getSourceLevel(FileObject[] filesToTest) {
-        ClassPath srcCP = ClassPath.getClassPath(filesToTest[0], SOURCE);
-        if (srcCP == null) {
-            return null;
-        }
-        
-        FileObject srcRoot = srcCP.findOwnerRoot(filesToTest[0]);
-        if (srcRoot == null) {
-            return null;
-        }
-        
-        return SourceLevelQuery.getSourceLevel(srcRoot);
-    }
-
-    /**
      * Creates a new test class.
      * 
      * @param  targetRoot     <!-- //PENDING -->
@@ -1611,9 +1599,7 @@ public final class DefaultPlugin extends JUnitPlugin {
                                         templateParams);
 
             /* fill in setup etc. according to dialog settings */
-            FileObject testFileObj = testDataObj.getPrimaryFile();
-            JavaSource testSrc = JavaSource.forFileObject(testFileObj);
-            testCreator.createEmptyTest(testSrc);
+            testCreator.createEmptyTest(testDataObj.getPrimaryFile());
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ex);
         }
@@ -1695,8 +1681,7 @@ public final class DefaultPlugin extends JUnitPlugin {
                         testFile = testDataObj.getPrimaryFile();
                     }
                     
-                    JavaSource testSrc = JavaSource.forFileObject(testFile);
-                    testCreator.createSimpleTest(clsToTest, testSrc, isNew);
+                    testCreator.createSimpleTest(clsToTest, testFile, isNew);
                     if (testDataObj == null) {
                         testDataObj = DataObject.find(testFile);
                     }

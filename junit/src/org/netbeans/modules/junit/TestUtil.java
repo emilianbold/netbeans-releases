@@ -75,6 +75,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.openide.util.Utilities;
 
 
@@ -835,6 +836,58 @@ public class TestUtil {
     }
 
     private TestUtil() {
+    }
+
+    /**
+     * Determines source level of the given file.
+     * 
+     * @param  file  file whose source level is to be determined
+     * @return  string denoting source level of the given file
+     *          (e.g. <code>&quot;1.5&quot;</code>)
+     *          or {@code null} if the source level could not be determined
+     */
+    static String getSourceLevel(FileObject file) {
+        ClassPath srcCP = ClassPath.getClassPath(file, ClassPath.SOURCE);
+        if (srcCP == null) {
+            return null;
+        }
+        
+        FileObject srcRoot = srcCP.findOwnerRoot(file);
+        if (srcRoot == null) {
+            return null;
+        }
+        
+        return SourceLevelQuery.getSourceLevel(srcRoot);
+    }
+
+    /**
+     * Checks whether Java annotations are applicable in the given file.
+     * The result is {@code true} if source level of the given is known
+     * and the source level is 1.5 or higher.
+     * 
+     * @param  file  file to be checked
+     * @return  {@code true} if the given file is known to be based on
+     *          JDK 1.5 or higher; {@code false} otherwise
+     * @see  #getSourceLevel
+     * @see  #areAnnotationsSupported(String)
+     */
+    static boolean areAnnotationsSupported(FileObject file) {
+        return areAnnotationsSupported(getSourceLevel(file));
+    }
+
+    /**
+     * Determines whether Java annotations are supported by the given
+     * Java source level.
+     * 
+     * @param  sourceLevel  Java source level (e.g. <code>&quot;1.5&quot;</code>),
+     *                      or {@code null} if the source level is unknown
+     * @return  {@code true} if the source level is known and Java annotations
+     *          are supported in the source level, {@code false} otherwise
+     * @see  #areAnnotationsSupported(FileObject)
+     */
+    static boolean areAnnotationsSupported(String sourceLevel) {
+        return (sourceLevel != null)
+                && (sourceLevel.compareTo("1.5") >= 0);                 //NOI18N
     }
     
 }

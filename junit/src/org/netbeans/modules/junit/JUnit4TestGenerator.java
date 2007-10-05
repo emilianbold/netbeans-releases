@@ -56,7 +56,6 @@ import com.sun.source.util.Trees;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -71,12 +70,10 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.openide.ErrorManager;
 import static javax.lang.model.element.Modifier.PUBLIC;
 import static javax.lang.model.element.Modifier.PROTECTED;
 import static javax.lang.model.element.Modifier.PRIVATE;
@@ -755,59 +752,6 @@ public class JUnit4TestGenerator extends AbstractTestGenerator {
                                 null,  //do not generate "new Class[]"
                                 Collections.<ExpressionTree>emptyList(),
                                 suiteMemberExpressions)));
-    }
-
-    /**
-     */
-    private ModifiersTree createModifiersTree(String annotationClassName,
-                                              Set<Modifier> modifiers,
-                                              WorkingCopy workingCopy) {
-        TreeMaker maker = workingCopy.getTreeMaker();
-        AnnotationTree annotation = maker.Annotation(
-                getClassIdentifierTree(annotationClassName, workingCopy),
-                Collections.<ExpressionTree>emptyList());
-        return maker.Modifiers(modifiers,
-                               Collections.<AnnotationTree>singletonList(
-                                                                   annotation));
-    }
-
-    /** */
-    private Map<String, ExpressionTree> classIdentifiers;
-
-    /**
-     */
-    private ExpressionTree getClassIdentifierTree(String className,
-                                        WorkingCopy workingCopy) {
-        ExpressionTree classIdentifier;
-        if (classIdentifiers == null) {
-            classIdentifier = null;
-            classIdentifiers = new HashMap<String, ExpressionTree>(13);
-        } else {
-            classIdentifier = classIdentifiers.get(className);
-        }
-        if (classIdentifier == null) {
-            TypeElement typeElement
-                    = getElemForClassName(className, workingCopy.getElements());
-            TreeMaker maker = workingCopy.getTreeMaker();
-            classIdentifier = (typeElement != null)
-                               ? maker.QualIdent(typeElement)
-                               : maker.Identifier(className);
-            classIdentifiers.put(className, classIdentifier);
-        }
-        return classIdentifier;
-    }
-
-    /**
-     */
-    private static TypeElement getElemForClassName(String className,
-                                                   Elements elements) {
-        TypeElement elem = elements.getTypeElement(className);
-        if (elem == null) {
-            ErrorManager.getDefault().log(
-                    ErrorManager.ERROR,
-                    "Could not find TypeElement for " + className);     //NOI18N
-        }
-        return elem;
     }
 
 }
