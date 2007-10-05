@@ -389,7 +389,7 @@ public class GlobalSourcePath {
             public Set<URL> run () {
                 synchronized (GlobalSourcePath.this) {
                     if (GlobalSourcePath.this.libsSrcs == null) {
-                        GlobalSourcePath.this.libsSrcs = new HashSet<URL>();
+                        final Set<URL> _libSrcs = new HashSet<URL>();
                         Set<JavaPlatform> platforms = new HashSet<JavaPlatform> (Arrays.asList(pm.getInstalledPlatforms()));
                         Set<JavaPlatform> oldPlatforms = new HashSet<JavaPlatform> (GlobalSourcePath.this.seenPlatforms);
                         OUTER: for (JavaPlatform platform : platforms) {                
@@ -417,7 +417,7 @@ public class GlobalSourcePath {
                                 catch (FileStateInvalidException ex) {
                                     Exceptions.printStackTrace(ex);
                                 }
-                                GlobalSourcePath.this.libsSrcs.add(url);
+                                _libSrcs.add(url);
                             }
                         }
                         for (JavaPlatform platform : oldPlatforms) {
@@ -452,7 +452,7 @@ public class GlobalSourcePath {
                                     catch (FileStateInvalidException ex) {
                                         Exceptions.printStackTrace(ex);
                                     }                        
-                                    GlobalSourcePath.this.libsSrcs.add(url);
+                                    _libSrcs.add(url);
                                 }
 
                             }
@@ -460,6 +460,7 @@ public class GlobalSourcePath {
                         for (Library lib : oldLibs) {
                             lib.removePropertyChangeListener(GlobalSourcePath.this.libsListener);
                         }
+                        GlobalSourcePath.this.libsSrcs = _libSrcs;
                     }
                     return GlobalSourcePath.this.libsSrcs;
                 }
