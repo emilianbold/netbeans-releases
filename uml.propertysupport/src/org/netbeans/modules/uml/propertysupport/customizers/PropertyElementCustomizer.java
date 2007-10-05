@@ -52,6 +52,7 @@ import org.netbeans.modules.uml.core.support.umlutils.IPropertyDefinition;
 import org.netbeans.modules.uml.core.support.umlutils.IPropertyElement;
 import org.netbeans.modules.uml.core.support.umlutils.IPropertyElementManager;
 import org.netbeans.modules.uml.propertysupport.DefinitionPropertyBuilder;
+import org.netbeans.modules.uml.propertysupport.customizers.PropertyDataFormatter;
 import org.netbeans.modules.uml.propertysupport.nodes.CustomPropertyEditor;
 
 import java.awt.Component;
@@ -714,6 +715,10 @@ public class PropertyElementCustomizer extends JPanel
             {
                 if(element != null) 
                 {
+                    String value = element.getValue();
+                    String transValue = PropertyDataFormatter.translateToFullyQualifiedName(value);
+                    element.setValue(transValue);
+                    
                     element.save();                 
                     Vector < IPropertyElement > children = element.getSubElements();
                     for(IPropertyElement child : children) 
@@ -768,6 +773,8 @@ public class PropertyElementCustomizer extends JPanel
                 setText(PropertyDataFormatter.translateFullyQualifiedName(transValue));
             }
         }
+        
+        
     }
     
     // Change the TextCellRender to the DefaultTableCellRenderer to
