@@ -45,6 +45,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.swing.JComponent;
 import javax.swing.text.BadLocationException;
@@ -99,7 +100,12 @@ public class StaticAccess extends AbstractHint {
         if (el == null || el.getKind() != ElementKind.CLASS) {
             return null;
         }
+        
         TypeElement type = (TypeElement)el;
+        
+        if (isError(type)) {
+            return null;
+        }
         
         Name idName = null;
         
@@ -128,6 +134,10 @@ public class StaticAccess extends AbstractHint {
             return null;
         }
         
+        if (isError(used)) {
+            return null;
+        }
+        
         int[] span = {
             (int)info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), expression),
             (int)info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), expression),
@@ -149,6 +159,20 @@ public class StaticAccess extends AbstractHint {
         bounds[0] = span[0];
         bounds[1] = span[1];
         return fixes;
+    }
+    
+    private boolean isError(Element e) {
+        if (e == null) {
+            return true;
+        }
+        
+        if (e.getKind() != ElementKind.CLASS) {
+            return false;
+        }
+        
+        TypeMirror type = ((TypeElement) e).asType();
+        
+        return type == null || type.getKind() == TypeKind.ERROR;
     }
     
     public List<ErrorDescription> run(CompilationInfo compilationInfo,

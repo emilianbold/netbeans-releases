@@ -189,6 +189,46 @@ public class StaticAccessTest extends TreeRuleTestBase {
         );
     }
     
+    public void testIgnoreErrors1() throws Exception {
+        String code = "package test; class Test {\n" +
+            "public void run() {\n" +
+            "aaa.getClass().getNa|me();\n" +
+            "}\n" +
+            "}";
+        
+        performAnalysisTest("test/Test.java", code);
+    }
+    
+    public void testIgnoreErrors2() throws Exception {
+        String code = "package test; class Test {\n" +
+            "public void run() {\n" +
+            "aaa.getCl|ass();\n" +
+            "}\n" +
+            "}";
+        
+        performAnalysisTest("test/Test.java", code);
+    }
+    
+    public void testIgnoreErrors3() throws Exception {
+        String code = "package test; class Test {\n" +
+            "public void run(String aaa) {\n" +
+            "aaa.ff|f();\n" +
+            "}\n" +
+            "}";
+        
+        performAnalysisTest("test/Test.java", code);
+    }
+    
+    public void testIgnoreErrors4() throws Exception {
+        String code = "package test; class Test {\n" +
+            "public void run() {\n" +
+            "super.ff|f();\n" +
+            "}\n" +
+            "}";
+        
+        performAnalysisTest("test/Test.java", code);
+    }
+    
     protected List<ErrorDescription> computeErrors(CompilationInfo info, TreePath path) {
         SourceUtilsTestUtil.setSourceLevel(info.getFileObject(), sourceLevel);
         return new StaticAccess().run(info, path);
