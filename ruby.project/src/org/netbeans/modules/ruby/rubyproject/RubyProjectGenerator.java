@@ -51,7 +51,6 @@ import org.netbeans.modules.ruby.rubyproject.ui.customizer.RubyProjectProperties
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
 import org.netbeans.modules.ruby.spi.project.support.rake.EditableProperties;
 import org.netbeans.modules.ruby.spi.project.support.rake.ProjectGenerator;
-import org.netbeans.modules.ruby.spi.project.support.rake.PropertyUtils;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.ruby.spi.project.support.rake.ReferenceHelper;
 import org.openide.filesystems.FileObject;
@@ -60,11 +59,10 @@ import org.openide.filesystems.Repository;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.modules.SpecificationVersion;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.ErrorManager;
-import org.openide.util.NbBundle;
+import org.openide.filesystems.FileLock;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -76,7 +74,7 @@ public class RubyProjectGenerator {
     
     public static final String DEFAULT_SRC_NAME = "src.dir"; // NOI18N
     public static final String DEFAULT_TEST_SRC_NAME = "test.src.dir"; // NOI18N
-    
+
     private RubyProjectGenerator() {}
     
     /**
@@ -97,7 +95,10 @@ public class RubyProjectGenerator {
         if ( mainClass != null ) {
             createMainClass( mainClass, srcFolder, "Templates/Ruby/main.rb" ); // NOI18N
         }
-        createMainClass( "Rakefile.rb", srcFolder, "Templates/Ruby/rakefile.rb" ); // NOI18N
+        DataObject rakeFileDO = createMainClass( "Rakefile.rb", dirFO, "Templates/Ruby/rakefile.rb" ); // NOI18N
+        if (rakeFileDO != null) {
+            rename(rakeFileDO.getPrimaryFile(), "Rakefile", null);
+        }
 
         // Run Rake -T silently to determine the available targets and write into private area
         RakeTargetsAction.refreshTargets(p);
@@ -106,7 +107,7 @@ public class RubyProjectGenerator {
     }
 
     public static RakeProjectHelper createProject(final File dir, final String name,
-                                                  final File[] sourceFolders, final File[] testFolders, final String manifestFile) throws IOException {
+            final File[] sourceFolders, final File[] testFolders, final String manifestFile) throws IOException {
         assert sourceFolders != null && testFolders != null: "Package roots can't be null";   //NOI18N
         final FileObject dirFO = createProjectDir (dir);
         // this constructor creates only java application type
@@ -324,9 +325,7 @@ public class RubyProjectGenerator {
         dirFO.getFileSystem().refresh(false);
     }
     
-
-    private static void createMainClass( String mainClassName, FileObject srcFolder, String templateName ) throws IOException {
-        
+    private static DataObject createMainClass( String mainClassName, FileObject srcFolder, String templateName ) throws IOException {
         int lastDotIdx = mainClassName.lastIndexOf( '/' );
         String mName, pName;
         if ( lastDotIdx == -1 ) {
@@ -339,13 +338,13 @@ public class RubyProjectGenerator {
         }
         
         if ( mName.length() == 0 ) {
-            return;
+            return null;
         }
         
         FileObject mainTemplate = Repository.getDefault().getDefaultFileSystem().findResource( templateName );
 
         if ( mainTemplate == null ) {
-            return; // Don't know the template
+            return null; // Don't know the template
         }
                 
         DataObject mt = DataObject.find( mainTemplate );
@@ -362,9 +361,19 @@ public class RubyProjectGenerator {
             mName = mName.substring(0, extension);
         }
         // END SEMPLICE MODIFICATIONS
-        mt.createFromTemplate( pDf, mName );
-        
+        return mt.createFromTemplate(pDf, mName);
+    }
+
+    private static void rename(final FileObject rakeFileFO, final String name,
+            final String ext) throws IOException {
+        FileLock lock = null;
+        try {
+            lock = rakeFileFO.lock();
+            rakeFileFO.rename(lock, name, ext);
+        } finally {
+            if (lock != null) {
+                lock.releaseLock();
+            }
+        }
     }
 }
-
-
