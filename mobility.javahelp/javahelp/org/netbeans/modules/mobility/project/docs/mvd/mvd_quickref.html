@@ -38,7 +38,7 @@ This topic describes common tasks you can perform in the Visual Mobile Designer
         <li>Choose File &gt; New File. <br>
           This opens the New File wizard.</li>
         <li>Under Categories, Choose MIDP. Under File Types, choose either the 
-          Visual MIDlet or Hello Visual MIDlet <a href="../projects/proj_templates.html">template</a>. 
+          Visual MIDlet or Visual Design <a href="../projects/proj_templates.html">template</a>. 
         </li>
         <li>In the Name and Location page, specify the name and location for the 
           new MIDlet. </li>
@@ -63,10 +63,7 @@ This topic describes common tasks you can perform in the Visual Mobile Designer
   <tr valign="top"> 
     <td>Open the Action Editor</td>
     <td><ul>
-        <li>Double-click on a command line within the <a href="../ui/mvd_flowdesigner.html">Flow 
-          Designer</a> window.</li>
-        <li>Click the Edit button in the Assigned Commands pane of the <a href="../ui/mvd_screendesigner.html">Screen 
-          Designer</a>. </li>
+        <li>Open the Action Editor by double-clicking on a transition line in the Flow Designer. </li>
         <li>Click on the Ellipsis button in the <a href="../ui/mvd_properties.html">Action 
           Properties</a> in the Properties window.</li>
       </ul></td>
@@ -89,46 +86,36 @@ This topic describes common tasks you can perform in the Visual Mobile Designer
           and drag it into the Flow Design window.</li>
       </ul></td>
   </tr>
-  <tr valign="top"> 
-    <td> Change the size of a Device Screen</td>
+   <tr valign="top"> 
+ <!--  <td> Change the size of a Device Screen</td>
     <td><ul>
         <li>Right-click on a Device Screen in the Screen Design window and choose 
           Set Screen Size. <br>
           This opens a dialog where you can set the height and width of the device 
           screen in pixels. </li>
-      </ul></td>
+      </ul></td> -->
   </tr>
+  
   <tr valign="top"> 
     <td>Add commands to the application flow</td>
     <td><ol>
         <li>Select a command from the Commands category of the Component Palette 
           and drag it on to the screen from where the command will be initiated.</li>
         <li>Drag a line from the command to a target component. </li>
-        <li>Optionally, double-click on a line to open the Action Editor.</li>
+        <li>Optionally, double-click on a line to edit the command action in the source code.
+        </li>
       </ol></td>
   </tr>
   <tr valign="top"> 
     <td>Redesign the layout in the Flow Designer</td>
     <td><ul>
-        <li>With the Flow Designer open, hold down the CTRL button. <br>
+        <li>With the Flow Designer open, place the mouse cursor over the transition line. <br>
           Each command line angle and intersection point becomes a red square 
           that can be dragged vertically or horizontally to redesign the layout. 
         </li>
       </ul></td>
   </tr>
-  <tr valign="top"> 
-    <td>Convert application design to other MIDP version</td>
-    <td><ul>
-        <li>Right-click on an object in the Flow Designer and choose Convert to 
-          MIDP <em>&lt;version number&gt;</em>. This converts all components in 
-          the VMD to the selected MIDP version. Note that if you convert from 
-          MIDP 2.0 to MIDP, components and settings that are not compatible with 
-          MIDP 1.0 are deleted from the design. </li>
-        <li>You can reverse the conversion by right-clicking on an object and 
-          choosing Undo.</li>
-      </ul></td>
-  </tr>
-  <tr valign="top"> 
+    <tr valign="top"> 
     <td>Add custom components to the Component Palette</td>
     <td><ol>
         <li>Ensure the class you want to use is in your project's classpath.</li>
