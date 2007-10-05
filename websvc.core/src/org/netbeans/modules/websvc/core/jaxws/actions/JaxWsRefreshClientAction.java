@@ -48,6 +48,6 @@ public class JaxWsRefreshClientAction extends CookieAction {
     protected void performAction(Node[] activatedNodes) {
         JaxWsRefreshCookie cookie = 
            activatedNodes[0].getCookie(JaxWsRefreshCookie.class);
-        cookie.refreshService(true);
+        if (cookie != null) cookie.refreshService(true);
     }
 }
