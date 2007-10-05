@@ -66,8 +66,10 @@ public class JDBCDriverManagerTest extends TestBase {
         Util.deleteDriverFiles();
         assertEquals(0, JDBCDriverManager.getDefault().getDrivers().length);
 
-        JDBCDriver driver1 = JDBCDriver.create("bar_driver", "Bar Driver", "org.bar.BarDriver", new URL[0]);
-        DataObject driver1DO = JDBCDriverConvertor.create(driver1);
+        JDBCDriver driver = JDBCDriver.create("bar_driver", "Bar Driver", "org.bar.BarDriver", new URL[0]);
+        // temporary: should actually call addDriver(), but that doesn't return a DataObject
+        // JDBCDriverManager.getDefault().addDriver(driver1);
+        DataObject driverDO = JDBCDriverConvertor.create(driver);
 
         // Probably cannot be GCed, becaue of I cannot get this GCed due to:
         //
@@ -85,13 +87,13 @@ public class JDBCDriverManagerTest extends TestBase {
         //
         // /*
         // assertEquals(1, JDBCDriverManager.getDefault().getDrivers().length);
-        WeakReference driver1DORef = new WeakReference(driver1DO);
-        driver1DO = null;
-        assertGC("Can GC the driver's DataObject", driver1DORef);
+        WeakReference driverDORef = new WeakReference(driverDO);
+        driverDO = null;
+        assertGC("Can GC the driver's DataObject", driverDORef);
         // */
 
         // this used to fail as described in issue 75204
         assertEquals(1, JDBCDriverManager.getDefault().getDrivers().length);
-        assertSame(driver1, JDBCDriverManager.getDefault().getDrivers("org.bar.BarDriver")[0]);
+        assertSame(driver, JDBCDriverManager.getDefault().getDrivers("org.bar.BarDriver")[0]);
     }
 }

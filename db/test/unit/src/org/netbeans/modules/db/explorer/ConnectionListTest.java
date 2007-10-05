@@ -58,9 +58,9 @@ public class ConnectionListTest extends TestBase {
         // ConnectionManager.getDefault().addConnection(dbconn);
         DataObject dbconnDO = DatabaseConnectionConvertor.create(dbconn);
 
-        Reference ref = new WeakReference(dbconnDO);
+        Reference dbconnDORef = new WeakReference(dbconnDO);
         dbconnDO = null;
-        assertGC("Should not be able to GC dobj", ref);
+        assertGC("Should not be able to GC dobj", dbconnDORef);
 
         assertEquals(1, ConnectionList.getDefault().getConnections().length);
         assertSame(dbconn, ConnectionList.getDefault().getConnections()[0]);
