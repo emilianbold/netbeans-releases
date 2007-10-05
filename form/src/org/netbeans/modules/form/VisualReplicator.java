@@ -713,16 +713,7 @@ public class VisualReplicator {
                 if (laysup != null) { // old layout support
                     laysup.setLayoutToContainer(cont, contDelegate);
                     if (comps.length > 0) { // add cloned subcomponents to container
-                        if (!(cont instanceof JToolBar))
-                            laysup.addComponentsToContainer(cont, contDelegate, comps, 0);
-                        else { // a L&F workaround for JToolBar (MetalToobarUI)
-                            SwingUtilities.invokeLater(new Runnable() {
-                                public void run() {
-                                    laysup.addComponentsToContainer(cont, contDelegate,
-                                                                    comps, 0);
-                                }
-                            });
-                        }
+                        laysup.addComponentsToContainer(cont, contDelegate, comps, 0);
                     }
                     laysup.arrangeContainer(cont, contDelegate);
                 }
