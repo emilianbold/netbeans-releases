@@ -594,6 +594,75 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
         );
     }
     
+    public void testRightBracePreprocessor() {
+        setLoadDocumentText(
+            "void foo(){\n" +
+            "#if A\n" +
+            "    if (a){\n" +
+            "#else\n" +
+            "    if (b){|\n" +
+            "#endif\n" +
+            "    }\n" +
+            "}"
+        );
+        assertFalse(isAddRightBrace());
+    }
+
+    public void testRightBracePreprocessor2() {
+        setLoadDocumentText(
+            "void foo(){\n" +
+            "#if A\n" +
+            "    if (a){|\n" +
+            "#else\n" +
+            "    if (b){\n" +
+            "#endif\n" +
+            "    }\n" +
+            "}"
+        );
+        assertFalse(isAddRightBrace());
+    }
+
+    public void testRightBracePreprocessor3() {
+        setLoadDocumentText(
+            "void foo(){\n" +
+            "#if A\n" +
+            "    if (a){|\n" +
+            "#else\n" +
+            "    if (b){\n" +
+            "#endif\n" +
+            "//    }\n" +
+            "}"
+        );
+        assertTrue(isAddRightBrace());
+    }
+
+    public void testRightBracePreprocessor4() {
+        setLoadDocumentText(
+            "void foo(){\n" +
+            "#if A\n" +
+            "    if (a){\n" +
+            "#else\n" +
+            "    if (b){\n" +
+            "#endif\n" +
+            "    if (b){|\n" +
+            "    }\n" +
+            "}"
+        );
+        assertTrue(isAddRightBrace());
+    }
+
+    public void testRightBracePreprocessor5() {
+        setLoadDocumentText(
+            "void foo(){\n" +
+            "#define PAREN {\n" +
+            "    if (b){|\n" +
+            "    }\n" +
+            "}"
+        );
+        assertFalse(isAddRightBrace());
+    }
+    
+    
 //    public void testColonAfterPublic() throws Exception {
 //        setLoadDocumentText (
 //            "class A{\n" +

@@ -843,7 +843,43 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
             "}\n"
         );
     };
+
+    public void testIdentDefineBrace() {
+        setLoadDocumentText(
+            "#define BRACE {\n" +
+            "int main() {\n" +
+            "if (a){\n" +
+            "}\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Incorrect identing define brace",
+            "#define BRACE {\n" +
+            "int main() {\n" +
+            "    if (a){\n" +
+            "    }\n" +
+            "}\n"
+        );
+    };
     
+    public void testIdentDefineBrace2() {
+        setLoadDocumentText(
+            "#define BRACE }\n" +
+            "int main() {\n" +
+            "if (a){\n" +
+            "}\n" +
+            "}\n"
+            );
+        reformat();
+        assertDocumentText("Incorrect identing define brace",
+            "#define BRACE }\n" +
+            "int main() {\n" +
+            "    if (a){\n" +
+            "    }\n" +
+            "}\n"
+        );
+    };
+
 //    public void testIdentMultyConstructor3() {
 //        setLoadDocumentText(
 //            "Query_log_event::Query_log_event(THD* thd_arg, const char* query_arg,\n" +

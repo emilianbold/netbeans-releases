@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.editor.cplusplus;
 
+import java.util.Stack;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import org.netbeans.editor.BaseDocument;
@@ -775,8 +776,12 @@ public class BracketCompletion {
     private static class BalanceTokenProcessor implements TokenProcessor {
         private TokenID leftTokenID;
         private TokenID rightTokenID;
+        private Stack<Integer> stack = new Stack<Integer>();
         
         private int balance;
+        private boolean isDefine;
+        private char[] buffer;
+        private int bufferStartPos;
         
         BalanceTokenProcessor(TokenID leftTokenID, TokenID rightTokenID) {
             this.leftTokenID = leftTokenID;
@@ -786,10 +791,44 @@ public class BracketCompletion {
         public boolean token(TokenID tokenID, TokenContextPath tcp,
                 int tokBuffOffset, int tokLength) {
             
-            if (tokenID == leftTokenID) {
-                balance++;
-            } else if (tokenID == rightTokenID) {
-                balance--;
+            if (tokenID.getCategory() == CCTokenContext.CPP) {
+                switch (tokenID.getNumericID()) {
+                case CCTokenContext.CPPIF_ID:
+                case CCTokenContext.CPPIFDEF_ID:
+                case CCTokenContext.CPPIFNDEF_ID:
+                    stack.push(balance);
+                    break;
+                case CCTokenContext.CPPELIF_ID:
+                case CCTokenContext.CPPELSE_ID:
+                    if (!stack.empty()){
+                        balance = stack.peek();
+                    }
+                    break;
+                case CCTokenContext.CPPENDIF_ID:
+                    if (!stack.empty()){
+                        stack.pop();
+                    }
+                    break;
+                case CCTokenContext.CPPDEFINE_ID:
+                    isDefine = true;
+                    break;
+                }
+            } else {
+                if (tokenID == leftTokenID) {
+                    if (!isDefine) {
+                        balance++;
+                    }
+                } else if (tokenID == rightTokenID) {
+                    if (!isDefine) {
+                        balance--;
+                    }
+                } else if (tokenID.getNumericID() == CCTokenContext.WHITESPACE_ID) {
+                    for(int i = tokBuffOffset; i < tokBuffOffset+tokLength; i++){
+                        if(buffer[i] == '\n'){
+                            isDefine = false;
+                        }
+                    }
+                }
             }
             return true;
         }
@@ -799,6 +838,8 @@ public class BracketCompletion {
         }
         
         public void nextBuffer(char [] buffer, int offset, int len, int startPos, int preScan, boolean lastBuffer) {
+            this.buffer = buffer;
+            bufferStartPos = startPos - offset;
         }
         
         public int getBalance() {
