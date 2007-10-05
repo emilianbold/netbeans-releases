@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.mercurial.ui.wizards;
 
+import java.io.File;
 import java.awt.Component;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
@@ -51,7 +52,7 @@ public class CloneDestinationDirectoryWizardPanel implements WizardDescriptor.Pa
      * The visual component that displays this panel. If you need to access the
      * component from this class, just use getComponent().
      */
-    private Component component;
+    private CloneDestinationDirectoryPanel component;
     
     // Get the visual component for the panel. In this template, the component
     // is kept separate. This can be more efficient: if the wizard is created
@@ -111,10 +112,18 @@ public class CloneDestinationDirectoryWizardPanel implements WizardDescriptor.Pa
     // settings object will be the WizardDescriptor, so you can use
     // WizardDescriptor.getProperty & putProperty to store information entered
     // by the user.
-    public void readSettings(Object settings) {}
+    public void readSettings(Object settings) {
+        if (settings instanceof WizardDescriptor) {
+            String repository = (String) ((WizardDescriptor) settings).getProperty("repository"); // NOI18N
+
+           System.err.println("repository " + repository);
+           component.nameField.setText(new File(repository).getName());
+        }
+    }
     public void storeSettings(Object settings) {
         if (settings instanceof WizardDescriptor) {
             ((WizardDescriptor) settings).putProperty("directory", ((CloneDestinationDirectoryPanel) component).getDirectory()); // NOI18N
+            ((WizardDescriptor) settings).putProperty("cloneName", ((CloneDestinationDirectoryPanel) component).getCloneName()); // NOI18N
         }
     }
 }

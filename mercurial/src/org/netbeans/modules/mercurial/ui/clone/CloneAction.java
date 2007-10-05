@@ -154,15 +154,15 @@ public class CloneAction extends AbstractAction {
                 try {
                     // TODO: We need to annotate the cloned project 
                     // See http://qa.netbeans.org/issues/show_bug.cgi?id=112870
+                    HgUtils.outputMercurialTabInRed(
+                            NbBundle.getMessage(CloneAction.class,
+                            "MSG_CLONE_TITLE")); // NOI18N
+                    HgUtils.outputMercurialTabInRed(
+                            NbBundle.getMessage(CloneAction.class,
+                            "MSG_CLONE_TITLE_SEP")); // NOI18N
                     List<String> list = HgCommand.doClone(source, target);
                     if(list != null && !list.isEmpty()){
                         HgUtils.createIgnored(cloneFolder);
-                        HgUtils.outputMercurialTabInRed(
-                                NbBundle.getMessage(CloneAction.class,
-                                "MSG_CLONE_TITLE")); // NOI18N
-                        HgUtils.outputMercurialTabInRed(
-                                NbBundle.getMessage(CloneAction.class,
-                                "MSG_CLONE_TITLE_SEP")); // NOI18N
                         HgUtils.outputMercurialTab(list);
                
                         if (prjName != null) {

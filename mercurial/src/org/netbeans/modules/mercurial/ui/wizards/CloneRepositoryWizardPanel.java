@@ -50,10 +50,11 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.Iterator;
 import org.openide.WizardDescriptor;
+import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
 import org.netbeans.modules.mercurial.ui.repository.Repository;
 
-public class CloneRepositoryWizardPanel implements WizardDescriptor.Panel, PropertyChangeListener {
+public class CloneRepositoryWizardPanel implements WizardDescriptor.ValidatingPanel, PropertyChangeListener {
     
     /**
      * The visual component that displays this panel. If you need to access the
@@ -113,10 +114,6 @@ public class CloneRepositoryWizardPanel implements WizardDescriptor.Panel, Prope
         }
     }
 
-    /*
-    public final void addChangeListener(ChangeListener l) {}
-    public final void removeChangeListener(ChangeListener l) {}
-    */
     private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1); // or can use ChangeSupport in NB 6.0
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
@@ -167,6 +164,22 @@ public class CloneRepositoryWizardPanel implements WizardDescriptor.Panel, Prope
         if (fire) {
             fireChangeEvent();
         }
+    }
+
+    protected void validateBeforeNext() {
+        System.err.println("validateBeforeNext");
+    }
+
+    // comes on next or finish
+    public final void validate () throws WizardValidationException {
+        validateBeforeNext();
+        //if (isValid() == false || errorMessage != null) {
+        //    throw new WizardValidationException (
+        //        (javax.swing.JComponent) component,
+        //        errorMessage,
+        //        errorMessage
+        //    );
+        //}
     }
 
     // You can use a settings object to keep track of state. Normally the

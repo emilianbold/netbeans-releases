@@ -52,6 +52,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.actions.CallableSystemAction;
 
 import java.util.List;
+import java.io.File;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
@@ -93,7 +94,9 @@ public final class CloneWizardAction extends CallableSystemAction implements Cha
         if (!cancelled) {
             final String repository = (String) wizardDescriptor.getProperty("repository"); // NOI18N
             final String directory = (String) wizardDescriptor.getProperty("directory"); // NOI18N
-            CloneAction.performClone(repository, directory, true, null);
+            final String cloneName = (String) wizardDescriptor.getProperty("cloneName"); // NOI18N
+            File cloneFile = new File(directory, cloneName);
+            CloneAction.performClone(repository, cloneFile.getAbsolutePath(), true, null);
         }
     }
     
