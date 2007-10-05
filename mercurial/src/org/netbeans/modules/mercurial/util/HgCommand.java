@@ -178,7 +178,7 @@ public class HgCommand {
     private static final String HG_CANNOT_READ_COMMIT_MESSAGE_ERR = "abort: can't read commit message"; // NOI18N
     private static final String HG_UNABLE_EXECUTE_COMMAND_ERR = "unable to execute hg command"; // NOI18N
     private static final String HG_CANCELLED_COMMAND_ERR = "command has been cancelled"; // NOI18N
-    private static final String HG_UNABLE_CLONE_ERR = "abort: destination "; // NOI18N
+    private static final String HG_UNABLE_CLONE_ERR = "abort: "; // NOI18N
     private static final String HG_NODE_NAME_ERR = "abort: node name or service name not known"; // NOI18N
     private static final String HG_NO_CHANGE_NEEDED_ERR = "no change needed"; // NOI18N
     private static final String HG_NO_ROLLBACK_ERR = "no rollback information available"; // NOI18N
