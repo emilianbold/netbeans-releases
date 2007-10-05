@@ -67,7 +67,8 @@ import org.openide.util.Exceptions;
  */
 public class JSFConfigUtilities {
     
-    
+    private static String CONFIG_FILES_PARAM_NAME = "javax.faces.CONFIG_FILES"; //NOI18N
+    private static String DEFAULT_FACES_CONFIG_PATH = "WEB-INF/faces-config.xml"; //NOI18N
     
     
     public static NavigationRule findNavigationRule(JSFConfigDataObject data, String fromView){
@@ -175,15 +176,25 @@ public class JSFConfigUtilities {
         // looking for WEB-INF/faces-config.xml
         WebModule webModule = WebModule.getWebModule(deploymentDesc);
         FileObject baseDir = webModule.getDocumentBase();
-        FileObject fileObject = baseDir.getFileObject("WEB-INF/faces-config.xml");
+        FileObject fileObject = baseDir.getFileObject(DEFAULT_FACES_CONFIG_PATH);
         if (fileObject != null)
-            files.add("WEB-INF/faces-config.xml");
-        if (deploymentDesc != null){
+            files.add(DEFAULT_FACES_CONFIG_PATH);
+        if (deploymentDesc != null) {
             InitParam param = null;
             try{
                 WebApp webApp = DDProvider.getDefault().getDDRoot(deploymentDesc);
-                if (webApp != null)
-                    param = (InitParam)webApp.findBeanByName("InitParam", "ParamName", "javax.faces.CONFIG_FILES"); //NOI18N
+                if (webApp != null) {
+                    // Fix for #117845. Cannot be used the method webApp.findBeanByName,
+                    // because this method doesn't trim the names of attribute.
+                    InitParam[] params = webApp.getContextParam();
+                    for (int i = 0; i < params.length; i++) {
+                        InitParam initParam = params[i];
+                        if (CONFIG_FILES_PARAM_NAME.equals(initParam.getParamName().trim())) {
+                            param = initParam;
+                            break;
+                        }
+                    }
+                }
             } catch (java.io.IOException e) {
                 Exceptions.printStackTrace(e);
             }
@@ -193,8 +204,14 @@ public class JSFConfigUtilities {
                 String value = param.getParamValue().trim();
                 if (value != null){
                     filesURI = value.split(",");
-                    for (int i = 0; i < filesURI.length; i++)
-                        files.add(filesURI[i].trim());
+                    for (int i = 0; i < filesURI.length; i++) {
+                        String file = filesURI[i].trim();
+                        // prevent to be default faces config twice listed twice
+                        if (!DEFAULT_FACES_CONFIG_PATH.equals(file) // need to check absolute and relative path
+                                && !("/" + DEFAULT_FACES_CONFIG_PATH).equals(file)) { //NOI18N
+                            files.add(file);
+                        }
+                    }
                 }
             }
         }
