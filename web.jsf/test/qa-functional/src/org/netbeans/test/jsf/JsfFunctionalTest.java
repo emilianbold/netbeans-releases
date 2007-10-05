@@ -111,6 +111,7 @@ public class JsfFunctionalTest extends JellyTestCase{
         return suite;
     }
     
+    @Override
     public void setUp() {
         System.out.println("### "+getName()+" ###");
     }
@@ -207,7 +208,7 @@ public class JsfFunctionalTest extends JellyTestCase{
     /** Test that delete safely bean removes record from faces-config.xml. */
     public void testManagedBeanDelete() {
         Node node = new Node(new SourcePackagesNode(PROJECT_NAME), "mypackage|MyManagedBean.java");
-        new ActionNoBlock(null, "Refactor|Safely Delete...").perform(node);
+        new ActionNoBlock(null, "Refactor|Safe Delete...").perform(node);
         NbDialogOperator safeDeleteDialog = new NbDialogOperator("Safe Delete");
         new JButtonOperator(safeDeleteDialog, "Refactor").push();
         node.waitNotPresent();
