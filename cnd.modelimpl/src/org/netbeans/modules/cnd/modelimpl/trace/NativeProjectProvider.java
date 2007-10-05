@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
@@ -97,16 +98,25 @@ public final class NativeProjectProvider {
 	public NativeProjectImpl(String projectRoot,
 		List<String> sysIncludes, List<String> usrIncludes, 
 		List<String> sysMacros, List<String> usrMacros) {
+
+	    this.projectRoot = projectRoot;
 	    
-	    this.sysIncludes = new ArrayList<String>(sysIncludes);
-	    this.usrIncludes = new ArrayList<String>(usrIncludes);
+	    this.sysIncludes = createIncludes(sysIncludes);
+	    this.usrIncludes = createIncludes(usrIncludes);
 	    this.sysMacros = new ArrayList<String>(sysMacros);
 	    this.usrMacros = new ArrayList<String>(usrMacros);
-	    
-	    this.projectRoot = projectRoot;
 	}
 	
-	public void addFiles(List<File> files) {
+	private List<String> createIncludes(List<String> src) {
+	    List<String> result = new ArrayList<String>(src.size());
+	    for( String path : src ) {
+		File file = new File(path);
+		result.add(file.getAbsolutePath());
+	    }
+	    return result;
+	}
+	
+	private void addFiles(List<File> files) {
 	    for( File file : files ) {
 		addFile(file);
 	    }
