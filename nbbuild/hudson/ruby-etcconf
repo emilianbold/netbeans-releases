@@ -4,7 +4,7 @@
 # Also add in a Mac dock icon
 
 unzip ruby/rubyide/dist/netbeans-rubyide-hudson-${BUILD_NUMBER}.zip nbrubyide/etc/nbrubyide.conf && \
-cat nbrubyide/etc/nbrubyide.conf | sed 's/-J-Xms24m -J-Xmx64m/-J-Xms32m -J-Xmx256m -J-XX:PermSize=32m -J-XX:MaxPermSize=160m -J-Dapple.laf.useScreenMenuBar=true/' > nbrubyide.conf.patched && \
+cat nbrubyide/etc/nbrubyide.conf | sed 's/-J-Xms24m -J-Xmx64m/-J-client -J-Xss2m -J-Xms32m -J-XX:PermSize=32m -J-XX:MaxPermSize=200m -J-Dapple.laf.useScreenMenuBar=true/' > nbrubyide.conf.patched && \
 mv nbrubyide.conf.patched nbrubyide/etc/nbrubyide.conf && \
 zip ruby/rubyide/dist/netbeans-rubyide-hudson-${BUILD_NUMBER}.zip nbrubyide/etc/nbrubyide.conf && \
 unzip ruby/rubyide/dist/netbeans-rubyide-hudson-${BUILD_NUMBER}.zip nbrubyide/bin/nbrubyide && \
