@@ -393,6 +393,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         MakeConfiguration makeConfiguration = getMakeConfiguration();
         boolean cFiles = false;
         boolean ccFiles = false;
+        boolean libsChanged = false;
         VectorConfiguration cIncludeDirectories;
         BooleanConfiguration cInheritIncludes;
         OptionsConfiguration cPpreprocessorOption;
@@ -443,6 +444,8 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             }
             items = new Item[] {item};
         } else {
+            libsChanged = makeConfiguration.getRequiredProjectsConfiguration().getDirty() ||
+                          makeConfiguration.getLinkerConfiguration().getLibrariesConfiguration().getDirty();
             cIncludeDirectories = makeConfiguration.getCCompilerConfiguration().getIncludeDirectories();
             cInheritIncludes = makeConfiguration.getCCompilerConfiguration().getInheritIncludes();
             cPpreprocessorOption = makeConfiguration.getCCompilerConfiguration().getPreprocessorConfiguration();
@@ -470,7 +473,12 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             ccInheritIncludes.setDirty(false);
             ccInheritMacros.setDirty(false);
         }
-        
+        if (libsChanged){
+            makeConfiguration.getRequiredProjectsConfiguration().setDirty(false);
+            makeConfiguration.getLinkerConfiguration().getLibrariesConfiguration().setDirty(false);
+            cFiles = true;
+            ccFiles = true;
+        }
         if (cFiles || ccFiles)
             firePropertiesChanged(items, cFiles, ccFiles);
     }
