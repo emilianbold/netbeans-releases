@@ -63,7 +63,18 @@ visualweb/webui/themes/release/modules/ext/defaulttheme-green.jar
 visualweb/webui/themes/release/modules/ext/defaulttheme.jar
 
 # Visualweb ThemeBuilder is not currently used in NB 6.0:
-visualweb/themebuilder/templates/WoodstockThemeTemplate/themes.zip
+visualweb/woodstock/pagetemplates/src/org/netbeans/modules/visualweb/woodstock/pagetemplates/resources/PageTemplate1-resources.zip
+visualweb/woodstock/pagetemplates/src/org/netbeans/modules/visualweb/woodstock/pagetemplates/resources/PageTemplate10-resources.zip
+visualweb/woodstock/pagetemplates/src/org/netbeans/modules/visualweb/woodstock/pagetemplates/resources/PageTemplate11-resources.zip
+visualweb/woodstock/pagetemplates/src/org/netbeans/modules/visualweb/woodstock/pagetemplates/resources/PageTemplate2-resources.zip
+visualweb/woodstock/pagetemplates/src/org/netbeans/modules/visualweb/woodstock/pagetemplates/resources/PageTemplate3-resources.zip
+visualweb/woodstock/pagetemplates/src/org/netbeans/modules/visualweb/woodstock/pagetemplates/resources/PageTemplate4-resources.zip
+visualweb/woodstock/pagetemplates/src/org/netbeans/modules/visualweb/woodstock/pagetemplates/resources/PageTemplate5-resources.zip
+visualweb/woodstock/pagetemplates/src/org/netbeans/modules/visualweb/woodstock/pagetemplates/resources/PageTemplate6-resources.zip
+visualweb/woodstock/pagetemplates/src/org/netbeans/modules/visualweb/woodstock/pagetemplates/resources/PageTemplate7-resources.zip
+visualweb/woodstock/pagetemplates/src/org/netbeans/modules/visualweb/woodstock/pagetemplates/resources/PageTemplate8-resources.zip
+visualweb/woodstock/pagetemplates/src/org/netbeans/modules/visualweb/woodstock/pagetemplates/resources/PageTemplate9-resources.zip
+visualweb/woodstock/themebuilder/templates/WoodstockThemeTemplate/themes.zip
 
 # Only used in automation tests for visualweb and not part of NB 6.0 distribution:
 visualweb/gravy/builds/gravy.jar
