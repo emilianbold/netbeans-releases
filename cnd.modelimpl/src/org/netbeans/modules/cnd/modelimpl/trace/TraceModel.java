@@ -439,17 +439,6 @@ public class TraceModel {
 	
     /*package*/
     void doTest() {
-	if (!pathsRelCurFile) {
-	    List[] paths = {quoteIncludePaths, systemIncludePaths};
-	    for (int listIdx = 0; listIdx < paths.length; listIdx++) {
-		for (int pathIdx = 0; pathIdx < paths[listIdx].size(); pathIdx++) {
-		    String path = (String) paths[listIdx].get(pathIdx);
-		    if (!new File(path).isAbsolute()) {
-			paths[listIdx].set(pathIdx, new File(path).getAbsolutePath());
-		    }
-		}
-	    }
-	}
 	if (stopBeforeAll) {
 	    waitAnyKey();
 	}
@@ -703,7 +692,7 @@ public class TraceModel {
 	}
 	
 	nativeProject = NativeProjectProvider.createProject("DummyProject", files, // NOI18N
-		systemIncludePaths, quoteIncludePaths, getSysMacros(), macros);
+		systemIncludePaths, quoteIncludePaths, getSysMacros(), macros, pathsRelCurFile);
 	
     }
 	

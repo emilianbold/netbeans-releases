@@ -73,10 +73,10 @@ public final class NativeProjectProvider {
     
     public static NativeProject createProject(String projectRoot, List<File> files,
 	    List<String> sysIncludes, List<String> usrIncludes,
-	    List<String> sysMacros, List<String> usrMacros) {
+	    List<String> sysMacros, List<String> usrMacros, boolean pathsRelCurFile) {
 	
         NativeProjectImpl project = new NativeProjectImpl(projectRoot, 
-		sysIncludes, usrIncludes, sysMacros, usrMacros);
+		sysIncludes, usrIncludes, sysMacros, usrMacros, pathsRelCurFile);
 	
 	project.addFiles(files);
 	
@@ -94,12 +94,22 @@ public final class NativeProjectProvider {
         private final List<NativeFileItem> sources = new ArrayList<NativeFileItem>();
 	
         private final String projectRoot;
+	private boolean pathsRelCurFile;
 
 	public NativeProjectImpl(String projectRoot,
 		List<String> sysIncludes, List<String> usrIncludes, 
 		List<String> sysMacros, List<String> usrMacros) {
+	    
+	    this(projectRoot, sysIncludes, usrIncludes, sysMacros, usrMacros, false);
+	}
+	
+	public NativeProjectImpl(String projectRoot,
+		List<String> sysIncludes, List<String> usrIncludes, 
+		List<String> sysMacros, List<String> usrMacros,
+		boolean pathsRelCurFile) {
 
 	    this.projectRoot = projectRoot;
+	    this.pathsRelCurFile = pathsRelCurFile;
 	    
 	    this.sysIncludes = createIncludes(sysIncludes);
 	    this.usrIncludes = createIncludes(usrIncludes);
@@ -108,12 +118,17 @@ public final class NativeProjectProvider {
 	}
 	
 	private List<String> createIncludes(List<String> src) {
-	    List<String> result = new ArrayList<String>(src.size());
-	    for( String path : src ) {
-		File file = new File(path);
-		result.add(file.getAbsolutePath());
+	    if( pathsRelCurFile ) {
+		return new ArrayList<String>(src);
 	    }
-	    return result;
+	    else {
+		List<String> result = new ArrayList<String>(src.size());
+		for( String path : src ) {
+		    File file = new File(path);
+		    result.add(file.getAbsolutePath());
+		}
+		return result;
+	    }
 	}
 	
 	private void addFiles(List<File> files) {
@@ -261,10 +276,10 @@ public final class NativeProjectProvider {
     private static final class NativeFileItemImpl implements NativeFileItem {
 	
         private final File file;
-        private final NativeProject project;
+        private final NativeProjectImpl project;
         private final NativeFileItem.Language lang;
 
-        public NativeFileItemImpl(File file, NativeProject project, NativeFileItem.Language language) {
+        public NativeFileItemImpl(File file, NativeProjectImpl project, NativeFileItem.Language language) {
 	    
             this.project = project;
             this.file = file;
@@ -280,12 +295,30 @@ public final class NativeProjectProvider {
         }
 
         public List<String> getSystemIncludePaths() {
-            return project.getSystemIncludePaths();
+	    List<String> result = project.getSystemIncludePaths();
+	    return project.pathsRelCurFile ? toAbsolute(result) : result;
         }
 
         public List<String> getUserIncludePaths() {
-            return project.getUserIncludePaths();
+	    List<String> result = project.getUserIncludePaths();
+            return project.pathsRelCurFile ? toAbsolute(result) : result;
         }
+	
+	private List<String> toAbsolute(List<String> orig) {
+	    File base = file.getParentFile();
+	    List<String> result = new ArrayList<String>(orig.size());
+	    for( String path : orig ) {
+		File file = new File(path);
+		if( file.isAbsolute() ) {
+		    result.add(path);
+		}
+		else {
+		    file = new File(base, path);
+		    result.add(file.getAbsolutePath());
+		}
+	    }
+	    return result;
+	}
 
         public List<String> getSystemMacroDefinitions() {
             return project.getSystemMacroDefinitions();
