@@ -650,6 +650,13 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                 super.processMouseEvent(e);
             }
             
+            @Override
+            /* #106223: Always compute row height from cell renderer, don't allow fixed
+             * row height */
+            public int getRowHeight() {
+                return 0;
+            }
+            
         };
         // #105642: start with right content in tree 
         File curDir = fileChooser.getCurrentDirectory();
@@ -2215,9 +2222,15 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                 ((JLabel)stringDisplayer).setIcon(getNodeIcon(node));
                 ((JLabel)stringDisplayer).setText(getNodeText(node.getFile()));
             }
+                Font f = stringDisplayer.getFont();
+                System.out.println("Font metrics: " + stringDisplayer.getFontMetrics(f));
+                System.out.println("preferred size: " + stringDisplayer.getPreferredSize());
+                stringDisplayer.setPreferredSize(new Dimension(stringDisplayer.getPreferredSize().width, 30));
+                System.out.println("preferred size: " + stringDisplayer.getPreferredSize());
 
             // allow some space around icon of items
             ((JComponent)stringDisplayer).setBorder(BorderFactory.createEmptyBorder(1, 0, 1, 0));
+            stringDisplayer.setSize(stringDisplayer.getPreferredSize());
             
             return stringDisplayer;
         }
