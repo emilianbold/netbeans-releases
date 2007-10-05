@@ -802,8 +802,10 @@ public class Registry {
                             StringUtils.asString(inavoidableDependents)));
                     
                     if (result) {
+                        product.setStatus(Status.NOT_INSTALLED);
                         product.getParent().removeChild(product);
                         for (Product dependent: inavoidableDependents) {
+                            dependent.setStatus(Status.NOT_INSTALLED);
                             dependent.getParent().removeChild(dependent);
                         }
                     } else {
