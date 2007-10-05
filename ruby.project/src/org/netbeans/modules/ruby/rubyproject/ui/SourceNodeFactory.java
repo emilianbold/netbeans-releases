@@ -108,6 +108,10 @@ public final class SourceNodeFactory implements NodeFactory {
             if (rakeFile != null && project.getProjectDirectory().equals(rakeFile.getParent())) {
                 result.add(new SourceGroupKey(rakeFile));
             }
+            FileObject readme = project.getProjectDirectory().getFileObject("README"); // NOI18N
+            if (readme != null) {
+                result.add(new SourceGroupKey(readme));
+            }
             return result;
         }
         
@@ -191,20 +195,11 @@ public final class SourceNodeFactory implements NodeFactory {
                 return false;
             } else {
                 SourceGroupKey otherKey = (SourceGroupKey) obj;
-                if (group == null || otherKey.group == null) {
-                    if (group == null) {
-                        return otherKey.group == null;
-                    } else if (otherKey.group == null) {
-                        return false;
-                    } else {
-                        return fileObject.equals(otherKey.fileObject);
-                    }
-                }
-                String thisDisplayName = this.group.getDisplayName();
-                String otherDisplayName = otherKey.group.getDisplayName();
+                String thisDisplayName = group == null ? null : group.getDisplayName();
+                String otherDisplayName = otherKey.group == null ? null : otherKey.group.getDisplayName();
                 // XXX what is the operator binding order supposed to be here??
                 return fileObject.equals(otherKey.fileObject) &&
-                        thisDisplayName == null ? otherDisplayName == null : thisDisplayName.equals(otherDisplayName);
+                        (thisDisplayName == null ? otherDisplayName == null : thisDisplayName.equals(otherDisplayName));
             }
         }
         
