@@ -318,7 +318,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         
         if (oldConf == null) {
             // What else can we do?
-            firePropertiesChanged(getMakeConfigurationDescriptor().getProjectItems(), true, true);
+            firePropertiesChanged(getMakeConfigurationDescriptor().getProjectItems(), true, true, true);
             return;
         }
         
@@ -373,7 +373,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         }
         fireFilesRemoved(deleted);
         fireFilesAdded(added);
-        firePropertiesChanged(list);
+        firePropertiesChanged(list, true);
     }
     
     public void checkForChangedItems(final Folder folder, final Item item) {
@@ -394,6 +394,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         boolean cFiles = false;
         boolean ccFiles = false;
         boolean libsChanged = false;
+        boolean projectChanged = false;
         VectorConfiguration cIncludeDirectories;
         BooleanConfiguration cInheritIncludes;
         OptionsConfiguration cPpreprocessorOption;
@@ -407,8 +408,8 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         // Check first whether compiler set has changed
         if (makeConfiguration.getCompilerSet().getDirty()) {
             makeConfiguration.getCompilerSet().setDirty(false);
-            fireFilesPropertiesChanged();
-            return;
+            items = getMakeConfigurationDescriptor().getProjectItems();
+            firePropertiesChanged(items, true, true, true);
         }
         
         if (folder != null) {
@@ -455,6 +456,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             ccPreprocessorOption = makeConfiguration.getCCCompilerConfiguration().getPreprocessorConfiguration();
             ccInheritMacros = makeConfiguration.getCCCompilerConfiguration().getInheritPreprocessor();
             items = getMakeConfigurationDescriptor().getProjectItems();
+            projectChanged = true;
         }
         
         if (cIncludeDirectories.getDirty() || cPpreprocessorOption.getDirty() ||
@@ -480,10 +482,10 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             ccFiles = true;
         }
         if (cFiles || ccFiles)
-            firePropertiesChanged(items, cFiles, ccFiles);
+            firePropertiesChanged(items, cFiles, ccFiles, projectChanged);
     }
     
-    private void firePropertiesChanged(Item[] items, boolean cFiles, boolean ccFiles) {
+    private void firePropertiesChanged(Item[] items, boolean cFiles, boolean ccFiles, boolean projectChanged) {
         ArrayList<NativeFileItem> list = new ArrayList<NativeFileItem>();
         ArrayList<NativeFileItem> deleted = new ArrayList<NativeFileItem>();
         // Handle project and file level changes
@@ -502,16 +504,16 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         if (deleted.size() > 0){
             fireFilesRemoved(deleted);
         }
-        firePropertiesChanged(list);
+        firePropertiesChanged(list, projectChanged);
     }
     
-    private void firePropertiesChanged(List<NativeFileItem> list) {
-        if (list.size() > 1) {
+    private void firePropertiesChanged(List<NativeFileItem> list, boolean projectChanged) {
+        if (list.size() > 1 || (projectChanged && list.size() == 1)) {
             fireFilesPropertiesChanged(list);
         } else if (list.size() == 1) {
             fireFilePropertiesChanged((NativeFileItem)list.get(0));
         } else {
-            ; // nothing
+            // nothing
         }
     }
     

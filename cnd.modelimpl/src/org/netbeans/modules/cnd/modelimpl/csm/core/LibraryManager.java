@@ -122,6 +122,14 @@ public final class LibraryManager {
         }
         String folder = FileUtil.normalizeFile(new File(resolvedPath.getFolder())).getAbsolutePath();
         res = searchInProjectRoots(baseProject, getPathToFolder(folder, resolvedPath.getPath()));
+        if (res != null) {
+            return res;
+        }
+        res = searchInProjectFilesArtificial(baseProject, searchFor);
+        if (res != null) {
+            return res;
+        }
+        res = searchInProjectRootsArtificial(baseProject, getPathToFolder(folder, resolvedPath.getPath()));
         if (res == null) {
             if (resolvedPath.isDefaultSearchPath()) {
                 res = baseProject;
@@ -161,10 +169,26 @@ public final class LibraryManager {
             return baseProject;
         }
         for (CsmProject prj : baseProject.getLibraries()) {
+            if (prj.isArtificial()) {
+                break;
+            }
             ((ProjectBase)prj).ensureFilesCreated();
             ProjectBase res = searchInProjectFiles((ProjectBase)prj, searchFor);
             if (res != null) {
                 return res;
+            }
+        }
+        return null;
+    }
+
+    private ProjectBase searchInProjectFilesArtificial(ProjectBase baseProject, File searchFor){
+        for (CsmProject prj : baseProject.getLibraries()) {
+            if (prj.isArtificial()) {
+                ((ProjectBase)prj).ensureFilesCreated();
+                ProjectBase res = searchInProjectFiles((ProjectBase)prj, searchFor);
+                if (res != null) {
+                    return res;
+                }
             }
         }
         return null;
@@ -177,9 +201,24 @@ public final class LibraryManager {
             }
         }
         for (CsmProject prj : baseProject.getLibraries()) {
+            if (prj.isArtificial()) {
+                break;
+            }
             ProjectBase res = searchInProjectRoots((ProjectBase)prj, folders);
             if (res != null) {
                 return res;
+            }
+        }
+        return null;
+    }
+
+    private ProjectBase searchInProjectRootsArtificial(ProjectBase baseProject, List<String> folders){
+        for (CsmProject prj : baseProject.getLibraries()) {
+            if (prj.isArtificial()) {
+                ProjectBase res = searchInProjectRoots((ProjectBase)prj, folders);
+                if (res != null) {
+                    return res;
+                }
             }
         }
         return null;
@@ -220,7 +259,7 @@ public final class LibraryManager {
     /**
      * Close unused artificial libraries.
      */
-    /*package-local*/ void onProjectClose(CsmUID<CsmProject> project){
+    public void onProjectClose(CsmUID<CsmProject> project){
         List<LibraryEntry> toClose = new ArrayList<LibraryEntry>();
         for(LibraryEntry entry : librariesEntries.values()){
             entry.removeProject(project);
