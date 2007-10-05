@@ -1573,11 +1573,13 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     }
 
     public boolean isEditableInPlace(RADComponent metacomp) {
-        if(metacomp == null)
+        if (metacomp == null) {
             return false;
-        Component comp = (Component) getComponent(metacomp);
-        if (comp == null)
+        }
+        Object comp = getComponent(metacomp);
+        if (!(comp instanceof Component)) {
             return false;
+        }
 
         // don't allow in-place editing if there's some AWT parent (it may
         // cause problems with fake peers on some platforms)
