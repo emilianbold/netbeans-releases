@@ -261,7 +261,9 @@ implements Executor {
         String className = event.location ().declaringType ().name ();
         ThreadReference tr = event.thread ();
         removeStepRequests (tr);
-        setLastOperation(tr);
+        if (stepRequest.depth() == StepRequest.STEP_OUT) {
+            setLastOperation(tr);
+        }
         synchronized (getDebuggerImpl ().LOCK) {
             //S ystem.out.println("/nStepAction.exec");
 
