@@ -46,6 +46,7 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import javax.lang.model.element.*;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.lexer.JavaTokenId;
@@ -61,7 +62,7 @@ import org.openide.text.PositionBounds;
 public class FindUsagesVisitor extends FindVisitor {
 
     private boolean findInComments = false;
-    private Collection<UsageInComment> usagesInComments;
+    private Collection<UsageInComment> usagesInComments = Collections.<UsageInComment>emptyList();
     public FindUsagesVisitor(WorkingCopy workingCopy) {
         super(workingCopy);
     }
