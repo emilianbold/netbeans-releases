@@ -294,7 +294,7 @@ public class PluginManager {
                 new PluginProgressPanel(NbBundle.getMessage(PluginManager.class, "PluginPleaseWait"));
         DialogDescriptor descriptor =
                 new DialogDescriptor(progress, description, true, options, closeButton,
-                DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(PluginPanel.class), null); // NOI18N
+                DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(PluginProgressPanel.class), null); // NOI18N
         descriptor.setModal(true);
         
         final Process[] processHolder = new Process[1];
