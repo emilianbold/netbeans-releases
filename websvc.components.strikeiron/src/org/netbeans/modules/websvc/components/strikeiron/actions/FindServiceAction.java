@@ -23,21 +23,8 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 
 /**
- * http://ws.strikeiron.com/MarketplaceSearch?WSDL
-
- 
-
-The “UseCustomWSDL” parameter determines whether the WSDLs contain an ISV code.  Set this to TRUE.
-
- 
-
-The “AuthenticationStyle” parameter determines whether the WSDL uses header fields or method parameters for username & password.  Use SimpleParam.
-
- 
-
-Username: Sun_Search@strikeiron.com
-
-PW: SearchSun.01
+ * Search for web services offered through StrikeIron marketplace.
+ * 
  * @author nam
  */
 public class FindServiceAction extends NodeAction {
