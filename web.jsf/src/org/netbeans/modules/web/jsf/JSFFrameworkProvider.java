@@ -234,6 +234,15 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
     }
     
     private class  CreateFacesConfig implements FileSystem.AtomicAction{
+        private static final String FACES_SERVLET_CLASS = "javax.faces.webapp.FacesServlet";  //NOI18N
+        private static final String FACES_SERVLET_NAME = "Faces Servlet";                     //NOI18N  
+        private static final String FALSE = "false";                                          //NOI18N  
+        private static final String INITPARAM_BEAN_NAME = "InitParam";                        //NOI18N  
+        private static final String MYFACES_STARTUP_LISTENER_CLASS = "org.apache.myfaces.webapp.StartupServletContextListener";//NOI18N
+        private static final String SAVINGMETHOD_PARAM_NAME = "javax.faces.STATE_SAVING_METHOD";//NOI18N
+        private static final String TRUE = "true";                                            //NOI18N
+        private static final String VALIDATEXML_PARAM_NAME = "com.sun.faces.validateXml";     //NOI18N  
+        private static final String VERIFYOBJECTS_PARAM_NAME = "com.sun.faces.verifyObjects"; //NOI18N 
         WebModule webModule;
         boolean isMyFaces;
         
@@ -251,46 +260,95 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             WebApp ddRoot = DDProvider.getDefault().getDDRoot(dd);
             if (ddRoot != null){
                 try{
-                    Servlet servlet = (Servlet)ddRoot.createBean("Servlet"); //NOI18N
-                    String servletName = panel == null ? "Faces Servlet" : panel.getServletName(); //NOI18N
-                    servlet.setServletName(servletName); //NOI18N
-                    servlet.setServletClass("javax.faces.webapp.FacesServlet"); //NOI18N
-                    ddRoot.addServlet(servlet);
+                    boolean servletDefined = false;
+                    Servlet servlet;
+                    Servlet[] servlets = ddRoot.getServlet();
+                    for (int i = 0; i < servlets.length; i++) {
+                        servlet = servlets[i];
+                        if (FACES_SERVLET_CLASS.equals(servlet.getServletClass().trim())) {
+                            servletDefined = true;
+                            break;
+                        }
+                    }
                     
-                    servlet.setLoadOnStartup(new BigInteger("1"));//NOI18N
+                    if (!servletDefined) {
+                        servlet = (Servlet)ddRoot.createBean("Servlet"); //NOI18N
+                        String servletName = panel == null ? FACES_SERVLET_NAME : panel.getServletName();
+                        servlet.setServletName(servletName); 
+                        servlet.setServletClass(FACES_SERVLET_CLASS); 
+                        servlet.setLoadOnStartup(new BigInteger("1"));//NOI18N
+                        ddRoot.addServlet(servlet);
+                        
+                        ServletMapping mapping = (ServletMapping)ddRoot.createBean("ServletMapping"); //NOI18N
+                        mapping.setServletName(servletName);//NOI18N
+                        mapping.setUrlPattern(panel == null ? "/faces/*" : panel.getURLPattern());//NOI18N
+
+                        ddRoot.addServletMapping(mapping);
+                    }
                     
+                    boolean verifyObjectsDefined = false;
+                    boolean validateXmlDefined = false;
+                    boolean savingMethodDefined = false;
                     
-                    ServletMapping mapping = (ServletMapping)ddRoot.createBean("ServletMapping"); //NOI18N
-                    mapping.setServletName(servletName);//NOI18N
-                    mapping.setUrlPattern(panel == null ? "/faces/*" : panel.getURLPattern());//NOI18N
+                    InitParam[] params = ddRoot.getContextParam();
+                    for (int i = 0; 
+                            i < params.length 
+                            || !(verifyObjectsDefined
+                            && validateXmlDefined
+                            && savingMethodDefined); i++) {
+                        InitParam initParam = params[i];
+                        String name = initParam.getParamName().trim();
+                        if (VERIFYOBJECTS_PARAM_NAME.equals(name)) {
+                            verifyObjectsDefined = true;
+                        } else if (VALIDATEXML_PARAM_NAME.equals(name)) {
+                            validateXmlDefined = true;
+                        } else if (SAVINGMETHOD_PARAM_NAME.equals(name)) {
+                            savingMethodDefined = true;
+                        }
+                    }
                     
-                    ddRoot.addServletMapping(mapping);
+                    InitParam contextParam;
+                    if (!verifyObjectsDefined) {
+                        contextParam = (InitParam)ddRoot.createBean(INITPARAM_BEAN_NAME); 
+                        contextParam.setParamName(VERIFYOBJECTS_PARAM_NAME);
+                        if (panel != null && panel.verifyObjects())
+                            contextParam.setParamValue(TRUE); 
+                        else
+                            contextParam.setParamValue(FALSE);
+                        ddRoot.addContextParam(contextParam);
+                    }
                     
-                    InitParam contextParam = (InitParam)ddRoot.createBean("InitParam"); //NOI18N
-                    contextParam.setParamName("com.sun.faces.verifyObjects");  //NOI18N
-                    if (panel != null && panel.verifyObjects())
-                        contextParam.setParamValue("true");  //NOI18N
-                    else
-                        contextParam.setParamValue("false");  //NOI18N
-                    ddRoot.addContextParam(contextParam);
+                    if (!validateXmlDefined) {
+                        contextParam = (InitParam)ddRoot.createBean(INITPARAM_BEAN_NAME);
+                        contextParam.setParamName(VALIDATEXML_PARAM_NAME);
+                        if(panel == null || panel.validateXML())
+                            contextParam.setParamValue(TRUE);
+                        else
+                            contextParam.setParamValue(FALSE);
+                        ddRoot.addContextParam(contextParam);
+                    }
                     
-                    contextParam = (InitParam)ddRoot.createBean("InitParam"); //NOI18N
-                    contextParam.setParamName("com.sun.faces.validateXml"); //NOI18N
-                    if(panel == null || panel.validateXML())
-                        contextParam.setParamValue("true"); //NOI18N
-                    else
-                        contextParam.setParamValue("false"); //NOI18N
-                    ddRoot.addContextParam(contextParam);
-                    
-                    contextParam = (InitParam)ddRoot.createBean("InitParam"); //NOI18N
-                    contextParam.setParamName("javax.faces.STATE_SAVING_METHOD"); //NOI18N
-                    contextParam.setParamValue("client"); //NOI18N
-                    ddRoot.addContextParam(contextParam);
+                    if (!savingMethodDefined) {
+                        contextParam = (InitParam)ddRoot.createBean(INITPARAM_BEAN_NAME);
+                        contextParam.setParamName(SAVINGMETHOD_PARAM_NAME);
+                        contextParam.setParamValue("client");
+                        ddRoot.addContextParam(contextParam);
+                    }
                     
                     if (isMyFaces) {
-                        Listener facesListener = (Listener) ddRoot.createBean("Listener");  //NOI18N
-                        facesListener.setListenerClass("org.apache.myfaces.webapp.StartupServletContextListener"); //NOI18N
-                        ddRoot.addListener(facesListener);
+                        boolean listenerDefined = false;
+                        Listener listeners[] = ddRoot.getListener();
+                        for (int i = 0; i < listeners.length; i++) {
+                            if (MYFACES_STARTUP_LISTENER_CLASS.equals(listeners[i].getListenerClass().trim())) {
+                                listenerDefined = true;
+                                break;
+                            }
+                        }
+                        if (!listenerDefined) {
+                            Listener facesListener = (Listener) ddRoot.createBean("Listener");  //NOI18N
+                            facesListener.setListenerClass(MYFACES_STARTUP_LISTENER_CLASS);
+                            ddRoot.addListener(facesListener);
+                        }
                     }
                     // add welcome file
                     WelcomeFileList welcomeFiles = ddRoot.getSingleWelcomeFileList();
