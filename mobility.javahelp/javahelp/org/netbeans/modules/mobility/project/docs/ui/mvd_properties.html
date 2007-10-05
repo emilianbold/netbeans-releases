@@ -32,22 +32,22 @@
     source code and edit the code manually:
 	
 <ul>
-  <li> If you uncheck Lazy Initialized, replace the <code>get_myComponent ()</code> 
+  <li> If you uncheck Lazy Initialized, replace the <code>getMyComponent ()</code> 
     method (that acquires an instance of the component) with a <code>myComponent</code> 
     field where the instance is stored.</li>
   <li></li>
   If you check Lazy Initialized, replace the <code>myComponent</code> field with 
-  a <code>get_myComponent()</code> method. </p> 
+  a <code>getMyComponent()</code> method. </p> 
 
 
   <p>For example, if you have the code</p>
-  <p><code>get_smsSender().sendSMS(get_phoneNumberTextField().getString(),
-    get_messageTextBox().getString());</code></p>
+  <p><code>getSmsSender().sendSMS(getPhoneNumberTextField().getString(),
+    getMessageTextBox().getString());</code></p>
   <p>and set &quot;Lazy Initialized&quot; from True to False on the <code>smsSender</code> 
     component,<br>
     you must edit the code to:</p>
-  <p><code>smsSender.sendSMS(get_phoneNumberTextField().getString(),
-    get_messageTextBox().getString());</code></p>
+  <p><code>smsSender.sendSMS(getPhoneNumberTextField().getString(),
+    getMessageTextBox().getString());</code></p>
 	</ul>
   <p>Several property types have special editors associated with them:</p>
   <ul>
