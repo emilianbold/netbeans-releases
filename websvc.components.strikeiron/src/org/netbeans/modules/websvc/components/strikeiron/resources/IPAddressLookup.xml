@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<component
+        xmlns="http://xml.netbeans.org/websvc/rest/component/1.0"
+        xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'    
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema"             
+        xsi:schemaLocation='http://xml.netbeans.org/websvc/rest/component/1.0 
+            ../../../../../../../../../../rest/src/org/netbeans/modules/websvc/rest/component/component.xsd'      
+        name="IPAddressLookup"
+        category="/StrikeIron"
+        nameKey="IPAddressLookup_Name"
+        categoryKey="StrikeIron_Name"
+        bundle="org.netbeans.modules.websvc.components.strikeiron.Bundle">
+
+    <description key="IPAddressLookup_Desc" 
+                 bundle="org.netbeans.modules.websvc.components.strikeiron.Bundle"/>
+        
+    <icons>
+        <icon url="org/netbeans/modules/websvc/components/strikeiron/resources/strikeiron16.png" size="16"/>
+        <icon url="org/netbeans/modules/websvc/components/strikeiron/resources/strikeiron32.png" size="32"/>
+    </icons>
+    
+    <service name="DNS">
+        <method name="DNSLookup" 
+                serviceName="DNS" portName="DNSSoap" 
+                type="http://schemas.xmlsoap.org/wsdl/"
+                url="http://wsparam.strikeiron.com/relauto/iplookup?WSDL">
+            <!-- name value is wsdl:binding:/wsdl:operation[@name] -->
+            <!-- serviceName value is wsdl:service[@name] -->
+            <!-- portName value is wsdl:service/wsdl:port[@name] -->                           
+            <documentation>
+                This operation delivers the IP address when given the name of a 
+                Web server.
+            </documentation>
+        </method>
+    </service>
+    
+</component>

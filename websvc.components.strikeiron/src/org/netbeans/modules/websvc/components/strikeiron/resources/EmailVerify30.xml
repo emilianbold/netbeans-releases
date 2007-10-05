@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<component
+        xmlns="http://xml.netbeans.org/websvc/rest/component/1.0"
+        xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'    
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema"             
+        xsi:schemaLocation='http://xml.netbeans.org/websvc/rest/component/1.0 
+        ../../../../../../../../../../rest/src/org/netbeans/modules/websvc/rest/component/component.xsd'      
+        name="EmailVerify30"
+        category="/StrikeIron"
+        nameKey="EmailVerify30_Name"
+        categoryKey="StrikeIron_Name"
+        bundle="org.netbeans.modules.websvc.components.strikeiron.Bundle">
+            
+    <description key="EmailVerify30_Desc" 
+                 bundle="org.netbeans.modules.websvc.components.strikeiron.Bundle"/>
+        
+    <icons>
+        <icon url="org/netbeans/modules/websvc/components/strikeiron/resources/strikeiron16.png" size="16"/>
+        <icon url="org/netbeans/modules/websvc/components/strikeiron/resources/strikeiron32.png" size="32"/>
+    </icons>
+    
+    <service name="EmailVerification">
+        <method name="ValidateEmail" 
+                serviceName="EmailVerification" portName="EmailVerificationSoap"
+                type="http://schemas.xmlsoap.org/wsdl/"
+                url="http://wsparam.strikeiron.com/emailverify_3_0?WSDL">
+            <!-- name value is wsdl:binding:/wsdl:operation[@name] -->
+            <!-- serviceName value is wsdl:service[@name] -->
+            <!-- portName value is wsdl:service/wsdl:port[@name] -->                               
+            <documentation>
+                This operation determines the validity of an email address or domain by contacting the email owners� SMTP servers to validate an address. 
+            </documentation>
+        </method>
+    </service>
+    
+</component>

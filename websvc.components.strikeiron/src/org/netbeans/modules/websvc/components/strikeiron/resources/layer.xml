@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    
+    <folder name="RestComponents">
+        <folder name="StrikeIron">
+            <file name="AddressVerification40.xml" url="/org/netbeans/modules/websvc/components/strikeiron/resources/AddressVerification40.xml" />
+            <file name="EmailVerify30.xml" url="/org/netbeans/modules/websvc/components/strikeiron/resources/EmailVerify30.xml" />
+            <file name="IPAddressLookup.xml" url="/org/netbeans/modules/websvc/components/strikeiron/resources/IPAddressLookup.xml" />
+            <file name="ReversePhoneLookup.xml" url="/org/netbeans/modules/websvc/components/strikeiron/resources/ReversePhoneLookup.xml" />
+            <file name="TaxComplete40.xml" url="/org/netbeans/modules/websvc/components/strikeiron/resources/TaxComplete40.xml" />
+            <file name="Search.xml" url="/org/netbeans/modules/websvc/components/strikeiron/resources/Search.xml" />
+        </folder>
+    </folder>
+    
+</filesystem>

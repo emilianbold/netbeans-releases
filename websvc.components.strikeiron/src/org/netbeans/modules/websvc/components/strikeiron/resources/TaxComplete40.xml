@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<component
+        xmlns="http://xml.netbeans.org/websvc/rest/component/1.0"
+        xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'    
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema"             
+        xsi:schemaLocation='http://xml.netbeans.org/websvc/rest/component/1.0 
+            ../../../../../../../../../../rest/src/org/netbeans/modules/websvc/rest/component/component.xsd'      
+        name="SalesandUseTaxComplete40"
+        category="/StrikeIron"
+        nameKey="SalesandUseTaxComplete40_Name"
+        categoryKey="StrikeIron_Name"
+        bundle="org.netbeans.modules.websvc.components.strikeiron.Bundle">
+
+    <description key="SalesandUseTaxComplete40_Desc" 
+                 bundle="org.netbeans.modules.websvc.components.strikeiron.Bundle"/>
+    <icons>
+        <icon url="org/netbeans/modules/websvc/components/strikeiron/resources/strikeiron16.png" size="16"/>
+        <icon url="org/netbeans/modules/websvc/components/strikeiron/resources/strikeiron32.png" size="32"/>
+    </icons>    
+    
+    <service name="TaxDataComplete">      
+        <method name="GetUSATaxRatesByZipCode" 
+                serviceName="TaxDataComplete" portName="TaxDataCompleteSoap" 
+                type="http://schemas.xmlsoap.org/wsdl/"
+                url="http://wsparam.strikeiron.com/TaxDataComplete4?WSDL">
+            <!-- name value is wsdl:binding:/wsdl:operation[@name] -->
+            <!-- serviceName value is wsdl:service[@name] -->
+            <!-- portName value is wsdl:service/wsdl:port[@name] -->
+            <documentation>
+                This operation corrects house numbers, street directions, street 
+                names, street types, apartment numbers, P.O. boxes, street name 
+                misspellings, validates street type extensions, standardizes city 
+                names and state names, appends missing state abbreviation and 
+                standardizes addresses according to postal authority rules.
+            </documentation>
+        </method>
+    </service>
+</component>
