@@ -30,7 +30,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeTransfer;
-import org.openide.util.Exceptions;
 
 import java.awt.datatransfer.Transferable;
 import java.io.File;
@@ -119,7 +118,7 @@ public abstract class FileAcceptPresenter extends AcceptPresenter {
                 return null;
             return new FileInputStream(file);
         } catch (FileNotFoundException ex) {
-            Exceptions.printStackTrace(ex);
+            Debug.warning(ex);
         }
         return null;
     }

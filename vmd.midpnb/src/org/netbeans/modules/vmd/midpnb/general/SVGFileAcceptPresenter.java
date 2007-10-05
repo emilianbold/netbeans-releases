@@ -21,25 +21,20 @@ package org.netbeans.modules.vmd.midpnb.general;
 
 import org.netbeans.modules.vmd.api.model.ComponentProducer.Result;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
-import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.common.AcceptSuggestion;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.categories.ResourcesCategoryCD;
 import org.netbeans.modules.vmd.midp.general.FileAcceptPresenter;
-import org.netbeans.modules.vmd.midpnb.components.sources.SVGMenuElementEventSourceCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGImageCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGMenuCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGPlayerCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.util.SVGUtils;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
-
 import java.awt.datatransfer.Transferable;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
+import org.netbeans.modules.vmd.api.model.Debug;
 
 /**
  *
@@ -55,55 +50,38 @@ public class SVGFileAcceptPresenter extends FileAcceptPresenter {
     public Result accept(Transferable transferable, AcceptSuggestion suggestion) {
         Result result = super.accept(transferable, suggestion);
         DesignComponent svgImage = result.getComponents().iterator().next();
-        DesignComponent animator = getComponent();
+        DesignComponent svgComponent = getComponent();
         FileObject fileObject = getNodeFileObject(transferable);
         if (fileObject == null) {
             return result;
         }
-        
+
         String path = getFileClasspath(fileObject);
         svgImage.writeProperty(SVGImageCD.PROP_RESOURCE_PATH, MidpTypes.createStringValue(path));
-        MidpDocumentSupport.getCategoryComponent(animator.getDocument(), ResourcesCategoryCD.TYPEID).addComponent(svgImage);
+        MidpDocumentSupport.getCategoryComponent(svgComponent.getDocument(), ResourcesCategoryCD.TYPEID).addComponent(svgImage);
 
-        if (animator.getDocument ().getDescriptorRegistry ().isInHierarchy (SVGMenuCD.TYPEID, animator.getType())
-                &&  animator.readProperty (SVGMenuCD.PROP_ELEMENTS).getArray ().size () == 0) {
-            parseSVGMenuItems(transferable, animator);
+        if (svgComponent.getDocument().getDescriptorRegistry().isInHierarchy(SVGMenuCD.TYPEID, svgComponent.getType())) {
+            parseSVGMenuItems(transferable, svgComponent);
         }
 
         return result;
     }
 
-    private void parseSVGMenuItems(Transferable transferable, final DesignComponent animator) {
+    private void parseSVGMenuItems(Transferable transferable, final DesignComponent svgMenuComponent) {
         InputStream inputStream = null;
         try {
             inputStream = getInputStream(transferable);
             if (inputStream != null) {
-                final String[] menuItems = SVGUtils.getMenuItems(inputStream);
-                if (menuItems != null) {
-                    animator.getDocument().getTransactionManager().writeAccess(new Runnable() {
-
-                        public void run() {
-                            List<PropertyValue> list = new ArrayList<PropertyValue>(menuItems.length);
-                            for (String str : menuItems) {
-                                DesignComponent es = animator.getDocument().createComponent(SVGMenuElementEventSourceCD.TYPEID);
-                                es.writeProperty(SVGMenuElementEventSourceCD.PROP_STRING, MidpTypes.createStringValue(str));
-                                list.add(PropertyValue.createComponentReference(es));
-                                animator.addComponent(es);
-                            }
-                            animator.writeProperty(SVGMenuCD.PROP_ELEMENTS, PropertyValue.createArray(SVGMenuElementEventSourceCD.TYPEID, list));
-                        }
-                    });
-                }
+                SVGUtils.parseSVGMenu(inputStream, svgMenuComponent);
             }
         } finally {
             if (inputStream != null) {
                 try {
                     inputStream.close();
                 } catch (IOException ioe) {
-                    Exceptions.printStackTrace(ioe);
+                    Debug.warning(ioe);
                 }
             }
         }
     }
-    
 }

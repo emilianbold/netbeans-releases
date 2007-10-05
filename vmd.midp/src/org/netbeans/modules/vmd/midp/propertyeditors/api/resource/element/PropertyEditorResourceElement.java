@@ -44,6 +44,13 @@ public abstract class PropertyEditorResourceElement extends JPanel {
 
     // List of Property Values
     public abstract List<String> getPropertyValueNames();
+    
+    public boolean isPostSetValueSupported(DesignComponent component) {
+        return false;
+    }
+
+    public void postSetValue(DesignComponent parentComponent, DesignComponent childComponent) {
+    }
 
     // icon path
     public String getIconPath() {

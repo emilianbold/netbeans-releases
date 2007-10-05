@@ -19,11 +19,14 @@ package org.netbeans.modules.vmd.midpnb.propertyeditors;
 
 import java.awt.BorderLayout;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -45,6 +48,8 @@ import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.PropertyEditorResourceElement;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGImageCD;
+import org.netbeans.modules.vmd.midpnb.components.svg.SVGMenuCD;
+import org.netbeans.modules.vmd.midpnb.components.svg.util.SVGUtils;
 import org.netbeans.modules.vmd.midpnb.screen.display.SVGImageComponent;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -141,9 +146,57 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement impleme
         setText(_pathText[0]);
     }
 
+    @Override
+    public boolean isPostSetValueSupported(final DesignComponent component) {
+        final boolean[] retValue = new boolean[1];
+        component.getDocument().getTransactionManager().readAccess(new Runnable() {
+
+            public void run() {
+                retValue[0] = component.getDocument().getDescriptorRegistry().isInHierarchy(SVGMenuCD.TYPEID, component.getType());
+            }
+        });
+        return retValue[0];
+    }
+
+    @Override
+    public void postSetValue(final DesignComponent parentComponent, final DesignComponent childComponent) {
+        final FileObject[] svgImageFileObject = new FileObject[1];
+        childComponent.getDocument().getTransactionManager().readAccess(new Runnable() {
+
+            public void run() {
+                PropertyValue propertyValue = childComponent.readProperty(SVGImageCD.PROP_RESOURCE_PATH);
+                if (propertyValue.getKind() == PropertyValue.Kind.VALUE) {
+                    Map<FileObject, FileObject> images = MidpProjectSupport.getFileObjectsForRelativeResourcePath(parentComponent.getDocument(), MidpTypes.getString(propertyValue));
+                    Iterator<FileObject> iterator = images.keySet().iterator();
+                    svgImageFileObject[0] = iterator.hasNext() ? iterator.next() : null;
+                }
+            }
+        });
+
+        if (svgImageFileObject[0] != null) {
+            InputStream inputStream = null;
+            try {
+                inputStream = svgImageFileObject[0].getInputStream();
+                if (inputStream != null) {
+                    SVGUtils.parseSVGMenu(inputStream, parentComponent);
+                }
+            } catch (FileNotFoundException ex) {
+                Debug.warning(ex);
+            } finally {
+                if (inputStream != null) {
+                    try {
+                        inputStream.close();
+                    } catch (IOException ioe) {
+                        Debug.warning(ioe);
+                    }
+                }
+            }
+        }
+    }
+
     private void setText(String text) {
         if (text == null) {
-            text = "";
+            text = ""; // NOI18N
         }
 
         addImage(text, true);
@@ -162,7 +215,7 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement impleme
         doNotFireEvent = false;
     }
 
-    @SuppressWarnings(value = "unchecked")
+    @SuppressWarnings(value = "unchecked") // NOI18N
     private void sortComboBoxContent() {
         int size = pathTextComboBox.getItemCount();
         List list = new ArrayList(size);
@@ -273,7 +326,7 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement impleme
                     // file exists, do not convert
                     return null;
                 }
-                
+
                 try {
                     fo = fo.copy(sourceFolder, fo.getName(), fo.getExt());
                 } catch (IOException ex) {

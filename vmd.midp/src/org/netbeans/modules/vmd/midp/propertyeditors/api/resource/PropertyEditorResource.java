@@ -162,9 +162,9 @@ public class PropertyEditorResource extends PropertyEditorUserCode implements Pr
         final DesignDocument document = component.get().getDocument();
         Map<String, DesignComponent> componentsMap = getComponentsMap();
         if (componentsMap.get(text) != null) {
-            super.setValue(PropertyValue.createComponentReference(componentsMap.get(text)));
+            setValue(PropertyValue.createComponentReference(componentsMap.get(text)));
         } else if (text.equals(noneComponentAsText)) {
-            super.setValue(NULL_VALUE);
+            setValue(NULL_VALUE);
         } else if (text.equals(newComponentAsText)) {
             document.getTransactionManager().writeAccess(new Runnable() {
 
@@ -179,7 +179,7 @@ public class PropertyEditorResource extends PropertyEditorUserCode implements Pr
 
                     if (createdComponent != null) {
                         initInstanceNameForComponent(createdComponent);
-                        PropertyEditorResource.super.setValue(PropertyValue.createComponentReference(createdComponent));
+                        PropertyEditorResource.this.setValue(PropertyValue.createComponentReference(createdComponent));
                     }
                 }
             });
@@ -188,15 +188,22 @@ public class PropertyEditorResource extends PropertyEditorUserCode implements Pr
             for (String key : wrappersMap.keySet()) {
                 if (key.equals(text)) {
                     DesignComponent createdComponent = createdComponents.get(text);
-                    super.setValue(PropertyValue.createComponentReference(createdComponent));
+                    setValue(PropertyValue.createComponentReference(createdComponent));
                     createdComponents.clear();
                     break;
                 }
             }
         }
     }
+    
+    private void setValue(PropertyValue value) {
+        super.setValue(value);
+        if (!NULL_VALUE.equals(value) && perElement.isPostSetValueSupported(component.get())) {
+            perElement.postSetValue(component.get(), value.getComponent());
+        }
+    }
 
-// invoke in the write transaction
+    // invoke in the write transaction
     private void initInstanceNameForComponent(DesignComponent component) {
         String nameToBeCreated = perElement.getResourceNameSuggestion();
         PropertyValue instanceName = InstanceNameResolver.createFromSuggested(component, nameToBeCreated);

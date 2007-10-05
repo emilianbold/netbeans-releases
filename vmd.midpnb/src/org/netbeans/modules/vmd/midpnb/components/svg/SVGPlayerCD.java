@@ -130,8 +130,8 @@ public class SVGPlayerCD extends ComponentDescriptor {
         return Arrays.asList(
                 // properties
                 createPropertiesPresenter (),
-                new SVGFileAcceptPresenter (),
                 //accept
+                new SVGFileAcceptPresenter (),
                 new MidpAcceptProducerKindPresenter ().addType(SVGImageCD.TYPEID, PROP_SVG_IMAGE),
                 new MidpAcceptTrensferableKindPresenter().addType(SVGImageCD.TYPEID, PROP_SVG_IMAGE),
                 // code
