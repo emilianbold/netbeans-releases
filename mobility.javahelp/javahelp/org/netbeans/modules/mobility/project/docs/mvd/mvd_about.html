@@ -18,22 +18,31 @@
 <h2>About Visually Designing MIDP Applications</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
 <p>The Visual Mobile Designer (VMD) enables you to visually design your application's 
-  work flow and graphical user interface (GUI). As you drag and drop objects into 
-  the Flow and Designer windows, the IDE generates and updates the Java code that 
-  implements your design.</p>
-<p>To use the VMD, you work with files created by the VMD <a href="../projects/proj_templates.html">templates</a>, 
-  available from the New File wizard. You cannot use the VMD to edit GUI forms 
-  that were created outside of the IDE. Note also that if you edit the code generated 
-  by the VMD in the Source Editor (code within the gray shaded areas), you can 
-  no longer work in the visual mode. </p>
+  work flow and graphical user interface (GUI). </p>
+<p>Tips for using the Visual Mobile Designer:</p>
+<ul>
+  <li> 
+    <div class="indent">Begin your application by  using VMD <a href="../projects/proj_templates.html">templates</a>, 
+  available from the New File wizard.</div>
+  </li>
+  <li>Drag and drop objects into the Flow or Screen Designer windows to create your application.</li>
+  <li>Saving the file or switching to Source view prompts the IDE to generate and update the Java code of your design.</li>
+  <li>
+    <div class="indent">The VMD cannot edit GUI forms 
+      that were created outside of the IDE.</div>
+  </li>
+  <li>
+    <div class="indent"> Using an external editor to modify the VMD generated code within the gray shaded areas may disable the ability to work on the project within the VMD.</div>
+  </li>
+</ul>
+
 <p>The VMD provides the following tools to simplify the process of
   designing your MIDP applications, including:</p>
 <ul>
   <li><strong><a href="../ui/mvd_flowdesigner.html">Flow Designer</a>.</strong> 
     The primary workspace for the VMD. In this space, you map out the flow of 
     the application by adding screens and other UI components, and associating 
-    commands with the components. It enables you to view forms in both Source 
-    and Design views.</li>
+    commands with the components.</li>
   <li><a href="../ui/mvd_screendesigner.html"><strong>Screen Designer</strong></a><strong>.</strong> 
     Enables you to design and modify screens within your application.</li>
   <li><strong><a href="../ui/mvd_inspector.html">Navigator Window</a>.</strong> 
@@ -45,17 +54,9 @@
     Manager.</strong> </a>Enables you to add your own screens and objects to the 
     Component Palette.</li>
   <li><a href="../ui/mvd_properties.html"> <strong>Properties window.</strong></a> 
-    Displays the editable settings for the currently selected component. The Properties 
-    window has four tabs: 
-    <ul>
-      <li>Properties</li>
-      <li>Binding</li>
-      <li>Events</li>
-      <li>Code</li>
-    </ul>
-  </li>
+  Displays the editable settings for the currently selected component.</li>
   <li><strong>Analyzer. </strong>Checks your visual design for unused components 
-    and reports all component, properties, and values that are not available in 
+    and reports all components, properties, and values that are not available in 
     MIDP 1.0.</li>
 </ul>
 <dl>
