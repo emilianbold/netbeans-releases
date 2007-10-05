@@ -41,6 +41,7 @@
 
 package org.netbeans.api.db.explorer;
 
+import java.lang.ref.WeakReference;
 import java.net.URL;
 import org.netbeans.modules.db.explorer.driver.JDBCDriverConvertor;
 import org.netbeans.modules.db.test.TestBase;
@@ -63,6 +64,7 @@ public class JDBCDriverManagerTest extends TestBase {
      */
     public void testSameInstanceAfterAdd() throws Exception {
         Util.deleteDriverFiles();
+        assertEquals(0, JDBCDriverManager.getDefault().getDrivers().length);
 
         JDBCDriver driver1 = JDBCDriver.create("bar_driver", "Bar Driver", "org.bar.BarDriver", new URL[0]);
         DataObject driver1DO = JDBCDriverConvertor.create(driver1);
@@ -83,10 +85,9 @@ public class JDBCDriverManagerTest extends TestBase {
         //
         // /*
         // assertEquals(1, JDBCDriverManager.getDefault().getDrivers().length);
-        //
-        // WeakReference driver1DORef = new WeakReference(driver1DO);
-        // driver1DO = null;
-        // assertGC("Can GC the driver's DataObject", driver1DORef);
+        WeakReference driver1DORef = new WeakReference(driver1DO);
+        driver1DO = null;
+        assertGC("Can GC the driver's DataObject", driver1DORef);
         // */
 
         // this used to fail as described in issue 75204
