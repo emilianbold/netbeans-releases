@@ -70,7 +70,11 @@ public class TreeExpandedState {
     public void save() {
 
         TreeNode root = (TreeNode) tree.getModel().getRoot();
-
+        
+        if(root == null){
+            return;
+        }
+        
         TreePath root_tp = TreeNode.getTreePath(root);
         //save the expanded state
         Enumeration<TreePath> expanded = tree.getExpandedDescendants(root_tp);
