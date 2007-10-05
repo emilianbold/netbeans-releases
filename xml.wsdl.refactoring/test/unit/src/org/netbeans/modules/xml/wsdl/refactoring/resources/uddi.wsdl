@@ -1,14 +1,25 @@
 <definitions xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:tns="urn:uddi-org:inquiry_v2" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:uddi="urn:uddi-org:api_v2" targetNamespace="urn:uddi-org:inquiry_v2" name="UDDI_Inquiry_API_V2">
 	<documentation>
-		Copyright (c) 2000 - 2002 by Accenture, Ariba, Inc., Commerce One, Inc. 
-		Fujitsu Limited, Hewlett-Packard Company, i2 Technologies, Inc., 
-		Intel Corporation, International Business Machines Corporation,  
-		Microsoft Corporation, Oracle Corporation, SAP AG, Sun Microsystems, Inc., 
+		Copyright (c) 2000 - 2002 by Accenture, Ariba, Inc., Commerce One, Inc.
+		Fujitsu Limited, Hewlett-Packard Company, i2 Technologies, Inc.,
+		Intel Corporation, International Business Machines Corporation,
+		Microsoft Corporation, Oracle Corporation, SAP AG, Sun Microsystems, Inc.,
 		and VeriSign, Inc.  All Rights Reserved.
+
+If you wish your version of this file to be governed by only the CDDL
+or only the GPL Version 2, indicate your decision by adding
+"[Contributor] elects to include this software in this distribution
+under the [CDDL or GPL Version 2] license." If you do not indicate a
+single choice of license, a recipient has the option to distribute
+your version of this file under either the CDDL, the GPL Version 2 or
+to extend the choice of license to its licensees as provided above.
+However, if you add GPL Version 2 code and therefore, elected the GPL
+Version 2 license, then the option applies only if the new code is
+made subject to such option by the copyright holder.
 		
-		WSDL Service Interface for UDDI Inquiry API V2.0    
+		WSDL Service Interface for UDDI Inquiry API V2.0
 		
-		This WSDL document defines the inquiry API calls for interacting with 
+		This WSDL document defines the inquiry API calls for interacting with
 		the UDDI registry.  The complete UDDI API specification is available
 		at http://www.uddi.org/specification.html.
 	</documentation>
