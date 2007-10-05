@@ -696,8 +696,9 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     void setDesignerMode(int mode) {
         formToolBar.updateDesignerMode(mode);
 
-        if (mode == designerMode)
+        if (mode == designerMode || !initialized) {
             return;
+        }
 
         if (mode == MODE_ADD) {
             PaletteItem pitem = PaletteUtils.getSelectedItem();
