@@ -31,7 +31,7 @@
           <ComponentRef name="nameField"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/cnd/gotodeclaration/other/ui/Bundle.properties" key="TXT_GoToElement_ElementName_Label" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/cnd/gotodeclaration/element/ui/Bundle.properties" key="TXT_GoToElement_ElementName_Label" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <AuxValues>
@@ -72,7 +72,7 @@
           <ComponentRef name="matchesScrollPane1"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/jumpto/type/Bundle.properties" key="TXT_GoToElement_MatchesList_Label" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/cnd/gotodeclaration/element/ui/Bundle.properties" key="TXT_GoToElement_MatchesList_Label" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Constraints>
@@ -132,7 +132,7 @@
     <Component class="javax.swing.JCheckBox" name="caseSensitive">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/cnd/gotodeclaration/other/ui/Bundle.properties" key="TXT_GoToElement_CaseSensitive" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/cnd/gotodeclaration/element/ui/Bundle.properties" key="TXT_GoToElement_CaseSensitive" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
         <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
           <Insets value="[0, 0, 0, 0]"/>
@@ -150,7 +150,7 @@
     <Component class="javax.swing.JLabel" name="jLabelLocation">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/cnd/gotodeclaration/other/ui/Bundle.properties" key="LBL_GoToElement_LocationJLabel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/cnd/gotodeclaration/element/ui/Bundle.properties" key="LBL_GoToElement_LocationJLabel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Constraints>
