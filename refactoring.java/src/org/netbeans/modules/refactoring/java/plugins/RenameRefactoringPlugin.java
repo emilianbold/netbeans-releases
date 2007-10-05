@@ -436,7 +436,7 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
             return null;
         Set<FileObject> a = getRelevantFiles();
         fireProgressListenerStart(ProgressEvent.START, a.size());
-        TransformTask transform = new TransformTask(new RenameTransformer(refactoring.getNewName(), allMethods), treePathHandle);
+        TransformTask transform = new TransformTask(new RenameTransformer(refactoring.getNewName(), allMethods, refactoring.isSearchInComments()), treePathHandle);
         createAndAddElements(a, transform, elements, refactoring);
         fireProgressListenerStop();
         return null;

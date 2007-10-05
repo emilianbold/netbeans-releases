@@ -47,8 +47,11 @@ import com.sun.source.util.TreePath;
 import java.util.Set;
 import javax.lang.model.element.*;
 import javax.lang.model.util.Elements;
+import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenSequence;
 
 /**
  *
@@ -58,10 +61,38 @@ public class RenameTransformer extends RefactoringVisitor {
 
     private Set<ElementHandle<ExecutableElement>> allMethods;
     private String newName;
+    private boolean renameInComments;
 
-    public RenameTransformer(String newName, Set<ElementHandle<ExecutableElement>> am) {
+    public RenameTransformer(String newName, Set<ElementHandle<ExecutableElement>> am, boolean renameInComments) {
         this.newName = newName;
         this.allMethods = am;
+        this.renameInComments = renameInComments;
+    }
+
+    @Override
+    public Tree visitCompilationUnit(CompilationUnitTree node, Element p) {
+        if (renameInComments) {
+            String originalName = p.getSimpleName().toString();
+            TokenSequence<JavaTokenId> ts = workingCopy.getTokenHierarchy().tokenSequence(JavaTokenId.language());
+            
+            while (ts.moveNext()) {
+                Token t = ts.token();
+                
+                if (t.id() == JavaTokenId.BLOCK_COMMENT || t.id() == JavaTokenId.LINE_COMMENT || t.id() == JavaTokenId.JAVADOC_COMMENT) {
+                    int index = -1;
+                    String text = t.text().toString();
+                            
+                    while ((index = text.indexOf(originalName, index + 1)) != (-1)) {
+                        if (index > 0 && Character.isJavaIdentifierPart(text.charAt(index - 1)))
+                            continue;
+                        if ((index + originalName.length() < text.length()) && Character.isJavaIdentifierPart(text.charAt(index + originalName.length())))
+                            continue;
+                        workingCopy.rewriteInComment(ts.offset() + index, originalName.length(), newName);
+                    }
+                }
+            }
+        }
+        return super.visitCompilationUnit(node, p);
     }
 
     @Override
