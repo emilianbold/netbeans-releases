@@ -40,11 +40,6 @@
  */
 package org.netbeans.modules.bpel.search.impl.ui;
 
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.List;
-
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Toolkit;
@@ -57,6 +52,13 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.List;
+
+import javax.swing.Action;
+import javax.swing.Icon;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JTree;
@@ -75,6 +77,7 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
 import org.openide.windows.WindowManager;
+import org.netbeans.modules.print.api.PrintManager;
 import org.netbeans.modules.xml.search.api.SearchElement;
 import org.netbeans.modules.xml.search.api.SearchEvent;
 import org.netbeans.modules.xml.search.spi.SearchListener;
@@ -213,34 +216,15 @@ final class Tree extends JTree implements SearchListener {
   }
 
   private void handleAction(int code, int modifiers, DefaultMutableTreeNode node) {
-//    if (code == KeyEvent.VK_D && isAlt(modifiers)) {
-//      select(node);
-//    }
-//    else if (code == KeyEvent.VK_O && isAlt(modifiers)) {
-//      gotoSource(node);
-//    }
-//    else
     if (code == KeyEvent.VK_C && isCtrl(modifiers)) {
       copy(node);
     }
-//    else if (code == KeyEvent.VK_H && isCtrl(modifiers)) {
-//      export(node);
-//    }
-    else {
-      handleResult(code, modifiers, node);
-    }
-  }
-
-  private void handleResult(int code, int modifiers, DefaultMutableTreeNode node) {
-    if (code == KeyEvent.VK_F12 && isShift(modifiers)) {
+    else if (code == KeyEvent.VK_F12 && isShift(modifiers)) {
       previousOccurence(node);
     }
     else if (code == KeyEvent.VK_F12) {
       nextOccurence(node);
     }
-//    else if (code == KeyEvent.VK_E && isCtrl(modifiers)) {
-//      expose(node);
-//    }
     else if (code == KeyEvent.VK_DELETE) {
       remove(node);
     }
@@ -255,9 +239,24 @@ final class Tree extends JTree implements SearchListener {
 
     popup.addSeparator(); // -----------------------------------------------------
 
+    // remove
+    item = createItem("LBL_Remove"); // NOI18N
+    item.setEnabled( !node.isRoot());
+    item.setIcon(EMPTY);
+    item.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent event) {
+        remove(node);
+      }
+    });
+    item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0));
+    popup.add(item);
+
+    popup.addSeparator(); // -----------------------------------------------------
+
     // previous occurence
     item = createItem("LBL_Previous_Occurence"); // NOI18N
     item.setEnabled(true);
+    item.setIcon(icon(Util.class, "previous")); // NOI18N
     item.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent event) {
         previousOccurence(node);
@@ -269,6 +268,7 @@ final class Tree extends JTree implements SearchListener {
     // next occurence
     item = createItem("LBL_Next_Occurence"); // NOI18N
     item.setEnabled(true);
+    item.setIcon(icon(Util.class, "next")); // NOI18N
     item.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent event) {
         nextOccurence(node);
@@ -279,26 +279,28 @@ final class Tree extends JTree implements SearchListener {
 
     popup.addSeparator(); // -----------------------------------------------------
 
-    // collapse / expand
-    item = createItem("LBL_Collapse_Expand"); // NOI18N
-    item.setEnabled( !node.isLeaf());
+    // vlv: print
+    item = createItem("LBL_Print_Preview"); // NOI18N
+    item.setEnabled(true);
+    item.setIcon(getPrintPreviewIcon());
     item.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent event) {
-        expose(node);
+        PrintManager.getPrintPreviewAction().actionPerformed(event);
       }
     });
-//  item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, KeyEvent.CTRL_MASK));
+    item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P,
+      KeyEvent.CTRL_MASK | KeyEvent.ALT_MASK | KeyEvent.SHIFT_MASK
+    ));
     popup.add(item);
 
-    // remove
-    item = createItem("LBL_Remove"); // NOI18N
-    item.setEnabled( !node.isRoot());
+    // export
+    item = createItem("LBL_Export"); // NOI18N
+    item.setIcon(icon(Util.class, "export")); // NOI18N
     item.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent event) {
-        remove(node);
+        export(node);
       }
     });
-    item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0));
     popup.add(item);
 
     // show
@@ -308,30 +310,31 @@ final class Tree extends JTree implements SearchListener {
   private void createAction(JPopupMenu popup, final DefaultMutableTreeNode node) {
     JMenuItem item;
 
-    // select
+    // go to design
     item = createItem("LBL_Select"); // NOI18N
     item.setEnabled( !node.isRoot());
+    item.setIcon(EMPTY);
     item.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent event) {
         select(node);
       }
     });
-//  item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D, KeyEvent.ALT_MASK));
     popup.add(item);
 
     // go to source
     item = createItem("LBL_Go_to_Source"); // NOI18N
     item.setEnabled( !node.isRoot());
+    item.setIcon(EMPTY);
     item.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent event) {
         gotoSource(node);
       }
     });
-//  item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, KeyEvent.ALT_MASK));
     popup.add(item);
 
     // copy
     item = createItem("LBL_Copy"); // NOI18N
+    item.setIcon(icon(Util.class, "copy")); // NOI18N
     item.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent event) {
         copy(node);
@@ -340,15 +343,25 @@ final class Tree extends JTree implements SearchListener {
     item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.CTRL_MASK));
     popup.add(item);
 
-    // export
-    item = createItem("LBL_Export"); // NOI18N
+    // collapse / expand
+    item = createItem("LBL_Collapse_Expand"); // NOI18N
+    item.setEnabled( !node.isLeaf());
+    item.setIcon(icon(Util.class, "expose")); // NOI18N
     item.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent event) {
-        export(node);
+        expose(node);
       }
     });
-//  item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_H, KeyEvent.CTRL_MASK));
     popup.add(item);
+  }
+
+  private Icon getPrintPreviewIcon() {
+    Object object = PrintManager.getPrintPreviewAction().getValue(Action.SMALL_ICON);
+
+    if (object instanceof Icon) {
+      return (Icon) object;
+    }
+    return EMPTY;
   }
 
   private boolean isAlt(int modifiers) {
@@ -486,7 +499,7 @@ final class Tree extends JTree implements SearchListener {
     TreePath path = new TreePath(node.getPath());
     boolean isExpanded = isExpanded(path);
 
-    // for root special check
+    // special check for root
     if (node.isRoot()) {
       Enumeration children = node.children();
       isExpanded = false;
@@ -662,14 +675,25 @@ final class Tree extends JTree implements SearchListener {
       JTree tree, Object value, boolean select, boolean expanded,
       boolean leaf, int row, boolean focus)
     {
-      super.getTreeCellRendererComponent(
-        tree, value, select, expanded, leaf, row, focus);
+      super.getTreeCellRendererComponent(tree, value, select, expanded, leaf, row, focus);
       SearchElement element =
         (SearchElement) ((DefaultMutableTreeNode) value).getUserObject();
-      setText(element.getName());
+
+      setText("<html>" + getHtmlName(element.getName(), leaf, row) + "</html>"); // NOI18N
       setToolTipText(element.getToolTip());
       setIcon(element.getIcon());
+
       return this;
+    }
+
+    private String getHtmlName(String name, boolean leaf, int row) {
+      if (row == 0) {
+        return name;
+      }
+      if (leaf) {
+        return "<b>" + name + "</b>"; // NOI18N
+      }
+      return "<font color=\"#999999\">" + name + "</font>"; // NOI18N
     }
   }
 
@@ -679,4 +703,5 @@ final class Tree extends JTree implements SearchListener {
   private boolean myIsReformAll;
   private DefaultMutableTreeNode myRoot;
   private List<DefaultMutableTreeNode> myOccurences;
+  private static final Icon EMPTY = icon(Util.class, "empty"); // NOI18N
 }

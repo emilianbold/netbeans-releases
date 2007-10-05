@@ -111,24 +111,6 @@ public final class View extends TopComponent {
     setSize(button);
     toolBar.add(button);
 
-    // export
-    button = createButton(
-      new ButtonAction(
-        icon(Util.class, "export"), // NOI18N
-        i18n(View.class, "TLT_Export")) { // NOI18N
-        public void actionPerformed(ActionEvent event) {
-          myTree.export(myTree.getSelectedNode());
-        }
-      }
-    );
-    setSize(button);
-    toolBar.add(button);
-
-    // vlv: print
-    button = createButton(PrintManager.getPrintPreviewAction());
-    setSize(button);
-    toolBar.add(button);
-
     // previous occurence
     button = createButton(
       new ButtonAction(
@@ -149,6 +131,24 @@ public final class View extends TopComponent {
         i18n(View.class, "TLT_Next_Occurence")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           myTree.nextOccurence(myTree.getSelectedNode());
+        }
+      }
+    );
+    setSize(button);
+    toolBar.add(button);
+
+    // vlv: print
+    button = createButton(PrintManager.getPrintPreviewAction());
+    setSize(button);
+    toolBar.add(button);
+
+    // export
+    button = createButton(
+      new ButtonAction(
+        icon(Util.class, "export"), // NOI18N
+        i18n(View.class, "TLT_Export")) { // NOI18N
+        public void actionPerformed(ActionEvent event) {
+          myTree.export(myTree.getSelectedNode());
         }
       }
     );

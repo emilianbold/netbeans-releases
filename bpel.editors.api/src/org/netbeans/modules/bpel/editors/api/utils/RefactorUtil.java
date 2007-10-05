@@ -149,7 +149,7 @@ public class RefactorUtil {
       String type = getType(component);
 
       if (type != null) {
-        return type + " '" + getName(component) + "'";
+        return "<html>" + type + " <b>" + getName(component) + "</b></html>";
       }
       return getName(component);
     }
