@@ -53,6 +53,8 @@ import java.util.concurrent.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.text.JTextComponent;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
@@ -205,10 +207,6 @@ public class BindingCustomizer extends JPanel {
         conversionLabel.setMaximumSize(conversionLabel.getPreferredSize());
         validatorLabel.setMaximumSize(validatorLabel.getPreferredSize());
         specialValuesLabel.setMaximumSize(specialValuesLabel.getPreferredSize());
-        
-        // Help IDs
-        HelpCtx.setHelpIDString(bindingPanel, "gui.binding-customizer.basic"); // NOI18N
-        HelpCtx.setHelpIDString(advancedPanel, "gui.binding-customizer.advanced"); // NOI18N
     }
 
     /**
@@ -274,7 +272,7 @@ public class BindingCustomizer extends JPanel {
         infoLabel.setText(info);
         setBindingToUI();
     }
-
+        
     /**
      * Returns dialog wrapper around the customizer.
      *
@@ -287,13 +285,20 @@ public class BindingCustomizer extends JPanel {
             initButtons(bundle);
             String pattern = bundle.getString("MSG_BindingCustomizer_Binding"); // NOI18N
             String title = MessageFormat.format(pattern, bindingComponent.getName(), bindingDescriptor.getPath());
-            DialogDescriptor dd = new DialogDescriptor(
+            final DialogDescriptor dd = new DialogDescriptor(
                 this, title, true,
                 new JButton[] { okButton, cancelButton },
                 okButton,
-                DialogDescriptor.DEFAULT_ALIGN, new HelpCtx("gui.binding-customizer"), // NOI18N
+                DialogDescriptor.DEFAULT_ALIGN, new HelpCtx("gui.binding-customizer.basic"), // NOI18N
                 null
             );
+            tabbedPane.addChangeListener(new ChangeListener() {
+                public void stateChanged(ChangeEvent e) {
+                    dd.setHelpCtx(new HelpCtx((tabbedPane.getSelectedIndex() == 1) ?
+                        "gui.binding-customizer.advanced" : "gui.binding-customizer.basic")); // NOI18N
+
+                }                
+            });
             dd.setClosingOptions(new JButton[] { okButton, cancelButton });
             dialog = DialogDisplayer.getDefault().createDialog(dd);
             dialog.addWindowListener(new WindowAdapter() {
