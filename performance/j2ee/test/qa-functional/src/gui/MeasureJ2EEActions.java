@@ -80,16 +80,14 @@ public class MeasureJ2EEActions  {
 	        suite.addTest(new OpenJ2EEFilesWithOpenedEditor("testOpeningSunEjbJarXml", "Open sun-ejb-jar.xml file if Editor opened"));
 	        suite.addTest(new OpenJ2EEFilesWithOpenedEditor("testOpeningApplicationXml", "Open application.xml file if Editor opened"));
 	        suite.addTest(new OpenJ2EEFilesWithOpenedEditor("testOpeningSunApplicationXml", "Open sun-application.xml file if Editor opened"));
-	        
+
+/* Wrong tests results, disabled util further investigation	        
 	        suite.addTest(new MeasureSessionBeanAction("testAddBusinessMethod", "Add business method to SB"));
 	        suite.addTest(new MeasureEntityBeanAction("testAddBusinessMethod", "Add business method to EB"));
-	        
                 suite.addTest(new MeasureEntityBeanAction("testAddFinderMethod", "Add finder method to EB"));
 	        suite.addTest(new MeasureEntityBeanAction("testAddSelectMethod", "Add select method to EB"));
-	
-                
 	        suite.addTest(new MeasureWebServiceAction("testAddOperation", "Add operation to WS"));
-	        
+*/	        
                 
 	        suite.addTest(new MeasureCallEjbAction("measureTime", "Call EJB in session bean"));
 	        
