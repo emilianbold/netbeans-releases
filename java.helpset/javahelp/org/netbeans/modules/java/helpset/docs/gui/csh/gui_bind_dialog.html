@@ -1,0 +1,64 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+*     Copyright (c) 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+    <head>
+        <title>Bind Dialog Box: Binding Tab (Java Desktop Applications)</title>
+<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>Bind Dialog Box: Binding Tab (Java Desktop Applications)</h2>
+        <p><small><a href="#seealso">See Also</a></small>
+<p>This dialog box enables you to bind properties of JavaBeans components (beans)
+with each other so that the values of those properties are synchronized. For example, 
+    you can bind the <tt>value</tt> property of a JSlider component to the value of  
+    an object in a table so that the value in the table cell is updated as the user 
+    adjusts the slider.</p>
+    
+    <p>The dialog box opens when you do one of the following things:</p>
+    <ul>
+        <li>Right-click a component in the GUI Builder and choose a property from 
+        the Bind submenu.</li>
+        <li>Click the ellipsis (...) button for a property in the property 
+    sheet of a bean.</li><!--TODO icon for ellipsis button-->
+</ul> 
+<p>The property for which you open the Bind dialog box serves as the <i>target</i> of the 
+binding. In the Bind dialog box, you specify the binding <i>source</i> and configure 
+the binding.</p>
+<p>The Binding tab of the dialog box contains a combination of the following fields:</p>
+<ul>
+    <!--TODO explain target/source -->
+    <li><b>Binding Source. </b> A drop-down list that contains a list of 
+visual components and other beans that are available for binding to the property 
+that was selected when you opened the dialog box. 
+<p>For a bean to be available in this list, it needs to be 
+    added to the form. See 
+<a href="../gui_addcomponent.html">Adding a Component to a Form</a>.</p> </li>
+<li><b>Binding Expression. </b>A drop-down list where you can select a  
+property of the binding source to bind to the target property. This list might 
+also contain other types of expressions which you can use in the binding, such as 
+Boolean expressions.
+
+<p>The expressions in this dialog box use Expression Language syntax.</p>
+<!--TODO link to EL topic--></li>    
+        </ul>
+
+  
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="../gui_designing.html">Designing Java GUIs with the GUI Builder</a></dd>            				
+            <dd><a href="../gui_overview.html">Working with the GUI Builder</a></dd>
+            <dd><a href="../gui_quickref.html">GUI Builder Tasks: Quick Reference</a></dd>
+        </dl>
+
+        <hr>
+<small><a href="../../credits.html">Legal Notices</a></small> 
+        <table border="0" cellpadding="50">
+            <tr>
+                <td>&nbsp;</td>
+            </tr>
+        </table>
+    </body>
+</html>

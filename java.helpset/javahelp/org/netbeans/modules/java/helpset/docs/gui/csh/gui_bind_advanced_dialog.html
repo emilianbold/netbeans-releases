@@ -1,0 +1,82 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+*     Copyright (c) 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+    <head>
+        <title>Bind Dialog Box: Advanced Tab (Java Desktop Applications)</title>
+<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>DRAFT: Bind Dialog Box: Advanced Tab (Java Desktop Applications)</h2>
+        <p><small><a href="#seealso">See Also</a></small>
+<p>This dialog box enables you to bind properties of JavaBeans components (beans)
+with each other so that the values of those properties are synchronized. For example, 
+    you can bind the <tt>value</tt> property of a JSlider component to the <tt>selectedElement</tt> 
+    property of a table.</p>
+    <!--TODO finish topic-->
+    <p>The dialog box opens when you do one of the following things:</p>
+    <ul>
+        <li>Right-click a component in the GUI Builder and choose Bind.</li>
+        <li>Click the ellipsis (...) button for a property in the property 
+    sheet of a bean.</li><!--TODO icon for ellipsis button-->
+</ul> 
+<p>The Advanced tab of the dialog box contains the following fields:</p>
+<ul>
+    <li><b>Name. </b>Enables you to create a name for the binding, 
+which you can use to refer to binding from other parts of your application. 
+<!--TODO clarify --></li>
+<li><b>Update Mode. </b> Specifies the way that the properties are kept synchronized. 
+The possible values are: 
+<ul>
+        <li><b>Always sync (read/write).</b> Whenever a change is made to either 
+        the source or the target, the other is updated.</li>
+        <li><b>Only read from source (read only).</b>  The target is only updated 
+            the first time the source value is set. Changes that are made to the 
+    source are updated in the target. Changes made to the target are not updated in 
+the source.</li>        
+            <li><b>Read from source once (read once).</b>  The target is only updated 
+            the first time the source value is set.</li>        
+    </ul></li>    
+<li><b>Ignore Adjusting. </b> </li>    
+<li><b>Converter. </b> </li>    
+<li><b>Validator. </b> </li>    
+<li><b>Null Source Value. </b> </li>   
+<li><b>Unreadable Source Value. </b> </li>    
+</ul>
+
+<!--
+<p>When you have selected the data provider you want, you can use the 
+<b>Available</b> and <b>Selected</b> lists to move items into and out 
+of the table. The Selected list shows everything that will be displayed 
+in the table, and by default lists all the items in the data provider. </p>
+<ul>
+  <li>You can add items to a list and remove items from a list by 
+  selecting an item and clicking the &lt; and &gt; buttons, or you 
+  can click &lt;&lt; or &gt;&gt; buttons to remove or add all items,</li>
+  <li>You can rearrange the items in the Selected list by selecting 
+  an item and clicking the Up or Down button. The order in which items 
+  appear in the Selected list is the order in which the columns appear 
+  in your table. </li>
+    <li>The New button adds a new column to the table. Any column you 
+    add with this button is not populated by the data provider. You 
+    must define the contents of the column yourself in the Visual Designer. </li>
+        </ul>
+  -->
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="../gui_designing.html">Designing Java GUIs with the GUI Builder</a></dd>            				
+            <dd><a href="../gui_overview.html">Working with the GUI Builder</a></dd>
+            <dd><a href="../gui_quickref.html">GUI Builder Tasks: Quick Reference</a></dd>
+        </dl>
+
+        <hr>
+<small><a href="../../credits.html">Legal Notices</a></small> 
+        <table border="0" cellpadding="50">
+            <tr>
+                <td>&nbsp;</td>
+            </tr>
+        </table>
+    </body>
+</html>

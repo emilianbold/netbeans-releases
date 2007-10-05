@@ -324,6 +324,10 @@
 <mapID target="gui.component-inspector" url="pending.html" />
 <!-- todo (post 5.0) reclaim these IDs - they are currently overridden by gui.connecting.code:-->
 
+<!--CSH for Binding dialog-->
+<mapID target="gui.binding-customizer.basic" url="gui/csh/gui_bind_advanced_dialog.html" />
+<mapID target="gui.binding-customizer.advanced" url="gui/csh/gui_bind_advanced_dialog.html" />
+
 <!--<mapID target="org.netbeans.modules.form.ConnectionWizard1" url="pending.html" />-->
 <!--<mapID target="org.netbeans.modules.form.ConnectionWizard2" url="pending.html" />-->
 <!--<mapID target="org.netbeans.modules.form.ConnectionWizard3" url="pending.html" />-->
