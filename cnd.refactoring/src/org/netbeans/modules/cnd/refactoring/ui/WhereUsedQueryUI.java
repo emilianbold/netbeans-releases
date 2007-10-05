@@ -156,7 +156,7 @@ public class WhereUsedQueryUI implements RefactoringUI {
         // i.e. "Usages of "name" (2 occurrences]"
         if (panel!=null) {
             String description = panel.getDescription();
-            String key = "DSC_WhereUsed";
+            String key = "DSC_WhereUsed"; // NOI18N
             if (panel.isClass()) {
                 if (!panel.isClassFindUsages()) {
                     if (panel.isClassSubTypesDirectOnly()) {
@@ -232,9 +232,9 @@ public class WhereUsedQueryUI implements RefactoringUI {
         } else if (CsmKindUtilities.isNamedElement(csmObj)) {
             objName = ((CsmNamedElement)csmObj).getName();
         } else if (csmObj != null) {
-            objName = "<UNNAMED ELEMENT>";
+            objName = "<UNNAMED ELEMENT>"; // NOI18N
         } else {
-            objName = "<UNRESOLVED ELEMENT>";
+            objName = "<UNRESOLVED ELEMENT>"; // NOI18N
         }
         return objName;
     }     

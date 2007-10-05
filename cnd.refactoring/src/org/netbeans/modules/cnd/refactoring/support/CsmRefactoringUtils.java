@@ -233,11 +233,11 @@ public class CsmRefactoringUtils {
                 }
                 AttributeSet set = settings.getTokenFontColors(category);
                 if (tokenBufferOffset+bufferStartPos == stToken) {
-                    buf.append("<b>");
+                    buf.append("<b>"); // NOI18N
                 }
                 buf.append(color(htmlize(text), set));
                 if (tokenBufferOffset+bufferStartPos+tokenLength == endToken) {
-                    buf.append("</b>");
+                    buf.append("</b>"); // NOI18N
                 }
                 return true;
             }
@@ -286,8 +286,8 @@ public class CsmRefactoringUtils {
             buf.append("</i>"); //NOI18N
         }
         if (StyleConstants.isStrikeThrough(set)) {
-            buf.insert(0,"<s>");
-            buf.append("</s>");
+            buf.insert(0,"<s>"); // NOI18N
+            buf.append("</s>"); // NOI18N
         }
         buf.insert(0,"<font color=" + getHTMLColor(StyleConstants.getForeground(set)) + ">"); //NOI18N
         buf.append("</font>"); //NOI18N

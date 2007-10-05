@@ -243,7 +243,7 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 0);
         add(toolBar, gridBagConstraints);
 
-        jPanel2.setBorder(javax.swing.BorderFactory.createLineBorder(javax.swing.UIManager.getDefaults().getColor("SplitPane.shadow")));
+        jPanel2.setBorder(javax.swing.BorderFactory.createLineBorder(javax.swing.UIManager.getDefaults().getColor("SplitPane.shadow"))); // NOI18N
         jPanel2.setMinimumSize(new java.awt.Dimension(1, 1));
         jPanel2.setPreferredSize(new java.awt.Dimension(1, 1));
         gridBagConstraints = new java.awt.GridBagConstraints();

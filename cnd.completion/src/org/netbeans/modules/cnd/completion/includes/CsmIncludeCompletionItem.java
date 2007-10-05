@@ -154,7 +154,7 @@ public class CsmIncludeCompletionItem implements CompletionItem {
                     try {
                         if (len > 0) {
                             String toReplace = doc.getText(substitutionOffset, len);
-                            if (toReplace.startsWith("\"") && len > 1) {
+                            if (toReplace.startsWith("\"") && len > 1) { // NOI18N
                                 Completion.get().hideDocumentation();
                                 Completion.get().hideCompletion();
                                 break;
@@ -207,12 +207,12 @@ public class CsmIncludeCompletionItem implements CompletionItem {
     @Override
     public String toString() {
         StringBuilder out = new StringBuilder();
-        out.append(this.isFolder() ? "[D] ": "[F] ");
-        out.append(this.isSysInclude() ? "<" : "\"");
+        out.append(this.isFolder() ? "[D] ": "[F] "); // NOI18N
+        out.append(this.isSysInclude() ? "<" : "\""); // NOI18N
         out.append(this.getLeftHtmlText(false));
-        out.append(this.isSysInclude() ? ">" : "\"");
-        out.append(" : ");
-        out.append(this.getRightText(false, "/"));
+        out.append(this.isSysInclude() ? ">" : "\""); // NOI18N
+        out.append(" : "); // NOI18N
+        out.append(this.getRightText(false, "/")); // NOI18N
         return out.toString();
     }
     

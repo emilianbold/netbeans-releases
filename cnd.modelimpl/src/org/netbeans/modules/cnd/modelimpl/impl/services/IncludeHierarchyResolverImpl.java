@@ -138,7 +138,7 @@ public class IncludeHierarchyResolverImpl extends CsmIncludeHierarchyResolver {
 
         @Override
         public String toString() {
-            return "Include Reference: " + (this.delegate != null ? delegate.toString() : super.getOffsetString());
+            return "Include Reference: " + (this.delegate != null ? delegate.toString() : super.getOffsetString()); // NOI18N
         }
 
         

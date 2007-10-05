@@ -1236,7 +1236,7 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
             switch (token.getTokenID().getNumericID()) {
             case CCTokenContext.WHITESPACE_ID:
                 if (checkedFirst) {
-                    if (token.getImage().contains("\n")) {
+                    if (token.getImage().contains("\n")) { // NOI18N
                         return null;
                     }
                 }

@@ -348,7 +348,7 @@ class Screen extends JComponent implements Accessible {
 
     protected class AccessibleScreen extends AccessibleJComponent {
 	public String getAccessibleDescription() {
-	    return "Terminal emulator";
+	    return "Terminal emulator"; // NOI18N
 	}
 	public AccessibleRole getAccessibleRole() {
 	    return AccessibleRole.TEXT;

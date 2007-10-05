@@ -186,7 +186,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
                 if (params.hasNext()) {
                     macroName.append(params.next());
                     while (params.hasNext()) {
-                        macroName.append(", ");
+                        macroName.append(", "); // NOI18N
                         macroName.append(params.next());
                     }
                 }
@@ -212,7 +212,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
                 remove(methodsPanel);
                 // WARNING for now since this feature is not ready yet
                 //label.setText(labelText);
-                String combinedLabelText = "<html><b><font style=\"color: red\">WARNING: This feature is in development and inaccurate!</font></b><br><br>" + labelText + "</html>";
+                String combinedLabelText = "<html><b><font style=\"color: red\">WARNING: This feature is in development and inaccurate!</font></b><br><br>" + labelText + "</html>"; // NOI18N
                 label.setText(combinedLabelText);
                 if (showMethodPanel) {
                     add(methodsPanel, BorderLayout.CENTER);
@@ -323,7 +323,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         methodsPanel.add(m_isBaseClass, gridBagConstraints);
-        m_isBaseClass.getAccessibleContext().setAccessibleDescription("null");
+        m_isBaseClass.getAccessibleContext().setAccessibleDescription("null"); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -346,7 +346,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         methodsPanel.add(m_overriders, gridBagConstraints);
         m_overriders.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "LBL_FindOverridingMethods")); // NOI18N
-        m_overriders.getAccessibleContext().setAccessibleDescription("null");
+        m_overriders.getAccessibleContext().setAccessibleDescription("null"); // NOI18N
 
         m_usages.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(m_usages, org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "LBL_FindUsages")); // NOI18N
@@ -363,7 +363,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         methodsPanel.add(m_usages, gridBagConstraints);
         m_usages.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "LBL_FindUsages")); // NOI18N
-        m_usages.getAccessibleContext().setAccessibleDescription("null");
+        m_usages.getAccessibleContext().setAccessibleDescription("null"); // NOI18N
 
         add(methodsPanel, java.awt.BorderLayout.CENTER);
 
@@ -385,7 +385,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         classesPanel.add(c_subclasses, gridBagConstraints);
-        c_subclasses.getAccessibleContext().setAccessibleDescription("null");
+        c_subclasses.getAccessibleContext().setAccessibleDescription("null"); // NOI18N
 
         buttonGroup.add(c_usages);
         c_usages.setSelected(true);
@@ -397,7 +397,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         classesPanel.add(c_usages, gridBagConstraints);
-        c_usages.getAccessibleContext().setAccessibleDescription("null");
+        c_usages.getAccessibleContext().setAccessibleDescription("null"); // NOI18N
 
         buttonGroup.add(c_directOnly);
         org.openide.awt.Mnemonics.setLocalizedText(c_directOnly, org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "LBL_FindDirectSubtypesOnly")); // NOI18N
@@ -407,14 +407,14 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         classesPanel.add(c_directOnly, gridBagConstraints);
-        c_directOnly.getAccessibleContext().setAccessibleDescription("null");
+        c_directOnly.getAccessibleContext().setAccessibleDescription("null"); // NOI18N
 
         add(classesPanel, java.awt.BorderLayout.CENTER);
 
         jPanel3.setLayout(new java.awt.BorderLayout());
         jPanel3.add(label, java.awt.BorderLayout.NORTH);
 
-        searchInComments.setSelected(false/*((Boolean) RefactoringModule.getOption("searchInComments.whereUsed", Boolean.FALSE)).booleanValue()*/);
+        searchInComments.setSelected(false/*((Boolean) RefactoringModule.getOption("searchInComments.whereUsed", Boolean.FALSE)).booleanValue()*/); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(searchInComments, org.openide.util.NbBundle.getBundle(WhereUsedPanel.class).getString("LBL_SearchInComents")); // NOI18N
         searchInComments.setEnabled(false);
         searchInComments.setMargin(new java.awt.Insets(10, 14, 2, 2));

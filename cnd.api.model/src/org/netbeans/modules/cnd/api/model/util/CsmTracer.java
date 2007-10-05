@@ -54,7 +54,7 @@ import org.netbeans.modules.cnd.api.model.deep.*;
  */
 public class CsmTracer {
     
-    private static final String NULL_TEXT = "null";
+    private static final String NULL_TEXT = "null"; // NOI18N
     
     private final int step = 4;
     private StringBuilder indentBuffer = new StringBuilder();
@@ -240,7 +240,7 @@ public class CsmTracer {
     }
 
     public static String toString(CsmDeclaration decl) {
-        return decl.getKind() + " " + toString(decl, true);
+        return decl.getKind() + " " + toString(decl, true); // NOI18N
     }    
 
     private static String toString(CsmDeclaration decl, boolean traceFile) {
@@ -251,7 +251,7 @@ public class CsmTracer {
     }
     
     public static String toString(CsmClassifier cls) {
-        return cls.getKind() + " " + toString(cls, true);
+        return cls.getKind() + " " + toString(cls, true); // NOI18N
     }    
         
     private static String toString(CsmClassifier cls, boolean traceFile) {
@@ -308,11 +308,11 @@ public class CsmTracer {
 	    return NULL_TEXT; // NOI18N
 	}
         File parent = new File(file.getAbsolutePath()).getParentFile();
-        return (parent != null ? parent.getName() +"/" : "") + file.getName();
+        return (parent != null ? parent.getName() +"/" : "") + file.getName(); // NOI18N
     }
     
     public static String toString(CsmVariable var) {
-        return var.getKind() + " " + toString(var, true);
+        return var.getKind() + " " + toString(var, true); // NOI18N
     }
     
     private static String toString(CsmVariable var, boolean traceFile) {
@@ -328,7 +328,7 @@ public class CsmTracer {
     }
 
     public static String toString(CsmFunction fun) {
-        return fun.getKind() + " " + toString(fun, true);
+        return fun.getKind() + " " + toString(fun, true); // NOI18N
     }
     
     private static String toString(CsmFunction fun, boolean signature) {
@@ -355,7 +355,7 @@ public class CsmTracer {
 	print("SIGNATURE " + fun.getSignature()); // NOI18N
 	print("UNIQUE NAME " + fun.getUniqueName()); // NOI18N
         if (fun instanceof CsmFriendFunction) {
-            print("REFERENCED FRIEND FUNCTION: " + toString(((CsmFriendFunction)fun).getReferencedFunction(), false));
+            print("REFERENCED FRIEND FUNCTION: " + toString(((CsmFriendFunction)fun).getReferencedFunction(), false)); // NOI18N
         }
 	dumpParameters(fun.getParameters());
 	print("RETURNS " + toString(fun.getReturnType(), false)); // NOI18N
@@ -379,7 +379,7 @@ public class CsmTracer {
     }
     
     public static String getScopeString(CsmScopeElement el) {
-	StringBuilder sb = new StringBuilder("SCOPE: ");
+	StringBuilder sb = new StringBuilder("SCOPE: "); // NOI18N
 	int initLen = sb.length();
 	CsmScope scope = el.getScope();
 	if (scope == null) {
@@ -396,7 +396,7 @@ public class CsmTracer {
 		else {
                     if (CsmKindUtilities.isStatement(scope)) {
 			CsmStatement stmt = (CsmStatement) scope;
-                        sb.append("Stmt ");
+                        sb.append("Stmt "); // NOI18N
                     }
                     if (CsmKindUtilities.isOffsetable(scope)) {
                         sb.append(getOffsetString(scope, false));
@@ -404,7 +404,7 @@ public class CsmTracer {
 		}
             }
 	    if( sb.length() == initLen ) {
-		sb.append("???");
+		sb.append("???"); // NOI18N
 	    }
 	}
         return sb.toString();
@@ -896,7 +896,7 @@ public class CsmTracer {
                     print(sb.toString());
                     indent();
                     CsmClass refClass = frClass.getReferencedClass();
-                    print("REFERENCED CLASS: " + refClass == null ? "*UNRESOLVED*" : refClass.getUniqueName());
+                    print("REFERENCED CLASS: " + refClass == null ? "*UNRESOLVED*" : refClass.getUniqueName()); // NOI18N
                     unindent();
                 } else if( friend.getKind() == CsmDeclaration.Kind.FUNCTION ) {
                     dumpModel((CsmFunction) friend);

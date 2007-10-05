@@ -78,7 +78,7 @@ public class CsmIncludeCompletionQuery {
         }
         File usrDir = new File(usrFilePath).getParentFile();
         if (usrInclude == null || usrInclude == Boolean.TRUE) {
-            addFolderItems(usrDir.getAbsolutePath(), ".", childSubDir, false, false, true, substitutionOffset);
+            addFolderItems(usrDir.getAbsolutePath(), ".", childSubDir, false, false, true, substitutionOffset); // NOI18N
             if (showAll) {
                 for (String usrPath : usrPaths) {
                     addFolderItems(usrPath, usrPath, childSubDir, false, false, false, substitutionOffset);
@@ -96,7 +96,7 @@ public class CsmIncludeCompletionQuery {
                 for (String usrPath : usrPaths) {
                     addFolderItems(usrPath, usrPath, childSubDir, false, false, false, substitutionOffset);
                 }
-                addFolderItems(usrDir.getAbsolutePath(), ".", childSubDir, false, false, true, substitutionOffset);
+                addFolderItems(usrDir.getAbsolutePath(), ".", childSubDir, false, false, true, substitutionOffset); // NOI18N
                 addParentFolder(substitutionOffset, childSubDir, true);
             }
         }
@@ -161,7 +161,7 @@ public class CsmIncludeCompletionQuery {
         } else if (name.endsWith("~")) { // NOI18N
             return true;
         } else if (file.isDirectory()) {
-            if (name.equals("CVS") || name.equals("SCCS") || name.equals(".hg")) { // NOI8N
+            if (name.equals("CVS") || name.equals("SCCS") || name.equals(".hg")) { // NOI8N // NOI18N
                 return true;
             }
         }

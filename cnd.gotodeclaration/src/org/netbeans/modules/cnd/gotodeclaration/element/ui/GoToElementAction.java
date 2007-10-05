@@ -260,7 +260,7 @@ public class GoToElementAction extends AbstractAction implements GoToElementPane
                 
         }
         else if (exact) {
-            nameKind = panel.isCaseSensitive() ? SearchType.EXACT_NAME : SearchType.CASE_INSENSITIVE_EXACT_NAME;
+            nameKind = panel.isCaseSensitive() ? SearchType.EXACT_NAME : SearchType./*CASE_INSENSITIVE_*/EXACT_NAME;
         }
         else {            
             nameKind = panel.isCaseSensitive() ? SearchType.PREFIX : SearchType.CASE_INSENSITIVE_PREFIX;

@@ -386,32 +386,32 @@ public class TraceModel {
     }
 	
     protected void processFlag(String flag) {
-	if ("dumplib".equals(flag)) {
+	if ("dumplib".equals(flag)) { // NOI18N
 	    // NOI18N
 	    dumpLib = true;
-	} else if ("relpath".equals(flag)) {
+	} else if ("relpath".equals(flag)) { // NOI18N
 	    // NOI18N
 	    pathsRelCurFile = true;
-	} else if ("listfiles".equals(flag)) {
+	} else if ("listfiles".equals(flag)) { // NOI18N
 	    // NOI18N
 	    listFilesAtEnd = true;
-	} else if ("raw".equals(flag)) {
+	} else if ("raw".equals(flag)) { // NOI18N
 	    // NOI18N
 	    testRawPerformance = true;
 	    //TraceFlags.DO_NOT_RENDER = true;
-	} else if ("listfiles".equals(flag)) {
+	} else if ("listfiles".equals(flag)) { // NOI18N
 	    // NOI18N
 	    printUserFileList = true;
-	} else if ("mbs".equals(flag)) {
+	} else if ("mbs".equals(flag)) { // NOI18N
 	    // NOI18N
 	    memBySize = true;
-	} else if ("cleanrepository".equals(flag)) {
+	} else if ("cleanrepository".equals(flag)) { // NOI18N
 	    // NOI18N
 	    doCleanRepository = true;
-	} else if ("folding".equals(flag)) {
+	} else if ("folding".equals(flag)) { // NOI18N
 	    // NOI18N
 	    testFolding = true;
-	} else if ("clean4dump".equals(flag)) {
+	} else if ("clean4dump".equals(flag)) { // NOI18N
 	    // NOI18N
 	    dumpModelAfterCleaningCache = true;
 	}
@@ -686,10 +686,10 @@ public class TraceModel {
     void processArguments(final String[] args) {
 	List<File> files = new ArrayList<File>();
 	for (int i = 0; i < args.length; i++) {
-	    if (args[i].startsWith("--")) {
+	    if (args[i].startsWith("--")) { // NOI18N
 		// NOI18N
 		processFlag(args[i].substring(2));
-	    } else if (args[i].startsWith("-")) {
+	    } else if (args[i].startsWith("-")) { // NOI18N
 		// NOI18N
 		for (int charIdx = 1; charIdx < args[i].length(); charIdx++) {
 		    boolean argHasBeenEaten = processFlag(args[i].charAt(charIdx), args[i].substring(charIdx + 1));

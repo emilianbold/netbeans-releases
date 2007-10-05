@@ -88,7 +88,7 @@ public class ProjectUtil {
     public static boolean ignoreFolder(File file){
         if (file.isDirectory()) {
             String name = file.getName();
-            return name.equals("SCCS") || name.equals("CVS") || name.equals(".hg") || name.equals("SunWS_cache");
+            return name.equals("SCCS") || name.equals("CVS") || name.equals(".hg") || name.equals("SunWS_cache"); // NOI18N
         }
         return false;
     }

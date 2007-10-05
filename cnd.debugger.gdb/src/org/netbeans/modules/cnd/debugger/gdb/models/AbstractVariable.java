@@ -494,7 +494,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
         
         synchronized (var) {
             log.fine("AV.expandChildrenFromValue[" + Thread.currentThread().getName() +
-                    "]: " + var.getName());
+                    "]: " + var.getName()); // NOI18N
             if (var.fields.length == 0) {
                 if (var.derefValue != null) {
                     v = var.derefValue;

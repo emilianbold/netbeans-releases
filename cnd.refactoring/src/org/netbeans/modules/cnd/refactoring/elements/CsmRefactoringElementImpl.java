@@ -81,8 +81,8 @@ public class CsmRefactoringElementImpl extends
             int endLine = Utilities.getRowLastNonWhite(getDocument(), endOffset);
             String lineText = getDocument().getText(startLine, endLine - startLine + 1);
             StringBuilder out = new StringBuilder(lineText);
-            out.insert(endOffset-startLine, "</b>");
-            out.insert(stOffset-startLine,"<b>");
+            out.insert(endOffset-startLine, "</b>"); // NOI18N
+            out.insert(stOffset-startLine,"<b>"); // NOI18N
             return out.toString();        
         } catch (BadLocationException ex) {
             

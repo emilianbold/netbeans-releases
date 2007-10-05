@@ -189,7 +189,7 @@ import org.openide.util.NbBundle;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
         add(jLabelText, gridBagConstraints);
 
-        nameField.setFont(new java.awt.Font("Monospaced", 0, 12));
+        nameField.setFont(new java.awt.Font("Monospaced", 0, 12)); // NOI18N
         nameField.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         nameField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -228,7 +228,7 @@ import org.openide.util.NbBundle;
         matchesScrollPane1.setBorder(null);
         matchesScrollPane1.setFocusable(false);
 
-        matchesList.setFont(new java.awt.Font("Monospaced", 0, 12));
+        matchesList.setFont(new java.awt.Font("Monospaced", 0, 12)); // NOI18N
         matchesList.setFocusable(false);
         matchesList.setVisibleRowCount(15);
         matchesList.addMouseListener(new java.awt.event.MouseAdapter() {
