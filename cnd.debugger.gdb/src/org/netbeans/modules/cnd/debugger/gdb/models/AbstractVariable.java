@@ -914,9 +914,8 @@ public class AbstractVariable implements LocalVariable, Customizer {
             derefValue = null;
         
             if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
-                value = GdbUtils.mackHack(value);
+                this.value = GdbUtils.mackHack(value);
             }
-            expandChildrenFromValue(this);
         }
         
         public boolean isStatic() {
