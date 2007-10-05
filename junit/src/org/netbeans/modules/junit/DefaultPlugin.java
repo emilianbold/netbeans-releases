@@ -1720,7 +1720,7 @@ public final class DefaultPlugin extends JUnitPlugin {
 
             List<String> mySuite = new LinkedList<String>();
             
-            progress.setMessage(getScanningMsg(srcFileObj.getName()), false);
+            progress.setMessage(getScanningMsg(srcFileObj.getName()));
 
             for (FileObject childFileObj : srcFileObj.getChildren()) {
                 if (progress.isCanceled()) {
