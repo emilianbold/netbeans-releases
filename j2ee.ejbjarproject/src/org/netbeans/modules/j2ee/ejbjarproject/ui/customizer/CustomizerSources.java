@@ -112,6 +112,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         emSR.setRelatedEditMediator( emTSR );
         emTSR.setRelatedEditMediator( emSR );
         this.sourceLevel.setModel(uiProperties.JAVAC_SOURCE_MODEL);
+        this.sourceLevel.setRenderer(uiProperties.JAVAC_SOURCE_RENDERER);
         uiProperties.JAVAC_SOURCE_MODEL.addListDataListener(new ListDataListener() {
             public void intervalAdded(ListDataEvent e) {
                 enableSourceLevel();
@@ -455,9 +456,9 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        jLabel4.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/customizer/Bundle").getString("MNE_SourceLevel").charAt(0));
+        jLabel4.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "MNE_SourceLevel").charAt(0));
         jLabel4.setLabelFor(sourceLevel);
-        jLabel4.setText(bundle.getString("TXT_SourceLevel")); // NOI18N
+        jLabel4.setText(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "TXT_SourceLevel")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -487,8 +488,6 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 12);
         jPanel1.add(jLabel5, gridBagConstraints);
-
-        encoding.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;

@@ -119,6 +119,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         emTSR.setRelatedEditMediator( emSR );
         
         this.jComboBoxSourceLevel.setModel(uiProperties.JAVAC_SOURCE_MODEL);
+        this.jComboBoxSourceLevel.setRenderer(uiProperties.JAVAC_SOURCE_RENDERER);
         uiProperties.JAVAC_SOURCE_MODEL.addListDataListener(new ListDataListener() {
             public void intervalAdded(ListDataEvent e) {
                 enableSourceLevel();

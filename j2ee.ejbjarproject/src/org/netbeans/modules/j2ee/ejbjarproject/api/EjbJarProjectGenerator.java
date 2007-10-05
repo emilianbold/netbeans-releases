@@ -479,11 +479,7 @@ public class EjbJarProjectGenerator {
                                 if (finalPlatformName == null)
                                     finalPlatformName = JavaPlatformManager.getDefault().getDefaultPlatform().getDisplayName();
 
-                                // #89131: these levels are not actually distinct from 1.5.
-                                String srcLevel = sourceLevel;
-                                if (sourceLevel.equals("1.6") || sourceLevel.equals("1.7"))
-                                    srcLevel = "1.5";
-                                PlatformUiSupport.storePlatform(ep, updateHelper, finalPlatformName, srcLevel != null ? new SpecificationVersion(srcLevel) : null);
+                                PlatformUiSupport.storePlatform(ep, updateHelper, finalPlatformName, sourceLevel != null ? new SpecificationVersion(sourceLevel) : null);
                                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
                                 ProjectManager.getDefault().saveProject(ProjectManager.getDefault().findProject(helper.getProjectDirectory()));
                             } catch (IOException e) {

@@ -46,7 +46,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -80,6 +79,9 @@ import org.w3c.dom.NodeList;
  */
 public class PlatformUiSupport {
     
+    private static final SpecificationVersion JDK_5 = new SpecificationVersion ("1.5");  //NOI18N
+    private static final SpecificationVersion JDK_6 = new SpecificationVersion ("1.6");  //NOI18N
+    private static final Logger LOGGER = Logger.getLogger(PlatformUiSupport.class.getName());
     
     private PlatformUiSupport() {
     }
@@ -115,7 +117,7 @@ public class PlatformUiSupport {
         } else {
             platformKey = new PlatformKey(JavaPlatformManager.getDefault().getDefaultPlatform());
         }
-        storePlatform(props, helper, platformKey, sourceLevel);
+        storePlatform(props, helper, platformKey, new SourceLevelKey(sourceLevel));
     }
     
     public static JavaPlatform findPlatform(String displayName) {
@@ -130,7 +132,7 @@ public class PlatformUiSupport {
      * @param platformKey the PatformKey got from the platform model
      * @param sourceLevel source level
      */
-    public static void storePlatform(EditableProperties props, UpdateHelper helper, Object platformKey, SpecificationVersion sourceLevel) {
+    public static void storePlatform(EditableProperties props, UpdateHelper helper, Object platformKey, Object sourceLevelKey) {
         assert platformKey instanceof PlatformKey;
         PlatformKey pk = (PlatformKey) platformKey;
         JavaPlatform platform = getPlatform(pk);
@@ -177,15 +179,36 @@ public class PlatformUiSupport {
                 }
             }
             
-            if (sourceLevel == null) {
+            SpecificationVersion sourceLevel;
+            if (sourceLevelKey == null) {
                 sourceLevel = platform.getSpecification().getVersion();
             }
+            else {
+                assert sourceLevelKey instanceof SourceLevelKey;
+                sourceLevel = ((SourceLevelKey)sourceLevelKey).getSourceLevel();
+            }
             String javacSource = sourceLevel.toString();
+            String javacTarget = javacSource;
+            
+            //Issue #116490
+            // Customizer value | -source | -target
+            // JDK 1.2            1.2        1.1
+            // JDK 1.3            1.3        1.1
+            // JDK 1.4            1.4        1.4
+            // JDK 5              1.5        1.5
+            // JDK 6              1.5        1.6
+            // JDK 7              1.7        1.7  - should bring a new language features
+            if (jdk13.compareTo(sourceLevel)>=0) {
+                javacTarget = "1.1";        //NOI18N
+            }
+            else if (JDK_6.equals(sourceLevel)) {
+                javacSource = JDK_5.toString();        //NOI18N
+            }
+            
             // #89131: these levels are not actually distinct from 1.5.
             if (javacSource.equals("1.6") || javacSource.equals("1.7")) {
                 javacSource = "1.5";
             }
-            String javacTarget = jdk13.compareTo(sourceLevel)>=0 ? "1.1" : javacSource;     //NOI18N
             if (!javacSource.equals(props.getProperty(AppClientProjectProperties.JAVAC_SOURCE))) {
                 props.setProperty(AppClientProjectProperties.JAVAC_SOURCE, javacSource);
             }
@@ -221,11 +244,12 @@ public class PlatformUiSupport {
      * The model listens on the platform's {@link ComboBoxModel} and update its
      * state according to changes
      * @param platformComboBoxModel the platform's model used for listenning
-     * @param initialValue initial source level value
+     * @param initialSourceLevel initial source level value
+     * @param initialTargetLevel initial target level value
      * @return {@link ComboBoxModel} of {@link SpecificationVersion}
      */
-    public static ComboBoxModel createSourceLevelComboBoxModel(ComboBoxModel platformComboBoxModel, String initialValue, String j2eePlatform) {
-        return new SourceLevelComboBoxModel(platformComboBoxModel, initialValue, j2eePlatform);
+    public static ComboBoxModel createSourceLevelComboBoxModel(ComboBoxModel platformComboBoxModel, String initialSourceLevel, String initialTargetLevel, String j2eePlatform) {
+        return new SourceLevelComboBoxModel(platformComboBoxModel, initialSourceLevel, initialTargetLevel, j2eePlatform);
     }
     
     public static ListCellRenderer createSourceLevelListCellRenderer() {
@@ -361,6 +385,14 @@ public class PlatformUiSupport {
             return buffer.toString();
         }
         
+        public String getDisplayName () {
+            String _tmp = sourceLevel.toString();
+            if (JDK_5.compareTo(sourceLevel)<=0) {                
+                _tmp = _tmp.replaceFirst("^1\\.([5-9]|\\d\\d+)$", "$1");        //NOI18N
+            }            
+            return NbBundle.getMessage(PlatformUiSupport.class, "LBL_JDK",_tmp);
+        }
+        
     }
     
     private static class PlatformComboBoxModel extends AbstractListModel implements ComboBoxModel, PropertyChangeListener {
@@ -483,58 +515,66 @@ public class PlatformUiSupport {
         private static final int INITIAL_VERSION_MINOR_JAVA_EE_5 = 5;     // 1.5
         
         private SpecificationVersion selectedSourceLevel;
-        private SpecificationVersion[] sourceLevelCache;
+        private SpecificationVersion originalSourceLevel;
+        private SourceLevelKey[] sourceLevelCache;
         private final ComboBoxModel platformComboBoxModel;
         private PlatformKey activePlatform;
         private String j2eePlatform = null;
         
-        public SourceLevelComboBoxModel(ComboBoxModel platformComboBoxModel, String initialValue) {
+        public SourceLevelComboBoxModel(ComboBoxModel platformComboBoxModel, String initialSourceLevel, String initialTargetLevel) {
             this.platformComboBoxModel = platformComboBoxModel;
             this.activePlatform = (PlatformKey) this.platformComboBoxModel.getSelectedItem();
             this.platformComboBoxModel.addListDataListener(this);
-            if (initialValue != null && initialValue.length()>0) {
+            if (initialSourceLevel != null && initialSourceLevel.length()>0) {
                 try {
-                    this.selectedSourceLevel = new SpecificationVersion (initialValue);
+                    originalSourceLevel = new SpecificationVersion (initialSourceLevel);
                 } catch (NumberFormatException nfe) {
                     // If the javac.source has invalid value, do not preselect and log it.  
-                    Logger.getLogger("global").log(Level.INFO, "Invalid javac.source: " + initialValue);
+                    LOGGER.log(Level.INFO, "Invalid javac.source: " + initialSourceLevel);
                 }
             }
+            if (initialTargetLevel != null && initialTargetLevel.length() > 0) {
+                try {
+                    SpecificationVersion originalTargetLevel = new SpecificationVersion (initialTargetLevel);
+                    if (this.originalSourceLevel == null || this.originalSourceLevel.compareTo(originalTargetLevel)<0) {
+                        this.originalSourceLevel = originalTargetLevel;
+                    }
+                } catch (NumberFormatException nfe) {
+                    //If the javac.target has invalid value, do not preselect and log it
+                    LOGGER.warning("Invalid javac.target: "+initialTargetLevel);       //NOI18N
+                }
+            }
+            this.selectedSourceLevel = this.originalSourceLevel;
         }
         
-        public SourceLevelComboBoxModel(ComboBoxModel platformComboBoxModel, String initialValue, String j2eePlatform) {
-            this(platformComboBoxModel, initialValue);
+        public SourceLevelComboBoxModel(ComboBoxModel platformComboBoxModel, String initialSourceLevel, String initialTargetLevel, String j2eePlatform) {
+            this(platformComboBoxModel, initialSourceLevel, initialTargetLevel);
             this.j2eePlatform = j2eePlatform;
         }
         
         public int getSize() {
-//            SourceLevelKey[] sLevels = getSourceLevels ();
-            SpecificationVersion[] sLevels = getSourceLevels();
+            SourceLevelKey[] sLevels = getSourceLevels();
             return sLevels.length;
         }
         
         public Object getElementAt(int index) {
-            SpecificationVersion[] sLevels = getSourceLevels();
+            SourceLevelKey[] sLevels = getSourceLevels();
             assert index >=0 && index< sLevels.length;
             return sLevels[index];
         }
         
-        public Object getSelectedItem() {
-            List sLevels = Arrays.asList(getSourceLevels());
-            if (this.selectedSourceLevel != null) {
-                if (!sLevels.contains(this.selectedSourceLevel)) {
-                    if (sLevels.size()>0) {
-                        this.selectedSourceLevel = (SpecificationVersion) sLevels.get(sLevels.size()-1);
-                    } else {
-                        this.selectedSourceLevel = null;
-                    }
+        public Object getSelectedItem () {
+            SourceLevelKey[] keys = getSourceLevels();
+            for (int i=0; i<keys.length; i++) {
+                if (keys[i].getSourceLevel().equals(this.selectedSourceLevel)) {
+                    return keys[i];
                 }
             }
-            return this.selectedSourceLevel;
+            return null;
         }
         
-        public void setSelectedItem(Object obj) {
-            this.selectedSourceLevel = (SpecificationVersion) obj;
+        public void setSelectedItem (Object obj) {
+            this.selectedSourceLevel = (obj == null ? null : ((SourceLevelKey) obj).getSourceLevel());
             this.fireContentsChanged(this, -1, -1);
         }
         
@@ -555,6 +595,9 @@ public class PlatformUiSupport {
                     this.platformComboBoxModel.setSelectedItem(this.activePlatform);
                     return;
                 }
+                else {
+                    this.originalSourceLevel = null;
+                }
             }
             this.activePlatform = selectedPlatform;
             resetCache();
@@ -567,27 +610,46 @@ public class PlatformUiSupport {
             this.fireContentsChanged(this, -1, -1);
         }
         
-        private SpecificationVersion[] getSourceLevels() {
+        private SourceLevelKey[] getSourceLevels() {
             if (this.sourceLevelCache == null) {
                 PlatformKey selectedPlatform = (PlatformKey) this.platformComboBoxModel.getSelectedItem();
-                JavaPlatform platform = getPlatform(selectedPlatform);
-                List<SpecificationVersion> sLevels = new ArrayList<SpecificationVersion>();
+                JavaPlatform platform = getPlatform(selectedPlatform);                
+                List<SourceLevelKey> sLevels = new ArrayList<SourceLevelKey>();
                 //If platform == null broken platform, the source level range is unknown
                 //The source level combo box should be empty and disabled
-                if (platform != null) {
-                    SpecificationVersion version = platform.getSpecification().getVersion();
+                boolean selSourceLevelValid = false;
+                if (platform != null) {                    
+                    SpecificationVersion version = platform.getSpecification().getVersion();                                        
                     int index = INITIAL_VERSION_MINOR;
                     // #71619 - source level lower than 1.5 won't be shown for Java EE 5 project
                     if (j2eePlatform != null && j2eePlatform.equals(AppClientProjectProperties.JAVA_EE_5)) {
                         index = INITIAL_VERSION_MINOR_JAVA_EE_5;
                     }
-                    SpecificationVersion template = new SpecificationVersion(VERSION_PREFIX + Integer.toString(index++));
+                    SpecificationVersion template = new SpecificationVersion (VERSION_PREFIX + Integer.toString (index++));
+                    boolean origSourceLevelValid = false;
+                    
                     while (template.compareTo(version)<=0) {
-                        sLevels.add(template);
-                        template = new SpecificationVersion(VERSION_PREFIX + Integer.toString(index++));
+                        if (template.equals(this.originalSourceLevel)) {
+                            origSourceLevelValid = true;
+                        }
+                        if (template.equals(this.selectedSourceLevel)) {
+                            selSourceLevelValid = true;
+                        }
+                        sLevels.add (new SourceLevelKey (template));
+                        template = new SpecificationVersion (VERSION_PREFIX + Integer.toString (index++));
                     }
+                    if (this.originalSourceLevel != null && !origSourceLevelValid) {
+                        if (originalSourceLevel.equals(this.selectedSourceLevel)) {                            
+                            selSourceLevelValid = true;
+                        }
+                        sLevels.add (new SourceLevelKey(this.originalSourceLevel,true));
+                    }                                        
                 }
-                this.sourceLevelCache = sLevels.toArray(new SpecificationVersion[sLevels.size()]);
+                this.sourceLevelCache = sLevels.toArray(new SourceLevelKey[sLevels.size()]);
+                if (!selSourceLevelValid) {
+                    this.selectedSourceLevel = this.sourceLevelCache.length == 0 ? 
+                        null : this.sourceLevelCache[this.sourceLevelCache.length-1].getSourceLevel();
+                }
             }
             return this.sourceLevelCache;
         }
@@ -624,10 +686,17 @@ public class PlatformUiSupport {
             String message;
             if (value == null) {
                 message = "";   //NOI18N
-            } else {
-                assert value instanceof SpecificationVersion;
-                SpecificationVersion key = (SpecificationVersion) value;
-                message = key.toString();
+            }
+            else {
+                assert value instanceof SourceLevelKey;
+                SourceLevelKey key = (SourceLevelKey) value;            
+                if (key.isBroken()) {                
+                    message = "<html><font color=\"#A40000\">" +    //NOI18N
+                        NbBundle.getMessage(PlatformUiSupport.class,"TXT_InvalidSourceLevel",key.getDisplayName());
+                }
+                else {
+                    message = key.getDisplayName();
+                }
             }
             return this.delegate.getListCellRendererComponent(list, message, index, isSelected, cellHasFocus);
         }
