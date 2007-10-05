@@ -86,7 +86,7 @@ public final class PluginAction extends NodeAction {
         DialogDescriptor descriptor =
             new DialogDescriptor(customizer, NbBundle.getMessage(PluginAction.class, "CTL_PluginTitle"),
                 true, new Object[] { close }, close, DialogDescriptor.DEFAULT_ALIGN,
-                new HelpCtx(PluginAction.class), null); // NOI18N
+                new HelpCtx(PluginPanel.class), null); // NOI18N
         Dialog dlg = null;
 
         try {

@@ -599,7 +599,7 @@ private void installButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN
             DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(PluginPanel.class, "ChoosePluginSettings"));
             dd.setOptionType(NotifyDescriptor.OK_CANCEL_OPTION);
             dd.setModal(true);
-            dd.setHelpCtx(new HelpCtx(PluginPanel.class));
+            dd.setHelpCtx(new HelpCtx(InstallationSettingsPanel.class));
             Object result = DialogDisplayer.getDefault().notify(dd);
             if (result.equals(NotifyDescriptor.OK_OPTION)) {
                 Plugin plugin = new Plugin(panel.getPluginName(), null);
