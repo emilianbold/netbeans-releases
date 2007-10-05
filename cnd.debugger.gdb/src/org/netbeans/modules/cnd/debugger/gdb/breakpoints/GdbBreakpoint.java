@@ -132,7 +132,6 @@ public abstract class GdbBreakpoint extends Breakpoint {
      * @param file name
      */
     public void setURL(String url) {
-        url = GdbUtils.gdbToUserEncoding(url);
         synchronized (this) {
             if (url != null && this.url != null && url.equals(this.url)) {
                 return;
