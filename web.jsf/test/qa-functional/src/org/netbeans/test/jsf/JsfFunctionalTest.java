@@ -399,6 +399,7 @@ public class JsfFunctionalTest extends JellyTestCase{
         if(!jsfCategoryOper.isSelected()) {
             jsfCategoryOper.push();
         }
+        editorOper.makeComponentVisible();
         paletteOper.selectComponent("JSF Form");
         paletteOper.pushKey(KeyEvent.VK_ENTER);
         new NbDialogOperator("Insert JSF Form").ok();
@@ -411,6 +412,7 @@ public class JsfFunctionalTest extends JellyTestCase{
         expected = "</f:view>";
         assertTrue("index.jsp should contain "+expected+".", editorOper.contains(expected));
         
+        editorOper.makeComponentVisible();
         paletteOper.selectComponent("JSF Data Table");
         paletteOper.pushKey(KeyEvent.VK_ENTER);
         new NbDialogOperator("Insert JSF Data Table").ok();
