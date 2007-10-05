@@ -69,7 +69,7 @@ public class CppSwitchTestCase extends TraceModelTestBase {
         for (CsmFile csmFile : files) {
             if (csmFile.getAbsolutePath().indexOf("welcome.cc")!=-1) { //NOI18N
                 CsmFile f = CppSwitchAction.findHeader(csmFile);
-                assert f!=null && f.getAbsolutePath().indexOf("dir1/welcome.h")!=-1; //NOI18N
+                assert f!=null && f.getAbsolutePath().indexOf("dir1" + File.separator +"welcome.h")!=-1; //NOI18N
             }
             if (csmFile.getAbsolutePath().indexOf("welcome.h")!=-1) { //NOI18N
                 CsmFile f = CppSwitchAction.findSource(csmFile);
@@ -78,8 +78,7 @@ public class CppSwitchTestCase extends TraceModelTestBase {
         }
     }
 
-    @Override
-    protected void doTest(File testFile, PrintStream streamOut, PrintStream streamErr, Object... params) throws Exception {
+    protected @Override void doTest(File testFile, PrintStream streamOut, PrintStream streamErr, Object... params) throws Exception {
         PrintStream oldOut = System.out;
         PrintStream oldErr = System.err;
         try {
