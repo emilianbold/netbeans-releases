@@ -57,12 +57,8 @@ import org.openide.text.Line.Part;
 import org.openide.util.RequestProcessor;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
-import org.netbeans.modules.cnd.debugger.gdb.InvalidExpressionException;
-import org.netbeans.modules.cnd.debugger.gdb.LocalVariable;
-import org.netbeans.modules.cnd.debugger.gdb.Variable;
-
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
 /*
@@ -113,7 +109,7 @@ public class ToolTipAnnotation extends Annotation {
             }
             try {
                 // There is a small window during debugger startup when getGdbProxy() returns null
-                int token = debugger.getGdbProxy().data_evaluate_expression(expression);
+                int token = debugger.evaluate(expression);
                 debugger.completeToolTip(token, this);
             } catch (NullPointerException npe) {
             }
@@ -129,6 +125,10 @@ public class ToolTipAnnotation extends Annotation {
         int i = expression.indexOf('\n');
         if (i >= 0) {
             expression = expression.substring(0, i);
+        }
+        if (value.startsWith(">The program being debugged was signaled while in a function called from GDB.")) { // NOI18N
+           value = NbBundle.getMessage(GdbDebugger.class, "ERR_WatchedFunctionAborted"); // NOI18N
+           value = '>' + value + '<';
         }
         
         final String toolTipText = expression + " = " + value; // NOI18N

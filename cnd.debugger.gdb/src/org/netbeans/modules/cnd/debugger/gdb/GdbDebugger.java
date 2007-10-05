@@ -1103,8 +1103,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private void firstStop() {
         firstStop = false;
         if (Utilities.isWindows()) {
-//            gdb.data_evaluate_expression("_CndSigInit()"); // NOI18N
-//            gdb.break_insert(GDB_INVISIBLE_BREAKPOINT, "_CndSigHandler"); // NOI18N
             gdb.info_threads(); // we get the PID from this...
         } else if (Utilities.getOperatingSystem() != Utilities.OS_MAC) {
             gdb.info_proc(); // we get the PID from this...
@@ -1509,16 +1507,21 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     
     public void requestWatchValue(GdbWatchVariable var) {
         if (state.equals(STATE_STOPPED) || !watchValueMap.isEmpty()) {
-            int token;
-            if (var.getName().indexOf('(') != -1) {
-                suspendBreakpointsAndSignals();
-                token = gdb.data_evaluate_expression('"' + var.getName() + '"'); // NOI18N
-                restoreBreakpointsAndSignals();
-            } else {
-                token = gdb.data_evaluate_expression('"' + var.getName() + '"'); // NOI18N
-            }
+            int token = evaluate(var.getName());
             watchValueMap.put(new Integer(token), var);
         }
+    }
+    
+    public int evaluate(String expression) {
+        int token;
+        if (expression.indexOf('(') != -1) {
+            suspendBreakpointsAndSignals();
+            token = gdb.data_evaluate_expression('"' + expression + '"'); // NOI18N
+            restoreBreakpointsAndSignals();
+        } else {
+            token = gdb.data_evaluate_expression('"' + expression + '"'); // NOI18N
+        }
+        return token;
     }
     
     public void requestWatchType(GdbWatchVariable var) {

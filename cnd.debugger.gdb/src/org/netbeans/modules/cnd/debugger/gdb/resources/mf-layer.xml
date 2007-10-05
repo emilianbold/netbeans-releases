@@ -50,8 +50,8 @@ made subject to such option by the copyright holder.
                     <file name="org-netbeans-modules-cnd-debugger-gdb-ToolTipAnnotation.instance"/>
                 </folder>
                 <folder name="GlyphGutterActions">
-                    <file name="org-netbeans-modules-cnd-debugger-gdb-actions-ToggleBreakpointAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-cnd-debugger-gdb-actions-ToggleBreakpointAction.instance"/>
+                    <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
                     </file>
                 </folder>
                 <folder name="Popup">
@@ -81,8 +81,8 @@ made subject to such option by the copyright holder.
                     <file name="org-netbeans-modules-cnd-debugger-gdb-ToolTipAnnotation.instance"/>
                 </folder>
                 <folder name="GlyphGutterActions">
-                    <file name="org-netbeans-modules-cnd-debugger-gdb-actions-ToggleBreakpointAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-cnd-debugger-gdb-actions-ToggleBreakpointAction.instance"/>
+                    <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
                     </file>
                 </folder>
                 <folder name="Popup">
@@ -249,11 +249,6 @@ made subject to such option by the copyright holder.
         <file name="F8.shadow">
             <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepOverAction.instance"/>
         </file>
-        <!--
-        <file name="D-F5.shadow">
-            <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ContinueAction.instance"/>
-        </file>
-        -->
         <file name="S-F5.shadow">
             <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-KillAction.instance"/>
         </file>
@@ -269,14 +264,6 @@ made subject to such option by the copyright holder.
     </folder>
     
     <folder name="Toolbars">
-        <!-- Attach Debugger action
-        <folder name="Build">            
-            <attr name="org-netbeans-modules-project-ui-DebugMainProject.shadow/org-netbeans-modules-debugger-ui-actions-ConnectAction.shadow" boolvalue="true" />
-            <file name="org-netbeans-modules-debugger-ui-actions-ConnectAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ConnectAction.instance"/>
-            </file>
-        </folder>
-            -->
         <folder name="Debug">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.debugger.gdb.Bundle"/>
             <file name="org-netbeans-modules-debugger-ui-actions-KillAction.shadow">
@@ -311,97 +298,7 @@ made subject to such option by the copyright holder.
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-FixAction.instance"/>
                 <attr name="position" intvalue="900"/>
             </file>
-            <!-- file name="org-netbeans-modules-debugger-ui-actions-AddWatchAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance"/>
-                <attr name="position" intvalue="1000"/>
-            </file -->
         </folder>
     </folder>
     
-    <folder name="Actions">
-        <folder name="Debug">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
-            
-            <file name="org-netbeans-modules-cnd-debugger-gdb-actions-ToggleBreakpointAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction"/>
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction.createToggleBreakpointAction"/>
-                <attr name="instanceOf" stringvalue="javax.swing.Action"/>
-            </file>
-            
-            <file name="org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance"/>
-            <!--
-            <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction"/>
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction.createToggleBreakpointAction"/>
-                <attr name="instanceOf" stringvalue="javax.swing.Action"/>
-            </file>
-	    -->
-            <file name="org-netbeans-modules-debugger-ui-actions-KillAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction"/>
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction.createKillAction"/>
-                <attr name="instanceOf" stringvalue="javax.swing.Action"/>
-            </file>
-            <file name="org-netbeans-modules-debugger-ui-actions-RunToCursorAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction"/>
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction.createRunToCursorAction"/>
-                <attr name="instanceOf" stringvalue="javax.swing.Action"/>
-            </file>
-            <file name="org-netbeans-modules-debugger-ui-actions-RunIntoMethodAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction"/>
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction.createRunIntoMethodAction"/>
-                <attr name="instanceOf" stringvalue="javax.swing.Action"/>
-            </file>
-            <file name="org-netbeans-modules-debugger-ui-actions-ContinueAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction"/>
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction.createContinueAction"/>
-                <attr name="instanceOf" stringvalue="javax.swing.Action"/>
-            </file>
-            <file name="org-netbeans-modules-debugger-ui-actions-StepIntoAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction"/>
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction.createStepIntoAction"/>
-                <attr name="instanceOf" stringvalue="javax.swing.Action"/>
-            </file>
-            <file name="org-netbeans-modules-debugger-ui-actions-StepOutAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction"/>
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction.createStepOutAction"/>
-                <attr name="instanceOf" stringvalue="javax.swing.Action"/>
-            </file>
-            <file name="org-netbeans-modules-debugger-ui-actions-StepOverAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction"/>
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction.createStepOverAction"/>
-                <attr name="instanceOf" stringvalue="javax.swing.Action"/>
-            </file>
-            
-            <!-- Attach Debugger action
-            <file name="org-netbeans-modules-debugger-ui-actions-ConnectAction.instance" />
-            -->
-            <file name="org-netbeans-modules-debugger-ui-actions-AddBreakpointAction.instance"/>
-            <file name="org-netbeans-modules-debugger-ui-actions-PauseAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction"/>
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction.createPauseAction"/>
-                <attr name="instanceOf" stringvalue="javax.swing.Action"/>
-            </file>
-            <file name="org-netbeans-modules-debugger-ui-actions-MakeCalleeCurrentAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction"/>
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction.createMakeCalleeCurrentAction"/>
-                <attr name="instanceOf" stringvalue="javax.swing.Action"/>
-            </file>
-            <file name="org-netbeans-modules-debugger-ui-actions-MakeCallerCurrentAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction"/>
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction.createMakeCallerCurrentAction"/>
-                <attr name="instanceOf" stringvalue="javax.swing.Action"/>
-            </file>
-            
-            <file name="org-netbeans-modules-debugger-ui-actions-FixAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction"/>
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction.createFixAction"/>
-                <attr name="instanceOf" stringvalue="javax.swing.Action"/>
-            </file>
-            <file name="org-netbeans-modules-debugger-ui-actions-PopTopmostCallAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction"/>
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction.createPopTopmostCallAction"/>
-                <attr name="instanceOf" stringvalue="javax.swing.Action"/>
-            </file>
-        </folder>
-    </folder>
 </filesystem>
