@@ -625,6 +625,7 @@ public final class PasteAction extends CallbackSystemAction {
                 }
             }
 
+            // XXX [FindBugs] is this field good for something (never read)? needed to hold hard ref, perhaps?
             this.children = node.getChildren().getNodes(true);
 
             this.added = new ArrayList<Node>();
