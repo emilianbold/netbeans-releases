@@ -305,7 +305,6 @@ final class NbEvents extends Events {
         private String text;
         private static RequestProcessor RP = new RequestProcessor("Notify About Module System"); // NOI18N
         private Object[] options;
-        private Object value;
         
         public Notifier(String text, boolean type) {
             this.warn = type;
@@ -326,9 +325,6 @@ final class NbEvents extends Events {
             }
         }
         
-        public Object getOption() {
-            return value;
-        }
         public void run() {
             int type = warn ? JOptionPane.WARNING_MESSAGE : JOptionPane.INFORMATION_MESSAGE;
             String msg = NbBundle.getMessage(Notifier.class, warn ? "MSG_warning" : "MSG_info"); // NOI18N
