@@ -45,7 +45,6 @@ import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
-import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.CoderResult;
 import java.util.ArrayList;
@@ -457,8 +456,16 @@ public class GdbUtils {
             StringBuilder s = new StringBuilder();
             int idx = 0;
             char last = 0;
+            int pos1, pos2, pos3;
             boolean inDoubleQuote = false;
             boolean inSingleQuote = false;
+            
+            pos1 = info.indexOf("&) @0x"); // NOI18N
+            pos2 = info.indexOf('{');
+            pos3 = info.indexOf(':');
+            if (info.charAt(0) == '(' && pos1  != -1 && pos2 != -1 && pos3 != -1 && pos3 < pos2) {
+                idx = pos2;
+            }
         
             while (idx < info.length()) {
                 char ch = info.charAt(idx);
@@ -481,6 +488,13 @@ public class GdbUtils {
                 } else if (ch == 'n' && last == '\\') {
                     s.deleteCharAt(s.length() - 1);
                     ch = 0;
+                } else if (info.substring(idx).startsWith("members of ")) { // NOI18N
+                    pos1 = info.indexOf(':', idx);
+                    pos2 = info.indexOf(' ', idx + 11);
+                    if (pos1 != -1 && pos2 != -1 && pos1 < pos2) {
+                        idx = pos1 + 1;
+                        ch = 0;
+                    }
                 }
                 if (ch != 0) {
                     s.append(ch);

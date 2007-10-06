@@ -107,7 +107,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
         
         if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
             // Convert the Mac-specific value to standard gdb/mi format
-            value = GdbUtils.mackHack(value);
+            this.value = GdbUtils.mackHack(value);
         }
         
         if (getDebugger() != null) {
