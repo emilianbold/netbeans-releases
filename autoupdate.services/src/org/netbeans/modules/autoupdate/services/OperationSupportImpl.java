@@ -232,6 +232,8 @@ public abstract class OperationSupportImpl {
             // restart IDE
             Utilities.deleteAllDoLater ();
             LifecycleManager.getDefault ().exit ();
+            // if exit&restart fails => use restart later as fallback
+            doRestartLater (restarter);
         }
 
         public void doRestartLater (Restarter restarter) {
@@ -367,6 +369,8 @@ public abstract class OperationSupportImpl {
             // restart IDE
             Utilities.deleteAllDoLater ();
             LifecycleManager.getDefault ().exit ();
+            // if exit&restart fails => use restart later as fallback
+            doRestartLater (restarter);
         }
 
         public void doRestartLater (Restarter restarter) {

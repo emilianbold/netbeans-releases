@@ -417,7 +417,7 @@ public class InstallSupportImpl {
         
     }
 
-    public void doRestart (Restarter validator,ProgressHandle progress/*or null*/) throws OperationException {
+    public void doRestart (Restarter restarter, ProgressHandle progress/*or null*/) throws OperationException {
         synchronized(this) {
             assert currentStep != STEP.FINISHED;
             if (currentStep == STEP.CANCEL) return;
@@ -425,7 +425,11 @@ public class InstallSupportImpl {
         }        
         Utilities.deleteAllDoLater ();
         getElement2Clusters ().clear ();
+        
         LifecycleManager.getDefault ().exit ();
+        
+        // if exit&restart fails => use restart later as fallback
+        doRestartLater (restarter);
     }
     
     public void doRestartLater(Restarter restarter) {
