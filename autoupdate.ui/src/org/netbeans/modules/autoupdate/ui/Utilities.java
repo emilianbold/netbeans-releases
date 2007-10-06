@@ -360,6 +360,24 @@ public class Utilities {
         return Boolean.valueOf (System.getProperty ("plugin.manager.extended.description"));
     }
 
+    /** Do auto-check for available new plugins a while after startup.
+     * 
+     * @return false as default
+     */
+    public static boolean shouldCheckAvailableNewPlugins () {
+        String shouldCheck = System.getProperty ("plugin.manager.check.new.plugins");
+        return shouldCheck == null ? false : Boolean.valueOf (shouldCheck);
+    }
+
+    /** Do auto-check for available updates a while after startup.
+     * 
+     * @return true as default
+     */
+    public static boolean shouldCheckAvailableUpdates() {
+        String shouldCheck = System.getProperty ("plugin.manager.check.updates");
+        return shouldCheck == null ? true : Boolean.valueOf (shouldCheck);
+    }
+
     public static void setModulesOnly (boolean modulesOnly) {
         isModulesOnly = modulesOnly ? Boolean.TRUE : Boolean.FALSE;
         getPreferences ().putBoolean (PLUGIN_MANAGER_MODULES_ONLY, isModulesOnly);

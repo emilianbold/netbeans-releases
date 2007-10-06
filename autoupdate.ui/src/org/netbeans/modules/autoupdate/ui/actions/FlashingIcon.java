@@ -86,6 +86,7 @@ abstract class FlashingIcon extends JComponent implements MouseListener {
         setMinimumSize( d );
         setMaximumSize( d );
         setPreferredSize( d );
+        setVisible (false);
         
         addMouseListener( this );
     }
@@ -107,6 +108,7 @@ abstract class FlashingIcon extends JComponent implements MouseListener {
             } else {
                 timerTask.run ();
             }
+            this.setVisible (true);
         }
         repaint();
     }
@@ -116,9 +118,6 @@ abstract class FlashingIcon extends JComponent implements MouseListener {
      */
     public void disappear() {
         synchronized( this ) {
-            System.out.println("========================== DISAPPEAR =================");
-            Thread.dumpStack();
-            System.out.println("======================================================");
             keepRunning = false;
             isIconVisible = false;
             keepFlashing = false;
@@ -126,6 +125,7 @@ abstract class FlashingIcon extends JComponent implements MouseListener {
                 timerTask.cancel();
             timerTask = null;
             setToolTipText( null );
+            this.setVisible (false);
         }
         repaint();
     }

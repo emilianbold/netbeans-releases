@@ -52,6 +52,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.autoupdate.OperationContainer;
+import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
@@ -76,7 +77,7 @@ public class AutoupdateCheckScheduler {
     private static RequestProcessor.Task regularlyCheck = null;    
     private static final RequestProcessor REGULARLY_CHECK_TIMER = 
         new RequestProcessor("auto-checker-reqularly-timer", 1, true); // NOI18N
-    private static final Logger err = Logger.getLogger ("org.netbeans.modules.autoupdate.services.AutoupdateCheckScheduler"); // NOI18N
+    private static final Logger err = Logger.getLogger (AutoupdateCheckScheduler.class.getName ());
 
     private AutoupdateCheckScheduler () {
     }
@@ -123,39 +124,68 @@ public class AutoupdateCheckScheduler {
             if (SwingUtilities.isEventDispatchThread ()) {
                 RequestProcessor.getDefault ().post (doCheckAvailableUpdates);
             }
-            // check
-            /*ProgressHandle handle = ProgressHandleFactory.createHandle (
-                    NbBundle.getMessage (AutoupdateCheckScheduler.class, "AutoupdateCheckScheduler_CheckingForUpdates"));
-            handle.setInitialDelay (0);
-            handle.start ();
-            try {*/
-            List<UpdateUnit> units = UpdateManager.getDefault ().getUpdateUnits (Utilities.getUnitTypes ());
-            List<UnitCategory> cats = Utilities.makeUpdateCategories (units, false);
-            if (cats == null || cats.isEmpty ()) {
-                return ;
+            boolean hasUpdates = false;
+            if (Utilities.shouldCheckAvailableUpdates ()) {
+                Collection<UpdateElement> updates = checkUpdateElements (OperationType.UPDATE);
+                hasUpdates = updates != null && ! updates.isEmpty ();
+                if (hasUpdates) {
+                    notifyAvailable(updates, OperationType.UPDATE);
+                }
             }
-            OperationContainer oc = OperationContainer.createForUpdate ();
-            Collection<UpdateElement> updates = new HashSet<UpdateElement> ();
-            for (UnitCategory cat : cats) {
-                for (Unit u : cat.getUnits ()) {
-                    UpdateElement element = ((Unit.Update) u).getRelevantElement ();
-                    UpdateUnit unit = element.getUpdateUnit ();
-                    if (oc.canBeAdded (unit, element)) {
-                        oc.add (element);
+            if (! hasUpdates && Utilities.shouldCheckAvailableNewPlugins ()) {
+                notifyAvailable (checkUpdateElements (OperationType.INSTALL), OperationType.INSTALL);
+            }
+        }
+    };
+    
+    private static Collection<UpdateElement> checkUpdateElements (OperationType type) {
+        // check
+        /*ProgressHandle handle = ProgressHandleFactory.createHandle (
+                NbBundle.getMessage (AutoupdateCheckScheduler.class, "AutoupdateCheckScheduler_CheckingForUpdates"));
+        handle.setInitialDelay (0);
+        handle.start ();
+        try {*/
+        err.log (Level.FINEST, "Check UpdateElements for " + type);
+        List<UpdateUnit> units = UpdateManager.getDefault ().getUpdateUnits (Utilities.getUnitTypes ());
+        boolean handleUpdates = OperationType.UPDATE == type;
+        Collection<UnitCategory> cats =  handleUpdates ?
+            Utilities.makeUpdateCategories (units, false) :
+            Utilities.makeAvailableCategories (units, false);
+        if (cats == null || cats.isEmpty ()) {
+            err.log (Level.FINE, "findUpdateElements(" + type + ") doesn't find any elements.");
+            return null;
+        }
+        OperationContainer oc = handleUpdates ?
+            OperationContainer.createForUpdate () :
+            OperationContainer.createForInstall ();
+        Collection<UpdateElement> updates = new HashSet<UpdateElement> ();
+        for (UnitCategory cat : cats) {
+            for (Unit u : cat.getUnits ()) {
+                UpdateElement element = handleUpdates ?
+                    ((Unit.Update) u).getRelevantElement () :
+                    ((Unit.Available) u).getRelevantElement ();
+                UpdateUnit unit = element.getUpdateUnit ();
+                if (oc.canBeAdded (unit, element)) {
+                    OperationInfo operationInfo = oc.add (element);
+                    if (operationInfo.getBrokenDependencies ().isEmpty ()) {
                         updates.add (element);
+                    } else {
+                        err.log (Level.WARNING, "Plugin " + element + // NOI18N
+                                " cannot be installed, some dependencies can be satisfied: " + operationInfo.getBrokenDependencies()); // NOI18N
                     }
                 }
             }
-            /*} finally {
-                if (handle != null) {
-                    handle.finish ();
-                }
-            }*/
-            
-            // if any then notify updates
-            notifyUpdates (updates);
         }
-    };
+        /*} finally {
+            if (handle != null) {
+                handle.finish ();
+            }
+        }*/
+
+        // if any then notify updates
+        err.log (Level.FINE, "findUpdateElements(" + type + ") returns " + updates.size () + " elements.");
+        return updates;
+    }
     
     public static boolean timeToCheck () {
         if (getReqularlyTimerTask () != null) {
@@ -259,16 +289,21 @@ public class AutoupdateCheckScheduler {
     
     private static AvailableUpdatesNotification.UpdatesFlasher flasher;
     
-    private static void notifyUpdates (final Collection<UpdateElement> elems) {
+    private static void notifyAvailable (final Collection<UpdateElement> elems, final OperationType type) {
+        if (elems == null || elems.isEmpty ()) {
+            return ;
+        }
         // Some modules found
         Runnable onMouseClick = new Runnable () {
             @SuppressWarnings("unchecked")
             public void run () {
                 boolean wizardFinished = false;
                 try {
-                    OperationContainer oc = OperationContainer.createForUpdate ();
+                    OperationContainer oc = OperationType.UPDATE == type ?
+                        OperationContainer.createForUpdate() :
+                        OperationContainer.createForInstall();
                     oc.add (elems);
-                    wizardFinished = new InstallUnitWizard ().invokeWizard (new InstallUnitWizardModel (OperationType.UPDATE, oc));
+                    wizardFinished = new InstallUnitWizard ().invokeWizard (new InstallUnitWizardModel (type, oc));
                 } finally {
                     if (wizardFinished) {
                         PluginManagerUI pluginManagerUI = PluginManagerAction.getPluginManagerUI ();
@@ -279,7 +314,7 @@ public class AutoupdateCheckScheduler {
                             flasher.disappear ();
                         }
                     } else {
-                        // store available updates for future
+                        // notify available plugins/updates in the future
                     }
                 }
             }
