@@ -58,11 +58,11 @@ public final class FileInfo {
     public static final int FLAG_isDirectory = 1;
     public static final int FLAG_exists = 2;
     public static final int FLAG_isComputeNode = 3;
-    public static final int FLAG_isWindowsFloppy = 4;
+    //public static final int FLAG_isWindowsFloppy = 4;
     public static final int FLAG_isUnixSpecialFile = 5;
     public static final int FLAG_isUNC = 6;    
     public static final int FLAG_isFloppy = 7;
-    public static final int FLAG_isWindows = 8;
+    //public static final int FLAG_isWindows = 8;
     public static final int FLAG_isConvertibleToFileObject = 9;
 
 
@@ -70,11 +70,9 @@ public final class FileInfo {
     private int isDirectory = -1;
     private int exists = -1;
     private int isComputeNode = -1;
-    private int isWindowsFloppy = -1;
     private int isUnixSpecialFile = -1;
     private int isUNC = -1;    
     private int isFloppy = -1;
-    private int isWindows = -1;
     private int isConvertibleToFileObject = -1;
 
     private Integer id = null;        
@@ -128,6 +126,7 @@ public final class FileInfo {
     }
 
 
+    // XXX this is identical to isFloppy, why is it here?
     public boolean isWindowsFloppy() {
         if (isFloppy == -1) {
             isFloppy = (FileInfo.FILESYSTEMVIEW.isFloppyDrive(getFile())) ? 1 : 0;
@@ -239,12 +238,14 @@ public final class FileInfo {
              case FLAG_isUnixSpecialFile:
                  isUnixSpecialFile = (value) ? 1 : 0;                                  
                 break;
+/*
              case FLAG_isWindows:
                  isWindows = (value) ? 1 : 0;                                  
                 break;
              case FLAG_isWindowsFloppy:
                  isWindowsFloppy = (value) ? 1 : 0;                                  
                 break;            
+*/
         }
     }
 
