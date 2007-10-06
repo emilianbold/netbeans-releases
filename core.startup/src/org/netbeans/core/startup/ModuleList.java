@@ -1210,7 +1210,7 @@ final class ModuleList {
         p.put("name", m.getCodeNameBase()); // NOI18N
         int rel = m.getCodeNameRelease();
         if (rel >= 0) {
-            p.put("release", new Integer(rel)); // NOI18N
+            p.put("release", rel); // NOI18N
         }
         SpecificationVersion spec = m.getSpecificationVersion();
         if (spec != null) {
