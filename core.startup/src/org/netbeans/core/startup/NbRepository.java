@@ -74,7 +74,7 @@ public final class NbRepository extends Repository {
         String systemDir = System.getProperty("system.dir"); // NOI18N
         
         if (systemDir != null) {
-            // initiliaze the filesystem for this property 
+            // initialize the filesystem for this property 
 
             try {
                 return SessionManager.getDefault().create(new File (systemDir), null, new File[0]);
@@ -145,10 +145,7 @@ public final class NbRepository extends Repository {
         }
 
         exc.printStackTrace ();
-        Object[] arg = new Object[] {systemDir};
-        System.err.println (new java.text.MessageFormat(
-            NbBundle.getMessage(NbRepository.class, "CTL_Cannot_mount_systemfs")
-        ).format(arg));
+        System.err.println(NbBundle.getMessage(NbRepository.class, "CTL_Cannot_mount_system_fs"));
         doExit (3);
         return null;
     }
