@@ -68,7 +68,7 @@ import org.openide.util.Utilities;
  */
 public final class FileChangeSupport {
     
-    public static FileChangeSupport DEFAULT = new FileChangeSupport();
+    public static final FileChangeSupport DEFAULT = new FileChangeSupport();
     
     private FileChangeSupport() {}
     
