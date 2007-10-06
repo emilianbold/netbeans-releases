@@ -70,6 +70,7 @@ import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.IDerivationClassifier;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.IRelationFactory;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.RelationFactory;
+import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.ClassifierTemplateParameter;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAssociation;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAssociationEnd;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAttribute;
@@ -2476,10 +2477,19 @@ public class ClassInfo extends ElementInfo
 		// extract the full class name - "Outer::Middle::Inner"
 		// and convert to dot notation = "Outer.Middle.Inner"
 		
-		if (fullPkgName.length() > 0)
+                String mask = fullPkgName;
+                if (classType instanceof ClassifierTemplateParameter) 
+                {
+                    IElement parent = classType.getOwner();
+                    if (parent instanceof IClassifier) 
+                    {
+                        mask = ((IClassifier)parent).getFullyQualifiedName(false);
+                    }
+                }
+		if (mask != null && mask.length() > 0)
 		{
 		    fullClassName = JavaClassUtils.convertUMLtoJava
-			(qualName.substring(fullPkgName.length()+2));
+			(qualName.substring(mask.length()+2));
 		    fullPkgName = JavaClassUtils.convertUMLtoJava(fullPkgName);
 		}
 		// it's in the default package
@@ -2499,7 +2509,7 @@ public class ClassInfo extends ElementInfo
     }
 
     public String getCodeGenType(boolean fullyQualified, ClassInfo container)
-    {
+    {       
 	if (fullyQualified) 
 	{
 	    if (codeGenTypeFullyQualified == null) 

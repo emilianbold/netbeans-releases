@@ -51,6 +51,8 @@ import org.netbeans.modules.uml.core.support.umlutils.IPropertyDefinition;
 import org.netbeans.modules.uml.core.support.umlsupport.IStrings;
 import org.netbeans.modules.uml.core.support.umlsupport.Strings;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.core.support.umlutils.IPropertyElementManager;
 import org.netbeans.modules.uml.core.typemanagement.ITypeManager;
@@ -148,6 +150,25 @@ public class ParameterCustomizer extends JPanel
                                     list.remove("void");
                                 }
                             }
+
+                            filter = "ParameterableElement";
+                            INamespace space = null;
+                            Object mobj = null;
+                            if (mElement != null) 
+                            {
+                                mobj = mElement.getElement();
+                            }
+                            if (mobj instanceof INamespace) 
+                            {
+                                space = (INamespace)mobj;
+                            }
+                            else if (mobj instanceof INamedElement)
+                            {
+                                space = ((INamedElement)mobj).getNamespace();
+                            }
+                            list.append(pickMan.getTypeNamesWithStringFilterNamespaceVisible
+                                        (filter, false, space));                         
+
                         }
                     }
                 }

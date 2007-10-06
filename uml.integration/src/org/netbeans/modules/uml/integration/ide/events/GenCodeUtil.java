@@ -51,6 +51,7 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicity;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicityRange;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPackage;
+import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.ClassifierTemplateParameter;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IClassifier;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IDerivation;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IUMLBinding;
@@ -91,7 +92,7 @@ public final class GenCodeUtil
 	ClassInfo container)
     {
 	ClassInfo ci = ClassInfo.getRefClassInfo(classType, true, true);
-	String  classTypeName = ci.getCodeGenType(fullyQualified, container);
+	String  classTypeName = ci.getCodeGenType(fullyQualified, container);        
 
 //        if (mult != null && mult.getRangeCount() > 0)
         if (mult != null && isMultiDim(mult))
@@ -284,8 +285,9 @@ public final class GenCodeUtil
 	    clazz = classType;
 	}   
 
-	String clazzTypeName;
-	if (fullyQualified || isNameCodeGenConflict(container, clazz)) 
+	String clazzTypeName;        
+	if ((fullyQualified || isNameCodeGenConflict(container, clazz)) 
+            && ! (clazz instanceof ClassifierTemplateParameter)) 
 	{
 	    clazzTypeName = getTypeName(clazz, true);
 	} 

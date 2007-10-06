@@ -64,6 +64,8 @@ import org.netbeans.modules.uml.core.coreapplication.ICoreProduct;
 import org.netbeans.modules.uml.core.eventframework.IEventDispatcher;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IConfigManager;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IOperation;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IOperationSignatureChangeContextManager;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.OperationSignatureChangeContextManager;
@@ -2022,6 +2024,41 @@ public class TranslatorImpl implements ITranslator
                               {
                                  String filter = "DataType Class Interface";
                                  list = pickMan.getTypeNamesWithStringFilter(filter);
+                                 
+                                 filter = "ParameterableElement";
+                                 Object mElem = null;
+                                 IEditControlField field = getCurrentField();
+                                 while(mElem == null && field != null) {
+                                     IPropertyElement pe = field.getPropertyElement();
+                                     if (pe != null) 
+                                     {
+                                         mElem = pe.getElement();
+                                     }
+                                     if (mElem == null) 
+                                     {
+                                         ITranslator translator = field.getOwnerTranslator();
+                                         if (translator != null) 
+                                         {
+                                             field = translator.getParentField();
+                                         }
+                                         else
+                                         {
+                                             break;
+                                         }
+                                     }
+                                 }
+
+                                 INamespace space = null;
+                                 if (mElem instanceof INamespace) 
+                                 {
+                                     space = (INamespace)mElem;
+                                 }
+                                 else if (mElem instanceof INamedElement)
+                                 {
+                                     space = ((INamedElement)mElem).getNamespace();
+                                 }
+                                 list.append(pickMan.getTypeNamesWithStringFilterNamespaceVisible
+                                             (filter, false, space));                         
                               }
                            }
                         }

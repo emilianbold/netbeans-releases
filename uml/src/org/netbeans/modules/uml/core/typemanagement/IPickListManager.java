@@ -43,6 +43,7 @@ package org.netbeans.modules.uml.core.typemanagement;
 
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
 import org.netbeans.modules.uml.core.support.umlsupport.IStrings;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 
@@ -77,6 +78,11 @@ public interface IPickListManager
 	 * Retrieves all the types in the Project that have a matching type specified in the filter. filter should be white-space delimited list of typenames, such as 'Class Interface Steroetype'.
 	*/
 	public IStrings getTypeNamesWithStringFilter( String filter );
+
+	/**
+	 * Retrieves all the types visible from inside the "space" namespace that have a matching type specified in the filter. filter should be white-space delimited list of typenames, such as 'Class Interface Steroetype'. 
+	*/
+	public IStrings getTypeNamesWithStringFilterNamespaceVisible( String filter, boolean fullNames, INamespace space );
 
 	/**
 	 * Retrieves all the type names in the Project that have a matching type specified in the typeFilter. typeFilter is a collection of type names to match against, such as 'Class'

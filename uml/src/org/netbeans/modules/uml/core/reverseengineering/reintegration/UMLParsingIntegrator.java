@@ -2057,6 +2057,7 @@ public class UMLParsingIntegrator
             List parmaterElements = classNode.selectNodes("UML:Element.ownedElement/UML:ParameterableElement");
             if (parmaterElements != null)
             {
+                String parentID = XMLManip.getAttributeValue(classNode, "xmi.id");
                 int numElements = parmaterElements.size();
                 String parametersID = "";
                 for (int x = 0; x < numElements; x++)
@@ -2065,6 +2066,7 @@ public class UMLParsingIntegrator
                     if (parameter != null)
                     {
                         establishXMIID(parameter);
+                        XMLManip.setAttributeValue(parameter, "owner", parentID);
                         String idValue = XMLManip.getAttributeValue(parameter, "xmi.id");
                         if (idValue != null)
                         {
@@ -2962,7 +2964,19 @@ public class UMLParsingIntegrator
         
         if (classNamespace != null)
         {
-            foundElement = getOwnedTypeByName(classNamespace, typeName);
+            boolean last = ! (classNamespace instanceof IClassifier);
+            while(foundElement == null && classNamespace != null) 
+            {
+                foundElement = getOwnedTypeByName(classNamespace, typeName);
+                classNamespace = classNamespace.getNamespace();
+                if (last) 
+                {
+                    break;
+                }
+                if (! (classNamespace instanceof IClassifier)) {
+                    last = true;
+                }
+            }
         }
         
         if (foundElement == null)
@@ -4970,7 +4984,7 @@ public class UMLParsingIntegrator
                                 supervisor.log(ITaskSupervisor.VERBOSE,
                                         INDENT + INDENT + clazzObj.getName());
                                 
-                                INamespace classSpace = clazzObj.getNamespace();
+                                INamespace classSpace = clazzObj;
                                 
                                 // Check Enumeration
                                 if ("Enumeration".equals(
@@ -7081,8 +7095,7 @@ public class UMLParsingIntegrator
         catch (Exception e)
         {
             sendExceptionMessage(e);
-        }
-        
+        }        
         return namedElement;
     }
     

@@ -56,6 +56,8 @@ import org.netbeans.modules.uml.core.configstringframework.IConfigStringTranslat
 import org.netbeans.modules.uml.core.coreapplication.ICoreProduct;
 import org.netbeans.modules.uml.core.coreapplication.IPreferenceManager2;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.core.support.umlsupport.IStrings;
 import org.netbeans.modules.uml.core.support.umlsupport.ProductRetriever;
@@ -580,15 +582,41 @@ public IStrings getValidValue(IPropertyElement elem){
         	IPickListManager pPickMgr = pTypeMgr.getPickListManager();
         	if (pPickMgr != null)
         	{
+                        retVal = new Strings();
         		String filter = parseDataTypeList();
-        		if (isFullyQualified())
-        		{
-        			retVal = pPickMgr.getFullyQualifiedTypeNamesWithStringFilter(filter);
-        		}
-        		else
-        		{
-        			retVal = pPickMgr.getTypeNamesWithStringFilter(filter);
-        		}
+                        StringTokenizer tokenizer = new StringTokenizer(filter, " ");
+                        while (tokenizer.hasMoreTokens())
+                        {
+                            IStrings list;
+                            String token = tokenizer.nextToken().trim();
+                            if (token.equals("ParameterableElement"))
+                            {
+                                INamespace space = null;
+                                Object mobj = getModelElement(elem);
+                                if (mobj instanceof INamespace) 
+                                {
+                                    space = (INamespace)mobj;
+                                }
+                                else if (mobj instanceof INamedElement)
+                                {
+                                    space = ((INamedElement)mobj).getNamespace();
+                                }
+                                list = (pPickMgr.getTypeNamesWithStringFilterNamespaceVisible
+                                       (token, false, space));
+                            } 
+                            else 
+                            {
+                                if (isFullyQualified())
+                                {
+                                    list = pPickMgr.getFullyQualifiedTypeNamesWithStringFilter(token);
+                                }
+                                else
+                                {
+                                    list = pPickMgr.getTypeNamesWithStringFilter(token);
+                                }
+                            }
+                            retVal.append(list);
+                        }
         	}
         }
       }
@@ -724,7 +752,7 @@ public IStrings getValidValue(IPropertyElement elem){
 				}
 				else
 				{
-					retStr = "DataType Class Interface Enumeration";
+					retStr = "DataType Class Interface Enumeration ParameterableElement";
 				}
 			}
 		}

@@ -250,6 +250,7 @@ public class PickListManager implements IPickListManager, IQueryUpdater,
                 for (int i=0; i<count; i++)
                 {
                     Node node = (Node)nameNodes.get(i);
+                    //System.out.println("node = "+node);
                     String name = XMLManip.getAttributeValue(node, "name");
                     String alias = XMLManip.getAttributeValue(node, "alias");
                     String nodeType = XMLManip.getAttributeValue(node, "nodeType_");
@@ -1427,6 +1428,11 @@ public class PickListManager implements IPickListManager, IQueryUpdater,
      */
     private IStrings getTypeNamesWithStringFilter(String filter, boolean fullNames)
     {
+        return getTypeNamesWithStringFilterNamespaceVisible(filter, fullNames, null);
+    }
+
+    public IStrings getTypeNamesWithStringFilterNamespaceVisible(String filter, boolean fullNames, INamespace space)
+    {
         IStrings foundNames = null;
         if (filter != null && filter.length() > 0)
         {
@@ -1435,7 +1441,7 @@ public class PickListManager implements IPickListManager, IQueryUpdater,
             while (tokenizer.hasMoreTokens())
             {
                 String token = tokenizer.nextToken().trim();
-                foundNames = getTypeNamesOfType(token, fullNames, foundNames);
+                foundNames = getTypeNamesOfType(token, fullNames, foundNames, space);
             }
         }
         return foundNames;
@@ -1455,6 +1461,11 @@ public class PickListManager implements IPickListManager, IQueryUpdater,
      */
     private IStrings getTypeNamesOfType(String type, boolean fullNames,
             IStrings typeNames)
+    {
+        return getTypeNamesOfType(type, fullNames, typeNames, null);
+    }
+    private IStrings getTypeNamesOfType(String type, boolean fullNames,
+            IStrings typeNames, INamespace space)
     {
         if (type != null && type.length() > 0)
         {
@@ -1480,15 +1491,36 @@ public class PickListManager implements IPickListManager, IQueryUpdater,
                             {
                                 // Only add the type if it has not been deleted
                                 NamedType foundType = types.get(i);
+                                //System.out.println("getTypesByName() foundType.getFullName() =  "+foundType.getFullName());
+                                //System.out.println("getTypesByName() foundType.getClass() =  "+foundType.getClass());
                                 if (foundType.getState() != TS_DELETED)
                                 {
-                                    if (fullNames)
+                                    boolean toAdd = (space == null);
+                                    if (space != null) 
                                     {
-                                        typeNames.add(foundType.getFullName());
+                                        String spaceFQ = space.getQualifiedName2();
+                                        String typeFQ = foundType.getFullName();
+                                        int ind = typeFQ.lastIndexOf("::");
+                                        String typeSpaceFQ = ""; 
+                                        if ( ind != -1 ) 
+                                        {
+                                            typeSpaceFQ = typeFQ.substring(0, ind);
+                                        }
+                                        if (spaceFQ.startsWith(typeSpaceFQ)) 
+                                        {
+                                            toAdd = true;
+                                        }
                                     }
-                                    else
-                                    {
-                                        typeNames.add(foundType.getName());
+                                    if (toAdd) 
+                                    {   
+                                        if (fullNames)
+                                        {
+                                            typeNames.add(foundType.getFullName());
+                                        }
+                                        else
+                                        {
+                                            typeNames.add(foundType.getName());
+                                        }
                                     }
                                 }
                             }
