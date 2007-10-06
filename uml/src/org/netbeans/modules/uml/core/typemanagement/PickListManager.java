@@ -250,7 +250,6 @@ public class PickListManager implements IPickListManager, IQueryUpdater,
                 for (int i=0; i<count; i++)
                 {
                     Node node = (Node)nameNodes.get(i);
-                    //System.out.println("node = "+node);
                     String name = XMLManip.getAttributeValue(node, "name");
                     String alias = XMLManip.getAttributeValue(node, "alias");
                     String nodeType = XMLManip.getAttributeValue(node, "nodeType_");
@@ -1431,6 +1430,10 @@ public class PickListManager implements IPickListManager, IQueryUpdater,
         return getTypeNamesWithStringFilterNamespaceVisible(filter, fullNames, null);
     }
 
+    /**
+     *  Version with additional namespace parameter - would return only types  
+     *  that are visible from inside the namespace.
+     */
     public IStrings getTypeNamesWithStringFilterNamespaceVisible(String filter, boolean fullNames, INamespace space)
     {
         IStrings foundNames = null;
@@ -1464,6 +1467,11 @@ public class PickListManager implements IPickListManager, IQueryUpdater,
     {
         return getTypeNamesOfType(type, fullNames, typeNames, null);
     }
+
+    /**
+     *  Version with additional namespace parameter - would return only types  
+     *  that are visible from inside the namespace.
+     */
     private IStrings getTypeNamesOfType(String type, boolean fullNames,
             IStrings typeNames, INamespace space)
     {
@@ -1491,8 +1499,6 @@ public class PickListManager implements IPickListManager, IQueryUpdater,
                             {
                                 // Only add the type if it has not been deleted
                                 NamedType foundType = types.get(i);
-                                //System.out.println("getTypesByName() foundType.getFullName() =  "+foundType.getFullName());
-                                //System.out.println("getTypesByName() foundType.getClass() =  "+foundType.getClass());
                                 if (foundType.getState() != TS_DELETED)
                                 {
                                     boolean toAdd = (space == null);
