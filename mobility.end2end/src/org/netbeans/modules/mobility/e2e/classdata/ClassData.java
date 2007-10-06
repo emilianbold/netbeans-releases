@@ -174,6 +174,16 @@ public class ClassData {
         return Collections.unmodifiableList( fields );
     }
 
+    public List<FieldData> getAllFields() {
+        List<FieldData> f = new ArrayList<FieldData>();
+        ClassData p = this;
+        while( p != null ) {
+            f.addAll( p.getFields());
+            p = p.getParent();
+        }
+        return Collections.unmodifiableList( f );
+    }
+    
     public void addMethod( MethodData method ) {
         methods.add( method );
     }

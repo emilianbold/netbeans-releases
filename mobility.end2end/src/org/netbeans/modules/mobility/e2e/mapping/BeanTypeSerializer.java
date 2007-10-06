@@ -81,6 +81,12 @@ public class BeanTypeSerializer implements JavonSerializer {
                 packageName = classFullQualifiedName.substring( fqnLength - shortLength - 1 );
             }
             
+            // Check for parent
+            if( clazz.getSuperclass().getKind() != TypeKind.DECLARED ) return false;
+            TypeElement superClass = (TypeElement)((DeclaredType) clazz.getSuperclass()).asElement();
+            if( !traversable.isTypeSupported( clazz.getSuperclass(), typeCache ) &&
+                    !"java.lang.Object".equals( superClass.getQualifiedName().toString())) return false;
+            
             // Check for default non static constructor
             List<ExecutableElement> constructors = ElementFilter.constructorsIn( clazz.getEnclosedElements());
             boolean validConstructor = false;
@@ -92,8 +98,8 @@ public class BeanTypeSerializer implements JavonSerializer {
                         break;
                     }
                 }
-            }
-            if( !validConstructor ) return false;
+            }            
+            if( !validConstructor ) return false;                        
             return true;
         }
         return false;
@@ -175,17 +181,18 @@ public class BeanTypeSerializer implements JavonSerializer {
                 }
             }
                         
-            // Support only java.lang.Object supertypes            
+            // Support only bean supertypes            
             if( clazz.getSuperclass().getKind() == TypeKind.DECLARED ) {
                 TypeElement superclass = (TypeElement)((DeclaredType) clazz.getSuperclass()).asElement();
-                if( !"java.lang.Object".equals(superclass.getQualifiedName().toString())) {
-                    return null;
+                ClassData superType = traversable.traverseType( superclass.asType(), typeCache );
+                if( superType != null ) {
+                    traversable.registerType( superType );
+                    cd.setParent( superType );
+                } else {
+                    if( !"java.lang.Object".equals(superclass.getQualifiedName().toString())) {
+                        return null;
+                    }
                 }
-//                ClassData superType = traversable.traverseType( superclass.asType(), typeCache );
-//                if( superType != null ) {
-//                    traversable.registerType( superType, this );
-//                    cd.setParent( superType );
-//                }
             } 
                         
             return cd;
@@ -222,7 +229,8 @@ public class BeanTypeSerializer implements JavonSerializer {
 //            if( mapping.getProperty( "target" ).equals( "client" )) {
                 serialization += type.getFullyQualifiedName() + " " + beanInstanceName + " = (" + type.getFullyQualifiedName() + ")" + object + ";\n";
 //            }
-            for( FieldData field : type.getFields()) {
+//            for( FieldData field : type.getFields()) {
+            for( FieldData field : type.getAllFields()) {
                 String id = "";
                 id = ", " + mapping.getRegistry().getRegisteredTypeId( field.getType());
                 if(( mapping.getProperty( "target" ).equals( "client" ) && mapping.getProperty( "create-stubs" ).equals( "true" )) 
@@ -252,7 +260,8 @@ public class BeanTypeSerializer implements JavonSerializer {
             String beanInstanceName = "b_" + type.getFullyQualifiedName().replace( ".", "_" );
             String deserialization = type.getFullyQualifiedName() + " " + beanInstanceName + 
                     " = new " + type.getFullyQualifiedName() + "();\n";
-            for( FieldData field : type.getFields()) {
+//            for( FieldData field : type.getFields()) {
+            for( FieldData field : type.getAllFields()) {
                 if(( mapping.getProperty( "target" ).equals( "client" ) && mapping.getProperty( "create-stubs" ).equals( "true" )) 
                         || field.getModifier() == ClassData.Modifier.PUBLIC ) {
                     if( field.getType().isPrimitive() && !field.getType().isArray()) {
