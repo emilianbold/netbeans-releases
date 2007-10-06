@@ -101,6 +101,10 @@ public class EjbDataSourcePropertiesPanel extends javax.swing.JPanel
     
     public String getName()
     {
+        // Workaround for 113538 Export/Import EJB feature doesn't work on Linux
+        if (nameTextField == null) {
+            return "";
+        }
         return nameTextField.getText().trim();
     }
     
