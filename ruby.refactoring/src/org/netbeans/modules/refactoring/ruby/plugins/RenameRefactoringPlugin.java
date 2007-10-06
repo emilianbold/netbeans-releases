@@ -148,6 +148,7 @@ import org.openide.util.NbBundle;
  * @todo When invoking refactoring on a file object, I also rename the file. I should (a) list the
  *   name it's going to change the file to, and (b) definitely "filenamize" it - e.g. for class FooBar the
  *   filename should be foo_bar.
+ * @todo If you rename a Model, I should add a corresponding rename_table entry in the migrations...
  *
  * @todo Complete this. Most of the prechecks are not implemented - and the refactorings themselves need a lot of work.
  */

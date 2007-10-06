@@ -337,7 +337,7 @@ public class RubyElementCtx {
                         // TODO - if the lhs is "foo.bar." I need to split this
                         // up and do it a bit more cleverly
                         TypeAnalyzer analyzer =
-                            new TypeAnalyzer(method, node, astOffset, lexOffset, doc, null);
+                            new TypeAnalyzer(null, method, node, astOffset, lexOffset, doc, null);
                         type = analyzer.getType(lhs);
                     }
                 } else if (call == Call.LOCAL) {
