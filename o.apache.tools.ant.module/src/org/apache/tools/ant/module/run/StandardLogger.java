@@ -278,7 +278,7 @@ public final class StandardLogger extends AntLogger {
         int secs = (int) (millis / 1000);
         int minutes = secs / 60;
         int seconds = secs % 60;
-        return NbBundle.getMessage(StandardLogger.class, key, new Integer(minutes), new Integer(seconds));
+        return NbBundle.getMessage(StandardLogger.class, key, minutes, seconds);
     }
     
     @Override

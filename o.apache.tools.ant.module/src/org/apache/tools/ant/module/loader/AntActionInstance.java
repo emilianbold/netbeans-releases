@@ -199,10 +199,10 @@ public class AntActionInstance implements
                 int idx = Mnemonics.findMnemonicAmpersand(pname);
                 if (idx != -1) {
                     // XXX this is wrong, should use some method in Mnemonics...
-                    return new Integer (pname.charAt (idx + 1));
+                    return pname.charAt(idx + 1);
                 }
             }
-            return new Integer (0); // #: 13084
+            return 0; // #: 13084
         }
         return null;
     }

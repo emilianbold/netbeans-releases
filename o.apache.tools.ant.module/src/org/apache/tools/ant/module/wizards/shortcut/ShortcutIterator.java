@@ -60,23 +60,23 @@ final class ShortcutIterator implements WizardDescriptor.Iterator<ShortcutWizard
     // You should define what panels you want to use here:
 
     private List<WizardDescriptor.Panel<ShortcutWizard>> createPanels() {
-        List<WizardDescriptor.Panel<ShortcutWizard>> panels = new ArrayList<WizardDescriptor.Panel<ShortcutWizard>>();
-        panels.add(new IntroPanel.IntroWizardPanel());
-        panels.add(new SelectFolderPanel.SelectFolderWizardPanel(
+        List<WizardDescriptor.Panel<ShortcutWizard>> _panels = new ArrayList<WizardDescriptor.Panel<ShortcutWizard>>();
+        _panels.add(new IntroPanel.IntroWizardPanel());
+        _panels.add(new SelectFolderPanel.SelectFolderWizardPanel(
                 NbBundle.getMessage(ShortcutIterator.class, "SI_LBL_select_menu_to_add_to"),
                 NbBundle.getMessage(ShortcutIterator.class, "SI_TEXT_menu_locn"),
                 NbBundle.getMessage(ShortcutIterator.class, "SI_LBL_display_name_for_menu"),
                 DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().findResource("Menu")), // NOI18N
                 true, ShortcutWizard.PROP_FOLDER_MENU));
-        panels.add(new SelectFolderPanel.SelectFolderWizardPanel(
+        _panels.add(new SelectFolderPanel.SelectFolderWizardPanel(
                 NbBundle.getMessage(ShortcutIterator.class, "SI_LBL_select_toolbar"),
                 NbBundle.getMessage(ShortcutIterator.class, "SI_TEXT_toolbar_locn"),
                 NbBundle.getMessage(ShortcutIterator.class, "SI_LBL_display_name_for_toolbar"),
                 DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().findResource("Toolbars")), // NOI18N
                 false, ShortcutWizard.PROP_FOLDER_TOOL));
-        panels.add(new SelectKeyboardShortcutPanel.SelectKeyboardShortcutWizardPanel());
-        panels.add(new CustomizeScriptPanel.CustomizeScriptWizardPanel());
-        return panels;
+        _panels.add(new SelectKeyboardShortcutPanel.SelectKeyboardShortcutWizardPanel());
+        _panels.add(new CustomizeScriptPanel.CustomizeScriptWizardPanel());
+        return _panels;
     }
 
     // And the list of step names:
@@ -119,7 +119,7 @@ final class ShortcutIterator implements WizardDescriptor.Iterator<ShortcutWizard
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent) c;
                 // Step #.
-                jc.putClientProperty ("WizardPanel_contentSelectedIndex", new Integer (i)); // NOI18N
+                jc.putClientProperty("WizardPanel_contentSelectedIndex", i); // NOI18N
                 // Step name (actually the whole list for reference).
                 jc.putClientProperty ("WizardPanel_contentData", steps); // NOI18N
             }
