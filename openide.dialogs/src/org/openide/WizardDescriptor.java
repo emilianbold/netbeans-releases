@@ -1759,9 +1759,7 @@ public class WizardDescriptor extends DialogDescriptor {
 
         /* Current name of the panel */
         public String name() {
-            return NbBundle.getMessage(
-                WizardDescriptor.class, "CTL_ArrayIteratorName", new Integer(index + 1), new Integer(panels.length)
-            );
+            return NbBundle.getMessage(WizardDescriptor.class, "CTL_ArrayIteratorName", index + 1, panels.length);
         }
 
         /* Is there a next panel?
