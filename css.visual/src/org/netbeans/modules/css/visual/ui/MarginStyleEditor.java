@@ -98,7 +98,6 @@ public class MarginStyleEditor extends StyleEditor {
 
         setLayout(new java.awt.BorderLayout(0, 5));
 
-        marginPanel.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5), javax.swing.BorderFactory.createEtchedBorder()));
         marginPanel.setLayout(new java.awt.BorderLayout());
         add(marginPanel, java.awt.BorderLayout.NORTH);
     }// </editor-fold>//GEN-END:initComponents

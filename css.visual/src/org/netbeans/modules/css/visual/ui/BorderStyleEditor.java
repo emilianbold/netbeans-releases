@@ -92,17 +92,14 @@ public class BorderStyleEditor extends StyleEditor {
 
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+
         borderPanel = new javax.swing.JPanel();
 
         setLayout(new java.awt.BorderLayout(0, 5));
 
         borderPanel.setLayout(new java.awt.BorderLayout());
-
-        borderPanel.setBorder(new javax.swing.border.CompoundBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(5, 5, 5, 5)), new javax.swing.border.EtchedBorder()));
         add(borderPanel, java.awt.BorderLayout.NORTH);
-
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
 
     class BorderDataTable extends JPanel {
 
