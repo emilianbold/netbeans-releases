@@ -49,6 +49,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
+import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.mercurial.util.HgRepositoryContextCache;
@@ -145,8 +146,10 @@ public class CloneAction extends AbstractAction {
                             DialogDisplayer.getDefault().notifyLater(e);
                         } 
                     } else {
-                        JOptionPane.showMessageDialog(null,
-                            NbBundle.getMessage(CloneAction.class,"MSG_NO_PROJECT")); // NOI18N
+                        if (HgModuleConfig.getDefault().getShowCloneCompleted()) {
+                            JOptionPane.showMessageDialog(null,
+                                NbBundle.getMessage(CloneAction.class,"MSG_NO_PROJECT")); // NOI18N
+                        }
                     }
                 }
             };

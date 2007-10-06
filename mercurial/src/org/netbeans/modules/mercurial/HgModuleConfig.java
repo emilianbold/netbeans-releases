@@ -76,7 +76,7 @@ public class HgModuleConfig {
     public static final String KEY_ANNOTATION_FORMAT        = "annotationFormat";                           // NOI18N
             
     private static final String RECENT_URL = "repository.recentURL";                                        // NOI18N
-    private static final String SHOW_CHECKOUT_COMPLETED = "checkoutCompleted.showCheckoutCompleted";        // NOI18N  
+    private static final String SHOW_CLONE_COMPLETED = "cloneCompleted.showCloneCompleted";        // NOI18N  
 
     private static final String URL_EXP = "annotator.urlExp";                                               // NOI18N
     private static final String ANNOTATION_EXP = "annotator.annotationExp";                                 // NOI18N
@@ -100,8 +100,8 @@ public class HgModuleConfig {
         return NbPreferences.forModule(HgModuleConfig.class);
     }
     
-    public boolean getShowCheckoutCompleted() {
-        return getPreferences().getBoolean(SHOW_CHECKOUT_COMPLETED, true);
+    public boolean getShowCloneCompleted() {
+        return getPreferences().getBoolean(SHOW_CLONE_COMPLETED, true);
     }
     
     public Pattern [] getIgnoredFilePatterns() {
@@ -251,8 +251,8 @@ public class HgModuleConfig {
         getPreferences().put(KEY_ANNOTATION_FORMAT, annotationFormat);        
     }
 
-    public void setShowCheckoutCompleted(boolean bl) {
-        getPreferences().putBoolean(SHOW_CHECKOUT_COMPLETED, bl);
+    public void setShowCloneCompleted(boolean bl) {
+        getPreferences().putBoolean(SHOW_CLONE_COMPLETED, bl);
     }
     
     public RepositoryConnection getRepositoryConnection(String url) {

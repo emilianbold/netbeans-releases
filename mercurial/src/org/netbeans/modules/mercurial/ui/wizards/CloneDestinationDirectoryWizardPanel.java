@@ -116,8 +116,7 @@ public class CloneDestinationDirectoryWizardPanel implements WizardDescriptor.Pa
         if (settings instanceof WizardDescriptor) {
             String repository = (String) ((WizardDescriptor) settings).getProperty("repository"); // NOI18N
 
-           System.err.println("repository " + repository);
-           component.nameField.setText(new File(repository).getName());
+            component.nameField.setText(new File(repository).getName());
         }
     }
     public void storeSettings(Object settings) {

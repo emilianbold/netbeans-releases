@@ -47,6 +47,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
+import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.versioning.util.AccessibleJFileChooser;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.util.NbBundle;
@@ -57,7 +58,9 @@ public final class CloneDestinationDirectoryPanel extends JPanel implements Acti
     public CloneDestinationDirectoryPanel() {
         initComponents();
         directoryBrowseButton.addActionListener(this);    
+        scanForProjectsCheckBox.addActionListener(this);    
         directoryField.setText(defaultWorkingDirectory().getPath());
+        scanForProjectsCheckBox.setSelected(HgModuleConfig.getDefault().getShowCloneCompleted());
     }
     
     public String getName() {
@@ -96,6 +99,9 @@ public final class CloneDestinationDirectoryPanel extends JPanel implements Acti
         nameLabel.setLabelFor(nameField);
         org.openide.awt.Mnemonics.setLocalizedText(nameLabel, org.openide.util.NbBundle.getMessage(CloneDestinationDirectoryPanel.class, "nameLabel.Name")); // NOI18N
 
+        scanForProjectsCheckBox.setSelected(true);
+        org.openide.awt.Mnemonics.setLocalizedText(scanForProjectsCheckBox, org.openide.util.NbBundle.getMessage(CloneDestinationDirectoryPanel.class, "CTL_Scan_After_Clone")); // NOI18N
+
         org.jdesktop.layout.GroupLayout destinationDirectoryPanelLayout = new org.jdesktop.layout.GroupLayout(destinationDirectoryPanel);
         destinationDirectoryPanel.setLayout(destinationDirectoryPanelLayout);
         destinationDirectoryPanelLayout.setHorizontalGroup(
@@ -111,6 +117,9 @@ public final class CloneDestinationDirectoryPanel extends JPanel implements Acti
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(directoryBrowseButton)
                 .add(12, 12, 12))
+            .add(destinationDirectoryPanelLayout.createSequentialGroup()
+                .add(scanForProjectsCheckBox)
+                .addContainerGap(268, Short.MAX_VALUE))
         );
         destinationDirectoryPanelLayout.setVerticalGroup(
             destinationDirectoryPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -124,8 +133,12 @@ public final class CloneDestinationDirectoryPanel extends JPanel implements Acti
                 .add(destinationDirectoryPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(nameLabel)
                     .add(nameField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(125, 125, 125))
+                .add(18, 18, 18)
+                .add(scanForProjectsCheckBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 32, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(75, 75, 75))
         );
+
+        scanForProjectsCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CloneDestinationDirectoryPanel.class, "ACSD_Scan_After_Clone")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -144,6 +157,8 @@ public final class CloneDestinationDirectoryPanel extends JPanel implements Acti
     public void actionPerformed(ActionEvent evt) {
         if (evt.getSource() == directoryBrowseButton) {
             onBrowseClick();
+        } else if (evt.getSource() == scanForProjectsCheckBox) {
+            HgModuleConfig.getDefault().setShowCloneCompleted(scanForProjectsCheckBox.isSelected());
         }
     }
 
@@ -220,6 +235,7 @@ public final class CloneDestinationDirectoryPanel extends JPanel implements Acti
     private javax.swing.JLabel directoryLabel;
     final javax.swing.JTextField nameField = new javax.swing.JTextField();
     private javax.swing.JLabel nameLabel;
+    final javax.swing.JCheckBox scanForProjectsCheckBox = new javax.swing.JCheckBox();
     // End of variables declaration//GEN-END:variables
     
 }
