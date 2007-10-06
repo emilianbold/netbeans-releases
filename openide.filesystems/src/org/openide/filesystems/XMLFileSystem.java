@@ -1016,6 +1016,7 @@ public final class XMLFileSystem extends AbstractFileSystem {
             return 0;
         }
 
+        private static final Set<String> NETWORK_PROTOCOLS = new HashSet<String>(Arrays.asList("http", "https", "ftp")); // NOI18N
         public Date lastModified(String name) {
             URL url = null;
             Date retval = null;
@@ -1036,12 +1037,13 @@ public final class XMLFileSystem extends AbstractFileSystem {
                 if ("jar".equals(protocol)) {//NOI18N
                     URL tmp = FileUtil.getArchiveFile(url);
                     url = (tmp != null) ? tmp : url;
+                    protocol = url.getProtocol();
                 }
                 
                 if ("file".equals(protocol)) { //NOI18N
                     File f = new File(URI.create(url.toExternalForm()));
                     retval = (f.exists()) ? new Date(f.lastModified()) : null;
-                } else {
+                } else /* #96928 */ if (!NETWORK_PROTOCOLS.contains(protocol)) {
                     retval = timeFromDateHeaderField(url);
                 }
             }
@@ -1116,9 +1118,6 @@ public final class XMLFileSystem extends AbstractFileSystem {
             }
         }
 
-        private java.util.Date timeFromDateHeaderField(URL[] urls) {
-            return (urls.length > 0) ? timeFromDateHeaderField(urls[0]) : new java.util.Date(0);
-        }
     }
 
     /** Class that can be used to parse XML document (Expects array of ElementHandler clasess).  Calls handler methods of ElementHandler clasess.
