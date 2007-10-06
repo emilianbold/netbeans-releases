@@ -297,7 +297,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         try {
             rc = getSelectedRC();            
             // check for a valid svnurl
-            rc.getURL();                             
+            rc.getHgUrl();                             
             //if(!isSet(FLAG_ACCEPT_REVISION) && !rc.getSvnRevision().equals(SVNRevision.HEAD)) 
             //{
             //    message = NbBundle.getMessage(Repository.class, "MSG_Repository_OnlyHEADRevision"); // NOI18N

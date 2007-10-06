@@ -40,31 +40,43 @@
  */
 package org.netbeans.modules.mercurial.ui.wizards;
 
+import java.net.MalformedURLException;
 import java.awt.Component;
 import java.awt.BorderLayout;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.JPanel;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.logging.Level;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.netbeans.modules.mercurial.Mercurial;
+import org.netbeans.modules.mercurial.HgModuleConfig;
+import org.netbeans.modules.mercurial.HgException;
+import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.ui.repository.Repository;
+import org.netbeans.modules.mercurial.ui.repository.RepositoryConnection;
+import org.netbeans.modules.mercurial.ui.repository.HgURL;
 
-public class CloneRepositoryWizardPanel implements WizardDescriptor.ValidatingPanel, PropertyChangeListener {
+public class CloneRepositoryWizardPanel implements WizardDescriptor.AsynchronousValidatingPanel, PropertyChangeListener {
     
     /**
      * The visual component that displays this panel. If you need to access the
      * component from this class, just use getComponent().
      */
-    private Component component;
+    private CloneRepositoryPanel component;
     private Repository repository;
     private int repositoryModeMask;
     private boolean valid;
     private String errorMessage;
+    private WizardStepProgressSupport support;
     
     // Get the visual component for the panel. In this template, the component
     // is kept separate. This can be more efficient: if the wizard is created
@@ -167,19 +179,30 @@ public class CloneRepositoryWizardPanel implements WizardDescriptor.ValidatingPa
     }
 
     protected void validateBeforeNext() {
-        System.err.println("validateBeforeNext");
+        try {
+            support = new RepositoryStepProgressSupport(component.progressPanel);
+
+            String url = getUrl();
+            support.setRepositoryRoot(url);
+            RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(url);
+            RequestProcessor.Task task = support.start(rp, url, NbBundle.getMessage(CloneRepositoryWizardPanel.class, "BK2012"));
+            task.waitFinished();
+        } finally {
+            support = null;
+        }
+
     }
 
     // comes on next or finish
     public final void validate () throws WizardValidationException {
         validateBeforeNext();
-        //if (isValid() == false || errorMessage != null) {
-        //    throw new WizardValidationException (
-        //        (javax.swing.JComponent) component,
-        //        errorMessage,
-        //        errorMessage
-        //    );
-        //}
+        if (isValid() == false || errorMessage != null) {
+            throw new WizardValidationException (
+                (javax.swing.JComponent) component,
+                errorMessage,
+                errorMessage
+            );
+        }
     }
 
     // You can use a settings object to keep track of state. Normally the
@@ -192,5 +215,81 @@ public class CloneRepositoryWizardPanel implements WizardDescriptor.ValidatingPa
             ((WizardDescriptor) settings).putProperty("repository", repository.getSelectedRC().getUrl()); // NOI18N
         }
     }
+
+    public void prepareValidation() {
+    }
+
+    private String getUrl() {
+        return getSelectedRepositoryConnection().getUrl();
+    }
+
+    private void storeHistory() {
+        RepositoryConnection rc = getSelectedRepositoryConnection();
+        if(rc != null) {
+            HgModuleConfig.getDefault().insertRecentUrl(rc);
+        }
+    }
+
+    private RepositoryConnection getSelectedRepositoryConnection() {
+        try {
+            return repository.getSelectedRC();
+        } catch (Exception ex) {
+            invalid(ex.getLocalizedMessage());
+            return null;
+        }
+    }
+
+    public void stop() {
+        if(support != null) {
+            support.cancel();
+        }
+    }
+
+    private class RepositoryStepProgressSupport extends WizardStepProgressSupport {
+
+        public RepositoryStepProgressSupport(JPanel panel) {
+            super(panel);
+        }
+
+        public void perform() {
+            final RepositoryConnection rc = getSelectedRepositoryConnection();
+            if (rc == null) {
+                return;
+            }
+            String invalidMsg = null;
+            try {
+                invalid(null);
+
+                // This command validates the url
+                rc.getHgUrl();
+                String url = rc.getUrl();
+                // We try to connect to the repository to check whether it is valid
+                try {
+                    HgCommand.hasHistory(url);
+                } catch (HgException ex) {
+                    invalidMsg = NbBundle.getMessage(CloneRepositoryWizardPanel.class, "CTL_Repository_Invalid", url);
+                    return;
+                }
+            } catch (MalformedURLException ex) {
+                Mercurial.LOG.log(Level.CONFIG, "msg", ex); // should not happen
+            } finally {
+                if(isCanceled()) {
+                    valid(org.openide.util.NbBundle.getMessage(CloneRepositoryWizardPanel.class, "CTL_Repository_Canceled")); // NOI18N
+                } else if(invalidMsg == null) {
+                  valid();
+                  storeHistory();
+                } else {
+                  valid(invalidMsg);
+                }
+            }
+        }
+
+        public void setEditable(boolean editable) {
+            repository.setEditable(editable);
+        }
+    };
+
+
+
 }
 

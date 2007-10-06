@@ -92,7 +92,7 @@ public class RepositoryConnection {
         return externalCommand == null ? "" : externalCommand; // NOI18N
     }
     
-    public HgURL getURL() throws MalformedURLException {
+    public HgURL getHgUrl() throws MalformedURLException {
         if(hgUrl == null) {
             parseUrlString(url);
         }
@@ -197,7 +197,7 @@ public class RepositoryConnection {
     public static String getString(RepositoryConnection rc) {
         HgURL url;
         try {        
-            url = rc.getURL();
+            url = rc.getHgUrl();
         } catch (MalformedURLException mue) {
             // should not happen
             //ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, mue); 

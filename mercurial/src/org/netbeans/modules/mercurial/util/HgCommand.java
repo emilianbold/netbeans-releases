@@ -551,6 +551,29 @@ public class HgCommand {
     /**
      * Determines whether anything has been committed to the repository
      *
+     * @param String repository of the mercurial repository
+     * @return Boolean which is true if the repository has revision history.
+     */
+    public static Boolean hasHistory(String repository) throws HgException {
+        if (repository == null ) return false;
+        
+        List<String> command = new ArrayList<String>();
+
+        command.add(getHgCommand());
+        command.add(HG_LOG_CMD);
+        command.add(HG_LOG_LIMIT_CMD);
+        command.add(HG_OPT_REPOSITORY);
+        command.add(repository);
+
+        List<String> list = exec(command);
+        if (!list.isEmpty() && isErrorAbort(list.get(0)))
+            throw new HgException( list.get(0));
+        return !list.isEmpty();
+    }
+
+    /**
+     * Determines whether anything has been committed to the repository
+     *
      * @param File repository of the mercurial repository's root directory
      * @return Boolean which is true if the repository has revision history.
      */
@@ -567,7 +590,7 @@ public class HgCommand {
 
         try {
             List<String> list = exec(command);
-            if (!list.isEmpty() && isErrorNoRepository(list.get(0)))
+            if (!list.isEmpty() && isErrorAbort(list.get(0)))
                 return false;
             else
                 return !list.isEmpty();
@@ -1816,6 +1839,4 @@ public class HgCommand {
      */
     private HgCommand() {
     }
-    
-    
 }
