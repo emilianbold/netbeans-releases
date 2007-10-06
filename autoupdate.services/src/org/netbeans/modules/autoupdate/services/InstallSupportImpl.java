@@ -373,7 +373,6 @@ public class InstallSupportImpl {
                         progress.progress("");
                         progress.finish();
                     }
-                    downloadedFiles = null;
                 }
                 
                 return needsRestart ? Boolean.TRUE : Boolean.FALSE;
@@ -442,6 +441,7 @@ public class InstallSupportImpl {
 
         Utilities.writeInstallLater(new HashMap<UpdateElementImpl, File>(getElement2Clusters ()));
         getElement2Clusters ().clear ();
+        downloadedFiles = null;
     }
 
     public String getCertificate(Installer validator, UpdateElement uElement) {
