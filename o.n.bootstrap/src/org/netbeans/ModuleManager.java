@@ -419,7 +419,7 @@ public final class ModuleManager {
     }
 
     /** A classloader giving access to all the module classloaders at once. */
-    private final class SystemClassLoader extends JarClassLoader {
+    private static final class SystemClassLoader extends JarClassLoader {
 
         private final PermissionCollection allPermissions;
         private final StringBuffer debugme;
@@ -462,12 +462,12 @@ public final class ModuleManager {
             debugme.append(']'); // NOI18N
         }
 
-        protected void finalize() throws Throwable {
+        protected @Override void finalize() throws Throwable {
             super.finalize();
             Util.err.fine("Collected system class loader");
         }
 
-        public String toString() {
+        public @Override String toString() {
             if (debugme == null) {
                 return "SystemClassLoader";
             }
@@ -477,7 +477,7 @@ public final class ModuleManager {
         /** Provide all permissions for any code loaded from the files list
          * (i.e. with netbeans.systemclassloader.patches).
          */
-        protected PermissionCollection getPermissions(CodeSource cs) {
+        protected @Override PermissionCollection getPermissions(CodeSource cs) {
             return allPermissions;
         }
 
