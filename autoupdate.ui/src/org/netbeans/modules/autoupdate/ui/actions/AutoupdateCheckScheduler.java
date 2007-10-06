@@ -321,7 +321,12 @@ public class AutoupdateCheckScheduler {
         };
         flasher = AvailableUpdatesNotification.getFlasher (onMouseClick);
         assert flasher != null : "Updates Flasher cannot be null.";
-        flasher.setToolTipText (NbBundle.getMessage (AutoupdateCheckScheduler.class, "AutoupdateCheckScheduler_UpdatesFound_ToolTip"));
+        flasher.setToolTipText (
+                elems.size () == 1 ?
+                    NbBundle.getMessage(AutoupdateCheckScheduler.class,
+                        "AutoupdateCheckScheduler_UpdateFound_ToolTip", elems.size()) : // NOI18N
+                    NbBundle.getMessage(AutoupdateCheckScheduler.class,
+                        "AutoupdateCheckScheduler_UpdatesFound_ToolTip", elems.size())); // NOI18N
         flasher.startFlashing ();
     }
     
