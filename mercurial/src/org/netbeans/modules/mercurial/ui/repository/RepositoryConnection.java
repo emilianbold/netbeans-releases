@@ -195,16 +195,9 @@ public class RepositoryConnection {
     //}
     
     public static String getString(RepositoryConnection rc) {
-        HgURL url;
-        try {        
-            url = rc.getHgUrl();
-        } catch (MalformedURLException mue) {
-            // should not happen
-            //ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, mue); 
-            return "";                                                          // NOI18N
-        }        
+        String url = rc.getUrl();
         StringBuffer sb = new StringBuffer();        
-        sb.append(url.toString());
+        sb.append(url);
         sb.append(RC_DELIMITER);
         sb.append(rc.getUsername());
         sb.append(RC_DELIMITER);
