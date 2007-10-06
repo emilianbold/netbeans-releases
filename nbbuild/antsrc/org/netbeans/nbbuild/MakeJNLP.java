@@ -179,7 +179,7 @@ public class MakeJNLP extends Task {
             getSignTask().setJar(from);
             getSignTask().setSignedjar(to);
             getSignTask().execute();
-        } else {
+        } else if (to != null) {
             Copy copy = (Copy)getProject().createTask("copy");
             copy.setFile(from);
             copy.setTofile(to);
@@ -268,12 +268,13 @@ public class MakeJNLP extends Task {
             
             StringWriter writeJNLP = new StringWriter();
             writeJNLP.write("<?xml version='1.0' encoding='UTF-8'?>\n");
-            writeJNLP.write("<jnlp spec='1.0+' codebase='" + codebase + "' >\n");
+            writeJNLP.write("<!DOCTYPE jnlp PUBLIC \"-//Sun Microsystems, Inc//DTD JNLP Discriptor 1.5//EN\" \"http://java.sun.com/dtd/JNLP-1.5.dtd\">\n");
+            writeJNLP.write("<jnlp spec='1.0+' codebase='" + codebase + "'>\n");
             writeJNLP.write("  <information>\n");
-            writeJNLP.write("   <title>" + title + "</title>\n");
+            writeJNLP.write("   <title>" + XMLUtil.toElementContent(title) + "</title>\n");
             writeJNLP.write("   <vendor>NetBeans</vendor>\n");
-            writeJNLP.write("   <description kind='one-line'>" + oneline + "</description>\n");
-            writeJNLP.write("   <description kind='short'>" + shrt + "</description>\n");
+            writeJNLP.write("   <description kind='one-line'>" + XMLUtil.toElementContent(oneline) + "</description>\n");
+            writeJNLP.write("   <description kind='short'>" + XMLUtil.toElementContent(shrt) + "</description>\n");
             writeJNLP.write("  </information>\n");
             writeJNLP.write(permissions +"\n");
             if (osDep == null) {
@@ -452,9 +453,7 @@ public class MakeJNLP extends Task {
         if (nblibJar.isFile()) {
             File ext = new File(new File(targetFile, dashcnb), "ant-nblib-" + nblibJar.getName());
             fileWriter.write("    <jar href='" + dashcnb + '/' + ext.getName() + "'/>\n");
-            getSignTask().setJar(nblibJar);
-            getSignTask().setSignedjar(ext);
-            getSignTask().execute();
+            signOrCopy(nblibJar, ext);
         }
 
         String path = mf.getMainAttributes().getValue("Class-Path");
@@ -482,12 +481,13 @@ public class MakeJNLP extends Task {
                 copy.setTofile(t);
                 copy.execute();
                 
-                String extJnlpName = t.getName().replaceFirst("\\.jar$", "") + ".jnlp";
-                File jnlp = new File(new File(targetFile, dashcnb), extJnlpName);
+                String extJnlpName = dashcnb + '-' + t.getName().replaceFirst("\\.jar$", "") + ".jnlp";
+                File jnlp = new File(targetFile, extJnlpName);
 
                 FileWriter writeJNLP = new FileWriter(jnlp);
                 writeJNLP.write("<?xml version='1.0' encoding='UTF-8'?>\n");
-                writeJNLP.write("<jnlp spec='1.0+' codebase='" + codebase + "' >\n");
+                writeJNLP.write("<!DOCTYPE jnlp PUBLIC \"-//Sun Microsystems, Inc//DTD JNLP Discriptor 1.5//EN\" \"http://java.sun.com/dtd/JNLP-1.5.dtd\">\n");
+                writeJNLP.write("<jnlp spec='1.0+' codebase='" + codebase + "'>\n");
                 writeJNLP.write("  <information>\n");
                 writeJNLP.write("    <title>" + n + "</title>\n");
                 writeJNLP.write("    <vendor>NetBeans</vendor>\n");
@@ -500,7 +500,7 @@ public class MakeJNLP extends Task {
                 writeJNLP.write("</jnlp>\n");
                 writeJNLP.close();
                 
-                fileWriter.write("    <extension name='" + e.getName().replaceFirst("\\.jar$", "") + "' href='" + dashcnb + '/' + extJnlpName + "'/>\n");
+                fileWriter.write("    <extension name='" + e.getName().replaceFirst("\\.jar$", "") + "' href='" + extJnlpName + "'/>\n");
             } else {
                 File ext = new File(new File(targetFile, dashcnb), s.replace('/', '-'));
                 
@@ -541,9 +541,7 @@ public class MakeJNLP extends Task {
             jartask.execute();
             blank.delete();
             fileWriter.write("    <jar href='" + dashcnb + '/' + ext.getName() + "'/>\n");
-            getSignTask().setJar(ext);
-            getSignTask().setSignedjar(null);
-            getSignTask().execute();
+            signOrCopy(ext, null);
         }
     }
     

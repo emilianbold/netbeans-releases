@@ -41,6 +41,7 @@
 
 package org.netbeans.nbbuild;
 
+import java.io.CharConversionException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
@@ -76,6 +77,8 @@ import org.xml.sax.SAXException;
  * @author Petr Kuzel, Jesse Glick
  */
 public final class XMLUtil extends Object {
+
+    private XMLUtil() {}
 
     @SuppressWarnings("unchecked")
     private static final ThreadLocal<DocumentBuilder>[] builderTL = new ThreadLocal[4];
@@ -272,4 +275,81 @@ public final class XMLUtil extends Object {
         return elements;
     }
     
+    static String toElementContent(String val) throws CharConversionException {
+        if (val == null) {
+            throw new CharConversionException("null"); // NOI18N
+        }
+
+        if (checkContentCharacters(val)) {
+            return val;
+        }
+
+        StringBuilder buf = new StringBuilder();
+
+        for (int i = 0; i < val.length(); i++) {
+            char ch = val.charAt(i);
+
+            if ('<' == ch) {
+                buf.append("&lt;");
+
+                continue;
+            } else if ('&' == ch) {
+                buf.append("&amp;");
+
+                continue;
+            } else if (('>' == ch) && (i > 1) && (val.charAt(i - 2) == ']') && (val.charAt(i - 1) == ']')) {
+                buf.append("&gt;");
+
+                continue;
+            }
+
+            buf.append(ch);
+        }
+
+        return buf.toString();
+    }
+    private static boolean checkContentCharacters(String chars)
+    throws CharConversionException {
+        boolean escape = false;
+
+        for (int i = 0; i < chars.length(); i++) {
+            char ch = chars.charAt(i);
+
+            if (((int) ch) <= 93) { // we are UNICODE ']'
+
+                switch (ch) {
+                case 0x9:
+                case 0xA:
+                case 0xD:
+
+                    continue;
+
+                case '>': // only ]]> is dangerous
+
+                    if (escape) {
+                        continue;
+                    }
+
+                    escape = (i > 0) && (chars.charAt(i - 1) == ']');
+
+                    continue;
+
+                case '<':
+                case '&':
+                    escape = true;
+
+                    continue;
+
+                default:
+
+                    if (((int) ch) < 0x20) {
+                        throw new CharConversionException("Invalid XML character &#" + ((int) ch) + ";.");
+                    }
+                }
+            }
+        }
+
+        return escape == false;
+    }
+
 }

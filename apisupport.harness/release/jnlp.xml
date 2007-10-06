@@ -54,8 +54,8 @@ made subject to such option by the copyright holder.
         <available file="master.jnlp" property="master.jnlp.exists"/>
     </target>
     <target name="jnlp-init-generate-master" depends="-check-for-master.jnlp" unless="master.jnlp.exists">
-        <!-- XXX ought to try to avoid generating a fixed codebase at this time (WAR build replaces it though) -->
         <echo file="master.jnlp"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE jnlp PUBLIC "-//Sun Microsystems, Inc//DTD JNLP Discriptor 1.5//EN" "http://java.sun.com/dtd/JNLP-1.5.dtd">
 <jnlp spec="1.0+" codebase="${jnlp.codebase}">
   <information>
       <title>$${app.title}</title>
@@ -68,10 +68,10 @@ made subject to such option by the copyright holder.
     <!-- The following property is needed when running with unsigned jars: -->
     <property name="netbeans.jnlp.fixPolicy" value="$${netbeans.jnlp.fixPolicy}"/>
     <extension name='branding' href='branding.jnlp' />
-<!-- The following line will be replaced with an automatically generated list of resources: -->    
+<!-- The following line will be replaced with an automatically generated list of resources: -->
 <!--$${jnlp.resources}-->
   </resources>
-  <resources os="Mac OS X"> 
+  <resources os="Mac OS X">
       <property name="netbeans.user" value="$${user.home}/Library/Application Support/$${app.name}"/>
   </resources>
   <application-desc>
@@ -81,6 +81,7 @@ made subject to such option by the copyright holder.
 </jnlp>  
 ]]></echo>
         <echo file="branding.jnlp"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE jnlp PUBLIC "-//Sun Microsystems, Inc//DTD JNLP Discriptor 1.5//EN" "http://java.sun.com/dtd/JNLP-1.5.dtd">
 <jnlp spec="1.0+" codebase="${jnlp.codebase}">
   <information>
       <title>$${app.title}</title>
@@ -88,7 +89,7 @@ made subject to such option by the copyright holder.
       <description>$${app.name} application</description>
       <icon href="$${app.icon}"/>
   </information>
-  <security>$${jnlp.permissions}</security>
+  $${jnlp.permissions}
   <resources>
     $${jnlp.branding.jars}
   </resources>
@@ -125,12 +126,13 @@ made subject to such option by the copyright holder.
                 </custom>
             </and>
         </fileset>
+        <property name="jnlp.sign.jars" value="true"/>
+        <property name="jnlp.signjar.keystore" location="build/default.keystore"/>
+        <property name="jnlp.signjar.alias" value="jnlp"/>
+        <property name="jnlp.signjar.password" value="netbeans"/>
+        <available property="jnlp.signjar.keystore.exists" file="${jnlp.signjar.keystore}"/>
     </target>
 
-    <property name="jnlp.signjar.keystore" location="build/default.keystore"/>
-    <property name="jnlp.signjar.alias" value="jnlp"/>
-    <property name="jnlp.signjar.password" value="netbeans"/>
-    <available property="jnlp.signjar.keystore.exists" file="${jnlp.signjar.keystore}"/>
     <target name="jnlp-generate-keystore" depends="jnlp-init" unless="jnlp.signjar.keystore.exists">
         <property name="jnlp.signjar.vendor" value="CN=${user.name}"/>
         
@@ -231,12 +233,13 @@ made subject to such option by the copyright holder.
         <mkdir dir="${build.jnlp.local.dir}/netbeans/"/>
         <mkdir dir="${build.jnlp.local.dir}/app/"/>
         
+        <makeurl property="build.jnlp.local.url" file="${build.jnlp.local.dir}"/>
         <copy todir="${build.jnlp.local.dir}">
             <fileset dir="build/jnlp">
                 <include name="*.jnlp"/>
             </fileset>
             <filterchain>
-                <replacestring from="$$$$codebase" to="file:${build.jnlp.local.dir}"/><!-- XXX potential SPACE_IN_PATH bug -->
+                <replacestring from="$$$$codebase" to="${build.jnlp.local.url}"/>
             </filterchain>
         </copy>
         <mkdir dir="build/jnlp/netbeans"/> <!-- else fileset will croak -->
@@ -245,7 +248,7 @@ made subject to such option by the copyright holder.
                 <include name="**/*.jnlp"/>
             </fileset>
             <filterchain>
-                <replacestring from="$$$$codebase" to="file:${build.jnlp.local.dir}/netbeans/"/><!-- XXX potential SPACE_IN_PATH bug -->
+                <replacestring from="$$$$codebase" to="${build.jnlp.local.url}netbeans/"/>
             </filterchain>
         </copy>
         <copy todir="${build.jnlp.local.dir}/app/">
@@ -253,7 +256,7 @@ made subject to such option by the copyright holder.
                 <include name="**/*.jnlp"/>
             </fileset>
             <filterchain>
-                <replacestring from="$$$$codebase" to="file:${build.jnlp.local.dir}/app/"/><!-- XXX potential SPACE_IN_PATH bug -->
+                <replacestring from="$$$$codebase" to="${build.jnlp.local.url}app/"/>
             </filterchain>
         </copy>
         <copy todir="${build.jnlp.local.dir}">
@@ -261,6 +264,9 @@ made subject to such option by the copyright holder.
                 <exclude name="**/*.jnlp"/>
             </fileset>
         </copy>
+        <verifyjnlp>
+            <fileset file="${build.jnlp.local.dir}/master.jnlp"/>
+        </verifyjnlp>
     </target>
     
     <target name="build-jnlp-nowar" depends="jnlp-init,jnlp-generate-keystore,jnlp-generate-platform">
@@ -342,6 +348,11 @@ made subject to such option by the copyright holder.
                 <replacestring from="$${jnlp.permissions}" to="${jnlp.permissions}"/>
             </filterchain>
         </copy>
+
+        <taskdef name="verifyjnlp" classname="org.netbeans.nbbuild.VerifyJNLP" classpath="${harness.dir}/tasks.jar"/>
+        <verifyjnlp>
+            <fileset file="${jnlp.dest.dir}/master.jnlp"/>
+        </verifyjnlp>
     </target>
     
     <target name="sign-branding-jars" unless="unsign-the-jars" depends="copy-branding-jars">

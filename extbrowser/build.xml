@@ -44,7 +44,7 @@ made subject to such option by the copyright holder.
 
     <import file="../nbbuild/templates/projectized.xml"/>
 
-    <target name="jnlp" depends="netbeans">
+    <target name="jnlp" depends="netbeans,-jnlp-init">
         <property name="dir" location="${jnlp.dest.dir}/${code.name.base.dashes}"/>
         <mkdir dir="${dir}"/>
         <copy file="${cluster}/${module.jar}" todir="${dir}"/>
@@ -53,6 +53,7 @@ made subject to such option by the copyright holder.
                 <include name="extbrowser*.dll"/>
             </fileset>
         </jar>
+        <!-- XXX ought to only do this in case jnlp.sign.jars=true -->
         <signjar alias="${jnlp.signjar.alias}" storepass="${jnlp.signjar.password}" keystore="${jnlp.signjar.keystore}">
             <fileset dir="${dir}">
                 <include name="*.jar"/>
@@ -61,6 +62,7 @@ made subject to such option by the copyright holder.
         <property file="${manifest.mf}"/>
         <property file="${src.dir}/${OpenIDE-Module-Localizing-Bundle}"/>
         <echo file="${jnlp.dest.dir}/${code.name.base.dashes}.jnlp"><![CDATA[<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE jnlp PUBLIC "-//Sun Microsystems, Inc//DTD JNLP Discriptor 1.5//EN" "http://java.sun.com/dtd/JNLP-1.5.dtd">
 <jnlp spec='1.0+' codebase='${jnlp.codebase}'>
   <information>
    <title>${OpenIDE-Module-Name}</title>

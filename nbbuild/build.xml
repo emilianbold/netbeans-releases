@@ -243,11 +243,15 @@ made subject to such option by the copyright holder.
     />
   </target>
 
-  <target name="build-jnlp" depends="init,jnlp-generate-keystore">
-      <fail message="Property jnlp.codebase must be set to final location of your JNLP files!" unless="jnlp.codebase" />
+  <target name="build-jnlp" depends="init,jnlp-generate-keystore" description="Create a JNLP distribution.">
       <property name="jnlp.dest.dir" location="build/jnlp" />
       <mkdir dir="${jnlp.dest.dir}" />
+      <makeurl property="jnlp.codebase" file="${jnlp.dest.dir}"/> <!-- fallback value unless otherwise configured -->
       <for-each startdir=".." target="jnlp" locations="${config.modules.jnlp}"/>
+      <taskdef name="verifyjnlp" classname="org.netbeans.nbbuild.VerifyJNLP" classpath="nbantext.jar"/>
+      <verifyjnlp>
+          <fileset dir="${jnlp.dest.dir}" includes="*.jnlp"/>
+      </verifyjnlp>
   </target>
   
   <!-- build javadoc for selected modules -->

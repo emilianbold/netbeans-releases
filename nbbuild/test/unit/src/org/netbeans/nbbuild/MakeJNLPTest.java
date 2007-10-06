@@ -791,7 +791,7 @@ public class MakeJNLPTest extends NbTestCase {
         
         assertFilenames(output, "aaa-my-module.jnlp", "aaa-my-module/s0.jar",
                 "aaa-my-module/ext-t0.jar",
-                "aaa-my-module/ext-t0.jnlp");
+                "aaa-my-module-ext-t0.jnlp");
         
         JarFile f = new JarFile(new File(output, "aaa-my-module/ext-t0.jar"));
         Enumeration en = f.entries();
@@ -820,7 +820,7 @@ public class MakeJNLPTest extends NbTestCase {
         int first = res.indexOf("jar href");
         assertEquals("Just one jar href ", -1, res.indexOf("jar href", first + 1));
         
-        String extRes = ModuleDependenciesTest.readFile(new File(output, "aaa-my-module/ext-t0.jnlp"));
+        String extRes = ModuleDependenciesTest.readFile(new File(output, "aaa-my-module-ext-t0.jnlp"));
         
         Matcher m = Pattern.compile("<title>(.*)</title>").matcher(extRes);
         assertTrue("title is there: " + extRes, m.find());
