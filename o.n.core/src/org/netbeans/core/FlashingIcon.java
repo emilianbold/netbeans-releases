@@ -84,6 +84,7 @@ abstract class FlashingIcon extends JComponent implements MouseListener {
         setMinimumSize( d );
         setMaximumSize( d );
         setPreferredSize( d );
+        setVisible (false);
         
         addMouseListener( this );
         rp = new RequestProcessor( "Exception Notification Icon" ); //NOI18N
@@ -105,6 +106,7 @@ abstract class FlashingIcon extends JComponent implements MouseListener {
                 timerTask = rp.create( new Timer() );
             }
             timerTask.run();
+            this.setVisible (true);
         }
         repaint();
     }
@@ -121,6 +123,7 @@ abstract class FlashingIcon extends JComponent implements MouseListener {
                 timerTask.cancel();
             timerTask = null;
             setToolTipText( null );
+            this.setVisible (false);
         }
         repaint();
     }
@@ -148,6 +151,7 @@ abstract class FlashingIcon extends JComponent implements MouseListener {
         repaint();
     }
 
+    @Override
     public void paint(java.awt.Graphics g) {
         if( isIconVisible ) {
             icon.paintIcon( this, g, 0, 0 );
@@ -185,6 +189,7 @@ abstract class FlashingIcon extends JComponent implements MouseListener {
      */
     protected abstract void timeout();
 
+    @Override
     public Cursor getCursor() {
 
         if( isIconVisible ) {
@@ -193,6 +198,7 @@ abstract class FlashingIcon extends JComponent implements MouseListener {
         return Cursor.getDefaultCursor();
     }
 
+    @Override
     public Point getToolTipLocation( MouseEvent event ) {
 
         JToolTip tip = createToolTip();
