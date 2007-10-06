@@ -40,44 +40,25 @@
  */
 package org.netbeans.modules.ruby;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.jruby.ast.ArrayNode;
-import org.jruby.ast.BignumNode;
 import org.jruby.ast.CallNode;
-import org.jruby.ast.ClassVarAsgnNode;
-import org.jruby.ast.ClassVarDeclNode;
 import org.jruby.ast.ClassVarNode;
 import org.jruby.ast.Colon2Node;
-import org.jruby.ast.DAsgnNode;
-import org.jruby.ast.DRegexpNode;
-import org.jruby.ast.DStrNode;
-import org.jruby.ast.DSymbolNode;
 import org.jruby.ast.DVarNode;
-import org.jruby.ast.DXStrNode;
-import org.jruby.ast.FalseNode;
-import org.jruby.ast.FixnumNode;
-import org.jruby.ast.FloatNode;
-import org.jruby.ast.GlobalAsgnNode;
 import org.jruby.ast.GlobalVarNode;
-import org.jruby.ast.HashNode;
-import org.jruby.ast.InstAsgnNode;
 import org.jruby.ast.InstVarNode;
-import org.jruby.ast.LocalAsgnNode;
 import org.jruby.ast.LocalVarNode;
 import org.jruby.ast.MethodDefNode;
-import org.jruby.ast.NilNode;
 import org.jruby.ast.Node;
-import org.jruby.ast.RegexpNode;
-import org.jruby.ast.StrNode;
+import org.jruby.ast.NodeTypes;
 import org.jruby.ast.SymbolNode;
-import org.jruby.ast.TrueNode;
-import org.jruby.ast.XStrNode;
-import org.jruby.ast.ZArrayNode;
 import org.jruby.ast.types.INameNode;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.ruby.elements.IndexedClass;
 import org.openide.filesystems.FileObject;
 
 
@@ -96,6 +77,10 @@ import org.openide.filesystems.FileObject;
  *    I should use that to track down the types
  * @todo Use some statistical results to improve this; .to_s => String, .to_f => float,
  *   etc.
+ * @todo In     create_table :posts do |t|
+ *   I need to realize the type of "t" is ActiveRecord::ConnectionAdapters::TableDefinition from schema_definitions.rb
+ * @todo Methods whose names end with "?" probably return TrueClass or FalseClass
+ *   so I can handle those expressions without actual return value lookup
  *
  * @author Tor Norbye
  */
@@ -103,6 +88,7 @@ public class TypeAnalyzer {
     static final String PARAM_HINT_ARG = "#:arg:"; // NOI18N
     static final String PARAM_HINT_RETURN = "#:return:=>"; // NOI18N
 
+    private RubyIndex index;
     /** Map from variable or field(etc) name to type. */
     private Map<String, String> types;
     private final int astOffset;
@@ -115,7 +101,8 @@ public class TypeAnalyzer {
 
     /** Creates a new instance of TypeAnalyzer for a given position.
      * The {@link #analyze} method will do the rest. */
-    public TypeAnalyzer(Node root, Node target, int astOffset, int lexOffset, BaseDocument doc, FileObject fileObject) {
+    public TypeAnalyzer(RubyIndex index, Node root, Node target, int astOffset, int lexOffset, BaseDocument doc, FileObject fileObject) {
+        this.index = index;
         this.root = root;
         this.target = target;
         this.astOffset = astOffset;
@@ -127,8 +114,9 @@ public class TypeAnalyzer {
     /**
      * Analyze the given code block down to the given offset. The {@link #getType}
      * method can then be used to read out the symbol type if any at that point.
+     * Returns the type of the current expression, if known.
      */
-    private void analyze(Node node) {
+    private String analyze(Node node) {
         // Avoid including definitions appearing later in the
         // context than the caret. (This only works for local variable
         // analysis; for fields it could be complicated by code earlier
@@ -139,14 +127,18 @@ public class TypeAnalyzer {
         }
 
         if (target == null && node.getPosition().getStartOffset() > astOffset) {
-            return;
+            return null;
         }
 
         // Algorithm: walk AST and look for assignments and such.
         // Attempt to compute the type of each expression and
-        if (node instanceof LocalAsgnNode || node instanceof InstAsgnNode ||
-                node instanceof GlobalAsgnNode || node instanceof ClassVarAsgnNode ||
-                node instanceof ClassVarDeclNode || node instanceof DAsgnNode) {
+        switch (node.nodeId) {
+        case NodeTypes.LOCALASGNNODE:
+        case NodeTypes.INSTASGNNODE:
+        case NodeTypes.GLOBALASGNNODE:
+        case NodeTypes.CLASSVARASGNNODE:
+        case NodeTypes.CLASSVARDECLNODE:
+        case NodeTypes.DASGNNODE: {
             String symbol = ((INameNode)node).getName();
             String type = expressionType(node);
 
@@ -158,6 +150,18 @@ public class TypeAnalyzer {
                 types.remove(symbol);
             }
         }
+//        case NodeTypes.ITERNODE: {
+//            // A block. See if I know the LHS expression types, and if so
+//            // I can propagate the type into the block variables.
+//        }
+//        case NodeTypes.CALLNODE: {
+//            // Look for known calls whose return types we can guess
+//            String name = ((INameNode)node).getName();
+//            if (name.startsWith("find")) {
+//            }
+//        }
+//            
+        }
 
         @SuppressWarnings("unchecked")
         List<Node> list = node.childNodes();
@@ -165,6 +169,8 @@ public class TypeAnalyzer {
         for (Node child : list) {
             analyze(child);
         }
+        
+        return null;
     }
 
     /** Called on AsgnNodes to compute RHS */
@@ -184,11 +190,13 @@ public class TypeAnalyzer {
 
         Node child = list.get(0);
 
-        if (child instanceof CallNode) {
+        switch (child.nodeId) {
+        case NodeTypes.CALLNODE: {
+            // Look for known calls whose return types we can guess
             CallNode call = (CallNode)child;
-
+            String name = call.getName();
             // If you call Foo.new I'm going to assume the type of the expression if "Foo"
-            if ("new".equals(call.getName())) { // NOI18N
+            if ("new".equals(name)) { // NOI18N
 
                 Node receiver = call.getReceiverNode();
 
@@ -198,43 +206,80 @@ public class TypeAnalyzer {
                     // TODO - compute fqn (packages etc.)
                     return ((INameNode)receiver).getName();
                 }
-            }
-        } else if (child instanceof LocalVarNode) {
-            return types.get(((LocalVarNode)child).getName());
-        } else if (child instanceof DVarNode) {
-            return types.get(((DVarNode)child).getName());
-        } else if (child instanceof InstVarNode) {
-            return types.get(((InstVarNode)child).getName());
-        } else if (child instanceof GlobalVarNode) {
-            return types.get(((GlobalVarNode)child).getName());
-        } else if (child instanceof ClassVarNode) {
-            return types.get(((ClassVarNode)child).getName());
-        } else if (child instanceof ArrayNode|| child instanceof ZArrayNode) {
-            return "Array";
-        } else if (child instanceof StrNode || child instanceof DStrNode ||
-                child instanceof XStrNode || child instanceof DXStrNode) {
-            return "String";
-        } else if (child instanceof FixnumNode) {
-            return "Fixnum";
-        } else if (child instanceof BignumNode) {
-            return "Bignum";
-        } else if (child instanceof HashNode) {
-            return "Hash";
-        } else if (child instanceof RegexpNode || child instanceof DRegexpNode) {
-            return "Regexp";
-        } else if (child instanceof SymbolNode || child instanceof DSymbolNode) {
-            return "Symbol";
-        } else if (child instanceof FloatNode) {
-            return "Float";
-        } else if (child instanceof NilNode) {
-            return "NilClass";
-        } else if (child instanceof TrueNode) {
-            return "TrueClass";
-        } else if (child instanceof FalseNode) {
-            return "FalseClass";
+            } else if (name.startsWith("find")) {
+                // -Possibly- ActiveRecord finders, very important
+                Node receiver = call.getReceiverNode();
 
+                String receiverName = null;
+                if (receiver instanceof Colon2Node) {
+                    receiverName = AstUtilities.getFqn((Colon2Node)receiver);
+                } else if (receiver instanceof INameNode) {
+                    // TODO - compute fqn (packages etc.)
+                    receiverName = ((INameNode)receiver).getName();
+                }
+                
+                if (receiverName != null && index != null) {
+                    IndexedClass superClass = index.getSuperclass(receiverName);
+                    if (superClass != null && "ActiveRecord::Base".equals(superClass.getFqn())) { // NOI18N
+                        // Looks like a find method on active record
+                        // The big question is whether this is going to return
+                        // the type itself (receivedName) or an array of it;
+                        // that depends on the args (for find(:all) it's asn array,
+                        // find(:first) it's an item, and for find(1,2,3) it's an
+                        // array etc. 
+                        // There are other find signatures which define other semantics
+                        return pickFinderType(call, name, receiverName);
+                    }
+                }
+            }
+            
+            // TODO - build up a return type database for lots of methods
+            // whose returntypes we can guess, and look up dynamically
+            // (probably backed by a cache since I'm frequently checkin the
+            // same methods over and over
+            
+            break;
+        }
+        case NodeTypes.LOCALVARNODE:
+            return types.get(((LocalVarNode)child).getName());
+        case NodeTypes.DVARNODE:
+            return types.get(((DVarNode)child).getName());
+        case NodeTypes.INSTVARNODE:
+            return types.get(((InstVarNode)child).getName());
+        case NodeTypes.GLOBALVARNODE:
+            return types.get(((GlobalVarNode)child).getName());
+        case NodeTypes.CLASSVARNODE:
+            return types.get(((ClassVarNode)child).getName());
+        case NodeTypes.ARRAYNODE:
+        case NodeTypes.ZARRAYNODE:
+            return "Array"; // NOI18N
+        case NodeTypes.STRNODE:
+        case NodeTypes.DSTRNODE:
+        case NodeTypes.XSTRNODE:
+        case NodeTypes.DXSTRNODE:
+            return "String"; // NOI18N
+        case NodeTypes.FIXNUMNODE:
+            return "Fixnum"; // NOI18N
+        case NodeTypes.BIGNUMNODE:
+            return "Bignum"; // NOI18N
+        case NodeTypes.HASHNODE:
+            return "Hash"; // NOI18N
+        case NodeTypes.REGEXPNODE:
+        case NodeTypes.DREGEXPNODE:
+            return "Regexp"; // NOI18N
+        case NodeTypes.SYMBOLNODE:
+        case NodeTypes.DSYMBOLNODE:
+            return "Symbol"; // NOI18N
+        case NodeTypes.FLOATNODE:
+            return "Float"; // NOI18N
+        case NodeTypes.NILNODE:
+            return "NilClass"; // NOI18N
+        case NodeTypes.TRUENODE:
+            return "TrueClass"; // NOI18N
+        case NodeTypes.FALSENODE:
+            return "FalseClass"; // NOI18N
             //} else if (child instanceof RangeNode) {
-            //    return "Range";
+            //    return "Range"; // NOI18N
         }
 
         return null;
@@ -255,7 +300,31 @@ public class TypeAnalyzer {
             analyze(root);
         }
 
-        return types.get(symbol);
+        String type = types.get(symbol);
+        
+        // Special cases
+        if (type == null) {
+            // Handle migrations. This needs better flow analysis of block
+            // variables but do quickfix for 6.0 which will work in most 
+            // migrations files.
+            if ("t".equals(symbol) && root.nodeId == NodeTypes.DEFSNODE) {
+                String n = ((INameNode)root).getName();
+                if ("up".equals(n) || ("down".equals(n))) {
+                    return "ActiveRecord::ConnectionAdapters::TableDefinition";
+                }
+            }
+        }
+
+        // We keep track of the types contained within Arrays
+        // internally (and probably hashes as well, TODO)
+        // such that we can do the right thing when you operate
+        // on an Array. However, clients should only see the "raw" (and real)
+        // type.
+        if (type != null && type.startsWith("Array<")) { // NOI18N
+            return "Array"; // NOI18N
+        }
+        
+        return type;
     }
     
     
@@ -395,6 +464,40 @@ public class TypeAnalyzer {
                     //}
                 }
             }
+        }
+    }
+
+    /** Look up the right return type for the given finder call */
+    private String pickFinderType(CallNode call, String method, String model) {
+        // Dynamic finders
+        boolean multiple;
+        if (method.startsWith("find_all")) { // NOI18N
+            multiple = true;
+        } else if (method.startsWith("find_by_") || method.equals("find_first")) { // NOI18N
+            multiple = false;
+        } else if (method.equals("find")) { // NOI18N
+            // Finder method that does both - gotta inspect it
+            List<Node> nodes = new ArrayList<Node>();
+            AstUtilities.addNodesByType(call, new int[] {NodeTypes.SYMBOLNODE}, nodes);
+            boolean foundAll = false;
+            for (Node n : nodes) {
+                SymbolNode symbol = (SymbolNode)n;
+                if ("all".equals(symbol.getName())) { // NOI18N
+                    foundAll = true;
+                    break;
+                }
+            }
+            multiple = foundAll;
+        } else {
+            // Not sure - probably some other locally defined finder method;
+            // just default to the model name
+            multiple = false;
+        }
+        
+        if (multiple) {
+            return "Array<" + model + ">";
+        } else {
+            return model;
         }
     }
 }

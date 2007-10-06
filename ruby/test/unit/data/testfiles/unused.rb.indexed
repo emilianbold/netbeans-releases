@@ -14,8 +14,8 @@ Indexed:
   class : Object
   class-ig : object
   fqn : Object
-  method : foo(unusedparam,unusedparam2,usedparam):t
+  method : foo(unusedparam,unusedparam2,usedparam)|TOPLEVEL|
   source : <TESTURL>/unused.rb
 
 Not Indexed:
-  attrs : c
+  attrs : |CLASS|

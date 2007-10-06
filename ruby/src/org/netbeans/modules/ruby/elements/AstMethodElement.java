@@ -61,6 +61,7 @@ public class AstMethodElement extends AstElement implements MethodElement {
         this.modifiers = modifiers;
     }
 
+    @Override
     public Set<Modifier> getModifiers() {
         if (modifiers == null) {
             if (node instanceof DefsNode) {
@@ -75,6 +76,11 @@ public class AstMethodElement extends AstElement implements MethodElement {
 
     public void setAccess(Modifier access) {
         this.access = access;
+        if (modifiers != null && modifiers.contains(Modifier.STATIC)) {
+            modifiers = EnumSet.of(Modifier.STATIC, access);
+        } else {
+            modifiers = null;
+        }
     }
 
     @Override
@@ -90,6 +96,13 @@ public class AstMethodElement extends AstElement implements MethodElement {
      * @todo Compute answer
      */
     public boolean isTopLevel() {
+        return false;
+    }
+
+    /**
+     * @todo Compute answer
+     */
+    public boolean isInherited() {
         return false;
     }
 }

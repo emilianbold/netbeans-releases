@@ -17,7 +17,7 @@ Indexed:
   source : <TESTURL>/action_view.rb
 
 Not Indexed:
-  attrs : c
+  attrs : |CLASS|
   in : ActionView
   includes : ActionView::Partials
   requires : action_view/base,action_view/partials

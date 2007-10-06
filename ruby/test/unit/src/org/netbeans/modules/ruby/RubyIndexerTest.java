@@ -47,16 +47,17 @@ import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.gsf.CompilationInfo;
 import java.io.File;
-import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.api.gsf.CompilationInfo;
 import org.netbeans.api.gsf.Index;
 import org.netbeans.api.gsf.NameKind;
-import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.ruby.elements.IndexedClass;
+import org.netbeans.modules.ruby.elements.IndexedElement;
+import org.netbeans.modules.ruby.elements.IndexedField;
+import org.netbeans.modules.ruby.elements.IndexedMethod;
 
 /**
  * @author Tor Norbye
@@ -109,6 +110,44 @@ public class RubyIndexerTest extends RubyTestBase {
             
             return sb.toString();
         }
+        
+        private String prettyPrintValue(String key, String value) {
+            if (value == null) {
+                return value;
+            }
+            if (RubyIndexer.FIELD_METHOD_NAME.equals(key)) {
+                // Decode the attributes
+                int attributeIndex = value.indexOf(';');
+                if (attributeIndex != -1) {
+                    int flags = IndexedElement.stringToFlag(value, attributeIndex+1);
+                    if (flags != 0) {
+                        String desc = IndexedMethod.decodeFlags(flags);
+                        value = value.substring(0, attributeIndex) + desc + value.substring(attributeIndex+3);
+                    }
+                }
+            } else if (RubyIndexer.FIELD_CLASS_ATTRS.equals(key)) {
+                // Decode the attributes
+                int flags = IndexedElement.stringToFlag(value, 0);
+                if (flags != 0) {
+                    String desc = IndexedClass.decodeFlags(flags);
+                    value = desc + value.substring(2);
+                } else {
+                    value = "|CLASS|";
+                }
+            } else if (RubyIndexer.FIELD_FIELD_NAME.equals(key)) {
+                // Decode the attributes
+                int attributeIndex = value.indexOf(';');
+                if (attributeIndex != -1) {
+                    int flags = IndexedElement.stringToFlag(value, attributeIndex+1);
+                    if (flags != 0) {
+                        String desc = IndexedField.decodeFlags(flags);
+                        value = value.substring(0, attributeIndex) + desc + value.substring(attributeIndex+3);
+                    }
+                }
+            }
+            
+            return value;
+        }
 
         public void gsfStore(Set<Map<String, String>> fieldToData, Set<Map<String, String>> noIndexData, Map<String, String> toDelete) throws IOException {
             sb.append("\n\nDocument ");
@@ -132,7 +171,7 @@ public class RubyIndexerTest extends RubyTestBase {
             List<String> strings = new ArrayList<String>();
             for (Map<String,String> map : fieldToData) {
                 for (String key : map.keySet()) {
-                    strings.add(key + " : " + map.get(key));
+                    strings.add(key + " : " + prettyPrintValue(key, map.get(key)));
                 }
             }
             Collections.sort(strings);
@@ -148,7 +187,7 @@ public class RubyIndexerTest extends RubyTestBase {
             strings = new ArrayList<String>();
             for (Map<String,String> map : noIndexData) {
                 for (String key : map.keySet()) {
-                    String value = map.get(key);
+                    String value = prettyPrintValue(key, map.get(key));
                     if (value.indexOf(',') != -1) {
                         value = sortCommaList(value);
                     }
@@ -176,7 +215,7 @@ public class RubyIndexerTest extends RubyTestBase {
         File rubyFile = new File(getDataDir(), relFilePath);
         Index index = new TestIndex(rubyFile.toURI().toURL().toExternalForm());
         RubyIndexer indexer = new RubyIndexer();
-        RubyIndex.setClusterUrl("bogus"); // No translation
+        RubyIndex.setClusterUrl("file:/bogus"); // No translation
         indexer.updateIndex(index, rpr);
         
         String annotatedSource = index.toString();
@@ -235,4 +274,50 @@ public class RubyIndexerTest extends RubyTestBase {
     public void testTopLevel3() throws Exception {
         checkIndexer("testfiles/method_definer_test.rb");
     }
+
+    public void testMigration1() throws Exception {
+        checkIndexer("testfiles/migrate/001_create_products.rb");
+    }
+    public void testMigration2() throws Exception {
+        checkIndexer("testfiles/migrate/002_add_price.rb");
+    }
+    public void testMigration3() throws Exception {
+        checkIndexer("testfiles/migrate/003_add_test_data.rb");
+    }
+    public void testMigration4() throws Exception {
+        checkIndexer("testfiles/migrate/004_add_sessions.rb");
+    }
+    public void testMigration5() throws Exception {
+        checkIndexer("testfiles/migrate/005_create_orders.rb");
+    }
+    public void testMigration6() throws Exception {
+        checkIndexer("testfiles/migrate/006_create_line_items.rb");
+    }
+    public void testMigration7() throws Exception {
+        checkIndexer("testfiles/migrate/007_create_users.rb");
+    }
+    public void testMigration8() throws Exception {
+        checkIndexer("testfiles/migrate/007_add_assets_and_resources.rb");
+    }
+    public void testMigration9() throws Exception {
+        checkIndexer("testfiles/migrate/029_add_correct_comment_lifetime.rb");
+    }
+    public void testMigration10() throws Exception {
+        checkIndexer("testfiles/migrate/044_store_single_filter.rb");
+    }
+    public void testMigration11() throws Exception {
+        checkIndexer("testfiles/migrate/001_create_products_renamed.rb");
+    }
+    public void testSchemaDepot() throws Exception {
+        checkIndexer("testfiles/migrate/schemas/depot/db/schema.rb");
+    }
+    public void testSchemaMephisto() throws Exception {
+        checkIndexer("testfiles/migrate/schemas/mephisto/db/schema.rb");
+    }
+
+    public void testClassvar() throws Exception {
+        checkIndexer("testfiles/classvar.rb");
+    }
+    
+    // TODO - test :nodoc: on methods and classes!!!
 }

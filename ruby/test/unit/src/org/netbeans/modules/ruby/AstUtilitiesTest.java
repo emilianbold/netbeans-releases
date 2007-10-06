@@ -41,9 +41,12 @@
 
 package org.netbeans.modules.ruby;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import org.jruby.ast.DefnNode;
+import org.jruby.ast.IterNode;
 import org.jruby.ast.Node;
 import org.jruby.ast.NodeTypes;
 import org.jruby.ast.types.INameNode;
@@ -76,6 +79,13 @@ public class AstUtilitiesTest extends RubyTestBase {
         assertEquals("test_sorting", ((INameNode)node).getName());
     }
 
+    public void testFindbySignatureNested() throws Exception {
+        Node root = getRootNode("testfiles/resolv.rb");
+        Node node = AstUtilities.findBySignature(root, "Resolv::DNS::lazy_initialize");
+        assertNotNull(node);
+        assertEquals("lazy_initialize", ((INameNode)node).getName());
+    }
+    
     public void testFindbySignatureInstance() throws Exception {
         Node root = getRootNode("testfiles/ape.rb");
         Node node = AstUtilities.findBySignature(root, "Ape#@dialogs");
@@ -137,7 +147,19 @@ public class AstUtilitiesTest extends RubyTestBase {
         assertEquals("report_html", method);
     }
     
-    public void testFindBlock() {
-        
+    public void testAddNodesByType() {
+        Node root = getRootNode("testfiles/unused.rb");
+        List<Node> result = new ArrayList<Node>();
+        AstUtilities.addNodesByType(root, new int[] { NodeTypes.ITERNODE }, result);
+        assertEquals(1, result.size());
+        assertTrue(result.get(0) instanceof IterNode);
+    }
+    
+    public void testAddNodesByType2() {
+        Node root = getRootNode("testfiles/top_level.rb");
+        List<Node> result = new ArrayList<Node>();
+        AstUtilities.addNodesByType(root, new int[] { NodeTypes.DEFNNODE }, result);
+        assertEquals(2, result.size());
+        assertTrue(result.get(0) instanceof DefnNode);
     }
 }

@@ -43,10 +43,8 @@ package org.netbeans.modules.ruby.elements;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import org.netbeans.api.gsf.ElementKind;
-import org.netbeans.api.gsf.Modifier;
 import org.netbeans.modules.ruby.RubyIndex;
 
 
@@ -62,33 +60,43 @@ import org.netbeans.modules.ruby.RubyIndex;
  * @author Tor Norbye
  */
 public final class IndexedMethod extends IndexedElement implements MethodElement {
+    /** This method takes a (possibly optional, see BLOCK_OPTIONAL) block */
+    public static final int BLOCK = 1 << 6;
+    /** This method takes an optional block */
+    public static final int BLOCK_OPTIONAL = 1 << 7;
+    /** Deprecated? */
+    /** Parenthesis or space delimited? */
+
+    public static enum MethodType { METHOD, ATTRIBUTE, DBCOLUMN };
+    
     protected final String signature;
     private String[] args;
     private String name;
     private List<String> parameters;
     private boolean smart;
-    private boolean attribute;
-
+    private boolean inherited; 
+    private MethodType methodType = MethodType.METHOD;
+    
     private IndexedMethod(String signature, RubyIndex index, String fileUrl, String fqn,
-        String clz, String require, Set<Modifier> modifiers, String attributes) {
-        super(index, fileUrl, fqn, clz, require, modifiers, attributes);
+        String clz, String require, String attributes, int flags) {
+        super(index, fileUrl, fqn, clz, require, attributes, flags);
         this.signature = signature;
     }
 
     public static IndexedMethod create(RubyIndex index, String signature, String fqn, String clz,
-        String fileUrl, String require, Set<Modifier> modifiers, String attributes) {
+        String fileUrl, String require, String attributes, int flags) {
         IndexedMethod m =
-            new IndexedMethod(signature, index, fileUrl, fqn, clz, require, modifiers, attributes);
+            new IndexedMethod(signature, index, fileUrl, fqn, clz, require, attributes, flags);
 
         return m;
     }
-
-    public boolean isPrivate() {
-        return modifiers.contains(Modifier.PRIVATE) || modifiers.contains(Modifier.PROTECTED);
+    
+    public MethodType getMethodType() {
+        return methodType;
     }
-
-    public boolean isStatic() {
-        return modifiers.contains(Modifier.STATIC);
+    
+    public void setMethodType(MethodType methodType) {
+        this.methodType = methodType;
     }
 
     @Override
@@ -118,13 +126,13 @@ public final class IndexedMethod extends IndexedElement implements MethodElement
     public String[] getArgs() {
         if (args == null) {
             // Parse signature
-            int index = signature.indexOf('(');
+            int parenIndex = signature.indexOf('(');
 
-            if (index == -1) {
+            if (parenIndex == -1) {
                 return new String[0];
             }
 
-            String argsPortion = signature.substring(index + 1, signature.length() - 1);
+            String argsPortion = signature.substring(parenIndex + 1, signature.length() - 1);
             args = argsPortion.split(","); // NOI18N
         }
 
@@ -163,32 +171,12 @@ public final class IndexedMethod extends IndexedElement implements MethodElement
         }
     }
     
-    public boolean isTopLevel() {
-        if (attributes != null) {
-            for (int i = 0, n = attributes.length(); i < n; i++) {
-                if (attributes.charAt(i) == 't') {
-                    return true;
-                }
-            }
-        }
-        
-        return false;
-    }
-    
     public boolean isSmart() {
         return smart;
     }
     
     public void setSmart(boolean smart) {
         this.smart = smart;
-    }
-
-    public boolean isAttribute() {
-        return attribute;
-    }
-    
-    public void setAttribute(boolean attribute) {
-        this.attribute = attribute;
     }
 
     @Override
@@ -206,7 +194,7 @@ public final class IndexedMethod extends IndexedElement implements MethodElement
         if (this.fqn != other.fqn && (this.fqn == null || !this.fqn.equals(other.fqn))) {
             return false;
         }
-        if (this.attributes != other.attributes && (this.attributes == null || !this.attributes.equals(other.attributes))) {
+        if (this.flags != other.flags) {
             return false;
         }
         return true;
@@ -217,9 +205,44 @@ public final class IndexedMethod extends IndexedElement implements MethodElement
         int hash = 7;
         hash = 53 * hash + (this.signature != null ? this.signature.hashCode() : 0);
         hash = 53 * hash + (this.fqn != null ? this.fqn.hashCode() : 0);
-        hash = 53 * hash + (this.attributes != null ? this.attributes.hashCode() : 0);
+        hash = 53 * hash + flags;
         return hash;
     }
     
+    public boolean isInherited() {
+        return inherited;
+    }
+
+    public void setInherited(boolean inherited) {
+        this.inherited = inherited;
+    }
     
+    public boolean hasBlock() {
+        return (flags & BLOCK) != 0;
+    }
+
+    public boolean isBlockOptional() {
+        return (flags & BLOCK_OPTIONAL) != 0;
+    }
+    
+    public static String decodeFlags(int flags) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(IndexedElement.decodeFlags(flags));
+
+        if ((flags & BLOCK) != 0) {
+            sb.append("|BLOCK");
+        }
+        if ((flags & BLOCK_OPTIONAL) != 0) {
+            sb.append("|BLOCK_OPTIONAL");
+        }
+        if (sb.length() > 0) {
+            sb.append("|");
+        }
+        
+        return sb.toString();
+    }
+    
+    public String getEncodedAttributes() {
+        return attributes;
+    }
 }

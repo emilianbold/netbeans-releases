@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.ruby;
 
-import junit.framework.TestCase;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.editor.BaseDocument;
@@ -166,7 +165,7 @@ public class RDocFormatterTest extends RubyTestBase {
         
         instance.appendLine("#   class EliteGenerator < Rails::Generator::Base");
         
-        assertEquals("<pre>\n  class EliteGenerator &lt; Rails::Generator::Base\n</pre>\n", instance.toHtml());
+        assertEquals("<pre style=\"color:#000000;\">\n  class EliteGenerator &lt; Rails::Generator::Base\n</pre>\n", instance.toHtml());
     }
 
     public void testNoEscape() {
@@ -233,7 +232,7 @@ public class RDocFormatterTest extends RubyTestBase {
 " <i>suffix</i> is given and present at the end of <i>file_name</i>,\n" +
 " it is removed.\n" +
 " #\n" +
-" <pre>\n" +
+" <pre style=\"color:#000000;\">\n" +
 "   File.basename(\"/home/gumby/work/ruby.rb\")          #=> \"ruby.rb\"\n" +
 "\n" +
 "   File.basename(\"/home/gumby/work/ruby.rb\", \".rb\")   #=> \"ruby\"\n" +

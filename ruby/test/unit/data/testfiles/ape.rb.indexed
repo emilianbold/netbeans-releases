@@ -25,28 +25,28 @@ Indexed:
   field : steps
   field : w
   fqn : Ape
-  method : check(uri,username,password,requested_e_coll,requested_m_coll)
+  method : check(uri,username,password,requested_e_coll,requested_m_coll)|DOCUMENTED|
   method : check_new_entry(as_posted,new_entry,desc)
-  method : check_resource(uri,name,content_type,report)
+  method : check_resource(uri,name,content_type,report)|DOCUMENTED|
   method : compare1(e1,e2,e1Name,e2Name,field)
   method : compare_entries(e1,e2,e1Name,e2Name)
   method : end_list
   method : error(message,crumb_key)
-  method : find_entry(feed_uri,name,id,report)
+  method : find_entry(feed_uri,name,id,report)|DOCUMENTED|
   method : footer(message)
   method : good(message,crumb_key)
   method : header(uri)
   method : info(message)
-  method : initialize(args):i
+  method : initialize(args)|PRIVATE|
   method : line
   method : list_item(message)
   method : might_fail(uri,requested_e_coll,requested_m_coll)
-  method : new(args):is
+  method : new(args)|PRIVATE|STATIC|
   method : report(output)
   method : report_html(output)
   method : report_li(dialog,marker,text)
   method : report_text
-  method : save_dialog(name,actor)
+  method : save_dialog(name,actor)|DOCUMENTED|
   method : show_crumbs(key)
   method : show_message(crumb,tf)
   method : start_list(message)
@@ -60,5 +60,5 @@ Indexed:
   source : <TESTURL>/ape.rb
 
 Not Indexed:
-  attrs : c
+  attrs : |CLASS|
   requires : authent,builder,categories,collection,crumbs,deleter,entry,escaper,feed,getter,html,names,poster,putter,rexml/document,rubygems,samples,service,validator

@@ -7,19 +7,19 @@ In common usage, the date is reckoned in years since or before the Common Era (C
 The standard civil year is 365 days long.  However, the solar year is fractionally longer than this.  To account for this, a <b>leap</b> <b>year</b> is occasionally inserted.  This is a year with 366 days, the extra day falling on February 29.  In the early days of the civil calendar, every fourth year without exception was a leap year.  This way of reckoning leap years is the <b>Julian</b> <b>Calendar</b>. <br><br>However, the solar year is marginally shorter than 365 1/4 days, and so the <b>Julian</b> <b>Calendar</b> gradually ran slow over the centuries.  To correct this, every 100th year (but not every 400th year) was excluded as a leap year. This way of reckoning leap years, which we use today, is the <b>Gregorian</b> <b>Calendar</b>. <br><br>The Gregorian Calendar was introduced at different times in different regions.  The day on which it was introduced for a particular region is the <b>Day</b> <b>of</b> <b>Calendar</b> <b>Reform</b> for that region.  This is abbreviated as <tt>sg</tt> (for Start of Gregorian calendar) in the Date class. <br><br>Two such days are of particular significance.  The first is October 15, 1582, which was the Day of Calendar Reform for Italy and most Catholic countries.  The second is September 14, 1752, which was the Day of Calendar Reform for England and its colonies (including what is now the United States).  These two dates are available as the constants Date::ITALY and Date::ENGLAND, respectively.  (By comparison, Germany and Holland, less Catholic than Italy but less stubborn than England, changed over in 1698; Sweden in 1753; Russia not till 1918, after the Revolution; and Greece in 1923.  Many Orthodox churches still use the Julian Calendar.  A complete list of Days of Calendar Reform can be found at <a href="http://www.polysyllabic.com/GregConv.html.">http://www.polysyllabic.com/GregConv.html.</a>) <br><br>Switching from the Julian to the Gregorian calendar involved skipping a number of days to make up for the accumulated lag, and the later the switch was (or is) done, the more days need to be skipped.  So in 1582 in Italy, 4th October was followed by 15th October, skipping 10 days; in 1752 in England, 2nd September was followed by 14th September, skipping 11 days; and if I decided to switch from Julian to Gregorian Calendar this midnight, I would go from 27th July 2003 (Julian) today to 10th August 2003 (Gregorian) tomorrow, skipping 13 days.  The Date class is aware of this gap, and a supposed date that would fall in the middle of it is regarded as invalid. <br><br>The Day of Calendar Reform is relevant to all date representations involving years.  It is not relevant to the Julian Day Numbers, except for converting between them and year-based representations. <br><br>In the Date and DateTime classes, the Day of Calendar Reform or <tt>sg</tt> can be specified a number of ways.  First, it can be as the Julian Day Number of the Day of Calendar Reform.  Second, it can be using the constants Date::ITALY or Date::ENGLAND; these are in fact the Julian Day Numbers of the Day of Calendar Reform of the respective regions.  Third, it can be as the constant Date::JULIAN, which means to always use the Julian Calendar. Finally, it can be as the constant Date::GREGORIAN, which means to always use the Gregorian Calendar. <br><br>Note: in the Julian Calendar, New Years Day was March 25.  The Date class does not follow this convention. <br><h3> Time Zones</h3>
 DateTime objects support a simple representation of time zones.  Time zones are represented as an offset from UTC, as a fraction of a day.  This offset is the how much local time is later (or earlier) than UTC. UTC offset 0 is centred on England (also known as GMT).  As you travel east, the offset increases until you reach the dateline in the middle of the Pacific Ocean; as you travel west, the offset decreases.  This offset is abbreviated as <tt>of</tt> in the Date class. <br><br>This simple representation of time zones does not take into account the common practice of Daylight Savings Time or Summer Time. <br><br>Most DateTime methods return the date and the time in local time.  The two exceptions are #ajd() and #amjd(), which return the date and time in UTC time, including fractional days. <br><br>The Date class does not support time zone offsets, in that there is no way to create a Date object with a time zone. However, methods of the Date class when used by a DateTime instance will use the time zone offset of this instance. <br><h2> Examples of use</h2>
 <h3> Print out the date of every Sunday between two dates.</h3>
-<pre>
+<pre style="color:#000000;">
     def print_sundays(d1, d2)
         d1 +=1 while (d1.wday != 0)
         d1.step(d2, 7) do |date|
-            puts "#{<span style="background:#ffffff">Date::MONTHNAMES[date.mon]</span>} #{<span style="background:#ffffff">date.day</span>}"
+            puts "#{<span style="background:#ffffff;color:#000000">Date::MONTHNAMES[date.mon]</span>} #{<span style="background:#ffffff;color:#000000">date.day</span>}"
         end
     end
 </pre>
-<pre>
+<pre style="color:#000000;">
     print_sundays(Date::civil(2003, 4, 8), Date::civil(2003, 5, 23))
 </pre>
 <h3> Calculate how many seconds to go till midnight on New Year's Day.</h3>
-<pre>
+<pre style="color:#000000;">
     def secs_to_new_year(now = DateTime::now())
         new_year = DateTime.new(now.year + 1, 1, 1)
         dif = new_year - now
@@ -27,7 +27,7 @@ DateTime objects support a simple representation of time zones.  Time zones are 
         return hours * 60 * 60 + mins * 60 + secs
     end
 </pre>
-<pre>
+<pre style="color:#000000;">
     puts secs_to_new_year()
 </pre>
 <hr>

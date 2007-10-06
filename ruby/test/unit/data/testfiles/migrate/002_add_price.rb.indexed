@@ -1,0 +1,34 @@
+
+
+Document 0
+Delete:  source : <TESTURL>/002_add_price.rb
+
+Indexed:
+
+Not Indexed:
+
+
+Document 1
+Delete:
+Indexed:
+  dbtable : products
+  source : <TESTURL>/002_add_price.rb
+
+Not Indexed:
+  dbcolumn : price;decimal
+  dbversion : 002
+
+
+Document 2
+Delete:
+Indexed:
+  class : AddPrice
+  class-ig : addprice
+  extends : ActiveRecord::Migration
+  fqn : AddPrice
+  method : down|STATIC|
+  method : up|STATIC|
+  source : <TESTURL>/002_add_price.rb
+
+Not Indexed:
+  attrs : |DOCUMENTED|;1429

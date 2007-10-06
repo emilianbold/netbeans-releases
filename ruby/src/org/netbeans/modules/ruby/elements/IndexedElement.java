@@ -41,6 +41,8 @@
 package org.netbeans.modules.ruby.elements;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.EnumSet;
 import java.util.Set;
 
 import javax.swing.text.Document;
@@ -59,27 +61,41 @@ import org.openide.filesystems.FileObject;
  * @author Tor Norbye
  */
 public abstract class IndexedElement extends RubyElement {
+    /** This method is documented */
+    public static final int DOCUMENTED = 1 << 0;
+    /** This method is protected */
+    public static final int PROTECTED = 1 << 1;
+    /** This method is private */
+    public static final int PRIVATE = 1 << 2;
+    /** This method is top level (implicit member of Object) */
+    public static final int TOPLEVEL = 1 << 3;
+    /** This element is "static" (e.g. it's a classvar for fields, class method for methods etc) */
+    public static final int STATIC = 1 << 4;
+    /** This element is deliberately not documented (rdoc :nodoc:) */
+    public static final int NODOC = 1 << 5;
+    
     protected String fileUrl;
     protected final String clz;
     protected final String fqn;
     protected final RubyIndex index;
     protected final String require;
-    protected final Set<Modifier> modifiers;
     protected final String attributes;
-    private int docLength = -1;
+    protected Set<Modifier> modifiers;
+    protected int flags;
+    protected int docLength = -1;
     private Document document;
     private FileObject fileObject;
 
     protected IndexedElement(RubyIndex index, String fileUrl, String fqn,
-        String clz, String require, Set<Modifier> modifiers, String attributes) {
+        String clz, String require, String attributes, int flags) {
         this.index = index;
         this.fileUrl = fileUrl;
         this.fqn = fqn;
         this.require = require;
-        this.modifiers = modifiers;
         this.attributes = attributes;
         // XXX Why do methods need to know their clz (since they already have fqn)
         this.clz = clz;
+        this.flags = flags;
     }
 
     public abstract String getSignature();
@@ -150,32 +166,134 @@ public abstract class IndexedElement extends RubyElement {
         return fileObject;
     }
 
-    public Set<Modifier> getModifiers() {
+    public final Set<Modifier> getModifiers() {
+        if (modifiers == null) {
+            Modifier access = Modifier.PUBLIC;
+            if (isPrivate()) {
+                access = Modifier.PRIVATE;
+            } else if (isProtected()) {
+                access = Modifier.PROTECTED;
+            }
+            boolean isStatic = isStatic();
+            
+            if (access != Modifier.PUBLIC) {
+                if (isStatic) {
+                    modifiers = EnumSet.of(access, Modifier.STATIC);
+                } else {
+                    modifiers = EnumSet.of(access);
+                }
+            } else if (isStatic) {
+                modifiers = EnumSet.of(Modifier.STATIC);
+            } else {
+                modifiers = Collections.emptySet();
+            }
+        }
         return modifiers;
     }
 
     /** Return the length of the documentation for this class, in characters */
     public int getDocumentationLength() {
-        if (docLength == -1) {
-            docLength = 0;
-
-            if (attributes != null) {
-                int index = attributes.indexOf('d');
-
-                if (index != -1) {
-                    index = attributes.indexOf('(', index + 1);
-
-                    if (index != -1) {
-                        docLength = Integer.parseInt(attributes.substring(index + 1,
-                                    attributes.indexOf(')', index + 1)));
-                    } else {
-                        // Unknown length - just use 1 to indicate positive document length
-                        docLength = 1;
-                    }
-                }
-            }
-        }
-
-        return docLength;
+        return isDocumented() ? 1 : 0;
     }
+    
+    /** Return a string (suitable for persistence) encoding the given flags */
+    public static char flagToFirstChar(int flags) {
+        char first = (char)(flags >>= 4);
+        if (first >= 10) {
+            return (char)(first-10+'a');
+        } else {
+            return (char)(first+'0');
+        }
+    }
+
+    /** Return a string (suitable for persistence) encoding the given flags */
+    public static char flagToSecondChar(int flags) {
+        char second = (char)(flags & 0xf);
+        if (second >= 10) {
+            return (char)(second-10+'a');
+        } else {
+            return (char)(second+'0');
+        }
+    }
+    
+    /** Return a string (suitable for persistence) encoding the given flags */
+    public static String flagToString(int flags) {
+        return (""+flagToFirstChar(flags)) + flagToSecondChar(flags);
+    }
+    
+    /** Return flag corresponding to the given encoding chars */
+    public static int stringToFlag(String s, int startIndex) {
+        return stringToFlag(s.charAt(startIndex), s.charAt(startIndex+1));
+    }
+    
+    /** Return flag corresponding to the given encoding chars */
+    public static int stringToFlag(char first, char second) {
+        int high = 0;
+        int low = 0;
+        if (first > '9') {
+            high = first-'a'+10;
+        } else {
+            high = first-'0';
+        }
+        if (second > '9') {
+            low = second-'a'+10;
+        } else {
+            low = second-'0';
+        }
+        return (high << 4) + low;
+    }
+    
+    public boolean isDocumented() {
+        return (flags & DOCUMENTED) != 0;
+    }
+    
+    public boolean isPublic() {
+        return (flags & PRIVATE & PROTECTED) == 0;
+    }
+
+    public boolean isPrivate() {
+// XXX hmmm        not symmetric, see what the old semantics was for why I needed both?
+        return ((flags & PRIVATE) != 0) || ((flags & PROTECTED) != 0);
+    }
+    
+    public boolean isProtected() {
+        return (flags & PROTECTED) != 0;
+    }
+    
+    public boolean isTopLevel() {
+        return (flags & TOPLEVEL) != 0;
+    }
+
+    public boolean isStatic() {
+        return (flags & STATIC) != 0;
+    }
+    
+    public boolean isNoDoc() {
+        return (flags & NODOC) != 0;
+    }
+    
+    public static String decodeFlags(int flags) {
+        StringBuilder sb = new StringBuilder();
+        if ((flags & DOCUMENTED) != 0) {
+            sb.append("|DOCUMENTED");
+        }
+        if ((flags & PRIVATE) != 0) {
+            sb.append("|PRIVATE");
+        }
+        if ((flags & PROTECTED) != 0) {
+            sb.append("|PROTECTED");
+        }
+        if ((flags & TOPLEVEL) != 0) {
+            sb.append("|TOPLEVEL");
+        }
+        if ((flags & STATIC) != 0) {
+            sb.append("|STATIC");
+        }
+        if ((flags & NODOC) != 0) {
+            sb.append("|NODOC");
+        }
+        
+        return sb.toString();
+    }
+
 }

@@ -62,6 +62,7 @@ public class RubyParseResult extends ParserResult {
     private AstRootElement rootElement;
     private String source;
     private OffsetRange sanitizedRange = OffsetRange.NONE;
+    private String sanitizedContents;
     private StructureAnalyzer.AnalysisResult analysisResult;
     private RubyParser.Sanitize sanitized;
     private RubyParserResult jrubyResult;
@@ -118,13 +119,18 @@ public class RubyParseResult extends ParserResult {
     public OffsetRange getSanitizedRange() {
         return sanitizedRange;
     }
+    
+    public String getSanitizedContents() {
+        return sanitizedContents;
+    }
 
     /**
      * Set the range of source that was sanitized, if any.
      */
-    void setSanitized(RubyParser.Sanitize sanitized, OffsetRange sanitizedRange) {
+    void setSanitized(RubyParser.Sanitize sanitized, OffsetRange sanitizedRange, String sanitizedContents) {
         this.sanitized = sanitized;
         this.sanitizedRange = sanitizedRange;
+        this.sanitizedContents = sanitizedContents;
     }
 
     public RubyParser.Sanitize getSanitized() {

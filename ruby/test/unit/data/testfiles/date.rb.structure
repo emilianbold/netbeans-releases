@@ -81,7 +81,7 @@ Date:CLASS:[]:ESCAPED{Date}:
   self:CLASS:[]:ESCAPED{self}:
   self:CLASS:[]:ESCAPED{self}:
   self:CLASS:[]:ESCAPED{self}:
-    once:METHOD:[STATIC]:ESCAPED{once}(PARAMETERS{ESCAPED{*ids}}):
+    once:METHOD:[STATIC, PRIVATE]:ESCAPED{once}(PARAMETERS{ESCAPED{*ids}}):
   sg:FIELD:[]:ESCAPED{sg}:
   start:METHOD:[PUBLIC]:ESCAPED{start}:
   step:METHOD:[PUBLIC]:ESCAPED{step}(PARAMETERS{ESCAPED{limit}, ESCAPED{step}}):

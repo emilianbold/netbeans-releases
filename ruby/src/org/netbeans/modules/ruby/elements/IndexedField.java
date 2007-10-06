@@ -28,10 +28,8 @@
 package org.netbeans.modules.ruby.elements;
 
 import org.netbeans.api.gsf.ElementKind;
-import java.util.Set;
 
 import org.netbeans.api.gsf.ElementKind;
-import org.netbeans.api.gsf.Modifier;
 import org.netbeans.modules.ruby.RubyIndex;
 
 
@@ -42,17 +40,18 @@ import org.netbeans.modules.ruby.RubyIndex;
 public class IndexedField extends IndexedElement {
     private boolean smart;
     private String name;
+    private boolean inherited;
 
     private IndexedField(String name, RubyIndex index, String fileUrl, String fqn,
-        String clz, String require, Set<Modifier> modifiers, String attributes) {
-        super(index, fileUrl, fqn, clz, require, modifiers, attributes);
+        String clz, String require, String attributes, int flags) {
+        super(index, fileUrl, fqn, clz, require, attributes, flags);
         this.name = name;
     }
 
     public static IndexedField create(RubyIndex index, String name, String fqn, String clz,
-        String fileUrl, String require, Set<Modifier> modifiers, String attributes) {
+        String fileUrl, String require, String attributes, int flags) {
         IndexedField m =
-            new IndexedField(name, index, fileUrl, fqn, clz, require, modifiers, attributes);
+            new IndexedField(name, index, fileUrl, fqn, clz, require, attributes, flags);
 
         return m;
     }
@@ -63,7 +62,7 @@ public class IndexedField extends IndexedElement {
     
     @Override
     public String getSignature() {
-        return fqn + "#@" + (modifiers.contains(Modifier.STATIC) ? "@" : "") + name;
+        return fqn + "#@" + (isStatic() ? "@" : "") + name;
     }
 
     public String getName() {
@@ -93,6 +92,9 @@ public class IndexedField extends IndexedElement {
         if (this.fqn != other.fqn && (this.fqn == null || !this.fqn.equals(other.fqn))) {
             return false;
         }
+        if (this.flags != other.flags) {
+            return false;
+        }
         return true;
     }
 
@@ -101,6 +103,18 @@ public class IndexedField extends IndexedElement {
         int hash = 7;
         hash = 43 * hash + (this.name != null ? this.name.hashCode() : 0);
         hash = 43 * hash + (this.fqn != null ? this.fqn.hashCode() : 0);
+        hash = 53 * hash + flags;
         return hash;
+    }
+
+    public boolean isInherited() {
+        return inherited;
+    }
+
+    public void setInherited(boolean inherited) {
+        this.inherited = inherited;
+    }
+    public static String decodeFlags(int flags) {
+        return IndexedElement.decodeFlags(flags);
     }
 }

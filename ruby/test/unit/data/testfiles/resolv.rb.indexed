@@ -18,7 +18,7 @@ Indexed:
   source : <TESTURL>/resolv.rb
 
 Not Indexed:
-  attrs : c
+  attrs : |CLASS|
   in : Resolv
   requires : fcntl,socket,thread,timeout,win32/resolv
 
@@ -33,7 +33,7 @@ Indexed:
   source : <TESTURL>/resolv.rb
 
 Not Indexed:
-  attrs : c
+  attrs : |CLASS|
   in : Resolv
   requires : fcntl,socket,thread,timeout,win32/resolv
 
@@ -57,13 +57,13 @@ Indexed:
   method : getaddresses(name)
   method : getname(address)
   method : getnames(address)
-  method : initialize(filename):i
+  method : initialize(filename)|PRIVATE|
   method : lazy_initialize
-  method : new(filename):is
+  method : new(filename)|PRIVATE|STATIC|
   source : <TESTURL>/resolv.rb
 
 Not Indexed:
-  attrs : c
+  attrs : |CLASS|
   in : Resolv
   requires : fcntl,socket,thread,timeout,win32/resolv
 
@@ -78,13 +78,13 @@ Indexed:
   field : msg
   field : sock
   fqn : Resolv::DNS::Requester::Sender
-  method : initialize(msg,data,sock,queue):i
-  method : new(msg,data,sock,queue):is
+  method : initialize(msg,data,sock,queue)|PRIVATE|
+  method : new(msg,data,sock,queue)|PRIVATE|STATIC|
   method : recv(msg)
   source : <TESTURL>/resolv.rb
 
 Not Indexed:
-  attrs : c
+  attrs : |CLASS|
   in : Resolv::DNS::Requester
   requires : fcntl,socket,thread,timeout,win32/resolv
 
@@ -98,13 +98,13 @@ Indexed:
   field : host
   field : port
   fqn : Resolv::DNS::Requester::UnconnectedUDP::Sender
-  method : initialize(msg,data,sock,host,port,queue):i
-  method : new(msg,data,sock,host,port,queue):is
+  method : initialize(msg,data,sock,host,port,queue)|PRIVATE|
+  method : new(msg,data,sock,host,port,queue)|PRIVATE|STATIC|
   method : send
   source : <TESTURL>/resolv.rb
 
 Not Indexed:
-  attrs : c
+  attrs : |CLASS|
   in : Resolv::DNS::Requester::UnconnectedUDP
   requires : fcntl,socket,thread,timeout,win32/resolv
 
@@ -119,13 +119,13 @@ Indexed:
   field : sock
   field : thread
   fqn : Resolv::DNS::Requester::UnconnectedUDP
-  method : initialize:i
-  method : new:is
+  method : initialize|PRIVATE|
+  method : new|PRIVATE|STATIC|
   method : sender(msg,data,queue,host,port)
   source : <TESTURL>/resolv.rb
 
 Not Indexed:
-  attrs : c
+  attrs : |CLASS|
   in : Resolv::DNS::Requester
   requires : fcntl,socket,thread,timeout,win32/resolv
 
@@ -141,7 +141,7 @@ Indexed:
   source : <TESTURL>/resolv.rb
 
 Not Indexed:
-  attrs : c
+  attrs : |CLASS|
   in : Resolv::DNS::Requester::ConnectedUDP
   requires : fcntl,socket,thread,timeout,win32/resolv
 
@@ -158,13 +158,13 @@ Indexed:
   field : sock
   field : thread
   fqn : Resolv::DNS::Requester::ConnectedUDP
-  method : initialize(host,port):i
-  method : new(host,port):is
+  method : initialize(host,port)|PRIVATE|
+  method : new(host,port)|PRIVATE|STATIC|
   method : sender(msg,data,queue,host,port)
   source : <TESTURL>/resolv.rb
 
 Not Indexed:
-  attrs : c
+  attrs : |CLASS|
   in : Resolv::DNS::Requester
   requires : fcntl,socket,thread,timeout,win32/resolv
 
@@ -180,7 +180,7 @@ Indexed:
   source : <TESTURL>/resolv.rb
 
 Not Indexed:
-  attrs : c
+  attrs : |CLASS|
   in : Resolv::DNS::Requester::TCP
   requires : fcntl,socket,thread,timeout,win32/resolv
 
@@ -198,13 +198,13 @@ Indexed:
   field : sock
   field : thread
   fqn : Resolv::DNS::Requester::TCP
-  method : initialize(host,port):i
-  method : new(host,port):is
+  method : initialize(host,port)|PRIVATE|
+  method : new(host,port)|PRIVATE|STATIC|
   method : sender(msg,data,queue,host,port)
   source : <TESTURL>/resolv.rb
 
 Not Indexed:
-  attrs : c
+  attrs : |CLASS|
   in : Resolv::DNS::Requester
   requires : fcntl,socket,thread,timeout,win32/resolv
 
@@ -219,7 +219,7 @@ Indexed:
   source : <TESTURL>/resolv.rb
 
 Not Indexed:
-  attrs : c
+  attrs : |CLASS|
   in : Resolv::DNS::Requester
   requires : fcntl,socket,thread,timeout,win32/resolv
 
@@ -235,12 +235,12 @@ Indexed:
   fqn : Resolv::DNS::Requester
   method : close
   method : delete(arg)
-  method : initialize:i
-  method : new:is
+  method : initialize|PRIVATE|
+  method : new|PRIVATE|STATIC|
   source : <TESTURL>/resolv.rb
 
 Not Indexed:
-  attrs : c
+  attrs : |CLASS|
   in : Resolv::DNS
   requires : fcntl,socket,thread,timeout,win32/resolv
 
@@ -255,7 +255,7 @@ Indexed:
   source : <TESTURL>/resolv.rb
 
 Not Indexed:
-  attrs : c
+  attrs : |CLASS|
   in : Resolv::DNS::Config
   requires : fcntl,socket,thread,timeout,win32/resolv
 
@@ -270,7 +270,7 @@ Indexed:
   source : <TESTURL>/resolv.rb
 
 Not Indexed:
-  attrs : c
+  attrs : |CLASS|
   in : Resolv::DNS::Config
   requires : fcntl,socket,thread,timeout,win32/resolv
 
@@ -288,19 +288,19 @@ Indexed:
   field : ndots
   field : search
   fqn : Resolv::DNS::Config
-  method : default_config_hash(filename):s
+  method : default_config_hash(filename)|STATIC|
   method : generate_candidates(name)
   method : generate_timeouts
-  method : initialize(config_info):i
+  method : initialize(config_info)|PRIVATE|
   method : lazy_initialize
-  method : new(config_info):is
-  method : parse_resolv_conf(filename):s
+  method : new(config_info)|PRIVATE|STATIC|
+  method : parse_resolv_conf(filename)|STATIC|
   method : resolv(name)
   method : single?
   source : <TESTURL>/resolv.rb
 
 Not Indexed:
-  attrs : c
+  attrs : |CLASS|
   in : Resolv::DNS
   requires : fcntl,socket,thread,timeout,win32/resolv
 
@@ -319,7 +319,7 @@ Indexed:
   source : <TESTURL>/resolv.rb
 
 Not Indexed:
-  attrs : m
+  attrs : |MODULE|
   in : Resolv::DNS
   requires : fcntl,socket,thread,timeout,win32/resolv
 
@@ -351,7 +351,7 @@ Indexed:
   source : <TESTURL>/resolv.rb
 
 Not Indexed:
-  attrs : m
+  attrs : |MODULE|
   in : Resolv::DNS
   requires : fcntl,socket,thread,timeout,win32/resolv
 
@@ -366,7 +366,7 @@ Indexed:
   source : <TESTURL>/resolv.rb
 
 Not Indexed:
-  attrs : c
+  attrs : |CLASS|
   in : Resolv::DNS
   requires : fcntl,socket,thread,timeout,win32/resolv
 
@@ -381,7 +381,7 @@ Indexed:
   source : <TESTURL>/resolv.rb
 
 Not Indexed:
-  attrs : c
+  attrs : |CLASS|
   in : Resolv::DNS
   requires : fcntl,socket,thread,timeout,win32/resolv
 
@@ -397,14 +397,14 @@ Indexed:
   method : ==(other)
   method : eql?(other)
   method : hash
-  method : initialize(string):i
+  method : initialize(string)|PRIVATE|
   method : inspect
-  method : new(string):is
+  method : new(string)|PRIVATE|STATIC|
   method : to_s
   source : <TESTURL>/resolv.rb
 
 Not Indexed:
-  attrs : c
+  attrs : |CLASS|
   in : Resolv::DNS::Label
   requires : fcntl,socket,thread,timeout,win32/resolv
 
@@ -415,11 +415,11 @@ Indexed:
   class : Label
   class-ig : label
   fqn : Resolv::DNS::Label
-  method : split(arg):s
+  method : split(arg)|STATIC|
   source : <TESTURL>/resolv.rb
 
 Not Indexed:
-  attrs : m
+  attrs : |MODULE|
   in : Resolv::DNS
   requires : fcntl,socket,thread,timeout,win32/resolv
 
@@ -435,19 +435,19 @@ Indexed:
   method : ==(other)
   method : [](i)
   method : absolute?
-  method : create(arg):s
+  method : create(arg)|STATIC|
   method : hash
-  method : initialize(labels,absolute):i
+  method : initialize(labels,absolute)|PRIVATE|
   method : inspect
   method : length
-  method : new(labels,absolute):is
-  method : subdomain_of?(other)
+  method : new(labels,absolute)|PRIVATE|STATIC|
+  method : subdomain_of?(other)|DOCUMENTED|
   method : to_a
-  method : to_s
+  method : to_s|DOCUMENTED|
   source : <TESTURL>/resolv.rb
 
 Not Indexed:
-  attrs : c
+  attrs : |CLASS|
   in : Resolv::DNS
   requires : fcntl,socket,thread,timeout,win32/resolv
 
@@ -460,8 +460,8 @@ Indexed:
   field : data
   field : names
   fqn : Resolv::DNS::Message::MessageEncoder
-  method : initialize:i
-  method : new:is
+  method : initialize|PRIVATE|
+  method : new|PRIVATE|STATIC|
   method : put_bytes(d)
   method : put_label(d)
   method : put_labels(d)
@@ -474,7 +474,7 @@ Indexed:
   source : <TESTURL>/resolv.rb
 
 Not Indexed:
-  attrs : c
+  attrs : |CLASS|
   in : Resolv::DNS::Message
   requires : fcntl,socket,thread,timeout,win32/resolv
 
@@ -498,12 +498,12 @@ Indexed:
   method : get_string
   method : get_string_list
   method : get_unpack(template)
-  method : initialize(data):i
-  method : new(data):is
+  method : initialize(data)|PRIVATE|
+  method : new(data)|PRIVATE|STATIC|
   source : <TESTURL>/resolv.rb
 
 Not Indexed:
-  attrs : c
+  attrs : |CLASS|
   in : Resolv::DNS::Message
   requires : fcntl,socket,thread,timeout,win32/resolv
 
@@ -525,26 +525,26 @@ Indexed:
   attribute : tc
   class : Message
   class-ig : message
-  field : identifier:s
+  field : identifier|STATIC
   fqn : Resolv::DNS::Message
   method : ==(other)
   method : add_additional(name,ttl,data)
   method : add_answer(name,ttl,data)
   method : add_authority(name,ttl,data)
   method : add_question(name,typeclass)
-  method : decode(m):s
+  method : decode(m)|STATIC|
   method : each_additional
   method : each_answer
   method : each_authority
   method : each_question
   method : each_resource
   method : encode
-  method : initialize(id):i
-  method : new(id):is
+  method : initialize(id)|PRIVATE|
+  method : new(id)|PRIVATE|STATIC|
   source : <TESTURL>/resolv.rb
 
 Not Indexed:
-  attrs : c
+  attrs : |CLASS|
   in : Resolv::DNS
   requires : fcntl,socket,thread,timeout,win32/resolv
 
@@ -555,12 +555,12 @@ Indexed:
   class : Query
   class-ig : query
   fqn : Resolv::DNS::Query
-  method : decode_rdata(msg):s
+  method : decode_rdata(msg)|STATIC|
   method : encode_rdata(msg)
   source : <TESTURL>/resolv.rb
 
 Not Indexed:
-  attrs : c
+  attrs : |CLASS|
   in : Resolv::DNS
   requires : fcntl,socket,thread,timeout,win32/resolv
 
@@ -573,15 +573,15 @@ Indexed:
   class-ig : generic
   extends : Resource
   fqn : Resolv::DNS::Resource::Generic
-  method : create(type_value,class_value):s
-  method : decode_rdata(msg):s
+  method : create(type_value,class_value)|STATIC|
+  method : decode_rdata(msg)|STATIC|
   method : encode_rdata(msg)
-  method : initialize(data):i
-  method : new(data):is
+  method : initialize(data)|PRIVATE|
+  method : new(data)|PRIVATE|STATIC|
   source : <TESTURL>/resolv.rb
 
 Not Indexed:
-  attrs : c
+  attrs : |CLASS|
   in : Resolv::DNS::Resource
   requires : fcntl,socket,thread,timeout,win32/resolv
 
@@ -594,14 +594,14 @@ Indexed:
   class-ig : domainname
   extends : Resource
   fqn : Resolv::DNS::Resource::DomainName
-  method : decode_rdata(msg):s
+  method : decode_rdata(msg)|STATIC|
   method : encode_rdata(msg)
-  method : initialize(name):i
-  method : new(name):is
+  method : initialize(name)|PRIVATE|
+  method : new(name)|PRIVATE|STATIC|
   source : <TESTURL>/resolv.rb
 
 Not Indexed:
-  attrs : c
+  attrs : |CLASS|
   in : Resolv::DNS::Resource
   requires : fcntl,socket,thread,timeout,win32/resolv
 
@@ -617,7 +617,7 @@ Indexed:
   source : <TESTURL>/resolv.rb
 
 Not Indexed:
-  attrs : c
+  attrs : |CLASS|
   in : Resolv::DNS::Resource
   requires : fcntl,socket,thread,timeout,win32/resolv
 
@@ -633,7 +633,7 @@ Indexed:
   source : <TESTURL>/resolv.rb
 
 Not Indexed:
-  attrs : c
+  attrs : |CLASS|
   in : Resolv::DNS::Resource
   requires : fcntl,socket,thread,timeout,win32/resolv
 
@@ -653,14 +653,14 @@ Indexed:
   constant : TypeValue
   extends : Resource
   fqn : Resolv::DNS::Resource::SOA
-  method : decode_rdata(msg):s
+  method : decode_rdata(msg)|STATIC|
   method : encode_rdata(msg)
-  method : initialize(mname,rname,serial,refresh,retry_,expire,minimum):i
-  method : new(mname,rname,serial,refresh,retry_,expire,minimum):is
+  method : initialize(mname,rname,serial,refresh,retry_,expire,minimum)|PRIVATE|
+  method : new(mname,rname,serial,refresh,retry_,expire,minimum)|PRIVATE|STATIC|
   source : <TESTURL>/resolv.rb
 
 Not Indexed:
-  attrs : c
+  attrs : |CLASS|
   in : Resolv::DNS::Resource
   requires : fcntl,socket,thread,timeout,win32/resolv
 
@@ -676,7 +676,7 @@ Indexed:
   source : <TESTURL>/resolv.rb
 
 Not Indexed:
-  attrs : c
+  attrs : |CLASS|
   in : Resolv::DNS::Resource
   requires : fcntl,socket,thread,timeout,win32/resolv
 
@@ -691,14 +691,14 @@ Indexed:
   constant : TypeValue
   extends : Resource
   fqn : Resolv::DNS::Resource::HINFO
-  method : decode_rdata(msg):s
+  method : decode_rdata(msg)|STATIC|
   method : encode_rdata(msg)
-  method : initialize(cpu,os):i
-  method : new(cpu,os):is
+  method : initialize(cpu,os)|PRIVATE|
+  method : new(cpu,os)|PRIVATE|STATIC|
   source : <TESTURL>/resolv.rb
 
 Not Indexed:
-  attrs : c
+  attrs : |CLASS|
   in : Resolv::DNS::Resource
   requires : fcntl,socket,thread,timeout,win32/resolv
 
@@ -713,14 +713,14 @@ Indexed:
   constant : TypeValue
   extends : Resource
   fqn : Resolv::DNS::Resource::MINFO
-  method : decode_rdata(msg):s
+  method : decode_rdata(msg)|STATIC|
   method : encode_rdata(msg)
-  method : initialize(rmailbx,emailbx):i
-  method : new(rmailbx,emailbx):is
+  method : initialize(rmailbx,emailbx)|PRIVATE|
+  method : new(rmailbx,emailbx)|PRIVATE|STATIC|
   source : <TESTURL>/resolv.rb
 
 Not Indexed:
-  attrs : c
+  attrs : |CLASS|
   in : Resolv::DNS::Resource
   requires : fcntl,socket,thread,timeout,win32/resolv
 
@@ -735,14 +735,14 @@ Indexed:
   constant : TypeValue
   extends : Resource
   fqn : Resolv::DNS::Resource::MX
-  method : decode_rdata(msg):s
+  method : decode_rdata(msg)|STATIC|
   method : encode_rdata(msg)
-  method : initialize(preference,exchange):i
-  method : new(preference,exchange):is
+  method : initialize(preference,exchange)|PRIVATE|
+  method : new(preference,exchange)|PRIVATE|STATIC|
   source : <TESTURL>/resolv.rb
 
 Not Indexed:
-  attrs : c
+  attrs : |CLASS|
   in : Resolv::DNS::Resource
   requires : fcntl,socket,thread,timeout,win32/resolv
 
@@ -757,14 +757,14 @@ Indexed:
   extends : Resource
   fqn : Resolv::DNS::Resource::TXT
   method : data
-  method : decode_rdata(msg):s
+  method : decode_rdata(msg)|STATIC|
   method : encode_rdata(msg)
-  method : initialize(first_string,*rest_strings):i
-  method : new(first_string,*rest_strings):is
+  method : initialize(first_string,*rest_strings)|PRIVATE|
+  method : new(first_string,*rest_strings)|PRIVATE|STATIC|
   source : <TESTURL>/resolv.rb
 
 Not Indexed:
-  attrs : c
+  attrs : |CLASS|
   in : Resolv::DNS::Resource
   requires : fcntl,socket,thread,timeout,win32/resolv
 
@@ -780,7 +780,7 @@ Indexed:
   source : <TESTURL>/resolv.rb
 
 Not Indexed:
-  attrs : c
+  attrs : |CLASS|
   in : Resolv::DNS::Resource
   requires : fcntl,socket,thread,timeout,win32/resolv
 
@@ -795,14 +795,14 @@ Indexed:
   constant : TypeValue
   extends : Resource
   fqn : Resolv::DNS::Resource::IN::A
-  method : decode_rdata(msg):s
+  method : decode_rdata(msg)|STATIC|
   method : encode_rdata(msg)
-  method : initialize(address):i
-  method : new(address):is
+  method : initialize(address)|PRIVATE|
+  method : new(address)|PRIVATE|STATIC|
   source : <TESTURL>/resolv.rb
 
 Not Indexed:
-  attrs : c
+  attrs : |CLASS|
   in : Resolv::DNS::Resource::IN
   requires : fcntl,socket,thread,timeout,win32/resolv
 
@@ -819,14 +819,14 @@ Indexed:
   constant : TypeValue
   extends : Resource
   fqn : Resolv::DNS::Resource::IN::WKS
-  method : decode_rdata(msg):s
+  method : decode_rdata(msg)|STATIC|
   method : encode_rdata(msg)
-  method : initialize(address,protocol,bitmap):i
-  method : new(address,protocol,bitmap):is
+  method : initialize(address,protocol,bitmap)|PRIVATE|
+  method : new(address,protocol,bitmap)|PRIVATE|STATIC|
   source : <TESTURL>/resolv.rb
 
 Not Indexed:
-  attrs : c
+  attrs : |CLASS|
   in : Resolv::DNS::Resource::IN
   requires : fcntl,socket,thread,timeout,win32/resolv
 
@@ -841,14 +841,14 @@ Indexed:
   constant : TypeValue
   extends : Resource
   fqn : Resolv::DNS::Resource::IN::AAAA
-  method : decode_rdata(msg):s
+  method : decode_rdata(msg)|STATIC|
   method : encode_rdata(msg)
-  method : initialize(address):i
-  method : new(address):is
+  method : initialize(address)|PRIVATE|
+  method : new(address)|PRIVATE|STATIC|
   source : <TESTURL>/resolv.rb
 
 Not Indexed:
-  attrs : c
+  attrs : |CLASS|
   in : Resolv::DNS::Resource::IN
   requires : fcntl,socket,thread,timeout,win32/resolv
 
@@ -866,14 +866,14 @@ Indexed:
   constant : TypeValue
   extends : Resource
   fqn : Resolv::DNS::Resource::IN::SRV
-  method : decode_rdata(msg):s
+  method : decode_rdata(msg)|STATIC|
   method : encode_rdata(msg)
-  method : initialize(priority,weight,port,target):i
-  method : new(priority,weight,port,target):is
+  method : initialize(priority,weight,port,target)|DOCUMENTED|PRIVATE|
+  method : new(priority,weight,port,target)|DOCUMENTED|PRIVATE|STATIC|
   source : <TESTURL>/resolv.rb
 
 Not Indexed:
-  attrs : c
+  attrs : |DOCUMENTED|;1305
   in : Resolv::DNS::Resource::IN
   requires : fcntl,socket,thread,timeout,win32/resolv
 
@@ -888,7 +888,7 @@ Indexed:
   source : <TESTURL>/resolv.rb
 
 Not Indexed:
-  attrs : m
+  attrs : |DOCUMENTED|MODULE|;28
   in : Resolv::DNS::Resource
   requires : fcntl,socket,thread,timeout,win32/resolv
 
@@ -904,15 +904,15 @@ Indexed:
   extends : Query
   fqn : Resolv::DNS::Resource
   method : ==(other)
-  method : decode_rdata(msg):s
+  method : decode_rdata(msg)|STATIC|
   method : encode_rdata(msg)
   method : eql?(other)
-  method : get_class(type_value,class_value):s
+  method : get_class(type_value,class_value)|STATIC|
   method : hash
   source : <TESTURL>/resolv.rb
 
 Not Indexed:
-  attrs : c
+  attrs : |CLASS|
   in : Resolv::DNS
   requires : fcntl,socket,thread,timeout,win32/resolv
 
@@ -941,14 +941,14 @@ Indexed:
   method : getnames(address)
   method : getresource(name,typeclass)
   method : getresources(name,typeclass)
-  method : initialize(config_info):i
+  method : initialize(config_info)|PRIVATE|
   method : lazy_initialize
-  method : new(config_info):is
-  method : open(*args):s
+  method : new(config_info)|PRIVATE|STATIC|
+  method : open(*args)|STATIC|
   source : <TESTURL>/resolv.rb
 
 Not Indexed:
-  attrs : c
+  attrs : |CLASS|
   in : Resolv
   requires : fcntl,socket,thread,timeout,win32/resolv
 
@@ -962,18 +962,18 @@ Indexed:
   constant : Regex
   fqn : Resolv::IPv4
   method : ==(other)
-  method : create(arg):s
+  method : create(arg)|STATIC|
   method : eql?(other)
   method : hash
-  method : initialize(address):i
+  method : initialize(address)|PRIVATE|
   method : inspect
-  method : new(address):is
+  method : new(address)|PRIVATE|STATIC|
   method : to_name
   method : to_s
   source : <TESTURL>/resolv.rb
 
 Not Indexed:
-  attrs : c
+  attrs : |CLASS|
   in : Resolv
   requires : fcntl,socket,thread,timeout,win32/resolv
 
@@ -991,18 +991,18 @@ Indexed:
   constant : Regex_CompressedHex4Dec
   fqn : Resolv::IPv6
   method : ==(other)
-  method : create(arg):s
+  method : create(arg)|STATIC|
   method : eql?(other)
   method : hash
-  method : initialize(address):i
+  method : initialize(address)|PRIVATE|
   method : inspect
-  method : new(address):is
+  method : new(address)|PRIVATE|STATIC|
   method : to_name
   method : to_s
   source : <TESTURL>/resolv.rb
 
 Not Indexed:
-  attrs : c
+  attrs : |CLASS|
   in : Resolv
   requires : fcntl,socket,thread,timeout,win32/resolv
 
@@ -1017,21 +1017,21 @@ Indexed:
   field : resolvers
   fqn : Resolv
   method : each_address(name)
-  method : each_address(name,&block):s
+  method : each_address(name,&block)|STATIC|
   method : each_name(address)
-  method : each_name(address,&proc):s
+  method : each_name(address,&proc)|STATIC|
   method : getaddress(name)
-  method : getaddress(name):s
+  method : getaddress(name)|STATIC|
   method : getaddresses(name)
-  method : getaddresses(name):s
+  method : getaddresses(name)|STATIC|
   method : getname(address)
-  method : getname(address):s
+  method : getname(address)|STATIC|
   method : getnames(address)
-  method : getnames(address):s
-  method : initialize(resolvers):i
-  method : new(resolvers):is
+  method : getnames(address)|STATIC|
+  method : initialize(resolvers)|PRIVATE|
+  method : new(resolvers)|PRIVATE|STATIC|
   source : <TESTURL>/resolv.rb
 
 Not Indexed:
-  attrs : c
+  attrs : |CLASS|
   requires : fcntl,socket,thread,timeout,win32/resolv

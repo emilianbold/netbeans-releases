@@ -44,6 +44,7 @@ import java.awt.Color;
 import java.io.CharConversionException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -54,12 +55,15 @@ import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorSettings;
+import org.netbeans.api.gsf.Element;
 import org.netbeans.api.gsf.GsfTokenId;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.ruby.elements.ClassElement;
+import org.netbeans.modules.ruby.elements.MethodElement;
 import org.netbeans.modules.ruby.lexer.RubyCommentTokenId;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.netbeans.spi.lexer.LanguageProvider;
@@ -83,6 +87,8 @@ import org.openide.xml.XMLUtil;
  * @todo Add italics around class names in the callseqs
  * @todo Swing Text often breaks up symbols in tables where it's on the left side; try 
  *   wrapping these in &lt;nobr&gt; tags. (Look at ClassMethods.paginate for example)
+ * @todo This is broken for the callseq handling of Kernel.raise. It includes the various
+ *   overloaded methods in place.
  * @todo When syntax highlighting potential ruby snippets, look for the common "=>" pattern
  *   and only attempt to tokenize the left hand side (and POSSIBLY) the right hand side)
  *   Look at the abbrev methods for example. It contains:
@@ -168,7 +174,7 @@ class RDocFormatter {
                     RubyUtils.endsWith(sb, "</h2>\n") || RubyUtils.endsWith(sb, "</h3>\n") ||
                     RubyUtils.endsWith(sb, "</h4>\n") || RubyUtils.endsWith(sb, "</h5>\n") ||
                     RubyUtils.endsWith(sb, "</ul>\n") || RubyUtils.endsWith(sb, "</ol>\n") ||
-                    RubyUtils.endsWith(sb, "</table>\n") || RubyUtils.endsWith(sb, "</hr>\n")) {
+                    RubyUtils.endsWith(sb, "</table>\n") || RubyUtils.endsWith(sb, "<hr>\n")) {
                     // No need for a separator
                     return;
                 }
@@ -252,7 +258,6 @@ class RDocFormatter {
                 if (RubyUtils.endsWith(sb, "<br>")) {
                     sb.setLength(sb.length()-4);
                 }
-                sb.append("<pre>\n"); // NOI18N
                 inVerbatim = true;
                 code = new ArrayList<String>();
             }
@@ -449,8 +454,12 @@ class RDocFormatter {
                     // Process code and format as Ruby
                     String html = getRubyHtml(code);
                     if (html != null) {
+                        // <pre> tag is added as part of the rubyhtml (since it 
+                        // needs to pick up the background color from the syntax
+                        // coloring settings)
                         sb.append(html);
                     } else {
+                        sb.append("<pre>\n"); // NOI18N
                         // Some kind of error; normal append
                         for (String s : code) {
                             try {
@@ -460,8 +469,10 @@ class RDocFormatter {
                             }
                             sb.append("<br>"); // NOI18N
                         }
+                        sb.append("</pre>\n"); // NOI18N
                     }
                 } else {
+                    sb.append("<pre>\n"); // NOI18N
                     if (isCallSeq(code)) {
                         String html = getCallSeqHtml(code);
                         sb.append(html);
@@ -473,11 +484,11 @@ class RDocFormatter {
                             sb.append("<br>"); // NOI18N
                         }
                     }
+                    sb.append("</pre>\n"); // NOI18N
                 }
                 code = null;
             }
 
-            sb.append("</pre>\n"); // NOI18N
             if (addHr) {
                sb.append("<hr>\n"); // NOI18N
             }
@@ -539,7 +550,8 @@ class RDocFormatter {
         }
         
         StringBuilder buffer = new StringBuilder(1500);
-        boolean errors = appendSequence(buffer, ruby.toString(), language, mimeType);
+
+        boolean errors = appendSequence(buffer, ruby.toString(), language, mimeType, true);
         
         // TODO: See
         // link_to_unless_current
@@ -556,12 +568,29 @@ class RDocFormatter {
 
     @SuppressWarnings("unchecked")
     private boolean appendSequence(StringBuilder sb, String text, 
-            Language<? extends TokenId> language, String mimeType) {
+            Language<? extends TokenId> language, String mimeType, boolean addPre) {
         // XXX is this getting called twice?    
         MimePath mimePath = MimePath.parse(mimeType);
         Lookup lookup = MimeLookup.getLookup(mimePath);
         FontColorSettings fcs = lookup.lookup(FontColorSettings.class);
 
+        if (addPre) {
+            sb.append("<pre style=\""); // NOI18N
+            AttributeSet attribs = fcs.getTokenFontColors("default"); // NOI18N
+            Color fg = (Color)attribs.getAttribute(StyleConstants.Foreground);
+            if (fg != null) {
+                sb.append("color:"); // NOI18N
+                sb.append(getHtmlColor(fg));
+                sb.append(";"); // NOI18N
+            }
+            Color bg = (Color)attribs.getAttribute(StyleConstants.Background);
+            // Only set the background for dark colors
+            if (bg != null && bg.getRed() < 128) {
+                sb.append("background:"); // NOI18N
+                sb.append(getHtmlColor(bg));
+            }
+            sb.append("\">\n"); // NOI18N
+        }
         TokenHierarchy hi = TokenHierarchy.create(text, language);
         TokenSequence ts = hi.tokenSequence();
 
@@ -603,16 +632,26 @@ class RDocFormatter {
                     //embedded.languagePath().mimePath();
                     String embeddedMimeType = MimePath.parse(embedded.languagePath().mimePath()).getPath();
                     Color bg = null;
+                    Color fg = null;
                     if (attribs != null) {
                         bg = (Color)attribs.getAttribute(StyleConstants.Background);
-                        if (bg != null) {
-                            sb.append("<span style=\"background:"); // NOI18N
-                            sb.append(getHtmlColor(bg));
+                        fg = (Color)attribs.getAttribute(StyleConstants.Foreground);
+                        if (fg != null || bg != null) {
+                            sb.append("<span style=\"");
+                            if (bg != null) {
+                                sb.append("background:"); // NOI18N
+                                sb.append(getHtmlColor(bg));
+                                sb.append(";");
+                            }
+                            if (fg != null) {
+                                sb.append("color:"); // NOI18N
+                                sb.append(getHtmlColor(fg));
+                            }
                             sb.append("\">"); // NOI18N
                         }
                     }
-                    appendSequence(sb, tokenText, embedded.language(), embeddedMimeType);
-                    if (bg != null) {
+                    appendSequence(sb, tokenText, embedded.language(), embeddedMimeType, false);
+                    if (fg != null || bg != null) {
                         sb.append("</span>"); // NOI18N
                     }
                     continue;
@@ -669,6 +708,10 @@ class RDocFormatter {
             } while (ts.moveNext());
         }
         
+        if (addPre) {
+            sb.append("</pre>\n");
+        }
+
         return false;
     }
 
@@ -737,6 +780,68 @@ class RDocFormatter {
         return sb.toString();
     }
     
+    public String getSignature(Element element) {
+        StringBuilder sb = new StringBuilder();
+        // TODO:
+        sb.append("<pre>");
+
+        if (element instanceof MethodElement) {
+            MethodElement executable = (MethodElement)element;
+            if (element.getIn() != null) {
+                String in = element.getIn();
+                sb.append("<i>");
+                sb.append(in);
+                sb.append("</i>");
+                sb.append("<br>");
+            }
+            // TODO - share this between Navigator implementation and here...
+            sb.append("<b>");
+            sb.append(executable.getName());
+            sb.append("</b>");
+
+            Collection<String> parameters = executable.getParameters();
+
+            if ((parameters != null) && (parameters.size() > 0)) {
+                sb.append("(");
+
+                sb.append("<font color=\"#808080\">");
+
+                for (Iterator<String> it = parameters.iterator(); it.hasNext();) {
+                    String ve = it.next();
+                    // TODO - if I know types, list the type here instead. For now, just use the parameter name instead
+                    sb.append(ve);
+
+                    if (it.hasNext()) {
+                        sb.append(", ");
+                    }
+                }
+
+                sb.append("</font>");
+
+                sb.append(")");
+            }
+        } else if (element instanceof ClassElement) {
+            ClassElement clz = (ClassElement)element;
+            String name = element.getName();
+            final String fqn = clz.getFqn();
+            if (fqn != null && !name.equals(fqn)) {
+                sb.append("<i>");
+                sb.append(fqn);
+                sb.append("</i>");
+                sb.append("<br>");
+            }
+            sb.append("<b>");
+            sb.append(name);
+            sb.append("</b>");
+        } else {
+            sb.append(element.getName());
+        }
+
+        sb.append("</pre>\n");
+
+        return sb.toString();
+    }
+
     private static String getHtmlColor(Color c) {
         int r = c.getRed();
         int g = c.getGreen();

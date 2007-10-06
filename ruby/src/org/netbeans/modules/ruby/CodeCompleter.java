@@ -52,6 +52,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -73,6 +74,7 @@ import org.jruby.ast.LocalAsgnNode;
 import org.jruby.ast.MethodDefNode;
 import org.jruby.ast.ModuleNode;
 import org.jruby.ast.Node;
+import org.jruby.ast.NodeTypes;
 import org.jruby.ast.SClassNode;
 import org.jruby.ast.types.INameNode;
 import org.jruby.lexer.yacc.ISourcePosition;
@@ -96,15 +98,16 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.ruby.RubyParser.Sanitize;
 import org.netbeans.modules.ruby.elements.AstElement;
 import org.netbeans.modules.ruby.elements.AstFieldElement;
 import org.netbeans.modules.ruby.elements.AstVariableElement;
 import org.netbeans.modules.ruby.elements.ClassElement;
 import org.netbeans.modules.ruby.elements.IndexedClass;
+import org.netbeans.modules.ruby.elements.IndexedClass;
 import org.netbeans.modules.ruby.elements.IndexedElement;
 import org.netbeans.modules.ruby.elements.IndexedMethod;
 import org.netbeans.modules.ruby.elements.KeywordElement;
-import org.netbeans.modules.ruby.elements.MethodElement;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.netbeans.modules.ruby.lexer.Call;
 import org.netbeans.modules.ruby.lexer.RubyStringTokenId;
@@ -113,6 +116,7 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -585,7 +589,6 @@ public class CodeCompleter implements Completable {
             if (lineBegin != -1) {
                 int lineEnd = Utilities.getRowEnd(doc, lexOffset);
                 String line = doc.getText(lineBegin, lineEnd-lineBegin);
-                String prefix = null;
                 int lineOffset = lexOffset-lineBegin;
                 int start = lineOffset;
                 if (lineOffset > 0) {
@@ -600,6 +603,7 @@ public class CodeCompleter implements Completable {
                 }
                 
                 // Find identifier end
+                String prefix;
                 if (upToOffset ){
                     prefix = line.substring(start, lineOffset);
                 } else {
@@ -840,6 +844,10 @@ public class CodeCompleter implements Completable {
                         if ((fqn != null) && fqn.equals(method.getClz())) {
                             continue;
                         }
+                        
+                        if (method.isNoDoc()) {
+                            continue;
+                        }
 
                         // If a method is an "initialize" method I should do something special so that
                         // it shows up as a "constructor" (in a new() statement) but not as a directly
@@ -910,7 +918,7 @@ public class CodeCompleter implements Completable {
                 if (method != null) {
                     // TODO - if the lhs is "foo.bar." I need to split this
                     // up and do it a bit more cleverly
-                    TypeAnalyzer analyzer = new TypeAnalyzer(method, node, astOffset, lexOffset, doc, fileObject);
+                    TypeAnalyzer analyzer = new TypeAnalyzer(index, method, node, astOffset, lexOffset, doc, fileObject);
                     type = analyzer.getType(lhs);
                 }
             }
@@ -986,10 +994,16 @@ public class CodeCompleter implements Completable {
                     continue;
                 }
 
-                // If a method is an "initialize" method I should do something special so that
-                // it shows up as a "constructor" (in a new() statement) but not as a directly
-                // callable initialize method (it should already be culled because it's private)
-                //proposals.add(new DefaultCompletionProposal(method.getComObject(), anchor));
+                if (method.isNoDoc()) {
+                    continue;
+                }
+
+                if (method.getMethodType() == IndexedMethod.MethodType.DBCOLUMN) {
+                    DbItem item = new DbItem(method.getName(), method.getIn(), anchor, request);
+                    proposals.add(item);
+                    continue;
+                }
+
                 MethodItem methodItem = new MethodItem(method, anchor, request);
                 // Exact matches
                 methodItem.setSmart(method.isSmart());
@@ -1046,6 +1060,10 @@ public class CodeCompleter implements Completable {
 
         // Prefix the current class if necessary
         for (IndexedClass cls : classes) {
+            if (cls.isNoDoc()) {
+                continue;
+            }
+
             ClassItem item = new ClassItem(cls, classAnchor, request);
             item.setSmart(true);
 
@@ -1097,7 +1115,7 @@ public class CodeCompleter implements Completable {
                             try {
                                 String text = doc.getText(commentBlock.getStart(), commentBlock.getLength());
                                 Element element = new CommentElement(text);
-                                MethodItem item = new MethodItem(element, anchor, request);
+                                ClassItem item = new ClassItem(element, anchor, request);
                                 proposals.add(item);
                                 return true;
                             } catch (BadLocationException ble) {
@@ -1252,108 +1270,629 @@ public class CodeCompleter implements Completable {
         return false;
     }
     
-    private boolean addMembers(List<CompletionProposal> proposals, CompletionRequest request) {
-        CompilationInfo info = request.info;
-        AstPath path = request.path;
-        int astOffset = request.astOffset;
+    private int callLineStart = -1;
+    private IndexedMethod callMethod;
 
-        Iterator<Node> it = path.leafToRoot();
+    /** Compute the current method call at the given offset. Returns false if we're not in a method call. 
+     * The argument index is returned in parameterIndexHolder[0] and the method being
+     * called in methodHolder[0].
+     */
+    boolean computeMethodCall(CompilationInfo info, int lexOffset, int astOffset,
+            IndexedMethod[] methodHolder, int[] parameterIndexHolder, int[] anchorOffsetHolder) {
+        try {
+            Node root = AstUtilities.getRoot(info);
 
-        Node call = null;
-        int index = -1;
-        int anchorOffset = -1;
+            if (root == null) {
+                return false;
+            }
 
-        while (it.hasNext()) {
-            Node node = it.next();
+            IndexedMethod targetMethod = null;
+            int index = -1;
 
-            if (node instanceof CallNode) {
-                Node argsNode = ((CallNode)node).getArgsNode();
+            AstPath path = null;
+            // Account for input sanitation
+            // TODO - also back up over whitespace, and if I hit the method
+            // I'm parameter number 0
+            int originalAstOffset = astOffset;
 
-                if (argsNode != null) {
-                    index = AstUtilities.findArgumentIndex(argsNode, astOffset);
+            // Adjust offset to the left
+            BaseDocument doc = (BaseDocument) info.getDocument();
+            int newLexOffset = LexUtilities.findSpaceBegin(doc, lexOffset);
+            if (newLexOffset < lexOffset) {
+                astOffset -= (lexOffset-newLexOffset);
+            }
 
-                    if (index != -1) {
-                        call = node;
-                        anchorOffset = argsNode.getPosition().getStartOffset();
-
-                        break;
+            RubyParseResult rpr = (RubyParseResult)info.getParserResult();
+            OffsetRange range = rpr.getSanitizedRange();
+            if (range != OffsetRange.NONE && range.containsInclusive(astOffset)) {
+                if (astOffset != range.getStart()) {
+                    astOffset = range.getStart()-1;
+                    if (astOffset < 0) {
+                        astOffset = 0;
                     }
+                    path = new AstPath(root, astOffset);
                 }
-            } else if (node instanceof FCallNode) {
-                Node argsNode = ((FCallNode)node).getArgsNode();
+            }
 
-                if (argsNode != null) {
-                    index = AstUtilities.findArgumentIndex(argsNode, astOffset);
+            if (path == null) {
+                path = new AstPath(root, astOffset);
+            }
 
-                    if (index != -1) {
-                        call = node;
-                        anchorOffset = argsNode.getPosition().getStartOffset();
+            int currentLineStart = Utilities.getRowStart(doc, lexOffset);
+            if (callLineStart != -1 && currentLineStart == callLineStart) {
+                // We know the method call
+                targetMethod = callMethod;
+                if (targetMethod != null) {
+                    // Somehow figure out the argument index
+                    // Perhaps I can keep the node tree around and look in it
+                    // (This is all trying to deal with temporarily broken
+                    // or ambiguous calls.
+                }
+            }
+            // Compute the argument index
 
+            Node call = null;
+            int anchorOffset = -1;
+
+            if (targetMethod != null) {
+                Iterator<Node> it = path.leafToRoot();
+                String name = targetMethod.getName();
+                while (it.hasNext()) {
+                    Node node = it.next();
+                    if (AstUtilities.isCall(node) &&
+                            name.equals(AstUtilities.getCallName(node))) {
+                        if (node.nodeId == NodeTypes.CALLNODE) {
+                            Node argsNode = ((CallNode)node).getArgsNode();
+
+                            if (argsNode != null) {
+                                index = AstUtilities.findArgumentIndex(argsNode, astOffset);
+
+                                if (index == -1 && astOffset < originalAstOffset) {
+                                    index = AstUtilities.findArgumentIndex(argsNode, originalAstOffset);
+                                }
+
+                                if (index != -1) {
+                                    call = node;
+                                    anchorOffset = argsNode.getPosition().getStartOffset();
+                                }
+                            }
+                        } else if (node.nodeId == NodeTypes.FCALLNODE) {
+                            Node argsNode = ((FCallNode)node).getArgsNode();
+
+                            if (argsNode != null) {
+                                index = AstUtilities.findArgumentIndex(argsNode, astOffset);
+
+                                if (index == -1 && astOffset < originalAstOffset) {
+                                    index = AstUtilities.findArgumentIndex(argsNode, originalAstOffset);
+                                }
+
+                                if (index != -1) {
+                                    call = node;
+                                    anchorOffset = argsNode.getPosition().getStartOffset();
+                                }
+                            }
+                        } else if (node.nodeId == NodeTypes.VCALLNODE) {
+                            // We might be completing at the end of a method call
+                            // and we don't have parameters yet so it just looks like
+                            // a vcall, e.g.
+                            //   create_table |
+                            // This is okay as long as the caret is outside and to
+                            // the right of this call. However
+                            final OffsetRange callRange = AstUtilities.getCallRange(node);
+                            AstUtilities.getCallName(node);
+                            if (originalAstOffset > callRange.getEnd()) {
+                                index = 0;
+                                call = node;
+                                anchorOffset = callRange.getEnd()+1;
+                            }
+                        }
+                        
                         break;
                     }
                 }
             }
-        }
 
-        if ((call == null) || (index == -1)) {
-            return false;
-        }
-        
-        // Look up the
-        // See if we can find the method corresponding to this call
-        IndexedMethod method = new DeclarationFinder().findMethodDeclaration(info, call, path);
+            if (call == null) {
+                // Find the call in around the caret. Beware of 
+                // input sanitization which could have completely
+                // removed the current parameter (e.g. with just
+                // a comma, or something like ", @" or ", :")
+                // where we accidentally end up in the previous
+                // parameter.
+                boolean haveSanitizedComma = rpr.getSanitized() == Sanitize.EDITED_DOT ||
+                        rpr.getSanitized() == Sanitize.ERROR_DOT;
+                if (haveSanitizedComma) {
+                    // We only care about removed commas since that
+                    // affects the parameter count
+                    if (rpr.getSanitizedContents().indexOf(',') == -1) {
+                        haveSanitizedComma = false;
+                    }
+                }
+                
+                ListIterator<Node> it = path.leafToRoot();
+             nodesearch:
+                while (it.hasNext()) {
+                    Node node = it.next();
 
-        if (method == null) {
-            return false;
-        }
+                    if (node.nodeId == NodeTypes.CALLNODE) {
+                        final OffsetRange callRange = AstUtilities.getCallRange(node);
+                        if (haveSanitizedComma && originalAstOffset > callRange.getEnd() && it.hasNext()) {
+                            for (int i = 0; i < 3; i++) {
+                                // It's not really a peek in the sense
+                                // that there's no reason to retry these
+                                // nodes later
+                                Node peek = it.next();
+                                if (AstUtilities.isCall(peek) &&
+                                        Utilities.getRowStart(doc, LexUtilities.getLexerOffset(info, peek.getPosition().getStartOffset())) ==
+                                        Utilities.getRowStart(doc, lexOffset)) {
+                                    // Use the outer method call instead
+                                    it.previous();
+                                    continue nodesearch;
+                                }
+                            }
+                        }
+                        
+                        Node argsNode = ((CallNode)node).getArgsNode();
 
-        List<String> params = method.getParameters();
+                        if (argsNode != null) {
+                            index = AstUtilities.findArgumentIndex(argsNode, astOffset);
 
-        if ((params != null) && (params.size() > 0)) {
+                            if (index == -1 && astOffset < originalAstOffset) {
+                                index = AstUtilities.findArgumentIndex(argsNode, originalAstOffset);
+                            }
+
+                            if (index != -1) {
+                                call = node;
+                                anchorOffset = argsNode.getPosition().getStartOffset();
+
+                                break;
+                            }
+                        } else {
+                            if (originalAstOffset > callRange.getEnd()) {
+                                index = 0;
+                                call = node;
+                                anchorOffset = callRange.getEnd()+1;
+                                break;
+                            }
+                        }
+                    } else if (node.nodeId == NodeTypes.FCALLNODE) {
+                        final OffsetRange callRange = AstUtilities.getCallRange(node);
+                        if (haveSanitizedComma && originalAstOffset > callRange.getEnd() && it.hasNext()) {
+                            for (int i = 0; i < 3; i++) {
+                                // It's not really a peek in the sense
+                                // that there's no reason to retry these
+                                // nodes later
+                                Node peek = it.next();
+                                if (AstUtilities.isCall(peek) &&
+                                        Utilities.getRowStart(doc, LexUtilities.getLexerOffset(info, peek.getPosition().getStartOffset())) ==
+                                        Utilities.getRowStart(doc, lexOffset)) {
+                                    // Use the outer method call instead
+                                    it.previous();
+                                    continue nodesearch;
+                                }
+                            }
+                        }
+                        
+                        Node argsNode = ((FCallNode)node).getArgsNode();
+
+                        if (argsNode != null) {
+                            index = AstUtilities.findArgumentIndex(argsNode, astOffset);
+
+                            if (index == -1 && astOffset < originalAstOffset) {
+                                index = AstUtilities.findArgumentIndex(argsNode, originalAstOffset);
+                            }
+
+                            if (index != -1) {
+                                call = node;
+                                anchorOffset = argsNode.getPosition().getStartOffset();
+
+                                break;
+                            }
+                        }
+                    } else if (node.nodeId == NodeTypes.VCALLNODE) {
+                        // We might be completing at the end of a method call
+                        // and we don't have parameters yet so it just looks like
+                        // a vcall, e.g.
+                        //   create_table |
+                        // This is okay as long as the caret is outside and to
+                        // the right of this call.
+                        
+                        final OffsetRange callRange = AstUtilities.getCallRange(node);
+                        if (haveSanitizedComma && originalAstOffset > callRange.getEnd() && it.hasNext()) {
+                            for (int i = 0; i < 3; i++) {
+                                // It's not really a peek in the sense
+                                // that there's no reason to retry these
+                                // nodes later
+                                Node peek = it.next();
+                                if (AstUtilities.isCall(peek) &&
+                                        Utilities.getRowStart(doc, LexUtilities.getLexerOffset(info, peek.getPosition().getStartOffset())) ==
+                                        Utilities.getRowStart(doc, lexOffset)) {
+                                    // Use the outer method call instead
+                                    it.previous();
+                                    continue nodesearch;
+                                }
+                            }
+                        }
+                        
+                        if (originalAstOffset > callRange.getEnd()) {
+                            index = 0;
+                            call = node;
+                            anchorOffset = callRange.getEnd()+1;
+                            break;
+                        }
+                    }
+                }
+                
+                if (index != -1 && haveSanitizedComma) {
+                    // Adjust the index to account for our removed
+                    // comma
+                    index++;
+                }
+            }
+
+            if ((call == null) || (index == -1)) {
+                callLineStart = -1;
+                callMethod = null;
+                return false;
+            } else if (targetMethod == null) {
+                // Look up the
+                // See if we can find the method corresponding to this call
+                targetMethod = new DeclarationFinder().findMethodDeclaration(info, call, path);
+                if (targetMethod == null) {
+                    return false;
+                }
+            }
+
+            callLineStart = currentLineStart;
+            callMethod = targetMethod;
+
+            methodHolder[0] = callMethod;
+            parameterIndexHolder[0] = index;
+
             // TODO - if you're in a splat node, I should be highlighting the splat node!!
             if (anchorOffset == -1) {
                 anchorOffset = call.getPosition().getStartOffset(); // TODO - compute
             }
+            anchorOffsetHolder[0] = anchorOffset;
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            return false;
+        } catch (BadLocationException ble) {
+            Exceptions.printStackTrace(ble);
+            return false;
+        }
 
-            // TODO - add parameter hints
-            // I need a "symbol" icon! and completion item
-            
-            List<String> comments = getComments(info, method); 
-            if (comments != null && comments.size() > 0 && index < params.size()) {
-                String param = params.get(index);
-                boolean parenthesize = false;
-                
-                
-                // Analyze the comments; look to see if we see something which looks
-                // like documentation for the parameters, as well as an indication whether
-                // this method is expected to use parens or not
-                // TODO - if the method has a single restarg, assume that it
-                for (String comment : comments) {
-                    if (comment.startsWith("<tt>:") || comment.startsWith("* <tt>:") || comment.startsWith("# * <tt>:")) { // NOI18N           
-                        String name = "todo";
-                        int startIndex = comment.indexOf("<tt>:"); // NOI18N
-                        int endIndex = comment.indexOf("</tt>", startIndex+1); // NOI18N
-                        if (startIndex != -1 && endIndex != -1) {
-                            // TODO: Ensure that we have only symbol chars between startIndex and endIndex)...
-                            String symbol = comment.substring(startIndex+4, endIndex);
-                            SymbolHashItem item = new SymbolHashItem(method, name, symbol, anchor, request);
+        return true;
+    }
 
-                            //item.setSmart(method.isSmart());
-                            item.setSmart(true);
-                            item.setSymbol(false);
-                            proposals.add(item);
+    private boolean addParameters(List<CompletionProposal> proposals, CompletionRequest request) {
+        IndexedMethod[] methodHolder = new IndexedMethod[1];
+        int[] paramIndexHolder = new int[1];
+        int[] anchorOffsetHolder = new int[1];
+        CompilationInfo info = request.info;
+        int lexOffset = request.lexOffset;
+        int astOffset = request.astOffset;
+        if (!computeMethodCall(info, lexOffset, astOffset,
+                methodHolder, paramIndexHolder, anchorOffsetHolder)) {
+
+            return false;
+        }
+
+        IndexedMethod targetMethod = methodHolder[0];
+        int index = paramIndexHolder[0];
+        List<String> params = targetMethod.getParameters();
+        if (params == null || params.size() <= index) {
+            return false;
+        }
+
+        boolean isLastArg = index < params.size()-1;
+        
+        String attrs = targetMethod.getEncodedAttributes();
+        if (attrs != null && attrs.length() > 0) {
+            int offset = -1;
+            for (int i = 0; i < 3; i++) {
+                offset = attrs.indexOf(';', offset+1);
+                if (offset == -1) {
+                    break;
+                }
+            }
+            String currentName = params.get(index);
+            if (currentName.startsWith("*")) {
+                // * and & are part of the sig
+                currentName = currentName.substring(1);
+            } else if (currentName.startsWith("&")) {
+                currentName = currentName.substring(1);
+            }
+            if (offset != -1) {
+                // Pick apart
+                attrs = attrs.substring(offset+1);
+                if (attrs.length() == 0) {
+                    return false;
+                }
+                String[] argEntries = attrs.split(",");
+                for (String entry : argEntries) {
+                    int parenIndex = entry.indexOf('(');
+                    assert parenIndex != -1 : attrs;
+                    String name = entry.substring(0, parenIndex);
+                    if  (currentName.equals(name)) {
+                        // Found a special parameter desc entry for this
+                        // parameter - decode it and create completion items
+                        // Decode
+                        int endIndex = entry.indexOf(')', parenIndex);
+                        assert endIndex != -1;
+                        String data = entry.substring(parenIndex+1, endIndex);
+                        if (data.length() > 0 && data.charAt(0) == '-') {
+                            // It's a plain item (e.g. not a hash etc) where
+                            // we have some logical types to complete
+                            if ("-table".equals(data)) {
+                                completeDbTables(proposals, targetMethod, request, isLastArg);
+                                // Not exiting - I may have other entries here too
+                            } else if ("-column".equals(data)) {
+                                completeDbColumns(proposals, targetMethod, request, isLastArg);
+                                // Not exiting - I may have other entries here too
+                            } else if ("-model".equals(data)) {
+                                completeModels(proposals, targetMethod, request, isLastArg);
+                            }
+                        } else if (data.startsWith("=>")) {
+                            // It's a hash; show the given keys
+                            // TODO: Determine if the caret is in the
+                            // value part, and if so, show the values instead
+                            // Uhm... what about fields and such?
+                            completeHash(proposals, request, targetMethod, data, isLastArg);
+                            // Not exiting - I may have a non-hash entry here too!
+                        } else {
+                            // Just show a fixed set of values
+                            completeFixed(proposals, request, targetMethod, data, isLastArg);
+                            // Not exiting - I may have other entries here too
                         }
-                    } else if (comment.indexOf("<tt>:") != -1) { // NOI18N
-                        // TODO log stuff here and figure out corner cases
-                        String x = comment;
                     }
                 }
             }
         }
-
         
         return true;
     }
+
+//    /** Handle insertion of :action, :controller, etc. even for methods without
+//     * actual method signatures. Operate at the lexical level.
+//     */
+//    private void handleRailsKeys(List<CompletionProposal> proposals, CompletionRequest request, IndexedMethod target, String data, boolean isLastArg) {
+//        TokenSequence ts = LexUtilities.getRubyTokenSequence(request.doc, anchor);
+//        if (ts == null) {
+//            return;
+//        }
+//        boolean inValue = false;
+//        ts.move(anchor);
+//        String line = null;
+//        while (ts.movePrevious()) {
+//            final Token token = ts.token();
+//            if (token.id() == RubyTokenId.WHITESPACE) {
+//                continue;
+//            } else if (token.id() == RubyTokenId.NONUNARY_OP &&
+//                    (token.text().toString().equals("=>"))) { // NOI18N
+//                inValue = true;
+//                // TODO - continue on to find out what the key is
+//                try {
+//                    BaseDocument doc = request.doc;
+//                    int lineStart = Utilities.getRowStart(doc, ts.offset());
+//                    line = doc.getText(lineStart, ts.offset()-lineStart).trim();
+//                } catch (BadLocationException ble) {
+//                    Exceptions.printStackTrace(ble);
+//                    return;
+//                }
+//            } else {
+//                break;
+//            }
+//        }
+//
+//        if (inValue) {
+//            if (line.endsWith(":action")) {
+//                // TODO
+//            } else if (line.endsWith(":controller")) {
+//                // Dynamically produce controllers
+//                List<String> controllers = RubyUtils.getControllerNames(request.fileObject, true);
+//                String prefix = request.prefix;
+//                for (String n : controllers) {
+//                    n = "'" + n + "'";
+//                    if (startsWith(n, prefix)) {
+//                        String insert = n;
+//                        if (!isLastArg) {
+//                            insert = insert + ", ";
+//                        }
+//                        ParameterItem item = new ParameterItem(target, n, null, insert,  anchor, request);
+//                        item.setSymbol(true);
+//                        item.setSmart(true);
+//                        proposals.add(item);
+//                    }
+//                }
+//            } else if (line.endsWith(":partial")) {
+//                // TODO
+//            }
+//        }
+//    }
+
+    private boolean completeHash(List<CompletionProposal> proposals, CompletionRequest request, IndexedMethod target, String data, boolean isLastArg) {
+        assert data.startsWith("=>");
+        data = data.substring(2);
+        String prefix = request.prefix;
+        
+        // Determine if we're in the key part or the value part when completing
+        boolean inValue = false;
+        TokenSequence ts = LexUtilities.getRubyTokenSequence(request.doc, anchor);
+        if (ts == null) {
+            return false;
+        }
+        ts.move(anchor);
+        String line = null;
+        
+        while (ts.movePrevious()) {
+            final Token token = ts.token();
+            if (token.id() == RubyTokenId.WHITESPACE) {
+                continue;
+            } else if (token.id() == RubyTokenId.NONUNARY_OP &&
+                    (token.text().toString().equals("=>"))) { // NOI18N
+                inValue = true;
+                // TODO - continue on to find out what the key is
+                try {
+                    BaseDocument doc = request.doc;
+                    int lineStart = Utilities.getRowStart(doc, ts.offset());
+                    line = doc.getText(lineStart, ts.offset()-lineStart).trim();
+                } catch (BadLocationException ble) {
+                    Exceptions.printStackTrace(ble);
+                    return false;
+                }
+            } else {
+                break;
+            }
+        }
+
+        List<String> suggestions = new ArrayList<String>();
+        
+        String key = null;
+        String[] values = data.split("\\|");
+        if (inValue) {
+            // Find the key and see if we have a type to offer for it
+            for (String value : values) {
+                int typeIndex = value.indexOf(':');
+                if (typeIndex != -1) {
+                    String name = value.substring(0, typeIndex);
+                    if (line.endsWith(name)) {
+                        key = name;
+                        // Score - it appears we're using the
+                        // key for this item
+                        String type = value.substring(typeIndex+1);
+                        if ("nil".equals(type)) { // NOI18N
+                            suggestions.add("nil"); // NOI18N
+                        } else if ("bool".equals(type)) { // NOI18N
+                            suggestions.add("true"); // NOI18N
+                            suggestions.add("false"); // NOI18N
+                        } else if ("submitmethod".equals(type)) { // NOI18N
+                            suggestions.add("post"); // NOI18N
+                            suggestions.add("get"); // NOI18N
+                        } else if ("validationactive".equals(type)) { // NOI18N
+                            suggestions.add(":save"); // NOI18N
+                            suggestions.add(":create"); // NOI18N
+                            suggestions.add(":update"); // NOI18N
+                        } else if ("string".equals(type)) { // NOI18N
+                            suggestions.add("\""); // NOI18N
+                        } else if ("hash".equals(type)) { // NOI18N
+                            suggestions.add("{"); // NOI18N
+                        } else if ("controller".equals(type)) {
+                            // Dynamically produce controllers
+                            List<String> controllers = RubyUtils.getControllerNames(request.fileObject, true);
+                            for (String n : controllers) {
+                                suggestions.add("'" + n + "'");
+                            }
+                        } else if ("action".equals(type)) {
+                            // Dynamically produce actions
+                            // This would need to be scoped by the current
+                            // context - look at the hash, find the specified
+                            // controller and limit it to that
+                        }
+                    }
+                }
+            }
+        } else {
+            for (String value : values) {
+                int typeIndex = value.indexOf(':');
+                if (typeIndex != -1) {
+                    value = value.substring(0, typeIndex);
+                }
+                value = ":" + value + " => ";
+                suggestions.add(value);
+            }
+        }
+
+        // I've gotta clean up the colon handling in complete()
+        // I originally stripped ":" to make direct (INameNode)getName()
+        // comparisons on symbols work directly but it's becoming a liability now
+        String colonPrefix = ":" + prefix;
+        for (String suggestion : suggestions) {
+            if (startsWith(suggestion, prefix) || startsWith(suggestion, colonPrefix)) {
+                String insert = suggestion;
+                String desc = null;
+                if (inValue) {
+                    if (!isLastArg) {
+                        insert = insert + ", ";
+                    }
+                    if (key != null) {
+                        desc = ":" + key + " = " + suggestion;
+                    }
+                }
+                ParameterItem item = new ParameterItem(target, suggestion, desc, insert,  anchor, request);
+                item.setSymbol(true);
+                item.setSmart(true);
+                proposals.add(item);
+            }
+        }
+        
+        return true;
+    }
+
+    private void completeFixed(List<CompletionProposal> proposals, CompletionRequest request, IndexedMethod target, String data, boolean isLastArg) {
+        String[] values = data.split("\\|");
+        String prefix = request.prefix;
+        for (String value : values) {
+            if (startsWith(value, prefix)) {
+                String insert = isLastArg ? value : (value + ", ");
+                ParameterItem item = new ParameterItem(target, value, null, insert, anchor, request);
+                item.setSymbol(true);
+                item.setSmart(true);
+                proposals.add(item);
+            }
+        }
+    }
+    
+    private void completeDbTables(List<CompletionProposal> proposals, IndexedMethod target, CompletionRequest request, boolean isLastArg) {
+        // Add in the eligible database tables found in this project
+        // Assumes this is a Rails project
+        Set<String> tables = request.index.getDatabaseTables(request.prefix, request.kind);
+        
+        String prefix = request.prefix;
+        for (String table : tables) {
+            if (startsWith(table, prefix)) {
+                String tableName = ":" + table;
+                String insert = isLastArg ? tableName : (tableName + ", ");
+                ParameterItem item = new ParameterItem(target, tableName, null, insert, anchor, request);
+                item.setSymbol(true);
+                item.setSmart(true);
+                proposals.add(item);
+            }
+        }
+    }
+
+    private void completeModels(List<CompletionProposal> proposals, IndexedMethod target, CompletionRequest request, boolean isLastArg) {
+        Set<IndexedClass> clz = request.index.getSubClasses(request.prefix, "ActiveRecord::Base", request.kind, RubyIndex.SOURCE_SCOPE);
+        
+        String prefix = request.prefix;
+        for (IndexedClass c : clz) {
+            String name = c.getName();
+            String symbol = ":"+RubyUtils.camelToUnderlinedName(name);
+            if (startsWith(symbol, prefix)) {
+                String insert = isLastArg ? symbol : (symbol + ", ");
+                ParameterItem item = new ParameterItem(target, symbol, name, insert, anchor, request);
+                item.setSymbol(true);
+                item.setSmart(true);
+                proposals.add(item);
+            }
+        }
+    }
+    
+    private void completeDbColumns(List<CompletionProposal> proposals, IndexedMethod target, CompletionRequest request, boolean isLastArg) {
+        // Add in the eligible database tables found in this project
+        // Assumes this is a Rails project
+        Set<String> tables = request.index.getDatabaseTables(request.prefix, request.kind);
+        
+        // TODO
+//        for (String table : tables) {
+//            if (startsWith(table, prefix)) {
+//                SymbolHashItem item = new SymbolHashItem(target, ":" + table, null, anchor, request);
+//                item.setSymbol(true);
+//                proposals.add(item);
+//            }
+//        }
+    }
+    
 
     // TODO: Move to the top
     public List<CompletionProposal> complete(final CompilationInfo info, int lexOffset, String prefix,
@@ -1518,7 +2057,7 @@ public class CodeCompleter implements Completable {
                     f = new HashSet<IndexedField>();
                     addActionViewFields(f, fileObject, index, prefix, kind);
                 } else {
-                    f = index.getInheritedFields(fqn, prefix, kind);
+                    f = index.getInheritedFields(fqn, prefix, kind, false);
                 }
 
                 for (IndexedField field : f) {
@@ -1551,8 +2090,7 @@ public class CodeCompleter implements Completable {
         }
         
         // If we're in a call, add in some info and help for the code completion call
-        // NOT YET ENABLED 
-        //addMembers(proposals, request);
+        boolean inCall = addParameters(proposals, request);
 
         // Code completion from the index.
         if (index != null) {
@@ -1585,12 +2123,30 @@ public class CodeCompleter implements Completable {
                     // is no receiver so it must be a local or inherited method call
                     Set<IndexedMethod> inheritedMethods =
                         index.getInheritedMethods(fqn, prefix, kind);
-                    
+
                     // Handle action view completion for RHTML and Markaby files
                     if (RubyUtils.isRhtmlFile(fileObject) || RubyUtils.isMarkabyFile(fileObject)) {
                         addActionViewMethods(inheritedMethods, fileObject, index, prefix, kind);
                     } else if (fileObject.getName().endsWith("_spec")) { // NOI18N
                         // RSpec
+                        
+                        /* My spec object had the following extras methods over a plain Object:
+                                x = self.class.methods
+                                x.each {|c|
+                                      puts c
+                                }
+                            > args_and_options
+                            > context
+                            > copy_instance_variables_from
+                            > describe
+                            > gem
+                            > metaclass
+                            > require
+                            > require_gem
+                            > respond_to
+                            > should
+                            > should_not
+                         */
                         String includes[] = { 
                             // "describe" should be in Kernel already, from spec/runner/extensions/kernel.rb
                             "Spec::Matchers",
@@ -1610,6 +2166,10 @@ public class CodeCompleter implements Completable {
                             continue;
                         }
 
+                        if (method.isNoDoc()) {
+                            continue;
+                        }
+                        
                         // If a method is an "initialize" method I should do something special so that
                         // it shows up as a "constructor" (in a new() statement) but not as a directly
                         // callable initialize method (it should already be culled because it's private)
@@ -1626,7 +2186,7 @@ public class CodeCompleter implements Completable {
                 }
             }
 
-            if (showUpper || showSymbols) {
+            if ((showUpper || showSymbols) && !inCall) {
                 completeClasses(proposals, request, showSymbols, call);
             }
         }
@@ -1778,7 +2338,7 @@ public class CodeCompleter implements Completable {
         // RHTML and Markaby: Add in the helper methods etc. from the associated files
         boolean isMarkaby = RubyUtils.isMarkabyFile(fileObject);
         if (isMarkaby) {
-            Set<IndexedField> actionView = index.getInheritedFields("ActionView::Base", prefix, kind); // NOI18N
+            Set<IndexedField> actionView = index.getInheritedFields("ActionView::Base", prefix, kind, true); // NOI18N
             inheritedFields.addAll(actionView);
         }
 
@@ -1798,7 +2358,7 @@ public class CodeCompleter implements Completable {
             }
 
             String fqn = controllerName+"Controller"; // NOI18N
-            Set<IndexedField> controllerFields = index.getInheritedFields(fqn, prefix, kind);
+            Set<IndexedField> controllerFields = index.getInheritedFields(fqn, prefix, kind, true);
             for (IndexedField field : controllerFields) {
                 if ("ActionController::Base".equals(field.getIn())) { // NOI18N
                     continue;
@@ -2362,9 +2922,15 @@ public class CodeCompleter implements Completable {
         
         List<String> comments = getComments(info, element);
         if (comments == null) {
-            return null;
-        }
+            if (element.getName().startsWith("find_by_") ||
+                element.getName().startsWith("find_all_by_")) {
+                return new RDocFormatter().getSignature(element) + NbBundle.getMessage(CodeCompleter.class, "DynamicMethod");
+            }
+            String html = new RDocFormatter().getSignature(element) + "\n<hr>\n<i>" + NbBundle.getMessage(CodeCompleter.class, "NoCommentFound") +"</i>";
 
+            return html;
+        }
+        
         RDocFormatter formatter = new RDocFormatter();
         String name = element.getName();
         if (name != null && name.length() > 0) {
@@ -2377,64 +2943,10 @@ public class CodeCompleter implements Completable {
 
         String html = formatter.toHtml();
         if (!formatter.wroteSignature()) {
-            html = getSignature(element) + "\n<hr>\n" + html;
+            html = formatter.getSignature(element) + "\n<hr>\n" + html;
         }
         
         return html;
-    }
-
-    /** @todo Move into RDocFormatter, close to the getCallSeqHtml method */
-    private String getSignature(Element element) {
-        StringBuilder sb = new StringBuilder();
-        // TODO:
-        sb.append("<pre>");
-
-        if (element instanceof MethodElement) {
-            MethodElement executable = (MethodElement)element;
-            if (element.getIn() != null) {
-                String in = element.getIn();
-                int lastIndex = in.lastIndexOf("::");
-                if (lastIndex != -1) {
-                    in = in.substring(lastIndex+2);
-                }
-                sb.append("<i>");
-                sb.append(in);
-                sb.append("</i>");
-                sb.append('.');
-            }
-            // TODO - share this between Navigator implementation and here...
-            sb.append("<b>");
-            sb.append(executable.getName());
-            sb.append("</b>");
-
-            Collection<String> parameters = executable.getParameters();
-
-            if ((parameters != null) && (parameters.size() > 0)) {
-                sb.append("(");
-
-                sb.append("<font color=\"#808080\">");
-
-                for (Iterator<String> it = parameters.iterator(); it.hasNext();) {
-                    String ve = it.next();
-                    // TODO - if I know types, list the type here instead. For now, just use the parameter name instead
-                    sb.append(ve);
-
-                    if (it.hasNext()) {
-                        sb.append(", ");
-                    }
-                }
-
-                sb.append("</font>");
-
-                sb.append(")");
-            }
-        } else {
-            sb.append(element.getName());
-        }
-
-        sb.append("</pre>");
-
-        return sb.toString();
     }
 
     public Set<String> getApplicableTemplates(CompilationInfo info, int selectionBegin,
@@ -2667,83 +3179,39 @@ public class CodeCompleter implements Completable {
         return null;
     }
 
-    public ParameterInfo parameters(CompilationInfo info, int caretOffset, CompletionProposal proposal) {
-        Node root = AstUtilities.getRoot(info);
+    public ParameterInfo parameters(CompilationInfo info, int lexOffset, CompletionProposal proposal) {
+        IndexedMethod[] methodHolder = new IndexedMethod[1];
+        int[] paramIndexHolder = new int[1];
+        int[] anchorOffsetHolder = new int[1];
+        int astOffset = AstUtilities.getAstOffset(info, lexOffset);
+        if (!computeMethodCall(info, lexOffset, astOffset,
+                methodHolder, paramIndexHolder, anchorOffsetHolder)) {
 
-        if (root == null) {
             return ParameterInfo.NONE;
         }
 
-        AstPath path = new AstPath(root, caretOffset);
-        Iterator<Node> it = path.leafToRoot();
-
-        Node call = null;
-        int index = -1;
-        int anchorOffset = -1;
-
-        while (it.hasNext()) {
-            Node node = it.next();
-
-            if (node instanceof CallNode) {
-                Node argsNode = ((CallNode)node).getArgsNode();
-
-                if (argsNode != null) {
-                    index = AstUtilities.findArgumentIndex(argsNode, caretOffset);
-
-                    if (index != -1) {
-                        call = node;
-                        anchorOffset = argsNode.getPosition().getStartOffset();
-
-                        break;
-                    }
-                }
-            } else if (node instanceof FCallNode) {
-                Node argsNode = ((FCallNode)node).getArgsNode();
-
-                if (argsNode != null) {
-                    index = AstUtilities.findArgumentIndex(argsNode, caretOffset);
-
-                    if (index != -1) {
-                        call = node;
-                        anchorOffset = argsNode.getPosition().getStartOffset();
-
-                        break;
-                    }
-                }
-            }
-        }
-
-        if ((call == null) || (index == -1)) {
+        IndexedMethod method = methodHolder[0];
+        if (method == null) {
             return ParameterInfo.NONE;
         }
+        int index = paramIndexHolder[0];
+        int anchorOffset = anchorOffsetHolder[0];
+
 
         // TODO: Make sure the caret offset is inside the arguments portion
         // (parameter hints shouldn't work on the method call name itself
         
-        // See if we can find the method corresponding to this call
-        IndexedMethod method = null;
-        if (proposal != null) {
-            Element element = proposal.getElement();
-            if (element instanceof IndexedMethod) {
-                method = ((IndexedMethod)element);
-            }
-        }
-        if (method == null) {
-            method = new DeclarationFinder().findMethodDeclaration(info, call, path);
-        }
-
-        if (method == null) {
-            return ParameterInfo.NONE;
-        }
+                // See if we can find the method corresponding to this call
+        //        if (proposal != null) {
+        //            Element element = proposal.getElement();
+        //            if (element instanceof IndexedMethod) {
+        //                method = ((IndexedMethod)element);
+        //            }
+        //        }
 
         List<String> params = method.getParameters();
 
         if ((params != null) && (params.size() > 0)) {
-            // TODO - if you're in a splat node, I should be highlighting the splat node!!
-            if (anchorOffset == -1) {
-                anchorOffset = call.getPosition().getStartOffset(); // TODO - compute
-            }
-
             return new ParameterInfo(params, index, anchorOffset);
         }
 
@@ -2826,6 +3294,10 @@ public class CodeCompleter implements Completable {
             return formatter.getText();
         }
 
+        public String getRhsHtml() {
+            return null;
+        }
+
         public Set<Modifier> getModifiers() {
             return element.getModifiers();
         }
@@ -2853,11 +3325,17 @@ public class CodeCompleter implements Completable {
         public String[] getParamListDelimiters() {
             return new String[] { "(", ")" }; // NOI18N
         }
+
+        public String getCustomInsertTemplate() {
+            return null;
+        }
     }
 
     private class MethodItem extends RubyCompletionItem {
-        MethodItem(Element element, int anchorOffset, CompletionRequest request) {
+        private IndexedMethod method;
+        MethodItem(IndexedMethod element, int anchorOffset, CompletionRequest request) {
             super(element, anchorOffset, request);
+            this.method = element;
         }
 
         @Override
@@ -2865,14 +3343,18 @@ public class CodeCompleter implements Completable {
             ElementKind kind = getKind();
             HtmlFormatter formatter = request.formatter;
             formatter.reset();
+            boolean emphasize = !method.isInherited();
+            if (emphasize) {
+                formatter.emphasis(true);
+            }
             formatter.name(kind, true);
             formatter.appendText(getName());
             formatter.name(kind, false);
+            if (emphasize) {
+                formatter.emphasis(false);
+            }
 
-            // TODO - do local methods in bold?
-            // See http://www.javalobby.org/forums/thread.jspa?messageID=92170302&#92170302
-            
-            Collection<String> parameters = ((MethodElement)element).getParameters();
+            Collection<String> parameters = method.getParameters();
 
             if ((parameters != null) && (parameters.size() > 0)) {
                 formatter.appendHtml("("); // NOI18N
@@ -2891,27 +3373,28 @@ public class CodeCompleter implements Completable {
 
                 formatter.appendHtml(")"); // NOI18N
             }
+            
+            if (method.hasBlock() && !method.isBlockOptional()) {
+                formatter.appendText(" { }");
+            }
 
             return formatter.getText();
         }
 
+        @Override
         public String getRhsHtml() {
             HtmlFormatter formatter = request.formatter;
             formatter.reset();
 
             // Top level methods (defined on Object) : print
             // the defining file instead
-            MethodElement me = (MethodElement)element;
-            if (me.isTopLevel() && me instanceof IndexedMethod) {
-                IndexedMethod im = (IndexedMethod)element;
-                if (im.isTopLevel() && im.getRequire() != null) {
-                    formatter.appendText(im.getRequire());
+            if (method.isTopLevel() && method.getRequire() != null) {
+                formatter.appendText(method.getRequire());
 
-                    return formatter.getText();
-                }
+                return formatter.getText();
             }
 
-            String in = me.getIn();
+            String in = method.getIn();
 
             if (in != null) {
                 formatter.appendText(in);
@@ -2923,11 +3406,131 @@ public class CodeCompleter implements Completable {
 
         @Override
         public List<String> getInsertParams() {
-            return ((MethodElement)element).getParameters();
+            return method.getParameters();
+        }
+
+        @Override
+        public String getCustomInsertTemplate() {
+            final String insertPrefix = getInsertPrefix();
+            List<String> params = getInsertParams();
+            
+            String startDelimiter;
+            String endDelimiter;
+            boolean hasBlock = false;
+            int paramCount = params.size();
+            int printArgs = paramCount;
+
+            boolean hasHashArgs = method.getEncodedAttributes() != null &&
+                    method.getEncodedAttributes().indexOf("=>") != -1; // NOI18N
+
+            if (paramCount > 0 && params.get(paramCount-1).startsWith("&")) { // NOI18N
+                hasBlock = true;
+                printArgs--;
+
+                // Force parentheses around the call when using { } blocks
+                // to avoid presedence problems
+                startDelimiter = "("; // NOI18N
+                endDelimiter = ")"; // NOI18N
+            } else if (method.hasBlock()) {
+                hasBlock = true;
+                if (paramCount > 0) {
+                    // Force parentheses around the call when using { } blocks
+                    // to avoid presedence problems
+                    startDelimiter = "("; // NOI18N
+                    endDelimiter = ")"; // NOI18N
+                } else {
+                    startDelimiter = "";
+                    endDelimiter = "";
+                }
+            } else {
+                String[] delimiters = getParamListDelimiters();
+                assert delimiters.length == 2;
+                startDelimiter = delimiters[0];
+                endDelimiter = delimiters[1];
+            }
+
+            StringBuilder sb = new StringBuilder();
+            sb.append(insertPrefix);
+
+            if (hasHashArgs) {
+                // Uhm, no don't do this until we get to the first arg that takes a hash
+                // For methods with hashes, rely on code completion to insert args
+                sb.append(" ");
+                return sb.toString();
+            }
+
+            sb.append(startDelimiter);
+            
+            int id = 1;
+            for (int i = 0; i < printArgs; i++) {
+                String paramDesc = params.get(i);
+                sb.append("${"); //NOI18N
+                // Ensure that we don't use one of the "known" logical parameters
+                // such that a parameter like "path" gets replaced with the source file
+                // path!
+                sb.append("ruby-cc-"); // NOI18N
+                sb.append(Integer.toString(id++));
+                sb.append(" default=\""); // NOI18N
+                sb.append(paramDesc);
+                sb.append("\""); // NOI18N
+                sb.append("}"); //NOI18N
+                if (i < printArgs-1) {
+                    sb.append(", "); //NOI18N
+                }
+            }
+            sb.append(endDelimiter);
+            
+            if (hasBlock) {
+                String[] blockArgs = null;
+                String attrs = method.getEncodedAttributes();
+                int yieldNameBegin = attrs.indexOf(';');
+                if (yieldNameBegin != -1) {
+                    int yieldNameEnd = attrs.indexOf(';', yieldNameBegin+1);
+                    if (yieldNameEnd != -1) {
+                        blockArgs = attrs.substring(yieldNameBegin+1,
+                                yieldNameEnd).split(",");
+                    }
+                }
+                // TODO - if it's not an indexed class, pull this from the
+                // method comments instead!
+                
+                sb.append(" { |"); // NOI18N
+                if (blockArgs != null && blockArgs.length > 0) {
+                    for (int i = 0; i < blockArgs.length; i++) {
+                        if (i > 0) {
+                            sb.append(","); // NOI18N
+                        }
+                        String arg = blockArgs[i];
+                        sb.append("${unusedlocal defaults=\""); // NOI18N
+                        sb.append(arg);
+                        sb.append("\"}"); // NOI18N
+                    }
+                } else {
+                    sb.append("${unusedlocal defaults=\"i,e\"}"); // NOI18N
+                }
+                sb.append("| ${"); // NOI18N
+                sb.append("ruby-cc-"); // NOI18N
+                sb.append(Integer.toString(id++));
+                sb.append(" default=\"\"} }${cursor}"); // NOI18N
+                
+            } else {
+                sb.append("${cursor}"); // NOI18N
+            }
+            
+            // Facility method parameter completion on this item
+            try {
+                callLineStart = Utilities.getRowStart(request.doc, anchorOffset);
+                callMethod = method;
+            } catch (BadLocationException ble) {
+                Exceptions.printStackTrace(ble);
+            }
+            
+            return sb.toString();
         }
         
         @Override
         public String[] getParamListDelimiters() {
+            // TODO - convert methods with NO parameters that take a block to insert { <here> }
             String n = getName();
             String in = element.getIn();
             if ("Module".equals(in)) {
@@ -3032,8 +3635,9 @@ public class CodeCompleter implements Completable {
             return super.getParamListDelimiters();
         }
 
+        @Override
         public ElementKind getKind() {
-            if (element instanceof IndexedMethod && ((IndexedMethod)element).isAttribute()) {
+            if (method.getMethodType() == IndexedMethod.MethodType.ATTRIBUTE) {
                 return ElementKind.ATTRIBUTE;
             }
 
@@ -3062,6 +3666,7 @@ public class CodeCompleter implements Completable {
             return ElementKind.KEYWORD;
         }
 
+        @Override
         public String getRhsHtml() {
             if (description != null) {
                 HtmlFormatter formatter = request.formatter;
@@ -3100,6 +3705,7 @@ public class CodeCompleter implements Completable {
             super(element, anchorOffset, request);
         }
 
+        @Override
         public String getRhsHtml() {
             HtmlFormatter formatter = request.formatter;
             formatter.reset();
@@ -3120,10 +3726,6 @@ public class CodeCompleter implements Completable {
         PlainItem(Element element, int anchorOffset, CompletionRequest request) {
             super(element, anchorOffset, request);
         }
-
-        public String getRhsHtml() {
-            return null;
-        }
     }
 
     private class FieldItem extends RubyCompletionItem {
@@ -3131,6 +3733,28 @@ public class CodeCompleter implements Completable {
             super(element, anchorOffset, request);
         }
 
+        @Override
+        public String getLhsHtml() {
+            if (element instanceof IndexedField) {
+                HtmlFormatter formatter = request.formatter;
+                formatter.reset();
+                IndexedField field = (IndexedField)element;
+                boolean emphasize = !field.isInherited();
+                if (emphasize) {
+                    formatter.emphasis(true);
+                }
+                formatter.name(ElementKind.FIELD, true);
+                formatter.appendText(getName());
+                formatter.name(ElementKind.FIELD, false);
+                if (emphasize) {
+                    formatter.emphasis(false);
+                }
+                
+                return formatter.getText();
+            }
+            return super.getLhsHtml();
+        }
+        
         @Override
         public String getInsertPrefix() {
             String name;
@@ -3146,6 +3770,7 @@ public class CodeCompleter implements Completable {
             return name;
         }
         
+        @Override
         public String getRhsHtml() {
             HtmlFormatter formatter = request.formatter;
             formatter.reset();
@@ -3176,57 +3801,123 @@ public class CodeCompleter implements Completable {
         }
     }
     
-    private class SymbolHashItem extends RubyCompletionItem {   
-        private static final String RUBY_SYMBOL = "org/netbeans/modules/ruby/symbol.png"; //NOI18N
+    private class ParameterItem extends RubyCompletionItem {   
+        private static final String CONSTANT_ICON = "org/netbeans/modules/ruby/symbol.png"; //NOI18N
         private final String name;
-        private final String symbol;
+        private final String desc;
+        private final String insert;
         
-        SymbolHashItem(Element element, String name, String symbol, int anchorOffset, CompletionRequest request) {
+        ParameterItem(IndexedMethod element, String name, String symbol, String insert, int anchorOffset, CompletionRequest request) {
             super(element, anchorOffset, request);
             this.name = name;
-            this.symbol = symbol;
+            this.desc = symbol;
+            this.insert = insert;
         }
 
+        @Override
         public String getRhsHtml() {
-//            formatter.reset();
-//
-//            String in = ((ClassElement)element).getIn();
-//
-//            if (in != null) {
-//                formatter.appendText(in);
-//            } else {
-//                return null;
-//            }
-//
-//            return formatter.getText();
-            return "";
+            if (desc != null) {
+                HtmlFormatter formatter = request.formatter;
+                formatter.reset();
+                formatter.appendText(desc);
+                return formatter.getText();
+            } else {
+                return null;
+            }
         }
         
+        @Override
         public ElementKind getKind() {
             return ElementKind.PARAMETER;
         }
 
+        @Override
         public ImageIcon getIcon() {
             if (symbolIcon == null) {
-                symbolIcon = new ImageIcon(org.openide.util.Utilities.loadImage(RUBY_SYMBOL));
+                symbolIcon = new ImageIcon(org.openide.util.Utilities.loadImage(CONSTANT_ICON));
             }
 
             return symbolIcon;
         }
 
+        @Override
         public String getName() {
-            return symbol;
+            return name;
         }
 
+        @Override
         public String getInsertPrefix() {
-            // TODO - add a comma etc?
-            // TODO - suppress parentheses?
-            // TODO - live code template here for inserting the value!!
-            return symbol + " => "; // NOI18N
+            return insert;
         }
 
     }
 
+    /** Methods/attributes inferred from ActiveRecord migrations */
+    private class DbItem extends RubyCompletionItem {
+        private String name;
+        private String type;
+        
+        DbItem(String name, String type, int anchorOffset, CompletionRequest request) {
+            super(null, anchorOffset, request);
+            this.name = name;
+            this.type = type;
+        }
+        
+        @Override
+        public String getLhsHtml() {
+            HtmlFormatter formatter = request.formatter;
+            formatter.reset();
+            formatter.emphasis(true);
+            formatter.name(ElementKind.DB, true);
+            formatter.appendText(getName());
+            formatter.name(ElementKind.DB, false);
+            formatter.emphasis(false);
+
+            return formatter.getText();
+        }
+
+        @Override
+        public String getInsertPrefix() {
+            return name;
+        }
+        
+        @Override
+        public String getRhsHtml() {
+            HtmlFormatter formatter = request.formatter;
+            formatter.reset();
+
+            // TODO - include table name somewhere?
+            formatter.appendText(type);
+            return formatter.getText();
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.DB;
+        }
+
+        @Override
+        public ImageIcon getIcon() {
+            return null;
+        }
+
+        @Override
+        public Set<Modifier> getModifiers() {
+            return Collections.emptySet();
+        }
+
+        @Override
+        public boolean isSmart() {
+            // All database attributes are considered smart matches
+            return true;
+        }
+    }
+    
     /** Return true if we always want to use parentheses
      * @todo Make into a user-configurable option
      * @todo Avoid doing this if there's possible ambiguity (e.g. nested method calls

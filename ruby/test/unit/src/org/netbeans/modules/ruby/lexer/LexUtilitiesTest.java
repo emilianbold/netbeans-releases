@@ -413,4 +413,21 @@ public class LexUtilitiesTest extends RubyTestBase {
             assertFalse(LexUtilities.isInsideRegexp(doc, i));
         }
     }
+    
+    public void testFindSpaceBegin() {
+        // Spaces in strings don't count
+        String s = "x =  'f oo'";
+        BaseDocument doc = getDocument(s);
+        assertEquals(0, LexUtilities.findSpaceBegin(doc, 0));
+        assertEquals(1, LexUtilities.findSpaceBegin(doc, 1));
+        assertEquals(1, LexUtilities.findSpaceBegin(doc, 2));
+        assertEquals(3, LexUtilities.findSpaceBegin(doc, 3));
+        assertEquals(3, LexUtilities.findSpaceBegin(doc, 4));
+        assertEquals(3, LexUtilities.findSpaceBegin(doc, 5));
+        assertEquals(6, LexUtilities.findSpaceBegin(doc, 6));
+        assertEquals(7, LexUtilities.findSpaceBegin(doc, 7));
+        assertEquals(8, LexUtilities.findSpaceBegin(doc, 8));
+        assertEquals(9, LexUtilities.findSpaceBegin(doc, 9));
+        assertEquals(10, LexUtilities.findSpaceBegin(doc, 10));
+    }
 }

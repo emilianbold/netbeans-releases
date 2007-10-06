@@ -216,6 +216,9 @@ public abstract class RubyTestBase extends NbTestCase {
         }
     }
 
+    public static BaseDocument getDocumentFor(FileObject fo) {
+        return createDocument(read(fo));
+    }
 
     protected BaseDocument getDocument(String s) {
         return createDocument(s);

@@ -47,6 +47,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.swing.text.BadLocationException;
@@ -102,9 +103,12 @@ import org.openide.util.Exceptions;
 
 
 /**
- *
- * @todo Create a NodePath abstraction, wrapping my ArrayList operation
- *   that I'm using here?
+ * Various utilities for operating on the JRuby ASTs that are used
+ * elsewhere.
+ * 
+ * @todo Rewrite many of the custom recursion routines to simply 
+ *  call {@link addNodesByType} and then iterate (without recursion) over
+ *  the result set.
  *
  * @author Tor Norbye
  */
@@ -160,6 +164,18 @@ public class AstUtilities {
 
             if (document instanceof BaseDocument) {
                 return ((BaseDocument)document);
+            } else {
+                // Must be testsuite execution
+                try {
+                    Class c = Class.forName("org.netbeans.modules.ruby.RubyTestBase");
+                    if (c != null) {
+                        @SuppressWarnings("unchecked")
+                        java.lang.reflect.Method m = c.getMethod("getDocumentFor", new Class[] { FileObject.class });
+                        return (BaseDocument) m.invoke(null, (Object[])new FileObject[] { fileObject });
+                    }
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
@@ -1634,5 +1650,22 @@ public class AstUtilities {
         }
 
         return result[0];
+    }
+    
+    /** Collect nodes of the given types (node.nodeId==NodeTypes.x) under the given root */
+    public static void addNodesByType(Node root, int[] nodeIds, List<Node> result) {
+        for (int i = 0; i < nodeIds.length; i++) {
+            if (root.nodeId == nodeIds[i]) {
+                result.add(root);
+                break;
+            }
+        }
+
+        @SuppressWarnings("unchecked")
+        List<Node> list = root.childNodes();
+
+        for (Node child : list) {
+            addNodesByType(child, nodeIds, result);
+        }
     }
 }

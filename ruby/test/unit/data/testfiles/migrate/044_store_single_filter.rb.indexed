@@ -1,0 +1,91 @@
+
+
+Document 0
+Delete:  source : <TESTURL>/044_store_single_filter.rb
+
+Indexed:
+
+Not Indexed:
+
+
+Document 1
+Delete:
+Indexed:
+  dbtable : filter
+  source : <TESTURL>/044_store_single_filter.rb
+
+Not Indexed:
+  dbcolumn : string;
+  dbversion : 044
+
+
+Document 2
+Delete:
+Indexed:
+  class : User
+  class-ig : user
+  extends : ActiveRecord::Base
+  fqn : StoreSingleFilter::User
+  source : <TESTURL>/044_store_single_filter.rb
+
+Not Indexed:
+  attrs : |CLASS|
+  in : StoreSingleFilter
+
+
+Document 3
+Delete:
+Indexed:
+  class : Site
+  class-ig : site
+  extends : ActiveRecord::Base
+  fqn : StoreSingleFilter::Site
+  source : <TESTURL>/044_store_single_filter.rb
+
+Not Indexed:
+  attrs : |CLASS|
+  in : StoreSingleFilter
+
+
+Document 4
+Delete:
+Indexed:
+  class : Content
+  class-ig : content
+  extends : ActiveRecord::Base
+  fqn : StoreSingleFilter::Content
+  source : <TESTURL>/044_store_single_filter.rb
+
+Not Indexed:
+  attrs : |CLASS|
+  in : StoreSingleFilter
+
+
+Document 5
+Delete:
+Indexed:
+  class : ContentVersion
+  class-ig : contentversion
+  extends : ActiveRecord::Base
+  fqn : StoreSingleFilter::ContentVersion
+  source : <TESTURL>/044_store_single_filter.rb
+
+Not Indexed:
+  attrs : |CLASS|
+  in : StoreSingleFilter
+
+
+Document 6
+Delete:
+Indexed:
+  class : StoreSingleFilter
+  class-ig : storesinglefilter
+  constant : FILTERED_MODELS
+  extends : ActiveRecord::Migration
+  fqn : StoreSingleFilter
+  method : down|STATIC|
+  method : up|STATIC|
+  source : <TESTURL>/044_store_single_filter.rb
+
+Not Indexed:
+  attrs : |CLASS|

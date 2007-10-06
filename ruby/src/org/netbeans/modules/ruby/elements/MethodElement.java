@@ -57,4 +57,5 @@ public interface MethodElement extends Element {
     List<String> getParameters();
     boolean isTopLevel();
     String getIn();
+    boolean isInherited();
 }

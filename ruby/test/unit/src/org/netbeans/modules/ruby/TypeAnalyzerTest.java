@@ -56,18 +56,42 @@ public class TypeAnalyzerTest extends RubyTestBase {
     public TypeAnalyzerTest(String testName) {
         super(testName);
     }
-    
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
 
-    protected void tearDown() throws Exception {
-        super.tearDown();
+    private TypeAnalyzer getAnalyzer(String file, String caretLine, boolean findMethod) throws Exception {
+        FileObject fo = getTestFile(file);
+        BaseDocument doc = getDocument(fo);
+        TestCompilationInfo info = getInfo(fo);
+        Node root = AstUtilities.getRoot(info);
+        RubyIndex index = RubyIndex.get(info.getIndex());
+
+        int caretOffset = -1;
+        if (caretLine != null) {
+            int caretDelta = caretLine.indexOf("^");
+            assertTrue(caretDelta != -1);
+            caretLine = caretLine.substring(0, caretDelta) + caretLine.substring(caretDelta + 1);
+            int lineOffset = info.getText().indexOf(caretLine);
+            assertTrue(lineOffset != -1);
+            caretOffset = lineOffset + caretDelta;
+        }
+        
+        AstPath path = new AstPath(root, caretOffset);
+        Node node = path.leaf();
+        
+        if (findMethod) {
+            MethodDefNode method = AstUtilities.findMethodAtOffset(root, caretOffset);
+            assertNotNull(method);
+            
+            root = method;
+        }
+        
+        TypeAnalyzer instance = new TypeAnalyzer(index, root, node, caretOffset, caretOffset, doc, fo);
+
+        return instance;
     }
     
-    public void testGetType() {
-        Node root = getRootNode("testfiles/types.rb");
-        TypeAnalyzer instance = new TypeAnalyzer(root, null, 794, 794, null, null);
+    public void testGetType() throws Exception {
+        TypeAnalyzer instance = getAnalyzer("testfiles/types.rb", " l^oc = {", false);
+
         assertEquals("Integer", instance.getType("x"));
         // y is reassigned later in the file - make sure that at this
         // point in scope we have the right type
@@ -77,9 +101,9 @@ public class TypeAnalyzerTest extends RubyTestBase {
         assertEquals("Array", instance.getType("@foo"));
     }
 
-    public void testGetType2() {
-        Node root = getRootNode("testfiles/types.rb");
-        TypeAnalyzer instance = new TypeAnalyzer(root, null, 974, 974, null, null);
+    public void testGetType2() throws Exception {
+        TypeAnalyzer instance = getAnalyzer("testfiles/types.rb", " # d^one", false);
+
         // Y is assigned different types - make sure that at this position, it's a number
         assertEquals("Fixnum", instance.getType("y"));
         // Lots of reassignments - track types through vars, statics, fields, classvars
@@ -90,43 +114,40 @@ public class TypeAnalyzerTest extends RubyTestBase {
         assertEquals("Hash", instance.getType("loc2"));
     }
  
-    public void testTypeAssertions() {
-        String file = "testfiles/types.rb";
-        FileObject fileObject = getTestFile(file);
-        BaseDocument doc = getDocument(fileObject);
-
-        Node root = getRootNode(file);
-        int offset = 794;
-        MethodDefNode method = AstUtilities.findMethodAtOffset(root, offset);
-        assertNotNull(method);
-        TypeAnalyzer instance = new TypeAnalyzer(method, null, offset, offset, doc, fileObject);
+    public void testTypeAssertions() throws Exception {
+        TypeAnalyzer instance = getAnalyzer("testfiles/types.rb", " l^oc = {", true);
         assertEquals("String", instance.getType("param1"));
         assertEquals("Hash", instance.getType("param2"));
     }
 
-    public void testBegin() {
-        String file = "testfiles/types2.rb";
-        FileObject fileObject = getTestFile(file);
-        BaseDocument doc = getDocument(fileObject);
-        Node root = getRootNode(file);
-        int pos = 3000;
-        MethodDefNode method = AstUtilities.findMethodAtOffset(root, pos);
-        assertNotNull(method);
-        AstPath path = new AstPath(root, pos);
-        Node node = path.leaf();
-        TypeAnalyzer instance = new TypeAnalyzer(method, node, pos, pos, doc, fileObject);
+    public void testBegin() throws Exception {
+        TypeAnalyzer instance = getAnalyzer("testfiles/types2.rb", " @f^iles = ARGV.dup", true);
         assertEquals("GetoptLong", instance.getType("go"));
     }
 
-    public void testRailsController() {
-        String file = "testfiles/type_controller.rb";
-        FileObject fo = getTestFile(file);
-        Node root = getRootNode(file);
-        BaseDocument doc = getDocument(fo);
-        int pos = 46;
-        AstPath path = new AstPath(root, pos);
-        Node node = path.leaf();
-        TypeAnalyzer instance = new TypeAnalyzer(root, node, pos, pos, doc, fo);
+    public void testRailsController() throws Exception {
+        TypeAnalyzer instance = getAnalyzer("testfiles/type_controller.rb", "^end", false);
         assertEquals("ActionController::CgiRequest", instance.getType("request"));
     }
+
+// This test doesn't work; the behavior works in the IDE but the
+// Lucene index isn't returning local symbols in the testing framework yet    
+//    public void testComplex1() throws Exception {
+//        TypeAnalyzer instance = getAnalyzer("testfiles/types3.rb", "^caret", false);
+//        assertEquals("Product", instance.getType("@product"));
+//    }
+
+    public void testComplex2() throws Exception {
+        TypeAnalyzer instance = getAnalyzer("testfiles/types3.rb", "^caret", true);
+        assertEquals("ActiveRecord::ConnectionAdapters::TableDefinition", instance.getType("t"));
+    }
+
+    //public void testComplex3() throws Exception {
+    //    // XXX TODO 
+    //    assertFalse("Check that I do closures for each, collect, map, etc.", true);
+    //    // also check to_s
+    //}
+    
+    // TODO: Make sure I can handle compound expressions like this one:
+    //  Product.find(params[:id]).destroy
 }

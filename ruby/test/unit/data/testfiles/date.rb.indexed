@@ -25,96 +25,96 @@ Indexed:
   field : of
   field : sg
   fqn : Date
-  method : +(n)
-  method : -(x)
-  method : <<(n)
-  method : <=>(other)
-  method : ===(other)
-  method : >>(n)
-  method : _dump(limit)
-  method : _load(str):s
-  method : ajd
-  method : ajd_to_amjd(ajd):s
-  method : ajd_to_jd(ajd,of):s
-  method : amjd
-  method : amjd_to_ajd(amjd):s
-  method : civil(y,m,d,sg):si
-  method : civil:i
-  method : civil_to_jd(y,m,d,sg):s
-  method : commercial(y,w,d,sg):si
-  method : commercial:i
-  method : commercial_to_jd(y,w,d,ns):s
-  method : cwday
-  method : cweek
-  method : cwyear
-  method : day_fraction
-  method : day_fraction_to_time(fr):s
-  method : downto(min,&block)
-  method : england
-  method : eql?(other)
-  method : gregorian
-  method : gregorian_leap?(y):s
-  method : hash
-  method : hour:i
-  method : initialize(ajd,of,sg):i
-  method : inspect
-  method : italy
-  method : jd
-  method : jd(jd,sg):s
-  method : jd_to_ajd(jd,fr,of):s
-  method : jd_to_civil(jd,sg):s
-  method : jd_to_commercial(jd,sg):s
-  method : jd_to_ld(jd):s
-  method : jd_to_mjd(jd):s
-  method : jd_to_ordinal(jd,sg):s
-  method : jd_to_wday(jd):s
-  method : julian
-  method : julian_leap?(y):s
-  method : ld
-  method : ld_to_jd(ld):s
-  method : leap?
-  method : mday
-  method : min:i
-  method : mjd
-  method : mjd_to_jd(mjd):s
-  method : mon
-  method : new(ajd,of,sg):is
-  method : new_offset(of):i
-  method : new_start(sg)
-  method : new_with_hash(elem,sg):s
-  method : ns?
-  method : ns?(jd,sg):s
-  method : offset:i
-  method : once(*ids):s
-  method : ordinal(y,d,sg):si
-  method : ordinal:i
-  method : ordinal_to_jd(y,d,sg):s
-  method : os?
-  method : os?(jd,sg):s
-  method : parse(str,comp,sg):s
-  method : sec:i
-  method : sec_fraction:i
-  method : start
-  method : step(limit,step)
-  method : strptime(str,fmt,sg):s
-  method : succ
-  method : time:i
-  method : time_to_day_fraction(h,min,s):s
-  method : to_s
-  method : today(sg):s
-  method : upto(max,&block)
-  method : valid_civil?(y,m,d,sg):s
-  method : valid_commercial?(y,w,d,sg):s
-  method : valid_jd?(jd,sg):s
-  method : valid_ordinal?(y,d,sg):s
-  method : wday
-  method : yday
-  method : year
-  method : zone:i
+  method : +(n)|DOCUMENTED|
+  method : -(x)|DOCUMENTED|
+  method : <<(n)|DOCUMENTED|
+  method : <=>(other)|DOCUMENTED|
+  method : ===(other)|DOCUMENTED|
+  method : >>(n)|DOCUMENTED|
+  method : _dump(limit)|DOCUMENTED|
+  method : _load(str)|DOCUMENTED|STATIC|
+  method : ajd_to_amjd(ajd)|DOCUMENTED|STATIC|
+  method : ajd_to_jd(ajd,of)|DOCUMENTED|STATIC|
+  method : ajd|DOCUMENTED|
+  method : amjd_to_ajd(amjd)|DOCUMENTED|STATIC|
+  method : amjd|DOCUMENTED|
+  method : civil(y,m,d,sg)|DOCUMENTED|PRIVATE|STATIC|
+  method : civil_to_jd(y,m,d,sg)|DOCUMENTED|STATIC|
+  method : civil|DOCUMENTED|PRIVATE|
+  method : commercial(y,w,d,sg)|DOCUMENTED|PRIVATE|STATIC|
+  method : commercial_to_jd(y,w,d,ns)|DOCUMENTED|STATIC|
+  method : commercial|DOCUMENTED|PRIVATE|
+  method : cwday|DOCUMENTED|
+  method : cweek|DOCUMENTED|
+  method : cwyear|DOCUMENTED|
+  method : day_fraction_to_time(fr)|DOCUMENTED|STATIC|
+  method : day_fraction|DOCUMENTED|
+  method : downto(min,&block)|DOCUMENTED|
+  method : england|DOCUMENTED|
+  method : eql?(other)|DOCUMENTED|
+  method : gregorian_leap?(y)|DOCUMENTED|STATIC|
+  method : gregorian|DOCUMENTED|
+  method : hash|DOCUMENTED|
+  method : hour|DOCUMENTED|PRIVATE|
+  method : initialize(ajd,of,sg)|DOCUMENTED|PRIVATE|
+  method : inspect|DOCUMENTED|
+  method : italy|DOCUMENTED|
+  method : jd(jd,sg)|DOCUMENTED|STATIC|
+  method : jd_to_ajd(jd,fr,of)|DOCUMENTED|STATIC|
+  method : jd_to_civil(jd,sg)|DOCUMENTED|STATIC|
+  method : jd_to_commercial(jd,sg)|DOCUMENTED|STATIC|
+  method : jd_to_ld(jd)|DOCUMENTED|STATIC|
+  method : jd_to_mjd(jd)|DOCUMENTED|STATIC|
+  method : jd_to_ordinal(jd,sg)|DOCUMENTED|STATIC|
+  method : jd_to_wday(jd)|DOCUMENTED|STATIC|
+  method : jd|DOCUMENTED|
+  method : julian_leap?(y)|DOCUMENTED|STATIC|
+  method : julian|DOCUMENTED|
+  method : ld_to_jd(ld)|DOCUMENTED|STATIC|
+  method : ld|DOCUMENTED|
+  method : leap?|DOCUMENTED|
+  method : mday|DOCUMENTED|
+  method : min|DOCUMENTED|PRIVATE|
+  method : mjd_to_jd(mjd)|DOCUMENTED|STATIC|
+  method : mjd|DOCUMENTED|
+  method : mon|DOCUMENTED|
+  method : new(ajd,of,sg)|DOCUMENTED|PRIVATE|STATIC|
+  method : new_offset(of)|PRIVATE|
+  method : new_start(sg)|DOCUMENTED|
+  method : new_with_hash(elem,sg)|STATIC|
+  method : ns?(jd,sg)|DOCUMENTED|STATIC|
+  method : ns?|DOCUMENTED|
+  method : offset|PRIVATE|
+  method : once(*ids)|PRIVATE|STATIC|
+  method : ordinal(y,d,sg)|DOCUMENTED|PRIVATE|STATIC|
+  method : ordinal_to_jd(y,d,sg)|DOCUMENTED|STATIC|
+  method : ordinal|DOCUMENTED|PRIVATE|
+  method : os?(jd,sg)|DOCUMENTED|STATIC|
+  method : os?|DOCUMENTED|
+  method : parse(str,comp,sg)|DOCUMENTED|STATIC|
+  method : sec_fraction|DOCUMENTED|PRIVATE|
+  method : sec|DOCUMENTED|PRIVATE|
+  method : start|DOCUMENTED|
+  method : step(limit,step)|DOCUMENTED|
+  method : strptime(str,fmt,sg)|DOCUMENTED|STATIC|
+  method : succ|DOCUMENTED|
+  method : time_to_day_fraction(h,min,s)|DOCUMENTED|STATIC|
+  method : time|DOCUMENTED|PRIVATE|
+  method : to_s|DOCUMENTED|
+  method : today(sg)|DOCUMENTED|STATIC|
+  method : upto(max,&block)|DOCUMENTED|
+  method : valid_civil?(y,m,d,sg)|DOCUMENTED|STATIC|
+  method : valid_commercial?(y,w,d,sg)|DOCUMENTED|STATIC|
+  method : valid_jd?(jd,sg)|DOCUMENTED|STATIC|
+  method : valid_ordinal?(y,d,sg)|DOCUMENTED|STATIC|
+  method : wday|DOCUMENTED|
+  method : yday|DOCUMENTED|
+  method : year|DOCUMENTED|
+  method : zone|PRIVATE|
   source : <TESTURL>/date.rb
 
 Not Indexed:
-  attrs : c
+  attrs : |DOCUMENTED|;1362
   includes : Comparable
   requires : date/format,rational
 
@@ -126,19 +126,19 @@ Indexed:
   class-ig : datetime
   extends : Date
   fqn : DateTime
-  method : civil(y,m,d,h,min,s,of,sg):s
-  method : commercial(y,w,d,h,min,s,of,sg):s
-  method : jd(jd,h,min,s,of,sg):s
-  method : new_with_hash(elem,sg):s
-  method : now(sg):s
-  method : ordinal(y,d,h,min,s,of,sg):s
-  method : parse(str,comp,sg):s
-  method : strptime(str,fmt,sg):s
-  method : valid_time?(h,min,s):s
+  method : civil(y,m,d,h,min,s,of,sg)|DOCUMENTED|STATIC|
+  method : commercial(y,w,d,h,min,s,of,sg)|DOCUMENTED|STATIC|
+  method : jd(jd,h,min,s,of,sg)|DOCUMENTED|STATIC|
+  method : new_with_hash(elem,sg)|STATIC|
+  method : now(sg)|DOCUMENTED|STATIC|
+  method : ordinal(y,d,h,min,s,of,sg)|DOCUMENTED|STATIC|
+  method : parse(str,comp,sg)|DOCUMENTED|STATIC|
+  method : strptime(str,fmt,sg)|DOCUMENTED|STATIC|
+  method : valid_time?(h,min,s)|DOCUMENTED|STATIC|
   source : <TESTURL>/date.rb
 
 Not Indexed:
-  attrs : c
+  attrs : |DOCUMENTED|;1138
   requires : date/format,rational
 
 
@@ -151,7 +151,7 @@ Indexed:
   source : <TESTURL>/date.rb
 
 Not Indexed:
-  attrs : c
+  attrs : |CLASS|
   requires : date/format,rational
 
 
@@ -165,5 +165,5 @@ Indexed:
   source : <TESTURL>/date.rb
 
 Not Indexed:
-  attrs : c
+  attrs : |CLASS|
   requires : date/format,rational

@@ -1204,18 +1204,9 @@ public class RubyInstallation {
 
         List<File> result = new ArrayList<File>();
 
-        if (PREINDEXING) {
-            // Index -all- files
-            for (File f : gems) {
-                if (f.isDirectory() && f.getName().indexOf('-') != -1) {
-                    result.add(f);
-                }
-            }
-        } else {
-            for (Map<String, File> map : gemFiles.values()) {
-                for (File f : map.values()) {
-                    result.add(f);
-                }
+        for (Map<String, File> map : gemFiles.values()) {
+            for (File f : map.values()) {
+                result.add(f);
             }
         }
 
@@ -1261,7 +1252,24 @@ public class RubyInstallation {
                         // Install gems.
                         if (!SKIP_INDEX_GEMS) {
                             initGemList();
-                            if (gemFiles != null) {
+                            if (PREINDEXING) {
+                                String gemDir = getRubyLibGemDir();
+                                File specDir = new File(gemDir, "gems");
+
+                                if (specDir.exists()) {
+                                    File[] gems = specDir.listFiles();
+                                    for (File f : gems) {
+                                        if (f.getName().indexOf('-') != -1) {
+                                            File lib = new File(f, "lib"); // NOI18N
+
+                                            if (lib.exists() && lib.isDirectory()) {
+                                                URL url = lib.toURI().toURL();
+                                                urls.add(url);
+                                            }
+                                        }
+                                    }
+                                }
+                            } else if (gemFiles != null) {
                                 Set<String> gems = gemFiles.keySet();
                                 for (String name : gems) {
                                     Map<String,File> m = gemFiles.get(name);

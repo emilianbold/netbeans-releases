@@ -118,6 +118,7 @@ import org.openide.util.Exceptions;
  * @todo I've gotta use the inherited method and field finders! If I'm in a Rails model
  *   and search for find_all it goes and pops into the stubs for enumerations instead.
  *   I -know- the method being referenced here since we have the inheritance chain!
+ * @todo Prefer files named after the class! (e.g. SchemaStatements in schema_statements.rb)
  * 
  * @author Tor Norbye
  */
@@ -406,7 +407,7 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
                     if (method != null) {
                         // TODO - if the lhs is "foo.bar." I need to split this
                         // up and do it a bit more cleverly
-                        TypeAnalyzer analyzer = new TypeAnalyzer(method, closest, astOffset, lexOffset, doc, info.getFileObject());
+                        TypeAnalyzer analyzer = new TypeAnalyzer(index, method, closest, astOffset, lexOffset, doc, info.getFileObject());
                         type = analyzer.getType(lhs);
                     }
                 }
@@ -975,7 +976,7 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
 
     /** Locate the method declaration for the given method call */
     public IndexedMethod findMethodDeclaration(CompilationInfo info, Node callNode, AstPath path) {
-        int caretOffset = AstUtilities.getCallRange(callNode).getStart();
+        int astOffset = AstUtilities.getCallRange(callNode).getStart();
 
         // Is this a require-statement? If so, jump to the required file
         try {
@@ -983,7 +984,7 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
 
             // Determine the bias (if the caret is between two tokens, did we
             // click on a link for the left or the right?
-            int lexOffset = LexUtilities.getLexerOffset(info, caretOffset);
+            int lexOffset = LexUtilities.getLexerOffset(info, astOffset);
             if (lexOffset == -1) {
                 return null;
             }
@@ -993,7 +994,7 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
                 return null;
             }
 
-            boolean leftSide = range.getEnd() <= caretOffset;
+            boolean leftSide = range.getEnd() <= astOffset;
 
             Node root = AstUtilities.getRoot(info);
 
@@ -1018,7 +1019,7 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
                     try {
                         IndexedMethod candidate =
                             findBestMethodMatch(text, methods, (BaseDocument)info.getDocument(),
-                                caretOffset, lexOffset, null, null, index);
+                                astOffset, lexOffset, null, null, index);
 
                         return candidate;
                     } catch (IOException ioe) {
@@ -1033,7 +1034,7 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
 
             TokenHierarchy<Document> th = TokenHierarchy.get(doc);
 
-            int tokenOffset = caretOffset;
+            int tokenOffset = astOffset;
 
             if (leftSide && (tokenOffset > 0)) {
                 tokenOffset--;
@@ -1041,10 +1042,94 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
 
             // A method call
             String name = ((INameNode)callNode).getName();
+            String fqn = AstUtilities.getFqnName(path);
 
-            //Call call = LexUtilities.getCallType(doc, th, caretOffset);
-            Set<IndexedMethod> methods = index.getMethods(name, null, NameKind.EXACT_NAME);
+            if ((fqn == null) || (fqn.length() == 0)) {
+                fqn = "Object"; // NOI18N
+            }
+            
+            Call call = Call.getCallType((BaseDocument)doc, th, lexOffset);
+            boolean skipPrivate = true;
+            boolean done = call.isMethodExpected();
+            boolean skipInstanceMethods = call.isStatic();
 
+            Set<IndexedMethod> methods = Collections.emptySet();
+            
+            String type = call.getType();
+            String lhs = call.getLhs();
+            NameKind kind = NameKind.EXACT_NAME;
+
+            Node node = callNode;
+            if ((type == null) && (lhs != null) && (node != null) && call.isSimpleIdentifier()) {
+                Node method = AstUtilities.findLocalScope(node, path);
+
+                if (method != null) {
+                    // TODO - if the lhs is "foo.bar." I need to split this
+                    // up and do it a bit more cleverly
+                    TypeAnalyzer analyzer = new TypeAnalyzer(index, method, node, astOffset, lexOffset, 
+                            (BaseDocument)doc, info.getFileObject());
+                    type = analyzer.getType(lhs);
+                }
+            }
+
+            // I'm not doing any data flow analysis at this point, so
+            // I can't do anything with a LHS like "foo.". Only actual types.
+            if ((type != null) && (type.length() > 0)) {
+                if ("self".equals(lhs)) {
+                    type = fqn;
+                    skipPrivate = false;
+                } else if ("super".equals(lhs)) {
+                    skipPrivate = false;
+
+                    IndexedClass sc = index.getSuperclass(fqn);
+
+                    if (sc != null) {
+                        type = sc.getFqn();
+                    } else {
+                        ClassNode cls = AstUtilities.findClass(path);
+
+                        if (cls != null) {
+                            type = AstUtilities.getSuperclass(cls);
+                        }
+                    }
+
+                    if (type == null) {
+                        type = "Object"; // NOI18N
+                    }
+                }
+
+                if ((type != null) && (type.length() > 0)) {
+                    // Possibly a class on the left hand side: try searching with the class as a qualifier.
+                    // Try with the LHS + current FQN recursively. E.g. if we're in
+                    // Test::Unit when there's a call to Foo.x, we'll try
+                    // Test::Unit::Foo, and Test::Foo
+                    while (methods.size() == 0) {
+                        methods = index.getInheritedMethods(fqn + "::" + type, name, kind);
+
+                        int f = fqn.lastIndexOf("::");
+
+                        if (f == -1) {
+                            break;
+                        } else {
+                            fqn = fqn.substring(0, f);
+                        }
+                    }
+
+                    // Add methods in the class (without an FQN)
+                    Set<IndexedMethod> m = index.getInheritedMethods(type, name, kind);
+
+                    if (m.size() > 0) {
+                        methods.addAll(m);
+                    }
+                }
+            }
+
+            // Try just the method call (e.g. across all classes). This is ignoring the 
+            // left hand side because we can't resolve it.
+            if ((methods.size() == 0)) {
+                methods = index.getMethods(name, null, kind);
+            }
+            
             if (name.equals("new")) { // NOI18N
                                       // Also look for initialize
 
@@ -1057,7 +1142,7 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
             try {
                 IndexedMethod candidate =
                     findBestMethodMatch(name, methods, (BaseDocument)info.getDocument(),
-                        caretOffset, lexOffset, path, callNode, index);
+                        astOffset, lexOffset, path, callNode, index);
 
                 return candidate;
             } catch (IOException ioe) {
@@ -1802,7 +1887,7 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
 
         // TODO - if fqn has multiple ::'s, try various combinations? or is 
         // add inherited already doing that?
-        Set<IndexedField> f = index.getInheritedFields(fqn, name, NameKind.EXACT_NAME);
+        Set<IndexedField> f = index.getInheritedFields(fqn, name, NameKind.EXACT_NAME, false);
         for (IndexedField field : f) {
             // How do we choose one?
             // For now, just pick the first one

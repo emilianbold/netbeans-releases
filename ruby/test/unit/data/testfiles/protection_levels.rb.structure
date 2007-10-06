@@ -1,0 +1,8 @@
+Foo:CLASS:[]:ESCAPED{Foo}:
+  i_am_actually_private:METHOD:[PRIVATE]:ESCAPED{i_am_actually_private}:
+  i_am_private:METHOD:[PRIVATE]:ESCAPED{i_am_private}:
+  i_am_public:METHOD:[PUBLIC]:ESCAPED{i_am_public}:
+  self:CLASS:[]:ESCAPED{self}:
+    im_a_static_private:METHOD:[STATIC, PRIVATE]:ESCAPED{im_a_static_private}:
+    im_a_static_public:METHOD:[STATIC, PRIVATE]:ESCAPED{im_a_static_public}:
+    im_actually_static_and_private:METHOD:[STATIC, PRIVATE]:ESCAPED{im_actually_static_and_private}:

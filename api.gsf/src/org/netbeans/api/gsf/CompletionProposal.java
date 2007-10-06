@@ -78,7 +78,23 @@ public interface CompletionProposal {
      * (currently the IDE flushes these to the top and separates them with a line)
      */
     boolean isSmart();
-    
+
+    /**
+     * Provide a custom live code template that will be inserted when
+     * this item is chosen for insertion. 
+     *
+     * @return A live code template to be inserted into the document
+     *   at the anchor offset. Return null to get the default behavior
+     *   where the insert prefix, the insert params and param list delimiters
+     *   are used instead.
+     */
+    String getCustomInsertTemplate();
+
+    /**
+     * Parameters to be inserted for this item, if any. Has no effect
+     * if getCustomInsertTemplate() returns non null.
+     * @return
+     */
     List<String> getInsertParams();
 
     /** The strings to be inserted to start and end a parameter list. Should be a String of length 2.

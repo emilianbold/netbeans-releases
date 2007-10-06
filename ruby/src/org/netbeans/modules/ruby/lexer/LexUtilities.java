@@ -1039,4 +1039,26 @@ public class LexUtilities {
         
         return OffsetRange.NONE;
     }
+
+    /** Back up to the first space character prior to the given offset */
+    public static int findSpaceBegin(BaseDocument doc, int lexOffset) {
+        TokenSequence ts = LexUtilities.getRubyTokenSequence(doc, lexOffset);
+        ts.move(lexOffset);
+        if (ts.moveNext()) {
+            if (lexOffset > ts.offset()) {
+                // We're in the middle of a token
+                return (ts.token().id() == RubyTokenId.WHITESPACE) ?
+                    ts.offset() : lexOffset;
+            }
+            while (ts.movePrevious()) {
+                Token token = ts.token();
+                if (token.id() != RubyTokenId.WHITESPACE) {
+                    return ts.offset() + token.length();
+                }
+            }
+        }
+        
+        return lexOffset;
+    }
+    
 }

@@ -53,6 +53,7 @@ public class GsfHtmlFormatter extends HtmlFormatter {
     protected boolean isParameter;
     protected boolean isType;
     protected boolean isName;
+    protected boolean isEmphasis;
 
     protected StringBuilder sb = new StringBuilder();
 
@@ -152,4 +153,16 @@ public class GsfHtmlFormatter extends HtmlFormatter {
 
         return sb.toString();
     }
+
+    public void emphasis(boolean start) {
+        assert start != isEmphasis;
+        isEmphasis = start;
+
+        if (isEmphasis) {
+            sb.append("<b>");
+        } else {
+            sb.append("</b>");
+        }
+    }
+
 }

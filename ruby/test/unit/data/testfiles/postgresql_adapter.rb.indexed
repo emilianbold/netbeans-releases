@@ -19,4 +19,4 @@ Indexed:
   source : <TESTURL>/postgresql_adapter.rb
 
 Not Indexed:
-  attrs : m
+  attrs : |DOCUMENTED|MODULE|;117

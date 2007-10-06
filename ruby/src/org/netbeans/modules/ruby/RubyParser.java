@@ -164,6 +164,7 @@ public class RubyParser implements Parser {
             context.sanitizedSource = context.source + ";end";
             int start = context.source.length();
             context.sanitizedRange = new OffsetRange(start, start+4);
+            context.sanitizedContents = "";
             return true;
         }
 
@@ -216,32 +217,49 @@ public class RubyParser implements Parser {
 
                         context.sanitizedRange = new OffsetRange(lineStart, lineEnd);
                         context.sanitizedSource = sb.toString();
+                        context.sanitizedContents = doc.substring(lineStart, lineEnd);
                         return true;
                     }
                 } else {
                     assert sanitizing == Sanitize.ERROR_DOT || sanitizing == Sanitize.EDITED_DOT;
-
                     // Try nuking dots/colons from this line
                     // See if I should try to remove the current line, since it has text on it.
-                    int lineEnd = RubyUtils.getRowLastNonWhite(doc, offset);
-
-                    if (lineEnd != -1) {
+                    int lineStart = RubyUtils.getRowStart(doc, offset);
+                    int lineEnd = offset-1;
+                    while (lineEnd >= lineStart && lineEnd < doc.length()) {
+                        if (!Character.isWhitespace(doc.charAt(lineEnd))) {
+                            break;
+                        }
+                        lineEnd--;
+                    }
+                    if (lineEnd > lineStart) {
                         StringBuilder sb = new StringBuilder(doc.length());
-                        int lineStart = RubyUtils.getRowStart(doc, offset);
                         String line = doc.substring(lineStart, lineEnd + 1);
                         int removeChars = 0;
-                        int removeOffset = lineEnd;
+                        int removeEnd = lineEnd+1;
 
                         if (line.endsWith(".") || line.endsWith("(")) { // NOI18N
                             removeChars = 1;
+                        } else if (line.endsWith(",")) { // NOI18N                            removeChars = 1;
+                            removeChars = 1;
+                        } else if (line.endsWith(",:")) { // NOI18N
+                            removeChars = 2;
+                        } else if (line.endsWith(", :")) { // NOI18N
+                            removeChars = 3;
+                        } else if (line.endsWith(", ")) { // NOI18N
+                            removeChars = 2;
+                        } else if (line.endsWith("=> :")) { // NOI18N
+                            removeChars = 4;
+                        } else if (line.endsWith("=>:")) { // NOI18N
+                            removeChars = 3;
+                        } else if (line.endsWith("=>")) { // NOI18N
+                            removeChars = 2;
                         } else if (line.endsWith("::")) { // NOI18N
                             removeChars = 2;
-                            removeOffset = lineEnd - 1;
                         } else if (line.endsWith(":")) { // NOI18N
                             removeChars = 1;
                         } else if (line.endsWith("@@")) { // NOI18N
                             removeChars = 2;
-                            removeOffset = lineEnd - 1;
                         } else if (line.endsWith("@")) { // NOI18N
                             removeChars = 1;
                         } else if (line.endsWith(",)")) { // NOI18N
@@ -250,33 +268,33 @@ public class RubyParser implements Parser {
                             // the line ends with ")", not "," !
                             // Just remove the comma
                             removeChars = 1;
-                            removeOffset = lineEnd - 1;
+                            removeEnd--;
                         } else if (line.endsWith(", )")) { // NOI18N
                             // Just remove the comma
                             removeChars = 1;
-                            removeOffset = lineEnd - 2;
+                            removeEnd -= 2;
                         }
                         
                         if (removeChars == 0) {
                             return false;
                         }
 
-                        int rest = removeOffset + removeChars;
+                        int removeStart = removeEnd-removeChars;
 
-                        sb.append(doc.substring(0, removeOffset));
+                        sb.append(doc.substring(0, removeStart));
 
                         for (int i = 0; i < removeChars; i++) {
                             sb.append(' ');
                         }
 
-                        if (rest < doc.length()) {
-                            sb.append(doc.substring(rest, doc.length()));
+                        if (removeEnd < doc.length()) {
+                            sb.append(doc.substring(removeEnd, doc.length()));
                         }
                         assert sb.length() == doc.length();
 
-                        context.sanitizedRange = new OffsetRange(removeOffset, removeOffset +
-                                removeChars);
+                        context.sanitizedRange = new OffsetRange(removeStart, removeEnd);
                         context.sanitizedSource = sb.toString();
+                        context.sanitizedContents = doc.substring(removeStart, removeEnd);
                         return true;
                     }
                 }
@@ -486,7 +504,7 @@ public class RubyParser implements Parser {
             AstRootElement rootElement = new AstRootElement(context.file.getFileObject(), root, result);
             AstNodeAdapter ast = new AstNodeAdapter(null, root);
             RubyParseResult r = createParseResult(context.file, rootElement, ast, root, realRoot, result);
-            r.setSanitized(context.sanitized, context.sanitizedRange);
+            r.setSanitized(context.sanitized, context.sanitizedRange, context.sanitizedContents);
             r.setSource(source);
             return r;
         } else {
@@ -672,6 +690,7 @@ public class RubyParser implements Parser {
         private String source;
         private String sanitizedSource;
         private OffsetRange sanitizedRange = OffsetRange.NONE;
+        private String sanitizedContents;
         private int caretOffset;
         private Sanitize sanitized = Sanitize.NONE;
         

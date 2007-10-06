@@ -1,0 +1,271 @@
+
+
+Document 0
+Delete:  source : <TESTURL>/schema.rb
+
+Indexed:
+
+Not Indexed:
+
+
+Document 1
+Delete:
+Indexed:
+  dbtable : sites
+  source : <TESTURL>/schema.rb
+
+Not Indexed:
+  dbcolumn : akismet_key;string
+  dbcolumn : akismet_url;string
+  dbcolumn : approve_comments;boolean
+  dbcolumn : articles_per_page;integer
+  dbcolumn : comment_age;integer
+  dbcolumn : current_theme_path;string
+  dbcolumn : email;string
+  dbcolumn : filter;string
+  dbcolumn : host;string
+  dbcolumn : permalink_style;string
+  dbcolumn : ping_urls;text
+  dbcolumn : search_layout;string
+  dbcolumn : search_path;string
+  dbcolumn : subtitle;string
+  dbcolumn : tag_layout;string
+  dbcolumn : tag_path;string
+  dbcolumn : timezone;string
+  dbcolumn : title;string
+  dbversion : schema
+
+
+Document 2
+Delete:
+Indexed:
+  dbtable : tags
+  source : <TESTURL>/schema.rb
+
+Not Indexed:
+  dbcolumn : name;string
+  dbversion : schema
+
+
+Document 3
+Delete:
+Indexed:
+  dbtable : content_versions
+  source : <TESTURL>/schema.rb
+
+Not Indexed:
+  dbcolumn : approved;boolean
+  dbcolumn : article_id;integer
+  dbcolumn : author;string
+  dbcolumn : author_email;string
+  dbcolumn : author_ip;string
+  dbcolumn : author_url;string
+  dbcolumn : body;text
+  dbcolumn : body_html;text
+  dbcolumn : comment_age;integer
+  dbcolumn : comments_count;integer
+  dbcolumn : content_id;integer
+  dbcolumn : created_at;datetime
+  dbcolumn : excerpt;text
+  dbcolumn : excerpt_html;text
+  dbcolumn : filter;string
+  dbcolumn : permalink;string
+  dbcolumn : published_at;datetime
+  dbcolumn : referrer;string
+  dbcolumn : site_id;integer
+  dbcolumn : title;string
+  dbcolumn : updated_at;datetime
+  dbcolumn : updater_id;integer
+  dbcolumn : user_agent;string
+  dbcolumn : user_id;integer
+  dbcolumn : version;integer
+  dbcolumn : versioned_type;string
+  dbversion : schema
+
+
+Document 4
+Delete:
+Indexed:
+  dbtable : sessions
+  source : <TESTURL>/schema.rb
+
+Not Indexed:
+  dbcolumn : data;text
+  dbcolumn : session_id;string
+  dbcolumn : updated_at;datetime
+  dbversion : schema
+
+
+Document 5
+Delete:
+Indexed:
+  dbtable : users
+  source : <TESTURL>/schema.rb
+
+Not Indexed:
+  dbcolumn : activated_at;datetime
+  dbcolumn : activation_code;string
+  dbcolumn : admin;boolean
+  dbcolumn : created_at;datetime
+  dbcolumn : crypted_password;string
+  dbcolumn : deleted_at;datetime
+  dbcolumn : email;string
+  dbcolumn : filter;string
+  dbcolumn : login;string
+  dbcolumn : salt;string
+  dbcolumn : token;string
+  dbcolumn : token_expires_at;datetime
+  dbcolumn : updated_at;datetime
+  dbversion : schema
+
+
+Document 6
+Delete:
+Indexed:
+  dbtable : contents
+  source : <TESTURL>/schema.rb
+
+Not Indexed:
+  dbcolumn : approved;boolean
+  dbcolumn : article_id;integer
+  dbcolumn : author;string
+  dbcolumn : author_email;string
+  dbcolumn : author_ip;string
+  dbcolumn : author_url;string
+  dbcolumn : body;text
+  dbcolumn : body_html;text
+  dbcolumn : comment_age;integer
+  dbcolumn : comments_count;integer
+  dbcolumn : created_at;datetime
+  dbcolumn : excerpt;text
+  dbcolumn : excerpt_html;text
+  dbcolumn : filter;string
+  dbcolumn : permalink;string
+  dbcolumn : published_at;datetime
+  dbcolumn : referrer;string
+  dbcolumn : site_id;integer
+  dbcolumn : title;string
+  dbcolumn : type;string
+  dbcolumn : updated_at;datetime
+  dbcolumn : updater_id;integer
+  dbcolumn : user_agent;string
+  dbcolumn : user_id;integer
+  dbcolumn : version;integer
+  dbversion : schema
+
+
+Document 7
+Delete:
+Indexed:
+  dbtable : events
+  source : <TESTURL>/schema.rb
+
+Not Indexed:
+  dbcolumn : article_id;integer
+  dbcolumn : author;string
+  dbcolumn : body;text
+  dbcolumn : comment_id;integer
+  dbcolumn : created_at;datetime
+  dbcolumn : mode;string
+  dbcolumn : site_id;integer
+  dbcolumn : title;text
+  dbcolumn : user_id;integer
+  dbversion : schema
+
+
+Document 8
+Delete:
+Indexed:
+  dbtable : assigned_sections
+  source : <TESTURL>/schema.rb
+
+Not Indexed:
+  dbcolumn : article_id;integer
+  dbcolumn : position;integer
+  dbcolumn : section_id;integer
+  dbversion : schema
+
+
+Document 9
+Delete:
+Indexed:
+  dbtable : assets
+  source : <TESTURL>/schema.rb
+
+Not Indexed:
+  dbcolumn : content_type;string
+  dbcolumn : created_at;datetime
+  dbcolumn : filename;string
+  dbcolumn : height;integer
+  dbcolumn : parent_id;integer
+  dbcolumn : site_id;integer
+  dbcolumn : size;integer
+  dbcolumn : thumbnail;string
+  dbcolumn : thumbnails_count;integer
+  dbcolumn : title;string
+  dbcolumn : user_id;integer
+  dbcolumn : width;integer
+  dbversion : schema
+
+
+Document 10
+Delete:
+Indexed:
+  dbtable : sections
+  source : <TESTURL>/schema.rb
+
+Not Indexed:
+  dbcolumn : archive_path;string
+  dbcolumn : archive_template;string
+  dbcolumn : articles_count;integer
+  dbcolumn : articles_per_page;integer
+  dbcolumn : layout;string
+  dbcolumn : name;string
+  dbcolumn : path;string
+  dbcolumn : position;integer
+  dbcolumn : show_paged_articles;boolean
+  dbcolumn : site_id;integer
+  dbcolumn : template;string
+  dbversion : schema
+
+
+Document 11
+Delete:
+Indexed:
+  dbtable : memberships
+  source : <TESTURL>/schema.rb
+
+Not Indexed:
+  dbcolumn : admin;boolean
+  dbcolumn : created_at;datetime
+  dbcolumn : site_id;integer
+  dbcolumn : user_id;integer
+  dbversion : schema
+
+
+Document 12
+Delete:
+Indexed:
+  dbtable : cached_pages
+  source : <TESTURL>/schema.rb
+
+Not Indexed:
+  dbcolumn : cleared_at;datetime
+  dbcolumn : references;text
+  dbcolumn : site_id;integer
+  dbcolumn : updated_at;datetime
+  dbcolumn : url;string
+  dbversion : schema
+
+
+Document 13
+Delete:
+Indexed:
+  dbtable : taggings
+  source : <TESTURL>/schema.rb
+
+Not Indexed:
+  dbcolumn : tag_id;integer
+  dbcolumn : taggable_id;integer
+  dbcolumn : taggable_type;string
+  dbversion : schema

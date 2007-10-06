@@ -14,9 +14,9 @@ Indexed:
   class : Object
   class-ig : object
   fqn : Object
-  method : bar(baz):t
-  method : foo:t
+  method : bar(baz)|TOPLEVEL|
+  method : foo|TOPLEVEL|
   source : <TESTURL>/top_level.rb
 
 Not Indexed:
-  attrs : c
+  attrs : |CLASS|

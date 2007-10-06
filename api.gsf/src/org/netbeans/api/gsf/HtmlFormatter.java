@@ -55,7 +55,8 @@ public abstract class HtmlFormatter {
     public abstract void reset();
     public abstract void appendHtml(String html);
     public abstract void appendText(String text);
-    
+
+    public abstract void emphasis(boolean start);
     public abstract void name(ElementKind kind, boolean start);
     public abstract void parameters(boolean start);
     public abstract void type(boolean start);

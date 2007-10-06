@@ -27,8 +27,13 @@
  */
 package org.netbeans.modules.ruby;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -83,6 +88,179 @@ public class RubyUtils {
             lastWasUnderline = (c == '_');
         }
         return sb.toString();
+    }
+    
+    private static final String S = "s";
+    private static final String ES = "es";
+
+    /** Pluralize, Rails style. This needs to roll in more magic from
+     * Inflector.pluralize
+     * 
+     * @see activesupport/lib/active_support/inflections.rb
+     * @param word The word to be pluralized
+     * @return The pluralized word
+     */
+    public static String pluralize(String word) {
+        // Apply inflector rules - see inflections.rb in activesupport
+        char c = word.charAt(word.length()-1);
+        switch (c) {
+        case 't':
+        case 'T':
+            if (endsWithIgnoreCase(word, "equipment")) { // Uncountable
+                return word;
+            }
+            break;
+        case 'p':
+        case 'P':
+            if (endsWithIgnoreCase(word, "sheep")) { // Uncountable
+                return word;
+            }
+            break;
+        case 'd':
+        case 'D':
+            if (endsWithIgnoreCase(word, "child")) { // Irregular
+                return word + "ren";
+            }
+            break;
+        case 'n':
+        case 'N':
+            if (endsWithIgnoreCase(word, "information")) { // Uncountable
+                return word;
+            } else if (endsWithIgnoreCase(word, "man")) { // Irregular
+                return word.substring(0, word.length()-2) + "en";
+            } else if (endsWithIgnoreCase(word, "person")) { // Irregular
+                return word.substring(0, word.length()-5) + "eople";
+            }
+            break;
+        case 's':
+        case 'S':
+            if (endsWithIgnoreCase(word, "species") || endsWithIgnoreCase(word, "series")) { // Uncountable
+                return word;
+            } else if (endsWithIgnoreCase(word,"axis") || endsWithIgnoreCase(word, "testis")) {
+                  // "(ax|test)is$", "\\1es",
+                return word.substring(0, word.length()-2) + ES;
+            } else if (endsWithIgnoreCase(word, "ss")) {
+                // Part of "(x|ch|ss|sh)$", "\\1es",
+                return word + ES;
+            } else if (endsWithIgnoreCase(word,"alias") || endsWithIgnoreCase(word,"status")) {
+                // "(alias|status)$", "\\1es",
+                return word + ES;
+            } else if (endsWithIgnoreCase(word, "us")) {
+                //"(octop|vir)(us)$", "\\1i",
+                return word.substring(0, word.length()-2) + "i";
+            } else if (endsWithIgnoreCase(word, "bus")) {
+                // "(bu)s$", "\\1ses",
+                return word.substring(0, word.length()-1) + "ses";
+            } else if (endsWithIgnoreCase(word, "sis")) {
+                // "sis$", "ses",
+                return word.substring(0, word.length()-2) + ES;
+            }
+            
+            // Ends with just s -- fall back to just the word itself
+            //   inflect.plural(/s$/i, 's')
+            return word;
+        case 'o':
+        case 'O':
+            if (endsWithIgnoreCase(word, "buffalo") || endsWithIgnoreCase(word, "tomato")) {
+                // "(buffal|tomat)o$", "\\1oes",
+                return word + ES;
+            }
+            break;
+        case 'm':
+        case 'M':
+            if (endsWithIgnoreCase(word, "tum") || endsWithIgnoreCase(word, "ium")) {
+                // "([ti])um$", "\\1a",
+                return word.substring(0, word.length()-2) + "a";
+            }
+            break;
+        case 'f':
+        case 'F':
+            if (endsWithIgnoreCase(word, "lf") || endsWithIgnoreCase(word, "rf")) {
+                // First half of inflect.plural(/(?:([^f])fe|([lr])f)$/i, '\1\2ves')
+                return word.substring(0, word.length()-1) + "ves";
+            }
+            break;
+        case 'e':
+        case 'E':
+            if (endsWithIgnoreCase(word, "rice")) { // Uncountable
+                return word;
+            } else if (endsWithIgnoreCase(word, "move")) { // Irregular
+                return word + S;
+            } else if (endsWithIgnoreCase(word, "mouse") ||
+                    endsWithIgnoreCase(word, "louse")) {
+                //  inflect.plural(/([m|l])ouse$/i, '\1ice')
+                return word.substring(0, word.length()-4) + "ice";
+            } else if (endsWithIgnoreCase(word, "fe") && !endsWithIgnoreCase(word, "ffe")) {
+                // Second half of inflect.plural(/(?:([^f])fe|([lr])f)$/i, '\1\2ves')
+                return word.substring(0, word.length()-2) + "ves";
+            } else if (endsWithIgnoreCase(word, "hive")) {
+                // inflect.plural(/(hive)$/i, '\1s')
+                return word+S;
+            }
+            break;
+        case 'y':
+        case 'Y':
+            if (endsWithIgnoreCase(word, "money")) { // Uncountable
+                return word;
+            }
+            //  inflect.plural(/([^aeiouy]|qu)y$/i, '\1ies')
+            if (word.matches(".*([^aeiouy]|qu)y$")) {
+                return word.substring(0, word.length()-1) + "ies";
+            }
+            break;
+        case 'x':
+        case 'X':
+            if (endsWithIgnoreCase(word, "sex")) { // Irregular
+                return word + ES;
+            } else if (endsWithIgnoreCase(word, "matrix") || endsWithIgnoreCase(word, "vertex") ||
+                    endsWithIgnoreCase(word, "index")) {
+                // inflect.plural(/(matr|vert|ind)ix|ex$/i, '\1ices')
+                return word.substring(0, word.length()-2) + "ices";
+            } else if (word.equalsIgnoreCase("ox")) {
+                // inflect.plural(/^(ox)$/i, '\1en')
+                return "oxen";
+            }
+            
+            // "(x|ch|ss|sh)$", "\\1es",
+            return word + ES;
+        case 'h':
+        case 'H':
+            if (endsWithIgnoreCase(word, "fish")) { // Uncountable
+                return word;
+            } else if (endsWithIgnoreCase(word, "ch") || endsWithIgnoreCase(word, "sh")) {
+                //  Half of  inflect.plural(/(x|ch|ss|sh)$/i, '\1es')
+                return word + ES;
+            }
+            break;
+        case 'z':
+        case 'Z':
+            if (endsWithIgnoreCase(word, "quiz")) {
+                // inflect.plural(/(quiz)$/i, '\1zes')
+                return word + "zes";
+            }
+        }
+
+        // Fallback
+        return word+S;
+    }
+    
+    private static boolean endsWithIgnoreCase(String word, String ending) {
+        if (ending.length() > word.length()) {
+            return false;
+        }
+
+        return word.regionMatches(true, word.length()-ending.length(), ending, 0, ending.length());
+    }
+    
+    /**
+     * Similar to Rails' Inflector tableize method: converts a name
+     * to a corresponding table name:
+     * 
+     * @param word
+     * @return
+     */
+    public static String tableize(String word) {
+        return RubyUtils.pluralize(RubyUtils.camelToUnderlinedName(word));
     }
     
     /** Is this name a valid operator name? */
@@ -363,6 +541,35 @@ public class RubyUtils {
             "nil", "not", "or", "redo", "rescue", "retry", "return", "self", "super", "then", "true",
             "undef", "unless", "until", "when", "while", "yield"
         };
+
+    public static List<String> getControllerNames(FileObject fileInProject, boolean lowercase) {
+        Project p = FileOwnerQuery.getOwner(fileInProject);
+        FileObject controllers = p.getProjectDirectory().getFileObject("app/controllers"); // NOI18N
+        if (controllers != null) {
+            List<String> names = new ArrayList<String>();
+            addControllerNames(controllers, names, lowercase);
+            return names;
+        }
+        
+        return Collections.emptyList();
+    }
+
+    private static final String CONTROLLER_SUFFIX = "_controller.rb"; // NOI18N
+    
+    private static void addControllerNames(FileObject file, List<String> names, boolean lowercase) {
+        final String filename = file.getNameExt();
+        if (filename.endsWith(CONTROLLER_SUFFIX)) {
+            String name = filename.substring(0, filename.length()-CONTROLLER_SUFFIX.length());
+            if (!lowercase) {
+                name = underlinedNameToCamel(name);
+            }
+            names.add(name);
+        }
+
+        for (FileObject child : file.getChildren()) {
+            addControllerNames(child, names, lowercase);
+        }
+    }
     
     public static String getControllerName(FileObject file) {
         String fileSuffix = "_controller"; // NOI18N

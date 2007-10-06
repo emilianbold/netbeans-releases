@@ -43,7 +43,6 @@ package org.netbeans.modules.ruby.elements;
 import java.util.Set;
 
 import org.netbeans.api.gsf.ElementKind;
-import org.netbeans.api.gsf.Modifier;
 import org.netbeans.modules.ruby.RubyIndex;
 
 
@@ -54,19 +53,20 @@ import org.netbeans.modules.ruby.RubyIndex;
  * @author Tor Norbye
  */
 public final class IndexedClass extends IndexedElement implements ClassElement {
-    boolean isModule;
+    /** This class is a module rather than a proper class */
+    public static final int MODULE = 1 << 6;
+
     private String in;
 
     protected IndexedClass(RubyIndex index, String fileUrl, String fqn,
-        String clz, String require, boolean isModule, Set<Modifier> modifiers, String attributes) {
-        super(index, fileUrl, fqn, clz, require, modifiers, attributes);
-        this.isModule = isModule;
+        String clz, String require, String attributes, int flags) {
+        super(index, fileUrl, fqn, clz, require, attributes, flags);
     }
 
     public static IndexedClass create(RubyIndex index, String clz, String fqn, String fileUrl,
-        String require, boolean isModule, Set<Modifier> modifiers, String attributes) {
+        String require, String attributes, int flags) {
         IndexedClass c =
-            new IndexedClass(index, fileUrl, fqn, clz, require, isModule, modifiers, attributes);
+            new IndexedClass(index, fileUrl, fqn, clz, require, attributes, flags);
 
         return c;
     }
@@ -95,7 +95,7 @@ public final class IndexedClass extends IndexedElement implements ClassElement {
     }
 
     public ElementKind getKind() {
-        return isModule ? ElementKind.MODULE : ElementKind.CLASS;
+        return (flags & MODULE) != 0 ? ElementKind.MODULE : ElementKind.CLASS;
     }
 
     public Set<String> getIncludes() {
@@ -112,5 +112,45 @@ public final class IndexedClass extends IndexedElement implements ClassElement {
     public int hashCode() {
         //return fqn.hashCode();
         return super.hashCode();
+    }
+    
+    /** Return the length of the documentation for this class, in characters */
+    @Override
+    public int getDocumentationLength() {
+        if (docLength == -1) {
+            if (attributes != null) {
+                int docIndex = attributes.indexOf(';');
+
+                if (docIndex != -1) {
+                    int end = attributes.indexOf(';', docIndex+1);
+                    if (end == -1) {
+                        end = attributes.length();
+                    }                        
+                    docLength = Integer.parseInt(attributes.substring(docIndex + 1, end));
+                    return docLength;
+                } else {
+                    // Unknown length - just use 1 to indicate positive document length
+                    docLength = 1;
+                }
+            }
+            
+            docLength = super.getDocumentationLength();
+        }
+
+        return docLength;
+    }
+    
+    public static String decodeFlags(int flags) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(IndexedElement.decodeFlags(flags));
+
+        if ((flags & MODULE) != 0) {
+            sb.append("|MODULE");
+        }
+        if (sb.length() > 0) {
+            sb.append("|");
+        }
+        
+        return sb.toString();
     }
 }

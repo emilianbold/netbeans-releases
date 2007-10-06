@@ -121,14 +121,17 @@ public class StructureAnalyzerTest extends RubyTestBase {
         HtmlFormatter formatter = new HtmlFormatter() {
             private StringBuilder sb = new StringBuilder();
             
+            @Override
             public void reset() {
                 sb.setLength(0);
             }
 
+            @Override
             public void appendHtml(String html) {
                 sb.append(html);
             }
 
+            @Override
             public void appendText(String text) {
                 // TODO escaped
                 sb.append("ESCAPED{");
@@ -136,12 +139,14 @@ public class StructureAnalyzerTest extends RubyTestBase {
                 sb.append("}");
             }
 
+            @Override
             public void name(ElementKind kind, boolean start) {
                 if (start) {
                     sb.append(kind);
                 }
             }
 
+            @Override
             public void parameters(boolean start) {
                 if (start) {
                     sb.append("PARAMETERS{");
@@ -150,6 +155,7 @@ public class StructureAnalyzerTest extends RubyTestBase {
                 }
             }
 
+            @Override
             public void type(boolean start) {
                 if (start) {
                     sb.append("TYPE{");
@@ -158,6 +164,7 @@ public class StructureAnalyzerTest extends RubyTestBase {
                 }
             }
 
+            @Override
             public void deprecated(boolean start) {
                 if (start) {
                     sb.append("DEPRECATED{");
@@ -166,10 +173,14 @@ public class StructureAnalyzerTest extends RubyTestBase {
                 }
             }
 
+            @Override
             public String getText() {
                 return sb.toString();
             }
-            
+
+            @Override
+            public void emphasis(boolean start) {
+            }
         };
         List<? extends StructureItem> structure = analyzer.scan(info, formatter);
         
@@ -198,6 +209,10 @@ public class StructureAnalyzerTest extends RubyTestBase {
         checkStructure("testfiles/unused.rb");
     }
 
+    public void testProtectionLevels() throws Exception {
+        checkStructure("testfiles/protection_levels.rb");
+    }
+    
     private void checkAttributes(String relFilePath) throws Exception {
         CompilationInfo info = getInfo(relFilePath);
         RubyParseResult rbr = (RubyParseResult)info.getParserResult();
