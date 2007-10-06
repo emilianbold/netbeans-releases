@@ -264,12 +264,14 @@ public class CloneRepositoryWizardPanel implements WizardDescriptor.Asynchronous
                 rc.getHgUrl();
                 String url = rc.getUrl();
                 // We try to connect to the repository to check whether it is valid
-                try {
-                    HgCommand.hasHistory(url);
-                } catch (HgException ex) {
-                    invalidMsg = NbBundle.getMessage(CloneRepositoryWizardPanel.class, "CTL_Repository_Invalid", url);
-                    return;
-                }
+                // I have not been able to find a command other than clone
+                // which access the repository.
+                //try {
+                    //HgCommand.hasHistory(url);
+                //} catch (HgException ex) {
+                //    invalidMsg = NbBundle.getMessage(CloneRepositoryWizardPanel.class, "CTL_Repository_Invalid", url);
+                //    return;
+                //}
             } catch (MalformedURLException ex) {
                 Mercurial.LOG.log(Level.CONFIG, "msg", ex); // should not happen
             } finally {
