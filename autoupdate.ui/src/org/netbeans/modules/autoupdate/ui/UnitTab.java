@@ -577,6 +577,10 @@ public class UnitTab extends javax.swing.JPanel {
                 setWaitingState (true);
                 final int row = getSelectedRow ();
                 final Map<String, Boolean> state = UnitCategoryTableModel.captureState (model.getUnits ());
+                if (model instanceof LocallyDownloadedTableModel) {
+                    ((LocallyDownloadedTableModel) model).removeInstalledUnits ();
+                    ((LocallyDownloadedTableModel) model).setUnits (null);
+                }
                 Utilities.presentRefreshProviders (manager, force);
                 final List<UpdateUnit> units = UpdateManager.getDefault ().getUpdateUnits (Utilities.getUnitTypes ());
                 SwingUtilities.invokeLater (new Runnable () {
@@ -1483,18 +1487,19 @@ public class UnitTab extends javax.swing.JPanel {
                 
                 final Runnable addUpdates = new Runnable (){
                     public void run () {
-                        final LocallyDownloadedTableModel downloadedTableModel = ((LocallyDownloadedTableModel)model);
+                        final LocallyDownloadedTableModel downloadedTableModel = ((LocallyDownloadedTableModel) model);
                         List<UpdateUnit> empty = Collections.emptyList();
                         downloadedTableModel.setUnits(empty);
-                        SwingUtilities.invokeLater (new Runnable () {
+                        final Collection<UpdateUnit> installed = downloadedTableModel.getLocalDownloadSupport ().getInstalledUpdateUnits ();
+                        downloadedTableModel.removeInstalledUnits ();
+                        SwingUtilities.invokeLater(new Runnable() {
                             public void run () {
                                 fireUpdataUnitChange();
                                 UnitCategoryTableModel.restoreState (model.getUnits (), state, model.isMarkedAsDefault ());                                
-                                List<UpdateUnit> installed = downloadedTableModel.getAlreadyInstalled ();
-                                if (!installed.isEmpty ())  {
+                                refreshState ();
+                                if (! installed.isEmpty ())  {
                                     showMessage (installed);
                                 }
-                                refreshState ();
                                 setWaitingState (false);
                             }
                         });
@@ -1506,7 +1511,7 @@ public class UnitTab extends javax.swing.JPanel {
             }
         }
         
-        void showMessage (List<UpdateUnit> installed) {
+        void showMessage (Collection<UpdateUnit> installed) {
             if (!installed.isEmpty ())  {
                 StringBuilder pluginNames = new StringBuilder ();
                 for (UpdateUnit updateUnit : installed) {
@@ -1555,16 +1560,19 @@ public class UnitTab extends javax.swing.JPanel {
         public void performerImpl (final Unit unit) {
             final Runnable removeUpdates = new Runnable (){
                 public void run () {
+                    final Map<String, Boolean> state = UnitCategoryTableModel.captureState (model.getUnits ());
                     try {
                         if (unit.isMarked ()) {
                             //this removes it from container
                             unit.setMarked (false);
                         }
                         getLocalDownloadSupport ().remove (unit.updateUnit);
+                        getLocalDownloadSupport ().getUpdateUnits ();
                     } finally {
                         SwingUtilities.invokeLater (new Runnable () {
                             public void run () {
                                 fireUpdataUnitChange();
+                                UnitCategoryTableModel.restoreState (model.getUnits (), state, model.isMarkedAsDefault ());
                                 refreshState ();
                                 setWaitingState (false);
                             }

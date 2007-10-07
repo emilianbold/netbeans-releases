@@ -111,6 +111,16 @@ public class LocalDownloadSupport {
         return false;
     }
         
+    public Collection<UpdateUnit> getInstalledUpdateUnits () {
+        Collection<UpdateUnit> res = new HashSet<UpdateUnit> ();
+        for (UpdateUnit uu : getUpdateUnits ()) {
+            if (uu.getInstalled () != null || uu.isPending ()) {
+                res.add (uu);
+            }
+        }
+        return res;
+    }
+    
     public List<UpdateUnit> getUpdateUnits () {
         boolean isNull = true;
         synchronized(LocalDownloadSupport.class) {
@@ -137,7 +147,7 @@ public class LocalDownloadSupport {
                 synchronized (LocalDownloadSupport.class) {
                     updateUnits.addAll(units);
                 }                                                            
-                for (Iterator<UpdateUnit> it = units.iterator(); it.hasNext();) {   
+                for (Iterator<UpdateUnit> it = units.iterator(); it.hasNext();) {
                     UpdateUnit updateUnit = it.next();
                     File file2 = units2file.put(updateUnit.getCodeName(), file1);
                     //do not allow to put in two updates for the same plugin - choose the one with higher spec.version
@@ -169,7 +179,18 @@ public class LocalDownloadSupport {
         return updateUnits;
     }
     
-    public List<UpdateUnit> remove(UpdateUnit unit) {
+    public boolean  removeAll (Collection<UpdateUnit> units) {
+        if (units == null) {
+            return false;
+        }
+        boolean res = false;
+        for (UpdateUnit uu : units) {
+            res |= remove (uu);
+        }
+        return res;
+    }
+    
+    public boolean remove(UpdateUnit unit) {
         File f = units2file.remove(unit.getCodeName());
         if (f != null) {
             fileList.removeFile(f);
@@ -177,7 +198,7 @@ public class LocalDownloadSupport {
                 updateUnits = null;
             }            
         }
-        return getUpdateUnits ();
+        return f != null;
     }
     
     private static class NbmFileFilter extends FileFilter {

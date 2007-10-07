@@ -58,7 +58,6 @@ public class LocallyDownloadedTableModel extends UnitCategoryTableModel {
     private OperationContainer<InstallSupport> availableNbmsContainer = Containers.forAvailableNbms();
     private OperationContainer<InstallSupport> updateNbmsContainer = Containers.forUpdateNbms();
     private LocalDownloadSupport localDownloadSupport = null;
-    private List<UpdateUnit> installed = new ArrayList<UpdateUnit>();
     List<UpdateUnit> cachedUnits;
         
     /** Creates a new instance of InstalledTableModel */
@@ -70,37 +69,17 @@ public class LocallyDownloadedTableModel extends UnitCategoryTableModel {
         List<UpdateUnit> units = getLocalDownloadSupport().getUpdateUnits();
         //do not compute if not necessary
         if (cachedUnits == null || !units.containsAll(cachedUnits) || !cachedUnits.containsAll(units)) {
-            List<Unit> oldUnits = getUnits();
             setData(makeCategories(units));
-            computeInstalled(units, oldUnits);
             cachedUnits = new ArrayList<UpdateUnit>(units);
         }
     }
     
-    List<UpdateUnit> getAlreadyInstalled() {
-        return installed;
+    void removeInstalledUnits () {
+        getLocalDownloadSupport ().removeAll (getLocalDownloadSupport ().getInstalledUpdateUnits ());
+        cachedUnits = null;
+        setUnits (null);
     }
             
-    private void computeInstalled(List<UpdateUnit> units, List<Unit> oldUnits) {
-        installed.clear();
-        installed.addAll(units);
-        List<Unit> newUnits = getUnits();
-        List<UpdateUnit> newUpdateUnits = new ArrayList<UpdateUnit>();
-        for (Unit unit : newUnits) {
-            newUpdateUnits.add(unit.updateUnit);
-        }
-        installed.removeAll(newUpdateUnits);
-        removeUpdateUnits(installed);        
-    }
-        
-        
-    private void removeUpdateUnits(List<UpdateUnit> units) {
-        for (UpdateUnit updateUnit : units) {
-            getLocalDownloadSupport().remove(updateUnit);
-        }
-    }
-    
-        
     private List<UnitCategory> makeCategories(List<UpdateUnit> units) {
         final List<UnitCategory> categories = new ArrayList<UnitCategory>();        
         categories.addAll(Utilities.makeAvailableCategories(units, true));
