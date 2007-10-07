@@ -1112,11 +1112,15 @@ public class Installer extends ModuleInstall implements Runnable {
         protected void createDialog() {
             Dimension dim = new Dimension(450, 50);
             
-            if (reportPanel==null) reportPanel = new ReportPanel();
+            if (reportPanel==null) {
+                reportPanel = new ReportPanel();
+            }
             Throwable t = getThrown();
-            if ((t != null)&&(reportPanel !=null)){
+            if (t != null && reportPanel !=null){
                 reportPanel.setSummary(createMessage(t));
-                dim = new Dimension(470, 450);
+                if ("ERROR_URL".equals(msg)) {
+                    dim = new Dimension(470, 450);
+                }
             }
             browser = new JEditorPane();
             try {

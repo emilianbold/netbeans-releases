@@ -41,7 +41,9 @@
 
 package org.netbeans.modules.uihandler;
 
+import java.awt.Component;
 import java.awt.Dialog;
+import java.awt.Dimension;
 import java.awt.Frame;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -52,6 +54,9 @@ import java.util.logging.Level;
 import javax.swing.JButton;
 import junit.framework.*;
 import java.util.Locale;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
+import javax.swing.JScrollPane;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.openide.DialogDescriptor;
@@ -114,6 +119,31 @@ public class InstallerReadPageTest extends NbTestCase {
     public void testURLInUTF8Encoding() throws Exception {
         doEncodingTest("UTF-8", "<meta http-equiv='Content-Type' content='text/html; charset=utf-8'></meta>");
     }
+
+    public void testSendLogWithException() throws Exception {
+        Logger uiLogger = Logger.getLogger("org.netbeans.ui");
+        LogRecord log1 = new LogRecord(Level.SEVERE, "TESTING MESSAGE");
+        LogRecord log2 = new LogRecord(Level.SEVERE, "TESTING MESSAGE");
+        LogRecord log3 = new LogRecord(Level.SEVERE, "NO EXCEPTION LOG");
+        LogRecord log4 = new LogRecord(Level.INFO, "INFO");
+        Throwable t1 = new NullPointerException("TESTING THROWABLE");
+        Throwable t2 = new UnknownError("TESTING ERROR");
+        log1.setThrown(t1);
+        log2.setThrown(t2);
+        log4.setThrown(t2);
+        Installer installer = Installer.findObject(Installer.class, true);
+        assertNotNull(installer);
+        installer.restored();
+        uiLogger.log(log1);
+        uiLogger.log(log2);
+        uiLogger.log(log3);
+        UIHandler.waitFlushed();
+        if (Installer.getThrown() == null) {
+            fail("Exception should be found in the log");
+        }
+        
+        doEncodingTest("UTF-8", "<meta http-equiv='Content-Type' content='text/html; charset=utf-8'></meta>");
+    }
     
     private void doEncodingTest(String encoding, String metaTag) throws Exception {
         //String kun = "Žluťoučký kůň";
@@ -141,6 +171,10 @@ public class InstallerReadPageTest extends NbTestCase {
         JButton b = (JButton)DD.d.getOptions()[0];
         
         assertEquals("It has the right localized text", kun, b.getText());
+
+        JScrollPane pane = (JScrollPane)DD.d.getMessage();
+        Component c = pane.getViewport().getView();
+        assertEquals("Dimension is small", new Dimension(450, 50), c.getPreferredSize());
     }
     
     public static final class DD extends DialogDisplayer {
