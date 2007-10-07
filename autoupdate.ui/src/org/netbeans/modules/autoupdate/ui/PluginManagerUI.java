@@ -372,17 +372,15 @@ private void tpTabsStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:
 private void bHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bHelpActionPerformed
         try {
             Object help = getHelpInstance ();
-            assert help != null : "HelpSystem Help.class must be in default Lookup!";
             if (help == null) {
                 return;
             }
             Method showHelpM = help.getClass ().getMethod ("showHelp", HelpCtx.class); // NOI18N
-            assert showHelpM != null : help + " must contain the method showHelp(HelpCtx.class)";
             if (showHelpM != null) {
                 showHelpM.invoke (help, getHelpCtx ());
             }
         } catch (Exception ex) {
-            Logger.getLogger (PluginManagerUI.class.getName ()).log (Level.FINE, ex.getLocalizedMessage (), ex);
+            Logger.getLogger (PluginManagerUI.class.getName ()).log (Level.INFO, ex.getLocalizedMessage (), ex);
         }
 }//GEN-LAST:event_bHelpActionPerformed
 
@@ -392,13 +390,12 @@ private void bHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:e
             try {
                 Class clazz = Class.forName ("org.netbeans.api.javahelp.Help", // NOI18N
                         false, Thread.currentThread().getContextClassLoader());
-                assert clazz != null : "Class org.netbeans.api.javahelp.Help found.";
                 if (clazz == null) {
                     return null;
                 }
                 helpInstance = Lookup.getDefault ().lookup (clazz);
             } catch (ClassNotFoundException ex) {
-                Logger.getLogger (PluginManagerUI.class.getName ()).log (Level.FINE, ex.getLocalizedMessage (), ex);
+                Logger.getLogger (PluginManagerUI.class.getName ()).log (Level.INFO, ex.getLocalizedMessage (), ex);
             }
         }
         return helpInstance;
@@ -408,15 +405,12 @@ private void bHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:e
         boolean res = true;
         try {
             Object help = getHelpInstance ();
-            assert help != null : "HelpSystem Help.class must be in default Lookup!";
             if (help == null) {
                 return res;
             }
             Method isValidIDM = help.getClass ().getMethod ("isValidID", String.class, boolean.class); // NOI18N
-            assert isValidIDM != null : help + " must contain the method isValidIDM(String.class, boolean)";
             if (isValidIDM != null) {
                 Object resO = isValidIDM.invoke (help, id, true);
-                assert resO instanceof Boolean : isValidIDM + " returns Boolean but " + resO;
                 if (resO instanceof Boolean) {
                     res = (Boolean) resO;
                 } else {
@@ -424,7 +418,7 @@ private void bHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:e
                 }
             }
         } catch (Exception ex) {
-            Logger.getLogger (PluginManagerUI.class.getName ()).log (Level.FINE, ex.getLocalizedMessage (), ex);
+            Logger.getLogger (PluginManagerUI.class.getName ()).log (Level.INFO, ex.getLocalizedMessage (), ex);
         }
         return res;
     }
