@@ -47,6 +47,7 @@ import java.awt.Window;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
@@ -60,7 +61,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
-import org.netbeans.api.javahelp.Help;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
@@ -80,8 +80,8 @@ public class PluginManagerUI extends javax.swing.JPanel implements UpdateUnitLis
     private UnitTable updateTable;
     private UnitTable localTable;
     private JButton closeButton;
-    final  RequestProcessor.Task initTask;
-    
+    final RequestProcessor.Task initTask;
+    private Object helpInstance = null;
     
     /** Creates new form PluginManagerUI */
     public PluginManagerUI (JButton closeButton) {
@@ -119,7 +119,7 @@ public class PluginManagerUI extends javax.swing.JPanel implements UpdateUnitLis
         
         // the Close & Help buttons are always enabled
         bClose.setEnabled (true);
-        bHelp.setEnabled (true);
+        bHelp.setEnabled (getHelpInstance () != null);
         
         Component parent = getParent ();
         Component rootPane = getRootPane ();
@@ -370,34 +370,80 @@ private void tpTabsStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:
 }//GEN-LAST:event_tpTabsStateChanged
 
 private void bHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bHelpActionPerformed
-    Help help = Lookup.getDefault ().lookup (Help.class);
-    assert help != null : "HelpSystem Help.class must be in default Lookup!";
-    if (help == null) {
-        return ;
-    }
-    help.showHelp (getHelpCtx ());
+        try {
+            Object help = getHelpInstance ();
+            assert help != null : "HelpSystem Help.class must be in default Lookup!";
+            if (help == null) {
+                return;
+            }
+            Method showHelpM = help.getClass ().getMethod ("showHelp", HelpCtx.class); // NOI18N
+            assert showHelpM != null : help + " must contain the method showHelp(HelpCtx.class)";
+            if (showHelpM != null) {
+                showHelpM.invoke (help, getHelpCtx ());
+            }
+        } catch (Exception ex) {
+            Logger.getLogger (PluginManagerUI.class.getName ()).log (Level.FINE, ex.getLocalizedMessage (), ex);
+        }
 }//GEN-LAST:event_bHelpActionPerformed
 
-private HelpCtx getHelpCtx () {
-    String id = PluginManagerUI.class.getName ();
-    Component c = tpTabs.getSelectedComponent ();
-    if (c instanceof UnitTab) {
-        id = ((UnitTab) c).getHelpId ();
-    } else if (c instanceof SettingsTab) {
-        id = SettingsTab.class.getName ();
+    @SuppressWarnings("unchecked")
+    private Object getHelpInstance () {
+        if (helpInstance == null) {
+            try {
+                Class clazz = Class.forName ("org.netbeans.api.javahelp.Help", // NOI18N
+                        false, Thread.currentThread().getContextClassLoader());
+                assert clazz != null : "Class org.netbeans.api.javahelp.Help found.";
+                if (clazz == null) {
+                    return null;
+                }
+                helpInstance = Lookup.getDefault ().lookup (clazz);
+            } catch (ClassNotFoundException ex) {
+                Logger.getLogger (PluginManagerUI.class.getName ()).log (Level.FINE, ex.getLocalizedMessage (), ex);
+            }
+        }
+        return helpInstance;
     }
-    Help help = Lookup.getDefault ().lookup (Help.class);
-    assert help != null : "HelpSystem Help.class must be in default Lookup!";
-    if (help == null) {
-        return null;
+
+    private boolean isValidHelpID (String id) {
+        boolean res = true;
+        try {
+            Object help = getHelpInstance ();
+            assert help != null : "HelpSystem Help.class must be in default Lookup!";
+            if (help == null) {
+                return res;
+            }
+            Method isValidIDM = help.getClass ().getMethod ("isValidID", String.class, boolean.class); // NOI18N
+            assert isValidIDM != null : help + " must contain the method isValidIDM(String.class, boolean)";
+            if (isValidIDM != null) {
+                Object resO = isValidIDM.invoke (help, id, true);
+                assert resO instanceof Boolean : isValidIDM + " returns Boolean but " + resO;
+                if (resO instanceof Boolean) {
+                    res = (Boolean) resO;
+                } else {
+                    res = true;
+                }
+            }
+        } catch (Exception ex) {
+            Logger.getLogger (PluginManagerUI.class.getName ()).log (Level.FINE, ex.getLocalizedMessage (), ex);
+        }
+        return res;
     }
-    if (help.isValidID (id, true).booleanValue ()) {
-        Logger.getLogger (PluginManagerUI.class.getName ()).log (Level.FINE, "HelpId is " + id);
-    } else {
-        Logger.getLogger (PluginManagerUI.class.getName ()).log (Level.INFO, id + " looks no valid HelpCtx. Is valid? " + help.isValidID (id, true));
+
+    private HelpCtx getHelpCtx() {
+        String id = PluginManagerUI.class.getName ();
+        Component c = tpTabs.getSelectedComponent ();
+        if (c instanceof UnitTab) {
+            id = ((UnitTab) c).getHelpId ();
+        } else if (c instanceof SettingsTab) {
+            id = SettingsTab.class.getName ();
+        }
+        if (isValidHelpID (id)) {
+            Logger.getLogger (PluginManagerUI.class.getName ()).log (Level.FINE, "HelpId is " + id);
+        } else {
+            Logger.getLogger (PluginManagerUI.class.getName ()).log (Level.INFO, id + " looks no valid HelpCtx. Is valid? " + isValidHelpID (id));
+        }
+        return new HelpCtx (id);
     }
-    return new HelpCtx (id);
-}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton bClose;
@@ -415,7 +461,8 @@ private HelpCtx getHelpCtx () {
         
         SettingsTab tab = new SettingsTab (this);
         tpTabs.add (tab,4);
-        tpTabs.setTitleAt(4, tab.getDisplayName());        
+        tpTabs.setTitleAt(4, tab.getDisplayName());
+        bHelp.setEnabled (getHelpInstance () != null);
     }
     
     private void decorateTabTitle (UnitTable table) {
