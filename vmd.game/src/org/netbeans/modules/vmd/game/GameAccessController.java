@@ -30,7 +30,7 @@ import org.netbeans.modules.vmd.game.model.GlobalRepository;
  */
 public class GameAccessController implements AccessController {
 
-    public static final boolean DEBUG = true;
+    public static final boolean DEBUG = false;
     
     private DesignDocument document;
 	
@@ -49,9 +49,9 @@ public class GameAccessController implements AccessController {
 	
 	
 	public void writeAccess(Runnable runnable) {
-		System.out.println("-------- will run");
+		if (DEBUG) System.out.println("-------- will run");
 		runnable.run();
-		System.out.println("-------- ran");
+		if (DEBUG) System.out.println("-------- ran");
 	}
 	
 	public void notifyEventFiring(DesignEvent event) {

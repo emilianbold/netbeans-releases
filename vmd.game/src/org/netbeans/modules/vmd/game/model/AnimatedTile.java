@@ -86,6 +86,9 @@ public class AnimatedTile extends Tile implements SequenceContainer, Editable, I
 	}
 
 	public void setName(String name) {
+		if (this.getName().equals(name)) {
+			return;
+		}
 		if (!this.getGameDesign().isComponentNameAvailable(name)) {
 			throw new IllegalArgumentException("AnimatedTile cannot be renamed because component name '" + name + "' already exists."); // NOI18N
 		}
@@ -216,7 +219,7 @@ public class AnimatedTile extends Tile implements SequenceContainer, Editable, I
                     new Object[] {NotifyDescriptor.YES_OPTION, NotifyDescriptor.NO_OPTION},
                     NotifyDescriptor.YES_OPTION));
             if (response == NotifyDescriptor.YES_OPTION) {
-                System.out.println("said YES to delete AnimatedTile"); // NOI18N
+                if (DEBUG) System.out.println("said YES to delete AnimatedTile"); // NOI18N
                 getImageResource().removeAnimatedTile(getIndex());
             }
 		}

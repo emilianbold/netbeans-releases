@@ -78,6 +78,8 @@ public class ScenePanel extends JPanel implements SceneListener,
         TiledLayerListener, PropertyChangeListener, MouseMotionListener,
         MouseListener {
 
+	private static final boolean DEBUG = false;
+	
     private static final int DEFAULT_GRID_X = 20;
     private static final int DEFAULT_GRID_Y = 20;
     private static final int GRID_MINORS_IN_A_MAJOR = 5;
@@ -262,7 +264,12 @@ public class ScenePanel extends JPanel implements SceneListener,
         }
         
         if (this.selectedLayers.contains(layer)) {
-            g.setColor(colorSelection);
+			if (this.scene.isLayerLocked(layer)) {
+				g.setColor(colorSelectionLocked);
+			}
+			else {
+				g.setColor(colorSelection);
+			}
         }
         else if (this.hilitedLayers.containsKey(layer)) {
             g.setColor(this.hilitedLayers.get(layer));
@@ -373,20 +380,19 @@ public class ScenePanel extends JPanel implements SceneListener,
         this.repaintAllLayerDecorations();
     }
 
-    public void layerMoved(Scene sourceScene, Layer layer, int indexOld,
-            int indexNew) {
+    public void layerMoved(Scene sourceScene, Layer layer, int indexOld, int indexNew) {
         //this.repaintLayerWithDecorations(layer);
         this.repaintAllLayerDecorations();
     }
 
-    public void layerRemoved(Scene sourceScene, Layer layer, LayerInfo info,
-            int index) {
+    public void layerRemoved(Scene sourceScene, Layer layer, LayerInfo info, int index) {
         this.unregisterLayerListeners(layer);
         //this.repaintLayerWithDecorations(layer);
         this.repaintAllLayerDecorations();
     }
 
     public void layerLockChanged(Scene sourceScene, Layer layer, boolean locked) {
+		this.repaintAllLayerDecorations();
     }
 
     public void layerPositionChanged(Scene sourceScene, Layer layer,
@@ -499,6 +505,7 @@ public class ScenePanel extends JPanel implements SceneListener,
     private Layer topHilitedLayer;
     private Map<Layer, Color> hilitedLayers = new HashMap<Layer, Color>();
     private Color colorSelection = new Color(0, 0, 255, 170);
+    private Color colorSelectionLocked = new Color(255, 0, 0, 170);
     private Color colorHilitePrimary = new Color(0, 0, 0, 120);
     private Color colorHiliteSecondary = new Color(0, 0, 0, 50);
     
@@ -920,8 +927,8 @@ public class ScenePanel extends JPanel implements SceneListener,
         
         JMenu sub2MenuPushUp = new JMenu(NbBundle.getMessage(ScenePanel.class, "ScenePanel.menuPushUp.txt"));
         JMenu sub2MenuPushDown = new JMenu(NbBundle.getMessage(ScenePanel.class, "ScenePanel.menuPushDown.txt"));
-        JMenu sub2MenuToTop = new JMenu(NbBundle.getMessage(ScenePanel.class, "ScenePanel.menuTop.txt"));
-        JMenu sub2MenuToBottom = new JMenu(NbBundle.getMessage(ScenePanel.class, "ScenePanel.menuBottom.txt"));
+        JMenu sub2MenuToTop = new JMenu(NbBundle.getMessage(ScenePanel.class, "ScenePanel.menuLayerToTop.txt"));
+        JMenu sub2MenuToBottom = new JMenu(NbBundle.getMessage(ScenePanel.class, "ScenePanel.menuLayerToBottom.txt"));
 
         Point poitAdjusted = this.adjustToOriginShift(e.getPoint());
         List<Layer> layersUnderCursor = this.scene.getLayersAtPoint(poitAdjusted);
@@ -1136,7 +1143,7 @@ public class ScenePanel extends JPanel implements SceneListener,
         public void itemStateChanged(ItemEvent e) {
             boolean visible = e.getStateChange() == ItemEvent.SELECTED ? true : false;
             ScenePanel.this.scene.setLayerVisible(this.layer, visible);
-            System.out.println("set " + layer.getName() + " visible " + visible); // NOI18N
+            if (DEBUG) System.out.println("set " + layer.getName() + " visible " + visible); // NOI18N
         }
     }
     
@@ -1148,7 +1155,7 @@ public class ScenePanel extends JPanel implements SceneListener,
         public void itemStateChanged(ItemEvent e) {
             boolean locked = e.getStateChange() == ItemEvent.SELECTED ? true : false;
             ScenePanel.this.scene.setLayerLocked(this.layer, locked);
-            System.out.println("set " + layer.getName() + " locked " + locked); // NOI18N
+            if (DEBUG) System.out.println("set " + layer.getName() + " locked " + locked); // NOI18N
         }
     }
     private class SelectListener implements ItemListener {
@@ -1159,7 +1166,7 @@ public class ScenePanel extends JPanel implements SceneListener,
         public void itemStateChanged(ItemEvent e) {
             //boolean selected = e.getStateChange() == ItemEvent.SELECTED ? true : false;
             ScenePanel.this.addSelectedLayer(layer, true);
-            System.out.println("set " + layer.getName() + " selection toogled"); // NOI18N
+            if (DEBUG) System.out.println("set " + layer.getName() + " selection toogled"); // NOI18N
         }
     }
       

@@ -42,6 +42,8 @@ import org.netbeans.modules.vmd.game.model.TiledLayer;
  */
 public class GlobalRepositoryTreeAdapter implements TreeModel, GlobalRepositoryListener, SceneListener, PropertyChangeListener {
 
+	private static final boolean DEBUG = false;
+	
 	private EventListenerList listenerList;
 	
 	private GlobalRepository globalRepository;
@@ -101,7 +103,7 @@ public class GlobalRepositoryTreeAdapter implements TreeModel, GlobalRepositoryL
 	}
 
 	public void valueForPathChanged(TreePath path, Object newValue) {
-		System.out.println("GlobalRepositoryTreeAdapter.valueForPathChanged"); // NOI18N 
+		if (DEBUG) System.out.println("GlobalRepositoryTreeAdapter.valueForPathChanged"); // NOI18N 
 	}
 
 	public int getIndexOfChild(Object parent, Object child) {

@@ -773,18 +773,15 @@ When having more than one frame selected only play the selected frames in the pr
 	private class FrameSelectionManager implements SequenceListener {
 		public static final int NONE = -1;
 
-		private List<Boolean> frameSelections = new ArrayList();
+		private ArrayList<Boolean> frameSelections;
 		
 		private int anchorSelectionIndex = NONE;
 		private int leadSelectionIndex = NONE;
 		
-		{
-			int size = SequenceEditingPanel.this.sequence.getFrameCount();
-			for (int i = 0; i < size; i++) {
-				this.frameSelections.add(Boolean.FALSE);
-			}
+		public FrameSelectionManager() {
+			this.clearSelections();
 		}
-		
+
 		public int getAnchorSelectionIndex() {
 			return this.anchorSelectionIndex;
 		}
@@ -794,8 +791,12 @@ When having more than one frame selected only play the selected frames in the pr
 		}
 		
 		public void clearSelections() {
-			for (int i = 0; i < this.frameSelections.size(); i++)
-				this.frameSelections.set(i, Boolean.FALSE);
+			int size = SequenceEditingPanel.this.sequence.getFrameCount();
+			this.frameSelections = new ArrayList<Boolean>();
+			this.frameSelections.ensureCapacity(size);
+			for (int i = 0; i < size; i++) {
+				this.frameSelections.add(Boolean.FALSE);
+			}
 			this.anchorSelectionIndex = NONE;
 			this.leadSelectionIndex = NONE;
 		}
@@ -858,10 +859,12 @@ When having more than one frame selected only play the selected frames in the pr
 		}
 
 		public void frameAdded(Sequence sequence, int index) {
+			this.clearSelections();
 			this.frameSelections.add(index, true);
 		}
 
 		public void frameRemoved(Sequence sequence, int index) {
+			this.clearSelections();
 			this.frameSelections.remove(index);
 		}
 

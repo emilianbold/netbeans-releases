@@ -96,6 +96,9 @@ public class Scene implements GlobalRepositoryListener, PropertyChangeListener, 
 	}
 
 	public void setName(String name) {
+		if (this.getName().equals(name)) {
+			return;
+		}
 		if (!this.gameDesign.isComponentNameAvailable(name)) {
 			throw new IllegalArgumentException("Scene cannot be renamed because component name '" + name + "' already exists."); // NOI18N
 		}
@@ -574,7 +577,6 @@ public class Scene implements GlobalRepositoryListener, PropertyChangeListener, 
 						new Object[] {NotifyDescriptor.YES_OPTION, NotifyDescriptor.NO_OPTION},
 						NotifyDescriptor.YES_OPTION));
 				if (response == NotifyDescriptor.YES_OPTION) {
-					System.out.println("said YES to delete scene"); // NOI18N
 					gameDesign.removeScene(Scene.this);
 				}
 		}

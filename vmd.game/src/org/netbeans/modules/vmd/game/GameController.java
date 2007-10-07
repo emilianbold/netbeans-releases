@@ -34,6 +34,7 @@ import org.netbeans.modules.vmd.api.io.IOUtils;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -94,7 +95,7 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 		SequenceListener, ImageResourceListener, PropertyChangeListener, DesignListener {
 	
 	private static boolean DEBUG = false;
-	private static boolean DEBUG_UNDO = true;
+	private static boolean DEBUG_UNDO = false;
 	
 	private final Map<Long, String> changeMap = new HashMap<Long, String>();
 	
@@ -207,6 +208,8 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 				changeMap.remove(designComponent.getComponentID());
 			}
 			else {
+				List<Layer> newLayers = new ArrayList<Layer>();
+				
 				List<PropertyValue> sceneItemsProps = designComponent.readProperty(SceneCD.PROPERTY_SCENE_ITEMS).getArray();
 				for (PropertyValue sceneItemProp : sceneItemsProps) {
 					DesignComponent sceneItemDC = sceneItemProp.getComponent();
@@ -218,15 +221,33 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 					int zOrder = (Integer) sceneItemDC.readProperty(SceneItemCD.PROPERTY_Z_ORDER).getPrimitiveValue();
 
 					Layer layer = this.getGameDesign().getLayer(layerDC.getComponentID());
-
+					newLayers.add(layer);
+							
 					if (!scene.contains(layer)) {
 						scene.append(layer);
 					}
+					
+					//temporarly unlock the layer so that we can change its position in scene if needed (proper lock is reapplied a few lines down anyway)
+					scene.setLayerLocked(layer, false);
 
 					scene.move(layer, zOrder);
 					scene.setLayerPosition(layer, layerLocation, false);
 					scene.setLayerVisible(layer, visible);
 					scene.setLayerLocked(layer, locked);
+				}
+				
+				//now remove all layers that are no longer in the scene
+				List<Layer> origLayers = new ArrayList<Layer>(scene.getLayers());
+				for (Layer origLayer : origLayers) {
+					boolean found = false;
+					for (Layer newLayer : newLayers) {
+						if (origLayer.getName().equals(newLayer.getName())) {
+							found = true;
+						}
+					}
+					if (!found) {
+						scene.remove(origLayer);
+					}
 				}
 			}
 		}

@@ -552,9 +552,9 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
                             
                             Set<Position> deltaNewSet = new HashSet<Position>();
                             for (int c = lastDraggedCell.getCol(); c != cell.getCol(); c+=colStep) {
-                                System.out.print("c = " + c);
+                                if (DEBUG) System.out.print("c = " + c);
                                 for (int r = firstDraggedCell.getRow(); r != cell.getRow(); r+=rowStep) {                               
-                                    System.out.println(" r = " + r);
+                                    if (DEBUG) System.out.println(" r = " + r);
                                     Position pos = new Position(r, c);
                                     if (DEBUG) System.out.println("\tadd to delta " + pos); // NOI18N
                                     deltaNewSet.add(pos);
@@ -1166,7 +1166,7 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
     }
 
 	public void tilesStructureChanged(TiledLayer source) {
-		System.out.println("tilesStructureChanged()");
+		if (DEBUG) System.out.println("tilesStructureChanged()");
         this.revalidate();
         this.repaint();
 	}

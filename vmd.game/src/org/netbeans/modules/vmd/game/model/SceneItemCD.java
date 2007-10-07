@@ -62,7 +62,7 @@ public class SceneItemCD extends ComponentDescriptor {
 		return Arrays.asList (
             new ValidatorPresenter() {
                 protected void checkCustomValidity() {
-                    assert getComponent().readProperty(PROPERTY_LAYER).getKind() != PropertyValue.Kind.NULL;
+                    //assert getComponent().readProperty(PROPERTY_LAYER).getKind() != PropertyValue.Kind.NULL;
                 }
             }
         );

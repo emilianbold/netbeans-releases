@@ -37,7 +37,7 @@ import org.netbeans.modules.vmd.game.model.Position;
  */
 public class FullImageGridPreview extends AbstractImagePreviewComponent {
 
-	private static final boolean DEBUG = true;
+	private static final boolean DEBUG = false;
 	
 	private URL imageURL;
 	private BufferedImage originalImage;

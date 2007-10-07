@@ -43,7 +43,7 @@ import org.netbeans.modules.vmd.game.model.TileTransferable;
  */
 class ResourceImageList extends JList {
 	
-    public static final boolean DEBUG = true;
+    public static final boolean DEBUG = false;
     
 	private int padX = 4;
 	private int padY = 4;

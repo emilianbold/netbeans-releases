@@ -106,6 +106,9 @@ public class Sequence implements Previewable, Editable, Identifiable {
 	}
 	
 	public void setName(String name) {
+		if (this.getName().equals(name)) {
+			return;
+		}
 		if (!this.getGameDesign().isComponentNameAvailable(name)) {
 			throw new IllegalArgumentException("Sequence cannot be renamed because component name '" + name + "' already exists."); // NOI18N
 		}

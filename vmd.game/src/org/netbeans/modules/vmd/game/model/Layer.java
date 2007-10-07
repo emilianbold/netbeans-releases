@@ -188,7 +188,6 @@ public abstract class Layer implements Previewable, Editable, Transferable, Iden
 						new Object[] {NotifyDescriptor.YES_OPTION, NotifyDescriptor.NO_OPTION},
 						NotifyDescriptor.YES_OPTION));
 				if (response == NotifyDescriptor.YES_OPTION) {
-					System.out.println("said YES to delete layer"); // NOI18N
 					Layer.this.gameDesign.removeLayer(Layer.this);
 				}
 			}
@@ -202,5 +201,5 @@ public abstract class Layer implements Previewable, Editable, Transferable, Iden
 	public void setId(long id) {
 		this.id = id;
 	}
-	
+
 }

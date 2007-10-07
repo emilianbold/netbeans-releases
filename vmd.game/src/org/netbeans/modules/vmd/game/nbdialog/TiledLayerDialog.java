@@ -382,7 +382,7 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
 	private void setPreviewPartial() {
 		if (this.imagePreview != null) {
 			try {
-				System.out.println("setPreviewPartial"); // NOI18N
+				if (DEBUG) System.out.println("setPreviewPartial"); // NOI18N
 				this.partialImagePreview.setImageURL(this.imagePreview.getImageURL());
 			} catch (MalformedURLException e) {
 				this.labelError.setText(NbBundle.getMessage(TiledLayerDialog.class, "SpriteDialog.labelInvalidImgLoc.txt"));
@@ -405,7 +405,7 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
 	private void setPreviewFull() {
 		if (this.imagePreview != null) {
 			try {
-				System.out.println("setPreviewFull"); // NOI18N
+				if (DEBUG) System.out.println("setPreviewFull"); // NOI18N
 				this.fullImagePreview.setImageURL(this.imagePreview.getImageURL());
 			} catch (MalformedURLException e) {
 				this.labelError.setText(NbBundle.getMessage(TiledLayerDialog.class, "SpriteDialog.labelInvalidImgLoc.txt"));
