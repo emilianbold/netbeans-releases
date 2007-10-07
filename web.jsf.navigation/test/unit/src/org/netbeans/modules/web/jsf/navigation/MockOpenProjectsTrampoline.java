@@ -81,10 +81,10 @@ public class MockOpenProjectsTrampoline implements OpenProjectsTrampoline {
         }
 
         public void setMainProject(Project project) {
-            if (mainProject != null && !openProjects.contains(mainProject)) {
-                throw new IllegalArgumentException("Project " + ProjectUtils.getInformation(mainProject).getDisplayName() + " is not open and cannot be set as main.");
+            if (project != null && !openProjects.contains(project)) {
+                throw new IllegalArgumentException("Project " + ProjectUtils.getInformation(project).getDisplayName() + " is not open and cannot be set as main.");
             }
-            this.mainProject = mainProject;
+            this.mainProject = project;
         }
 
 }
