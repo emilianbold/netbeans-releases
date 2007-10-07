@@ -36,6 +36,7 @@ bunzip2 -d -c `dirname $0`/template.sparseimage.bz2 > $tmpdir/template.sparseima
 rm -rf $tmpdir/mountpoint
 mkdir $tmpdir/mountpoint
 hdiutil mount -verbose -mountpoint $tmpdir/mountpoint $tmpdir/template.sparseimage
+rm -rf $tmpdir/mountpoint/*
 rsync -a $srcdirs --exclude .DS_Store $tmpdir/mountpoint/
 diskutil rename $tmpdir/mountpoint "$volname"
 hdiutil unmount -verbose $tmpdir/mountpoint
