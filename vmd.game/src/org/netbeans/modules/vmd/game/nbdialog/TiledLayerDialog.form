@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<Form version="1.3" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+<Form version="1.3" maxVersion="1.3" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <NonVisualComponents>
     <Component class="javax.swing.ButtonGroup" name="buttonGroupLayers">
     </Component>
@@ -77,7 +77,7 @@
               <Group type="102" attributes="0">
                   <Component id="labelImageFile" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="jScrollPane1" pref="250" max="32767" attributes="0"/>
+                  <Component id="jScrollPane1" pref="252" max="32767" attributes="0"/>
                   <EmptySpace type="separate" max="-2" attributes="0"/>
                   <Component id="buttonImportImages" min="-2" max="-2" attributes="0"/>
               </Group>
@@ -108,7 +108,9 @@
         </Container>
         <Component class="javax.swing.JButton" name="buttonImportImages">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Import sample images "/>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/vmd/game/nbdialog/Bundle.properties" key="SpriteDialog.buttonImportImages.txt" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
             <Property name="actionCommand" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/vmd/game/nbdialog/Bundle.properties" key="SpriteDialog.buttonImportImages.txt" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
@@ -138,7 +140,7 @@
                           <Group type="103" groupAlignment="1" attributes="0">
                               <Group type="102" alignment="0" attributes="0">
                                   <Component id="labelImagePreview" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace pref="166" max="32767" attributes="0"/>
+                                  <EmptySpace pref="196" max="32767" attributes="0"/>
                                   <Component id="checkBoxZoom" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <Component id="panelImage" alignment="1" pref="373" max="32767" attributes="2"/>
@@ -273,7 +275,7 @@
               <Group type="102" alignment="0" attributes="0">
                   <Component id="jLabel3" min="-2" max="-2" attributes="0"/>
                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                  <Component id="fieldLayerName" pref="553" max="32767" attributes="1"/>
+                  <Component id="fieldLayerName" pref="568" max="32767" attributes="1"/>
               </Group>
           </Group>
         </DimensionLayout>
