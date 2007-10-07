@@ -142,6 +142,15 @@ public class TiledLayer extends Layer implements ImageResourceListener {
 		}
 	}	
 
+	private void fireTilesChanged() {
+		Object[] listeners = listenerList.getListenerList();
+		for (int i = listeners.length - 2; i >= 0; i -= 2) {
+			if (listeners[i] == TiledLayerListener.class) {
+				((TiledLayerListener) listeners[i+1]).tilesStructureChanged(this);
+			}
+		}
+	}	
+
 	/**
 	 * Returns AnimatedTiles currently assigned to this TiledLayer.
 	 */
@@ -413,7 +422,21 @@ public class TiledLayer extends Layer implements ImageResourceListener {
 	}
 	
 	public int[][] getTiles() {
-		return this.grid;
+		return cloneTiles(this.grid);
+	}
+	
+	public void setTiles(int[][] newGrid) {
+		this.grid = cloneTiles(newGrid);
+		this.fireTilesChanged();
+	}
+	
+	public static int[][] cloneTiles(int[][] grid) {
+		int[][] clone = new int[grid.length][];
+		for (int r = 0; r < grid.length; r++) {
+			clone[r] = new int[grid[r].length];
+			System.arraycopy(grid[r], 0, clone[r], 0, grid[r].length);
+		}
+		return clone;
 	}
 	
 	// Previewable

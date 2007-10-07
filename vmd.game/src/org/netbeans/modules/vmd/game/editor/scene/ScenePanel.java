@@ -458,6 +458,10 @@ public class ScenePanel extends JPanel implements SceneListener,
         this.repaintLayerWithDecorations(source);
     }
 
+	public void tilesStructureChanged(TiledLayer source) {
+		this.repaintLayerWithDecorations(source);
+	}
+
     public void tileChanged(TiledLayer source, int row, int col) {
         int w = source.getTileWidth();
         int h = source.getTileHeight();

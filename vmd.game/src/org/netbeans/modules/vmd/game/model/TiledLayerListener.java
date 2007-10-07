@@ -27,6 +27,8 @@ public interface TiledLayerListener extends EventListener {
 	
 	public void tilesChanged(TiledLayer source, Set positions);
 	
+	public void tilesStructureChanged(TiledLayer source);
+	
 	public void columnsInserted(TiledLayer source, int index, int count);
 	
 	public void columnsRemoved(TiledLayer source, int index, int count);

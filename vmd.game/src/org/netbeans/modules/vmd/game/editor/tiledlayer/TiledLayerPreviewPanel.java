@@ -129,8 +129,12 @@ public class TiledLayerPreviewPanel extends JComponent implements TiledLayerList
         this.tiledLayerChangedVisualy();
     }
 	
+	public void tilesStructureChanged(TiledLayer source) {
+		this.tiledLayerChangedVisualy();
+	}
+	
 	private void tiledLayerChangedVisualy() {
 		this.repaint();
 	}
-	
+
 }

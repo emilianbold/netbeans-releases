@@ -140,6 +140,15 @@ public class GlobalRepository implements PropertyChangeListener, Editable {
 		return Collections.unmodifiableCollection(this.imgResourceMap.values());
 	}
 	
+	public ImageResource getImageResource(long id) {
+		for (ImageResource imgRes : this.getImageResources()) {
+			if (imgRes.getId() == id) {
+				return imgRes;
+			}
+		}
+		return null;
+	}
+	
 	private void fireImageResourceAdded(ImageResource imgRes) {
 		Object[] listeners = listenerList.getListenerList();
 		for (int i = listeners.length - 2; i >= 0; i -= 2) {
@@ -241,6 +250,14 @@ public class GlobalRepository implements PropertyChangeListener, Editable {
 		return this.layers.get(name);
 	}
 
+	public Layer getLayer(long id) {
+		for (Layer layer : this.layers.values()) {
+			if (layer.getId() == id) {
+				return layer;
+			}
+		}
+		return null;
+	}
 
 	private void addScene(Scene scene) {
 		this.scenes.add(scene);
@@ -321,6 +338,15 @@ public class GlobalRepository implements PropertyChangeListener, Editable {
 		return next;
 	}
 	
+	public Scene getScene(long id) {
+		for (Iterator iter = this.scenes.iterator(); iter.hasNext();) {
+			Scene scene = (Scene) iter.next();
+			if (scene.getId() == id) {
+				return scene;
+			}
+		}
+		return null;
+	}
 	public Scene getSceneByName(String name) {
 		for (Iterator iter = this.scenes.iterator(); iter.hasNext();) {
 			Scene scene = (Scene) iter.next();

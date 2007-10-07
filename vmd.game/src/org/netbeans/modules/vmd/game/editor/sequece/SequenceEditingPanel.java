@@ -292,6 +292,8 @@ When having more than one frame selected only play the selected frames in the pr
     public Dimension getPreferredSize() {
 		if (DEBUG) System.out.println("getPreferredSize"); // NOI18N
 		
+		
+		
 		int filmRollWidth = (this.filmUnitWidth * this.sequence.getFrameCount()) + this.transOutlineToSeparator.x + this.transSeparatorToOutline.x;
 		int filmRollHeight = BOUNDARY_MIN + this.separatorHeight;
 
@@ -502,6 +504,12 @@ When having more than one frame selected only play the selected frames in the pr
 		this.repaint(this.getAreaForColumn(getColumnForFrame(index)));
     }
 
+	public void framesChanged(Sequence sequence) {
+		if (DEBUG) System.out.println("SequenceEditingPanel.framesChanged"); // NOI18N
+		this.revalidate();
+		this.repaint();
+	}
+	
 	//------------ MouseListener -----------
 	//on separator right-click offer tween :)
 	
@@ -859,8 +867,12 @@ When having more than one frame selected only play the selected frames in the pr
 
 		public void frameModified(Sequence sequence, int index) {
 		}
-	}	
-	
+
+		public void framesChanged(Sequence sequence) {
+			this.clearSelections();
+		}
+	}
+
 	
 	
 }

@@ -37,8 +37,10 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
-public abstract class Layer implements Previewable, Editable, Transferable {
+public abstract class Layer implements Previewable, Editable, Transferable, Identifiable {
 	
+	private long id = Identifiable.ID_UNKNOWN;
+
 	public static final String ACTION_PROP_SCENE = "layer.action.prop.scene"; // NOI18N
 	
 	protected PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
@@ -68,6 +70,9 @@ public abstract class Layer implements Previewable, Editable, Transferable {
 	}
 	
 	public void setName(String name) {
+		if (this.getName().equals(name)) {
+			return;
+		}
 		if (!this.gameDesign.isComponentNameAvailable(name)) {
 			throw new IllegalArgumentException("Layer cannot be renamed because component name '" + name + "' already exists."); // NOI18N
 		}
@@ -188,6 +193,14 @@ public abstract class Layer implements Previewable, Editable, Transferable {
 				}
 			}
 		}
+	}
+
+	public long getId() {
+		return id;
+	}
+
+	public void setId(long id) {
+		this.id = id;
 	}
 	
 }

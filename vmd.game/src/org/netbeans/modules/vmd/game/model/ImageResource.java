@@ -34,8 +34,10 @@ import java.util.Map;
 import java.util.Set;
 import javax.swing.event.EventListenerList;
 
-public class ImageResource {
+public class ImageResource implements Identifiable{
 	
+	private long id = Identifiable.ID_UNKNOWN;
+
 	public static final boolean DEBUG = false;
 	
     private GlobalRepository gameDesign;
@@ -53,7 +55,7 @@ public class ImageResource {
 	
 	private List<Sequence> sequences = new ArrayList();
 
-	private static HashMap imgSoftReferences = new HashMap();	
+	private static HashMap imgSoftReferences = new HashMap();
 	
 	private static BufferedImage softenImage(URL imageURL) {
 		BufferedImage img = null;
@@ -109,6 +111,14 @@ public class ImageResource {
 	public Sequence getSequenceByName(String name) {
 		for (Sequence sequence : this.sequences) {
 			if (sequence.getName().equals(name))
+				return sequence;
+		}
+		return null;
+	}
+
+	public Sequence getSequence(long id) {
+		for (Sequence sequence : this.sequences) {
+			if (sequence.getId() == id)
 				return sequence;
 		}
 		return null;
@@ -455,6 +465,14 @@ public class ImageResource {
             return "" + tileWidth + tileHeight + zeroBasedIndex;
         }
 
+	}
+
+	public long getId() {
+		return id;
+	}
+
+	public void setId(long id) {
+		this.id = id;
 	}
 
 

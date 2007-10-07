@@ -49,14 +49,15 @@ public class GameAccessController implements AccessController {
 	
 	
 	public void writeAccess(Runnable runnable) {
+		System.out.println("-------- will run");
 		runnable.run();
+		System.out.println("-------- ran");
 	}
 	
 	public void notifyEventFiring(DesignEvent event) {
 	}
 	
 	public void notifyEventFired(DesignEvent event) {
-//		if (DEBUG) System.out.println("GameAccessController.notifyEventFired() : " + event);
 	}
 	
 	public void notifyComponentsCreated(Collection<DesignComponent> createdComponents) {

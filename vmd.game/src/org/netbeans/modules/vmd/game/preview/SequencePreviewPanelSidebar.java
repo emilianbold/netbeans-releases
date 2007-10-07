@@ -346,6 +346,9 @@ public class SequencePreviewPanelSidebar extends javax.swing.JPanel implements
 	public void frameRemoved(Sequence sequence, int index) {
 		this.sequenceChanged();
 	}
+	public void framesChanged(Sequence sequence) {
+		this.sequenceChanged();
+	}
 	public void frameModified(Sequence sequence, int index) {
 		//TODO : here i would recache the modified frame image i think
 	}	

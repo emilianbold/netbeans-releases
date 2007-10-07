@@ -140,8 +140,9 @@ public class MainView implements GlobalRepositoryListener, EditorManager {
     }
 
 	public void requestEditing(Editable editable) {
-		if (this.currentEditable == editable)
+		if (this.currentEditable == editable) {
 			return;
+		}
 		this.currentEditable = editable;
 		ImageResourceInfo resource = this.currentEditable.getImageResourceInfo();
 		JComponent editor = this.currentEditable.getEditor();

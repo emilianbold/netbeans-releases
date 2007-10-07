@@ -39,7 +39,9 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
-public class AnimatedTile extends Tile implements SequenceContainer, Editable {
+public class AnimatedTile extends Tile implements SequenceContainer, Editable, Identifiable {
+
+	private long id = Identifiable.ID_UNKNOWN;
 
 	public static final boolean DEBUG = false;
 	
@@ -244,6 +246,14 @@ public class AnimatedTile extends Tile implements SequenceContainer, Editable {
 
 	public JComponent getNavigator() {
 		return new SequenceContainerNavigator(this);
+	}
+
+	public long getId() {
+		return id;
+	}
+
+	public void setId(long id) {
+		this.id = id;
 	}
 
 }

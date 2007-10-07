@@ -70,7 +70,6 @@ public class GameEditorView implements DataEditorView, EditorManagerListener {
 		if (this.controller.getGameDesign() != null) {
 			this.controller.getGameDesign().getMainView().addEditorManagerListener(this);
 		}
-		
     }
 	
 	

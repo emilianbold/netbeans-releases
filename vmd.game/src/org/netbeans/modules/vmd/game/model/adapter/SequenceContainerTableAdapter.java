@@ -234,4 +234,10 @@ public class SequenceContainerTableAdapter implements TableModel, SequenceContai
 	public void frameModified(Sequence sequence, int index) {
 		//don't care
 	}
+
+	public void framesChanged(Sequence sequence) {
+		TableModelEvent e = new TableModelEvent(this);
+		this.fireTableChanged(e);
+	}
+	
 }

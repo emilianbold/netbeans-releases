@@ -30,7 +30,6 @@ import java.util.Set;
 import javax.swing.JScrollPane;
 import org.netbeans.modules.vmd.game.dialog.NewAnimatedTileDialog;
 import org.netbeans.modules.vmd.game.model.Editable;
-import org.netbeans.modules.vmd.game.model.Layer;
 import org.netbeans.modules.vmd.game.model.Tile;
 import org.netbeans.modules.vmd.game.model.TiledLayer;
 import org.netbeans.modules.vmd.game.model.TiledLayerListener;
@@ -278,6 +277,10 @@ public class TiledLayerEditor extends javax.swing.JPanel implements TiledLayerLi
 
     public void tilesChanged(TiledLayer t, Set positions) {
     }
+
+	public void tilesStructureChanged(TiledLayer source) {
+		this.updateTextLabels();
+	}
 
     public void columnsInserted(TiledLayer t, int index, int count) {
 		this.updateTextLabels();

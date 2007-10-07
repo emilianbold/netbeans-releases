@@ -39,7 +39,9 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 
-public class Sequence implements Previewable, Editable {
+public class Sequence implements Previewable, Editable, Identifiable {
+
+	private long id = Identifiable.ID_UNKNOWN;
 
 	public static final boolean DEBUG = false;
 
@@ -110,6 +112,16 @@ public class Sequence implements Previewable, Editable {
 		String oldName = this.name;
 		this.name = name;
 		this.propertyChangeSupport.firePropertyChange(Sequence.PROPERTY_NAME, oldName, name);
+	}
+	
+	public void setFrames(int[] frames) {
+		ArrayList<StaticTile> newFrames = new ArrayList<StaticTile>();
+		for (int i = 0; i < frames.length; i++) {
+			StaticTile frame = new StaticTile(imageResource, frames[i], frameWidth, frameHeight, zeroBasedIndex);
+			newFrames.add(frame);
+		}
+		this.frames = newFrames;
+		this.fireFramesChanged();
 	}
 	
 	public void addFrame(StaticTile frame) {
@@ -195,6 +207,15 @@ public class Sequence implements Previewable, Editable {
 			a[i] = this.frames.get(i).getIndex();	
 		}
 		return a;
+	}
+	
+	private void fireFramesChanged() {
+		Object[] listeners = listenerList.getListenerList();
+		for (int i = listeners.length - 2; i >= 0; i -= 2) {
+			if (listeners[i] == SequenceListener.class) {
+				((SequenceListener) listeners[i+1]).framesChanged(this);
+			}
+		}
 	}
 	
 	private void fireFrameAdded(StaticTile frame, int index) {
@@ -316,5 +337,13 @@ public class Sequence implements Previewable, Editable {
 			Dialog d = DialogDisplayer.getDefault().createDialog(dd);
 			d.setVisible(true);
 		}
+	}
+
+	public long getId() {
+		return id;
+	}
+
+	public void setId(long id) {
+		this.id = id;
 	}
 }

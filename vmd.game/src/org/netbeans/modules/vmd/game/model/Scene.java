@@ -47,9 +47,11 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
-public class Scene implements GlobalRepositoryListener, PropertyChangeListener, Previewable, Editable {
+public class Scene implements GlobalRepositoryListener, PropertyChangeListener, Previewable, Editable, Identifiable {
+	
+	private long id = Identifiable.ID_UNKNOWN;
 
-	public static final boolean DEBUG = true;
+	public static final boolean DEBUG = false;
 	
 	public static final String PROPERTY_LAYERS_BOUNDS = "prop.layers.bounds"; // NOI18N
 
@@ -228,6 +230,9 @@ public class Scene implements GlobalRepositoryListener, PropertyChangeListener, 
 			return;
 		}
 		if (DEBUG) System.out.println(this + " move " + layer + " from " + oldIndex + " to " + newIndex); // NOI18N
+		if (oldIndex == newIndex) {
+			return;
+		}
 		this.layers.remove(layer);
 		this.layers.ensureCapacity(newIndex + 1);
 		this.layers.add(newIndex, layer);
@@ -371,6 +376,9 @@ public class Scene implements GlobalRepositoryListener, PropertyChangeListener, 
 		if (DEBUG) System.out.println(layer + " set position " + position); // NOI18N
 		LayerInfo info = (LayerInfo) this.getLayerInfo(layer);
 		Point old = info.getPosition();
+//		if (old.equals(position)) {
+//			return;
+//		}
 		info.setPosition(position);
 		this.updateLayersBounds();
 		this.fireLayerPositionModified(layer, this.layers.indexOf(layer), old, info.getPosition(), inTransition);
@@ -382,7 +390,11 @@ public class Scene implements GlobalRepositoryListener, PropertyChangeListener, 
 
 	public void setLayerVisible(Layer layer, boolean visible) {
 		if (DEBUG) System.out.println(layer + " set visible " + visible); // NOI18N
-		((LayerInfo) this.getLayerInfo(layer)).setVisible(visible);
+		boolean old = this.getLayerInfo(layer).isVisible();
+		if (old == visible) {
+			return;
+		}
+		this.getLayerInfo(layer).setVisible(visible);
 		this.fireLayerVisibilityModified(layer, this.layers.indexOf(layer), visible);
 	}
 
@@ -392,7 +404,11 @@ public class Scene implements GlobalRepositoryListener, PropertyChangeListener, 
 
 	public void setLayerLocked(Layer layer, boolean locked) {
 		if (DEBUG) System.out.println(layer + " set locked " + locked); // NOI18N
-		((LayerInfo) this.getLayerInfo(layer)).setLocked(locked);
+		boolean old = this.getLayerInfo(layer).isLocked();
+		if (old == locked) {
+			return;
+		}
+		this.getLayerInfo(layer).setLocked(locked);
 		this.fireLayerLockModified(layer, this.layers.indexOf(layer), locked);
 	}
 
@@ -613,5 +629,13 @@ public class Scene implements GlobalRepositoryListener, PropertyChangeListener, 
     public int getHeight() {
 		return 0;
     }
+
+	public long getId() {
+		return id;
+	}
+
+	public void setId(long id) {
+		this.id = id;
+	}
 
 }
