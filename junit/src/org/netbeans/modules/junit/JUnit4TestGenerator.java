@@ -83,7 +83,7 @@ import static javax.lang.model.element.Modifier.STATIC;
  *
  * @author  Marian Petras
  */
-public class JUnit4TestGenerator extends AbstractTestGenerator {
+final class JUnit4TestGenerator extends AbstractTestGenerator {
     
     /** */
     static final String ANN_BEFORE_CLASS = "org.junit.BeforeClass";     //NOI18N
@@ -402,6 +402,7 @@ public class JUnit4TestGenerator extends AbstractTestGenerator {
     
     /**
      */
+    @Override
     protected String createTestMethodName(String smName) {
         return smName;
     }
