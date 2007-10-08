@@ -477,8 +477,8 @@ public class TestUtils {
                     }
 
                     TypeElement midlet=parameter.getElements().getTypeElement("javax.microedition.midlet.MIDlet");
-
-                    if (parameter.getTypeUtilities().isCastable(element.asType(),midlet.asType()))
+                        
+                    if (midlet == null || parameter.getTypeUtilities().isCastable(element.asType(),midlet.asType()))
                     {
                         testable = false;
                         return;
