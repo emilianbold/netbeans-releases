@@ -503,7 +503,6 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
 
         String testMethodName = createTestMethodName(
                                     srcMethod.getSimpleName().toString());
-        ModifiersTree modifiers = maker.Modifiers(createModifierSet(PUBLIC));
         List<ExpressionTree> throwsList;
         if (throwsNonRuntimeExceptions(workingCopy, srcMethod)) {
             throwsList = Collections.<ExpressionTree>singletonList(
