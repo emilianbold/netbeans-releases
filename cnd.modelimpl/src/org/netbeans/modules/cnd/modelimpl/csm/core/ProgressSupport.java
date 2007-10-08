@@ -105,9 +105,6 @@ public class ProgressSupport {
         for( CsmProgressListener listener : progressListeners ) {
 	    try { // have to do this to not allow a listener to crush code model threads
 		listener.fileParsingFinished(file);
-		if( listener instanceof CsmProgressListenerEx ) {
-		    ((CsmProgressListenerEx) listener).fileParsingFinished(file, preprocHandler);
-		}
 	    } catch(Exception e) {
 		e.printStackTrace(System.err);
 	    }

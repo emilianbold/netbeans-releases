@@ -151,7 +151,14 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     private int hash; // Default to 0
     
     private NativeFileItem nativeFileItem;
-
+    
+    /** For test purposes only */
+    public interface Hook {
+	void parsingFinished(CsmFile file, APTPreprocHandler preprocHandler);
+    }
+    
+    private static Hook hook = null;
+    
     public FileImpl(FileBuffer fileBuffer, ProjectBase project, int fileType, NativeFileItem nativeFileItem) {
 	state = State.INITIAL;
 	this.nativeFileItem = nativeFileItem;
@@ -167,6 +174,11 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         this.fakeLock = new String("File Lock for " + fileBuffer.getFile().getAbsolutePath()); // NOI18N
         this.guardState = new GuardBlockState();
         Notificator.instance().registerNewFile(this);
+    }
+    
+    /** For test purposes only */
+    public static void setHook(Hook aHook) {
+	hook = aHook;
     }
     
     public final NativeFileItem getNativeFileItem() {
@@ -642,6 +654,10 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 	lastParsed = Math.max(System.currentTimeMillis(), fileBuffer.lastModified());
 	if( TraceFlags.TRACE_VALIDATION ) System.err.printf("PARSED    %s \n\tlastModified=%d\n\t  lastParsed=%d  diff=%d\n", 
 		getAbsolutePath(), fileBuffer.lastModified(), lastParsed, fileBuffer.lastModified()-lastParsed);
+	Hook aHook = hook;
+	if( aHook != null ) {
+	    aHook.parsingFinished(this, preprocHandler);
+	}
         return ast;
     }
     

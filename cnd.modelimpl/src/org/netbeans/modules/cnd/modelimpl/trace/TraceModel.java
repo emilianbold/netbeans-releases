@@ -247,7 +247,16 @@ public class TraceModel {
     private Map<String, Long> cacheTimes = new HashMap<String, Long>();
 
     private int lap = 0;
+    
+    private final Map<CsmFile, APTPreprocHandler> states = new HashMap<CsmFile, APTPreprocHandler>();  
+    
+    FileImpl.Hook hook = new FileImpl.Hook() {
+	public void parsingFinished(CsmFile file, APTPreprocHandler preprocHandler) {
+	    states.put(file, preprocHandler);
+	}
 	
+    };
+    
     public TraceModel() {
 	RepositoryUtils.cleanCashes();
 	model = (ModelImpl) CsmModelAccessor.getModel(); // new ModelImpl(true);
@@ -256,6 +265,7 @@ public class TraceModel {
 	}
 	model.startup();
 	currentIncludePaths = quoteIncludePaths;
+	FileImpl.setHook(hook);
     }
 
     /*package*/
@@ -441,7 +451,7 @@ public class TraceModel {
 	    model.shutdown();
 	}
     }
-
+    
     /*package*/
     void doTest() {
 	if( repeatCount > 1 ) {
@@ -1490,29 +1500,11 @@ public class TraceModel {
 	AST tree = null;
 	int errCount = 0;
 
-	final Map<CsmFile, APTPreprocHandler> states = new HashMap<CsmFile, APTPreprocHandler>();
-
-	class ProgressListenerExImpl extends CsmProgressAdapter implements CsmProgressListenerEx {
-
-	    public void fileParsingFinished(CsmFile file, APTPreprocHandler preprocHandler) {
-		states.put(file, preprocHandler);
-	    }
-	}
-	CsmProgressListenerEx progressListenerEx = new ProgressListenerExImpl();
-	model.addProgressListener(progressListenerEx);
-
 	FileImpl fileImpl = (FileImpl) getProject().testAPTParseFile(item);
-	try {
-	    //fileImpl.scheduleParsing(true, state);
-	    waitProjectParsed(false);
-	    if (dumpAst || writeAst || showAstWindow) {
-		tree = fileImpl.parse(null);
-	    }
-//	} catch (InterruptedException e) {
-//	    // nothing to do
-	} finally {
-	    model.removeProgressListener(progressListenerEx);
-	}
+        waitProjectParsed(false);
+        if (dumpAst || writeAst || showAstWindow) {
+            tree = fileImpl.parse(null);
+        }
 	errCount = fileImpl.getErrorCount();
 	if (dumpPPState) {
 	    sleep(100); // so that we don't run ahead of fileParsingFinished event
