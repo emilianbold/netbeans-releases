@@ -129,9 +129,12 @@ public class BracketCompletion {
         if (isForLoopSemicolon(token) || posWithinAnyQuote(doc,dotPos)) {
             return;
         }
-        doc.remove(dotPos, 1);
-        doc.insertString(lastParenPos, ";", null); // NOI18N
-        caret.setDot(lastParenPos + 1);
+        // may be check offsets?
+//        if (lastParenPos != dotPos) {
+            doc.remove(dotPos, 1);
+            doc.insertString(lastParenPos, ";", null); // NOI18N
+            caret.setDot(lastParenPos + 1);
+//        }
     }
     
     private static boolean isForLoopSemicolon(TokenItem token) {
