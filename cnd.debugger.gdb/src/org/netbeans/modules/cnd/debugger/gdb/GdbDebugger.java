@@ -159,6 +159,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private boolean cygwin = false;
     private boolean cplusplus = false;
     private int tcwait = 0; // counter for type completion
+    private String firstBPfullname;
+    private String firstBPline;
         
     public GdbDebugger(ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
@@ -1400,9 +1402,27 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             } else if (o instanceof Map || o == null) {
                 pendingBreakpointMap.remove(Integer.valueOf(token));
                 impl.completeValidation((Map<String, String>) o);
+                if (o != null) {
+                    Map<String, String> map = (Map) o;
+                    String fullname = map.get("fullname"); // NOI18N
+                    String line = map.get("line"); // NOI18N
+                    if (firstBPfullname != null && firstBPfullname.equals(fullname) &&
+                            firstBPline != null && firstBPline.equals(line)) {
+                        continueAfterFirstStop = false;
+                    }
+                }
             }
             if (pendingBreakpointMap.isEmpty() && state.equals(STATE_LOADING)) {
                 setReady();
+            }
+        } else if (o instanceof Map) { // first breakpoint
+            Map<String, String> map = (Map) o;
+            String number = map.get("number"); // NOI18N
+            String fullname = map.get("fullname"); // NOI18N
+            String line = map.get("line"); // NOI18N
+            if (number != null && number.equals("1")) {
+                firstBPfullname = fullname;
+                firstBPline = line;
             }
         }
     }

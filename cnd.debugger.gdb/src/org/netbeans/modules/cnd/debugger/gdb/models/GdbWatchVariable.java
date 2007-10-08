@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.debugger.gdb.models;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.logging.Logger;
 import org.netbeans.api.debugger.Watch;
 import org.netbeans.modules.cnd.debugger.gdb.Field;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
@@ -72,7 +71,6 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
     private WatchesTreeModel model;
     private StringBuilder typeBuf = new StringBuilder();
     private Object LOCK = new Object();
-    protected Logger log = Logger.getLogger("gdb.logger"); // NOI18N
     
     /** Creates a new instance of GdbWatchVariable */
     public GdbWatchVariable(WatchesTreeModel model, Watch watch) {
@@ -145,8 +143,6 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
         if (type == null) {
             this.type = "";
             this.value = "";
-//            fields = new Field[0];
-//            derefValue = null;
         } else {
             this.type = type;
         }
@@ -200,8 +196,6 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
     public void setValue(String value) {
         if (value == null) {
             this.value = "";
-//            fields = new Field[0];
-//            derefValue = null;
         } else {
             this.value = value;
         }

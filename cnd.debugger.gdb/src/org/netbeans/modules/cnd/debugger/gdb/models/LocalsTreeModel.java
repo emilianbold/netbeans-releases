@@ -45,10 +45,8 @@ import java.beans.Customizer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
-import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
-import java.util.WeakHashMap;
 import org.netbeans.modules.cnd.debugger.gdb.CallStackFrame;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.viewmodel.ModelEvent;
@@ -71,14 +69,9 @@ import org.openide.util.WeakSet;
  */
 public class LocalsTreeModel implements TreeModel, TreeExpansionModel, PropertyChangeListener {
         
-    /** Nest array elements when array length is bigger then this. */
-    private static final int ARRAY_CHILDREN_NESTED_LENGTH = 100;
-    
     private GdbDebugger debugger;
     private Listener listener;
     private Vector listeners = new Vector();
-    private Map cachedLocals = new WeakHashMap();
-    private Map cachedArrayChildren = new WeakHashMap();
     private Set expandedNodes = new WeakSet();
     private Set collapsedNodes = new WeakSet();
         
@@ -255,8 +248,9 @@ public class LocalsTreeModel implements TreeModel, TreeExpansionModel, PropertyC
         private RequestProcessor.Task task;
         
         public void propertyChange(PropertyChangeEvent e) {
-            if (((e.getPropertyName() == debugger.PROP_CURRENT_CALL_STACK_FRAME) ||
-                    (e.getPropertyName() == debugger.PROP_STATE)) && (debugger.getState() == debugger.STATE_STOPPED)) {
+            if (((e.getPropertyName().equals(GdbDebugger.PROP_CURRENT_CALL_STACK_FRAME)) ||
+                    (e.getPropertyName().equals(GdbDebugger.PROP_STATE))) &&
+                    (debugger.getState().equals(GdbDebugger.STATE_STOPPED))) {
                 // IF state has been changed to STOPPED or
                 // IF current call stack frame has been changed & state is stoped
                 final LocalsTreeModel ltm = getModel();
@@ -270,26 +264,27 @@ public class LocalsTreeModel implements TreeModel, TreeExpansionModel, PropertyC
                 }
                 task = RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
-                        if (debugger.getState() != debugger.STATE_STOPPED) {
+                        if (!(debugger.getState().equals(GdbDebugger.STATE_STOPPED))) {
                             return;
                         }
                         debugger.waitForTypeCompletionCompletion();
                         ltm.fireTreeChanged();
                     }
                 }, 500);
-            } else if ((e.getPropertyName() == debugger.PROP_STATE) && (debugger.getState() != debugger.STATE_STOPPED) && (task != null)) {
+            } else if ((e.getPropertyName().equals(GdbDebugger.PROP_STATE)) &&
+                    !(debugger.getState().equals(GdbDebugger.STATE_STOPPED)) && (task != null)) {
                 // debugger has been resumed
                 // =>> cancel task
                 task.cancel();
                 task = null;
-            } else if (e.getPropertyName().equals(debugger.PROP_LOCALS_VIEW_UPDATE)) {
+            } else if (e.getPropertyName().equals(GdbDebugger.PROP_LOCALS_VIEW_UPDATE)) {
                 final LocalsTreeModel ltm = getModel();
                 if (ltm == null) {
                     return;
                 }
                 task = RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
-                        if (debugger.getState() == debugger.STATE_STOPPED) {
+                        if (debugger.getState().equals(GdbDebugger.STATE_STOPPED)) {
                             ltm.fireTreeChanged();
                         }
                     }
@@ -313,11 +308,7 @@ public class LocalsTreeModel implements TreeModel, TreeExpansionModel, PropertyC
                 return false;
             }
         }
-        // Default behavior follows:
-        if (node instanceof AbstractVariable) {
-            return false;
-        }
-        throw new UnknownTypeException(node);
+        return false;
     }
     
     /**
@@ -326,12 +317,6 @@ public class LocalsTreeModel implements TreeModel, TreeExpansionModel, PropertyC
      * @param node a expanded node
      */
     public void nodeExpanded(Object node) {
-        if (node instanceof AbstractVariable) {
-            AbstractVariable var = (AbstractVariable) node;
-            if (var.expandChildren()) {
-                fireTreeChanged();
-            }
-        }
         synchronized (this) {
             expandedNodes.add(node);
             collapsedNodes.remove(node);
