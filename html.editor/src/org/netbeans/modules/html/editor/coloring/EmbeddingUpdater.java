@@ -276,7 +276,7 @@ public class EmbeddingUpdater implements SyntaxParserListener {
                     if(ts.embedded(lang) == null) {
                         //the embedding doesn't exist, try to create
                         if(!ts.createEmbedding(lang, iAmFirstToken ? startSkipLength : 0, iAmLastToken ? endSkipLength : 0)) {
-                            LOGGER.log(Level.WARNING, "Cannot create embedding for " + mimeType + " [" + startOffset + " - "  + endOffset + "] (" + item.text().toString() + ")\n");
+                            LOGGER.log(Level.FINE, "Cannot create embedding for " + mimeType + " [" + startOffset + " - "  + endOffset + "] (" + item.text().toString() + ")\n");
                         } else {
                             CharSequence text = item.text();
                             if(text == null) {
@@ -285,7 +285,7 @@ public class EmbeddingUpdater implements SyntaxParserListener {
                                 LOGGER.log(Level.WARNING, null, new IllegalStateException("Token.text() of " + item.toString() + " == null without any previous modification of the underlying document! This seems to be a bug in lexer. Please report the issue to lexer module and attach the info dumped into the log, the document and possibly steps to reproduce."));
                                 LOGGER.log(Level.WARNING, "TokenSequence:\n" + ts.toString());
                             } else {
-                                LOGGER.log(Level.INFO, "Embedding for " + mimeType + " created [" + startOffset + " - "  + endOffset + "] (" + printEmbeddedText(text, iAmFirstToken ? startSkipLength : 0, iAmLastToken ? endSkipLength : 0) + ")\n");
+                                LOGGER.log(Level.FINE, "Embedding for " + mimeType + " created [" + startOffset + " - "  + endOffset + "] (" + printEmbeddedText(text, iAmFirstToken ? startSkipLength : 0, iAmLastToken ? endSkipLength : 0) + ")\n");
                             }
                         }
                     }
