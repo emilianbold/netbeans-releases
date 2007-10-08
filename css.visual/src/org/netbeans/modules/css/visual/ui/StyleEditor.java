@@ -47,14 +47,18 @@
 
 package org.netbeans.modules.css.visual.ui;
 
+import java.util.logging.Level;
+import javax.swing.text.BadLocationException;
 import org.netbeans.modules.css.model.CssRuleContent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.JPanel;
 import org.netbeans.modules.css.visual.api.CssRuleContext;
 import org.netbeans.modules.css.visual.ui.preview.CssPreviewable;
+import org.openide.util.Exceptions;
 
 /**
  * Super class for all Style editors
@@ -181,7 +185,11 @@ abstract public class StyleEditor extends JPanel {
         }
 
         public void propertyChange(PropertyChangeEvent evt) {
-            cssStyleData.modifyProperty(evt.getPropertyName(), (String)evt.getNewValue());
+            try {
+                cssStyleData.modifyProperty(evt.getPropertyName(), (String) evt.getNewValue());
+            } catch (BadLocationException ex) {
+                Logger.getLogger("global").log(Level.WARNING, "CssModel inconsistency!", ex); //NOI18N
+            }
         }
     }
 }

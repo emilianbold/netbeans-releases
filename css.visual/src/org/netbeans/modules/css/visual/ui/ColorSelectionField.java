@@ -160,7 +160,7 @@ public class ColorSelectionField extends javax.swing.JPanel {
         colorModel.setColor(currentColor);
         repaint();
         firePropertyChange("color", oldColor, colorPropertyData.toString()); //NOI18N
-        oldColor = currentColor;
+        oldColor = colorPropertyData.toString();
         
     }
     

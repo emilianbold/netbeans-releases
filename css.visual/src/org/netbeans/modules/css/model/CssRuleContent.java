@@ -49,6 +49,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.text.BadLocationException;
 import org.openide.util.NbBundle;
 
 /**
@@ -101,7 +102,7 @@ public class CssRuleContent {
     }
     
     //TODO remove this from the API
-    public void modifyProperty(String property, String newValue) {
+    public void modifyProperty(String property, String newValue) throws BadLocationException {
         CssRuleItem item = findItem(property);
         newValue = newValue.trim();
         if(item == null && newValue.length() == 0) {

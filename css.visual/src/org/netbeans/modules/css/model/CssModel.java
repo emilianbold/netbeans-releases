@@ -288,7 +288,7 @@ public final class CssModel {
                                         
                                         ASTNode key = node.getNode("key"); //NOI18N
                                         ASTNode value = node.getNode("expr"); //NOI18N
-                                        CssRuleItem ruleItem = new CssRuleItem(key.getAsText().trim(), key.getOffset(), value.getAsText().trim(), value.getOffset(), colonOffset, semicolonOffset);
+                                        CssRuleItem ruleItem = new CssRuleItem(doc, key.getAsText().trim(), key.getOffset(), value.getAsText().trim(), value.getOffset(), colonOffset, semicolonOffset);
                                         items.add(ruleItem);
                                     }
                                 }
@@ -306,6 +306,10 @@ public final class CssModel {
                                         }
                                     }
                                 }
+                            }
+                            
+                            if(openBracket == null || closeBracket == null) {
+                                continue;
                             }
                             
                             CssRuleContent styleData = new CssRuleContent(items, isImmutable());

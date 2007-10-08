@@ -355,11 +355,6 @@ public class BackgroundStyleEditor extends StyleEditor {
                 horizontalPosComboBoxItemStateChanged(evt);
             }
         });
-        horizontalPosComboBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                horizontalPosComboBoxActionPerformed(evt);
-            }
-        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
@@ -372,11 +367,6 @@ public class BackgroundStyleEditor extends StyleEditor {
         horizontalPosComboBox.getAccessibleContext().setAccessibleDescription(null);
 
         verticalPosComboBox.setEditable(true);
-        verticalPosComboBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                verticalPosComboBoxActionPerformed(evt);
-            }
-        });
         verticalPosComboBox.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 verticalPosComboBoxItemStateChanged(evt);
@@ -460,26 +450,18 @@ public class BackgroundStyleEditor extends StyleEditor {
             setBackgroundPosition();
         }
     }//GEN-LAST:event_verticalPosComboBoxItemStateChanged
-    
-    private void verticalPosComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_verticalPosComboBoxActionPerformed
-        bgPositionData.setVerticalValue((String)verticalPosComboBox.getSelectedItem());
-        setBackgroundPosition();
-    }//GEN-LAST:event_verticalPosComboBoxActionPerformed
-    
+        
     private void horizontalPosComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_horizontalPosComboBoxItemStateChanged
         if (evt.getStateChange() != evt.DESELECTED) {
             bgPositionData.setHorizontalValue((String)horizontalPosComboBox.getSelectedItem());
             setBackgroundPosition();
         }
     }//GEN-LAST:event_horizontalPosComboBoxItemStateChanged
-    
-    private void horizontalPosComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_horizontalPosComboBoxActionPerformed
-        bgPositionData.setHorizontalValue((String)horizontalPosComboBox.getSelectedItem());
-        setBackgroundPosition();
-    }//GEN-LAST:event_horizontalPosComboBoxActionPerformed
-    
+        
     private void scrollComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_scrollComboBoxItemStateChanged
-        setBackgroundAttachment();
+        if(evt.getStateChange() != evt.DESELECTED) {
+            setBackgroundAttachment();
+        }
     }//GEN-LAST:event_scrollComboBoxItemStateChanged
     
     private void repeatComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_repeatComboBoxItemStateChanged

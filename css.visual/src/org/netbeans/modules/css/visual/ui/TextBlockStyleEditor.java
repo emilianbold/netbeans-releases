@@ -331,6 +331,11 @@ public class TextBlockStyleEditor extends StyleEditor {
                 directionComboItemStateChanged(evt);
             }
         });
+        directionCombo.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                directionComboFocusLost(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -341,14 +346,14 @@ public class TextBlockStyleEditor extends StyleEditor {
         directionCombo.getAccessibleContext().setAccessibleName(null);
         directionCombo.getAccessibleContext().setAccessibleDescription(null);
 
-        horizontalAlignCombo.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                horizontalAlignComboFocusLost(evt);
-            }
-        });
         horizontalAlignCombo.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 horizontalAlignComboItemStateChanged(evt);
+            }
+        });
+        horizontalAlignCombo.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                horizontalAlignComboFocusLost(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -387,11 +392,6 @@ public class TextBlockStyleEditor extends StyleEditor {
                 textIndentComboItemStateChanged(evt);
             }
         });
-        textIndentCombo.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                textIndentComboActionPerformed(evt);
-            }
-        });
         textIndentCombo.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent evt) {
                 textIndentComboFocusLost(evt);
@@ -408,19 +408,14 @@ public class TextBlockStyleEditor extends StyleEditor {
         textIndentCombo.getAccessibleContext().setAccessibleDescription(null);
 
         verticalAlignCombo.setEditable(true);
-        verticalAlignCombo.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                verticalAlignComboActionPerformed(evt);
+        verticalAlignCombo.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                verticalAlignComboItemStateChanged(evt);
             }
         });
         verticalAlignCombo.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent evt) {
                 verticalAlignComboFocusLost(evt);
-            }
-        });
-        verticalAlignCombo.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                verticalAlignComboItemStateChanged(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -463,11 +458,6 @@ public class TextBlockStyleEditor extends StyleEditor {
                 wordSpacingComboItemStateChanged(evt);
             }
         });
-        wordSpacingCombo.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                wordSpacingComboActionPerformed(evt);
-            }
-        });
         wordSpacingCombo.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent evt) {
                 wordSpacingComboFocusLost(evt);
@@ -497,11 +487,6 @@ public class TextBlockStyleEditor extends StyleEditor {
         letterSpacingCombo.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 letterSpacingComboItemStateChanged(evt);
-            }
-        });
-        letterSpacingCombo.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                letterSpacingComboActionPerformed(evt);
             }
         });
         letterSpacingCombo.addFocusListener(new java.awt.event.FocusAdapter() {
@@ -563,11 +548,6 @@ public class TextBlockStyleEditor extends StyleEditor {
                 lineHeightComboItemStateChanged(evt);
             }
         });
-        lineHeightCombo.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                lineHeightComboActionPerformed(evt);
-            }
-        });
         lineHeightCombo.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent evt) {
                 lineHeightComboFocusLost(evt);
@@ -622,11 +602,7 @@ public class TextBlockStyleEditor extends StyleEditor {
             setLetterSpacing();
         }
     }//GEN-LAST:event_letterSpacingComboItemStateChanged
-    
-    private void letterSpacingComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_letterSpacingComboActionPerformed
-        setLetterSpacing();
-    }//GEN-LAST:event_letterSpacingComboActionPerformed
-    
+        
     private void wordSpacingUnitComboItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_wordSpacingUnitComboItemStateChanged
         if (evt.getStateChange() != evt.DESELECTED) {
             setWordSpacing();
@@ -634,7 +610,7 @@ public class TextBlockStyleEditor extends StyleEditor {
     }//GEN-LAST:event_wordSpacingUnitComboItemStateChanged
     
     private void wordSpacingComboFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_wordSpacingComboFocusLost
-        setWordSpacing();
+            setWordSpacing();
     }//GEN-LAST:event_wordSpacingComboFocusLost
     
     private void wordSpacingComboItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_wordSpacingComboItemStateChanged
@@ -642,13 +618,11 @@ public class TextBlockStyleEditor extends StyleEditor {
             setWordSpacing();
         }
     }//GEN-LAST:event_wordSpacingComboItemStateChanged
-    
-    private void wordSpacingComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_wordSpacingComboActionPerformed
-        setWordSpacing();
-    }//GEN-LAST:event_wordSpacingComboActionPerformed
-    
+        
     private void directionComboItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_directionComboItemStateChanged
-        setDirection();
+        if (evt.getStateChange() != evt.DESELECTED) {
+            setDirection();
+        }
     }//GEN-LAST:event_directionComboItemStateChanged
     
     private void textIndentUnitComboItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_textIndentUnitComboItemStateChanged
@@ -666,11 +640,7 @@ public class TextBlockStyleEditor extends StyleEditor {
             setTextIndent();
         }
     }//GEN-LAST:event_textIndentComboItemStateChanged
-    
-    private void textIndentComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_textIndentComboActionPerformed
-        setTextIndent();
-    }//GEN-LAST:event_textIndentComboActionPerformed
-        
+            
     private void verticalAlignComboFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_verticalAlignComboFocusLost
         setVerticalAlign();
     }//GEN-LAST:event_verticalAlignComboFocusLost
@@ -684,11 +654,7 @@ public class TextBlockStyleEditor extends StyleEditor {
             setVerticalAlign();
         }
     }//GEN-LAST:event_verticalAlignComboItemStateChanged
-    
-    private void verticalAlignComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_verticalAlignComboActionPerformed
-        setVerticalAlign();
-    }//GEN-LAST:event_verticalAlignComboActionPerformed
-    
+        
     private void horizontalAlignComboItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_horizontalAlignComboItemStateChanged
         if (evt.getStateChange() != evt.DESELECTED) {
             setTextAlign();
@@ -711,9 +677,9 @@ public class TextBlockStyleEditor extends StyleEditor {
         setLineHeight();
     }//GEN-LAST:event_lineHeightComboFocusLost
     
-    private void lineHeightComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_lineHeightComboActionPerformed
-        setLineHeight();
-    }//GEN-LAST:event_lineHeightComboActionPerformed
+    private void directionComboFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_directionComboFocusLost
+        setDirection();
+    }//GEN-LAST:event_directionComboFocusLost
     
     private void setLineHeight(){
         lineHeightData.setUnit(lineHeightUnitCombo.getSelectedItem().toString());

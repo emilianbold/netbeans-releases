@@ -399,7 +399,6 @@ public class PositionStyleEditor extends StyleEditor {
         mainPositionPanel.setLayout(new java.awt.GridBagLayout());
 
         clipPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1), org.openide.util.NbBundle.getMessage(PositionStyleEditor.class, "CLIP_TITLE"), javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.ABOVE_TOP, new java.awt.Font("Dialog", 1, 14))); // NOI18N
-        clipPanel.setMinimumSize(null);
         clipPanel.setLayout(new java.awt.GridBagLayout());
 
         clipLeftLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/css/visual/ui/Bundle").getString("MNE_CLIP_LEFT").charAt(0));
@@ -580,8 +579,6 @@ public class PositionStyleEditor extends StyleEditor {
         mainPositionPanel.add(clipPanel, gridBagConstraints);
 
         positionContainerPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1), org.openide.util.NbBundle.getMessage(PositionStyleEditor.class, "POISTION_TITLE"), javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 1, 14))); // NOI18N
-        positionContainerPanel.setMinimumSize(null);
-        positionContainerPanel.setPreferredSize(null);
         positionContainerPanel.setLayout(new java.awt.GridBagLayout());
 
         posTopLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/css/visual/ui/Bundle").getString("MNE_POSITION_TOP").charAt(0));
@@ -600,11 +597,6 @@ public class PositionStyleEditor extends StyleEditor {
         posTopComboBox.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 posTopComboBoxItemStateChanged(evt);
-            }
-        });
-        posTopComboBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                posTopComboBoxActionPerformed(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -651,11 +643,6 @@ public class PositionStyleEditor extends StyleEditor {
                 posBottomComboBoxItemStateChanged(evt);
             }
         });
-        posBottomComboBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                posBottomComboBoxActionPerformed(evt);
-            }
-        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
@@ -700,11 +687,6 @@ public class PositionStyleEditor extends StyleEditor {
                 posRightComboBoxItemStateChanged(evt);
             }
         });
-        posRightComboBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                posRightComboBoxActionPerformed(evt);
-            }
-        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -747,11 +729,6 @@ public class PositionStyleEditor extends StyleEditor {
         posLeftComboBox.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 posLeftComboBoxItemStateChanged(evt);
-            }
-        });
-        posLeftComboBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                posLeftComboBoxActionPerformed(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -833,11 +810,6 @@ public class PositionStyleEditor extends StyleEditor {
                 heightComboBoxItemStateChanged(evt);
             }
         });
-        heightComboBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                heightComboBoxActionPerformed(evt);
-            }
-        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -880,11 +852,6 @@ public class PositionStyleEditor extends StyleEditor {
         widthComboBox.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 widthComboBoxItemStateChanged(evt);
-            }
-        });
-        widthComboBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                widthComboBoxActionPerformed(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1039,11 +1006,15 @@ public class PositionStyleEditor extends StyleEditor {
     }//GEN-LAST:event_clipTopComboBoxItemStateChanged
         
     private void zindexComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_zindexComboBoxItemStateChanged
-        setZindex();
+        if (evt.getStateChange() != evt.DESELECTED) {
+            setZindex();
+        }
     }//GEN-LAST:event_zindexComboBoxItemStateChanged
     
     private void visibleComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_visibleComboBoxItemStateChanged
-        setVisibility();
+        if (evt.getStateChange() != evt.DESELECTED) {
+            setVisibility();
+        }
     }//GEN-LAST:event_visibleComboBoxItemStateChanged
     
     private void heightUnitComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_heightUnitComboBoxItemStateChanged
@@ -1057,15 +1028,7 @@ public class PositionStyleEditor extends StyleEditor {
             setHeight();
         }
     }//GEN-LAST:event_heightComboBoxItemStateChanged
-    
-    private void heightComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_heightComboBoxActionPerformed
-        setHeight();
-    }//GEN-LAST:event_heightComboBoxActionPerformed
-    
-    private void widthComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_widthComboBoxActionPerformed
-        setWidth();
-    }//GEN-LAST:event_widthComboBoxActionPerformed
-    
+            
     private void widthComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_widthComboBoxItemStateChanged
         if (evt.getStateChange() != evt.DESELECTED) {
             setWidth();
@@ -1089,11 +1052,7 @@ public class PositionStyleEditor extends StyleEditor {
             setRightPos();
         }
     }//GEN-LAST:event_posRightComboBoxItemStateChanged
-    
-    private void posRightComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_posRightComboBoxActionPerformed
-        setRightPos();
-    }//GEN-LAST:event_posRightComboBoxActionPerformed
-    
+        
     private void posLeftUnitComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_posLeftUnitComboBoxItemStateChanged
         if (evt.getStateChange() != evt.DESELECTED) {
             setLeftPos();
@@ -1105,11 +1064,7 @@ public class PositionStyleEditor extends StyleEditor {
             setLeftPos();
         }
     }//GEN-LAST:event_posLeftComboBoxItemStateChanged
-    
-    private void posLeftComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_posLeftComboBoxActionPerformed
-        setLeftPos();
-    }//GEN-LAST:event_posLeftComboBoxActionPerformed
-    
+        
     private void posBottomUnitComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_posBottomUnitComboBoxItemStateChanged
         if (evt.getStateChange() != evt.DESELECTED) {
             setBottomPos();
@@ -1121,11 +1076,7 @@ public class PositionStyleEditor extends StyleEditor {
             setBottomPos();
         }
     }//GEN-LAST:event_posBottomComboBoxItemStateChanged
-    
-    private void posBottomComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_posBottomComboBoxActionPerformed
-        setBottomPos();
-    }//GEN-LAST:event_posBottomComboBoxActionPerformed
-    
+        
     private void posTopUnitComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_posTopUnitComboBoxItemStateChanged
         if (evt.getStateChange() != evt.DESELECTED) {
             setTopPos();
@@ -1137,13 +1088,11 @@ public class PositionStyleEditor extends StyleEditor {
             setTopPos();
         }
     }//GEN-LAST:event_posTopComboBoxItemStateChanged
-    
-    private void posTopComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_posTopComboBoxActionPerformed
-        setTopPos();
-    }//GEN-LAST:event_posTopComboBoxActionPerformed
-    
+        
     private void positionModeComboItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_positionModeComboItemStateChanged
-        setPosition();
+        if (evt.getStateChange() != evt.DESELECTED) {
+            setPosition();
+        }
     }//GEN-LAST:event_positionModeComboItemStateChanged
     
     private void setZindex(){

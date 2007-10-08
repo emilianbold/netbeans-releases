@@ -462,11 +462,6 @@ public class FontStyleEditor extends StyleEditor {
                 fontStyleComboBoxItemStateChanged(evt);
             }
         });
-        fontStyleComboBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                fontStyleComboBoxActionPerformed(evt);
-            }
-        });
         fontStyleComboBox.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent evt) {
                 fontStyleComboBoxFocusLost(evt);
@@ -481,11 +476,6 @@ public class FontStyleEditor extends StyleEditor {
         fontWeightComboBox.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 fontWeightComboBoxItemStateChanged(evt);
-            }
-        });
-        fontWeightComboBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                fontWeightComboBoxActionPerformed(evt);
             }
         });
         fontWeightComboBox.addFocusListener(new java.awt.event.FocusAdapter() {
@@ -504,15 +494,7 @@ public class FontStyleEditor extends StyleEditor {
                 fontVariantComboBoxItemStateChanged(evt);
             }
         });
-        fontVariantComboBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                fontVariantComboBoxActionPerformed(evt);
-            }
-        });
         fontVariantComboBox.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                fontVariantComboBoxFocusGained(evt);
-            }
             public void focusLost(java.awt.event.FocusEvent evt) {
                 fontVariantComboBoxFocusLost(evt);
             }
@@ -554,7 +536,7 @@ public class FontStyleEditor extends StyleEditor {
                         .add(noDecorationCheckbox)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(strikethroughCheckbox)))
-                .addContainerGap(87, Short.MAX_VALUE))
+                .addContainerGap(57, Short.MAX_VALUE))
         );
         decorationPanelLayout.setVerticalGroup(
             decorationPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -617,23 +599,23 @@ public class FontStyleEditor extends StyleEditor {
         }
         setTextDecoration();
     }//GEN-LAST:event_noDecorationCheckboxItemStateChanged
-    
-    private void fontVariantComboBoxFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fontVariantComboBoxFocusGained
-            }//GEN-LAST:event_fontVariantComboBoxFocusGained
-    
+        
     private void strikethroughCheckboxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_strikethroughCheckboxItemStateChanged
-        textDecorationData.enableLineThrough((evt.getStateChange() == evt.SELECTED));
-        setTextDecoration();
+        if(textDecorationData.enableLineThrough((evt.getStateChange() == evt.SELECTED))) {
+            setTextDecoration();
+        }
     }//GEN-LAST:event_strikethroughCheckboxItemStateChanged
     
     private void overlineCheckboxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_overlineCheckboxItemStateChanged
-        textDecorationData.enableOverline((evt.getStateChange() == evt.SELECTED));
-        setTextDecoration();
+        if(textDecorationData.enableOverline((evt.getStateChange() == evt.SELECTED))) {
+            setTextDecoration();
+        }
     }//GEN-LAST:event_overlineCheckboxItemStateChanged
     
     private void underlineCheckboxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_underlineCheckboxItemStateChanged
-        textDecorationData.enableUnderline((evt.getStateChange() == evt.SELECTED));
-        setTextDecoration();
+        if(textDecorationData.enableUnderline((evt.getStateChange() == evt.SELECTED))) {
+            setTextDecoration();
+        }
     }//GEN-LAST:event_underlineCheckboxItemStateChanged
     
     private void fontVariantComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_fontVariantComboBoxItemStateChanged
@@ -645,29 +627,17 @@ public class FontStyleEditor extends StyleEditor {
     private void fontVariantComboBoxFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fontVariantComboBoxFocusLost
         setFontVariant();
     }//GEN-LAST:event_fontVariantComboBoxFocusLost
-    
-    private void fontVariantComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fontVariantComboBoxActionPerformed
-        setFontVariant();
-    }//GEN-LAST:event_fontVariantComboBoxActionPerformed
-    
+        
     private void fontWeightComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_fontWeightComboBoxItemStateChanged
         if (evt.getStateChange() != evt.DESELECTED) {
             setFontWeight();
         }
     }//GEN-LAST:event_fontWeightComboBoxItemStateChanged
-    
-    private void fontWeightComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fontWeightComboBoxActionPerformed
-        setFontWeight();
-    }//GEN-LAST:event_fontWeightComboBoxActionPerformed
-    
+        
     private void fontWeightComboBoxFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fontWeightComboBoxFocusLost
         setFontWeight();
     }//GEN-LAST:event_fontWeightComboBoxFocusLost
-    
-    private void fontStyleComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fontStyleComboBoxActionPerformed
-        setFontStyle();
-    }//GEN-LAST:event_fontStyleComboBoxActionPerformed
-    
+        
     private void fontStyleComboBoxFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fontStyleComboBoxFocusLost
         setFontStyle();
     }//GEN-LAST:event_fontStyleComboBoxFocusLost

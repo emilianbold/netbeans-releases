@@ -269,21 +269,20 @@ public class CssEditorSupport extends DataEditorSupport implements OpenCookie, E
                             } else {
                                 //either MODEL_INVALID or MODEL_PARSING fired
                                 final boolean invalid = evt.getPropertyName().equals(CssModel.MODEL_INVALID);
-                                
-                                //remove the CssStyleData listener to disallow StyleBuilder editing
-                                //until the parser finishes parsing. If I do not do that, the parsed
-                                //data from the CssModel are inaccurate and hence,
-                                //when user uses StyleBuilder, the source may become broken.
-                                if(selected != null) {
-                                    selected.ruleContent().removePropertyChangeListener(CSS_STYLE_DATA_LISTENER);
-                                    selected = null;
-                                }
-                                activePane.removeCaretListener(CARET_LISTENER);
-                                
                                 //disable editing on the StyleBuilder
                                 SwingUtilities.invokeLater(new Runnable() {
+
                                     public void run() {
-                                        if(invalid) {
+                                        //remove the CssStyleData listener to disallow StyleBuilder editing
+                                        //until the parser finishes parsing. If I do not do that, the parsed
+                                        //data from the CssModel are inaccurate and hence,
+                                        //when user uses StyleBuilder, the source may become broken.
+                                        if (selected != null) {
+                                            selected.ruleContent().removePropertyChangeListener(CSS_STYLE_DATA_LISTENER);
+                                            selected = null;
+                                        }
+                                        activePane.removeCaretListener(CARET_LISTENER);
+                                        if (invalid) {
                                             //model invalid - switch the stylebuilder UI to an error panel
                                             StyleBuilderTopComponent.findInstance().setPanelMode(StyleBuilderTopComponent.MODEL_ERROR);
                                             firePreviewableDeactivated();

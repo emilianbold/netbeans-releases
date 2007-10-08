@@ -41,6 +41,10 @@
 
 package org.netbeans.modules.css.model;
 
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.Position;
+
 /**
  * An immutable representation of a css rule item eg.:
  *
@@ -54,18 +58,20 @@ public final class CssRuleItem {
     Item value;
 
     //offset of colon key-value separator and ending semicolon of the item
-    private int colon_offset;
-    private int semicolon_offset;
+    private Position colon_offset = null;
+    private Position semicolon_offset = null;
 
-    public CssRuleItem(String key, int keyOffset, String val, int valOffset) {
-        this(key, keyOffset, val, valOffset, -1, -1);
+    public CssRuleItem(String key, int keyOffset, String val, int valOffset) throws BadLocationException {
+        this(null, key, keyOffset, val, valOffset, -1, -1);
     }
 
-    CssRuleItem(String key, int keyOffset, String val, int valOffset, int colon_offset, int semicolon_offset) {
-        this.key = new Item(key, keyOffset);
-        this.value = new Item(val, valOffset);
-        this.colon_offset = colon_offset;
-        this.semicolon_offset = semicolon_offset;
+    CssRuleItem(Document doc, String key, int keyOffset, String val, int valOffset, int colon_offset, int semicolon_offset) throws BadLocationException {
+        this.key = new Item(doc, key, keyOffset);
+        this.value = new Item(doc, val, valOffset);
+        if(doc != null) {
+            this.colon_offset = doc.createPosition(colon_offset);
+            this.semicolon_offset = doc.createPosition(semicolon_offset);
+        }
     }
 
     /** @return representation of the key of the rule item. */
@@ -85,22 +91,22 @@ public final class CssRuleItem {
     /** Gets offset of the key - value separator in the css rule item.
      */
     public int colonOffset() {
-        return colon_offset;
+        return colon_offset != null ? colon_offset.getOffset() : -1;
     }
 
     /** Gets offset of the ending semicolon in rule item or -1 if there is no ending semicolon.
      */
     public int semicolonOffset() {
-        return semicolon_offset;
+        return semicolon_offset != null ? semicolon_offset.getOffset() : -1;
     }
 
     public boolean equals(Object o) {
         if (o instanceof CssRuleItem) {
             CssRuleItem ori = (CssRuleItem) o;
             return key().equals(ori.key()) 
-                    && value().equals(ori.value())
-                    && colonOffset() == ori.colonOffset() 
-                    && semicolonOffset() == ori.semicolonOffset();
+                    && value().equals(ori.value());
+//                    && colonOffset() == ori.colonOffset() 
+//                    && semicolonOffset() == ori.semicolonOffset();
         }
         return false;
     }
@@ -112,11 +118,17 @@ public final class CssRuleItem {
     public static final class Item {
 
         private String name;
-        private int offset;
+        private Position offset = null;
 
-        Item(String name, int offset) {
+        Item(String name, int offset) throws BadLocationException {
+            this(null, name, offset);
+        }
+        
+        Item(Document doc, String name, int offset) throws BadLocationException {
             this.name = name;
-            this.offset = offset;
+            if(doc != null) {
+                this.offset = doc.createPosition(offset);
+            }
         }
 
         /** @return text content of the attribute's item. */
@@ -126,7 +138,7 @@ public final class CssRuleItem {
 
         /** @return offset in the model's document of the attribute's item. */
         public int offset() {
-            return offset;
+            return offset != null ? offset.getOffset() : -1;
         }
 
         public String toString() {

@@ -104,10 +104,7 @@ public class BorderStyleEditor extends StyleEditor {
     class BorderDataTable extends JPanel {
 
         CssRuleContent cssStyleData;
-        /**
-         * Holds value of property value.
-         */
-        private String value;
+        
         BorderModel borderModel = new BorderModel();
         JComboBox allStyleCombo;
         BorderWidthField allWidthField;
@@ -295,9 +292,11 @@ public class BorderStyleEditor extends StyleEditor {
             topStyleCombo.addItemListener(new ItemListener() {
 
                 public void itemStateChanged(ItemEvent evt) {
-                    PropertyData pd = new PropertyData();
-                    pd.setValue(topStyleCombo.getSelectedItem().toString());
-                    cssPropertyChangeSupport().firePropertyChange(CssProperties.BORDER_TOP_STYLE, null, pd.toString());
+                    if(evt.getStateChange() == ItemEvent.SELECTED) {
+                        PropertyData pd = new PropertyData();
+                        pd.setValue(evt.getItem().toString());
+                        cssPropertyChangeSupport().firePropertyChange(CssProperties.BORDER_TOP_STYLE, null, pd.toString());
+                    }
                 }
             });
 
@@ -333,11 +332,12 @@ public class BorderStyleEditor extends StyleEditor {
             bottomStyleCombo.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(BorderDataTable.class, "BOTTOM_SIDE_BORDER_STYLE_ACCESS_DESC"));
             bottomStyleCombo.setModel(borderModel.getStyleList());
             bottomStyleCombo.addItemListener(new ItemListener() {
-
                 public void itemStateChanged(ItemEvent evt) {
-                    PropertyData pd = new PropertyData();
-                    pd.setValue(topStyleCombo.getSelectedItem().toString());
-                    cssPropertyChangeSupport().firePropertyChange(CssProperties.BORDER_BOTTOM_STYLE, null, pd.toString());
+                    if(evt.getStateChange() == ItemEvent.SELECTED) {
+                        PropertyData pd = new PropertyData();
+                        pd.setValue(evt.getItem().toString());
+                        cssPropertyChangeSupport().firePropertyChange(CssProperties.BORDER_BOTTOM_STYLE, null, pd.toString());
+                    }
                 }
             });
 
@@ -375,11 +375,12 @@ public class BorderStyleEditor extends StyleEditor {
             leftStyleCombo.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(BorderDataTable.class, "LEFT_SIDE_BORDER_STYLE_ACCESS_DESC"));
             leftStyleCombo.setModel(borderModel.getStyleList());
             leftStyleCombo.addItemListener(new ItemListener() {
-
                 public void itemStateChanged(ItemEvent evt) {
-                    PropertyData pd = new PropertyData();
-                    pd.setValue(topStyleCombo.getSelectedItem().toString());
-                    cssPropertyChangeSupport().firePropertyChange(CssProperties.BORDER_LEFT_STYLE, null, pd.toString());
+                    if(evt.getStateChange() == ItemEvent.SELECTED) {
+                        PropertyData pd = new PropertyData();
+                        pd.setValue(evt.getItem().toString());
+                        cssPropertyChangeSupport().firePropertyChange(CssProperties.BORDER_LEFT_STYLE, null, pd.toString());
+                    }
                 }
             });
 
@@ -416,12 +417,14 @@ public class BorderStyleEditor extends StyleEditor {
             rightStyleCombo.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(BorderDataTable.class, "RIGHT_SIDE_BORDER_STYLE_ACCESS_DESC"));
             rightStyleCombo.setModel(borderModel.getStyleList());
             rightStyleCombo.addItemListener(new ItemListener() {
-
                 public void itemStateChanged(ItemEvent evt) {
-                    PropertyData pd = new PropertyData();
-                    pd.setValue(topStyleCombo.getSelectedItem().toString());
-                    cssPropertyChangeSupport().firePropertyChange(CssProperties.BORDER_RIGHT_STYLE, null, pd.toString());
+                    if(evt.getStateChange() == ItemEvent.SELECTED) {
+                        PropertyData pd = new PropertyData();
+                        pd.setValue(evt.getItem().toString());
+                        cssPropertyChangeSupport().firePropertyChange(CssProperties.BORDER_RIGHT_STYLE, null, pd.toString());
+                    }
                 }
+
             });
 
 

@@ -95,9 +95,12 @@ public class TextDecorationData {
 
     /**
      * Enable/disable the underling of text.
+     * @return true if the return value of toString() method changes after setting the value.
      */
-    public void enableUnderline(boolean underlineEnabled) {
+    public boolean enableUnderline(boolean underlineEnabled) {
+        boolean change = (underlineEnabled() != underlineEnabled) && !noDecorationEnabled();
         this.underlineEnabled = underlineEnabled;
+        return change;
     }
 
     public boolean underlineEnabled() {
@@ -106,9 +109,12 @@ public class TextDecorationData {
 
     /**
      * Enable/disable the overlining of text.
+     * @return true if the return value of toString() method changes after setting the value.
      */
-    public void enableOverline(boolean overlineEnabled) {
+    public boolean enableOverline(boolean overlineEnabled) {
+        boolean change = (overlineEnabled() != overlineEnabled) && !noDecorationEnabled();
         this.overlineEnabled = overlineEnabled;
+        return change;
     }
 
     public boolean overlineEnabled() {
@@ -117,9 +123,12 @@ public class TextDecorationData {
 
     /**
      * Enable/disable the line through effect of text.
+     * @return true if the return value of toString() method changes after setting the value.
      */
-    public void enableLineThrough(boolean lineThroughEnabled) {
+    public boolean enableLineThrough(boolean lineThroughEnabled) {
+        boolean change = (lineThroughEnabled() != lineThroughEnabled) && !noDecorationEnabled();
         this.lineThroughEnabled = lineThroughEnabled;
+        return change;
     }
 
     public boolean lineThroughEnabled() {
@@ -128,9 +137,12 @@ public class TextDecorationData {
 
     /**
      * Enable/disable text blinking.
+     * @return true if the return value of toString() method changes after setting the value.
      */
-    public void enableBlink(boolean blinkEnabled) {
+    public boolean enableBlink(boolean blinkEnabled) {
+        boolean change = (blinkEnabled() != blinkEnabled) && !noDecorationEnabled();
         this.blinkEnabled = blinkEnabled;
+        return change;
     }
 
     public boolean blinkEnabled() {
