@@ -1894,7 +1894,6 @@ public class ContainerBox extends CssBox {
      */
     private boolean isSpan() {
         return inline && !boxType.isAbsolutelyPositioned() && !replaced;
-//        return false; // TEMP
     }
     
     private static boolean isTextualBox(CssBox box) {
@@ -1915,10 +1914,11 @@ public class ContainerBox extends CssBox {
         // the children as normal children; the LineBoxGroup will organize
         // them into LineBoxes
         
-        // XXX #105679 This doesn't know how to deal with the 'textual' boxes, adding those normally.
-        if (isSpan() && !isTextualBox(ibox)) {
-            addBox(ibox, prevBox, nextBox);
-        } else {
+        // XXX #117840 This shuffle seems to be wrong, commented out.
+//        // XXX #105679 This doesn't know how to deal with the 'textual' boxes, adding those normally.
+//        if (isSpan() && !isTextualBox(ibox)) {
+//            addBox(ibox, prevBox, nextBox);
+//        } else {
             if (context.lineBox == null) {
                 FontMetrics metrics = context.metrics;
 
@@ -1934,7 +1934,7 @@ public class ContainerBox extends CssBox {
             }
 
             context.lineBox.addBox(ibox, null, null);
-        }
+//        }
     }
 
     /**
@@ -2363,4 +2363,33 @@ public class ContainerBox extends CssBox {
 //        return true;
         return CssProvider.getValueService().isInlineTag(cssDisplay, element, tag);
     }
+    
+    /** If this is a block-level box, return self, otherwise
+     * return the nearest block-level ancestor box.
+     * Note that absolutely positioned inline boxes are considered
+     * block boxes, and so are replaced inline boxes (e.g. iframe, stringbox).
+     */
+    private ContainerBox getBlockBox() {
+        // XXX what about floats?
+        if (!inline || boxType.isAbsolutelyPositioned()) {
+            return this;
+        } if (isSpan() && !isTextualBox(this)) {
+            // XXX #117840 Improving the tree layout.
+            return this;
+        } else {
+            ContainerBox blockBox = this;
+
+            while (blockBox.inline && !blockBox.boxType.isAbsolutelyPositioned() &&
+                    !blockBox.replaced || !(blockBox instanceof ContainerBox)) {
+                ContainerBox parent = blockBox.getParent();
+                if (parent == null) {
+                    break;
+                }
+                blockBox = parent;
+            }
+
+            return blockBox;
+        }
+    }
+    
 }

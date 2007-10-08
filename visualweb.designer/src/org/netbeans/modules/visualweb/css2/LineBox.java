@@ -165,7 +165,7 @@ public class LineBox extends ContainerBox {
         //a resulting line height would be a maximum of the boxes height
         int maxHeight = Math.max(box.getHeight(), box.getHeight());
         //need to recalculate the line width
-        int maxWidth = context.getMaxWidth(this.getParent(), targetY, maxHeight);
+        int maxWidth = context.getMaxWidth(this, this.getParent(), targetY, maxHeight);
 
         int boxWidth = box.getWidth();
 

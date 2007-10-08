@@ -94,7 +94,7 @@ public class FormatContext {
      * floated to the right, minus the rightmost coordinate of any
      * float overlapping this line that is floated to the left...) */
     int getMaxWidth(CssBox parent, int y) {
-        return(getMaxWidth(parent, y, 0));
+        return(getMaxWidth(null, parent, y, 0));
     }
 
     /** Return the maximum x coordinate available - this is the right edge
@@ -103,7 +103,7 @@ public class FormatContext {
      * @param y - lineBox top.
      * @param height - linebox height
      */
-    int getMaxWidth(CssBox parent, int y, int height) {
+    int getMaxWidth(CssBox cssBox, CssBox parent, int y, int height) {
         // XXX Here's an idea. Look for a common parent (between the current
         // formatting box and the floating box), and translate
         // coordinate systems appropriately so the coordinates match!
@@ -119,6 +119,12 @@ public class FormatContext {
         for (int i = 0, n = floats.size(); i < n; i++) {
             FloatingBoxInfo info = floats.get(i);
             CssBox box = info.box;
+            
+            // XXX #117840 Check for parentage, and skip if this float is child of the examined box.
+            if (box == cssBox || isParentOf(cssBox, box)) {
+                continue;
+            }
+            
             if(canAdjustY(parent, box.getParent())) {
                 int yp = adjustY(y, parent, box.getParent());
                 
@@ -613,9 +619,12 @@ public class FormatContext {
         for (int i = 0; i < n; i++) {
             FloatingBoxInfo info = floats.get(i);
             // XXX #117400 If this is parent of the float stop.
-//            if(info.box == box) {
-            if(info.box == box || isParentOf(box, info.box)) {
+            if(info.box == box) {
+//            if(info.box == box || isParentOf(box, info.box)) {
                 return(result);
+            }
+            if (isParentOf(box, info.box)) {
+                continue;
             }
             if(canAdjustY(info.box, box.getPositionedBy())) {
                 yAdj = adjustY(0, info.box, box.getPositionedBy());

@@ -2927,26 +2927,26 @@ public class CssBox implements Box {
         return py;
     }
 
-    /** If this is a block-level box, return self, otherwise
-     * return the nearest block-level ancestor box.
-     * Note that absolutely positioned inline boxes are considered
-     * block boxes, and so are replaced inline boxes (e.g. iframe, stringbox).
-     */
-    protected ContainerBox getBlockBox() {
-        // XXX what about floats?
-        if (!inline || boxType.isAbsolutelyPositioned()) {
-            return (ContainerBox)this;
-        } else {
-            CssBox blockBox = this;
-
-            while (blockBox.inline && !blockBox.boxType.isAbsolutelyPositioned() &&
-                    !blockBox.replaced || !(blockBox instanceof ContainerBox)) {
-                blockBox = blockBox.parent;
-            }
-
-            return (ContainerBox)blockBox;
-        }
-    }
+//    /** If this is a block-level box, return self, otherwise
+//     * return the nearest block-level ancestor box.
+//     * Note that absolutely positioned inline boxes are considered
+//     * block boxes, and so are replaced inline boxes (e.g. iframe, stringbox).
+//     */
+//    protected ContainerBox getBlockBox() {
+//        // XXX what about floats?
+//        if (!inline || boxType.isAbsolutelyPositioned()) {
+//            return (ContainerBox)this;
+//        } else {
+//            CssBox blockBox = this;
+//
+//            while (blockBox.inline && !blockBox.boxType.isAbsolutelyPositioned() &&
+//                    !blockBox.replaced || !(blockBox instanceof ContainerBox)) {
+//                blockBox = blockBox.parent;
+//            }
+//
+//            return (ContainerBox)blockBox;
+//        }
+//    }
 
     /** Get the most recent normal-flow box prior to the current box
      * in the parent's box list */

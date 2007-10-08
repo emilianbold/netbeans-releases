@@ -514,36 +514,43 @@ public class LineBoxGroup extends ContainerBox {
                 //need to assign original container to all sub-boxes,
                 //otherwise it will be lost.
                 BoxList boxList = ((ContainerBox)box).getBoxList();
-                int boxListSize = boxList.size();
-                for(int j = 0; j < boxListSize; j++) {
-                    boxList.get(j).originalInlineContainer = box;
+                
+                if (boxList == null && box instanceof LineBoxGroup) {
+                    boxList = ((LineBoxGroup)box).allBoxes;
                 }
                 
-                // XXX #113899 Bad architecture, the textual nodes are assigned to line box group
-                // which mihgt also be a parent of container which holds the other silings (non-textual) of the textual nodes.
-                // That causes incorrect ordering of the boxes comparing to the original element structure.
-                // Here trying to hack it, i.e. to put the thing into original order.
-                for (int j = 0; j < boxListSize; j++) {
-                    CssBox boxListBox = boxList.get(j);
-                    CssBox nextBoxListBox = j + 1 < boxListSize ? boxList.get(j + 1) : null;
-                    if (boxListBox instanceof ContainerBox && boxListBox.getBoxCount() == 0) {
-                        // Could be a placeholder
-                        Element boxListBoxElement = boxListBox.getElement();
-                        for (int k = i + 1; k < n; k++) {
-                            CssBox nextSibling = list.get(k);
-                            if (boxListBoxElement == nextSibling.getElement()) {
-                                // XXX #109446 Don't add if it is already in.
-                                if (boxList.indexOf(nextSibling) == -1) {
-                                    // XXX Place the next sibling to the place holder position.
-                                    boxList.add(nextSibling, boxListBox, nextBoxListBox);
-                                }
-                                processedChildren.add(nextSibling);
-                            }
-                        }
+                if (boxList != null) {
+                    int boxListSize = boxList.size();
+                    for(int j = 0; j < boxListSize; j++) {
+                        boxList.get(j).originalInlineContainer = box;
                     }
+
+    //                // XXX #113899 Bad architecture, the textual nodes are assigned to line box group
+    //                // which mihgt also be a parent of container which holds the other silings (non-textual) of the textual nodes.
+    //                // That causes incorrect ordering of the boxes comparing to the original element structure.
+    //                // Here trying to hack it, i.e. to put the thing into original order.
+    //                for (int j = 0; j < boxListSize; j++) {
+    //                    CssBox boxListBox = boxList.get(j);
+    //                    CssBox nextBoxListBox = j + 1 < boxListSize ? boxList.get(j + 1) : null;
+    //                    if (boxListBox instanceof ContainerBox && boxListBox.getBoxCount() == 0) {
+    //                        // Could be a placeholder
+    //                        Element boxListBoxElement = boxListBox.getElement();
+    //                        for (int k = i + 1; k < n; k++) {
+    //                            CssBox nextSibling = list.get(k);
+    //                            if (boxListBoxElement == nextSibling.getElement()) {
+    //                                // XXX #109446 Don't add if it is already in.
+    //                                if (boxList.indexOf(nextSibling) == -1) {
+    //                                    // XXX Place the next sibling to the place holder position.
+    //                                    boxList.add(nextSibling, boxListBox, nextBoxListBox);
+    //                                }
+    //                                processedChildren.add(nextSibling);
+    //                            }
+    //                        }
+    //                    }
+    //                }
+
+                    relayoutChildren(context, boxList, box.getElement());
                 }
-                
-                relayoutChildren(context, boxList, box.getElement());
             } else {
                 boolean formatContent = true;
 
@@ -770,7 +777,7 @@ public class LineBoxGroup extends ContainerBox {
                 //may not stick out at the right edge, unless it is already
                 //as far to the left as possible.) An analogous rule holds
                 //for right-floating elements.
-                if(context.getMaxWidth(this, theY, box.getHeight()) < box.getWidth()) {
+                if(context.getMaxWidth(box, this, theY, box.getHeight()) < box.getWidth()) {
                     //move it to the new line, then
                     CssBox prev = context.getLowestFloatingForFloat(box);
                     if(prev != null) {
