@@ -143,14 +143,14 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         ExtensionList hlist = HDataLoader.getInstance().getExtensions();
         
         for (int i = 0; i < items.length; i++) {
-            ItemConfiguration itemConfiguration = items[i].getItemConfiguration(getMakeConfiguration()); //ItemConfiguration)getMakeConfiguration().getAuxObject(ItemConfiguration.getId(items[i].getPath()));
-            if (itemConfiguration != null){
-                if (!itemConfiguration.getExcluded().getValue()){
-                    list.add(items[i]);
-                }
-            } else if (hlist.isRegistered(items[i].getPath())) {
-                list.add(items[i]);
-            }
+	    if (hlist.isRegistered(items[i].getPath())) {
+		ItemConfiguration itemConfiguration = items[i].getItemConfiguration(getMakeConfiguration());
+		if (itemConfiguration != null){
+		    if (!itemConfiguration.getExcluded().getValue()){
+			list.add(items[i]);
+		    }
+		}		
+	    }
         }
         return list;
     }
