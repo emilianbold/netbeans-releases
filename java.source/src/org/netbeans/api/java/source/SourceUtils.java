@@ -609,25 +609,24 @@ public class SourceUtils {
                         exec = compile;
                         compile = null;
                     }
-                    if (exec == null || source == null) {
-                        return null;
-                    }
-                    Set<URL> roots = new HashSet<URL>();
-                    for (ClassPath.Entry e : exec.entries()) {
-                        roots.add(e.getURL());
-                    }
-                    if (compile != null) {
-                        for (ClassPath.Entry e : compile.entries()) {
-                            roots.remove(e.getURL());
+                    if (exec != null && source != null) {
+                        Set<URL> roots = new HashSet<URL>();
+                        for (ClassPath.Entry e : exec.entries()) {
+                            roots.add(e.getURL());
                         }
-                    }
-                    List<FileObject> sourceRoots = Arrays.asList(source.getRoots());
-out:                for (URL e : roots) {
-                        FileObject[] res = SourceForBinaryQuery.findSourceRoots(e).getRoots();
-                        for (FileObject fo : res) {
-                            if (sourceRoots.contains(fo)) {
-                                binaries.add(e);
-                                continue out;
+                        if (compile != null) {
+                            for (ClassPath.Entry e : compile.entries()) {
+                                roots.remove(e.getURL());
+                            }
+                        }
+                        List<FileObject> sourceRoots = Arrays.asList(source.getRoots());
+out:                    for (URL e : roots) {
+                            FileObject[] res = SourceForBinaryQuery.findSourceRoots(e).getRoots();
+                            for (FileObject fo : res) {
+                                if (sourceRoots.contains(fo)) {
+                                    binaries.add(e);
+                                    continue out;
+                                }
                             }
                         }
                     }
