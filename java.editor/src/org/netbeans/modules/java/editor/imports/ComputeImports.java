@@ -314,6 +314,10 @@ public class ComputeImports {
         public Void visitIdentifier(IdentifierTree tree, Map<String, Object> p) {
             super.visitIdentifier(tree, p);
             
+            if (getCurrentPath().getParentPath() != null && getCurrentPath().getParentPath().getLeaf().getKind() == Kind.METHOD_INVOCATION) {
+                return null;
+            }
+            
 //            System.err.println("tree=" + tree);
             Element el = info.getTrees().getElement(getCurrentPath());
             if (el != null && (el.getKind().isClass() || el.getKind().isInterface() || el.getKind() == ElementKind.PACKAGE)) {

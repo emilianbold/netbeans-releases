@@ -194,6 +194,10 @@ public class ComputeImportsTest extends NbTestCase {
         doTest("TestAnnotation2", JDK16_MASKS, JDK16_MASKS);
     }
     
+    public void test90743() throws Exception {
+        doTest("Test90743", NO_MASKS, NO_MASKS);
+    }
+    
     private void prepareTest(String capitalizedName) throws Exception {
         FileObject workFO = IsOverriddenAnnotationCreatorTest.makeScratchDir(this);
         
