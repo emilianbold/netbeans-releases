@@ -131,6 +131,7 @@ made subject to such option by the copyright holder.
                 <include name="org/netbeans/api/java/source/gen/IfTest.class"/>
                 <include name="org/netbeans/api/java/source/gen/RefactoringRegressionsTest.class"/>
                 <include name="org/netbeans/api/java/source/gen/CompilationUnitTest.class"/>
+                <include name="org/netbeans/api/java/source/gen/ParameterizedTypeTest.class"/>
                 
                 <!--
                 Makes many operation on field declaration.
