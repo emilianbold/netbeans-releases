@@ -298,7 +298,9 @@ public final class UiUtils {
                             if (GraphicsEnvironment.isHeadless()) {
                                 HeadlessException e = new HeadlessException();
                                 System.err.println(e.getMessage());
-                                throw new InitializationException("Can`t initialize UI", e);
+                                throw new InitializationException(
+                                        ResourceUtils.getString(UiUtils.class, 
+                                        RESOURCE_FAILED_TO_INIT_UI), e);
                             }
                             LogManager.log("... L&F is set");
                         } catch (Throwable e) {
@@ -326,18 +328,26 @@ public final class UiUtils {
                             UIManager.setLookAndFeel(className);
                             
                             // this exception would be thrown only if cross-platform LAF is successfully installed
-                            throw new InitializationException("Could not activate the defined look and feel - falling back to the default cross-platform one.", e);
+                            throw new InitializationException(
+                                    ResourceUtils.getString(UiUtils.class, 
+                                    RESOURCE_FAILED_TO_ACTIVATE_DEFINED_LAF), e);
                         }
                     } catch (NoClassDefFoundError e) {
-                        throw new InitializationException("Could not activate the cross-platform look and feel - proceeding with whatever look and feel was the default.", e);
+                        throw new InitializationException(
+                                ResourceUtils.getString(UiUtils.class,
+                                RESOURCE_FAILED_TO_ACTIVATE_CROSSPLATFORM_LAF), e);
                     } catch (ClassNotFoundException e) {
-                        throw new InitializationException("Could not activate the cross-platform look and feel - proceeding with whatever look and feel was the default.", e);
+                        throw new InitializationException(ResourceUtils.getString(UiUtils.class,
+                                RESOURCE_FAILED_TO_ACTIVATE_CROSSPLATFORM_LAF), e);
                     } catch (InstantiationException e) {
-                        throw new InitializationException("Could not activate the cross-platform look and feel - proceeding with whatever look and feel was the default.", e);
+                        throw new InitializationException(ResourceUtils.getString(UiUtils.class,
+                                RESOURCE_FAILED_TO_ACTIVATE_CROSSPLATFORM_LAF), e);
                     } catch (IllegalAccessException e) {
-                        throw new InitializationException("Could not activate the cross-platform look and feel - proceeding with whatever look and feel was the default.", e);
+                        throw new InitializationException(ResourceUtils.getString(UiUtils.class,
+                                RESOURCE_FAILED_TO_ACTIVATE_CROSSPLATFORM_LAF), e);
                     } catch (UnsupportedLookAndFeelException e) {
-                        throw new InitializationException("Could not activate the cross-platform look and feel - proceeding with whatever look and feel was the default.", e);
+                        throw new InitializationException(ResourceUtils.getString(UiUtils.class,
+                                RESOURCE_FAILED_TO_ACTIVATE_CROSSPLATFORM_LAF), e);
                     }
                     break;
             }
@@ -373,7 +383,8 @@ public final class UiUtils {
                             className = "com.sun.java.swing.plaf.gtk.GTKLookAndFeel";
                         }
                     } catch (ClassNotFoundException e) {
-                        ErrorManager.notifyDebug("Cannot force the use of GTK look and feel", e);
+                        ErrorManager.notifyDebug(ResourceUtils.getString(UiUtils.class,
+                                RESOURCE_FAILED_TO_FORCE_GTK), e);
                     }
                 }
                 
@@ -545,4 +556,12 @@ public final class UiUtils {
      */
     private static final String RESOURCE_FAILED_TO_PARSE_SYSTEM_PROPERTY =
             "UI.error.failed.to.parse.property"; // NOI18N
+    private static final String RESOURCE_FAILED_TO_ACTIVATE_CROSSPLATFORM_LAF =
+            "UI.error.failed.to.activate.crossplatform.laf"; // NOI18N
+    private static final String RESOURCE_FAILED_TO_ACTIVATE_DEFINED_LAF =
+            "UI.error.failed.to.activate.defined.laf";//NOI18N
+    private static final String RESOURCE_FAILED_TO_INIT_UI = 
+            "UI.error.failed.to.init.ui";//NOI18N
+    private static final String RESOURCE_FAILED_TO_FORCE_GTK =
+            "UI.error.failed.to.force.gtk";//NOI18N
 }
