@@ -486,9 +486,9 @@ public class TreeFactory {
     }
     
     public ParameterizedTypeTree ParameterizedType(Tree type,
-                                                   List<? extends ExpressionTree> typeArguments) {
+                                                   List<? extends Tree> typeArguments) {
         ListBuffer<JCExpression> typeargs = new ListBuffer<JCExpression>();
-        for (ExpressionTree t : typeArguments)
+        for (Tree t : typeArguments)
             typeargs.append((JCExpression)t);
         return make.TypeApply((JCExpression)type, typeargs.toList());        
     }

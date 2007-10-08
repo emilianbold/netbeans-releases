@@ -42,12 +42,10 @@ package org.netbeans.api.java.source.gen;
 
 import com.sun.source.tree.*;
 import java.io.*;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.*;
 import org.netbeans.junit.NbTestSuite;
@@ -67,7 +65,65 @@ public class ParameterizedTypeTest extends GeneratorTestMDRCompat {
         NbTestSuite suite = new NbTestSuite();
         suite.addTestSuite(ParameterizedTypeTest.class);
 //        suite.addTest(new ParameterizedTypeTest("test115176HowTo"));
+//        suite.addTest(new ParameterizedTypeTest("test115176TestCase"));
         return suite;
+    }
+
+    public void test115176TestCase() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.util.List;\n" +
+            "import java.util.Map;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "\n" +
+            "    public List<Map<String, String>> foo() {\n" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree classTree = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree newMethod = make.Method(
+                    make.Modifiers( 
+                        Collections.singleton(Modifier.PUBLIC)
+                    ),
+                    "foo", // name
+                    make.ParameterizedType(
+                        make.QualIdent(workingCopy.getElements().getTypeElement("java.util.List")),
+                        Collections.<Tree>singletonList(make.ParameterizedType(
+                            make.QualIdent(workingCopy.getElements().getTypeElement("java.util.Map")),
+                            Arrays.<Tree>asList(make.Identifier("String"), make.Identifier("String"))
+                        ))
+                    ),
+                    Collections.<TypeParameterTree>emptyList(), // type parameters for parameters
+                    Collections.<VariableTree>emptyList(), // parameters
+                    Collections.<ExpressionTree>emptyList(),
+                    make.Block(Collections.<StatementTree>emptyList(), false),
+                    null // default value - not applicable here, used by annotations
+                );
+                ClassTree copy = make.addClassMember(classTree, newMethod);
+                workingCopy.rewrite(classTree, copy);
+            }
+            
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
     }
 
     public void test115176HowTo() throws Exception {
@@ -84,7 +140,8 @@ public class ParameterizedTypeTest extends GeneratorTestMDRCompat {
             "import java.util.List;\n" +
             "import java.util.Map;\n" +
             "\n" +
-            "public class Test {\n\n" +
+            "public class Test {\n" +
+            "\n" +
             "    public List<Map<String, String>> foo() {\n" +
             "    }\n" +
             "}\n";
@@ -101,8 +158,6 @@ public class ParameterizedTypeTest extends GeneratorTestMDRCompat {
                         "java.util.List<java.util.Map<String, String>>",
                         (TypeElement) workingCopy.getTrees().getElement(workingCopy.getTrees().getPath(cut, classTree))
                 );
-                DeclaredType declared = (DeclaredType) mirror;
-                System.err.println(workingCopy.getTrees().getTree(declared.asElement()));
                 MethodTree newMethod = make.Method(
                     make.Modifiers( 
                         Collections.singleton(Modifier.PUBLIC)

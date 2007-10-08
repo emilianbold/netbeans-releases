@@ -721,7 +721,7 @@ public final class TreeMaker {
      * @see com.sun.source.tree.ParameterizedTypeTree
      */
     public ParameterizedTypeTree ParameterizedType(Tree type,
-                                            List<? extends ExpressionTree> typeArguments) {
+                                            List<? extends Tree> typeArguments) {
         return delegate.ParameterizedType(type, typeArguments);
     }
     
