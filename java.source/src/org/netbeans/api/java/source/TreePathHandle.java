@@ -324,7 +324,7 @@ public final class TreePathHandle {
               clsSym = (Symbol.ClassSymbol) SourceUtils.getEnclosingTypeElement(element);
             }
             FileObject file = null;
-            if (clsSym!=null) {
+            if (clsSym!=null && clsSym.classfile!=null) {
                 FileObject fo = URLMapper.findFileObject(clsSym.classfile.toUri().toURL());
                 file = fo;
                 if (fo.getNameExt().endsWith("sig")) {
