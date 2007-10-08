@@ -30,19 +30,22 @@ import org.openide.util.NbBundle;
  * @author  Jan Jancura
  */
 public class ShortcutsDialog extends javax.swing.JPanel {
+    public static final String PROP_SHORTCUT_VALID = "ShortcutsDialog.PROP_SHORTCUT_VALID"; //NOI18N
+    
     private Listener listener = null;
     private JButton bTab = new JButton ();
     private JButton bClear = new JButton ();
     private ShortcutsFinder f = null;
+    private boolean shortcutValid = false;
     
     void init(ShortcutsFinder f) {
         this.f = f;
-        loc (lShortcut, "Shortcut");
+        loc (lShortcut, "Shortcut"); //NOI18N
         lConflict.setForeground (Color.red);
-        loc (bTab, "CTL_Tab");
+        loc (bTab, "CTL_Tab"); //NOI18N
         bTab.getAccessibleContext().setAccessibleName(loc("AN_Tab")); //NOI18N
         bTab.getAccessibleContext().setAccessibleDescription(loc("AD_Tab")); //NOI18N
-        loc (bClear, "CTL_Clear");
+        loc (bClear, "CTL_Clear"); //NOI18N
         bClear.getAccessibleContext().setAccessibleName(loc("AN_Clear")); //NOI18N
         bClear.getAccessibleContext().setAccessibleDescription(loc("AD_Clear")); //NOI18N
         tfShortcut.setFocusTraversalKeys (
@@ -158,7 +161,7 @@ public class ShortcutsDialog extends javax.swing.JPanel {
             private KeyStroke tabKS = KeyStroke.getKeyStroke 
                 (KeyEvent.VK_TAB, 0);
             
-            private String key = "";
+            private String key = ""; //NOI18N
 
             public void keyTyped (KeyEvent e) {
                 e.consume ();
@@ -170,17 +173,17 @@ public class ShortcutsDialog extends javax.swing.JPanel {
                     e.getModifiers ()
                 );
                 
-                boolean add = e.getKeyCode () != e.VK_SHIFT &&
-                              e.getKeyCode () != e.VK_CONTROL &&
-                              e.getKeyCode () != e.VK_ALT &&
-                              e.getKeyCode () != e.VK_META &&
-                              e.getKeyCode () != e.VK_ALT_GRAPH;
+                boolean add = e.getKeyCode () != KeyEvent.VK_SHIFT &&
+                              e.getKeyCode () != KeyEvent.VK_CONTROL &&
+                              e.getKeyCode () != KeyEvent.VK_ALT &&
+                              e.getKeyCode () != KeyEvent.VK_META &&
+                              e.getKeyCode () != KeyEvent.VK_ALT_GRAPH;
                 
                 if (keyStroke.equals (backspaceKS) && !key.equals ("")) {
                     // delete last key
-                    int i = key.lastIndexOf (' ');
+                    int i = key.lastIndexOf (' '); //NOI18N
                     if (i < 0) {
-                        key = "";
+                        key = ""; //NOI18N
                     } else {
                         key = key.substring (0, i);
                     }
@@ -189,7 +192,11 @@ public class ShortcutsDialog extends javax.swing.JPanel {
                     // add key
                     addKeyStroke (keyStroke, add);
                 }
-                if (add) updateWarning ();
+                if (add) {
+                    updateWarning();
+                } else {
+                    setShortcutValid(false);
+                }
                 e.consume ();
             }
 
@@ -199,33 +206,38 @@ public class ShortcutsDialog extends javax.swing.JPanel {
             
             public void actionPerformed (ActionEvent e) {
                 if (e.getSource () == getBClear()) {
-                    key = "";
+                    key = ""; //NOI18N
                     getTfShortcut().setText (key);
                 } else 
-                if (e.getSource () == getBTab())
+                if (e.getSource () == getBTab()) {
                     addKeyStroke (tabKS, true);
+                }
+                updateWarning();
             }
             
             private void updateWarning () {
-                ShortcutAction action = f.findActionForShortcut 
-                    (getTfShortcut().getText ());
+                String text = getTfShortcut().getText();
+                ShortcutAction action = f.findActionForShortcut(text);
                 if (action != null) {
                     lConflict.setText (MessageFormat.format (
-                        loc ("Shortcut_Conflict"), 
+                        loc ("Shortcut_Conflict"), //NOI18N
                         new Object[] {action.getDisplayName ()}
                     ));
-                } else 
-                    lConflict.setText ("");
+                    setShortcutValid(false);
+                } else {
+                    lConflict.setText (""); //NOI18N
+                    setShortcutValid(text != null && text.length() > 0);
+                }
             }
             
             private void addKeyStroke (KeyStroke keyStroke, boolean add) {
                 String k = Utils.getKeyStrokeAsText (keyStroke);
-                if (key.equals ("")) {
+                if (key.equals ("")) { //NOI18N
                     getTfShortcut().setText (k);
                     if (add) key = k;
                 } else {
-                    getTfShortcut().setText (key + " " + k);
-                    if (add) key += " " + k;
+                    getTfShortcut().setText (key + " " + k); //NOI18N
+                    if (add) key += " " + k; //NOI18N
                 }
             }
         }
@@ -236,5 +248,16 @@ public class ShortcutsDialog extends javax.swing.JPanel {
 
     public JButton getBClear() {
         return bClear;
+    }
+    
+    public boolean isShortcutValid() {
+        return shortcutValid;
+    }
+    
+    private void setShortcutValid(boolean valid) {
+        if (valid != shortcutValid) {
+            shortcutValid = valid;
+            firePropertyChange(PROP_SHORTCUT_VALID, !shortcutValid, shortcutValid);
+        }
     }
 }

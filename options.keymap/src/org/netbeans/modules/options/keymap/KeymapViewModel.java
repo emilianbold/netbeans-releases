@@ -43,6 +43,8 @@ package org.netbeans.modules.options.keymap;
 
 
 import java.awt.Component;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -456,7 +458,7 @@ public class KeymapViewModel implements TreeModel, ShortcutsFinder {
     public String showShortcutsDialog() {
         final ShortcutsDialog d = new ShortcutsDialog ();
         d.init(this);
-        DialogDescriptor descriptor = new DialogDescriptor (
+        final DialogDescriptor descriptor = new DialogDescriptor (
             d,
             loc ("Add_Shortcut_Dialog"),
             true,
@@ -476,6 +478,15 @@ public class KeymapViewModel implements TreeModel, ShortcutsFinder {
         descriptor.setAdditionalOptions (new Object [] {
             d.getBClear(), d.getBTab()
         });
+        descriptor.setValid(d.isShortcutValid());
+        d.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (evt.getPropertyName() == null || ShortcutsDialog.PROP_SHORTCUT_VALID.equals(evt.getPropertyName())) {
+                    descriptor.setValid(d.isShortcutValid());
+                }
+            }
+        });
+        
         DialogDisplayer.getDefault ().notify (descriptor);
         if (descriptor.getValue () == DialogDescriptor.OK_OPTION)
             return d.getTfShortcut().getText ();
