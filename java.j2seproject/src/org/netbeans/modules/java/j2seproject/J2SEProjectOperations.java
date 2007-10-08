@@ -51,6 +51,7 @@ import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.CopyOperationImplementation;
 import org.netbeans.spi.project.DeleteOperationImplementation;
@@ -70,6 +71,11 @@ import org.openide.util.NbBundle;
 public class J2SEProjectOperations implements DeleteOperationImplementation, CopyOperationImplementation, MoveOperationImplementation {
     
     private J2SEProject project;
+    
+    //RELY: Valid only on original project after the notifyMoving or notifyCopying was called
+    private String appArgs;
+    //RELY: Valid only on original project after the notifyMoving or notifyCopying was called
+    private String workDir;
     
     public J2SEProjectOperations(J2SEProject project) {
         this.project = project;
@@ -124,7 +130,7 @@ public class J2SEProjectOperations implements DeleteOperationImplementation, Cop
     }
     
     public void notifyCopying() {
-        //nothing.
+        readPrivateProperties();
     }
     
     public void notifyCopied(Project original, File originalPath, String nueName) {
@@ -132,7 +138,7 @@ public class J2SEProjectOperations implements DeleteOperationImplementation, Cop
             //do nothing for the original project.
             return ;
         }
-        
+        fixPrivateProperties(original.getLookup().lookup(J2SEProjectOperations.class));
         fixDistJarProperty (nueName);
         project.getReferenceHelper().fixReferences(originalPath);
         
@@ -144,18 +150,45 @@ public class J2SEProjectOperations implements DeleteOperationImplementation, Cop
             throw new IOException (NbBundle.getMessage(J2SEProjectOperations.class,
                 "MSG_OldProjectMetadata"));
         }
+        readPrivateProperties ();        
         notifyDeleting();
     }
-    
-    public void notifyMoved(Project original, File originalPath, String nueName) {
+            
+    public void notifyMoved(Project original, File originalPath, String nueName) {        
         if (original == null) {
             project.getAntProjectHelper().notifyDeleted();
             return ;
         }                
-        
+        fixPrivateProperties (original.getLookup().lookup(J2SEProjectOperations.class));
         fixDistJarProperty (nueName);
         project.setName(nueName);        
 	project.getReferenceHelper().fixReferences(originalPath);
+    }
+    
+    private void readPrivateProperties () {
+        ProjectManager.mutex().readAccess(new Runnable() {
+            public void run () {
+                appArgs = project.getUpdateHelper().getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH).getProperty(J2SEProjectProperties.APPLICATION_ARGS);
+                workDir = project.getUpdateHelper().getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH).getProperty(J2SEProjectProperties.RUN_WORK_DIR);        
+            }
+        });
+    }
+    
+    private void fixPrivateProperties (final J2SEProjectOperations original) {
+        if (original != null && (original.appArgs != null || original.workDir != null)) {
+            ProjectManager.mutex().writeAccess(new Runnable () {
+                public void run () {
+                    final EditableProperties ep = project.getUpdateHelper().getProperties (AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+                    if (original.appArgs != null) {
+                        ep.put(J2SEProjectProperties.APPLICATION_ARGS, original.appArgs);
+                    }
+                    if (original.workDir != null) {
+                        ep.put (J2SEProjectProperties.RUN_WORK_DIR, original.workDir);
+                    }
+                    project.getUpdateHelper().putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
+                }
+            });
+        }
     }
     
     private void fixDistJarProperty (final String newName) {
