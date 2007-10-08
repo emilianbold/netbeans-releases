@@ -105,7 +105,6 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         NamespaceImpl ns = new NamespaceImpl(this);
         assert ns != null;
         if (TraceFlags.USE_REPOSITORY) {
-            RepositoryUtils.openUnit(this);
             this.globalNamespaceUID = UIDCsmConverter.namespaceToUID(ns);
             this.globalNamespaceOLD = null;
             declarationsSorageKey = new DeclarationContainer(this).getKey();
