@@ -293,7 +293,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                     InitParam[] params = ddRoot.getContextParam();
                     for (int i = 0; 
                             i < params.length 
-                            || !(verifyObjectsDefined
+                            && !(verifyObjectsDefined
                             && validateXmlDefined
                             && savingMethodDefined); i++) {
                         InitParam initParam = params[i];
