@@ -162,6 +162,10 @@ class AST2Bytecode {
                             methodName = "<init>";
                             TreePath iPath = TreePath.getPath(cu, identifier);
                             TypeMirror type = trees.getTypeMirror(iPath);
+                            if (type.getKind() == TypeKind.ERROR) {
+                                // There are errors, give it up.
+                                return null;
+                            }
                             assert type.getKind() == TypeKind.DECLARED;
                             TypeElement te = (TypeElement) types.asElement(type);
                             methodClassType = ElementUtilities.getBinaryName(te);
@@ -172,6 +176,10 @@ class AST2Bytecode {
                                 methodName = ((IdentifierTree) identifier).getName().toString();
                                 TreePath iPath = TreePath.getPath(cu, identifier);
                                 TypeElement te = trees.getScope(iPath).getEnclosingClass();
+                                if (te == null) {
+                                    // No enclosing class? Some error, give it up.
+                                    return null;
+                                }
                                 methodClassType = ElementUtilities.getBinaryName(te);
                             } else {
                                 methodName = ((MemberSelectTree) identifier).getIdentifier().toString();
@@ -179,6 +187,10 @@ class AST2Bytecode {
                                 ExpressionTree exp = ((MemberSelectTree) identifier).getExpression();
                                 TreePath expPath = TreePath.getPath(cu, exp);
                                 TypeMirror type = trees.getTypeMirror(expPath);
+                                if (type.getKind() == TypeKind.ERROR) {
+                                    // There are errors, give it up.
+                                    return null;
+                                }
                                 assert type.getKind() == TypeKind.DECLARED;
                                 TypeElement te = (TypeElement) types.asElement(type);
                                 methodClassType = ElementUtilities.getBinaryName(te);
