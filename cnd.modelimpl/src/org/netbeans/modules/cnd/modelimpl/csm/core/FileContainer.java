@@ -241,7 +241,7 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
             FileImpl file = null;
             if (TraceFlags.USE_REPOSITORY) {
                 file = (FileImpl) UIDCsmConverter.UIDtoFile(f.fileNew);
-                assert (file != null);
+                assert (file != null) : "Failed to get FileImpl by UID " + f.fileNew;
             } else {
                 file = f.fileOld;
             }

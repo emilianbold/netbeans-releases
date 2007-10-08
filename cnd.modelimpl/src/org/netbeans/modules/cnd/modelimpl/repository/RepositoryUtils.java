@@ -283,9 +283,9 @@ public class RepositoryUtils {
     }
     
     private static void openUnit(String unitName) {
-	RepositoryListenerImpl.instance().onExplicitOpen(unitName);
 	// TODO explicit open should be called here: 
-	// RepositoryAccess.getRepository().open(unitName);
+	RepositoryListenerImpl.instance().onExplicitOpen(unitName);
+	RepositoryAccessor.getRepository().openUnit(unitName);
     }
     
     public static void unregisterRepositoryListener(RepositoryListener listener) {

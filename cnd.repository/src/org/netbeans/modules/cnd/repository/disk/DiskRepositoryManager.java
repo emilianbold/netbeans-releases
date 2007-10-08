@@ -209,6 +209,8 @@ public final class DiskRepositoryManager extends AbstractDiskRepository implemen
             return needMoreTime;
     }
 
+    public void openUnit(String unitName) {
+    }
  
 
     public void closeUnit(final String unitName, final boolean cleanRepository, Set<String> requiredUnits) {

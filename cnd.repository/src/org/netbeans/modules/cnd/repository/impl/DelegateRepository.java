@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.cnd.repository.impl;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.cnd.repository.api.Repository;
 import org.netbeans.modules.cnd.repository.spi.Key;
@@ -54,7 +56,11 @@ import org.netbeans.modules.cnd.repository.util.RepositoryListenersManager;
  * @author Vladimir Voskresensky
  */
 public final class DelegateRepository implements Repository {
+    
     private final Repository delegate;
+    
+    private Map<String, Object> locks = new HashMap<String, Object>();
+    private String mainLock = new String("DelegateRepository main lock"); // NOI18N
     
     public DelegateRepository() {
         if (Stats.validateKeys) {
@@ -97,8 +103,27 @@ public final class DelegateRepository implements Repository {
         delegate.shutdown();
     }
 
+    private Object getLock(String unitName) {
+	synchronized( mainLock  ) {
+	    Object lock = locks.get(unitName);
+	    if( lock == null ) {
+		lock = new String(unitName); // NOI18N
+		locks.put(unitName, lock);
+	    }
+	    return lock;
+	}
+    }
+    
+    public void openUnit(String unitName) {
+	synchronized( getLock(unitName) ) {
+	    delegate.openUnit(unitName);
+	}
+    }
+    
     public void closeUnit(String unitName, boolean cleanRepository, Set<String> requiredUnits) {
-        delegate.closeUnit(unitName, cleanRepository, requiredUnits);
+	synchronized( getLock(unitName) ) {
+	    delegate.closeUnit(unitName, cleanRepository, requiredUnits);
+	}
     }
     
     public void removeUnit(String unitName) {

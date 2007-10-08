@@ -106,6 +106,12 @@ public interface Repository {
     void shutdown();
     
     /**
+     * Opens repository unit
+     * @param unitName the unique identifier of the unit to open
+     */
+    void openUnit(String unitName);
+    
+    /**
      * Close Repository Unit, e.g. Project for IDE
      * @param unitName the name of unit
      */

@@ -154,6 +154,10 @@ public class HybridRepository implements Repository {
         }        
     }
     
+    public void openUnit(String unitName) {
+	diskRepository.openUnit(unitName);
+    }
+    
     public void closeUnit(String unitName, boolean cleanRepository, Set<String> requiredUnits) {
         cleanWriteHungObjects(unitName, cleanRepository);
         diskRepository.closeUnit(unitName, cleanRepository, null);

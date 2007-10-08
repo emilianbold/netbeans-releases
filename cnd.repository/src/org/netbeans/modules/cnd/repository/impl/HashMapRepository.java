@@ -94,6 +94,10 @@ public class HashMapRepository implements Repository {
         map.clear();
     }
 
+    public void openUnit(String unitName) {
+	// do nothing
+    }
+    
     public void closeUnit(String unitName, boolean cleanRepository, Set<String> requiredUnits) {
         // do nothing
     }

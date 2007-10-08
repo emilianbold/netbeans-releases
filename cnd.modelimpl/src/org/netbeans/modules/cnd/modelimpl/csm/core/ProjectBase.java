@@ -707,6 +707,9 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
             for( NativeFileItem item : nativeProject.getAllHeaderFiles() ) {
                 projectFiles.add(item.getFile().getAbsolutePath());
             }
+            for( NativeFileItem item : nativeProject.getAllSourceFiles() ) {
+                projectFiles.add(item.getFile().getAbsolutePath());
+            }
         }
         
         Set<FileImpl> candidates = new HashSet<FileImpl>();
