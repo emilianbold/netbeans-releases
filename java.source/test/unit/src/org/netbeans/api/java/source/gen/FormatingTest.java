@@ -1365,6 +1365,65 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         assertEquals(golden, res);
     }
     
+    /**
+     * Do not put spaces to parenthesis when method declaration has no
+     * parameters. The same rule should be applied to method invocation.
+     * Regression test.
+     * 
+     * http://www.netbeans.org/issues/show_bug.cgi?id=116225
+     */
+    public void test116225() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "}\n"
+            );
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker maker = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                ModifiersTree mods = maker.Modifiers(Collections.<Modifier>emptySet());
+                MethodTree method = maker.Method(
+                        mods,
+                        "test",
+                        maker.Identifier("int"),
+                        Collections.<TypeParameterTree>emptyList(),
+                        Collections.<VariableTree>emptyList(), 
+                        Collections.<ExpressionTree>emptyList(),
+                        "{ System.err.println(i); System.err.println(); " +
+                        " new ArrayList(); new ArrayList(i); return i; }",
+                        null
+                );
+                workingCopy.rewrite(clazz, maker.addClassMember(clazz, method));
+            }            
+        };
+        Preferences preferences = FmtOptions.getPreferences(FmtOptions.getCurrentProfileId());
+        preferences.putBoolean("spaceWithinMethodDeclParens", true);
+        preferences.putBoolean("spaceWithinMethodCallParens", true);
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+
+        String golden = 
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "\n" +
+            "    int test() {\n" +
+            "        System.err.println( i );\n" +
+            "        System.err.println();\n" +
+            "        new ArrayList();\n" +
+            "        new ArrayList( i );\n" +
+            "        return i;\n" +
+            "    }\n" +
+            "}\n";
+        assertEquals(golden, res);
+    }
+    
     String getGoldenPckg() {
         return "";
     }
