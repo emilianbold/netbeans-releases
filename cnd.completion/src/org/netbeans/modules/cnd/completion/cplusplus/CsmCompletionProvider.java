@@ -101,7 +101,7 @@ public class CsmCompletionProvider implements CompletionProvider {
         final int dot = component.getCaret().getDot();
         // do not work together with include completion
         if (sup != null && !sup.isCompletionDisabled(dot) && sup.isIncludeCompletionDisabled(dot)) {
-            if (queryType == COMPLETION_QUERY_TYPE) {
+            if ((queryType & COMPLETION_QUERY_TYPE) == COMPLETION_QUERY_TYPE) {
                 return new AsyncCompletionTask(new Query(dot), component);
             } else if (queryType == DOCUMENTATION_QUERY_TYPE) {
                 return new AsyncCompletionTask(new DocQuery(null), component);
