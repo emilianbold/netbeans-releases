@@ -644,7 +644,12 @@ tokens {
 
 public translation_unit:
 		//{enterExternalScope();}
-		(external_declaration)* EOF!
+		(
+                    external_declaration 
+                    | 
+                    /* errors recovery */
+                    (LCURLY | RCURLY | LSQUARE | RSQUARE) { reportError(new NoViableAltException(LT(0), getFilename())); }
+                )* EOF!
 		{/*exitExternalScope();*/ #translation_unit = #(#[CSM_TRANSLATION_UNIT, getFilename()], #translation_unit);}
        ;
 
