@@ -576,7 +576,8 @@ public class AbstractVariable implements LocalVariable, Customizer {
                             }
                         }
                     } else if (GdbUtils.isArray(rt) && 
-                            (rt.startsWith("char [") || rt.startsWith("unsigned char ["))) { // NOI18N
+                            ((rt.startsWith("char") && rt.substring(4).trim().startsWith("[")) || // NOI18N
+                             (rt.startsWith("unsigned char") && rt.substring(13).trim().startsWith("[")))) { // NOI18N
                         // gdb puts them in string
                         count += parseCharArray(var, var.name, t, v.substring(1, v.length() - 1));
                     } else if (var.derefValue != null) {
