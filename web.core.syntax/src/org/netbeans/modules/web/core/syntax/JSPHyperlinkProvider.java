@@ -239,7 +239,14 @@ public class JSPHyperlinkProvider implements HyperlinkProvider {
         
         if (getTagFile(tokenSequence, jspSup) != null){
             // a reachable tag file.
-            return new int[]{token.offset(tokenHierarchy), token.offset(tokenHierarchy) + token.length()-1};
+            int start = token.offset(tokenHierarchy);
+            int end = token.offset(tokenHierarchy) + token.length()-1;
+            String text = token.text().toString().trim();
+            if (text.startsWith("<")) {
+                start = start + 1;
+                end = end + 1;
+            }
+            return new int[]{start, end};
         } else{
             // is it a bean in EL ?
             TokenSequence elTokenSequence = tokenSequence.embedded(ELTokenId.language());
@@ -447,6 +454,9 @@ public class JSPHyperlinkProvider implements HyperlinkProvider {
         Token token = tokenSequence.token();
         if(token.id() == JspTokenId.TAG) {
             String image = token.text().toString().trim();
+            if (image.startsWith("<")) {                                 // NOI18N
+                image = image.substring(1).trim();
+            }
             if (!image.startsWith("jsp:") && image.indexOf(':') != -1){  // NOI18N
                 List l = jspSup.getTags(image);
                 if (l.size() == 1){
