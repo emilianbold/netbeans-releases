@@ -429,7 +429,14 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
         return findFloatingFrameDroppable(floatingFrames, location, kind, transfer) != null;
     }
     
-    private static boolean isInFreeArea(Point location) {
+    /** 
+     * Tests if given location is in free area or not.
+     * @param location the location to test
+     * @param exclude Window to exclude from test (used for fake drag-under effect window)
+     * @return true when location point is on free screen, not contained in any 
+     * frames or windows of the system, false otherwise
+     */
+    private static boolean isInFreeArea(Point location, Window exclude) {
         // prepare array of all our windows
         Window mainWindow = WindowManagerImpl.getInstance().getMainWindow();
         Window[] owned = mainWindow.getOwnedWindows();
@@ -439,6 +446,10 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
         System.arraycopy(owned, 0, windows, frames.length, owned.length);
 
         for(int i = 0; i < windows.length; i++) {
+            // #114064: exclude fake drar under effect window from the test
+            if (windows[i] == exclude) {
+                continue;
+            }
             //#40782 fix. don't take the invisible frames into account when deciding what is
             // free space.
             if(windows[i].isVisible() && windows[i].getBounds().contains(location.x, location.y)) {
@@ -468,7 +479,7 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
 //            return getCenterPanelDroppable();
 //        }
         
-        if(isInFreeArea(location)) {
+        if(isInFreeArea(location, motionListener.fakeWindow)) {
             return getFreeAreaDroppable(location);
         }
         return null;
@@ -965,7 +976,7 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
             && windowDnDManager.isInFloatingFrame(location)) {
                 // Simulates success drop in free area.
                 topComponentDragSupport.setSuccessCursor(false);
-            } else if(isInFreeArea(location)
+            } else if(isInFreeArea(location, fakeWindow)
             && getFreeAreaDroppable(location).canDrop(windowDnDManager.startingTransfer, location)) {
                 topComponentDragSupport.setSuccessCursor(true);
                 // paint fake window during move over free area
@@ -1025,24 +1036,7 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
                 fakeWindow = null;
             }
         }
-
-        /** Moves the window containing given top component to follow mouse drag.
-         */
-        private void handleWindowMove (ModeImpl mode, TopComponent tc, DragSourceDragEvent evt) {
-            Point dragLoc = evt.getLocation();
-            // start from real starting point of the drag
-            Window w = SwingUtilities.getWindowAncestor(tc);
-            if (previousDragLoc == null) {
-                previousDragLoc = windowDnDManager.getStartingPoint();
-                SwingUtilities.convertPointToScreen(previousDragLoc, w);
-            }
-            Point newLoc = w.getLocation();
-            newLoc.translate(dragLoc.x - previousDragLoc.x, dragLoc.y - previousDragLoc.y);
-            w.setLocation(newLoc);
-
-            previousDragLoc = dragLoc;
-        }
-
+        
         /** Shows or hides fake window as drag under effect
          */
         private void paintFakeWindow (boolean visible, DragSourceDragEvent evt) {
