@@ -111,7 +111,12 @@ import org.openide.util.actions.SystemAction;
  */
 public class RakeTargetsAction extends SystemAction implements ContextAwareAction {
     
-    private static List<RakeTarget> recentTargets = new ArrayList<RakeTarget>();
+    /**
+     * Recent targets per Rakefile.
+     * <br>
+     * TODO: potential memory leak
+     */
+    private static Map<FileObject, List<RakeTarget>> recentTargets = new HashMap<FileObject, List<RakeTarget>>();
 
     /** Set during a refresh */
     private static volatile boolean refreshing;
@@ -497,7 +502,6 @@ public class RakeTargetsAction extends SystemAction implements ContextAwareActio
             this.debug = debug;
 
             Collection<?extends Project> apcs = lkp.lookupAll(Project.class);
-            Project p = null;
 
             if (apcs.size() == 1) {
                 project = apcs.iterator().next();
@@ -560,16 +564,22 @@ public class RakeTargetsAction extends SystemAction implements ContextAwareActio
 
                 // List my recent targets 
                 // Most recent order
-                for (int i = recentTargets.size() - 1; i >= 0; i--) {
-                    RakeTarget target = recentTargets.get(i);
-                    assert target.isTarget();
+                FileObject rakeFile = RakeSupport.findRakeFile(project);
+                if (rakeFile != null) {
+                    List<RakeTarget> recent = recentTargets.get(rakeFile);
+                    if (recent != null) {
+                        for (int i = recent.size() - 1; i >= 0; i--) {
+                            RakeTarget target = recent.get(i);
+                            assert target.isTarget();
 
-                    // Show the target name (e.g. doc:app) rather than the display name (app)
-                    JMenuItem menuitem = new JMenuItem(target.getTarget());
-                    menuitem.addActionListener(new TargetMenuItemHandler(project, target, debug));
-                    menuitem.setToolTipText(target.getDescription());
-                    add(menuitem);
-                    needsep = true;
+                            // Show the target name (e.g. doc:app) rather than the display name (app)
+                            JMenuItem menuitem = new JMenuItem(target.getTarget());
+                            menuitem.addActionListener(new TargetMenuItemHandler(project, target, debug));
+                            menuitem.setToolTipText(target.getDescription());
+                            add(menuitem);
+                            needsep = true;
+                        }
+                    }
                 }
 
                 if (needsep) {
@@ -717,8 +727,15 @@ public class RakeTargetsAction extends SystemAction implements ContextAwareActio
             rake.runRake(pwd, rakeFile, displayName, fileLocator, true, debug, targetName);
 
             // Update recent targets list: add or move to end
-            recentTargets.remove(target);
-            recentTargets.add(target);
+            if (rakeFile != null) {
+                List<RakeTarget> recent = recentTargets.get(rakeFile);
+                if (recent == null) {
+                    recent = new ArrayList<RakeTarget>();
+                    recentTargets.put(rakeFile, recent);
+                }
+                recent.remove(target);
+                recent.add(target);
+            }
         }
     }
 
