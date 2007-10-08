@@ -73,7 +73,7 @@ public class RubyFileLocator implements FileLocator {
     public FileObject find(String path) {
         // Firstly try whether a path is absolute
         File file = new File(path);
-        if (file.isAbsolute()) {
+        if (file.isAbsolute() && file.isFile()) {
             return FileUtil.toFileObject(FileUtil.normalizeFile(file));
         }
         
@@ -101,7 +101,7 @@ public class RubyFileLocator implements FileLocator {
         // Try to resolve relatively to project directory (see e.g. #112254)
         for (FileObject root : roots) {
             File relToPrjDir = new File(FileUtil.toFile(root), path);
-            if (relToPrjDir.exists()) {
+            if (relToPrjDir.isFile()) {
                 try {
                     relToPrjDir = relToPrjDir.getCanonicalFile();
                     return FileUtil.toFileObject(relToPrjDir);
