@@ -30,3 +30,6 @@ if [ -d "/Applications/Netbeans/$NETBEANS_INSTALL_DIR" ] ; then
     rm -rf "/Applications/Netbeans/$NETBEANS_INSTALL_DIR"
 fi
 
+if [ -d "/Library/Receipts/NetBeans.pkg" ] ; then
+    rm -rf "/Library/Receipts/NetBeans.pkg"
+fi

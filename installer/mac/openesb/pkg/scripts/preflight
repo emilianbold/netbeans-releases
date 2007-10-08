@@ -19,3 +19,6 @@
 
 set -e
 
+if [ -d "/Library/Receipts/openesb.pkg" ] ; then
+    rm -rf "/Library/Receipts/openesb.pkg"
+fi
