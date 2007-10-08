@@ -105,6 +105,8 @@ public abstract class EditDialog extends DialogDescriptor {
             errorLabel.setForeground(SectionVisualTheme.getErrorLabelColor());
             add(panel, java.awt.BorderLayout.CENTER);
             add(errorLabel, java.awt.BorderLayout.SOUTH);
+            getAccessibleContext().setAccessibleName(panel.getAccessibleContext().getAccessibleName());
+            getAccessibleContext().setAccessibleDescription(panel.getAccessibleContext().getAccessibleDescription());
         }
         
         void setErrorMessage(String message) {
