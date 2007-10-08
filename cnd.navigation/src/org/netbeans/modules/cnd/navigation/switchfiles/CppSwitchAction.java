@@ -269,15 +269,27 @@ public final class CppSwitchAction extends BaseAction {
     private static FileObject findBrother(DataObject dob, String[] ext) {
         assert (dob != null);
         assert (dob.getPrimaryFile() != null);
-        // get a file object associated with the data object
-        FileObject fo = dob.getPrimaryFile();
         if (ext != null && ext.length > 0) {
+            // get a file object associated with the data object
+            FileObject fo = dob.getPrimaryFile();
+            FileObject[] childs = fo.getParent().getChildren();
+
             // try to find a file with the same name and one of passed extensions
             for (int i = 0; i < ext.length; i++) {
                 // use FileUtilities to find brother of the file object
-                FileObject res = FileUtil.findBrother(fo, ext[i]);
-                if (res != null) {
-                    return res;
+                // FileObject res = FileUtil.findBrother(fo, ext[i]);
+
+                // IZ117750. Netbeans don't recognize MAC FS as case-insensitive
+                // so FileObject.getFileObject(name, extension) can create
+                // separate FileObjects for name.h and name.H although they are names
+                // of the same file. So FileUtil.findBrother can't be used for now.
+                
+                String ne = fo.getName() + '.' + ext;
+                for (int j = 0; j < childs.length; j++) {
+                    FileObject fileObject = childs[j];
+                    if (fileObject.getNameExt().equals(ne)) {
+                        return fileObject;
+                    }
                 }
             }
         }
