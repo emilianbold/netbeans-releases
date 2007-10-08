@@ -447,6 +447,7 @@ public class TraceModel {
 	} catch( Error thr ) {
 	    System.err.printf("\n");
 	    thr.printStackTrace();
+	    return;
 	} finally {
 	    model.shutdown();
 	}
@@ -459,6 +460,7 @@ public class TraceModel {
 		print("\n\n==================== Pass " + i + "====================\n");
                 doTest2();
 		resetProject();
+		//sleep(2000, "Waiting for repository to shutdown");
 	    }
 	} else {
 	    doTest2();
@@ -828,6 +830,12 @@ public class TraceModel {
 	    }
 	}
 	return wasWait;
+    }
+
+    private void sleep(int timeout, String message) {
+	System.err.printf("Sleeping: %s\n", message);
+	sleep(timeout);
+	System.err.printf("Awoke (%s)\n", message);
     }
     
     private void sleep(int timeout) {
