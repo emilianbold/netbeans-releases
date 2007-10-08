@@ -51,6 +51,7 @@
 package org.netbeans.modules.visualweb.faces.dt.converter;
 
 import com.sun.rave.designtime.DesignBean;
+import com.sun.rave.designtime.DisplayAction;
 import com.sun.rave.designtime.Result;
 import com.sun.rave.designtime.impl.BasicDesignInfo;
 import javax.faces.convert.DateTimeConverter;
@@ -71,5 +72,9 @@ public class DateTimeConverterDesignInfo extends BasicDesignInfo {
         // We want to set the time zone to null so that the user's time zone will be used
         designBean.getProperty( "timeZone").setValue( null );
         return Result.SUCCESS;
+    }
+    
+    public DisplayAction[] getContextItems(DesignBean bean) {
+        return new DisplayAction[0];
     }
 }
