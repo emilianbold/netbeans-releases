@@ -18,6 +18,7 @@
  */
 
 package org.netbeans.modules.mobility.project;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.BufferedReader;
@@ -33,10 +34,11 @@ import java.net.URLConnection;
 import java.net.URLStreamHandler;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.Map;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
@@ -48,9 +50,14 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.modules.j2me.cdc.platform.spi.CDCPlatformConfigurator;
+import org.netbeans.modules.j2me.cdc.platform.spi.CDCPlatformUtil;
 import org.netbeans.spi.mobility.project.ProjectPropertiesDescriptor;
 import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -72,6 +79,7 @@ import org.netbeans.modules.mobility.project.queries.CompiledSourceForBinaryQuer
 import org.netbeans.modules.mobility.project.queries.JavadocForBinaryQueryImpl;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.modules.j2me.cdc.platform.CDCPlatform;
 import org.netbeans.modules.mobility.project.classpath.J2MEClassPathProvider;
 import org.netbeans.modules.mobility.project.queries.SourceLevelQueryImpl;
 import org.netbeans.modules.mobility.project.queries.FileBuiltQueryImpl;
@@ -109,7 +117,8 @@ public final class J2MEProject implements Project, AntProjectListener {
     static final String CONFIGS_NAME = "configurations"; // NOI18N
     static final String CONFIG_NAME = "configuration"; // NOI18N
     static final String CONFIGS_NS = "http://www.netbeans.org/ns/project-configurations/1"; // NOI18N
-
+    static final String CLASSPATH = "classpath";
+    
     final AuxiliaryConfiguration aux;
     final AntProjectHelper helper;
     final GeneratedFilesHelper genFilesHelper;
@@ -470,6 +479,7 @@ public final class J2MEProject implements Project, AntProjectListener {
             try {
                 refreshBuildScripts(true);
                 refreshPrivateProperties();
+                refreshBootClasspath();
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }
@@ -502,6 +512,46 @@ public final class J2MEProject implements Project, AntProjectListener {
             GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, new ClassPath[] {cpProvider.getBootClassPath()});
             GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, new ClassPath[] {cpProvider.getSourcepath()});
             GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE, new ClassPath[] {cpProvider.getCompileTimeClasspath()});
+        }
+
+        private CDCPlatform getActivePlatform (final String activePlatformId) {
+            if (activePlatformId != null)
+            {
+                final JavaPlatformManager pm = JavaPlatformManager.getDefault();
+                JavaPlatform[] installedPlatforms = pm.getPlatforms(null, new Specification (CDCPlatform.PLATFORM_CDC,null));   //NOI18N
+                for (JavaPlatform platform : installedPlatforms ){
+                    if (activePlatformId.equals(platform.getProperties().get("platform.ant.name"))) {
+                        return (CDCPlatform) platform;
+                    }
+                }
+            }
+            return null;
+        }
+        
+        private void refreshBootClasspath()
+        {
+            
+            JavaPlatformManager.getDefault().addPropertyChangeListener(new PropertyChangeListener()
+            {
+
+                public void propertyChange(PropertyChangeEvent evt)
+                {
+                    
+                    CDCPlatform platform=getActivePlatform(J2MEProject.this.helper.getStandardPropertyEvaluator().getProperty("platform.active")); 
+                    if (CLASSPATH.equals(evt.getPropertyName()) ||
+                       JavaPlatformManager.PROP_INSTALLED_PLATFORMS.equals(evt.getPropertyName()))
+                    {
+                       J2MEProject.this.updateBootClassPathProperty(platform);
+                       return;
+                    }
+                }
+            });
+            CDCPlatform platform = getActivePlatform(J2MEProject.this.helper.getStandardPropertyEvaluator().getProperty("platform.active"));
+            if (platform == null){                                                
+                return;
+            }
+            //Change path if platform has changed
+            J2MEProject.this.updateBootClassPathProperty(platform);
         }
         
     }
@@ -818,5 +868,61 @@ public final class J2MEProject implements Project, AntProjectListener {
 //            return true;
 //        }
         return true;
+    }
+    
+    
+    private static String normalizePath (File path,  File jdkHome, String propName) {
+        String jdkLoc = jdkHome.getAbsolutePath();
+        if (!jdkLoc.endsWith(File.separator)) {
+            jdkLoc = jdkLoc + File.separator;
+        }
+        String loc = path.getAbsolutePath();
+        if (loc.startsWith(jdkLoc)) {
+            return "${"+propName+"}"+File.separator+loc.substring(jdkLoc.length());           //NOI18N
+        }
+        return loc;
+    }
+    
+    private static void generatePlatformProperties (CDCPlatform platform, String activeDevice, String activeProfile, EditableProperties props)  {
+        Collection<FileObject> installFolders = platform.getInstallFolders();
+        if (installFolders.size()>0) {            
+            File jdkHome = FileUtil.toFile (installFolders.iterator().next());
+            StringBuffer sbootcp = new StringBuffer();
+            ClassPath bootCP = platform.getBootstrapLibrariesForProfile(activeDevice, activeProfile);
+            for (ClassPath.Entry entry : (List<ClassPath.Entry>)bootCP.entries()) {
+                URL url = entry.getURL();
+                if ("jar".equals(url.getProtocol())) {              //NOI18N
+                    url = FileUtil.getArchiveFile(url);
+                }
+                File root = new File (URI.create(url.toExternalForm()));
+                if (sbootcp.length()>0) {
+                    sbootcp.append(File.pathSeparator);
+                }
+                sbootcp.append(normalizePath(root, jdkHome, "platform.home"));
+            }
+            props.setProperty(DefaultPropertiesDescriptor.PLATFORM_BOOTCLASSPATH,sbootcp.toString());   //NOI18N
+        }
+    }
+
+    private void updateBootClassPathProperty(CDCPlatform platform)
+    {
+        if (platform != null)
+        {
+            try
+            {
+                EditableProperties props=helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                generatePlatformProperties(
+                        platform,
+                        J2MEProject.this.helper.getStandardPropertyEvaluator().getProperty(DefaultPropertiesDescriptor.PLATFORM_DEVICE),
+                        J2MEProject.this.helper.getStandardPropertyEvaluator().getProperty(DefaultPropertiesDescriptor.PLATFORM_PROFILE),
+                        props
+                        ); 
+               helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH,props);
+               ProjectManager.getDefault().saveProject(this);
+            } catch (IOException ex)
+            {
+                ErrorManager.getDefault().notify(ex);
+            } 
+        }
     }
 }
