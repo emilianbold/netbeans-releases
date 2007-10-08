@@ -135,7 +135,7 @@ public class FormatterTest extends RubyTestBase {
             doc.insertString(caret.getDot(), "\n", null);
         
             int startPos = caret.getDot()+1;
-            int endPos = startPos+1;
+            int endPos = startPos;
 
             //ParserResult result = parse(fo);
             ParserResult result = null;

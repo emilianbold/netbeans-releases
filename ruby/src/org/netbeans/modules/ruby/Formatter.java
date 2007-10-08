@@ -481,7 +481,7 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
             // wholesale formatting a whole document, leave these lines alone.
             boolean indentEmptyLines = (startOffset != 0 || endOffset != doc.getLength());
 
-            boolean includeEnd = endOffset == doc.getLength();
+            boolean includeEnd = endOffset == doc.getLength() || indentOnly;
             
             // TODO - remove initialbalance etc.
             computeIndents(doc, initialIndent, initialOffset, endOffset, result, 
