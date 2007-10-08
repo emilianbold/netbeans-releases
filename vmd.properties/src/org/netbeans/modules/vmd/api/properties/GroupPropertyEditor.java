@@ -66,7 +66,7 @@ public abstract class GroupPropertyEditor extends DesignPropertyEditor {
     }
     
     @Override
-    public final boolean isResetToDefaultAutomatic() {
+    public final boolean isResetToDefaultAutomatically() {
         return false;
     }
 

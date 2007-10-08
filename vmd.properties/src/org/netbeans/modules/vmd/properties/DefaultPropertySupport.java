@@ -84,7 +84,7 @@ public abstract class DefaultPropertySupport extends PropertySupport {
     public void restoreDefaultValue() throws IllegalAccessException, InvocationTargetException {
         if (propertyEditor instanceof DesignPropertyEditor && propertyNames != null && (!propertyNames.isEmpty())) {
             final DesignPropertyEditor dpe = (DesignPropertyEditor) propertyEditor;
-            if (dpe.isResetToDefaultAutomatic()) {
+            if (dpe.isResetToDefaultAutomatically()) {
                 setValue(dpe.getDefaultValue());
             } else {
                 designPropertyDescriptor.getComponent().getDocument().getTransactionManager().writeAccess(new Runnable() {
