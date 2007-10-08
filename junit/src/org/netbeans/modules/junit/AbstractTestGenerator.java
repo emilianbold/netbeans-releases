@@ -75,8 +75,6 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.ArrayType;
-import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
@@ -941,7 +939,7 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
 
                 statements.add(methodCallStmt);
             } else {
-                Tree retTypeTree = createTypeTree(retType, workingCopy, maker);
+                Tree retTypeTree = maker.Type(retType);
 
                 VariableTree expectedValue = maker.Variable(
                         maker.Modifiers(NO_MODIFIERS),
@@ -1009,53 +1007,6 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
         }
 
         return maker.Block(statements, false);
-    }
-
-    /**
-     * Create a tree representing the given type.
-     */
-    private Tree createTypeTree(final TypeMirror typeMirror,
-                                final WorkingCopy workingCopy,
-                                final TreeMaker maker) {
-        final TypeKind typeKind = typeMirror.getKind();
-
-        if (typeKind == TypeKind.VOID) {
-            return maker.Identifier("void");                            //NOI18N
-        }
-
-        if (typeKind.isPrimitive()) {
-            return maker.Identifier(typeMirror.toString());
-        }
-
-        if (typeKind == TypeKind.ARRAY) {
-            TypeMirror componentType = ((ArrayType) typeMirror).getComponentType();
-            Tree componentTypeTree = createTypeTree(componentType,
-                                                    workingCopy,
-                                                    maker);
-            return (componentTypeTree != null)
-                   ? maker.ArrayType(componentTypeTree)
-                   : null;
-        }
-
-        if (typeKind == TypeKind.ERROR) {
-            return null;
-        }
-
-        final Types types = workingCopy.getTypes();
-        Tree result = maker.QualIdent(types.asElement(typeMirror));
-        if (typeKind == TypeKind.DECLARED) {
-            DeclaredType declType = (DeclaredType) typeMirror;
-            List<? extends TypeMirror> typeArgs = declType.getTypeArguments();
-            if (!typeArgs.isEmpty()) {
-                List<Tree> typeArgTrees = new ArrayList<Tree>(typeArgs.size());
-                for (TypeMirror typeArg : typeArgs) {
-                    typeArgTrees.add(createTypeTree(typeArg, workingCopy, maker));
-                }
-                result = maker.ParameterizedType(result, typeArgTrees);
-            }
-        }
-
-        return result;
     }
 
     /**
