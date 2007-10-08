@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.loaders;
 
 import java.io.IOException;
 import java.util.Enumeration;
+import org.netbeans.modules.cnd.MIMENames;
 
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.MultiDataObject;
@@ -113,14 +114,11 @@ public class MakefileDataLoader extends UniFileLoader {
         if (fo.isFolder()) {
             return null;
         }
-
-	// Check for various (somewhat) standard Makefile names.
-	String name = fo.getName().toLowerCase();
-	if (name.startsWith("makefile") || name.endsWith("makefile") ||name.startsWith("gnumakefile")) { // NOI18N
+        String mimeType = fo.getMIMEType();
+        if (MIMENames.MAKEFILE_MIME_TYPE.equals(mimeType)) {
             return fo;
-	}
-        
-	return super.findPrimaryFile(fo);
+        }
+	return null;
     }
 }
 

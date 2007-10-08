@@ -81,8 +81,8 @@ public class CndMIMEResolver extends MIMEResolver {
             return MIMENames.CPLUSPLUS_MIME_TYPE;
         }
 
-	// Recognize makefiles
-	if (MakefileDataLoader.getInstance().findPrimaryFile(fo) != null) {
+	// Recognize makefiles by extension
+	if (MakefileDataLoader.getInstance().getExtensions().isRegistered(ext)) {
             return MIMENames.MAKEFILE_MIME_TYPE;
 	}
 
@@ -101,6 +101,14 @@ public class CndMIMEResolver extends MIMEResolver {
             return MIMENames.ASM_MIME_TYPE;
         }
         
+        // Recognize makefiles by name
+	// Check for various (somewhat) standard Makefile names.
+        if (ext.length() == 0) {
+            String name = fo.getName().toLowerCase();
+            if (name.startsWith("makefile") || name.endsWith("makefile") ||name.startsWith("gnumakefile")) { // NOI18N
+                return MIMENames.MAKEFILE_MIME_TYPE;
+            }          
+        }
 	return null;
     }
 }
