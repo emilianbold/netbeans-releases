@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.visualweb.project.jsf.api;
 
-import org.netbeans.modules.visualweb.project.jsf.JsfProjectTemplate;
 import org.netbeans.modules.visualweb.project.jsf.actions.ImportFileAction;
 import org.netbeans.modules.visualweb.project.jsf.libraries.LibraryDefinition;
 import org.netbeans.modules.visualweb.project.jsf.libraries.J2SELibraryDefinition;
@@ -146,15 +145,6 @@ public class JsfProjectUtils {
     };
 
     private static final Map<Project,ArrayList> propertyListeners = new WeakHashMap();
-
-    /**
-     * Provides the project template to be used to instantiate the project contents
-     * May be overridden by subclasses to produce project variants
-     * @return The project template class that will perform the instantiation of project contents
-     */
-    public static ProjectTemplate getProjectTemplate() {
-        return new JsfProjectTemplate();
-    }
 
     public static WebModule getWebModule(Project project) {
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());

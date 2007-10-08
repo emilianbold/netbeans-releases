@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.visualweb.project.jsf.framework;
 
-import org.netbeans.modules.visualweb.project.jsf.JsfProjectTemplate;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectConstants;
 import org.netbeans.modules.visualweb.project.jsf.api.ProjectTemplate;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
