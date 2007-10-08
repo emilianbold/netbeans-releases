@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU General
  * Public License Version 2 only ("GPL") or the Common Development and Distribution
  * License("CDDL") (collectively, the "License"). You may not use this file except in
@@ -16,13 +16,13 @@
  * accompanied this code. If applicable, add the following below the License Header,
  * with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * Contributor(s):
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL or only the
  * GPL Version 2, indicate your decision by adding "[Contributor] elects to include
  * this software in this distribution under the [CDDL or GPL Version 2] license." If
@@ -149,7 +149,7 @@ public class SearchForJavaAction extends WizardAction {
                         "... parsed java: " + javaInfo.getVersion() + " " + // NOI18N
                         "by " + javaInfo.getVendor() + "; " + // NOI18N
                         "final=" + !javaInfo.isNonFinal()); // NOI18N
-                        
+                
                 // filter out "private" jres
                 if (javaHome.getName().equals("jre") &&
                         JavaUtils.isJdk(javaHome.getParentFile())) {
@@ -267,7 +267,20 @@ public class SearchForJavaAction extends WizardAction {
             candidateLocations.addAll(
                     Arrays.asList(JAVA_FILESYSTEM_LOCATIONS_UNIX));
         }
-        
+        final File currentJava = SystemUtils.getCurrentJavaHome();
+        final File currentJavaParentDir = currentJava.getParentFile();
+        if(currentJavaParentDir!=null) {
+            if(JavaUtils.isJavaHome(currentJava) && JavaUtils.isJdk(currentJavaParentDir)) {
+                //installer runs on private JRE so perform search for
+                //all children of the parent directory of the corresponding JDK
+                String parentDir = currentJavaParentDir.getParent();
+                if ( parentDir != null ) {
+                    if(!candidateLocations.contains(parentDir)) {
+                        candidateLocations.add(parentDir);
+                    }
+                }
+            }
+        }
         for (String location: candidateLocations) {
             final File parent = SystemUtils.resolvePath(location);
             
@@ -278,7 +291,7 @@ public class SearchForJavaAction extends WizardAction {
                         return pathname.isDirectory();
                     }
                 });
-                    
+                
                 if (children != null) {
                     for (File child: children) {
                         locations.add(child);
@@ -382,7 +395,6 @@ public class SearchForJavaAction extends WizardAction {
             }
         }
     }
-    
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
     public static final String DEFAULT_TITLE =
@@ -437,7 +449,7 @@ public class SearchForJavaAction extends WizardAction {
     
     public static final String[] JAVA_FILESYSTEM_LOCATIONS_COMMON = new String[] {
         "$S{java.home}", // NOI18N
-        "$S{java.home}/.." // NOI18N        
+        "$S{java.home}/.." // NOI18N
     };
     
     public static final String[] JAVA_FILESYSTEM_LOCATIONS_UNIX = new String[] {
@@ -455,7 +467,7 @@ public class SearchForJavaAction extends WizardAction {
         "/usr/java", // NOI18N
         "/usr/java/jdk", // NOI18N
         "/usr/j2se", // NOI18N
-        "/usr/j2sdk", // NOI18N  
+        "/usr/j2sdk", // NOI18N
         
         
         "/usr/local", // NOI18N
@@ -463,7 +475,7 @@ public class SearchForJavaAction extends WizardAction {
         "/usr/local/jdk/instances", // NOI18N
         "/usr/local/java", // NOI18N
         "/usr/local/j2se", // NOI18N
-        "/usr/local/j2sdk", // NOI18N  
+        "/usr/local/j2sdk", // NOI18N
         
         "/export", // NOI18N
         "/export/jdk", // NOI18N
@@ -479,7 +491,7 @@ public class SearchForJavaAction extends WizardAction {
         "/opt/j2se",  // NOI18N
         "/opt/j2sdk", // NOI18N
         
-        "/usr/lib/jvm", // NOI18N        
+        "/usr/lib/jvm", // NOI18N
     };
     
     public static final String[] JAVA_FILESYSTEM_LOCATIONS_MACOSX = new String[] {
