@@ -218,10 +218,17 @@ public class XsltMapper extends BasicMapper implements HelpCtx.Provider{
         targetTree.addKeyListener(new KeyAdapter() {
             public void keyReleased(KeyEvent event) {
                 if (event.getKeyCode() == KeyEvent.VK_DELETE) {
-                    TreeNode selectedNode = (TreeNode)targetTree.
-                            getSelectionPath().getLastPathComponent();
-                    DeleteAction da = new DeleteAction(XsltMapper.this, selectedNode);
+                    
+                    TreePath selection = targetTree.getSelectionPath();
+                    
+                    if(selection != null){
+                    
+                    
+                    DeleteAction da = new DeleteAction(
+                            XsltMapper.this,
+                            (TreeNode) selection.getLastPathComponent());
                     da.actionPerformed(null);
+                    }
                 }
             }
         });
