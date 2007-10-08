@@ -328,7 +328,7 @@ public class RefactoringRegressionsTest extends GeneratorTestMDRCompat {
                 //ExpressionStatementTree stmt = (ExpressionStatementTree) stmts.get(0);
                 NewClassTree nct = (NewClassTree) stmt.getInitializer();
                 //NewClassTree nct = (NewClassTree) stmt.getExpression();
-                workingCopy.rewrite(nct, make.addNewClassArgument(nct, null, make.Literal(5)));
+                workingCopy.rewrite(nct, make.addNewClassArgument(nct, make.Literal(5)));
             }
         };
         src.runModificationTask(task).commit();
@@ -384,7 +384,7 @@ public class RefactoringRegressionsTest extends GeneratorTestMDRCompat {
                 List<? extends StatementTree> stmts = method.getBody().getStatements();
                 ExpressionStatementTree stmt = (ExpressionStatementTree) stmts.get(0);
                 NewClassTree nct = (NewClassTree) stmt.getExpression();
-                workingCopy.rewrite(nct, make.addNewClassArgument(nct, null, make.Literal(5)));
+                workingCopy.rewrite(nct, make.addNewClassArgument(nct, make.Literal(5)));
             }
         };
         src.runModificationTask(task).commit();

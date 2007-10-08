@@ -691,7 +691,7 @@ public class MethodParametersTest extends GeneratorTestMDRCompat {
                 MethodTree method1 = (MethodTree) clazz.getMembers().get(1);
                 ExpressionStatementTree statement = (ExpressionStatementTree) method1.getBody().getStatements().get(0);
                 MethodInvocationTree invocation = (MethodInvocationTree) statement.getExpression();
-                workingCopy.rewrite(invocation, make.addMethodInvocationArgument(invocation, make.Literal(0), null));
+                workingCopy.rewrite(invocation, make.addMethodInvocationArgument(invocation, make.Literal(0)));
                 MemberSelectTree mst = (MemberSelectTree) invocation.getMethodSelect();
                 MethodTree method2 = (MethodTree) clazz.getMembers().get(2);
                 VariableTree var = make.Variable(
