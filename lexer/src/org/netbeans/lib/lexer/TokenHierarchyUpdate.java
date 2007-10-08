@@ -394,17 +394,17 @@ public final class TokenHierarchyUpdate {
          * It's expected that updateStatusImpl() was already called
          * on the corresponding embedding container.
          */
-        public void markRemoved(TokenList<?> removedTokenList) {
-            int offset = removedTokenList.startOffset();
+        public void markRemoved(EmbeddedTokenList<?> removedTokenList) {
             if (index == -1) {
-                index = tokenListList.findIndex(offset);
+                index = tokenListList.findIndexDuringUpdate(removedTokenList,
+                        update.eventInfo.modificationOffset(), update.eventInfo.removedLength());
                 assert (index >= 0) : "index=" + index + " < 0"; // NOI18N
             }
-            TokenList<?> expected = tokenListList.getOrNull(index + removeCount);
-            if (expected != removedTokenList) {
-                throw new IllegalStateException("Removing at offset=" + offset + // NOI18N
-                        ". Expected to remove tokenList\n" + expected + // NOI18N
-                        "\nbut removing tokenList\n" + removedTokenList + // NOI18N
+            TokenList<?> markedForRemoveTokenList = tokenListList.getOrNull(index + removeCount);
+            if (markedForRemoveTokenList != removedTokenList) {
+                throw new IllegalStateException("Removing at index=" + index + // NOI18N
+                        ". Wishing to remove tokenList\n" + removedTokenList + // NOI18N
+                        "\nbut marked-for-remove tokenList is \n" + markedForRemoveTokenList + // NOI18N
                         "\nfrom tokenListList\n" + tokenListList);
             }
             removeCount++;
@@ -448,15 +448,14 @@ public final class TokenHierarchyUpdate {
             if (index == -1)
                 return; // Nothing to do
 
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("TokenListList " + tokenListList.languagePath() +
-                        " replace: index=" + index +
-                        ", removeCount=" + removeCount +
-                        ", added.size()=" + added.size()
-                );
-            }
-
             if (removeCount == 0 && added.size() == 0) { // Bounds change only
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("TLLInfo.update(): BOUNDS-CHANGE: " + tokenListList.languagePath().mimePath() + // NOI18N
+                            " index=" + index + // NOI18N
+                            '\n'
+                    );
+                }
+
                 EmbeddedTokenList<?> etl = (EmbeddedTokenList<?>)tokenListList.get(index);
                 // Should certainly be non-empty
                 assert (etl.tokenCountCurrent() > 0);
@@ -476,6 +475,15 @@ public final class TokenHierarchyUpdate {
                 relexAfterLastModifiedSection(index + 1, relexState, matchState);
 
             } else { // Non-bounds change
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("TLLInfo.update(): REPLACE: " + tokenListList.languagePath().mimePath() + // NOI18N
+                            " index=" + index + // NOI18N
+                            ", removeCount=" + removeCount + // NOI18N
+                            ", added.size()=" + added.size() + // NOI18N
+                            '\n'
+                    );
+                }
+
                 TokenList<?>[] removed = tokenListList.replace(index, removeCount, added);
                 // Mark embeddings of removed token lists as removed
                 if (tokenListList.hasChildren()) {

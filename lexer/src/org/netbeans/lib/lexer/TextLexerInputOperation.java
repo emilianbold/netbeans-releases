@@ -103,7 +103,6 @@ public class TextLexerInputOperation<T extends TokenId> extends LexerInputOperat
     }
 
     public void approveToken(AbstractToken<T> token) {
-        int tokenLength = tokenLength();
         if (isSkipToken(token)) {
             preventFlyToken();
 

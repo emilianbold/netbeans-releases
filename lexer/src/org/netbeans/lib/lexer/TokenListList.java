@@ -250,6 +250,98 @@ public final class TokenListList extends GapList<EmbeddedTokenList<?>> {
         }
         return low;
     }
+    
+    /**
+     * Find an index during update of the token list.
+     * <br>
+     * If there was a removal performed and some of the contained token lists
+     * were removed then these TLs then the token lists beyond the modification point
+     * will be forced to update itself which may 
+     */
+    public int findIndexDuringUpdate(EmbeddedTokenList targetEtl, int modOffset, int removedLength) {
+        int high = size() - 1;
+        int low = 0;
+        int targetStartOffset = targetEtl.startOffset();
+        if (targetStartOffset > modOffset && targetEtl.embeddingContainer().isRemoved()) {
+            targetStartOffset = Math.max(targetStartOffset - removedLength, modOffset);
+        }
+        while (low <= high) {
+            int mid = (low + high) >> 1;
+            EmbeddedTokenList<?> etl = get(mid);
+            // Ensure that the startOffset() will be updated
+            etl.embeddingContainer().updateStatusImpl();
+            int startOffset = etl.startOffset();
+            if (startOffset > modOffset && etl.embeddingContainer().isRemoved()) {
+                startOffset = Math.max(startOffset - removedLength, modOffset);
+            }
+            int cmp = startOffset - targetStartOffset;
+            if (cmp < 0)
+                low = mid + 1;
+            else if (cmp > 0)
+                high = mid - 1;
+            else {
+                low = mid;
+                // Now it's also possible that there was a larger remove when multiple token lists
+                // inside the removed area were removed and they all have startOffset being modOffset.
+                // In such case these need to be searched by linear search in both directions
+                // from the found one.
+                if (etl != targetEtl) {
+                    low--;
+                    while (low >= 0) {
+                        etl = get(low);
+                        if (etl == targetEtl) { // Quick check for match
+                            return low;
+                        }
+                        // Check whether this was appropriate attempt for match
+                        startOffset = etl.startOffset();
+                        if (startOffset > modOffset && etl.embeddingContainer().isRemoved()) {
+                            startOffset = Math.max(startOffset - removedLength, modOffset);
+                        }
+                        if (startOffset != modOffset)
+                            break;
+                        low--;
+                    }
+                    
+                    // Go up from mid
+                    low = mid + 1;
+                    while (low < size()) {
+                        etl = get(low);
+                        if (etl == targetEtl) { // Quick check for match
+                            return low;
+                        }
+                        // Check whether this was appropriate attempt for match
+                        startOffset = etl.startOffset();
+                        if (startOffset > modOffset && etl.embeddingContainer().isRemoved()) {
+                            startOffset = Math.max(startOffset - removedLength, modOffset);
+                        }
+                        if (startOffset != modOffset)
+                            break;
+                        low++;
+                    }
+                }
+                break;
+            }
+        }
+        return low;
+    }
+    
+    public String checkConsistency() {
+        // Check whether the token lists are in a right order
+        int lastEndOffset = 0;
+        for (int i = 0; i < size(); i++) {
+            EmbeddedTokenList<?> etl = get(i);
+            if (etl.startOffset() < lastEndOffset) {
+                return "etl[" + i + "].startOffset()=" + etl.startOffset() +
+                        " < lastEndOffset=" + lastEndOffset;
+            }
+            if (etl.startOffset() > etl.endOffset()) {
+                return "etl[" + i + "].startOffset()=" + etl.startOffset() +
+                        " > etl[" + i + "].endOffset()="+ etl.endOffset();
+            }
+            lastEndOffset = etl.endOffset();
+        }
+        return null;
+    }
 
     @Override
     public String toString() {

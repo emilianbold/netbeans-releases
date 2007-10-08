@@ -342,10 +342,14 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
                 incTokenList.setText(text);
             }
             
+            if (TokenHierarchyUpdate.LOG.isLoggable(Level.FINE)) {
+                TokenHierarchyUpdate.LOG.fine("EVENT-INFO: " + eventInfo + "\n"); // NOI18N
+            }
+
             new TokenHierarchyUpdate(eventInfo).update(incTokenList);
             
             if (TokenHierarchyUpdate.LOG.isLoggable(Level.FINE)) {
-                TokenHierarchyUpdate.LOG.fine("EVENT: " + eventInfo + "\n"); // NOI18N
+                TokenHierarchyUpdate.LOG.fine("AFFECTED: " + eventInfo.dumpAffected() + "\n"); // NOI18N
                 String extraMsg = "";
                 if (TokenHierarchyUpdate.LOG.isLoggable(Level.FINER)) {
                     // Check consistency of the whole token hierarchy
@@ -547,9 +551,14 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
      * @return string describing the problem or null if the hierarchy is consistent.
      */
     public String checkConsistency() {
+        // Check root token list first
         String error = checkConsistencyTokenList(validRootTokenList(), ArrayUtilities.emptyIntArray(), 0);
-        if (error == null && path2tokenListList != null) { // Check token sequences lists
+        // Check token-list lists
+        if (error == null && path2tokenListList != null) {
             for (TokenListList tll : path2tokenListList.values()) {
+                // Check token-list list consistency
+                tll.checkConsistency();
+                // Check each individual token list in token-list list
                 for (TokenList<?> tl : tll) {
                     error = checkConsistencyTokenList(tl, ArrayUtilities.emptyIntArray(), tl.startOffset());
                     if (error != null) {

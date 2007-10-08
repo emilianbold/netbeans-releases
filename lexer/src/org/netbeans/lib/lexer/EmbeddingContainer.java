@@ -499,6 +499,17 @@ public final class EmbeddingContainer<T extends TokenId> {
     }
     
     /**
+     * Check whether this embedding container is no longer present
+     * in the token hierarchy.
+     * <br/>
+     * This method should only be called after updateStatusImpl() was called
+     * (it updates rootToken variable).
+     */
+    public boolean isRemoved() {
+        return (rootToken == null);
+    }
+    
+    /**
      * Update and return root token corresponding to this embedding container.
      */
     AbstractToken<? extends TokenId> updateStatusImpl() {

@@ -429,7 +429,12 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
     }
     
     public String toString() {
-        return LexerUtilsConstants.appendTokenList(null, this).toString();
+        StringBuilder sb = new StringBuilder(256);
+        sb.append("EmbeddedTokenList: startOffset=").append(startOffset());
+        sb.append(", endOffset=").append(endOffset());
+        sb.append('\n');
+        LexerUtilsConstants.appendTokenList(sb, this);
+        return sb.toString();
     }
 
 }
