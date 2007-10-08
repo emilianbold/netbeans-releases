@@ -547,12 +547,14 @@ public class WebForm implements Designer {
         return domProvider;
     }
 
+    @Override
     public String toString() {
 //        if (getMarkup() != null) {
 //            return "WebForm[" + getMarkup().getFileObject().getNameExt() + "]";
 //        }
-        return super.toString() + "[domProvider=" + domProvider + " ,selection=" + selection
-                + ", designerPane=" + designerPane + ", gridmode=" + isGridMode() + "]";
+//        return super.toString() + "[domProvider=" + domProvider + " ,selection=" + selection
+//                + ", designerPane=" + designerPane + ", gridmode=" + isGridMode() + "]";
+        return super.toString() + "[domProvider=" + domProvider + "]"; // NOI18N
     }
 
 //    /** Look up a webform for a given model */

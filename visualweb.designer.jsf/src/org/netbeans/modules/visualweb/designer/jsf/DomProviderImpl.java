@@ -1486,4 +1486,9 @@ class DomProviderImpl implements DomProvider {
     public int getGridOffset() {
         return GridHandler.getDefault().getGridOffset();
     }
+    
+    @Override
+    public String toString() {
+        return super.toString() + "[jsfForm=" + jsfForm + "]"; // NOI18N
+    }
 }

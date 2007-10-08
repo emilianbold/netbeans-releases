@@ -524,20 +524,22 @@ public abstract class ExternalDocumentBox extends DocumentBox implements Externa
         return frameForm;
     }
 
-    /** Redefine to return the <code>WebForm</code> for the content being shown
-     * in the external document. That way JSF rendering etc. will use
-     * the correct form.
-     * XXX This looks suspicious.
-     */
-    @Override
-    public WebForm getWebForm() {
-        WebForm frameForm = getExternalForm();
-        if (frameForm != null) {
-            return frameForm;
-        }
-
-        return super.getWebForm();
-    }
+    // XXX #118167 This hack seems to be causing more troubles (see the issue), commenting out.
+    // If you need to access the external form, use getExternalForm() method.
+//    /** Redefine to return the <code>WebForm</code> for the content being shown
+//     * in the external document. That way JSF rendering etc. will use
+//     * the correct form.
+//     * XXX This looks suspicious.
+//     */
+//    @Override
+//    public WebForm getWebForm() {
+//        WebForm frameForm = getExternalForm();
+//        if (frameForm != null) {
+//            return frameForm;
+//        }
+//
+//        return super.getWebForm();
+//    }
     
     public DomProvider getExternalDomProvider() {
         WebForm externalForm = getExternalForm();
