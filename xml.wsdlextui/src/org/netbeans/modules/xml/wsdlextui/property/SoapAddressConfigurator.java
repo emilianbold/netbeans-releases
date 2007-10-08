@@ -108,21 +108,15 @@ public class SoapAddressConfigurator extends ExtensibilityElementConfigurator {
    
     
     public String generateAddressLocation(ExtensibilityElement element) {
-        //TODO:Complete this once decision is made.
         WSDLModel model = element.getModel();
         ModelSource ms = model.getModelSource();
-        FileObject fo = (FileObject) ms.getLookup().lookup(FileObject.class);
+        FileObject fo = ms.getLookup().lookup(FileObject.class);
         if (fo != null) {
             Project prj = FileOwnerQuery.getOwner(fo);
-            //String prjPath = prj.getProjectDirectory().getPath();
-            //String filePath = fo.getPath();
-            
-            //String path = filePath.substring(prjPath.length());
-            //String path = FileUtil.getRelativePath(prj.getProjectDirectory().getParent(), fo);
-            
-            //URL url = new URL("http", "localhost", 18181, path);
-            Port port = (Port) element.getParent();
-            return "http://localhost:18181/" +  prj.getProjectDirectory().getName() + "/" + fo.getName() + "/" + port.getName();
+            if (prj != null) { 
+                Port port = (Port) element.getParent();
+                return "http://localhost:18181/" +  prj.getProjectDirectory().getName() + "/" + fo.getName() + "/" + port.getName();
+            }
         }
         return "http://localhost:18181/service";
     }
