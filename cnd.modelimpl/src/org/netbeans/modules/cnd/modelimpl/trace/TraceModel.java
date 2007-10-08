@@ -434,6 +434,9 @@ public class TraceModel {
 	try {
 	    processArguments(args);
 	    doTest();
+	} catch( Error thr ) {
+	    System.err.printf("\n");
+	    thr.printStackTrace();
 	} finally {
 	    model.shutdown();
 	}
@@ -444,7 +447,7 @@ public class TraceModel {
 	if( repeatCount > 1 ) {
 	    for (int i = 0; i < repeatCount; i++) {
 		print("\n\n==================== Pass " + i + "====================\n");
-		doTest2();
+                doTest2();
 		resetProject();
 	    }
 	} else {
