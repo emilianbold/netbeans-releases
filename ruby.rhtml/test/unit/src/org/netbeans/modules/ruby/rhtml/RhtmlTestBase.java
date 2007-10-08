@@ -34,13 +34,13 @@ import java.util.Collections;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.JEditorPane;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Formatter;
 import org.netbeans.editor.ext.ExtFormatter;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
-import org.netbeans.modules.editor.indent.IndentTestMimeDataProvider;
 import org.netbeans.modules.gsf.DefaultLanguage;
 import org.netbeans.modules.gsf.GsfIndentTaskFactory;
 import org.netbeans.modules.gsf.Language;
@@ -56,6 +56,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
+import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 
 /**
  *
@@ -77,9 +78,9 @@ public abstract class RhtmlTestBase extends RubyTestBase {
         TestLanguageProvider.register(HTMLTokenId.language());
         
         rhtmlReformatFactory = new RhtmlIndentTaskFactory();
-        IndentTestMimeDataProvider.addInstances(RubyInstallation.RHTML_MIME_TYPE, rhtmlReformatFactory);
+        MockMimeLookup.setInstances(MimePath.parse(RubyInstallation.RHTML_MIME_TYPE), rhtmlReformatFactory);
         htmlReformatFactory = new HtmlIndentTaskFactory();
-        IndentTestMimeDataProvider.addInstances("text/html", htmlReformatFactory);
+        MockMimeLookup.setInstances(MimePath.parse("text/html"), htmlReformatFactory);
         // Can't do this without LanguageRegistry finding Ruby
         //rubyReformatFactory = new GsfIndentTaskFactory();
         //IndentTestMimeDataProvider.addInstances(RubyInstallation.RUBY_MIME_TYPE, rubyReformatFactory);
@@ -109,8 +110,8 @@ public abstract class RhtmlTestBase extends RubyTestBase {
     
     @Override
     protected void tearDown() throws Exception {
-        IndentTestMimeDataProvider.removeInstances(RubyInstallation.RHTML_MIME_TYPE, rhtmlReformatFactory);
-        IndentTestMimeDataProvider.removeInstances("text/html", htmlReformatFactory);
+        MockMimeLookup.setLookup(MimePath.parse(RubyInstallation.RHTML_MIME_TYPE));
+        MockMimeLookup.setLookup(MimePath.parse("text/html"));
         //IndentTestMimeDataProvider.removeInstances(RubyInstallation.RUBY_MIME_TYPE, rubyReformatFactory);
         super.tearDown();
     }
