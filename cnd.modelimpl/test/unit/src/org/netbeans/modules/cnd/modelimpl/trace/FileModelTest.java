@@ -64,6 +64,10 @@ public class FileModelTest extends TraceModelTestBase {
         getTraceModel().setDumpPPState(true);
     }
     
+    public void testParserRecover() throws Exception {
+        performTest("parser_recover.cc");
+    }
+    
     public void testFunWithoutRetTypeInClassBody() throws Exception {
         performTest("constructors_and_fun_no_ret_types.cc");
     }

@@ -1,0 +1,20 @@
+
+State of macro map:
+Own Map:
+MACROS (sorted 0):
+System Map:
+MACROS (sorted 0):
+
+
+========== Dumping model of FILE parser_recover.cc
+Includes:
+    <no includes>
+Macros:
+    <no macros>
+VARIABLE x [3:5/15-3:11/21]  TYPE: int TEXT=int  [3:5/15-3:8/18]  INIT: null  SCOPE: $Global$ 
+VARIABLE y [5:1/24-5:7/30]  TYPE: int TEXT=int  [5:1/24-5:4/27]  INIT: null  SCOPE: $Global$ 
+
+========== Dumping model of PROJECT DummyProject
+VARIABLE x [3:5/15-3:11/21]  TYPE: int TEXT=int  [3:5/15-3:8/18]  INIT: null  SCOPE: $Global$ 
+VARIABLE y [5:1/24-5:7/30]  TYPE: int TEXT=int  [5:1/24-5:4/27]  INIT: null  SCOPE: $Global$ 
+
