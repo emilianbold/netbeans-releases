@@ -67,12 +67,14 @@ final class AddCastFix implements Fix {
     private String treeName;
     private String type;
     private int position;
+    private boolean wrapWithBrackets;
     
-    public AddCastFix(JavaSource js, String treeName, String type, int position) {
+    public AddCastFix(JavaSource js, String treeName, String type, int position, boolean wrapWithBrackets) {
         this.js = js;
         this.treeName = treeName;
         this.type = type;
         this.position = position;
+        this.wrapWithBrackets = wrapWithBrackets;
     }
     
     public ChangeInfo implement() {
@@ -88,7 +90,13 @@ final class AddCastFix implements Fix {
                     AddCast.computeType(working, position, tm, expression, leaf);
                     
                     TreeMaker make = working.getTreeMaker();
-                    ExpressionTree cast = make.TypeCast(make.Type(tm[0]), expression[0]);
+                    ExpressionTree toCast = expression[0];
+                    
+                    if (wrapWithBrackets) {
+                        toCast = make.Parenthesized(toCast);
+                    }
+                    
+                    ExpressionTree cast = make.TypeCast(make.Type(tm[0]), toCast);
                     
                     working.rewrite(expression[0], cast);
                 }
@@ -102,6 +110,10 @@ final class AddCastFix implements Fix {
     
     public String getText() {
         return NbBundle.getMessage(AddCastFix.class, "LBL_FIX_Add_Cast", treeName, type); // NOI18N
+    }
+    
+    public String toDebugString() {
+        return "[AddCastFix:" + treeName + ":" + type + "]";
     }
 
 }

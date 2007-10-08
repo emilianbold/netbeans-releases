@@ -43,8 +43,10 @@ package org.netbeans.modules.java.hints.errors;
 
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
@@ -58,7 +60,9 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -68,6 +72,7 @@ import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.util.NbBundle;
 
+import static com.sun.source.tree.Tree.Kind.*;
 
 /**
  *
@@ -147,7 +152,7 @@ public final class AddCast implements ErrorRule<Void> {
         if (tm[0] != null) {
             int position = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), expression[0]);
             
-            result.add(new AddCastFix(info.getJavaSource(), new HintDisplayNameVisitor().scan(expression[0], null), Utilities.getTypeName(tm[0], false).toString(), position));
+            result.add(new AddCastFix(info.getJavaSource(), new HintDisplayNameVisitor(info).scan(expression[0], null), Utilities.getTypeName(tm[0], false).toString(), position, expression[0].getKind().asInterface() == BinaryTree.class));
         }
         
         return result;
@@ -169,7 +174,52 @@ public final class AddCast implements ErrorRule<Void> {
         return NbBundle.getMessage(AddCast.class, "DSC_Add_Cast");
     }
     
+    private static final Map<Kind, String> operator2DN;
+    
+    static {
+        operator2DN = new HashMap<Kind, String>();
+        
+        operator2DN.put(AND, "&");
+        operator2DN.put(XOR, "^");
+        operator2DN.put(OR, "|");
+        operator2DN.put(CONDITIONAL_AND, "&&");
+        operator2DN.put(CONDITIONAL_OR, "||");
+        operator2DN.put(MULTIPLY_ASSIGNMENT, "*=");
+        operator2DN.put(DIVIDE_ASSIGNMENT, "/=");
+        operator2DN.put(REMAINDER_ASSIGNMENT, "%=");
+        operator2DN.put(PLUS_ASSIGNMENT, "+=");
+        operator2DN.put(MINUS_ASSIGNMENT, "-=");
+        operator2DN.put(LEFT_SHIFT_ASSIGNMENT, "<<=");
+        operator2DN.put(RIGHT_SHIFT_ASSIGNMENT, ">>=");
+        operator2DN.put(UNSIGNED_RIGHT_SHIFT_ASSIGNMENT, ">>>=");
+        operator2DN.put(AND_ASSIGNMENT, "&=");
+        operator2DN.put(XOR_ASSIGNMENT, "^=");
+        operator2DN.put(OR_ASSIGNMENT, "|=");
+        operator2DN.put(BITWISE_COMPLEMENT, "~");
+        operator2DN.put(LOGICAL_COMPLEMENT, "!");
+        operator2DN.put(MULTIPLY, "*");
+        operator2DN.put(DIVIDE, "/");
+        operator2DN.put(REMAINDER, "%");
+        operator2DN.put(PLUS, "+");
+        operator2DN.put(MINUS, "-");
+        operator2DN.put(LEFT_SHIFT, "<<");
+        operator2DN.put(RIGHT_SHIFT, ">>");
+        operator2DN.put(UNSIGNED_RIGHT_SHIFT, ">>>");
+        operator2DN.put(LESS_THAN, "<");
+        operator2DN.put(GREATER_THAN, ">");
+        operator2DN.put(LESS_THAN_EQUAL, "<=");
+        operator2DN.put(GREATER_THAN_EQUAL, ">=");
+        operator2DN.put(EQUAL_TO, "==");
+        operator2DN.put(NOT_EQUAL_TO, "!=");
+    }
+    
     private static class HintDisplayNameVisitor extends TreeScanner<String, Void> {
+        
+        private CompilationInfo info;
+
+        public HintDisplayNameVisitor(CompilationInfo info) {
+            this.info = info;
+        }
         
         public @Override String visitIdentifier(IdentifierTree tree, Void v) {
             return "..." + tree.getName().toString();
@@ -187,6 +237,24 @@ public final class AddCast implements ErrorRule<Void> {
         
         public @Override String visitNewClass(NewClassTree nct, Void p) {
             return "...new " + simpleName(nct.getIdentifier()) + "(...)"; // NOI18N
+        }
+
+        @Override
+        public String visitBinary(BinaryTree node, Void p) {
+            String dn = operator2DN.get(node.getKind());
+            
+            return scan(node.getLeftOperand(), p) + dn + scan(node.getRightOperand(), p);
+        }
+
+        @Override
+        public String visitLiteral(LiteralTree node, Void p) {
+            if (node.getValue() instanceof String)
+                return "...";
+            
+            int start = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), node);
+            int end   = (int) info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), node);
+            
+            return info.getText().substring(start, end);
         }
         
         private String simpleName(Tree t) {
