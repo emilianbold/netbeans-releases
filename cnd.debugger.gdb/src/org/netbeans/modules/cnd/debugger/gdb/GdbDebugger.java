@@ -149,6 +149,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private Map<Integer, BreakpointImpl> pendingBreakpointMap = new HashMap<Integer, BreakpointImpl>();
     private Map<Integer, AbstractVariable> updateVariablesMap = new HashMap<Integer, AbstractVariable>();
     private Map<String, BreakpointImpl> breakpointList = Collections.synchronizedMap(new HashMap<String, BreakpointImpl>());
+    private Map<String, String> varToTypeMap = new HashMap<String, String>();
     private Logger log = Logger.getLogger("gdb.logger"); // NOI18N
     private int currentToken = 0;
     private String currentThread = "1"; // NOI18N
@@ -456,14 +457,22 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     List list = getEnumList(tbuf.substring(pos + 1));
                     addType(type, list);
                 } else {
+                    String t;
                     Map map = getCSUFieldMap(tbuf.substring(pos + 1));
                     if (type.equals("this") && isCplusPlus()) { // NOI18N
                         int pos1 = tbuf.indexOf(' ');
                         int pos2 = tbuf.indexOf(' ', pos1 + 1);
-                        String t = tbuf.substring(pos1, pos2).trim();
+                        t = tbuf.substring(pos1, pos2).trim();
                         addType(t, map);
                     } else {
-                        addType(type, map);
+                        t = varToTypeMap.remove(type);
+                        String n = map.get("<name>").toString(); // NOI18N
+                        if (t == null || n.equals(t)) {
+                            addType(type, map);
+                        } else {
+                            addType(n, map);
+                            addType(t, n);
+                        }
                     }
                     if (map.size() > 0) { // NOI18N
                         checkForUnknownTypes(map);
@@ -493,6 +502,13 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 int pos = tbuf.indexOf('='); // its guaranteed to have '='
                 String type = tbuf.substring(0, pos);
                 typePendingTable.remove(type);
+                if (msg.startsWith("\"No symbol \\\"")) { // NOI18N
+                    int pos1 = msg.substring(13).indexOf("\""); // NOI18N
+                    if (pos1 != -1 && msg.substring(13, pos1 + 12).equals(type)) {
+                        String var = varToTypeMap.get(type);
+                        addTypeCompletion(var);
+                    }
+                }
             } else if (token == ttToken) { // invalid tooltip request
                 ttAnnotation.postToolTip('>' + msg.substring(1, msg.length() - 1) + '<');
                 ttToken = 0;
@@ -580,7 +596,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     if (type.endsWith("{...}")) { // NOI18N
                         addTypeCompletion('$' + var.getName()); // unnamed type
                     } else {
-                        addTypeCompletion(type);
+                        varToTypeMap.put(var.getName(), type);
+                        addTypeCompletion(var.getName());
                     }
                 }
             } else if ((typebuf = typeCompletionTable.get(Integer.valueOf(token))) != null) { // ptype
@@ -766,9 +783,18 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         int pos1 = info.indexOf('{');
         int pos2 = GdbUtils.findMatchingCurly(info, pos1);
         String fields = null;
+        String n;
         
-        if (pos1 != -1 && (pos0 = getSuperclassColon(info.substring(0, pos1))) != -1) {
-            map = addSuperclassEntries(map, info.substring(pos0 + 1, pos1));
+        if (pos1 != -1) {
+            if ((pos0 = getSuperclassColon(info.substring(0, pos1))) != -1) {
+                map = addSuperclassEntries(map, info.substring(pos0 + 1, pos1));
+            }
+            if (pos0 == -1) {
+                n = info.substring(0, pos1).trim();
+            } else {
+                n = info.substring(0, pos0).trim();
+            }
+            map.put("<name>", n.startsWith("class ") ? n.substring(5).trim() : n); // NOI18N
         }
         
         if (pos1 == -1 && pos2 == -1) {
