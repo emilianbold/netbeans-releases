@@ -1,0 +1,143 @@
+<?xml version="1.0"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+
+<filesystem>
+    <folder name="Editors">
+        
+        <folder name="FontsColors">
+            <folder name="DarkPastels">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.themes.Bundle"/>
+                <folder name="Defaults">
+                    <file name="org-netbeans-modules-defaults-token-colorings.xml" url="DarkPastels-fontsColorsDefaults.xml">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
+                    </file>
+                    <file name="org-netbeans-modules-defaults-highlight-colorings.xml" url="DarkPastels-editor.xml">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
+                        <attr name="nbeditor-settings-ColoringType" stringvalue="highlight"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
+        
+        <folder name="application">
+            <folder name="x-httpd-eruby">
+                <folder name="FontsColors">
+                    <folder name="DarkPastels">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-editor-rhtml-token-colorings.xml" url="blank.xml"/>
+                        </folder>
+                    </folder>
+                </folder>
+            </folder>
+        </folder>
+        
+        <folder name="text">
+            <folder name="plain">
+                <folder name="FontsColors">
+                    <folder name="DarkPastels">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-editor-plain-token-colorings.xml" url="DarkPastels-plain-fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>
+            </folder>
+
+            <folder name="html">
+                <folder name="FontsColors">
+                    <folder name="DarkPastels">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-editor-html-colorings.xml" url="DarkPastels-HTML-fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>
+            </folder>
+            
+            <folder name="x-java">
+                <folder name="FontsColors">
+                    <folder name="DarkPastels">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-editor-java-token-colorings.xml" url="DarkPastels-Java-fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>
+            </folder>
+            
+            <folder name="x-ruby">
+                <folder name="FontsColors">
+                    <folder name="DarkPastels">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-editor-ruby-token-colorings.xml" url="DarkPastels-Ruby-fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>
+            </folder>
+            <folder name="x-ruby-comment">
+                <folder name="FontsColors">
+                    <folder name="DarkPastels">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-editor-x-ruby-comment-token-colorings.xml" url="blank.xml"/>
+                        </folder>
+                    </folder>
+                </folder>
+            </folder>
+            <folder name="x-ruby-string-double">
+                <folder name="FontsColors">
+                    <folder name="DarkPastels">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-editor-x-ruby-string-double-token-colorings.xml" url="blank.xml"/>
+                        </folder>
+                    </folder>
+                </folder>
+            </folder>
+            <folder name="x-ruby-string-single">
+                <folder name="FontsColors">
+                    <folder name="DarkPastels">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-editor-x-ruby-string-single-token-colorings.xml" url="blank.xml"/>
+                        </folder>
+                    </folder>
+                </folder>
+            </folder>
+            
+            <folder name="xml">
+                <folder name="FontsColors">
+                    <folder name="DarkPastels">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-xml-text-token-colorings.xml" url="DarkPastels-XML-fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>
+            </folder>
+        </folder>
+        
+    </folder>
+</filesystem>
+
