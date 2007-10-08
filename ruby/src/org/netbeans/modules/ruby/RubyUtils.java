@@ -810,5 +810,13 @@ public class RubyUtils {
         return true;
     }
 
+    public static String truncate(String s, int length) {
+        assert length > 3; // Not for short strings
+        if (s.length() <= length) {
+            return s;
+        } else {
+            return s.substring(0, length-3) + "...";
+        }
+    }
     
 }
