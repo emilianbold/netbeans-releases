@@ -37,13 +37,12 @@ public abstract class DefaultPropertySupport extends PropertySupport {
     public static final String PROPERTY_VALUE_NULL = "PROPERTY_NULL_VALUE_FOR_FEATURE_DESCRIPTOR"; //NOI18N //work around for hashmap which cant accept null
     public static final String PROPERYT_INPLACE_EDITOR = "inplaceEditor"; //NOI18N
     public static final String PROPERTY_CUSTOM_EDITOR_TITLE = "title"; //NOI18N
-    
     private PropertyValue propertyValue;
     private PropertyEditor propertyEditor;
     private List<String> propertyNames;
     private DesignPropertyDescriptor designPropertyDescriptor;
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings(value = "unchecked")
     DefaultPropertySupport(DesignPropertyDescriptor designerPropertyDescriptor, Class type) {
         super(designerPropertyDescriptor.getPropertyNames().iterator().next(), type, designerPropertyDescriptor.getPropertyDisplayName(), designerPropertyDescriptor.getPropertyToolTip(), true, true);
         this.designPropertyDescriptor = designerPropertyDescriptor;
@@ -66,6 +65,7 @@ public abstract class DefaultPropertySupport extends PropertySupport {
     protected PropertyValue readPropertyValue(final DesignComponent component, final String propertyName) {
         assert component != null;
         component.getDocument().getTransactionManager().readAccess(new Runnable() {
+
             public void run() {
                 propertyValue = component.readProperty(propertyName);
             }
@@ -83,7 +83,16 @@ public abstract class DefaultPropertySupport extends PropertySupport {
     @SuppressWarnings(value = "unchecked")
     public void restoreDefaultValue() throws IllegalAccessException, InvocationTargetException {
         if (propertyEditor instanceof DesignPropertyEditor && propertyNames != null && (!propertyNames.isEmpty())) {
-            setValue(((DesignPropertyEditor) propertyEditor).getDefaultValue());
+            final DesignPropertyEditor dpe = (DesignPropertyEditor) propertyEditor;
+            if (dpe.isResetToDefaultAutomatic()) {
+                setValue(dpe.getDefaultValue());
+            } else {
+                designPropertyDescriptor.getComponent().getDocument().getTransactionManager().writeAccess(new Runnable() {
+                    public void run() {
+                        dpe.customEditorResetToDefaultButtonPressed();
+                    }
+                });
+            }
         } else {
             super.restoreDefaultValue();
         }

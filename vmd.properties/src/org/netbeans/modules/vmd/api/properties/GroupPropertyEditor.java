@@ -29,8 +29,11 @@ import java.util.Arrays;
 /**
  * This DesignPropertyEditor provides support when is neccessary to support more that
  * one DesignComponent property in a single custom property editor.
+ * NOTE:It is very importent to take care of the customEditorResetToDefaultButtonPressed, 
+ * reseting to the default value needs to be implmented manualy inside of customEditorResetToDefaultButtonPressed
+ * mthod.
  */
-public class GroupPropertyEditor extends DesignPropertyEditor {
+public abstract class GroupPropertyEditor extends DesignPropertyEditor {
 
     private GroupValue value;
     
@@ -56,9 +59,16 @@ public class GroupPropertyEditor extends DesignPropertyEditor {
         this.value = newValue;
         firePropertyChange();
     }
+    
     @Override 
     public GroupValue getValue() {
         return value;
     }
+    
+    @Override
+    public final boolean isResetToDefaultAutomatic() {
+        return false;
+    }
 
+    
 }

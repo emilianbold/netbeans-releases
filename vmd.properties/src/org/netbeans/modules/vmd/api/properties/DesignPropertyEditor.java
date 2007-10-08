@@ -257,9 +257,28 @@ import org.openide.nodes.PropertySupport;
     }
     
     /**
-     * Method is invoked after OK button is pressed in custom editor.
+     * Method is invoked after OK button is pressed in the custom editor.
      */
     public void customEditorOKButtonPressed() {
+    }
+    /**
+     * This method gives support to chose how to handle reset To Defualt event inside of custom property editor.
+     * When returns Boolean.True (on default) reset to defualt is handle automaticly 
+     * by the method getDefaultValue and all values connected with this
+     * property editor are restored to the default based on the getDefaultValue method.
+     * When return Boolean.False, restoring values to the default state
+     * has to be resolve complitly inside of method customEditorResetToDefaultButtonPressed
+     * @return
+     */
+    public boolean isResetToDefaultAutomatic() {
+        return true;
+    }
+    /**
+     * Method is invoked after Reset To Defaulat button is pressed in the custom property editor.
+     * This method is executed only when isResetToDefaultAutomatic return Boolean.False.
+     * NOTE: This method is executed inside of write transaction.
+     */
+    public void customEditorResetToDefaultButtonPressed() {
     }
     
     @SuppressWarnings("unchecked") // NOI18N

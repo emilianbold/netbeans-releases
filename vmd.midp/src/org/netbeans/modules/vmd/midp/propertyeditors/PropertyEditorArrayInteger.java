@@ -133,4 +133,15 @@ public class PropertyEditorArrayInteger extends GroupPropertyEditor implements E
     public void init(DesignComponent component) {
         this.component = new WeakReference<DesignComponent>(component);
     }
+
+    @Override
+    public void customEditorResetToDefaultButtonPressed() {
+         if (! (getValue() instanceof GroupValue))
+            throw new IllegalArgumentException();
+        GroupValue currentValue = (GroupValue) getValue();        
+        for (String propertyName : currentValue.getPropertyNames()) {
+            component.get().writeProperty(propertyName, MidpTypes.createIntegerValue(0));
+        }
+    }
+    
 }
