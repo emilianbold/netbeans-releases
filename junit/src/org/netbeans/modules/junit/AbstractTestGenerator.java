@@ -536,10 +536,7 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
     
     /**
      */
-    protected String createTestMethodName(String smName) {
-        return "test"                                                   //NOI18N
-               + smName.substring(0,1).toUpperCase() + smName.substring(1);
-    }
+    protected abstract String createTestMethodName(String smName);
     
     /**
      */

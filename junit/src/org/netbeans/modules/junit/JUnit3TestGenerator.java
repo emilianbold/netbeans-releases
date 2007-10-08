@@ -309,6 +309,14 @@ final class JUnit3TestGenerator extends AbstractTestGenerator {
     
     /**
      */
+    @Override
+    protected String createTestMethodName(String smName) {
+        return "test"                                                   //NOI18N
+               + smName.substring(0,1).toUpperCase() + smName.substring(1);
+    }
+    
+    /**
+     */
     protected MethodTree composeNewTestMethod(String testMethodName,
                                               BlockTree testMethodBody,
                                               List<ExpressionTree> throwsList,
