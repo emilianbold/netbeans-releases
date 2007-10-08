@@ -132,7 +132,12 @@
                             </file>
                         </folder>
                     </folder>
+                    <folder name="BlueTheme">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-editor-rhtml-token-colorings.xml" url="BlueTheme-fontsColors.xml"/>
                         </folder>
+                    </folder>
+                </folder>
 
                 <file name="Settings.settings" url="RhtmlOptions.settings"/>
                 <file name="EditorKit.instance">
