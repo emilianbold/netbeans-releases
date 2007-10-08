@@ -156,6 +156,25 @@ public class JsfProjectUtils {
         return new JsfProjectTemplate();
     }
 
+    public static WebModule getWebModule(Project project) {
+        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
+
+        if (wm != null) {
+            return wm;
+        }
+
+        Sources sources = ProjectUtils.getSources(project);
+        SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        for (SourceGroup group : groups) {
+            wm = WebModule.getWebModule(group.getRootFolder());
+            if (wm != null) {
+                return wm;
+            }
+        }
+
+        return null;
+    }
+
     /**
      * Check for Creator project
      * @param project Project to be checked
@@ -169,7 +188,7 @@ public class JsfProjectUtils {
         if (project == null) {
             return false;
         }
-        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
+        WebModule wm = getWebModule(project);
         return wm != null;
     }
 
@@ -499,7 +518,7 @@ public class JsfProjectUtils {
         putProjectProperty(project, JsfProjectConstants.PROP_START_PAGE, newStartPage);
 
         // Adjust the path to the startpage based on JSF parameters
-        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
+        WebModule wm = getWebModule(project);
         if (wm != null) {
             try {
                 FileObject dd = wm.getDeploymentDescriptor();
@@ -675,7 +694,7 @@ public class JsfProjectUtils {
         if (project == null)
             return null;
 
-        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
+        WebModule wm = getWebModule(project);
         String name = (String) propertyValues[0];
         if (wm != null) {
             try {
@@ -755,7 +774,7 @@ public class JsfProjectUtils {
             return null;
         }
 
-        return slq.getSourceLevel(null);
+        return slq.getSourceLevel(getSourceRoot(project));
     }
 
     public static final String J2EE_1_3 = J2eeModule.J2EE_13;
@@ -773,7 +792,7 @@ public class JsfProjectUtils {
             return "";
         }
 
-        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
+        WebModule wm = getWebModule(project);
         if (wm == null) {
             return "";
         }
@@ -805,7 +824,7 @@ public class JsfProjectUtils {
             return null;
         }
 
-        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
+        WebModule wm = getWebModule(project);
         if (wm == null) {
             return null;
         }
@@ -823,7 +842,7 @@ public class JsfProjectUtils {
             return null;
         }
 
-        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
+        WebModule wm = getWebModule(project);
         if (wm == null) {
             return null;
         }

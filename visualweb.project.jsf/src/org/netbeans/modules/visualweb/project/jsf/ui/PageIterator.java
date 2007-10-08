@@ -221,12 +221,11 @@ public class PageIterator implements TemplateWizard.Iterator {
                 WebFrameworkProvider framework = (WebFrameworkProvider) frameworks.get(i);
                 String name = NbBundle.getMessage(JSFFrameworkProvider.class, "JSF_Name");
                 if (framework.getName().equals(name)) {
-                    FileObject projDir = project.getProjectDirectory();
-                    WebModule webModule = WebModule.getWebModule(projDir);
+                    WebModule webModule = JsfProjectUtils.getWebModule(project);
 
                     String beanPackage = (String) wizard.getProperty(JsfProjectConstants.PROP_JSF_PAGEBEAN_PACKAGE);
                     if (beanPackage == null) {
-                        beanPackage = JsfProjectUtils.deriveSafeName(projDir.getName());
+                        beanPackage = JsfProjectUtils.deriveSafeName(project.getProjectDirectory().getName());
                     }
                     JsfProjectUtils.createProjectProperty(project, JsfProjectConstants.PROP_JSF_PAGEBEAN_PACKAGE, beanPackage);
 
