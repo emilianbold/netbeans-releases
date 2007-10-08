@@ -43,6 +43,7 @@ package org.netbeans.modules.ruby.rubyproject;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.charset.Charset;
 import java.util.Stack;
 import org.netbeans.api.project.Project;
@@ -63,6 +64,7 @@ import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
+import org.openide.util.NbBundle;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -96,9 +98,11 @@ public class RubyProjectGenerator {
         }
         DataObject rakeFileDO = createFromTemplate( "Rakefile.rb", dirFO, "Templates/Ruby/rakefile.rb" ); // NOI18N
         if (rakeFileDO != null) {
-            rename(rakeFileDO.getPrimaryFile(), "Rakefile", null);
+            rename(rakeFileDO.getPrimaryFile(), "Rakefile", null); // NOI18N
         }
-
+        FileObject readme = dirFO.createData("README"); // NOI18N
+        PrintWriter readmeW = new PrintWriter(readme.getOutputStream());
+        readmeW.println(NbBundle.getMessage(RubyProjectGenerator.class, "TXT_README_Content", name));
         // Run Rake -T silently to determine the available targets and write into private area
         RakeTargetsAction.refreshTargets(p);
         

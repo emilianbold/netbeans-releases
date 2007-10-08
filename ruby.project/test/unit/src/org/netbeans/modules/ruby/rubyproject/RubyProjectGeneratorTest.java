@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.ruby.rubyproject;
 
 import java.io.File;
@@ -46,7 +45,7 @@ import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
 import org.openide.filesystems.FileObject;
 
 public class RubyProjectGeneratorTest extends RubyProjectTestBase {
-    
+
     public RubyProjectGeneratorTest(String testName) {
         super(testName);
     }
@@ -58,11 +57,13 @@ public class RubyProjectGeneratorTest extends RubyProjectTestBase {
         RakeProjectHelper helper = RubyProjectGenerator.createProject(projectDir, "Ruby Application", name);
         FileObject prjDirFO = helper.getProjectDirectory();
         assertNotNull("project created", prjDirFO);
+
         assertNotNull("has Rakefile", prjDirFO.getFileObject("Rakefile"));
         final FileObject libDirFO = prjDirFO.getFileObject("lib");
         assertNotNull("has lib", libDirFO);
         assertNotNull("has script.rb", libDirFO.getFileObject(name));
         assertNull("does not have Rakefile in lib", libDirFO.getFileObject("Rakefile"));
-    }
 
+        assertNotNull("has README", prjDirFO.getFileObject("README"));
+    }
 }
