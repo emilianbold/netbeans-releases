@@ -41,11 +41,9 @@
 
 package org.netbeans.modules.ruby.rubyproject.ui.wizards;
 
-import java.awt.Dialog;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.Enumeration;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -211,18 +209,6 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
                 if ("nbproject".equals(childName)) {   //NOI18N
                     file = NbBundle.getMessage (PanelSourceFolders.class,"TXT_NetBeansProject");
                 }
-//                else if ("build".equals(childName)) {    //NOI18N
-//                    file = NbBundle.getMessage (PanelSourceFolders.class,"TXT_BuildFolder");
-//                }
-//                else if ("dist".equals(childName)) {   //NOI18N
-//                    file = NbBundle.getMessage (PanelSourceFolders.class,"TXT_DistFolder");
-//                }
-//                else if ("build.xml".equals(childName)) {   //NOI18N
-//                    file = NbBundle.getMessage (PanelSourceFolders.class,"TXT_BuildXML");
-//                }
-//                else if ("manifest.mf".equals(childName)) { //NOI18N
-//                    file = NbBundle.getMessage (PanelSourceFolders.class,"TXT_Manifest");
-//                }
                 if (file != null) {
                     String format = NbBundle.getMessage (PanelSourceFolders.class,"MSG_ProjectFolderInvalid");
                     return MessageFormat.format(format, new Object[] {file});

@@ -55,7 +55,7 @@ public class RubyProjectGeneratorTest extends RubyProjectTestBase {
         registerLayer();
         File projectDir = new File(getWorkDir(), "RubyApp");
         final String name = "script.rb";
-        RakeProjectHelper helper = RubyProjectGenerator.createProject(projectDir, "Ruby Application", name, null);
+        RakeProjectHelper helper = RubyProjectGenerator.createProject(projectDir, "Ruby Application", name);
         FileObject prjDirFO = helper.getProjectDirectory();
         assertNotNull("project created", prjDirFO);
         assertNotNull("has Rakefile", prjDirFO.getFileObject("Rakefile"));

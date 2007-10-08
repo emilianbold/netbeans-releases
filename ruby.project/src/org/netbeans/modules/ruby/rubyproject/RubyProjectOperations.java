@@ -46,26 +46,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Properties;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.CopyOperationImplementation;
 import org.netbeans.spi.project.DeleteOperationImplementation;
 import org.netbeans.spi.project.MoveOperationImplementation;
-import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
-import org.netbeans.modules.ruby.spi.project.support.rake.EditableProperties;
-import org.netbeans.modules.ruby.spi.project.support.rake.GeneratedFilesHelper;
-import org.netbeans.modules.ruby.spi.project.support.rake.PropertyUtils;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
-/**
- *
- * @author Jan Lahoda
- */
 public class RubyProjectOperations implements DeleteOperationImplementation, CopyOperationImplementation, MoveOperationImplementation {
     
     private RubyProject project;
@@ -85,12 +72,7 @@ public class RubyProjectOperations implements DeleteOperationImplementation, Cop
     public List<FileObject> getMetadataFiles() {
         FileObject projectDirectory = project.getProjectDirectory();
         List<FileObject> files = new ArrayList<FileObject>();
-        
         addFile(projectDirectory, "nbproject", files); // NOI18N
-//        addFile(projectDirectory, "build.xml", files); // NOI18N
-//        addFile(projectDirectory, "xml-resources", files); //NOI18N
-//        addFile(projectDirectory, "catalog.xml", files); //NOI18N
-        
         return files;
     }
     
@@ -98,7 +80,6 @@ public class RubyProjectOperations implements DeleteOperationImplementation, Cop
         List<FileObject> files = new ArrayList<FileObject>();
         files.addAll(Arrays.asList(project.getSourceRoots().getRoots()));
         files.addAll(Arrays.asList(project.getTestSourceRoots().getRoots()));
-//        addFile(project.getProjectDirectory(), "manifest.mf", files); // NOI18N
         return files;
     }
     

@@ -77,7 +77,7 @@ public abstract class RubyProjectTestBase extends RubyTestBase {
     
     protected RubyProject createTestProject(String projectName, String... paths) throws Exception {
         File prjDirF = new File(getWorkDir(), projectName);
-        RubyProjectGenerator.createProject(prjDirF, projectName, null, null);
+        RubyProjectGenerator.createProject(prjDirF, projectName, null);
         createFiles(prjDirF, paths);
         RubyProject project = (RubyProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(prjDirF));
         assertNotNull(project);

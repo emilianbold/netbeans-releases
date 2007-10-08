@@ -84,18 +84,17 @@ public class RubyProjectGenerator {
      * @return the helper object permitting it to be further customized
      * @throws IOException in case something went wrong
      */
-    public static RakeProjectHelper createProject(File dir, String name, String mainClass, String manifestFile) throws IOException {
+    public static RakeProjectHelper createProject(File dir, String name, String mainClass) throws IOException {
         FileObject dirFO = createProjectDir (dir);
-        // if manifestFile is null => it's TYPE_LIB
-        RakeProjectHelper h = createProject(dirFO, name, "lib", "test", mainClass, manifestFile, false); //NOI18N
+        RakeProjectHelper h = createProject(dirFO, name, "lib", "test", mainClass, false); //NOI18N
         Project p = ProjectManager.getDefault().findProject(dirFO);
         ProjectManager.getDefault().saveProject(p);
         FileObject srcFolder = dirFO.createFolder("lib"); // NOI18N
         dirFO.createFolder("test"); // NOI18N
         if ( mainClass != null ) {
-            createMainClass( mainClass, srcFolder, "Templates/Ruby/main.rb" ); // NOI18N
+            createFromTemplate( mainClass, srcFolder, "Templates/Ruby/main.rb" ); // NOI18N
         }
-        DataObject rakeFileDO = createMainClass( "Rakefile.rb", dirFO, "Templates/Ruby/rakefile.rb" ); // NOI18N
+        DataObject rakeFileDO = createFromTemplate( "Rakefile.rb", dirFO, "Templates/Ruby/rakefile.rb" ); // NOI18N
         if (rakeFileDO != null) {
             rename(rakeFileDO.getPrimaryFile(), "Rakefile", null);
         }
@@ -107,11 +106,11 @@ public class RubyProjectGenerator {
     }
 
     public static RakeProjectHelper createProject(final File dir, final String name,
-            final File[] sourceFolders, final File[] testFolders, final String manifestFile) throws IOException {
+            final File[] sourceFolders, final File[] testFolders) throws IOException {
         assert sourceFolders != null && testFolders != null: "Package roots can't be null";   //NOI18N
         final FileObject dirFO = createProjectDir (dir);
         // this constructor creates only java application type
-        final RakeProjectHelper h = createProject(dirFO, name, null, null, null, manifestFile, false);
+        final RakeProjectHelper h = createProject(dirFO, name, null, null, null, false);
         final RubyProject p = (RubyProject) ProjectManager.getDefault().findProject(dirFO);
         final ReferenceHelper refHelper = p.getReferenceHelper();
         try {
@@ -189,7 +188,7 @@ public class RubyProjectGenerator {
     }
 
     private static RakeProjectHelper createProject(FileObject dirFO, String name,
-                                                  String srcRoot, String testRoot, String mainClass, String manifestFile, boolean isLibrary) throws IOException {
+                                                  String srcRoot, String testRoot, String mainClass, boolean isLibrary) throws IOException {
         RakeProjectHelper h = ProjectGenerator.createProject(dirFO, RubyProjectType.TYPE);
         Element data = h.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
@@ -290,9 +289,6 @@ public class RubyProjectGenerator {
 //        ep.setProperty(RubyProjectProperties.JAVADOC_ENCODING, ""); // NOI18N
 //        ep.setProperty(RubyProjectProperties.JAVADOC_ADDITIONALPARAM, ""); // NOI18N
         
-//        if (manifestFile != null) {
-//            ep.setProperty("manifest.file", manifestFile); // NOI18N
-//        }
         h.putProperties(RakeProjectHelper.PROJECT_PROPERTIES_PATH, ep);        
         return h;
     }
@@ -325,7 +321,7 @@ public class RubyProjectGenerator {
         dirFO.getFileSystem().refresh(false);
     }
     
-    private static DataObject createMainClass( String mainClassName, FileObject srcFolder, String templateName ) throws IOException {
+    private static DataObject createFromTemplate( String mainClassName, FileObject srcFolder, String templateName ) throws IOException {
         int lastDotIdx = mainClassName.lastIndexOf( '/' );
         String mName, pName;
         if ( lastDotIdx == -1 ) {

@@ -44,8 +44,6 @@ package org.netbeans.modules.ruby.rubyproject.ui.wizards;
 import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.text.MessageFormat;
 import java.util.HashSet;
 import java.util.NoSuchElementException;
@@ -59,7 +57,6 @@ import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -74,8 +71,6 @@ public class NewRubyProjectWizardIterator implements WizardDescriptor.ProgressIn
     static final int TYPE_EXT = 2;
     
     static final String PROP_NAME_INDEX = "nameIndex";      //NOI18N
-
-//    private static final String MANIFEST_FILE = "manifest.mf"; // NOI18N
 
     private static final long serialVersionUID = 1L;
     
@@ -140,8 +135,8 @@ public class NewRubyProjectWizardIterator implements WizardDescriptor.ProgressIn
         if (this.type == TYPE_EXT) {
             File[] sourceFolders = (File[])wiz.getProperty("sourceRoot");        //NOI18N
             File[] testFolders = (File[])wiz.getProperty("testRoot");            //NOI18N
-            RubyProjectGenerator.createProject(dirF, name, sourceFolders, testFolders, null );
-            handle.progress (2);
+            RubyProjectGenerator.createProject(dirF, name, sourceFolders, testFolders);
+            handle.progress(2);
             for (int i=0; i<sourceFolders.length; i++) {
                 FileObject srcFo = FileUtil.toFileObject(sourceFolders[i]);
                 if (srcFo != null) {
@@ -150,8 +145,8 @@ public class NewRubyProjectWizardIterator implements WizardDescriptor.ProgressIn
             }
         }
         else {
-            RakeProjectHelper h = RubyProjectGenerator.createProject(dirF, name, mainClass, null);
-            handle.progress (2);
+            RakeProjectHelper h = RubyProjectGenerator.createProject(dirF, name, mainClass);
+            handle.progress(2);
             // BEGIN SEMPLICE MODIFICATIONS
             // Update since format is customized
             //mainClass = (String)wiz.getProperty("mainClass");
@@ -175,9 +170,6 @@ public class NewRubyProjectWizardIterator implements WizardDescriptor.ProgressIn
             // }
         }
         FileObject dir = FileUtil.toFileObject(dirF);
-//        if (type == TYPE_APP || type == TYPE_EXT) {
-//            createManifest(dir);
-//        }
         handle.progress (3);
 
         // Returning FileObject of project diretory. 
@@ -258,17 +250,21 @@ public class NewRubyProjectWizardIterator implements WizardDescriptor.ProgressIn
     public boolean hasNext() {
         return index < panels.length - 1;
     }
+    
     public boolean hasPrevious() {
         return index > 0;
     }
+    
     public void nextPanel() {
         if (!hasNext()) throw new NoSuchElementException();
         index++;
     }
+    
     public void previousPanel() {
         if (!hasPrevious()) throw new NoSuchElementException();
         index--;
     }
+    
     public WizardDescriptor.Panel current () {
         return panels[index];
     }
@@ -304,28 +300,4 @@ public class NewRubyProjectWizardIterator implements WizardDescriptor.ProgressIn
         return builder.length() == 0 ? NbBundle.getMessage(NewRubyProjectWizardIterator.class,"TXT_DefaultPackageName") : builder.toString();
     }
     
-//    /**
-//     * Create a new application manifest file with minimal initial contents.
-//     * @param dir the directory to create it in
-//     * @throws IOException in case of problems
-//     */
-//    private static void createManifest(final FileObject dir) throws IOException {
-//        FileObject manifest = dir.createData(MANIFEST_FILE);
-//        FileLock lock = manifest.lock();
-//        try {
-//            OutputStream os = manifest.getOutputStream(lock);
-//            try {
-//                PrintWriter pw = new PrintWriter(os);
-//                pw.println("Manifest-Version: 1.0"); // NOI18N
-//                pw.println("X-COMMENT: Main-Class will be added automatically by build"); // NOI18N
-//                pw.println(); // safest to end in \n\n due to JRE parsing bug
-//                pw.flush();
-//            } finally {
-//                os.close();
-//            }
-//        } finally {
-//            lock.releaseLock();
-//        }
-//    }
-
 }
