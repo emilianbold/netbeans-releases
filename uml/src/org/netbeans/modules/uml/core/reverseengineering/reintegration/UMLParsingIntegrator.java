@@ -4193,23 +4193,39 @@ public class UMLParsingIntegrator
         // Before adding the type as a unresolved type.  Check
         // the type is an inner class.
         
-        List < Node > nestedClasses = clazz.selectNodes("UML:Element.ownedElement/*[ name() = 'UML:Class' or name() = 'UML:Interface'  or name() = 'UML:Enumeration']");
-        for(Node innerClassifier : nestedClasses)
+        // Issue 80932: An inner class can be referenced by the 
+        // <outer class>::<inner class>
+        int index = typeName.indexOf("::");
+        if(index > 0)
         {
-            String name = XMLManip.getAttributeValue(innerClassifier, "name");
-            if(typeName.equals(name) == true)
+            String outer = typeName.substring(0, index);
+            String inner = typeName.substring(index + 2);
+            
+            Element clazzElement = (Element)clazz;
+            if(clazzElement.attributeValue("name").equals(outer) == true)
             {
-                String xmiid = XMLManip.getAttributeValue(innerClassifier, "xmi.id");
-                
-                String elementType = XMLManip.retrieveSimpleName(clazz);
-                
-                TypedFactoryRetriever<IClassifier> retreiver =
-                        new TypedFactoryRetriever<IClassifier>();
-                retVal = retreiver.createTypeAndFill(elementType, clazz);
-                break;
+                retVal = findInnerClass(clazz, inner);
             }
         }
-        
+        else
+        {
+            List < Node > nestedClasses = clazz.selectNodes("UML:Element.ownedElement/*[ name() = 'UML:Class' or name() = 'UML:Interface'  or name() = 'UML:Enumeration']");
+            for(Node innerClassifier : nestedClasses)
+            {
+                String name = XMLManip.getAttributeValue(innerClassifier, "name");
+                if(typeName.equals(name) == true)
+                {
+                    String xmiid = XMLManip.getAttributeValue(innerClassifier, "xmi.id");
+
+                    String elementType = XMLManip.retrieveSimpleName(clazz);
+
+                    TypedFactoryRetriever<IClassifier> retreiver =
+                            new TypedFactoryRetriever<IClassifier>();
+                    retVal = retreiver.createTypeAndFill(elementType, innerClassifier);
+                    break;
+                }
+            }
+        }
         return retVal;
     }
     
@@ -4280,7 +4296,7 @@ public class UMLParsingIntegrator
         return isCreated;
     }
     
-    protected boolean isTypeAllowedInAssociation(Node pAttrNode, String typeName)
+    protected boolean isTypeAllowedInAssociation(Node pAttrNode, Node owner, String typeName)
     {
         boolean isAllowed = false;
         try
@@ -4313,6 +4329,16 @@ public class UMLParsingIntegrator
 			    {
 				isAllowed = true;
 			    } 
+                            
+                            // Issue 80932: Inner classes are not stored on the 
+                            //              symbol list.  Therefore check 
+                            //              if the type is an inner class.
+                            //              This only needs to happen if the 
+                            //              type name is like <outer class>::<inner class>
+                            else if(findInnerClass(owner, typeName) != null)
+                            {
+                                isAllowed = true;
+                            }
 			    else 
 			    { 
 				ETList < INamedElement > list = 
@@ -4624,8 +4650,9 @@ public class UMLParsingIntegrator
                                     
                                     if (actualType != null &&
                                             actualType.length() > 0 &&
-                                            isTypeAllowedInAssociation(
-                                            attr, actualType))
+                                            isTypeAllowedInAssociation(attr, 
+                                                                       clazz, 
+                                                                       actualType))
                                     {
                                         establishAssociation(
                                                 attr, clazz, clazzObj,
