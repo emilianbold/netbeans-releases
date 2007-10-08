@@ -242,13 +242,24 @@ public class ServletsMultiViewElement extends ToolBarMultiViewElement implements
                 NbBundle.getMessage(ServletsMultiViewElement.class,"LBL_description_mnem").charAt(0),
                 NbBundle.getMessage(ServletsMultiViewElement.class,"LBL_urlPatterns_mnem").charAt(0)
             };
+            String[] a11y_desc = new String[]{
+                NbBundle.getMessage(ServletsMultiViewElement.class,"ACSD_servletName"),
+                NbBundle.getMessage(ServletsMultiViewElement.class,"ACSD_servletClass"),
+                NbBundle.getMessage(ServletsMultiViewElement.class,"ACSD_jspFile"),
+                NbBundle.getMessage(ServletsMultiViewElement.class,"ACSD_description"),
+                NbBundle.getMessage(ServletsMultiViewElement.class,"ACSD_urlPatterns")
+            };
             boolean[] buttons = new boolean[]{false,true,true,false,false};
             SimpleDialogPanel.DialogDescriptor descriptor = new SimpleDialogPanel.DialogDescriptor(labels);
             descriptor.setMnemonics(mnem);
             descriptor.setButtons(buttons);
+            descriptor.setA11yDesc(a11y_desc);
             descriptor.setTextField(new boolean[]{true,true,true,false,true});
             
             final SimpleDialogPanel dialogPanel = new SimpleDialogPanel(descriptor);
+            dialogPanel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ServletsMultiViewElement.class,"ACS_add_servlet"));
+            dialogPanel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ServletsMultiViewElement.class,"ACSD_add_servlet"));
+            
             dialogPanel.getCustomizerButtons()[0].addActionListener(new java.awt.event.ActionListener() {
                 public void actionPerformed(java.awt.event.ActionEvent evt) {
                     try {

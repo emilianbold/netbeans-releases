@@ -97,6 +97,10 @@ public class ListenersTablePanel extends DefaultTablePanel {
                 NbBundle.getMessage(ListenersTablePanel.class,"LBL_listenerClass_mnem").charAt(0),
                 NbBundle.getMessage(ListenersTablePanel.class,"LBL_description_mnem").charAt(0)
             };
+            String[] a11y_desc = new String[]{
+                NbBundle.getMessage(ListenersTablePanel.class,"ACSD_listener_class"),
+                NbBundle.getMessage(ListenersTablePanel.class,"ACSD_listener_desc")
+            };
             SimpleDialogPanel.DialogDescriptor descriptor = new SimpleDialogPanel.DialogDescriptor(labels);
             if (!add) {
                 String[] initValues = new String[] {
@@ -108,7 +112,15 @@ public class ListenersTablePanel extends DefaultTablePanel {
             descriptor.setMnemonics(mnem);
             descriptor.setButtons(new boolean[]{true,false});
             descriptor.setTextField(new boolean[]{true,false});
+            descriptor.setA11yDesc(a11y_desc);
             final SimpleDialogPanel dialogPanel = new SimpleDialogPanel(descriptor);
+            if (add) {
+                dialogPanel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ListenersTablePanel.class,"ACSD_add_listenerClass"));
+                dialogPanel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ListenersTablePanel.class,"ACSD_add_listenerClass"));
+            }else {
+                dialogPanel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ListenersTablePanel.class,"ACSD_edit_listenerClass"));
+                dialogPanel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ListenersTablePanel.class,"ACSD_edit_listenerClass"));
+            }
             dialogPanel.getCustomizerButtons()[0].addActionListener(new java.awt.event.ActionListener() {
                 public void actionPerformed(java.awt.event.ActionEvent evt) {
                     try {

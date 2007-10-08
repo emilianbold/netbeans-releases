@@ -135,6 +135,9 @@ public class SimpleDialogPanel extends JPanel {
                     button.setText(NbBundle.getMessage(SimpleDialogPanel.class,"LBL_browse"+String.valueOf(j)));
                     button.setMnemonic(NbBundle.getMessage(SimpleDialogPanel.class,"LBL_browse"+String.valueOf(j++)+"_mnem").charAt(0));
                     button.setMargin(new java.awt.Insets(0, 14, 0, 14));
+                                       
+                    button.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SimpleDialogPanel.class,"ACSD_browse"));
+                                       
                     buttonList.add(button);
                     gridBagConstraints = new java.awt.GridBagConstraints();
                     gridBagConstraints.gridx = 2;

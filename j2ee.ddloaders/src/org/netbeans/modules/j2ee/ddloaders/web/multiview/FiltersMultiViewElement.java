@@ -255,13 +255,21 @@ public class FiltersMultiViewElement extends ToolBarMultiViewElement implements 
                 NbBundle.getMessage(FiltersMultiViewElement.class,"LBL_filterClass_mnem").charAt(0),
                 NbBundle.getMessage(FiltersMultiViewElement.class,"LBL_description_mnem").charAt(0)
             };
+            String[] a11y_desc = new String[]{
+                NbBundle.getMessage(FiltersMultiViewElement.class,"ACSD_filterName"),
+                NbBundle.getMessage(FiltersMultiViewElement.class,"ACSD_filterClass"),
+                NbBundle.getMessage(FiltersMultiViewElement.class,"ACSD_description")
+            };
             boolean[] buttons = new boolean[]{false,true,false};
             SimpleDialogPanel.DialogDescriptor descriptor = new SimpleDialogPanel.DialogDescriptor(labels);
             descriptor.setMnemonics(mnem);
             descriptor.setButtons(buttons);
+            descriptor.setA11yDesc(a11y_desc);
             descriptor.setTextField(new boolean[]{true,true,false});
             
             final SimpleDialogPanel dialogPanel = new SimpleDialogPanel(descriptor);
+            dialogPanel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(FiltersMultiViewElement.class,"ACSD_add_filter"));
+            dialogPanel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FiltersMultiViewElement.class,"ACSD_add_err_page"));
             dialogPanel.getCustomizerButtons()[0].addActionListener(new java.awt.event.ActionListener() {
                 public void actionPerformed(java.awt.event.ActionEvent evt) {
                     try {

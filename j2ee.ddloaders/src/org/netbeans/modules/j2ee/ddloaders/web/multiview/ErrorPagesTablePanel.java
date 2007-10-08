@@ -102,6 +102,11 @@ public class ErrorPagesTablePanel extends DefaultTablePanel {
                 NbBundle.getMessage(ErrorPagesTablePanel.class,"LBL_errorCode_mnem").charAt(0),
                 NbBundle.getMessage(ErrorPagesTablePanel.class,"LBL_exceptionType_mnem").charAt(0)
             };
+            String[] a11y_desc = new String[]{
+                NbBundle.getMessage(ErrorPagesTablePanel.class,"ACSD_err_display_name"),
+                NbBundle.getMessage(ErrorPagesTablePanel.class,"ACSD_err_desc"),
+                NbBundle.getMessage(ErrorPagesTablePanel.class,"ACSD_err_url_pattern")
+            };
             SimpleDialogPanel.DialogDescriptor descriptor = new SimpleDialogPanel.DialogDescriptor(labels);
             if (!add) {
                 Integer val = (Integer)model.getValueAt(row,1);
@@ -114,7 +119,15 @@ public class ErrorPagesTablePanel extends DefaultTablePanel {
             }
             descriptor.setButtons(new boolean[]{true,false,false});
             descriptor.setMnemonics(mnem);
+            descriptor.setA11yDesc(a11y_desc);
             final SimpleDialogPanel dialogPanel = new SimpleDialogPanel(descriptor);
+            if (add) {
+                dialogPanel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ErrorPagesTablePanel.class,"ACSD_add_err_page"));
+                dialogPanel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ErrorPagesTablePanel.class,"ACSD_add_err_page"));
+            }else {
+                dialogPanel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ErrorPagesTablePanel.class,"ACSD_edit_err_page"));
+                dialogPanel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ErrorPagesTablePanel.class,"ACSD_edit_err_page"));
+            }
             dialogPanel.getTextComponents()[0].setEditable(false);
             dialogPanel.getCustomizerButtons()[0].addActionListener(new java.awt.event.ActionListener() {
                 public void actionPerformed(java.awt.event.ActionEvent evt) {

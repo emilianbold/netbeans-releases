@@ -99,6 +99,11 @@ public class ContextParamsTablePanel extends DefaultTablePanel {
                 NbBundle.getMessage(ContextParamsTablePanel.class,"LBL_initParamValue_mnem").charAt(0),
                 NbBundle.getMessage(ContextParamsTablePanel.class,"LBL_description_mnem").charAt(0)
             };
+            String[] a11y_desc = new String[]{
+                NbBundle.getMessage(ContextParamsTablePanel.class,"ACSD_context_param_name"),
+                NbBundle.getMessage(ContextParamsTablePanel.class,"ACSD_context_param_value"),
+                NbBundle.getMessage(ContextParamsTablePanel.class,"ACSD_context_param_desc")
+            };
             SimpleDialogPanel.DialogDescriptor descriptor = new SimpleDialogPanel.DialogDescriptor(labels);
             if (!add) {
                 String[] initValues = new String[] {
@@ -110,7 +115,15 @@ public class ContextParamsTablePanel extends DefaultTablePanel {
             }
             descriptor.setMnemonics(mnem);
             descriptor.setTextField(new boolean[]{true,true,false});
+            descriptor.setA11yDesc(a11y_desc);
             final SimpleDialogPanel dialogPanel = new SimpleDialogPanel(descriptor);
+            if (add) {
+                dialogPanel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ContextParamsTablePanel.class,"ACSD_add_context_param"));
+                dialogPanel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ContextParamsTablePanel.class,"ACSD_add_context_param"));
+            }else {
+                dialogPanel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ContextParamsTablePanel.class,"ACSD_edit_context_param"));
+                dialogPanel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ContextParamsTablePanel.class,"ACSD_edit_context_param"));
+            }
             
             EditDialog dialog = new EditDialog(dialogPanel,NbBundle.getMessage(ContextParamsTablePanel.class,"TTL_ContextParam"),add) {
                 protected String validate() {

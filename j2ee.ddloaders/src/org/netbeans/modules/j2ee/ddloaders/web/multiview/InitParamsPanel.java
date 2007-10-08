@@ -103,6 +103,11 @@ public class InitParamsPanel extends DefaultTablePanel {
                 NbBundle.getMessage(InitParamsPanel.class,"LBL_initParamValue_mnem").charAt(0),
                 NbBundle.getMessage(InitParamsPanel.class,"LBL_description_mnem").charAt(0)
             };
+            String[] a11y_desc = new String[]{
+                NbBundle.getMessage(InitParamsPanel.class,"ACSD_init_param_name"),
+                NbBundle.getMessage(InitParamsPanel.class,"ACSD_init_param_value"),
+                NbBundle.getMessage(InitParamsPanel.class,"ACSD_init_param_desc")
+            };
             SimpleDialogPanel.DialogDescriptor descriptor = new SimpleDialogPanel.DialogDescriptor(labels);
             if (!add) {
                 String[] initValues = new String[] {
@@ -114,7 +119,16 @@ public class InitParamsPanel extends DefaultTablePanel {
             }
             descriptor.setMnemonics(mnem);
             descriptor.setTextField(new boolean[]{true,true,false});
+            descriptor.setA11yDesc(a11y_desc);
             final SimpleDialogPanel dialogPanel = new SimpleDialogPanel(descriptor);
+            
+            if (add) {
+                dialogPanel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(InitParamsPanel.class,"ACSD_add_initParam"));
+                dialogPanel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(InitParamsPanel.class,"ACSD_add_initParam"));
+            }else {
+                dialogPanel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(InitParamsPanel.class,"ACSD_edit_initParam"));
+                dialogPanel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(InitParamsPanel.class,"ACSD_edit_initParam"));
+            }
             
             EditDialog dialog = new EditDialog(dialogPanel,NbBundle.getMessage(InitParamsPanel.class,"TTL_InitParam"),add) {
                 protected String validate() {
