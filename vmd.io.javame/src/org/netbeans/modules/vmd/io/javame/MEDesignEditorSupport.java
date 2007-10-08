@@ -52,6 +52,13 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
 import java.io.*;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.vmd.api.io.DataObjectContext;
+import org.netbeans.modules.vmd.api.io.ProjectUtils;
+import org.netbeans.modules.vmd.api.io.serialization.DocumentErrorHandler;
+import org.netbeans.modules.vmd.api.io.serialization.DocumentErrorHandlerSupport;
+import org.openide.util.NbBundle;
+
 
 /**
  * @author David Kaspar
@@ -128,8 +135,14 @@ public final class MEDesignEditorSupport extends J2MEEditorSupport implements Ed
     @Override
     public void open() {
         useEditPriority = false;
-        
-        String projectType = IOSupport.resolveProjectType (IOSupport.getDataObjectContext (dataObject));
+        DataObjectContext context = IOSupport.getDataObjectContext (dataObject);
+        Project project = ProjectUtils.getProject(context);
+        if (project == null) {
+            DocumentErrorHandler errorHandler = new DocumentErrorHandler().addError(NbBundle.getMessage(MEDesignEditorSupport.class, "MSG_ProjectMissing")); //NOI18N
+            DocumentErrorHandlerSupport.showDocumentErrorHandlerDialog(errorHandler, dataObject.getPrimaryFile());
+            return;
+        }
+        String projectType = IOSupport.resolveProjectType (context);
         if (projectType == null)
             return;
         

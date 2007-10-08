@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.vmd.io;
 
+import org.netbeans.modules.vmd.api.io.serialization.DocumentErrorHandlerSupport;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.api.io.DataSerializer;
 import org.netbeans.modules.vmd.api.io.providers.IOSupport;
@@ -37,7 +38,6 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.MessageFormat;
 import java.util.*;
 import org.netbeans.modules.vmd.api.io.serialization.DocumentErrorHandler;
 import org.openide.util.NbBundle;

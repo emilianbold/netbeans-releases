@@ -33,7 +33,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.ArrayList;
 import java.lang.ref.WeakReference;
 import org.netbeans.modules.vmd.api.io.serialization.DocumentErrorHandler;
-import org.netbeans.modules.vmd.io.DocumentErrorHandlerSupport;
+import org.netbeans.modules.vmd.api.io.serialization.DocumentErrorHandlerSupport;
 
 /**
  * @author David Kaspar

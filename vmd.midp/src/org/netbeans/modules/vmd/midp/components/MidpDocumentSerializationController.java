@@ -19,7 +19,6 @@
  */
 package org.netbeans.modules.vmd.midp.components;
 
-import com.sun.org.apache.bcel.internal.verifier.exc.LoadingException;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.api.io.ProjectUtils;
 import org.netbeans.modules.vmd.api.io.serialization.ComponentElement;
