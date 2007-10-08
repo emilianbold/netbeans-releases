@@ -1372,5 +1372,31 @@ public class RubyInstallation {
     public void removeInterpreterLiveChangeListener(final InterpreterLiveChangeListener ilcl) {
         interpreterLCLs.remove(ilcl);
     }
+    
+    public String getShortName() {
+        String r = getPreferences().get(KEY_RUBY, null);
+        final String BUILTIN_JRUBY = NbBundle.getMessage(RubyInstallation.class, "BuiltinRuby");
+        if (r == null) {
+            return BUILTIN_JRUBY;
+        } else {
+            r = getRuby();
+            if (r == null) {
+                return "";
+            }
+
+            final String jh = getJRubyHome();
+            if (jh != null & r.startsWith(jh)) {
+                return BUILTIN_JRUBY;
+            }
+            if (isJRubySet()) {
+                return "JRuby"; // TODO I18N and version
+            }
+        }
+
+        // How do I summary other interpreters?? For now, just use path
+        final File rubyFile = new File(r);
+        String basename = rubyFile.getName();
+        return NbBundle.getMessage(RubyInstallation.class, "RubyInPath", basename, rubyFile.getParent());
+    }
 
 }

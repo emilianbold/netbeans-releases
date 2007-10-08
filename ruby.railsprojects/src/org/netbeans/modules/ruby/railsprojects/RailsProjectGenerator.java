@@ -53,7 +53,9 @@ import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectPropert
 import org.netbeans.modules.ruby.rubyproject.api.RubyExecution;
 import org.netbeans.modules.ruby.rubyproject.execution.ExecutionDescriptor;
 import org.netbeans.api.ruby.platform.RubyInstallation;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.ruby.NbUtilities;
+import org.netbeans.modules.ruby.railsprojects.ui.wizards.PanelOptionsVisual;
 import org.netbeans.modules.ruby.rubyproject.RakeTargetsAction;
 import org.netbeans.modules.ruby.rubyproject.execution.DirectoryFileLocator;
 import org.netbeans.modules.ruby.rubyproject.execution.ExecutionService;
@@ -61,6 +63,7 @@ import org.netbeans.modules.ruby.rubyproject.execution.RegexpOutputRecognizer;
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
 import org.netbeans.modules.ruby.spi.project.support.rake.EditableProperties;
 import org.netbeans.modules.ruby.spi.project.support.rake.ProjectGenerator;
+import org.openide.LifecycleManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
@@ -102,6 +105,8 @@ public class RailsProjectGenerator {
     public static RakeProjectHelper createProject(File dir, String name, boolean create, 
             String database, boolean jdbc, boolean deploy) throws IOException {
         FileObject dirFO = createProjectDir (dir);
+        boolean createJavaDb = false;
+        boolean createJdbc = false;
         
         // Run Rails to generate the appliation skeleton
         if (create) {
@@ -109,19 +114,29 @@ public class RailsProjectGenerator {
             ExecutionDescriptor desc = null;
             String displayName = NbBundle.getMessage(RailsProjectGenerator.class, "GenerateRails");
 
+            String railsDbArg = null;
+            if (database != null) {
+                if (database.equals(PanelOptionsVisual.JAVA_DB)) {
+                    createJavaDb = true;
+                } else if (database.equals(PanelOptionsVisual.JDBC)) {
+                    createJdbc = true;
+                } else {
+                    railsDbArg = "--database=" + database;
+                }
+            }
             File pwd = dir.getParentFile();
             if (runThroughRuby) {
                 desc = new ExecutionDescriptor(displayName, pwd,
                     RubyInstallation.getInstance().getRails());
-                if (database != null) {
-                    desc.additionalArgs(name, "--database=" + database);
+                if (railsDbArg != null) {
+                    desc.additionalArgs(name, railsDbArg);
                 } else {
                     desc.additionalArgs(name);
                 }
             } else {
                 desc = new ExecutionDescriptor(displayName, pwd, name);
-                if (database != null) {
-                    desc.additionalArgs("--database=" + database);
+                if (railsDbArg != null) {
+                    desc.additionalArgs(railsDbArg);
                 }
                 desc.cmd(new File(RubyInstallation.getInstance().getRails()));
             }
@@ -152,6 +167,12 @@ public class RailsProjectGenerator {
             // TODO - only do this if not creating from existing app?
             if (jdbc) {
                 insertActiveJdbcHook(dirFO);
+            }
+            
+            if (createJdbc || createJavaDb) {
+                editDatabaseYml(dirFO, createJavaDb);
+            } else if (RubyInstallation.getInstance().isJRubySet()) {
+                commentOutSocket(dirFO);
             }
         }
 
@@ -213,7 +234,151 @@ public class RailsProjectGenerator {
                         SaveCookie sc = dobj.getCookie(SaveCookie.class);
                         if (sc != null) {
                             sc.save();
+                        } else {
+                            LifecycleManager.getDefault().saveAll();
                         }
+                    }
+                }
+            } catch (BadLocationException ble) {
+                Exceptions.printStackTrace(ble);
+            } catch (DataObjectNotFoundException dnfe) {
+                Exceptions.printStackTrace(dnfe);
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+            }
+        }
+    }
+
+    private static void editDatabaseYml(FileObject dir, boolean javaDb) {
+        FileObject fo = dir.getFileObject("config/database.yml"); // NOI18N
+        if (fo != null) {
+            BaseDocument bdoc = null;
+            try {
+                DataObject dobj = DataObject.find(fo);
+                EditorCookie ec = dobj.getCookie(EditorCookie.class);
+                if (ec != null) {
+                    javax.swing.text.Document doc = ec.openDocument();
+                    // Replace contents wholesale
+                    if (doc instanceof BaseDocument) {
+                        bdoc = (BaseDocument)doc;
+                        bdoc.atomicLock();
+                    }
+                    
+                    doc.remove(0, doc.getLength());
+                    String insert = null;
+                    if (javaDb) {
+                        insert =
+                            "# JavaDB Setup\n" + 
+                            "#\n" + 
+                            "# You may need to copy derby.jar into\n" + 
+                            "#  " + RubyInstallation.getInstance().getRubyLib() + "\n" + 
+                            "# With Java SE 6 and later this is not necessary.\n" + 
+                            "development:\n" + // NOI18N
+                            "  adapter: derby\n" +  // NOI18N
+                            "  database: db/development.db\n" + // NOI18N
+                            "\n" + // NOI18N
+                            "# Warning: The database defined as 'test' will be erased and\n" + 
+                            "# re-generated from your development database when you run 'rake'.\n" + 
+                            "# Do not set this db to the same as development or production.\n" + 
+                            "test:\n" +  // NOI18N
+                            "  adapter: derby\n" +  // NOI18N
+                            "  database: db/test.db\n" +  // NOI18N
+                            "\n" + // NOI18N
+                            "production:\n" +  // NOI18N
+                            "  adapter: derby\n" +  // NOI18N
+                            "  database: db/production.db\n"; // NOI18N
+                    } else {
+                        String projectName = dir.getName();
+                        insert = 
+                            "# JDBC Setup\n" + 
+                            "# Adjust JDBC driver URLs as necessary.\n" + 
+                            "development:\n" + // NOI18N
+                            "      host: localhost\n" + // NOI18N
+                            "      adapter: jdbc\n" + // NOI18N
+                            "      driver: com.mysql.jdbc.Driver\n" + // NOI18N
+                            "      url: jdbc:mysql://localhost/" + projectName + "_development\n" + // NOI18N
+                            "      username:\n" + // NOI18N
+                            "      password:\n" + // NOI18N
+                            "\n" + // NOI18N
+                            "# Warning: The database defined as 'test' will be erased and\n" + 
+                            "# re-generated from your development database when you run 'rake'.\n" + 
+                            "# Do not set this db to the same as development or production.\n" + 
+                            "test:\n" +  // NOI18N
+                            "      host: localhost\n" + // NOI18N
+                            "      adapter: jdbc\n" + // NOI18N
+                            "      driver: com.mysql.jdbc.Driver\n" + // NOI18N
+                            "      url: jdbc:mysql://localhost/" + projectName + "_test\n" + // NOI18N
+                            "      username:\n" + // NOI18N
+                            "      password:\n" + // NOI18N
+                            "\n" + // NOI18N
+                            "production:\n" +  // NOI18N
+                            "      host: localhost\n" + // NOI18N
+                            "      adapter: jdbc\n" + // NOI18N
+                            "      driver: com.mysql.jdbc.Driver\n" + // NOI18N
+                            "      url: jdbc:mysql://localhost/" + projectName + "_production\n" + // NOI18N
+                            "      username:\n" + // NOI18N
+                            "      password:\n"; // NOI18N
+                    }
+                    doc.insertString(0, insert, null);
+                    SaveCookie sc = dobj.getCookie(SaveCookie.class);
+                    if (sc != null) {
+                        sc.save();
+                    } else {
+                        LifecycleManager.getDefault().saveAll();
+                    }
+                }
+            } catch (BadLocationException ble) {
+                Exceptions.printStackTrace(ble);
+            } catch (DataObjectNotFoundException dnfe) {
+                Exceptions.printStackTrace(dnfe);
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+            } finally {
+                if (bdoc != null) {
+                    bdoc.atomicUnlock();
+                }
+            }
+        }
+    }
+
+    // JRuby doesn't support the socket syntax in database.yml, so try to edit it
+    // out
+    private static void commentOutSocket(FileObject dir) {
+        FileObject fo = dir.getFileObject("config/database.yml"); // NOI18N
+        if (fo != null) {
+            try {
+                DataObject dobj = DataObject.find(fo);
+                EditorCookie ec = dobj.getCookie(EditorCookie.class);
+                if (ec != null) {
+                    javax.swing.text.Document doc = ec.openDocument();
+                    String text = doc.getText(0, doc.getLength());
+                    int offset = text.indexOf("socket:"); // NOI18N
+                    if (offset == -1) {
+                        // Rails didn't do anything to this file
+                        return;
+                    }
+                    // Determine indent
+                    int indent = 0;
+                    for (int i = offset-1; i >= 0; i--) {
+                        if (text.charAt(i) == '\n') {
+                            break;
+                        } else {
+                            indent++;
+                        }
+                    }
+
+                    StringBuilder sb = new StringBuilder();
+                    sb.append("# JRuby doesn't support socket:\n");
+                    for (int i = 0; i < indent; i++) {
+                        sb.append(" ");
+                    }
+                    sb.append("#");
+                    doc.insertString(offset, sb.toString(), null);
+                    SaveCookie sc = dobj.getCookie(SaveCookie.class);
+                    if (sc != null) {
+                        sc.save();
+                    } else {
+                        LifecycleManager.getDefault().saveAll();
                     }
                 }
             } catch (BadLocationException ble) {

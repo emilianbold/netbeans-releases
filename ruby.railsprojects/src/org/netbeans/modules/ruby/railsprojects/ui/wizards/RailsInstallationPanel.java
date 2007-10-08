@@ -74,7 +74,11 @@ public class RailsInstallationPanel extends javax.swing.JPanel {
         this.setName(NbBundle.getMessage(RailsInstallationPanel.class,"LAB_InstallRails"));
         this.putClientProperty ("NewProjectWizard_Title", NbBundle.getMessage(RailsInstallationPanel.class,"TXT_RailsInstallation")); // NOI18N
         updateLabel();
-        
+
+        updateGemProblem();
+    }
+    
+    private void updateGemProblem() {
         String gemProblem = GemManager.getGemProblem();
         if (gemProblem != null) {
             String msg = NbBundle.getMessage(RailsInstallationPanel.class,"GemProblem");
@@ -108,6 +112,9 @@ public class RailsInstallationPanel extends javax.swing.JPanel {
     
     void read (WizardDescriptor settings) {
         this.wizardDescriptor = settings;
+        
+        // In case user went back to the previous panel and changed the ruby settings
+        updateGemProblem();
     }
         
     boolean valid (WizardDescriptor settings) {
