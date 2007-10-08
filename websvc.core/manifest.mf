@@ -5,5 +5,3 @@ OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/websvc/core/Bundle.proper
 OpenIDE-Module-Layer: org/netbeans/modules/websvc/core/resources/mf-layer.xml
 AutoUpdate-Show-In-Client: false
 
-Name: org/netbeans/modules/websvc/core/wseditor/support/WSFileLoader.class
-OpenIDE-Module-Class: Loader
