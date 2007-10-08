@@ -69,7 +69,7 @@ public class GrailsProjectCustomizerProvider implements CustomizerProvider {
         categories = new ProjectCustomizer.Category[] { generalSettings };
         
         Map<ProjectCustomizer.Category, JPanel> panels = new HashMap<ProjectCustomizer.Category, JPanel>();
-        panels.put(generalSettings, new GeneralCustomizerPanel());
+        panels.put(generalSettings, new GeneralCustomizerPanel(project));
         
         panelProvider = new PanelProvider(panels);
     }    
