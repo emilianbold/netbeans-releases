@@ -38,23 +38,26 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.ruby.rubyproject;
 
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.lookup.Lookups;
 
 public class RubyFileLocatorTest extends RubyProjectTestBase {
+
+    private RubyProject project;
 
     public RubyFileLocatorTest(String testName) {
         super(testName);
     }
 
-    public RubyFileLocator generateProject(String path) throws Exception {
-        return new RubyFileLocator(Lookups.singleton(new Object()),
-                createTestProject("LocatorTestProject", path));
+    public RubyFileLocator generateProject(String... path) throws Exception {
+        project = createTestProject("LocatorTestProject", path);
+        return new RubyFileLocator(Lookups.singleton(new Object()), project);
     }
 
-    public void testRelativeToProjectDir() throws Exception { // # 112254
+    public void testRelativeToProjectDir() throws Exception { // #112254
         RubyFileLocator rfl = generateProject("test/unit/http_phone/asterisk_cmd_test.rb");
         assertNotNull(rfl.find("./test/unit/http_phone/asterisk_cmd_test.rb"));
     }
@@ -63,5 +66,13 @@ public class RubyFileLocatorTest extends RubyProjectTestBase {
         RubyFileLocator rfl = generateProject("test/unit/http_phone/asterisk_cmd_test.rb");
         assertNotNull(rfl.find("./http_phone/asterisk_cmd_test.rb"));
         assertNotNull(rfl.find("asterisk_cmd_test.rb"));
+    }
+
+    public void testAbsoluteFile() throws Exception { // #117978
+        RubyFileLocator rfl = generateProject("a/b/c/base.rb", "e/f/g/base.rb");
+        FileObject first = project.getProjectDirectory().getFileObject("a/b/c/base.rb");
+        FileObject second = project.getProjectDirectory().getFileObject("e/f/g/base.rb");
+        assertEquals(first, rfl.find(FileUtil.toFile(first).getAbsolutePath()));
+        assertEquals(second, rfl.find(FileUtil.toFile(second).getAbsolutePath()));
     }
 }

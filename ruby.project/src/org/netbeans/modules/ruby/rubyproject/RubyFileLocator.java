@@ -70,7 +70,13 @@ public class RubyFileLocator implements FileLocator {
         this.project = project;
     }
 
-    public FileObject find(String file) {
+    public FileObject find(String path) {
+        // Firstly try whether a path is absolute
+        File file = new File(path);
+        if (file.isAbsolute()) {
+            return FileUtil.toFileObject(FileUtil.normalizeFile(file));
+        }
+        
         List<FileObject> roots = new ArrayList<FileObject>();
         
         Sources sources = project.getLookup().lookup(Sources.class);
@@ -94,7 +100,7 @@ public class RubyFileLocator implements FileLocator {
         
         // Try to resolve relatively to project directory (see e.g. #112254)
         for (FileObject root : roots) {
-            File relToPrjDir = new File(FileUtil.toFile(root), file);
+            File relToPrjDir = new File(FileUtil.toFile(root), path);
             if (relToPrjDir.exists()) {
                 try {
                     relToPrjDir = relToPrjDir.getCanonicalFile();
@@ -107,7 +113,7 @@ public class RubyFileLocator implements FileLocator {
         
         // Next try searching the set of source files
         FileObject[] fos = findSources(roots);
-        String fileName = new File(file).getName();
+        String fileName = new File(path).getName();
         if (fos != null) {
             for (FileObject fo : fos) {
                 if (fo.getNameExt().equals(fileName)) {
