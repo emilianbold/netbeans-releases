@@ -78,6 +78,7 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
         this.refactoring = re;
     }
     
+    @Override
     public void setWorkingCopy(WorkingCopy wc) throws ToPhaseException {
         super.setWorkingCopy(wc);
         this.inner = refactoring.getSourceType().resolveElement(wc);
@@ -113,7 +114,7 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
                     thisString = "this";
             
             }
-            rewrite(arg0,make.addNewClassArgument(arg0, null, make.Identifier(thisString)));
+            rewrite(arg0,make.addNewClassArgument(arg0, make.Identifier(thisString)));
         }
         return super.visitNewClass(arg0, arg1);
     }
@@ -132,7 +133,7 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
             if (!inner.equals(getCurrentClass()) && workingCopy.getTypes().isSubtype(getCurrentElement().getEnclosingElement().asType(), inner.asType())) {
                 MemberSelectTree arg = make.MemberSelect(make.Identifier(getCurrentClass().getEnclosingElement().getSimpleName()), "this");
                 MethodInvocationTree superCall = (MethodInvocationTree) ((ExpressionStatementTree)constructor.getBody().getStatements().get(0)).getExpression();
-                MethodInvocationTree newSuperCall = make.insertMethodInvocationArgument(superCall, 0, arg, null);
+                MethodInvocationTree newSuperCall = make.insertMethodInvocationArgument(superCall, 0, arg);
                 rewrite(superCall, newSuperCall);
             }
             

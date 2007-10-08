@@ -948,27 +948,52 @@ public class TreeFactory {
     }
     
     // MethodInvocation
-    public MethodInvocationTree addMethodInvocationArgument(MethodInvocationTree methodInvocation, ExpressionTree argument, ExpressionTree typeArgument) {
-        return modifyMethodInvocationArgument(methodInvocation, -1, argument, typeArgument, Operation.ADD);
+    public MethodInvocationTree addMethodInvocationArgument(MethodInvocationTree methodInvocation, ExpressionTree argument) {
+        return modifyMethodInvocationArgument(methodInvocation, -1, argument, Operation.ADD);
     }
     
-    public MethodInvocationTree insertMethodInvocationArgument(MethodInvocationTree methodInvocation, int index, ExpressionTree argument, ExpressionTree typeArgument) {
-        return modifyMethodInvocationArgument(methodInvocation, index, argument, typeArgument, Operation.ADD);
+    public MethodInvocationTree insertMethodInvocationArgument(MethodInvocationTree methodInvocation, int index, ExpressionTree argument) {
+        return modifyMethodInvocationArgument(methodInvocation, index, argument, Operation.ADD);
     }
 
-    public MethodInvocationTree removeMethodInvocationArgument(MethodInvocationTree methodInvocation, ExpressionTree argument, ExpressionTree typeArgument) {
-        return modifyMethodInvocationArgument(methodInvocation, -1, argument, typeArgument, Operation.REMOVE);
+    public MethodInvocationTree removeMethodInvocationArgument(MethodInvocationTree methodInvocation, ExpressionTree argument) {
+        return modifyMethodInvocationArgument(methodInvocation, -1, argument, Operation.REMOVE);
     }
     
     public MethodInvocationTree removeMethodInvocationArgument(MethodInvocationTree methodInvocation, int index) {
-        return modifyMethodInvocationArgument(methodInvocation, index, null, null, Operation.REMOVE);
+        return modifyMethodInvocationArgument(methodInvocation, index, null, Operation.REMOVE);
     }
     
-    private MethodInvocationTree modifyMethodInvocationArgument(MethodInvocationTree methodInvocation, int index, ExpressionTree argument, ExpressionTree typeArgument, Operation op) {
+    private MethodInvocationTree modifyMethodInvocationArgument(MethodInvocationTree methodInvocation, int index, ExpressionTree argument, Operation op) {
+        MethodInvocationTree copy = MethodInvocation(
+            (List<? extends ExpressionTree>) methodInvocation.getTypeArguments(),
+            methodInvocation.getMethodSelect(),
+            c(methodInvocation.getArguments(), index, argument, op)
+        );
+        return copy;
+    }
+    
+    public MethodInvocationTree addMethodInvocationTypeArgument(MethodInvocationTree methodInvocation, ExpressionTree typeArgument) {
+        return modifyMethodInvocationTypeArgument(methodInvocation, -1, typeArgument, Operation.ADD);
+    }
+    
+    public MethodInvocationTree insertMethodInvocationTypeArgument(MethodInvocationTree methodInvocation, int index, ExpressionTree typeArgument) {
+        return modifyMethodInvocationTypeArgument(methodInvocation, index, typeArgument, Operation.ADD);
+    }
+
+    public MethodInvocationTree removeMethodInvocationTypeArgument(MethodInvocationTree methodInvocation, ExpressionTree typeArgument) {
+        return modifyMethodInvocationTypeArgument(methodInvocation, -1, typeArgument, Operation.REMOVE);
+    }
+    
+    public MethodInvocationTree removeMethodInvocationTypeArgument(MethodInvocationTree methodInvocation, int index) {
+        return modifyMethodInvocationArgument(methodInvocation, index, null, Operation.REMOVE);
+    }
+    
+    private MethodInvocationTree modifyMethodInvocationTypeArgument(MethodInvocationTree methodInvocation, int index, ExpressionTree typeArgument, Operation op) {
         MethodInvocationTree copy = MethodInvocation(
             c((List<? extends ExpressionTree>) methodInvocation.getTypeArguments(), index, typeArgument, op),
             methodInvocation.getMethodSelect(),
-            c(methodInvocation.getArguments(), index, argument, op)
+            methodInvocation.getArguments()
         );
         return copy;
     }
@@ -1141,26 +1166,26 @@ public class TreeFactory {
     }
     
     // NewClass
-    public NewClassTree addNewClassArgument(NewClassTree newClass, ExpressionTree typeArgument, ExpressionTree argument) {
-        return modifyNewClassArgument(newClass, -1, typeArgument, argument, Operation.ADD);
+    public NewClassTree addNewClassArgument(NewClassTree newClass, ExpressionTree argument) {
+        return modifyNewClassArgument(newClass, -1, argument, Operation.ADD);
     }
 
-    public NewClassTree insertNewClassArgument(NewClassTree newClass, int index, ExpressionTree typeArgument, ExpressionTree argument) {
-        return modifyNewClassArgument(newClass, index, typeArgument, argument, Operation.ADD);
+    public NewClassTree insertNewClassArgument(NewClassTree newClass, int index, ExpressionTree argument) {
+        return modifyNewClassArgument(newClass, index, argument, Operation.ADD);
     }
 
-    public NewClassTree removeNewClassArgument(NewClassTree newClass, ExpressionTree typeArgument, ExpressionTree argument) {
-        return modifyNewClassArgument(newClass, -1, typeArgument, argument, Operation.REMOVE);
+    public NewClassTree removeNewClassArgument(NewClassTree newClass, ExpressionTree argument) {
+        return modifyNewClassArgument(newClass, -1, argument, Operation.REMOVE);
     }
 
     public NewClassTree removeNewClassArgument(NewClassTree newClass, int index) {
-        return modifyNewClassArgument(newClass, index, null, null, Operation.REMOVE);
+        return modifyNewClassArgument(newClass, index, null, Operation.REMOVE);
     }
     
-    private NewClassTree modifyNewClassArgument(NewClassTree newClass, int index, ExpressionTree typeArgument, ExpressionTree argument, Operation op) {
+    private NewClassTree modifyNewClassArgument(NewClassTree newClass, int index, ExpressionTree argument, Operation op) {
         NewClassTree copy = NewClass(
             newClass.getEnclosingExpression(),
-            c((List<ExpressionTree>) newClass.getTypeArguments(), index, typeArgument, op),
+            (List<ExpressionTree>) newClass.getTypeArguments(),
             newClass.getIdentifier(),
             c(newClass.getArguments(), index, argument, op),
             newClass.getClassBody()
@@ -1168,6 +1193,33 @@ public class TreeFactory {
         return copy;
     }
 
+    public NewClassTree addNewClassTypeArgument(NewClassTree newClass, ExpressionTree typeArgument) {
+        return modifyNewClassTypeArgument(newClass, -1, typeArgument, Operation.ADD);
+    }
+
+    public NewClassTree insertNewClassTypeArgument(NewClassTree newClass, int index, ExpressionTree typeArgument) {
+        return modifyNewClassTypeArgument(newClass, index, typeArgument, Operation.ADD);
+    }
+
+    public NewClassTree removeNewClassTypeArgument(NewClassTree newClass, ExpressionTree typeArgument) {
+        return modifyNewClassTypeArgument(newClass, -1, typeArgument, Operation.REMOVE);
+    }
+
+    public NewClassTree removeNewClassTypeArgument(NewClassTree newClass, int index) {
+        return modifyNewClassTypeArgument(newClass, index, null, Operation.REMOVE);
+    }
+    
+    private NewClassTree modifyNewClassTypeArgument(NewClassTree newClass, int index, ExpressionTree typeArgument, Operation op) {
+        NewClassTree copy = NewClass(
+            newClass.getEnclosingExpression(),
+            c((List<ExpressionTree>) newClass.getTypeArguments(), index, typeArgument, op),
+            newClass.getIdentifier(),
+            newClass.getArguments(),
+            newClass.getClassBody()
+        );
+        return copy;
+    }
+    
     // ParameterizedType
     public ParameterizedTypeTree addParameterizedTypeTypeArgument(ParameterizedTypeTree parameterizedType, ExpressionTree argument) {
         return modifyParameterizedTypeTypeArgument(parameterizedType, -1, argument, Operation.ADD);

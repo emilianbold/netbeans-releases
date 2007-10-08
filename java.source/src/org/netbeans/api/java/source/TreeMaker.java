@@ -1511,53 +1511,47 @@ public final class TreeMaker {
     
     // MethodInvocation
     /**
-     * Appends specified element <tt>argument</tt> with related 
-     * <tt>typeArgument</tt> to the end of arguments/type arguments list.
+     * Appends specified element <tt>argument</tt>.
      *
      * @param  methodInvocation method invocation tree containing arguments list.
      * @param  argument     element to be appended to arguments list.
-     * @param  typeArgument element to be appended to type arguments list.
      * @return method invocation tree with modified arguments and type arguments.
      */
-    public MethodInvocationTree addMethodInvocationArgument(MethodInvocationTree methodInvocation, ExpressionTree argument, ExpressionTree typeArgument) {
-        return delegate.addMethodInvocationArgument(methodInvocation, argument, typeArgument);
+    public MethodInvocationTree addMethodInvocationArgument(MethodInvocationTree methodInvocation, ExpressionTree argument) {
+        return delegate.addMethodInvocationArgument(methodInvocation, argument);
     }
     
     /**
-     * Inserts the specified element <tt>argument</tt> with related
-     * <tt>typeArgument</tt> at the specified position in arguments/type arguments list.
+     * Inserts the specified element <tt>argument</tt>.
      *
      * @param  methodInvocation method invocation tree containing arguments list.
      * @param  index  index at which the specified elements is to be inserted.
      * @param  argument   element to be inserted to arguments list.
-     * @param  typeArgument element to be inserted to type arguments list.
      * @return method invocation tree with modified type arguments and type arguments.
      *
      * @throws    IndexOutOfBoundsException if the index is out of range
      *		  (index &lt; 0 || index &gt; size()).
      */
-    public MethodInvocationTree insertMethodInvocationArgument(MethodInvocationTree methodInvocation, int index, ExpressionTree argument, ExpressionTree typeArgument) {
-        return delegate.insertMethodInvocationArgument(methodInvocation, index, argument, typeArgument);
-    }
-    
-    /** TODO: Strange method - different arguments/type arguments can be removed.
-     *  just argument should be passed to the method.
-     * Removes the first occurrence in arguments and type arguments list 
-     * of the specified elements. If this list do not contain the elements, it is
-     * unchanged.
-     *
-     * @param   methodInvocation method invocation tree containing arguments list.
-     * @param   argument   element to be removed from this list, if present.
-     * @param   typeArgument element to be removed from this list, if present.
-     * @return  method invocation tree with modified arguments and type arguments.
-     */
-    public MethodInvocationTree removeMethodInvocationArgument(MethodInvocationTree methodInvocation, ExpressionTree argument, ExpressionTree typeArgument) {
-        return delegate.removeMethodInvocationArgument(methodInvocation, argument, typeArgument);
+    public MethodInvocationTree insertMethodInvocationArgument(MethodInvocationTree methodInvocation, int index, ExpressionTree argument) {
+        return delegate.insertMethodInvocationArgument(methodInvocation, index, argument);
     }
     
     /**
-     * Removes the element at the specified position in arguments and 
-     * type arguments list. Returns the modified method invocation tree.
+     * Removes the first occurrence in arguments list of the specified
+     * element. If this list does not contain the element, it is does not
+     * change anything.
+     *
+     * @param   methodInvocation method invocation tree containing arguments list.
+     * @param   argument   element to be removed from this list, if present.
+     * @return  method invocation tree with modified arguments and type arguments.
+     */
+    public MethodInvocationTree removeMethodInvocationArgument(MethodInvocationTree methodInvocation, ExpressionTree argument) {
+        return delegate.removeMethodInvocationArgument(methodInvocation, argument);
+    }
+    
+    /**
+     * Removes the element at the specified position in arguments
+     * list. Returns the modified method invocation tree.
      *
      * @param   methodInvocation method invocation tree containing arguments list.
      * @param   index  the index of the element to be removed.
@@ -1568,6 +1562,62 @@ public final class TreeMaker {
      */
     public MethodInvocationTree removeMethodInvocationArgument(MethodInvocationTree methodInvocation, int index) {
         return delegate.removeMethodInvocationArgument(methodInvocation, index);
+    }
+    
+    /**
+     * Appends specified element <tt>type argument</tt> 
+     * to the end of type arguments list.
+     *
+     * @param  methodInvocation method invocation tree containing arguments list.
+     * @param  typeArgument element to be appended to type arguments list.
+     * @return method invocation tree with modified arguments and type arguments.
+     */
+    public MethodInvocationTree addMethodInvocationTypeArgument(MethodInvocationTree methodInvocation, ExpressionTree typeArgument) {
+        return delegate.addMethodInvocationTypeArgument(methodInvocation, typeArgument);
+    }
+    
+    /**
+     * Inserts the specified element <tt>typeArgument</tt>
+     * at the specified position in type arguments list.
+     *
+     * @param  methodInvocation method invocation tree containing arguments list.
+     * @param  index  index at which the specified elements is to be inserted.
+     * @param  typeArgument element to be inserted to type arguments list.
+     * @return method invocation tree with modified type arguments and type arguments.
+     *
+     * @throws    IndexOutOfBoundsException if the index is out of range
+     *		  (index &lt; 0 || index &gt; size()).
+     */
+    public MethodInvocationTree insertMethodInvocationTypeArgument(MethodInvocationTree methodInvocation, int index, ExpressionTree typeArgument) {
+        return delegate.insertMethodInvocationTypeArgument(methodInvocation, index, typeArgument);
+    }
+
+    /** 
+     * Removes the first occurrence in type arguments list of the specified 
+     * elements. If this list does not contain the element, it is method
+     * does not change anything.
+     *
+     * @param   methodInvocation method invocation tree containing arguments list.
+     * @param   typeArgument element to be removed from this list, if present.
+     * @return  method invocation tree with modified arguments and type arguments.
+     */
+    public MethodInvocationTree removeMethodInvocationTypeArgument(MethodInvocationTree methodInvocation, ExpressionTree typeArgument) {
+        return delegate.removeMethodInvocationTypeArgument(methodInvocation, typeArgument);
+    }
+    
+    /**
+     * Removes the element at the specified position in type arguments.
+     * Returns the modified method invocation tree.
+     *
+     * @param   methodInvocation method invocation tree containing arguments list.
+     * @param   index  the index of the element to be removed.
+     * @return  method invocation tree with modified arguments and type arguments.
+     * 
+     * @throws IndexOutOfBoundsException if the index is out of range (index
+     *            &lt; 0 || index &gt;= size()).
+     */
+    public MethodInvocationTree removeMethodInvocationTypeArgument(MethodInvocationTree methodInvocation, int index) {
+        return delegate.removeMethodInvocationTypeArgument(methodInvocation, index);
     }
     
     // Method
@@ -1912,53 +1962,48 @@ public final class TreeMaker {
     
     // NewClass
     /**
-     * Appends specified element <tt>argument</tt> with related 
-     * <tt>typeArgument</tt> to the end of arguments/type arguments list.
+     * Appends specified element <tt>argument</tt> 
+     * to the end of arguments list.
      *
      * @param  newClass     new class tree containing arguments list.
-     * @param  typeArgument element to be appended to type arguments list.
      * @param  argument     element to be appended to arguments list.
      * @return new class tree with modified arguments and type arguments.
      */
-    public NewClassTree addNewClassArgument(NewClassTree newClass, ExpressionTree typeArgument, ExpressionTree argument) {
-        return delegate.addNewClassArgument(newClass, typeArgument, argument);
+    public NewClassTree addNewClassArgument(NewClassTree newClass, ExpressionTree argument) {
+        return delegate.addNewClassArgument(newClass, argument);
     }
     
     /**
-     * Inserts the specified element <tt>argument</tt> with related
-     * <tt>typeArgument</tt> at the specified position in arguments/type arguments list.
+     * Inserts the specified element <tt>argument</tt> 
+     * at the specified position in type arguments list.
      *
      * @param  newClass   new class tree containing type arguments list.
      * @param  index  index at which the specified elements is to be inserted.
-     * @param  typeArgument element to be inserted to type arguments list.
      * @param  argument   element to be inserted to arguments list.
      * @return new class tree with modified type arguments and type arguments.
      *
      * @throws    IndexOutOfBoundsException if the index is out of range
      *		  (index &lt; 0 || index &gt; size()).
      */
-    public NewClassTree insertNewClassArgument(NewClassTree newClass, int index, ExpressionTree typeArgument, ExpressionTree argument) {
-        return delegate.insertNewClassArgument(newClass, index, typeArgument, argument);
-    }
-    
-    /** TODO: Strange method - different arguments/type arguments can be removed.
-     *  just argument should be passed to the method.
-     * Removes the first occurrence in arguments and type arguments list 
-     * of the specified elements. If this list do not contain the elements, it is
-     * unchanged.
-     *
-     * @param   newClass  new class tree containing type arguments list.
-     * @param   typeArgument element to be removed from this list, if present.
-     * @param   argument   element to be removed from this list, if present.
-     * @return  new class tree with modified arguments and type arguments.
-     */
-    public NewClassTree removeNewClassArgument(NewClassTree newClass, ExpressionTree typeArgument, ExpressionTree argument) {
-        return delegate.removeNewClassArgument(newClass, typeArgument, argument);
+    public NewClassTree insertNewClassArgument(NewClassTree newClass, int index, ExpressionTree argument) {
+        return delegate.insertNewClassArgument(newClass, index, argument);
     }
     
     /**
-     * Removes the element at the specified position in arguments and 
-     * type arguments list. Returns the modified new class tree.
+     * Removes the first occurrence in arguments of the specified elements.
+     * If this list does not contain the element, it is unchanged.
+     *
+     * @param   newClass  new class tree containing type arguments list.
+     * @param   argument   element to be removed from this list, if present.
+     * @return  new class tree with modified arguments and type arguments.
+     */
+    public NewClassTree removeNewClassArgument(NewClassTree newClass, ExpressionTree argument) {
+        return delegate.removeNewClassArgument(newClass, argument);
+    }
+    
+    /**
+     * Removes the element at the specified position in arguments
+     * list. Returns the modified new class tree.
      *
      * @param   newClass   new class tree containing type arguments list.
      * @param   index  the index of the element to be removed.
@@ -1969,6 +2014,61 @@ public final class TreeMaker {
      */
     public NewClassTree removeNewClassArgument(NewClassTree newClass, int index) {
         return delegate.removeNewClassArgument(newClass, index);
+    }
+    
+    /**
+     * Appends specified element <tt>typeArgument</tt> 
+     * to the end of type arguments list.
+     *
+     * @param  newClass     new class tree containing arguments list.
+     * @param  typeArgument element to be appended to type arguments list.
+     * @return new class tree with modified arguments and type arguments.
+     */
+    public NewClassTree addNewClassTypeArgument(NewClassTree newClass, ExpressionTree typeArgument) {
+        return delegate.addNewClassTypeArgument(newClass, typeArgument);
+    }
+    
+    /**
+     * Inserts the specified element <tt>typeArgument</tt> 
+     * at the specified position in type arguments list.
+     *
+     * @param  newClass   new class tree containing type arguments list.
+     * @param  index  index at which the specified elements is to be inserted.
+     * @param  typeArgument element to be inserted to type arguments list.
+     * @return new class tree with modified type arguments and type arguments.
+     *
+     * @throws    IndexOutOfBoundsException if the index is out of range
+     *		  (index &lt; 0 || index &gt; size()).
+     */
+    public NewClassTree insertNewClassTypeArgument(NewClassTree newClass, int index, ExpressionTree typeArgument) {
+        return delegate.insertNewClassTypeArgument(newClass, index, typeArgument);
+    }
+    
+    /**
+     * Removes the first occurrence in type arguments list of the specified elements.
+     * If this list does not contain the element, it is unchanged.
+     *
+     * @param   newClass  new class tree containing type arguments list.
+     * @param   typeArgument element to be removed from this list, if present.
+     * @return  new class tree with modified arguments and type arguments.
+     */
+    public NewClassTree removeNewClassTypeArgument(NewClassTree newClass, ExpressionTree typeArgument) {
+        return delegate.removeNewClassTypeArgument(newClass, typeArgument);
+    }
+    
+    /**
+     * Removes the element at the specified position in type arguments
+     * list. Returns the modified new class tree.
+     *
+     * @param   newClass   new class tree containing type arguments list.
+     * @param   index  the index of the element to be removed.
+     * @return  new class tree with modified arguments and type arguments.
+     * 
+     * @throws IndexOutOfBoundsException if the index is out of range (index
+     *            &lt; 0 || index &gt;= size()).
+     */
+    public NewClassTree removeNewClassTypeArgument(NewClassTree newClass, int index) {
+        return delegate.removeNewClassTypeArgument(newClass, index);
     }
 
     // ParameterizedType
