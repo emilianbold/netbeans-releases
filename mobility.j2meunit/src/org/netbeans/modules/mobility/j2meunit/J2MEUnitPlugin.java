@@ -22,15 +22,20 @@ package org.netbeans.modules.mobility.j2meunit;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.junit.plugin.JUnitPlugin;
 import org.netbeans.modules.junit.plugin.JUnitPlugin.CreateTestParam;
-import org.netbeans.modules.mobility.j2meunit.TestUtils.TestableTypeFinder;
+import org.netbeans.modules.junit.plugin.JUnitPlugin.Location;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
@@ -55,12 +60,101 @@ public class J2MEUnitPlugin extends JUnitPlugin {
 
     protected JUnitPlugin.Location getTestLocation(JUnitPlugin.Location sourceLocation) {
 
-        return null;
+        FileObject fileObj = sourceLocation.getFileObject();
+        ClassPath srcCp;
+        
+        if (fileObj.isFolder() || (srcCp = ClassPath.getClassPath(fileObj, ClassPath.SOURCE)) == null) {
+            return null;
+        }
+        
+        String baseResName = srcCp.getResourceName(fileObj, '/', false);
+        String testResName = getTestResName(baseResName, fileObj.getExt());
+        assert testResName != null;
+        
+        return getOppositeLocation(sourceLocation,
+                                   srcCp,
+                                   testResName,
+                                   true);
 
     }
 
     protected JUnitPlugin.Location getTestedLocation(JUnitPlugin.Location testLocation) {
-        return null;
+        FileObject fileObj = testLocation.getFileObject();
+        ClassPath srcCp;
+        
+        if (fileObj.isFolder() || ((srcCp = ClassPath.getClassPath(fileObj, ClassPath.SOURCE)) == null)) {
+            return null;
+        }
+        
+        String baseResName = srcCp.getResourceName(fileObj, '/', false);
+        String srcResName = getSrcResName(baseResName, fileObj.getExt());
+        if (srcResName == null) {
+            return null;     //if the selectedFO is not a test class (by name)
+        }
+
+        return getOppositeLocation(testLocation,
+                                   srcCp,
+                                   srcResName,
+                                   false);
+    }
+    
+    
+    /**
+     */
+    private static String getTestResName(String baseResName, String ext) {
+        StringBuilder buf
+                = new StringBuilder(baseResName.length() + ext.length() + 10);
+        buf.append(baseResName).append("Test");                         //NOI18N
+        if (ext.length() != 0) {
+            buf.append('.').append(ext);
+        }
+        return buf.toString();
+    }
+    
+    /**
+     */
+    private static String getSrcResName(String testResName, String ext) {
+        if (!testResName.endsWith("Test")) {                            //NOI18N
+            return null;
+        }
+        
+        StringBuilder buf
+                = new StringBuilder(testResName.length() + ext.length());
+        buf.append(testResName.substring(0, testResName.length() - 4));
+        if (ext.length() != 0) {
+            buf.append('.').append(ext);
+        }
+        return buf.toString();
+    }
+    
+    private static Location getOppositeLocation(
+                                    final Location sourceLocation,
+                                    final ClassPath fileObjCp,
+                                    final String oppoResourceName,
+                                    final boolean sourceToTest) {
+        FileObject fileObj = sourceLocation.getFileObject();
+        FileObject fileObjRoot;
+        
+        if ((fileObjRoot = fileObjCp.findOwnerRoot(fileObj)) == null) {
+            return null;
+        }
+        
+        URL[] oppoRootsURLs = sourceToTest
+                              ? UnitTestForSourceQuery.findUnitTests(fileObjRoot)
+                              : UnitTestForSourceQuery.findSources(fileObjRoot);
+        if ((oppoRootsURLs == null) || (oppoRootsURLs.length == 0)) {
+            return null;
+        }
+        
+        ClassPath oppoRootsClassPath = ClassPathSupport
+                                           .createClassPath(oppoRootsURLs);
+        final List<FileObject> oppoFiles = oppoRootsClassPath
+                                           .findAllResources(oppoResourceName);
+        if (oppoFiles.isEmpty()) {
+            return null;
+        }
+        
+        return new Location(oppoFiles.get(0)/*, null*/);
     }
     
     
