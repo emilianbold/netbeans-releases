@@ -87,7 +87,7 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
     
     private static final Icon DOMAIN_OBJECT_NODE_ICON =
         new ImageIcon(Utilities.loadImage(
-        "org/netbeans/modules/uml/resources/images/templates.gif")); // NOI18N
+        "org/netbeans/modules/uml/resources/images/templates.png")); // NOI18N
     
     private static final Icon TEMPLATE_FAMILY_NODE_ICON =
         new ImageIcon(Utilities.loadImage(
