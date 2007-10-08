@@ -293,14 +293,14 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
                 }
             }*/
             if (locations.isEmpty() && reason[0] == null) {
-                reason[0] = NbBundle.getMessage(LineBreakpointImpl.class, "MSG_NoLocation", Integer.toString(lineNumber));
+                reason[0] = NbBundle.getMessage(LineBreakpointImpl.class, "MSG_NoLocation", Integer.toString(lineNumber), referenceType.name());
             }
             return locations;
         } catch (AbsentInformationException ex) {
             // we are not able to create breakpoint in this situation. 
             // should we write some message?!?
             // We should indicate somehow that the breakpoint is invalid...
-            reason[0] = NbBundle.getMessage(LineBreakpointImpl.class, "MSG_NoLineInfo");
+            reason[0] = NbBundle.getMessage(LineBreakpointImpl.class, "MSG_NoLineInfo", referenceType.name());
         } catch (ObjectCollectedException ex) {
             // no problem, breakpoint will be created next time the class 
             // is loaded
