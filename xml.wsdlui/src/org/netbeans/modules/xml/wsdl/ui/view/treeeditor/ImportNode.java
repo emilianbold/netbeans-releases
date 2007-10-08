@@ -85,7 +85,6 @@ import org.openide.util.lookup.ProxyLookup;
 public class ImportNode extends WSDLElementNode<Import> {
     
     private static final String NAMESPACE_PROP = "namespace";//NOI18N
-    private Import mWSDLConstruct;
             
     Image ICON  = Utilities.loadImage
      ("org/netbeans/modules/xml/wsdl/ui/view/resources/import-include-redefine.png");
@@ -111,7 +110,6 @@ public class ImportNode extends WSDLElementNode<Import> {
     public ImportNode(Children children,
                       Import wsdlConstruct) {
         super(children, wsdlConstruct);
-        mWSDLConstruct = wsdlConstruct;
         this.mPropertyAdapter = new ImportPropertyAdapter();
     }
     
@@ -158,13 +156,15 @@ public class ImportNode extends WSDLElementNode<Import> {
 
             
         } catch(Exception ex) {
-            mLogger.log(Level.SEVERE, "failed to create property sheet for "+ mWSDLConstruct, ex);
+            mLogger.log(Level.SEVERE, "failed to create property sheet for "+ getWSDLComponent(), ex);
         }
     }
 
     @Override
     protected void updateDisplayName() {
-        setDisplayName(mWSDLConstruct.getNamespace());
+        if (getWSDLComponent() != null) {
+            setDisplayName(getWSDLComponent().getNamespace());
+        }
     }
     
     public class ImportPropertyAdapter extends PropertyAdapter {
@@ -174,17 +174,18 @@ public class ImportNode extends WSDLElementNode<Import> {
         }
         
         public void setLocation(String location) {
-            getWSDLComponent().getModel().startTransaction();
-            (getWSDLComponent()).setLocation(location);
-                getWSDLComponent().getModel().endTransaction();
+            Import imp = (Import) getDelegate();
+            imp.getModel().startTransaction();
+            imp.setLocation(location);
+            imp.getModel().endTransaction();
          }
          
          public String getLocation() {
-             if(mWSDLConstruct.getLocation() == null) {
+             if(getWSDLComponent().getLocation() == null) {
                  return "";
              }
              
-             return mWSDLConstruct.getLocation();
+             return getWSDLComponent().getLocation();
          }
          
          public void setNamespace(String namespace) {
@@ -194,11 +195,11 @@ public class ImportNode extends WSDLElementNode<Import> {
          }
          
          public String getNamespace() {
-             if(mWSDLConstruct.getNamespace() == null) {
+             if(getWSDLComponent().getNamespace() == null) {
                  return "";
              }
              
-             return mWSDLConstruct.getNamespace();
+             return getWSDLComponent().getNamespace();
          } 
          
     }
@@ -213,7 +214,7 @@ public class ImportNode extends WSDLElementNode<Import> {
 
         @Override
         public PropertyEditor getPropertyEditor() {
-            return new ImportLocationPropertyEditor(mWSDLConstruct);
+            return new ImportLocationPropertyEditor(getWSDLComponent());
         }
     }
 
