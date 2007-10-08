@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -256,10 +256,14 @@ public class IndexBuilder implements Runnable, ChangeListener {
                     title = st.getOverviewTitleBase(title);
                 }
                 if ("".equals(title)) { // NOI18N
+                    String filename = FileUtil.getFileDisplayName(index);
+                    if (filename.length() > 54) {
+                        // trim to display 54 chars
+                        filename = filename.substring(0, 10) + "[...]" // NOI18N
+                                + filename.substring(filename.length() - 40, filename.length());
+                    }
                     title = NbBundle.getMessage(IndexBuilder.class,
-                            "FMT_NoOverviewTitle", new Object[] { index.getPath(), // NOI18N
-                                                                   fo.getName(),
-                                                                   fo.getName() });
+                            "FMT_NoOverviewTitle", new Object[] { filename }); // NOI18N
                 }
                 Info info = new Info();
                 info.title = title == null ? fo.getName() : title;
@@ -280,7 +284,7 @@ public class IndexBuilder implements Runnable, ChangeListener {
      * May return null if there is no title tag, or "" if it is empty.
      */
     private String parseTitle(FileObject html) {
-        String title = null;
+        String title = ""; // NOI18N
         try {
             // #71979: html parser used again to fix encoding issues.
             // I have measured no difference if the parser or plain file reading
@@ -298,10 +302,7 @@ public class IndexBuilder implements Runnable, ChangeListener {
         } catch (IOException ioe) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
         }
-        if (title == null) { // fallback
-            title = FileUtil.getFileDisplayName(html);
-        }
-        return title;
+        return title.trim();
     }
 
     private synchronized static void scheduleTask() {
