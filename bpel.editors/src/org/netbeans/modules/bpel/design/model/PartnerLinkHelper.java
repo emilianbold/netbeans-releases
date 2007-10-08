@@ -555,14 +555,14 @@ public class PartnerLinkHelper {
     }
     public static boolean isExternalResource(URL url){
         if (url == null || url.getHost() == null){
-            return false;
+            return true;
         }
         InetAddress inet_addr;
         try {
             inet_addr = InetAddress.getByName(url.getHost());
             
             if (inet_addr == null){
-                return false;
+                return true;
             }
             
             return (NetworkInterface.getByInetAddress(inet_addr) == null);
@@ -570,7 +570,7 @@ public class PartnerLinkHelper {
         } catch (SocketException ex) {
         } catch (UnknownHostException ex) {
         }
-        return false;
+        return true;
     }
     
     private WSDLModel getWSDLModel(FileObject fo){
