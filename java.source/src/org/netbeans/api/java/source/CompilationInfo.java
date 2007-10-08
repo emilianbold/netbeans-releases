@@ -122,12 +122,15 @@ public class CompilationInfo {
     /**
      * Returns the javac tree representing the source file.
      * @return {@link CompilationUnitTree} the compilation unit cantaining the top level classes contained in the,
-     * java source file. It may return null when the phase is less than {@link JavaSource.Phase#PARSED}
+     * java source file. 
+     * @throws java.lang.IllegalStateException  when the phase is less than {@link JavaSource.Phase#PARSED}
      */
     public CompilationUnitTree getCompilationUnit() {
         if (this.jfo == null) {
             throw new IllegalStateException ();
         }
+        if (this.phase.compareTo (JavaSource.Phase.PARSED) < 0)
+            throw new IllegalStateException("Cannot call getCompilationInfo() if current phase < JavaSource.Phase.PARSED. You must call toPhase(Phase.PARSED) first.");//NOI18N
         return this.compilationUnit;
     }
     
