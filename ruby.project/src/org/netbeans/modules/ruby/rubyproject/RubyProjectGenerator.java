@@ -103,6 +103,7 @@ public class RubyProjectGenerator {
         FileObject readme = dirFO.createData("README"); // NOI18N
         PrintWriter readmeW = new PrintWriter(readme.getOutputStream());
         readmeW.println(NbBundle.getMessage(RubyProjectGenerator.class, "TXT_README_Content", name));
+        readmeW.close();
         // Run Rake -T silently to determine the available targets and write into private area
         RakeTargetsAction.refreshTargets(p);
         
