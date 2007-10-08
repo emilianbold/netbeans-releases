@@ -71,7 +71,6 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.completion.csm.CompletionUtilities;
 import org.netbeans.modules.cnd.editor.cplusplus.CCTokenContext;
 import org.netbeans.modules.cnd.editor.spi.cplusplus.CCSyntaxSupport;
-import org.openide.util.Exceptions;
 
 /**
 * Support methods for csm based syntax analyzes
@@ -147,6 +146,7 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
         return new CsmIncludeProcessor(this);
     }
     
+    @Override
     protected void documentModified(DocumentEvent evt) {
         super.documentModified(evt);
         classFieldMaps.clear();
@@ -160,10 +160,12 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
         this.java15 = java15;
     }
 
+    @Override
     public TokenID[] getCommentTokens() {
         return COMMENT_TOKENS;
     }
 
+    @Override
     public TokenID[] getBracketSkipTokens() {
         return BRACKET_SKIP_TOKENS;
     }
@@ -171,6 +173,7 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
     /** Return the position of the last command separator before
     * the given position.
     */
+    @Override
     public int getLastCommandSeparator(final int pos) throws BadLocationException {
         if (pos == 0)
             return 0;
@@ -336,6 +339,7 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
         return false;
     }    
 
+    @Override
     public int[] getFunctionBlock(int[] identifierBlock) throws BadLocationException {
         int[] retValue = super.getFunctionBlock(identifierBlock);
         if (!isAnnotation(identifierBlock[0]))
@@ -343,6 +347,7 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
         return null;
     }
     
+    @Override
     protected DeclarationTokenProcessor createDeclarationTokenProcessor(
         String varName, int startPos, int endPos) {
         return java15
@@ -350,6 +355,7 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
             : (DeclarationTokenProcessor)new CsmDeclarationTokenProcessor(this, varName);
     }
 
+    @Override
     protected VariableMapTokenProcessor createVariableMapTokenProcessor(
         int startPos, int endPos) {
         return java15
@@ -1061,6 +1067,7 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
     * @return it returns Object to enable the custom implementations
     *   to return the appropriate instances.
     */
+    @Override
     public Object findType(String varName, int varPos) {
         CsmType type = null;
         Map varMap = getLocalVariableMap(varPos); // first try local vars
@@ -1119,6 +1126,7 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
     //                  build variable maps
     ///////////////////////////////////////////////////////////////////////////
     
+    @Override
     protected Map buildLocalVariableMap(int offset) {
         int methodStartPos = getMethodStartPosition(offset);
         if (methodStartPos >= 0 && methodStartPos < offset) {
@@ -1128,6 +1136,7 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
         return null;
     }
     
+    @Override
     protected Map buildGlobalVariableMap(int offset) {
         List res = CompletionUtilities.findGlobalVariables(getDocument(), offset);
         return list2Map(res);
@@ -1160,6 +1169,7 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
         return res;
     }
     
+    @Override
     protected boolean isAbbrevDisabled(int offset) {
         boolean abbrevDisabled = false;
         TokenID[] disableTokenIds = BRACKET_SKIP_TOKENS;
@@ -1318,7 +1328,7 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
     }        
 
     public boolean needShowCompletionOnText(JTextComponent target, String typedText) throws BadLocationException {
-        boolean showCompletion = false;      
+        boolean showCompletion = false;    
         char typedChar = typedText.charAt(0);
         if (typedChar == ' ' || typedChar == '>' || typedChar == ':' || typedChar == '.' || typedChar == '*') {
             

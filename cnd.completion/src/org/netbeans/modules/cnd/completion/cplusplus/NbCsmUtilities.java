@@ -41,15 +41,7 @@
 
 package org.netbeans.modules.cnd.completion.cplusplus;
 
-import javax.swing.text.BadLocationException;
-import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.SyntaxSupport;
-import org.netbeans.editor.Utilities;
-import org.netbeans.editor.ext.Completion;
-import org.netbeans.editor.ext.CompletionQuery;
-import org.netbeans.editor.ext.ExtUtilities;
-import org.netbeans.modules.editor.NbEditorUtilities;
 
 /**
  *
