@@ -63,6 +63,7 @@ public abstract class APTIfdefConditionBaseNode extends APTTokenAndChildBasedNod
     /**package*/ APTIfdefConditionBaseNode(APTIfdefConditionBaseNode orig) {
         super(orig);
         this.macroName = orig.macroName;
+        this.endOffset = orig.endOffset;
     }
     
     /** Constructor for serialization */
