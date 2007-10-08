@@ -270,7 +270,7 @@ public abstract class TestBase extends RubyTestBase {
         public IFL() {}
         @Override
         public File locate(String relativePath, String codeNameBase, boolean localized) {
-            if (relativePath.equals("ruby/debug-commons-0.9.4/classic-debug.rb")) {
+            if (relativePath.equals("ruby/debug-commons-0.9.5/classic-debug.rb")) {
                 File rubydebugDir = getDirectory("rubydebug.dir", true);
                 File cd = new File(rubydebugDir, "classic-debug.rb");
                 assertTrue("classic-debug found in " + rubydebugDir, cd.isFile());
