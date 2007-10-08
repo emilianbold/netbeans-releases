@@ -43,6 +43,7 @@ package org.netbeans.modules.options.advanced;
 
 import java.awt.BorderLayout;
 import java.util.Iterator;
+import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -76,8 +77,11 @@ public final class AdvancedPanel extends JPanel {
     AdvancedPanel () {}
         
     public void update () {
-        String category = tabbedPanel.getTitleAt(tabbedPanel.getSelectedIndex());
-        model.update (category);        
+        int idx = tabbedPanel.getSelectedIndex();
+        if (idx != -1) {
+            String category = tabbedPanel.getTitleAt(idx);
+            model.update (category);        
+        }
     }
     
     public void applyChanges () {
@@ -117,7 +121,9 @@ public final class AdvancedPanel extends JPanel {
     private void initTabbedPane(Lookup masterLookup) {
         tabbedPanel.removeChangeListener(changeListener);
         tabbedPanel.removeAll();
-        Iterator it = model.getCategories().iterator();
+        List categories = model.getCategories();
+        tabbedPanel.setVisible(categories.size() > 0);
+        Iterator it = categories.iterator();
         while (it.hasNext()) {
             String category = (String) it.next ();
             tabbedPanel.addTab(category, new JLabel(category));
@@ -127,14 +133,16 @@ public final class AdvancedPanel extends JPanel {
     }
 
     private void handleTabSwitched() {        
-        final int selectedIndex = tabbedPanel.getSelectedIndex() >= 0 ? tabbedPanel.getSelectedIndex() : 0;
-        String category = tabbedPanel.getTitleAt(selectedIndex);
-        if (tabbedPanel.getSelectedComponent() instanceof JLabel) {
-            tabbedPanel.setComponentAt(tabbedPanel.getSelectedIndex(), model.getPanel(category));
-            ((JComponent)tabbedPanel.getSelectedComponent()).setBorder (new EmptyBorder(11,11,11,11));
+        final int selectedIndex = tabbedPanel.getSelectedIndex() >= 0 ? tabbedPanel.getSelectedIndex() : -1;
+        if (selectedIndex != -1) {
+            String category = tabbedPanel.getTitleAt(selectedIndex);
+            if (tabbedPanel.getSelectedComponent() instanceof JLabel) {
+                tabbedPanel.setComponentAt(tabbedPanel.getSelectedIndex(), model.getPanel(category));
+                ((JComponent)tabbedPanel.getSelectedComponent()).setBorder (new EmptyBorder(11,11,11,11));
+            }
+            model.update(category);
+            firePropertyChange (OptionsPanelController.PROP_HELP_CTX, null, null);        
         }
-        model.update(category);
-        firePropertyChange (OptionsPanelController.PROP_HELP_CTX, null, null);        
     }
     
     private class LookupListenerImpl implements LookupListener {
