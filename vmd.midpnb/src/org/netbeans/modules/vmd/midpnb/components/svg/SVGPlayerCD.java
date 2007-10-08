@@ -32,6 +32,7 @@ import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
 import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
 import org.netbeans.modules.vmd.midp.codegen.SwitchDisplayableParameterPresenter;
 import org.netbeans.modules.vmd.midp.components.*;
+import org.netbeans.modules.vmd.midpnb.components.SVGImageAcceptTrensferableKindPresenter;
 import org.netbeans.modules.vmd.midp.components.displayables.CanvasCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
@@ -42,7 +43,6 @@ import org.netbeans.modules.vmd.midpnb.general.SVGFileAcceptPresenter;
 import org.netbeans.modules.vmd.midpnb.propertyeditors.SVGImageEditorElement;
 import org.netbeans.modules.vmd.midpnb.screen.display.SVGPlayerDisplayPresenter;
 import org.openide.util.NbBundle;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -133,7 +133,7 @@ public class SVGPlayerCD extends ComponentDescriptor {
                 //accept
                 new SVGFileAcceptPresenter (),
                 new MidpAcceptProducerKindPresenter ().addType(SVGImageCD.TYPEID, PROP_SVG_IMAGE),
-                new MidpAcceptTrensferableKindPresenter().addType(SVGImageCD.TYPEID, PROP_SVG_IMAGE),
+                new SVGImageAcceptTrensferableKindPresenter().addType(SVGImageCD.TYPEID, PROP_SVG_IMAGE),
                 // code
                 createSetterPresenter(),
                 MidpCodePresenterSupport.createAddImportPresenter(),

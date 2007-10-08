@@ -37,7 +37,7 @@ import org.netbeans.modules.vmd.api.model.common.AcceptSuggestion;
  */
 public class MidpAcceptTrensferableKindPresenter extends AcceptPresenter {
     
-    private Map<TypeID, String> typesMap;
+    protected Map<TypeID, String> typesMap;
     
     public MidpAcceptTrensferableKindPresenter() {
         super(AcceptPresenter.Kind.TRANSFERABLE);

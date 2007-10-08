@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.vmd.midpnb.components.svg.util;
 
-import java.util.Collection;
 import org.xml.sax.*;
 import org.xml.sax.helpers.XMLReaderFactory;
 import java.io.ByteArrayInputStream;
@@ -32,7 +31,6 @@ import java.util.regex.Pattern;
 import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
-import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midpnb.components.sources.SVGMenuElementEventSourceCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGMenuCD;
@@ -54,18 +52,6 @@ public final class SVGUtils {
             svgComponent.getDocument().getTransactionManager().writeAccess(new Runnable() {
 
                 public void run() {
-                    // remove all menu event sources
-//                    Collection<DesignComponent> components = svgComponent.getComponents();
-//                    for (DesignComponent component : components) {
-//                        if (SVGMenuElementEventSourceCD.TYPEID.equals(component.getType())) {
-//                            svgComponent.removeComponent(component);
-//                        } else {
-//                            components.remove(component);
-//                        }
-//                    }
-//                    DeleteSupport.invokeDirectUserDeletion(svgComponent.getDocument(), components, false);
-                    
-                    // parse for new
                     List<PropertyValue> list = new ArrayList<PropertyValue>(menuItems.length);
                     for (String item : menuItems) {
                         DesignComponent es = svgComponent.getDocument().createComponent(SVGMenuElementEventSourceCD.TYPEID);

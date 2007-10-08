@@ -152,9 +152,11 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement impleme
         component.getDocument().getTransactionManager().readAccess(new Runnable() {
 
             public void run() {
-                retValue[0] = component.getDocument().getDescriptorRegistry().isInHierarchy(SVGMenuCD.TYPEID, component.getType());
+                retValue[0] = component.getDocument().getDescriptorRegistry().isInHierarchy(SVGMenuCD.TYPEID, component.getType()) &&
+                        component.readProperty(SVGMenuCD.PROP_ELEMENTS).getArray().size() == 0;
             }
         });
+
         return retValue[0];
     }
 

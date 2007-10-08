@@ -60,7 +60,8 @@ public class SVGFileAcceptPresenter extends FileAcceptPresenter {
         svgImage.writeProperty(SVGImageCD.PROP_RESOURCE_PATH, MidpTypes.createStringValue(path));
         MidpDocumentSupport.getCategoryComponent(svgComponent.getDocument(), ResourcesCategoryCD.TYPEID).addComponent(svgImage);
 
-        if (svgComponent.getDocument().getDescriptorRegistry().isInHierarchy(SVGMenuCD.TYPEID, svgComponent.getType())) {
+        if (svgComponent.getDocument().getDescriptorRegistry().isInHierarchy(SVGMenuCD.TYPEID, svgComponent.getType()) &&
+                        svgComponent.readProperty (SVGMenuCD.PROP_ELEMENTS).getArray().size() == 0) {
             parseSVGMenuItems(transferable, svgComponent);
         }
 
