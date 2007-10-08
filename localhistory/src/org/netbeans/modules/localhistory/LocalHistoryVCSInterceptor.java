@@ -180,6 +180,12 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
     }
 
     public void afterCreate(File file) {
+        if(LocalHistory.getInstance().isManagedByParent(file) == null) {
+            // XXX: the VCS interceptor doesn't filter afterCreate because
+            // of a workaround for caching problems in other VCS systems. 
+            // For now this must be done here ...
+            return;
+        }
         LocalHistory.getInstance().fireFileEvent(LocalHistory.EVENT_FILE_CREATED, file);
         toBeCreated.remove(file);
         if(file.isFile()) {
