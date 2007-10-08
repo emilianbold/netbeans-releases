@@ -227,7 +227,7 @@ public final class SettingsProvider implements MimeDataProvider {
                     String changedProfile = (String) evt.getNewValue();
                     if (changedProfile.equals(fcsProfile)) {
                         MimePath changedMimePath = (MimePath) evt.getOldValue();
-                        if (fontColorSettings.isDerivedFromMimePath(changedMimePath)) {
+                        if (fontColorSettings != null && fontColorSettings.isDerivedFromMimePath(changedMimePath)) {
                             fcsChanged = true;
                         }
                     }
