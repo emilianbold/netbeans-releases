@@ -490,6 +490,10 @@ public class VisualReplicator {
                         new String[] { metacomp.getId() } );
                 }
             }
+            // fallback - workaround for issue 118019, for example
+            if (comp.getParent() != null) {
+                comp.getParent().remove(comp);
+            }
         }
         else if (clone instanceof MenuComponent) { // AWT menu
             MenuComponent menuComp = (MenuComponent) clone;

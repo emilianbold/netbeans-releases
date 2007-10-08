@@ -168,6 +168,14 @@ public class MetaComponentCreator {
         return copyComponent2(metacomp, metacomp, targetComp, targetPlacement) != null;
     }
 
+    public void addComponents(Collection<RADComponent> components, RADComponent targetComp) {
+        for (RADComponent metacomp : components) {
+            int targetPlacement = getTargetPlacement(metacomp.getBeanClass(), targetComp, false, false);
+            assert (targetPlacement != NO_TARGET);
+            copyComponent2(metacomp, metacomp, targetComp, targetPlacement);
+        }
+    }
+    
     public static boolean canAddComponent(Class beanClass,
                                           RADComponent targetComp)
     {
@@ -782,6 +790,7 @@ public class MetaComponentCreator {
             newMetaComp.initialize(formModel);
             if (!initComponentInstance(newMetaComp, compClass))
                 return null; // failure (reported)
+
 
             if (newMetaCont == null)
                 break; // not a container, the component is done

@@ -203,9 +203,12 @@ public class EncloseAction extends NodeAction {
                             String[] compIds = new String[components.size()];
                             int i = 0;
                             for (RADComponent metacomp : components) {
-                                creator.moveComponent(metacomp, newCont); // this does not affect layout model
                                 compIds[i++] = metacomp.getId();
                             }
+                            for (RADComponent metacomp : components) {
+                                formModel.removeComponent(metacomp, false);
+                            }
+                            creator.addComponents(components, newCont); // this does not affect layout model
                             FormEditor.getFormDesigner(formModel).getLayoutDesigner()
                                     .encloseInContainer(compIds, newCont.getId());
                             autoUndo = false;
