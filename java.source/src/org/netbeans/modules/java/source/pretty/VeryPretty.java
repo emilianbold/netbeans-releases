@@ -488,11 +488,11 @@ public final class VeryPretty extends JCTree.Visitor {
                 print(tree.name);
             }
             print(cs.spaceBeforeMethodDeclParen() ? " (" : "(");
-            if (cs.spaceWithinMethodDeclParens())
+            if (cs.spaceWithinMethodDeclParens() && tree.params.nonEmpty())
                 print(' ');
             wrapTrees(tree.params, cs.wrapMethodParams(), cs.alignMultilineMethodParams()
                     ? out.col : out.leftMargin + cs.getContinuationIndentSize());
-            if (cs.spaceWithinMethodDeclParens())
+            if (cs.spaceWithinMethodDeclParens() && tree.params.nonEmpty())
                 needSpace();
             print(')');
             if (tree.thrown.nonEmpty()) {
@@ -697,6 +697,7 @@ public final class VeryPretty extends JCTree.Visitor {
         undent(old);
     }
 
+    @Override
     public void visitSwitch(JCSwitch tree) {
 	print("switch");
         print(cs.spaceBeforeSwitchParen() ? " (" : "(");
@@ -970,11 +971,11 @@ public final class VeryPretty extends JCTree.Visitor {
         }
         this.prec = prevPrec;
 	print(cs.spaceBeforeMethodCallParen() ? " (" : "(");
-        if (cs.spaceWithinMethodCallParens())
+        if (cs.spaceWithinMethodCallParens() && tree.args.nonEmpty())
             print(' ');
 	wrapTrees(tree.args, cs.wrapMethodCallArgs(), cs.alignMultilineCallArgs()
                 ? out.col : out.leftMargin + cs.getContinuationIndentSize());
-	print(cs.spaceWithinMethodCallParens() ? " )" : ")");
+	print(cs.spaceWithinMethodCallParens() && tree.args.nonEmpty() ? " )" : ")");
     }
 
     @Override
@@ -996,11 +997,11 @@ public final class VeryPretty extends JCTree.Visitor {
 	else
 	    print(tree.clazz);
 	print(cs.spaceBeforeMethodCallParen() ? " (" : "(");
-        if (cs.spaceWithinMethodCallParens())
+        if (cs.spaceWithinMethodCallParens()  && tree.args.nonEmpty())
             print(' ');
 	wrapTrees(tree.args, cs.wrapMethodCallArgs(), cs.alignMultilineCallArgs()
                 ? out.col : out.leftMargin + cs.getContinuationIndentSize());
-	print(cs.spaceWithinMethodCallParens() ? " )" : ")");
+	print(cs.spaceWithinMethodCallParens() && tree.args.nonEmpty() ? " )" : ")");
 	if (tree.def != null) {
 	    Name enclClassNamePrev = enclClassName;
 	    enclClassName = tree.def.name;
