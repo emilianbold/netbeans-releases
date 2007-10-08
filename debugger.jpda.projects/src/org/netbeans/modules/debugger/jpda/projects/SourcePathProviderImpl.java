@@ -100,6 +100,8 @@ public class SourcePathProviderImpl extends SourcePathProvider {
 
     /** Contains all known source paths + jdk source path for JPDAStart task */
     private ClassPath               originalSourcePath;
+    /** Contains the additional source roots, added at a later time to the original roots. */
+    private Set<String>             additionalSourceRoots;
     /** Contains just the source paths which are selected for debugging. */
     private ClassPath               smartSteppingSourcePath;
     private String[]                projectSourceRoots;
@@ -426,6 +428,10 @@ public class SourcePathProviderImpl extends SourcePathProvider {
                 originalSourcePath =
                         ClassPathSupport.createClassPath(
                             sourcePathOriginal.toArray(new FileObject[0]));
+                if (additionalSourceRoots == null) {
+                    additionalSourceRoots = new HashSet<String>();
+                }
+                additionalSourceRoots.addAll(newOriginalRoots);
             }
 
             // Then correct the smart-stepping path
@@ -434,13 +440,22 @@ public class SourcePathProviderImpl extends SourcePathProvider {
                 newSteppingRoots.remove(getRoot(fo));
             }
             Set<FileObject> removedSteppingRoots = new HashSet<FileObject>();
+            Set<FileObject> removedOriginalRoots = new HashSet<FileObject>();
             for (FileObject fo : sourcePath) {
-                if (!newRoots.contains(getRoot(fo))) {
+                String spr = getRoot(fo);
+                if (!newRoots.contains(spr)) {
                     removedSteppingRoots.add(fo);
+                    if (additionalSourceRoots != null && additionalSourceRoots.contains(spr)) {
+                        removedOriginalRoots.add(fo);
+                        additionalSourceRoots.remove(spr);
+                        if (additionalSourceRoots.size() == 0) {
+                            additionalSourceRoots = null;
+                        }
+                    }
                 }
             }
-            if (removedSteppingRoots.size() > 0) {
-                sourcePathOriginal.removeAll(removedSteppingRoots);
+            if (removedOriginalRoots.size() > 0) {
+                sourcePathOriginal.removeAll(removedOriginalRoots);
                 originalSourcePath =
                         ClassPathSupport.createClassPath(
                             sourcePathOriginal.toArray(new FileObject[0]));
