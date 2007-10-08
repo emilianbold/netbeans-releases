@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.qa.form;
 
 import java.io.BufferedReader;
@@ -53,6 +52,7 @@ import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
+import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.ActionNoBlock;
@@ -66,6 +66,7 @@ import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jellytools.properties.Property;
 import org.netbeans.jellytools.properties.PropertySheetOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.Operator;
 
 /**
@@ -501,5 +502,17 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
 
         return result;
     }
-    
+
+    public void createJDABasicProject() {
+        
+        new ActionNoBlock("File|New Project",null).perform(); // NOI18N
+
+        NewProjectWizardOperator op = new NewProjectWizardOperator();
+        op.selectProject("Java Desktop Application"); // NOI18N
+        op.next();
+        
+        NbDialogOperator newJDAOp = new NbDialogOperator("New Desktop Application"); // NOI18N
+        new JTextFieldOperator(newJDAOp, 3).typeText(getTestProjectName());
+        new JButtonOperator(newJDAOp, "Finish").push(); // NOI18N
+    }
 }
