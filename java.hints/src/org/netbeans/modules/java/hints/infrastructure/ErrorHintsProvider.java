@@ -296,6 +296,12 @@ public final class ErrorHintsProvider implements CancellableTask<CompilationInfo
         if (!rangePrepared) {
             String text = line.getText();
             
+            if (text == null) {
+                //#116560, (according to the javadoc, means the document is closed):
+                cancel();
+                return null;
+            }
+            
             int column = 0;
             int length = text.length();
             
