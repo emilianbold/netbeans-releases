@@ -594,7 +594,8 @@ function monitor(xmlHttpReq, param) {
     var prev = document.getElementById('monitorText');
     var cURL = currentValidUrl;
     var s = 'Request: ' + currentMethod + ' ' + cURL + 
-            '\n\nStatus: ' + xmlHttpReq.status + ' (' + xmlHttpReq.statusText + ')';
+                '\n\nStatus: ' + xmlHttpReq.status + ' (' + xmlHttpReq.statusText + ')'+
+                '\n\nTimeStamp: ' + ' ' + xmlHttpReq.getResponseHeader('Date') + '';
     var prevs = '';
     if(currMonitorText != null && currMonitorText != undefined) {
         prevs = currMonitorText;        
