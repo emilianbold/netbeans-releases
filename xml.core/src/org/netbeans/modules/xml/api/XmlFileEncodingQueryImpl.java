@@ -27,15 +27,21 @@
  */
 package org.netbeans.modules.xml.api;
 
-import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
 import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CharsetEncoder;
+import java.nio.charset.CoderResult;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.xml.core.lib.EncodingHelper;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  * This implementation of the FileEncodingQueryImplementation can be used
@@ -43,9 +49,18 @@ import org.openide.filesystems.FileObject;
  *
  * @author nk160297
  */
-public class XmlFileEncodingQueryImpl extends FileEncodingQueryImplementation {
+public final class XmlFileEncodingQueryImpl extends FileEncodingQueryImplementation {
+    
+    //Logger based unit testing
+    static final String DECODER_SELECTED = "decoder-selected";      //NOI18N
+    //Logger based unit testing
+    static final String ENCODER_SELECTED = "encoder-selected";      //NOI18N
+    
+    private static final Logger LOG = Logger.getLogger(XmlFileEncodingQueryImpl.class.getName());
 
-    private static XmlFileEncodingQueryImpl singleton = new XmlFileEncodingQueryImpl();
+    private static final XmlFileEncodingQueryImpl singleton = new XmlFileEncodingQueryImpl();
+    
+    private XmlFileEncodingQueryImpl () {}
     
     public static XmlFileEncodingQueryImpl singleton() {
         return singleton;
@@ -53,36 +68,241 @@ public class XmlFileEncodingQueryImpl extends FileEncodingQueryImplementation {
     
     public synchronized Charset getEncoding(FileObject file) {
         assert file != null;
-        InputStream in = null;
-        String encoding = null;
-        try {
-            in = new BufferedInputStream(file.getInputStream(),
-                    EncodingHelper.EXPECTED_PROLOG_LENGTH);
-            encoding = EncodingHelper.detectEncoding(in);
-            if(encoding == null) {
-                encoding = EncodingUtil.getProjectEncoding(file);
+        return new XMLCharset();
+    }
+    
+    private static class XMLCharset extends Charset {
+        
+            public XMLCharset () {
+                super ("UTF-8", new String[0]);         //NOI18N
             }
-        } catch (Exception ex) {
-            Logger.getLogger("global").log(Level.INFO, null, ex);
-        } finally {
+        
+            public boolean contains(Charset c) {
+                return false;
+            }
+
+            public CharsetDecoder newDecoder() {
+                return new XMLDecoder (this);
+            }
+
+            public CharsetEncoder newEncoder() {
+                return new XMLEncoder (this);
+            }
+    }
+    
+    private static class XMLEncoder extends CharsetEncoder {
+            
+        private CharBuffer buffer = CharBuffer.allocate(4*1024);
+        private CharsetEncoder encoder;
+        private boolean cont;
+
+        public XMLEncoder (Charset cs) {
+            super (cs, 1,2);
+        }
+
+
+        protected CoderResult encodeLoop(CharBuffer in, ByteBuffer out) {
+            if (buffer == null) {
+                assert encoder != null;
+                return encoder.encode(in, out, false);
+            }
+            if (cont) {
+                return flushHead (in,out);
+            }
+            if (buffer.remaining() == 0) {
+               return handleHead (in,out);
+           }
+           else if (buffer.remaining() < in.remaining()) {
+               int limit = in.limit();
+               in.limit(in.position()+buffer.remaining());
+               buffer.put(in);
+               in.limit(limit);
+               return handleHead (in, out);
+           }
+           else {
+               buffer.put(in);
+               return CoderResult.UNDERFLOW;
+           }
+        }
+
+        private CoderResult handleHead (CharBuffer in, ByteBuffer out) {
+            String encoding = null;
             try {
-                if (in != null) {
-                    in.close();
-                }
-            } catch (IOException ex) {
-                //this is silly, java shouldn't do this.
+                encoding = getEncoding ();
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+            }
+            if (encoding == null) {          
+                buffer = null;
+                throwUnknownEncoding();
+                return null;
+            }
+            else {
+                Charset c = Charset.forName(encoding);
+                encoder = c.newEncoder();
+                LOG.log (Level.FINEST,ENCODER_SELECTED,encoder);
+                return flushHead(in, out);
             }
         }
 
-        if(encoding != null) {
+        private CoderResult flushHead (CharBuffer in , ByteBuffer out) {
+            buffer.flip();
+            CoderResult r = encoder.encode(buffer,out, in==null);
+            if (r.isOverflow()) {
+                cont = true;
+                return r;
+            }
+            buffer = null;
+            if (in == null) {
+                return r;
+            }
+            return encoder.encode(in, out, false);
+        }
+
+        private String getEncoding () throws IOException {
+            String text = buffer.asReadOnlyBuffer().flip().toString();
+            InputStream in = new ByteArrayInputStream(text.getBytes());
             try {
-                return Charset.forName(encoding);
-            } catch (Exception ex) {
-                Logger.getLogger("global").log(Level.INFO, null, ex);
+                return EncodingHelper.detectEncoding(in);
+            } finally {
+                in.close();
             }
         }
-        
-        //if nothing works, UTF8 will be the default encoding
-        return Charset.forName("UTF8"); //NOI18N
-    }        
+
+        @Override
+        protected CoderResult implFlush(ByteBuffer out) {
+            CoderResult res;
+            if (buffer != null) {
+                if (cont) {
+                    res = flushHead(null, out);
+                    return res;
+                }
+                else {
+                    res = handleHead(null, out);
+                    return res;
+                }
+            }
+            else {
+                CharBuffer empty = (CharBuffer) CharBuffer.allocate(0).flip();
+                encoder.encode(empty, out, true);
+            }
+            res = encoder.flush(out);
+            return res;
+        }
+
+        @Override
+        protected void implReset() {
+            if (encoder != null) {
+                encoder.reset();
+            }
+        }           
+    }
+
+    private static class XMLDecoder extends CharsetDecoder {
+
+        private ByteBuffer buffer = ByteBuffer.allocate(4*1024);
+        private CharsetDecoder decoder;
+        private boolean cont;
+
+        public XMLDecoder (Charset cs) {
+            super (cs,1,2);
+        }
+
+        protected CoderResult decodeLoop(ByteBuffer in, CharBuffer out) {
+            if (buffer == null) {
+                assert decoder != null;
+                return decoder.decode(in, out, false);
+            }
+            if (cont) {
+                return flushHead (in,out);
+            }
+            if (buffer.remaining() == 0) {
+               return handleHead (in,out);
+           }
+           else if (buffer.remaining() < in.remaining()) {
+               int limit = in.limit();
+               in.limit(in.position()+buffer.remaining());
+               buffer.put(in);
+               in.limit(limit);
+               return handleHead (in, out);
+           }
+           else {
+               buffer.put(in);
+               return CoderResult.UNDERFLOW;
+           }
+        }
+
+        private CoderResult handleHead (ByteBuffer in, CharBuffer out) {
+            String encoding = null;
+            try {
+                encoding = getEncoding ();
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+            }
+            if (encoding == null) {          
+                buffer = null;
+                throwUnknownEncoding();
+                return null;
+            }
+            else {
+                Charset c = Charset.forName(encoding);
+                decoder = c.newDecoder();
+                LOG.log (Level.FINEST,DECODER_SELECTED,decoder);
+                return flushHead(in, out);
+            }
+        }
+
+        private CoderResult flushHead (ByteBuffer in , CharBuffer out) {
+            buffer.flip();
+            CoderResult r = decoder.decode(buffer,out, in==null);
+            if (r.isOverflow()) {
+                cont = true;
+                return r;
+            }
+            buffer = null;
+            if (in == null) {
+                return r;
+            }
+            return decoder.decode(in, out, false);
+        }
+
+        private String getEncoding () throws IOException {
+            byte[] arr = buffer.array();
+            ByteArrayInputStream in = new ByteArrayInputStream (arr);
+            try {
+                return EncodingUtil.detectEncoding(in);
+            }            
+            finally {
+                in.close();                
+            }
+        }
+
+        @Override
+        protected CoderResult implFlush(CharBuffer out) {
+            CoderResult res;
+            if (buffer != null) {
+                if (cont) {
+                    res = flushHead(null, out);
+                    return res;
+                }
+                else {
+                    res = handleHead(null, out);
+                    return res;
+                }
+            }
+            else {
+                ByteBuffer empty = (ByteBuffer) ByteBuffer.allocate(0).flip();
+                decoder.decode(empty, out, true);
+            }
+            res = decoder.flush(out);
+            return res;
+        }
+
+        @Override
+        protected void implReset() {
+            if (decoder != null) {
+                decoder.reset();
+            }
+        }            
+    }
 }
