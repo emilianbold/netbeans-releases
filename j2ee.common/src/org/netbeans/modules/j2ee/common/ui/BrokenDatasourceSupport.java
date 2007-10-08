@@ -203,12 +203,16 @@ public class BrokenDatasourceSupport {
         if ((jdbcResourceUrl != null) && (dsInfoUrl != null)){
             char[] jdbcResourceUrlChars = jdbcResourceUrl.toCharArray();
             char[] dsInfoUrlChars = dsInfoUrl.toCharArray();
-            for(int i = 0; i < jdbcResourceUrlChars.length - 1; i++){
-                if ((jdbcResourceUrlChars[i] != dsInfoUrlChars[i]) && jdbcResourceUrlChars[i] == ':'){
-                    nextIndex = 1;
-                } else if (jdbcResourceUrlChars[i + nextIndex] != dsInfoUrlChars[i]){
-                    return false;
+            if (dsInfoUrlChars.length == jdbcResourceUrlChars.length) {
+                for (int i = 0; i < jdbcResourceUrlChars.length - 1; i++) {
+                    if ((jdbcResourceUrlChars[i] != dsInfoUrlChars[i]) && jdbcResourceUrlChars[i] == ':') {
+                        nextIndex = 1;
+                    } else if (jdbcResourceUrlChars[i + nextIndex] != dsInfoUrlChars[i]) {
+                        return false;
+                    }
                 }
+            } else {
+                return false;
             }
         }
         return true;
