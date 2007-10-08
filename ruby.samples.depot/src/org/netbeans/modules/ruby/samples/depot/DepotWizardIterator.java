@@ -46,6 +46,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.text.MessageFormat;
 import java.util.Enumeration;
 import java.util.LinkedHashSet;
@@ -59,6 +60,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileAlreadyLockedException;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -84,17 +86,17 @@ public class DepotWizardIterator implements WizardDescriptor.InstantiatingIterat
 
     public Set<FileObject> instantiate() throws IOException {
         Set<FileObject> resultSet = new LinkedHashSet<FileObject>();
-        File dirF = FileUtil.normalizeFile((File) wiz.getProperty("projdir"));
-        dirF.mkdirs();
+        File prjDirF = FileUtil.normalizeFile((File) wiz.getProperty("projdir"));
+        prjDirF.mkdirs();
 
         FileObject template = Templates.getTemplate(wiz);
-        FileObject dir = FileUtil.toFileObject(dirF);
-        unZipFile(template.getInputStream(), dir);
+        FileObject prjDir = FileUtil.toFileObject(prjDirF);
+        unZipFile(template.getInputStream(), prjDir);
 
         // Always open top dir as a project:
-        resultSet.add(dir);
+        resultSet.add(prjDir);
         // Look for nested projects to open as well:
-        Enumeration<? extends FileObject> e = dir.getFolders(true);
+        Enumeration<? extends FileObject> e = prjDir.getFolders(true);
         while (e.hasMoreElements()) {
             FileObject subfolder = e.nextElement();
             if (ProjectManager.getDefault().isProject(subfolder)) {
@@ -102,11 +104,18 @@ public class DepotWizardIterator implements WizardDescriptor.InstantiatingIterat
             }
         }
 
-        File parent = dirF.getParentFile();
+        File parent = prjDirF.getParentFile();
         if (parent != null  && parent.exists()) {
             ProjectChooser.setProjectsFolder(parent);
         }
-        resultSet.add(dir.getFileObject("README")); // NOI18N
+        
+        // Open DEPOT-README.html in a browser
+        File urlTempF = File.createTempFile("depotReadme", ".url"); // NOI18N
+        urlTempF.deleteOnExit();
+        FileObject readmeURL = FileUtil.toFileObject(urlTempF);
+        writeLines(readmeURL, prjDir.getFileObject("README-DEPOT.html").getURL().toString()); // NOI18N
+        resultSet.add(readmeURL);
+        
         return resultSet;
     }
 
@@ -205,4 +214,14 @@ public class DepotWizardIterator implements WizardDescriptor.InstantiatingIterat
             source.close();
         }
     }
+
+    // TODO: use FileUtils when #118087 is fixed
+    private static void writeLines(final FileObject readme, final String... lines) throws FileAlreadyLockedException, IOException {
+        PrintWriter readmeW = new PrintWriter(readme.getOutputStream());
+        for (String line : lines) {
+            readmeW.println(line);
+        }
+        readmeW.close();
+    }
+
 }
