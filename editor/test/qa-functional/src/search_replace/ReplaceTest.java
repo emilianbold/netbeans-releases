@@ -147,7 +147,8 @@ public class ReplaceTest extends EditorTestCase {
             // compare
             assertEquals(text, "testReplaceSelectionRepeated");
             replace.cboReplaceWith().clearText();
-            replace.cboReplaceWith().typeText("testReplaceSelectionRepeated2");
+            replace.cboReplaceWith().typeText("testReplaceSelectionRepeated2");   
+            new EventTool().waitNoEvent(250);
             replace.replace();
             new EventTool().waitNoEvent(REPLACE_TIMEOUT);
             replace.close();
@@ -194,8 +195,8 @@ public class ReplaceTest extends EditorTestCase {
             editor.setCaretPosition(1,1);
             editor.txtEditorPane().pushKey(KeyEvent.VK_H, KeyEvent.CTRL_MASK);
             Replace replace = new Replace();
-            replace.cboFindWhat().removeAllItems();
-            replace.cboReplaceWith().removeAllItems();
+            //replace.cboFindWhat().removeAllItems();
+            //replace.cboReplaceWith().removeAllItems();
             
             // check only selected checkboxes
             uncheckAll();
@@ -434,7 +435,7 @@ public class ReplaceTest extends EditorTestCase {
     
     
     public static void main(String[] args) {
-        TestRunner.run(ReplaceTest.class);
+        TestRunner.run(ReplaceTest.class);                
     }
 
 }

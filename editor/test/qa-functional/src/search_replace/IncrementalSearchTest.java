@@ -196,7 +196,7 @@ public class IncrementalSearchTest extends EditorTestCase{
         t.pushKey(KeyEvent.VK_ESCAPE);
         new EventTool().waitNoEvent(100);
         assertFalse("ToolBar not closed",searchBar.isVisible());
-        editor.closeDiscard();
+        editor.closeDiscard();        
     }
     
     public void testCloseButton() {
@@ -210,6 +210,11 @@ public class IncrementalSearchTest extends EditorTestCase{
         JButtonOperator b = new JButtonOperator(c,3);  // close        
         b.push();
         new EventTool().waitNoEvent(250);
+        if(searchBar.isVisible()) { //2nd try 
+            b = new JButtonOperator(c,4);  // close        
+            b.push();
+            new EventTool().waitNoEvent(250);
+        }
         assertFalse("ToolBar not closed",searchBar.isVisible());
         editor.closeDiscard();
     }
@@ -360,7 +365,7 @@ public class IncrementalSearchTest extends EditorTestCase{
     }
     
     public static void main(String[] args) {
-        TestRunner.run(IncrementalSearchTest.class);
+        TestRunner.run(IncrementalSearchTest.class);        
     }
 
     private void openSearchBar(EditorOperator editor) {
