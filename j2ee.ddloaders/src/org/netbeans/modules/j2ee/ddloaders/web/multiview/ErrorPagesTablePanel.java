@@ -103,9 +103,9 @@ public class ErrorPagesTablePanel extends DefaultTablePanel {
                 NbBundle.getMessage(ErrorPagesTablePanel.class,"LBL_exceptionType_mnem").charAt(0)
             };
             String[] a11y_desc = new String[]{
-                NbBundle.getMessage(ErrorPagesTablePanel.class,"ACSD_err_display_name"),
-                NbBundle.getMessage(ErrorPagesTablePanel.class,"ACSD_err_desc"),
-                NbBundle.getMessage(ErrorPagesTablePanel.class,"ACSD_err_url_pattern")
+                NbBundle.getMessage(ErrorPagesTablePanel.class,"ACSD_errorPage"),
+                NbBundle.getMessage(ErrorPagesTablePanel.class,"ACSD_errorCode"),
+                NbBundle.getMessage(ErrorPagesTablePanel.class,"ACSD_exceptionType")
             };
             SimpleDialogPanel.DialogDescriptor descriptor = new SimpleDialogPanel.DialogDescriptor(labels);
             if (!add) {
