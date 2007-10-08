@@ -74,7 +74,8 @@ public class BpelSafeReference<T extends BpelEntity> {
             return true;
         }
         if (obj instanceof BpelSafeReference){
-            return this.myId.equals(((BpelSafeReference) obj).myId);
+            return myId != null 
+                    && this.myId.equals(((BpelSafeReference) obj).myId);
         }
         return false;
     }
