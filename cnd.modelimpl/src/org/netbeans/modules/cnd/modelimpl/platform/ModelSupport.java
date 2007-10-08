@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.cnd.modelimpl.platform;
 
-import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
+import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
@@ -76,6 +76,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
@@ -616,6 +617,9 @@ public class ModelSupport implements PropertyChangeListener {
                 return;
             }
 	    NativeFileItemSet set = curObj.getLookup().lookup(NativeFileItemSet.class);
+            if (set == null){
+                set = findCanonicalSet(curObj);
+            }
 	    
 	    if( set != null && ! set.isEmpty() ) {
 		
@@ -632,7 +636,31 @@ public class ModelSupport implements PropertyChangeListener {
                         csmProject.onFileEditStart(buffer, nativeFile);
                     }
 		}
-	    }
+            }
+        }
+       
+        private boolean isCndDataObject(FileObject fo){
+            String type = fo.getMIMEType();
+            return "text/x-c++".equals(type) || "text/x-c".equals(type); //NOI18N
+        }
+        
+        private NativeFileItemSet findCanonicalSet(DataObject curObj){
+            FileObject fo = curObj.getPrimaryFile();
+            if (fo != null && isCndDataObject(fo)) {
+                File file = FileUtil.toFile(fo);
+                // the file can null, for example, when we edit templates
+                if (file != null) {
+                    try {
+                        file = FileUtil.normalizeFile(file);
+                        fo = FileUtil.toFileObject(file.getCanonicalFile());
+                        curObj = DataObject.find(fo);
+                        return curObj.getLookup().lookup(NativeFileItemSet.class);
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
+            return null;
         }
         
 //        private void editEnd(DataObject curObj) {
