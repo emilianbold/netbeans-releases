@@ -176,21 +176,6 @@ public final class ErrorHintsProvider implements CancellableTask<CompilationInfo
         return descs;
     }
     
-    public Document getDocument() {
-        try {
-            DataObject d = DataObject.find(file);
-            EditorCookie ec = d.getCookie(EditorCookie.class);
-            
-            if (ec == null)
-                return null;
-            
-            return ec.getDocument();
-        } catch (IOException e) {
-            Logger.getLogger(ErrorHintsProvider.class.getName()).log(Level.INFO, "SemanticHighlighter: Cannot find DataObject for file: " + FileUtil.getFileDisplayName(file), e);
-            return null;
-        }
-    }
-    
     public static Token findUnresolvedElementToken(CompilationInfo info, int offset) throws IOException {
         TokenHierarchy<Void> th = info.getTokenHierarchy();
         TokenSequence<JavaTokenId> ts = th.tokenSequence(JavaTokenId.language());
@@ -381,10 +366,10 @@ public final class ErrorHintsProvider implements CancellableTask<CompilationInfo
     public void run(CompilationInfo info) throws IOException {
         resume();
         
-        Document doc = getDocument();
+        Document doc = info.getDocument();
         
         if (doc == null) {
-            Logger.getLogger(ErrorHintsProvider.class.getName()).log(Level.INFO, "SemanticHighlighter: Cannot get document!");
+            Logger.getLogger(ErrorHintsProvider.class.getName()).log(Level.FINE, "SemanticHighlighter: Cannot get document!");
             return ;
         }
         

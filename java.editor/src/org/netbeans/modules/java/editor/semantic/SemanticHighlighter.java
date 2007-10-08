@@ -113,7 +113,6 @@ import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.HintsController;
 import org.netbeans.spi.editor.hints.LazyFixList;
 import org.netbeans.spi.editor.hints.Severity;
-import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -125,11 +124,17 @@ import org.openide.loaders.DataObject;
  */
 public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo> {
     
-    public static List<TreePathHandle> computeUnusedImports(CompilationInfo info) {
+    public static List<TreePathHandle> computeUnusedImports(CompilationInfo info) throws IOException {
         SemanticHighlighter sh = new SemanticHighlighter(info.getFileObject());
         final List<TreePathHandle> result = new ArrayList<TreePathHandle>();
+        Document doc = info.getDocument();
         
-        sh.process(info, sh.getDocument(),new ErrorDescriptionSetter() {
+        if (doc == null) {
+            Logger.getLogger(SemanticHighlighter.class.getName()).log(Level.FINE, "SemanticHighlighter: Cannot get document!");
+            return result;
+        }
+        
+        sh.process(info,doc, new ErrorDescriptionSetter() {
             public void setErrors(Document doc, List<ErrorDescription> errors, List<TreePathHandle> allUnusedImports) {
                 result.addAll(allUnusedImports);
             }
@@ -146,28 +151,13 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
         this.file = file;
     }
 
-    public Document getDocument() {
-        try {
-            DataObject d = DataObject.find(file);
-            EditorCookie ec = (EditorCookie) d.getCookie(EditorCookie.class);
-            
-            if (ec == null)
-                return null;
-            
-            return ec.getDocument();
-        } catch (IOException e) {
-            Logger.getLogger(SemanticHighlighter.class.getName()).log(Level.INFO, "SemanticHighlighter: Cannot find DataObject for file: " + FileUtil.getFileDisplayName(file), e);
-            return null;
-        }
-    }
-    
-    public @Override void run(CompilationInfo info) {
+    public @Override void run(CompilationInfo info) throws IOException {
         resume();
         
-        Document doc = getDocument();
+        Document doc = info.getDocument();
 
         if (doc == null) {
-            Logger.getLogger(SemanticHighlighter.class.getName()).log(Level.INFO, "SemanticHighlighter: Cannot get document!");
+            Logger.getLogger(SemanticHighlighter.class.getName()).log(Level.FINE, "SemanticHighlighter: Cannot get document!");
             return ;
         }
 

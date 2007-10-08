@@ -112,30 +112,15 @@ public class IsOverriddenAnnotationHandler implements CancellableTask<Compilatio
         Logger.getLogger("TIMER").log(Level.FINE, "IsOverriddenAnnotationHandler", new Object[] {file, this}); //NOI18N
     }
     
-    public StyledDocument getDocument() {
-        try {
-            DataObject d = DataObject.find(file);
-            EditorCookie ec = d.getCookie(EditorCookie.class);
-            
-            if (ec == null)
-                return null;
-            
-            return ec.getDocument();
-        } catch (IOException e) {
-            LOG.log(Level.INFO, "Cannot find DataObject for file: " + FileUtil.getFileDisplayName(file), e); //NOI18N
-            return null;
-        }
-    }
-    
     private IsOverriddenVisitor visitor;
     
-    public void run(CompilationInfo info) {
+    public void run(CompilationInfo info) throws IOException {
         resume();
         
-        StyledDocument doc = getDocument();
+        StyledDocument doc = (StyledDocument) info.getDocument();
         
         if (doc == null) {
-            LOG.log(Level.INFO, "Cannot get document!"); //NOI18N
+            LOG.log(Level.FINE, "Cannot get document!"); //NOI18N
             return ;
         }
         

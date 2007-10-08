@@ -103,28 +103,13 @@ public class MarkOccurrencesHighlighter implements CancellableTask<CompilationIn
     
     public static final Color ES_COLOR = new Color( 175, 172, 102 ); // new Color(244, 164, 113);
     
-    public Document getDocument() {
-        try {
-            DataObject d = DataObject.find(file);
-            EditorCookie ec = d.getCookie(EditorCookie.class);
-            
-            if (ec == null)
-                return null;
-            
-            return ec.getDocument();
-        } catch (IOException e) {
-            Logger.getLogger(MarkOccurrencesHighlighter.class.getName()).log(Level.INFO, "SemanticHighlighter: Cannot find DataObject for file: " + FileUtil.getFileDisplayName(file), e);
-            return null;
-        }
-    }
-    
-    public void run(CompilationInfo info) {
+    public void run(CompilationInfo info) throws IOException {
         resume();
         
-        Document doc = getDocument();
+        Document doc = info.getDocument();
         
         if (doc == null) {
-            Logger.getLogger(MarkOccurrencesHighlighter.class.getName()).log(Level.INFO, "SemanticHighlighter: Cannot get document!");
+            Logger.getLogger(MarkOccurrencesHighlighter.class.getName()).log(Level.FINE, "SemanticHighlighter: Cannot get document!");
             return ;
         }
         
