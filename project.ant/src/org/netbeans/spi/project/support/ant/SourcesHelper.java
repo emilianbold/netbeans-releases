@@ -289,6 +289,7 @@ public final class SourcesHelper {
     private final PropertyEvaluator evaluator;
     private final List<SourceRoot> principalSourceRoots = new ArrayList<SourceRoot>();
     private final List<Root> nonSourceRoots = new ArrayList<Root>();
+    private final List<Root> ownedFiles = new ArrayList<Root>();
     private final List<TypedSourceRoot> typedSourceRoots = new ArrayList<TypedSourceRoot>();
     private int registeredRootAlgorithm;
     /**
@@ -398,6 +399,29 @@ public final class SourcesHelper {
     }
     
     /**
+     * Add any file that is supposed to be owned by a given project 
+     * via FileOwnerQuery, affects only {@link #registerExternalRoots} 
+     * and not {@link #createSources}.
+     * <p class="nonnormative">
+     * Useful for project type providers which have external paths holding build
+     * products. These should not appear in {@link Sources}, yet it may be useful
+     * for {@link FileOwnerQuery} to know the owning project (for example, in order
+     * for a project-specific <a href="@org-netbeans-api-java@/org/netbeans/spi/java/queries/SourceForBinaryQueryImplementation.html"><code>SourceForBinaryQueryImplementation</code></a> to work).
+     * </p>
+     * @param location a project-relative or absolute path giving the location
+     *                 of a file; may contain Ant property substitutions
+     * @throws IllegalStateException if this method is called after
+     *                               {@link #registerExternalRoots} was called
+     * @since org.netbeans.modules.project.ant/1 1.17
+     */
+    public void addOwnedFile(String location) throws IllegalStateException {
+        if (lastRegisteredRoots != null) {
+            throw new IllegalStateException("registerExternalRoots was already called"); // NOI18N
+        }
+        ownedFiles.add(new Root(location));
+    }
+    
+    /**
      * Add a typed source root which will be considered only in certain contexts.
      * @param location a project-relative or absolute path giving the location
      *                 of a source tree; may contain Ant property substitutions
@@ -495,6 +519,7 @@ public final class SourcesHelper {
     private void remarkExternalRoots() throws IllegalArgumentException {
         List<Root> allRoots = new ArrayList<Root>(principalSourceRoots);
         allRoots.addAll(nonSourceRoots);
+        allRoots.addAll(ownedFiles);
         Project p = getProject();
         FileObject pdir = project.getProjectDirectory();
         // First time: register roots and add to lastRegisteredRoots.
@@ -511,22 +536,21 @@ public final class SourcesHelper {
         // up calling APH.resolveFileObject repeatedly (for each property change)
         for (Root r : allRoots) {
             for (FileObject loc : r.getIncludeRoots()) {
-                if (!loc.isFolder()) {
-                    continue;
-                }
                 if (FileUtil.getRelativePath(pdir, loc) != null) {
                     // Inside projdir already. Skip it.
                     continue;
                 }
-                try {
-                    Project other = ProjectManager.getDefault().findProject(loc);
-                    if (other != null) {
-                        // This is a foreign project; we cannot own it. Skip it.
+                if (loc.isFolder()) {
+                    try {
+                        Project other = ProjectManager.getDefault().findProject(loc);
+                        if (other != null) {
+                            // This is a foreign project; we cannot own it. Skip it.
+                            continue;
+                        }
+                    } catch (IOException e) {
+                        // Assume it is a foreign project and skip it.
                         continue;
                     }
-                } catch (IOException e) {
-                    // Assume it is a foreign project and skip it.
-                    continue;
                 }
                 // It's OK to go.
                 newRegisteredRoots.add(loc);

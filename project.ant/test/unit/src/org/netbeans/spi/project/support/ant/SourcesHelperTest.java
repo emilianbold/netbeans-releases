@@ -73,6 +73,8 @@ public final class SourcesHelperTest extends NbTestCase {
     private FileObject src3dir;
     private FileObject src4dir;
     private FileObject builddir;
+    private FileObject extdir;
+    private FileObject ext2dir;
     private AntProjectHelper h;
     private Project project;
     private SourcesHelper sh;
@@ -102,6 +104,8 @@ public final class SourcesHelperTest extends NbTestCase {
         src4dir.createData("src4file");
         builddir = scratch.createFolder("build");
         builddir.createData("buildfile");
+        extdir = scratch.createFolder("external");
+        extdir.createData("extFile");
         h = ProjectGenerator.createProject(projdir, "test");
         project = ProjectManager.getDefault().findProject(projdir);
         assertNotNull("have a project", project);
@@ -113,6 +117,7 @@ public final class SourcesHelperTest extends NbTestCase {
         p.setProperty("src4.dir", "..");
         p.setProperty("src5.dir", "../../nonesuch");
         p.setProperty("build.dir", "../../build");
+        p.setProperty("ext.file", "../../external/extFile");
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, p);
         ProjectManager.getDefault().saveProject(project);
         sh = new SourcesHelper(h, h.getStandardPropertyEvaluator());
@@ -123,6 +128,7 @@ public final class SourcesHelperTest extends NbTestCase {
         sh.addPrincipalSourceRoot("${src4.dir}", "The Whole Shebang", null, null); // above proj dir
         sh.addPrincipalSourceRoot("${src5.dir}", "None such", null, null); // does not exist on disk
         sh.addNonSourceRoot("${build.dir}");
+        sh.addOwnedFile("${ext.file}");
         sh.addTypedSourceRoot("${src1.dir}", "java", "Packages #1", null, null);
         sh.addTypedSourceRoot("${src3.dir}", "java", "Packages #3", null, null);
         sh.addTypedSourceRoot("${src5.dir}", "java", "No Packages", null, null);
@@ -136,6 +142,8 @@ public final class SourcesHelperTest extends NbTestCase {
         proj2src1dir.createData("proj2src1file");
         proj2src2dir = proj2dir.createFolder("src2");
         proj2src2dir.createData("proj2src2file");
+        ext2dir = scratch.createFolder("external2");
+        FileObject ext2File = ext2dir.createData("ext2File");
         h2 = ProjectGenerator.createProject(proj2dir, "test");
         project2 = ProjectManager.getDefault().findProject(proj2dir);
         assertNotNull("have a project2", project2);
@@ -143,6 +151,7 @@ public final class SourcesHelperTest extends NbTestCase {
         sh2.addPrincipalSourceRoot("src1", "Sources #1", null, null);
         sh2.addPrincipalSourceRoot("src2", "Sources #2", null, null);
         sh2.addNonSourceRoot("build");
+        sh2.addOwnedFile(FileUtil.toFile(ext2File).getAbsolutePath());
         sh2.addTypedSourceRoot("src1", "java", "Packages #1", null, null);
         sh2.addTypedSourceRoot("src2", "java", "Packages #2", null, null);
     }
@@ -204,6 +213,9 @@ public final class SourcesHelperTest extends NbTestCase {
         assertEquals("src3file registered", project, FileOwnerQuery.getOwner(f));
         f = builddir.getFileObject("buildfile");
         assertEquals("buildfile registered", project, FileOwnerQuery.getOwner(f));
+        f = extdir.getFileObject("extFile");
+        assertEquals("extfile registered", project, FileOwnerQuery.getOwner(f));
+        assertEquals("extdir not registered", null, FileOwnerQuery.getOwner(extdir));
         f = scratch.getFileObject("otherfile");
         assertEquals("otherfile not registered", null, FileOwnerQuery.getOwner(f));
         // Test the simpler project type.
@@ -214,6 +226,9 @@ public final class SourcesHelperTest extends NbTestCase {
         assertEquals("proj2src1file registered", project2, FileOwnerQuery.getOwner(f));
         f = proj2src2dir.getFileObject("proj2src2file");
         assertEquals("proj2src2file registered", project2, FileOwnerQuery.getOwner(f));
+        f = ext2dir.getFileObject("ext2File");
+        assertEquals("ext2File registered", project2, FileOwnerQuery.getOwner(f));
+        assertEquals("ext2dir not registered", null, FileOwnerQuery.getOwner(ext2dir));
     }
     
     public void testSourceLocationChanges() throws Exception {

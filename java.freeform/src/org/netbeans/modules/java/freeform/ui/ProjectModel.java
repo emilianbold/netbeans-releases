@@ -222,6 +222,10 @@ public class ProjectModel  {
                     model.javaCompilationUnitsList, model.baseFolder, model.nbProjectFolder);
                 JavaProjectGenerator.putBuildFolders(helper, buildFolders);
                 
+                List<String> buildFiles = JavaProjectGenerator.getBuildFiles(model.getEvaluator(), 
+                    model.javaCompilationUnitsList, model.baseFolder, model.nbProjectFolder);
+                JavaProjectGenerator.putBuildFiles(helper, buildFiles);
+                
                 return null;
             }
         });

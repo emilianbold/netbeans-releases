@@ -111,6 +111,7 @@ Cf. http://projects.netbeans.org/buildsys/design.html#freeform
                 <xsd:element name="source-folder" type="maybe-typed-source-root"/>
                 <!-- Other roots of build files (internal or external). -->
                 <xsd:element name="build-folder" type="root"/>
+                <xsd:element name="build-file" type="root"/>
             </xsd:choice>
         </xsd:sequence>
     </xsd:complexType>

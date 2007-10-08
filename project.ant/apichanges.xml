@@ -104,7 +104,25 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
-
+        
+        <change id="owned-files">
+            <api name="general"/>
+            <summary>Support for adding </summary>
+            <version major="1" minor="17"/>
+            <date day="8" month="10" year="2007"/>
+            <author login="mkubec"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                  Added a method for registering external file that is supposed to be
+                  owned by the project, typically used in freeform project to register
+                  build products that are external to project dir.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.project.support.ant" name="SourcesHelper"/>
+            <issue number="57656"/>
+        </change>
+        
         <change id="build-extender">
             <api name="general"/>
             <summary>Support for externally extending the project's build script</summary>

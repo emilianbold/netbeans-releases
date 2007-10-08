@@ -93,6 +93,8 @@ final class FreeformSources implements Sources, AntProjectListener {
                 String location = Util.findText(locationE);
                 if (folderE.getLocalName().equals("build-folder")) { // NOI18N
                     h.addNonSourceRoot(location);
+                } else if (folderE.getLocalName().equals("build-file")) { // NOI18N
+                    h.addOwnedFile(location);
                 } else {
                     assert folderE.getLocalName().equals("source-folder") : folderE;
                     Element nameE = Util.findElement(folderE, "label", FreeformProjectType.NS_GENERAL); // NOI18N

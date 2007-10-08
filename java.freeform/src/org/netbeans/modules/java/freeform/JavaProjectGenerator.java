@@ -42,6 +42,7 @@
 package org.netbeans.modules.java.freeform;
 
 import java.io.File;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -57,6 +58,7 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -74,7 +76,7 @@ public class JavaProjectGenerator {
     private static final String[] viewElementsOrder = new String[]{"items", "context-menu"}; // NOI18N
     
     // this order is not required by schema, but follow it to minimize randomness a bit
-    private static final String[] folderElementsOrder = new String[]{"source-folder", "build-folder"}; // NOI18N
+    private static final String[] folderElementsOrder = new String[]{"source-folder", "build-folder", "build-file"}; // NOI18N
     private static final String[] viewItemElementsOrder = new String[]{"source-folder", "source-file"}; // NOI18N
     
     /**
@@ -717,29 +719,23 @@ public class JavaProjectGenerator {
      */
     public static List<String> guessBuildFolders(PropertyEvaluator evaluator,
             List<JavaCompilationUnit> javaCompilationUnits, File projectBase, File freeformBase) {
-        //assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
+
         List<String> buildFolders = new ArrayList<String>();
         for (JavaCompilationUnit cu : javaCompilationUnits) {
             if (cu.output != null) {
                 for (String output : cu.output) {
                     File f = Util.resolveFile(evaluator, freeformBase, output);
-                    if (f.exists()) {
-                        if (f.isFile()) {
-                            f = f.getParentFile();
-                        }
-                    } else {
-                        // guess: if name contains dot then it is probably file
-                        if (f.getName().indexOf('.') != -1) {
-                            f = f.getParentFile();
-                        }
+                    // include only directories
+                    if (!f.isDirectory()) {
+                        continue;
                     }
-                    output = f.getAbsolutePath();
-                    if (!output.endsWith(File.separator)) {
-                        output += File.separatorChar;
+                    String absOutput = f.getAbsolutePath();
+                    if (!absOutput.endsWith(File.separator)) {
+                        absOutput += File.separatorChar;
                     }
 
-                    if (output.startsWith(projectBase.getAbsolutePath()+File.separatorChar) ||
-                        output.startsWith(freeformBase.getAbsolutePath()+File.separatorChar)) {
+                    if (absOutput.startsWith(projectBase.getAbsolutePath()+File.separatorChar) ||
+                        absOutput.startsWith(freeformBase.getAbsolutePath()+File.separatorChar)) {
                         // ignore output which lies below project base or freeform base
                         continue;
                     }
@@ -750,20 +746,20 @@ public class JavaProjectGenerator {
                         if (!path.endsWith(File.separator)) {
                             path += File.separatorChar;
                         }
-                        if (path.equals(output)) {
+                        if (path.equals(absOutput)) {
                             // such a path is already there
                             add = false;
                             break;
-                        } else if (output.startsWith(path)) {
+                        } else if (absOutput.startsWith(path)) {
                             // such a patch is already there
                             add = false;
                             break;
-                        } else if (path.startsWith(output)) {
+                        } else if (path.startsWith(absOutput)) {
                             it.remove();
                         }
                     }
                     if (add) {
-                        buildFolders.add(f.getAbsolutePath());
+                        buildFolders.add(output);
                     }
                 }
             }
@@ -778,8 +774,10 @@ public class JavaProjectGenerator {
      * @param buildFolders list of build folder locations
      */
     public static void putBuildFolders(AntProjectHelper helper, List<String> buildFolders) {
-        //assert ProjectManager.mutex().isWriteAccess();
-        ArrayList list = new ArrayList();
+        putBuildElement(helper, buildFolders, "build-folder");
+    }
+    
+    private static void putBuildElement(AntProjectHelper helper, List<String> buildFolders, String elemName) {
         Element data = Util.getPrimaryConfigurationData(helper);
         Document doc = data.getOwnerDocument();
         Element foldersEl = Util.findElement(data, "folders", Util.NAMESPACE); // NOI18N
@@ -791,7 +789,7 @@ public class JavaProjectGenerator {
             Iterator it = folders.iterator();
             while (it.hasNext()) {
                 Element buildFolderEl = (Element)it.next();
-                if (!buildFolderEl.getLocalName().equals("build-folder")) { // NOI18N
+                if (!buildFolderEl.getLocalName().equals(elemName)) { // NOI18N
                     continue;
                 }
                 foldersEl.removeChild(buildFolderEl);
@@ -800,7 +798,7 @@ public class JavaProjectGenerator {
         Iterator it = buildFolders.iterator();
         while (it.hasNext()) {
             String location = (String)it.next();
-            Element buildFolderEl = doc.createElementNS(Util.NAMESPACE, "build-folder"); // NOI18N
+            Element buildFolderEl = doc.createElementNS(Util.NAMESPACE, elemName); // NOI18N
             Element locationEl = doc.createElementNS(Util.NAMESPACE, "location"); // NOI18N
             locationEl.appendChild(doc.createTextNode(location));
             buildFolderEl.appendChild(locationEl);
@@ -808,7 +806,51 @@ public class JavaProjectGenerator {
         }
         Util.putPrimaryConfigurationData(helper, data);
     }
-
+    
+    public static List<String> getBuildFiles(PropertyEvaluator evaluator,
+            List<JavaCompilationUnit> compUnits, File projectBase, File freeformBase) {
+        
+        List<String> buildFiles = new ArrayList<String>();
+        for (JavaCompilationUnit cu : compUnits) {
+            if (cu.output != null) {
+                for (String output : cu.output) {
+                    File f = Util.resolveFile(evaluator, freeformBase, output);
+                    try {
+                        if (f.exists() && !FileUtil.isArchiveFile(f.toURL())) {
+                            continue;
+                        }
+                    } catch (MalformedURLException murle) {
+                        Exceptions.printStackTrace(murle);
+                    }
+                    String absOutput = f.getAbsolutePath();
+                    if (absOutput.startsWith(projectBase.getAbsolutePath() + File.separatorChar) ||
+                        absOutput.startsWith(freeformBase.getAbsolutePath() + File.separatorChar)) {
+                        // ignore output which lies below project base or freeform base
+                        continue;
+                    }
+                    boolean add = true;
+                    Iterator<String> it = buildFiles.iterator();
+                    while (it.hasNext()) {
+                        String path = it.next();
+                        if (path.equals(absOutput)) {
+                            // such a path is already there
+                            add = false;
+                            break;
+                        }
+                    }
+                    if (add) {
+                        buildFiles.add(output);
+                    }
+                }
+            }
+        }
+        return buildFiles;
+    }
+    
+    public static void putBuildFiles(AntProjectHelper helper, List<String> buildFiles) {
+        putBuildElement(helper, buildFiles, "build-file");
+    }
+    
     // XXX: copy&pasted from FreeformProjectGenerator
     /**
      * Read target mappings from project.

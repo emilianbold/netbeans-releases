@@ -1187,7 +1187,8 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         File proj1 = new File(base, "proj1");
         proj1.mkdir();
         File base2 = new File(getWorkDir(), "folder2");
-        
+        base2.mkdir();
+                
         JavaProjectGenerator.JavaCompilationUnit cu = new JavaProjectGenerator.JavaCompilationUnit();
         cu.output = new ArrayList();
         cu.output.add("${outputfile}");
@@ -1200,27 +1201,11 @@ public class JavaProjectGeneratorTest extends NbTestCase {
             PropertyUtils.fixedPropertyProvider(m)});
         List buildFolders = JavaProjectGenerator.guessBuildFolders(evaluator, units, proj1, proj1);
         assertEquals("no build folder", 0, buildFolders.size());
-        
-        m.put("outputfile", "../proj1_diff/out.jar");
-        evaluator = PropertyUtils.sequentialPropertyEvaluator(null, new PropertyProvider[]{
-            PropertyUtils.fixedPropertyProvider(m)});
-        buildFolders = JavaProjectGenerator.guessBuildFolders(evaluator, units, proj1, proj1);
-        assertEquals("one build-folder created", 1, buildFolders.size());
-        assertEquals("export is properly configured", base.getAbsolutePath()+File.separator+"proj1_diff", buildFolders.get(0));
-        
-        m.put("outputfile", "../out.jar");
-        evaluator = PropertyUtils.sequentialPropertyEvaluator(null, new PropertyProvider[]{
-            PropertyUtils.fixedPropertyProvider(m)});
-        buildFolders = JavaProjectGenerator.guessBuildFolders(evaluator, units, proj1, proj1);
-        assertEquals("one build-folder created", 1, buildFolders.size());
-        assertEquals("export is properly configured", base.getAbsolutePath(), buildFolders.get(0));
-        
+                
         cu.output.add(base2.getAbsolutePath());
-        cu.output.add("other.jar");
         buildFolders = JavaProjectGenerator.guessBuildFolders(evaluator, units, proj1, proj1);
-        assertEquals("two build-folder created", 2, buildFolders.size());
-        assertEquals("export is properly configured", base.getAbsolutePath(), buildFolders.get(0));
-        assertEquals("export is properly configured", base2.getAbsolutePath(), buildFolders.get(1));
+        assertEquals("one build-folder created", 1, buildFolders.size());
+        assertEquals("export is properly configured", base2.getAbsolutePath(), buildFolders.get(0));
         
         cu.output.add(getWorkDir().getAbsolutePath());
         buildFolders = JavaProjectGenerator.guessBuildFolders(evaluator, units, proj1, proj1);
@@ -1295,7 +1280,62 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         validate(p);
         
     }    
-
+    
+    public void testPutBuildFiles() throws Exception {
+        AntProjectHelper helper = createEmptyProject("proj", "proj", false);
+        FileObject base = helper.getProjectDirectory();
+        Project p = ProjectManager.getDefault().findProject(base);
+        assertNotNull("Project was not created", p);
+        assertEquals("Project folder is incorrect", base, p.getProjectDirectory());
+        
+        List buildFiles = new ArrayList();
+        buildFiles.add("/some/path/projA/archive.jar");
+        buildFiles.add("C:\\dev\\projB\\library.jar");
+        
+        JavaProjectGenerator.putBuildFiles(helper, buildFiles);
+        Element el = Util.getPrimaryConfigurationData(helper);
+        Element foldersEl = Util.findElement(el, "folders", Util.NAMESPACE);
+        assertNotNull("<folders> element exists", foldersEl);
+        List subElements = Util.findSubElements(foldersEl);
+        assertEquals("project has two build-files", 2, subElements.size());
+        Element el2 = (Element)subElements.get(0);
+        assertElement(el2, "build-file", null);
+        assertEquals("build-file has one subelement", 1, Util.findSubElements(el2).size());
+        assertElement((Element)Util.findSubElements(el2).get(0), "location", "/some/path/projA/archive.jar");
+        el2 = (Element)subElements.get(1);
+        assertElement(el2, "build-file", null);
+        assertEquals("build-file has one subelement", 1, Util.findSubElements(el2).size());
+        assertElement((Element)Util.findSubElements(el2).get(0), "location", "C:\\dev\\projB\\library.jar");
+        
+        // validate against schema:
+        ProjectManager.getDefault().saveAllProjects();
+        validate(p);
+        
+        // now test updating
+        buildFiles = new ArrayList();
+        buildFiles.add("/projC/dist/projC.jar");
+        JavaProjectGenerator.putBuildFiles(helper, buildFiles);
+        el = Util.getPrimaryConfigurationData(helper);
+        foldersEl = Util.findElement(el, "folders", Util.NAMESPACE);
+        subElements = Util.findSubElements(foldersEl);
+        assertEquals("project has one build-file", 1, subElements.size());
+        el2 = (Element)subElements.get(0);
+        assertElement(el2, "build-file", null);
+        assertEquals("build-file has one subelement", 1, Util.findSubElements(el2).size());
+        assertElement((Element)Util.findSubElements(el2).get(0), "location", "/projC/dist/projC.jar");
+        
+        buildFiles = new ArrayList();
+        JavaProjectGenerator.putBuildFiles(helper, buildFiles);
+        el = Util.getPrimaryConfigurationData(helper);
+        foldersEl = Util.findElement(el, "folders", Util.NAMESPACE);
+        subElements = Util.findSubElements(foldersEl);
+        assertEquals("project has no build-file", 0, subElements.size());
+        
+        // validate against schema:
+        ProjectManager.getDefault().saveAllProjects();
+        validate(p);
+    }
+    
     private static class Listener implements ChangeListener {
         int count = 0;
         public void stateChanged(ChangeEvent ev) {
