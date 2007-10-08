@@ -144,9 +144,12 @@ public abstract class LookupBasedJavaSourceTaskFactory extends JavaSourceTaskFac
             }
         }
 
-        currentFiles = OpenedEditors.filterSupportedMIMETypes(new LinkedList<FileObject>(newCurrentFiles), supportedMimeTypes);
+        List<FileObject> newCurrentFilesFiltered = OpenedEditors.filterSupportedMIMETypes(new LinkedList<FileObject>(newCurrentFiles), supportedMimeTypes);
         
-        lookupContentChanged();
+        if (!currentFiles.equals(newCurrentFilesFiltered)) {
+            currentFiles = newCurrentFilesFiltered;
+            lookupContentChanged();
+        }
     }
     
     /**@inheritDoc*/
