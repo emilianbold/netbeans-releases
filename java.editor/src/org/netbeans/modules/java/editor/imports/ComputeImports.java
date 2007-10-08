@@ -42,6 +42,7 @@ package org.netbeans.modules.java.editor.imports;
 
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Scope;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
@@ -57,6 +58,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.PackageElement;
@@ -315,7 +317,11 @@ public class ComputeImports {
             super.visitIdentifier(tree, p);
             
             if (getCurrentPath().getParentPath() != null && getCurrentPath().getParentPath().getLeaf().getKind() == Kind.METHOD_INVOCATION) {
-                return null;
+                MethodInvocationTree mit = (MethodInvocationTree) getCurrentPath().getParentPath().getLeaf();
+                
+                if (mit.getMethodSelect() == tree) {
+                    return null;
+                }
             }
             
 //            System.err.println("tree=" + tree);
@@ -339,10 +345,10 @@ public class ComputeImports {
                     }
                 }
                 
-                if (ERROR.equals(simpleName)) {
+                if (simpleName == null || !SourceVersion.isIdentifier(simpleName) || SourceVersion.isKeyword(simpleName)) {
                     simpleName = null;
                 }
-                
+                    
                 if (simpleName != null) {
                     unresolved.add(simpleName);
                     
