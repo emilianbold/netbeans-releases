@@ -358,10 +358,12 @@ public class EditorOperatorTest extends JellyTestCase {
         eo.waitFolding();
         assertFalse("Initial comment at line 2 should be expanded.", eo.isCollapsed(2));
         eo.setCaretPositionToLine(3);
-        assertFalse("Initial comment at line 3 should be expanded.", eo.isCollapsed(2));
+        assertFalse("Initial comment at line 3 should be expanded.", eo.isCollapsed(3));
         try {
-            eo.isCollapsed(19);
-            fail("JemmyException should be thrown because no fold is at line 13.");
+            eo.setCaretPosition("package sample1;", true); // NOI18N
+            int line = eo.getLineNumber();
+            eo.isCollapsed(line);
+            fail("JemmyException should be thrown because no fold is at line "+line);
         } catch (JemmyException e) {
             // OK.
         }
