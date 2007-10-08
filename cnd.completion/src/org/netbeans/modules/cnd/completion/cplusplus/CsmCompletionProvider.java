@@ -83,7 +83,6 @@ public class CsmCompletionProvider implements CompletionProvider {
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
         CsmSyntaxSupport sup = (CsmSyntaxSupport)Utilities.getSyntaxSupport(component).get(CsmSyntaxSupport.class);
         final int dot = component.getCaret().getDot();
-        // do not work together with include completion
         if (sup != null && !sup.isCompletionDisabled(dot) && sup.isIncludeCompletionDisabled(dot)) {
             try {
                 if (sup.needShowCompletionOnText(component, typedText)) {
@@ -105,7 +104,7 @@ public class CsmCompletionProvider implements CompletionProvider {
                 return new AsyncCompletionTask(new Query(dot), component);
             } else if (queryType == DOCUMENTATION_QUERY_TYPE) {
                 return new AsyncCompletionTask(new DocQuery(null), component);
-            } else if (queryType == TOOLTIP_QUERY_TYPE) {
+            } else if (queryType == TOOLTIP_QUERY_TYPE) {                
                 return new AsyncCompletionTask(new ToolTipQuery(), component);
             }
         }
@@ -127,7 +126,6 @@ public class CsmCompletionProvider implements CompletionProvider {
         private NbCsmCompletionQuery.CsmCompletionResult queryResult;
         
         private int creationCaretOffset;
-        private int queryCaretOffset;
         
         private int queryAnchorOffset;
         
@@ -135,13 +133,14 @@ public class CsmCompletionProvider implements CompletionProvider {
         
         Query(int caretOffset) {
             this.creationCaretOffset = caretOffset;
+            this.queryAnchorOffset = -1;
         }
         
         @Override
         protected void preQueryUpdate(JTextComponent component) {
             int caretOffset = component.getCaretPosition();
             Document doc = component.getDocument();
-            if (caretOffset >= creationCaretOffset) {
+            if (creationCaretOffset > 0 && caretOffset >= creationCaretOffset) {
                 try {
                     if (isJavaIdentifierPart(doc.getText(creationCaretOffset, caretOffset - creationCaretOffset)))
                         return;
@@ -152,25 +151,29 @@ public class CsmCompletionProvider implements CompletionProvider {
         }        
         
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
-            // TODO: scanning-in-progress
-//            if (JavaMetamodel.getManager().isScanInProgress())
-//                resultSet.setWaitText(NbBundle.getMessage(CsmCompletionProvider.class, "scanning-in-progress")); //NOI18N
-            SyntaxSupport syntSupp = Utilities.getSyntaxSupport(component);
-            if (syntSupp != null){
-                CsmSyntaxSupport sup = (CsmSyntaxSupport)syntSupp.get(CsmSyntaxSupport.class);
-                NbCsmCompletionQuery query = (NbCsmCompletionQuery) getCompletionQuery();
-                NbCsmCompletionQuery.CsmCompletionResult res = (NbCsmCompletionQuery.CsmCompletionResult)query.query(component, caretOffset, sup);
-                if (res != null) {
-                    queryCaretOffset = caretOffset;
-                    queryAnchorOffset = res.getSubstituteOffset();
-                    Collection items = res.getData();
-                    resultSet.estimateItems(items.size(), -1);
-                    // no more title in NB 6 in completion window
-                    //resultSet.setTitle(res.getTitle());
-                    resultSet.setAnchorOffset(queryAnchorOffset);
-                    resultSet.addAllItems(items);
-                    queryResult = res;
+            boolean hide = (caretOffset > creationCaretOffset) && (filterPrefix == null);
+            if (!hide) {
+                // TODO: scanning-in-progress
+    //            if (JavaMetamodel.getManager().isScanInProgress())
+    //                resultSet.setWaitText(NbBundle.getMessage(CsmCompletionProvider.class, "scanning-in-progress")); //NOI18N
+                SyntaxSupport syntSupp = Utilities.getSyntaxSupport(component);
+                if (syntSupp != null){
+                    CsmSyntaxSupport sup = (CsmSyntaxSupport)syntSupp.get(CsmSyntaxSupport.class);
+                    NbCsmCompletionQuery query = (NbCsmCompletionQuery) getCompletionQuery();
+                    NbCsmCompletionQuery.CsmCompletionResult res = (NbCsmCompletionQuery.CsmCompletionResult)query.query(component, caretOffset, sup);
+                    if (res != null) {
+                        queryAnchorOffset = res.getSubstituteOffset();
+                        Collection items = res.getData();
+                        resultSet.estimateItems(items.size(), -1);
+                        // no more title in NB 6 in completion window
+                        //resultSet.setTitle(res.getTitle());
+                        resultSet.setAnchorOffset(queryAnchorOffset);
+                        resultSet.addAllItems(items);
+                        queryResult = res;
+                    }
                 }
+            } else {
+                Completion.get().hideCompletion();
             }
             resultSet.finish();
         }
@@ -185,16 +188,14 @@ public class CsmCompletionProvider implements CompletionProvider {
             int caretOffset = component.getCaretPosition();
             Document doc = component.getDocument();
             filterPrefix = null;
-            if (caretOffset >= queryCaretOffset) {
-                if (queryAnchorOffset > -1) {
-                    try {
-                        filterPrefix = doc.getText(queryAnchorOffset, caretOffset - queryAnchorOffset);
-                        if (!isJavaIdentifierPart(filterPrefix)) {
-                            filterPrefix = null;
-                        }
-                    } catch (BadLocationException e) {
-                        // filterPrefix stays null -> no filtering
+            if (queryAnchorOffset > -1 && caretOffset > queryAnchorOffset) {
+                try {
+                    filterPrefix = doc.getText(queryAnchorOffset, caretOffset - queryAnchorOffset);
+                    if (!isJavaIdentifierPart(filterPrefix)) {
+                        filterPrefix = null;
                     }
+                } catch (BadLocationException e) {
+                    // filterPrefix stays null -> no filtering
                 }
             }
             return (filterPrefix != null);
