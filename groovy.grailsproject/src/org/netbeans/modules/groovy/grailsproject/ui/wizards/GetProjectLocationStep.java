@@ -43,8 +43,8 @@ import org.openide.util.HelpCtx;
  * @author schmidtm
  */
 public class GetProjectLocationStep implements  WizardDescriptor.Panel, 
-                                                WizardDescriptor.ValidatingPanel, 
-                                                WizardDescriptor.FinishablePanel {
+                                                WizardDescriptor.ValidatingPanel 
+                                                {
 
     private GetProjectLocationPanel component;
     private WizardDescriptor wizardDescriptor;
@@ -62,11 +62,15 @@ public class GetProjectLocationStep implements  WizardDescriptor.Panel,
     }
 
     public void readSettings(Object settings) {
-        return;
+        wizardDescriptor = (WizardDescriptor)settings;        
+        component.read (wizardDescriptor);
+
     }
 
     public void storeSettings(Object settings) {
-        return;
+        WizardDescriptor d = (WizardDescriptor)settings;
+        component.store(d);
+
     }
 
     public boolean isValid() {
@@ -104,7 +108,7 @@ public class GetProjectLocationStep implements  WizardDescriptor.Panel,
     }
 
     public boolean isFinishPanel() {
-        return true;
+        return false;
     }
 
 }

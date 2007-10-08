@@ -30,7 +30,7 @@ package org.netbeans.modules.groovy.grails;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.InputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import org.openide.execution.NbProcessDescriptor;
@@ -38,6 +38,7 @@ import org.openide.util.Exceptions;
 import org.netbeans.modules.groovy.grails.settings.Settings;
 import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.concurrent.CountDownLatch;
 
 /**
  *
@@ -49,52 +50,46 @@ public class GrailsServerRunnable implements Runnable {
     Settings settings;
     String cwdName;
     String cmd;
+    private BufferedReader procOutput;
+    CountDownLatch outputReady = null;
+    
     private  final Logger LOG = Logger.getLogger(GrailsServerRunnable.class.getName());
     
-    public GrailsServerRunnable(PrintWriter writer, String cwdName, String cmd){
-        this.writer = writer;
+    public GrailsServerRunnable(CountDownLatch outputReady, String cwdName, String cmd){
+
         this.settings = Settings.getInstance();
         this.cwdName = cwdName; 
         this.cmd = cmd;
+        this.outputReady = outputReady;
         
         String sep = System.getProperty("file.separator");
         this.grailsExecutable = settings.getGrailsBase() + sep + "bin"+ sep +"grails";
         }
     
-    
     public void run() {
         if (new File(grailsExecutable).exists()) {
             try {
                 NbProcessDescriptor grailsProcessDesc = new NbProcessDescriptor(grailsExecutable, cmd);
-                
-                File cwd = new File(cwdName);
-                Process process = grailsProcessDesc.exec(null, null, cwd);
- 
-                readOutput(process.getInputStream());
 
-                // process.waitFor();
-            } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
-            }
+                File cwd = new File(cwdName);
+
+                Process process = grailsProcessDesc.exec(null, null, cwd);
+
+                procOutput = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                outputReady.countDown();
+
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                    LOG.log(Level.WARNING, "Problem creating Process");
+                    }                
+           
         } else {
             LOG.log(Level.WARNING, "Executable doesn't exist...");
             }
     }
 
-    /**
-    * Parse the output.
-    */
-    void readOutput(InputStream inStream) {
-        try {
-            BufferedReader error = new BufferedReader(new InputStreamReader(inStream));
-            String errString = null;
-            
-            while ((errString = error.readLine()) != null) {
-                writer.print(errString + "\n");
-            }
-                } catch (Exception e) {
-                    LOG.log(Level.WARNING, "Could not read Process output " +e);
-                    }
+    public BufferedReader getProcOutput() {
+        return procOutput;
     }
     
 }

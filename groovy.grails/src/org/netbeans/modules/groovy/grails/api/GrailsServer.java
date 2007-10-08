@@ -29,6 +29,8 @@
 package org.netbeans.modules.groovy.grails.api;
 
 import org.netbeans.api.project.Project;
+import java.io.BufferedReader;
+import org.openide.windows.InputOutput;
 
 /**
  * @param prj
@@ -38,6 +40,6 @@ import org.netbeans.api.project.Project;
  * @return 
  */
 public interface GrailsServer {
-    public int runCommand(Project prj, String cmd);
+    public BufferedReader runCommand(Project prj, String cmd, InputOutput io, String dirName);
 
 }

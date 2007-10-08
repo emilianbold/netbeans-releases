@@ -31,43 +31,94 @@ package org.netbeans.modules.groovy.grails;
 import org.netbeans.modules.groovy.grails.api.GrailsServer;
 import org.openide.execution.ExecutionEngine;
 import org.openide.execution.ExecutorTask;
-import org.openide.windows.IOProvider;
+import org.openide.util.Exceptions;
 import org.openide.windows.InputOutput;
-import org.openide.windows.OutputWriter;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.groovy.grails.api.GrailsServerState;
+import java.util.concurrent.CountDownLatch;
+import java.io.BufferedReader;
+import java.util.logging.Logger;
+import java.util.logging.Level;
+
 /**
  *
  * @author schmidtm
  */
 public class ExternalGrailsServer implements GrailsServer{
 
-    public int runCommand(Project prj, String cmd) {
+    CountDownLatch outputReady = new CountDownLatch(1);
+    BufferedReader procOutput = null;
+
+    GrailsServerRunnable gsr;
+    
+    private  final Logger LOG = Logger.getLogger(ExternalGrailsServer.class.getName());
+    
+    
+    public BufferedReader runCommand(Project prj, String cmd, InputOutput io, String dirName) {
         
+                
         if(cmd.startsWith("create-app")) {
             // in this case we don't have a Project yet, therefore i should be null
             assert prj == null;
+            assert io ==  null;
+                
+            // split dirName in directory to create and parent:
+            int lastSlash = dirName.lastIndexOf("/");
+            String workDir = dirName.substring(0, lastSlash);
+            String newDir  = dirName.substring(lastSlash + 1);
+            
+            // LOG.log(Level.WARNING, "workDir:" + workDir);
+            // LOG.log(Level.WARNING, "newDir:"  + newDir);
+            
+                gsr = new GrailsServerRunnable(outputReady, workDir, "create-app " + newDir);
+                new Thread(gsr).start();
+
+                try {
+                    outputReady.await();
+                    } catch (InterruptedException ex) {
+                            Exceptions.printStackTrace(ex);
+                            }
+            
+            procOutput = gsr.getProcOutput();
         
             }
         else if(cmd.startsWith("run-app")) {
-            String tabName = "Grails Server for: " + prj.getProjectDirectory().getName();
-            InputOutput io = IOProvider.getDefault().getIO(tabName, true);
-            io.select (); //Tree tab is selected
-            OutputWriter writer = io.getOut ();
 
-            ExecutionEngine engine = ExecutionEngine.getDefault();
+                String tabName = "Grails Server for: " + prj.getProjectDirectory().getName();
+                
+                ExecutionEngine engine = ExecutionEngine.getDefault();
 
-            String cwdName = "/" + prj.getProjectDirectory().getPath();
-            ExecutorTask exTask = engine.execute(tabName, new GrailsServerRunnable(writer, cwdName, cmd), io);
+                String cwdName = "/" + prj.getProjectDirectory().getPath();
+                
+                gsr = new GrailsServerRunnable(outputReady, cwdName, cmd);
+                ExecutorTask exTask = engine.execute(tabName, gsr, io);
 
-            GrailsServerState serverState = prj.getLookup().lookup(GrailsServerState.class);
+                try {
+                    outputReady.await();
+                    } catch (InterruptedException ex) {
+                            Exceptions.printStackTrace(ex);
+                            }
 
-            serverState.setRunning(true);
-            serverState.setExTask(exTask);
-            exTask.addTaskListener(serverState);
+                GrailsServerState serverState = prj.getLookup().lookup(GrailsServerState.class);
+
+                if (serverState != null) {
+                    serverState.setRunning(true);
+                    serverState.setExTask(exTask);
+                    exTask.addTaskListener(serverState);
+                    }
+                else {
+                    LOG.log(Level.WARNING, "Could not get serverState through lookup");
+                    }
+                
+                procOutput = gsr.getProcOutput();
+  
         }
         
-        return 0;
+        return procOutput;
     }
+    
+
+    
+    
 
 }

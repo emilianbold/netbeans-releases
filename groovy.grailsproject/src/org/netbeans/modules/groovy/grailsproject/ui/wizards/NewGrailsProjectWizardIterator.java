@@ -39,6 +39,16 @@ import org.openide.WizardDescriptor.Panel;
 import java.util.NoSuchElementException;
 import javax.swing.JComponent;
 import org.openide.util.NbBundle;
+import java.io.BufferedReader;
+import org.netbeans.modules.groovy.grails.api.GrailsServer;
+import org.netbeans.modules.groovy.grails.api.GrailsServerFactory;
+import org.openide.util.Exceptions;
+import javax.swing.JTextArea;
+import java.io.File;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.FileObject;
+
+
 
 /**
  *
@@ -50,18 +60,14 @@ public class NewGrailsProjectWizardIterator implements WizardDescriptor.Instanti
     private transient WizardDescriptor.Panel[] panels;
     private transient WizardDescriptor wiz;
     
+    ServerOutputStep sos = null;
+    
     private WizardDescriptor.Panel[] createPanels () {
+        
+        sos = new ServerOutputStep();
+        
         return new WizardDescriptor.Panel[] {
-                new GetProjectLocationStep(),
-                new ServerOutputStep()
-            
-            
-            
-            
-            
-            
-            
-            };
+                new GetProjectLocationStep(), sos };
     }
     
      private String[] createSteps() {
@@ -75,9 +81,14 @@ public class NewGrailsProjectWizardIterator implements WizardDescriptor.Instanti
     
     
     public Set instantiate() throws IOException {
-        Set resultSet = new HashSet ();
+        Set<FileObject> resultSet = new HashSet<FileObject> ();
+        File dirF = new File((String)wiz.getProperty("projectFolder"));
+        if (dirF != null) {
+            dirF = FileUtil.normalizeFile(dirF);
+        }
         
-        
+        FileObject dir = FileUtil.toFileObject(dirF);
+        resultSet.add (dir);
         
         return resultSet;
     }
@@ -107,7 +118,10 @@ public class NewGrailsProjectWizardIterator implements WizardDescriptor.Instanti
     }
 
     public void uninitialize(WizardDescriptor wizard) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        
+
+
+        
     }
 
     public Panel current() {
