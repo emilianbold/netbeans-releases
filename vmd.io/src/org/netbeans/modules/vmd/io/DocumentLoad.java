@@ -148,9 +148,15 @@ public class DocumentLoad {
             long componentid = element.getUID();
             loadingDocument.setPreferredComponentID(componentid);
             if (loadingDocument.getDescriptorRegistry().getComponentDescriptor(element.getTypeID()) == null) {
-                Debug.warning("Missing ComponentDescriptor in registry ", element.getTypeID()); // NOI18N
-                errorHandler.addWarning("{0} {1}", DESCRIPTOR_MISSING_ERROR, element.getTypeID().toString()); //NOI18N
-                continue;
+                if (element.getUID() == 0) {
+                    Debug.warning("Missing ComponentDescriptor in registry ", element.getTypeID()); // NOI18N
+                    errorHandler.addError("{0} {1}", DESCRIPTOR_MISSING_ERROR, element.getTypeID().toString()); //NOI18N
+                    continue;
+                } else {
+                    Debug.warning("Missing ComponentDescriptor in registry ", element.getTypeID()); // NOI18N
+                    errorHandler.addWarning("{0} {1}", DESCRIPTOR_MISSING_ERROR, element.getTypeID().toString()); //NOI18N
+                    continue;
+                }
             }
             if (!errorHandler.getErrors().isEmpty()) {
                 return;
