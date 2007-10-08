@@ -298,8 +298,8 @@ public class HgCommand {
         command.add(repository.getAbsolutePath());
 
         List<String> list = exec(command);
-        if (list.isEmpty())
-            throw new HgException( list.get(0));
+        if (!list.isEmpty())
+            throw new HgException(list.get(0));
         
         return list;
     }
@@ -369,7 +369,12 @@ public class HgCommand {
             command.add(from);
         }
 
-        return exec(command);
+        List<String> list = exec(command);
+        if (!list.isEmpty() && 
+             isErrorAbort(list.get(list.size() -1))) {
+            throw new HgException( list.get(list.size() -1));
+        }
+        return list;
     }
  
     /**
@@ -396,7 +401,12 @@ public class HgCommand {
             command.add(bundle.getAbsolutePath());
         }
 
-        return exec(command);
+        List<String> list = exec(command);
+        if (!list.isEmpty() && 
+             isErrorAbort(list.get(list.size() -1))) {
+            throw new HgException( list.get(list.size() -1));
+        }
+        return list;
     }
  
     /**
@@ -438,8 +448,12 @@ public class HgCommand {
             command.add(from);
         }
 
-        return exec(command);
-
+        List<String> list = exec(command);
+        if (!list.isEmpty() && 
+             isErrorAbort(list.get(list.size() -1))) {
+            throw new HgException( list.get(list.size() -1));
+        }
+        return list;
     }
     
     /**
@@ -464,8 +478,9 @@ public class HgCommand {
 
         List<String> list = exec(command);
         if (!list.isEmpty() && 
-             isErrorAbort(list.get(0)))
-            throw new HgException( list.get(0));
+             isErrorAbort(list.get(list.size() -1))) {
+            throw new HgException( list.get(list.size() -1));
+        }
         return list;
     }
 
@@ -492,8 +507,9 @@ public class HgCommand {
 
         List<String> list = exec(command);
         if (!list.isEmpty() && 
-             isErrorAbort(list.get(0)))
-            throw new HgException( list.get(0));
+             isErrorAbort(list.get(list.size() -1))) {
+            throw new HgException( list.get(list.size() -1));
+        }
         return list;
     }
 
@@ -519,6 +535,8 @@ public class HgCommand {
              }
             else if (isErrorHgkNotFound(list.get(0))) {
                 throw new HgException(org.openide.util.NbBundle.getMessage(HgCommand.class, "MSG_WARN_HGK_NOT_FOUND_TEXT"));
+            } else if (isErrorAbort(list.get(list.size() -1))) {
+                throw new HgException( list.get(list.size() -1));
             }
         } 
         return list;
