@@ -286,6 +286,7 @@ public class OperationWidget extends AbstractTitledWidget {
             setBorder(BorderFactory.createLineBorder(0, Color.LIGHT_GRAY));
             setBackground(Color.WHITE);
             setOpaque(true);
+            setToolTipText(NbBundle.getMessage(OperationWidget.class, "Hint_ListView"));
         }
 
         protected Shape createImage(int width, int height) {
@@ -308,6 +309,7 @@ public class OperationWidget extends AbstractTitledWidget {
             setBorder(BorderFactory.createLineBorder(0, Color.LIGHT_GRAY));
             setBackground(Color.WHITE);
             setOpaque(true);
+            setToolTipText(NbBundle.getMessage(OperationWidget.class, "Hint_TabbedView"));
         }
 
         protected Shape createImage(int width, int height) {
