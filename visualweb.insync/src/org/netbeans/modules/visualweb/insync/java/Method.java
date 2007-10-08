@@ -66,13 +66,10 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.visualweb.insync.beans.Bean;
 import org.netbeans.modules.visualweb.insync.beans.BeanStructureScanner;
-import org.netbeans.modules.visualweb.insync.beans.Event;
 import org.netbeans.modules.visualweb.insync.beans.EventSet;
 import org.netbeans.modules.visualweb.insync.beans.Property;
-import org.netbeans.modules.visualweb.insync.faces.ThresherFacesBeanStructureScanner;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.NbDocument;
 
 /**
@@ -258,9 +255,11 @@ public class Method {
         wc.rewrite(oldBlockTree, newBlockTree);
     }
 
-    public void addPropertySetStatements(WorkingCopy wc, Bean bean) {
-        ExecutableElement elem = execElementHandle.resolve(wc);
-        BlockTree oldBlockTree = wc.getTrees().getTree(elem).getBody();
+    BlockTree addPropertySetStatements(WorkingCopy wc, Bean bean, BlockTree oldBlockTree) {
+        if(oldBlockTree == null) {
+            ExecutableElement elem = execElementHandle.resolve(wc);
+            oldBlockTree = wc.getTrees().getTree(elem).getBody();
+        }
         BlockTree newBlockTree = oldBlockTree;
         for (Property prop : bean.getProperties()) {
             if (!prop.isMarkupProperty() && !prop.isInserted()) {
@@ -268,12 +267,17 @@ public class Method {
                 prop.setInserted(true);
             }
         }
-        wc.rewrite(oldBlockTree, newBlockTree);
+        if(oldBlockTree != newBlockTree) {
+            wc.rewrite(oldBlockTree, newBlockTree);
+        }
+        return newBlockTree;
     }
    
-    public void removeSetStatements(WorkingCopy wc, Bean bean) {
-        ExecutableElement elem = execElementHandle.resolve(wc);
-        BlockTree oldBlockTree = wc.getTrees().getTree(elem).getBody();
+    BlockTree removeSetStatements(WorkingCopy wc, Bean bean, BlockTree oldBlockTree) {
+        if(oldBlockTree == null) {
+            ExecutableElement elem = execElementHandle.resolve(wc);
+            oldBlockTree = wc.getTrees().getTree(elem).getBody();
+        }
         BlockTree newBlockTree = oldBlockTree;
         //Remove property set statements
         for (Property prop : bean.getProperties()) {
@@ -289,7 +293,11 @@ public class Method {
                 eventSet.setInserted(false);
             }
         }
-        wc.rewrite(oldBlockTree, newBlockTree);
+        if(oldBlockTree != newBlockTree) {
+            wc.rewrite(oldBlockTree, newBlockTree);
+        }
+        
+        return newBlockTree;
     }
 
     public void addEventSetStatements(Bean bean) {

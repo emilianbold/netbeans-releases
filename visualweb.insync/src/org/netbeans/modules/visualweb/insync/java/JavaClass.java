@@ -42,6 +42,7 @@
 package org.netbeans.modules.visualweb.insync.java;
 
 import com.sun.rave.designtime.ContextMethod;
+import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
@@ -69,7 +70,6 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.visualweb.insync.beans.Bean;
 import org.netbeans.modules.visualweb.insync.beans.BeansUnit;
 import org.netbeans.modules.visualweb.insync.beans.Naming;
-import org.netbeans.modules.visualweb.insync.faces.FacesBean;
 import org.netbeans.modules.visualweb.insync.faces.HtmlBean;
 import org.openide.filesystems.FileObject;
 
@@ -288,14 +288,23 @@ public class JavaClass {
                 // TBD: index selection logic, i.e where to add the field, getter and setter
                 // For now insert before the ctor
                 Tree ctor = getPublicConstructor(wc, ctree);
+                BeansUnit beansUnit = null;
+                BlockTree blockTree = null;
                 for (Bean bean : beans) {
                     ctree = addProperty(bean.getName(), bean.getType(), 
                             bean.isGetterRequired(), bean.isSetterRequired(), ctree, ctor, wc);
-                    bean.getUnit().getPropertiesInitMethod().addPropertySetStatements(wc, bean);
+                    beansUnit = bean.getUnit();
+                    if(beansUnit != null) {
+                        blockTree = beansUnit.getPropertiesInitMethod().addPropertySetStatements(wc, bean, blockTree);
+                    }
                     bean.setInserted(true);
                 }
-                beans.get(0).getUnit().getCleanupMethod().addCleanupStatements(wc, beans);
-                wc.rewrite(oldTree, ctree);
+                if(beansUnit != null) {
+                    beansUnit.getCleanupMethod().addCleanupStatements(wc, beans);
+                }
+                if(oldTree != ctree) {
+                    wc.rewrite(oldTree, ctree);
+                }
                 return null;
             }
         }, fObj);
@@ -308,12 +317,13 @@ public class JavaClass {
                 ClassTree ctree = wc.getTrees().getTree(typeElement);
                 ClassTree oldTree = ctree;
                 BeansUnit beansUnit = null;
+                BlockTree blockTree = null;
                 for (Bean bean : beans) {
                     if(!(bean instanceof HtmlBean)) {
                         ctree = removeProperty(bean.getName(), ctree, wc);
                         beansUnit = bean.getUnit();
                         if (beansUnit != null) {
-                            beansUnit.getPropertiesInitMethod().removeSetStatements(wc, bean);
+                            blockTree = beansUnit.getPropertiesInitMethod().removeSetStatements(wc, bean, blockTree);
                         }
                     }
                     bean.removeEntry();
