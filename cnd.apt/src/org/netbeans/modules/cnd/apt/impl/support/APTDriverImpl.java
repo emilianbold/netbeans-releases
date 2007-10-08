@@ -47,8 +47,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
@@ -85,14 +83,12 @@ public class APTDriverImpl {
         String path = file.getAbsolutePath();
         APTFile apt = _getAPTFile(path, withTokens);
         if (apt == null) {
-            APTSyncCreator creator = file2creator.get(path);
-            if (creator == null) {
-                synchronized (file2creator) {
-                    creator = file2creator.get(path);
-                    if (creator == null) {
-                        creator = new APTSyncCreator();
-                        file2creator.put(path, creator);
-                    }
+            APTSyncCreator creator;
+            synchronized (file2creator) {
+                creator = file2creator.get(path);
+                if (creator == null) {
+                    creator = new APTSyncCreator();
+                    file2creator.put(path, creator);
                 }
             }
             assert (creator != null);
@@ -124,7 +120,9 @@ public class APTDriverImpl {
         }
     }
     
-    private static class APTSyncCreator {               
+    private static class APTSyncCreator {  
+        private APTFile fullAPT = null;
+        private APTFile lightAPT = null;
         public APTSyncCreator() {
         }
         
@@ -132,8 +130,13 @@ public class APTDriverImpl {
         public synchronized APTFile findAPT(APTFileBuffer buffer, boolean withTokens) throws IOException {
             File file = buffer.getFile();
             String path = file.getAbsolutePath();
-            // quick exti: check if already was added by another creator
+            // quick exit: check if already was added by another creator
             // during wait
+            if (withTokens && fullAPT != null) {
+                return fullAPT;
+            } else if (!withTokens && lightAPT != null) {
+                return lightAPT;
+            }
             APTFile apt = _getAPTFile(path, withTokens);
             if (apt == null) {
                 // ok, create new apt
@@ -145,6 +148,7 @@ public class APTDriverImpl {
                     TokenStream ts = APTTokenStreamBuilder.buildTokenStream(path, stream);
                     // build apt from token stream
                     apt = APTBuilder.buildAPT(path, ts);
+                    fullAPT = apt;
                     if (apt != null) {
                         if (APTTraceFlags.TEST_APT_SERIALIZATION) {
                             APTFile test = (APTFile) APTSerializeUtils.testAPTSerialization(buffer, apt);
@@ -156,6 +160,7 @@ public class APTDriverImpl {
                         }
                         _putAPTFile(path, apt, withTokens);
                         APTFile aptLight = (APTFile) APTBuilder.buildAPTLight(apt);
+                        lightAPT = aptLight;
                         _putAPTFile(path, aptLight, withTokens);
                         if (!withTokens) {
                             // were asked to return apt light
