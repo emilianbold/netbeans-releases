@@ -1013,17 +1013,6 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
 
     /**
      * Create a tree representing the given type.
-     * <p>
-     * The current implementation of this method is a compromise
-     * between the expected correctness of the generated code and
-     * the current limitation of method
-     * {@link TreeMaker#ParameterizedType} which requires that its second
-     * argument must be a {@code List} of {@link ExpressionTree}s
-     * (see bug #115176): If the given type mirror represents a parameterized
-     * type and any of the type parameters is also parameterized, then
-     * the returned tree corresponds to erasure of the given type mirror.
-     * 
-     * @see  <a href="http://www.netbeans.org/issues/show_bug.cgi?id=115176">bug115176</a>
      */
     private Tree createTypeTree(final TypeMirror typeMirror,
                                 final WorkingCopy workingCopy,
