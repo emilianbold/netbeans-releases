@@ -289,14 +289,17 @@ public class GdbUtils {
     public static String gdbToUserEncoding(String string) {
         // The first part transforms string to byte array
         char[] chars = string.toCharArray();
+        char last = 0, next;
         ArrayList<Byte> _bytes = new ArrayList<Byte>();
         for (int i = 0; i < chars.length; i++) {
             char ch = chars[i];
-            if (ch == '\\') {
+            next = (i + 1) < chars.length ? chars[i + 1] : 0;
+            if (ch == '\\' && last != '\\' && next != '\\') {
                 char[] charVal = {chars[++i], chars[++i], chars[++i]};
                 ch = (char) Integer.valueOf(String.valueOf(charVal), 8).intValue();
             }
             _bytes.add((byte) ch);
+            last = chars[i];
         }
         byte[] bytes = new byte[_bytes.size()];
         for (int i = 0; i < bytes.length; i++) {

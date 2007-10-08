@@ -69,6 +69,7 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
     private GdbBreakpoint breakpoint;
     private BreakpointsReader reader;
     private final Session session;
+    private String err;
     
     protected BreakpointImpl(GdbBreakpoint breakpoint, BreakpointsReader reader, GdbDebugger debugger, Session session) {
         this.debugger = debugger;
@@ -77,29 +78,43 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
         this.session = session;
         this.state = BPSTATE_UNVALIDATED;
         this.breakpointNumber = -1;
+        this.err = null;
     }
 
     public void completeValidation(Map<String, String> map) {
+        String number;
         assert getState().equals(BPSTATE_VALIDATION_PENDING) : getState();
         if (map != null) {
-            String number = map.get("number"); // NOI18N
-            if (number != null) {
-                breakpointNumber = Integer.parseInt(number);
-                setState(BPSTATE_VALIDATED);
-                if (!breakpoint.isEnabled()) {
-                    getDebugger().break_disable(breakpointNumber);
-                }
-                if (this instanceof FunctionBreakpointImpl) {
-                    try {
-                        breakpoint.setURL(map.get("fullname")); // NOI18N
-                        breakpoint.setLineNumber(Integer.parseInt(map.get("line"))); // NOI18N
-                    } catch (Exception ex) {
-                    }
-                }
-            } else {
-                setState(BPSTATE_VALIDATION_FAILED);
+            number = map.get("number"); // NOI18N
+        } else {
+            number = null;
+        }
+        if (number != null) {
+            breakpointNumber = Integer.parseInt(number);
+            setState(BPSTATE_VALIDATED);
+            breakpoint.setValid();
+            if (!breakpoint.isEnabled()) {
+                getDebugger().break_disable(breakpointNumber);
             }
-            getDebugger().getBreakpointList().put(number, this);
+            if (this instanceof FunctionBreakpointImpl) {
+                try {
+                    breakpoint.setURL(map.get("fullname")); // NOI18N
+                    breakpoint.setLineNumber(Integer.parseInt(map.get("line"))); // NOI18N
+                } catch (Exception ex) {
+                }
+            }
+        } else {
+            breakpoint.setInvalid(err);
+            setState(BPSTATE_VALIDATION_FAILED);
+        }
+        getDebugger().getBreakpointList().put(number, this);
+    }
+    
+    public void addError(String err) {
+        if (this.err != null) {
+            this.err = this.err + err;
+        } else {
+            this.err = err;
         }
     }
 

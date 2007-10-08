@@ -141,6 +141,22 @@ public class GdbProxy implements GdbMiDefinitions {
         if (ver > 6.3) {
             return engine.sendCommand("-environment-cd  \"" + dir + "\""); // NOI18N
         } else {
+            return engine.sendCommand("cd \"" + dir + "\""); // NOI18N
+        }
+    }
+
+    /**
+     * Set the runtime directory. Note that this method may get called before we have
+     * gdb's version. Thats why we check that its greater than 6.3. This way, if we
+     * don't have the version we fallback to the non-mi command.
+     *
+     * @param path The directory we want to run from
+     */
+    public int environment_directory(String dir) {
+        double ver = debugger.getGdbVersion();
+        if (ver > 6.3) {
+            return engine.sendCommand("-environment-directory  \"" + dir + "\""); // NOI18N
+        } else {
             return engine.sendCommand("directory \"" + dir + "\""); // NOI18N
         }
     }

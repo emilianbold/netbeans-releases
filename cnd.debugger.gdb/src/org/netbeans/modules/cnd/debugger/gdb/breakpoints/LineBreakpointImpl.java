@@ -78,7 +78,7 @@ public class LineBreakpointImpl extends BreakpointImpl {
         if (getState().equals(BPSTATE_UNVALIDATED)) {
             setState(BPSTATE_VALIDATION_PENDING);
             lineNumber = breakpoint.getLineNumber();
-            String path = getDebugger().getProjectRelativePath(breakpoint.getPath());
+            String path = getDebugger().getBestPath(breakpoint.getPath());
             int token = getDebugger().getGdbProxy().break_insert(path + ':' + lineNumber);
             getDebugger().addPendingBreakpoint(token, this);
 	} else {

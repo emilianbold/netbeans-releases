@@ -108,6 +108,14 @@ public abstract class GdbBreakpoint extends Breakpoint {
         firePropertyChange(PROP_LINE_NUMBER, new Integer(old), new Integer(ln));
     }
     
+    protected void setValid() {
+        setValidity(Breakpoint.VALIDITY.VALID, null);
+    }
+    
+    protected void setInvalid(String msg) {
+        setValidity(Breakpoint.VALIDITY.INVALID, msg);
+    }
+    
     /**
      *  Return a path based on this breakpoints URL. The path is not necessarily the
      *  same as the URL with the "File:/" removed. This is because Windows often substitues

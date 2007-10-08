@@ -231,7 +231,7 @@ public class GdbProxyEngine {
                 break;
                 
             case '&': // log-stream-output
-                debugger.logStreamOutput(msg);
+                debugger.logStreamOutput(token, msg);
                 break;
                 
             default:

@@ -63,7 +63,6 @@ import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
-import org.netbeans.api.debugger.Watch;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.BreakpointImpl;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.event.GdbBreakpointEvent;
@@ -108,6 +107,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     public static final String          STATE_NONE = "state_none"; // NOI18N
     public static final String          STATE_STARTING = "state_starting"; // NOI18N
     public static final String          STATE_LOADING = "state_loading"; // NOI18N
+    public static final String          STATE_LOADED = "state_loaded"; // NOI18N
     public static final String          STATE_READY = "state_ready"; // NOI18N
     public static final String          STATE_RUNNING = "state_running"; // NOI18N
     public static final String          STATE_STOPPED = "state_stopped"; // NOI18N
@@ -135,7 +135,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private ArrayList<CallStackFrame> callstack = new ArrayList<CallStackFrame>();
     private GdbEngineProvider gdbEngineProvider;
     private CallStackFrame currentCallStackFrame;
-    private boolean firstStop = true;
     public final Object LOCK = new Object();
     private long programPID = 0;
     private double gdbVersion = 0.0;
@@ -214,21 +213,30 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     runDirectory, termpath);
             gdb.gdb_version();
             gdb.file_exec_and_symbols(getProgramName(pae.getExecutable()));
-            gdb.environment_cd(getProgramDirectory(pae.getExecutable()));
+            gdb.environment_directory(runDirectory);
             gdb.gdb_show("language"); // NOI18N
         
             if (Utilities.isWindows()) {
                 if (conType != RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
                     gdb.set_new_console();
                 }
-//                File cnd_dll = InstalledFileLocator.getDefault().locate("bin/cnd.dll", null, false); // NOI18N
-//                gdb.gdb_set_environment("LD_PRELOAD=" + cygpath(cnd_dll.getAbsolutePath())); // NOI18N
             }
             if (pae.getID() == ProjectActionEvent.DEBUG_STEPINTO) {
                 continueAfterFirstStop = false; // step into project
             }
             gdb.break_insert(GDB_TMP_BREAKPOINT, "main"); // NOI18N
-            setLoading(); // This triggers persistent breakpoint loading
+            try {
+                gdb.exec_run(pae.getProfile().getArgsFlat());
+            } catch (Exception ex) {
+                ErrorManager.getDefault().notify(ex);
+                ((Session) lookupProvider.lookupFirst(null, Session.class)).kill();
+            }
+            if (Utilities.isWindows()) {
+                gdb.info_threads(); // we get the PID from this...
+            } else if (Utilities.getOperatingSystem() != Utilities.OS_MAC) {
+                gdb.info_proc(); // we get the PID from this...
+            }
+            setLoading();
         } catch (Exception ex) {
             if (startupTimer != null) {
                 startupTimer.cancel();
@@ -263,23 +271,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         return programName.toString();
     }
     
-    private String getProgramDirectory(String program) {
-        if (Utilities.isWindows()) {
-            if (isCygwin()) {
-                program = cygpath(program);
-            } else if (program.indexOf('\\') != -1) {
-                program = convertToWindowsPath(program);
-            }
-        }
-        int i = program.lastIndexOf('/');
-        assert i > -1;
-        if (i > 0) {
-            return program.substring(0, i);
-        } else {
-            return program;
-        }
-    }
-    
     /** If the type definition contains { ... }, strip it. It will be picked up elsewhere */
     private String stripFields(String info) {
         StringBuilder buf = new StringBuilder();
@@ -296,18 +287,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         return buf.toString();
     }
     
-    private static String convertToWindowsPath(String orig) {
-        String nue = orig.replace('\\', '/');
-        return orig.replace("\\", "/"); // NOI18N
-    }
-    
-    private String cygpath(String path) {
-        if (path.charAt(1) == ':') {
-            path = "/cygdrive/" + path.substring(0, 1) + path.substring(2); // NOI18N
-        }
-        return convertToWindowsPath(path);
-    }
-    
     /** Get the gdb version */
     public double getGdbVersion() {
         return gdbVersion;
@@ -315,13 +294,12 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals(PROP_STATE)) {
-            if (evt.getNewValue() == STATE_READY) {
-                ProjectActionEvent pae = (ProjectActionEvent) lookupProvider.lookupFirst(null, ProjectActionEvent.class);
-                try {
-                    gdb.exec_run(pae.getProfile().getArgsFlat());
-                } catch (Exception ex) {
-                    ErrorManager.getDefault().notify(ex);
-                    ((Session) lookupProvider.lookupFirst(null, Session.class)).kill();
+            if (evt.getNewValue().equals(STATE_READY)) {
+                if (continueAfterFirstStop) {
+                    gdb.exec_continue();
+                } else {
+                    gdb.stack_list_frames();
+                    setStopped();
                 }
             } else if (evt.getNewValue() == STATE_STOPPED) {
                 tcwait = 0;
@@ -504,7 +482,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             } else if (pendingBreakpointMap.get(itok) != null) {
                 breakpointValidation(token, null);
             }
-        } else if (msg.startsWith("^running")) { // NOI18N
+        } else if (msg.startsWith("^running") && getState().equals(STATE_STOPPED)) { // NOI18N
             setRunning();
         } else if (msg.startsWith("^error,msg=")) { // NOI18N
             msg = msg.substring(11);
@@ -576,33 +554,12 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         }
     }
     
-    /** Handle geb responses starting with '*' */
+    /** Handle gdb responses starting with '*' */
     public void execAsyncOutput(int token, String msg) {
         if (msg.startsWith("*stopped")) { // NOI18N
             Map<String, String> map = GdbUtils.createMapFromString(msg.substring(9));
-            String reason = map.get("reason"); // NOI18N
-            String bkptno;
-            if ((reason == null || (Utilities.getOperatingSystem() == Utilities.OS_MAC &&
-                    (bkptno = map.get("bkptno")) != null && bkptno.equals("1"))) && firstStop) { // NOI18N
-                firstStop(); // temporary breakpoint from initial -exec-run command
-            } else {
-                if (firstStop) { // got a user-set breakpoint first
-                    continueAfterFirstStop = false; // never continues after this first stop
-                    firstStop();
-                }
-                stopped(token, map);
-            }
+            stopped(token, map);
         }
-    }
-    
-    /** Handle gdb responses starting with '+' */
-    public void statusAsyncOutput(int token, String msg) {
-      log.fine("GDI.statusAsyncOutput[" + token + "]: " + msg); // NOI18N
-    }
-    
-    /** Handle gdb responses starting with '=' */
-    public void notifyAsyncOutput(int token, String msg) {
-        log.fine("GDI.notifyAsyncOutput[" + token + "]: " + msg); // NOI18N
     }
     
     /** Handle gdb responses starting with '~' */
@@ -709,14 +666,11 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         }
     }
     
-    /** Handle gdb responses starting with '@' */
-    public void targetStreamOutput(String msg) {
-       log.fine("GDI.targetStreamOutput: " + msg);  // NOI18N
-    }
-    
     /** Handle gdb responses starting with '&' */
-    public void logStreamOutput(String msg) {
-        if (msg.startsWith("&\"info proc") || // NOI18N
+    public void logStreamOutput(int token, String msg) {
+        if (pendingBreakpointMap.get(Integer.valueOf(token)) != null) {
+            breakpointValidation(token, msg.substring(2, msg.length() - 3));
+        } else if (msg.startsWith("&\"info proc") || // NOI18N
                 msg.startsWith("&\"info threads") || // NOI18N
                 msg.startsWith("&\"directory ") || // NOI18N
                 msg.startsWith("&\"set new-console") || // NOI18N
@@ -727,6 +681,21 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         } else {
             log.finest("GDI.logStreamOutput: " + msg); // NOI18N
         }
+    }
+    
+    /** Handle gdb responses starting with '+' */
+    public void statusAsyncOutput(int token, String msg) {
+      log.fine("GDI.statusAsyncOutput[" + token + "]: " + msg); // NOI18N
+    }
+    
+    /** Handle gdb responses starting with '=' */
+    public void notifyAsyncOutput(int token, String msg) {
+        log.fine("GDI.notifyAsyncOutput[" + token + "]: " + msg); // NOI18N
+    }
+    
+    /** Handle gdb responses starting with '@' */
+    public void targetStreamOutput(String msg) {
+       log.fine("GDI.targetStreamOutput: " + msg);  // NOI18N
     }
     
     private Map<String, Object> addSuperclassEntries(Map<String, Object> map, String info) {
@@ -768,6 +737,29 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         return map;
     }
     
+    /**
+     * Find the first ":" which isn'f part of a "::".
+     * @param info The string to check
+     * @return The index (if found) or -1
+     */
+    private int getSuperclassColon(String info) {
+        char lastc = 0;
+        char nextc;
+        char ch;
+        
+        for (int i = 0; i < info.length(); i++) {
+            ch = info.charAt(i);
+            nextc = (i + 1) < info.length() ? info.charAt(i + 1) : 0;
+            if (ch == ':' && nextc != ':' && lastc != ':') {
+                return i;
+            } else if (ch == '<') {
+                i = GdbUtils.findMatchingLtGt(info, i);
+            }
+            lastc = ch;
+        }
+        return -1;
+    }
+    
     private Map getCSUFieldMap(String info) {
         Map<String, Object> map = new HashMap<String, Object>();
         int pos0;
@@ -775,7 +767,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         int pos2 = GdbUtils.findMatchingCurly(info, pos1);
         String fields = null;
         
-        if (pos1 != -1 && (pos0 = info.substring(0, pos1).indexOf(':')) != -1) {
+        if (pos1 != -1 && (pos0 = getSuperclassColon(info.substring(0, pos1))) != -1) {
             map = addSuperclassEntries(map, info.substring(pos0 + 1, pos1));
         }
         
@@ -1096,26 +1088,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         updateVariablesMap.put(new Integer(token), var);
     }
     
-    /**
-     * We set a temporary breakpoint at main so we can complete initialization. Some things
-     * (like breakpoints) can't be set before this point.
-     */
-    private void firstStop() {
-        firstStop = false;
-        if (Utilities.isWindows()) {
-            gdb.info_threads(); // we get the PID from this...
-        } else if (Utilities.getOperatingSystem() != Utilities.OS_MAC) {
-            gdb.info_proc(); // we get the PID from this...
-        }
-        
-        if (continueAfterFirstStop) {
-            gdb.exec_continue();
-        } else {
-            gdb.stack_list_frames();
-            setStopped();
-        }
-    }
-    
     public void completeToolTip(int token, ToolTipAnnotation tt) {
         ttToken = token;
         ttAnnotation = tt;
@@ -1318,6 +1290,10 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     public void stopped(int token, Map<String, String> map) {
         String reason = map.get("reason"); // NOI18N
         
+        if (state.equals(STATE_STARTING) || state.equals(STATE_LOADING)) {
+            return;
+        }
+        
         log.fine("GD.stopped[" + Thread.currentThread().getName() + "]:\n"); // NOI18N
         if (reason != null) {
             setCurrentCallStackFrameNoFire(null);   // will be reset when stack updates
@@ -1389,13 +1365,18 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
      *
      * @param reason a reason why program is stopped
      */
-    private void breakpointValidation(int token, Map<String, String> map) {
-        BreakpointImpl impl = pendingBreakpointMap.remove(Integer.valueOf(token));
+    private void breakpointValidation(int token, Object o) {
+        BreakpointImpl impl = pendingBreakpointMap.get(Integer.valueOf(token));
         
         if (impl != null) { // impl is null for the temporary bp set at main during startup
-            impl.completeValidation(map);
+            if (o instanceof String) {
+                impl.addError((String) o);
+            } else if (o instanceof Map || o == null) {
+                pendingBreakpointMap.remove(Integer.valueOf(token));
+                impl.completeValidation((Map<String, String>) o);
+            }
             if (pendingBreakpointMap.isEmpty() && state.equals(STATE_LOADING)) {
-                setRunning();
+                setReady();
             }
         }
     }
@@ -1482,19 +1463,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             return (List<GdbVariable>) localVariables.clone();
         }
     }
-    
-//    /** Count watches by counting GdbWatchVariables listening for property changes */
-//    private int getWatchCount() {
-//        PropertyChangeListener[] pcl = pcs.getPropertyChangeListeners();
-//        int count = 0;
-//        
-//        for (int i = 0; i < pcl.length; i++) {
-//            if (pcl[i] instanceof GdbWatchVariable) {
-//                count++;
-//            }
-//        }
-//        return count;
-//    }
     
     public void requestDerefValue(AbstractVariable var, String name) {
         if (state.equals(STATE_STOPPED)) {
@@ -1673,14 +1641,53 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     }
     
     /**
-     *  Convert an absolute path to a project-relative path.
+     *  Gdbmi doesn't handle spaces in paths (see http://sourceware.org/ml/gdb/2006-02/msg00283.html
+     *  for more details). So try an alternate if the path has embedded spaces.
      *
      *  @param path The absolute path to convert
-     *  @return The project-relative path or the unchanged path
+     *  @return The possibly modified path
      */
-    public String getProjectRelativePath(String path) {
-        if (path.startsWith(runDirectory)) {
+    public String getBestPath(String path) {
+        if (path.indexOf(' ') == -1) {
+            return path;
+        } else if (path.startsWith(runDirectory)) {
             return (path.substring(runDirectory.length()));
+        } else {
+            int pos = path.lastIndexOf('/');
+            if (pos != -1) {
+                return path.substring(pos + 1);
+            }
+            // Don't delete the following code yet. Neet to understand breakpoints outside the current
+            // project better! This might still be relevant.
+//            String rdir;
+//            if (runDirectory.endsWith("/")) { // NOI18N
+//                rdir = runDirectory.substring(0, runDirectory.length() - 1);
+//            } else {
+//                rdir = runDirectory;
+//            }
+//            int rdir_pos = rdir.indexOf('/');
+//            int path_pos = path.indexOf('/');
+//            int match = -1;
+//            while (rdir_pos == path_pos && rdir_pos != -1) {
+//                if (path.substring(0, rdir_pos).equals(rdir.substring(0, rdir_pos))) {
+//                    match = rdir_pos;
+//                }
+//                rdir_pos = rdir.indexOf('/', rdir_pos + 1);
+//                path_pos = path.indexOf('/', path_pos + 1);
+//            }
+//            if (match != -1) {
+//                path_pos = path.substring(0, path_pos).lastIndexOf('/'); // we want the previous path_pos
+//                int count = 1;
+//                while (rdir_pos != -1) {
+//                    count++;
+//                    rdir_pos = rdir.indexOf('/', rdir_pos + 1);
+//                }
+//                StringBuilder rpath = new StringBuilder();
+//                while (count-- > 0) {
+//                    rpath.append("../");
+//                }
+//                return rpath.toString()  + path.substring(path_pos + 1);
+//            }
         }
         return path;
     }
