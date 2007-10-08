@@ -133,6 +133,7 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
         checkedTreeView.getAccessibleContext().setAccessibleDescription( NbBundle.getMessage( ServicesPanel.class, "ACSD_Services" ));
         
         if(dataObject == null || dataObject.isGenerating()) generateButton.setEnabled( false ); //for case we are generating
+        if( dataObject == null ) generateButton.setVisible( false );
         checkedTreeView.addChangeListener( new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
                if (dataObject != null) ServicesPanel.this.dataObject.setModified(true);
