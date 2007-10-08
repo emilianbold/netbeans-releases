@@ -1058,27 +1058,11 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
             DeclaredType declType = (DeclaredType) typeMirror;
             List<? extends TypeMirror> typeArgs = declType.getTypeArguments();
             if (!typeArgs.isEmpty()) {
-                List<ExpressionTree> typeArgTrees
-                        = new ArrayList<ExpressionTree>(typeArgs.size());
-
-                boolean parameterizedParamTypeFound = false;
+                List<Tree> typeArgTrees = new ArrayList<Tree>(typeArgs.size());
                 for (TypeMirror typeArg : typeArgs) {
-                    assert typeArg.getKind() == TypeKind.DECLARED;
-                    DeclaredType declParamType = (DeclaredType) typeArg;
-                    if (!declParamType.getTypeArguments().isEmpty()) {
-                        parameterizedParamTypeFound = true;
-                        /*
-                         * It is not possible to handle type parameters
-                         * of type parameters (bug #115176).
-                         */
-                        break;
-                    }
-                    typeArgTrees.add(maker.QualIdent(types.asElement(typeArg)));
+                    typeArgTrees.add(createTypeTree(typeArg, workingCopy, maker));
                 }
-                if (!parameterizedParamTypeFound) {
-                    result = maker.ParameterizedType(result, typeArgTrees);
-                }
-                /* else: keep the current result without type parameters */
+                result = maker.ParameterizedType(result, typeArgTrees);
             }
         }
 
