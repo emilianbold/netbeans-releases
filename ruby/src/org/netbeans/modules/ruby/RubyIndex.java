@@ -1249,7 +1249,9 @@ public final class RubyIndex {
             assert map != null;
 
             String tableName = map.getValue(RubyIndexer.FIELD_DB_TABLE);
-            tables.add(tableName);
+            if (tableName != null) {
+                tables.add(tableName);
+            }
         }
         
         return tables;

@@ -1392,6 +1392,16 @@ public class CodeCompleter implements Completable {
                 }
             }
 
+            boolean haveSanitizedComma = rpr.getSanitized() == Sanitize.EDITED_DOT ||
+                    rpr.getSanitized() == Sanitize.ERROR_DOT;
+            if (haveSanitizedComma) {
+                // We only care about removed commas since that
+                // affects the parameter count
+                if (rpr.getSanitizedContents().indexOf(',') == -1) {
+                    haveSanitizedComma = false;
+                }
+            }
+
             if (call == null) {
                 // Find the call in around the caret. Beware of 
                 // input sanitization which could have completely
@@ -1399,16 +1409,6 @@ public class CodeCompleter implements Completable {
                 // a comma, or something like ", @" or ", :")
                 // where we accidentally end up in the previous
                 // parameter.
-                boolean haveSanitizedComma = rpr.getSanitized() == Sanitize.EDITED_DOT ||
-                        rpr.getSanitized() == Sanitize.ERROR_DOT;
-                if (haveSanitizedComma) {
-                    // We only care about removed commas since that
-                    // affects the parameter count
-                    if (rpr.getSanitizedContents().indexOf(',') == -1) {
-                        haveSanitizedComma = false;
-                    }
-                }
-                
                 ListIterator<Node> it = path.leafToRoot();
              nodesearch:
                 while (it.hasNext()) {
@@ -1522,14 +1522,14 @@ public class CodeCompleter implements Completable {
                         }
                     }
                 }
-                
-                if (index != -1 && haveSanitizedComma) {
-                    // Adjust the index to account for our removed
-                    // comma
-                    index++;
-                }
             }
 
+            if (index != -1 && haveSanitizedComma) {
+                // Adjust the index to account for our removed
+                // comma
+                index++;
+            }
+            
             if ((call == null) || (index == -1)) {
                 callLineStart = -1;
                 callMethod = null;
@@ -1594,6 +1594,28 @@ public class CodeCompleter implements Completable {
                 offset = attrs.indexOf(';', offset+1);
                 if (offset == -1) {
                     break;
+                }
+            }
+            if (offset == -1) {
+                Node root = null;
+                if (info != null) {
+                    root = AstUtilities.getRoot(info);
+                }
+
+                IndexedElement match = findDocumentationEntry(root, targetMethod);
+                if (match == targetMethod || !(match instanceof IndexedMethod)) {
+                    return false;
+                }
+                targetMethod = (IndexedMethod)match;
+                attrs = targetMethod.getEncodedAttributes();
+                if (attrs != null && attrs.length() > 0) {
+                    offset = -1;
+                    for (int i = 0; i < 3; i++) {
+                        offset = attrs.indexOf(';', offset+1);
+                        if (offset == -1) {
+                            break;
+                        }
+                    }
                 }
             }
             String currentName = params.get(index);

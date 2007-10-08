@@ -1607,8 +1607,28 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
         } else if (!candidates.isEmpty()) {
             methods = candidates;
         }
+        
+        // 3. Prefer methods with extra index attributes since these tend to be important
+        // methods (e.g. pick ActiveRecord::ConnectionAdapters::SchemaStatements instead
+        // of the many overrides of that method
+        // (A more general solution would be to prefer ancestor classes' implementations
+        // over superclasses' implementations
+        assert candidates.isEmpty();
 
-        // 3. Use method arity to rule out mismatches
+        for (IndexedMethod method : methods) {
+            String attributes = method.getEncodedAttributes();
+            if (attributes.length() > 3) {
+                candidates.add(method);
+            }
+        }
+
+        if (candidates.size() == 1) {
+            return candidates.iterator().next();
+        } else if (!candidates.isEmpty()) {
+            methods = candidates;
+        }
+
+        // 4. Use method arity to rule out mismatches
         // TODO - this is tricky since Ruby lets you specify more or fewer
         // parameters with some reasonable behavior...
         // Possibly I should do this check further down since the
