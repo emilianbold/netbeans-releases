@@ -45,6 +45,7 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.List;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
@@ -113,44 +114,37 @@ public class CloneAction extends AbstractAction {
         String projName = null;
         if (projFile != null) projName = HgProjectUtils.getProjectName(projFile);
         final String prjName = projName;
+        File cloneProjFile;
+        if (!prjIsRepos) {
+            String name = prjFile.getAbsolutePath().substring(source.length() + 1);
+            cloneProjFile = new File (normalizedCloneFolder, name);
+        } else {
+            cloneProjFile = normalizedCloneFolder;
+        }
+        final File clonePrjFile = cloneProjFile;
         
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(source);
         HgProgressSupport support = new HgProgressSupport() {
             Runnable doOpenProject = new Runnable () {
                 public void run()  { 
                     // Open and set focus on the cloned project
-                    File cloneProjFile;
-                    if (!prjIsRepos) {
-                        String name = prjFile.getAbsolutePath().substring(source.length() + 1);
-                        cloneProjFile = new File (normalizedCloneFolder, name);
-                    } else {
-                        cloneProjFile = normalizedCloneFolder;
-                    }
+                    try {
+                        FileObject cloneProj = FileUtil.toFileObject(clonePrjFile);
+                        Project prj = projectManager.findProject(cloneProj);
+                        HgProjectUtils.openProject(prj, this);
+                        // TODO: figure out how to rename the cloned project
+                        // Following brings up Rename Project Dialog but not with correct settings 
+                        // - thought the ctx was ok but must not be
+                        // HgProjectUtils.renameProject(prj);
 
-                    FileObject cloneProj = FileUtil.toFileObject(cloneProjFile);
-                    if (projectManager.isProject(cloneProj)){
-                        try {
-                            org.netbeans.api.project.Project prj = projectManager.findProject(cloneProj);
-                            HgProjectUtils.openProject(prj, this);
-                            // TODO: figure out how to rename the cloned project
-                            // Following brings up Rename Project Dialog but not with correct settings 
-                            // - thought the ctx was ok but must not be
-                            // HgProjectUtils.renameProject(prj);
-                
-                            hg.versionedFilesChanged();
-                            hg.refreshAllAnnotations();
-                            //HgUtils.forceStatusRefresh(cloneFolder);
-                
-                        } catch (java.lang.Exception ex) {
-                            NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(new HgException(ex.toString()));
-                            DialogDisplayer.getDefault().notifyLater(e);
-                        } 
-                    } else {
-                        if (HgModuleConfig.getDefault().getShowCloneCompleted()) {
-                            JOptionPane.showMessageDialog(null,
-                                NbBundle.getMessage(CloneAction.class,"MSG_NO_PROJECT")); // NOI18N
-                        }
-                    }
+                        hg.versionedFilesChanged();
+                        hg.refreshAllAnnotations();
+                        //HgUtils.forceStatusRefresh(cloneFolder);
+            
+                    } catch (java.lang.Exception ex) {
+                        NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(new HgException(ex.toString()));
+                        DialogDisplayer.getDefault().notifyLater(e);
+                    } 
                 }
             };
             public void perform() {
@@ -186,9 +180,17 @@ public class CloneAction extends AbstractAction {
                         }
                         HgUtils.outputMercurialTab(""); // NOI18N
 
-                        SwingUtilities.invokeLater(doOpenProject);
+                        FileObject cloneProj = FileUtil.toFileObject(clonePrjFile);
+                        if (projectManager.isProject(cloneProj)){
+                            SwingUtilities.invokeLater(doOpenProject);
+                        } else if (HgModuleConfig.getDefault().getShowCloneCompleted()) {
+                            CloneCompleted cc = new CloneCompleted(cloneFolder);
+                            if (isCanceled()) {
+                                return;
+                            }
+                            cc.scanForProjects(this);
+                        }
                     }
-
                 } catch (HgException ex) {
                     NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
                     DialogDisplayer.getDefault().notifyLater(e);
