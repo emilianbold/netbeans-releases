@@ -110,6 +110,7 @@ public final class MimePathLookup extends ProxyLookup implements LookupListener 
         // editor/mimelookup/impl do the composition in their own way. So we
         // will probably have to extend the SPI somehow to accomodate both simple
         // providers and the composing ones.
+        // See also http://www.netbeans.org/issues/show_bug.cgi?id=118099
 
         // Add lookups from deprecated MimeLookupInitializers
         List<String> paths;

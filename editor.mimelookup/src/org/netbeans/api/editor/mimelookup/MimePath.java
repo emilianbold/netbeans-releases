@@ -534,6 +534,7 @@ public final class MimePath {
     // and editor/mimelookup/impl via reflection.
     // We will eventually make it friend API. In the meantime just
     // make sure that any changes here still work for those modules.
+    // See also http://www.netbeans.org/issues/show_bug.cgi?id=118099
 
     /* package */ List<String> getInheritedPaths(String prefixPath, String suffixPath) {
         synchronized (LOCK) {
