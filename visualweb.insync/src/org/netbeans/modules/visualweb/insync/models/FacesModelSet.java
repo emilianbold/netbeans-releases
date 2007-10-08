@@ -402,19 +402,7 @@ public class FacesModelSet extends ModelSet implements FacesDesignProject {
         facesConfigModel = new FacesConfigModel(this);
         setConfigModel(facesConfigModel);
 
-        FileObject anyJavaFile = getAnyJavaFile();
-        if (anyJavaFile == null || !SourceUtils.isScanInProgress()) {
-            ReadTaskWrapper.execute(new ReadTaskWrapper.Read() {
-                public Object run(CompilationInfo cinfo) {
-                    doModeling();
-                    return null;
-                }
-            }, anyJavaFile);
-        }else {
-            // Can't use wrapper task to ensure background scaning
-            // stopped while modeling.
-            doModeling();
-        }
+        doModeling();
         
         projectBuiltQueryStatus = ProjectBuiltQuery.getStatus(project);
         projectBuiltQueryStatusChangeListener  = new ChangeListener() {
@@ -483,22 +471,6 @@ public class FacesModelSet extends ModelSet implements FacesDesignProject {
     }
 
     //------------------------------------------------------------------------------------ Accessors
-
-
-    private FileObject getAnyJavaFile() {
-        FileObject sourceRootFileObject = JsfProjectUtils.getSourceRoot(project);
-        Enumeration<? extends FileObject> sourceFileObjects = sourceRootFileObject.getChildren(true);
-        FileObject anyJavaFile = null;
-        while (sourceFileObjects.hasMoreElements()) {
-            FileObject aSourceFileObject = sourceFileObjects.nextElement();
-            if (aSourceFileObject.getMIMEType().equals("text/x-java")) {
-                // NOI18N
-                anyJavaFile = aSourceFileObject;
-                break;
-            }
-        }
-        return anyJavaFile;
-    }
 
     /**
      * @return
