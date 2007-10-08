@@ -219,31 +219,20 @@ public final class SourceNodeFactory implements NodeFactory {
             this.generator = Generator.NONE;
         }
 
-        @Override
-        public int hashCode() {
+        public @Override int hashCode() {
             return fileObject.hashCode();
         }
 
-        @Override
-        public boolean equals(Object obj) {
+        public @Override boolean equals(Object obj) {
             if (!(obj instanceof SourceGroupKey)) {
                 return false;
             } else {
                 SourceGroupKey otherKey = (SourceGroupKey) obj;
-                if (group == null || otherKey.group == null) {
-                    if (group == null) {
-                        return otherKey.group == null;
-                    } else if (otherKey.group == null) {
-                        return false;
-                    } else {
-                        return fileObject.equals(otherKey.fileObject);
-                    }
-                }
-                String thisDisplayName = this.group.getDisplayName();
-                String otherDisplayName = otherKey.group.getDisplayName();
+                String thisDisplayName = group == null ? null : group.getDisplayName();
+                String otherDisplayName = otherKey.group == null ? null : otherKey.group.getDisplayName();
                 // XXX what is the operator binding order supposed to be here??
                 return fileObject.equals(otherKey.fileObject) &&
-                        thisDisplayName == null ? otherDisplayName == null : thisDisplayName.equals(otherDisplayName);
+                        (thisDisplayName == null ? otherDisplayName == null : thisDisplayName.equals(otherDisplayName));
             }
         }
     }
