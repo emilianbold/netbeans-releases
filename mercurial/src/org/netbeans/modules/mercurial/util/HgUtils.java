@@ -261,7 +261,7 @@ public class HgUtils {
 
     private static String computePatternToIgnore(File directory, File file) {
         String name = file.getAbsolutePath().substring(directory.getAbsolutePath().length()+1);
-        return name.replace(' ', '?');
+        return name.replace(' ', '?').replace(File.separatorChar, '/');
     }
 
     private static void writeIgnoreEntries(File directory, Set entries) throws IOException {
