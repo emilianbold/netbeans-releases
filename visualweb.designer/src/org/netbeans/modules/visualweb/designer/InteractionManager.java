@@ -2951,7 +2951,7 @@ public class InteractionManager {
             }
             
             TopComponent activated = TopComponent.getRegistry().getActivated();
-            cncOriginWRef = new WeakReference(activated);
+            cncOriginWRef = new WeakReference<TopComponent>(activated);
             if (activated == null) {
                 cncTransferable = null;
                 return;
