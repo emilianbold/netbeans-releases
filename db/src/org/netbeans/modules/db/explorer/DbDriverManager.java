@@ -165,7 +165,9 @@ public class DbDriverManager {
             if (newConn == null) {
                 throw new SQLException("Unable to connect using existingConn's original driver", "08001"); // NOI18N
             }
-            conn2Driver.put(newConn, driver);
+            synchronized (conn2Driver) {
+                conn2Driver.put(newConn, driver);
+            }
             return newConn;
         } else {
             return DriverManager.getConnection(databaseURL, props);
