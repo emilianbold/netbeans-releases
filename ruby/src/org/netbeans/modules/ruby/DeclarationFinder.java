@@ -1619,7 +1619,7 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
         // of the many overrides of that method
         // (A more general solution would be to prefer ancestor classes' implementations
         // over superclasses' implementations
-        assert candidates.isEmpty();
+        candidates = new HashSet<IndexedMethod>();
 
         for (IndexedMethod method : methods) {
             String attributes = method.getEncodedAttributes();
