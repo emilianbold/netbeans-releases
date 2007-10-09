@@ -163,7 +163,8 @@ final class FileSelector extends JPanel implements PropertyChangeListener, Explo
                 add(comboPanel, BorderLayout.NORTH);
             } else {
                 manager.setSelectedNodes (new Node[] { root });
-                JLabel label = new JLabel(rootLabel.replace('&', ' '));
+                JLabel label = new JLabel();
+                Mnemonics.setLocalizedText(label, rootLabel);
                 label.setLabelFor(tree);
                 add(label, BorderLayout.NORTH);
             }
