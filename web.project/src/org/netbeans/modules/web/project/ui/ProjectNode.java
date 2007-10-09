@@ -47,6 +47,7 @@ import java.net.URL;
 import java.net.MalformedURLException;
 import java.io.File;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -77,6 +78,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.modules.web.project.UpdateHelper;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
@@ -230,32 +232,40 @@ class ProjectNode extends AbstractNode {
         protected void performAction(Node[] activatedNodes) {
             Project[] projects = new Project[activatedNodes.length];
             for (int i=0; i<projects.length;i++) {
-                projects[i] = (Project) activatedNodes[i].getLookup().lookup(Project.class);
+                final Project p = getProject(activatedNodes[i]);
+                if (p == null) {
+                    //Should not happen, only for case when project is deleted after enabled called
+                    return;
+                }
+                projects[i] = p;
             }
             OpenProjects.getDefault().open(projects, false);
         }
 
         protected boolean enable(Node[] activatedNodes) {
-	    Project[] openProjs = OpenProjects.getDefault().getOpenProjects();
-	    for (int i = 0; i < activatedNodes.length; i++) {
-		Project proj = (Project) activatedNodes[i].getLookup().lookup(Project.class);
-		if (proj == null) {
-		    return false;
-		}
-
-		boolean opened = false;
-		for (int j = 0; j < openProjs.length; j++) {
-		    if (proj == openProjs[j]) {
-			opened = true;
-			break;
-		    }
-		}
-		if (opened == false) {
-		    return true;
-		}
-	    }
-
-	    return false;
+            final Collection<Project> openedProjects =Arrays.asList(OpenProjects.getDefault().getOpenProjects());
+            for (int i=0; i<activatedNodes.length; i++) {
+                final Project p = getProject (activatedNodes[i]);
+                if (p == null) {
+                    return false;
+                }
+                if (openedProjects.contains(p)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        
+        private static Project getProject (final Node node) {
+            assert node != null;
+            final Project p = node.getLookup().lookup(Project.class);
+            if (p != null) {
+                final FileObject projectRoot = p.getProjectDirectory();
+                if (projectRoot == null || !projectRoot.isValid()) {
+                    return null;
+                }
+            }
+            return p;
         }
 
         public String getName() {
