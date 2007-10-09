@@ -64,7 +64,7 @@ public class FortranDataLoader extends CndAbstractDataLoader {
 
     /** The suffix list for Fortran primary files */
     private static final String[] fortranExtensions =
-	   { "f", "F", "f90", "F90", "f95", "F95", "for", "il", "mod" };// NOI18N
+	   { "f", "F", "f90", "F90", "f95", "F95", "f03", "F03", "for", "il", "mod" };// NOI18N
 
     protected FortranDataLoader() {
 	super("org.netbeans.modules.cnd.loaders.FortranDataObject"); // NOI18N
