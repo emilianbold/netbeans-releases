@@ -429,11 +429,6 @@ public final class WebServiceManager {
             }
             
             FileObject userdir = FileUtil.createFolder(new File(WEBSVC_HOME));
-            File targetWsdlFile = new File(WEBSVC_HOME, wsdlFO.getNameExt());
-            if (targetWsdlFile.exists()) {
-                return targetWsdlFile;
-            }
-            
             FileObject userdirWsdl = FileUtil.copyFile(wsdlFO, userdir, wsdlFO.getName());
             File result = FileUtil.toFile(userdirWsdl);
             success = true;
