@@ -145,10 +145,6 @@ public class AddTableDlg extends javax.swing.JPanel {
         return _tableJList.getSelectedValues();
     }
 
-    public void setTableValues(String[] tableList) {
-        _tableList = tableList;
-    }
-
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
