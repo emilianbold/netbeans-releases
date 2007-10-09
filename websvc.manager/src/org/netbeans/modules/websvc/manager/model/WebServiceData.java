@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.websvc.manager.model;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -84,6 +86,8 @@ public class WebServiceData {
     private boolean jaxRpcEnabled;
     private boolean compiled;
     
+    private boolean resolved;
+    
     // File descriptors for each web service type
     private WebServiceDescriptor jaxWsDescriptor;
     private WebServiceDescriptor jaxRpcDescriptor;
@@ -92,9 +96,11 @@ public class WebServiceData {
     private String jaxRpcDescriptorPath;
     
     private List<WebServiceDataListener> listeners = new ArrayList<WebServiceDataListener>();
+    private List<PropertyChangeListener> propertyListeners = new ArrayList<PropertyChangeListener>();
     
     /** Default constructor needed for persistence*/
     public WebServiceData() {
+        this.resolved = true;
     }
     
     public WebServiceData(String url, String originalWsdl, String groupId) {
@@ -104,6 +110,7 @@ public class WebServiceData {
         this.groupId = groupId;
         this.compiled = false;
         this.originalWsdl = originalWsdl;
+        this.resolved = true;
     }
     
     public WebServiceData(WsdlService service, String url, String originalWsdl, String groupId){
@@ -140,6 +147,22 @@ public class WebServiceData {
         }
         
         return true;
+    }
+    
+    public void setResolved(boolean resolved) {
+        boolean oldValue = this.resolved;
+        this.resolved = resolved;
+        PropertyChangeEvent evt = 
+                new PropertyChangeEvent(this, "resolved", Boolean.valueOf(oldValue), Boolean.valueOf(this.resolved)); // NOI18N
+        
+        for (PropertyChangeListener listener : propertyListeners) {
+            listener.propertyChange(evt);
+        }
+        
+    }
+    
+    public boolean isResolved() {
+        return resolved;
     }
     
     private String derivePackageName(String wsdlURL, String subPackage) {
@@ -314,5 +337,13 @@ public class WebServiceData {
 
     public void addWebServiceDataListener(WebServiceDataListener listener) {
         listeners.add(listener);
+    }
+    
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        propertyListeners.add(listener);
+    }
+    
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        propertyListeners.remove(listener);
     }
 }

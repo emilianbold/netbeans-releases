@@ -82,7 +82,7 @@ public final class WebServiceManager {
     
     private static WebServiceManager wsMgr;
     
-    public static final String WEBSVC_HOME = WebServiceDescriptor.WEBSVC_HOME;
+    public static String WEBSVC_HOME = WebServiceDescriptor.WEBSVC_HOME;
     
     private Map<WebServiceData, WsdlModelListenerImpl> compilationMap = new HashMap<WebServiceData,WsdlModelListenerImpl>();    
     private Set<WebServiceData> compilingServices = Collections.synchronizedSet(new HashSet<WebServiceData>());
@@ -202,6 +202,7 @@ public final class WebServiceManager {
         //listener.refreshing = true;
         listener.webServiceData = wsData;
         WsdlModeler wsdlModeler = WsdlModelerFactory.getDefault().getWsdlModeler(wsdlUrl);
+        wsdlModeler.setPackageName(wsData.getPackageName());
         listener.setWsdlModeler(wsdlModeler);
         wsdlModeler.generateWsdlModel(listener);
     }
@@ -259,6 +260,10 @@ public final class WebServiceManager {
         // remove w/s directory
         if (wsData.getName() != null) {
             new File(WEBSVC_HOME, wsData.getName()).delete();
+        }
+        
+        if (wsData.getURL() == null) {
+            return;
         }
         
         boolean deleteWsdl = true;
@@ -442,7 +447,7 @@ public final class WebServiceManager {
         }
     }
 
-    private static final class WsdlModelListenerImpl implements WsdlModelListener{
+    static final class WsdlModelListenerImpl implements WsdlModelListener{
         private boolean newlyAdded;
         //private boolean refreshing;
         private String packageName;
@@ -557,6 +562,7 @@ public final class WebServiceManager {
                         wsData.setName(svc.getName());
                         wsData.setURL(wsdlFile.getAbsolutePath());
                         wsData.setOriginalWsdl(originalWsdl);
+                        wsData.setResolved(true);
                         
                         listModel.addWebService(wsData);
                         listModel.getWebServiceGroup(groupId).add(wsData.getId());
@@ -582,6 +588,7 @@ public final class WebServiceManager {
                 for (WsdlService svc: services){
                     if (webServiceData.getName().equals(svc.getName())){
                         webServiceData.setWsdlService(svc);
+                        webServiceData.setResolved(true);
                         WebServiceListModel.getInstance().addWebService(webServiceData);
                         WebServiceListModel.getInstance().
                                 getWebServiceGroup(webServiceData.getGroupId()).add(webServiceData.getId());

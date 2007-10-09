@@ -54,7 +54,8 @@ import org.netbeans.modules.websvc.manager.model.WebServiceListModelListener;
 
 import org.netbeans.modules.websvc.manager.model.WebServiceGroupEvent;
 import org.netbeans.modules.websvc.manager.model.WebServiceListModelEvent;
-import org.openide.ErrorManager;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -67,6 +68,7 @@ import org.openide.util.NbBundle;
  */
 public class WebServicesRootNodeChildren extends Children.Keys<WebServiceGroup> implements WebServiceGroupListener, WebServiceListModelListener{
     private WebServiceListModel websvcListModel = WebServiceListModel.getInstance();
+    private boolean errorNotify = false;
 
     public WebServicesRootNodeChildren() {
         websvcListModel.addWebServiceListModelListener(this);
@@ -80,6 +82,7 @@ public class WebServicesRootNodeChildren extends Children.Keys<WebServiceGroup> 
     }
     
     private void updateKeys() {
+        errorNotify = false;
         setKeys(websvcListModel.getWebServiceGroupSet());
     }
     
@@ -90,22 +93,30 @@ public class WebServicesRootNodeChildren extends Children.Keys<WebServiceGroup> 
         super.removeNotify();
     }
     
-    protected Node[] createNodes(WebServiceGroup wsGroup) {            
+    protected Node[] createNodes(final WebServiceGroup wsGroup) {            
         // Create the web service nodes at the top level instead of the
         // group folder if it is the default group
         if(wsGroup.getId().equals(WebServiceListModel.DEFAULT_GROUP)){
-            Set<Node> nodes = new HashSet<Node>();
+            Set<Node> createdNodes = new HashSet<Node>();
             for (String webServiceId : wsGroup.getWebServiceIds()) {            
                 WebServiceData wsData = websvcListModel.getWebService(webServiceId);
                 
-                if (wsData != null && wsData.getWsdlService() == null) {
+                if (wsData != null && wsData.getWsdlService() == null && wsData.isResolved()) {
                     final WebServiceData data = wsData;
                     Runnable modelWsdl = new Runnable() {
                         public void run() {
                             try {
                                 WebServiceManager.getInstance().addWebService(data);
                             } catch (IOException ex) {
-                                ErrorManager.getDefault().notify(ex);
+                                data.setResolved(false);
+                                refreshKey(wsGroup);
+                                
+                                if (!errorNotify) {
+                                    errorNotify = true;
+                                    String message = NbBundle.getMessage(WebServiceManager.class, "WS_WSDL_XML_ERROR");
+                                    NotifyDescriptor d = new NotifyDescriptor.Message(message);
+                                    DialogDisplayer.getDefault().notify(d);
+                                }
                             }
                         }
                     };
@@ -114,12 +125,12 @@ public class WebServicesRootNodeChildren extends Children.Keys<WebServiceGroup> 
                     waitNode.setName(NbBundle.getMessage(WebServiceGroupNodeChildren.class, "NODE_LOAD_MSG"));
                     waitNode.setIconBaseWithExtension("org/netbeans/modules/websvc/manager/resources/wait.gif"); // NOI18N
                     
-                    nodes.add(waitNode);
+                    createdNodes.add(waitNode);
                 }else {
-                    nodes.add(new WebServiceNode(wsData));
+                    createdNodes.add(new WebServiceNode(wsData));
                 }
             }
-            return nodes.toArray(new Node[nodes.size()]);
+            return createdNodes.toArray(new Node[createdNodes.size()]);
         }else {
             return new Node[] { new WebServiceGroupNode(wsGroup) };
         }

@@ -27,6 +27,9 @@
  */
 package org.netbeans.modules.websvc.manager.nodes;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.websvc.manager.WebServiceManager;
@@ -38,22 +41,29 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 
 /**
  *
  * @author quynguyen
  */
-public class WebServiceNodeChildren extends Children.Keys<WsdlPort> implements WebServiceDataListener {
+public class WebServiceNodeChildren extends Children.Keys<WsdlPort> implements WebServiceDataListener, PropertyChangeListener {
     private final WebServiceData wsData;
     
     public WebServiceNodeChildren(WebServiceData wsData) {
         this.wsData = wsData;
-        wsData.addWebServiceDataListener(this);
+        wsData.addWebServiceDataListener(WeakListeners.create(WebServiceDataListener.class, this, wsData));
+        wsData.addPropertyChangeListener(WeakListeners.create(PropertyChangeListener.class, this, wsData));
     }
 
     @Override
     protected void addNotify() {
-        setKeys(filterNonSoapPorts(wsData.getWsdlService().getPorts()));
+        boolean resolved = wsData.isResolved();
+        if (resolved) {
+            setKeys(filterNonSoapPorts(wsData.getWsdlService().getPorts()));
+        } else {
+            setKeys(new ArrayList<WsdlPort>());
+        }
         super.addNotify();
     }
     
@@ -65,7 +75,9 @@ public class WebServiceNodeChildren extends Children.Keys<WsdlPort> implements W
     }
     
     protected Node[] createNodes(WsdlPort key) {
-        if (!wsData.isCompiled()) {
+        if (!wsData.isResolved()) {
+            return new Node[0];
+        }else if (!wsData.isCompiled()) {
             // start the compilation
             WebServiceManager.getInstance().compileWebService(wsData);
             
@@ -94,5 +106,20 @@ public class WebServiceNodeChildren extends Children.Keys<WsdlPort> implements W
         
         return filterPorts;
     }
-    
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getPropertyName().equals("resolved")) { //NOI18N
+            Object newValue = evt.getNewValue();
+            if (newValue instanceof Boolean) {
+                boolean resolved = ((Boolean) newValue).booleanValue();
+                if (resolved) {
+                    setKeys(filterNonSoapPorts(wsData.getWsdlService().getPorts()));
+                } else {
+                    setKeys(new ArrayList<WsdlPort>());
+                }
+
+            }
+            
+        }
+    }
 }

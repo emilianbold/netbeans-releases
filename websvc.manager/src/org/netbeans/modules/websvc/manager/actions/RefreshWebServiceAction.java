@@ -30,11 +30,8 @@ package org.netbeans.modules.websvc.manager.actions;
 import java.io.IOException;
 import org.netbeans.modules.websvc.manager.WebServiceManager;
 import org.netbeans.modules.websvc.manager.model.WebServiceData;
-import org.netbeans.modules.websvc.manager.nodes.WebServiceNode;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
-import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -78,6 +75,7 @@ public class RefreshWebServiceAction extends NodeAction {
     protected void performAction(Node[] nodes) {
         
         if(null != nodes && nodes.length > 0) {
+            final Ref<Boolean> errorNotify = new Ref<Boolean>(Boolean.FALSE);
             String msg = NbBundle.getMessage(RefreshWebServiceAction.class, "WS_REFRESH");
             NotifyDescriptor d = new NotifyDescriptor.Confirmation(msg, NotifyDescriptor.YES_NO_OPTION);
             Object response = DialogDisplayer.getDefault().notify(d);
@@ -93,7 +91,14 @@ public class RefreshWebServiceAction extends NodeAction {
                                         WebServiceManager.getInstance().refreshWebService(wsData);
                                     }
                                 } catch (IOException ioe) {
-                                    ErrorManager.getDefault().notify(ioe);
+                                    wsData.setResolved(false);
+                                    
+                                    if (!errorNotify.reference.booleanValue()) {
+                                        errorNotify.reference = Boolean.TRUE;
+                                        String message = NbBundle.getMessage(WebServiceManager.class, "WS_WSDL_XML_ERROR");
+                                        NotifyDescriptor d = new NotifyDescriptor.Message(message);
+                                        DialogDisplayer.getDefault().notify(d);
+                                    }
                                 }
                             }
                         };
@@ -108,5 +113,13 @@ public class RefreshWebServiceAction extends NodeAction {
     @Override
     protected boolean asynchronous() {
         return false;
+    }
+    
+    private static final class Ref<T> {
+        public T reference;
+        
+        public Ref(T ref) {
+            this.reference = ref;
+        }
     }
 }

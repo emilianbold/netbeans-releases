@@ -75,7 +75,7 @@ public class ViewWSDLAction extends NodeAction {
             for (int i = 0; i < nodes.length; i++) {
                 WebServiceData wsData = nodes[i].getLookup().lookup(WebServiceData.class);
                 
-                if (wsData != null && wsData.getURL() != null && wsData.getURL().length() > 0) {
+                if (wsData != null && wsData.getURL() != null && wsData.getURL().length() > 0 && wsData.isResolved()) {
                     return true;
                 }
             }

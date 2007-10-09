@@ -117,18 +117,6 @@ made subject to such option by the copyright holder.
         </javac>
     </target>
     
-    <target name="recompile-wsimport" unless="is-jdk-1.5">
-        <!-- ensure correct source level -->
-        <delete dir="${jaxws.base}/build"/>
-        <mkdir dir="${jaxws.base}/build"/>
-        <javac srcdir="${jaxws.base}/src" 
-               destdir="${jaxws.base}/build" 
-               classpath="${java.home}/../lib/tools.jar:${libs.jaxws20.classpath}" 
-               debug="on" source="1.5" fork="true">
-            <compilerarg value="-Djava.endorsed.dirs=${jaxws.endorsed.dir}"/>
-        </javac>        
-    </target>
-    
     <target name="-run-wsimport" depends="-init-wsimport, -init-user">
         <wsimport sourcedestdir="${jaxws.base}/src" 
                   extension="true" 
@@ -137,8 +125,6 @@ made subject to such option by the copyright holder.
                   wsdl="${wsdlFileName}" xendorsed="true" fork="true" catalog="${catalog.file}" verbose="true">
             <jvmarg value="-Djava.endorsed.dirs=${jaxws.endorsed.dir}"/>
         </wsimport>
-        
-        <antcall target="recompile-wsimport"/>
     </target>
     
     <target name="-create-proxy-jars" depends="-set-wsimport-base, -set-wscompile-base">

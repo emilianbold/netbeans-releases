@@ -31,6 +31,8 @@ import java.awt.Image;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -56,6 +58,7 @@ import org.openide.nodes.Sheet;
 import org.openide.nodes.Sheet.Set;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.ExTransferable;
 import org.openide.util.lookup.AbstractLookup;
@@ -65,7 +68,7 @@ import org.openide.util.lookup.InstanceContent;
  *
  * @author quynguyen
  */
-public class WebServiceNode extends AbstractNode implements Node.Cookie {
+public class WebServiceNode extends AbstractNode implements Node.Cookie, PropertyChangeListener {
     protected static final DataFlavor WEBSERVICE_NODE_FLAVOR;
     
     static {
@@ -92,7 +95,12 @@ public class WebServiceNode extends AbstractNode implements Node.Cookie {
         this.wsData = wsData;
         content.add(wsData);
         content.add(this);
-        setName(wsData.getWsdlService().getName());
+        if (wsData.getWsdlService() != null) {
+            setName(wsData.getWsdlService().getName());
+        }else {
+            setName(getUnresolvedName());
+        }
+        wsData.addPropertyChangeListener(WeakListeners.create(PropertyChangeListener.class, this, wsData));
     }
     
     @Override
@@ -180,6 +188,10 @@ public class WebServiceNode extends AbstractNode implements Node.Cookie {
     
     @Override
     public Transferable clipboardCopy() throws IOException {
+        if (!wsData.isResolved()) {
+            return super.clipboardCopy();
+        }
+        
         // enable drag-and-drop of a single port if only one is available
         Node[] children = getChildren().getNodes();
         if (children != null && children.length == 1) {
@@ -256,4 +268,37 @@ public class WebServiceNode extends AbstractNode implements Node.Cookie {
         }
         return url;
     }
+    
+    private String getUnresolvedName() {
+        String wsdlName = "";
+        try {
+            URL wsdl = new URL(wsData.getOriginalWsdl());
+            String path = wsdl.getPath();
+            int i = path.lastIndexOf("/"); // NOI1N
+
+            if (i >= 0 && i < path.length() - 1) {
+                wsdlName = path.substring(i + 1);
+            }
+        } catch (IOException ex) {
+        }
+        
+        wsdlName += "(" + NbBundle.getMessage(WebServiceNode.class, "WS_UNRESOLVED") + ")"; // NOI18N
+        return wsdlName;
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getPropertyName().equals("resolved")) { // NOI18N
+            Object newValue = evt.getNewValue();
+            if (newValue instanceof Boolean) {
+                boolean resolved = ((Boolean)newValue).booleanValue();
+                if (resolved) {
+                    setName(wsData.getWsdlService().getName());
+                }else {
+                    setName(getUnresolvedName());
+                }
+                
+            }
+        }
+    }
+    
 }

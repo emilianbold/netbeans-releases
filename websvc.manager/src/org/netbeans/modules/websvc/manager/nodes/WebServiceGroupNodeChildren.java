@@ -49,7 +49,8 @@ import org.netbeans.modules.websvc.manager.model.WebServiceGroup;
 import org.netbeans.modules.websvc.manager.model.WebServiceGroupListener;
 import org.netbeans.modules.websvc.manager.model.WebServiceListModel;
 import org.netbeans.modules.websvc.manager.model.WebServiceGroupEvent;
-import org.openide.ErrorManager;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -63,6 +64,7 @@ public class WebServiceGroupNodeChildren extends Children.Keys<String> implement
     
     WebServiceGroup webserviceGroup;
     WebServiceListModel websvcListModel = WebServiceListModel.getInstance();
+    private boolean errorNotify = false;
     
     public WebServiceGroupNodeChildren(WebServiceGroup websvcGroup) {
         webserviceGroup = websvcGroup;
@@ -76,6 +78,7 @@ public class WebServiceGroupNodeChildren extends Children.Keys<String> implement
     }
     
     private void updateKeys() {
+        errorNotify = false;
         setKeys(webserviceGroup.getWebServiceIds());
     }
     
@@ -88,14 +91,23 @@ public class WebServiceGroupNodeChildren extends Children.Keys<String> implement
     
     protected Node[] createNodes(String id) {
         WebServiceData wsData = websvcListModel.getWebService(id);
-        if (wsData.getWsdlService() == null) {
+        if (wsData.getWsdlService() == null && wsData.isResolved()) {
             final WebServiceData data = wsData;
             Runnable modeller = new Runnable() {
                 public void run() {
                     try {
                         WebServiceManager.getInstance().addWebService(data);
                     } catch (IOException ex) {
-                        ErrorManager.getDefault().notify(ex);
+                        data.setResolved(false);
+                        refreshKey(data.getId());
+                        
+                        String message = NbBundle.getMessage(WebServiceManager.class, "WS_WSDL_XML_ERROR");
+                        NotifyDescriptor d = new NotifyDescriptor.Message(message);
+                        if (!errorNotify) {
+                            errorNotify = true;
+                            DialogDisplayer.getDefault().notify(d);
+                        }
+                        
                     }
                 }
             };
@@ -107,7 +119,7 @@ public class WebServiceGroupNodeChildren extends Children.Keys<String> implement
             waitNode.setIconBaseWithExtension("org/netbeans/modules/websvc/manager/resources/wait.gif"); // NOI18N
             return new Node[] { waitNode };
         }else {
-            assert wsData.getWsdlService() != null;
+            assert wsData.getWsdlService() != null || !wsData.isResolved();
             return new Node[] { new WebServiceNode(wsData) };
         }
     }
@@ -121,5 +133,4 @@ public class WebServiceGroupNodeChildren extends Children.Keys<String> implement
         updateKeys();
         refreshKey(groupEvent.getWebServiceId());
     }
-    
 }
