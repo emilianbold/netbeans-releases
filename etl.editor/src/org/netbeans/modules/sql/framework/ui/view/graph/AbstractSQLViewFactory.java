@@ -42,7 +42,6 @@ package org.netbeans.modules.sql.framework.ui.view.graph;
 
 import java.awt.Frame;
 import java.util.List;
-
 import org.netbeans.modules.sql.framework.ui.graph.IGraphController;
 import org.netbeans.modules.sql.framework.ui.graph.IGraphView;
 import org.netbeans.modules.sql.framework.ui.graph.IOperatorManager;
@@ -57,60 +56,61 @@ import org.openide.windows.WindowManager;
 
 /**
  * Abstract factory for creating SQL graph view objects.
- * 
+ *
  * @author Ritesh Adval
  * @author Jonathan Giron
  * @version $Revision$
  */
 public abstract class AbstractSQLViewFactory implements IOperatorManager {
+
     private OperatorSelectionPanel panel;
     protected int toolbarType;
 
     /**
      * create a graph view
-     * 
+     *
      * @return graph view
      */
     public abstract IGraphView createGraphView();
 
     /**
      * create a tool bar
-     * 
+     *
      * @return tool bar
      */
     public abstract IToolBar createToolBar();
 
     /**
      * create a graph controller
-     * 
+     *
      * @return
      */
     public abstract IGraphController createGraphController();
 
     /**
      * get SQL model
-     * 
+     *
      * @return SQL model
      */
     public abstract SQLUIModel getSQLModel();
 
     /**
      * get graph view container
-     * 
+     *
      * @return graph view container
      */
     public abstract Object getGraphViewContainer();
 
     /**
      * get graph view pop up actions
-     * 
+     *
      * @return actions
      */
     public abstract List getGraphActions();
 
     /**
      * return toolbar actions
-     * 
+     *
      * @return toolbar actions
      */
     public abstract List getToolBarActions();
@@ -138,19 +138,13 @@ public abstract class AbstractSQLViewFactory implements IOperatorManager {
         if (toolBar != null) {
             toolBar.setGraphView(graphView);
             toolBar.setActions(getToolBarActions());
-            toolBar.initializeToolBar();  
-            
-            SQLToolBar sqlToolbar = (SQLToolBar) toolBar;
-            sqlToolbar.initializeSQLToolBar();
-            
+            toolBar.initializeToolBar();
+
             //set toolbar on graph
             if (graphView != null) {
                 graphView.setToolBar(toolBar);
-                graphView.setToolBar(sqlToolbar);
             }
-        }        
-
-        
+        }
         //set up controller
         if (controller != null) {
             controller.setDataModel(model);
@@ -158,25 +152,21 @@ public abstract class AbstractSQLViewFactory implements IOperatorManager {
         }
     }
 
-  /*  public void initializeSQLToolBar() {
-        // Add SQL operators
-        IOperatorXmlInfoModel model = getOperatorXmlInfoModel();
-        Node node = model.getRootNode();
-        Children children = node.getChildren();
-        Node[] nodes = children.getNodes();
-
-        for (int i = 0; i < nodes.length; i++) {
-            IOperatorXmlInfoCategory catNode = (IOperatorXmlInfoCategory) nodes[i];
-            if (shouldDisplay(catNode.getToolbarType())) {
-                createOperatorCategories(catNode);
+    public void setSQLToolBar() {
+        IGraphView graphView = createGraphView();
+        SQLToolBar toolBar = (SQLToolBar) createToolBar();
+        if (toolBar != null) {
+            toolBar.initializeSQLToolBar();
+            if (graphView != null) {
+                graphView.setToolBar(toolBar);
             }
         }
-     }*/
-         
+    }
+
     /**
      * Show the operator palette dialog, initially displaying the category panel
      * associated with the given node.
-     * 
+     *
      * @param node operator node whose category panel will be initially displayed in the
      *        selection dialog.
      */
@@ -197,11 +187,10 @@ public abstract class AbstractSQLViewFactory implements IOperatorManager {
 
     /**
      * Returns toolbar type.
-     * 
+     *
      * @return toolbar type
      */
     public int getToolbarType() {
         return this.toolbarType;
     }
 }
-

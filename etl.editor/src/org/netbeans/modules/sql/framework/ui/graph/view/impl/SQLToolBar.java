@@ -213,14 +213,14 @@ public class SQLToolBar extends BasicToolBar {
         }*/
     }
     
-     public void initializeSQLToolBar() {
+  public void initializeSQLToolBar() {
         // Add SQL operators
         Node node = model.getRootNode();
         Children children = node.getChildren();
         Node[] nodes = children.getNodes();
 
         for (int i = 0; i < nodes.length; i++) {
-            IOperatorXmlInfoCategory catNode = (IOperatorXmlInfoCategory) nodes[i];
+            IOperatorXmlInfoCategory catNode = (IOperatorXmlInfoCategory) nodes[i];           
             if (shouldDisplay(catNode.getToolbarType())) {
                 createOperatorCategories(catNode);
             }
