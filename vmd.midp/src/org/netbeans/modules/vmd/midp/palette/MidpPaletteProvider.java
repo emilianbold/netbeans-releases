@@ -103,7 +103,7 @@ public class MidpPaletteProvider implements PaletteProvider {
                 catFO.setAttribute("position", categoryPositions[i]); // NOI18N
             }
         } catch (IOException e) {
-            throw Debug.error(e);
+            Debug.warning("Can't set attributes for palette category folder", e); // NOI18N
         }
     }
 

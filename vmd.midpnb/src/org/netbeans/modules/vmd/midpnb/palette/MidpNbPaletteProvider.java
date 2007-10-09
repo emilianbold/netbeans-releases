@@ -90,7 +90,7 @@ public class MidpNbPaletteProvider implements PaletteProvider {
             catFO.setAttribute("isExpanded", "true"); // NOI18N
             catFO.setAttribute("position", CATEGORY_SVG_POSITION); // NOI18N
         } catch (IOException e) {
-            throw Debug.error(e);
+            Debug.warning("Can't set attributes for palette category folder", e); // NOI18N
         }
     }
 
