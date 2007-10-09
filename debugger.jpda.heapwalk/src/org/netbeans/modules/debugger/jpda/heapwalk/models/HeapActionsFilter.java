@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.debugger.jpda.heapwalk.models;
 
-import com.sun.tools.profiler.heap.Instance;
+import org.netbeans.lib.profiler.heap.Instance;
 
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;

@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.debugger.jpda.heapwalk;
 
-import com.sun.tools.profiler.heap.PrimitiveArrayInstance;
+import org.netbeans.lib.profiler.heap.PrimitiveArrayInstance;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.debugger.jpda.heapwalk.views;
 
-import com.sun.tools.profiler.heap.Heap;
+import org.netbeans.lib.profiler.heap.Heap;
 
 import java.awt.BorderLayout;
 import java.beans.PropertyChangeEvent;

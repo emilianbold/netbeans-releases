@@ -41,9 +41,9 @@
 
 package org.netbeans.modules.debugger.jpda.heapwalk;
 
-import com.sun.tools.profiler.heap.Field;
-import com.sun.tools.profiler.heap.JavaClass;
-import com.sun.tools.profiler.heap.Type;
+import org.netbeans.lib.profiler.heap.Field;
+import org.netbeans.lib.profiler.heap.JavaClass;
+import org.netbeans.lib.profiler.heap.Type;
 
 /**
  *

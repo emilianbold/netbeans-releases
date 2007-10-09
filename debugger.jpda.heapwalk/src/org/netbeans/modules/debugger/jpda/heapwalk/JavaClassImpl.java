@@ -41,10 +41,10 @@
 
 package org.netbeans.modules.debugger.jpda.heapwalk;
 
-import com.sun.tools.profiler.heap.Field;
-import com.sun.tools.profiler.heap.FieldValue;
-import com.sun.tools.profiler.heap.Instance;
-import com.sun.tools.profiler.heap.JavaClass;
+import org.netbeans.lib.profiler.heap.Field;
+import org.netbeans.lib.profiler.heap.FieldValue;
+import org.netbeans.lib.profiler.heap.Instance;
+import org.netbeans.lib.profiler.heap.JavaClass;
 
 import java.util.ArrayList;
 import java.util.Collections;
