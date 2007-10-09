@@ -25,6 +25,6 @@ Microsystems, Inc. All Rights Reserved.
     <localizing-bundle>org.netbeans.modules.mobility.proguard.Bundle</localizing-bundle>
     <volume>    
         <type>classpath</type>
-        <resource>jar:nbinst:///external/proguard/proguard3.7.jar!/</resource>
+        <resource>jar:nbinst:///external/proguard/proguard4.0.jar!/</resource>
     </volume>
 </library>
