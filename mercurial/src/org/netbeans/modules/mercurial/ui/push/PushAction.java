@@ -175,7 +175,13 @@ public class PushAction extends AbstractAction {
                 // Push does not do an Update of the target Working Dir
                 if(!bMergeNeeded){
                     HgUtils.outputMercurialTab(""); // NOI18N
-                    if (bNoChanges) return;
+                    if (bNoChanges) {
+                        HgUtils.outputMercurialTabInRed(
+                                NbBundle.getMessage(PushAction.class,
+                                "MSG_PUSH_DONE")); // NOI18N
+                        HgUtils.outputMercurialTab(""); // NOI18N
+                        return;
+                    }
                     if (!bLocalPush) {
                         HgUtils.outputMercurialTabInRed(
                                     NbBundle.getMessage(PushAction.class,
@@ -223,6 +229,9 @@ public class PushAction extends AbstractAction {
                 } catch (java.lang.Exception ex) {
                 }
             }
+            HgUtils.outputMercurialTabInRed(
+                    NbBundle.getMessage(PushAction.class,
+                    "MSG_PUSH_DONE")); // NOI18N
             HgUtils.outputMercurialTab(""); // NOI18N
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);

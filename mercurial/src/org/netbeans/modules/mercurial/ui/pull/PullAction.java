@@ -280,6 +280,9 @@ public class PullAction extends AbstractAction {
                 } catch (java.lang.Exception ex) {
                 }
             }
+            HgUtils.outputMercurialTabInRed(
+                    NbBundle.getMessage(PullAction.class,
+                    "MSG_PULL_DONE")); // NOI18N
             HgUtils.outputMercurialTab(""); // NOI18N
             
         } catch (HgException ex) {

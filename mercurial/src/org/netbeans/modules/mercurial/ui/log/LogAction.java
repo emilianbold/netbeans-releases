@@ -164,6 +164,7 @@ public class LogAction extends AbstractAction {
                             outRed.println(""); // NOI18N
                             MergeAction.printMergeWarning(outRed, headRevList);
                         }
+                        outRed.println(NbBundle.getMessage(LogAction.class, "MSG_Log_DONE")); // NOI18N
                         out.println(""); // NOI18N
                         out.close();
                         outRed.close();

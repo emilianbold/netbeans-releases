@@ -140,8 +140,11 @@ public class RollbackAction extends AbstractAction {
                         HgUtils.outputMercurialTabInRed(
                                     NbBundle.getMessage(RollbackAction.class,
                                     "MSG_ROLLBACK_INFO")); // NOI18N
-                        HgUtils.outputMercurialTab(""); // NOI18N
                     }
+                    HgUtils.outputMercurialTabInRed(
+                                NbBundle.getMessage(RollbackAction.class,
+                                "MSG_ROLLBACK_DONE")); // NOI18N
+                    HgUtils.outputMercurialTab(""); // NOI18N
                 } catch (HgException ex) {
                     NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
                     DialogDisplayer.getDefault().notifyLater(e);
