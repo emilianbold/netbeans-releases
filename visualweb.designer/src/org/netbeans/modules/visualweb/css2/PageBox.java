@@ -401,6 +401,11 @@ public class PageBox extends DocumentBox implements ChangeListener {
 
     public void stateChanged(ChangeEvent e) {
         if (e.getSource() == this.viewport) {
+            // XXX #114381 Don't do anything while pane not shown.
+            if (!pane.isShowing()) {
+                return;
+            }
+            
             boolean scrolled = false;
             Point p = viewport.getViewPosition();
 
