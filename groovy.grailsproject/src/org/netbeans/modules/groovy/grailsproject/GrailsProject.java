@@ -88,6 +88,7 @@ public final class GrailsProject implements Project {
                 new GrailsSources(projectDir),
                 new GrailsServerState(),
                 new GrailsProjectCustomizerProvider(this),
+                new GrailsProjectDeleteImplementation(this),
                 logicalView //Logical view of project implementation
             );
         }
