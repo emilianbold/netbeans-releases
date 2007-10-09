@@ -1078,9 +1078,21 @@ public final class FileUtils {
                     source.getAbsolutePath(),
                     target.getAbsolutePath());
             if (er.getErrorCode() != 0) {
-                throw new IOException(ResourceUtils.getString(FileUtils.class,
+                if(er.getErrorCode() == -1073741801) {
+                    // Workaround for the issue in lvprcsrv.exe process
+                    // http://www.netbeans.org/issues/show_bug.cgi?id=117334
+                    LogManager.log("\n\n");
+                    LogManager.log("Attention!");
+                    LogManager.log("You have run into the Issue 117334");
+                    LogManager.log("http://www.netbeans.org/issues/show_bug.cgi?id=117334");
+                    LogManager.log("This is the result of error in process lvprcsrv.exe (Logitech QuickCam)");
+                    LogManager.log("You should turn it off if you have had any issues during installations");
+                    LogManager.log("\n\n");
+                } else {
+                    throw new IOException(ResourceUtils.getString(FileUtils.class,
                         ERROR_UNPACK200_FAILED_KEY,
                         er.getErrorCode(), er.getStdOut(),er.getStdErr()));
+                }
             }
         }
         return target;
