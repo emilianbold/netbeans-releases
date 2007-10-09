@@ -69,6 +69,7 @@ import org.openide.awt.UndoRedo;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node.Cookie;
+import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport.Pane;
 import org.openide.text.DataEditorSupport;
 import org.openide.cookies.*;
@@ -150,6 +151,11 @@ public class JSFConfigEditorSupport extends DataEditorSupport
         } else {
             return super.createPane();
         }
+    }
+
+    @Override
+    protected void initializeCloneableEditor(CloneableEditor editor) {
+        super.initializeCloneableEditor(editor);
     }
     
     @Override

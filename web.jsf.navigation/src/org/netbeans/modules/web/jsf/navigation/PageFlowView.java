@@ -155,7 +155,7 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
             }
 
             if (jsfConfigDataObject != null) {
-                lookup = new ProxyLookup(new Lookup[]{superLookup, jsfConfigDataObject.getLookup(), Lookups.fixed(new Object[]{scene})});
+                lookup = new ProxyLookup(new Lookup[]{superLookup, jsfConfigDataObject.getNodeDelegate().getLookup(), Lookups.fixed(new Object[]{scene})});
             } else {
                 /* Temporarily Removing Palette */
                 //            PaletteController paletteController = getPaletteController();

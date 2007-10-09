@@ -57,11 +57,9 @@ import org.openide.awt.UndoRedo;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.CloneableEditor;
-import org.openide.text.DataEditorSupport;
 import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 
 /*
@@ -121,8 +119,9 @@ public class JSFConfigMultiviewDescriptor implements MultiViewDescription, Seria
         private transient JComponent toolbar;
         private transient JSFConfigDataObject jsfDataObject;
         
-        public JSFConfigMultiviewElement(JSFConfigEditorContext context, DataEditorSupport support) {
+        public JSFConfigMultiviewElement(JSFConfigEditorContext context, JSFConfigEditorSupport support) {
             super(support);
+            support.initializeCloneableEditor(this);
             this.context = context;
             init();
         }
@@ -156,12 +155,6 @@ public class JSFConfigMultiviewDescriptor implements MultiViewDescription, Seria
                     toolbar = new JPanel();
             }
             return toolbar;
-        }
-        
-        
-        @Override
-        public Lookup getLookup() {
-            return jsfDataObject.getLookup();
         }
         
         @Override
