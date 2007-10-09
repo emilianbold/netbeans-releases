@@ -120,7 +120,14 @@ public class RenameTransformer extends RefactoringVisitor {
             if (elementToFind.getKind().isField()) {
                 Scope scope = workingCopy.getTrees().getScope(path);
                 for (Element ele : scope.getLocalElements()) {
-                    if ((ele.getKind() == ElementKind.LOCAL_VARIABLE || ele.getKind() == ElementKind.PARAMETER) && ele.getSimpleName().toString().equals(newName)) {
+                    if ((ele.getKind() == ElementKind.LOCAL_VARIABLE || ele.getKind() == ElementKind.PARAMETER) 
+                            && ele.getSimpleName().toString().equals(newName)) {
+                        if (tree.getKind() == Tree.Kind.MEMBER_SELECT) {
+                            String isThis = ((MemberSelectTree) tree).getExpression().toString();
+                            if (isThis.equals("this") || isThis.endsWith(".this")) {
+                                break;
+                            }
+                        }
                         if (scope.getEnclosingClass().equals(elementToFind.getEnclosingElement())) 
                             useThis = "this.";
                         else 
