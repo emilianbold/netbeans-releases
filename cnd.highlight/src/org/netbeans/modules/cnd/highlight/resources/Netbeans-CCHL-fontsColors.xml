@@ -43,5 +43,7 @@ made subject to such option by the copyright holder.
 <!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
 
 <fontscolors>
-    <fontcolor name="cc-highlighting-inactive" foreColor="969696" default="default"/>
+    <fontcolor name="cc-highlighting-inactive" foreColor="969696" default="default">
+        <font style="plain"/>
+    </fontcolor>
 </fontscolors>
