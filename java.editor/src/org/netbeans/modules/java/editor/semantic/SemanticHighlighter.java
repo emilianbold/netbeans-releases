@@ -993,6 +993,8 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
             
             firstIdentifier(tree.getName().toString());
             
+            tl.moveNext();
+            
             scan(tree.getInitializer(), null);
             
             return null;

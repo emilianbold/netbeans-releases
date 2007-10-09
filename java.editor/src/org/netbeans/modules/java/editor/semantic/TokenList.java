@@ -230,4 +230,19 @@ public class TokenList {
             }
         });
     }
+
+    public void moveNext() {
+        doc.render(new Runnable() {
+            public void run() {
+                if (cancel.get())
+                    return ;
+                
+                if (ts == null)
+                    return ;
+                
+                ts.moveNext();
+            }
+        });
+    }
+    
 }

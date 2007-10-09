@@ -328,6 +328,14 @@ public class DetectorTest extends TestBase {
 	performTest("FullMemberSelect109886");
     }
     
+    public void testMultiFields116520a() throws Exception {
+	performTest("MultiFields");
+    }
+    
+    public void testMultiFields116520b() throws Exception {
+	performTest("MultiFields");
+    }
+    
     private void performTest(String fileName) throws Exception {
         performTest(fileName, new Performer() {
             public void compute(CompilationController parameter, Document doc, ErrorDescriptionSetter setter) {
