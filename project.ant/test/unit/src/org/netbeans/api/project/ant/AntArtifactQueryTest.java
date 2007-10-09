@@ -52,7 +52,7 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Lookup;
+import org.openide.util.test.MockLookup;
 
 /* XXX tests needed:
  * - testFindArtifactFromNonexistentFile
@@ -77,12 +77,9 @@ public class AntArtifactQueryTest extends NbTestCase {
     private FileObject dummyprojdir;
     private ProjectManager pm;
     
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         super.setUp();
-        TestUtil.setLookup(new Object[] {
-            AntBasedTestUtil.testAntBasedProjectType(),
-            TestUtil.testProjectFactory(),
-        });
+        MockLookup.setInstances(AntBasedTestUtil.testAntBasedProjectType(), TestUtil.testProjectFactory());
         scratch = TestUtil.makeScratchDir(this);
         projdir = scratch.createFolder("proj");
         ProjectGenerator.createProject(projdir, "test");
@@ -97,12 +94,11 @@ public class AntArtifactQueryTest extends NbTestCase {
         dummyprojdir.createFolder("testproject");
     }
 
-    protected void tearDown() throws Exception {
+    protected @Override void tearDown() throws Exception {
         scratch = null;
         projdir = null;
         sisterprojdir = null;
         pm = null;
-        TestUtil.setLookup(Lookup.EMPTY);
         super.tearDown();
     }
     
