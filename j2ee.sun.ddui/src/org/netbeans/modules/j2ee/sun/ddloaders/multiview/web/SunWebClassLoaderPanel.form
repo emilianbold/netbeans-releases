@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<Form version="1.2" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+<Form version="1.2" maxVersion="1.2" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <Properties>
     <Property name="alignmentX" type="float" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
       <Connection code="LEFT_ALIGNMENT" type="code"/>
@@ -9,10 +9,10 @@
   </Properties>
   <AccessibilityProperties>
     <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-      <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webapp/Bundle.properties" key="ACSN_WebAppGeneralTab" replaceFormat="webappBundle.getString(&quot;{key}&quot;)"/>
+      <ResourceString bundle="org/netbeans/modules/j2ee/sun/ddloaders/multiview/web/Bundle.properties" key="ACSN_ClassLoaderPanel" replaceFormat="webappBundle.getString(&quot;{key}&quot;)"/>
     </Property>
     <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-      <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webapp/Bundle.properties" key="ACSD_WebAppGeneralTab" replaceFormat="webappBundle.getString(&quot;{key}&quot;)"/>
+      <ResourceString bundle="org/netbeans/modules/j2ee/sun/ddloaders/multiview/web/Bundle.properties" key="ACSD_ClassLoaderPanel" replaceFormat="webappBundle.getString(&quot;{key}&quot;)"/>
     </Property>
   </AccessibilityProperties>
   <AuxValues>
@@ -37,10 +37,10 @@
       </Properties>
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webapp/Bundle.properties" key="ACSN_ClassLoader" replaceFormat="webappBundle.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/j2ee/sun/ddloaders/multiview/web/Bundle.properties" key="ACSN_ClassLoader" replaceFormat="webappBundle.getString(&quot;{key}&quot;)"/>
         </Property>
         <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webapp/Bundle.properties" key="ACSD_ClassLoader" replaceFormat="webappBundle.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/j2ee/sun/ddloaders/multiview/web/Bundle.properties" key="ACSD_ClassLoader" replaceFormat="webappBundle.getString(&quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
       <Events>
@@ -70,10 +70,10 @@
     <Component class="javax.swing.JTextField" name="jTxtExtraClassPath">
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webapp/Bundle.properties" key="ACSN_ExtraClassPath" replaceFormat="webappBundle.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/j2ee/sun/ddloaders/multiview/web/Bundle.properties" key="ACSN_ExtraClassPath" replaceFormat="webappBundle.getString(&quot;{key}&quot;)"/>
         </Property>
         <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webapp/Bundle.properties" key="ACSD_ExtraClassPath" replaceFormat="webappBundle.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/j2ee/sun/ddloaders/multiview/web/Bundle.properties" key="ACSD_ExtraClassPath" replaceFormat="webappBundle.getString(&quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
       <Events>
@@ -103,10 +103,10 @@
     <Component class="javax.swing.JTextField" name="jTxtDynamicReloadInterval">
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webapp/Bundle.properties" key="ACSN_DynamicReloadInterval" replaceFormat="webappBundle.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/j2ee/sun/ddloaders/multiview/web/Bundle.properties" key="ACSN_DynamicReloadInterval" replaceFormat="webappBundle.getString(&quot;{key}&quot;)"/>
         </Property>
         <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webapp/Bundle.properties" key="ACSD_DynamicReloadInterval" replaceFormat="webappBundle.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/j2ee/sun/ddloaders/multiview/web/Bundle.properties" key="ACSD_DynamicReloadInterval" replaceFormat="webappBundle.getString(&quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
       <Events>
@@ -139,10 +139,10 @@
       </Properties>
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webapp/Bundle.properties" key="ACSN_ClassLoaderDelegate" replaceFormat="webappBundle.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/j2ee/sun/ddloaders/multiview/web/Bundle.properties" key="ACSN_ClassLoaderDelegate" replaceFormat="webappBundle.getString(&quot;{key}&quot;)"/>
         </Property>
         <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/j2ee/sun/share/configbean/customizers/webapp/Bundle.properties" key="ACSD_ClassLoaderDelegate" replaceFormat="webappBundle.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/j2ee/sun/ddloaders/multiview/web/Bundle.properties" key="ACSD_ClassLoaderDelegate" replaceFormat="webappBundle.getString(&quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
       <Events>
