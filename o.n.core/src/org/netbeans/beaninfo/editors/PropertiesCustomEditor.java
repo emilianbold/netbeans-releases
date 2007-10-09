@@ -44,7 +44,6 @@ package org.netbeans.beaninfo.editors;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Insets;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -56,7 +55,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
-import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.openide.util.HelpCtx;
@@ -133,7 +131,7 @@ public class PropertiesCustomEditor extends JPanel implements DocumentListener {
         }
     }
 
-    public Dimension getPreferredSize() {
+    public @Override Dimension getPreferredSize() {
         return new Dimension(600, 400);
     }
 
