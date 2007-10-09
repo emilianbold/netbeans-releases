@@ -240,7 +240,7 @@ final class LibrariesNode extends AbstractNode {
         private final String classPathProperty;
         private final String platformProperty;
         private final Set classPathIgnoreRef;
-
+        
         //XXX: Workaround: classpath is used only to listen on non existent files.
         // This should be removed when there will be API for it
         // See issue: http://www.netbeans.org/issues/show_bug.cgi?id=33162
@@ -259,7 +259,7 @@ final class LibrariesNode extends AbstractNode {
 
         public void propertyChange(PropertyChangeEvent evt) {
             String propName = evt.getPropertyName();
-            if (classPathProperty.equals(propName) || ClassPath.PROP_ROOTS.equals(propName)) {
+            if (classPathProperty.equals(propName) || ClassPath.PROP_ROOTS.equals(propName) || LibraryManager.PROP_LIBRARIES.equals(propName)) {
                 synchronized (this) {
                     if (fsListener!=null) {
                         fsListener.removePropertyChangeListener (this);
@@ -275,11 +275,13 @@ final class LibrariesNode extends AbstractNode {
 
         protected void addNotify() {
             this.eval.addPropertyChangeListener (this);
+            LibraryManager.getDefault().addPropertyChangeListener(this);
             this.setKeys(getKeys ());
         }
 
         protected void removeNotify() {
             this.eval.removePropertyChangeListener(this);
+            LibraryManager.getDefault().removePropertyChangeListener(this);
             synchronized (this) {
                 if (fsListener!=null) {
                     fsListener.removePropertyChangeListener (this);
@@ -608,7 +610,7 @@ final class LibrariesNode extends AbstractNode {
             };
             ((JButton)options[0]).setEnabled(false);
             ((JButton)options[0]).getAccessibleContext().setAccessibleDescription (NbBundle.getMessage (LibrariesNode.class,"AD_AddLibrary"));
-            LibrariesChooser panel = new LibrariesChooser ((JButton)options[0], Collections.EMPTY_SET);
+            LibrariesChooser panel = new LibrariesChooser ((JButton)options[0]);
             DialogDescriptor desc = new DialogDescriptor(panel,NbBundle.getMessage( LibrariesNode.class, "LBL_CustomizeCompile_Classpath_AddLibrary" ),
                     true, options, options[0], DialogDescriptor.DEFAULT_ALIGN,null,null);
             Dialog dlg = DialogDisplayer.getDefault().createDialog(desc);

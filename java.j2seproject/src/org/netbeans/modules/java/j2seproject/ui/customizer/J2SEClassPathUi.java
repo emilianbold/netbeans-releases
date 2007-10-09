@@ -77,6 +77,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.java.j2seproject.classpath.ClassPathSupport;
 import org.netbeans.modules.java.j2seproject.ui.FoldersListSettings;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -405,26 +406,49 @@ public class J2SEClassPathUi {
                     FoldersListSettings.getDefault().setLastUsedClassPathFolder(curDir);
                 }
             }
-            else if ( source == addLibrary ) {
-                Set/*<Library>*/includedLibraries = new HashSet ();
-                for (int i=0; i< listModel.getSize(); i++) {
-                    ClassPathSupport.Item item = (ClassPathSupport.Item) listModel.get(i);
-                    if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY && !item.isBroken() ) {
-                        includedLibraries.add( item.getLibrary() );
-                    }
-                }
+            else if ( source == addLibrary ) {                
                 Object[] options = new Object[] {
                     new JButton (NbBundle.getMessage (J2SEClassPathUi.class,"LBL_AddLibrary")),
                     DialogDescriptor.CANCEL_OPTION
                 };
                 ((JButton)options[0]).setEnabled(false);
                 ((JButton)options[0]).getAccessibleContext().setAccessibleDescription (NbBundle.getMessage (J2SEClassPathUi.class,"AD_AddLibrary"));
-                LibrariesChooser panel = new LibrariesChooser ((JButton)options[0], includedLibraries);
+                LibrariesChooser panel = new LibrariesChooser ((JButton)options[0]);
                 DialogDescriptor desc = new DialogDescriptor(panel,NbBundle.getMessage( J2SEClassPathUi.class, "LBL_CustomizeCompile_Classpath_AddLibrary" ),
                     true, options, options[0], DialogDescriptor.DEFAULT_ALIGN,null,null);
                 Dialog dlg = DialogDisplayer.getDefault().createDialog(desc);
                 dlg.setVisible(true);
-                if (desc.getValue() == options[0]) {
+                //Refresh classpath items                    
+                final Set<Library> includedLibraries = new HashSet<Library> ();
+                for (int i=0; i< listModel.getSize(); i++) {
+                    ClassPathSupport.Item item = (ClassPathSupport.Item) listModel.get(i);
+                    if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY) {
+                         if (item.isBroken()) {
+                             //Try to refresh the broken item, it may be already valid or invalid
+                             final String reference = item.getReference();
+                             final String libraryName = reference.substring( J2SEProjectProperties.LIBRARY_PREFIX.length(), reference.lastIndexOf('.') ); //NOI18N
+                             final Library library = LibraryManager.getDefault().getLibrary( libraryName );                                 
+                             if ( library != null ) {
+                                 listModel.remove(i);                                     
+                                 item = ClassPathSupport.Item.create( library, reference );
+                                 listModel.add(i, item);
+                             }
+                         }
+                         else {
+                             final Library origLibrary = item.getLibrary();
+                             final Library newLibrary = LibraryManager.getDefault().getLibrary(origLibrary.getName());
+                             if (newLibrary == null) {
+                                 listModel.remove(i);                                     
+                                 item = ClassPathSupport.Item.createBroken(ClassPathSupport.Item.TYPE_LIBRARY, item.getReference());
+                                 listModel.add(i, item);
+                             }
+                         }
+                         if (!item.isBroken()) {
+                            includedLibraries.add( item.getLibrary() );
+                         }
+                    }
+                }
+                if (desc.getValue() == options[0]) {                    
                    int[] newSelection = ClassPathUiSupport.addLibraries( listModel, list.getSelectedIndices(), panel.getSelectedLibraries(), includedLibraries );
                    list.setSelectedIndices( newSelection );
                 }
