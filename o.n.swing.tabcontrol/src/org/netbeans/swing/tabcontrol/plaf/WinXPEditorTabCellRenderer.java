@@ -475,8 +475,8 @@ final class WinXPEditorTabCellRenderer extends AbstractTabCellRenderer {
                                                    Math.round(p1.getY()),
                                                    paint.getColor2(), false);
                 //Paint the left edge inverse gradient line
-                int rpos = ren.isLeftmost() ? x + 2 : x + 1;
-                g.fillRect(rpos, y + ins.top + 3, rpos,
+                int rpos = x + 1;
+                g.fillRect(rpos, y + ins.top + 3, rpos + (ren.isLeftmost() ? 1 : 0),
                            (height - (ins.top + ins.bottom + 3)));
 
                 g.setColor(getSelectedTabBottomLineColor());
