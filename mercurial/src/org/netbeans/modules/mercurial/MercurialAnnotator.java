@@ -542,11 +542,21 @@ public class MercurialAnnotator extends VCSAnnotator {
     }
     
     private String annotateFolderNameHtml(String name, FileInformation mostImportantInfo, File mostImportantFile) {
+        String project = HgProjectUtils.getProjectName(mostImportantFile);
+        String fileName = mostImportantFile.getName();
+        if (project == null || fileName.equals(name)) {
+            fileName = null;
+        }
+
+
         name = htmlEncode(name);
         if (mostImportantInfo.getStatus() == FileInformation.STATUS_NOTVERSIONED_EXCLUDED){
             return excludedFormat.format(new Object [] { name, ""}); // NOI18N
         }
-        return uptodateFormat.format(new Object [] { name, "" }); // NOI18N
+        if (fileName != null)
+            return uptodateFormat.format(new Object [] { name, " [" + fileName + "]" }); // NOI18N
+        else
+            return uptodateFormat.format(new Object [] { name, "" }); // NOI18N
     }
     
     private boolean isMoreImportant(FileInformation a, FileInformation b) {
