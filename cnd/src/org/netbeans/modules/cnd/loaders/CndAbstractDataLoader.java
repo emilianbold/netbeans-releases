@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.loaders;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Date;
 import java.util.Map;
 import java.text.DateFormat;
@@ -107,6 +108,16 @@ public abstract class CndAbstractDataLoader extends UniFileLoader {
 	public CndFormat(MultiDataObject obj, FileObject primaryFile) {
 	    super(obj, primaryFile);
 	}
+
+        @Override
+        public FileObject createFromTemplate(FileObject f, String name) throws IOException {
+            FileObject fo = super.createFromTemplate(f, name);
+            if (fo.getAttribute(TemplateExtensionUtils.NAME_ATTRIBUTE)!=null){
+                fo.setAttribute(TemplateExtensionUtils.NAME_ATTRIBUTE, null);
+            }
+            return fo;
+        }
+        
         
 	protected java.text.Format createFormat(FileObject target, String name, String ext) {
 	    
