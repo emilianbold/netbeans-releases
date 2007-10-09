@@ -77,8 +77,7 @@ made subject to such option by the copyright holder.
     
     <codetemplate abbreviation="fori" contexts="BLOCK,CASE" descriptionId="CT_fori">
         <code>
-<![CDATA[
-int ${IDX newVarName default="i"};
+<![CDATA[int ${IDX newVarName default="i"};
 for (${IDX} = 0; ${IDX} < ${SIZE int default="size"}; ${IDX}++) {
    ${TYPE rightSideType default="Object"} ${ELEM newVarName default="elem"} = ${TYPE_CAST cast default="" editable=false}${ARR array default="array"}[${IDX}];
    ${selection line}${cursor}

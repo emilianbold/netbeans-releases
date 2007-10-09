@@ -103,8 +103,7 @@ made subject to such option by the copyright holder.
     </codetemplate>   
     <codetemplate abbreviation="wh" contexts="BLOCK,CASE">
         <code>
-<![CDATA[
-while (${EXP default="exp"}) { 
+<![CDATA[while (${EXP default="exp"}) { 
    ${selection line}${cursor} 
 }
 ]]>
