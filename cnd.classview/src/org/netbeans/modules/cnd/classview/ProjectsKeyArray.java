@@ -45,7 +45,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
@@ -62,26 +61,39 @@ public class ProjectsKeyArray extends Children.Keys<CsmProject> {
     private java.util.Map<CsmProject,SortedName> myProjects;
     private ChildrenUpdater childrenUpdater;
     private static Comparator<java.util.Map.Entry<CsmProject, SortedName>> COMARATOR = new ProjectComparator();
+    private Object lock = new Object(){
+        @Override
+        public String toString() {
+            return "ProjectsKeyArray lock";// NOI18N
+        }
+    };
     
     public ProjectsKeyArray(ChildrenUpdater childrenUpdater){
         this.childrenUpdater = childrenUpdater;
     }
 
-    private synchronized void resetKeys(){
-        List<java.util.Map.Entry<CsmProject,SortedName>> list =
-                new ArrayList<java.util.Map.Entry<CsmProject,SortedName>>(myProjects.entrySet());
-        Collections.sort(list, COMARATOR);
-        final List<CsmProject> res = new ArrayList<CsmProject>();
-        for(java.util.Map.Entry<CsmProject,SortedName> entry :list){
-            CsmProject key = entry.getKey();
-            res.add(key);
+    private void resetKeys(){
+        synchronized(lock) {
+            if (myProjects != null) {
+                List<java.util.Map.Entry<CsmProject, SortedName>> list = new ArrayList<java.util.Map.Entry<CsmProject, SortedName>>(myProjects.entrySet());
+                Collections.sort(list, COMARATOR);
+                final List<CsmProject> res = new ArrayList<CsmProject>();
+                for (java.util.Map.Entry<CsmProject, SortedName> entry : list) {
+                    CsmProject key = entry.getKey();
+                    res.add(key);
+                }
+                setKeys(res);
+            } else {
+                setKeys(Collections.<CsmProject>emptyList());
+            }
         }
-        setKeys(res);
     }
     
     public void dispose(){
-        if (myProjects != null) {
-            myProjects.clear();
+        synchronized(lock) {
+            if (myProjects != null) {
+                myProjects.clear();
+            }
         }
         childrenUpdater =null;
         setKeys(new CsmProject[0]);
@@ -108,60 +120,69 @@ public class ProjectsKeyArray extends Children.Keys<CsmProject> {
     }
     
     public boolean isEmpty(){
-        if (myProjects != null) {
-            return myProjects.size()==0;
+        synchronized(lock) {
+            if (myProjects != null) {
+                return myProjects.size()==0;
+            }
         }
         return true;
     }
     
     public void openProject(CsmProject project){
-        if (myProjects == null){
-            return;
+        synchronized(lock) {
+            if (myProjects == null) {
+                return;
+            }
+            if (myProjects.containsKey(project)) {
+                return;
+            }
+            myProjects.put(project, getSortedName(project, false));
         }
-        if (myProjects.containsKey(project)){
-            return;
-        }
-        myProjects.put(project,getSortedName(project,false));
         resetKeys();
     }
     
     public void closeProject(CsmProject project){
-        if (myProjects == null || myProjects.size() == 0){
-            return;
-        }
-        if (!myProjects.containsKey(project)){
-            return;
-        }
-        myProjects.remove(project);
-        childrenUpdater.unregister(project);
-        boolean removeAll = true;
-        for(CsmProject p : myProjects.keySet()){
-            SortedName name = myProjects.get(p);
-            if (name.getPrefix()==0){
-                removeAll = false;
+        synchronized(lock) {
+            if (myProjects == null || myProjects.size() == 0){
+                return;
             }
-        }
-        if (removeAll) {
-            for(CsmProject p : myProjects.keySet()){
-                childrenUpdater.unregister(p);
+            if (!myProjects.containsKey(project)){
+                return;
             }
-            myProjects.clear();
+            myProjects.remove(project);
+            childrenUpdater.unregister(project);
+            boolean removeAll = true;
+            for (CsmProject p : myProjects.keySet()) {
+                SortedName name = myProjects.get(p);
+                if (name != null && name.getPrefix() == 0) {
+                    removeAll = false;
+                    break;
+                }
+            }
+            if (removeAll) {
+                for (CsmProject p : myProjects.keySet()) {
+                    childrenUpdater.unregister(p);
+                }
+                myProjects.clear();
+            }
         }
         resetKeys();
     }
     
     public void resetProjects(){
         Set<CsmProject> newProjects = getProjects();
-        if (myProjects != null){
-            for(CsmProject p : myProjects.keySet()){
-                if (!newProjects.contains(p)){
-                    childrenUpdater.unregister(p);
+        synchronized(lock) {
+            if (myProjects != null) {
+                for (CsmProject p : myProjects.keySet()) {
+                    if (!newProjects.contains(p)) {
+                        childrenUpdater.unregister(p);
+                    }
                 }
             }
-        }
-        myProjects = createProjectsMap();
-        for(CsmProject p : newProjects){
-            myProjects.put(p,getSortedName(p,false));
+            myProjects = createProjectsMap();
+            for (CsmProject p : newProjects) {
+                myProjects.put(p, getSortedName(p, false));
+            }
         }
         resetKeys();
     }
@@ -215,11 +236,13 @@ public class ProjectsKeyArray extends Children.Keys<CsmProject> {
     @Override
     protected void removeNotify() {
         super.removeNotify();
-        if (myProjects != null) {
-            myProjects.clear();
-            resetKeys();
+        synchronized(lock) {
+            if (myProjects != null) {
+                myProjects.clear();
+                resetKeys();
+            }
+            myProjects = null;
         }
-        myProjects = null;
     }
     
     private static final class ProjectComparator implements Comparator<java.util.Map.Entry<CsmProject,SortedName>> {
