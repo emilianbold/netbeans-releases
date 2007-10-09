@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog" prefer="system">
+    <system systemId="http://www.webservicemart.com/uszip.asmx?WSDL" uri="www.webservicemart.com/uszip.asmx.wsdl"/>
+</catalog>
