@@ -51,13 +51,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
-import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.api.progress.ProgressHandle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.versioning.util.AccessibleJFileChooser;
-import org.netbeans.modules.mercurial.util.HgCommand;
-import org.netbeans.modules.mercurial.HgModuleConfig;
+import org.netbeans.spi.project.ui.support.ProjectChooser;
 
 /**
  *
@@ -73,11 +69,13 @@ public class ClonePanel extends javax.swing.JPanel implements ActionListener {
         initComponents();
         browseButton.addActionListener(this);
         fromTextField.setText(repo.getAbsolutePath());
-        toTextField.setText(to.getAbsolutePath());
+        toTextField.setText(to.getParent());
+        toCloneField.setText(to.getName());
     }
 
     public String getOutputFileName() {
-        return toTextField.getText();
+        File target = new File(toTextField.getText(), toCloneField.getText());
+        return target.getAbsolutePath();
     }
 
     /** This method is called from within the constructor to
@@ -92,6 +90,9 @@ public class ClonePanel extends javax.swing.JPanel implements ActionListener {
         toLabel = new javax.swing.JLabel();
         browseButton = new javax.swing.JButton();
         fromTextField = new javax.swing.JTextField();
+        toNameLabel = new javax.swing.JLabel();
+        toCloneField = new javax.swing.JTextField();
+        destinationLabel = new javax.swing.JLabel();
 
         fromLabel.setText(org.openide.util.NbBundle.getMessage(ClonePanel.class, "ClonePanel.fromLabel.text")); // NOI18N
 
@@ -102,6 +103,10 @@ public class ClonePanel extends javax.swing.JPanel implements ActionListener {
 
         fromTextField.setEditable(false);
 
+        toNameLabel.setText(org.openide.util.NbBundle.getMessage(ClonePanel.class, "ClonePanel.toName.text")); // NOI18N
+
+        destinationLabel.setText(org.openide.util.NbBundle.getMessage(ClonePanel.class, "destinationLabel.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -109,30 +114,43 @@ public class ClonePanel extends javax.swing.JPanel implements ActionListener {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(destinationLabel)
+                    .add(fromLabel)
                     .add(layout.createSequentialGroup()
-                        .add(toLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(toTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 215, Short.MAX_VALUE))
-                    .add(layout.createSequentialGroup()
-                        .add(fromLabel)
+                        .add(12, 12, 12)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(toNameLabel)
+                            .add(toLabel))))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(fromTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 282, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                            .add(toCloneField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 213, Short.MAX_VALUE)
+                            .add(toTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 213, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(fromTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 217, Short.MAX_VALUE)))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 12, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(browseButton))
+                        .add(browseButton)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(27, 27, 27)
+                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(fromLabel)
                     .add(fromTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 35, Short.MAX_VALUE)
+                .add(18, 18, 18)
+                .add(destinationLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(toLabel)
                     .add(browseButton)
                     .add(toTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(26, 26, 26))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 15, Short.MAX_VALUE)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(toCloneField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(toNameLabel))
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
     
@@ -144,7 +162,7 @@ public class ClonePanel extends javax.swing.JPanel implements ActionListener {
     }
 
     private void onBrowseClick() {
-        File oldFile = null;
+        File oldFile = defaultWorkingDirectory();
         JFileChooser fileChooser = new AccessibleJFileChooser(NbBundle.getMessage(ClonePanel.class, "ACSD_BrowseFolder"), oldFile);   // NO I18N
         fileChooser.setDialogTitle(NbBundle.getMessage(ClonePanel.class, "Browse_title"));                                            // NO I18N
         fileChooser.setMultiSelectionEnabled(false);
@@ -169,12 +187,54 @@ public class ClonePanel extends javax.swing.JPanel implements ActionListener {
             toTextField.setText(f.getAbsolutePath());
         }
     }
+    /**
+     * Returns file to be initally used.
+     * <ul>
+     * <li>first is takes text in workTextField
+     * <li>then recent project folder
+     * <li>finally <tt>user.home</tt>
+     * <ul>
+     */
+    private File defaultWorkingDirectory() {
+        File defaultDir = null;
+        String current = toTextField.getText();
+        if (current != null && !(current.trim().equals(""))) {  // NOI18N
+            File currentFile = new File(current);
+            while (currentFile != null && currentFile.exists() == false) {
+                currentFile = currentFile.getParentFile();
+            }
+            if (currentFile != null) {
+                if (currentFile.isFile()) {
+                    defaultDir = currentFile.getParentFile();
+                } else {
+                    defaultDir = currentFile;
+                }
+            }
+        }
+
+        if (defaultDir == null) {
+            File projectFolder = ProjectChooser.getProjectsFolder();
+            if (projectFolder.exists() && projectFolder.isDirectory()) {
+                defaultDir = projectFolder;
+            }
+
+        }
+
+        if (defaultDir == null) {
+            defaultDir = new File(System.getProperty("user.home"));  // NOI18N
+        }
+
+        return defaultDir;
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton browseButton;
+    private javax.swing.JLabel destinationLabel;
     private javax.swing.JLabel fromLabel;
     private javax.swing.JTextField fromTextField;
+    private javax.swing.JTextField toCloneField;
     private javax.swing.JLabel toLabel;
+    private javax.swing.JLabel toNameLabel;
     final javax.swing.JTextField toTextField = new javax.swing.JTextField();
     // End of variables declaration//GEN-END:variables
     
