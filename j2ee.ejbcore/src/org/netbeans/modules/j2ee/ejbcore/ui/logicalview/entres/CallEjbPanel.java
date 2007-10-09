@@ -463,8 +463,10 @@ public class CallEjbPanel extends javax.swing.JPanel {
                 public Map<String, String> run(EjbJarMetadata metadata) throws Exception {
                     Map<String, String> result = new HashMap<String, String>();
                     EntityAndSession ejb = (EntityAndSession) metadata.findByEjbClass(elementHandle.getQualifiedName());
-                    result.put(EntityAndSession.HOME, ejb.getHome());
-                    result.put(EntityAndSession.EJB_NAME, ejb.getEjbName());
+                    if (ejb != null) {
+                        result.put(EntityAndSession.HOME, ejb.getHome());
+                        result.put(EntityAndSession.EJB_NAME, ejb.getEjbName());
+                    }
                     return result;
                 }
             });
