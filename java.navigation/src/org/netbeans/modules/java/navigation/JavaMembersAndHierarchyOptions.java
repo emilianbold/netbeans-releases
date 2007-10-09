@@ -41,6 +41,13 @@
 
 package org.netbeans.modules.java.navigation;
 
+import java.awt.Dimension;
+import java.awt.Rectangle;
+import java.awt.Toolkit;
+import java.util.prefs.Preferences;
+
+import org.openide.util.NbPreferences;
+
 /**
  * The static options for hierarchy and members pop up windows.
  * <p>
@@ -50,6 +57,32 @@ package org.netbeans.modules.java.navigation;
  * @author Sandip Chitale (Sandip.Chitale@Sun.Com)
  */
 public final class JavaMembersAndHierarchyOptions {
+    
+    private static final Preferences getPreferences() {
+        return NbPreferences.forModule(JavaMembersAndHierarchyOptions.class);
+    }
+    
+    private static final String PROP_caseSensitive = "caseSensitive";
+    private static final String PROP_showInherited = "showInherited";
+    private static final String PROP_showSuperTypeHierarchy = "showSuperTypeHierarchy";
+    private static final String PROP_showSubTypeHierarchy = "showSubTypeHierarchy";
+    private static final String PROP_showInner = "showInner";
+    private static final String PROP_showFQN = "showFQN";
+    private static final String PROP_showConstructors = "showConstructors";
+    private static final String PROP_showMethods = "showMethods";
+    private static final String PROP_showFields = "showFields";
+    private static final String PROP_showEnumConstants = "showEnumConstants";
+    private static final String PROP_showProtected = "showProtected";
+    private static final String PROP_showPackage = "showPackage";
+    private static final String PROP_showPrivate = "showPrivate";
+    private static final String PROP_showStatic = "showStatic";
+    private static final String PROP_lastBoundsX = "lastBoundsX";
+    private static final String PROP_lastBoundsY = "lastBoundsY";
+    private static final String PROP_lastBoundsWidth = "lastBoundsWidth";
+    private static final String PROP_lastBoundsHeight = "lastBoundsHeight";
+    private static final String PROP_membersDividerLocation = "membersDividerLocation";
+    private static final String PROP_hierarchyDividerLocation = "hierarchyDividerLocation";
+    
     /**
      */
     private static boolean caseSensitive = false;
@@ -105,6 +138,17 @@ public final class JavaMembersAndHierarchyOptions {
     /**
      */
     private static boolean showStatic = true;
+    
+    private static Rectangle lastBounds;
+    static
+    {
+        Dimension dimensions = Toolkit.getDefaultToolkit().getScreenSize();        
+        lastBounds = new Rectangle(((dimensions.width / 2) - 410), ((dimensions.height / 2) - 300), 820, 600);
+    }
+    
+    private static int membersDividerLocation = 350;
+    
+    private static int hierarchyDividerLocation = 350;   
 
     private static int subTypeHierarchyDepth = 1;
 
@@ -115,30 +159,30 @@ public final class JavaMembersAndHierarchyOptions {
      * @return Value of property showInherited.
      */
     public static boolean isShowInherited() {
-        return showInherited;
+        return getPreferences().getBoolean(PROP_showInherited, showInherited);
     }
 
     /**
      * @param showInherited New value of property showInherited.
      */
     public static void setShowInherited(boolean showInherited) {
-        JavaMembersAndHierarchyOptions.showInherited = showInherited;
+        getPreferences().putBoolean(PROP_showInherited, showInherited);
     }
 
     /**
      * @return
      */
     public static boolean isShowSubTypeHierarchy() {
-        return showSubTypeHierarchy;
+        return getPreferences().getBoolean(PROP_showSubTypeHierarchy, showSubTypeHierarchy);
     }
 
     /**
      * @param showSubTypeHierarchy
      */
     public static void setShowSubTypeHierarchy(boolean showSubTypeHierarchy) {
-        JavaMembersAndHierarchyOptions.showSubTypeHierarchy = showSubTypeHierarchy;
+        getPreferences().putBoolean(PROP_showSubTypeHierarchy, showSubTypeHierarchy);
         if (showSubTypeHierarchy) {
-            JavaMembersAndHierarchyOptions.showSuperTypeHierarchy = false;
+            getPreferences().putBoolean(PROP_showSuperTypeHierarchy, false);
         }
     }
 
@@ -146,16 +190,16 @@ public final class JavaMembersAndHierarchyOptions {
      * @return
      */
     public static boolean isShowSuperTypeHierarchy() {
-        return showSuperTypeHierarchy;
+        return getPreferences().getBoolean(PROP_showSuperTypeHierarchy, showSuperTypeHierarchy);
     }
 
     /**
      * @param showSuperTypeHierarchy
      */
     public static void setShowSuperTypeHierarchy(boolean showSuperTypeHierarchy) {
-        JavaMembersAndHierarchyOptions.showSuperTypeHierarchy = showSuperTypeHierarchy;
+        getPreferences().putBoolean(PROP_showSuperTypeHierarchy, showSuperTypeHierarchy);
         if (showSuperTypeHierarchy) {
-            JavaMembersAndHierarchyOptions.showSubTypeHierarchy = false;
+            getPreferences().putBoolean(PROP_showSubTypeHierarchy, false);
         }
     }
 
@@ -164,156 +208,190 @@ public final class JavaMembersAndHierarchyOptions {
      * @return Value of property caseSensitive.
      */
     public static boolean isCaseSensitive() {
-        return caseSensitive;
+        return getPreferences().getBoolean(PROP_caseSensitive, caseSensitive);
     }
 
     /**
      * @param caseSensitive New value of property caseSensitive.
      */
     public static void setCaseSensitive(boolean caseSensitive) {
-        JavaMembersAndHierarchyOptions.caseSensitive = caseSensitive;
+        getPreferences().putBoolean(PROP_caseSensitive, caseSensitive);
     }
 
     /**
      * @return Value of property showInner.
      */
     public static boolean isShowFQN() {
-        return JavaMembersAndHierarchyOptions.showFQN;
+        return getPreferences().getBoolean(PROP_showFQN, showFQN);
     }
 
     /**
      * @param showFQN New value of property showFQN.
      */
     public static void setShowFQN(boolean showFQN) {
-        JavaMembersAndHierarchyOptions.showFQN = showFQN;
+        getPreferences().putBoolean(PROP_showFQN, showFQN);
     }
 
     /**
      * @return Value of property showInner.
      */
     public static boolean isShowInner() {
-        return JavaMembersAndHierarchyOptions.showInner;
+        return getPreferences().getBoolean(PROP_showInner, showInner);
     }
 
     /**
      * @param showInner New value of property showInner.
      */
     public static void setShowInner(boolean showInner) {
-        JavaMembersAndHierarchyOptions.showInner = showInner;
+        getPreferences().putBoolean(PROP_showInner, showInner);
     }
 
     /**
      * @return Value of property showConstructors.
      */
     public static boolean isShowConstructors() {
-        return JavaMembersAndHierarchyOptions.showConstructors;
+        return getPreferences().getBoolean(PROP_showConstructors, showConstructors);
     }
 
     /**
      * @param showConstructors New value of property showConstructors.
      */
     public static void setShowConstructors(boolean showConstructors) {
-        JavaMembersAndHierarchyOptions.showConstructors = showConstructors;
+        getPreferences().putBoolean(PROP_showConstructors, showConstructors);
     }
 
     /**
      * @return Value of property showMethods.
      */
     public static boolean isShowMethods() {
-        return JavaMembersAndHierarchyOptions.showMethods;
+        return getPreferences().getBoolean(PROP_showMethods, showMethods);
     }
 
     /**
      * @param showMethods New value of property showMethods.
      */
     public static void setShowMethods(boolean showMethods) {
-        JavaMembersAndHierarchyOptions.showMethods = showMethods;
+        getPreferences().putBoolean(PROP_showMethods, showMethods);
     }
 
     /**
      * @return Value of property showFields.
      */
     public static boolean isShowFields() {
-        return JavaMembersAndHierarchyOptions.showFields;
+        return getPreferences().getBoolean(PROP_showFields, showFields);
     }
 
     /**
      * @param showFields New value of property showFields.
      */
     public static void setShowFields(boolean showFields) {
-        JavaMembersAndHierarchyOptions.showFields = showFields;
+        getPreferences().putBoolean(PROP_showFields, showFields);
     }
 
     /**
      * @return
      */
     public static boolean isShowEnumConstants() {
-        return showEnumConstants;
+        return getPreferences().getBoolean(PROP_showEnumConstants, showEnumConstants);
     }
 
     /**
      * @param showEnumConstants
      */
     public static void setShowEnumConstants(boolean showEnumConstants) {
-        JavaMembersAndHierarchyOptions.showEnumConstants = showEnumConstants;
+        getPreferences().putBoolean(PROP_showEnumConstants, showEnumConstants);
     }
 
     /**
      * @return Value of property showPublicOnly.
      */
     public static boolean isShowProtected() {
-        return JavaMembersAndHierarchyOptions.showProtected;
+        return getPreferences().getBoolean(PROP_showProtected, showProtected);
     }
 
     /**
      * @param showProtected
      */
     public static void setShowProtected(boolean showProtected) {
-        JavaMembersAndHierarchyOptions.showProtected = showProtected;
+       getPreferences().putBoolean(PROP_showProtected, showProtected);
     }
 
     /**
      * @return Value of property showPackage.
      */
     public static boolean isShowPackage() {
-        return JavaMembersAndHierarchyOptions.showPackage;
+        return getPreferences().getBoolean(PROP_showPackage, showPackage);
     }
 
     /**
      * @param showPackage
      */
     public static void setShowPackage(boolean showPackage) {
-        JavaMembersAndHierarchyOptions.showPackage = showPackage;
+        getPreferences().putBoolean(PROP_showPackage, showPackage);
     }
 
     /**
      * @return Value of property showPrivate.
      */
     public static boolean isShowPrivate() {
-        return JavaMembersAndHierarchyOptions.showPrivate;
+        return getPreferences().getBoolean(PROP_showPrivate, showPrivate);
     }
 
     /**
      * @param showPrivate New value of property showPrivate.
      */
     public static void setShowPrivate(boolean showPrivate) {
-        JavaMembersAndHierarchyOptions.showPrivate = showPrivate;
+        getPreferences().putBoolean(PROP_showPrivate, showPrivate);
     }
 
     /**
      * @return Value of property showStatic.
      */
     public static boolean isShowStatic() {
-        return JavaMembersAndHierarchyOptions.showStatic;
+        return getPreferences().getBoolean(PROP_showStatic, showStatic);
     }
 
     /**
      * @param showStatic New value of property showStatic.
      */
     public static void setShowStatic(boolean showStatic) {
-        JavaMembersAndHierarchyOptions.showStatic = showStatic;
+        getPreferences().putBoolean(PROP_showStatic, showStatic);
     }
-
+    
+    public static Rectangle getLastBounds() {
+        int x = getPreferences().getInt(PROP_lastBoundsX, lastBounds.x);
+        int y = getPreferences().getInt(PROP_lastBoundsY, lastBounds.y);
+        int width = getPreferences().getInt(PROP_lastBoundsWidth, lastBounds.width);
+        int height = getPreferences().getInt(PROP_lastBoundsHeight, lastBounds.height);
+        
+        return new Rectangle(x, y, width, height);
+    }
+    
+    public static void setLastBounds(Rectangle lastBounds) {
+        if (lastBounds != null) {
+            getPreferences().putInt(PROP_lastBoundsX, lastBounds.x);
+            getPreferences().putInt(PROP_lastBoundsY, lastBounds.y);
+            getPreferences().putInt(PROP_lastBoundsWidth, lastBounds.width);
+            getPreferences().putInt(PROP_lastBoundsHeight, lastBounds.height);
+        }
+    }
+    
+    public static int getMembersDividerLocation() {
+        return getPreferences().getInt(PROP_membersDividerLocation, membersDividerLocation);
+    }
+    
+    public static void setMembersDividerLocation(int membersDividerLocation) {
+        getPreferences().putInt(PROP_membersDividerLocation, membersDividerLocation);
+    }
+    
+    public static int getHierarchyDividerLocation() {
+        return getPreferences().getInt(PROP_hierarchyDividerLocation, hierarchyDividerLocation);
+    }
+    
+    public static void setHierarchyDividerLocation(int hierarchyDividerLocation) {
+        getPreferences().putInt(PROP_hierarchyDividerLocation, hierarchyDividerLocation);
+    }
+    
     static int getSubTypeHierarchyDepth() {
         return subTypeHierarchyDepth;
     }
@@ -321,5 +399,4 @@ public final class JavaMembersAndHierarchyOptions {
     static void setSubTypeHierarchyDepth(int subTypeHierarchyDepth) {
         JavaMembersAndHierarchyOptions.subTypeHierarchyDepth = subTypeHierarchyDepth;
     }
-
 }

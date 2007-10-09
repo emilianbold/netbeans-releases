@@ -92,6 +92,7 @@ public class JavaMembersPanel extends javax.swing.JPanel {
         
         docPane = new DocumentationScrollPane( true );
         splitPane.setRightComponent( docPane );
+        splitPane.setDividerLocation(JavaMembersAndHierarchyOptions.getMembersDividerLocation());
 
         ToolTipManager.sharedInstance().registerComponent(javaMembersTree);
         ToolTipManager.sharedInstance().setLightWeightPopupEnabled(false);
@@ -396,14 +397,31 @@ public class JavaMembersPanel extends javax.swing.JPanel {
 
     public void addNotify() {
         super.addNotify();
-        applyFilter();
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                applyFilter();                
+            }           
+        });
     }
 
     public void removeNotify() {
+        JavaMembersAndHierarchyOptions.setMembersDividerLocation(splitPane.getDividerLocation());
         docPane.setData(null);
         super.removeNotify();
     }
-
+    
+    // Hack to allow showing of Help window when F1 or HELP key is pressed.
+    @Override
+    protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
+        if (e.getKeyCode() == KeyEvent.VK_F1 || e.getKeyCode() == KeyEvent.VK_HELP)  {
+            JComponent rootPane = SwingUtilities.getRootPane(this);
+            if (rootPane != null) {
+                rootPane.putClientProperty(ResizablePopup.HELP_COOKIE, Boolean.TRUE); // NOI18N
+            }
+        }
+        return super.processKeyBinding(ks, e, condition, pressed);
+    }
+    
     private void applyFilter() {
         // show wait cursor
         SwingUtilities.invokeLater(
@@ -439,18 +457,30 @@ public class JavaMembersPanel extends javax.swing.JPanel {
                     javaMembersModel.update();
 
                     // expand the tree
-                    for (int row = 0; row < javaMembersTree.getRowCount(); row++) {
-                        TreePath treePath = javaMembersTree.getPathForRow(row);
+                    for (int row = 0; row < javaMembersTree.getRowCount(); row++) {                        
                         javaMembersTree.expandRow(row);
                     }
 
-                    // select first matching
-                    for (int row = 0; row < javaMembersTree.getRowCount(); row++) {
-                        Object o = javaMembersTree.getPathForRow(row).getLastPathComponent();
-                        if (o instanceof JavaElement) {
-                            if (javaMembersModel.patternMatch((JavaElement)o)) {
-                                javaMembersTree.setSelectionRow(row);
-                                break;
+                    if (filterTextField.getText().trim().length() > 0) {
+                        // select first matching
+                        for (int row = 0; row < javaMembersTree.getRowCount(); row++) {
+                            Object o = javaMembersTree.getPathForRow(row).getLastPathComponent();
+                            if (o instanceof JavaElement) {
+                                if (javaMembersModel.patternMatch((JavaElement)o)) {
+                                    javaMembersTree.setSelectionRow(row);
+                                    break;
+                                }
+                            }
+                        }
+                    } else {
+                        // Try to select non-package node
+                        if (javaMembersTree.getRowCount() > 1){
+                            TreePath treePath = javaMembersTree.getPathForRow(0);
+                            if (treePath != null) {
+                                Object node = treePath.getLastPathComponent();
+                                if (node instanceof JavaMembersModel.PackageTreeNode) {
+                                    javaMembersTree.setSelectionRow(1);
+                                }
                             }
                         }
                     }

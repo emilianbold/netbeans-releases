@@ -211,7 +211,7 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
                     }
                     DefaultMutableTreeNode parent = root;
                     for(TypeElement superTypeElement:superClasses) {
-                        FileObject fileObject = SourceUtils.getFile(superTypeElement, compilationInfo.getClasspathInfo());
+                        FileObject fileObject = SourceUtils.getFile(ElementHandle.create(superTypeElement), compilationInfo.getClasspathInfo());
                         DefaultMutableTreeNode child = new SimpleTypeTreeNode(fileObject, superTypeElement, compilationInfo, typeElement != superTypeElement || typeElement.getQualifiedName().equals(Object.class.getName()));
                         parent.insert(child, 0);
                         parent = child;
@@ -421,14 +421,14 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
 
             TypeElement superClass = (TypeElement) types.asElement(typeElement.getSuperclass());
             if (superClass != null && !superClass.getQualifiedName().toString().equals(Object.class.getName())) {
-                FileObject fileObject = SourceUtils.getFile(superClass, compilationInfo.getClasspathInfo());
+                FileObject fileObject = SourceUtils.getFile(ElementHandle.create(superClass), compilationInfo.getClasspathInfo());
                 insert(new TypeTreeNode(fileObject, superClass, compilationInfo, true), index++);
             }
             List<? extends TypeMirror> interfaces = typeElement.getInterfaces();
             for (TypeMirror interfaceMirror:interfaces) {
                 TypeElement interfaceElement = (TypeElement) types.asElement(interfaceMirror);
                 if (interfaceElement != null) {
-                    FileObject fileObject = SourceUtils.getFile(interfaceElement, compilationInfo.getClasspathInfo());
+                    FileObject fileObject = SourceUtils.getFile(ElementHandle.create(interfaceElement), compilationInfo.getClasspathInfo());
                     insert(new TypeTreeNode(fileObject, (TypeElement)interfaceElement, compilationInfo, true), index++);
                 }
             }
@@ -549,7 +549,7 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
                                                             compilationController.toPhase(Phase.ELEMENTS_RESOLVED);
                                                             Element implementor = finalImplementorElementHandle.resolve(compilationController);
                                                             if (implementor instanceof TypeElement && ((TypeElement)implementor).getNestingKind() != NestingKind.ANONYMOUS) {
-                                                                FileObject fo = SourceUtils.getFile(implementor, compilationController.getClasspathInfo());
+                                                                FileObject fo = SourceUtils.getFile(ElementHandle.create(implementor), compilationController.getClasspathInfo());
                                                                 if (fo != null) {
                                                                     insert(new SimpleTypeTreeNode(fo, (TypeElement) implementor, compilationController), index[0]++);
                                                                 } 

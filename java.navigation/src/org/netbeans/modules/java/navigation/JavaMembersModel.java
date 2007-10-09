@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.java.navigation;
 
-import com.sun.javadoc.Doc;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -60,7 +59,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -219,7 +217,7 @@ public final class JavaMembersModel extends DefaultTreeModel {
         return Utils.patternMatch(javaToolsJavaElement, pattern, patternLowerCase);
     }
 
-    private abstract class AbstractMembersTreeNode
+    abstract class AbstractMembersTreeNode
         extends DefaultMutableTreeNode implements JavaElement {
         private FileObject fileObject;
         private ElementHandle<?extends Element> elementHandle;
@@ -333,7 +331,7 @@ public final class JavaMembersModel extends DefaultTreeModel {
         }
     }
 
-    private class PackageTreeNode extends AbstractMembersTreeNode {
+    class PackageTreeNode extends AbstractMembersTreeNode {
         PackageTreeNode(FileObject fileObject, PackageElement packageElement,
             CompilationInfo compilationInfo) {
             super(fileObject, packageElement, compilationInfo);
@@ -348,7 +346,7 @@ public final class JavaMembersModel extends DefaultTreeModel {
         }
     }
 
-    private class TypeTreeNode extends AbstractMembersTreeNode {
+    class TypeTreeNode extends AbstractMembersTreeNode {
         private boolean inSuperClassRole;
 
         TypeTreeNode(FileObject fileObject, TypeElement typeElement,
@@ -524,7 +522,7 @@ public final class JavaMembersModel extends DefaultTreeModel {
                     if ((superClass != null) &&
                             !superClass.getQualifiedName().toString()
                                            .equals(Object.class.getName())) {
-                        FileObject fileObject = SourceUtils.getFile(superClass,
+                        FileObject fileObject = SourceUtils.getFile(ElementHandle.create(superClass),
                                 compilationInfo.getClasspathInfo());
                         insert(new TypeTreeNode(fileObject, superClass,
                                 compilationInfo, true), index++);
@@ -535,7 +533,7 @@ public final class JavaMembersModel extends DefaultTreeModel {
 
                 for (TypeMirror interfaceTypeMirror : interfaces) {
                     TypeElement anInterface = (TypeElement) ((DeclaredType) interfaceTypeMirror).asElement();
-                    FileObject fileObject = SourceUtils.getFile(anInterface,
+                    FileObject fileObject = SourceUtils.getFile(ElementHandle.create(anInterface),
                             compilationInfo.getClasspathInfo());
                     insert(new TypeTreeNode(fileObject, anInterface,
                             compilationInfo, true), index++);
@@ -563,7 +561,7 @@ public final class JavaMembersModel extends DefaultTreeModel {
         }
     }
 
-    private class ConstructorTreeNode extends AbstractMembersTreeNode {
+    class ConstructorTreeNode extends AbstractMembersTreeNode {
         ConstructorTreeNode(FileObject fileObject,
             ExecutableElement contructorElement, CompilationInfo compilationInfo) {
             super(fileObject, contructorElement, compilationInfo);
@@ -578,7 +576,7 @@ public final class JavaMembersModel extends DefaultTreeModel {
         }
     }
 
-    private class MethodTreeNode extends AbstractMembersTreeNode {
+    class MethodTreeNode extends AbstractMembersTreeNode {
         MethodTreeNode(FileObject fileObject, ExecutableElement methodElement,
             CompilationInfo compilationInfo) {
             super(fileObject, methodElement, compilationInfo);
@@ -593,7 +591,7 @@ public final class JavaMembersModel extends DefaultTreeModel {
         }
     }
 
-    private class FieldTreeNode extends AbstractMembersTreeNode {
+    class FieldTreeNode extends AbstractMembersTreeNode {
         FieldTreeNode(FileObject fileObject, VariableElement variableElement,
             CompilationInfo compilationInfo) {
             super(fileObject, variableElement, compilationInfo);
@@ -608,7 +606,7 @@ public final class JavaMembersModel extends DefaultTreeModel {
         }
     }
 
-    private class EnumConstantTreeNode extends AbstractMembersTreeNode {
+    class EnumConstantTreeNode extends AbstractMembersTreeNode {
         EnumConstantTreeNode(FileObject fileObject,
             VariableElement variableElement, CompilationInfo compilationInfo) {
             super(fileObject, variableElement, compilationInfo);

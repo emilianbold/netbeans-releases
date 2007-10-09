@@ -40,13 +40,11 @@
  */
 package org.netbeans.modules.java.navigation;
 
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.RootPaneContainer;
 
 import org.openide.windows.WindowManager;
-import java.awt.Dimension;
-import java.awt.Rectangle;
-import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -60,17 +58,15 @@ import javax.swing.JDialog;
  *
  * @author Sandip Chitale (Sandip.Chitale@Sun.Com)
  */
-final class ResizablePopup {
-    private static Rectangle lastBounds;
-    static
-    {
-        Dimension dimensions = Toolkit.getDefaultToolkit().getScreenSize();
-        lastBounds = new Rectangle(((dimensions.width / 2) - 410), ((dimensions.height / 2) - 300), 820, 600);
-    }
-
+final class ResizablePopup {   
+    static final String HELP_COOKIE = "help"; // NOI18N
+    
     private static final WindowListener windowListener = new WindowAdapter() {
         public void windowDeactivated(WindowEvent windowEvent) {
-            cleanup(windowEvent.getWindow());
+            Window window = windowEvent.getWindow();
+            if (!aboutToShowHelp(window)) {
+                cleanup(window);
+            }
         }
 
         public void windowClosing(WindowEvent windowEvent) {
@@ -85,6 +81,17 @@ final class ResizablePopup {
             window.removeWindowListener(this);
             window.dispose();
         }
+        
+        private boolean aboutToShowHelp(Window window) {
+            if (window instanceof RootPaneContainer) {
+                JComponent rootPane = ((RootPaneContainer) window).getRootPane();
+                if (Boolean.TRUE.equals(rootPane.getClientProperty(HELP_COOKIE))) {
+                    rootPane.putClientProperty(HELP_COOKIE, null);
+                    return true;
+                }
+            }
+            return false;
+        }
     };
 
     static JDialog getDialog() {
@@ -92,13 +99,13 @@ final class ResizablePopup {
                     public void setVisible(boolean visible) {
                         boolean wasVisible = isVisible();
                         if (wasVisible && !visible) {
-                            lastBounds = getBounds();
+                            JavaMembersAndHierarchyOptions.setLastBounds(getBounds());
                         }
                         super.setVisible(visible);
                     }
                 };
         //dialog.setUndecorated(true);
-        dialog.setBounds(lastBounds);
+        dialog.setBounds(JavaMembersAndHierarchyOptions.getLastBounds());
         dialog.addWindowListener(windowListener);
         dialog.setDefaultCloseOperation(JDialog.HIDE_ON_CLOSE);
         return dialog;

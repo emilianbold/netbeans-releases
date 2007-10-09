@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.java.navigation;
 
+import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Point;
 import java.awt.Toolkit;
@@ -58,6 +59,7 @@ import javax.swing.JRootPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
+import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.HyperlinkEvent;
@@ -92,6 +94,7 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
         
         docPane = new DocumentationScrollPane( true );
         splitPane.setRightComponent( docPane );
+        splitPane.setDividerLocation(JavaMembersAndHierarchyOptions.getHierarchyDividerLocation());        
         
         ToolTipManager.sharedInstance().registerComponent(javaHierarchyTree);
         ToolTipManager.sharedInstance().setLightWeightPopupEnabled(false);
@@ -357,14 +360,29 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
 
     public void addNotify() {
         super.addNotify();
-        applyFilter();
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                applyFilter();                
+            }           
+        });
     }
 
     public void removeNotify() {
-        // Reset the hierarchy mode
-        JavaMembersAndHierarchyOptions.setShowSuperTypeHierarchy(true);
+        JavaMembersAndHierarchyOptions.setHierarchyDividerLocation(splitPane.getDividerLocation());
         docPane.setData( null );
         super.removeNotify();
+    }
+    
+    // Hack to allow showing of Help window when F1 or HELP key is pressed.
+    @Override
+    protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
+        if (e.getKeyCode() == KeyEvent.VK_F1 || e.getKeyCode() == KeyEvent.VK_HELP)  {
+            JComponent rootPane = SwingUtilities.getRootPane(this);
+            if (rootPane != null) {
+                rootPane.putClientProperty(ResizablePopup.HELP_COOKIE, Boolean.TRUE); // NOI18N
+            }
+        }
+        return super.processKeyBinding(ks, e, condition, pressed);
     }
 
     private void applyFilter() {
@@ -430,7 +448,6 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
                 try {
                     // expand the tree
                     for (int row = 0; row < javaHierarchyTree.getRowCount(); row++) {
-                        TreePath treePath = javaHierarchyTree.getPathForRow(row);
                         javaHierarchyTree.expandRow(row);
                     }
                     selectMatchingRow();
@@ -447,16 +464,18 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
 
     private void selectMatchingRow() {
         javaHierarchyModel.setPattern(filterTextField.getText());
+        filterTextField.setForeground(UIManager.getColor("TextField.foreground"));
         // select first matching
         for (int row = 0; row < javaHierarchyTree.getRowCount(); row++) {
             Object o = javaHierarchyTree.getPathForRow(row).getLastPathComponent();
             if (o instanceof JavaElement) {
                 if (javaHierarchyModel.patternMatch((JavaElement)o)) {
-                    javaHierarchyTree.setSelectionRow(row);
-                    break;
+                    javaHierarchyTree.setSelectionRow(row);                    
+                    return;
                 }
             }
         }
+        filterTextField.setForeground(Color.RED);
     }
 
     private void gotoElement(JavaElement javaToolsJavaElement) {
