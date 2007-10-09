@@ -70,8 +70,8 @@ public class OptionsListCustomizer extends BasicCustomizer2 {
 
     public OptionsListCustomizer() {
         super(OptionsListPanel.class, DesignMessageUtil.getMessage(OptionsListCustomizer.class,
-                "OptionsListCustomizer.title"), null, "the-help-key"); // NOI18N
-        setApplyCapable(true);
+                "OptionsListCustomizer.title"), null, "projrave_ui_elements_dialogs_options_customizer_db"); // NOI18N
+        setApplyCapable(true);        
     }
 
     private OptionsListPanel optionsListPanel;
