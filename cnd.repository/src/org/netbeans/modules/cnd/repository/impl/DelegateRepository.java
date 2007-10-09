@@ -127,7 +127,9 @@ public final class DelegateRepository implements Repository {
     }
     
     public void removeUnit(String unitName) {
-	delegate.removeUnit(unitName);
+	synchronized( getLock(unitName) ) {
+	    delegate.removeUnit(unitName);
+	}
     }
 
     public void cleanCaches() {
