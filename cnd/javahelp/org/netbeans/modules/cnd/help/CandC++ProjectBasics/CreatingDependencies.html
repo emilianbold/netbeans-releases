@@ -18,7 +18,7 @@ that you designate as required projects of your C or C++ Application project.
 Whenever you
 clean and build the project, the IDE also cleans and builds the required projects.
 </p>
-<p><b>To add a project dependency:</b></p>
+<p><b>To add a project dependency to an application or dynamic library project:</b></p>
 <ol>
 <li>In the Projects window, right-click the project and choose Properties.
 </li>
@@ -30,9 +30,32 @@ Libraries.
 <li>In the Libraries dialog box, click Add Project.
 </li>
 <li>In the Add Project dialog box, select the library project on which your 
-Application project depends. Click Add Project Library.
+Application project depends. Click Add Project.
 </li>
+<li>If you do not want 
+the project to be built every time the dependent project is built, select 
+the Build checkbox to remove the check mark.</li> 
 <li>Click OK in the Libraries dialog box and the Project Properties dialog box.
+</li>
+</ol>
+<p><b>To add a project dependency to a project from existing code:</b></p>
+<ol>
+<li>In the Projects window, right-click the project and choose Properties.
+</li>
+<li>In the Project Properties dialog box, select 
+Required Projects.
+</li>
+<li>In the Required Projects panel, click the browse button.
+</li>
+<li>In the Projects dialog box, click Add.
+</li>
+<li>In the Add Project dialog box, select the project on which your 
+project from existing code depends. Click Add Project.
+</li>
+<li>If you want 
+the project to be built every time the dependent project is built, select 
+the Build checkbox to add a check mark.</li> 
+<li>Click OK in the Projects dialog box and the Project Properties dialog box.
 </li>
 </ol>
 <table>

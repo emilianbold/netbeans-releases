@@ -39,7 +39,7 @@ Select the right template for your project.
 </tr>
 <tr>
 <td>
-Set up compilation dependencies between projects.
+Set up compilation dependencies between application and library projects.
 </td>
 <td>
 <ol>
@@ -53,10 +53,32 @@ Libraries.
 <li>In the Libraries panel, click the browse button.
 </li>
 <li>In the Libraries dialog box, click Add Project and select the library project on which your 
-Application project depends. Click Add Project Library.
+Application project depends. Click Add Project. If you do not want the project to be built every time the 
+dependent project is built, select the Build checkbox to remove the check mark.
 </li>
 </ol>
 </td>
+</tr>
+<tr>
+<td>Set up dependencies for projects from existing code
+</td>
+<td>
+<ol>
+<li>
+In the Projects window, right-click the project node and choose Properties.
+</li>
+<li>Select the Required Projects node.
+</li>
+<li>In the Required Projects panel, click the browse button.
+</li>
+<li>In the Projects dialog box, click Add and select 
+the project on which the project from existing code depends. Click 
+Add Project. If you want the project to be built every time the 
+dependent project is built, select the Build checkbox to add a check mark.
+</li>
+</ol>
+</td>
+</tr>
 <tr>
 <td>
 Open required projects.
