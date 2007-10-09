@@ -439,8 +439,8 @@ public class CustomIconEditor extends javax.swing.JPanel {
         IconFileItem(FileObject file) {
             this.file = file;
             try {
-                icon = file.getSize() < SIZE_LIMIT
-                        ? new ImageIcon(ImageIO.read(file.getURL())) : null;
+                Image image = (file.getSize() < SIZE_LIMIT) ? ImageIO.read(file.getURL()) : null;
+                icon = (image != null) ? new ImageIcon(image) : null;
             } catch (IOException ex) {
                 Logger.getLogger(CustomIconEditor.class.getName()).log(Level.WARNING, null, ex);
             }
