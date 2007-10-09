@@ -52,12 +52,16 @@ public class ElementsTest extends NbTestCase {
         SourceUtilsTestUtil.prepareTest(new String[0], new Object[] {new FileEncodingQueryImplementation() {
             @Override
             public Charset getEncoding(FileObject file) {
-                return Charset.forName("UTF-8");
+                if (file.equals(testFO))
+                    return Charset.forName("UTF-8");
+                else
+                    return null;
             }
         }});
     }
     
     private FileObject sourceRoot;
+    private FileObject testFO;
         
     private void prepareTest() throws Exception {
         File work = TestUtil.createWorkFolder();
@@ -70,11 +74,12 @@ public class ElementsTest extends NbTestCase {
         FileObject cache = workFO.createFolder("cache");
         
         SourceUtilsTestUtil.prepareTest(sourceRoot, buildRoot, cache);
+        
+        testFO = sourceRoot.createData("Test.java");
     }
     
     public void testI18N() throws Exception {
         prepareTest();
-        FileObject testFO = sourceRoot.createData("Test.java");
         
         TestUtilities.copyStringToFile(FileUtil.toFile(testFO),
                 "public class Vecernicek {" +
