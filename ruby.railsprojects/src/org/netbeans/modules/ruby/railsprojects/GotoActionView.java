@@ -213,49 +213,8 @@ public class GotoActionView extends AbstractAction {
             return;
         }
 
-        // TODO - instead of relying on Path manipulation here, should I just
-        // use the RubyIndex to locate the class and method?
-        FileObject controllerFile = null;
         String action = file.getName();
-
-        try {
-            file = file.getParent();
-
-            String fileName = file.getName();
-            String path = "";
-
-            if (!fileName.startsWith("_")) { // NOI18N
-                                             // For partials like "_foo", just use the surrounding view
-                path = fileName;
-            }
-
-            // Find app dir, and build up a relative path to the view file in the process
-            FileObject app = file.getParent();
-
-            while (app != null) {
-                if (app.getName().equals("views") && // NOI18N
-                        ((app.getParent() == null) || app.getParent().getName().equals("app"))) { // NOI18N
-                    app = app.getParent();
-
-                    break;
-                }
-
-                path = app.getNameExt() + "/" + path; // NOI18N
-                app = app.getParent();
-            }
-
-            if (app == null) {
-                notFound(target);
-
-                return;
-            }
-
-            controllerFile = app.getFileObject("controllers/" + path + "_controller.rb"); // NOI18N
-        } catch (Exception e) {
-            notFound(target);
-
-            return;
-        }
+        FileObject controllerFile = RubyUtils.getRailsControllerFor(file);
 
         if (controllerFile == null) {
             notFound(target);

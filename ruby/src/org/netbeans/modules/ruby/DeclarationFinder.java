@@ -826,7 +826,9 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
                         ts.move(nameOffset);
 
                         StringBuilder sb = new StringBuilder();
+                        boolean started = false;
                         while (ts.moveNext() && ts.offset() < end) {
+                            started = true;
                             Token<?extends TokenId> token = ts.token();
                             TokenId id = token.id();
                             if (id == RubyTokenId.STRING_LITERAL || id == RubyTokenId.QUOTED_STRING_LITERAL) {
@@ -837,6 +839,10 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
                                 break;
                             }
                         }
+                        if (!started) {
+                            return null;
+                        }
+
                         int rangeEnd = ts.offset();
 
                         String name = sb.toString();

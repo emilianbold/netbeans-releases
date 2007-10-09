@@ -1810,6 +1810,10 @@ public class CodeCompleter implements Completable {
                             // This would need to be scoped by the current
                             // context - look at the hash, find the specified
                             // controller and limit it to that
+                            List<String> actions = getActionNames(request);
+                            for (String n : actions) {
+                                suggestions.add("'" + n + "'");
+                            }
                         }
                     }
                 }
@@ -1851,6 +1855,44 @@ public class CodeCompleter implements Completable {
         return true;
     }
 
+    /** Get the actions for the given file. If the file is a controller, list the actions within it,
+     * otherwise, if the file is a view, list the actions for the corresponding controller.
+     * 
+     * @param fileInProject the file we're looking up
+     * @return A List of action names
+     */
+    private List<String> getActionNames(CompletionRequest request) {
+        FileObject file = request.fileObject;
+        FileObject controllerFile = null;
+        if (file.getNameExt().endsWith("_controller.rb")) {
+            controllerFile = file;
+        } else {
+            controllerFile = RubyUtils.getRailsControllerFor(file);
+        }
+        // TODO - check for other :controller-> settings in the hashmap and if present, use it
+        if (controllerFile == null) {
+            return Collections.emptyList();
+        }
+        
+        String controllerClass = RubyUtils.getControllerClass(controllerFile);
+        if (controllerClass != null) {
+            String prefix = request.prefix;
+            Set<IndexedMethod> methods = request.index.getMethods(prefix, controllerClass, request.kind);
+            List<String> actions = new ArrayList<String>();
+            for (IndexedMethod method : methods) {
+                if (method.isPublic() && method.getArgs() == null || method.getArgs().length == 0) {
+                    actions.add(method.getName());
+                }
+            }
+            
+            return actions;
+        }
+        
+        // TODO - pull out the methods or this class
+        
+        return Collections.emptyList();
+    }
+    
     private void completeFixed(List<CompletionProposal> proposals, CompletionRequest request, IndexedMethod target, String data, boolean isLastArg) {
         String[] values = data.split("\\|");
         String prefix = request.prefix;
@@ -1884,6 +1926,7 @@ public class CodeCompleter implements Completable {
         // comparisons on symbols work directly but it's becoming a liability now
         String prefix = request.prefix;
         for (String table : tables) {
+            // PENDING: Should I insert :tablename or 'tablename' or "tablename" ?
             String tableName = ":" + table;
             if (startsWith(tableName, prefix) || startsWith(tableName, colonPrefix)) {
                 String insert = isLastArg ? tableName : (tableName + ", ");
@@ -1899,10 +1942,13 @@ public class CodeCompleter implements Completable {
         Set<IndexedClass> clz = request.index.getSubClasses(request.prefix, "ActiveRecord::Base", request.kind, RubyIndex.SOURCE_SCOPE);
         
         String prefix = request.prefix;
+        // I originally stripped ":" to make direct (INameNode)getName()
+        // comparisons on symbols work directly but it's becoming a liability now
+        String colonPrefix = ":" + prefix;
         for (IndexedClass c : clz) {
             String name = c.getName();
             String symbol = ":"+RubyUtils.camelToUnderlinedName(name);
-            if (startsWith(symbol, prefix)) {
+            if (startsWith(symbol, prefix) || startsWith(symbol, colonPrefix)) {
                 String insert = isLastArg ? symbol : (symbol + ", ");
                 ParameterItem item = new ParameterItem(target, symbol, name, insert, anchor, request);
                 item.setSymbol(true);

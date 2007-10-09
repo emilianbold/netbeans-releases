@@ -728,15 +728,18 @@ public class AstUtilities {
      */
     @SuppressWarnings("unchecked")
     public static int findArgumentIndex(Node node, int offset) {
-        if (node instanceof FCallNode) {
+        switch (node.nodeId) {
+        case NodeTypes.FCALLNODE: {
             Node argsNode = ((FCallNode)node).getArgsNode();
 
             return findArgumentIndex(argsNode, offset);
-        } else if (node instanceof CallNode) {
+        }
+        case NodeTypes.CALLNODE: {
             Node argsNode = ((CallNode)node).getArgsNode();
 
             return findArgumentIndex(argsNode, offset);
-        } else if (node instanceof ArgsCatNode) {
+        }
+        case NodeTypes.ARGSCATNODE: {
             ArgsCatNode acn = (ArgsCatNode)node;
 
             int index = findArgumentIndex(acn.getFirstNode(), offset);
@@ -757,38 +760,44 @@ public class AstUtilities {
             if ((offset >= pos.getStartOffset()) && (offset <= pos.getEndOffset())) {
                 return getConstantArgs(acn);
             }
-        } else if (node instanceof ListNode) {
-            List<Node> children = node.childNodes();
+        }
+        case NodeTypes.HASHNODE: 
+            // Everything gets glommed into the same hash parameter offset
+            return offset;
+        default:
+            if (node instanceof ListNode) {
+                List<Node> children = node.childNodes();
 
-            int prevEnd = Integer.MAX_VALUE;
+                int prevEnd = Integer.MAX_VALUE;
 
-            for (int index = 0; index < children.size(); index++) {
-                Node child = children.get(index);
-                ISourcePosition pos = child.getPosition();
+                for (int index = 0; index < children.size(); index++) {
+                    Node child = children.get(index);
+                    ISourcePosition pos = child.getPosition();
 
-                if ((offset <= pos.getEndOffset()) &&
-                        ((offset >= prevEnd) || (offset >= pos.getStartOffset()))) {
-                    return index;
+                    if ((offset <= pos.getEndOffset()) &&
+                            ((offset >= prevEnd) || (offset >= pos.getStartOffset()))) {
+                        return index;
+                    }
+
+                    prevEnd = pos.getEndOffset();
                 }
 
-                prevEnd = pos.getEndOffset();
+                // Caret -inside- empty parentheses?
+                ISourcePosition pos = node.getPosition();
+
+                if ((offset > pos.getStartOffset()) && (offset < pos.getEndOffset())) {
+                    return 0;
+                }
+            } else {
+                ISourcePosition pos = node.getPosition();
+
+                if ((offset >= pos.getStartOffset()) && (offset <= pos.getEndOffset())) {
+                    return 0;
+                }
             }
 
-            // Caret -inside- empty parentheses?
-            ISourcePosition pos = node.getPosition();
-
-            if ((offset > pos.getStartOffset()) && (offset < pos.getEndOffset())) {
-                return 0;
-            }
-        } else {
-            ISourcePosition pos = node.getPosition();
-
-            if ((offset >= pos.getStartOffset()) && (offset <= pos.getEndOffset())) {
-                return 0;
-            }
+            return -1;
         }
-
-        return -1;
     }
 
     /** Utility method used by findArgumentIndex: count the constant number of

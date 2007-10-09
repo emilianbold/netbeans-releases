@@ -542,6 +542,24 @@ public class RubyUtils {
             "undef", "unless", "until", "when", "while", "yield"
         };
 
+    /** Return the class name corresponding to the given controller file */
+    public static String getControllerClass(FileObject controllerFile) {
+        Project p = FileOwnerQuery.getOwner(controllerFile);
+        FileObject controllers = p.getProjectDirectory().getFileObject("app/controllers"); // NOI18N
+        if (controllers != null) {
+            String relative = controllerFile.getName();;
+            FileObject f = controllerFile.getParent();
+            while (f != controllers && f != null) {
+                relative = f.getName() + "/" + relative;
+                f = f.getParent();
+            }
+            
+            return underlinedNameToCamel(relative);
+        }
+        
+        return null;
+    }
+
     public static List<String> getControllerNames(FileObject fileInProject, boolean lowercase) {
         Project p = FileOwnerQuery.getOwner(fileInProject);
         FileObject controllers = p.getProjectDirectory().getFileObject("app/controllers"); // NOI18N
@@ -692,6 +710,49 @@ public class RubyUtils {
         }
         
         return viewFile;
+    }
+    
+    public static FileObject getRailsControllerFor(FileObject file) {
+        // TODO - instead of relying on Path manipulation here, should I just
+        // use the RubyIndex to locate the class and method?
+        FileObject controllerFile = null;
+
+        try {
+            file = file.getParent();
+
+            String fileName = file.getName();
+            String path = "";
+
+            if (!fileName.startsWith("_")) { // NOI18N
+                                             // For partials like "_foo", just use the surrounding view
+                path = fileName;
+            }
+
+            // Find app dir, and build up a relative path to the view file in the process
+            FileObject app = file.getParent();
+
+            while (app != null) {
+                if (app.getName().equals("views") && // NOI18N
+                        ((app.getParent() == null) || app.getParent().getName().equals("app"))) { // NOI18N
+                    app = app.getParent();
+
+                    break;
+                }
+
+                path = app.getNameExt() + "/" + path; // NOI18N
+                app = app.getParent();
+            }
+
+            if (app == null) {
+                return null;
+            }
+
+            controllerFile = app.getFileObject("controllers/" + path + "_controller.rb"); // NOI18N
+        } catch (Exception e) {
+            return null;
+        }
+
+        return controllerFile;
     }
     
     public static boolean isRowWhite(String text, int offset) throws BadLocationException {
