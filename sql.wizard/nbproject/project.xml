@@ -203,7 +203,7 @@ made subject to such option by the copyright holder.
                 </test-type>
             </test-dependencies>       
 			<class-path-extension>
-                <runtime-relative-path>ext/sql/ant.jar</runtime-relative-path>
+                <runtime-relative-path>../../java1/ant/lib/ant.jar</runtime-relative-path>
                 <binary-origin>"${harness.dir}/../java1/ant/lib/ant.jar"</binary-origin>
             </class-path-extension>
 			 <public-packages>
