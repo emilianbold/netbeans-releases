@@ -65,7 +65,6 @@ import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
-import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -270,30 +269,30 @@ final class NewProjectIterator extends BasicWizardIterator {
     }
     
     private static void collectFiles(FileObject parent, Collection<FileObject> accepted, int parentSharab) {
-        FileObject[] fos = parent.getChildren();
-        for (int i = 0; i < fos.length; i++) {
-            if (!VisibilityQuery.getDefault().isVisible(fos[i])) {
-                //#66765
-                // ignore invisible files/folders.. like CVS subdirectory
+        for (FileObject fo : parent.getChildren()) {
+            if (!VisibilityQuery.getDefault().isVisible(fo)) {
+                // #66765: ignore invisible files/folders, like CVS subdirectory
                 continue;
             }
             int sharab;
             if (parentSharab == SharabilityQuery.UNKNOWN || parentSharab == SharabilityQuery.MIXED) {
-                sharab = SharabilityQuery.getSharability(FileUtil.toFile(fos[i]));
+                sharab = SharabilityQuery.getSharability(FileUtil.toFile(fo));
             } else {
                 sharab = parentSharab;
             }
-            if (fos[i].isData() && !fos[i].isVirtual() && sharab == SharabilityQuery.SHARABLE) {
-                accepted.add(fos[i]);
-            } else if (fos[i].isFolder() && sharab != SharabilityQuery.NOT_SHARABLE) {
-                accepted.add(fos[i]);
-                collectFiles(fos[i], accepted, sharab);
+            if (sharab == SharabilityQuery.NOT_SHARABLE) {
+                continue;
+            }
+            if (fo.isData() && !fo.isVirtual()) {
+                accepted.add(fo);
+            } else if (fo.isFolder()) {
+                accepted.add(fo);
+                collectFiles(fo, accepted, sharab);
             }
         }
     }
     
     private static void createZipFile(OutputStream target, FileObject root, Collection /* FileObject*/ files) throws IOException {
-        //TODO create the zip..
         ZipOutputStream str = null;
         try {
             str = new ZipOutputStream(target);
@@ -352,8 +351,6 @@ final class NewProjectIterator extends BasicWizardIterator {
             FileLock lock = file.lock();
             try {
                 createProjectZip(file.getOutputStream(lock), templateProject);
-            } catch (IOException e) {
-                Util.err.notify(ErrorManager.INFORMATIONAL, e);
             } finally {
                 lock.releaseLock();
             }
