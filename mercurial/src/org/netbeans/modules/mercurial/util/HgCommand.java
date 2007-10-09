@@ -298,7 +298,7 @@ public class HgCommand {
         command.add(repository.getAbsolutePath());
 
         List<String> list = exec(command);
-        if (!list.isEmpty())
+        if (list.isEmpty())
             handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_ROLLBACK_FAILED"));
         
         return list;
