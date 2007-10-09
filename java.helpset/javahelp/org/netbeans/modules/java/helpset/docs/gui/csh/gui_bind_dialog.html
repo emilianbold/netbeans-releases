@@ -36,18 +36,26 @@ that was selected when you opened the dialog box.
 <p>For a bean to be available in this list, it needs to be 
     added to the form. See 
 <a href="../gui_addcomponent.html">Adding a Component to a Form</a>.</p> </li>
-<li><b>Binding Expression. </b>A drop-down list where you can select a  
+<li><b>Binding Expression. </b>A combo box where you can select or type a  
 property of the binding source to bind to the target property. This list might 
-also contain other types of expressions which you can use in the binding, such as 
-Boolean expressions.
+also contain other types of expressions which you can use in the binding. Some of 
+the properties offered in this combo box are 
+<a href="../gui_bind_synthetic.html">special synthetic properties</a> that are 
+added by the beans binding library to enable useful bindings that would not 
+be possible with the base set of properties for some components.
 <p>The expressions in this dialog box use Expression Language syntax.</p>
 <p>Some bindings do not require a binding expression.</p>
     <!--TODO link to EL topic--></li>   
-    <li><b>Import Data to Form </b>(elements property only). </li>
-    <li><b>Available</b> and <b>Selected</b> columns (elements property only). 
-When you have selected the binding you want, you can use the 
-<b>Available</b> and <b>Selected</b> lists to move items into and out 
-of the table. The Selected list shows everything that will be displayed 
+    <li><b>Import Data to Form </b>(only for <tt>elements</tt> property of 
+    JTable, JList, and JComboBox components). Enables you to select a database 
+    table for which to generate an entity class to which you can bind 
+from the form. Once you have done so, list and query objects for that 
+database table become available in the Binding Source drop-down list.<!--TODO link to topic about creating entity class by wizard--></li>
+<li><b>Available</b> and <b>Selected</b> columns (only for <tt>elements</tt> property of 
+    JTable components). After you have used the 
+    Import Data to Form button to select a database table, you can use the 
+    <b>Available</b> and <b>Selected</b> lists to move items into and out 
+of the JTable. The Selected list shows everything that will be displayed 
 in the table. 
 <p>You can add items to a list and remove items from a list by 
   selecting an item and clicking the &lt; and &gt; buttons, or you 
@@ -62,7 +70,7 @@ in the table.
   
         <dl>
             <dt><a name="seealso">See Also</a></dt>
-            <dd><a href="gui_bind_advanced_dialog">Bind Dialog Box: Advanced Tab</a></dd>            				                 
+            <dd><a href="gui_bind_advanced_dialog.html">Bind Dialog Box: Advanced Tab</a></dd>            				                 
             <dd><a href="../gui_designing.html">Designing Java GUIs with the GUI Builder</a></dd>            				
             <dd><a href="../gui_overview.html">Working with the GUI Builder</a></dd>
             <dd><a href="../gui_quickref.html">GUI Builder Tasks: Quick Reference</a></dd>
