@@ -166,6 +166,11 @@ final class ModuleListParser {
                                 matches = false;
                             }
                         }
+                        File myProjectXml = project.resolveFile("nbproject/project.xml");
+                        if (myProjectXml.isFile() && !timestampsAndSizes.containsKey(myProjectXml)) {
+                            project.log("Cache ignored since it has no mention of " + myProjectXml);
+                            matches = false; // #118098
+                        }
                         if (matches) {
                             @SuppressWarnings("unchecked") Map<String,Entry> _entries = (Map) oi.readObject();
                             entries = _entries;
