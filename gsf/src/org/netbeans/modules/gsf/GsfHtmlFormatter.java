@@ -78,23 +78,16 @@ public class GsfHtmlFormatter extends HtmlFormatter {
 
                 break;
 
-            case '>':
-                sb.append("&gt;"); // NOI18N
-
+            case '>': // Only ]]> is dangerous
+                if ((i > 1) && (text.charAt(i - 2) == ']') && (text.charAt(i - 1) == ']')) {
+                    sb.append("&gt;"); // NOI18N
+                } else {
+                    sb.append(c);
+                }
                 break;
 
             case '&':
                 sb.append("&amp;"); // NOI18N
-
-                break;
-
-            case '"':
-                sb.append("&quot;"); // NOI18N
-
-                break;
-
-            case '\'':
-                sb.append("&apos;"); // NOI18N
 
                 break;
 
