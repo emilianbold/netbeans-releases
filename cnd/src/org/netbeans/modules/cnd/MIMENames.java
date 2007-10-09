@@ -60,8 +60,8 @@ public class MIMENames {
     /** Makefiles */
     public static final String MAKEFILE_MIME_TYPE = "text/x-make"; //NOI18N
 
-    /** Makefiles */
-    public static final String SHELL_MIME_TYPE = "text/x-shell"; //NOI18N
+    /** Shell */
+    public static final String SHELL_MIME_TYPE = "text/sh"; //NOI18N
 
 
     /** Visu x designer */

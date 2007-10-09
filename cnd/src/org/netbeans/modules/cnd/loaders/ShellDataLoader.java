@@ -92,7 +92,7 @@ public class ShellDataLoader extends CndAbstractDataLoader {
     
     @Override
     protected String actionsContext () {
-        return "Loaders/text/x-shell/Actions/"; // NOI18N
+        return "Loaders/text/sh/Actions/"; // NOI18N
     }
 
     protected String getMimeType() {
@@ -112,6 +112,7 @@ public class ShellDataLoader extends CndAbstractDataLoader {
 	return new ShellDataObject(primaryFile, this);
     }
 
+    @Override
     protected MultiDataObject.Entry createPrimaryEntry(MultiDataObject obj, FileObject primaryFile) {
 	return new ShellFormat(obj, primaryFile);
     }
@@ -134,15 +135,15 @@ public class ShellDataLoader extends CndAbstractDataLoader {
          * the mime resolver.
          */
 	String mime = fo.getMIMEType();
-	if (mime != null && mime.equals(MIMENames.SHELL_MIME_TYPE)) {
-	    return fo;
-	}
+        if (mime != null && mime.equals(MIMENames.SHELL_MIME_TYPE)) {
+            return fo;
+        }
 
 	return null;
     }
 
     // Inner class: Substitute important template parameters...
-    public class ShellFormat extends CndFormat {
+    private static class ShellFormat extends CndFormat {
         
 	public ShellFormat(MultiDataObject obj, FileObject primaryFile) {
 	    super(obj, primaryFile);

@@ -125,9 +125,4 @@ made subject to such option by the copyright holder.
         <resolver mime="application/x-elf"/>
     </file>
 
-    <file>
-	<magic hex="2321"/> <!-- #! -->
-        <resolver mime="text/x-shell"/>
-    </file>
-        
 </MIME-resolver>

@@ -73,7 +73,7 @@ made subject to such option by the copyright holder.
                 <file name="x-c" url="cplusplus/CExample"/>
                 <file name="x-fortran" url="fortran/FExample"/>
                 <file name="x-make" url="makefile/MakeExample"/>
-                <file name="x-shell" url="shell/ShellExample"/>
+<!--                <file name="sh" url="shell/ShellExample"/> -->
             </folder>
         </folder>
     </folder>
@@ -358,9 +358,11 @@ made subject to such option by the copyright holder.
                 </file>
             </folder>
             
-            <folder name="x-shell">
+            <folder name="sh">
+                <!--
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-                
+                -->
+                <attr name="createDataObject" boolvalue="false"/>
                 <folder name="CodeTemplates">
                     <folder name="Defaults">
                         <file name="codetemplates.xml" url="shell/Shell-DefaultAbbrevs.xml">
@@ -368,7 +370,7 @@ made subject to such option by the copyright holder.
                         </file>
                     </folder>
                 </folder>
-                
+                <!--
                 <folder name="FontsColors">
                     <folder name="NetBeans">
                         <folder name="Defaults">
@@ -383,6 +385,7 @@ made subject to such option by the copyright holder.
                 <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.shell.ShellKit"/>
                 </file>
+                -->
             </folder>
         </folder>
     </folder>
@@ -417,15 +420,15 @@ made subject to such option by the copyright holder.
                 <attr name="instanceOf" stringvalue="org.openide.filesystems.MIMEResolver"/>
                 <attr name="position" intvalue="460"/>
             </file>  
-            <file name="zy-cnd-hex-based-mime-resolver.xml" url="mime-resolver-hex-based.xml">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/MakefileDataIcon.gif"/>
-                <attr name="position" intvalue="470"/>
-            </file>
             <file name="org-netbeans-modules-cnd-loaders-CndSniffyMIMEResolver.instance">
                 <attr name="instanceOf" stringvalue="org.openide.filesystems.MIMEResolver"/>
+                <attr name="position" intvalue="470"/>
+            </file> 
+            <file name="cnd-hex-based-mime-resolver.xml" url="mime-resolver-hex-based.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/MakefileDataIcon.gif"/>
                 <attr name="position" intvalue="500"/>
-            </file>             
+            </file>
         </folder>
         
         <folder name="JavaHelp">
@@ -839,7 +842,7 @@ made subject to such option by the copyright holder.
                 </folder> <!-- Actions -->
             </folder> <!-- x-make -->
             
-            <folder name="x-shell">
+            <folder name="sh">
                 <folder name="Actions">
                     <file name="OpenAction.instance">
                         <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction"/>

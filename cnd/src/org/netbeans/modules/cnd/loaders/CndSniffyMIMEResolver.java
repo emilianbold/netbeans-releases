@@ -2,44 +2,124 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.cnd.loaders;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import org.netbeans.modules.cnd.MIMENames;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MIMEResolver;
+import org.openide.util.Utilities;
 
 /**
  * expensive resolver (read any file) not based neither on extension, name nor magic hex number
- * 
+ *
  * @author Vladimir Voskresensky
  */
 public class CndSniffyMIMEResolver extends MIMEResolver {
+
     /**
      * Resolves FileObject and returns recognized MIME type
      * @param fo is FileObject which should be resolved
      * @return  recognized MIME type or null if not recognized
      */
     public String findMIMEType(FileObject fo) {
-	if (fo.isFolder()) {
-	    return null;
-	}
-
+        if (fo.isFolder()) {
+            return null;
+        }
+        if (fo.getExt().length() > 0) {
+            return null;
+        }
+        
+        String line = getFirstLine(fo);
         // Recognize c++ file without extension
-	if (HDataLoader.getInstance().detectCPPByComment(fo)) {
-             return MIMENames.CPLUSPLUS_MIME_TYPE;
-	}
+        if (detectCPPByLine(line)) {
+            return MIMENames.CPLUSPLUS_MIME_TYPE;
+        }
+        // detect special sun headers
+        if (detectShellByLine(line)) {
+            return MIMENames.SHELL_MIME_TYPE;
+        }
         return null;
+    }
+
+    private String getFirstLine(FileObject fo) {
+        String line = "";
+        InputStreamReader isr = null;
+        BufferedReader br = null;
+        try {
+            if (fo.canRead()) {
+                isr = new InputStreamReader(fo.getInputStream());
+                br = new BufferedReader(isr);
+                try {
+                    line = br.readLine();
+                } catch (IOException ex) {
+                    line = "";
+                }
+            }
+        } catch (IOException ex) {
+//            ex.printStackTrace();
+        } finally {
+            if (br != null) {
+                try {
+                    br.close();
+                } catch (IOException ex) {
+//                    ex.printStackTrace();
+                }
+            }
+            if (isr != null) {
+                try {
+                    isr.close();
+                } catch (IOException ex) {
+//                    ex.printStackTrace();
+                }
+            }
+        }
+        return line;
+    }
+
+    /**
+     *  This is a special detector which samples suffix-less header files looking for the
+     *  string "-*- C++ -*-".
+     *
+     *  Note: Not all Sun Studio headerless includes contain this comment.
+     */
+    private boolean detectCPPByLine(String line) {
+        if (line != null) {
+            if (line.startsWith("//") && line.indexOf("-*- C++ -*-") > 0) {
+                // NOI18N
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean detectShellByLine(String line) {
+        if (line != null) {
+            line = line.replaceAll("\\s", "");
+            if (line.equals("#!/bin/bash") || 
+                    line.equals("#!/bin/sh") || 
+                    line.equals("#!/bin/ksh") || 
+                    line.equals("#!/bin/csh") || 
+                    line.equals("#!/bin/zsh")) {
+                return true;
+            }
+        }
+        return false;
     }
 }
