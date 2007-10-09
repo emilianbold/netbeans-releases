@@ -44,8 +44,6 @@ import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.components.Product;
-import org.netbeans.installer.product.dependencies.InstallAfter;
-import org.netbeans.installer.utils.helper.Dependency;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.LogManager;
@@ -70,14 +68,54 @@ import org.netbeans.installer.wizard.components.WizardAction;
  */
 public class SearchForJavaAction extends WizardAction {
     /////////////////////////////////////////////////////////////////////////////////
-    // Static
-    public static String getLabel(File javaHome) {
+    // Instance
+    private static List<File> javaLocations = new LinkedList<File>();
+    private static List<String> javaLabels = new LinkedList<String>();
+    
+    public SearchForJavaAction() {
+        setProperty(TITLE_PROPERTY, DEFAULT_TITLE);
+        setProperty(DESCRIPTION_PROPERTY, DEFAULT_DESCRIPTION);
+    }
+    
+    public void execute() {        
+        execute(new Progress());
+    }
+    public void execute(Progress progress) {
+        getWizardUi().setProgress(progress);
+        final List<File> locations = new LinkedList<File>();
+        progress.setTitle(SEARCH_INSTALLED_JAVAS);
+        progress.setDetail(StringUtils.EMPTY_STRING);
+        progress.setPercentage(Progress.START);
+        
+        SystemUtils.sleep(200);
+        
+        progress.setDetail(PREPARE_JAVA_LIST);
+        if (SystemUtils.isWindows()) {
+            fetchLocationsFromWindowsRegistry(locations);
+        }
+        fetchLocationsFromEnvironment(locations);
+        fetchLocationsFromFilesystem(locations);
+        fetchLocationsFromRegistry(locations);
+        getJavaLocationsInfo(locations, progress);
+        
+        sortJavaLocations();
+        
+        progress.setDetail(StringUtils.EMPTY_STRING);
+        progress.setPercentage(Progress.COMPLETE);
+        
+        SystemUtils.sleep(200);
+    }
+    @Override
+    public boolean canExecuteForward() {
+        return javaLocations.size() == 0;
+    }
+     // private //////////////////////////////////////////////////////////////////////
+    private static String getLabel(File javaHome) {
         JavaInfo javaInfo = JavaUtils.getInfo(javaHome);
         
         return getLabel(javaHome, javaInfo);
-    }
+    }    
     
-    // private //////////////////////////////////////////////////////////////////////
     private static String getLabel(File javaHome, JavaInfo javaInfo) {
         if (javaInfo.isNonFinal()) {
             return StringUtils.format(JAVA_ENTRY_LABEL_NON_FINAL,
@@ -99,38 +137,7 @@ public class SearchForJavaAction extends WizardAction {
                 vendor);
     }
     
-    /////////////////////////////////////////////////////////////////////////////////
-    // Instance
-    public static List<File> javaLocations = new LinkedList<File>();
-    public static List<String> javaLabels = new LinkedList<String>();
-    
-    public static File lastSelectedJava = null;
-    
-    public SearchForJavaAction() {
-        setProperty(TITLE_PROPERTY, DEFAULT_TITLE);
-        setProperty(DESCRIPTION_PROPERTY, DEFAULT_DESCRIPTION);
-    }
-    
-    public void execute() {
-        final Progress progress = new Progress();
-        final List<File> locations = new LinkedList<File>();
-        
-        getWizardUi().setProgress(progress);
-        
-        progress.setTitle(SEARCH_INSTALLED_JAVAS);
-        progress.setDetail(StringUtils.EMPTY_STRING);
-        progress.setPercentage(Progress.START);
-        
-        SystemUtils.sleep(200);
-        
-        progress.setDetail(PREPARE_JAVA_LIST);
-        if (SystemUtils.isWindows()) {
-            fetchLocationsFromWindowsRegistry(locations);
-        }
-        fetchLocationsFromEnvironment(locations);
-        fetchLocationsFromFilesystem(locations);
-        fetchLocationsFromRegistry(locations);
-        
+    private void getJavaLocationsInfo(List <File> locations, Progress progress) {
         for (int i = 0; i < locations.size(); i++) {
             final File javaHome = locations.get(i).getAbsoluteFile();
             
@@ -169,29 +176,8 @@ public class SearchForJavaAction extends WizardAction {
             SystemUtils.sleep(50);
         }
         
-        // finally we should scan the registry for jdks planned for installation, if
-        // the current product is scheduled to be installed after 'jdk', i.e. has
-        // an install-after dependency on 'jdk' uid
-        final Product product = (Product) getWizard().
-                getContext().
-                get(Product.class);
-        for (Dependency dependency: product.getDependencies(
-                InstallAfter.class)) {
-            if (dependency.getUid().equals(JDK_PRODUCT_UID)) {
-                for (Product jdk: Registry.getInstance().getProducts(JDK_PRODUCT_UID)) {
-                    if (jdk.getStatus() == Status.TO_BE_INSTALLED) {
-                        javaLocations.add(jdk.getInstallationLocation());
-                        javaLabels.add(getLabel(
-                                jdk.getInstallationLocation(),
-                                jdk.getVersion(),
-                                SUN_MICROSYSTEMS_VENDOR));
-                    }
-                }
-                
-                break;
-            }
-        }
-        
+    }
+    public static void sortJavaLocations(){
         // sort the found java installations:
         //   1) by version descending
         //   2) by path acending
@@ -234,20 +220,27 @@ public class SearchForJavaAction extends WizardAction {
                 }
             }
         }
-        
-        //if (javaLocations.size() > 0) {
-        //    lastSelectedJava = javaLocations.get(0);
-        //}
-        
-        progress.setDetail("");
-        progress.setPercentage(Progress.COMPLETE);
-        
-        SystemUtils.sleep(200);
     }
     
-    @Override
-    public boolean canExecuteForward() {
-        return javaLocations.size() == 0;
+    public static void addJavaLocation(File location, Version version, String vendor) {
+        if (!javaLocations.contains(location)) {
+            javaLocations.add(location);
+            javaLabels.add(getLabel(location, version, vendor));
+        }
+    }
+    
+    public static void addJavaLocation(File location) {
+        if (!javaLocations.contains(location)) {
+            javaLocations.add(location);
+            javaLabels.add(getLabel(location));
+        }
+    }
+    public static List <File> getJavaLocations() {
+        return javaLocations;
+    }
+    
+    public static List <String> getJavaLabels() {
+        return javaLabels;
     }
     
     private void fetchLocationsFromFilesystem(final List<File> locations) {
@@ -418,9 +411,6 @@ public class SearchForJavaAction extends WizardAction {
     public static final String JAVA_ENTRY_LABEL_NON_FINAL =
             ResourceUtils.getString(SearchForJavaAction.class,
             "SFJA.entry.label.non.final");//NOI18N
-    
-    private static final String SUN_MICROSYSTEMS_VENDOR =
-            "Sun Microsystems Inc." ; //NOI18N
     
     private static final String JDK_PRODUCT_UID = "jdk"; //NOI18N
     

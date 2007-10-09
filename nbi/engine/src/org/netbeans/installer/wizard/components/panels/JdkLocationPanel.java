@@ -41,6 +41,7 @@ import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.components.Product;
+import org.netbeans.installer.product.dependencies.InstallAfter;
 import org.netbeans.installer.product.filters.OrFilter;
 import org.netbeans.installer.product.filters.ProductFilter;
 import org.netbeans.installer.product.filters.RegistryFilter;
@@ -48,6 +49,7 @@ import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.applications.JavaUtils;
+import org.netbeans.installer.utils.helper.Dependency;
 import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.helper.Version;
 import org.netbeans.installer.utils.helper.Version.VersionDistance;
@@ -66,6 +68,8 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
     private String  vendorAllowed;
     private List<File>   jdkLocations;
     private List<String> jdkLabels;
+    private static File lastSelectedJava = null;
+    
     
     public JdkLocationPanel() {
         setProperty(MINIMUM_JDK_VERSION_PROPERTY,
@@ -120,14 +124,16 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
                     getProperty(PREFERRED_JDK_VERSION_PROPERTY));
         }
         
+        addJavaLocationsFromProductDependencies();
+        
         jdkLocations = new LinkedList<File>();
         jdkLabels = new LinkedList<String>();
         
         final Registry registry = Registry.getInstance();
-        for (int i = 0; i < SearchForJavaAction.javaLocations.size(); i++) {
-            final File location = SearchForJavaAction.javaLocations.get(i);
+        for (int i = 0; i < SearchForJavaAction.getJavaLocations().size(); i++) {
+            final File location = SearchForJavaAction.getJavaLocations().get(i);
             
-            String label = SearchForJavaAction.javaLabels.get(i);
+            String label = SearchForJavaAction.getJavaLabels().get(i);
             Version version = null;
             
             // initialize the version; if the location exists, it must be an
@@ -224,9 +230,9 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
             return new File(jdkLocation);
         }
         
-        if ((SearchForJavaAction.lastSelectedJava != null) &&
-                jdkLocations.contains(SearchForJavaAction.lastSelectedJava)) {
-            return SearchForJavaAction.lastSelectedJava;
+        if ((lastSelectedJava != null) &&
+                jdkLocations.contains(lastSelectedJava)) {
+            return lastSelectedJava;
         }
         
         for (Product product: Registry.getInstance().queryProducts(new OrFilter(
@@ -342,17 +348,43 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
     }
     
     public void setLocation(final File location) {
-        SearchForJavaAction.lastSelectedJava = location;
-        
-        if (!SearchForJavaAction.javaLocations.contains(location)) {
-            SearchForJavaAction.javaLocations.add(location);
-            SearchForJavaAction.javaLabels.add(
-                    SearchForJavaAction.getLabel(location));
-        }
-        
+        lastSelectedJava = location;
+        SearchForJavaAction.addJavaLocation(location);        
         getWizard().setProperty(JDK_LOCATION_PROPERTY, location.getAbsolutePath());
     }
     
+    private void addJavaLocationsFromProductDependencies() {
+        // finally we should scan the registry for jdks planned for installation, if
+        // the current product is scheduled to be installed after 'jdk', i.e. has
+        // an install-after dependency on 'jdk' uid
+        
+        final Object objectContext = getWizard().getContext().get(Product.class);
+        boolean sort = false;
+        if(objectContext != null && objectContext instanceof Product) {
+            final Product product = (Product) objectContext;
+            for (Dependency dependency: product.getDependencies(
+                    InstallAfter.class)) {
+                if (dependency.getUid().equals(JDK_PRODUCT_UID)) {
+                    for (Product jdk: Registry.getInstance().getProducts(JDK_PRODUCT_UID)) {
+                        if (jdk.getStatus() == Status.TO_BE_INSTALLED &&
+                                !SearchForJavaAction.getJavaLocations().
+                                contains(jdk.getInstallationLocation())) {                            
+                            SearchForJavaAction.addJavaLocation(
+                                    jdk.getInstallationLocation(), 
+                                    jdk.getVersion(), 
+                                    SUN_MICROSYSTEMS_VENDOR);
+                            sort = true;
+                        }
+                    }
+                    
+                    break;
+                }
+            }
+        }
+        if(sort) {
+            SearchForJavaAction.sortJavaLocations();
+        }
+    }
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
     public static final String JDK_LOCATION_PROPERTY =
@@ -443,6 +475,9 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
             "JLP.usedby.label"); //NOI18N
     public static final String USEDBY_LABEL_PROPERTY =
             "usedby.label"; //NOI18N
+    
+    private static final String SUN_MICROSYSTEMS_VENDOR =
+            "Sun Microsystems Inc." ; //NOI18N
     
     private static final String JDK_PRODUCT_UID =
             "jdk"; //NOI18N
