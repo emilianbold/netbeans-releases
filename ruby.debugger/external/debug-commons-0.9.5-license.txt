@@ -2,6 +2,9 @@ Name: Debug Commons
 Version: 0.9.5
 OSR: 5813
 License: MIT
+Origin: http://debug-commons.rubyforge.org/
+Description: debug-commons currently consist of wrappers around various Ruby debugging backends.
+Files: debug-commons-0.9.5.tar.gz
 
 The file lib/classic-debug.rb is based on the debug.rb file from Ruby
 project.
