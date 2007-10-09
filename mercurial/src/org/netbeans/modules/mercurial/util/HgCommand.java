@@ -55,6 +55,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
+import org.openide.util.NbBundle;
 import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.FileStatus;
 import org.netbeans.modules.mercurial.HgException;
@@ -177,7 +178,6 @@ public class HgCommand {
     private static final String HG_NOT_FOUND_ERR = "not found!"; // NOI18N
     private static final String HG_CANNOT_READ_COMMIT_MESSAGE_ERR = "abort: can't read commit message"; // NOI18N
     private static final String HG_UNABLE_EXECUTE_COMMAND_ERR = "unable to execute hg command"; // NOI18N
-    private static final String HG_CANCELLED_COMMAND_ERR = "command has been cancelled"; // NOI18N
     private static final String HG_ABORT_ERR = "abort: "; // NOI18N
     private static final String HG_NO_CHANGE_NEEDED_ERR = "no change needed"; // NOI18N
     private static final String HG_NO_ROLLBACK_ERR = "no rollback information available"; // NOI18N
@@ -226,7 +226,7 @@ public class HgCommand {
         List<String> list = execEnv(command, env);
         if (!list.isEmpty()) {
             if (isErrorOutStandingUncommittedMerges(list.get(0))) {
-                throw new HgException(org.openide.util.NbBundle.getMessage(HgCommand.class, "MSG_WARN_MERGE_COMMIT_TEXT"));
+                throw new HgException(NbBundle.getMessage(HgCommand.class, "MSG_WARN_MERGE_COMMIT_TEXT"));
              }
         } 
         return list;
@@ -261,9 +261,9 @@ public class HgCommand {
         if (bThrowException) {
             if (!list.isEmpty()) {
                 if  (isErrorUpdateSpansBranches(list.get(0))) {
-                    throw new HgException(org.openide.util.NbBundle.getMessage(HgCommand.class, "MSG_WARN_UPDATE_MERGE_TEXT"));
+                    throw new HgException(NbBundle.getMessage(HgCommand.class, "MSG_WARN_UPDATE_MERGE_TEXT"));
                 } else if (isErrorOutStandingUncommittedMerges(list.get(0))) {
-                    throw new HgException(org.openide.util.NbBundle.getMessage(HgCommand.class, "MSG_WARN_UPDATE_COMMIT_TEXT"));
+                    throw new HgException(NbBundle.getMessage(HgCommand.class, "MSG_WARN_UPDATE_COMMIT_TEXT"));
                 }
             }
         }
@@ -299,7 +299,7 @@ public class HgCommand {
 
         List<String> list = exec(command);
         if (!list.isEmpty())
-            throw new HgException(list.get(0));
+            handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_ROLLBACK_FAILED"));
         
         return list;
     }
@@ -372,7 +372,7 @@ public class HgCommand {
         List<String> list = exec(command);
         if (!list.isEmpty() && 
              isErrorAbort(list.get(list.size() -1))) {
-            throw new HgException( list.get(list.size() -1));
+            handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"));
         }
         return list;
     }
@@ -404,7 +404,7 @@ public class HgCommand {
         List<String> list = exec(command);
         if (!list.isEmpty() && 
              isErrorAbort(list.get(list.size() -1))) {
-            throw new HgException( list.get(list.size() -1));
+            handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"));
         }
         return list;
     }
@@ -451,7 +451,7 @@ public class HgCommand {
         List<String> list = exec(command);
         if (!list.isEmpty() && 
              isErrorAbort(list.get(list.size() -1))) {
-            throw new HgException( list.get(list.size() -1));
+            handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"));
         }
         return list;
     }
@@ -479,7 +479,7 @@ public class HgCommand {
         List<String> list = exec(command);
         if (!list.isEmpty() && 
              isErrorAbort(list.get(list.size() -1))) {
-            throw new HgException( list.get(list.size() -1));
+            handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"));
         }
         return list;
     }
@@ -508,7 +508,7 @@ public class HgCommand {
         List<String> list = exec(command);
         if (!list.isEmpty() && 
              isErrorAbort(list.get(list.size() -1))) {
-            throw new HgException( list.get(list.size() -1));
+            handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"));
         }
         return list;
     }
@@ -531,12 +531,12 @@ public class HgCommand {
         List<String> list = exec(command);
         if (!list.isEmpty()) {
             if (isErrorNoView(list.get(list.size() -1))) {
-                throw new HgException(org.openide.util.NbBundle.getMessage(HgCommand.class, "MSG_WARN_NO_VIEW_TEXT"));
+                throw new HgException(NbBundle.getMessage(HgCommand.class, "MSG_WARN_NO_VIEW_TEXT"));
              }
             else if (isErrorHgkNotFound(list.get(0))) {
-                throw new HgException(org.openide.util.NbBundle.getMessage(HgCommand.class, "MSG_WARN_HGK_NOT_FOUND_TEXT"));
+                throw new HgException(NbBundle.getMessage(HgCommand.class, "MSG_WARN_HGK_NOT_FOUND_TEXT"));
             } else if (isErrorAbort(list.get(list.size() -1))) {
-                throw new HgException( list.get(list.size() -1));
+                handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"));
             }
         } 
         return list;
@@ -585,7 +585,7 @@ public class HgCommand {
 
         List<String> list = exec(command);
         if (!list.isEmpty() && isErrorAbort(list.get(0)))
-            throw new HgException( list.get(0));
+            handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"));
         return !list.isEmpty();
     }
 
@@ -639,7 +639,7 @@ public class HgCommand {
 
         List<String> list = exec(command);
         if (!list.isEmpty() && isErrorNoRepository(list.get(0)))
-            throw new HgException( list.get(0));
+            handleError(command, list, NbBundle.getMessage(HgCommand.class, "NO_REPOSITORY_ERR"));
         return list;
     }
     
@@ -669,7 +669,7 @@ public class HgCommand {
         
         List<String> list = exec(command);
         if (!list.isEmpty() && isErrorNoRepository(list.get(0)))
-            throw new HgException( list.get(0));
+            handleError(command, list, NbBundle.getMessage(HgCommand.class, "NO_REPOSITORY_ERR"));
         return list;
     }
     
@@ -719,7 +719,7 @@ public class HgCommand {
         List<String> list = exec(command);
         
         if (!list.isEmpty() && isErrorNoRepository(list.get(0)))
-            throw new HgException( list.get(0));
+            handleError(command, list, NbBundle.getMessage(HgCommand.class, "NO_REPOSITORY_ERR"));
     }
     
     /**
@@ -741,7 +741,7 @@ public class HgCommand {
 
         List<String> list = exec(command);
         if (!list.isEmpty())
-            throw new HgException( list.get(0));
+            handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_CREATE_FAILED"));
     }
     
     /**
@@ -779,7 +779,7 @@ public class HgCommand {
         List<String> list = exec(command);
         if (!list.isEmpty() && 
              isErrorAbort(list.get(0)))
-            throw new HgException( list.get(0));
+            handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"));
         return list;
     }
     
@@ -824,10 +824,10 @@ public class HgCommand {
             
             if (!list.isEmpty()
                     && (isErrorNotTracked(list.get(0)) || isErrorCannotReadCommitMsg(list.get(0))))
-                throw new HgException( list.get(0));
+                handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMIT_FAILED"));
             
         }catch (IOException ex){
-            throw new HgException(HG_CANNOT_READ_COMMIT_MESSAGE_ERR);
+            throw new HgException(NbBundle.getMessage(HgCommand.class, "MSG_FAILED_TO_READ_COMMIT_MESSAGE"));
         }finally{
             if (commitMessage != null && tempfile != null){
                 tempfile.delete();
@@ -864,7 +864,7 @@ public class HgCommand {
         
         List<String> list = exec(command);
         if (!list.isEmpty())
-            throw new HgException( list.get(0));
+            handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_RENAME_FAILED"));
     }
     
     /**
@@ -896,7 +896,7 @@ public class HgCommand {
         }
         List<String> list = exec(command);
         if (!list.isEmpty() && isErrorAlreadyTracked(list.get(0)))
-            throw new HgException( list.get(0));
+            handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_ALREADY_TRACKED"));
     }
 
     /**
@@ -928,7 +928,7 @@ public class HgCommand {
         }
         List<String> list = exec(command);
         if (!list.isEmpty() && isErrorNoChangeNeeded(list.get(0)))
-            throw new HgException(list.get(0));
+            handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_REVERT_FAILED"));
     }
 
     /**
@@ -958,7 +958,7 @@ public class HgCommand {
         command.add(file.getAbsolutePath());
         List<String> list = exec(command);
         if (!list.isEmpty() && isErrorAlreadyTracked(list.get(0)))
-            throw new HgException( list.get(0));
+            handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_ALREADY_TRACKED"));
     }
     
     /**
@@ -983,7 +983,7 @@ public class HgCommand {
         command.add(file.getAbsolutePath());
         List<String> list = exec(command);
         if (!list.isEmpty() && isErrorNoRepository(list.get(0)))
-            throw new HgException( list.get(0));
+            handleError(command, list, NbBundle.getMessage(HgCommand.class, "NO_REPOSITORY_ERR"));
         return list;
     }
   
@@ -1437,7 +1437,7 @@ public class HgCommand {
 
         List<String> list = exec(command);
         if (!list.isEmpty() && isErrorAlreadyTracked(list.get(0)))
-            throw new HgException( list.get(0));
+            handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_ALREADY_TRACKED"));
     }
     
     /**
@@ -1461,7 +1461,7 @@ public class HgCommand {
 
         List<String> list = exec(command);
         if (!list.isEmpty())
-            throw new HgException( list.get(0));
+            handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_EXPORT_FAILED"));
     }
     
     /**
@@ -1485,7 +1485,7 @@ public class HgCommand {
         List<String> list = exec(command);
         // The first line of output is "applying <filename>" // NOI18N
         if (!list.isEmpty() && list.size() > 1) {
-            throw new HgException( list.get(1));
+            handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_IMPORT_FAILED"));
         }
     }
     
@@ -1629,7 +1629,7 @@ public class HgCommand {
         
         List<String> list =  exec(command);
         if (!list.isEmpty() && isErrorNoRepository(list.get(0)))
-            throw new HgException(list.get(0));
+            handleError(command, list, NbBundle.getMessage(HgCommand.class, "NO_REPOSITORY_ERR"));
         return list;
     }
     /**
@@ -1685,7 +1685,8 @@ public class HgCommand {
                 if (proc.exitValue() == 255) {
                     Mercurial.LOG.log(Level.FINE, "execEnv():  process returned 255"); // NOI18N
                     if (list.isEmpty()) {
-                        throw new HgException(HG_UNABLE_EXECUTE_COMMAND_ERR);
+                        Mercurial.LOG.log(Level.SEVERE, "command: " + command); // NOI18N
+                        throw new HgException(NbBundle.getMessage(HgCommand.class, "MSG_UNABLE_EXECUTE_COMMAND"));
                     }
                 }
             } catch (InterruptedException e) {
@@ -1704,15 +1705,15 @@ public class HgCommand {
                 }
                 proc.destroy();
             }
-            throw new HgException(HG_CANCELLED_COMMAND_ERR);
+            throw new HgException(NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_CANCELLED"));
         }catch(IOException e){
             // Hg does not seem to be returning error status != 0
             // even when it fails when for instance adding an already tracked file to
             // the repository - we will have to examine the output in the context of the
             // calling func and raise exceptions there if needed
-            Mercurial.LOG.log(Level.FINE, "execEnv():  execEnv(): IOException " + e); // NOI18N
+            Mercurial.LOG.log(Level.SEVERE, "execEnv():  execEnv(): IOException " + e); // NOI18N
              
-            throw new HgException(HG_UNABLE_EXECUTE_COMMAND_ERR);
+            throw new HgException(NbBundle.getMessage(HgCommand.class, "MSG_UNABLE_EXECUTE_COMMAND"));
         }finally{
             if (input != null) {
                 try {
@@ -1742,6 +1743,13 @@ public class HgCommand {
             return HG_COMMAND;
         else
             return defaultPath + File.separatorChar + HG_COMMAND;
+    }
+
+    private static void handleError(List<String> command, List<String> list, String message) throws HgException{
+        Mercurial.LOG.log(Level.WARNING, "command: " + command); // NOI18N
+        Mercurial.LOG.log(Level.WARNING, "output: " + list); // NOI18N
+
+        throw new HgException(message);
     }
 
     public static boolean isMergeNeededMsg(String msg) {
