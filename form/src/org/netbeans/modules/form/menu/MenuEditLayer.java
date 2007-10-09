@@ -196,6 +196,10 @@ public class MenuEditLayer extends JPanel {
         }
     }
     
+    DragOperation getDragOperation() {
+        return dragop;
+    }
+    
     private boolean assistantInitialized = false;
     private void initAssistant() {
         String missingMenubarMsg = "You cannot add a menu component to a form without a menubar";

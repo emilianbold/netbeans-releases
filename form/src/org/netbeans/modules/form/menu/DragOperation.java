@@ -167,8 +167,8 @@ class DragOperation {
                     }
                     if(comp instanceof JSeparator) {
                         p("it's a separator");
-                        jcomp.setBorder(BorderFactory.createLineBorder(new Color(0xFFA400), 1));//, thickness)MenuEditLayer.DRAG_SEPARATOR_BORDER);
-                        jcomp.setPreferredSize(new Dimension(80,5));
+                        //jcomp.setBorder(BorderFactory.createLineBorder(new Color(0xFFA400), 1));//, thickness)MenuEditLayer.DRAG_SEPARATOR_BORDER);
+                        //jcomp.setPreferredSize(new Dimension(80,5));
                         p("border = " + jcomp.getBorder());
                     }
                     return jcomp;
@@ -306,6 +306,10 @@ class DragOperation {
                 menuEditLayer.showMenuPopup(menu);
             }
             
+            if(child == null) {
+                menuEditLayer.dropTargetLayer.clearDropTarget();
+            }
+            
         } else {
             p("DragOperation: dragComponent shouldn't be null when moving");
         }
@@ -345,6 +349,7 @@ class DragOperation {
     
     // only looks at JMenu and JMenubar RADComponents as well as anything in the popups
     JComponent getDeepestComponent(Point pt) {
+        if(pt == null) return null;
         RADComponent rad = menuEditLayer.formDesigner.getHandleLayer().getMetaComponentAt(pt, HandleLayer.COMP_DEEPEST);
         if(rad != null && (JMenu.class.isAssignableFrom(rad.getBeanClass()) ||
                 JMenuBar.class.isAssignableFrom(rad.getBeanClass()))) {

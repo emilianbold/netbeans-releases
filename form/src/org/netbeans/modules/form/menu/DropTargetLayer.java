@@ -54,6 +54,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
+import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.netbeans.modules.form.RADComponent;
@@ -203,12 +204,21 @@ class DropTargetLayer extends JComponent {
             }
         }
         
+        JComponent payload = canvas.getDragOperation().getDragComponent();
+        if(payload instanceof JSeparator && canvas.getDragOperation().getDeepestComponent(currentTargetPoint) != null) {
+            g2.translate(payload.getX(), payload.getY());
+            g2.setStroke(SELECTION_STROKE);
+            g2.setColor(SELECTION_COLOR);
+            g2.drawRect(0, 0, 50, 3);
+            g2.translate(-payload.getX(), -payload.getY());
+        }
+        
         // draw the menu item subselection rectangles
         //JComponent selected = null;//canvas.getSelectedComponent();
         for(RADComponent rad : canvas.getSelectedRADComponents()) {
             if(rad != null) {
                 JComponent selected = (JComponent) canvas.formDesigner.getComponent(rad);
-                drawSelectedComponent(g2, selected);
+                drawSelectedComponent(g2, selected, rad);
             }
         }
         
@@ -230,7 +240,7 @@ class DropTargetLayer extends JComponent {
         }
         g2.drawRect(mblocation.x+2, mblocation.y+2, mb.getHeight()-4, mb.getHeight()-4);
     }
-    private void drawSelectedComponent(Graphics2D g2, JComponent selected) {
+    private void drawSelectedComponent(Graphics2D g2, JComponent selected, RADComponent rad) {
         // draw normal border around toplevel menus
         if (selected instanceof JMenu && selected.getParent() instanceof JMenuBar) {
             JMenuItem menu = (JMenuItem) selected;
@@ -241,7 +251,7 @@ class DropTargetLayer extends JComponent {
             g2.drawRect(0, 0, menu.getWidth() - 1, menu.getHeight() - 1);
             g2.translate(-location.x, -location.y);
         }
-
+        
         // style only menuitems and menus that aren't also toplevel menus
         // don't do subrect drawing if doing a drag
         if (selected instanceof JMenuItem && !(selected.getParent() instanceof JMenuBar) && currentTargetComponent == null) {
