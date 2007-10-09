@@ -52,10 +52,13 @@ import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 import org.xml.sax.InputSource;
 
 import org.netbeans.api.xml.cookies.ValidateXMLCookie;
 import org.netbeans.api.xml.cookies.CheckXMLCookie;
+import org.netbeans.modules.xml.api.XmlFileEncodingQueryImpl;
+import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.netbeans.spi.xml.cookies.*;
 import org.w3c.dom.Document;
 import org.xml.sax.ErrorHandler;
@@ -94,7 +97,7 @@ public class StrutsConfigDataObject extends MultiDataObject
         CookieSet cookies = getCookieSet();
         
         getCookieSet().add(StrutsConfigEditorSupport.class, this);
-        
+        getCookieSet().assign(FileEncodingQueryImplementation.class, XmlFileEncodingQueryImpl.singleton());
         // Creates Check XML and Validate XML context actions
         InputSource in = DataObjectAdapters.inputSource(this);
         CheckXMLCookie checkCookie = new CheckXMLSupport(in);
@@ -126,7 +129,12 @@ public class StrutsConfigDataObject extends MultiDataObject
         else
             return null;
     }
-    
+
+    @Override
+    public Lookup getLookup() {
+        return getCookieSet().getLookup();
+    }
+
     /** Gets editor support for this data object. */
     public StrutsConfigEditorSupport getEditorSupport() {
         if(editorSupport == null) {
