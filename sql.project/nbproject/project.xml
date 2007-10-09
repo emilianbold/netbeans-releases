@@ -289,7 +289,7 @@ made subject to such option by the copyright holder.
                         <specification-version>3.9.12</specification-version>
                     </run-dependency>
                 </dependency>
-		    <dependency>
+				<dependency>
                     <code-name-base>org.netbeans.soa.libs.wsdl4j</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -298,8 +298,11 @@ made subject to such option by the copyright holder.
                         <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
-
-            </module-dependencies>
+				</module-dependencies>
+				<class-path-extension>
+					<runtime-relative-path>ext/sql/jaxp-ri/jaxp-ri-1.4.jar</runtime-relative-path>
+					<binary-origin>../external/jaxp-ri-1.4.jar</binary-origin>
+				</class-path-extension>
             <public-packages/>
 		</data> 
 	</configuration>
