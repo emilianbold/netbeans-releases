@@ -1,0 +1,3 @@
+org.netbeans.modules.profiler.j2ee.tomcat.Tomcat5IntegrationProvider
+org.netbeans.modules.profiler.j2ee.tomcat.Tomcat55IntegrationProvider
+org.netbeans.modules.profiler.j2ee.tomcat.Tomcat4IntegrationProvider

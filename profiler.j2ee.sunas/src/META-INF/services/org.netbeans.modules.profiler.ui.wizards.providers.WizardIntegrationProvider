@@ -1,0 +1,3 @@
+org.netbeans.modules.profiler.j2ee.sunas.SunAS7IntegrationProvider
+org.netbeans.modules.profiler.j2ee.sunas.SunAS8IntegrationProvider
+org.netbeans.modules.profiler.j2ee.sunas.GlassfishIntegrationProvider
