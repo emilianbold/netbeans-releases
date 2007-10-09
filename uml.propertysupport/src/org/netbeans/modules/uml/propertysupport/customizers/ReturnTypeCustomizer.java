@@ -55,21 +55,6 @@ import java.util.ResourceBundle;
 import javax.swing.JTable;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
-import org.netbeans.modules.uml.core.configstringframework.ConfigStringHelper;
-import org.netbeans.modules.uml.core.configstringframework.IConfigStringTranslator;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicity;
-import org.netbeans.modules.uml.core.support.umlutils.IPropertyElement;
-import org.netbeans.modules.uml.core.support.umlutils.IPropertyDefinition;
-import org.netbeans.modules.uml.core.support.umlsupport.IStrings;
-import org.netbeans.modules.uml.core.support.umlsupport.Strings;
-import org.netbeans.modules.uml.core.metamodel.structure.IProject;
-import org.netbeans.modules.uml.core.typemanagement.ITypeManager;
-import org.netbeans.modules.uml.core.typemanagement.IPickListManager;
-import org.netbeans.modules.uml.ui.support.applicationmanager.IProduct;
-import org.netbeans.modules.uml.ui.support.applicationmanager.IProductProjectManager;
-import org.netbeans.modules.uml.ui.support.ProductHelper;
-import org.netbeans.modules.uml.propertysupport.nodes.CustomPropertyEditor;
-import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import java.util.Vector;
@@ -80,9 +65,26 @@ import javax.swing.JComboBox;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
-import org.netbeans.modules.uml.common.generics.ETPairT;
+
+import org.netbeans.modules.uml.core.configstringframework.ConfigStringHelper;
+import org.netbeans.modules.uml.core.configstringframework.IConfigStringTranslator;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicity;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicityRange;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IParameter;
+import org.netbeans.modules.uml.core.metamodel.structure.IProject;
+import org.netbeans.modules.uml.core.support.umlutils.IPropertyElement;
+import org.netbeans.modules.uml.core.support.umlutils.IPropertyDefinition;
+import org.netbeans.modules.uml.core.support.umlsupport.IStrings;
+import org.netbeans.modules.uml.core.support.umlsupport.Strings;
+import org.netbeans.modules.uml.core.typemanagement.ITypeManager;
+import org.netbeans.modules.uml.core.typemanagement.IPickListManager;
+import org.netbeans.modules.uml.ui.support.applicationmanager.IProduct;
+import org.netbeans.modules.uml.ui.support.applicationmanager.IProductProjectManager;
+import org.netbeans.modules.uml.ui.support.ProductHelper;
+import org.netbeans.modules.uml.common.generics.ETPairT;
+import org.netbeans.modules.uml.propertysupport.nodes.CustomPropertyEditor;
+
+import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -91,7 +93,7 @@ import org.openide.util.Utilities;
  * @author  khu
  */
 public class ReturnTypeCustomizer extends javax.swing.JPanel 
-        implements Customizer, EnhancedCustomPropertyEditor
+    implements Customizer, EnhancedCustomPropertyEditor
 {
     private ResourceBundle bundle = NbBundle.getBundle(ReturnTypeCustomizer.class);
     private IPropertyElement mElement = null;
@@ -553,9 +555,14 @@ private void returnTypeChangedHandler(java.awt.event.ItemEvent evt) {//GEN-FIRST
                 for(RangeData data : ranges) 
                 {
                     IMultiplicityRange range = multiplicity.createRange();
-                    
                     range.setRange(data.getLower(), data.getUpper());
-                    range.setCollectionType(data.getCollection());
+                    
+                    // IZ=117383
+                    // collection type needed to be converted from format
+                    // "ArrayList : java::util" to "java::util::ArrayList"
+                    // before being persisted
+                    range.setCollectionType(PropertyDataFormatter
+                        .translateToFullyQualifiedName(data.getCollection()));
                     
                     multiplicity.addRange(range);
                 }
@@ -759,8 +766,7 @@ private void returnTypeChangedHandler(java.awt.event.ItemEvent evt) {//GEN-FIRST
                 retVal.addItem(s);
             }
             
-            // IZ=117383: the value is already in the format that is desired
-            // String t = PropertyDataFormatter.translateFullyQualifiedName((String)value);
+            String t = PropertyDataFormatter.translateFullyQualifiedName((String)value);
             retVal.setSelectedItem(value);
             
             return retVal;
@@ -775,8 +781,7 @@ private void returnTypeChangedHandler(java.awt.event.ItemEvent evt) {//GEN-FIRST
         @Override
         protected void setValue(Object value)
         {
-            // IZ=117383: the value is already in the format that is desired
-            // Object realValue = PropertyDataFormatter.translateFullyQualifiedName((String)value);
+            Object realValue = PropertyDataFormatter.translateFullyQualifiedName((String)value);
             super.setValue(value);
         }
     }
