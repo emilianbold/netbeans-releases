@@ -166,10 +166,12 @@ public final class CreateTestAction extends TestAction {
             }
         }
 
-        JUnitPlugin plugin = TestUtil.getPluginForProject(theProject);
-        result &= JUnitPluginTrampoline.DEFAULT.canCreateTests(
-                        plugin,
-                        fileObjs.toArray(new FileObject[fileObjs.size()]));
+        if (theProject != null) {
+            JUnitPlugin plugin = TestUtil.getPluginForProject(theProject);
+            result &= JUnitPluginTrampoline.DEFAULT.canCreateTests(
+                            plugin,
+                            fileObjs.toArray(new FileObject[fileObjs.size()]));
+        }
 
         return result;
     }
