@@ -1958,7 +1958,7 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
                         eb.addEjb(ejb);
                     }
                     ejb.setJndiName(name);
-                    String factory = "jms/" + name + "Factory"; //NOI18N
+                    String factory = name + "Factory"; //NOI18N
                     MdbConnectionFactory connFactory = ejb.newMdbConnectionFactory();
                     connFactory.setJndiName(factory);
                     ejb.setMdbConnectionFactory(connFactory);
