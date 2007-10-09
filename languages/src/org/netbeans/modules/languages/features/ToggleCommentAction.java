@@ -53,7 +53,7 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.editor.ext.ExtKit.CommentAction;
+import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.languages.Feature;
@@ -64,7 +64,7 @@ import org.netbeans.modules.languages.LanguagesManager;
  *
  * @author Daniel Prusa
  */
-public class ToggleCommentAction extends CommentAction {
+public class ToggleCommentAction extends ExtKit.ToggleCommentAction {
 
     public ToggleCommentAction() {
         super(""); // NOI18N

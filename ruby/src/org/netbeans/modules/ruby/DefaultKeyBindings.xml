@@ -50,7 +50,6 @@ See http://wiki.netbeans.info/wiki/view/DevFaqLogicalKeybindings for action name
 -->
 <bindings>
     <bind actionName="goto-declaration" key="D-B"/>
-    <bind actionName="toggle-comment" key="D-SLASH"/>
     <bind actionName="goto-help" key="O-F1"/>
     <!--
     <bind actionName="select-element-next" key="OS-PERIOD"/>

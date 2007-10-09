@@ -276,12 +276,11 @@ public class LanguagesEditorKit extends NbEditorKit {
         c.addMouseMotionListener (hl);
         c.addMouseListener (hl);
         c.addCaretListener (new MarkOccurrencesSupport (c));
-        
+
         //HACK:
         c.getInputMap ().put (KeyStroke.getKeyStroke (KeyEvent.VK_R, InputEvent.CTRL_DOWN_MASK), "in-place-refactoring");
-        c.getInputMap ().put (KeyStroke.getKeyStroke (KeyEvent.VK_SLASH, InputEvent.CTRL_DOWN_MASK), "comment");
     }
-    
+
     public @Override String getContentType() {
         return mimeType;
     }

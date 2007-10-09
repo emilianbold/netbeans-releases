@@ -54,7 +54,6 @@ made subject to such option by the copyright holder.
 
     <bind actionName="goto-super-implementation" key="DS-P"/>
     <bind actionName="goto-declaration" key="D-B"/>    
-    <bind actionName="toggle-comment" key="D-SLASH"/>
     <bind actionName="goto-help" key="O-F1"/>
 <!--    <bind actionName="make-is" key="O-U$I"/> -->
 <!--    <bind actionName="make-getter" key="O-U$G"/> -->

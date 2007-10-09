@@ -553,10 +553,6 @@ public class RhtmlKit extends HTMLKit {
         
         public RhtmlToggleCommentAction() {
             super(ERB_COMMENT);
-            // "Rebind" the action name here since Schliemann has bound the
-            // toggle-comment keybinding to an action named "comment"
-            putValue(Action.NAME, "comment");
-            
         }
 
         @Override
