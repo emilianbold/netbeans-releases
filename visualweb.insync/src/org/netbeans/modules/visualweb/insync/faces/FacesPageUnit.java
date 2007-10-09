@@ -313,8 +313,7 @@ public class FacesPageUnit extends FacesUnit implements PropertyChangeListener {
         if (srcEncoding == null || srcEncoding.length() == 0)
             srcEncoding = pgdirective.getAttribute("pageEncoding");
         if (srcEncoding == null || srcEncoding.length() == 0)
-            srcEncoding = defaultSrcEncoding;
-        pgunit.setEncoding(srcEncoding);
+            srcEncoding = defaultSrcEncoding;        
         pgunit.ensureAttributeValue(pgdirective, "pageEncoding", srcEncoding);
 
         // set the page response content type and charset (encoding)

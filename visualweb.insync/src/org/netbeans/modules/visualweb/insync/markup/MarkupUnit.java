@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.visualweb.insync.markup;
 
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
 import com.sun.rave.designtime.markup.MarkupDesignBean;
 import org.netbeans.modules.visualweb.insync.InSyncServiceProvider;
@@ -56,6 +57,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Locale;
@@ -69,6 +71,7 @@ import org.apache.xml.serialize.OutputFormat;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.visualweb.extension.openide.util.Trace;
@@ -384,7 +387,6 @@ public class MarkupUnit extends SourceUnit implements org.w3c.dom.events.EventLi
                 else {
                     if (xencoding != null && xencoding.length() > 0) {
                         encoding = xencoding;
-                        fobj.setAttribute("Content-Encoding", encoding); // NOI18N
                     }
                 }
 //            }
@@ -648,23 +650,8 @@ public class MarkupUnit extends SourceUnit implements org.w3c.dom.events.EventLi
      * @return the current encoding in IANA form, or null for default (UTF8)
      */
     public String getEncoding() {
-        // grab the file object's idea of the source encoding (from .nbattrs)
-        Object encodingO = fobj.getAttribute("Content-Encoding"); // NOI18N
-        return encodingO instanceof String ? (String)encodingO : null;
-    }
-
-    /**
-     * Sets the encoding for this markup document. This encoding will be used by consumers of the
-     * document (such as browsers) to determine charset.
-     * @param encoding May be the Java or IANA encoding
-     */
-    public void setEncoding(String encoding) {
-        try {
-            fobj.setAttribute("Content-Encoding", encoding); // NOI18N
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
+        Charset encodingCharset = FileEncodingQuery.getEncoding(fobj);
+        return (encodingCharset == null ? null : encodingCharset.name());        
     }
 
     static final String BLANK = "                                                                                                                        ";
