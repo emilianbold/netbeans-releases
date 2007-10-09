@@ -59,6 +59,7 @@ import java.util.logging.Logger;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
+import org.openide.util.Parameters;
 
 /**
  * Provides access to Deployment Descriptor root ({@link org.netbeans.modules.j2ee.dd.api.web.WebApp} object)
@@ -94,7 +95,17 @@ public final class DDProvider {
         return ddProvider;
     }
     
+    /**
+     * Gets the root bean graph representing the given web.xml deployment descriptor
+     * file. 
+     * 
+     * @param fo the file object representing a web.xml file. Must not be null.
+     * @return the <code>WebApp</code> representing the given <code>fo</code>.
+     * @throws IOException if the given <code>fo</code> could not be read
+     * or if parsing it failed.
+     */ 
     public WebApp getDDRoot(FileObject fo) throws java.io.IOException {
+        Parameters.notNull("fo", fo); //NO18N
         WebAppProxy webApp = null;
         
         synchronized (ddMap) {
