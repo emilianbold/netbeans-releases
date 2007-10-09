@@ -116,6 +116,7 @@ import org.netbeans.spi.editor.hints.Severity;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -266,7 +267,13 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
 
                 allUnusedImports.add(handle);
                 if (RemoveUnusedImportFix.isEnabled()) {
-                    errors.add(ErrorDescriptionFactory.createErrorDescription(Severity.VERIFIER, "Unused import", new FixAllImportsFixList(removeImport, removeAllUnusedImports, allUnusedImports), doc, line));
+                    errors.add(ErrorDescriptionFactory.createErrorDescription(
+                            Severity.VERIFIER,
+                            NbBundle.getMessage(SemanticHighlighter.class, "LBL_UnusedImport"),
+                            new FixAllImportsFixList(removeImport, removeAllUnusedImports, allUnusedImports),
+                            doc,
+                            line)
+                    );
                 }
             }
         }
