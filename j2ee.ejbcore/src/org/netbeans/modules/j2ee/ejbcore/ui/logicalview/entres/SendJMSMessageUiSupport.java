@@ -48,7 +48,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComboBox;
 import javax.swing.JList;
@@ -90,7 +92,7 @@ public abstract class SendJMSMessageUiSupport extends MessageDestinationUiSuppor
         for (Project p : openProjects) {
             if (EjbJar.getEjbJars(p).length > 0) {
                 try {
-                    List<String> drivens = getMdbs(p);
+                    Map<String, String> drivens = getMdbs(p);
                     populateMdbs(mdbs, drivens, p);
                 } catch (IOException ioe) {
                     Exceptions.printStackTrace(ioe);
@@ -138,12 +140,17 @@ public abstract class SendJMSMessageUiSupport extends MessageDestinationUiSuppor
         }
     }
     
-    private static void populateMdbs(List<MdbHolder> mdbs, final List<String> drivens, final Project project) {
-        for (String mdbName : drivens) {
+    private static void populateMdbs(List<MdbHolder> mdbs, final Map<String, String> drivens, final Project project) {
+        for (Map.Entry<String, String> mdbEntry : drivens.entrySet()) {
             J2eeModuleProvider j2eeModuleProvider = getJ2eeModuleProvider(project);
             try {
                 MessageDestination messageDestination = null;
+                String mdbName = mdbEntry.getKey();
+                String mappedName = mdbEntry.getValue();
                 String destName = j2eeModuleProvider.getConfigSupport().findMessageDestinationName(mdbName);
+                if (destName == null && mappedName != null) {
+                    destName = mappedName;
+                }
                 if (destName != null) {
                     messageDestination = j2eeModuleProvider.getConfigSupport().findMessageDestination(destName);
                     mdbs.add(new MdbHolder(mdbName, messageDestination, project));
@@ -157,29 +164,30 @@ public abstract class SendJMSMessageUiSupport extends MessageDestinationUiSuppor
     private static J2eeModuleProvider getJ2eeModuleProvider(Project project) {
         return project.getLookup().lookup(J2eeModuleProvider.class);
     }
-    
-    private static List<String> getMdbs(Project project) throws IOException {
+
+    // kay ejb-name and value is mapped-name
+    private static Map<String, String> getMdbs(Project project) throws IOException {
         
-        List<String> mdbs = new ArrayList<String>();
+        Map<String, String> mdbs = new HashMap<String, String>();
         
         for (EjbJar ejbModule : EjbJar.getEjbJars(project)) {
             MetadataModel<EjbJarMetadata> metadataModel = ejbModule.getMetadataModel();
-            List<String> mdbsInModule = metadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, List<String>>() {
-                public List<String> run(EjbJarMetadata metadata) throws Exception {
-                    List<String> result = new ArrayList<String>();
+            Map<String, String> mdbsInModule = metadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, Map<String, String>>() {
+                public Map<String, String> run(EjbJarMetadata metadata) throws Exception {
+                    Map<String, String> result = new HashMap<String, String>();
                     EnterpriseBeans eb = metadata.getRoot().getEnterpriseBeans();
                     if (eb == null) {
-                        return Collections.<String>emptyList();
+                        return Collections.<String, String>emptyMap();
                     }
 
                     MessageDriven[] messageDrivens = eb.getMessageDriven();
                     for (MessageDriven mdb : messageDrivens) {
-                        result.add(mdb.getEjbName());
+                        result.put(mdb.getEjbName(), mdb.getMappedName());
                     }
                     return result;
                 }
             });
-            mdbs.addAll(mdbsInModule);
+            mdbs.putAll(mdbsInModule);
         }
         
         return mdbs;
