@@ -61,12 +61,7 @@ public class ProjectsKeyArray extends Children.Keys<CsmProject> {
     private java.util.Map<CsmProject,SortedName> myProjects;
     private ChildrenUpdater childrenUpdater;
     private static Comparator<java.util.Map.Entry<CsmProject, SortedName>> COMARATOR = new ProjectComparator();
-    private Object lock = new Object(){
-        @Override
-        public String toString() {
-            return "ProjectsKeyArray lock";// NOI18N
-        }
-    };
+    private Object lock = new String("ProjectsKeyArray lock");// NOI18N
     
     public ProjectsKeyArray(ChildrenUpdater childrenUpdater){
         this.childrenUpdater = childrenUpdater;
