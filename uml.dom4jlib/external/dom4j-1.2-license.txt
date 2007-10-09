@@ -1,9 +1,11 @@
 Name: dom4j
 Version: 1.2
 OSR: 6878
-License: BSD
+License: DOM4J-BSD
 Origin: http://dom4j.org/
 Description: dom4j is an easy to use, open source library for working with XML, XPath and XSLT on the Java platform using the Java Collections Framework and with full support for DOM, SAX and JAXP.
+
+BSD style license
 
 Redistribution and use of this software and associated documentation
 ("Software"), with or without modification, are permitted provided that

@@ -1,7 +1,9 @@
 Name: Tom Sawyer Visualization Library
 Version: 6.0
 OSR: 139749
-License: SLA
+License: TOM-SAWYER-SLA-6.0
+Origin: http://www.tomsawyer.com
+Description: Supports the UML drawing area.
 
 TOM SAWYER 6.0 IN NETBEANS 6.0
 
