@@ -283,16 +283,15 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
                                          String testClassName,
                                          TreePath compUnitPath,
                                          WorkingCopy workingCopy) {
-        String srcClassName = srcTopClass.getSimpleName().toString();
-        String tstClassName = TestUtil.getTestClassName(srcClassName);
-
         List<ExecutableElement> srcMethods
                                 = findTestableMethods(srcTopClass);
         boolean srcHasTestableMethods = !srcMethods.isEmpty();
 
+        final String testClassSimpleName = TestUtil.getSimpleName(testClassName);
+
         ClassTree tstTopClass = null;
         for (ClassTree tstClass : tstTopClasses) {
-            if (tstClass.getSimpleName().contentEquals(tstClassName)) {
+            if (tstClass.getSimpleName().contentEquals(testClassSimpleName)) {
                 tstTopClass = tstClass;
                 break;
             }
@@ -322,10 +321,9 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
                                     tstTopClass);
             }
         } else {
-            if (srcHasTestableMethods
-                    || tstClassName.equals(TestUtil.getSimpleName(testClassName))) {
+            if (srcHasTestableMethods) {
                 tstTopClass = generateNewTestClass(workingCopy,
-                                                   tstClassName,
+                                                   testClassSimpleName,
                                                    srcTopClass,
                                                    srcMethods);
                 //PENDING - add the top class to the CompilationUnit
