@@ -345,12 +345,15 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
             return formatEstimate(estimatedCompletion);
         }
         if (percentage != -1) {
-            if (percentage < 1 || percentage > 99) {
-                int x = (int)(percentage * 100);
-                int y = (int)percentage;
-                return "" + y + "." + (x - y * 100) + "%";
-            } 
-            return "" + (int)percentage + "%";
+            //#
+//            if (percentage < 1 || percentage > 99) {
+//                int x = (int)(percentage * 100);
+//                int y = (int)percentage;
+//                return "" + y + "." + (x - y * 100) + "%";
+//            } 
+            int rounded = (int)Math.round(percentage);
+            rounded = Math.min(99, rounded);
+            return "" + rounded + "%"; //NOI18N
         }
         return "";
     }
