@@ -54,6 +54,7 @@ import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.debugger.jpda.EditorContext.MethodArgument;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
+import org.openide.ErrorManager;
 
 
 /**
@@ -145,6 +146,25 @@ public class EditorContextBridge {
         return original.replace (File.separatorChar, '/');
     }
     
+    public static int getCurrentOffset() {
+        // TODO: return getContext ().getCurrentOffset();
+        try {
+            return (Integer) getContext ().getClass().getMethod("getCurrentOffset", new Class[] {}).
+                    invoke(getContext(), new Object[] {});
+        } catch (java.lang.reflect.InvocationTargetException itex) {
+            Throwable tex = itex.getTargetException();
+            if (tex instanceof RuntimeException) {
+                throw (RuntimeException) tex;
+            } else {
+                ErrorManager.getDefault().notify(tex);
+                return 0;
+            }
+        } catch (Exception ex) {
+            ErrorManager.getDefault().notify(ex);
+            return 0;
+        }
+    }
+    
     
     // innerclasses ............................................................
     
@@ -201,6 +221,43 @@ public class EditorContextBridge {
             if (i < 1)
                 return cp2.getCurrentLineNumber ();
             return i;
+        }
+        
+        public int getCurrentOffset() {
+            Integer i = null;
+            try {
+                i = (Integer) cp1.getClass().getMethod("getCurrentOffset", new Class[] {}).
+                        invoke(getContext(), new Object[] {});
+            } catch (java.lang.reflect.InvocationTargetException itex) {
+                Throwable tex = itex.getTargetException();
+                if (tex instanceof RuntimeException) {
+                    throw (RuntimeException) tex;
+                } else {
+                    ErrorManager.getDefault().notify(tex);
+                    return 0;
+                }
+            } catch (Exception ex) {
+                // Ignore, we have another attempt with cp2
+                //ErrorManager.getDefault().notify(ex);
+            }
+            if (i == null || i.intValue() < 1) {
+                try {
+                    i = (Integer) cp2.getClass().getMethod("getCurrentOffset", new Class[] {}).
+                            invoke(getContext(), new Object[] {});
+                } catch (java.lang.reflect.InvocationTargetException itex) {
+                    Throwable tex = itex.getTargetException();
+                    if (tex instanceof RuntimeException) {
+                        throw (RuntimeException) tex;
+                    } else {
+                        ErrorManager.getDefault().notify(tex);
+                        return 0;
+                    }
+                } catch (Exception ex) {
+                    ErrorManager.getDefault().notify(ex);
+                    return 0;
+                }
+            }
+            return i.intValue();
         }
         
         public String getCurrentMethodName () {

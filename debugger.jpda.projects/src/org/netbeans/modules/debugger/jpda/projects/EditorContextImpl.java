@@ -419,6 +419,43 @@ public class EditorContextImpl extends EditorContext {
     }
     
     /**
+     * Returns number of line currently selected in editor or <code>-1</code>.
+     *
+     * @return number of line currently selected in editor or <code>-1</code>
+     */
+    public int getCurrentOffset () {
+        if (SwingUtilities.isEventDispatchThread()) {
+            return getCurrentOffset_();
+        } else {
+            final int[] ln = new int[1];
+            try {
+                SwingUtilities.invokeAndWait(new Runnable() {
+                    public void run() {
+                        ln[0] = getCurrentOffset_();
+                    }
+                });
+            } catch (InvocationTargetException ex) {
+                ErrorManager.getDefault().notify(ex.getTargetException());
+            } catch (InterruptedException ex) {
+                ErrorManager.getDefault().notify(ex);
+            }
+            return ln[0];
+        }
+    }
+    
+    private int getCurrentOffset_() {
+        EditorCookie e = getCurrentEditorCookie ();
+        if (e == null) return -1;
+        JEditorPane ep = getCurrentEditor ();
+        if (ep == null) return -1;
+        StyledDocument d = e.getDocument ();
+        if (d == null) return -1;
+        Caret caret = ep.getCaret ();
+        if (caret == null) return -1;
+        return caret.getDot();
+    }
+    
+    /**
      * Returns name of class currently selected in editor or empty string.
      *
      * @return name of class currently selected in editor or empty string
