@@ -157,7 +157,8 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
                         SyntaxElement se = helper.getSyntaxElement();
                         if(se instanceof StartTag) {
                             String tagName = ((StartTag)se).getNodeName();
-                            list.add(new EndTagAutocompletionResultItem(tagName));
+                            if(tagName != null)
+                                list.add(new EndTagAutocompletionResultItem(tagName));
                         }
                     }
                 }
@@ -343,8 +344,10 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
         List result = new ArrayList(133);
         while ( refs.hasMoreElements() ) {
             GrammarResult next = (GrammarResult) refs.nextElement();
-            EntityRefResultItem ref = new EntityRefResultItem(next);
-            result.add( ref );
+            if(next != null && next.getNodeName() != null) {
+                EntityRefResultItem ref = new EntityRefResultItem(next);
+                result.add( ref );
+            }
         }
         return result;
     }
@@ -360,8 +363,10 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
 //                err.log(ErrorManager.WARNING, "Grammar " + perfomer.getClass().getName() + " result '"  + prefix + "' eliminated to avoid #28224.");  // NOi18N
                 continue;
             }
-            ElementResultItem ei = new ElementResultItem(next);
-            result.add( ei );
+            if(next != null && next.getNodeName() != null) {
+                ElementResultItem ei = new ElementResultItem(next);
+                result.add( ei );
+            }
         }
         return result;
     }
@@ -371,8 +376,10 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
         List result = new ArrayList(13);
         while (attrs.hasMoreElements()) {
             GrammarResult next = (GrammarResult) attrs.nextElement();
-            AttributeResultItem attr = new AttributeResultItem(next, false);
-            result.add( attr );
+            if(next != null && next.getNodeName() != null) {
+                AttributeResultItem attr = new AttributeResultItem(next, false);
+                result.add( attr );
+            }
         }
         return result;
     }
@@ -381,8 +388,10 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
         List result = new ArrayList(3);
         while (values.hasMoreElements()) {
             GrammarResult next = (GrammarResult) values.nextElement();
-            ValueResultItem val = new ValueResultItem(next);
-            result.add( val );
+            if(next != null && next.getDisplayName() != null) {
+                ValueResultItem val = new ValueResultItem(next);
+                result.add( val );
+            }
         }
         return result;
     }
