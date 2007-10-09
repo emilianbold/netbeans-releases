@@ -93,7 +93,7 @@ import org.openide.util.Cancellable;
  * @author Dmitry Ivanov
  * @author Vladimir Kvashin
  */
-public abstract class ProjectBase implements CsmProject, Disposable, Persistent, SelfPersistent {
+public abstract class ProjectBase implements CsmProject, Persistent, SelfPersistent {
     
     private transient boolean needParseOrphan;
     
@@ -650,44 +650,48 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
     }
     
     protected void onAddedToModelImpl(boolean isRestored) {
-        
-//	System.err.printf("SLEEPING...\n");
-//	try {
-//		Thread.sleep(10000);
-//	} catch (InterruptedException ex) {
-//		ex.printStackTrace();
-//	}
-//	System.err.printf("AWOKE...\n");
-        
-        ensureFilesCreated();
-        
+
         if( disposing ) {
             return;
         }
-        
-        ensureChangedFilesEnqueued();
-        
-        if( disposing ) {
-            return;
-        }
-        
-        if( isRestored ) {
-            ProgressSupport.instance().fireProjectLoaded(ProjectBase.this);
-        }
-        
-        if( isRestored && ! disposing ) {
-            // FIXUP for #109105 fix the reason instead!
-            try {
-                // TODO: refactor this - remove waiting here!
-                // It was introduced in version 1.2.2.27.2.94.4.41
-                // when validation was introduced
-                waitParseImpl();
-                checkForRemoved();
-            } catch( Exception e ) {
-                e.printStackTrace(System.err);
-            }
-        }
-        Notificator.instance().flush();
+	
+	try {
+	    disposeLock.readLock().lock();
+	    if( disposing ) {
+		return;
+	    }
+	
+	    ensureFilesCreated();
+	    if( disposing ) {
+		return;
+	    }
+
+	    ensureChangedFilesEnqueued();
+	    if( disposing ) {
+		return;
+	    }
+
+	    if( isRestored ) {
+		ProgressSupport.instance().fireProjectLoaded(ProjectBase.this);
+	    }
+
+	    if( isRestored && ! disposing ) {
+		// FIXUP for #109105 fix the reason instead!
+		try {
+		    // TODO: refactor this - remove waiting here!
+		    // It was introduced in version 1.2.2.27.2.94.4.41
+		    // when validation was introduced
+		    waitParseImpl();
+		    checkForRemoved();
+		} catch( Exception e ) {
+		    e.printStackTrace(System.err);
+		}
+	    }
+	    Notificator.instance().flush();
+	}
+	finally {
+	    disposeLock.readLock().unlock();
+	}
     }
     
     /**
@@ -1220,10 +1224,6 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
     
     public boolean isDisposing() {
         return disposing;
-    }
-    
-    public void dispose() {
-        dispose(!TraceFlags.PERSISTENT_REPOSITORY);
     }
     
     public void dispose(final boolean cleanPersistent) {
