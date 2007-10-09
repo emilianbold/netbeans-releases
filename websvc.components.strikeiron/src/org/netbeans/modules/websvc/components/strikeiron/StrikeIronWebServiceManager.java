@@ -30,6 +30,8 @@ package org.netbeans.modules.websvc.components.strikeiron;
 import javax.swing.Action;
 import org.netbeans.modules.websvc.components.strikeiron.actions.FindServiceAction;
 import org.netbeans.modules.websvc.manager.api.WebServiceDescriptor;
+import org.netbeans.modules.websvc.manager.model.WebServiceGroup;
+import org.netbeans.modules.websvc.manager.model.WebServiceListModel;
 import org.netbeans.modules.websvc.manager.spi.WebServiceManagerExt;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
@@ -40,15 +42,33 @@ import org.openide.util.actions.SystemAction;
  * @author nam
  */
 public class StrikeIronWebServiceManager implements WebServiceManagerExt {
+
     public static final String STRIKE_IRON_GROUP = NbBundle.getMessage(StrikeIronWebServiceManager.class, "STRIKE_IRON_GROUP");
     public Action[] getGroupActions(Node node) {
-        /*if (node.getName().startsWith(STRIKE_IRON_GROUP)) {
+        if (node.getName().startsWith(STRIKE_IRON_GROUP)) {
             return new Action[] { SystemAction.get(FindServiceAction.class) };
-        } else {*/
+        } else {
             return EMPTY_ACTIONS;
-        //}
+        }
     }
 
+    private static String strikeIronGroupId;
+    
+    public static String getGroupId() {
+        if (strikeIronGroupId == null) {
+            for (WebServiceGroup group : WebServiceListModel.getInstance().getWebServiceGroupSet()) {
+                if (STRIKE_IRON_GROUP.equalsIgnoreCase(group.getName())) {
+                    strikeIronGroupId = group.getId();
+                    break;
+                }
+            }
+            if (strikeIronGroupId == null) {
+                //TODO create new group
+            }
+        }
+        return strikeIronGroupId;
+    }
+    
     public Action[] getMethodActions(Node node) {
         return EMPTY_ACTIONS;
     }

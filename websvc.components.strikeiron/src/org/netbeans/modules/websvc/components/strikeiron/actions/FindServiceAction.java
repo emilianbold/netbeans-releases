@@ -27,7 +27,15 @@
  */
 package org.netbeans.modules.websvc.components.strikeiron.actions;
 
+import com.strikeiron.search.MarketPlaceService;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.websvc.components.strikeiron.StrikeIronWebServiceManager;
 import org.netbeans.modules.websvc.components.strikeiron.ui.FindServicelDialog;
+import org.netbeans.modules.websvc.manager.model.WebServiceData;
+import org.netbeans.modules.websvc.manager.model.WebServiceGroup;
+import org.netbeans.modules.websvc.manager.model.WebServiceListModel;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -35,7 +43,7 @@ import org.openide.util.actions.NodeAction;
 
 /**
  * Search for web services offered through StrikeIron marketplace.
- * 
+ *
  * @author nam
  */
 public class FindServiceAction extends NodeAction {
@@ -56,10 +64,25 @@ public class FindServiceAction extends NodeAction {
         FindServicelDialog dialog = new FindServicelDialog();
         dialog.setVisible(true);
         if (dialog.getReturnStatus() == FindServicelDialog.RET_OK) {
-            System.out.println("OK Add");
-        } else {
-            System.out.println("Cancel");
+            WebServiceGroup group = WebServiceListModel.getInstance().getWebServiceGroup(StrikeIronWebServiceManager.getGroupId());
+            if (group == null) {
+                Logger.global.log(Level.INFO, "Could not find 'Strike Iron Services' group"); //NOI18N
+                return;
+            }
+            Set<MarketPlaceService> services = dialog.getSelectedServices();
+            for (MarketPlaceService service : services) {
+                String url = service.getWSDL();
+                String name = service.getServiceName();
+                WebServiceData wsData = WebServiceListModel.getInstance().findWebServiceData(url, name);
+                if (wsData == null) {
+                    WebServiceListModel.getInstance().addWebService(url, dialog.getPackageName(service.getServiceName()), group.getId());
+                }
+            }
         }
     }
 
+    @Override
+    protected boolean asynchronous() {
+        return false;
+    }
 }

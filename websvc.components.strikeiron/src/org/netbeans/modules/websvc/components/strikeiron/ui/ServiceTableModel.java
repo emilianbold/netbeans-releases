@@ -28,7 +28,9 @@
 package org.netbeans.modules.websvc.components.strikeiron.ui;
 
 import com.strikeiron.search.AUTHENTICATIONSTYLE;
+import com.strikeiron.search.ArrayOfMarketPlaceService;
 import com.strikeiron.search.LicenseInfo;
+import com.strikeiron.search.MarketPlaceService;
 import com.strikeiron.search.ObjectFactory;
 import com.strikeiron.search.RegisteredUser;
 import com.strikeiron.search.SISearchService;
@@ -36,50 +38,314 @@ import com.strikeiron.search.SISearchServiceSoap;
 import com.strikeiron.search.SORTBY;
 import com.strikeiron.search.SearchOutPut;
 import com.sun.xml.ws.developer.WSBindingProvider;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.EventListener;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.event.ChangeEvent;
 import javax.swing.table.DefaultTableModel;
+import javax.xml.namespace.QName;
+import org.netbeans.modules.websvc.manager.api.WebServiceDescriptor;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author nam
  */
 public class ServiceTableModel extends DefaultTableModel {
+    public static final QName SI_SEARCH_SERVICE = new QName("http://www.strikeiron.com", "SISearchService");
+    public static final String STRIKE_IRON_HOME = WebServiceDescriptor.WEBSVC_HOME + "/strikeiron";
+    public static final String SEARCH_PROPERTIES = "search.properties";
+    public static final String WSDL_LOCATION = "wsdlLocation";
+    public static final String USERID = "userId";
+    public static final String PASSWORD = "password";
+    private static final String DEFAULT_USERID = "Sun_Search@strikeiron.com";
+    private static final String DEFAULT_PASSWORD = "SearchSun.01";
+    private static final String DEFAULT_URL = "http://ws.strikeiron.com/Searchsunsi01.StrikeIron/MarketplaceSearch?WSDL";
+    public static final String DEFAUL_PACKAGE_NAME = "com.strikeiron";
+    
+    private static final int COLUMN_WS_NAME = 0;
+    private static final int COLUMN_SELECT = 2;
+    private static final int COLUMN_PROVIDER = 1;
+    
+    private String wsdlLocation;
+    private String userId = "Sun_Search@strikeiron.com";
+    private String password = "SearchSun.01";
     private AUTHENTICATIONSTYLE authenticationStyle = AUTHENTICATIONSTYLE.SOAP_HEADER;
     private Boolean useCustomWSDL = Boolean.TRUE;
     private SORTBY sortBy = SORTBY.NAME;
-    private String searchTerm;
+    private SISearchService sservice;
+    private List<MarketPlaceService> result;
+
+    private String status;
+    private Set<Integer> selectedRows = new HashSet<Integer>();
+    private RequestProcessor.Task searchTask;
 
     public ServiceTableModel() {
-        
+        init();
     }
     
-    
-    public SearchOutPut doSearch(String searchTerm, SORTBY sortBy) {
-        if (searchTerm == null) {
-            searchTerm = this.searchTerm;
+    private void init() {
+        Properties p = new Properties();
+        File propFile = new File(STRIKE_IRON_HOME, SEARCH_PROPERTIES);
+        if (propFile.isFile()) {
+            try {
+                p.load(new FileInputStream(propFile));
+            } catch(IOException ioe) {
+                // OK
+            }
         }
+        wsdlLocation = p.getProperty(WSDL_LOCATION);
+        if (wsdlLocation == null) {
+            wsdlLocation = DEFAULT_URL;
+        }
+        userId = p.getProperty(USERID);
+        if (userId == null) {
+            userId = DEFAULT_USERID;
+        }
+        password =  p.getProperty(PASSWORD);
+        if (password == null) {
+            password = DEFAULT_PASSWORD;
+        }
+    }
+    
+    public String getUserId() {
+        return userId;
+    }
+    
+    public String getPassword() {
+        return password;
+    }
+    
+    public String getSearchServiceUrl() {
+        return getWsdlLocation().toExternalForm();
+    }
+
+    public MarketPlaceService getService(int row) {
+        return result.get(row);
+    }
+    
+    public void setPackageName(String serviceName, String packageName) {
+        if (! DEFAUL_PACKAGE_NAME.equals(packageName)) {
+            packageNames.put(serviceName, packageName);
+        }
+    }
+    
+    public static final String SEARCH_COMPLETE = "searchCompleted";
+    public static final String SEARCH_CANCELLED = "searchCancelled";
+    public static final String SEARCH_ERROR = "searchError";
+    
+    public interface SearchListener extends EventListener {
+        void searchCompleted(ChangeEvent e);
+    }
+    
+    List<SearchListener> listeners = new ArrayList<SearchListener>();
+    public void addEventListener(SearchListener listener) {
+        listeners.add(listener);
+    }
+    public void removeEventListener(SearchListener listener) {
+        listeners.remove(listener);
+    }
+    private void fireSearchEnded() {
+        for (SearchListener l : listeners) {
+            l.searchCompleted(new ChangeEvent(this));
+        }
+    }
+    
+    public void doSearch(final String searchTerm, final SORTBY sortBy) {
+        cancelSearch();
+        searchTask = RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                callSearch(searchTerm, sortBy);
+            }
+        });
+        searchTask.run();
+    }
+    
+    public void cancelSearch() {
+        if (searchTask != null) {
+            searchTask.cancel();
+            fireSearchEnded();
+            searchTask = null;
+        }
+    }
+    
+    public Set<MarketPlaceService> getSelectedServices() {
+        Set<MarketPlaceService> selection = new HashSet<MarketPlaceService>();
+        for (int i : selectedRows) {
+            selection.add(result.get(i));
+        }
+        return selection;
+    }
+    
+    private Map<String,String> packageNames = new HashMap<String,String>();
+    public String getPackageName(String serviceName) {
+        String ret = packageNames.get(serviceName);
+        if (ret == null) {
+            return DEFAUL_PACKAGE_NAME;
+        }
+        return ret;
+    }
+    
+    public String getStatus() {
+        return status;
+    }
+
+    private URL getWsdlLocation() {
+        if (wsdlLocation == null) {
+            return null;
+        }
+        try {
+            return new URL(wsdlLocation);
+        } catch(Exception ex) {
+            Logger.global.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+            return null;
+        }
+    }
+    
+    private void callSearch(String searchTerm, SORTBY sortBy) {
+        status = null;
+        selectedRows = new HashSet<Integer>();
+        result = new ArrayList<MarketPlaceService>();
+        fireTableDataChanged();
+        
         if (sortBy == null) {
             sortBy = this.sortBy;
         }
         try {
-            SISearchService service = new SISearchService();
-            SISearchServiceSoap port = service.getSISearchServiceSoap();
+            // init service only when needed to avoid unecessary internet access
+            if (sservice == null) {
+                URL url = getWsdlLocation();
+                if (url == null) {
+                    sservice = new SISearchService();
+                } else {
+                    sservice = new SISearchService(url, SI_SEARCH_SERVICE);
+                }
+            }
+            SISearchServiceSoap port = sservice.getSISearchServiceSoap();
             setHeaderParameters(port);
-            return port.search(searchTerm, sortBy, useCustomWSDL, authenticationStyle);
+            SearchOutPut output = port.search(searchTerm, sortBy, useCustomWSDL, authenticationStyle);
+            if (output != null) {
+                ArrayOfMarketPlaceService amps = output.getStrikeIronWebServices();
+                if (amps != null) {
+                    result = output.getStrikeIronWebServices().getMarketPlaceService();
+                }
+            }
+            if (output != null && output.getServiceStatus() != null) {
+                status = output.getServiceStatus().getStatusDescription();
+            }
+            fireTableDataChanged();
         } catch (Exception ex) {
-            Logger.global.log(Level.INFO, ex.getLocalizedMessage(), ex);
-            return null;
+            status = ex.getLocalizedMessage();
+        } finally {
+            fireSearchEnded();
+            searchTask = null;
         }
     }
-
+    
     private void setHeaderParameters(SISearchServiceSoap port) {
         RegisteredUser ru = new RegisteredUser();
-        ru.setUserID("Sun_Search@strikeiron.com");
-        ru.setPassword("SearchSun.01");
+        ru.setUserID(userId);
+        ru.setPassword(password);
         LicenseInfo li = new LicenseInfo();
         li.setRegisteredUser(ru);
         WSBindingProvider bp = (WSBindingProvider) port;
         bp.setOutboundHeaders(new ObjectFactory().createLicenseInfo(li));
     }
+
+    @Override
+    public int getColumnCount() {
+        return 3;
+    }
+
+    @Override
+    public Class getColumnClass(int column) {
+        if (column == COLUMN_SELECT) {
+            return Boolean.class;
+        }
+        return String.class;
+    }
+    
+    @Override
+    public String getColumnName(int column) {
+        switch(column) {
+        case COLUMN_WS_NAME:
+            return NbBundle.getMessage(ServiceTableModel.class, "LBL_ServiceName");
+        case COLUMN_SELECT:
+            return NbBundle.getMessage(ServiceTableModel.class, "LBL_Select");
+        case COLUMN_PROVIDER:
+            return NbBundle.getMessage(ServiceTableModel.class, "LBL_ProviderName");
+        }
+        throw new IllegalArgumentException("column > 2"); //NOI18N
+    }
+
+    public boolean isSearching() {
+        return searchTask != null && result ==  null;
+    }
+    
+    @Override
+    public int getRowCount() {
+        if (isSearching()) {
+            return 1;
+        } else {
+            return result != null ? result.size() : 0;
+        }
+    }
+    
+    @Override
+    public Object getValueAt(int row, int column) {
+        if (isSearching()) {
+            return NbBundle.getMessage(ServiceTableModel.class, "MSG_Searching");
+        } else if (result == null) {
+            throw new IllegalStateException("Search has not started or has no results");
+        }
+        MarketPlaceService mps = result.get(row);
+        switch(column) {
+        case COLUMN_WS_NAME:
+            return mps.getServiceName();
+        case COLUMN_SELECT:
+            return selectedRows.contains(row);
+        case COLUMN_PROVIDER:
+            return mps.getProviderName();
+        default:
+            throw new IllegalArgumentException("column = "+column); //NOI18N
+        }
+    }
+
+    @Override
+    public void setValueAt(Object value, int row, int column) {
+        if (column == COLUMN_SELECT && value instanceof Boolean) {
+            boolean selected = (Boolean) value;
+            if (selected) {
+                selectedRows.add(row);
+            } else {
+                selectedRows.remove(row);
+            }
+        }
+    }
+
+    @Override
+    public boolean isCellEditable(int row, int column) {
+        switch(column) {
+        case COLUMN_SELECT:
+            return true;
+        default:
+            return false;
+        }
+        
+    }
+    
 }

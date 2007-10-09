@@ -201,6 +201,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.visualweb.websvcmgr</friend>
                 <friend>org.netbeans.modules.web.project</friend>
                 <friend>org.netbeans.modules.websvc.clientapi</friend>
+                <friend>org.netbeans.modules.websvc.components.strikeiron</friend>
                 <friend>org.netbeans.modules.websvc.core</friend>
                 <friend>org.netbeans.modules.websvc.customization</friend>
                 <friend>org.netbeans.modules.websvc.design</friend>
