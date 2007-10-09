@@ -47,6 +47,26 @@ made subject to such option by the copyright holder.
 </apidefs>
 <changes>
 
+<change id="auto_iconify">
+    <api name="winsys"/>
+    <summary>Added command line boolean option 'netbeans.winsys.auto_iconify'.</summary>
+    <version major="6" minor="17"/>
+    <date day="9" month="10" year="2007"/>
+    <author login="dsimonek"/>
+    <compatibility addition="yes" binary="compatible" source="compatible" semantic="incompatible" deprecation="no" deletion="no" modification="no"/>
+    <description>
+        Added command line boolean option 'netbeans.winsys.auto_iconify'. When system is run
+        with option netbeans.winsys.auto_iconify=true, all separate frames will follow 
+        iconified state of main window automatically. So when main window is iconified,
+        they all get iconified too and vice versa. Such behavior was default
+        prior to this change, but now automatic iconification is disabled by default,
+        to respect independency of separate frames and behave well with GNOME window
+        managers such as default Metacity WM.
+    </description>
+    <issue number="109427"/>
+</change>    
+    
+    
 <change id="isOpenedEditorTopComponent">
     <api name="winsys"/>
     <summary>Added a method to check the TopComponent type - editor/view</summary>

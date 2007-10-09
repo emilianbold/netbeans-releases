@@ -1044,12 +1044,14 @@ final class ViewHierarchy {
             int newState = evt.getNewState();
             controller.userChangedFrameStateMainWindow(newState);
             
-            if (((oldState & Frame.ICONIFIED) == 0) &&
-                ((newState & Frame.ICONIFIED) == Frame.ICONIFIED)) {
-                hierarchy.changeStateOfSeparateViews(true);
-            } else if (((oldState & Frame.ICONIFIED) == Frame.ICONIFIED) && 
-                       ((newState & Frame.ICONIFIED) == 0 )) {
-                hierarchy.changeStateOfSeparateViews(false);
+            if (Constants.AUTO_ICONIFY) {
+                if (((oldState & Frame.ICONIFIED) == 0) &&
+                    ((newState & Frame.ICONIFIED) == Frame.ICONIFIED)) {
+                    hierarchy.changeStateOfSeparateViews(true);
+                } else if (((oldState & Frame.ICONIFIED) == Frame.ICONIFIED) && 
+                           ((newState & Frame.ICONIFIED) == 0 )) {
+                    hierarchy.changeStateOfSeparateViews(false);
+                }
             }
         }
     } // End of main window listener.

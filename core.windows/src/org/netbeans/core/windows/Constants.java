@@ -115,7 +115,6 @@ public abstract class Constants {
     /** Allows user to move <code>TopComponent</code>S between document and view modes, 
      * which is restricted otherwise. */
     public static final boolean SWITCH_MODE_ADD_NO_RESTRICT = Boolean.getBoolean("netbeans.winsys.allow.dock.anywhere"); // NOI18N
-    //public static final boolean SWITCH_MODE_ADD_NO_RESTRICT = Boolean.TRUE;
     /** Disables DnD of <code>TopComponent</code>S. */
     public static final boolean SWITCH_DND_DISABLE          = Boolean.getBoolean("netbeans.winsys.disable_dnd"); // NOI18N
     /** During DnD it provides nicer feedback (fading of possible drop), however performance is worsen in that case. */
@@ -148,6 +147,9 @@ public abstract class Constants {
 
     /** If set to true the help button will not be shown in the dialogs.*/
     public static final boolean DO_NOT_SHOW_HELP_IN_DIALOGS = Boolean.getBoolean("netbeans.winsys.no_help_in_dialogs"); // NOI18N
+    
+    /** True means automatic iconification/deiconification of all separate frames if main window is iconified/deiconified */ 
+    public static final boolean AUTO_ICONIFY = Boolean.getBoolean("netbeans.winsys.auto_iconify"); // NOI18N
     
     private Constants() {}
 }

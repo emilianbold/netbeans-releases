@@ -386,19 +386,24 @@ public final class DefaultSeparateContainer extends AbstractModeContainer {
         
             window.addWindowStateListener(new WindowStateListener() {
                 public void windowStateChanged(WindowEvent evt) {
-         // All the timestamping is a a workaround beause of buggy GNOME and of its kind who iconify the windows on leaving the desktop.
-                    Component comp = modeView.getComponent();
-                    if (comp instanceof Frame /*&& comp.isVisible() */) {
-                        long currentStamp = System.currentTimeMillis();
-                        if (currentStamp > (modeView.getUserStamp() + 500) && currentStamp > (modeView.getMainWindowStamp() + 1000)) {
-                            modeView.getController().userChangedFrameStateMode(modeView, evt.getNewState());
-                        } else {
-                            modeView.setUserStamp(0);
-                            modeView.setMainWindowStamp(0);
-                            modeView.updateFrameState();
+                    if (!Constants.AUTO_ICONIFY) {
+                        modeView.getController().userChangedFrameStateMode(modeView, evt.getNewState());
+                    } else {
+                         // All the timestamping is a a workaround beause of buggy GNOME
+                        // and of its kind who iconify the windows on leaving the desktop.
+                        Component comp = modeView.getComponent();
+                        if (comp instanceof Frame /*&& comp.isVisible() */) {
+                            long currentStamp = System.currentTimeMillis();
+                            if (currentStamp > (modeView.getUserStamp() + 500) && currentStamp > (modeView.getMainWindowStamp() + 1000)) {
+                                modeView.getController().userChangedFrameStateMode(modeView, evt.getNewState());
+                            } else {
+                                modeView.setUserStamp(0);
+                                modeView.setMainWindowStamp(0);
+                                modeView.updateFrameState();
+                            }
+                            long stamp = System.currentTimeMillis();
+                            modeView.setUserStamp(stamp);
                         }
-                        long stamp = System.currentTimeMillis();
-                        modeView.setUserStamp(stamp);
                     }
                 }
             }); // end of WindowStateListener
