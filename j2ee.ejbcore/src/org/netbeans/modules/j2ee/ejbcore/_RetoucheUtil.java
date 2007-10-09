@@ -336,19 +336,22 @@ public final class _RetoucheUtil {
     }
 
     @SuppressWarnings("unchecked")
-    public static ElementHandle<ExecutableElement> getMethodHandle(JavaSource javaSource, final MethodModel methodModel) throws IOException {
+    public static ElementHandle<ExecutableElement> getMethodHandle(JavaSource javaSource, final MethodModel methodModel, final String className) throws IOException {
 
         final ElementHandle[] result = new ElementHandle[1];
 
-        javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
-            public void run(WorkingCopy workingCopy) throws IOException {
-                workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                Trees trees = workingCopy.getTrees();
-                MethodTree methodTree = MethodModelSupport.createMethodTree(workingCopy, methodModel);
-                Element element = trees.getElement(trees.getPath(workingCopy.getCompilationUnit(), methodTree));
-                result[0] = ElementHandle.create(element);
+        javaSource.runUserActionTask(new Task<CompilationController>() {
+            public void run(CompilationController controller) throws IOException {
+                controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                TypeElement typeElement = controller.getElements().getTypeElement(className);
+                for (ExecutableElement method : ElementFilter.methodsIn(typeElement.getEnclosedElements())) {
+                    if (MethodModelSupport.isSameMethod(controller, method, methodModel)) {
+                        result[0] = ElementHandle.create(method);
+                        return;
+                    }
+                }
             }
-        });
+        }, true);
 
         return result[0];
     }

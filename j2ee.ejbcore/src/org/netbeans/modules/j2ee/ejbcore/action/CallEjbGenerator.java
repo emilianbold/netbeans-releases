@@ -35,7 +35,6 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
-import com.sun.source.util.Trees;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.MessageFormat;
@@ -43,7 +42,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
@@ -52,13 +50,10 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
-import javax.lang.model.util.ElementFilter;
 import javax.naming.NamingException;
-import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -240,7 +235,7 @@ public class CallEjbGenerator {
                             );
                 }
             } else {
-                generateJNDI(
+                result = generateJNDI(
                         fileObject, 
                         className, 
                         isLocal ? ejbReference.getLocalHome() : ejbReference.getRemoteHome(), 
@@ -378,7 +373,7 @@ public class CallEjbGenerator {
         return elementToOpen;
     }
     
-    private void generateJNDI(FileObject fileObject, final String className, String homeName, 
+    private ElementHandle<ExecutableElement> generateJNDI(FileObject fileObject, final String className, String homeName, 
             String componentName, boolean throwCheckedExceptions, boolean isLocal) throws IOException {
         String name = "lookup" + ejbReferenceName.substring(ejbReferenceName.lastIndexOf('/') + 1);
         String body = null;
@@ -449,6 +444,9 @@ public class CallEjbGenerator {
                 workingCopy.rewrite(classTree, newClassTree);
             }
         }).commit();
+        
+        return _RetoucheUtil.getMethodHandle(javaSource, methodModel, className);
+        
     }
     
     private ElementHandle<ExecutableElement> generateServiceLocatorJNDI(FileObject fileObject, final String className, String homeName, String refName,
@@ -512,7 +510,7 @@ public class CallEjbGenerator {
             }
         }).commit();
 
-        return _RetoucheUtil.getMethodHandle(javaSource, methodModel);
+        return _RetoucheUtil.getMethodHandle(javaSource, methodModel, className);
 
     }
     
