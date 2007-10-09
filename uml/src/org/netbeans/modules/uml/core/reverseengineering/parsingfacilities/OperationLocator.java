@@ -123,8 +123,8 @@ public class OperationLocator extends LocatorEvaluator<MethodDeclaration>
     {
         if (paramList != null)
         {
-            int max         = paramList.size(), 
-                desiredMax  = m_DesiredParameters.size();
+            int max         = paramList.size(); 
+            int desiredMax  = m_DesiredParameters.size();
             
             // There will always be one extra parameter for the return type 
             // of an operation.  This is a HACK in UML.  However I have to 
@@ -146,12 +146,15 @@ public class OperationLocator extends LocatorEvaluator<MethodDeclaration>
                     
                     // First make sure that this isn't the parameter that
                     // specifies the methods return type.
-                    if (cur.getKind() != IREParameter.PDK_RESULT
-                            && !areParametersEqual(classLoader, thisClass,
+                    if (cur.getKind() != IREParameter.PDK_RESULT) {
+                        
+                        if (!areParametersEqual(classLoader, thisClass,
                                     cur, m_DesiredParameters.get(testParam))) 
-                        return false;
-                    else 
+                            return false;
+                        
                         testParam ++ ;
+                    } 
+                        
                 }
 
                 return true;
@@ -185,7 +188,7 @@ public class OperationLocator extends LocatorEvaluator<MethodDeclaration>
         
         if(typeName != null && curtype.equals(typeName))
            retVal = true;
-        else if(checkIfObject(curtype) && (inst.isPrimitive() == false))
+        else if(checkIfObject(curtype) && inst.isPrimitive() == false)
            retVal = true;
         else if(typeName.equals("null") || typeName.equals("NULL"))
            retVal = true;
