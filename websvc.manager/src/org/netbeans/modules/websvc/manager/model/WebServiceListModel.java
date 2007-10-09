@@ -40,8 +40,8 @@
  */
 package org.netbeans.modules.websvc.manager.model;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Collections;
@@ -51,9 +51,13 @@ import java.util.Random;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.websvc.manager.WebServiceManager;
 import org.netbeans.modules.websvc.manager.WebServicePersistenceManager;
-import org.openide.util.RequestProcessor;
+import org.netbeans.modules.websvc.manager.ui.AddWebServiceDlg;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 
 /**
  * A model to keep track of web service data and their group
@@ -361,4 +365,43 @@ public class WebServiceListModel {
         return initialized;
     }
     
+    public void addWebService(final String wsdl, final String packageName, final String groupId) {
+        // Run the add W/S asynchronously
+        Runnable addWsRunnable = new Runnable() {
+            public void run() {
+                boolean addError = false;
+                Exception exc = null;
+                try {
+                    WebServiceManager.getInstance().addWebService(wsdl, packageName, groupId);
+                } catch (IOException ex) {
+                    addError = true;
+                    exc = ex;
+                }
+
+                final Exception exception = exc;
+                if (addError) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            if (exception instanceof FileNotFoundException) {
+                                String errorMessage = NbBundle.getMessage(AddWebServiceDlg.class, "INVALID_URL");
+                                NotifyDescriptor d = new NotifyDescriptor.Message(errorMessage);
+                                DialogDisplayer.getDefault().notify(d);
+                            } else {
+                                String cause = (exception != null) ? exception.getLocalizedMessage() : null;
+                                String excString = (exception != null) ? exception.getClass().getName() + " - " + cause : null;
+
+                                String errorMessage = NbBundle.getMessage(AddWebServiceDlg.class, "WS_ADD_ERROR") + "\n\n" + excString; // NOI18N
+                                NotifyDescriptor d = new NotifyDescriptor.Message(errorMessage);
+                                DialogDisplayer.getDefault().notify(d);
+                            }
+                        }
+                    });
+                }
+            }
+        };
+        
+        WebServiceManager.getInstance().getRequestProcessor().post(addWsRunnable);
+        
+    }
+
 }

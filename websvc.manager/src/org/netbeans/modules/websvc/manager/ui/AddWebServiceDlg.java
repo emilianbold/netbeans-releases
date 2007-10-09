@@ -385,42 +385,8 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
         dialog = null;
         
         // Run the add W/S asynchronously
-        Runnable addWsRunnable = new Runnable() {
-            public void run() {
-                boolean addError = false;
-                Exception exc = null;
-                try {
-                    WebServiceManager.getInstance().addWebService(wsdl, packageName, groupId);
-                } catch (IOException ex) {
-                    addError = true;
-                    exc = ex;
-                }
-
-                final Exception exception = exc;
-                if (addError) {
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            if (exception instanceof FileNotFoundException) {
-                                String errorMessage = NbBundle.getMessage(AddWebServiceDlg.class, "INVALID_URL");
-                                NotifyDescriptor d = new NotifyDescriptor.Message(errorMessage);
-                                DialogDisplayer.getDefault().notify(d);
-                            } else {
-                                String cause = (exception != null) ? exception.getLocalizedMessage() : null;
-                                String excString = (exception != null) ? exception.getClass().getName() + " - " + cause : null;
-
-                                String errorMessage = NbBundle.getMessage(AddWebServiceDlg.class, "WS_ADD_ERROR") + "\n\n" + excString; // NOI18N
-                                NotifyDescriptor d = new NotifyDescriptor.Message(errorMessage);
-                                DialogDisplayer.getDefault().notify(d);
-                            }
-                        }
-                    });
-                }
-            }
-        };
-        
-        WebServiceManager.getInstance().getRequestProcessor().post(addWsRunnable);
-    }
-    
+        WebServiceListModel.getInstance().addWebService(wsdl, packageName, groupId);
+    }    
     
     public void actionPerformed(ActionEvent evt) {
         String actionCommand = evt.getActionCommand();
