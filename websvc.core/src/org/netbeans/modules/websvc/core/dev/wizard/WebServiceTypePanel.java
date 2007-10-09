@@ -87,6 +87,8 @@ public class WebServiceTypePanel extends javax.swing.JPanel implements HelpCtx.P
     private boolean jsr109Supported;
     private boolean jsr109oldSupported;
     private boolean jwsdpSupported;
+    private WebModule wm;
+    private EjbJar em;
     
     /** Creates new form WebServiceTypePanel */
     public WebServiceTypePanel(Project project) {
@@ -109,8 +111,8 @@ public class WebServiceTypePanel extends javax.swing.JPanel implements HelpCtx.P
         jButtonConvert.setVisible(false);
         
         //disable encapsulate session bean for j2se project
-        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
-        EjbJar em = EjbJar.getEjbJar(project.getProjectDirectory());
+        wm = WebModule.getWebModule(project.getProjectDirectory());
+        em = EjbJar.getEjbJar(project.getProjectDirectory());
         if ((em == null && wm == null)
         ||  //disable encapsulate session beans for Tomcat
                 ((!jsr109Supported && !jsr109oldSupported ||
@@ -287,8 +289,8 @@ public class WebServiceTypePanel extends javax.swing.JPanel implements HelpCtx.P
         if(!checkNonJsr109Valid(wizardDescriptor)){
             return false;
         }
-        
-        if (!Util.isJavaEE5orHigher(project) && WebServicesClientSupport.getWebServicesClientSupport(project.getProjectDirectory()) == null) {
+        boolean noJsr109InWeb = wm != null && !jsr109Supported && !jsr109oldSupported;
+        if (!Util.isJavaEE5orHigher(project) && !noJsr109InWeb  && WebServicesClientSupport.getWebServicesClientSupport(project.getProjectDirectory()) == null) {
             // check if jaxrpc plugin installed
             wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(WebServiceFromWSDLPanel.class, "ERR_NoJaxrpcPluginFound")); // NOI18N
             return false;

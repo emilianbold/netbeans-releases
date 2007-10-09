@@ -63,6 +63,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelListener;
@@ -111,6 +112,7 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
     private boolean jsr109Supported;
     private boolean jsr109oldSupported;
     private boolean jwsdpSupported;
+    private WebModule wm;
     
     private RequestProcessor.Task generateWsdlModelTask;
     private URL wsdlURL;
@@ -358,6 +360,7 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
     }
     
     private void initJsr109Info() {
+        wm = WebModule.getWebModule(project.getProjectDirectory());
         wss = JAXWSSupport.getJAXWSSupport(project.getProjectDirectory());
         if (wss != null) {
             Map properties = wss.getAntProjectHelper().getStandardPropertyEvaluator().getProperties();
@@ -405,7 +408,9 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
             return false;
         }
         
-        if (!Util.isJavaEE5orHigher(project) && WebServicesClientSupport.getWebServicesClientSupport(project.getProjectDirectory()) == null) {
+        boolean noJsr109InWeb = wm != null && !jsr109Supported && !jsr109oldSupported;
+        
+        if (!Util.isJavaEE5orHigher(project) && !noJsr109InWeb && WebServicesClientSupport.getWebServicesClientSupport(project.getProjectDirectory()) == null) {
             // check if jaxrpc plugin installed
             wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(WebServiceFromWSDLPanel.class, "ERR_NoJaxrpcPluginFound")); // NOI18N
             return false;
