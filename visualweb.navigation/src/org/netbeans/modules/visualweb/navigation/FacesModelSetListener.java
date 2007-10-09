@@ -42,7 +42,6 @@ public class FacesModelSetListener implements ModelSetListener {
 
     private static Logger LOGGER = Logger.getLogger(FacesModelSetListener.class.getName());
 
-
     public FacesModelSetListener(VWPContentModel vwpContentModel) {
         setVwpContentModel(vwpContentModel);
     }
@@ -53,15 +52,22 @@ public class FacesModelSetListener implements ModelSetListener {
     }
 
     public void modelChanged(final Model myModel) {
-        FacesModel facesModel = getVwpContentModel().getFacesModel();
-        LOGGER.finest("Model Changed()");
-        if ((myModel == facesModel) || (myModel.getFile().getExt().equals("jspf") && getVwpContentModel().isKnownFragementModel(facesModel, facesModel.getRootBean(), myModel))) {
-            EventQueue.invokeLater(new Runnable() {
+        final VWPContentModel vwpContentModel = getVwpContentModel();
+        if (myModel != null && vwpContentModel != null) {
+            FacesModel facesModel = vwpContentModel.getFacesModel();
+            LOGGER.finest("Model Changed()");
+            if ((myModel.equals(facesModel)) || (myModel.getFile().getExt().equals("jspf") && getVwpContentModel().isKnownFragementModel(facesModel, facesModel.getRootBean(), myModel))) {
+                EventQueue.invokeLater(new Runnable() {
 
-                public void run() {
-                    getVwpContentModel().updateModel();
-                }
-            });
+                    public void run() {
+                       vwpContentModel.updateModel();
+                    }
+                });
+            }
+        } else {
+            LOGGER.fine("Values of one of the model is null:");
+            LOGGER.fine("VWPContentModel: " + vwpContentModel);
+            LOGGER.fine("MyModel (passed in): " + myModel);
         }
     }
 
@@ -74,12 +80,11 @@ public class FacesModelSetListener implements ModelSetListener {
         LOGGER.finest("Model Project Changed()");
         //DO NOTHING
     }
-    
     private WeakReference<VWPContentModel> refVWPContentModel;
 
     private VWPContentModel getVwpContentModel() {
         VWPContentModel vwpContentModel = null;
-        if( refVWPContentModel != null ){
+        if (refVWPContentModel != null) {
             vwpContentModel = refVWPContentModel.get();
         }
         return vwpContentModel;
