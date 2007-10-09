@@ -222,6 +222,8 @@ class DropTargetLayer extends JComponent {
             }
         }
         
+        drawDropTarget(g2);
+        
         g2.dispose();
     }
     
@@ -259,7 +261,10 @@ class DropTargetLayer extends JComponent {
             drawSubselectedItem(g2, item);
         }
 
-        // draw the drop target
+    }
+    
+    private void drawDropTarget(Graphics2D g2) {
+         // draw the drop target
         if (currentTargetComponent != null) {
             Point cursorLocation = SwingUtilities.convertPoint(this, currentTargetPoint, currentTargetComponent);
             if (currentTargetType == DropTargetType.INTER_MENU) {
