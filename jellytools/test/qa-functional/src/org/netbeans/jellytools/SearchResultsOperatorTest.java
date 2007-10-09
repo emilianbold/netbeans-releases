@@ -131,6 +131,7 @@ public class SearchResultsOperatorTest extends JellyTestCase {
 
     /** Test showDetails method  */
     public void testShowDetails() {
+        searchResultsOper.makeComponentVisible();
         searchResultsOper.showDetails().close();
     }
 
