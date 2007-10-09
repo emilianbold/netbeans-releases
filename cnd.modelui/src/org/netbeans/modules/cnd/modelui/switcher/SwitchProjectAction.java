@@ -106,15 +106,24 @@ public class SwitchProjectAction extends NodeAction {
             presenter.setSelected(false);
         }
         else {
-            State state = getState(projects);
-            if( state == State.Indeterminate ) {
-                presenter.setEnabled(!running);
-                presenter.setSelected(false);
-            }
-            else {
-                presenter.setEnabled(!running);
-                presenter.setSelected(state == State.Enabled);
-            }
+	    try {
+		State state = getState(projects);
+		if( state == State.Indeterminate ) {
+		    presenter.setEnabled(!running);
+		    presenter.setSelected(false);
+		}
+		else {
+		    presenter.setEnabled(!running);
+		    presenter.setSelected(state == State.Enabled);
+		}
+	    }
+	    catch( Throwable thr ) { 
+		// we are in awt thread;
+		// if exception occurs here, it doesn't allow even to close the project!
+		thr.printStackTrace();
+		presenter.setEnabled(false);
+		presenter.setSelected(true);
+	    }
         }
         return presenter;
     }
