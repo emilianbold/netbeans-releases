@@ -172,7 +172,7 @@ public class DateTimePatternPanel extends AbstractPropertyJPanel {
 
         label = new javax.swing.JLabel();
         label.setHorizontalAlignment(SwingConstants.LEFT);
-        label.setText(bundle.getString("pattern")); //NOI18N
+        label.setText(bundle.getString("dateTime_pattern")); //NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -185,7 +185,7 @@ public class DateTimePatternPanel extends AbstractPropertyJPanel {
         patternInputField = new JTextField();
         patternInputField.getDocument().addDocumentListener(this);
         patternInputField.setText(getPropertyEditor().getAsText());
-        patternInputField.getAccessibleContext().setAccessibleName(bundle.getString("pattern"));
+        patternInputField.getAccessibleContext().setAccessibleName(bundle.getString("input_pattern"));
         patternInputField.getAccessibleContext().setAccessibleDescription(bundle.getString("input_pattern"));
         label.setLabelFor(patternInputField);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -214,7 +214,7 @@ public class DateTimePatternPanel extends AbstractPropertyJPanel {
         nowOutputField = new JTextField();
         nowOutputField.setText(""); //NOI18N
         nowOutputField.setEditable(false);
-        nowOutputField.getAccessibleContext().setAccessibleName(bundle.getString("pattern"));
+        nowOutputField.getAccessibleContext().setAccessibleName(bundle.getString("output_pattern"));
         nowOutputField.getAccessibleContext().setAccessibleDescription(bundle.getString("output_pattern"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
