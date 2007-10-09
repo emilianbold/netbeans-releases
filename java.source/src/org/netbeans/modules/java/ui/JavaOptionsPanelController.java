@@ -40,9 +40,11 @@
  */
 package org.netbeans.modules.java.ui;
 
+import java.awt.Component;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -65,6 +67,7 @@ final class JavaOptionsPanelController extends OptionsPanelController {
     
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     
+    private Map<JComponent, OptionsPanelController> component2Option;
     private List<AdvancedOption> options;
 
     private JTabbedPane pane;
@@ -110,14 +113,27 @@ final class JavaOptionsPanelController extends OptionsPanelController {
     }
     
     public HelpCtx getHelpCtx() {
-	return null; // new HelpCtx("...ID") if you have a help set
+	return pane != null ? getHelpCtx(pane.getSelectedComponent()) : null;
+    }
+    
+    private HelpCtx getHelpCtx(Component c) {
+        OptionsPanelController o = component2Option.get(c);
+        
+        if (o != null) {
+            return o.getHelpCtx();
+        }
+        
+        return new HelpCtx("netbeans.optionsDialog.java");
     }
     
     public synchronized JComponent getComponent(Lookup masterLookup) {
         if ( pane == null ) {
             pane = new JTabbedPane();
+            component2Option = new HashMap<JComponent, OptionsPanelController>();
             for (OptionsPanelController c : getControllers()) {
-                pane.add( controllers2Options.get(c).getDisplayName(), c.getComponent( c.getLookup()));
+                JComponent comp = c.getComponent( c.getLookup());
+                pane.add( controllers2Options.get(c).getDisplayName(), comp);
+                component2Option.put(comp, c);
             }
         }
         return pane;

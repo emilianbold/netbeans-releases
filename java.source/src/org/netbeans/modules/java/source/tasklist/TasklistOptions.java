@@ -130,7 +130,7 @@ public class TasklistOptions extends AdvancedOption {
         }
 
         public HelpCtx getHelpCtx() {
-            return HelpCtx.DEFAULT_HELP;
+            return new HelpCtx("netbeans.optionsDialog.java.tasklist");
         }
 
         public void addPropertyChangeListener(PropertyChangeListener l) {

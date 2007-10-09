@@ -79,7 +79,7 @@ final class MarkOccurencesOptionsPanelController extends OptionsPanelController 
     }
     
     public HelpCtx getHelpCtx() {
-	return null; // new HelpCtx("...ID") if you have a help set
+	return new HelpCtx("netbeans.optionsDialog.java.markoccurrences");
     }
     
     public synchronized JComponent getComponent(Lookup masterLookup) {
