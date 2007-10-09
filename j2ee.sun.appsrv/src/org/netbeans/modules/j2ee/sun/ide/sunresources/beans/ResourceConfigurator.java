@@ -443,7 +443,24 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         String hostName = getUrlServerName(workingUrl);
         PropertyElement servName = jdbcConnectionPool.newPropertyElement();
         servName.setName(WizardConstants.__ServerName);
-        servName.setValue(hostName);
+        if(vendorName.contains("informix")){
+            String informixSname = getUrlInformixServerName(workingUrl);
+            if (vendorName.equals("informix")) {
+                servName.setValue(informixSname);
+                PropertyElement informixhostName = jdbcConnectionPool.newPropertyElement();
+                informixhostName.setName(WizardConstants.__InformixHostName);
+                informixhostName.setValue(hostName);
+                jdbcConnectionPool.addPropertyElement(informixhostName);
+            }else{
+                PropertyElement informixserver = jdbcConnectionPool.newPropertyElement();
+                informixserver.setName(WizardConstants.__InformixServer);
+                informixserver.setValue(informixSname);
+                jdbcConnectionPool.addPropertyElement(informixserver);
+                servName.setValue(hostName);
+            }
+        }else{
+            servName.setValue(hostName);
+        }
         
         String portNumber = getUrlPortNo(workingUrl);
         PropertyElement portno = jdbcConnectionPool.newPropertyElement();
@@ -761,8 +778,10 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
     
     /**
      * Parses incoming url to create DatabaseName additional properties required by server
-     * example of url : jdbc:sun:db2://serverName:portNumber;databaseName=databaseName
-     * "jdbc:sun:sqlserver://sunsqlserverHost:3333;databaseName=sunsqlserverdb;selectMethod=cursor"
+     * example urls
+     * jdbc:sun:db2://serverName:portNumber;databaseName=databaseName
+     * jdbc:sun:sqlserver://sunsqlserverHost:3333;databaseName=sunsqlserverdb;selectMethod=cursor
+     * jdbc:datadirect:informix://servername:port;InformixServer=server_name;DatabaseName=db_name"
      */
     private String getUrlDatabaseName(String url){
         String databaseName = ""; //NOI18N
@@ -792,30 +811,57 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         return databaseName;
     }
     /**
-     * Parses incoming url. to create SID additional properties required by server
+     * Parses incoming url. to create additional properties required by server
      * examples of url 
      *   - jdbc:derby://serverName:portNumber/databaseName;create=true
      *   - jdbc:mysql://host:port/database?relaxAutoCommit="true"
      *   - jdbc:vendor://host:port/database
+     *   - "jdbc:informix-sqli://123.45.67.89:1533/testDB:INFORMIXSERVER=myserver;user=rdtest;password=test"
      */
     private String getUrlDbName(String url){
         String databaseName = ""; //NOI18N
         int slashIndex = url.indexOf("/"); //NOI18N
-        int clIndex = url.indexOf(";", slashIndex); //NOI18N
-        int scIndex = url.indexOf(":", slashIndex); //NOI18N
-        int qIndex = url.indexOf("?", slashIndex); //NOI18N
         if(slashIndex != -1){
-            if(clIndex != -1)
-                databaseName = url.substring(slashIndex + 1, clIndex);
-            else if(scIndex != -1)
-                databaseName = url.substring(slashIndex + 1, scIndex);
-            else if(qIndex != -1)
-                databaseName = url.substring(slashIndex + 1, qIndex);
-            else
-                databaseName = url.substring(slashIndex + 1, url.length());
-                
+            databaseName = getSubString(url, slashIndex);  
         }
         return databaseName;
+    }
+    
+    private String getSubString(String url, int stIndex){
+        String value = ""; //NOI18N       
+        if (stIndex != -1) {
+            int clIndex = url.indexOf(";", stIndex); //NOI18N
+            int scIndex = url.indexOf(":", stIndex); //NOI18N
+            int qIndex = url.indexOf("?", stIndex); //NOI18N
+            int val = clIndex;
+            if ((clIndex > scIndex) && (scIndex != -1)) {
+                val = scIndex;
+                if ((scIndex > qIndex) && (qIndex != -1)) {
+                    val = qIndex;
+                }
+            } else if ((clIndex > qIndex) && (qIndex != -1)) {
+                val = qIndex;
+            }
+            if (val != -1) {
+                value = url.substring(stIndex + 1, val);
+            } else {
+                value = url.substring(stIndex + 1, url.length());
+            }
+        }
+        return value;
+    }
+    /**
+     * Parses incoming url to get INFORMIXSERVER additional property 
+     * example of url : jdbc:informix-sqli://#HOST$:#PORT$/#DB$:INFORMIXSERVER=#SERVER_NAME$
+     */
+    private String getUrlInformixServerName(String url){
+        String informixServer = ""; //NOI18N
+        int index = url.toLowerCase().indexOf("informixserver="); //NOI18N
+        if(index != -1){
+            int eqIndex = url.indexOf("=", index); //NOI18N
+            informixServer = getSubString(url, eqIndex);  
+        }
+        return informixServer;
     }
     
     /***************************************** DS Management API *****************************************************************************/
@@ -1020,7 +1066,6 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
     private void createCPPoolResource(String name, String databaseUrl, String username, String password, String driver, File resourceDir) throws IOException {
         FileObject location = FileUtil.toFileObject(resourceDir);
         Resources resources = ResourceUtils.getServerResourcesGraph(location);
-        
         JdbcConnectionPool jdbcConnectionPool = resources.newJdbcConnectionPool();
         jdbcConnectionPool.setName(name);
         jdbcConnectionPool.setResType(WizardConstants.__Type_Datasource);

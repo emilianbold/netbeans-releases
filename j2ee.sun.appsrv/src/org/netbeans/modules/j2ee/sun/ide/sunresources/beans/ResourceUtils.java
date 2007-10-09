@@ -1104,6 +1104,8 @@ public class ResourceUtils implements WizardConstants{
         String dbName = ""; //NOI18N
         String sid = ""; //NOI18N
         String driverClass = ""; //NOI18N
+        String informixServerName = ""; //NOI18N
+        String informixHostName = ""; //NOI18N
         
         AttributeList attrList = (AttributeList)mejb.invoke(connPoolObj, __GetProperties, null, null);
         HashMap attrs = getObjMap(attrList);
@@ -1130,7 +1132,12 @@ public class ResourceUtils implements WizardConstants{
                 sid = getStringVal(attrs.get(keyName));
             }else if(keyName.equalsIgnoreCase(__DriverClass)) {
                 driverClass = getStringVal(attrs.get(keyName));
-            }    
+            }else if(keyName.equalsIgnoreCase(__InformixServer)) {
+                informixServerName = getStringVal(attrs.get(keyName));
+            }else if(keyName.equalsIgnoreCase(__InformixHostName)) {
+                informixHostName = getStringVal(attrs.get(keyName));
+            }
+            
         }
         if (url == null || url.equals("")) {
             if (dsClassName.indexOf("derby") != -1) { //NOI18N
@@ -1148,6 +1155,8 @@ public class ResourceUtils implements WizardConstants{
                 if (serverName != null) {
                     if (vName.equals("sybase2")) { //NOI18N
                         url = urlPrefix + serverName;
+                    }if (vName.equals("informix")) { //NOI18N
+                        url = urlPrefix + "//" + informixHostName;
                     } else {
                         url = urlPrefix + "//" + serverName; //NOI18N
                     }
@@ -1161,6 +1170,11 @@ public class ResourceUtils implements WizardConstants{
                     url = url + ";databaseName=" + dbName; //NOI18N
                 } else if (Arrays.asList(VendorsDBNameProp).contains(vName)) {
                     url = url + "/" + dbName; //NOI8N
+                }
+                if (vName.equals("informix")) { //NOI18N
+                    url = url + ":INFORMIXSERVER=" + serverName;
+                }else if(vName.equals("datadirect_informix")){
+                    url = url + ";InformixServer=" + informixServerName;
                 }
             }
         }
