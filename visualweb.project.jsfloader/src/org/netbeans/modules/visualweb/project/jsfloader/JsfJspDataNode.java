@@ -162,24 +162,17 @@ public class JsfJspDataNode extends org.openide.loaders.DataNode implements Prop
              */
             try {
                 if(portletSupport.isInitialPage(PortletModeType.VIEW, fo)) {
-                    /**
-                     * Get the appropriate icon
-                     */
                     returnImage = Utilities.loadImage("org/netbeans/modules/visualweb/project/jsfloader/resources/initialviewpage.png"); // NOI18N
                     setShortDescription(NbBundle.getMessage(JsfJspDataNode.class, "LBL_InitialViewShortDesc"));
                 } else if(portletSupport.isInitialPage(PortletModeType.EDIT, fo)) {
-                    /**
-                     * Get the appropriate icon
-                     */
                     returnImage = Utilities.loadImage("org/netbeans/modules/visualweb/project/jsfloader/resources/initialeditpage.png"); // NOI18N
                     setShortDescription(NbBundle.getMessage(JsfJspDataNode.class, "LBL_InitialEditShortDesc"));                    
                 } else if(portletSupport.isInitialPage(PortletModeType.HELP, fo)) {
-                    /**
-                     * Get the appropriate icon
-                     */
                     returnImage = Utilities.loadImage("org/netbeans/modules/visualweb/project/jsfloader/resources/initialhelppage.png"); // NOI18N
                     setShortDescription(NbBundle.getMessage(JsfJspDataNode.class, "LBL_InitialHelpShortDesc"));                    
-                } 
+                } else {
+                    returnImage = Utilities.loadImage("org/netbeans/modules/visualweb/project/jsfloader/resources/jsfJspObject.png"); // NOI18N
+                }
             } catch (JsfPortletSupportException jpse) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, jpse);
             }
