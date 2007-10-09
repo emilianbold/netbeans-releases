@@ -343,10 +343,9 @@ public class ProjectsRootNode extends AbstractNode {
         public BadgingNode(Node n, boolean addSearchInfo) {
             super(n, null, addSearchInfo ? new ProxyLookup(n.getLookup(), Lookups.singleton(alwaysSearchableSearchInfo(n.getLookup().lookup(Project.class)))) : n.getLookup());
             OpenProjectList.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(this, OpenProjectList.getDefault()));
-            DataObject fold = getOriginal().getLookup().lookup(DataObject.class);
-            if (fold != null) {
-
-                file = fold.getPrimaryFile();
+            Project proj = getOriginal().getLookup().lookup(Project.class);
+            if (proj != null) {
+                file = proj.getProjectDirectory();
                 files = Collections.singleton(file);
                 try {
                     FileSystem fs = file.getFileSystem();
@@ -388,10 +387,10 @@ public class ProjectsRootNode extends AbstractNode {
         
         public String getDisplayName() {
             String original = super.getDisplayName();
-            DataObject fold = getOriginal().getLookup().lookup(DataObject.class);
-            if (fold != null) {
+            Project proj = getOriginal().getLookup().lookup(Project.class);
+            if (proj != null) {
                 try {            
-                    original = fold.getPrimaryFile().getFileSystem ().getStatus ().annotateName (original, Collections.singleton(fold.getPrimaryFile()));
+                    original = proj.getProjectDirectory().getFileSystem().getStatus().annotateName(original, Collections.singleton(proj.getProjectDirectory()));
                 } catch (FileStateInvalidException e) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                 }
@@ -410,15 +409,14 @@ public class ProjectsRootNode extends AbstractNode {
                     // ignore
                 }
             }
-            DataObject fold = getOriginal().getLookup().lookup(DataObject.class);
-            if (fold != null) {
-
+            Project proj = getOriginal().getLookup().lookup(Project.class);
+            if (proj != null) {
                 try {
-                    FileSystem.Status stat = fold.getPrimaryFile().getFileSystem().getStatus();
+                    FileSystem.Status stat = proj.getProjectDirectory().getFileSystem().getStatus();
                     if (stat instanceof FileSystem.HtmlStatus) {
                         FileSystem.HtmlStatus hstat = (FileSystem.HtmlStatus) stat;
 
-                        String result = hstat.annotateNameHtml(super.getDisplayName(), Collections.singleton(fold.getPrimaryFile()));
+                        String result = hstat.annotateNameHtml(super.getDisplayName(), Collections.singleton(proj.getProjectDirectory()));
                         //Make sure the super string was really modified
                         if (result != null && !super.getDisplayName().equals(result)) {
                            return isMain() ? "<b>" + (result) + "</b>" : result; //NOI18N
