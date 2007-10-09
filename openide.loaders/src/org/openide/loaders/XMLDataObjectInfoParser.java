@@ -405,18 +405,23 @@ implements FileChangeListener, LexicalHandler, LookupListener {
     }
 
     public void startEntity(String name) throws SAXException {
+        XMLDataObject.ERR.log(Level.FINEST, "startEntity {0}", name);
     }
 
     public void endEntity(String name) throws SAXException {
+        XMLDataObject.ERR.log(Level.FINEST, "endEntity {0}", name);
     }
 
     public void startCDATA() throws SAXException {
+        XMLDataObject.ERR.log(Level.FINEST, "startCDATA");
     }
 
     public void endCDATA() throws SAXException {
+        XMLDataObject.ERR.log(Level.FINEST, "endCDATA");
     }
 
     public void comment(char[] ch, int start, int length) throws SAXException {
+        XMLDataObject.ERR.log(Level.FINEST, "comment len: {0}", length);
     }
 
     @Override
@@ -439,6 +444,7 @@ implements FileChangeListener, LexicalHandler, LookupListener {
     }
 
     private void stop() throws SAXException {
+        XMLDataObject.ERR.log(Level.FINEST, "stop");
         throw STOP;
     }
 

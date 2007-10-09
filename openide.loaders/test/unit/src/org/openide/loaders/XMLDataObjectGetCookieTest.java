@@ -40,12 +40,18 @@
  */
 package org.openide.loaders;
 
+import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.util.logging.Level;
+import org.netbeans.junit.Log;
 import org.openide.ErrorManager;
+import org.openide.cookies.EditorCookie;
+import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.Environment.Provider;
 import org.openide.nodes.Node;
@@ -71,10 +77,10 @@ implements Node.Cookie {
         
         err = ErrorManager.getDefault().getInstance("TEST-" + getName());
         
-        registerIntoLookup(ENV);
     }
     
     public void testGetTheLookupWhileWaitingBeforeAssigningIt() throws IOException {
+        registerIntoLookup(ENV);
         doTest(
             "THREAD:t2 MSG:parsedId set to NULL" + 
             "THREAD:t1 MSG:Has already been parsed.*" +
@@ -83,6 +89,7 @@ implements Node.Cookie {
     }
 
     public void testGetTheLookupWhileWaitingAfterParsing() throws IOException {
+        registerIntoLookup(ENV);
         doTest(
             "THREAD:t1 MSG:New id.*" +
             "THREAD:t2 MSG:Going to read parseId.*" 
@@ -147,6 +154,57 @@ implements Node.Cookie {
         assertEquals("Second result is ok", ENV, r2.cookie);
     }
     
+    public void testParseUnparsableXML() throws IOException, PropertyVetoException {
+        LocalFileSystem lfs = new LocalFileSystem();
+        lfs.setRootDirectory(getWorkDir());
+        FileObject res = FileUtil.createData(
+            lfs.getRoot(), 
+            getName() + "/R.xml"
+        );
+        
+        err.log("file created: " + res);
+        org.openide.filesystems.FileLock l = res.lock();
+        OutputStream os = res.getOutputStream(l);
+        err.log("stream opened");
+        PrintStream ps = new PrintStream(os);
+        
+        ps.println("<?xml version='1.0' encoding='UTF-8'?>");
+        ps.println("<PointSourceSubmissionGroup xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " +
+            "xmlns=\"http://www.epa.gov/exchangenetwork\" xsi" +
+            ":schemaLocation=\"http://www.epa.gov/exchangenetwork EN_NEI_Point_v3_0.xsd\" " +
+            "schemaVersion=\"3.0\">");
+        for (int i = 0; i < 10000; i++) {
+            ps.println("<SystemRecordCountValues schemaVersion='3.0'>");
+            ps.println("  <SystemRecordCountTransmittalValue>46</SystemRecordCountTransmittalValue>");
+            ps.println("  <SystemRecordCountSiteValue>740</SystemRecordCountSiteValue>");
+            ps.println("  <SystemRecordCountEmissionUnitValue>4256</SystemRecordCountEmissionUnitValue>");
+            ps.println("</SystemRecordCountValues>");
+            ps.println("<TransmittalSubmissionGroup schemaVersion='3.0'>");
+            ps.println("  <IndividualFullName>LYNN BARNES</IndividualFullName>");
+            ps.println("</TransmittalSubmissionGroup>");
+        }
+
+        err.log("Content written");
+        os.close();
+        err.log("Stream closed");
+        l.releaseLock();
+        err.log("releaseLock");
+    
+        
+        CharSequence log = Log.enable("org.openide.loaders.XMLDataObject", Level.FINEST);
+        final DataObject obj = DataObject.find(res);
+        
+        
+        Object cookie = obj.getCookie(OpenCookie.class);
+        assertNotNull( "Can be opened", cookie);
+        cookie = obj.getCookie(EditorCookie.class);
+        assertNotNull( "Can be editored", cookie);
+
+        String s = log.toString();
+        if (s.indexOf("stop") > 1000) {
+            fail("Too much logged data:\n" + log);
+        }
+    }
     
     
     private static Object ENV = new EP();
