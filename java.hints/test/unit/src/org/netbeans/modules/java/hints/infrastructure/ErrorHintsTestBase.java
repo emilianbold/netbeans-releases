@@ -163,6 +163,14 @@ public abstract class ErrorHintsTestBase extends NbTestCase {
         assertTrue(fixesNames.toString(), Arrays.equals(golden, fixesNames.toArray(new String[0])));
     }
     
+    protected void performFixTest(String fileName, String code, String fixCode, String golden) throws Exception {
+        int[] caretPosition = new int[1];
+        
+        code = org.netbeans.modules.java.hints.TestUtilities.detectOffsets(code, caretPosition);
+        
+        performFixTest(fileName, code, caretPosition[0], fixCode, golden);
+    }
+    
     protected void performFixTest(String fileName, String code, int pos, String fixCode, String golden) throws Exception {
         performFixTest(fileName, code, pos, fixCode, fileName, golden);
     }
