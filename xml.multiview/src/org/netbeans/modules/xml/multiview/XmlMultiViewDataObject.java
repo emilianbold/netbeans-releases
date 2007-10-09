@@ -51,6 +51,7 @@ import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.nodes.CookieSet;
+import org.openide.util.Lookup;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -62,6 +63,8 @@ import java.io.*;
 import java.util.Enumeration;
 import java.util.Date;
 import java.lang.ref.WeakReference;
+import org.netbeans.modules.xml.api.XmlFileEncodingQueryImpl;
+import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 
 /**
  * Base class for data objects that are used as a basis for
@@ -100,6 +103,7 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
     public XmlMultiViewDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {
         super(pf, loader);
         getCookieSet().add(XmlMultiViewEditorSupport.class, this);
+        getCookieSet().assign(FileEncodingQueryImplementation.class, new Object[]{XmlFileEncodingQueryImpl.singleton()});
     }
     
     protected EditorCookie createEditorCookie() {
@@ -179,6 +183,10 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
         FileObject retValue = super.handleRename(name);
         getEditorSupport().updateDisplayName();
         return retValue;
+    }
+
+    public Lookup getLookup() {
+        return getCookieSet().getLookup();
     }
     
     /**
