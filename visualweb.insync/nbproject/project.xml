@@ -476,7 +476,6 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.modules.visualweb.insync.action</package>
                 <package>org.netbeans.modules.visualweb.insync.beans</package>
                 <package>org.netbeans.modules.visualweb.insync.faces</package>
-                <package>org.netbeans.modules.visualweb.insync.faces.config</package>
                 <package>org.netbeans.modules.visualweb.insync.java</package>
                 <package>org.netbeans.modules.visualweb.insync.live</package>
                 <package>org.netbeans.modules.visualweb.insync.markup</package>
