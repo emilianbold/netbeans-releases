@@ -1385,6 +1385,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         ERR.fine("reloadDocument in " + Thread.currentThread()); // NOI18N
 
         if (doc != null) {
+            final JEditorPane[] panes = getOpenedPanes();
             // acquire write access
             NbDocument.runAtomic(doc,
                                  new Runnable() {
@@ -1393,7 +1394,6 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                          // UndoManager must be detached from document here because it will be attached in loadDocument()
                                          doc.removeUndoableEditListener(getUndoRedo());
                                          // Remember caret positions in all opened panes
-                                         final JEditorPane[] panes = getOpenedPanes();
                                          final int[] carets;
 
                                          if (panes != null) {
