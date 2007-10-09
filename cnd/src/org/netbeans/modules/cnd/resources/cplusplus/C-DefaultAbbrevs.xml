@@ -74,11 +74,12 @@ made subject to such option by the copyright holder.
     <codetemplate abbreviation="voi"><code><![CDATA[void ]]></code></codetemplate> 
 
     <codetemplate abbreviation="sw"><code><![CDATA[switch (]]></code></codetemplate> 
-    <codetemplate abbreviation="wh"><code><![CDATA[while (]]></code></codetemplate> 
     
     <codetemplate abbreviation="fori" contexts="BLOCK,CASE" descriptionId="CT_fori">
         <code>
-<![CDATA[for (int ${IDX newVarName default="i"} = 0; ${IDX} < ${SIZE int default="size"}; ${IDX}++) {
+<![CDATA[
+int ${IDX newVarName default="i"};
+for (${IDX} = 0; ${IDX} < ${SIZE int default="size"}; ${IDX}++) {
    ${TYPE rightSideType default="Object"} ${ELEM newVarName default="elem"} = ${TYPE_CAST cast default="" editable=false}${ARR array default="array"}[${IDX}];
    ${selection line}${cursor}
 }
@@ -93,7 +94,7 @@ made subject to such option by the copyright holder.
 ]]>
         </code>
     </codetemplate>
-    <codetemplate abbreviation="ifelse" contexts="BLOCK,CASE">
+    <codetemplate abbreviation="ife" contexts="BLOCK,CASE">
         <code>
 <![CDATA[if (${EXP default="exp"}) {
    ${selection line}${cursor}
@@ -102,7 +103,7 @@ made subject to such option by the copyright holder.
 ]]>
         </code>
     </codetemplate>   
-    <codetemplate abbreviation="whilexp" contexts="BLOCK,CASE">
+    <codetemplate abbreviation="wh" contexts="BLOCK,CASE">
         <code>
 <![CDATA[while (${EXP default="exp"}) { 
    ${selection line}${cursor} 

@@ -74,7 +74,6 @@ made subject to such option by the copyright holder.
     <codetemplate abbreviation="voi"><code><![CDATA[void ]]></code></codetemplate> 
 
     <codetemplate abbreviation="sw"><code><![CDATA[switch (]]></code></codetemplate> 
-    <codetemplate abbreviation="wh"><code><![CDATA[while (]]></code></codetemplate> 
     
     <codetemplate abbreviation="fori" contexts="BLOCK,CASE" descriptionId="CT_fori">
         <code>
@@ -93,7 +92,7 @@ made subject to such option by the copyright holder.
 ]]>
         </code>
     </codetemplate>
-    <codetemplate abbreviation="ifelse" contexts="BLOCK,CASE">
+    <codetemplate abbreviation="ife" contexts="BLOCK,CASE">
         <code>
 <![CDATA[if (${EXP default="exp"}) {
    ${selection line}${cursor}
@@ -102,9 +101,10 @@ made subject to such option by the copyright holder.
 ]]>
         </code>
     </codetemplate>   
-    <codetemplate abbreviation="whilexp" contexts="BLOCK,CASE">
+    <codetemplate abbreviation="wh" contexts="BLOCK,CASE">
         <code>
-<![CDATA[while (${EXP default="exp"}) { 
+<![CDATA[
+while (${EXP default="exp"}) { 
    ${selection line}${cursor} 
 }
 ]]>
@@ -113,9 +113,11 @@ made subject to such option by the copyright holder.
     
     <codetemplate abbreviation="cls" descriptionId="CT_cls">
         <code>
-<![CDATA[class ${CLS newVarName default="Class"} {
+<![CDATA[
+class ${CLS newVarName default="Class"} {
 public:
     ${CLS}();
+    ${CLS}(const ${CLS}& orig);
     virtual ~${CLS}();
 private:
    ${selection line}${cursor} 
@@ -126,30 +128,21 @@ private:
     
     <codetemplate abbreviation="clss" descriptionId="CT_clss">
         <code>
-<![CDATA[${CLS newVarName default="Class"}::${CLS}() {
+<![CDATA[
+#include "${CLS newVarName default="Class"}.h"
+
+${CLS}::${CLS}() {
    ${selection line}${cursor} 
+}
+
+${CLS}::${CLS}(const ${CLS}& orig) {
 }
 
 ${CLS}::~${CLS}() {
 }
 ]]>
         </code>
-    </codetemplate>    
-    
-    <!--
-    <codetemplate abbreviation="icls" descriptionId="CT_icls">
-        <code>
-<![CDATA[class ${CLS newVarName default="Class"} : ${INH default="public"} ${BASE class default="Base"} {
-public:
-    ${CLS}();
-    virtual ~${CLS}();
-private:
-   ${selection line}${cursor} 
-};
-]]>
-        </code>
-    </codetemplate>     
-    -->
+    </codetemplate>       
     
     <codetemplate abbreviation="tr"><code><![CDATA[true]]></code></codetemplate> 
     <codetemplate abbreviation="fa"><code><![CDATA[false]]></code></codetemplate> 
