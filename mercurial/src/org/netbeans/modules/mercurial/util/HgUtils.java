@@ -107,6 +107,8 @@ public class HgUtils {
 
     private static final int MAX_LINES_TO_PRINT = 500;
 
+    private static final String MSG_TOO_MANY_LINES = "The number of output lines is greater than 500; see message log for complete output";
+
     /**
      * confirmDialog - display a confirmation dialog
      *
@@ -753,14 +755,21 @@ itor tabs #66700).
         io.select();
         OutputWriter out = io.getOut();
         
-        int lines = 0;
-        for (String s : list){
-            if (++lines > MAX_LINES_TO_PRINT) {
-                out.println("...");
-                out.println(list.get(list.size() -1));
-                break;
+        int lines = list.size();
+        if (lines > MAX_LINES_TO_PRINT) {
+            out.println(list.get(1));
+            out.println(list.get(2));
+            out.println(list.get(3));
+            out.println("...");
+            out.println(list.get(list.size() -1));
+            out.println(MSG_TOO_MANY_LINES);
+            for (String s : list){
+                Mercurial.LOG.log(Level.WARNING, s);
             }
-            out.println(s);
+        } else {
+            for (String s : list){
+                out.println(s);
+            }
         }
         out.close();
     }
