@@ -51,6 +51,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.logging.Logger;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.openide.ErrorManager;
@@ -77,7 +78,17 @@ public abstract class AntArtifact {
     /**
      * Empty constructor for use from subclasses.
      */
-    protected AntArtifact() {}
+    protected AntArtifact() {
+        try {
+            if (getClass().getMethod("getArtifactLocation").getDeclaringClass() == AntArtifact.class && // NOI18N
+                    getClass().getMethod("getArtifactLocations").getDeclaringClass() == AntArtifact.class) { // NOI18N
+                // #72308: at least one must be overridden
+                throw new IllegalStateException(getClass().getName() + ".getArtifactLocations() must be overridden"); // NOI18N
+            }
+        } catch (NoSuchMethodException x) {
+            throw new AssertionError(x);
+        }
+    }
     
     /**
      * Get the type of the build artifact.
@@ -146,7 +157,7 @@ public abstract class AntArtifact {
     public URI[] getArtifactLocations() {
         String name = getClass().getName();
         if (warnedClasses.add(name)) {
-            ErrorManager.getDefault().log(ErrorManager.WARNING, "Warning: " + name + ".getArtifactLocations() must be overridden");
+            Logger.getLogger(AntArtifact.class.getName()).warning(name + ".getArtifactLocations() must be overridden");
         }
         return new URI[]{getArtifactLocation()};
     }
