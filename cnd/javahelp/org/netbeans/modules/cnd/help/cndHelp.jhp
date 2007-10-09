@@ -7,24 +7,24 @@
 
 <helenProject version="1.0">
     <documents>
-		<directory title="/set/pubs/Work/arice/CND1Help/cnd/core/javahelp/org/netbeans/modules/cnd/help">
+		<directory title="/net/techpubs/export/set/techpubs4/Work/arice/CND6Help/cnd/core/javahelp/org/netbeans/modules/cnd/help">
 			<directory title="CandC++ProjectBasics">
 				<file title="AddtlIncludeDirectories.html"/>
 				<file title="AddtlLibraryDirectories.html"/>
 				<file title="BalloonEvaluation.html"/>
 				<file title="BuildingCorC++Project.html"/>
-				<file title="C&amp;C++Breakpoints.html"/>
-				<file title="C&amp;C++BreakpointsWindow.html"/>
-				<file title="C&amp;C++BuildingTasks.html"/>
-				<file title="C&amp;C++CallStackWindow.html"/>
-				<file title="C&amp;C++DebuggerContext.html"/>
-				<file title="C&amp;C++DebuggingTasks.html"/>
-				<file title="C&amp;C++LocalVariablesWindow.html"/>
-				<file title="C&amp;C++SessionsWindow.html"/>
-				<file title="C&amp;C++WatchesWindow.html"/>
+				<file title="CandC++Breakpoints.html"/>
+				<file title="CandC++BreakpointsWindow.html"/>
+				<file title="CandC++BuildingTasks.html"/>
+				<file title="CandC++CallStackWindow.html"/>
+				<file title="CandC++DebuggerContext.html"/>
+				<file title="CandC++DebuggingTasks.html"/>
+				<file title="CandC++LocalVariablesWindow.html"/>
+				<file title="CandC++SessionsWindow.html"/>
+				<file title="CandC++WatchesWindow.html"/>
 				<file title="CompilerOptions.html"/>
-				<file title="CompilingSingleC&amp;C++File.html"/>
-				<file title="CorC++Variables&amp;Expressions.html"/>
+				<file title="CompilingSingleCandC++File.html"/>
+				<file title="CorC++VariablesandExpressions.html"/>
 				<file title="CreatingCorC++Watch.html"/>
 				<file title="CreatingDependencies.html"/>
 				<file title="DebuggerWindows.html"/>
@@ -33,6 +33,7 @@
 				<file title="FinishingCorC++DebugSession.html"/>
 				<file title="Libraries.html"/>
 				<file title="LinkerOptions.html"/>
+				<file title="Projects.html"/>
 				<file title="ResolveBuildTools.html"/>
 				<file title="RunningCorC++Project.html"/>
 				<file title="RuntimeSearchDirectories.html"/>
@@ -40,6 +41,7 @@
 				<file title="StartingLocalDebuggingSession.html"/>
 				<file title="SteppingThroughCorC++.html"/>
 				<file title="UsingCorC++CallStack.html"/>
+				<file title="Watch.html"/>
 				<file title="WorkingWithDebugging.html"/>
 			</directory>
 			<directory title="CreatingMakefile">
@@ -63,13 +65,19 @@
 			</directory>
 			<directory title="EditingSourceFiles">
 				<file title="AbbreviationsQuickRef.html"/>
-				<file title="C&amp;C++CodeFolding.html"/>
+				<file title="CandC++CodeFolding.html"/>
 				<file title="Commenting.html"/>
 				<file title="CreatingCodeTemplates.html"/>
 				<file title="DisablingAutoCodeCompletion.html"/>
 				<file title="EditingSourceFiles.html"/>
 				<file title="GoToDeclaration.html"/>
+				<file title="GoToFunction.html"/>
+				<file title="GoToInclude.html"/>
+				<file title="GoToType.html"/>
+				<file title="IncludeView.html"/>
 				<file title="SettingCompletionBoxDelay.html"/>
+				<file title="SourceHeaderSwitch.html"/>
+				<file title="TypeView.html"/>
 				<file title="UsingAbbreviations.html"/>
 				<file title="UsingClassView.html"/>
 				<file title="UsingCodeCompletion.html"/>
@@ -78,9 +86,9 @@
 				<file title="UsingPairCompletion.html"/>
 			</directory>
 			<directory title="GettingStarted">
-				<file title="C&amp;C++Overview.html"/>
+				<file title="CandC++Overview.html"/>
 				<file title="FilesWindow.html"/>
-				<file title="KeyC&amp;C++Concepts.html"/>
+				<file title="KeyCandC++Concepts.html"/>
 				<file title="Memory.html"/>
 				<file title="ProjectsWindow.html"/>
 			</directory>
@@ -89,7 +97,6 @@
 					<file title="Entries"/>
 					<file title="Repository"/>
 					<file title="Root"/>
-					<file title="Tag"/>
 					<file title="Template"/>
 				</directory>
 				<file title="arrow.gif"/>
@@ -140,8 +147,9 @@
 				<file title="webProjectIcon.gif"/>
 			</directory>
 			<directory title="WorkingWithCandC++Projects">
-				<file title="AboutC&amp;C++Projects.html"/>
-				<file title="AddingFiles&amp;Folders.html"/>
+				<file title="AboutCandC++Projects.html"/>
+				<file title="AddingFilesAndFolders.html"/>
+				<file title="CandC++BuildingTasks.html"/>
 				<file title="CodeAssistance.html"/>
 				<file title="CodeAssistanceWizardP1.html"/>
 				<file title="CodeAssistanceWizardP2.html"/>
@@ -149,6 +157,7 @@
 				<file title="CodeAssistanceWizardP4.html"/>
 				<file title="CodeAssistanceWizardP5.html"/>
 				<file title="CodeAssistanceWizardP6.html"/>
+				<file title="CompilingSingleCandC++File.html"/>
 				<file title="ConfiguringBuildTools.html"/>
 				<file title="ConfiguringParsingSettings.html"/>
 				<file title="ConfiguringProjectSettings.html"/>
@@ -173,12 +182,13 @@
 				<file title="ProjectPropsLinkerLibraries.html"/>
 				<file title="ProjectPropsMake.html"/>
 				<file title="ProjectPropsParser.html"/>
+				<file title="ProjectPropsRequired.html"/>
 				<file title="ProjectPropsRunning.html"/>
 				<file title="ProjectTasks.html"/>
-				<file title="SettingC&amp;C++FileProperties.html"/>
-				<file title="SettingC&amp;C++ProjectProperties.html"/>
+				<file title="SettingCandC++FileProperties.html"/>
+				<file title="SettingCandC++ProjectProperties.html"/>
 				<file title="SettingMainCorC++Project.html"/>
-				<file title="WorkingWithC&amp;C++Projects.html"/>
+				<file title="WorkingWithCandC++Projects.html"/>
 			</directory>
 			<file title="cnd.hs"/>
 			<file title="cndTOC.xml"/>

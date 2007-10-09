@@ -3,8 +3,8 @@
                      "http://java.sun.com/products/javahelp/map_1_0.dtd">
 
 <map version="1.0">
-	<mapID target="AboutCandC++Projects" url="WorkingWithCandC++Projects/AboutC&amp;C++Projects.html"/>
-	<mapID target="WorkingWithCandC++Projects" url="WorkingWithCandC++Projects/WorkingWithC&amp;C++Projects.html"/>
+	<mapID target="AboutCandC++Projects" url="WorkingWithCandC++Projects/AboutCandC++Projects.html"/>
+	<mapID target="WorkingWithCandC++Projects" url="WorkingWithCandC++Projects/WorkingWithCandC++Projects.html"/>
 	<mapID target="ProjectTasks" url="WorkingWithCandC++Projects/ProjectTasks.html"/>
 	<mapID target="CreatingCorC++Project" url="WorkingWithCandC++Projects/CreatingCorC++Project.html"/>
 	<mapID target="circle1" url="images/circle1.gif"/>
@@ -38,11 +38,11 @@
 	<mapID target="warn" url="images/warn.gif"/>
 	<mapID target="webPages" url="images/webPages.gif"/>
 	<mapID target="webProjectIcon" url="images/webProjectIcon.gif"/>
-	<mapID target="CandC++Overview" url="GettingStarted/C&amp;C++Overview.html"/>
-	<mapID target="KeyCandC++Concepts" url="GettingStarted/KeyC&amp;C++Concepts.html"/>
-	<mapID target="SettingProjectProperties" url="WorkingWithCandC++Projects/SettingC&amp;C++ProjectProperties.html"/>
+	<mapID target="CandC++Overview" url="GettingStarted/CandC++Overview.html"/>
+	<mapID target="KeyCandC++Concepts" url="GettingStarted/KeyCandC++Concepts.html"/>
+	<mapID target="SettingProjectProperties" url="WorkingWithCandC++Projects/SettingCandC++ProjectProperties.html"/>
 	<mapID target="ManagingProjectConfigurations" url="WorkingWithCandC++Projects/ManagingProjectConfigurations.html"/>
-	<mapID target="UsingCodeFolding" url="EditingSourceFiles/C&amp;C++CodeFolding.html"/>
+	<mapID target="UsingCodeFolding" url="EditingSourceFiles/CandC++CodeFolding.html"/>
 	<mapID target="UsingClassView" url="EditingSourceFiles/UsingClassView.html"/>
 	<mapID target="UsingHyperlinks" url="EditingSourceFiles/UsingHyperlinks.html"/>
 	<mapID target="UsingCodeCompletion" url="EditingSourceFiles/UsingCodeCompletion.html"/>
@@ -55,7 +55,7 @@
 	<mapID target="ProjectsWindow" url="GettingStarted/ProjectsWindow.html"/>
 	<mapID target="FilesWindow" url="GettingStarted/FilesWindow.html"/>
 	<mapID target="UsingCodeCompletion1" url="EditingSourceFiles/UsingCodeCompletion.html"/>
-	<mapID target="C&amp;C++CodeFolding" url="EditingSourceFiles/C&amp;C++CodeFolding.html"/>
+	<mapID target="CandC++CodeFolding" url="EditingSourceFiles/CandC++CodeFolding.html"/>
 	<mapID target="target_location" url="CreatingMakefile/target_location.html"/>
 	<mapID target="type_and_platform" url="CreatingMakefile/type_and_platform.html"/>
 	<mapID target="base_directory" url="CreatingMakefile/base_directory.html"/>
@@ -73,14 +73,14 @@
 	<mapID target="compiling_preference" url="CreatingMakefile/compiling_preference.html"/>
 	<mapID target="review_makefile" url="CreatingMakefile/review_makefile.html"/>
 	<mapID target="CreatingMakefile" url="CreatingMakefile/CreatingMakefile.html"/>
-	<mapID target="AddingFiles&amp;Folders" url="WorkingWithCandC++Projects/AddingFiles&amp;Folders.html"/>
+	<mapID target="AddingFilesandFolders" url="WorkingWithCandC++Projects/AddingFilesAndFolders.html"/>
 	<mapID target="BuildingCorC++Project" url="CandC++ProjectBasics/BuildingCorC++Project.html"/>
 	<mapID target="RunningCorC++Project" url="CandC++ProjectBasics/RunningCorC++Project.html"/>
-	<mapID target="C&amp;C++BuildingTasks" url="CandC++ProjectBasics/C&amp;C++BuildingTasks.html"/>
+	<mapID target="CandC++BuildingTasks" url="CandC++ProjectBasics/CandC++BuildingTasks.html"/>
 	<mapID target="CreatingDependencies" url="CandC++ProjectBasics/CreatingDependencies.html"/>
 	<mapID target="SettingMainCorC++Project." url="WorkingWithCandC++Projects/SettingMainCorC++Project.html"/>
 	<mapID target="LinkerOptions" url="CandC++ProjectBasics/LinkerOptions.html"/>
-	<mapID target="CompilingSingleC&amp;C++File" url="CandC++ProjectBasics/CompilingSingleC&amp;C++File.html"/>
+	<mapID target="CompilingSingleCandC++File" url="CandC++ProjectBasics/CompilingSingleCandC++File.html"/>
 	<mapID target="CompilerOptions" url="CandC++ProjectBasics/CompilerOptions.html"/>
 	<mapID target="SettingCompletionBoxDelay" url="EditingSourceFiles/SettingCompletionBoxDelay.html"/>
 	<mapID target="DisablingAutoCodeCompletion" url="EditingSourceFiles/DisablingAutoCodeCompletion.html"/>
@@ -95,7 +95,7 @@
 	<mapID target="Environment" url="CandC++ProjectBasics/Environment.html"/>
 	<mapID target="ProjectPropsLinkerGeneral" url="WorkingWithCandC++Projects/ProjectPropsLinkerLibraries.html"/>
 	<mapID target="ProjectPropsCommandLine" url="WorkingWithCandC++Projects/ProjectPropsCommandLine.html"/>
-	<mapID target="SettingC&amp;C++FileProperties" url="WorkingWithCandC++Projects/SettingC&amp;C++FileProperties.html"/>
+	<mapID target="SettingCandC++FileProperties" url="WorkingWithCandC++Projects/SettingCandC++FileProperties.html"/>
 	<mapID target="UsingAbbreviations" url="EditingSourceFiles/UsingAbbreviations.html"/>
 	<mapID target="EditingSourceFiles" url="EditingSourceFiles/EditingSourceFiles.html"/>
 	<mapID target="Configuring" url="WorkingWithCandC++Projects/ConfiguringProjectSettings.html"/>
@@ -104,22 +104,21 @@
 	<mapID target="CreatingCodeTemplates" url="EditingSourceFiles/CreatingCodeTemplates.html"/>
 	<mapID target="DebuggingCorC++Project" url="CandC++ProjectBasics/DebuggingCorC++Project.html"/>
 	<mapID target="WorkingWithDebugging" url="CandC++ProjectBasics/WorkingWithDebugging.html"/>
-	<mapID target="C&amp;C++DebuggingTasks" url="CandC++ProjectBasics/C&amp;C++DebuggingTasks.html"/>
+	<mapID target="CandC++DebuggingTasks" url="CandC++ProjectBasics/CandC++DebuggingTasks.html"/>
 	<mapID target="DebuggerWindows" url="CandC++ProjectBasics/DebuggerWindows.html"/>
-	<mapID target="C&amp;C++DebuggerContext" url="CandC++ProjectBasics/C&amp;C++DebuggerContext.html"/>
-	<mapID target="C&amp;C++Breakpoints" url="CandC++ProjectBasics/C&amp;C++Breakpoints.html"/>
+	<mapID target="CandC++DebuggerContext" url="CandC++ProjectBasics/CandC++DebuggerContext.html"/>
+	<mapID target="CandC++Breakpoints" url="CandC++ProjectBasics/CandC++Breakpoints.html"/>
 	<mapID target="SettingCorC++Breakpoint" url="CandC++ProjectBasics/SettingCorC++Breakpoint.html"/>
 	<mapID target="StartingLocalDebuggingSession" url="CandC++ProjectBasics/StartingLocalDebuggingSession.html"/>
 	<mapID target="SteppingThroughCorC++" url="CandC++ProjectBasics/SteppingThroughCorC++.html"/>
 	<mapID target="FinishingCorC++DebugSession" url="CandC++ProjectBasics/FinishingCorC++DebugSession.html"/>
-	<mapID target="CorC++Variables&amp;Expressions" url="CandC++ProjectBasics/CorC++Variables&amp;Expressions.html"/>
 	<mapID target="BalloonEvaluation" url="CandC++ProjectBasics/BalloonEvaluation.html"/>
 	<mapID target="UsingCorC++CallStack" url="CandC++ProjectBasics/UsingCorC++CallStack.html"/>
-	<mapID target="CandC++LocalVariables." url="CandC++ProjectBasics/C&amp;C++LocalVariablesWindow.html"/>
-	<mapID target="CandC++Watches" url="CandC++ProjectBasics/C&amp;C++WatchesWindow.html"/>
-	<mapID target="C&amp;C++CallStack" url="CandC++ProjectBasics/C&amp;C++CallStackWindow.html"/>
-	<mapID target="C&amp;C++BreakpointsWindow" url="CandC++ProjectBasics/C&amp;C++BreakpointsWindow.html"/>
-	<mapID target="C&amp;C++SessionsWindow" url="CandC++ProjectBasics/C&amp;C++SessionsWindow.html"/>
+	<mapID target="CandC++LocalVariables." url="CandC++ProjectBasics/CandC++LocalVariablesWindow.html"/>
+	<mapID target="CandC++Watches" url="CandC++ProjectBasics/CandC++WatchesWindow.html"/>
+	<mapID target="CandC++CallStack" url="CandC++ProjectBasics/CandC++CallStackWindow.html"/>
+	<mapID target="CandC++BreakpointsWindow" url="CandC++ProjectBasics/CandC++BreakpointsWindow.html"/>
+	<mapID target="CandC++SessionsWindow" url="CandC++ProjectBasics/CandC++SessionsWindow.html"/>
 	<mapID target="cf_minus" url="images/cf_minus.gif"/>
 	<mapID target="cf_plus" url="images/cf_plus.gif"/>
 	<mapID target="Breakpoint" url="images/Breakpoint.gif"/>
@@ -134,7 +133,7 @@
 	<mapID target="StaticVariable" url="images/StaticVariable.gif"/>
 	<mapID target="SuperVariable" url="images/SuperVariable.gif"/>
 	<mapID target="Watch" url="images/Watch.gif"/>
-	<mapID target="CreatingCorC++Watch" url="CandC++ProjectBasics/CreatingCorC++Watch.html"/>
+	<mapID target="debug.add.watch" url="CandC++ProjectBasics/CreatingCorC++Watch.html"/>
 	<mapID target="DeletingCorC++Project" url="WorkingWithCandC++Projects/DeletingCorC++Project.html"/>
 	<mapID target="MovingCorC++Project" url="WorkingWithCandC++Projects/MovingCorC++Project.html"/>
 	<mapID target="Memory" url="GettingStarted/Memory.html"/>
@@ -155,5 +154,35 @@
 	<mapID target="Commenting" url="EditingSourceFiles/Commenting.html"/>
 	<mapID target="CodeAssistanceWizardP6" url="WorkingWithCandC++Projects/CodeAssistanceWizardP6.html"/>
 	<mapID target="UsingNavigator" url="EditingSourceFiles/UsingNavigator.html"/>
-	<mapID target="GoToDeclaration" url="EditingSourceFiles/GoToDeclaration.html"/>
+	<mapID target="GoToDeclaration" url="EditingSourceFiles/GoToFunction.html"/>
+	<mapID target="AddingFilesAndFolders" url="WorkingWithCandC++Projects/AddingFilesAndFolders.html"/>
+	<mapID target="ProjectPropsRequired" url="WorkingWithCandC++Projects/ProjectPropsRequired.html"/>
+	<mapID target="Projects" url="CandC++ProjectBasics/Projects.html"/>
+	<mapID target="Watch1" url="CandC++ProjectBasics/Watch.html"/>
+	<mapID target="CandC++Breakpoints" url="CandC++ProjectBasics/CandC++Breakpoints.html"/>
+	<mapID target="CandC++BreakpointsWindow" url="CandC++ProjectBasics/CandC++BreakpointsWindow.html"/>
+	<mapID target="CandC++BuildingTasks" url="CandC++ProjectBasics/CandC++BuildingTasks.html"/>
+	<mapID target="CandC++CallStackWindow" url="CandC++ProjectBasics/CandC++CallStackWindow.html"/>
+	<mapID target="CandC++DebuggerContext" url="CandC++ProjectBasics/CandC++DebuggerContext.html"/>
+	<mapID target="CandC++DebuggingTasks" url="CandC++ProjectBasics/CandC++DebuggingTasks.html"/>
+	<mapID target="CandC++LocalVariablesWindow" url="CandC++ProjectBasics/CandC++LocalVariablesWindow.html"/>
+	<mapID target="CandC++SessionsWindow" url="CandC++ProjectBasics/CandC++SessionsWindow.html"/>
+	<mapID target="CandC++WatchesWindow" url="CandC++ProjectBasics/CandC++WatchesWindow.html"/>
+	<mapID target="CompilingSingleCandC++File" url="CandC++ProjectBasics/CompilingSingleCandC++File.html"/>
+	<mapID target="CorC++VariablesandExpressions" url="CandC++ProjectBasics/CorC++VariablesandExpressions.html"/>
+	<mapID target="CandC++Overview1" url="GettingStarted/CandC++Overview.html"/>
+	<mapID target="KeyCandC++Concepts1" url="GettingStarted/KeyCandC++Concepts.html"/>
+	<mapID target="AboutCandC++Projects1" url="WorkingWithCandC++Projects/AboutCandC++Projects.html"/>
+	<mapID target="CandC++BuildingTasks1" url="WorkingWithCandC++Projects/CandC++BuildingTasks.html"/>
+	<mapID target="CompilingSingleCandC++File1" url="WorkingWithCandC++Projects/CompilingSingleCandC++File.html"/>
+	<mapID target="WorkingWithCandC++Projects1" url="WorkingWithCandC++Projects/WorkingWithCandC++Projects.html"/>
+	<mapID target="SettingCandC++FileProperties" url="WorkingWithCandC++Projects/SettingCandC++FileProperties.html"/>
+	<mapID target="SettingCandC++ProjectProperties" url="WorkingWithCandC++Projects/SettingCandC++ProjectProperties.html"/>
+	<mapID target="CandC++CodeFolding" url="EditingSourceFiles/CandC++CodeFolding.html"/>
+	<mapID target="TypeView" url="EditingSourceFiles/TypeView.html"/>
+	<mapID target="IncludeView" url="EditingSourceFiles/IncludeView.html"/>
+	<mapID target="SourceHeaderSwitch" url="EditingSourceFiles/SourceHeaderSwitch.html"/>
+	<mapID target="GoToInclude" url="EditingSourceFiles/GoToInclude.html"/>
+	<mapID target="GoToDeclaration1" url="EditingSourceFiles/GoToDeclaration.html"/>
+	<mapID target="GoToType" url="EditingSourceFiles/GoToType.html"/>
 </map>

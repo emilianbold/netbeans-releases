@@ -8,7 +8,7 @@
 	</indexitem>
 	<indexitem text="breakpoints">
 		<indexitem text="C and C++">
-			<indexitem text="about" target="C&amp;C++Breakpoints" />
+			<indexitem text="about" target="CandC++Breakpoints" />
 			<indexitem text="setting" target="SettingCorC++Breakpoint" />
 		</indexitem>
 	</indexitem>
@@ -31,7 +31,7 @@
 	<indexitem text="compiler options, C and C++, setting" target="CompilerOptions" />
 	<indexitem text="compiling">
 		<indexitem text="C and C++ projects" target="BuildingCorC++Project" />
-		<indexitem text="single C or C++ file" target="CompilingSingleC&amp;C++File" />
+		<indexitem text="single C or C++ file" target="CompilingSingleCandC++File" />
 	</indexitem>
 	<indexitem text="configurations, C and C++ projects" target="ManagingProjectConfigurations" />
 	<indexitem text="configuring">
@@ -43,13 +43,13 @@
 	<indexitem text="dependencies between C or C++ projects" target="CreatingDependencies" />
 	<indexitem text="debugging">
 		<indexitem text="breakpoints, setting, C and C++" target="SettingCorC++Breakpoint" />
-		<indexitem text="current context in, C and C++" target="C&amp;C++DebuggerContext" />
+		<indexitem text="current context in, C and C++" target="CandC++DebuggerContext" />
 		<indexitem text="sessions">
 			<indexitem text="finishing, C and C++" target="FinishingCorC++DebugSession" />
 			<indexitem text="starting, C and C++" target="StartingLocalDebuggingSession" />
 		</indexitem>
 		<indexitem text="stepping through C and C++ code" target="SteppingThroughCorC++" />
-		<indexitem text="variables, viewing, C and C++" target="CorC++Variables&amp;Expressions" />
+		<indexitem text="variables, viewing, C and C++" />
 		<indexitem text="watches, setting, C and C++" target="CandC++Watches" />
 	</indexitem>
 	<indexitem text="editing">
@@ -57,15 +57,15 @@
 	</indexitem>
 	<indexitem text="expressions">
 		<indexitem text="C and C++, completing in Source Editor" target="UsingCodeCompletion" />
-		<indexitem text="C and C++, watching in debugger" target="CreatingCorC++Watch" />
+		<indexitem text="C and C++, watching in debugger" target="debug.add.watch" />
 	</indexitem>
 	<indexitem text="files">
-		<indexitem text="adding to C or C++ projects" target="AddingFiles&amp;Folders" />
-		<indexitem text="C and C++, setting properties of" target="SettingC&amp;C++FileProperties" />
+		<indexitem text="adding to C or C++ projects" target="AddingFilesandFolders" />
+		<indexitem text="C and C++, setting properties of" target="SettingCandC++FileProperties" />
 	</indexitem>
 	<indexitem text="Files window, C and C++ projects" target="FilesWindow" mergetype="javax.help.SortMerge" />
 	<indexitem text="folders">
-		<indexitem text="adding to C or C++ projects" target="AddingFiles&amp;Folders" />
+		<indexitem text="adding to C or C++ projects" target="AddingFilesandFolders" />
 	</indexitem>
 	<indexitem text="hyperlink navigation, C and C++" target="UsingHyperlinks" />
 	<indexitem text="linker options, C and C++, setting" target="LinkerOptions" />
@@ -79,7 +79,7 @@
 	<indexitem text="projects">
 		<indexitem text="C and C++">
 			<indexitem text="about" target="AboutCandC++Projects" />
-			<indexitem text="adding files and folders to" target="AddingFiles&amp;Folders" />
+			<indexitem text="adding files and folders to" target="AddingFilesandFolders" />
 			<indexitem text="Application" target="AboutCandC++Projects" />
 			<indexitem text="building" target="BuildingCorC++Project" />
 			<indexitem text="configuring" target="ManagingProjectConfigurations" />
@@ -116,10 +116,19 @@
 		</indexitem>
 	</indexitem>
 	<indexitem text="variables">
-		<indexitem text="watching value of" target="CreatingCorC++Watch" />
+		<indexitem text="watching value of" target="debug.add.watch" />
 		<indexitem text="modifying value of" target="CandC++LocalVariables." />
 	</indexitem>
 	<indexitem text="watching">
 		<indexitem text="C and C++ variables" />
 	</indexitem>
+	<indexitem text="TypeView" />
+	<indexitem text="IncludeView" />
+	<indexitem text="SourceHeaderSwitch" />
+	<indexitem text="TypeView" target="TypeView" />
+	<indexitem text="IncludeView" target="IncludeView" />
+	<indexitem text="SourceHeaderSwitch" target="SourceHeaderSwitch" />
+	<indexitem text="GoToInclude" target="GoToInclude" />
+	<indexitem text="GoToDeclaration" target="GoToDeclaration1" />
+	<indexitem text="GoToType" target="GoToType" />
 </index>
