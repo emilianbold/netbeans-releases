@@ -190,9 +190,9 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
             CndCoreTestUtils.copyToWorkDir(goldenDataFile, goldenDataFileCopy); // NOI18N
         }
         if (outTheSame) {
-            assertTrue("ERR Difference between " + error + " and " + goldenErrFileCopy, errTheSame); // NOI18N
+            assertTrue("ERR Difference - check: diff " + error + " " + goldenErrFileCopy, errTheSame); // NOI18N
         } else if (errTheSame) {
-            assertTrue("OUTPUT Difference between " + output + " and " + goldenDataFileCopy, outTheSame); // NOI18N
+            assertTrue("OUTPUT Difference - check: diff " + output + " " + goldenDataFileCopy, outTheSame); // NOI18N
         } else {
             assertTrue("OUTPUT and ERR are different, see content of folder " + workDir, false); // NOI18N
         }
