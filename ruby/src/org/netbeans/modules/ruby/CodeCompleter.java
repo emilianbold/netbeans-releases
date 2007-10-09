@@ -1854,8 +1854,11 @@ public class CodeCompleter implements Completable {
     private void completeFixed(List<CompletionProposal> proposals, CompletionRequest request, IndexedMethod target, String data, boolean isLastArg) {
         String[] values = data.split("\\|");
         String prefix = request.prefix;
+        // I originally stripped ":" to make direct (INameNode)getName()
+        // comparisons on symbols work directly but it's becoming a liability now
+        String colonPrefix = ":" + prefix;
         for (String value : values) {
-            if (startsWith(value, prefix)) {
+            if (startsWith(value, prefix) || startsWith(value, colonPrefix)) {
                 String insert = isLastArg ? value : (value + ", ");
                 ParameterItem item = new ParameterItem(target, value, null, insert, anchor, request);
                 item.setSymbol(true);
@@ -1868,12 +1871,21 @@ public class CodeCompleter implements Completable {
     private void completeDbTables(List<CompletionProposal> proposals, IndexedMethod target, CompletionRequest request, boolean isLastArg) {
         // Add in the eligible database tables found in this project
         // Assumes this is a Rails project
-        Set<String> tables = request.index.getDatabaseTables(request.prefix, request.kind);
+        String p = request.prefix;
+        String colonPrefix = p;
+        if (":".equals(p)) { // NOI18N
+            p = "";
+        } else {
+            colonPrefix = ":" + p; // NOI18N
+        }
+        Set<String> tables = request.index.getDatabaseTables(p, request.kind);
         
+        // I originally stripped ":" to make direct (INameNode)getName()
+        // comparisons on symbols work directly but it's becoming a liability now
         String prefix = request.prefix;
         for (String table : tables) {
-            if (startsWith(table, prefix)) {
-                String tableName = ":" + table;
+            String tableName = ":" + table;
+            if (startsWith(tableName, prefix) || startsWith(tableName, colonPrefix)) {
                 String insert = isLastArg ? tableName : (tableName + ", ");
                 ParameterItem item = new ParameterItem(target, tableName, null, insert, anchor, request);
                 item.setSymbol(true);
