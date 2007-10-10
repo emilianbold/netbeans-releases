@@ -136,11 +136,8 @@ public class AnnotationManager extends ASTEvaluator {
                         ASTItem item = it2.next ();
                         Feature mark = it3.next ();
                         String message = (String) mark.getValue ("message");
-                        try {
-                            Language language = LanguagesManager.getDefault ().getLanguage (item.getMimeType ());
-                            message = language.localize(message);
-                        } catch (LanguageDefinitionNotFoundException e) {
-                        }
+                        Language language = (Language) item.getLanguage ();
+                        message = language.localize(message);
                         String type = (String) mark.getValue ("type");
                         while (
                             oldAnnotation != null &&

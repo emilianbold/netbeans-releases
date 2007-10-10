@@ -195,7 +195,8 @@ final class ASTBrowserTopComponent extends TopComponent {
                         if (item == null) return;
                         highlighting.highlight (
                             editorCookie.getDocument (), 
-                            item
+                            item.getOffset (),
+                            item.getEndOffset ()
                         );
                         return;
                     }

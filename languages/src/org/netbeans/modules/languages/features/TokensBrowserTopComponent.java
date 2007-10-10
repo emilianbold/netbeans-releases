@@ -201,16 +201,17 @@ final class TokensBrowserTopComponent extends TopComponent {
                 if (t == null) return;
                 Token token = t.getToken ();
                 if (token == null) return;
-                ASTToken stoken = ASTToken.create (
-                    t.getMimeType (),
-                    token.id ().name (), 
-                    token.text ().toString (), 
-                    t.getOffset ()
-                );
+//                ASTToken stoken = ASTToken.create (
+//                    t.getMimeType (),
+//                    token.id ().ordinal (), 
+//                    token.text ().toString (), 
+//                    t.getOffset ()
+//                );
                 if (t != null) {
                     highlighting.highlight (
                         editorCookie.getDocument (), 
-                        stoken
+                        t.getOffset (),
+                        t.getOffset () + token.length ()
                     );
                     return;
                 }

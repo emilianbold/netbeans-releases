@@ -80,7 +80,7 @@ public class LLSyntaxAnalyser {
     private Language        language;
     private List<Rule>      rules;
     private Map<String,Map> first;
-    private Set<String>     skip;
+    private Set<Integer>    skip;
     private int             traceSteps = -1;
     private boolean         printFirst = false;
     
@@ -99,15 +99,14 @@ public class LLSyntaxAnalyser {
     public static LLSyntaxAnalyser create (Language language) throws ParseException {
         LLSyntaxAnalyser a = new LLSyntaxAnalyser (language);
         a.rules = language.getRules ();
-        a.skip = new HashSet<String> (language.getSkipTokenTypes ());
-        a.skip.add ("error");
+        a.skip = new HashSet<Integer> (language.getSkipTokenTypes ());
         a.initTracing ();
-        a.first = Petra.first2 (a.rules);
+        a.first = Petra.first2 (a.rules, language);
         boolean hasConflicts = AnalyserAnalyser.printConflicts (a.first, null);
         if (hasConflicts)
             AnalyserAnalyser.printRules (a.rules, null);
         if (a.printFirst)
-            AnalyserAnalyser.printF (a.first, null);
+            AnalyserAnalyser.printF (a.first, null, language);
         AnalyserAnalyser.printUndefinedNTs (a.rules, null);
         return a;
     }
@@ -115,7 +114,7 @@ public class LLSyntaxAnalyser {
     public static LLSyntaxAnalyser createEmpty (Language language) {
         LLSyntaxAnalyser a = new LLSyntaxAnalyser (language);
         a.rules = Collections.<Rule>emptyList ();
-        a.skip = new HashSet<String> (language.getSkipTokenTypes ());
+        a.skip = new HashSet<Integer> (language.getSkipTokenTypes ());
         a.first = Collections.<String,Map>emptyMap ();
         return a;
     }
@@ -125,7 +124,6 @@ public class LLSyntaxAnalyser {
         boolean skipErrors, 
         boolean[] cancel
     ) throws ParseException {
-        _t = 0;
         Map<String,List<ASTItem>> embeddings = new HashMap<String, List<ASTItem>> ();
         ASTNode root;
         try {
@@ -138,10 +136,7 @@ public class LLSyntaxAnalyser {
             return null;
         }
         if (embeddings.isEmpty ()) {
-            int[] ntw = new int [3];
-            inspect (root, ntw);
-            //S ystem.out.println("inspect node:" + ntw [0] + " token: " + ntw [1] + " whitespace: " + ntw [2]);
-            //S ystem.out.println("T = " + _t);
+            inspect (root);
             return root;
         }
         List<ASTItem> roots = new ArrayList<ASTItem> ();
@@ -167,24 +162,12 @@ public class LLSyntaxAnalyser {
             roots.add (r);
         }
         roots.add (root);
-        ASTNode result = ASTNode.createCompoundASTNode (root.getMimeType (), "Root", roots, 0);
-        int[] ntw = new int [3];
-        inspect (result, ntw);
-        //S ystem.out.println("inspect node:" + ntw [0] + " token: " + ntw [1] + " whitespace: " + ntw [2]);
-        //S ystem.out.println("T = " + _t);
+        ASTNode result = ASTNode.createCompoundASTNode (language, "Root", roots, 0);
+        inspect (result);
         return result;
     }
     
-    private void inspect (ASTItem item, int[] ntw) {
-        if (item instanceof ASTNode)
-            ntw [0]++;
-        else {
-            ASTToken t = (ASTToken) item;
-            ntw [1]++;
-            if (t.getType ().indexOf ("whitespace") >= 0)
-                ntw [2]++;
-        }
-        
+    private void inspect (ASTItem item) {
         Iterator<ASTItem> it = new ArrayList<ASTItem> (item.getChildren ()).iterator ();
         int i = 0;
         while (it.hasNext ()) {
@@ -204,7 +187,7 @@ public class LLSyntaxAnalyser {
                 }
             }
             i++;
-            inspect (child, ntw);
+            inspect (child);
         }
     }
     
@@ -254,12 +237,12 @@ public class LLSyntaxAnalyser {
                 if (newRule == -1) {
                     if (!skipErrors) {
                         if (node == null)
-                            root = node = ASTNode.create (language.getMimeType(), "Root", whitespaces, offset);
+                            root = node = ASTNode.create (language, "Root", whitespaces, offset);
                         throw new ParseException ("No rule for " + input.next (1) + " in " + nt + ".", root);
                     }
                     if (input.eof ()) {
                         if (node == null)
-                            root = node = ASTNode.create (language.getMimeType(), "Root", whitespaces, offset);
+                            root = node = ASTNode.create (language, "Root", whitespaces, offset);
                         createErrorNode (node, input.getOffset ());
                         //S ystem.out.println(input.getIndex () + ": unexpected eof " + nt);
                         return root;
@@ -288,7 +271,7 @@ public class LLSyntaxAnalyser {
                                 if (rule.getRight ().isEmpty () && removeEmpty (rule.getNT ()))
                                     continue;
                                 ASTNode nnode = ASTNode.create (
-                                    language.getMimeType (),
+                                    language,
                                     rule.getNT (), 
                                     whitespaces,
                                     offset
@@ -336,7 +319,7 @@ public class LLSyntaxAnalyser {
             createErrorNode (node, input.getOffset ()).addChildren (readEmbeddings (input.read (), skipErrors, embeddings, cancel));
         if (root == null) {
             root = ASTNode.create (
-                language.getMimeType (),  
+                language,
                 "Root", 
                 readWhitespaces (node, input, skipErrors, embeddings, cancel), 
                 input.getOffset ()
@@ -346,13 +329,13 @@ public class LLSyntaxAnalyser {
     }
     
     private static boolean isCompatible (ASTToken t1, ASTToken t2) {
-        if (t1.getType () == null) {
+        if (t1.getTypeID () == -1) {
             return t1.getIdentifier ().equals (t2.getIdentifier ());
         } else {
             if (t1.getIdentifier () == null)
-                return t1.getType ().equals (t2.getType ());
+                return t1.getTypeID () == t2.getTypeID ();
             else
-                return t1.getType ().equals (t2.getType ()) && 
+                return t1.getTypeID () == t2.getTypeID () && 
                        t1.getIdentifier ().equals (t2.getIdentifier ());
         }
     }
@@ -367,7 +350,7 @@ public class LLSyntaxAnalyser {
         List<ASTItem> result = null;
         while (
             !input.eof () &&
-            skip.contains (input.next (1).getType ())
+            skip.contains (input.next (1).getTypeID ())
         ) {
             if (cancel [0]) throw new CancelledException ();
             ASTToken token = input.read ();
@@ -395,23 +378,21 @@ public class LLSyntaxAnalyser {
         TokenInput in = TokenInputUtils.create (children);
         try {
             String mimeType = children.get (0).getMimeType ();
-            Language oLanguage = LanguagesManager.getDefault ().
-                getLanguage (token.getMimeType ());
-            Feature f = oLanguage.getPreprocessorImport ();
+            Language outerLanguage = (Language) token.getLanguage ();
+            Feature f = outerLanguage.getPreprocessorImport ();
             if (f != null && 
                 mimeType.equals (f.getValue ("mimeType")) &&
                 f.getBoolean ("continual", false)
             )
                 return skipEmbedding (token, embeddings, children, mimeType);
-            f = oLanguage.getTokenImports ().get (token.getType ());
+            f = outerLanguage.getTokenImports ().get (token.getTypeName ());
             if (f != null && 
                 mimeType.equals (f.getValue ("mimeType")) &&
                 f.getBoolean ("continual", false)
             )
                 return skipEmbedding (token, embeddings, children, mimeType);
 
-            Language language = LanguagesManager.getDefault ().
-                getLanguage (children.get (0).getMimeType ());
+            Language language = (Language) children.get (0).getLanguage ();
             ASTNode root = language.getAnalyser ().read (in, skipErrors, embeddings, cancel);
             Feature astProperties = language.getFeature ("AST");
             if (astProperties != null) {
@@ -426,8 +407,8 @@ public class LLSyntaxAnalyser {
                 }
             }
             return ASTToken.create (
-                token.getMimeType (),
-                token.getType (),
+                outerLanguage,
+                token.getTypeID (),
                 token.getIdentifier (),
                 token.getOffset (),
                 token.getLength (),
@@ -448,11 +429,11 @@ public class LLSyntaxAnalyser {
         if (l == null) {
             l = new ArrayList<ASTItem> ();
             embeddings.put (mimeType, l);
-        }
+        }        
         l.addAll (children);
         return ASTToken.create (
-            token.getMimeType (),
-            token.getType (),
+            token.getLanguage (),
+            token.getTypeID (),
             token.getIdentifier (),
             token.getOffset (),
             token.getLength (),
@@ -466,7 +447,7 @@ public class LLSyntaxAnalyser {
         Map<String,List<ASTItem>> embeddings,
         boolean[] cancel
     ) throws ParseException, CancelledException {
-        ASTNode root = ASTNode.create (language.getMimeType(), "S", input.getIndex ());
+        ASTNode root = ASTNode.create (language, "S", input.getIndex ());
         while (!input.eof ()) {
             if (cancel [0]) throw new CancelledException ();
             ASTToken token = input.read ();
@@ -482,7 +463,7 @@ public class LLSyntaxAnalyser {
         Map<String,List<ASTItem>> embeddings,
         boolean[] cancel
     ) throws ParseException, CancelledException {
-        ASTNode root = ASTNode.create (language.getMimeType(), "S", offset);
+        ASTNode root = ASTNode.create (language, "S", offset);
         for (Iterator iter = tokens.iterator(); iter.hasNext(); ) {
             if (cancel [0]) throw new CancelledException ();
             ASTToken token = (ASTToken) iter.next();
@@ -502,7 +483,7 @@ public class LLSyntaxAnalyser {
             }
         }
         ASTNode errorNode = ASTNode.create (
-            language.getMimeType (),
+            language,
             "ERROR", 
             null,
             offset
@@ -523,11 +504,11 @@ public class LLSyntaxAnalyser {
                 T t = new T (token);
                 r = (Map) m.get (t);
                 if (r == null) {
-                    t.type = null;
+                    t.type = -1;
                     r = (Map) m.get (t);
                 }
                 if (r == null) {
-                    t.type = token.getType ();
+                    t.type = token.getTypeID ();
                     t.identifier = null;
                     r = (Map) m.get (t);
                 }
@@ -632,10 +613,9 @@ public class LLSyntaxAnalyser {
         initASTFeatures ();
         return removeEmpty || (removeEmptyN == empty.contains (nt));
     }
-    
+        
     
     // innerclasses ............................................................
-    
     
     public static class Rule {
         
@@ -680,37 +660,43 @@ public class LLSyntaxAnalyser {
         }
     }
 
-    static int _t;
-    
     public static class T {
-        String type;
+        int    type;
         String identifier;
         
         T (ASTToken t) {
-            type = t.getType ();
+            type = t.getTypeID ();
             identifier = t.getIdentifier ();
-            if (type == null && identifier == null)
+            if (type == -1 && identifier == null)
                 System.out.println("null null!!!");
-            _t++;
         }
         
         public boolean equals (Object o) {
             if (!(o instanceof T)) return false;
-            return (((T) o).type == null || ((T) o).type.equals (type)) &&
+            return (((T) o).type == -1 || ((T) o).type == type) &&
                    (((T) o).identifier == null || ((T) o).identifier.equals (identifier));
         }
         
         public int hashCode () {
-            return type == null ? -1 : type.hashCode () *
+            return type *
                    (identifier == null ? -1 : identifier.hashCode ());
         }
         
         public String toString () {
-            if (type == null)
+            if (type == -1)
                 return "\"" + identifier + "\"";
             if (identifier == null)
                 return "<" + type + ">";
             return "[" + type + "," + identifier + "]";
+        }
+        
+        public String toString (Language language) {
+            if (type == -1)
+                return "\"" + identifier + "\"";
+            String typeName = language.getTokenType (type);
+            if (identifier == null)
+                return "<" + typeName + ">";
+            return "[" + typeName + "," + identifier + "]";
         }
     }
     

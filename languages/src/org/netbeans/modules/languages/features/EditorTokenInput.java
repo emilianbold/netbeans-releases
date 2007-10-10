@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.languages.features;
 
+import org.netbeans.api.languages.Language;
 import org.netbeans.api.languages.TokenInput;
 import org.netbeans.api.languages.ASTToken;
 import org.netbeans.api.lexer.Token;
@@ -53,6 +54,8 @@ import javax.swing.text.StyledDocument;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
+import org.netbeans.api.languages.LanguagesManager;
 
 
 /**
@@ -62,28 +65,33 @@ import java.util.Set;
 public class EditorTokenInput extends TokenInput {
 
     private TokenSequence   tokenSequence;
+    private Language        language;
     private List            tokens = new ArrayList ();
     private int             index = 0;
-    private Set             filter;
+    private Set<Integer>    filter;
     private StyledDocument  doc;
     private String          mimeType;
     
 
     public static EditorTokenInput create (
-        Set             filter,
-        StyledDocument  doc
+        Set<Integer>        filter,
+        StyledDocument      doc
     ) {
         return new EditorTokenInput (filter, doc);
     }
 
     private EditorTokenInput (
-        Set             filter,
-        StyledDocument  doc
+        Set<Integer>        filter,
+        StyledDocument      doc
     ) {
         tokenSequence = TokenHierarchy.get (doc).tokenSequence ();
+        mimeType = tokenSequence.language ().mimeType ();
+        try {
+            language = LanguagesManager.get ().getLanguage (mimeType);
+        } catch (LanguageDefinitionNotFoundException ex) {
+        }
         this.filter = filter;
         this.doc = doc;
-        mimeType = tokenSequence.language ().mimeType ();
     }
 
     public ASTToken next (int i) {
@@ -100,13 +108,13 @@ public class EditorTokenInput extends TokenInput {
             if (!tokenSequence.moveNext ()) return null;
         } while (
             filter.contains (
-                tokenSequence.token ().id ().name ()
+                tokenSequence.token ().id ().ordinal ()
             )
         );
         Token token = tokenSequence.token ();
         return ASTToken.create (
-            tokenSequence.language ().mimeType (),
-            token.id ().name (),
+            language,
+            token.id ().ordinal (),
             token.text ().toString (),
             tokenSequence.offset ()
         );

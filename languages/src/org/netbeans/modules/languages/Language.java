@@ -41,8 +41,6 @@
 
 package org.netbeans.modules.languages;
 
-import org.netbeans.api.languages.ASTEvaluator;
-import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.IOException;
@@ -63,25 +61,20 @@ import java.util.List;
 import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ASTPath;
+import org.netbeans.api.languages.ASTEvaluator;
+import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
 import org.netbeans.api.languages.ParseException;
-import org.netbeans.api.languages.ASTNode;
-import org.netbeans.api.languages.ASTToken;
 import org.netbeans.api.languages.ParserManager.State;
 import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.api.languages.TokenInput;
-import org.netbeans.api.languages.TokenInput;
 import org.netbeans.modules.languages.Language.TokenType;
-import org.netbeans.modules.languages.LanguagesManager;
-import org.netbeans.modules.languages.Utils;
 import org.netbeans.modules.languages.parser.LLSyntaxAnalyser;
 import org.netbeans.modules.languages.parser.LLSyntaxAnalyser.Rule;
-import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
 import org.netbeans.modules.languages.parser.Parser;
 import org.netbeans.modules.languages.parser.Pattern;
 import org.netbeans.modules.languages.parser.Petra;
 import org.netbeans.modules.languages.parser.StringInput;
 import org.netbeans.modules.languages.parser.TokenInputUtils;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 
@@ -114,9 +107,15 @@ public class Language extends org.netbeans.api.languages.Language {
     public static final String TOKEN = "TOKEN";
     public static final String TOOLTIP = "TOOLTIP";
     
+    public static final String ERROR_TOKEN_TYPE_NAME = "error";
+    public static final String EMBEDDING_TOKEN_TYPE_NAME = "PE";
+    
     private Parser              parser;
     private List<TokenType>     tokenTypes = new ArrayList<TokenType> ();
-    private Set<String>         skipTokenTypes;
+    private Map<String,Integer> tokenTypeToID = new HashMap<String,Integer> ();
+    private Map<Integer,String> idToTokenType = new HashMap<Integer,String> ();
+    private Set<String>         skipTokenTypeNames = new HashSet<String> ();
+    private Set<Integer>        skipTokenTypes;
     private String              mimeType;
     private ParseException      analyserException;
     private LLSyntaxAnalyser    analyser;
@@ -125,11 +124,16 @@ public class Language extends org.netbeans.api.languages.Language {
     private List<Language>      importedLangauges = new ArrayList<Language> ();
     private boolean             bundleResolved = false;
     private ResourceBundle      bundle;
+    private boolean             isLexicalAnalyseSupported;
 
     
     /** Creates a new instance of Language */
     public Language (String mimeType) {
         this.mimeType = mimeType;
+        addToken (null, ERROR_TOKEN_TYPE_NAME, null, null, null);
+        addToken (null, EMBEDDING_TOKEN_TYPE_NAME, null, null, null);
+        skipTokenTypeNames.add ("error");
+        isLexicalAnalyseSupported = false;
     }
     
     
@@ -149,16 +153,28 @@ public class Language extends org.netbeans.api.languages.Language {
         return Collections.unmodifiableList (tokenTypes);
     }
     
-    public Set<String> getSkipTokenTypes () {
-        if (skipTokenTypes == null)
-            return Collections.<String>emptySet ();
-        return skipTokenTypes;
+    public int getTokenID (String tokenType) {
+        if (!tokenTypeToID.containsKey (tokenType))
+            System.err.println ("unknown token type: " + tokenType);
+        return tokenTypeToID.get (tokenType);
     }
     
-    void addSkipTokenType (String tokenType) {
-        if (skipTokenTypes == null)
-            skipTokenTypes = new HashSet<String> ();
-        skipTokenTypes.add (tokenType);
+    public String getTokenType (int tokenTypeID) {
+        return idToTokenType.get (tokenTypeID);
+    }
+    
+    public boolean isLexicalAnalyseSupported () {
+        return isLexicalAnalyseSupported;
+    }
+    
+    public Set<Integer> getSkipTokenTypes () {
+        if (skipTokenTypes == null) {
+            skipTokenTypes = new HashSet<Integer> ();
+            Iterator<String> it = skipTokenTypeNames.iterator ();
+            while (it.hasNext ())
+                skipTokenTypes.add (getTokenID (it.next ()));
+        }
+        return skipTokenTypes;
     }
     
     public boolean hasAnalyser () {
@@ -189,6 +205,7 @@ public class Language extends org.netbeans.api.languages.Language {
         String              startState,
         Pattern             pattern,
         String              type,
+        int                 typeID,
         String              endState,
         int                 priority,
         Feature             properties
@@ -197,6 +214,7 @@ public class Language extends org.netbeans.api.languages.Language {
             startState,
             pattern,
             type,
+            typeID,
             endState,
             priority,
             properties
@@ -232,7 +250,7 @@ public class Language extends org.netbeans.api.languages.Language {
     
     // package private interface ...............................................
 
-    public void addToken (
+    void addToken (
         String      startState,
         String      type,
         Pattern     pattern,
@@ -241,14 +259,30 @@ public class Language extends org.netbeans.api.languages.Language {
     ) {
         if (parser != null)
             throw new InternalError ();
+        int id;
+        if (tokenTypeToID.containsKey (type)) {
+            // there can be more TokenTypes with the same token type name!!!
+            id = tokenTypeToID.get (type);
+        } else {
+            id = tokenTypeToID.size ();
+            tokenTypeToID.put (type, id);
+            idToTokenType.put (id, type);
+        }
         tokenTypes.add (createTokenType (
             startState,
             pattern,
             type,
+            id,
             endState,
             tokenTypes.size (),
             properties
         ));
+        isLexicalAnalyseSupported = true;
+    }
+    
+    void addTokenType (int id, String name) {
+        idToTokenType.put (id, name);
+        tokenTypeToID.put (name, id);
     }
     
     void addRule (ASTNode rule) {
@@ -264,7 +298,7 @@ public class Language extends org.netbeans.api.languages.Language {
     
     public List<Rule> getRules () {
         if (grammarRules == null)
-            grammarRules = Petra.convert (grammarASTNodes, getMimeType ());
+            grammarRules = Petra.convert (this, grammarASTNodes, getMimeType ());
         return grammarRules;
     }
     
@@ -287,7 +321,7 @@ public class Language extends org.netbeans.api.languages.Language {
             String mimeType = (String) feature.getValue ("mimeType");
             Language language = LanguagesManager.getDefault ().getLanguage (mimeType);
             if (feature.getPattern ("start") != null) {
-                //feature.put ("token", "PE");
+                //feature.put ("token", Language.EMBEDDING_TOKEN_TYPE_NAME);
                 assert (preprocessorImport == null);
                 preprocessorImport = feature;
                 importedLangauges.add (language);
@@ -344,7 +378,7 @@ public class Language extends org.netbeans.api.languages.Language {
 
     public void addFeature (Feature feature) {
         if (feature.getFeatureName().equals (SKIP))
-            addSkipTokenType (feature.getSelector ().getAsString ());
+            skipTokenTypeNames.add (feature.getSelector().getAsString ());
         else
         if (feature.getFeatureName ().equals (IMPORT))
             importLanguage (feature);
@@ -368,6 +402,18 @@ public class Language extends org.netbeans.api.languages.Language {
 
     public Feature getFeature (String featureName, String id) {
         List<Feature> features = getFeatures (featureName, id);
+        if (features.isEmpty ()) return null;
+        return features.get (0);
+    }
+    
+    public List<Feature> getFeatures (String featureName, int tokenTypeID) {
+        String tokenType = getTokenType (tokenTypeID);
+        return featureList.getFeatures (featureName, tokenType);
+    }
+
+    public Feature getFeature (String featureName, int tokenTypeID) {
+        String tokenType = getTokenType (tokenTypeID);
+        List<Feature> features = getFeatures (featureName, tokenType);
         if (features.isEmpty ()) return null;
         return features.get (0);
     }
@@ -404,10 +450,9 @@ public class Language extends org.netbeans.api.languages.Language {
             ln = br.readLine ();
         }
         TokenInput ti = TokenInputUtils.create (
-            getMimeType (),
+            this,
             getParser (), 
-            new StringInput (sb.toString ()),
-            Collections.emptySet ()
+            new StringInput (sb.toString ())
         );
         ASTNode root = getAnalyser ().read (ti, true, new boolean[] {false});
         Feature astProperties = getFeature ("AST");
@@ -422,8 +467,8 @@ public class Language extends org.netbeans.api.languages.Language {
         return root;
     }
     
-    void print () throws ParseException {
-        System.out.println("\nPrint " + mimeType);
+    void print () {
+        System.out.println("\nLanguage " + mimeType);
         System.out.println("Tokens:");
         Iterator<TokenType> it = getTokenTypes ().iterator ();
         while (it.hasNext ()) {
@@ -431,11 +476,17 @@ public class Language extends org.netbeans.api.languages.Language {
             System.out.println("  " + r);
         }
         System.out.println("Grammar Rules:");
-        Iterator<Rule> it2 = getAnalyser ().getRules ().iterator ();
-        while (it.hasNext ()) {
-            Rule r = it2.next ();
-            System.out.println("  " + r);
+        try { 
+            Iterator<Rule> it2 = getAnalyser ().getRules ().iterator ();
+            while (it.hasNext ()) {
+                Rule r = it2.next ();
+                System.out.println("  " + r);
+            }
+        } catch (ParseException ex) {
+            ex.printStackTrace ();
         }
+        System.out.println ("Features:");
+        System.out.println (featureList.toString ());
     }
     
     public String toString () {
@@ -450,6 +501,7 @@ public class Language extends org.netbeans.api.languages.Language {
         private String  startState;
         private Pattern pattern;
         private String  type;
+        private int     typeID;
         private String  endState;
         private int     priority;
         private Feature properties;
@@ -458,6 +510,7 @@ public class Language extends org.netbeans.api.languages.Language {
             String      startState,
             Pattern     pattern,
             String      type,
+            int         typeID,
             String      endState,
             int         priority,
             Feature     properties
@@ -465,6 +518,7 @@ public class Language extends org.netbeans.api.languages.Language {
             this.startState = startState == null ? Parser.DEFAULT_STATE : startState;
             this.pattern = pattern;
             this.type = type;
+            this.typeID = typeID;
             this.endState = endState == null ? Parser.DEFAULT_STATE : endState;
             this.priority = priority;
             this.properties = properties;
@@ -472,6 +526,10 @@ public class Language extends org.netbeans.api.languages.Language {
         
         public String getType () {
             return type;
+        }
+        
+        public int getTypeID () {
+            return typeID;
         }
         
         public String getStartState () {

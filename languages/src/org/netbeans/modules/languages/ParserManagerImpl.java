@@ -195,9 +195,6 @@ public class ParserManagerImpl extends ParserManager {
         final ASTNode                         root
     ) {
         cancel [0] = true;
-        if (parsingTask != null) {
-            parsingTask.cancel ();
-        }
         parsingTask = rp.post (new Runnable () {
             public void run () {
                 cancel [0] = false;
@@ -267,15 +264,12 @@ public class ParserManagerImpl extends ParserManager {
         Map<String,Set<ASTEvaluator>> evaluatorsMap2                            //, Map<Object,Long> times                                         
     ) {
         path.add (item);
-        try {
-            Language l = LanguagesManager.getDefault ().getLanguage (item.getMimeType ());
-            l.evaluate (
-                 state, 
-                 path, 
-                 evaluatorsMap2                                                 //, times
-            );
-        } catch (LanguageDefinitionNotFoundException ex) {
-        }
+        Language l = (Language) item.getLanguage ();
+        l.evaluate (
+             state, 
+             path, 
+             evaluatorsMap2                                                 //, times
+        );
         Iterator<ASTItem> it2 = item.getChildren ().iterator ();
         while (it2.hasNext ()) {
             if (cancel [0]) return;
@@ -376,11 +370,16 @@ public class ParserManagerImpl extends ParserManager {
     }
     
     private List<ASTToken> getTokens (TokenSequence ts) {
+        Language language = null;
+        try {
+            language = LanguagesManager.getDefault ().getLanguage (ts.language ().mimeType ());
+        } catch (LanguageDefinitionNotFoundException ex) {
+        }
         List<ASTToken> tokens = new ArrayList<ASTToken> ();
         while (ts.moveNext ()) {
             if (cancel [0]) return null;
             Token t = ts.token ();
-            String type = t.id ().name ();
+            int type = t.id ().ordinal ();
             int offset = ts.offset ();
             String ttype = (String) t.getProperty ("type");
             if (ttype == null || ttype.equals ("E")) {
@@ -389,7 +388,7 @@ public class ParserManagerImpl extends ParserManager {
                 if (ts2 != null)
                     children = getTokens (ts2);
                 tokens.add (ASTToken.create (
-                    ts.language ().mimeType (),
+                    language,
                     type, 
                     t.text ().toString (), 
                     offset,
@@ -439,13 +438,13 @@ public class ParserManagerImpl extends ParserManager {
 //                        children.addAll (
 //                            getTokens (ts2)
 //                        );
-                    if (!type.equals (t.id ().name ()))
+                    if (type != t.id ().ordinal ())
                         throw new IllegalArgumentException ();
                     sb.append (t.text ());
                 }
                 int no = ts.offset () + ts.token ().length ();
                 tokens.add (ASTToken.create (
-                    ts.language ().mimeType (),
+                    language,
                     type, 
                     sb.toString (), 
                     offset,

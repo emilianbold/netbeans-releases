@@ -102,7 +102,7 @@ import = "@import" (<css_string> | <css_url>) (<css_identifier>)* ";";
 media = "@media" mediaName mediaBody;
 mediaName = <css_identifier> ("," <css_identifier>)*;
 mediaBody = "{" (ruleset)* "}";
-page = "@page" [":" <css_indentifier>] body;
+page = "@page" [":" <css_identifier>] body;
 
 ruleset = selectors body;
 body = "{" declarations "}";

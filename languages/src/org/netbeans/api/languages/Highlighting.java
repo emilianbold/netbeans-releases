@@ -97,27 +97,33 @@ public class Highlighting {
      * @param item a item
      * @param as set of highlighting attributes
      */
-    public Highlight highlight (ASTItem item, AttributeSet as) {
-        return highlight (item.getOffset (), item.getEndOffset (), as);
-    }
+//    public Highlight highlight (int start, int end, AttributeSet as) {
+//        return highlight (item.getOffset (), item.getEndOffset (), as);
+//    }
     
     /**
      * Returns highlighting for given AST item.
      * 
      * @param highlighting for given AST item
      */
-    public AttributeSet get (ASTItem item) {
-        Highlight highlight = get (
-            item.getOffset (), 
-            item.getEndOffset ()
-        );
+//    public AttributeSet get (ASTItem item) {
+//        Highlight highlight = get (
+//            item.getOffset (), 
+//            item.getEndOffset ()
+//        );
+//        if (highlight == null) return null;
+//        return highlight.attributeSet;
+//    }
+    
+    private Set<Highlight> items = new HashSet<Highlight> ();
+    
+    public AttributeSet get (int start, int end) {
+        Highlight highlight = getHighlight (start, end);
         if (highlight == null) return null;
         return highlight.attributeSet;
     }
     
-    private Set<Highlight> items = new HashSet<Highlight> ();
-    
-    private Highlight get (int start, int end) {
+    private Highlight getHighlight (int start, int end) {
         Iterator<Highlight> it = items.iterator ();
         while (it.hasNext()) {
             Highlight item =  it.next();
@@ -127,7 +133,7 @@ public class Highlighting {
         return null;
     }
     
-    private Highlight highlight (int startOffset, int endOffset, AttributeSet as) {
+    public Highlight highlight (int startOffset, int endOffset, AttributeSet as) {
         try {
             Highlight result = new Highlight (
                 document.createPosition (startOffset),

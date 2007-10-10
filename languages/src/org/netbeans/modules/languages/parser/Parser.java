@@ -44,6 +44,7 @@ package org.netbeans.modules.languages.parser;
 import org.netbeans.api.languages.CharInput;
 import org.netbeans.api.languages.ASTToken;
 import java.util.*;
+import org.netbeans.api.languages.Language;
 import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Feature.Type;
 import org.netbeans.modules.languages.Language.TokenType;
@@ -103,7 +104,7 @@ public class Parser {
             stateToPattern.put (state, pattern);
     }
     
-    public ASTToken read (Cookie cookie, CharInput input, String mimeType) {
+    public ASTToken read (Cookie cookie, CharInput input, Language language) {
         if (input.eof ()) return null;
         int originalIndex = input.getIndex ();
         Pattern pattern = stateToPattern.get (cookie.getState ());
@@ -120,8 +121,8 @@ public class Parser {
             state = getState (endState);
         cookie.setState (state);
         ASTToken token = ASTToken.create (
-            mimeType,
-            tokenType.getType (),
+            language,
+            tokenType.getTypeID (),
             input.getString (originalIndex, input.getIndex ()),
             originalIndex
         );

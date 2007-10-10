@@ -120,7 +120,7 @@ public class MarkOccurrencesSupport implements CaretListener {
                     Iterator<ASTItem> it = ussages.iterator ();
                     while (it.hasNext ()) {
                         ASTItem i = it.next ();
-                        highlights.add (highlighting.highlight (i, getHighlightAS ()));
+                        highlights.add (highlighting.highlight (i.getOffset (), i.getEndOffset (), getHighlightAS ()));
                         LanguagesAnnotation la = new LanguagesAnnotation (
                             "Usage",
                             "..."

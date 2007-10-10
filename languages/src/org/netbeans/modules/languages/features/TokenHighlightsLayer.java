@@ -99,6 +99,7 @@ class TokenHighlightsLayer extends AbstractHighlightsContainer {
             attributeSet = new SimpleAttributeSet ();
             startOffset1 = endOffset1;
             TokenSequence ts = hierarchy.tokenSequence ();
+            
             AttributeSet as = null;
             do {
                 do {
@@ -108,13 +109,13 @@ class TokenHighlightsLayer extends AbstractHighlightsContainer {
                     Token t = ts.token ();
                     if (ts.language () == null)
                         throw new NullPointerException ("ts.language()==null: TS " + ts + " : " + document.getProperty("mimeType"));
-                    ASTToken stoken = ASTToken.create (
-                        ts.language ().mimeType (),
-                        t.id ().name (),
-                        t.text ().toString (),
-                        ts.offset ()
-                    );
-                    as = highlighting.get (stoken);
+//                    ASTToken stoken = ASTToken.create (
+//                        ts.language ().mimeType (),
+//                        t.id ().ordinal (),
+//                        t.text ().toString (),
+//                        ts.offset ()
+//                    );
+                    as = highlighting.get (ts.offset (), ts.offset () + t.length ());
                     if (as != null) {
                         attributeSet.addAttributes (as);
                         endOffset1 = ts.offset () + t.length ();

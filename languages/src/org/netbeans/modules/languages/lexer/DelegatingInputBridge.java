@@ -54,14 +54,14 @@ class DelegatingInputBridge extends CharInput {
     private InputBridge     input;
     private Pattern         start;
     private Pattern         end;
-    private String          tokenType;
+    private int             tokenType;
     private List<Vojta>     embeddings = new ArrayList<Vojta> ();
 
     DelegatingInputBridge (
         InputBridge         input, 
         Pattern             start,
         Pattern             end,
-        String              tokenType
+        int                 tokenType
     ) {
         this.input =        input;
         this.start =        start;
