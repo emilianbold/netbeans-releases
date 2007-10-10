@@ -138,6 +138,7 @@ final class ResultPanelTree extends JPanel
     
     /**
      */
+    @Override
     public void addNotify() {
         super.addNotify();
         
@@ -302,6 +303,7 @@ final class ResultPanelTree extends JPanel
     
     /**
      */
+    @Override
     public boolean requestFocusInWindow() {
         return treeView.requestFocusInWindow();
     }
