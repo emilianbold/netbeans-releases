@@ -59,7 +59,7 @@ public class ImageWidget extends Widget {
     private boolean paintAsDisabled;
     private ImageObserver observer = new ImageObserver() {
         public boolean imageUpdate (Image img, int infoflags, int x, int y, int width, int height) {
-            System.out.println ("INFO: " + infoflags);
+//            System.out.println ("INFO: " + infoflags);
             if ((infoflags & (ImageObserver.HEIGHT | ImageObserver.WIDTH)) != 0)
                 revalidate ();
             else
