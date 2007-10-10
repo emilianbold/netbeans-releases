@@ -434,7 +434,7 @@ public class VerifyLibsAndLicenses extends Task {
                 }
                 if (!ignored && dir.getName().equals("external") &&
                         new File(new File(dir.getParentFile(), "nbproject"), "project.xml").isFile() &&
-                        (dir.getParentFile().getName().equals("profiler") || new File(dir.getParentFile(), "src").isDirectory())) {
+                        new File(dir.getParentFile(), "src").isDirectory()) {
                     ignored = true;
                 }
                 if (!ignored) {
