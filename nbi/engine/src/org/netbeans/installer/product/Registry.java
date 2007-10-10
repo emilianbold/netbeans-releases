@@ -745,7 +745,7 @@ public class Registry {
      * @return The list of products for which the given product is the only one
      *      satisfying their requirements.
      */
-    private List<Product> getInavoidableDependents(final Product product) {
+    public List<Product> getInavoidableDependents(final Product product) {
         final Set<Product> dependents = new HashSet<Product>();
         
         for (Product candidate: getProducts()) {
