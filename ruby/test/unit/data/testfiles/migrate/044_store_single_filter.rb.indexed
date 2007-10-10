@@ -11,21 +11,24 @@ Not Indexed:
 Document 1
 Delete:
 Indexed:
-  dbtable : filter
+  class : Content
+  class-ig : content
+  extends : ActiveRecord::Base
+  fqn : StoreSingleFilter::Content
   source : <TESTURL>/044_store_single_filter.rb
 
 Not Indexed:
-  dbcolumn : string;
-  dbversion : 044
+  attrs : |CLASS|
+  in : StoreSingleFilter
 
 
 Document 2
 Delete:
 Indexed:
-  class : User
-  class-ig : user
+  class : ContentVersion
+  class-ig : contentversion
   extends : ActiveRecord::Base
-  fqn : StoreSingleFilter::User
+  fqn : StoreSingleFilter::ContentVersion
   source : <TESTURL>/044_store_single_filter.rb
 
 Not Indexed:
@@ -50,34 +53,6 @@ Not Indexed:
 Document 4
 Delete:
 Indexed:
-  class : Content
-  class-ig : content
-  extends : ActiveRecord::Base
-  fqn : StoreSingleFilter::Content
-  source : <TESTURL>/044_store_single_filter.rb
-
-Not Indexed:
-  attrs : |CLASS|
-  in : StoreSingleFilter
-
-
-Document 5
-Delete:
-Indexed:
-  class : ContentVersion
-  class-ig : contentversion
-  extends : ActiveRecord::Base
-  fqn : StoreSingleFilter::ContentVersion
-  source : <TESTURL>/044_store_single_filter.rb
-
-Not Indexed:
-  attrs : |CLASS|
-  in : StoreSingleFilter
-
-
-Document 6
-Delete:
-Indexed:
   class : StoreSingleFilter
   class-ig : storesinglefilter
   constant : FILTERED_MODELS
@@ -89,3 +64,28 @@ Indexed:
 
 Not Indexed:
   attrs : |CLASS|
+
+
+Document 5
+Delete:
+Indexed:
+  class : User
+  class-ig : user
+  extends : ActiveRecord::Base
+  fqn : StoreSingleFilter::User
+  source : <TESTURL>/044_store_single_filter.rb
+
+Not Indexed:
+  attrs : |CLASS|
+  in : StoreSingleFilter
+
+
+Document 6
+Delete:
+Indexed:
+  dbtable : filter
+  source : <TESTURL>/044_store_single_filter.rb
+
+Not Indexed:
+  dbcolumn : string;
+  dbversion : 044

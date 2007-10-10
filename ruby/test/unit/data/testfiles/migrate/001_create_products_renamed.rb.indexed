@@ -11,21 +11,6 @@ Not Indexed:
 Document 1
 Delete:
 Indexed:
-  dbtable : products
-  source : <TESTURL>/001_create_products_renamed.rb
-
-Not Indexed:
-  dbcolumn : desc
-  dbcolumn : description;-
-  dbcolumn : description;text
-  dbcolumn : image_url;string
-  dbcolumn : title;string
-  dbversion : 001
-
-
-Document 2
-Delete:
-Indexed:
   class : CreateProductsRenamed
   class-ig : createproductsrenamed
   extends : ActiveRecord::Migration
@@ -36,3 +21,18 @@ Indexed:
 
 Not Indexed:
   attrs : |DOCUMENTED|;1429
+
+
+Document 2
+Delete:
+Indexed:
+  dbtable : products
+  source : <TESTURL>/001_create_products_renamed.rb
+
+Not Indexed:
+  dbcolumn : desc
+  dbcolumn : description;-
+  dbcolumn : description;text
+  dbcolumn : image_url;string
+  dbcolumn : title;string
+  dbversion : 001

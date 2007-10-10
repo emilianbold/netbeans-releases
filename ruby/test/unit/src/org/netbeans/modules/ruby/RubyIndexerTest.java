@@ -79,8 +79,9 @@ public class RubyIndexerTest extends RubyTestBase {
     }
     
     private class TestIndex extends Index {
-        private int documentNumber;
         private final String localUrl;
+        private List<String> documents = new ArrayList<String>();
+        private List<String> emptyDocuments = new ArrayList<String>();
         
         public TestIndex(String localUrl) {
             // Leave the end
@@ -91,9 +92,27 @@ public class RubyIndexerTest extends RubyTestBase {
             this.localUrl = localUrl;
         }
         
-        private final StringBuilder sb = new StringBuilder();
         @Override
         public String toString() {
+            Collections.sort(emptyDocuments);
+            Collections.sort(documents);
+            StringBuilder sb = new StringBuilder();
+            int documentNumber = 0;
+            for (String s : emptyDocuments) {
+                sb.append("\n\nDocument ");
+                sb.append(Integer.toString(documentNumber++));
+                sb.append("\n");
+                sb.append(s);
+            }
+
+            for (String s : documents) {
+                sb.append("\n\nDocument ");
+                sb.append(Integer.toString(documentNumber++));
+                sb.append("\n");
+                sb.append(s);
+            }
+
+
             return sb.toString().replace(localUrl, "<TESTURL>");
         }
         
@@ -150,10 +169,7 @@ public class RubyIndexerTest extends RubyTestBase {
         }
 
         public void gsfStore(Set<Map<String, String>> fieldToData, Set<Map<String, String>> noIndexData, Map<String, String> toDelete) throws IOException {
-            sb.append("\n\nDocument ");
-            sb.append(Integer.toString(documentNumber++));
-            sb.append("\n");
-            
+            StringBuilder sb = new StringBuilder();
             sb.append("Delete:");
             List<String> keys = new ArrayList<String>(toDelete.keySet());
             Collections.sort(keys);
@@ -199,6 +215,13 @@ public class RubyIndexerTest extends RubyTestBase {
                 sb.append("  ");
                 sb.append(string);
                 sb.append("\n");
+            }
+            
+            String s = sb.toString();
+            if (fieldToData.size() == 0 && noIndexData.size() == 0) {
+                emptyDocuments.add(s);
+            } else {
+                documents.add(s);
             }
         }
 

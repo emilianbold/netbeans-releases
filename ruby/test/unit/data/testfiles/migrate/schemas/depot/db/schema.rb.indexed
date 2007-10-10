@@ -25,17 +25,32 @@ Not Indexed:
 Document 2
 Delete:
 Indexed:
-  dbtable : users
+  dbtable : orders
   source : <TESTURL>/schema.rb
 
 Not Indexed:
-  dbcolumn : hashed_password;string
+  dbcolumn : address;text
+  dbcolumn : email;string
   dbcolumn : name;string
-  dbcolumn : salt;string
+  dbcolumn : pay_type;string
   dbversion : schema
 
 
 Document 3
+Delete:
+Indexed:
+  dbtable : products
+  source : <TESTURL>/schema.rb
+
+Not Indexed:
+  dbcolumn : description;text
+  dbcolumn : image_url;string
+  dbcolumn : price;decimal
+  dbcolumn : title;string
+  dbversion : schema
+
+
+Document 4
 Delete:
 Indexed:
   dbtable : sessions
@@ -48,29 +63,14 @@ Not Indexed:
   dbversion : schema
 
 
-Document 4
-Delete:
-Indexed:
-  dbtable : orders
-  source : <TESTURL>/schema.rb
-
-Not Indexed:
-  dbcolumn : address;text
-  dbcolumn : email;string
-  dbcolumn : name;string
-  dbcolumn : pay_type;string
-  dbversion : schema
-
-
 Document 5
 Delete:
 Indexed:
-  dbtable : products
+  dbtable : users
   source : <TESTURL>/schema.rb
 
 Not Indexed:
-  dbcolumn : description;text
-  dbcolumn : image_url;string
-  dbcolumn : price;decimal
-  dbcolumn : title;string
+  dbcolumn : hashed_password;string
+  dbcolumn : name;string
+  dbcolumn : salt;string
   dbversion : schema

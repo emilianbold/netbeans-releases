@@ -11,6 +11,49 @@ Not Indexed:
 Document 1
 Delete:
 Indexed:
+  class : AddAssetsAndResources
+  class-ig : addassetsandresources
+  extends : ActiveRecord::Migration
+  fqn : AddAssetsAndResources
+  method : down|STATIC|
+  method : up|STATIC|
+  source : <TESTURL>/007_add_assets_and_resources.rb
+
+Not Indexed:
+  attrs : |CLASS|
+
+
+Document 2
+Delete:
+Indexed:
+  class : OldTemplate
+  class-ig : oldtemplate
+  extends : ActiveRecord::Base
+  fqn : AddAssetsAndResources::OldTemplate
+  source : <TESTURL>/007_add_assets_and_resources.rb
+
+Not Indexed:
+  attrs : |CLASS|
+  in : AddAssetsAndResources
+
+
+Document 3
+Delete:
+Indexed:
+  class : Template
+  class-ig : template
+  extends : ActiveRecord::Base
+  fqn : AddAssetsAndResources::Template
+  source : <TESTURL>/007_add_assets_and_resources.rb
+
+Not Indexed:
+  attrs : |CLASS|
+  in : AddAssetsAndResources
+
+
+Document 4
+Delete:
+Indexed:
   dbtable : assets
   source : <TESTURL>/007_add_assets_and_resources.rb
 
@@ -27,7 +70,7 @@ Not Indexed:
   dbversion : 007
 
 
-Document 2
+Document 5
 Delete:
 Indexed:
   dbtable : db_files
@@ -36,46 +79,3 @@ Indexed:
 Not Indexed:
   dbcolumn : data;binary
   dbversion : 007
-
-
-Document 3
-Delete:
-Indexed:
-  class : OldTemplate
-  class-ig : oldtemplate
-  extends : ActiveRecord::Base
-  fqn : AddAssetsAndResources::OldTemplate
-  source : <TESTURL>/007_add_assets_and_resources.rb
-
-Not Indexed:
-  attrs : |CLASS|
-  in : AddAssetsAndResources
-
-
-Document 4
-Delete:
-Indexed:
-  class : Template
-  class-ig : template
-  extends : ActiveRecord::Base
-  fqn : AddAssetsAndResources::Template
-  source : <TESTURL>/007_add_assets_and_resources.rb
-
-Not Indexed:
-  attrs : |CLASS|
-  in : AddAssetsAndResources
-
-
-Document 5
-Delete:
-Indexed:
-  class : AddAssetsAndResources
-  class-ig : addassetsandresources
-  extends : ActiveRecord::Migration
-  fqn : AddAssetsAndResources
-  method : down|STATIC|
-  method : up|STATIC|
-  source : <TESTURL>/007_add_assets_and_resources.rb
-
-Not Indexed:
-  attrs : |CLASS|

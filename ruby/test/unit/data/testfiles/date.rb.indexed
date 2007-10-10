@@ -122,6 +122,19 @@ Not Indexed:
 Document 2
 Delete:
 Indexed:
+  class : Date
+  class-ig : date
+  fqn : Date
+  source : <TESTURL>/date.rb
+
+Not Indexed:
+  attrs : |CLASS|
+  requires : date/format,rational
+
+
+Document 3
+Delete:
+Indexed:
   class : DateTime
   class-ig : datetime
   extends : Date
@@ -139,19 +152,6 @@ Indexed:
 
 Not Indexed:
   attrs : |DOCUMENTED|;1138
-  requires : date/format,rational
-
-
-Document 3
-Delete:
-Indexed:
-  class : Date
-  class-ig : date
-  fqn : Date
-  source : <TESTURL>/date.rb
-
-Not Indexed:
-  attrs : |CLASS|
   requires : date/format,rational
 
 

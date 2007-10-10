@@ -11,17 +11,6 @@ Not Indexed:
 Document 1
 Delete:
 Indexed:
-  dbtable : products
-  source : <TESTURL>/002_add_price.rb
-
-Not Indexed:
-  dbcolumn : price;decimal
-  dbversion : 002
-
-
-Document 2
-Delete:
-Indexed:
   class : AddPrice
   class-ig : addprice
   extends : ActiveRecord::Migration
@@ -32,3 +21,14 @@ Indexed:
 
 Not Indexed:
   attrs : |DOCUMENTED|;1429
+
+
+Document 2
+Delete:
+Indexed:
+  dbtable : products
+  source : <TESTURL>/002_add_price.rb
+
+Not Indexed:
+  dbcolumn : price;decimal
+  dbversion : 002

@@ -11,19 +11,6 @@ Not Indexed:
 Document 1
 Delete:
 Indexed:
-  dbtable : users
-  source : <TESTURL>/007_create_users.rb
-
-Not Indexed:
-  dbcolumn : hashed_password;string
-  dbcolumn : name;string
-  dbcolumn : salt;string
-  dbversion : 007
-
-
-Document 2
-Delete:
-Indexed:
   class : CreateUsers
   class-ig : createusers
   extends : ActiveRecord::Migration
@@ -34,3 +21,16 @@ Indexed:
 
 Not Indexed:
   attrs : |DOCUMENTED|;1429
+
+
+Document 2
+Delete:
+Indexed:
+  dbtable : users
+  source : <TESTURL>/007_create_users.rb
+
+Not Indexed:
+  dbcolumn : hashed_password;string
+  dbcolumn : name;string
+  dbcolumn : salt;string
+  dbversion : 007

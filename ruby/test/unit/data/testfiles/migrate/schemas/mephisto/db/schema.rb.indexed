@@ -11,43 +11,54 @@ Not Indexed:
 Document 1
 Delete:
 Indexed:
-  dbtable : sites
+  dbtable : assets
   source : <TESTURL>/schema.rb
 
 Not Indexed:
-  dbcolumn : akismet_key;string
-  dbcolumn : akismet_url;string
-  dbcolumn : approve_comments;boolean
-  dbcolumn : articles_per_page;integer
-  dbcolumn : comment_age;integer
-  dbcolumn : current_theme_path;string
-  dbcolumn : email;string
-  dbcolumn : filter;string
-  dbcolumn : host;string
-  dbcolumn : permalink_style;string
-  dbcolumn : ping_urls;text
-  dbcolumn : search_layout;string
-  dbcolumn : search_path;string
-  dbcolumn : subtitle;string
-  dbcolumn : tag_layout;string
-  dbcolumn : tag_path;string
-  dbcolumn : timezone;string
+  dbcolumn : content_type;string
+  dbcolumn : created_at;datetime
+  dbcolumn : filename;string
+  dbcolumn : height;integer
+  dbcolumn : parent_id;integer
+  dbcolumn : site_id;integer
+  dbcolumn : size;integer
+  dbcolumn : thumbnail;string
+  dbcolumn : thumbnails_count;integer
   dbcolumn : title;string
+  dbcolumn : user_id;integer
+  dbcolumn : width;integer
   dbversion : schema
 
 
 Document 2
 Delete:
 Indexed:
-  dbtable : tags
+  dbtable : assigned_sections
   source : <TESTURL>/schema.rb
 
 Not Indexed:
-  dbcolumn : name;string
+  dbcolumn : article_id;integer
+  dbcolumn : position;integer
+  dbcolumn : section_id;integer
   dbversion : schema
 
 
 Document 3
+Delete:
+Indexed:
+  dbtable : cached_pages
+  source : <TESTURL>/schema.rb
+
+Not Indexed:
+  dbcolumn : cleared_at;datetime
+  dbcolumn : references;text
+  dbcolumn : site_id;integer
+  dbcolumn : updated_at;datetime
+  dbcolumn : url;string
+  dbversion : schema
+
+
+Document 4
 Delete:
 Indexed:
   dbtable : content_versions
@@ -83,43 +94,7 @@ Not Indexed:
   dbversion : schema
 
 
-Document 4
-Delete:
-Indexed:
-  dbtable : sessions
-  source : <TESTURL>/schema.rb
-
-Not Indexed:
-  dbcolumn : data;text
-  dbcolumn : session_id;string
-  dbcolumn : updated_at;datetime
-  dbversion : schema
-
-
 Document 5
-Delete:
-Indexed:
-  dbtable : users
-  source : <TESTURL>/schema.rb
-
-Not Indexed:
-  dbcolumn : activated_at;datetime
-  dbcolumn : activation_code;string
-  dbcolumn : admin;boolean
-  dbcolumn : created_at;datetime
-  dbcolumn : crypted_password;string
-  dbcolumn : deleted_at;datetime
-  dbcolumn : email;string
-  dbcolumn : filter;string
-  dbcolumn : login;string
-  dbcolumn : salt;string
-  dbcolumn : token;string
-  dbcolumn : token_expires_at;datetime
-  dbcolumn : updated_at;datetime
-  dbversion : schema
-
-
-Document 6
 Delete:
 Indexed:
   dbtable : contents
@@ -154,7 +129,7 @@ Not Indexed:
   dbversion : schema
 
 
-Document 7
+Document 6
 Delete:
 Indexed:
   dbtable : events
@@ -173,42 +148,21 @@ Not Indexed:
   dbversion : schema
 
 
-Document 8
+Document 7
 Delete:
 Indexed:
-  dbtable : assigned_sections
+  dbtable : memberships
   source : <TESTURL>/schema.rb
 
 Not Indexed:
-  dbcolumn : article_id;integer
-  dbcolumn : position;integer
-  dbcolumn : section_id;integer
-  dbversion : schema
-
-
-Document 9
-Delete:
-Indexed:
-  dbtable : assets
-  source : <TESTURL>/schema.rb
-
-Not Indexed:
-  dbcolumn : content_type;string
+  dbcolumn : admin;boolean
   dbcolumn : created_at;datetime
-  dbcolumn : filename;string
-  dbcolumn : height;integer
-  dbcolumn : parent_id;integer
   dbcolumn : site_id;integer
-  dbcolumn : size;integer
-  dbcolumn : thumbnail;string
-  dbcolumn : thumbnails_count;integer
-  dbcolumn : title;string
   dbcolumn : user_id;integer
-  dbcolumn : width;integer
   dbversion : schema
 
 
-Document 10
+Document 8
 Delete:
 Indexed:
   dbtable : sections
@@ -229,36 +183,48 @@ Not Indexed:
   dbversion : schema
 
 
-Document 11
+Document 9
 Delete:
 Indexed:
-  dbtable : memberships
+  dbtable : sessions
   source : <TESTURL>/schema.rb
 
 Not Indexed:
-  dbcolumn : admin;boolean
-  dbcolumn : created_at;datetime
-  dbcolumn : site_id;integer
-  dbcolumn : user_id;integer
-  dbversion : schema
-
-
-Document 12
-Delete:
-Indexed:
-  dbtable : cached_pages
-  source : <TESTURL>/schema.rb
-
-Not Indexed:
-  dbcolumn : cleared_at;datetime
-  dbcolumn : references;text
-  dbcolumn : site_id;integer
+  dbcolumn : data;text
+  dbcolumn : session_id;string
   dbcolumn : updated_at;datetime
-  dbcolumn : url;string
   dbversion : schema
 
 
-Document 13
+Document 10
+Delete:
+Indexed:
+  dbtable : sites
+  source : <TESTURL>/schema.rb
+
+Not Indexed:
+  dbcolumn : akismet_key;string
+  dbcolumn : akismet_url;string
+  dbcolumn : approve_comments;boolean
+  dbcolumn : articles_per_page;integer
+  dbcolumn : comment_age;integer
+  dbcolumn : current_theme_path;string
+  dbcolumn : email;string
+  dbcolumn : filter;string
+  dbcolumn : host;string
+  dbcolumn : permalink_style;string
+  dbcolumn : ping_urls;text
+  dbcolumn : search_layout;string
+  dbcolumn : search_path;string
+  dbcolumn : subtitle;string
+  dbcolumn : tag_layout;string
+  dbcolumn : tag_path;string
+  dbcolumn : timezone;string
+  dbcolumn : title;string
+  dbversion : schema
+
+
+Document 11
 Delete:
 Indexed:
   dbtable : taggings
@@ -268,4 +234,38 @@ Not Indexed:
   dbcolumn : tag_id;integer
   dbcolumn : taggable_id;integer
   dbcolumn : taggable_type;string
+  dbversion : schema
+
+
+Document 12
+Delete:
+Indexed:
+  dbtable : tags
+  source : <TESTURL>/schema.rb
+
+Not Indexed:
+  dbcolumn : name;string
+  dbversion : schema
+
+
+Document 13
+Delete:
+Indexed:
+  dbtable : users
+  source : <TESTURL>/schema.rb
+
+Not Indexed:
+  dbcolumn : activated_at;datetime
+  dbcolumn : activation_code;string
+  dbcolumn : admin;boolean
+  dbcolumn : created_at;datetime
+  dbcolumn : crypted_password;string
+  dbcolumn : deleted_at;datetime
+  dbcolumn : email;string
+  dbcolumn : filter;string
+  dbcolumn : login;string
+  dbcolumn : salt;string
+  dbcolumn : token;string
+  dbcolumn : token_expires_at;datetime
+  dbcolumn : updated_at;datetime
   dbversion : schema
