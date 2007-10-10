@@ -47,20 +47,17 @@ made subject to such option by the copyright holder.
 
     <!-- register templates -->
     <folder name="Templates">
-
         <folder name="XML">
-
             <file name="stylesheet.xsl" url="nbresloc:/org/netbeans/modules/xsl/resources/templates/stylesheet.xsl">
-                &localize-it;
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xsl/resources/xslObject.gif"/>
                 <attr name="position" intvalue="300"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xsl/resources/templates/stylesheet.html"/>
                 <attr name="template" boolvalue="true"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xsl.wizard.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xsl/resources/xslObject.gif"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xsl/resources/templates/stylesheet.html"/>
                 <attr name="templateCategory" stringvalue="XML"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.xsl.wizard.XSLWizardIterator"/>
             </file>
-
-            </folder> <!-- XML -->
-
+        </folder> <!-- XML -->
     </folder> <!-- Templates -->
 
 

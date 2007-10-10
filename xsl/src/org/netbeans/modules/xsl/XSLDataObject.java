@@ -42,20 +42,20 @@ package org.netbeans.modules.xsl;
 
 import org.xml.sax.InputSource;
 import javax.xml.transform.Source;
-
 import org.openide.loaders.*;
 import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 import org.openide.nodes.Node;
 import org.openide.nodes.Children;
 import org.openide.nodes.CookieSet;
-
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 import org.netbeans.spi.xml.cookies.*;
-
 import org.netbeans.modules.xml.core.XMLDataObjectLook;
 import org.netbeans.modules.xml.core.text.TextEditorSupport;
 import org.netbeans.modules.xml.core.sync.*;
 import org.netbeans.modules.xml.core.cookies.*;
+import org.netbeans.modules.xml.api.XmlFileEncodingQueryImpl;
 import org.netbeans.modules.xsl.cookies.ValidateXSLSupport;
 
 /**
@@ -67,22 +67,13 @@ import org.netbeans.modules.xsl.cookies.ValidateXSLSupport;
 public final class XSLDataObject extends MultiDataObject implements XMLDataObjectLook {
     /** Serial Version UID */
     private static final long serialVersionUID = -3523066651187749549L;
-
     /** XSLT Mime Type. */
-    public static final String MIME_TYPE = "application/xslt+xml"; // NOI18N
-    
+    public static final String MIME_TYPE = "application/xslt+xml"; // NOI18N    
     private static final String XSL_ICON_BASE =
-        "org/netbeans/modules/xsl/resources/xslObject"; // NOI18N
-    
+        "org/netbeans/modules/xsl/resources/xslObject"; // NOI18N    
     private transient final DataObjectCookieManager cookieManager;
-
-    private transient Synchronizator synchronizator;
+    private transient Synchronizator synchronizator;    
     
-    
-    //
-    // init
-    //
-
     public XSLDataObject(final FileObject obj, final UniFileLoader loader) throws DataObjectExistsException {
         super (obj, loader);
 
@@ -109,6 +100,12 @@ public final class XSLDataObject extends MultiDataObject implements XMLDataObjec
 		
     }
 
+    public final Lookup getLookup() {
+        return Lookups.fixed(new Object[]{
+            super.getLookup(),
+            this,
+            XmlFileEncodingQueryImpl.singleton()});
+    }
 
     /**
      */
