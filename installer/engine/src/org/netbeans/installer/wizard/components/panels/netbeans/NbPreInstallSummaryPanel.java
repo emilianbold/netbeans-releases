@@ -467,6 +467,7 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                             for(final Product gfProduct : Registry.getInstance().getProducts("glassfish")) {
                                 if(gfProduct.getStatus() == Status.INSTALLED &&
                                         new File(gfLocation).equals(gfProduct.getInstallationLocation()))    {
+                                    glassfishProduct = gfProduct;
                                     gfCheckbox = new NbiCheckBox();
                                     //List <Product> alsoRemoving = Registry.getInstance().getInavoidableDependents(gfProduct);
                                     //for(Product toUninstall : Registry.getInstance().getProductsToUninstall()) {
@@ -491,8 +492,9 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                                             }
                                         }
                                     });
-                                    gfCheckbox.setEnabled(true);
-                                    glassfishProduct = gfProduct;
+                                    gfCheckbox.setSelected(true);
+                                    gfProduct.setStatus(Status.TO_BE_UNINSTALLED);
+                                    
                                     add(runtimesToRemove, new GridBagConstraints(
                                             0, index++,                        // x, y
                                             1, 1,                             // width, height
@@ -556,7 +558,8 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                                             }
                                         }
                                     });
-                                    tomcatCheckbox.setEnabled(true);
+                                    tomcatCheckbox.setSelected(true);                                    
+                                    tomcatProduct.setStatus(Status.TO_BE_UNINSTALLED);
                                     add(tomcatCheckbox, new GridBagConstraints(
                                             0, index++,                        // x, y
                                             1, 1,                             // width, height
