@@ -247,22 +247,22 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
     
     /** Get default accelerator */
     protected KeyStroke getDefaultAccelerator(){
-        Lookup ml = MimeLookup.getLookup(MimePath.get("text/x-java")); //NOI18N
-        KeyBindingSettings kbs = (KeyBindingSettings) ml.lookup(KeyBindingSettings.class);
-        if (kbs != null){
-            List lst = kbs.getKeyBindings();
-            if (lst != null){
-                for (int i=0; i<lst.size(); i++){
-                    MultiKeyBinding mkb = (MultiKeyBinding)lst.get(i);
-                    String an = mkb.getActionName();
-                    if (an != null && an.equals(getActionName())){
-                        if (mkb.getKeyStrokeCount() == 1){// we do not support multi KB in mnemonics
-                            return mkb.getKeyStroke(0);
-                        }
-                    }
-                }
-            }
-        }
+//        Lookup ml = MimeLookup.getLookup(MimePath.get("text/x-java")); //NOI18N
+//        KeyBindingSettings kbs = (KeyBindingSettings) ml.lookup(KeyBindingSettings.class);
+//        if (kbs != null){
+//            List lst = kbs.getKeyBindings();
+//            if (lst != null){
+//                for (int i=0; i<lst.size(); i++){
+//                    MultiKeyBinding mkb = (MultiKeyBinding)lst.get(i);
+//                    String an = mkb.getActionName();
+//                    if (an != null && an.equals(getActionName())){
+//                        if (mkb.getKeyStrokeCount() == 1){// we do not support multi KB in mnemonics
+//                            return mkb.getKeyStroke(0);
+//                        }
+//                    }
+//                }
+//            }
+//        }
         return null;
     }
     
@@ -371,10 +371,7 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
             return ExtKit.gotoSourceAction;
         }
         
-        protected KeyStroke getDefaultAccelerator(){
-            return KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.ALT_MASK);
-        }
-        
+
     }
 
     
@@ -401,10 +398,7 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
             return ExtKit.gotoSuperImplementationAction;
         }
         
-        protected KeyStroke getDefaultAccelerator(){
-            return KeyStroke.getKeyStroke(KeyEvent.VK_B, InputEvent.CTRL_MASK);
-        }
-        
+
     }
 
     public static class GoToDeclarationAction extends MainMenuAction{
@@ -428,10 +422,6 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
 
         protected String getActionName() {
             return ExtKit.gotoDeclarationAction;
-        }
-        
-        protected KeyStroke getDefaultAccelerator(){
-            return KeyStroke.getKeyStroke(KeyEvent.VK_G, InputEvent.ALT_MASK);
         }
         
     }
@@ -461,9 +451,7 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
             return BaseKit.jumpListPrevAction;
         }
         
-        protected KeyStroke getDefaultAccelerator () {
-            return KeyStroke.getKeyStroke(KeyEvent.VK_K, InputEvent.ALT_MASK);
-        }
+
         
     } // end of JumpBackAction
     
@@ -492,9 +480,7 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
             return BaseKit.jumpListNextAction;
         }
         
-        protected KeyStroke getDefaultAccelerator () {
-            return KeyStroke.getKeyStroke(KeyEvent.VK_L, InputEvent.ALT_MASK);
-        }
+
         
     } // end of JumpForwardAction
 
