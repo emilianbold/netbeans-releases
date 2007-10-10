@@ -65,6 +65,7 @@ import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.modules.java.source.query.CommentHandler;
 import org.netbeans.modules.java.source.query.CommentSet;
 import org.netbeans.api.java.source.Comment.Style;
+import org.netbeans.api.java.source.support.TranslateIdentifier;
 import org.netbeans.modules.java.source.query.CommentHandler;
 
 import org.netbeans.modules.java.source.builder.CommentHandlerService;
@@ -2687,4 +2688,8 @@ public final class TreeMaker {
         }
     }
     
+    public <T extends Tree> T copyTree(T tree, CompilationUnitTree cut) {
+        TranslateIdentifier translator = new TranslateIdentifier(copy);
+        return (T) translator.translate(tree);
+    }
 }
