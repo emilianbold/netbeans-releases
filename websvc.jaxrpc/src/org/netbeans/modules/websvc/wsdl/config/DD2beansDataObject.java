@@ -45,12 +45,15 @@ import java.awt.event.ActionListener;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.MultiFileLoader;
+import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.netbeans.modules.websvc.wsdl.xmlutils.XMLJ2eeDataObject;
 import org.netbeans.modules.websvc.wsdl.xmlutils.XMLJ2eeUtils;
 
 import java.io.*;
 import javax.swing.Timer;
+import org.netbeans.modules.xml.api.XmlFileEncodingQueryImpl;
+import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.util.WeakListeners;
 
 /** Represents a DD2beansDataObject in the Repository.
@@ -98,6 +101,7 @@ public abstract class DD2beansDataObject extends XMLJ2eeDataObject implements or
         timer.addActionListener ((ActionListener) WeakListeners.create (ActionListener.class, timerListener, timer));
         timer.setInitialDelay(DELAY_FOR_TIMER);
         timer.setRepeats(false);
+        getCookieSet().assign(FileEncodingQueryImplementation.class, XmlFileEncodingQueryImpl.singleton());
     }
 
     private synchronized void restartTimer(){
@@ -143,6 +147,11 @@ public abstract class DD2beansDataObject extends XMLJ2eeDataObject implements or
         return generationTask;
     }
 
+    @Override
+    public Lookup getLookup() {
+        return getCookieSet().getLookup();
+    }
+    
     protected void restartGen() {
         //System.out.println("restart Gen");
         generationTask = null;
