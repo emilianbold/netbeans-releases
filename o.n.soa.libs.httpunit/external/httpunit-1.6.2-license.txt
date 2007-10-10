@@ -1,7 +1,7 @@
 Name: httpunit
 Version: 1.6.2
 Description: Library for automate HTTP unit testing.
-License: Apache-1.1
+License: HttpUnit License
 OSR: 4279
 Origin: http://httpunit.sourceforge.net/
 
