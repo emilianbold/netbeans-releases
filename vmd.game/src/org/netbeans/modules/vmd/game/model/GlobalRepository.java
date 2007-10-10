@@ -99,7 +99,7 @@ public class GlobalRepository implements PropertyChangeListener, Editable {
 	
 	public MainView getMainView() {
 		if (this.mainView == null) {
-			this.mainView = new MainView();
+			this.mainView = new MainView(this);
 			this.addGlobalRepositoryListener(this.mainView);
 		}
 		return this.mainView;

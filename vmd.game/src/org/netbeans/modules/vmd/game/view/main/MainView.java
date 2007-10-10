@@ -46,6 +46,8 @@ import org.netbeans.modules.vmd.game.model.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.Frame;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.event.EventListenerList;
 import org.netbeans.modules.vmd.game.model.Editable.ImageResourceInfo;
 
@@ -55,19 +57,20 @@ public class MainView implements GlobalRepositoryListener, EditorManager {
 	
 	EventListenerList listenerList = new EventListenerList();
 
+	private GlobalRepository gameDesign;
 	private Editable currentEditable;
 	
 	private JPanel rootPanel;
 	private JSplitPane mainSplit;
-	private JSplitPane explorerSplit;
 	private JSplitPane previewExplorerSplit;
-	private JSplitPane editorSplit;
 	
 	//the right panel contains editor and optional resource grid
 	private JPanel mainEditorPanel;
-	private ResourceImageEditor resourceImageView;
 	
-	public MainView() {
+	Map<Editable, JSplitPane> splits = new HashMap<Editable, JSplitPane>();
+	
+	public MainView(GlobalRepository gameDesign) {
+		this.gameDesign = gameDesign;
 		this.initComponents();
 		this.initLayout();
 	}
@@ -81,15 +84,6 @@ public class MainView implements GlobalRepositoryListener, EditorManager {
 		this.mainEditorPanel = new JPanel();
 		this.mainEditorPanel.setBorder(null);
 		this.mainEditorPanel.setBackground(Color.WHITE);
-		
-		this.resourceImageView = new ResourceImageEditor();
-
-		this.editorSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT, false);
-		this.editorSplit.setDividerLocation(400);
-		this.editorSplit.setResizeWeight(1.0);
-		this.editorSplit.setOneTouchExpandable(false);
-		this.editorSplit.setDividerSize(5);
-
 	}
 	
 	private void initLayout() {		
@@ -138,7 +132,7 @@ public class MainView implements GlobalRepositoryListener, EditorManager {
 	}
 
 	public void sceneRemoved(Scene scene, int index) {
-		this.closeEditor(scene);
+		this.requestEditing(this.gameDesign);
 	}
 
 	public void tiledLayerAdded(final TiledLayer tiledLayer, int index) {
@@ -146,7 +140,7 @@ public class MainView implements GlobalRepositoryListener, EditorManager {
 	}
 
 	public void tiledLayerRemoved(TiledLayer tiledLayer, int index) {
-		this.closeEditor(tiledLayer);
+		this.requestEditing(this.gameDesign);
 	}
 
 	public void spriteAdded(Sprite sprite, int index) {
@@ -155,7 +149,7 @@ public class MainView implements GlobalRepositoryListener, EditorManager {
 	}
 
 	public void spriteRemoved(Sprite sprite, int index) {
-		this.closeEditor(sprite);
+		this.requestEditing(this.gameDesign);
 	}
 
     public void imageResourceAdded(ImageResource imageResource) {
@@ -165,19 +159,34 @@ public class MainView implements GlobalRepositoryListener, EditorManager {
 		if (this.currentEditable == editable) {
 			return;
 		}
+		
 		this.currentEditable = editable;
+		
 		ImageResourceInfo resource = this.currentEditable.getImageResourceInfo();
 		JComponent editor = this.currentEditable.getEditor();
 
 		this.mainEditorPanel.removeAll();
 		
 		if (resource != null) {
-			this.resourceImageView.setImageResourceInfo(resource);
-			this.editorSplit.setTopComponent(editor);
-			this.editorSplit.setBottomComponent(this.resourceImageView);
-			this.editorSplit.setOneTouchExpandable(false);
-			this.editorSplit.setDividerSize(5);
-			this.mainEditorPanel.add(MainView.this.editorSplit);
+			JSplitPane split = this.splits.get(this.currentEditable);
+			if (split == null) {
+				split = new JSplitPane(JSplitPane.VERTICAL_SPLIT, false);
+				split.setDividerLocation(400);
+				split.setResizeWeight(1.0);
+				split.setOneTouchExpandable(false);
+				split.setDividerSize(5);
+				
+				split.setTopComponent(editor);
+
+				ResourceImageEditor	resourceImageView = new ResourceImageEditor();
+				resourceImageView.setImageResourceInfo(resource);
+				split.setBottomComponent(resourceImageView);
+				
+				split.setOneTouchExpandable(false);
+				split.setDividerSize(5);
+				this.splits.put(this.currentEditable, split);
+			}
+			this.mainEditorPanel.add(split);
 		}
 		else {
 			this.mainEditorPanel.add(editor);
@@ -227,19 +236,6 @@ public class MainView implements GlobalRepositoryListener, EditorManager {
             frame.setExtendedState(Frame.MAXIMIZED_BOTH);
         frame.validate();
    }
-
-	
-	public static void main(String[] args) {
-		MainView view  = new MainView();
-		JFrame frame = new JFrame("Zero Effort Game Builder"); // NOI18N
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.setSize(new Dimension(900, 600));
-		frame.getContentPane().setLayout(new BorderLayout());
-		frame.getContentPane().add(view.getRootComponent(), BorderLayout.CENTER);
-		MainView.center(frame);
-		frame.setVisible(true);
-		frame.getContentPane().doLayout();
-	}
 
 
 	public JComponent getRootComponent() {
