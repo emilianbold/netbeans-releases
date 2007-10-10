@@ -96,7 +96,7 @@ public class DwarfSource implements SourceFileProperties{
         this.grepBase = grepBase;
         initSourceSettings(cu, isCPP);
     }
-    
+
     private void initCompilerSettings(CompilerSettings compilerSettings, boolean isCPP){
         List<String> list = compilerSettings.getSystemIncludePaths(isCPP);
        if (list != null){
@@ -586,17 +586,25 @@ public class DwarfSource implements SourceFileProperties{
                 macro = PathCache.getString(def);
             }
             if (haveSystemMacros && systemMacros.containsKey(macro)){
-                // filter out system macros
-                // For example gcc windows dwarf contains following system macros as user:
-                // unix=1 __unix=1 __unix__=1 __CYGWIN__=1 __CYGWIN32__=1
-                if (value == null || "1".equals(value)){ // NOI18N
+                String sysValue = systemMacros.get(macro);
+                if (equalValues(sysValue, value)) {
                     continue;
                 }
             }
             userMacros.put(macro,value);
         }
     }
-    
+
+    private boolean equalValues(String sysValue, String value) {
+        // filter out system macros
+        // For example gcc windows dwarf contains following system macros as user:
+        // unix=1 __unix=1 __unix__=1 __CYGWIN__=1 __CYGWIN32__=1
+        if (value == null || "1".equals(value)) {
+            return sysValue == null || "1".equals(sysValue); // NOI18N
+        }
+        return value.equals(sysValue); // NOI18N
+    }
+  
     private List<String> grepSourceFile(String fileName){
         List<String> res = grepBase.get(fileName);
         if (res != null) {

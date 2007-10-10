@@ -127,17 +127,27 @@ public class DwarfMacinfoTable {
         int idx = 0;
         int currLine = entries.get(0).lineNum;
         int prevLine = -1;
-        
+        int count = 0;
         // Skip non-command-line entries... 
-        
         while (currLine > prevLine && idx < size) {
             prevLine = currLine;
             if (idx == size -1){
                 return result;
             }
             currLine = entries.get(++idx).lineNum;
+            count++;
         }
-                
+        if (count < 10 && currLine == 1){
+            // it seems all system and user macros have the same lineNum == 1
+            idx = 0;
+            DwarfMacinfoEntry entry = entries.get(idx);
+            do {
+                result.add(entry);
+                currLine = entry.lineNum;
+                idx++;
+            } while (idx < size && (entry = entries.get(idx)).lineNum == 1);
+            return result;
+        }
         DwarfMacinfoEntry entry = entries.get(idx);
 
         do {
