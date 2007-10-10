@@ -43,7 +43,6 @@ package org.netbeans.modules.junit.output;
 
 import java.awt.EventQueue;
 import java.util.Collection;
-import java.util.Iterator;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.NbBundle;
@@ -275,6 +274,7 @@ final class RootNode extends AbstractNode {
         }
     }
     
+    @Override
     public SystemAction[] getActions(boolean context) {
         return new SystemAction[0];
     }
