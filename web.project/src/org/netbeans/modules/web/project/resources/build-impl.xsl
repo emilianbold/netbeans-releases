@@ -124,9 +124,6 @@ introduced by support for multiple source roots. -jglick
             <target name="-do-ear-init">
                 <xsl:attribute name="depends">-pre-init,-init-private,-init-user,-init-project,-init-macrodef-property</xsl:attribute>
                 <xsl:attribute name="if">dist.ear.dir</xsl:attribute>
-                <property value="${{build.ear.web.dir}}/META-INF" name="build.meta.inf.dir"/>
-                <property name="build.classes.dir.real" value="${{build.ear.classes.dir}}"/>
-                <property name="build.web.dir.real" value="${{build.ear.web.dir}}"/>
             </target>
             
             <target name="-do-init">
@@ -225,8 +222,6 @@ introduced by support for multiple source roots. -jglick
                 </condition>
                 
                 <property value="${{build.web.dir}}/META-INF" name="build.meta.inf.dir"/>
-                <property name="build.classes.dir.real" value="${{build.classes.dir}}"/>
-                <property name="build.web.dir.real" value="${{build.web.dir}}"/>
                 
                 <condition property="application.args.param" value="${{application.args}}" else="">
                     <and>
@@ -306,10 +301,9 @@ introduced by support for multiple source roots. -jglick
                     </attribute>
                     <attribute>
                         <xsl:attribute name="name">destdir</xsl:attribute>
-                        <xsl:attribute name="default">${build.classes.dir.real}</xsl:attribute>
+                        <xsl:attribute name="default">${build.classes.dir}</xsl:attribute>
                     </attribute>
                     <attribute>
-                        <!-- CAUTION: while changing classpath DO change debug.classpath as well - see #113297 -->
                         <xsl:attribute name="name">classpath</xsl:attribute>
                         <xsl:attribute name="default">${javac.classpath}:${j2ee.platform.classpath}</xsl:attribute>
                     </attribute>
@@ -408,8 +402,13 @@ introduced by support for multiple source roots. -jglick
                                 <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
                             </xsl:if>
                             <jvmarg line="${{runmain.jvmargs}}"/>
+                            <!--
+                                #113297, #118187
+                                for the moment debug.classpath equals run.classpath
+                                XXX: introduce run.classpath and use it for debug.classpath
+                             -->
                             <classpath>
-                                <path path="${{build.classes.dir.real}}:${{javac.classpath}}:${{j2ee.platform.classpath}}"/>
+                                <path path="${{debug.classpath}}"/>
                             </classpath>
                             <syspropertyset>
                                 <propertyref prefix="run-sys-prop."/>
@@ -451,7 +450,7 @@ introduced by support for multiple source roots. -jglick
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/web-project/1</xsl:attribute>
                     <attribute>
                         <xsl:attribute name="name">dir</xsl:attribute>
-                        <xsl:attribute name="default">${build.classes.dir.real}</xsl:attribute>
+                        <xsl:attribute name="default">${build.classes.dir}</xsl:attribute>
                     </attribute>
                     <sequential>
                         <nbjpdareload>
@@ -541,7 +540,7 @@ introduced by support for multiple source roots. -jglick
                         <condition value="yes" property="hastlds_@{{propname}}">
                             <contains string="${{tld.files.path_@{{propname}}}}" substring=".tld" casesensitive="false"/>
                         </condition>
-                        <condition value="${{build.web.dir.real}}/WEB-INF/lib" property="copy.to.dir_@{{propname}}">
+                        <condition value="${{build.web.dir}}/WEB-INF/lib" property="copy.to.dir_@{{propname}}">
                             <isset property="hastlds_@{{propname}}"/>
                         </condition>
                         <condition value="${{dist.ear.dir}}" property="copy.to.dir_@{{propname}}">
@@ -592,9 +591,9 @@ introduced by support for multiple source roots. -jglick
                              classpath="${{wscompile.classpath}}"/>
                     <taskdef name="wsclientuptodate" classname="org.netbeans.modules.websvc.jaxrpc.ant.WsClientUpToDate"
                              classpath="${{wsclientuptodate.classpath}}"/>
-                    <mkdir dir="${{build.web.dir.real}}/WEB-INF/wsdl"/>
+                    <mkdir dir="${{build.web.dir}}/WEB-INF/wsdl"/>
                     <mkdir dir="${{webinf.dir}}/wsdl"/>
-                    <mkdir dir="${{build.classes.dir.real}}"/>
+                    <mkdir dir="${{build.classes.dir}}"/>
                     <mkdir dir="${{build.generated.dir}}/wsclient"/>
                     <mkdir dir="${{build.generated.dir}}/wsservice"/>
                     <mkdir dir="${{build.generated.dir}}/wsbinary"/>
@@ -627,7 +626,7 @@ introduced by support for multiple source roots. -jglick
                                        features="${{wscompile.service.{$wsname}.features}}"
                                        mapping="${{webinf.dir}}/${{{$wsname}.mapping}}"
                                        classpath="${{wscompile.classpath}}:${{javac.classpath}}"
-                                       nonClassDir="${{build.web.dir.real}}/WEB-INF/wsdl"
+                                       nonClassDir="${{build.web.dir}}/WEB-INF/wsdl"
                                        verbose="true"
                                        xPrintStackTrace="true"
                                        base="${{build.generated.dir}}/wsbinary"
@@ -645,9 +644,9 @@ introduced by support for multiple source roots. -jglick
                                 base="${{build.generated.dir}}/wsbinary"
                                 xPrintStackTrace="true"
                                 verbose="true"
-                                nonClassDir="${{build.web.dir.real}}/WEB-INF/wsdl"
-                                classpath="${{wscompile.classpath}}:${{build.classes.dir.real}}:${{javac.classpath}}"
-                                mapping="${{build.web.dir.real}}/WEB-INF/${{{$wsname}.mapping}}"
+                                nonClassDir="${{build.web.dir}}/WEB-INF/wsdl"
+                                classpath="${{wscompile.classpath}}:${{build.classes.dir}}:${{javac.classpath}}"
+                                mapping="${{build.web.dir}}/WEB-INF/${{{$wsname}.mapping}}"
                                 config="${{{$wsname}.config.name}}"
                                 features="${{wscompile.service.{$wsname}.features}}"
                                 sourceBase="${{build.generated.dir}}/wsservice">
@@ -723,18 +722,18 @@ introduced by support for multiple source roots. -jglick
                             <xsl:value-of select="webproject3:web-service-client-name"/>
                         </xsl:variable>
                         <copy file="${{build.generated.dir}}/wsclient/wsdl/{$wsclientname}-mapping.xml"
-                              tofile="${{build.web.dir.real}}/WEB-INF/{$wsclientname}-mapping.xml"/>
+                              tofile="${{build.web.dir}}/WEB-INF/{$wsclientname}-mapping.xml"/>
                     </xsl:for-each>
                 </target>
                 <target name="web-service-client-compile" depends="web-service-client-generate">
-                    <webproject2:javac srcdir="${{build.generated.dir}}/wsclient" classpath="${{wscompile.classpath}}:${{javac.classpath}}" destdir="${{build.classes.dir.real}}"/>
+                    <webproject2:javac srcdir="${{build.generated.dir}}/wsclient" classpath="${{wscompile.classpath}}:${{javac.classpath}}" destdir="${{build.classes.dir}}"/>
                 </target>
             </xsl:if>
             
             <target name="-pre-pre-compile">
                 <xsl:attribute name="depends">init,deps-jar<xsl:if test="/p:project/p:configuration/webproject3:data/webproject3:web-service-clients/webproject3:web-service-client">,web-service-client-generate</xsl:if>
                 </xsl:attribute>
-                <mkdir dir="${{build.classes.dir.real}}"/>
+                <mkdir dir="${{build.classes.dir}}"/>
             </target>
             
             <target name="-pre-compile">
@@ -743,14 +742,14 @@ introduced by support for multiple source roots. -jglick
             </target>
             
             <target name="-copy-webdir">
-                <copy todir="${{build.web.dir.real}}">
+                <copy todir="${{build.web.dir}}">
                     <fileset excludes="${{build.web.excludes}}" dir="${{web.docbase.dir}}">
                         <xsl:if test="/p:project/p:configuration/webproject3:data/webproject3:web-services/webproject3:web-service">
                             <xsl:attribute name="excludes">WEB-INF/classes/** WEB-INF/web.xml WEB/sun-web.xml</xsl:attribute>
                         </xsl:if>
                     </fileset>
                 </copy>
-                <copy todir="${{build.web.dir.real}}/WEB-INF">
+                <copy todir="${{build.web.dir}}/WEB-INF">
                     <fileset excludes="${{build.web.excludes}}" dir="${{webinf.dir}}">
                         <xsl:if test="/p:project/p:configuration/webproject3:data/webproject3:web-services/webproject3:web-service">
                             <xsl:attribute name="excludes">classes/** web.xml sun-web.xml</xsl:attribute>
@@ -760,10 +759,10 @@ introduced by support for multiple source roots. -jglick
                 
                 <xsl:if test="/p:project/p:configuration/webproject3:data/webproject3:web-services/webproject3:web-service">
                     <xsl:comment>For web services, refresh web.xml and sun-web.xml</xsl:comment>
-                    <copy todir="${{build.web.dir.real}}" overwrite="true">
+                    <copy todir="${{build.web.dir}}" overwrite="true">
                         <fileset includes="WEB-INF/web.xml WEB-INF/sun-web.xml" dir="${{web.docbase.dir}}"/>
                     </copy>
-                    <copy todir="${{build.web.dir.real}}/WEB-INF" overwrite="true">
+                    <copy todir="${{build.web.dir}}/WEB-INF" overwrite="true">
                         <fileset includes="web.xml sun-web.xml" dir="${{webinf.dir}}"/>
                     </copy>
                 </xsl:if>
@@ -798,8 +797,8 @@ introduced by support for multiple source roots. -jglick
                         <include name="**/*.java"/>
                     </source>
                 </restapt>
-                <webproject2:javac srcdir="${{build.generated.dir}}/rest-gen" destdir="${{build.classes.dir.real}}"/>
-                <copy todir="${{build.classes.dir.real}}">
+                <webproject2:javac srcdir="${{build.generated.dir}}/rest-gen" destdir="${{build.classes.dir}}"/>
+                <copy todir="${{build.classes.dir}}">
                     <fileset dir="${{build.generated.dir}}/rest-gen" includes="**/*.wadl"/>
                 </copy>
             </target>
@@ -813,9 +812,9 @@ introduced by support for multiple source roots. -jglick
                 <xsl:attribute name="depends">init, deps-jar, -pre-pre-compile, -pre-compile, -copy-manifest, -copy-persistence-xml, -copy-webdir, library-inclusion-in-archive,library-inclusion-in-manifest,-do-ws-compile</xsl:attribute>
                 <xsl:attribute name="if">have.sources</xsl:attribute>
                 
-                <webproject2:javac destdir="${{build.classes.dir.real}}"/>
+                <webproject2:javac destdir="${{build.classes.dir}}"/>
                 
-                <copy todir="${{build.classes.dir.real}}">
+                <copy todir="${{build.classes.dir}}">
                     <xsl:call-template name="createFilesets">
                         <xsl:with-param name="roots" select="/p:project/p:configuration/webproject3:data/webproject3:source-roots"/>
                         <xsl:with-param name="excludes">${build.classes.excludes}</xsl:with-param>
@@ -831,8 +830,8 @@ introduced by support for multiple source roots. -jglick
             </target>
             
             <target name="-copy-persistence-xml" if="has.persistence.xml">
-                <mkdir dir="${{build.web.dir.real}}/WEB-INF/classes/META-INF"/>
-                <copy todir="${{build.web.dir.real}}/WEB-INF/classes/META-INF">
+                <mkdir dir="${{build.web.dir}}/WEB-INF/classes/META-INF"/>
+                <copy todir="${{build.web.dir}}/WEB-INF/classes/META-INF">
                     <fileset dir="${{conf.dir}}" includes="persistence.xml"/>
                 </copy>
             </target>
@@ -880,7 +879,7 @@ introduced by support for multiple source roots. -jglick
                     </customize>
                 </webproject2:javac>
                 
-                <copy todir="${{build.classes.dir.real}}">
+                <copy todir="${{build.classes.dir}}">
                     <xsl:call-template name="createFilesets">
                         <xsl:with-param name="roots" select="/p:project/p:configuration/webproject3:data/webproject3:source-roots"/>
                         <xsl:with-param name="excludes">${build.classes.excludes}</xsl:with-param>
@@ -908,7 +907,7 @@ introduced by support for multiple source roots. -jglick
                       failonerror="true"
                 >
                     <arg value="-uriroot"/>
-                    <arg file="${{basedir}}/${{build.web.dir.real}}"/>
+                    <arg file="${{basedir}}/${{build.web.dir}}"/>
                     <arg value="-d"/>
                     <arg file="${{basedir}}/${{build.generated.dir}}/src"/>
                     <arg value="-die1"/>
@@ -918,7 +917,7 @@ introduced by support for multiple source roots. -jglick
                 <webproject2:javac
                     srcdir="${{build.generated.dir}}/src"
                     destdir="${{build.generated.dir}}/classes"
-                    classpath="${{j2ee.platform.classpath}}:${{build.classes.dir.real}}:${{jspcompilation.classpath}}"/>
+                    classpath="${{j2ee.platform.classpath}}:${{build.classes.dir}}:${{jspcompilation.classpath}}"/>
                 
             </target>
             
@@ -933,7 +932,7 @@ introduced by support for multiple source roots. -jglick
                       failonerror="true"
                 >
                     <arg value="-uriroot"/>
-                    <arg file="${{basedir}}/${{build.web.dir.real}}"/>
+                    <arg file="${{basedir}}/${{build.web.dir}}"/>
                     <arg value="-d"/>
                     <arg file="${{basedir}}/${{build.generated.dir}}/src"/>
                     <arg value="-die1"/>
@@ -945,7 +944,7 @@ introduced by support for multiple source roots. -jglick
                 <webproject2:javac
                     srcdir="${{build.generated.dir}}/src"
                     destdir="${{build.generated.dir}}/classes"
-                    classpath="${{j2ee.platform.classpath}}:${{build.classes.dir.real}}:${{jspcompilation.classpath}}">
+                    classpath="${{j2ee.platform.classpath}}:${{build.classes.dir}}:${{jspcompilation.classpath}}">
                     <customize>
                         <patternset includes="${{javac.jsp.includes}}"/>
                     </customize>
@@ -954,8 +953,8 @@ introduced by support for multiple source roots. -jglick
                 <webproject:javac xmlns:webproject="http://www.netbeans.org/ns/web-project/1">
                 <xsl:with-param name="srcdir" select="'${{build.generated.dir}}/src'"/>
                 <xsl:with-param name="destdir" select="'${{build.generated.dir}}/classes'"/>
-                <xsl:with-param name="classpath" select="'${{javac.classpath}}:${{j2ee.platform.classpath}}:${{build.classes.dir.real}}'"/>
-                <xsl:with-param name="classpath" select="'${{javac.classpath}}:${{j2ee.platform.classpath}}:${{build.classes.dir.real}}:${{jspc.classpath}}'"/>
+                <xsl:with-param name="classpath" select="'${{javac.classpath}}:${{j2ee.platform.classpath}}:${{build.classes.dir}}'"/>
+                <xsl:with-param name="classpath" select="'${{javac.classpath}}:${{j2ee.platform.classpath}}:${{build.classes.dir}}:${{jspc.classpath}}'"/>
                 </webproject:javac>
                 -->
             </target>
@@ -1041,12 +1040,12 @@ introduced by support for multiple source roots. -jglick
                         <xsl:if test="(@dirs &gt; 1) or (@files &gt; 0 and (@dirs &gt; 0))">
                             <xsl:call-template name="copyIterateDirs">
                                 <xsl:with-param name="files" select="@dirs"/>
-                                <xsl:with-param name="target" select="concat('${build.web.dir.real}/','WEB-INF/classes')"/>
+                                <xsl:with-param name="target" select="concat('${build.web.dir}/','WEB-INF/classes')"/>
                                 <xsl:with-param name="libfile" select="webproject3:file"/>
                             </xsl:call-template>
                         </xsl:if>
                         <xsl:if test="@dirs = 1 and (@files = 0 or not(@files))">
-                            <xsl:variable name="target" select="concat('${build.web.dir.real}/','WEB-INF/classes')"/>
+                            <xsl:variable name="target" select="concat('${build.web.dir}/','WEB-INF/classes')"/>
                             <xsl:variable name="libfile" select="webproject3:file"/>
                             <copy todir="{$target}">
                                 <fileset dir="{$libfile}" includes="**/*"/>
@@ -1061,13 +1060,13 @@ introduced by support for multiple source roots. -jglick
                         <xsl:if test="(@files &gt; 1) or (@files &gt; 0 and (@dirs &gt; 0))">
                             <xsl:call-template name="copyIterateFiles">
                                 <xsl:with-param name="files" select="@files"/>
-                                <xsl:with-param name="target" select="concat('${build.web.dir.real}/',$copyto)"/>
+                                <xsl:with-param name="target" select="concat('${build.web.dir}/',$copyto)"/>
                                 <xsl:with-param name="libfile" select="webproject3:file"/>
                             </xsl:call-template>
                         </xsl:if>
                         <xsl:if test="@files = 1 and (@dirs = 0 or not(@dirs))">
                             <xsl:variable name="libfile" select="webproject3:file"/>
-                            <xsl:variable name="target" select="concat('${build.web.dir.real}/',$copyto)"/>
+                            <xsl:variable name="target" select="concat('${build.web.dir}/',$copyto)"/>
                             <copy file="{$libfile}" todir="{$target}"/>
                         </xsl:if>
                     </xsl:if>
@@ -1075,12 +1074,12 @@ introduced by support for multiple source roots. -jglick
                         <xsl:if test="(@dirs &gt; 1) or (@files &gt; 0 and (@dirs &gt; 0))">
                             <xsl:call-template name="copyIterateDirs">
                                 <xsl:with-param name="files" select="@dirs"/>
-                                <xsl:with-param name="target" select="concat('${build.web.dir.real}/',$copyto)"/>
+                                <xsl:with-param name="target" select="concat('${build.web.dir}/',$copyto)"/>
                                 <xsl:with-param name="libfile" select="webproject3:file"/>
                             </xsl:call-template>
                         </xsl:if>
                         <xsl:if test="@dirs = 1 and (@files = 0 or not(@files))">
-                            <xsl:variable name="target" select="concat('${build.web.dir.real}/',$copyto)"/>
+                            <xsl:variable name="target" select="concat('${build.web.dir}/',$copyto)"/>
                             <xsl:variable name="libfile" select="webproject3:file"/>
                             <copy todir="{$target}">
                                 <fileset dir="{$libfile}" includes="**/*"/>
@@ -1089,8 +1088,8 @@ introduced by support for multiple source roots. -jglick
                     </xsl:if>
                 </xsl:for-each>
                 
-                <mkdir dir="${{build.web.dir.real}}/META-INF"/>
-                <manifest file="${{build.web.dir.real}}/META-INF/MANIFEST.MF" mode="update">
+                <mkdir dir="${{build.web.dir}}/META-INF"/>
+                <manifest file="${{build.web.dir}}/META-INF/MANIFEST.MF" mode="update">
                     <xsl:if test="//webproject3:web-module-libraries/webproject3:library[webproject3:path-in-war]">
                         <attribute>
                             <xsl:attribute name="name">Class-Path</xsl:attribute>
@@ -1127,12 +1126,12 @@ introduced by support for multiple source roots. -jglick
                         <xsl:if test="(@files &gt; 1) or (@files &gt; 0 and (@dirs &gt; 0))">
                             <xsl:call-template name="copyIterateFiles">
                                 <xsl:with-param name="files" select="@files"/>
-                                <xsl:with-param name="target" select="concat('${build.web.dir.real}/',$copyto)"/>
+                                <xsl:with-param name="target" select="concat('${build.web.dir}/',$copyto)"/>
                                 <xsl:with-param name="libfile" select="webproject3:file"/>
                             </xsl:call-template>
                         </xsl:if>
                         <xsl:if test="@files = 1 and (@dirs = 0 or not(@dirs))">
-                            <xsl:variable name="target" select="concat('${build.web.dir.real}/',$copyto)"/>
+                            <xsl:variable name="target" select="concat('${build.web.dir}/',$copyto)"/>
                             <xsl:variable name="libfile" select="webproject3:file"/>
                             <copy file="{$libfile}" todir="{$target}"/>
                         </xsl:if>
@@ -1141,12 +1140,12 @@ introduced by support for multiple source roots. -jglick
                         <xsl:if test="(@dirs &gt; 1) or (@files &gt; 0 and (@dirs &gt; 0))">
                             <xsl:call-template name="copyIterateDirs">
                                 <xsl:with-param name="files" select="@dirs"/>
-                                <xsl:with-param name="target" select="concat('${build.web.dir.real}/','WEB-INF/classes')"/>
+                                <xsl:with-param name="target" select="concat('${build.web.dir}/','WEB-INF/classes')"/>
                                 <xsl:with-param name="libfile" select="webproject3:file"/>
                             </xsl:call-template>
                         </xsl:if>
                         <xsl:if test="@dirs = 1 and (@files = 0 or not(@files))">
-                            <xsl:variable name="target" select="concat('${build.web.dir.real}/','WEB-INF/classes')"/>
+                            <xsl:variable name="target" select="concat('${build.web.dir}/','WEB-INF/classes')"/>
                             <xsl:variable name="libfile" select="webproject3:file"/>
                             <copy todir="{$target}">
                                 <fileset dir="{$libfile}" includes="**/*"/>
@@ -1161,12 +1160,12 @@ introduced by support for multiple source roots. -jglick
                         <xsl:if test="(@files &gt; 1) or (@files &gt; 0 and (@dirs &gt; 0))">
                             <xsl:call-template name="copyIterateFiles">
                                 <xsl:with-param name="files" select="@files"/>
-                                <xsl:with-param name="target" select="concat('${build.web.dir.real}/',$copyto)"/>
+                                <xsl:with-param name="target" select="concat('${build.web.dir}/',$copyto)"/>
                                 <xsl:with-param name="libfile" select="webproject3:file"/>
                             </xsl:call-template>
                         </xsl:if>
                         <xsl:if test="@files = 1 and (@dirs = 0 or not(@dirs))">
-                            <xsl:variable name="target" select="concat('${build.web.dir.real}/',$copyto)"/>
+                            <xsl:variable name="target" select="concat('${build.web.dir}/',$copyto)"/>
                             <xsl:variable name="libfile" select="webproject3:file"/>
                             <copy file="{$libfile}" todir="{$target}"/>
                         </xsl:if>
@@ -1175,12 +1174,12 @@ introduced by support for multiple source roots. -jglick
                         <xsl:if test="(@dirs &gt; 1) or (@files &gt; 0 and (@dirs &gt; 0))">
                             <xsl:call-template name="copyIterateDirs">
                                 <xsl:with-param name="files" select="@dirs"/>
-                                <xsl:with-param name="target" select="concat('${build.web.dir.real}/',$copyto)"/>
+                                <xsl:with-param name="target" select="concat('${build.web.dir}/',$copyto)"/>
                                 <xsl:with-param name="libfile" select="webproject3:file"/>
                             </xsl:call-template>
                         </xsl:if>
                         <xsl:if test="@dirs = 1 and (@files = 0 or not(@files))">
-                            <xsl:variable name="target" select="concat('${build.web.dir.real}/',$copyto)"/>
+                            <xsl:variable name="target" select="concat('${build.web.dir}/',$copyto)"/>
                             <xsl:variable name="libfile" select="webproject3:file"/>
                             <copy todir="{$target}">
                                 <fileset dir="{$libfile}" includes="**/*"/>
@@ -1194,8 +1193,8 @@ introduced by support for multiple source roots. -jglick
                 <xsl:attribute name="depends">init,compile,compile-jsps,-pre-dist,library-inclusion-in-manifest</xsl:attribute>
                 <dirname property="dist.jar.dir" file="${{dist.ear.war}}"/>
                 <mkdir dir="${{dist.jar.dir}}"/>
-                <jar jarfile="${{dist.ear.war}}" compress="${{jar.compress}}" manifest="${{build.web.dir.real}}/META-INF/MANIFEST.MF">
-                    <fileset dir="${{build.web.dir.real}}"/>
+                <jar jarfile="${{dist.ear.war}}" compress="${{jar.compress}}" manifest="${{build.web.dir}}/META-INF/MANIFEST.MF">
+                    <fileset dir="${{build.web.dir}}"/>
                 </jar>
             </target>
             
@@ -1701,10 +1700,10 @@ introduced by support for multiple source roots. -jglick
             <target name="do-clean">
                 <xsl:attribute name="depends">init</xsl:attribute>
                 
-                <condition value="${{build.web.dir.real}}" property="build.dir.to.clean">
+                <condition value="${{build.web.dir}}" property="build.dir.to.clean">
                     <isset property="dist.ear.dir"/>
                 </condition>
-                <property value="${{build.web.dir.real}}" name="build.dir.to.clean"/>
+                <property value="${{build.web.dir}}" name="build.dir.to.clean"/>
                 
                 <delete includeEmptyDirs="true" quiet="true">
                     <fileset dir="${{build.dir.to.clean}}/WEB-INF/lib"/>
@@ -1715,7 +1714,7 @@ introduced by support for multiple source roots. -jglick
                 <!-- XXX explicitly delete all build.* and dist.* dirs in case they are not subdirs -->
                 <!--
                 <delete dir="${{build.generated.dir}}"/>
-                <delete dir="${{build.web.dir.real}}"/>
+                <delete dir="${{build.web.dir}}"/>
                 -->
             </target>
             
@@ -1726,13 +1725,13 @@ introduced by support for multiple source roots. -jglick
                 When undeploy is implemented it should be optional:
                 <xsl:attribute name="unless">clean.check.skip</xsl:attribute>
                 -->
-                <echo message="Warning: unable to delete some files in ${{build.web.dir.real}}/WEB-INF/lib - they are probably locked by the J2EE server. " />
+                <echo message="Warning: unable to delete some files in ${{build.web.dir}}/WEB-INF/lib - they are probably locked by the J2EE server. " />
                 <echo level="info" message="To delete all files undeploy the module from Server Registry in Runtime tab and then use Clean again."/>
                 <!--
                 Here comes the undeploy code when supported by nbdeploy task:
                 <nbdeploy undeploy="true" clientUrlPart="${client.urlPart}"/>
                 And then another attempt to delete:
-                <delete dir="${{build.web.dir.real}}/WEB-INF/lib"/>
+                <delete dir="${{build.web.dir}}/WEB-INF/lib"/>
                 -->
             </target>
             
@@ -1780,14 +1779,14 @@ introduced by support for multiple source roots. -jglick
         <dirname property="dist.jar.dir" file="${{dist.war}}"/>
         <mkdir dir="${{dist.jar.dir}}"/>
         <jar jarfile="${{dist.war}}" compress="${{jar.compress}}">
-            <fileset dir="${{build.web.dir.real}}"/>
+            <fileset dir="${{build.web.dir}}"/>
         </jar>
     </xsl:template>
     <xsl:template name="distWithCustomManifest">
         <dirname property="dist.jar.dir" file="${{dist.war}}"/>
         <mkdir dir="${{dist.jar.dir}}"/>
         <jar manifest="${{build.meta.inf.dir}}/MANIFEST.MF" jarfile="${{dist.war}}" compress="${{jar.compress}}">
-            <fileset dir="${{build.web.dir.real}}"/>
+            <fileset dir="${{build.web.dir}}"/>
         </jar>
     </xsl:template>
     

@@ -305,8 +305,6 @@ public class UpdateHelper {
                 "${run.test.classpath}", // NOI18N
             });
             
-            props.put(WebProjectProperties.BUILD_EAR_CLASSES_DIR, "${build.ear.web.dir}/WEB-INF/classes");
-            props.put(WebProjectProperties.BUILD_EAR_WEB_DIR, "${build.dir}/war");
             props.put(WebProjectProperties.WAR_EAR_NAME, props.getProperty(WebProjectProperties.WAR_NAME));
             props.put(WebProjectProperties.DIST_WAR_EAR, "${dist.dir}/${war.ear.name}");
             

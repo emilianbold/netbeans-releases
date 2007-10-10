@@ -646,17 +646,15 @@ public class WebProjectUtilities {
         ep.setProperty(WebProjectProperties.BUILD_TEST_CLASSES_DIR, "${build.dir}/test/classes"); // NOI18N
         ep.setProperty(WebProjectProperties.BUILD_TEST_RESULTS_DIR, "${build.dir}/test/results"); // NOI18N
         ep.setProperty(WebProjectProperties.BUILD_WEB_DIR, "${"+WebProjectProperties.BUILD_DIR+"}/web"); // NOI18N
-        ep.setProperty(WebProjectProperties.BUILD_EAR_WEB_DIR, "${"+WebProjectProperties.BUILD_DIR+"}/web"); // NOI18N
         ep.setProperty(WebProjectProperties.BUILD_GENERATED_DIR, "${"+WebProjectProperties.BUILD_DIR+"}/generated"); // NOI18N
         ep.setProperty(WebProjectProperties.BUILD_CLASSES_DIR, "${"+WebProjectProperties.BUILD_WEB_DIR+"}/WEB-INF/classes"); // NOI18N
-        ep.setProperty(WebProjectProperties.BUILD_EAR_CLASSES_DIR, "${"+WebProjectProperties.BUILD_EAR_WEB_DIR+"}/WEB-INF/classes"); // NOI18N
         ep.setProperty(WebProjectProperties.BUILD_CLASSES_EXCLUDES, "**/*.java,**/*.form"); // NOI18N
         ep.setProperty(WebProjectProperties.BUILD_WEB_EXCLUDES, "${"+ WebProjectProperties.BUILD_CLASSES_EXCLUDES +"}"); //NOI18N
         ep.setProperty(WebProjectProperties.DIST_JAVADOC_DIR, "${"+WebProjectProperties.DIST_DIR+"}/javadoc"); // NOI18N
         ep.setProperty(WebProjectProperties.NO_DEPENDENCIES, "false"); // NOI18N
         ep.setProperty(WebProjectProperties.JAVA_PLATFORM, "default_platform"); // NOI18N
-        // #113297
-        ep.setProperty(WebProjectProperties.DEBUG_CLASSPATH, "${build.classes.dir.real}:${"+WebProjectProperties.JAVAC_CLASSPATH+"}:${"+WebProjectProperties.J2EE_PLATFORM_CLASSPATH+"}"); // NOI18N
+        // #113297, #118187
+        ep.setProperty(WebProjectProperties.DEBUG_CLASSPATH, Utils.getDefaultDebugClassPath());
         
         ep.setProperty("runmain.jvmargs", ""); // NOI18N
         ep.setComment("runmain.jvmargs", new String[] { // NOI18N

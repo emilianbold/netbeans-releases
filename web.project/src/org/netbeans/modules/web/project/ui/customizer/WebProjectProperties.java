@@ -150,10 +150,8 @@ public class WebProjectProperties {
     public static final String WEBINF_DIR = "webinf.dir"; //NOI18N
     public static final String BUILD_DIR = "build.dir"; //NOI18N
     public static final String BUILD_WEB_DIR = "build.web.dir"; //NOI18N
-    public static final String BUILD_EAR_WEB_DIR = "build.ear.web.dir"; //NOI18N
     public static final String BUILD_GENERATED_DIR = "build.generated.dir"; //NOI18N
     public static final String BUILD_CLASSES_DIR = "build.classes.dir"; //NOI18N
-    public static final String BUILD_EAR_CLASSES_DIR = "build.ear.classes.dir"; //NOI18N
     public static final String BUILD_CLASSES_EXCLUDES = "build.classes.excludes"; //NOI18N
     public static final String BUILD_WEB_EXCLUDES = "build.web.excludes"; //NOI18N
     public static final String DIST_JAVADOC_DIR = "dist.javadoc.dir"; //NOI18N

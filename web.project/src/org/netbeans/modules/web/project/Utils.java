@@ -54,6 +54,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 
 public class Utils {
 
@@ -132,6 +133,69 @@ public class Utils {
      */
     public static JavaPlatform findJavaPlatform(String platformName) {
         return findJavaPlatform(platformName, null);
+    }
+    
+    /**
+     * Get the default value of the <tt>debug.classpath</tt> property.
+     * @return the default value of the <tt>debug.classpath</tt> property.
+     */
+    public static String getDefaultDebugClassPath() {
+        return "${"+WebProjectProperties.BUILD_CLASSES_DIR+"}:${"+WebProjectProperties.JAVAC_CLASSPATH+"}:${"+WebProjectProperties.J2EE_PLATFORM_CLASSPATH+"}"; // NOI18N
+    }
+    
+    /**
+     * Correct given classpath, that means remove obsolete properties, add missing ones etc.
+     * If the given parameter is <code>null</code> or empty, the default debug classpath is returned.
+     * @return corrected classpath, never <code>null</code>.
+     * @see #getDefaultClassPath()
+     */
+    public static String correctDebugClassPath(String debugClassPath) {
+
+        String correctValue = null;
+        if (debugClassPath == null || debugClassPath.length() == 0) {
+            // should not happend
+            correctValue = Utils.getDefaultDebugClassPath();
+        } else {
+
+            // "invalid" strings
+            final String buildEarWebDir = "${build.ear.web.dir}"; // NOI18N
+            final String buildEarClassesDir = "${build.ear.classes.dir}"; // NOI18N
+            final String buildEarPrefix = "${build.ear."; // NOI18N
+            
+            StringBuilder buffer = null;
+            // do we need to correct classpath?
+            if (debugClassPath.contains(buildEarPrefix)) {  // NOI18N
+                
+                buffer = new StringBuilder(200);
+                for (String token : PropertyUtils.tokenizePath(debugClassPath)) {
+                    if (buildEarWebDir.equals(token)
+                            || buildEarClassesDir.equals(token)) {
+                        // NB 5.5.x - obsolete properties -do nothing
+                    } else {
+                        // leave the current token
+                        buffer.append(token);
+                        buffer.append(":"); // NOI18N
+                    }
+                }
+            } else {
+                // classpath is ok
+                buffer = new StringBuilder(debugClassPath);
+                // just to be sure that the classpath ends with colon in every case - see next
+                buffer.append(":");
+            }
+            
+            final String platform = "${" + WebProjectProperties.J2EE_PLATFORM_CLASSPATH + "}"; // NOI18N
+            if (!buffer.toString().contains(platform)) {
+                buffer.append(platform);
+            }
+
+            // check the last character (here could be ';' as well but I take care only of "my" colons, see tokenizing above)
+            correctValue = buffer.toString();
+            if (correctValue.endsWith(":")) { //NOI18N
+                correctValue = correctValue.substring(0, correctValue.length() - 1);
+            }
+        }
+        return correctValue;
     }
 
     private static JavaPlatform findJavaPlatform(String platformName, String specFilter) {

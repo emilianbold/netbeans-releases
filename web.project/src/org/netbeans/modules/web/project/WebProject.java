@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.web.project;
 
+import com.sun.org.apache.xerces.internal.impl.xs.SubstitutionGroupHandler;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -134,6 +135,7 @@ import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesSupportFactory;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -855,33 +857,14 @@ public final class WebProject implements Project, AntProjectListener, FileChange
             updateHelper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
 
             // update a dual build directory project to use a single directory
-            String earBuildDir = props.getProperty(WebProjectProperties.BUILD_EAR_WEB_DIR);
-            if (null != earBuildDir) {
-                // there is an BUILD_EAR_WEB_DIR property... we may
-                //  need to change its value
-                String buildDir = props.getProperty(WebProjectProperties.BUILD_WEB_DIR);
-                if (null != buildDir) {
-                    // there is a value that we may need to change the
-                    // BUILD_EAR_WEB_DIR property value to match.
-                    if (!buildDir.equals(earBuildDir)) {
-                        // the values do not match... update the property
-                        props.setProperty(WebProjectProperties.BUILD_EAR_WEB_DIR,
-                                buildDir);
-                    }
-                    // else {
-                    //   the values match and we don't need to do anything
-                    // }
-                }
-                // else {
-                //   the project doesn't have a BUILD_WEB_DIR property
-                //   ** This is not an expected state, but if the project
-                //      properties evolve, this property may go away...
-                // }
+            if (updateHelper.isCurrent()) { // #113297, #118187
+                // this operation should be safe in future as well - of course if properties with the same name weren't re-introduced
+                props.remove("build.ear.web.dir");      // used to be WebProjectProperties.BUILD_EAR_WEB_DIR    // NOI18N
+                props.remove("build.ear.classes.dir");  // used to be WebProjectProperties.BUILD_EAR_CLASSES_DIR    // NOI18N
             }
-            // else {
-            //   there isn't a BUILD_EAR_WEB_DIR in this project...
-            //     so we should not create one, by setting it.
-            // }
+            // check debug.classpath - can be done every time, whenever
+            String debugClassPath = props.getProperty(WebProjectProperties.DEBUG_CLASSPATH);
+            props.setProperty(WebProjectProperties.DEBUG_CLASSPATH, Utils.correctDebugClassPath(debugClassPath));
 
             updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
 
