@@ -72,6 +72,10 @@ public final class AddToPaletteWizardAction extends CallableSystemAction {
 
     public void performAction() {
         DesignDocument document = ActiveDocumentSupport.getDefault ().getActiveDocument ();
+        if (document == null) {
+            return;
+        }
+        
         if (! MidpDocumentSupport.PROJECT_TYPE_MIDP.equals (document.getDocumentInterface ().getProjectType ()))
             return;
 
