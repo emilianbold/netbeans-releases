@@ -351,11 +351,16 @@ public class CCSyntax extends Syntax {
                 break;
 
             case ISA_INCLUDE:
-                if (!(isSpaceChar(actChar) || actChar == '"' || actChar == '<')) {
+                if (isSpaceChar(actChar)) {
+                    state = ISA_INCLUDE_A_WS;
+                } else if (actChar == '"') {
+                    state = ISI_USR_INCLUDE;
+                } else if (actChar == '<') {
+                    state = ISI_SYS_INCLUDE;
+                } else {
                     state = INIT;
-                    return CCTokenContext.CPPINCLUDE;                                        
-                }                 
-                state = ISA_INCLUDE_A_WS; 
+                    offset--;                                    
+                } 
                 break;
                 
             case ISA_INCLUDE_A_WS:
