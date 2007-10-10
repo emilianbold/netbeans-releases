@@ -243,6 +243,8 @@ class DropTargetLayer extends JComponent {
         g2.drawRect(mblocation.x+2, mblocation.y+2, mb.getHeight()-4, mb.getHeight()-4);
     }
     private void drawSelectedComponent(Graphics2D g2, JComponent selected, RADComponent rad) {
+        if(selected == null) return;
+        if(selected.getParent() == null || !selected.getParent().isVisible()) return;
         // draw normal border around toplevel menus
         if (selected instanceof JMenu && selected.getParent() instanceof JMenuBar) {
             JMenuItem menu = (JMenuItem) selected;
