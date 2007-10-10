@@ -800,9 +800,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         }
     }
     
-    static boolean ensureAttributeValue(URL root, String attributeName, String attributeValue, boolean markDirty) throws IOException {
+    static boolean ensureAttributeValue(final URL root, final String attributeName, final String attributeValue, final boolean markDirty) throws IOException {
         Properties p = loadProperties(root);
-        String current = p.getProperty(attributeName);
+        final String current = p.getProperty(attributeName);
         
         if (   (attributeValue != null && attributeValue.equals(current))
             || (attributeValue == null && current == null))
@@ -819,7 +819,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         }
         
         storeProperties(root, p);
-        
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.fine ("ensureAttributeValue attr: " + attributeName + " current: " +current+ " new: " + attributeValue+" markDirty: "+markDirty);
+        }
         return true;
     }
     
@@ -1549,6 +1551,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         }
         
         private void parseFiles(URL root, boolean isInitialCompilation, Iterable<File> children, boolean clean, ProgressHandle handle, JavaFileFilterImplementation filter, Map<String,List<File>> resources, Set<File> compiledFiles, Set<File> toRecompile) throws IOException {
+            LOGGER.fine("parseFiles: " + root);            
             final FileObject rootFo = URLMapper.findFileObject(root);
             if (rootFo == null) {
                 return;
@@ -1592,6 +1595,8 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             } else {
                 cpInfo = ClasspathInfoAccessor.INSTANCE.create(bootPath,compilePath,sourcePath,filter,true,true);
             }
+            
+            LOGGER.fine("Initial value of clean: "+clean);
             
             if (isInitialCompilation) {
                 if (getAttribute(root, DIRTY_ROOT, null) != null) { //always do a clean rebuild if root dirty
