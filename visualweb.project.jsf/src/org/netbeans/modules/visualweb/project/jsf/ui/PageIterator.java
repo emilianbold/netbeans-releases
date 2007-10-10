@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.visualweb.project.jsf.ui;
 
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectConstants;
@@ -81,6 +80,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.*;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /** A template wizard iterator for new JSF page action
@@ -88,14 +88,14 @@ import org.openide.util.NbBundle;
  * @author Po-Ting Wu
  */
 public class PageIterator implements TemplateWizard.Iterator {
-    private static final long serialVersionUID = 1L;
 
+    private static final long serialVersionUID = 1L;
     public static final String FILETYPE_WEBFORM = "WebForm";
     public static final String FILETYPE_BEAN = "Bean";
-
     private String fileType;
     private int index;
-
+    private boolean usePageLayout = false;
+    PageLayoutChooserPanel pageLayoutChooserPanel = new PageLayoutChooserPanel();
     private transient WizardDescriptor.Panel[] panels;
 
     public static PageIterator createWebFormIterator() {
@@ -110,31 +110,42 @@ public class PageIterator implements TemplateWizard.Iterator {
         this.fileType = fileType;
     }
 
-    public void initialize (TemplateWizard wizard) {
+    public void initialize(TemplateWizard wizard) {
         index = 0;
         // obtaining target folder
-        Project project = Templates.getProject( wizard );
+        Project project = Templates.getProject(wizard);
         SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
 
         WizardDescriptor.Panel packagePanel = new PagebeanPackagePanel(project);
         WizardDescriptor.Panel javaPanel = new SimpleTargetChooserPanel(project, sourceGroups, packagePanel, false, fileType);
-        panels = new WizardDescriptor.Panel[] { javaPanel };
+        String templateType = Templates.getTemplate(wizard).getExt();
+
+        boolean templatesAvailable = pageLayoutChooserPanel.isPageLayoutsAvailable();
+        if (fileType.equals(FILETYPE_WEBFORM) && (!"jspf".equals(templateType)) && (J2eeModule.JAVA_EE_5.equals(JsfProjectUtils.getJ2eePlatformVersion(project))) && templatesAvailable) {
+            usePageLayout = true;
+        }
+
+        if (usePageLayout) {
+            panels = new WizardDescriptor.Panel[]{javaPanel, pageLayoutChooserPanel};
+        } else {
+            panels = new WizardDescriptor.Panel[]{javaPanel};
+        }
 
         // Creating steps.
-        Object prop = wizard.getProperty ("WizardPanel_contentData"); // NOI18N
+        Object prop = wizard.getProperty("WizardPanel_contentData"); // NOI18N
         String[] beforeSteps = null;
         if (prop != null && prop instanceof String[]) {
-            beforeSteps = (String[])prop;
+            beforeSteps = (String[]) prop;
         }
-        String[] steps = createSteps (beforeSteps, panels);
+        String[] steps = createSteps(beforeSteps, panels);
 
         for (int i = 0; i < panels.length; i++) {
-            JComponent jc = (JComponent)panels[i].getComponent ();
+            JComponent jc = (JComponent) panels[i].getComponent();
             if (steps[i] == null) {
-                steps[i] = jc.getName ();
+                steps[i] = jc.getName();
             }
-            jc.putClientProperty ("WizardPanel_contentSelectedIndex", new Integer (i)); // NOI18N
-            jc.putClientProperty ("WizardPanel_contentData", steps); // NOI18N
+            jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i)); // NOI18N
+            jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
         }
 
         // no support for non-web project
@@ -160,8 +171,7 @@ public class PageIterator implements TemplateWizard.Iterator {
             String prefix = "jsp".equals(ext) ? "Page" : "Fragment"; // NOI18N
             for (int pageIndex = 1;; pageIndex++) {
                 String name = prefix + pageIndex;
-                if ((jspDir.getFileObject(name + "." + ext) == null) &&
-                    ((javaDir == null) || (javaDir.getFileObject(name + ".java") == null))) { // NOI18N
+                if ((jspDir.getFileObject(name + "." + ext) == null) && ((javaDir == null) || (javaDir.getFileObject(name + ".java") == null))) { // NOI18N
                     wizard.setTargetName(name);
                     return;
                 }
@@ -191,11 +201,11 @@ public class PageIterator implements TemplateWizard.Iterator {
             }
         }
     }
-    
-    public void uninitialize (TemplateWizard wizard) {
+
+    public void uninitialize(TemplateWizard wizard) {
         panels = null;
     }
-    
+
     public Set instantiate(TemplateWizard wizard) throws IOException/*, IllegalStateException*/ {
         // Here is the default plain behavior. Simply takes the selected
         // template (you need to have included the standard second panel
@@ -210,7 +220,13 @@ public class PageIterator implements TemplateWizard.Iterator {
         FileObject template = Templates.getTemplate(wizard);
         Project project = Templates.getProject(wizard);
 
-        DataObject dTemplate = DataObject.find(template);                
+        if (J2eeModule.JAVA_EE_5.equals(JsfProjectUtils.getJ2eePlatformVersion(project)) && usePageLayout) {
+            PageLayoutData selectedTemplate = pageLayoutChooserPanel.getSelectedPageLayout();
+            selectedTemplate.copyResources(JsfProjectUtils.getResourcesDirectory(project));
+            template = selectedTemplate.getFileObject();
+        }
+
+        DataObject dTemplate = DataObject.find(template);
         String targetName = Templates.getTargetName(wizard);
         Set result = Collections.EMPTY_SET;
 
@@ -238,7 +254,7 @@ public class PageIterator implements TemplateWizard.Iterator {
                     WebModuleExtender extender = framework.createWebModuleExtender(webModule, ExtenderController.create());
                     result = extender.extend(webModule);
 
-                    if (dir.getFileObject(targetName+"."+template.getExt()) != null) { // NOI18N
+                    if (dir.getFileObject(targetName + "." + template.getExt()) != null) { // NOI18N
                         return result;
                     }
                 }
@@ -271,12 +287,11 @@ public class PageIterator implements TemplateWizard.Iterator {
                     templateParameters.put("folder", folder); //NOI18N
 
                 }
-                
+
                 obj = dTemplate.createFromTemplate(df, targetName, templateParameters);
             }
-        } catch(org.netbeans.modules.visualweb.project.jsf.api.JsfDataObjectException jsfe) {
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                NbBundle.getMessage(PageIterator.class, "TXT_CantCreatePage", df.getName())));
+        } catch (org.netbeans.modules.visualweb.project.jsf.api.JsfDataObjectException jsfe) {
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(PageIterator.class, "TXT_CantCreatePage", df.getName())));
             return result;
         }
 
@@ -287,13 +302,13 @@ public class PageIterator implements TemplateWizard.Iterator {
         }
 
         // Open the new document
-        OpenCookie open = (OpenCookie)obj.getCookie(OpenCookie.class);
+        OpenCookie open = (OpenCookie) obj.getCookie(OpenCookie.class);
         if (open != null) {
             open.open();
         }
         return result;
     }
-    
+
     private void setStartPage(Project project, WebModule webModule, FileObject targetFolder, String targetName) {
         String startPage = targetName + ".jsp";
         FileObject webFolder = webModule.getDocumentBase();
@@ -307,50 +322,55 @@ public class PageIterator implements TemplateWizard.Iterator {
         JsfProjectUtils.createProjectProperty(project, JsfProjectConstants.PROP_START_PAGE, startPage);
     }
 
-    public void previousPanel () {
-        if (! hasPrevious ()) throw new NoSuchElementException ();
+    public void previousPanel() {
+        if (!hasPrevious())
+            throw new NoSuchElementException();
         index--;
     }
-    
-    public void nextPanel () {
-        if (! hasNext ()) throw new NoSuchElementException ();
+
+    public void nextPanel() {
+        if (!hasNext())
+            throw new NoSuchElementException();
         index++;
     }
-    
-    public boolean hasPrevious () {
+
+    public boolean hasPrevious() {
         return index > 0;
     }
-    
-    public boolean hasNext () {
+
+    public boolean hasNext() {
         return index < panels.length - 1;
     }
-    
+
     public String name() {
-        return NbBundle.getMessage(PageIterator.class, "TITLE_x_of_y",
-        new Integer(index + 1), new Integer(panels.length));
+        return NbBundle.getMessage(PageIterator.class, "TITLE_x_of_y", new Integer(index + 1), new Integer(panels.length));
     }
-    
+
     public WizardDescriptor.Panel current() {
         return panels[index];
     }
-    
+
     // If nothing unusual changes in the middle of the wizard, simply:
-    public final void addChangeListener(ChangeListener l) {}
-    public final void removeChangeListener(ChangeListener l) {}
+
+    public final void addChangeListener(ChangeListener l) {
+    }
+
+    public final void removeChangeListener(ChangeListener l) {
+    }
 
     private String[] createSteps(String[] before, WizardDescriptor.Panel[] panels) {
         int diff = 0;
         if (before == null) {
             before = new String[0];
         } else if (before.length > 0) {
-            diff = ("...".equals (before[before.length - 1])) ? 1 : 0; // NOI18N
+            diff = ("...".equals(before[before.length - 1])) ? 1 : 0; // NOI18N
         }
-        String[] res = new String[ (before.length - diff) + panels.length];
+        String[] res = new String[(before.length - diff) + panels.length];
         for (int i = 0; i < res.length; i++) {
             if (i < (before.length - diff)) {
                 res[i] = before[i];
             } else {
-                res[i] = panels[i - before.length + diff].getComponent ().getName ();
+                res[i] = panels[i - before.length + diff].getComponent().getName();
             }
         }
         return res;
