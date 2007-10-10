@@ -68,6 +68,7 @@ import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.MultiFileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 
@@ -384,7 +385,7 @@ implements LookupListener {
     }
     
     /** Refresh layers */
-    public void resultChanged(org.openide.util.LookupEvent ev) {
+    public void resultChanged(LookupEvent ev) {
         setDelegates(appendLayers(writableLayer, addLookup, otherLayers, cacheLayer));
     }
     
@@ -440,16 +441,15 @@ implements LookupListener {
             StringBuilder buf = new StringBuilder();
             buf.append(managerName);
             buf.append('\n');
-            Iterator<URL> it = urls.iterator();
             int i = 0;
-            while (it.hasNext()) {
+            for (URL url : urls) {
                 long t = times[i++];
                 if (t == 0L) {
                     buf.append("<file not found>"); // NOI18N
                 } else {
                     buf.append(new Date(t));
                 }
-                buf.append('\t').append(it.next()).append('\n');
+                buf.append('\t').append(url).append('\n');
             }
             return buf.toString();
         }
