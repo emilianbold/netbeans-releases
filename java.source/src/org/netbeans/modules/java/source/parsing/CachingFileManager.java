@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.java.source.parsing;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -53,16 +55,18 @@ import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
+import org.netbeans.modules.java.source.classpath.CacheClassPath;
 import org.netbeans.modules.java.source.util.Iterators;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.WeakListeners;
 
 
 /** Implementation of file manager for given classpath.
  *
  * @author Petr Hrebejk
  */
-public class CachingFileManager implements JavaFileManager {
+public class CachingFileManager implements JavaFileManager, PropertyChangeListener {
     
     protected final CachingArchiveProvider provider;
     protected final JavaFileFilterImplementation filter;
@@ -79,6 +83,9 @@ public class CachingFileManager implements JavaFileManager {
     public CachingFileManager( CachingArchiveProvider provider, final ClassPath cp, final JavaFileFilterImplementation filter, boolean cacheFile, boolean ignoreExcludes) {
         this.provider = provider;
         this.cp = cp;
+        if (CacheClassPath.KEEP_JARS) {
+            cp.addPropertyChangeListener(WeakListeners.propertyChange(this, cp));
+        }
         this.cacheFile = cacheFile;
         this.filter = filter;
         this.ignoreExcludes = ignoreExcludes;
@@ -232,5 +239,11 @@ public class CachingFileManager implements JavaFileManager {
         return fileObject instanceof FileObjects.FileBase 
                && fileObject0 instanceof FileObjects.FileBase 
                && ((FileObjects.FileBase)fileObject).getFile().equals(((FileObjects.FileBase)fileObject).getFile());
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (ClassPath.PROP_ROOTS.equals(evt.getPropertyName())) {
+            provider.clear();
+        }
     }
 }

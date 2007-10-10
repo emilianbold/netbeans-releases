@@ -69,6 +69,8 @@ import org.openide.util.WeakListeners;
  */
 public class CacheClassPath implements ClassPathImplementation, PropertyChangeListener {
     
+    public static final boolean KEEP_JARS = Boolean.getBoolean("CacheClassPath.keepJars");     //NOI18N
+    
     private final ClassPath cp;    
     private final boolean translate;
     private final PropertyChangeSupport listeners;
@@ -133,6 +135,9 @@ public class CacheClassPath implements ClassPathImplementation, PropertyChangeLi
                     } catch (IOException ioe) {
                         ErrorManager.getDefault().notify(ioe);
                     }
+                }
+                if (KEEP_JARS && translate) {
+                    _cache.add(ClassPathSupport.createResource(url));
                 }
             } else {
                 if (FileObjects.JAR.equals(url.getProtocol())) {

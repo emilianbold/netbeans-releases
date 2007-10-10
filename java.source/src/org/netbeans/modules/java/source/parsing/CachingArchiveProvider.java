@@ -181,5 +181,8 @@ public class CachingArchiveProvider {
         }
     }
             
+    void clear() {
+        archives.clear();
+    }
           
 }
