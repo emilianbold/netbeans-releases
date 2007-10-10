@@ -320,7 +320,7 @@ public class MercurialAnnotator extends VCSAnnotator {
 
         List<Action> actions = new ArrayList<Action>(INITIAL_ACTION_ARRAY_LENGTH);
         if (goodVersion && destination == VCSAnnotator.ActionDestination.MainMenu) {
-            actions.add(new CreateAction(loc.getString("CTL_PopupMenuItem_Create"), ctx)); // NOI18N
+            actions.add(new CreateAction(loc.getString("CTL_MenuItem_Create"), ctx)); // NOI18N
             actions.add(null);
             actions.add(new StatusAction(loc.getString("CTL_PopupMenuItem_Status"), ctx)); // NOI18N
             actions.add(new DiffAction(loc.getString("CTL_PopupMenuItem_Diff"), ctx)); // NOI18N
