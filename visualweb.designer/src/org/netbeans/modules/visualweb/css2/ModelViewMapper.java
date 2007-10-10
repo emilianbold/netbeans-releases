@@ -2828,7 +2828,11 @@ public final class ModelViewMapper {
             // XXX #113773 Fixing selecting of some element whose parent box 
             // is excluded from the hierarchy (suspicous architecture).
             Element element = box.getElement();
-            if (WebForm.getDomProviderService().isPrincipalElement(element, null)) {
+            // XXX #118287 Also pass the parent box to determine the principal element
+            // (the real one might be excluded from the tree)
+            CssBox parentBox = box.getParent();
+            Element parentElement = parentBox == null ? null : parentBox.getElement();
+            if (WebForm.getDomProviderService().isPrincipalElement(element, parentElement)) {
                 if (WebForm.getDomProviderService().isSpecialComponent(element)) {
                     continue;
                 }

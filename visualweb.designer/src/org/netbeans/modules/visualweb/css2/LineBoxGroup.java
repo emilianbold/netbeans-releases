@@ -1188,7 +1188,8 @@ public class LineBoxGroup extends ContainerBox {
                     // multiple separate segments for different live beans? If so
                     // I guess I should only join rectangles for -contiguous-
                     // sections of boxes
-                    if (hasComponentAncestor(leaf, componentRootElement)) {
+                    Element element = leaf == null ? null : leaf.getElement();
+                    if (isParentElementOf(componentRootElement, element) || hasComponentAncestor(leaf, componentRootElement)) {
                         // Yessss
                         Rectangle r =
                             new Rectangle(leaf.getAbsoluteX(), leaf.getAbsoluteY(),
@@ -1274,7 +1275,8 @@ public class LineBoxGroup extends ContainerBox {
                 for (int j = 0, m = lb.getBoxCount(); j < m; j++) {
                     CssBox leaf = lb.getBox(j);
 
-                    if (hasComponentAncestor(leaf, componentRootElement)) {
+                    Element element = leaf == null ? null : leaf.getElement();
+                    if (isParentElementOf(componentRootElement, element) || hasComponentAncestor(leaf, componentRootElement)) {
                         // Yessss
                         Rectangle r =
                             new Rectangle(leaf.getAbsoluteX(), leaf.getAbsoluteY(),
@@ -1336,6 +1338,22 @@ public class LineBoxGroup extends ContainerBox {
             leaf = leaf.getParent();
         }
 
+        return false;
+    }
+    
+    // XXX #118287 Also when the root box is not part of the tree (see also #107084).
+    private static boolean isParentElementOf(Element parentElement, Element element) {
+        if (parentElement == null || element == null) {
+            return false;
+        }
+        
+        Node node = element;
+        while (node != null) {
+            if (node == parentElement) {
+                return true;
+            }
+            node = node.getParentNode();
+        }
         return false;
     }
 
