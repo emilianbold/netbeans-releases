@@ -165,6 +165,7 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
     @Override
     public void addNotify() {
         updateLocationsSelection();
+        panelEnabler(!disableDalpManagementCheckBox.isSelected(), advancedOptionConfigPanel);
         startListening();
         super.addNotify();
     }    
@@ -396,13 +397,11 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
         hvgaCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         hvgaCheckBox.setNextFocusableComponent(vgaCheckBox);
 
-        vgaCheckBox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(vgaCheckBox, bundle.getString("LBL_VGA")); // NOI18N
         vgaCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         vgaCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         vgaCheckBox.setNextFocusableComponent(wvgaCheckBox);
 
-        wvgaCheckBox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(wvgaCheckBox, bundle.getString("LBL_WVGA")); // NOI18N
         wvgaCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         wvgaCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
@@ -479,7 +478,7 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
                     .add(jPanel2Layout.createSequentialGroup()
                         .add(installOtherSDRadioButton)
                         .add(6, 6, 6)
-                        .add(installLocationComboBox, 0, 135, Short.MAX_VALUE))
+                        .add(installLocationComboBox, 0, 131, Short.MAX_VALUE))
                     .add(installHDDRadioButton)
                     .add(installSDVMRadioButton))
                 .addContainerGap())
@@ -557,7 +556,7 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
                     .add(jPanel3Layout.createSequentialGroup()
                         .add(workingDirOtherSDRadioButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(workingDirComboBox, 0, 124, Short.MAX_VALUE)))
+                        .add(workingDirComboBox, 0, 120, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
@@ -607,7 +606,7 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
             .add(org.jdesktop.layout.GroupLayout.TRAILING, advancedOptionConfigPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(advancedOptionConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 496, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 488, Short.MAX_VALUE)
                     .add(jLabel15)
                     .add(jLabel22)
                     .add(jLabel28)
@@ -617,7 +616,7 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
                             .add(advancedOptionConfigPanelLayout.createSequentialGroup()
                                 .add(iconPathOrAbbrevLabel)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(abbrevationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 402, Short.MAX_VALUE))
+                                .add(abbrevationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 394, Short.MAX_VALUE))
                             .add(advancedOptionConfigPanelLayout.createSequentialGroup()
                                 .add(useAbbreviationCheckBox)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -632,8 +631,8 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
                             .add(advancedOptionConfigPanelLayout.createSequentialGroup()
                                 .add(dalpVersionTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 71, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                 .add(259, 259, 259))
-                            .add(codeBaseTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 375, Short.MAX_VALUE)))
-                    .add(startupArgumentsTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 496, Short.MAX_VALUE)
+                            .add(codeBaseTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 367, Short.MAX_VALUE)))
+                    .add(startupArgumentsTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 488, Short.MAX_VALUE)
                     .add(disableDalpManagementCheckBox))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -1077,6 +1076,15 @@ private void disableDalpManagementCheckBoxActionPerformed(java.awt.event.ActionE
             if (compArr[i] instanceof Container && ((Container)compArr[i]).getComponentCount() != 0){
                 panelEnabler(enable, ((Container)compArr[i]));
             }
+        }
+        
+        if (enable){
+            if (dalpSpecSDKJ1RadioButton.isSelected()) {
+                dalpSpecSDKJ1RadioButtonActionPerformed(null);
+            }
+            if (dalpSpecSDKJ2RadioButton.isSelected()) {
+                dalpSpecSDKJ2RadioButtonActionPerformed(null);
+            }            
         }
     }
 

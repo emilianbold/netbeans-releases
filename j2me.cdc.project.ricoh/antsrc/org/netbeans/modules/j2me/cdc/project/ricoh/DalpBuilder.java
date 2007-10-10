@@ -105,9 +105,9 @@ public class DalpBuilder extends Task {
             // we support just local installation
             {
                 String version = getProject().getProperty("application.version") != null ? "version=\"" + getProject().getProperty("application.version") + "\"" : "";
-                pw.println("    <jar href=\"./"   + getProject().getProperty("dist.jar") + 
-                                 "\" "  + version + 
-                                 "\" basepath=\"current\" main=\"true\" />");
+                pw.println("    <jar href=\"./"   + getProject().getProperty("dist.jar") + "\" "
+                                + version
+                                + " basepath=\"current\" main=\"true\" />");
             }
 
             addLibraries(pw);
