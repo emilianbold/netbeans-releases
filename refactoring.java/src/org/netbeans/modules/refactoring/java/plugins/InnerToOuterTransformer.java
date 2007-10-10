@@ -46,10 +46,9 @@ import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import javax.lang.model.element.*;
+import javax.lang.model.element.Modifier;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.SourceUtils;
@@ -114,7 +113,9 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
                     thisString = "this";
             
             }
-            rewrite(arg0,make.addNewClassArgument(arg0, make.Identifier(thisString)));
+            if (thisString!=null) {
+                rewrite(arg0,make.addNewClassArgument(arg0, make.Identifier(thisString)));
+            }
         }
         return super.visitNewClass(arg0, arg1);
     }
@@ -268,20 +269,18 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
     
     private ClassTree refactorInnerClass(ClassTree newInnerClass) {
         String referenceName = refactoring.getReferenceName();
+        VariableTree variable = null;
         if (referenceName != null) {
-            VariableTree variable = make.Variable(make.Modifiers(Collections.<Modifier>emptySet()), refactoring.getReferenceName(), make.Type(outer.asType()), null);
+            variable = make.Variable(make.Modifiers(Collections.<Modifier>emptySet()), refactoring.getReferenceName(), make.Type(outer.asType()), null);
             newInnerClass = GeneratorUtilities.get(workingCopy).insertClassMember(newInnerClass, variable);
-            Set <Modifier> mods = new HashSet(newInnerClass.getModifiers().getFlags());
-            mods.remove(Modifier.STATIC);
-            mods.remove(Modifier.PRIVATE);
-            newInnerClass = make.Class(
-                    make.Modifiers(mods, newInnerClass.getModifiers().getAnnotations()),
-                    newInnerClass.getSimpleName(),
-                    newInnerClass.getTypeParameters(),
-                    newInnerClass.getExtendsClause(),
-                    newInnerClass.getImplementsClause(),
-                    newInnerClass.getMembers());
+        }
+        
+        ModifiersTree modifiersTree = newInnerClass.getModifiers();
+        ModifiersTree newModifiersTree = make.removeModifiersModifier(modifiersTree, Modifier.PRIVATE);
+        newModifiersTree = make.removeModifiersModifier(newModifiersTree, Modifier.STATIC);
+        rewrite(modifiersTree, newModifiersTree);
 
+        if (referenceName != null) {
             for (Tree member:newInnerClass.getMembers()) {
                 if (member.getKind() == Tree.Kind.METHOD) {
                     MethodTree m = (MethodTree) member;
@@ -304,10 +303,4 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
         }
         return newInnerClass;
     }
-
-//    @Override
-//    public Tree visitMemberSelect(MemberSelectTree node, Element p) {
-//        updateUsageIfMatch(getCurrentPath(), node,p);
-//        return super.visitMemberSelect(node, p);
-//    }
 }
