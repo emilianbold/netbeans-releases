@@ -74,7 +74,7 @@ made subject to such option by the copyright holder.
     <folder name="Services">
         <folder name="JavaHelp">
             <file name="mercurial-helpset.xml" url="mercurial-helpset.xml">
-                <attr name="position" stringvalue="3004"/>
+                <attr name="position" intvalue="3004"/>
             </file>
         </folder>
     </folder>
