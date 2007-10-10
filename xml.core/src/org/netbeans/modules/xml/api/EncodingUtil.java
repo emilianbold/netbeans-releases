@@ -42,18 +42,18 @@ package org.netbeans.modules.xml.api;
 
 import java.io.*;
 import java.nio.charset.Charset;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.*;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Mutex;
-import org.openide.util.MutexException;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.xml.core.lib.EncodingHelper;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 /**
  * XML uses inband encoding detection - this class obtains it.
@@ -63,6 +63,7 @@ import org.openide.filesystems.FileObject;
  */
 public class EncodingUtil {
 
+    private static final Logger logger = Logger.getLogger(EncodingUtil.class.getName());
     /**
      * Detect input stream encoding.
      * The stream stays intact.
@@ -101,12 +102,16 @@ public class EncodingUtil {
      */
     public static String getProjectEncoding(FileObject file) {
         Project project = FileOwnerQuery.getOwner(file);
-        if(project == null)
+        if(project == null) {
+            logger.log(Level.INFO, NbBundle.getMessage(EncodingUtil.class, "Null_Project")); //NOI18N
             return "UTF-8"; //NOI18N
+        }
         FileEncodingQueryImplementation feq = project.getLookup().
                 lookup(FileEncodingQueryImplementation.class);
-        if(feq == null)
+        if(feq == null) {
+            logger.log(Level.INFO, NbBundle.getMessage(EncodingUtil.class, "Null_FEQ")); //NOI18N
             return "UTF-8"; //NOI18N
+        }
         return feq.getEncoding(file).name();
     }
     
