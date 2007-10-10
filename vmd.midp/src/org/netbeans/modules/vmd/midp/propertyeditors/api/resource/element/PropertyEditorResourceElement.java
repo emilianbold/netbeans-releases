@@ -47,6 +47,7 @@ import org.netbeans.modules.vmd.midp.components.general.ClassCode;
 import org.netbeans.modules.vmd.midp.components.resources.ResourceCD;
 import javax.swing.*;
 import java.util.*;
+import org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditorMessageAwareness;
 
 /**
  *
@@ -69,13 +70,19 @@ public abstract class PropertyEditorResourceElement extends JPanel {
     // List of Property Values
     public abstract List<String> getPropertyValueNames();
     
+    // support for post setValue() action
     public boolean isPostSetValueSupported(DesignComponent component) {
         return false;
     }
 
+    // support for post setValue() action
     public void postSetValue(DesignComponent parentComponent, DesignComponent childComponent) {
     }
 
+    // messageAwareness allows to show warning/error message in custom PropertyEditor
+    public void setPropertyEditorMessageAwareness(PropertyEditorMessageAwareness messageAwareness) {
+    }
+    
     // icon path
     public String getIconPath() {
         return ResourceCD.ICON_PATH;

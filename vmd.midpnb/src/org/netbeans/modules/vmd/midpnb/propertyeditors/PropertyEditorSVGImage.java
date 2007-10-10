@@ -79,8 +79,9 @@ public class PropertyEditorSVGImage extends PropertyEditorUserCode implements Pr
         Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(PropertyEditorSVGImage.class, "LBL_SVGIMAGE_STR")); // NOI18N;
         customEditor = new SVGImageEditorElement();
         customEditor.addPropertyEditorResourceElementListener(this);
+        customEditor.setPropertyEditorMessageAwareness(this);
     }
-
+    
     @Override
     public void customEditorOKButtonPressed() {
         super.customEditorOKButtonPressed();

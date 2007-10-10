@@ -105,6 +105,7 @@ public class PropertyEditorResource extends PropertyEditorUserCode implements Pr
         this.newComponentAsText = newComponentAsText;
         this.noneComponentAsText = noneComponentAsText;
         this.perElement = perElement;
+        perElement.setPropertyEditorMessageAwareness(this);
 
         createdComponents = new HashMap<String, DesignComponent>();
 

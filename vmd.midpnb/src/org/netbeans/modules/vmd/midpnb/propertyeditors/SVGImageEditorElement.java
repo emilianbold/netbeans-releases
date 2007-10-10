@@ -71,6 +71,7 @@ import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.PropertyEditorResourceElement;
+import org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditorMessageAwareness;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGImageCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGMenuCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.util.SVGUtils;
@@ -97,6 +98,7 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement impleme
     private Map<String, FileObject> paths;
     private final AtomicBoolean requiresModelUpdate = new AtomicBoolean(false);
     private DesignComponentWrapper wrapper;
+    private PropertyEditorMessageAwareness messageAwareness;
 
     public SVGImageEditorElement() {
         paths = new HashMap<String, FileObject>();
@@ -105,6 +107,11 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement impleme
         progressBar.setVisible(false);
         imageView = new SVGImageComponent();
         previewPanel.add(imageView, BorderLayout.CENTER);
+    }
+
+    @Override
+    public void setPropertyEditorMessageAwareness(PropertyEditorMessageAwareness messageAwareness) {
+        this.messageAwareness = messageAwareness;
     }
 
     public JComponent getJComponent() {
@@ -176,8 +183,7 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement impleme
         component.getDocument().getTransactionManager().readAccess(new Runnable() {
 
             public void run() {
-                retValue[0] = component.getDocument().getDescriptorRegistry().isInHierarchy(SVGMenuCD.TYPEID, component.getType()) &&
-                        component.readProperty(SVGMenuCD.PROP_ELEMENTS).getArray().size() == 0;
+                retValue[0] = component.getDocument().getDescriptorRegistry().isInHierarchy(SVGMenuCD.TYPEID, component.getType()) && component.readProperty(SVGMenuCD.PROP_ELEMENTS).getArray().size() == 0;
             }
         });
 
@@ -241,7 +247,7 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement impleme
         doNotFireEvent = false;
     }
 
-    @SuppressWarnings(value = "unchecked") // NOI18N
+    @SuppressWarnings(value = "unchecked")
     private void sortComboBoxContent() {
         int size = pathTextComboBox.getItemCount();
         List list = new ArrayList(size);
@@ -302,7 +308,14 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement impleme
             if (fo != null) {
                 svgImage = Util.createSVGImage(fo, true);
             }
+            if (messageAwareness != null) {
+                messageAwareness.clearErrorStatus();
+            }
         } catch (IOException e) {
+            Debug.warning(e);
+            if (messageAwareness != null) {
+                messageAwareness.displayWarning(NbBundle.getMessage(SVGImageEditorElement.class, "MSG_SVG_Image_Not_SVG_Tiny")); // NOI18N
+            }
         }
 
         if (svgImage != null) {

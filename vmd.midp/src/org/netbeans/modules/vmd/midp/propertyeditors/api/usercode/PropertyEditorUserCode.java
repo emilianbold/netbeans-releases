@@ -71,7 +71,7 @@ import java.util.*;
  *
  * @author Anton Chechel
  */
-public abstract class PropertyEditorUserCode extends DesignPropertyEditor {
+public abstract class PropertyEditorUserCode extends DesignPropertyEditor implements PropertyEditorMessageAwareness {
 
     public static final PropertyValue NULL_VALUE = PropertyValue.createNull();
     public static final String NULL_TEXT = NbBundle.getMessage(PropertyEditorUserCode.class, "LBL_STRING_NULL"); // NOI18N
@@ -210,7 +210,7 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor {
      * Displays warning message on the custom property editor panel
      * @param message to be displayed
      */
-    protected void displayWarning(String message) {
+    public void displayWarning(String message) {
         messageLabel.setText(message);
         messageLabel.setIcon(ICON_WARNING);
     }
@@ -219,7 +219,7 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor {
      * Displays error message on the custom property editor panel
      * @param message to be displayed
      */
-    protected void displayError(String message) {
+    public void displayError(String message) {
         messageLabel.setText(message);
         messageLabel.setIcon(ICON_ERROR);
     }
@@ -227,7 +227,7 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor {
     /**
      * Clears error/warning message on the custom property editor panel
      */
-    protected void clearErrorStatus() {
+    public void clearErrorStatus() {
         messageLabel.setText(" "); //NOI18N
         messageLabel.setIcon(null);
     }

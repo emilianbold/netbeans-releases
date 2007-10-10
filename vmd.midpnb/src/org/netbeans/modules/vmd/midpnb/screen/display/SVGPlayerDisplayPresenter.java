@@ -42,6 +42,7 @@
 package org.netbeans.modules.vmd.midpnb.screen.display;
 
 import org.netbeans.modules.mobility.svgcore.util.Util;
+import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
@@ -56,7 +57,6 @@ import org.netbeans.modules.vmd.midpnb.components.svg.SVGPlayerCD;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-
 import javax.microedition.m2g.SVGImage;
 import javax.swing.*;
 import java.awt.*;
@@ -78,7 +78,7 @@ public class SVGPlayerDisplayPresenter extends DisplayableDisplayPresenter {
     private ScreenFileObjectListener imageFileListener;
     private FileObject svgFileObject;
 
-    public SVGPlayerDisplayPresenter () {
+    public SVGPlayerDisplayPresenter() {
         JPanel contentPanel = getPanel().getContentPanel();
         contentPanel.setLayout(new BorderLayout());
         stringLabel = new JLabel();
@@ -97,6 +97,7 @@ public class SVGPlayerDisplayPresenter extends DisplayableDisplayPresenter {
             DesignComponent svgImageComponent = value.getComponent();
 
             SVGImage svgImage = null;
+            boolean notSVGTiny = false;
             if (svgImageComponent != null) {
                 PropertyValue propertyValue = svgImageComponent.readProperty(SVGImageCD.PROP_RESOURCE_PATH);
                 if (propertyValue.getKind() == PropertyValue.Kind.VALUE) {
@@ -112,7 +113,8 @@ public class SVGPlayerDisplayPresenter extends DisplayableDisplayPresenter {
                                 svgFileObject.addFileChangeListener(imageFileListener);
                             }
                         } catch (IOException e) {
-                            Exceptions.printStackTrace(e);
+                            Debug.warning(e);
+                            notSVGTiny = true;
                         }
                     }
                 }
@@ -121,8 +123,13 @@ public class SVGPlayerDisplayPresenter extends DisplayableDisplayPresenter {
             if (svgImage != null) {
                 contentPanel.add(imageView, BorderLayout.CENTER);
             } else {
-                stringLabel.setText(NbBundle.getMessage(SVGPlayerDisplayPresenter.class, "DISP_svg_image_not_specified")); // NOI18N
-                contentPanel.add(stringLabel, BorderLayout.CENTER);
+                if (notSVGTiny) {
+                    stringLabel.setText(NbBundle.getMessage(SVGPlayerDisplayPresenter.class, "DISP_svg_image_not_svg_tiny")); // NOI18N
+                    contentPanel.add(stringLabel, BorderLayout.CENTER);
+                } else {
+                    stringLabel.setText(NbBundle.getMessage(SVGPlayerDisplayPresenter.class, "DISP_svg_image_not_specified")); // NOI18N
+                    contentPanel.add(stringLabel, BorderLayout.CENTER);
+                }
             }
         } else {
             stringLabel.setText(NbBundle.getMessage(SVGPlayerDisplayPresenter.class, "DISP_svg_image_is_usercode")); // NOI18N
@@ -132,12 +139,13 @@ public class SVGPlayerDisplayPresenter extends DisplayableDisplayPresenter {
 
     @Override
     public Collection<ScreenPropertyDescriptor> getPropertyDescriptors() {
-        ArrayList<ScreenPropertyDescriptor> descriptors = new ArrayList<ScreenPropertyDescriptor> (super.getPropertyDescriptors());
-        ResourcePropertyEditor imagePropertyEditor = new ResourcePropertyEditor (SVGPlayerCD.PROP_SVG_IMAGE, getComponent());
-        if (stringLabel.getParent () != null)
+        ArrayList<ScreenPropertyDescriptor> descriptors = new ArrayList<ScreenPropertyDescriptor>(super.getPropertyDescriptors());
+        ResourcePropertyEditor imagePropertyEditor = new ResourcePropertyEditor(SVGPlayerCD.PROP_SVG_IMAGE, getComponent());
+        if (stringLabel.getParent() != null) {
             descriptors.add(new ScreenPropertyDescriptor(getComponent(), stringLabel, imagePropertyEditor));
-        else
+        } else {
             descriptors.add(new ScreenPropertyDescriptor(getComponent(), imageView, imagePropertyEditor));
+        }
         return descriptors;
     }
 
@@ -149,5 +157,4 @@ public class SVGPlayerDisplayPresenter extends DisplayableDisplayPresenter {
         svgFileObject = null;
         imageFileListener = null;
     }
-
 }
