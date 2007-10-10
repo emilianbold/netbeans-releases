@@ -189,6 +189,7 @@ public class DiscoveryProjectGenerator {
             } else {
                 if (!usedItems.contains(item)) {
                     projectBridge.setExclude(item,false);
+                    projectBridge.setHeaderTool(item);
                 }
             }
         }

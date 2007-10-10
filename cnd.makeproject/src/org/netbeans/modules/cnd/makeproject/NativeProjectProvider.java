@@ -140,12 +140,10 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         if (getMakeConfigurationDescriptor() == null || getMakeConfiguration() == null)
             return list;
         Item[] items = getMakeConfigurationDescriptor().getProjectItems();
-        ExtensionList hlist = HDataLoader.getInstance().getExtensions();
-        
         for (int i = 0; i < items.length; i++) {
-	    if (hlist.isRegistered(items[i].getPath())) {
+	    if (items[i].hasHeaderOrSourceExtension(true, true)) {
 		ItemConfiguration itemConfiguration = items[i].getItemConfiguration(getMakeConfiguration());
-		if (itemConfiguration != null){
+		if (itemConfiguration != null && !itemConfiguration.isCompilerToolConfiguration()){
 		    if (!itemConfiguration.getExcluded().getValue()){
 			list.add(items[i]);
 		    }
@@ -335,7 +333,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             if ((newItemConf.getExcluded().getValue() ^ oldItemConf.getExcluded().getValue()) &&
                 (newItemConf.getTool() == Tool.CCompiler ||
                  newItemConf.getTool() == Tool.CCCompiler ||
-                 items[i].isHeaderFile())) {
+                 items[i].hasHeaderOrSourceExtension(true,true))) {
                 if (newItemConf.getExcluded().getValue()) {
                     // excluded
                     deleted.add(items[i]);
@@ -497,7 +495,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             }
             if ((cFiles && itemConfiguration.getTool() == Tool.CCompiler) ||
                 (ccFiles && itemConfiguration.getTool() == Tool.CCCompiler) ||
-                items[i].isHeaderFile()) {
+                items[i].hasHeaderOrSourceExtension(cFiles, ccFiles)) {
                 list.add(items[i]);
             }
         }

@@ -428,13 +428,12 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         return vec;
     }
     
-    public boolean isHeaderFile() {
-        ExtensionList hlist = HDataLoader.getInstance().getExtensions();
-        if (hlist.isRegistered(getPath())) {
-            return true;
-        } else {
-            return false;
-        }
+    public boolean hasHeaderOrSourceExtension(boolean cFiles, boolean ccFiles) {
+        // Method return true for source files also.
+        String itemPath = getPath();
+        return HDataLoader.getInstance().getExtensions().isRegistered(itemPath) ||
+               ccFiles && CCDataLoader.getInstance().getExtensions().isRegistered(itemPath) ||
+               cFiles && CDataLoader.getInstance().getExtensions().isRegistered(itemPath);
     }
     
     /**
@@ -459,7 +458,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
             language = NativeFileItem.Language.CPP;
         else if (tool == Tool.FortranCompiler)
             language = NativeFileItem.Language.FORTRAN;
-        else if (isHeaderFile())
+        else if (hasHeaderOrSourceExtension(true,true))
             language = NativeFileItem.Language.C_HEADER;
         else
             language = NativeFileItem.Language.OTHER;
