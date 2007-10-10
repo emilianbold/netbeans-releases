@@ -332,8 +332,8 @@ public class Scene extends Widget {
         Point preLocation = getLocation ();
         Rectangle preBounds = getBounds ();
         if (extendSceneOnly  &&  rect != null  &&  preBounds != null) {
-            System.out.println ("preBounds = " + preBounds);
-            System.out.println ("rect = " + rect);
+//            System.out.println ("preBounds = " + preBounds);
+//            System.out.println ("rect = " + rect);
             rect.add (prepreBounds);
         }
         resolveBounds (rect != null ? new Point (- rect.x, - rect.y) : new Point (), rect);
