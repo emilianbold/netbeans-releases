@@ -556,7 +556,10 @@ final class NbInstaller extends ModuleInstaller {
                 if (load) {
                     host.addURLs(theseurls);
                 } else {
-                    host.removeURLs(theseurls);
+                    // #106737: we might have the wrong host, since it switches when reloadable flag is toggled.
+                    // To be safe, remove from both.
+                    ModuleLayeredFileSystem.getUserModuleLayer().removeURLs(theseurls);
+                    ModuleLayeredFileSystem.getInstallationModuleLayer().removeURLs(theseurls);
                 }
             } catch (Exception e) {
                 Util.err.log(Level.WARNING, null, e);
@@ -650,7 +653,7 @@ final class NbInstaller extends ModuleInstaller {
      * in the system filesystem, ModuleAutoDeps/*.xml may be added
      * according to the DTD "-//NetBeans//DTD Module Automatic Dependencies 1.0//EN".
      */
-    public void refineDependencies(Module m, Set<Dependency> dependencies) {
+    public @Override void refineDependencies(Module m, Set<Dependency> dependencies) {
         /* JST-PENDING just tring to comment this out
         // All modules implicitly depend on the APIs somehow.
         if (!m.getCodeNameBase().equals("org.openide") &&
@@ -698,7 +701,7 @@ final class NbInstaller extends ModuleInstaller {
         }
     }
     
-    public String[] refineProvides (Module m) {
+    public @Override String[] refineProvides (Module m) {
         if (m.getCodeNameBase ().equals ("org.openide.modules")) { // NOI18N
             List<String> arr = new ArrayList<String>(4);
             
@@ -732,7 +735,7 @@ final class NbInstaller extends ModuleInstaller {
         return null;
     }
     
-    public boolean shouldDelegateResource(Module m, Module parent, String pkg) {
+    public @Override boolean shouldDelegateResource(Module m, Module parent, String pkg) {
         //Util.err.fine("sDR: m=" + m + " parent=" + parent + " pkg=" + pkg);
         // Cf. #19622:
         if (parent == null) {
@@ -886,7 +889,7 @@ final class NbInstaller extends ModuleInstaller {
     /** These packages have been refactored into several modules.
      * Disable the domain cache for them.
      */
-    public boolean isSpecialResource(String pkg) {
+    public @Override boolean isSpecialResource(String pkg) {
         // JST-PENDING here is experimental enumeration of shared packages in openide
         // maybe this will speed up startup, but it is not accurate as if
         // someone enables some long time deprecated openide jar list will
@@ -1219,7 +1222,7 @@ final class NbInstaller extends ModuleInstaller {
     /** Overrides superclass method to keep a cache of module manifests,
      * so that their JARs do not have to be opened twice during startup.
      */
-    public Manifest loadManifest(File jar) throws IOException {
+    public @Override Manifest loadManifest(File jar) throws IOException {
         if (!usingManifestCache) {
             return super.loadManifest(jar);
         }
