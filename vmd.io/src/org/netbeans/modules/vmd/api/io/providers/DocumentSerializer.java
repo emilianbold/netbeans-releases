@@ -194,7 +194,7 @@ public final class DocumentSerializer {
             listener.setDesignDocument (newDocument);
     }
 
-    public UndoRedo getUndoRedoManager () {
+    public UndoRedo.Manager getUndoRedoManager () {
         synchronized (this) {
             return undoRedoManager;
         }
