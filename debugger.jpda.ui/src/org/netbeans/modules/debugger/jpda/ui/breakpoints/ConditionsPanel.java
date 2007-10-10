@@ -470,6 +470,7 @@ private void conditionCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {/
                 }
             });
         }
+        tfCondition.requestFocusInWindow();
     } else {
         tfCondition.setVisible(false);
         spCondition.setVisible(false);
