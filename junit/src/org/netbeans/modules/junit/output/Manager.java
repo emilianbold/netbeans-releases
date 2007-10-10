@@ -41,8 +41,6 @@
 
 package org.netbeans.modules.junit.output;
 
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.Map;
