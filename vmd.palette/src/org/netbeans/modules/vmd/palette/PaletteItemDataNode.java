@@ -44,6 +44,13 @@ package org.netbeans.modules.vmd.palette;
 import java.awt.Image;
 import java.beans.BeanInfo;
 import java.io.IOException;
+import java.util.List;
+import org.netbeans.modules.vmd.api.io.DataObjectContext;
+import org.netbeans.modules.vmd.api.io.ProjectUtils;
+import org.netbeans.modules.vmd.api.model.ComponentProducer;
+import org.netbeans.modules.vmd.api.model.DescriptorRegistry;
+import org.netbeans.modules.vmd.api.model.DesignDocument;
+import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
 import org.openide.loaders.DataNode;
 import org.openide.nodes.Children;
 import org.openide.util.Lookup;
@@ -57,21 +64,20 @@ import org.openide.util.lookup.Lookups;
  * @author Anton Chechel
  */
 public class PaletteItemDataNode extends DataNode {
+
     private static Image errorBadge;
-    
     private PaletteItemDataObject obj;
     private Lookup lookup;
     private boolean isValid = true;
     private boolean needCheck = true;
-    
     static {
         errorBadge = Utilities.loadImage("org/netbeans/modules/vmd/palette/resources/error-badge.gif"); // NOI18N
     }
-    
+
     public PaletteItemDataNode(PaletteItemDataObject obj) {
-        this( obj, new InstanceContent() );
+        this(obj, new InstanceContent());
     }
-    
+
     private PaletteItemDataNode(PaletteItemDataObject obj, InstanceContent ic) {
         super(obj, Children.LEAF, new AbstractLookup(ic));
         ic.add(obj);
@@ -79,23 +85,23 @@ public class PaletteItemDataNode extends DataNode {
         this.obj = obj;
         lookup = Lookups.singleton(this);
     }
-    
+
     @Override
     public String getDisplayName() {
         return obj.getDisplayName();
     }
-    
+
     @Override
     public String getShortDescription() {
         return obj.getToolTip();
     }
-    
+
     @Override
     public Image getIcon(int type) {
         if (needCheck) {
             PaletteMap.getInstance().checkValidity(getProjectType(), lookup);
         }
-        
+
         if (type == BeanInfo.ICON_COLOR_16x16 || type == BeanInfo.ICON_MONO_16x16) {
             String iconPath = obj.getIcon();
             Image icon = null;
@@ -110,7 +116,7 @@ public class PaletteItemDataNode extends DataNode {
             }
             return icon;
         }
-        
+
         String iconPath = obj.getBigIcon();
         Image icon = null;
         if (iconPath != null) {
@@ -124,52 +130,77 @@ public class PaletteItemDataNode extends DataNode {
         }
         return icon;
     }
-    
+
     @Override
     public Image getOpenedIcon(int type) {
         return getIcon(type);
     }
-    
+
     String getProjectType() {
         return obj.getProjectType();
     }
-    
+
     String getProducerID() {
         return obj.getProducerID();
     }
-    
+
     void setValid(boolean isValid) {
         this.isValid = isValid;
     }
-    
+
     boolean isValid() {
         return isValid;
     }
-    
+
     void setNeedCheck(boolean needCheck) {
         this.needCheck = needCheck;
     }
-    
+
     @Override
     public boolean canRename() {
         return false;
     }
-    
+
     @Override
     public boolean canDestroy() {
-        return false;
+        return true;
     }
-    
+
     @Override
     public void destroy() throws IOException {
         super.destroy();
+        DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
+
+        if (document != null) {
+            DataObjectContext context = ProjectUtils.getDataObjectContextForDocument(document);
+            if (context != null) {
+                final DescriptorRegistry registry = DescriptorRegistry.getDescriptorRegistry(context.getProjectType(), context.getProjectID());
+                registry.writeAccess(new Runnable() {
+
+                    public void run() {
+                        List<ComponentProducer> producers = registry.getComponentProducers();
+                        ComponentProducer producer = null;
+                        for (ComponentProducer p : producers) {
+                            if (p.getProducerID().equals(obj.getProducerID())) {
+                                producer = p;
+                                break;
+                            }
+                        }
+
+                        if (producer != null && "custom".equalsIgnoreCase(producer.getPaletteDescriptor().getCategoryID())) { // NOI18N
+                            registry.removeComponentDescriptor(producer.getMainComponentTypeID());
+                        }
+                    }
+                });
+            }
+        }
     }
-    
+
     @Override
     public boolean canCopy() {
         return false;
     }
-    
+
     @Override
     public boolean canCut() {
         return false;
