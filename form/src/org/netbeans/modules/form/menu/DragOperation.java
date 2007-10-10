@@ -315,6 +315,9 @@ class DragOperation {
     
     
     void end(Point pt) {
+        end(pt, true);
+    }
+    void end(Point pt, boolean clear) {
         started = false;
         currentItem = null;
         if(dragComponent == null) return;
@@ -324,7 +327,7 @@ class DragOperation {
         
         p("op = " + op);
         switch (op) {
-        case PICK_AND_PLOP_FROM_PALETTE: completePickAndPlopFromPalette(pt); break;
+        case PICK_AND_PLOP_FROM_PALETTE: completePickAndPlopFromPalette(pt, clear); break;
         case INTER_MENU_DRAG: completeInterMenuDrag(pt); break ;
         case NO_MENUBAR: /* do nothing */ break;
         }
@@ -435,7 +438,7 @@ class DragOperation {
         }
     }
     
-    private void completePickAndPlopFromPalette(Point pt) {
+    private void completePickAndPlopFromPalette(Point pt, boolean clear) {
         p("complete pick and plop from palette: target comp = " + targetComponent);
         PaletteItem paletteItem = PaletteUtils.getSelectedItem();
         if(paletteItem == null) return;
@@ -449,7 +452,9 @@ class DragOperation {
         p("tcomp = " + tcomp);
         if(targetComponent != tcomp) {
             p("no longer over a valid target. bailing");
-            menuEditLayer.formDesigner.toggleSelectionMode();
+            if(clear) {
+                menuEditLayer.formDesigner.toggleSelectionMode();
+            }
             return;
         }
         
@@ -534,7 +539,9 @@ class DragOperation {
             }
         }
         
-        menuEditLayer.formDesigner.toggleSelectionMode();
+        if(clear) {
+            menuEditLayer.formDesigner.toggleSelectionMode();
+        }
         
     }
     

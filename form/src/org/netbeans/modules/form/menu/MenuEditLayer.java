@@ -1502,7 +1502,13 @@ public class MenuEditLayer extends JPanel {
             if(dragop.isStarted() && dragop.getTargetComponent() != null &&
                     isMenuRelatedComponentClass(dragop.getTargetComponent().getClass())) {
                 p("skipping the lower part");
-                dragop.end(e.getPoint());
+                if(e.isShiftDown()) {
+                    dragop.end(e.getPoint(), false);
+                    PaletteItem item = PaletteUtils.getSelectedItem();
+                    dragop.start(item, e.getPoint());
+                } else {
+                    dragop.end(e.getPoint(), true);                    
+                }
                 return;
             }
             if(shouldRedispatchToHandle()) {
@@ -1613,7 +1619,7 @@ public class MenuEditLayer extends JPanel {
             }
             
             //p("mouse released: " + e);
-            if(dragop.isStarted()) {
+            if(dragop.isStarted() && !e.isShiftDown()) {
                 dragop.end(e.getPoint());
             } else {
                 if(!isEditing) {
