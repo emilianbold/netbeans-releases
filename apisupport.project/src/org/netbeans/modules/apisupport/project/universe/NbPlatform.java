@@ -68,7 +68,6 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
@@ -130,7 +129,7 @@ public final class NbPlatform {
     private static Set<NbPlatform> getPlatformsInternal() {
         if (platforms == null) {
             platforms = new HashSet<NbPlatform>();
-            Map<String,String> p = PropertyUtils.sequentialPropertyEvaluator(null, new PropertyProvider[] {PropertyUtils.globalPropertyProvider()}).getProperties();
+            Map<String,String> p = PropertyUtils.sequentialPropertyEvaluator(null, PropertyUtils.globalPropertyProvider()).getProperties();
             boolean foundDefault = false;
             for (Map.Entry<String,String> entry : p.entrySet()) {
                 String key = entry.getKey();
@@ -930,7 +929,7 @@ public final class NbPlatform {
         return true;
     }
     
-    public String toString() {
+    public @Override String toString() {
         return "NbPlatform[" + getID() + ":" + getDestDir() + ";sources=" + Arrays.asList(getSourceRoots()) + ";javadoc=" + Arrays.asList(getJavadocRoots()) + "]"; // NOI18N;
     }
     
