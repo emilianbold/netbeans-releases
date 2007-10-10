@@ -60,8 +60,7 @@ public class DiffAction extends ContextAction {
     }
 
     protected int getFileEnabledStatus() {
-        return FileInformation.STATUS_LOCAL_CHANGE
-             | FileInformation.STATUS_REMOTE_CHANGE;
+        return getDirectoryEnabledStatus();
     }
 
     protected int getDirectoryEnabledStatus() {
