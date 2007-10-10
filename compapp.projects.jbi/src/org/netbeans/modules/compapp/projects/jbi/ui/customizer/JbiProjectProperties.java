@@ -56,7 +56,6 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.modules.compapp.projects.jbi.CasaHelper;
 
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 
@@ -1574,7 +1573,9 @@ public class JbiProjectProperties {
                 String raw, AntProjectHelper antProjectHelper, ReferenceHelper refHelper
                 ) {
             if (raw == null) {
-                raw = Charset.defaultCharset().name();
+                // Use the default encoding charset of NetBeans projects, 
+                // not the default charset of the JVM.
+                raw = FileEncodingQuery.getDefaultEncoding().name(); //Charset.defaultCharset().name();
             }
             return new Charset(raw, new String[0]) {
                 public boolean contains(Charset cs) {
