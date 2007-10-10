@@ -63,7 +63,7 @@ public class ReferenceRepositoryImplTestCase extends TraceModelTestBase {
     }
     
     public void testCpuClassRefs() throws Exception {
-        performTest("cpu.h", 25, 9);
+        performTest("cpu.h", 47, 9);
     }
     ////////////////////////////////////////////////////////////////////////////
     // general staff
