@@ -444,8 +444,10 @@ public final class CreatedModifiedFiles {
                 if (f == null) {
                     throw new IOException("No such folder " + layerPath);
                 }
-                Integer beforePos = getPosition(f, precedingItemName);
-                Integer afterPos = getPosition(f, followingItemName);
+                FileObject merged = LayerUtils.getEffectiveSystemFilesystem(project).findResource(layerPath);
+                assert merged != null : layerPath;
+                Integer beforePos = getPosition(merged, precedingItemName);
+                Integer afterPos = getPosition(merged, followingItemName);
                 if (beforePos != null && afterPos != null) {
                     // won't work well if afterPos == beforePos + 1, but oh well
                     f.getFileObject(newItemName).setAttribute("position", (beforePos + afterPos) / 2); // NOI18N
