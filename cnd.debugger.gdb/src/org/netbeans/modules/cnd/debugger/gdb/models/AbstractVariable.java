@@ -75,7 +75,6 @@ public class AbstractVariable implements LocalVariable, Customizer {
     protected String name;
     protected String type;
     protected String value;
-    protected String mvalue;
     protected String ovalue;
     protected String derefValue;
     protected Field[] fields;
@@ -100,7 +99,6 @@ public class AbstractVariable implements LocalVariable, Customizer {
         this.name = name;
         this.type = type;
         this.value = value;
-        this.mvalue = null;
         this.ovalue = null;
         this.derefValue = derefValue;
         fields = new Field[0];
@@ -126,11 +124,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
      * @return string representation of type of this variable.
      */
     public String getValue() {
-        if (mvalue != null) {
-            return mvalue;
-        } else {
-            return value;
-        }
+        return value;
     }
 
     /**
@@ -143,71 +137,71 @@ public class AbstractVariable implements LocalVariable, Customizer {
         String msg = null;
         int pos;
         
-        if (getFieldsCount() == 0) {
-            if (getDebugger() != null) {
-                value = value.trim();
-                if (value.length() > 0 && value.charAt(0) == '(' && (pos = GdbUtils.findMatchingParen(value, 0)) != -1) {
-                    // Strip a cast
-                    value = value.substring(pos + 1).trim();
+        if (getDebugger() != null) {
+            value = value.trim();
+            if (value.length() > 0 && value.charAt(0) == '(' && (pos = GdbUtils.findMatchingParen(value, 0)) != -1) {
+                // Strip a cast
+                value = value.substring(pos + 1).trim();
+            }
+            if (type.equals("char") || type.equals("unsigned char")) { // NOI18N
+                value = setValueChar(value);
+                if (value == null) { // Invalid input
+                    msg = NbBundle.getMessage(AbstractVariable.class, "ERR_SetValue_Invalid_Char"); // NOI18N
                 }
-                if (type.equals("char") || type.equals("unsigned char")) { // NOI18N
-                    value = setValueChar(value);
-                    if (value == null) { // Invalid input
-                        msg = NbBundle.getMessage(AbstractVariable.class, "ERR_SetValue_Invalid_Char"); // NOI18N
-                    }
-                } else if (type.equals("char *") || type.equals("unsigned char *")) { // NOI18N
-                    value = setValueCharStar(value);
-                    if (value == null) { // Invalid input
-                        msg = NbBundle.getMessage(AbstractVariable.class, "ERR_SetValue_Invalid_Char*"); // NOI18N
-                    }
-                } else if ((type.equals("int") || type.equals("long"))) { // NOI18N
-                    value = setValueNumber(value);
-                    if (value == null) { // Invalid input
-                        msg = NbBundle.getMessage(AbstractVariable.class, "ERR_SetValue_Invalid_Number"); // NOI18N
-                    }
-                } else if (getDebugger().isCplusPlus() && type.equals("bool")) { // NOI18N
-                    if (!value.equals("true") && !value.equals("false") && !isNumber(value)) { // NOI18N
-                        msg = NbBundle.getMessage(AbstractVariable.class, "ERR_SetValue_Invalid_CplusPlus_Bool"); // NOI18N
-                    }
-                } else if (type.startsWith("enum")) { // NOI18N
-                    value = setValueEnum(value);
-                    if (value == null) { // Invalid input
-                        msg = NbBundle.getMessage(AbstractVariable.class, "ERR_SetValue_Invalid_Enum"); // NOI18N
-                    }
-                } else if (value.charAt(0) == '"' || (value.startsWith("0x") && value.endsWith("\""))) { // NOI18N
-                    value = setValueCharStar(value);
-                    if (value == null) { // Invalid input
-                        msg = NbBundle.getMessage(AbstractVariable.class, "ERR_SetValue_Invalid_Char*"); // NOI18N
-                    }
+            } else if (type.equals("char *") || type.equals("unsigned char *")) { // NOI18N
+                value = setValueCharStar(value);
+                if (value == null) { // Invalid input
+                    msg = NbBundle.getMessage(AbstractVariable.class, "ERR_SetValue_Invalid_Char*"); // NOI18N
                 }
-                if (value != null) {
-                    if (value.endsWith("\\\"")) { // NOI18N
-                        pos = value.indexOf('"');
-                        if (pos != -1) {
-                            value = value.substring(pos, value.length() - 1) + '"';
-                        }
-                    }
-                    if (value.charAt(0) == '(') {
-                        pos = GdbUtils.findMatchingParen(value, 0);
-                        if (pos != -1) {
-                            value = value.substring(pos + 1).trim();
-                        }
+            } else if ((type.equals("int") || type.equals("long"))) { // NOI18N
+                value = setValueNumber(value);
+                if (value == null) { // Invalid input
+                    msg = NbBundle.getMessage(AbstractVariable.class, "ERR_SetValue_Invalid_Number"); // NOI18N
+                }
+            } else if (getDebugger().isCplusPlus() && type.equals("bool")) { // NOI18N
+                if (!value.equals("true") && !value.equals("false") && !isNumber(value)) { // NOI18N
+                    msg = NbBundle.getMessage(AbstractVariable.class, "ERR_SetValue_Invalid_CplusPlus_Bool"); // NOI18N
+                }
+            } else if (type.startsWith("enum")) { // NOI18N
+                value = setValueEnum(value);
+                if (value == null) { // Invalid input
+                    msg = NbBundle.getMessage(AbstractVariable.class, "ERR_SetValue_Invalid_Enum"); // NOI18N
+                }
+            } else if (value.charAt(0) == '"' || (value.startsWith("0x") && value.endsWith("\""))) { // NOI18N
+                value = setValueCharStar(value);
+                if (value == null) { // Invalid input
+                    msg = NbBundle.getMessage(AbstractVariable.class, "ERR_SetValue_Invalid_Char*"); // NOI18N
+                }
+            } else if (GdbUtils.isPointer(type)) {
+                // no current validation
+            }
+            if (value != null) {
+                if (value.endsWith("\\\"")) { // NOI18N
+                    pos = value.indexOf('"');
+                    if (pos != -1) {
+                        value = value.substring(pos, value.length() - 1) + '"';
                     }
                 }
-                if (msg == null) {
-                    String fullname;
-                    if (this instanceof GdbWatchVariable) {
-                        fullname = ((GdbWatchVariable) this).getExpression();
+                if (value.charAt(0) == '(') {
+                    pos = GdbUtils.findMatchingParen(value, 0);
+                    if (pos != -1) {
+                        value = value.substring(pos + 1).trim();
+                    }
+                }
+            }
+            if (msg == null) {
+                String fullname;
+                if (this instanceof GdbWatchVariable) {
+                    fullname = ((GdbWatchVariable) this).getExpression();
+                } else {
+                    if (this instanceof AbstractField) {
+                        fullname = ((AbstractField) this).getFullName(false);
                     } else {
-                        if (this instanceof AbstractField) {
-                            fullname = ((AbstractField) this).getFullName(false);
-                        } else {
-                            fullname = name;
-                        }
+                        fullname = name;
                     }
-                    ovalue = this.value;
-                    getDebugger().updateVariable(this, fullname, value);
                 }
+                ovalue = this.value;
+                getDebugger().updateVariable(this, fullname, value);
             }
         }
         if (msg != null) {
@@ -218,11 +212,16 @@ public class AbstractVariable implements LocalVariable, Customizer {
     }
     
     public void restoreOldValue() {
-        mvalue = ovalue;
+        value = ovalue;
     }
     
-    public void setModifiedValue(String mvalue) {
-        this.mvalue = mvalue;
+    public synchronized void setModifiedValue(String value) {
+        this.value = value;
+        if (fields.length > 0) {
+            fields = new Field[0];
+            derefValue = null;
+            expandChildren();
+        }
     }
     
     /**
@@ -483,7 +482,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
         return csf;
     }
     
-    public boolean expandChildren() {
+    public synchronized boolean expandChildren() {
         int fcount = 0;
         if (fields.length == 0) {
             fcount = expandChildrenFromValue(this);
@@ -929,8 +928,8 @@ public class AbstractVariable implements LocalVariable, Customizer {
         
         @Override
         public String getFullName(boolean showBaseClass) {
-            String n;
             String pname; // parent part of name
+            String fullname;
             int pos;
             
             if (parent instanceof AbstractField) {
@@ -941,21 +940,24 @@ public class AbstractVariable implements LocalVariable, Customizer {
             
             if (name.equals("<Base class>")) { // NOI18N
                 if (showBaseClass) {
-                    return pname + ".<" + type + ">"; // NOI18N
+                    fullname = pname + ".<" + type + ">"; // NOI18N
                 } else {
-                    return pname;
+                    fullname = pname;
                 }
             } else if (name.indexOf('[') != -1) {
                 if ((pos = pname.lastIndexOf('.')) != -1) {
-                    return pname.substring(0, pos) + '.' + name;
+                    fullname = pname.substring(0, pos) + '.' + name;
                 } else {
-                    return name;
+                    fullname = name;
                 }
-            } else if (name.equals('*' + pname)) {
-                return name;
+            } else if (GdbUtils.isSimplePointer(parent.getType()) && name.startsWith("*")) { // NOI18N
+                fullname = '*' + pname;
+            } else if (GdbUtils.isPointer(parent.getType())) {
+                fullname = pname + "->" + name;
             } else {
-                return pname + '.' + name;
+                fullname = pname + '.' + name;
             }
+            return fullname;
         }
     }
 }

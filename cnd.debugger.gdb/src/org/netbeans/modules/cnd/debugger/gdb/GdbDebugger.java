@@ -438,6 +438,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
 //                firePropertyChange(new PropertyChangeEvent(watch.getWatch(), Watch.PROP_VALUE, watch, null));
             } else if ((avar = updateVariablesMap.remove(itok)) != null) {
                 avar.setModifiedValue(msg.substring(13, msg.length() - 1));
+                firePropertyChange(PROP_LOCALS_VIEW_UPDATE, 0, 1);
             }
         } else if (msg.equals("^done") && getState().equals(STATE_SILENT_STOP)) { // NOI18N
             setRunning();

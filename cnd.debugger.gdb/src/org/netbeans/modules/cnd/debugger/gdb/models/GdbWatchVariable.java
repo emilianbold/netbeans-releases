@@ -60,7 +60,7 @@ import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
  *   getValue() will be called. It will send a request to gdb and block until the request
  *   is completed (since we always read gdb responses on the GDB Reader thread we're
  *   guaranteed not to deadlock). The GdbDebugger responds to the response from gdb and
- *   calls setValue() (still on the GDB Reader thread). The setValue calls tells the blocked
+ *   calls setValue() (still on the GDB Reader thread). The setValueAT calls tells the blocked
  *   getValue() to continue and the updated value is displayed.
  *
  * @author gordonp
@@ -202,7 +202,7 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
     }
     
     public void setValueAt(String value) {
-        setValue(value);
+        super.setValue(value);
     }
     
     public void setValueToError(String msg) {

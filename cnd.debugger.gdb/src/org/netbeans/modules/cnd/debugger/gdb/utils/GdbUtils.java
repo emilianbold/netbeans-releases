@@ -87,16 +87,6 @@ public class GdbUtils {
         
         return ver;
     }
-    
-//    /**
-//     * Determine if we're running Cygwin or not
-//     *
-//     * @param message The input string (without the '~')
-//     * @return boolean true if Cygwin else false
-//     */
-//    private static boolean isCygwin(String message) {
-//        return Utilities.isWindows() && message.toLowerCase().contains("cygwin"); // NOI18N
-//    }
 
     /**
      *  Ignoring array and pointer information, is this type a keyword type? We may check more
@@ -112,7 +102,7 @@ public class GdbUtils {
 
             while (tok.hasMoreTokens()) {
                 String token = tok.nextToken();
-                if (!isSimpleTypeKeyword(token) && Character.isJavaIdentifierStart(token.charAt(0))) {
+                if (!isSimpleTypeKeyword(token)) {
                     return false;
                 }
             }
@@ -125,7 +115,7 @@ public class GdbUtils {
     }
 
     public static boolean isSimplePointer(String type) {
-	return type != null && isSimple(type.replace('*', ' '));
+	return type != null && isSimple(type.replaceFirst("[*]", " ")); // NOI18N
     }
     
     /** Test if the type of a type is a keyword type */

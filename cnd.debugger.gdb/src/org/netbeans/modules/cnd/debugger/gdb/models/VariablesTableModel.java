@@ -62,6 +62,7 @@ import org.netbeans.modules.cnd.debugger.gdb.Variable;
  *
  * @author Nik Molchanov (copied from Jan Jancura's JPDA implementation)
  */
+import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
 public class VariablesTableModel implements TableModel, Constants {
     
     private GdbDebugger      debugger;
@@ -108,12 +109,12 @@ public class VariablesTableModel implements TableModel, Constants {
                     columnID.equals(LOCALS_TYPE_COLUMN_ID) ||
                     columnID.equals(WATCH_TYPE_COLUMN_ID)) {
                 return true;
-            }
-            if (columnID.equals(LOCALS_VALUE_COLUMN_ID) || columnID.equals(WATCH_VALUE_COLUMN_ID)) {
+            } else if (columnID.equals(LOCALS_VALUE_COLUMN_ID) || columnID.equals(WATCH_VALUE_COLUMN_ID)) {
                 if (row instanceof AbstractVariable) {
-                    return ((AbstractVariable) row).getFieldsCount() != 0;
+                    AbstractVariable var = (AbstractVariable) row;
+                    return GdbUtils.isPointer(var.getType()) ? false : var.getFieldsCount() != 0;
                 } else {
-                return true;
+                    return true;
                 }
             }
         } else if (row.toString().startsWith("No current thread")) { // NOI18N
