@@ -49,8 +49,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.swing.*;
-
+import javax.swing.JSplitPane;
+import javax.swing.SwingUtilities;
 import org.openide.ErrorManager;
 import org.netbeans.modules.junit.JUnitSettings;
 
@@ -98,6 +98,7 @@ final class ResultDisplayHandler {
         JSplitPane splitPane
                 = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, left, right) {
 
+            @Override
             public void addNotify() {
                 super.addNotify();
                 SwingUtilities.invokeLater(new Runnable() {
@@ -110,6 +111,7 @@ final class ResultDisplayHandler {
                 });
             }
 
+            @Override
             public void removeNotify() {
                 JUnitSettings.getDefault().setResultsSplitPaneDivider(getDividerLocation());
                 super.removeNotify();
