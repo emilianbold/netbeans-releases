@@ -42,9 +42,9 @@
 package org.netbeans.modules.cnd.settings;
 
 import java.util.ResourceBundle;
-import org.openide.options.SystemOption;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.SharedClassObject;
 
 /** Settings for the C/C++/Fortran. The compile/build options stored
  * in this class are <B>default</B> options which will be applied to new files.
@@ -52,7 +52,7 @@ import org.openide.util.NbBundle;
  * files options do not change if these default options are changed.
  */
 
-public class ShellSettings extends SystemOption {
+public class ShellSettings extends SharedClassObject {
 
     /** The singleton instance */
     //static ShellSettings cppSettings;

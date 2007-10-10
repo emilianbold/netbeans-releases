@@ -47,13 +47,14 @@ import java.io.IOException;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
+import java.util.prefs.Preferences;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.Path;
 import org.openide.ErrorManager;
-import org.openide.options.SystemOption;
 import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
+import org.openide.util.SharedClassObject;
 import org.openide.util.Utilities;
 
 /**
@@ -63,7 +64,7 @@ import org.openide.util.Utilities;
  * files options do not change if these default options are changed.
  */
 
-public class CppSettings extends SystemOption {
+public class CppSettings extends SharedClassObject {
 
     /** serial uid */
     static final long serialVersionUID = -2942467713237077336L;
@@ -130,7 +131,8 @@ public class CppSettings extends SystemOption {
     }
     
     public String getCompilerSetName() {
-        String name = (String) getProperty(PROP_COMPILER_SET_NAME);
+        //String name = (String) getProperty(PROP_COMPILER_SET_NAME);
+        String name = getPreferences().get(PROP_COMPILER_SET_NAME, null);
         if (name == null) {
             return "";
         } else {
@@ -141,23 +143,29 @@ public class CppSettings extends SystemOption {
     public void setCompilerSetName(String name) {
         String n = getCompilerSetName();
         if (n == null || !n.equals(name)) {
-            putProperty(PROP_COMPILER_SET_NAME, name, true);
+            //putProperty(PROP_COMPILER_SET_NAME, name, true);
+            getPreferences().put(PROP_COMPILER_SET_NAME, name);
+            firePropertyChange(PROP_COMPILER_SET_NAME, n, name);
         }
     }
     
     public String getCompilerSetDirectories() {
-        return (String) getProperty(PROP_COMPILER_SET_DIRECTORIES);
+        //return (String) getProperty(PROP_COMPILER_SET_DIRECTORIES);
+        return getPreferences().get(PROP_COMPILER_SET_DIRECTORIES, null);
     }
     
     public void setCompilerSetDirectories(String name) {
         String n = getCompilerSetDirectories();
         if (n == null || !n.equals(name)) {
-            putProperty(PROP_COMPILER_SET_DIRECTORIES, name, true);
+            //putProperty(PROP_COMPILER_SET_DIRECTORIES, name, true);
+            getPreferences().put(PROP_COMPILER_SET_DIRECTORIES, name);
+            firePropertyChange(PROP_COMPILER_SET_DIRECTORIES, n, name);
         }
     }
     
     public String getMakeName() {
-        String name = (String) getProperty(PROP_MAKE_NAME);
+        //String name = (String) getProperty(PROP_MAKE_NAME);
+        String name = getPreferences().get(PROP_MAKE_NAME, null);
         if (name == null) {
             return "make"; // NOI18N
         } else {
@@ -168,7 +176,9 @@ public class CppSettings extends SystemOption {
     public void setMakeName(String name) {
         String n = getMakeName();
         if (!n.equals(name)) {
-            putProperty(PROP_MAKE_NAME, name, true);
+            //putProperty(PROP_MAKE_NAME, name, true);
+            getPreferences().put(PROP_MAKE_NAME, name);
+            firePropertyChange(PROP_MAKE_NAME, n, name);
         }
     }
     
@@ -179,9 +189,11 @@ public class CppSettings extends SystemOption {
      * @returns Path to the make program
      */
     public String getMakePath() {
-        String path = (String) getProperty(PROP_MAKE_PATH);
+        //String path = (String) getProperty(PROP_MAKE_PATH);
+        String path = getPreferences().get(PROP_MAKE_PATH, null);
         if (path == null) {
-            String name = (String) getProperty(PROP_MAKE_NAME);
+            //String name = (String) getProperty(PROP_MAKE_NAME);
+            String name = getPreferences().get(PROP_MAKE_NAME, null);
             if (name != null) {
                 StringTokenizer tok = new StringTokenizer(getPath(), File.pathSeparator);
                 while (tok.hasMoreTokens()) {
@@ -189,7 +201,9 @@ public class CppSettings extends SystemOption {
                     File file = new File(d, name);
                     if (file.exists()) {
                         path = file.getAbsolutePath();
-                        putProperty(PROP_MAKE_PATH, path, true);
+                        //putProperty(PROP_MAKE_PATH, path, true); 
+                        getPreferences().put(PROP_MAKE_PATH, path);
+                        firePropertyChange(PROP_MAKE_PATH, null, path);
                         return path;
                     }
                 }
@@ -209,7 +223,9 @@ public class CppSettings extends SystemOption {
     public void setMakePath(String path) {
         String p = getMakePath();
         if (!p.equals(path)) {
-            putProperty(PROP_MAKE_PATH, path, true);
+            //putProperty(PROP_MAKE_PATH, path, true);
+            getPreferences().put(PROP_MAKE_PATH, path);
+            firePropertyChange(PROP_MAKE_PATH, p, path);
         }
     }
     
@@ -227,7 +243,8 @@ public class CppSettings extends SystemOption {
     }
     
     public String getGdbName() {
-        String name = (String) getProperty(PROP_GDB_NAME);
+        //String name = (String) getProperty(PROP_GDB_NAME);
+        String name = getPreferences().get(PROP_GDB_NAME, null);
         if (name == null) {
             return "gdb"; // NOI18N
         } else {
@@ -238,12 +255,15 @@ public class CppSettings extends SystemOption {
     public void setGdbName(String name) {
         String n = getGdbName();
         if (!n.equals(name)) {
-            putProperty(PROP_GDB_NAME, name, true);
+            //putProperty(PROP_GDB_NAME, name, true);
+            getPreferences().put(PROP_GDB_NAME, name);
+            firePropertyChange(PROP_GDB_NAME, n, name);
         }
     }
     
     public String getGdbPath() {
-        String path = (String) getProperty(PROP_GDB_PATH);
+        //String path = (String) getProperty(PROP_GDB_PATH);
+        String path = getPreferences().get(PROP_GDB_PATH, null);
         if (path == null) {
             if (Utilities.isWindows()) {
                 return "C:\\Cygwin\\bin\\gdb.exe"; // NOI18N
@@ -258,12 +278,15 @@ public class CppSettings extends SystemOption {
     public void setGdbPath(String path) {
         String p = getGdbPath();
         if (!p.equals(path)) {
-            putProperty(PROP_GDB_PATH, path, true);
+            //putProperty(PROP_GDB_PATH, path, true);
+            getPreferences().put(PROP_GDB_PATH, path);
+            firePropertyChange(PROP_GDB_PATH, p, path);
         }
     }
     
     public String getCCompilerName() {
-        String name = (String) getProperty(PROP_C_COMPILER_NAME);
+        //String name = (String) getProperty(PROP_C_COMPILER_NAME);
+        String name = getPreferences().get(PROP_C_COMPILER_NAME, null);
         if (name == null) {
             return getCompilerSetName().startsWith("Sun") ? "cc" : "gcc"; // NOI18N
         } else {
@@ -274,12 +297,15 @@ public class CppSettings extends SystemOption {
     public void setCCompilerName(String name) {
         String n = getCCompilerName();
         if (!n.equals(name)) {
-            putProperty(PROP_C_COMPILER_NAME, name, true);
+            //putProperty(PROP_C_COMPILER_NAME, name, true);
+            getPreferences().put(PROP_C_COMPILER_NAME, name);
+            firePropertyChange(PROP_C_COMPILER_NAME, n, name);
         }
     }
     
     public String getCppCompilerName() {
-        String name = (String) getProperty(PROP_CPP_COMPILER_NAME);
+        //String name = (String) getProperty(PROP_CPP_COMPILER_NAME);
+        String name = getPreferences().get(PROP_CPP_COMPILER_NAME, null);
         if (name == null) {
             return getCompilerSetName().startsWith("Sun") ? "CC" : "g++"; // NOI18N
         } else {
@@ -290,12 +316,15 @@ public class CppSettings extends SystemOption {
     public void setCppCompilerName(String name) {
         String n = getCppCompilerName();
         if (!n.equals(name)) {
-            putProperty(PROP_CPP_COMPILER_NAME, name, true);
+            //putProperty(PROP_CPP_COMPILER_NAME, name, true);
+            getPreferences().put(PROP_CPP_COMPILER_NAME, name);
+            firePropertyChange(PROP_CPP_COMPILER_NAME, n, name);
         }
     }
     
     public String getFortranCompilerName() {
-        String name = (String) getProperty(PROP_FORTRAN_COMPILER_NAME);
+        //String name = (String) getProperty(PROP_FORTRAN_COMPILER_NAME);
+        String name = getPreferences().get(PROP_FORTRAN_COMPILER_NAME, null);
         if (name == null) {
             return getCompilerSetName().startsWith("Sun") ? "f90" : "g77"; // NOI18N
         } else {
@@ -306,7 +335,9 @@ public class CppSettings extends SystemOption {
     public void setFortranCompilerName(String name) {
         String n = getFortranCompilerName();
         if (!n.equals(name)) {
-            putProperty(PROP_FORTRAN_COMPILER_NAME, name, true);
+            //putProperty(PROP_FORTRAN_COMPILER_NAME, name, true);
+            getPreferences().put(PROP_FORTRAN_COMPILER_NAME, name);
+            firePropertyChange(PROP_FORTRAN_COMPILER_NAME, n, name);
         }
     }
 
@@ -315,10 +346,9 @@ public class CppSettings extends SystemOption {
      * @return The time in milis
      */
     public int getParsingDelay() {
-        Integer delay = (Integer)getProperty(PROP_PARSING_DELAY);
-        if (delay == null)
-            return DEFAULT_PARSING_DELAY;
-        return delay.intValue();
+        //Integer delay = (Integer)getProperty(PROP_PARSING_DELAY);
+        int delay = getPreferences().getInt(PROP_PARSING_DELAY, DEFAULT_PARSING_DELAY);
+        return delay;
     }
 
     /**
@@ -332,7 +362,10 @@ public class CppSettings extends SystemOption {
 	    //ErrorManager.getDefault().notify(e);
 	    throw e;
 	}
-        putProperty(PROP_PARSING_DELAY, new Integer(delay));
+        //putProperty(PROP_PARSING_DELAY, new Integer(delay));
+        int oldValue = getParsingDelay();
+        getPreferences().putInt(PROP_PARSING_DELAY, delay);
+        firePropertyChange(PROP_PARSING_DELAY, new Integer(oldValue), new Integer(delay));
     }
 
     /**
@@ -343,7 +376,9 @@ public class CppSettings extends SystemOption {
         String t = getReplaceableStringsTable();
         if (t.equals(table))
             return;
-        putProperty(PROP_REPLACEABLE_STRINGS_TABLE, table, true);
+        //putProperty(PROP_REPLACEABLE_STRINGS_TABLE, table, true);
+        getPreferences().put(PROP_REPLACEABLE_STRINGS_TABLE, table);
+        firePropertyChange(PROP_REPLACEABLE_STRINGS_TABLE, t, table);
     }
 
     /**
@@ -351,7 +386,8 @@ public class CppSettings extends SystemOption {
      * from template.
      */
     public String getReplaceableStringsTable() {
-        String table = (String)getProperty(PROP_REPLACEABLE_STRINGS_TABLE);
+        //String table = (String)getProperty(PROP_REPLACEABLE_STRINGS_TABLE);
+        String table = getPreferences().get(PROP_REPLACEABLE_STRINGS_TABLE, null);
         if (table == null) {
             return "USER=" + System.getProperty("user.name"); // NOI18N
         } else {
@@ -381,8 +417,9 @@ public class CppSettings extends SystemOption {
      * @return true if its enabled
      */
     public boolean isFortranEnabled() {
-        Boolean b = (Boolean) getProperty(PROP_FORTRAN_ENABLED);
-        return b == null ? DEFAULT_FORTRAN_ENABLED : b.booleanValue();
+        //Boolean b = (Boolean) getProperty(PROP_FORTRAN_ENABLED);
+        boolean b = getPreferences().getBoolean(PROP_FORTRAN_ENABLED, DEFAULT_FORTRAN_ENABLED);
+        return b;
     }
     
     /**
@@ -391,69 +428,93 @@ public class CppSettings extends SystemOption {
      * @param enabled Value to set property to
      */
     public void setFortranEnabled(boolean enabled) {
-        putProperty(PROP_FORTRAN_ENABLED, Boolean.valueOf(enabled), true);
+        //putProperty(PROP_FORTRAN_ENABLED, Boolean.valueOf(enabled), true);
+        boolean oldValue = isFortranEnabled();
+        getPreferences().putBoolean(PROP_FORTRAN_ENABLED, enabled);
+        firePropertyChange(PROP_FORTRAN_ENABLED, new Boolean(oldValue), new Boolean(enabled));
     }
     
 
      public boolean isFreeFormatFortran(){
-         Boolean b = (Boolean)getProperty(PROP_FREE_FORMAT_FORTRAN);
-         if( b == null ){
-             try{
-                 // Need to go through SystemClassLoader :(
-                 Class fSettingsDefaults = Class.forName(
-                     "org.netbeans.modules.cnd.editor.fortran.FSettingsDefaults", // NOI18N
-                     true, (ClassLoader) Lookup.getDefault().lookup(ClassLoader.class)
-                 );
-                 java.lang.reflect.Field defaultFreeFormat =
-                     fSettingsDefaults.getField("defaultFreeFormat"); // NOI18N
-                 b = (defaultFreeFormat.getBoolean(null))?Boolean.TRUE:Boolean.FALSE;
-             }catch(Exception e){
-                 // let's cheat, we know the default is TRUE (from FSettingsDefault)
-                 b = Boolean.TRUE;
-             }
-             putProperty(PROP_FREE_FORMAT_FORTRAN, b);
-         }
-         return b.booleanValue();
+        //Boolean b = (Boolean)getProperty(PROP_FREE_FORMAT_FORTRAN);
+        boolean b = getPreferences().getBoolean(PROP_FREE_FORMAT_FORTRAN, true);
+//         if( b == null ){
+//             try{
+//                 // Need to go through SystemClassLoader :(
+//                 Class fSettingsDefaults = Class.forName(
+//                     "org.netbeans.modules.cnd.editor.fortran.FSettingsDefaults", // NOI18N
+//                     true, (ClassLoader) Lookup.getDefault().lookup(ClassLoader.class)
+//                 );
+//                 java.lang.reflect.Field defaultFreeFormat =
+//                     fSettingsDefaults.getField("defaultFreeFormat"); // NOI18N
+//                 b = (defaultFreeFormat.getBoolean(null))?Boolean.TRUE:Boolean.FALSE;
+//             }catch(Exception e){
+//                 // let's cheat, we know the default is TRUE (from FSettingsDefault)
+//                 b = Boolean.TRUE;
+//             }
+//             putProperty(PROP_FREE_FORMAT_FORTRAN, b);
+//         }
+//         return b.booleanValue();'
+        return b;
      }
 
      public void setFreeFormatFortran(boolean state){
-         putProperty(PROP_FREE_FORMAT_FORTRAN, state ? Boolean.TRUE : Boolean.FALSE);
+        //putProperty(PROP_FREE_FORMAT_FORTRAN, state ? Boolean.TRUE : Boolean.FALSE);
+        boolean oldValue = isFreeFormatFortran();
+        getPreferences().putBoolean(PROP_FREE_FORMAT_FORTRAN, state);
+        firePropertyChange(PROP_FREE_FORMAT_FORTRAN, new Boolean(oldValue), new Boolean(state));
      }
     
     public boolean isGdbRequired() {
-        Boolean b = (Boolean) getProperty(PROP_GDB_REQUIRED);
-        return b == null ? false : b.booleanValue();
+        //Boolean b = (Boolean) getProperty(PROP_GDB_REQUIRED);
+        //return b == null ? false : b.booleanValue();
+        return getPreferences().getBoolean(PROP_GDB_REQUIRED, false);
     }
     
     public void setGdbRequired(boolean enabled) {
-        putProperty(PROP_GDB_REQUIRED, Boolean.valueOf(enabled));
+        //putProperty(PROP_GDB_REQUIRED, Boolean.valueOf(enabled));
+        boolean oldValue = isGdbRequired();
+        getPreferences().putBoolean(PROP_GDB_REQUIRED, enabled);
+        firePropertyChange(PROP_GDB_REQUIRED, new Boolean(oldValue), new Boolean(enabled));
     }
     
     public boolean isCRequired() {
-        Boolean b = (Boolean) getProperty(PROP_C_REQUIRED);
-        return b == null ? true : b.booleanValue();
+        //Boolean b = (Boolean) getProperty(PROP_C_REQUIRED);
+        //return b == null ? true : b.booleanValue();
+        return getPreferences().getBoolean(PROP_C_REQUIRED, true);
     }
     
     public void setCRequired(boolean enabled) {
-        putProperty(PROP_C_REQUIRED, Boolean.valueOf(enabled));
+        //putProperty(PROP_C_REQUIRED, Boolean.valueOf(enabled));
+        boolean oldValue = isCRequired();
+        getPreferences().putBoolean(PROP_C_REQUIRED, enabled);
+        firePropertyChange(PROP_C_REQUIRED, new Boolean(oldValue), new Boolean(enabled));
     }
     
     public boolean isCppRequired() {
-        Boolean b = (Boolean) getProperty(PROP_CPP_REQUIRED);
-        return b == null ? true : b.booleanValue();
+        //Boolean b = (Boolean) getProperty(PROP_CPP_REQUIRED);
+        //return b == null ? true : b.booleanValue();
+        return getPreferences().getBoolean(PROP_CPP_REQUIRED, true);
     }
     
     public void setCppRequired(boolean enabled) {
-        putProperty(PROP_CPP_REQUIRED, Boolean.valueOf(enabled));
+        //putProperty(PROP_CPP_REQUIRED, Boolean.valueOf(enabled));
+        boolean oldValue = isCppRequired();
+        getPreferences().putBoolean(PROP_CPP_REQUIRED, enabled);
+        firePropertyChange(PROP_CPP_REQUIRED, new Boolean(oldValue), new Boolean(enabled));
     }
     
     public boolean isFortranRequired() {
-        Boolean b = (Boolean) getProperty(PROP_FORTRAN_REQUIRED);
-        return b == null ? false : b.booleanValue();
+        //Boolean b = (Boolean) getProperty(PROP_FORTRAN_REQUIRED);
+        //return b == null ? false : b.booleanValue();
+        return getPreferences().getBoolean(PROP_FORTRAN_REQUIRED, false);
     }
     
     public void setFortranRequired(boolean enabled) {
-        putProperty(PROP_FORTRAN_REQUIRED, Boolean.valueOf(enabled));
+        //putProperty(PROP_FORTRAN_REQUIRED, Boolean.valueOf(enabled));
+        boolean oldValue = isFortranRequired();
+        getPreferences().putBoolean(PROP_FORTRAN_REQUIRED, enabled);
+        firePropertyChange(PROP_FORTRAN_REQUIRED, new Boolean(oldValue), new Boolean(enabled));
     }
 
     /**
@@ -469,6 +530,10 @@ public class CppSettings extends SystemOption {
 	return new HelpCtx ("Welcome_opt_editing_sources");	        //NOI18N
     }
 
+    private Preferences getPreferences() {
+        return NbPreferences.forModule(CppSettings.class);
+    }
+    
     public ResourceBundle getBundle() {
         return bundle;
     }

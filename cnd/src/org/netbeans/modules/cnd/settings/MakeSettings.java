@@ -46,12 +46,11 @@ import java.io.File;
 import java.util.ResourceBundle;
 import org.netbeans.modules.cnd.builds.ErrorExpression;
 import org.netbeans.modules.cnd.builds.ErrorExpressionEditor;
-import org.netbeans.modules.cnd.execution41.org.openide.execution.Executor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.options.SystemOption;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.SharedClassObject;
 
 /** Settings for the C/C++/Fortran Module. The compile/build options stored
  * in this class are <B>default</B> options which will be applied to new files.
@@ -60,7 +59,7 @@ import org.openide.util.NbBundle;
  *
  */
 
-public class MakeSettings extends SystemOption {
+public class MakeSettings extends SharedClassObject {
 
     /** serial uid */
     static final long serialVersionUID = 1276277545941336641L;

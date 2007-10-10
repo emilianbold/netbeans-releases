@@ -46,24 +46,18 @@ import java.io.IOException;
 import org.netbeans.editor.Settings;
 import org.netbeans.modules.cnd.builds.OutputWindowOutputStream;
 import org.netbeans.modules.cnd.editor.cplusplus.CCKit;
-import org.netbeans.modules.cnd.editor.cplusplus.CCPrintOptions;
 import org.netbeans.modules.cnd.editor.cplusplus.CCSettingsInitializer;
 import org.netbeans.modules.cnd.editor.cplusplus.CKit;
 import org.netbeans.modules.cnd.editor.fortran.FKit;
-import org.netbeans.modules.cnd.editor.fortran.FPrintOptions;
 import org.netbeans.modules.cnd.editor.fortran.FSettingsInitializer;
 import org.netbeans.modules.cnd.editor.makefile.MakefileKit;
-import org.netbeans.modules.cnd.editor.makefile.MakefilePrintOptions;
 import org.netbeans.modules.cnd.editor.makefile.MakefileSettingsInitializer;
 import org.netbeans.modules.cnd.editor.shell.ShellKit;
-import org.netbeans.modules.cnd.editor.shell.ShellPrintOptions;
 import org.netbeans.modules.cnd.editor.shell.ShellSettingsInitializer;
 import org.openide.ErrorManager;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.ModuleInstall;
 import org.openide.modules.InstalledFileLocator;
-import org.openide.options.SystemOption;
-import org.openide.text.PrintSettings;
 import org.openide.util.Utilities;
 
 public class CndModule extends ModuleInstall {
@@ -75,11 +69,11 @@ public class CndModule extends ModuleInstall {
         OutputWindowOutputStream.detachAllAnnotations();
 
         // Print Options
-        PrintSettings ps = (PrintSettings) PrintSettings.findObject(PrintSettings.class, true);
-	ps.removeOption((SystemOption)SystemOption.findObject(FPrintOptions.class, true));
-       	ps.removeOption((SystemOption)SystemOption.findObject(CCPrintOptions.class, true));
-	ps.removeOption((SystemOption)SystemOption.findObject(MakefilePrintOptions.class, true));
-	ps.removeOption((SystemOption)SystemOption.findObject(ShellPrintOptions.class, true));
+//        PrintSettings ps = (PrintSettings) PrintSettings.findObject(PrintSettings.class, true);
+//	ps.removeOption((SystemOption)SystemOption.findObject(FPrintOptions.class, true));
+//      ps.removeOption((SystemOption)SystemOption.findObject(CCPrintOptions.class, true));
+//	ps.removeOption((SystemOption)SystemOption.findObject(MakefilePrintOptions.class, true));
+//	ps.removeOption((SystemOption)SystemOption.findObject(ShellPrintOptions.class, true));
     }
 
     /** Module is being opened (NetBeans startup, or enable-toggled) */
@@ -92,11 +86,11 @@ public class CndModule extends ModuleInstall {
 	Settings.addInitializer(new MakefileSettingsInitializer(MakefileKit.class));
 	Settings.addInitializer(new ShellSettingsInitializer(ShellKit.class));
 	
-	PrintSettings ps = (PrintSettings) PrintSettings.findObject(PrintSettings.class, true);
-	ps.addOption ((SystemOption) SystemOption.findObject(FPrintOptions.class, true));
-	ps.addOption ((SystemOption) SystemOption.findObject(CCPrintOptions.class, true));
-	ps.addOption ((SystemOption) SystemOption.findObject(MakefilePrintOptions.class, true));
-	ps.addOption ((SystemOption) SystemOption.findObject(ShellPrintOptions.class, true));
+//	PrintSettings ps = (PrintSettings) PrintSettings.findObject(PrintSettings.class, true);
+//	ps.addOption ((SystemOption) SystemOption.findObject(FPrintOptions.class, true));
+//	ps.addOption ((SystemOption) SystemOption.findObject(CCPrintOptions.class, true));
+//	ps.addOption ((SystemOption) SystemOption.findObject(MakefilePrintOptions.class, true));
+//	ps.addOption ((SystemOption) SystemOption.findObject(ShellPrintOptions.class, true));
         
         if (Utilities.isUnix()) {
             setExecutionPermission("bin/dorun.sh"); // NOI18N
