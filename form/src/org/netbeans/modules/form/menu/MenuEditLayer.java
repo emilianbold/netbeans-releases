@@ -818,7 +818,7 @@ public class MenuEditLayer extends JPanel {
         try {
             //clear old bgs first
             for(RADComponent rad : selectedComponents) {
-                if(isMenuRelatedRADComponent(rad) && !isMenuBarContainer(rad)) { // don't mess w/ the menubar's background
+                if(isMenuRelatedRADComponent(rad) && !isMenuBarContainer(rad) && !isNonMenuJSeparator(rad)) { // don't mess w/ the menubar's background
                     JComponent c = (JComponent) formDesigner.getComponent(rad);
                     if(c != null) { // could be null if comp was just deleted
                         c.setBackground(getNormalBackground(c));
