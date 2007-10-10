@@ -1228,6 +1228,9 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
         try {
             int checkOffset = offset;
             if (offset == getDocument().getLength()) {
+                if (offset == 0) {
+                    return null;
+                }
                 checkOffset--;
             }
             token = getTokenChain(checkOffset, checkOffset + 1);
