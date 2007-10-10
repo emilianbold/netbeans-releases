@@ -50,6 +50,9 @@ public final class CloneRepositoryPanel extends JPanel {
     }
     
     public String getName() {
+        if (repositoryPanel == null) {
+            return null;
+        }
         return repositoryPanel.getName();
     }
     

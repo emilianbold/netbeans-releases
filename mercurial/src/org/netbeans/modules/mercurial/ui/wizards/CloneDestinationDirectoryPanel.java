@@ -64,6 +64,9 @@ public final class CloneDestinationDirectoryPanel extends JPanel implements Acti
     }
     
     public String getName() {
+        if (destinationDirectoryPanel == null) {
+            return null;
+        }
         return destinationDirectoryPanel.getName();
     }
     
