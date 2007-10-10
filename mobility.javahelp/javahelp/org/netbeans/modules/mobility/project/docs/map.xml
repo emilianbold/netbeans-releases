@@ -36,6 +36,7 @@
 	<mapID target="org.netbeans.modules.mobility.project.ui.customizer.CustomizerRun" url="ui/projectprop_running.html"/>
 	<mapID target="org.netbeans.modules.mobility.project.ui.J2MEPhysicalViewProvider$J2MEProjectRootNode" url="ui/node_project.html"/>
 	<mapID target="org.netbeans.modules.mobility.project.ui.customizer.NewConfigurationPanel" url="ui/dialog_addconfiguration.html"/>
+       	<mapID target="org.netbeans.modules.mobility.project.CfgSelectionPanel" url="ui/dialog_projectconfigs.html"/>
 	<mapID target="me.gloss_cldc" url="glossary/gloss_cldc.html"/>
 	<mapID target="me.gloss_attributes" url="glossary/gloss_attributes.html"/>
 	<mapID target="me.gloss_configuration" url="glossary/gloss_configuration.html"/>
