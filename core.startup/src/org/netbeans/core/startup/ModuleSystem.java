@@ -46,10 +46,9 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -59,13 +58,14 @@ import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.DuplicateException;
 import org.netbeans.Events;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
-import org.netbeans.Util;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
 /** Controller of the IDE's whole module system.
@@ -77,6 +77,7 @@ import org.openide.util.Exceptions;
  * @author Jesse Glick
  */
 public final class ModuleSystem {
+    private static final Logger LOG = Logger.getLogger(ModuleSystem.class.getName());
     private final ModuleManager mgr;
     private final NbInstaller installer;
     private final ModuleList list;
@@ -162,35 +163,22 @@ public final class ModuleSystem {
      * Note that they might not satisfy all their dependencies, in which
      * case oh well...
      */
-    public void loadBootModules() {	
-        // Keep a list of manifest URL prefixes which we know we do not need to
+    public void loadBootModules() {
+        // Keep a list of manifest URL bases which we know we do not need to
         // parse. Some of these manifests might be signed, and if so, we do not
         // want to touch them, as it slows down startup quite a bit.
-        Collection<String> ignoredPrefixes = new ArrayList<String>(3); // List<String>
-        try {
-            // skip the JDK/JRE libraries
-            String jdk = System.getProperty("java.home");
-            if (jdk.endsWith(File.separator + "jre")) { // NOI18N
-                jdk = jdk.substring(0, jdk.length() - 4);
-            }
-            File f = new File(jdk);
-            if (new File(new File(f, "lib"), "tools.jar").isFile()) { // NOI18N
-                // #74287: do not ignore in case we are using an embedded JRE!
-                ignoredPrefixes.add("jar:" + f.toURI().toURL()); // NOI18N
-            }
-            // skip $nbhome/lib/ext/*.jar; all fixes modules should be in
-            // $nbhome/lib/ (or perhaps elsewhere, with -cp:a)
-            String nbhomeS = System.getProperty("netbeans.home");
-            if (nbhomeS != null) {
-                File nbhome = new File(nbhomeS);
-                f = new File(new File(nbhome, "lib"), "ext"); // NOI18N
-                ignoredPrefixes.add("jar:" + f.toURI().toURL()); // NOI18N
-            }
-        } catch (MalformedURLException e) {
-            Util.err.log(Level.WARNING, null, e);
+        Set<File> ignoredJars = new HashSet<File>();
+        String javaHome = System.getProperty("java.home"); // NOI18N
+        if (javaHome != null) {
+            File lib = new File(new File(javaHome).getParentFile(), "lib"); // NOI18N
+            ignoredJars.add(new File(lib, "tools.jar")); // NOI18N
+            ignoredJars.add(new File(lib, "dt.jar")); // NOI18N
         }
-        Util.err.log(Level.FINE, "ignoredPrefixes={0}", ignoredPrefixes);
-        
+        for (String entry : System.getProperty("sun.boot.class.path", "").split(File.pathSeparator)) { // NOI18N
+            ignoredJars.add(new File(entry));
+        }
+        LOG.log(Level.FINE, "Ignored JARs: {0}", ignoredJars);
+            
         mgr.mutexPrivileged().enterWriteAccess();
         ev.log(Events.START_LOAD_BOOT_MODULES);
         try {
@@ -208,14 +196,16 @@ public final class ModuleSystem {
                     // Already seen, ignore.
                     continue;
                 }
-                String manifestUrlS = manifestUrl.toExternalForm();
-                for (String pref: ignoredPrefixes) {
-                    if (manifestUrlS.startsWith(pref)) {
-                        Util.err.log(Level.FINE, "ignoring JDK/JRE manifest: {0}", manifestUrlS);
+                URL jarURL = FileUtil.getArchiveFile(manifestUrl);
+                try {
+                    if (jarURL != null && jarURL.getProtocol().equals("file") && ignoredJars.contains(new File(jarURL.toURI()))) {
+                        LOG.log(Level.FINE, "ignoring JDK/JRE manifest: {0}", manifestUrl);
                         continue MANIFESTS;
                     }
+                } catch (URISyntaxException x) {
+                    Exceptions.printStackTrace(x);
                 }
-                Util.err.log(Level.FINE, "Checking boot manifest: {0}", manifestUrlS);
+                LOG.log(Level.FINE, "Checking boot manifest: {0}", manifestUrl);
                 
                 InputStream is;
                 try {
@@ -249,9 +239,9 @@ public final class ModuleSystem {
             // Probably if a bootstrap module is corrupt we are in pretty bad shape
             // anyway, so don't bother trying to be fancy and install just some of
             // them etc.
-            Util.err.log(Level.WARNING, null, ioe);
+            LOG.log(Level.WARNING, null, ioe);
         } catch (DuplicateException de) {
-            Util.err.log(Level.WARNING, null, de);
+            LOG.log(Level.WARNING, null, de);
         } finally {
             // Not 100% accurate in this case:
             ev.log(Events.FINISH_LOAD_BOOT_MODULES);
