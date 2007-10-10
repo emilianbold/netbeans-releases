@@ -58,6 +58,7 @@ import org.netbeans.modules.websvc.manager.ui.AddWebServiceDlg;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor.Task;
 
 /**
  * A model to keep track of web service data and their group
@@ -294,13 +295,18 @@ public class WebServiceListModel {
     }
     
     public WebServiceData getWebServiceData(String wsdlUrl, String serviceName) {
-        WebServiceData target = findWebServiceData(wsdlUrl, serviceName, false);
+        final WebServiceData target = findWebServiceData(wsdlUrl, serviceName, false);
         if (target != null && ! target.isReady()) {
+            Runnable run = new Runnable() {
+                public void run() {
             try {
                 WebServiceManager.getInstance().ensureWebServiceClientReady(target);
             } catch (IOException ex) {
                 Logger.global.log(Level.INFO, ex.getLocalizedMessage(), ex);
             }
+            }};
+            Task t = WebServiceManager.getInstance().getRequestProcessor().post(run);
+            t.waitFinished();
         }
         return target;
     }
