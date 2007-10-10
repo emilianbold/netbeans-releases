@@ -71,9 +71,13 @@ public class ExportDiff implements PropertyChangeListener {
     /** Creates a new instance of ExportDiff */
     public ExportDiff(File repository) {
         panel = new ExportDiffPanel(repository);
-        okButton = new JButton(org.openide.util.NbBundle.getMessage(ExportDiff.class, "CTL_ExportForm_Action_Export")); // NOI18N
+        okButton = new JButton();
+        org.openide.awt.Mnemonics.setLocalizedText(okButton, org.openide.util.NbBundle.getMessage(ExportDiff.class, "CTL_ExportForm_Action_Export")); // NOI18N
+        okButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ExportDiff.class, "ACSN_ExportForm_Action_Export")); // NOI18N
         okButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ExportDiff.class, "ACSD_ExportForm_Action_Export")); // NOI18N
-        cancelButton = new JButton(org.openide.util.NbBundle.getMessage(ExportDiff.class, "CTL_ExportForm_Action_Cancel")); // NOI18N
+        cancelButton = new JButton();
+        org.openide.awt.Mnemonics.setLocalizedText(cancelButton, org.openide.util.NbBundle.getMessage(ExportDiff.class, "CTL_ExportForm_Action_Cancel")); // NOI18N
+        cancelButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ExportDiff.class, "ACSN_ExportForm_Action_Cancel")); // NOI18N
         cancelButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ExportDiff.class, "ACSD_ExportForm_Action_Cancel")); // NOI18N
         this.listener = new DocumentListener() {
             public void insertUpdate(DocumentEvent e) { nameChange(); }
