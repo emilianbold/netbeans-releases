@@ -74,15 +74,14 @@ public class FileInfoQueryImpl extends CsmFileInfoQuery {
         if (file instanceof FileImpl) {
             FileImpl fileImpl = (FileImpl)file;
             try {
-                APTFile apt = APTDriver.getInstance().findAPT(fileImpl.getBuffer());
-                // seems next line fits better here but APTLight is not precise, see IZ115345
-                // APTFile aptLight = fileImpl.getProjectImpl().getAPTLight(fileImpl);
+                //APTFile apt = APTDriver.getInstance().findAPT(fileImpl.getBuffer());
+                APTFile apt = APTDriver.getInstance().findAPTLight(fileImpl.getBuffer());
                 if (apt != null) {
                     APTFindUnusedBlocksWalker walker = 
                         new APTFindUnusedBlocksWalker(apt, fileImpl, fileImpl.getPreprocHandler());
                     walker.visit();
                     out = walker.getBlocks();
-                }
+               }
             }
             catch (IOException ex) {
                 ex.printStackTrace();
