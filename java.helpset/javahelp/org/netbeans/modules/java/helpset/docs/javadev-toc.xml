@@ -167,12 +167,12 @@
     <tocitem text="Setting Layout Properties" target="gui.layouts.props" />
     </tocitem>    
     <tocitem text="Adding a Bean to the Palette Window" target="beans.adding" />
-    <tocitem text="Configuring the GUI Builder" target="gui.config" />
-    </tocitem>
     <tocitem text="Binding Beans to Data and Other Beans">
-      <tocitem text="About Beans Binding" target="gui.bind.about">
-          
+      <tocitem text="About Beans Binding" target="gui.bind.about"/>
       </tocitem>
+    <tocitem text="Configuring the GUI Builder" target="gui.config" />
+
+    </tocitem>
     <tocitem text="Internationalizing Source Code">
     <tocitem text="About" target="internation.internation"/>
     <tocitem text="Internationalizing a Single File" target="internation.singlefile" />
