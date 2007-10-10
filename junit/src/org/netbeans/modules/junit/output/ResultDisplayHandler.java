@@ -61,11 +61,6 @@ import org.netbeans.modules.junit.JUnitSettings;
 final class ResultDisplayHandler {
     
     /** */
-    private static final String ID_TREE = "tree";                       //NOI18N
-    /** */
-    private static final String ID_OUTPUT = "output";                   //NOI18N
-    
-    /** */
     private static java.util.ResourceBundle bundle = org.openide.util.NbBundle.getBundle(
             ResultDisplayHandler.class);
     
