@@ -98,7 +98,7 @@ public class NbPlatformTest extends TestBase {
     
     public void testGetSourceLocationOfModule() throws Exception {
         NbPlatform p = NbPlatform.getDefaultPlatform();
-        assertEquals("Right source location for beans.jar", file("beans"), p.getSourceLocationOfModule(file("nbbuild/netbeans/" + TestBase.CLUSTER_IDE + "/modules/org-netbeans-modules-beans.jar")));
+        assertEquals("Right source location for image.jar", file("image"), p.getSourceLocationOfModule(file("nbbuild/netbeans/" + TestBase.CLUSTER_IDE + "/modules/org-netbeans-modules-image.jar")));
     }
     
     public void testIsPlatformDirectory() throws Exception {
@@ -257,12 +257,9 @@ public class NbPlatformTest extends TestBase {
             assertTrue(f2.mkdir());
         }
         URL[] us = {f1.toURI().toURL(), f2.toURI().toURL()};
-        String path = def.urlsToAntPath(us);
-        URL[] rus = def.findURLs(path);
-        assertEquals(us.length, rus.length);
-        for (int i = 0; i < us.length; i++) {
-            assertEquals(path, us[i].toExternalForm(), rus[i].toExternalForm());
-        }
+        String path = NbPlatform.urlsToAntPath(us);
+        URL[] rus = NbPlatform.findURLs(path);
+        assertEquals(path, Arrays.asList(us), Arrays.asList(rus));
     }
     
     public void testHarnessVersionDetection() throws Exception {
