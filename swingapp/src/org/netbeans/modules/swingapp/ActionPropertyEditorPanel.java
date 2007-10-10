@@ -917,8 +917,13 @@ private void targetClassButtonActionPerformed(java.awt.event.ActionEvent evt) {/
     if(cp.getSelectedFile() != null) {
         selectedSourceFile = cp.getSelectedFile();
         String selectedClass = AppFrameworkSupport.getClassNameForFile(cp.getSelectedFile());
-        classField.setText(selectedClass);
-        classLabel.setText(selectedClass);
+        if(AppFrameworkSupport.getFileForClass(sourceFile, selectedClass) == null) {
+            classField.setText("");
+            classLabel.setText("");
+        } else {
+            classField.setText(selectedClass);
+            classLabel.setText(selectedClass);
+        }
     }
 }//GEN-LAST:event_targetClassButtonActionPerformed
 
