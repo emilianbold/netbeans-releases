@@ -137,7 +137,7 @@
     <tocitem text="About Profiling Java Applications" target="profiling_javaapp"/>
     </tocitem>
     <tocitem text="Building Java GUIs">
-    <tocitem text="About Java GUIs" target="gui.about"/>
+    <tocitem text="About the GUI Builder" target="gui.about"/>
     <tocitem text="Working with the GUI Builder" target="gui.overview"/>
     <tocitem text="GUI Builder Tasks: Quick Reference" target="gui.quickref"/>
     <tocitem text="Designing Java GUIs">      
