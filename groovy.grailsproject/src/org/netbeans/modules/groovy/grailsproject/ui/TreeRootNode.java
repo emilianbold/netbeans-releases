@@ -70,6 +70,8 @@ import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
+import javax.swing.Action;
+import org.netbeans.modules.groovy.grailsproject.actions.NewControllerAction;
 
 /**
  * 
@@ -100,6 +102,24 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
         g.addPropertyChangeListener(WeakListeners.propertyChange(this, g));
     }
 
+    
+    /*  Here we can customize the Actions on the different source-directories.
+        Dispatching based on the Nodes name (better type) needs to be done here.
+     */
+    
+    public Action[] getActions(boolean context) {
+        List<Action> result = new ArrayList<Action>();
+
+        
+        if(g.getDisplayName().startsWith("Controllers")){
+            result.add(new NewControllerAction());
+            return result.toArray(new Action[result.size()]);
+                }
+    
+        return new Action[0];
+        }
+    
+    
     /** Copied from PackageRootNode with modifications. */
     private Image computeIcon(boolean opened, int type) {
         Icon icon = g.getIcon(opened);
