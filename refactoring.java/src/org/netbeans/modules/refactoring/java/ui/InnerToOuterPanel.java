@@ -48,7 +48,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.api.InnerToOuterRefactoring;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 
@@ -62,15 +61,17 @@ public class InnerToOuterPanel extends JPanel implements CustomRefactoringPanel 
     // refactoring this panel provides parameters for
     private final InnerToOuterRefactoring refactoring;
     private final ChangeListener parent;
+    private boolean disableDeclareFields;
     
     /** Creates new form InnerToOuterPanel
      * @param refactoring The refactoring this panel provides parameters for.
      */
-    public InnerToOuterPanel(InnerToOuterRefactoring refactoring, final ChangeListener parent) {
+    public InnerToOuterPanel(InnerToOuterRefactoring refactoring, final ChangeListener parent, boolean disableDeclareFields) {
         this.refactoring = refactoring;
         this.parent = parent;
         initComponents();
         setPreferredSize(new Dimension(300, 130));
+        this.disableDeclareFields = disableDeclareFields;
     }
     
     public Component getComponent() {
@@ -80,11 +81,10 @@ public class InnerToOuterPanel extends JPanel implements CustomRefactoringPanel 
     /** Initialization of the panel (called by the parent window).
      */
     public void initialize() {
-        final boolean isInterface = RetoucheUtils.getElementKind(refactoring.getSourceType()).isInterface();
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 classNameField.setText(refactoring.getClassName());
-                if (isInterface) {
+                if (disableDeclareFields) {
                     fieldCheckBox.setEnabled(false);
                 } else if (refactoring.getReferenceName() != null) {
                     fieldNameField.setText(refactoring.getReferenceName());

@@ -40,6 +40,9 @@
  */
 package org.netbeans.modules.refactoring.java.ui;
 
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Modifier;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
@@ -64,11 +67,15 @@ public class InnerToOuterRefactoringUI implements RefactoringUI {
     // UI panel for collecting parameters
     private InnerToOuterPanel panel;
     
+    private boolean disableDeclareFields;
+    
     /** Creates a new instance of InnerToOuterRefactoringUI
      * @param selectedElements Elements the refactoring action was invoked on.
      */
     public InnerToOuterRefactoringUI(TreePathHandle sourceType, CompilationInfo info) {
         refactoring = new InnerToOuterRefactoring(sourceType);
+        Element temp = sourceType.resolveElement(info);
+        disableDeclareFields = temp.getModifiers().contains(Modifier.STATIC) || temp.getKind() !=ElementKind.CLASS;
     }
     
     // --- IMPLEMENTATION OF RefactoringUI INTERFACE ---------------------------
@@ -79,7 +86,7 @@ public class InnerToOuterRefactoringUI implements RefactoringUI {
 
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
         if (panel == null) {
-            panel = new InnerToOuterPanel(refactoring, parent);
+            panel = new InnerToOuterPanel(refactoring, parent, disableDeclareFields);
         }
         return panel;
     }
