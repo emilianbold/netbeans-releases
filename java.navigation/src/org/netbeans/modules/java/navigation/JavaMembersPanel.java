@@ -146,7 +146,7 @@ public class JavaMembersPanel extends javax.swing.JPanel {
                         Utils.firstRow(javaMembersTree);
                     }
                 },
-                KeyStroke.getKeyStroke(KeyEvent.VK_HOME, 0, true),
+                KeyStroke.getKeyStroke(KeyEvent.VK_HOME, 0, false),
                 JComponent.WHEN_FOCUSED);
 
         filterTextField.registerKeyboardAction(
@@ -155,7 +155,7 @@ public class JavaMembersPanel extends javax.swing.JPanel {
                         Utils.previousRow(javaMembersTree);
                     }
                 },
-                KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0, true),
+                KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0, false),
                 JComponent.WHEN_FOCUSED);
 
         filterTextField.registerKeyboardAction(
@@ -164,7 +164,7 @@ public class JavaMembersPanel extends javax.swing.JPanel {
                         Utils.nextRow(javaMembersTree);
                     }
                 },
-                KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0, true),
+                KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0, false),
                 JComponent.WHEN_FOCUSED);
 
         filterTextField.registerKeyboardAction(
@@ -173,7 +173,7 @@ public class JavaMembersPanel extends javax.swing.JPanel {
                         Utils.lastRow(javaMembersTree);
                     }
                 },
-                KeyStroke.getKeyStroke(KeyEvent.VK_END, 0, true),
+                KeyStroke.getKeyStroke(KeyEvent.VK_END, 0, false),
                 JComponent.WHEN_FOCUSED);
 
         signatureEditorPane.putClientProperty(

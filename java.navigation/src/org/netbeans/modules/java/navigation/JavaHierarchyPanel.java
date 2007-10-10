@@ -142,7 +142,7 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
                 Utils.firstRow(javaHierarchyTree);
             }
         },
-                KeyStroke.getKeyStroke(KeyEvent.VK_HOME, 0, true),
+                KeyStroke.getKeyStroke(KeyEvent.VK_HOME, 0, false),
                 JComponent.WHEN_FOCUSED);
 
         filterTextField.registerKeyboardAction(
@@ -151,7 +151,7 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
                 Utils.previousRow(javaHierarchyTree);
             }
         },
-                KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0, true),
+                KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0, false),
                 JComponent.WHEN_FOCUSED);
 
         filterTextField.registerKeyboardAction(
@@ -160,7 +160,7 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
                 Utils.nextRow(javaHierarchyTree);
             }
         },
-                KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0, true),
+                KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0, false),
                 JComponent.WHEN_FOCUSED);
 
         filterTextField.registerKeyboardAction(
@@ -169,7 +169,7 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
                 Utils.lastRow(javaHierarchyTree);
             }
         },
-                KeyStroke.getKeyStroke(KeyEvent.VK_END, 0, true),
+                KeyStroke.getKeyStroke(KeyEvent.VK_END, 0, false),
                 JComponent.WHEN_FOCUSED);
 
         signatureEditorPane.putClientProperty(
