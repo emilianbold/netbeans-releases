@@ -1,0 +1,141 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+            "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+*     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+    <head>
+        <title>Viewing File Status Information</title>
+        <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+        <link href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css"
+            rel="StyleSheet" type="text/css">
+    </head>
+    
+    <body>
+        <h2>Viewing File Status Information</h2>
+        
+        <p><small><a href="#seealso">See Also</a></small></p>
+        
+        <p>The IDE's Mercurial support enables you to view and manage the evolution
+        of changes in version-controlled files.</p>
+        
+        <h3>Viewing Revision Information<a name="viewing"></a></h3>
+        
+        <p>The IDE's Mercurial support enables you to view version status information in 
+            many of the IDE's windows, including the Status, 
+            Projects, Files, and Favorites windows. The <a href="mercurial-statuswindow.html">Status Window</a>, however, represents 
+            the primary place within which to manage version-controlled files by displaying a 
+            list of all of the new, modified, and removed files in the currently selected project 
+            or directory.</p>
+        
+        <h4>To open the Status window, choose either:</h4>
+        
+        <ul>
+            <li>Mercurial &gt; Status from the right-click menu of a version-controlled 
+                file or folder from the Projects, Files, or Favorites window.</li>
+            <li>Versioning &gt; Status from the main menu.</li>
+            <li>Choose Window &gt; Versioning &gt; Mercurial from the main menu.</li>                
+        </ul>
+        
+        <h4>The IDE's Mercurial support provides file status information in the following ways:</h4>
+        
+        <ul>
+            <li><strong>Status Labels</strong>. Textual indication of file status in the Status, 
+                Projects, Files, and Favorites windows. To display status labels, choose View 
+                &gt; Show Versioning Labels from the main menu.</li>
+            <li><strong>Status Color</strong>. Graphical indication of file status in the Status, 
+                Projects, Files, and Favorites windows.</li>
+            <li><strong>Status Badges</strong>. Graphical indication of the status of files contained 
+                within your project, folder, and package nodes. Displayed in the Projects, Files, 
+                and Favorites windows.</li>
+            <li><strong>Revision Annotations</strong>. Displays commit message, author, date, and 
+                revision number information in the left margin of files open in the Source Editor. 
+                To display annotations, select a versioned file and choose Show Annotations (or 
+                Mercurial &gt; Show Annotations) from its right-click menu. Alternatively, choose 
+                Versioning, &gt; Show Annotations from the main menu.</li>
+        </ul>
+        
+        <p>The IDE displays version-controlled files using the following color coding and font styles:</p>
+        
+        <table border="1" cellpadding="5">
+            <tr>
+                <th>Color Coding</th>
+                <th align="center">Description</th>
+            </tr>
+            <tr>
+                <td><img src="images/green_status.png" alt="green status"></td>
+                <td><strong>Green</strong>. Indicates that the file is a new
+                    local file that does not yet exist in the repository.</td>
+            </tr>
+            <tr>
+                <td><img src="images/blue_status.png" alt="blue status"></td>
+                <td><strong>Blue</strong>. Indicates that the file has been 
+                    modified locally.</td>
+            </tr>
+            <tr>
+                <td><img src="images/red_status.png" alt="red status"></td>
+                <td><strong>Red</strong>. Indicates that the file contains conflicts.
+                    You must employ the Resolve Conflicts command (Mercurial &gt; Resolve 
+                    Conflicts) for such files.</td>
+            </tr>
+            <tr>
+                <td><img src="images/grey_status.png" alt="grey status"></td>
+                <td><strong>Grey</strong>. Indicates that the file is ignored by Mercurial 
+                    and will not be included when calling versioning commands. In the
+                    <a href="csh/svn_versioning_window.html">Status window</a>, grey 
+                    text signifies deleted files.</td>
+            </tr>                    
+            <tr>
+                <td><img src="images/strikethrough_status.png" alt="strike-through status"></td>
+                <td><strong>Strike-through</strong>. Indicates that the file is excluded when 
+                    calling the Commit command. All other Mercurial commands, however, work as 
+                    usual. Note that files displayed in the strike-through style only appear in 
+                    the Status window and Commit dialog. They will not appear in Diff panes, 
+                    nor will their parent folders (or packages) display badges if they are modified.</td>
+            </tr>
+        </table>
+        
+        <br>
+        <p>Current Mercurial file status is indicated by adding the following badges
+            to project, package and directory icons:</p>
+        
+        <table border="1" cellpadding="5">
+            <tr>
+                <th>Badge</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td><img src="images/blue_badge.png" alt="blue badge"></td>
+                <td><strong>Locally Modified Badge</strong>. A blue badge on a folder or 
+                    package node marks folders or packages that contain locally modified 
+                    or new files. In the case of packages, this badge applies only to the 
+                    package itself and not its subpackages. For folders, the badge indicates 
+                    local modifications in that folder or any of its subfolders.</td>
+            </tr>
+            <tr>
+                <td><img src="images/red_badge.png" alt="red badge"></td>
+                <td><strong>Conflict Badge</strong>. A red badge on a folder or package node
+                    marks folders or packages that contain files for which the repository 
+                    copy of the file contains changes which conflict with the local version. 
+                    In case of packages, this badge applies only to the package itself and not 
+                    its subpackages. For folders, the badge indicates local modifications in 
+                    that folder or any of its subfolders.</td>
+            </tr>
+        </table>
+        
+        <ul class="note">
+            <li>Note that the parent folders (or packages) of files excluded from commits
+                and displayed in the strike-through style will not display badges if they 
+                are modified.</li>
+        </ul>
+        
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="mercurial-quickref.html">Mercurial Tasks: Quick Reference</a></dd>            
+        </dl>
+        
+        <hr><small><a href="../credits.html">Legal Notices</a></small>
+        <br><br><br>
+    </body>
+</html>

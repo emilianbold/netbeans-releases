@@ -54,6 +54,7 @@ import java.awt.Cursor;
 import java.io.*;
 import java.util.logging.Level;
 import org.netbeans.modules.mercurial.Mercurial;
+import org.netbeans.modules.mercurial.util.HgUtils;
 
 /**
  * Top component of the Versioning view.
@@ -138,13 +139,24 @@ public class HgVersioningTopComponent extends TopComponent {
     private void updateTitle() {
         SwingUtilities.invokeLater(new Runnable (){
             public void run() {
+                
                 if (contentTitle == null) {
                     setName(NbBundle.getMessage(HgVersioningTopComponent.class, "CTL_Versioning_TopComponent_Title")); // NOI18N
                 } else {
+                    File baseFile = HgUtils.getRootFile(context);
+                    String name = "";
+                    if(baseFile != null){
+                        name = baseFile.getName();
+                    }
+                    
                     if (branchTitle == null) {
-                        setName(NbBundle.getMessage(HgVersioningTopComponent.class, "CTL_Versioning_TopComponent_MultiTitle", contentTitle));  // NOI18N
+                        setName(NbBundle.getMessage(HgVersioningTopComponent.class, 
+                                "CTL_Versioning_TopComponent_MultiTitle", 
+                                contentTitle, name.equals(contentTitle)? "": "[" + name + "]"));  // NOI18N
                     } else {
-                        setName(NbBundle.getMessage(HgVersioningTopComponent.class, "CTL_Versioning_TopComponent_Title_ContentBranch", contentTitle, branchTitle)); // NOI18N
+                        setName(NbBundle.getMessage(HgVersioningTopComponent.class, 
+                                "CTL_Versioning_TopComponent_Title_ContentBranch", 
+                                contentTitle, name.equals(contentTitle)? "": "[" + name + "] ", branchTitle)); // NOI18N
                     }
                 }                
             }

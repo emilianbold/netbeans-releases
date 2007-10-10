@@ -1,0 +1,111 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+            "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+*     Copyright � 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+    <head>
+        <title>Mercurial: Status Window</title>
+        <link href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" 
+            rel="StyleSheet" type="text/css">
+    </head>
+    
+    <body>
+        <h2>Mercurial: Status Window</h2>
+        
+        <p><small><a href="#seealso">See Also</a></small></p>
+        
+        <p>The Mercurial Status window presents a real-time view of the changes made in 
+            your local working copy for selected version-controlled directories. It opens by 
+            default in the bottom panel of the IDE, listing added, deleted or modified files.</p>
+            
+        <p>To open the Status window, choose Window &gt; Versioning &gt; Mercurial from the 
+            main menu. Alternately, you can select a versioned file or folder (e.g. from the Projects,
+            Files, or Favorites window) and either choose Mercurial &gt; Status from the 
+            right-click menu, or choose Versioning &gt; Status from the main menu.</p>
+        
+        <p>By default, the Status window displays a list of all modified files within the selected 
+            package or folder. The toolbar label includes the current revision of the working directory and the 
+            Mercurial ChangeSet ID. You can click the column headings above the listed files to sort 
+            the files by name, status or location.</p>
+            
+        <p>The Status window toolbar includes buttons that enable you to invoke the most common 
+            Mercurial tasks on all files displayed in the list. The following table lists the Mercurial 
+            commands available in the toolbar of the Status window:</p>
+            
+        <table border="1" cellpadding="5">
+            <tr>
+                <th>Icon</th>
+                <th style="width:100px">Name</th>
+                <th>Function</th>
+            </tr>
+            <tr>
+                <td align="center"><img src="images/refresh.png" alt="refresh status icon"></td>
+                <td align="center"><strong>Refresh Status</strong></td>
+                <td>Refreshes the status of the selected files. Files displayed 
+                    in the Status window can be refreshed to reflect any changes that
+                    may have been made externally.</td>
+            </tr>
+            <tr>
+                <td align="center"><img src="images/diff.png" alt="diff all icon"></td>
+                <td align="center"><strong>Diff All</strong></td>
+                <td>Opens the Diff Viewer providing you with a side-by-side comparison of 
+                    your local copies and the versions maintained in the repository.</td>
+            </tr>     
+            <tr>
+                <td align="center"><img src="images/update.png" alt="update all icon"></td>
+                <td align="center"><strong>Update All</strong></td>
+                <td>Updates the working directory from the repository.</td>
+            </tr>
+            <tr>
+                <td align="center"> </td>
+                <td align="center"><strong>Update Target</strong></td>
+                <td>Allows you to specify the revision to update the working directory to, when clicking on Update All.</td>
+            </tr>
+            <tr>
+                <td align="center"><img src="images/commit.png" alt="commit all icon"></td>
+                <td align="center"><strong>Commit All</strong></td>
+                <td>Enables you to commit local changes to the repository.</td>
+            </tr>            
+        </table>
+        
+        <br>
+        <p>You can access other Mercurial commands in the Status window by selecting a table 
+            row that corresponds to a modified file, and choosing a command from the right-click menu.
+            You can, for example, perform the following actions on a file:</p>
+            
+        <ul>
+            <li><strong>Open</strong>. Open the file in the Source Editor.</li>
+            <li><strong>Diff</strong>. Launch the Diff Viewer for this file, 
+                to comapare the local file with that stored in the Repository.</li>
+            <li><strong>Commit</strong>. Launches the Commit Dialog to allow this file to be Comitted.</li>
+            <li><strong>Mark as Resolved</strong>. Allows you to mark a file that is in a Conflict state after a Merge as resolved.</li>
+            <li><strong>Show Annotations</strong>. Displays commit message, author, date, and revision number 
+                information in the left margin of files open in the Source Editor..</li>
+            <li><strong>Revert Modifications</strong>. Enables you to revert any changes to the copy 
+                in your local working directory back to the current version maintained in the repository.</li>
+            <li><strong>Revert Delete</strong>. Enables you to revert any delete actions that you have committed
+                to files in your local working copy. When you invoke the Revert Delete command, the specified 
+                file(s) will be retrieved from the repository and reinstated into your local working copy.</li>               
+            <li><strong>Exclude from Commit</strong>. Allows you to mark the file to be excluded when 
+                performing a commit.</li>
+        </ul>
+
+        <h4>Notes:</h4>
+        <ul class="note">
+            <li>You can also exclude files from a commit in the Commit dialog box.</li>
+            <li>You can select multiple files in the Status window by holding down the Ctrl key 
+                when you select files.</li>
+        </ul>
+        
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="mercurial-diffviewer.html">Comparing File Revisions in Mercurial</a></dd>
+        </dl>
+        
+        <hr>
+        <small><a href="../credits.html">Legal Notices</a></small>
+        <br><br><br>
+    </body>
+</html>

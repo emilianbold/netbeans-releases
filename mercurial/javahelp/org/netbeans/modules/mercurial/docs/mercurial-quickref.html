@@ -1,0 +1,151 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+            "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+*     Copyright � 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+    <head>
+        <title>Mercurial Tasks: Quick Reference</title>
+        <link href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css"
+              rel="StyleSheet" type="text/css">
+    </head>
+    <body>
+        
+        <h2>Mercurial Tasks: Quick Reference</h2>
+        
+        <p><small><a href="#seealso">See Also</a></small></p>
+        
+        <p>The following table describes common Mercurial tasks.</p>
+        
+        <table border="1" cellpadding="5">
+            <tr>
+                <th>To perform this task:</th>
+                <th>Follow these steps:</th>
+            </tr>
+            <tr>
+                <td><strong>Initialize a Mercurial Repository</strong></td>
+                <td>
+                    <ol>
+                        <li>Select the NetBeans project you wish to put under Mercurial version control.</li>
+                        <li>Choose Versioning &gt; Mercurial &gt; Initialize Mercurial Repository 
+                            from the main menu.</li>
+                        <li>The project will be placed under Mercurial control. You will then need to Commit the Project files.</li>
+                    </ol>
+                </td>
+            </tr>
+            <tr>
+                <td><strong>Clone a remote Repository</strong></td>
+                <td>
+                    <ol>
+                        <li>Choose Versioning &gt; Mercurial &gt; Clone Other... 
+                            from the main menu.</li>
+                        <li>In the Mercurial Clone Other... wizard, specify the location of the Mercurial repository, 
+                            and click Next.</li>
+                        <li>In the Parent Directory, specify the location on your computer where you want the 
+                            Clone to reside.</li>
+                        <li>In the Clone Name, specify the name of the Clone.</li>
+                        <li>Click Finish to Clone the remote repository.</li>
+                    </ol>
+                </td>
+            </tr>
+            <tr>
+                <td><strong>View versioning information</strong></td>
+                <td>
+                    <ol>
+                        <li>Select a project, directory, or file that is in a Mercurial working 
+                            directory</li>
+                        <li>Choose Mercurial &gt; Status from the right-click menu. The
+                            Status window opens to display versioning information on the selected item(s).</li>
+                    </ol>
+                </td>
+            </tr>                
+            <tr>
+                <td><strong>Diff files</strong></td>
+                <td>
+                    <ol>
+                        <li>Select the file that you want to perform a diff on.</li>
+                        <li>Choose Mercurial &gt; <a href="mercurial-diffviewer.html">Diff</a> 
+                            from the right-click menu.</li>
+                    </ol>
+                </td>
+            </tr>
+            <tr>
+                <td><strong>Update project</strong></td>
+                <td>
+                    <ol>
+                        <li>Select the project that you want to update</li>
+                        <li>Choose Mercurial &gt; Update from 
+                            the right-click menu.</li>
+                        <li>This will update the working directory to match the repository contents.</li>
+                    </ol>
+                </td>
+            </tr>
+            <tr>
+                <td><strong>Commit changes</strong></td>
+                <td>
+                    <ol>
+                        <li>Select the file or directory that you want to commit.</li>
+                        <li>Choose Mercurial &gt; Commit from right-click menu.</li>
+                    </ol>
+                </td>
+            </tr>
+            <tr>
+                <td><strong>Create a patch</strong></td>
+                <td>
+                    <ol>
+                        <li>Select the locally modified file or folder and choose Versioning &gt;
+                            Export Diff from the main menu.</li>
+                        <li>Select the revision to export.</li>
+                        <li>Enter a name and location where you want to save the patch.</li>
+                        <li>The default is to place it in /tmp/%b_%r_%h. Where %b = Project Name, %r = revision and %h = ChangeSet ID </li>
+                        <li>Click Export.</li>
+                    </ol>
+                </td>
+            </tr>
+            <tr>
+                <td><strong>Import a patch</strong></td>
+                <td>
+                    <ol>
+                        <li>Select the Mercurial controlled Project and choose Versioning &gt;
+                            Import Patches... from the main menu.</li>
+                        <li>Type the path or navigate to the patch file you want to apply.</li>
+                        <li>Click Ok.</li>
+                    </ol>
+                </td>
+            </tr>
+            <tr>
+                <td><strong>Push to default</strong></td>
+                <td>
+                    <ol>
+                        <li>Select the Cloned Mercurial Project you want to Push changes to.</li>
+                        <li>Choose Mercurial &gt; Push to default from right-click menu.</li>
+                        <li>This will Push changes to the Clone's parent Repository.</li>
+                    </ol>
+                </td>
+            </tr>
+            <tr>
+                <td><strong>Pull from default</strong></td>
+                <td>
+                    <ol>
+                        <li>Select the Cloned Mercurial Project you want to Pull changes into.</li>
+                        <li>Choose Mercurial &gt; Pull from default from right-click menu.</li>
+                        <li>This will Pull changes from the Clone's parent Repository.</li>
+                    </ol>
+                </td>
+            </tr>
+        </table>
+ 
+        <h4>Notes:</h4>
+        <ul class="note">
+             <li>The default Push/Pull locations can be changed from the Projects Mercurial &gt; Properties dialog.</li>
+        </ul>
+         
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="mercurial-about.html">About Mercurial</a></dd>
+        </dl>
+        <hr><small><a href="../credits.html">Legal Notices</a></small>
+        <br><br><br>
+    </body>
+</html>

@@ -1,0 +1,111 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+            "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+*     Copyright � 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+    <head>
+	<title>Mercurial: Diff Viewer</title>
+        <link href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css"
+            rel="StyleSheet" type="text/css">
+    </head>
+    
+    <body>
+	<h2>Mercurial: Diff Viewer</h2
+        
+	<p>The IDE's graphical Diff Viewer enables you to compare 
+            revisions of a file side by side using color coding to emphasize the differences 
+            between the files being compared.</p>
+            
+	<p>You access the Diff Viewer in one of the following manners:</p> 
+            
+        <ul>
+            <li>select a version-controlled file or folder (e.g. from the Projects, Files or 
+                Favorites window) and choose either Mercurial &gt; Diff from the right-click menu or
+                Versioning &gt; Diff from the main menu.</li>
+            <li>select the Diff view from the <a href="mercurial-statuswindow.html">Status Window</a>.</li>
+        </ul>
+        
+        <h4>The Diff Viewer tool bar provides you with the following functionality:</h4>
+
+        <ul>                
+            <li>Navigate among differences found in the compared files. Choose to view differences 
+                as they appear from top to bottom by clicking the appropriate icon:
+                
+                <ul>
+                    <li><img src="images/diff-prev.png" alt="previous difference button">: Go to 
+                        previous difference.</li>
+                    <li><img src="images/diff-next.png" alt="next difference button">: Go to next 
+                        difference.</li>
+                </ul></li>
+        
+            <li>Refresh the status of the diff (e.g. in the event that changes to your local
+                working directory have been made externally), and update the status of the 
+                repository versions of files listed in the diff:
+            
+                <ul>
+                    <li><img src="images/update.png" alt="update button">: Update the working directory from the repository.</li>
+                </ul></li>
+                
+            <li>Commit any changes contained in your local working directory:
+            
+                <ul>
+                    <li><img src="images/commit.png" alt="commit button">: Commit the selected 
+                        item to the repository.</li>
+                </ul></li>
+        </ul>
+                
+        <h4>The Diff Viewer provides the following UI components:</h4>
+        
+        <table border="1" cellpadding="5">
+            <tr>
+                <td align="right"><strong>Blue</strong> 
+                    ( <span style="background-color:#b8cfe5">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> )</td>
+                <td>Indicates lines that have been changed since the earlier revision.</td>
+            </tr>
+            <tr>
+                <td align="right"><strong>Green</strong> 
+                    ( <span style="background-color:#b4ffb4">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> )</td>
+                <td>Indicates lines that have been added since the earlier revision.</td>
+            </tr>
+            <tr>
+                <td align="right"><strong>Red</strong> 
+                    ( <span style="background-color:#ffa0b4">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> )</td>
+                <td>Indicates lines that have been removed since the earlier revision.</td>                
+            </tr>
+        </table>
+        
+        <ul class="note">
+            <li>The above color settings are set by default within the IDE. You can modify 
+                these settings by choosing Tools &gt; Options from the main menu, then clicking
+                Advanced Options. Expand IDE Configuration &gt; Server and External Tool Settings
+                &gt; Diff and Merge Types &gt; Diff Visualizers &gt; Graphical Diff Viewer.
+                From the right panel, you can select the colors of your choice.</li>
+        </ul>
+                
+        <h4>The following icons allow you to make changes directly to your local working copy:</h4>
+        
+        <table border="1" cellpadding="5">
+            <tr>
+                <td><strong>Replace</strong> 
+                    ( <img src="images/insert.png" alt="replace icon"> )</td>
+                <td>Inserts the highlighted text from the previous revision into the current revision.</td>
+            </tr>
+            <tr>
+                <td><strong>Move All</strong> 
+                    ( <img src="images/arrow.png" alt="move all icon"> )</td>
+                <td>Reverts the file's current version to the state of the selected previous version.</td>
+            </tr>
+            <tr>
+                <td><strong>Remove</strong>&nbsp;
+                    ( <img src="images/remove.png" alt="remove icon"> )</td>
+                <td>Removes the highlighted text from the current version so that it mirrors the previous version.</td>                
+            </tr>
+        </table>
+         
+	<hr>
+	<small><a href="../credits.html">Legal Notices</a></small>
+        <br><br><br>
+    </body>
+</html>
