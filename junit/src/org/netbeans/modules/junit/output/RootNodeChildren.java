@@ -218,6 +218,7 @@ final class RootNodeChildren extends Children.Array {
     
     /**
      */
+    @Override
     protected void addNotify() {
         super.addNotify();
         
@@ -227,6 +228,7 @@ final class RootNodeChildren extends Children.Array {
     
     /**
      */
+    @Override
     protected void removeNotify() {
         super.removeNotify();
         
