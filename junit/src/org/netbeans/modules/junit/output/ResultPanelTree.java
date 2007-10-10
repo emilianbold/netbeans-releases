@@ -142,8 +142,6 @@ final class ResultPanelTree extends JPanel
     public void addNotify() {
         super.addNotify();
         
-        final Object[] pendingOutput;
-        
         displayHandler.setTreePanel(this);
     }
     
