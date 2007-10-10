@@ -78,6 +78,8 @@ public class HgModuleConfig {
     private static final String RECENT_URL = "repository.recentURL";                                        // NOI18N
     private static final String SHOW_CLONE_COMPLETED = "cloneCompleted.showCloneCompleted";        // NOI18N  
 
+    private static final String OPEN_CLONED_PROJECT = "cloneCompleted.openClonedProject";        // NOI18N  
+
     private static final String URL_EXP = "annotator.urlExp";                                               // NOI18N
     private static final String ANNOTATION_EXP = "annotator.annotationExp";                                 // NOI18N
     
@@ -102,6 +104,10 @@ public class HgModuleConfig {
     
     public boolean getShowCloneCompleted() {
         return getPreferences().getBoolean(SHOW_CLONE_COMPLETED, true);
+    }
+    
+    public boolean getOpenClonedProject() {
+        return getPreferences().getBoolean(OPEN_CLONED_PROJECT, true);
     }
     
     public Pattern [] getIgnoredFilePatterns() {
@@ -253,6 +259,10 @@ public class HgModuleConfig {
 
     public void setShowCloneCompleted(boolean bl) {
         getPreferences().putBoolean(SHOW_CLONE_COMPLETED, bl);
+    }
+    
+    public void setOpenClonedProject(boolean bl) {
+        getPreferences().putBoolean(OPEN_CLONED_PROJECT, bl);
     }
     
     public RepositoryConnection getRepositoryConnection(String url) {

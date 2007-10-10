@@ -101,10 +101,14 @@ public class CloneAction extends AbstractAction {
             return;
         }
 
-        performClone(root.getAbsolutePath(), clone.getOutputFileName(), projIsRepos, projFile);
+        performClone(root.getAbsolutePath(), clone.getOutputFileName(), projIsRepos, projFile, true);
     }
 
     public static void performClone(final String source, final String target, boolean projIsRepos, File projFile) {
+        performClone(source, target, projIsRepos, projFile, false);
+    }
+
+    private static void performClone(final String source, final String target, boolean projIsRepos, File projFile, final boolean isLocalClone) {
         final Mercurial hg = Mercurial.getInstance();
         final ProjectManager projectManager = ProjectManager.getDefault();
         final File prjFile = projFile;
@@ -181,8 +185,10 @@ public class CloneAction extends AbstractAction {
                         HgUtils.outputMercurialTab(""); // NOI18N
 
                         FileObject cloneProj = FileUtil.toFileObject(clonePrjFile);
-                        if (projectManager.isProject(cloneProj)){
-                            SwingUtilities.invokeLater(doOpenProject);
+                        if (isLocalClone){
+                            if (HgModuleConfig.getDefault().getOpenClonedProject()) {
+                                SwingUtilities.invokeLater(doOpenProject);
+                            }
                         } else if (HgModuleConfig.getDefault().getShowCloneCompleted()) {
                             CloneCompleted cc = new CloneCompleted(cloneFolder);
                             if (isCanceled()) {

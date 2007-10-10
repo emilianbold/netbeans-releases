@@ -54,6 +54,7 @@ import javax.swing.filechooser.FileFilter;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.versioning.util.AccessibleJFileChooser;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
+import org.netbeans.modules.mercurial.HgModuleConfig;
 
 /**
  *
@@ -68,9 +69,11 @@ public class ClonePanel extends javax.swing.JPanel implements ActionListener {
         repository = repo;
         initComponents();
         browseButton.addActionListener(this);
+        openProjectCheckBox.addActionListener(this);
         fromTextField.setText(repo.getAbsolutePath());
         toTextField.setText(to.getParent());
         toCloneField.setText(to.getName());
+        openProjectCheckBox.setSelected(HgModuleConfig.getDefault().getOpenClonedProject());
     }
 
     public String getOutputFileName() {
@@ -93,6 +96,7 @@ public class ClonePanel extends javax.swing.JPanel implements ActionListener {
         toNameLabel = new javax.swing.JLabel();
         toCloneField = new javax.swing.JTextField();
         destinationLabel = new javax.swing.JLabel();
+        openProjectCheckBox = new javax.swing.JCheckBox();
 
         fromLabel.setText(org.openide.util.NbBundle.getMessage(ClonePanel.class, "ClonePanel.fromLabel.text")); // NOI18N
 
@@ -107,6 +111,8 @@ public class ClonePanel extends javax.swing.JPanel implements ActionListener {
 
         destinationLabel.setText(org.openide.util.NbBundle.getMessage(ClonePanel.class, "destinationLabel.text")); // NOI18N
 
+        openProjectCheckBox.setText(org.openide.util.NbBundle.getMessage(ClonePanel.class, "openCheckbox.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -120,14 +126,15 @@ public class ClonePanel extends javax.swing.JPanel implements ActionListener {
                         .add(12, 12, 12)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(toNameLabel)
-                            .add(toLabel))))
+                            .add(toLabel)
+                            .add(openProjectCheckBox))))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(fromTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 282, Short.MAX_VALUE)
+                    .add(fromTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 242, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(toCloneField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 213, Short.MAX_VALUE)
-                            .add(toTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 213, Short.MAX_VALUE))
+                            .add(toCloneField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 173, Short.MAX_VALUE)
+                            .add(toTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 173, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(browseButton)))
                 .addContainerGap())
@@ -146,10 +153,12 @@ public class ClonePanel extends javax.swing.JPanel implements ActionListener {
                     .add(toLabel)
                     .add(browseButton)
                     .add(toTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 15, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(toCloneField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(toNameLabel))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(openProjectCheckBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 21, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -158,6 +167,8 @@ public class ClonePanel extends javax.swing.JPanel implements ActionListener {
     public void actionPerformed(ActionEvent evt) {
         if (evt.getSource() == browseButton) {
             onBrowseClick();
+        } else if (evt.getSource() == openProjectCheckBox) {
+            HgModuleConfig.getDefault().setOpenClonedProject(openProjectCheckBox.isSelected());
         }
     }
 
@@ -232,6 +243,7 @@ public class ClonePanel extends javax.swing.JPanel implements ActionListener {
     private javax.swing.JLabel destinationLabel;
     private javax.swing.JLabel fromLabel;
     private javax.swing.JTextField fromTextField;
+    private javax.swing.JCheckBox openProjectCheckBox;
     private javax.swing.JTextField toCloneField;
     private javax.swing.JLabel toLabel;
     private javax.swing.JLabel toNameLabel;
