@@ -94,9 +94,12 @@ public final class WebModule {
     }
     
     /**
-     * Finds the web module for the given file.
+     * Finds the web module that a given file belongs to. The given file should
+     * be one known to be owned by a web module (e.g., it can be a file in a
+     * Java source group, such as a servlet, or it can be a file in the document
+     * base, such as a JSP page).
      *
-     * @param  file the file to find the web module for.
+     * @param  file the file to find the web module for; never null.
      * @return the web module this file belongs to or null if the file does not belong
      *         to any web module.
      * @throws NullPointerException if the <code>file</code> parameter is null.
