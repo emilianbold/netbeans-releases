@@ -241,9 +241,12 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
                 rootNode = new FilterNode(rootNode, new FilterNode.Children(rootNode) {
                     protected Node[] createNodes(Node serviceNode) {
                         return new Node[] { new FilterNode(serviceNode, new FilterNode.Children(serviceNode) {
+                            String firstWsdlPortName = null;
                             protected Node[] createNodes(Node portNode) {
                                 WsdlPort wsdlPort = portNode.getLookup().lookup( WsdlPort.class );
-                                return (wsdlPort != null && (port == null || portNode.getName().equals(port.getName()))) ? super.createNodes(portNode) : null;
+                                if (wsdlPort == null) return null;
+                                if (firstWsdlPortName == null) firstWsdlPortName = wsdlPort.getName();
+                                return portNode.getName().equals(port == null ? firstWsdlPortName : port.getName()) ? super.createNodes(portNode) : null;
                             }
                         })};
                     }
