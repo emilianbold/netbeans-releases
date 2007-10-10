@@ -305,7 +305,9 @@ public class Scene extends Widget {
 
     // TODO - requires optimalization while changing preferred size and calling revalidate/repaint
     private void layoutScene () {
-        Rectangle prepreBounds = getBounds ();
+        Point preLocation = getLocation ();
+        Rectangle preBounds = getBounds ();
+
         layout (false);
         resolveBounds (null, null);
         justify ();
@@ -329,13 +331,8 @@ public class Scene extends Widget {
             rect = rect.intersection (maximumBounds);
         }
 
-        Point preLocation = getLocation ();
-        Rectangle preBounds = getBounds ();
-        if (extendSceneOnly  &&  rect != null  &&  preBounds != null) {
-//            System.out.println ("preBounds = " + preBounds);
-//            System.out.println ("rect = " + rect);
-            rect.add (prepreBounds);
-        }
+        if (extendSceneOnly  &&  rect != null  &&  preBounds != null)
+            rect.add (new Rectangle (preBounds.x + preLocation.x, preBounds.y + preLocation.y, preBounds.width, preBounds.height));
         resolveBounds (rect != null ? new Point (- rect.x, - rect.y) : new Point (), rect);
 
         Dimension preferredSize = rect != null ? rect.getSize () : new Dimension ();
@@ -365,7 +362,7 @@ public class Scene extends Widget {
             if (sceneResized)
                 resolveBounds (getLocation (), bounds);
         }
-        if (! getLocation ().equals (preLocation)  ||  ! bounds.equals (preBounds)) {
+        if (! getLocation ().equals (preLocation)  ||  ! getBounds ().equals (preBounds)) {
             Rectangle rectangle = convertLocalToScene (getBounds ());
             if (repaintRegion == null)
                 repaintRegion = rectangle;
