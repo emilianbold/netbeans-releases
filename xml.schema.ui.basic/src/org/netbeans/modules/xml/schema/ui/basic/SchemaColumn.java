@@ -320,7 +320,7 @@ public class SchemaColumn extends JPanel
             // Find the selected node in this column and activate it.
             JList list = (JList) nodeView.getViewport().getView();
             Object[] items = list.getSelectedValues();
-            if (items != null && items.length > 1) {
+            if (items != null && items.length > 0) {
                 Node[] nodes = new Node[items.length];
                 for(int i=0; i<items.length; i++) {
                     Node n = Visualizer.findNode(items[i]);

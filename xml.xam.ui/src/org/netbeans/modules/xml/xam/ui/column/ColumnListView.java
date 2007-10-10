@@ -41,31 +41,11 @@
 
 package org.netbeans.modules.xml.xam.ui.column;
 
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.beans.PropertyVetoException;
 import javax.accessibility.AccessibleContext;
-import javax.swing.Action;
 import javax.swing.JList;
-import javax.swing.JPopupMenu;
 import javax.swing.KeyStroke;
-import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
-import org.openide.ErrorManager;
-import org.openide.awt.MouseUtils;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.ListView;
-import org.openide.nodes.Node;
-import org.openide.nodes.NodeOp;
-import org.openide.util.Lookup;
-import org.openide.util.Utilities;
-import org.openide.util.actions.ActionPerformer;
-import org.openide.util.actions.CallbackSystemAction;
-import org.openide.util.actions.SystemAction;
 
 /**
  * This is a slightly hackish solution to get the ListView to show the
@@ -81,8 +61,6 @@ import org.openide.util.actions.SystemAction;
 public class ColumnListView extends ListView {
     /** silence compiler warnings */
     private static final long serialVersionUID = 1L;
-    /** Popup menu support. */
-    private transient PopupSupport popupSupport;
     /** Used to select nodes. */
     private ExplorerManager explorerManager;
 
@@ -91,7 +69,6 @@ public class ColumnListView extends ListView {
      */
     public ColumnListView() {
         super();
-        // For deserialization only
     }
 
     /**
@@ -104,121 +81,34 @@ public class ColumnListView extends ListView {
         explorerManager = em;
     }
 
-    public void addNotify() {
-        super.addNotify();
-        MouseListener[] l = list.getMouseListeners();
-        for (MouseListener ml : l) {
-            if (ml instanceof ActionPerformer &&
-                    ml instanceof FocusListener) {
-                // This is the PopupSupport that is installed by ListView.
-                // It is broken and needs to be replaced with our own.
-                list.removeMouseListener(ml);
-                list.removeFocusListener((FocusListener) ml);
-                break;
-            }
-        }
-        popupSupport = new PopupSupport();
-        list.addFocusListener(popupSupport);
-        list.addMouseListener(popupSupport);
-    }
-
     protected JList createList() {
         return new ColumnList();
     }
 
-    public void removeNotify() {
-        super.removeNotify();
-        list.removeFocusListener(popupSupport);
-        list.removeMouseListener(popupSupport);
-    }
-
-    void createPopup(int xpos, int ypos, boolean context) {
-        if (explorerManager == null) {
-            return;
-        }
-        if (!isPopupAllowed()) {
-            return;
-        }
-
-        if (context) {
-            // For invisible root node, show its context menu.
-            // Must set the node selected for this to work.
-            Node[] nodes = new Node[] { explorerManager.getExploredContext() };
-            try {
-                explorerManager.setSelectedNodes(nodes);
-            } catch (PropertyVetoException pve) {
-                assert false : pve; // not permitted to be thrown
-            }
-        }
-        Action[] actions = NodeOp.findActions(explorerManager.getSelectedNodes());
-        JPopupMenu popup = Utilities.actionsToPopup(actions, this);
-        if (popup != null && popup.getSubElements().length > 0) {
-            popup.show(list, xpos, ypos);
-        }
-    }
-
-    final class PopupSupport extends MouseUtils.PopupMouseAdapter
-            implements ActionPerformer, Runnable, FocusListener {
-        private CallbackSystemAction csa;
-
-        protected void showPopup(MouseEvent e) {
-            Point p = new Point(e.getX(), e.getY());
-            int i = list.locationToIndex(p);
-            Rectangle r = list.getCellBounds(i, i);
-            boolean contextMenu = (r == null) || !r.contains(p);
-            if (!contextMenu && !list.isSelectedIndex(i)) {
-                // Do not set the last item selected unless the user
-                // actually clicked on it. This is to avoid conflicting
-                // with createPopup() which will set the root node
-                // selected if contextMenu is true.
-                list.setSelectedIndex(i);
-            }
-            createPopup(e.getX(), e.getY(), contextMenu);
-        }
-
-        public void performAction(SystemAction act) {
-            SwingUtilities.invokeLater(this);
-        }
-
-        public void run() {
-            boolean multisel = (list.getSelectionMode() != ListSelectionModel.SINGLE_SELECTION);
-            int i = (multisel ? list.getLeadSelectionIndex() : list.getSelectedIndex());
-            if (i < 0) {
-                return;
-            }
-            Point p = list.indexToLocation(i);
-            if (p == null) {
-                return;
-            }
-            createPopup(p.x, p.y, false);
-        }
-
-        @SuppressWarnings("deprecation")
-        public void focusGained(FocusEvent ev) {
-            if (csa == null) {
-                try {
-                    ClassLoader l = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
-                    if (l == null) {
-                        l = getClass().getClassLoader();
-                    }
-                    Class popup = Class.forName("org.openide.actions.PopupAction", true, l); // NOI18N
-                    csa = (CallbackSystemAction) CallbackSystemAction.get(popup);
-                } catch (ClassNotFoundException e) {
-                    Error err = new NoClassDefFoundError();
-                    ErrorManager.getDefault().annotate(err, e);
-                    throw err;
-                }
-            }
-            csa.setActionPerformer(this);
-        }
-
-        @SuppressWarnings("deprecation")
-        public void focusLost(FocusEvent ev) {
-            if (csa != null && csa.getActionPerformer() instanceof PopupSupport) {
-                csa.setActionPerformer(null);
-            }
-        }
-    }
+//    void createPopup(int xpos, int ypos, boolean context) {
+//        if (explorerManager == null) {
+//            return;
+//        }
+//        if (!isPopupAllowed()) {
+//            return;
+//        }
+//
+//        if (context) {
+//            // For invisible root node, show its context menu.
+//            // Must set the node selected for this to work.
+//            Node[] nodes = new Node[] { explorerManager.getExploredContext() };
+//            try {
+//                explorerManager.setSelectedNodes(nodes);
+//            } catch (PropertyVetoException pve) {
+//                assert false : pve; // not permitted to be thrown
+//            }
+//        }
+//        Action[] actions = NodeOp.findActions(explorerManager.getSelectedNodes());
+//        JPopupMenu popup = Utilities.actionsToPopup(actions, this);
+//        if (popup != null && popup.getSubElements().length > 0) {
+//            popup.show(list, xpos, ypos);
+//        }
+//    }
 
     /**
      * Specialized JList that tracks the viewport width in order to
@@ -277,4 +167,5 @@ public class ColumnListView extends ListView {
             }
         }
     }
+    
 }
