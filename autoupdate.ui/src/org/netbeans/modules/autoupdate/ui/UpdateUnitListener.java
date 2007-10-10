@@ -48,4 +48,5 @@ package org.netbeans.modules.autoupdate.ui;
 public interface UpdateUnitListener {
     public void updateUnitsChanged ();
     public void buttonsChanged ();
+    public void filterChanged ();    
 }

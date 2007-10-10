@@ -73,7 +73,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author  Jiri Rechtacek, Radek Matous
  */
-public class PluginManagerUI extends javax.swing.JPanel implements UpdateUnitListener {
+public class PluginManagerUI extends javax.swing.JPanel  {
     private List<UpdateUnit> units = Collections.emptyList ();
     private UnitTable installedTable;
     private UnitTable availableTable;
@@ -225,7 +225,6 @@ public class PluginManagerUI extends javax.swing.JPanel implements UpdateUnitLis
         selectFirstRow(table);
         
         UnitTab tab = new UnitTab(table, new UnitDetails(), this);
-        tab.addUpdateUnitListener(this);
         tpTabs.add(tab, model.getTabIndex());
         decorateTabTitle(table);
         return table;
@@ -459,7 +458,7 @@ private void bHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:e
         bHelp.setEnabled (getHelpInstance () != null);
     }
     
-    private void decorateTabTitle (UnitTable table) {
+    void decorateTabTitle (UnitTable table) {
         UnitCategoryTableModel model = (UnitCategoryTableModel)table.getModel();
         int index = model.getTabIndex();
         tpTabs.setTitleAt (index, model.getDecoratedTabTitle());
@@ -557,5 +556,5 @@ private void bHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:e
             ((UnitTab) c).refreshState ();
         }
     }
-
+    
 }

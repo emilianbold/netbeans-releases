@@ -172,6 +172,21 @@ public class UnitTab extends javax.swing.JPanel {
                 
             }
         });
+        addUpdateUnitListener(new UpdateUnitListener() {
+            public void updateUnitsChanged() {
+                UnitTab.this.manager.updateUnitsChanged();
+            }
+
+            public void buttonsChanged() {
+                UnitTab.this.manager.buttonsChanged();
+            }
+
+            public void filterChanged() {
+                model.fireTableDataChanged();
+                UnitTab.this.manager.decorateTabTitle(UnitTab.this.table);                
+                refreshState();
+            }
+        });
     }
     
     void focusTable () {

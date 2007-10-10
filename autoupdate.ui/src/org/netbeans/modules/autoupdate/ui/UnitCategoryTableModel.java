@@ -245,10 +245,9 @@ public abstract class UnitCategoryTableModel extends AbstractTableModel {
             public void run () {
                 synchronized(UnitCategoryTableModel.class) {
                     UnitCategoryTableModel.this.filter = filter.toLowerCase ();
-                }
-                //UnitCategoryTableModel.this.fireTableDataChanged ();
+                }                
                 computeExtensionState();
-                fireUpdataUnitChange ();
+                fireFilterChange();
                 if (runAfterwards != null) {
                     runAfterwards.run();
                 }
@@ -283,7 +282,14 @@ public abstract class UnitCategoryTableModel extends AbstractTableModel {
             l.buttonsChanged ();
         }
     }
-        
+
+    void fireFilterChange () {
+        assert listeners != null : "UpdateUnitListener found.";
+        for (UpdateUnitListener l : listeners) {
+            l.filterChanged();
+        }
+    }
+    
     List<Unit> getVisibleUnits () {
         return getVisibleUnits(getUnits(), getFilter(), true);
     }
