@@ -70,7 +70,7 @@ public interface TestLocator {
 
     /**
      * This method determines whether the file-search mechanism should be synchronous
-     * or asynchronous. If synchronous, {@link #findOpposite(FileObject)} will be called
+     * or asynchronous. If asynchronous, {@link #findOpposite(FileObject)} will be called
      * to compute the result directly. If it is false, {@link #findOpposite(FileObject,LocationListener)}
      * will be called instead.
      * 
@@ -82,10 +82,15 @@ public interface TestLocator {
     /**
      * Compute the opposite file's location.
      * @param fo The FileObject to search for an opposite file for
+     * @param caretOffset The caret offset in the current file, or -1 if unknown.
+     *    Can be used to aid finding the opposite file. (For example, a TestLocator
+     *    implementation can use it to determine the class around the caret offset
+     *    and then use its own code index to locate a corresponding class based on
+     *    class patterns rather than file names and locations.
      * @return The {@link Location} of the opposite file, or {@link Location#NONE} if
      *   no such file can be found
      */
-    LocationResult findOpposite(FileObject fo);
+    LocationResult findOpposite(FileObject fo, int caretOffset);
     
     /**
      * Compute the opposite file's location. This method will only be called
@@ -93,10 +98,15 @@ public interface TestLocator {
      * of this method should call the given callback with the correct location
      * or error message.
      * @param fo The file object whose opposite file we want to find
+     * @param caretOffset The caret offset in the current file, or -1 if unknown.
+     *    Can be used to aid finding the opposite file. (For example, a TestLocator
+     *    implementation can use it to determine the class around the caret offset
+     *    and then use its own code index to locate a corresponding class based on
+     *    class patterns rather than file names and locations.
      * @param callback The callback to call when the opposite file is found or an
      *   appropriate error message is known.
      */
-    void findOpposite(FileObject fo, LocationListener callback);
+    void findOpposite(FileObject fo, int caretOffset, LocationListener callback);
 
     /**
      * Decide what type of file is being edited (which will be used to enable either

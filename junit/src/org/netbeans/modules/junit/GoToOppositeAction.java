@@ -87,11 +87,11 @@ public final class GoToOppositeAction implements TestLocator {
         return true;
     }
 
-    public LocationResult findOpposite(FileObject fileObj) {
+    public LocationResult findOpposite(FileObject fileObj, int caretOffset) {
         throw new UnsupportedOperationException("JUnit's GoToOppositeAction is asynchronous");
     }
         
-    public void findOpposite(FileObject fileObj, LocationListener callback) {
+    public void findOpposite(FileObject fileObj, int caretOffset, LocationListener callback) {
         boolean isJavaFile = false;
         ClassPath srcCP;
         FileObject fileObjRoot;

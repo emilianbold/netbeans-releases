@@ -124,13 +124,16 @@ public class GotoOppositeAction extends CallableSystemAction {
     }
     
     public void performAction() {
-        FileObject fo = getApplicableFileObject();
+        int caretOffsetHolder[] = new int[1];
+        FileObject fo = getApplicableFileObject(caretOffsetHolder);
+        int caretOffset = caretOffsetHolder[0];
+
         if (fo != null) {
             TestLocator locator = getLocatorFor(fo);
             if (locator != null) {
                 if (locator.appliesTo(fo)) {
                     if (locator.asynchronous()) {
-                        locator.findOpposite(fo, new LocationListener() {
+                        locator.findOpposite(fo, caretOffset, new LocationListener() {
                             public void foundLocation(FileObject fo, LocationResult location) {
                                 if (location != null) {
                                     handleResult(location);
@@ -138,7 +141,7 @@ public class GotoOppositeAction extends CallableSystemAction {
                             }
                         });
                     } else {
-                        LocationResult opposite = locator.findOpposite(fo);
+                        LocationResult opposite = locator.findOpposite(fo, caretOffset);
 
                         if (opposite != null) {
                             handleResult(opposite);
@@ -196,7 +199,7 @@ public class GotoOppositeAction extends CallableSystemAction {
     }
     
     private FileType getCurrentFileType() {
-        FileObject fo = getApplicableFileObject();
+        FileObject fo = getApplicableFileObject(null);
         
         return (fo != null) ? getFileType(fo) : FileType.NEITHER;
     }
@@ -230,7 +233,9 @@ public class GotoOppositeAction extends CallableSystemAction {
         return false;
     }
     
-    private FileObject getApplicableFileObject() {
+    private FileObject getApplicableFileObject(int[] caretPosHolder) {
+        // TODO: Use the new editor library to compute this:
+        // JTextComponent pane = EditorRegistry.lastFocusedComponent();
         TopComponent comp = TopComponent.getRegistry().getActivated();
         if (comp == null) {
             return null;
@@ -239,6 +244,9 @@ public class GotoOppositeAction extends CallableSystemAction {
         if (comp instanceof CloneableEditorSupport.Pane) {
             JEditorPane editorPane = ((CloneableEditorSupport.Pane)comp).getEditorPane();
             if (editorPane != null) {
+                if (caretPosHolder != null && editorPane.getCaret() != null) {
+                    caretPosHolder[0] = editorPane.getCaret().getDot();
+                }
                 Document document = editorPane.getDocument();
 
                 Object sdp = document.getProperty(Document.StreamDescriptionProperty);
@@ -249,6 +257,9 @@ public class GotoOppositeAction extends CallableSystemAction {
                 }
             }
         } else {
+            if (caretPosHolder != null) {
+                caretPosHolder[0] = -1;
+            }
             Node[] selectedNodes = comp.getActivatedNodes();
             if (selectedNodes != null && selectedNodes.length == 1) {
                 DataObject dataObj = selectedNodes[0].getLookup().lookup(DataObject.class);
