@@ -289,7 +289,7 @@ public class DatabaseSettingsImporter {
         return contextReleaseDirFiles;        
     }
     
-    private synchronized void registerConnections(File contextFile) {
+    private void registerConnections(File contextFile) {
         dataSourcesInfo = createDataSourceInfoFromCtx(contextFile);
         
         if (dataSourcesInfo != null) {
