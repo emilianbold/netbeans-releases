@@ -339,6 +339,10 @@ public class WebServiceData {
         listeners.add(listener);
     }
     
+    public void removeWebServiceDataListener(WebServiceDataListener listener) {
+        listeners.remove(listener);
+    }
+    
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         propertyListeners.add(listener);
     }
