@@ -460,7 +460,7 @@ class DropTargetLayer extends JComponent {
         return false;
     }
     
-    private static boolean isVista() {
+    static boolean isVista() {
         if(System.getProperty("os.name").startsWith("Windows Vista")) {
             return true;
         }

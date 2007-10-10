@@ -642,13 +642,17 @@ public class MenuEditLayer extends JPanel {
             if(DropTargetLayer.isAqua()) {
                 offset = 2;
             }
-            g.fillRect(width-ACCEL_PREVIEW_WIDTH+offset,   1,ACCEL_PREVIEW_WIDTH, height);
+            int ioffset = 0;
+            if(DropTargetLayer.isVista()) {
+                ioffset = -2;
+            }
+            g.fillRect(width-ACCEL_PREVIEW_WIDTH+offset,   1,ACCEL_PREVIEW_WIDTH-0+ioffset, height+ioffset);
             g.setColor(EMPTY_ICON_COLOR);
-            g.drawRect(width-ACCEL_PREVIEW_WIDTH+offset,   1,ACCEL_PREVIEW_WIDTH-1, height);
-            g.drawRect(width-ACCEL_PREVIEW_WIDTH+offset+1, 2,ACCEL_PREVIEW_WIDTH-3, height-2);
+            g.drawRect(width-ACCEL_PREVIEW_WIDTH+offset,   1,ACCEL_PREVIEW_WIDTH-1+ioffset, height+ioffset);
+            g.drawRect(width-ACCEL_PREVIEW_WIDTH+offset+1, 2,ACCEL_PREVIEW_WIDTH-3+ioffset, height-2+ioffset);
             g.setColor(Color.LIGHT_GRAY);
             g.setFont(new Font("SansSerif",Font.PLAIN,10));
-            g.drawString("shortcut", width-ACCEL_PREVIEW_WIDTH+15,height-3);
+            g.drawString("shortcut", width-ACCEL_PREVIEW_WIDTH+15,height-3+ioffset);
         }
 
         public Insets getBorderInsets(Component c) {
