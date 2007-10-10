@@ -139,7 +139,7 @@ public class HgProjectUtils {
         
         final ExplorerManager.Provider ptLogial = findDefault(ProjectTab_ID_LOGICAL);
         
-        return (p == null) ? null: ProjectUtils.getInformation( p ).getName();
+        return (p == null) ? null: ProjectUtils.getInformation( p ).getDisplayName();
     }
       
     private static synchronized ExplorerManager.Provider findDefault( String tcID ) {
