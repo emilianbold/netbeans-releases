@@ -382,27 +382,33 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
         }
     }
     
-    public void propertyChange (PropertyChangeEvent evt) {
-        if (!listen) return;
-        if (evt.getPropertyName () == Preview.PROP_CURRENT_ELEMENT) {
-            String currentCategory = (String) evt.getNewValue ();
-            Vector categories = getCategories (currentProfile, currentLanguage);
-            if (currentLanguage.equals (ColorModel.ALL_LANGUAGES))
-                currentCategory = (String) convertALC.get (currentCategory);
-            int i, k = categories.size ();
-            for (i = 0; i < k; i++) {
-                AttributeSet as = (AttributeSet) categories.get (i);
-                if (!currentCategory.equals (
-                    as.getAttribute (StyleConstants.NameAttribute)
-                )) continue;
-                blink = false;
-                lCategories.setSelectedIndex (i);
-                lCategories.ensureIndexIsVisible (i);
-                blink = true;
-                return;
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (!listen || evt.getPropertyName() == null ) {
+            return;
+        }
+        
+        if (Preview.PROP_CURRENT_ELEMENT.equals(evt.getPropertyName())) {
+            String currentCategory = (String) evt.getNewValue();
+            Vector<AttributeSet> categories = getCategories(currentProfile, currentLanguage);
+            if (currentLanguage.equals(ColorModel.ALL_LANGUAGES)) {
+                String converted = (String) convertALC.get(currentCategory);
+                if (converted != null) {
+                    currentCategory = converted;
+                }
             }
-        } else if (evt.getPropertyName () == ColorComboBox.PROP_COLOR) {
-            updateData ();
+
+            for (int i = 0; i < categories.size(); i++) {
+                AttributeSet as = categories.get(i);
+                if (currentCategory.equals(as.getAttribute(StyleConstants.NameAttribute))) {
+                    blink = false;
+                    lCategories.setSelectedIndex(i);
+                    lCategories.ensureIndexIsVisible(i);
+                    blink = true;
+                    break;
+                }
+            }
+        } else if (ColorComboBox.PROP_COLOR.equals(evt.getPropertyName())) {
+            updateData();
         }
     }
     
@@ -616,13 +622,14 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
     }
     
     private void updatePreview () {
-        Collection<AttributeSet> syntaxColorings = getSyntaxColorings ();
-        Collection<AttributeSet> allLanguages = getAllLanguages ();
+        Collection<AttributeSet> syntaxColorings = getSyntaxColorings();
+        Collection<AttributeSet> allLanguages = getAllLanguages();
         if ((blinkSequence % 2) == 1) {
-            if (currentLanguage == ColorModel.ALL_LANGUAGES)
-                allLanguages = invertCategory (allLanguages, getCurrentCategory ());
-            else
-                syntaxColorings = invertCategory (syntaxColorings, getCurrentCategory ());
+            if (ColorModel.ALL_LANGUAGES.equals(currentLanguage)) {
+                allLanguages = invertCategory(allLanguages, getCurrentCategory());
+            } else {
+                syntaxColorings = invertCategory(syntaxColorings, getCurrentCategory());
+            }
         }
         preview.setParameters (
             currentLanguage,
@@ -967,17 +974,10 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
     private static Map<String, String> convertALC = new HashMap<String, String>();
     
     static {
-        convertALC.put ("java-block-comment", "comment"); //NOI18N
-        convertALC.put ("java-keywords", "keyword"); //NOI18N
-        convertALC.put ("java-line-comment", "comment"); //NOI18N
-        convertALC.put ("java-dentifier", "identifier"); //NOI18N
-        convertALC.put ("java-numeric-literals", "number"); //NOI18N
-        convertALC.put ("java-operators", "operator"); //NOI18N
-        convertALC.put ("java-char-literal", "char"); //NOI18N
-        convertALC.put ("java-string-literal", "string"); //NOI18N
-        convertALC.put ("java-whitespace", "whitespace"); //NOI18N
-        convertALC.put ("java-identifier", "identifier"); //NOI18N
-        convertALC.put ("java-error", "error"); //NOI18N
+        convertALC.put("character", "char"); //NOI18N
+        convertALC.put("errors", "error"); //NOI18N
+        convertALC.put("literal", "keyword"); //NOI18N
+        convertALC.put("keyword-directive", "keyword"); //NOI18N
     }
     
     private static Integer defaultFontSize;
