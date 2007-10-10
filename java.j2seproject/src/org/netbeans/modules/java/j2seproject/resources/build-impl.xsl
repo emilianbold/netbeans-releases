@@ -409,6 +409,10 @@ is divided into following sections:
                         <xsl:attribute name="name">excludes</xsl:attribute>
                         <xsl:attribute name="default">${excludes}</xsl:attribute>
                     </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">testincludes</xsl:attribute>
+                        <xsl:attribute name="default">**</xsl:attribute>
+                    </attribute>
                     <sequential>
                         <junit>
                             <xsl:attribute name="showoutput">true</xsl:attribute>
@@ -423,7 +427,7 @@ is divided into following sections:
                                 <xsl:call-template name="createFilesets">
                                     <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject3:data/j2seproject3:test-roots"/>
                                     <xsl:with-param name="includes">@{includes}</xsl:with-param>
-                                    <xsl:with-param name="includes2">**/*Test.java</xsl:with-param>
+                                    <xsl:with-param name="includes2">@{testincludes}</xsl:with-param>
                                     <xsl:with-param name="excludes">@{excludes}</xsl:with-param>
                                 </xsl:call-template>
                             </batchtest>
@@ -1135,7 +1139,7 @@ is divided into following sections:
             <target name="-do-test-run">
                 <xsl:attribute name="if">have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init,compile-test,-pre-test-run</xsl:attribute>
-                <j2seproject3:junit/>
+                <j2seproject3:junit testincludes="**/*Test.java"/>
             </target>
             
             <target name="-post-test-run">
