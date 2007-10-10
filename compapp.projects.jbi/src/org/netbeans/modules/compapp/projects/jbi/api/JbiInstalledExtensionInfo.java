@@ -143,7 +143,7 @@ public class JbiInstalledExtensionInfo {
         return singleton;
     }
 
-    private static void loadJbiDefaultExtensionInfoFromFileObject(FileObject fo) { // JbiComponents or SeeBeyondJbiComponents
+    private static void loadJbiDefaultExtensionInfoFromFileObject(FileObject fo) {
         if (fo != null) {
             DataFolder df = DataFolder.findFolder(fo);
             for (DataObject extsDO : df.getChildren()) {
@@ -174,7 +174,7 @@ public class JbiInstalledExtensionInfo {
                             icon = (URL) attrObj;
                         }
                     }
-                    System.out.println("GotExt: "+name+", "+file+", "+type+", "+target);
+                    // System.out.println("GotExt: "+name+", "+file+", "+type+", "+target);
                     for (DataObject extDO : ((DataFolder) extsDO).getChildren()) {
                         FileObject extFO = extDO.getPrimaryFile();
                         String extName = extDO.getName();
@@ -192,19 +192,19 @@ public class JbiInstalledExtensionInfo {
     }
 
     /**
-     * Getter for the default binding info list
+     * Getter for the installed extension info list
      *
-     * @return the default binding info list
+     * @return the default installed extension info list
      */
     public List<JbiExtensionInfo> getJbiExtensionList() {
         return extensionList;
     }
 
     /**
-     * Getter for the specific binding info
+     * Getter for the specific extension info
      *
-     * @param  id  binding component identifier
-     * @return the specific binding info
+     * @param  id  extension identifier
+     * @return the specific extension info
      */
     public JbiExtensionInfo getExtensionInfo(String id) {
         return extensionMap.get(id);

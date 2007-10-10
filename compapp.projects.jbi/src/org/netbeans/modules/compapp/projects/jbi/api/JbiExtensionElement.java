@@ -42,7 +42,6 @@
 package org.netbeans.modules.compapp.projects.jbi.api;
 
 import java.io.Serializable;
-import java.net.URL;
 
 /**
  * JBI Extension element

@@ -63,7 +63,7 @@ public class JbiExtensionInfo implements Serializable {
     private String file;
 
     /**
-     * Type of the extension, e.x., "port", "endpoint", or "su".
+     * Type of the extension, e.x., "port", "endpoint", "connection", or "su".
      */
     private String type;
 
@@ -171,7 +171,7 @@ public class JbiExtensionInfo implements Serializable {
     /**
      * DOCUMENT ME!
      *
-     * @return the binding component namespaces
+     * @return the extension namespaces
      */
     // FIXME
     public String getNameSpace() {
@@ -182,7 +182,7 @@ public class JbiExtensionInfo implements Serializable {
     /**
      * DOCUMENT ME!
      *
-     * @return the binding component namespaces
+     * @return the extension elements
      */
     // FIXME
     public List<JbiExtensionElement> getElements() {
