@@ -107,6 +107,21 @@ is the proper place.
     <changes>
         <change>
             <api name="database_explorer_api"/>
+            <summary>Allow user to save password</summary>
+            <version major="1" minor="23"/>
+            <date day="5" month="10" year="2007"/>
+            <author login="davidvc"/>
+            <compatibility addition="yes"/>
+            <description>
+                This change updated the connection DTD to 1.1, adding a password
+                element.  In the Database Explorer implementation, we allow the
+                user to indicate they want to save the password.  This works across
+                invocations of the VM.
+            </description>
+            <issue number="87600"/>
+        </change>
+        <change>
+            <api name="database_explorer_api"/>
             <summary>Added utility class for working with SQL identifiers</summary>
             <version major="1" minor="22"/>
             <date day="12" month="9" year="2007"/>

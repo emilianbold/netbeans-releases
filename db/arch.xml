@@ -243,17 +243,31 @@ made subject to such option by the copyright holder.
    </p>
    <pre>
     &lt;?xml version='1.0'?&gt;
-    &lt;!DOCTYPE connection PUBLIC '-//NetBeans//DTD Database Connection 1.0//EN' 'http://www.netbeans.org/dtds/connection-1_0.dtd'&gt;
+    &lt;!DOCTYPE connection PUBLIC '-//NetBeans//DTD Database Connection 1.1//EN' 'http://www.netbeans.org/dtds/connection-1_1.dtd'&gt;
     &lt;connection&gt;
       &lt;driver-class value='org.postgresql.Driver'/&gt;
       &lt;driver-name value='postgres-7'/&gt;
       &lt;database-url value='jdbc:postgresql:test'/&gt;
       &lt;schema value='public'/&gt;
       &lt;user value='test'/&gt;
+      &lt;password value='cGFzc3dvcmQ='/&gt;
     &lt;/connection&gt;
    </pre>
    <p>
-    This file should be registered in the <code>Databases/Connections</code> folder of the module layer.
+    This file should be registered in the <code>Databases/Connections</code> folder 
+    of the module layer.  
+    <p>
+    The password element is optional, but if it is included, 
+    its value must be the Base64 encoding of the UTF-8 representation of the 
+    password.  Note that the UTF-8 representation of passwords composed entirely of
+    ASCII characters is the same as their ASCII representation, so for such 
+    passwords all that needs to be done is to convert them to Base64.
+    </p>
+    <p>
+    Base64 encoding serves as a simple scrambling to prevent 
+    accidental revelation of the password.  It is not indended to offer any 
+    real security.   You can protect the password by assigning appropriate
+    file protections to the connection XML file.
    </p>
   </usecase>
   <usecase id="retrieve-connections" name="Retrieving and displaying the list of database connections">

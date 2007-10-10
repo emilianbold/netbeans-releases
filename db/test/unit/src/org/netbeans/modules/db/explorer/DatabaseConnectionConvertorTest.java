@@ -49,6 +49,7 @@ import org.netbeans.modules.db.explorer.nodes.RootNode;
 import org.netbeans.modules.db.test.DOMCompare;
 import org.netbeans.modules.db.test.TestBase;
 import org.netbeans.modules.db.test.Util;
+import org.netbeans.modules.db.util.Base64;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
@@ -99,8 +100,8 @@ public class DatabaseConnectionConvertorTest extends TestBase {
     
     public void testWriteXml() throws Exception {
         DatabaseConnection conn = new DatabaseConnection("org.bar.BarDriver", 
-                "bar_driver", "jdbc:bar:localhost", "schema", "user", "password");
-        conn.setRememberPassword(true);
+                "bar_driver", "jdbc:bar:localhost", "schema", "user", "password",
+                true);
         DatabaseConnectionConvertor.create(conn);
         
         FileObject fo = Util.getConnectionsFolder().getChildren()[0];
@@ -231,7 +232,8 @@ public class DatabaseConnectionConvertorTest extends TestBase {
                 writer.write("<schema value='schema'/>");
                 writer.write("<user value='user'/>");
                 // This is the Base64 encoded value for the string 'password'
-                writer.write("<password value='rO0ABXQACHBhc3N3b3Jk'/>");
+                writer.write("<password value='" + 
+                        Base64.byteArrayToBase64("password".getBytes("UTF-8")) + "'/>");
                 writer.write("</connection>");
             } finally {
                 writer.close();

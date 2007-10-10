@@ -364,7 +364,8 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
             }
             if (instance.rememberPassword() ) {
                 pw.println("  <password value='" + 
-                        Base64.encodeObject(instance.getPassword()) + "'/>"); // NO18N
+                        Base64.byteArrayToBase64(
+                        instance.getPassword().getBytes("UTF-8")) + "'/>"); // NO18N
             }
             pw.println("</connection>"); //NOI18N
         }        
@@ -410,7 +411,7 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
             } else if (ELEMENT_USER.equals(qName)) {
                 user = value;
             } else if (ELEMENT_PASSWORD.equals(qName)) {
-                password = (String)Base64.decodeToObject(value);
+                password = new String(Base64.base64ToByteArray(value));
                 
                 // If the password was saved, then it means the user checked
                 // the box to say the password should be remembered.  This is

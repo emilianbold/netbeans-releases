@@ -781,7 +781,7 @@ public class DatabaseConnection implements DBConnection {
             if (cni != null && cni.getConnection() == null) {
                 Mutex.EVENT.readAccess(new Runnable() {
                     public void run() {
-                        new ConnectAction.ConnectionDialogDisplayer().showDialog(cni, true);
+                        new ConnectAction.ConnectionDialogDisplayer().showDialog(cni, false);
                     }
                 });
             }

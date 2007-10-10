@@ -19,7 +19,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <!--- The root connection element. -->
-<!ELEMENT connection (driver-class,driver-name,database-url,schema,user,password)>
+<!ELEMENT connection (driver-class,driver-name,database-url,schema,user,password?)>
 
 <!--- The driver class. -->
 <!ELEMENT driver-class EMPTY>
