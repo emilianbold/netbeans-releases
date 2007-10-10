@@ -229,7 +229,7 @@ public class WebServicePersistenceManager implements ExceptionListener {
             Enumeration<? extends FileObject> en = f.getFolders(false);
             while (en.hasMoreElements()) {
                 FileObject nextFolder = en.nextElement();
-                List<String> currentUrls = new ArrayList<String>();
+                Map<String,String> currentUrls = new HashMap<String,String>(); //url->name
                 
                 FileObject[] contents = nextFolder.getChildren();
                 for (int i = 0; i < contents.length; i++) {
@@ -246,11 +246,14 @@ public class WebServicePersistenceManager implements ExceptionListener {
                             
                             if ("http://schemas.xmlsoap.org/wsdl/".equals(type) && !partnerUrls.contains(url)) { // NOI18N
                                 partnerUrls.add(url);
-                                currentUrls.add(url);
+                                String serviceName = attributes.getNamedItem("serviceName").getNodeValue(); //NOI18N
+                                currentUrls.put(url, serviceName);
                             }
                         }
                     }catch (Exception ex) {
-                        ErrorManager.getDefault().notify(ex);
+                        String msg = NbBundle.getMessage(WebServicePersistenceManager.class, "MSG_BadContent", contents[i].getPath());
+                        Throwable t = ErrorManager.getDefault().annotate(ex, msg);
+                        ErrorManager.getDefault().notify(t);
                     }
                 }
 
@@ -265,8 +268,10 @@ public class WebServicePersistenceManager implements ExceptionListener {
                     newGroup.setName(groupName);
                     newGroup.setUserDefined(false);
                     
-                    for (String url : currentUrls) {
+                    for (Map.Entry<String,String> entry : currentUrls.entrySet()) {
+                        String url = entry.getKey();
                         WebServiceData wsData = new WebServiceData(url, url, newGroup.getId());
+                        wsData.setName(entry.getValue());
                         WebServiceListModel.getInstance().addWebService(wsData);
                         
                         newGroup.add(wsData.getId(), true);
