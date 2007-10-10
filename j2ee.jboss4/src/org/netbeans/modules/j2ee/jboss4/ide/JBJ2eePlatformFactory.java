@@ -196,9 +196,25 @@ public class JBJ2eePlatformFactory extends J2eePlatformFactory {
         }
 
         public boolean isToolSupported(String toolName) {
+            
+            if (J2eePlatform.TOOL_JSR109.equals(toolName)) {
+                if (containsJaxWsLibraries())
+                    return true;
+            }            
+            
+             if (J2eePlatform.TOOL_WSIMPORT.equals(toolName)) {
+                if (containsJaxWsLibraries())
+                    return true;
+            }
+            
+            if ("JaxWs-in-j2ee14-supported".equals(toolName)) { //NOI18N
+                if (containsJaxWsLibraries())
+                    return true;
+            }            
+            
             if (J2eePlatform.TOOL_WSCOMPILE.equals(toolName) 
                     || J2eePlatform.TOOL_APP_CLIENT_RUNTIME.equals(toolName) ) {
-                return true;
+                    return true;
             }
             if ("org.hibernate.ejb.HibernatePersistence".equals(toolName)
                     || "oracle.toplink.essentials.ejb.cmp3.EntityManagerFactoryProvider".equals(toolName)
@@ -213,6 +229,13 @@ public class JBJ2eePlatformFactory extends J2eePlatformFactory {
             }
 
             return false;
+        }
+        
+        private boolean containsJaxWsLibraries() {
+            File root = new File(properties.getRootDir(), "client"); // NOI18N
+            File jaxWsAPILib = new File(root, "jboss-jaxws.jar"); // NOI18N
+            if (jaxWsAPILib.exists()) return true;
+            else return false;
         }
 
         private boolean containsPersistenceProvider(String providerName) {
@@ -269,6 +292,38 @@ public class JBJ2eePlatformFactory extends J2eePlatformFactory {
         }
         
         public File[] getToolClasspathEntries(String toolName) {
+           if (J2eePlatform.TOOL_WSIMPORT.equals(toolName)) {
+                File root = new File(properties.getRootDir(), "client"); // NOI18N
+                File jaxWsAPILib = new File(root, "jboss-jaxws.jar"); // NOI18N
+                if (jaxWsAPILib.exists()) {
+                    return new File[] {
+                        new File(root, "activation.jar"),     // NOI18N
+                        new File(root, "getopt.jar"),    // NOI18N
+                        new File(root, "wstx.jar"),   // NOI18N
+                        new File(root, "jbossall-client.jar"),  // NOI18N
+                        new File(root, "log4j.jar"),     // NOI18N
+                        new File(root, "mail.jar"),    // NOI18N
+                        new File(root, "jbossws-spi.jar"),   // NOI18N
+                        new File(root, "jaxws-tools.jar"),  // NOI18N
+                        new File(root, "jaxws-rt.jar"),     // NOI18N
+                        new File(root, "stax-api.jar"),    // NOI18N
+                        new File(root, "jaxb-api.jar"),   // NOI18N
+                        new File(root, "jaxb-impl.jar"),  // NOI18N
+                        new File(root, "jaxb-xjc.jar"),   // NOI18N
+                        new File(root, "streambuffer.jar"),  // NOI18N
+                        new File(root, "stax-ex.jar"),    // NOI18N
+                        //for SunRI JAX-WS implementation uncomment this:
+                        //new File(root, "jbossws-sunri-client.jar"),   // NOI18N
+                        //and comment out following jars:
+                        new File(root, "javassist.jar"),  // NOI18N
+                        new File(root, "jboss-xml-binding.jar"),   // NOI18N
+                        new File(root, "jbossws-client.jar"),  // NOI18N
+                        new File(root, "jboss-jaxws.jar"),    // NOI18N
+                        new File(root, "jboss-jaxrpc.jar"),    // NOI18N
+                        new File(root, "jboss-saaj.jar")    // NOI18N
+                    };
+                }
+            }
             if (J2eePlatform.TOOL_WSCOMPILE.equals(toolName)) {
                 File root = InstalledFileLocator.getDefault().locate("modules/ext/jaxrpc16", null, false); // NOI18N
                 return new File[] {
