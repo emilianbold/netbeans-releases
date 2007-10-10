@@ -48,6 +48,7 @@ import java.awt.event.FocusListener;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import javax.swing.UIManager;
+import javax.swing.tree.DefaultTreeModel;
 import org.netbeans.modules.mobility.end2end.util.ServiceNodeManager;
 import org.openide.nodes.Children;
 import org.openide.nodes.Children;
@@ -109,7 +110,7 @@ public class MethodCheckedTreeBeanView extends BeanTreeView {
         if (root == null) return;
         if (n != null) forceState(n.getChildren(), (MultiStateCheckBox.State)n.getValue(ServiceNodeManager.NODE_SELECTION_ATTRIBUTE));
         updateMixedStates(root);
-        validateTree();
+        ((DefaultTreeModel)tree.getModel()).reload();
         fireChange();        
     }
     
