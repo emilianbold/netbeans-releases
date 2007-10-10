@@ -268,14 +268,9 @@ public abstract class WindowManager extends Object implements Serializable {
         if (old != null) {
             try {
                 old.componentDeactivated();
-            } catch (RuntimeException re) {
-                IllegalStateException ise = new IllegalStateException(
-                        "[Winsys] TopComponent " + old // NOI18N
-                         +" throws runtime exception from its componentDeactivated() method. Repair it!"
-                    
-                    ); // NOI18N
-                ise.initCause(re);
-                Logger.getLogger(WindowManager.class.getName()).log(Level.WARNING, null, ise);
+            } catch (Throwable th) {
+                logThrowable(th, "[Winsys] TopComponent " + old.getClass().getName() // NOI18N
+                         +" throws runtime exception from its componentDeactivated() method.\nPlease repair it!"); // NOI18N
             }
         }
 
@@ -285,14 +280,9 @@ public abstract class WindowManager extends Object implements Serializable {
         if (newTC != null) {
             try {
                 newTC.componentActivated();
-            } catch (RuntimeException re) {
-                IllegalStateException ise = new IllegalStateException(
-                        "[Winsys] TopComponent " + newTC // NOI18N
-                         +" throws runtime exception from its componentActivated() method. Repair it!"
-                    
-                    ); // NOI18N
-                ise.initCause(re);
-                Logger.getLogger(WindowManager.class.getName()).log(Level.WARNING, null, ise);
+            } catch (Throwable th) {
+                logThrowable(th, "[Winsys] TopComponent " + newTC.getClass().getName() // NOI18N
+                         +" throws runtime exception from its componentActivated() method.\nPlease repair it!"); // NOI18N
             }
         }
     }
@@ -306,13 +296,9 @@ public abstract class WindowManager extends Object implements Serializable {
     protected void componentOpenNotify(TopComponent tc) {
         try {
             tc.componentOpened();
-        } catch (RuntimeException re) {
-            IllegalStateException ise = new IllegalStateException(
-                    "[Winsys] TopComponent " + tc // NOI18N
-                     +" throws runtime exception from its componentOpened() method. Repair it!"
-                ); // NOI18N
-            ise.initCause(re);
-            Logger.getLogger(WindowManager.class.getName()).log(Level.WARNING, null, ise);
+        } catch (Throwable th) {
+            logThrowable(th, "[Winsys] TopComponent " + tc.getClass().getName() // NOI18N
+                 +" throws exception/error from its componentOpened() method.\nPlease repair it!"); // NOI18N
         }
     }
 
@@ -325,13 +311,9 @@ public abstract class WindowManager extends Object implements Serializable {
     protected void componentCloseNotify(TopComponent tc) {
         try {
             tc.componentClosed();
-        } catch (RuntimeException re) {
-            IllegalStateException ise = new IllegalStateException(
-                    "[Winsys] TopComponent " + tc // NOI18N
-                     +" throws runtime exception from its componentClosed() method. Repair it!"
-                ); // NOI18N
-            ise.initCause(re);
-            Logger.getLogger(WindowManager.class.getName()).log(Level.WARNING, null, ise);
+        } catch (Throwable th) {
+            logThrowable(th, "[Winsys] TopComponent " + tc.getClass().getName() // NOI18N
+                     +" throws exception/error from its componentClosed() method.\nPlease repair it!"); // NOI18N
         }
 
         if (tc == getActiveComponent()) {
@@ -346,13 +328,9 @@ public abstract class WindowManager extends Object implements Serializable {
     protected void componentShowing(TopComponent tc) {
         try {
             tc.componentShowing();
-        } catch (RuntimeException re) {
-            IllegalStateException ise = new IllegalStateException(
-                    "[Winsys] TopComponent " + tc // NOI18N
-                     +" throws runtime exception from its componentShowing() method. Repair it!"
-                ); // NOI18N
-            ise.initCause(re);
-            Logger.getLogger(WindowManager.class.getName()).log(Level.WARNING, null, ise);
+        } catch (Throwable th) {
+            logThrowable(th, "[Winsys] TopComponent " + tc.getClass().getName() // NOI18N
+                    +" throws runtime exception from its componentShowing() method.\nPlease repair it!"); // NOI18N
         }
     }
 
@@ -363,14 +341,26 @@ public abstract class WindowManager extends Object implements Serializable {
     protected void componentHidden(TopComponent tc) {
         try {
             tc.componentHidden();
-        } catch (RuntimeException re) {
-            IllegalStateException ise = new IllegalStateException(
-                    "[Winsys] TopComponent " + tc // NOI18N
-                     +" throws runtime exception from its componentHidden() method. Repair it!"
-                ); // NOI18N
-            ise.initCause(re);
-            Logger.getLogger(WindowManager.class.getName()).log(Level.WARNING, null, ise);
+        } catch (Throwable th) {
+            logThrowable(th, "[Winsys] TopComponent " + tc.getClass().getName() // NOI18N
+                    +" throws runtime exception from its componentHidden() method.\nPlease repair it!"); // NOI18N
         }
+    }
+    
+    /** #113391: catch all we can but ThreadDeath, as even java.lang.Error may come 
+     * from TopComponent.componentOpened or componentClosed.
+     */
+    private static void logThrowable (Throwable th, String message) {
+        if (th instanceof ThreadDeath) {
+            // let us R.I.P. :-)
+            throw (ThreadDeath)th;
+        }
+        StackTraceElement[] stackTrace = th.getStackTrace();
+        String cause = stackTrace.length > 0 
+                ? " Probable cause is at " + stackTrace[0].toString() : "";
+        IllegalStateException ise = new IllegalStateException(message + cause); // NOI18N
+        ise.initCause(th);
+        Logger.getLogger(WindowManager.class.getName()).log(Level.WARNING, null, ise);
     }
 
     /** Provides opening of specified <code>TopComponent</code>.
