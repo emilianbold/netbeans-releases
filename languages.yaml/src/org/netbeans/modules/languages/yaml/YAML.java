@@ -26,6 +26,9 @@ import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ASTPath;
 import org.netbeans.api.languages.ASTToken;
+import org.netbeans.api.languages.Language;
+import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
+import org.netbeans.api.languages.LanguagesManager;
 import org.netbeans.api.languages.SyntaxContext;
 
 
@@ -36,57 +39,62 @@ import org.netbeans.api.languages.SyntaxContext;
 public class YAML {
     
     public static ASTNode parse (SyntaxContext context) {
-        ASTNode root = (ASTNode) context.getASTPath ().getRoot ();
-        if (root.getChildren ().isEmpty ())
-            return root;
-        ASTNode result = parse (root.getChildren (), 0, new int[] {0});
-        List<ASTItem> ch = new ArrayList<ASTItem> ();
-        int seqCount = 0;
-        List<ASTItem> seqChildren = new ArrayList<ASTItem> ();
-        for (ASTItem item : result.getChildren()) {
-            if (item instanceof ASTNode && ((ASTNode)item).getNode("Item2.SequenceValue") != null) {
-                seqCount++;
-                seqChildren.add(item);
-            } else {
-                if (seqCount > 1) {
-                    ASTNode node = ASTNode.create (
-                        "text/x-yaml",
-                        "Collection",
-                        seqChildren,
-                        seqChildren.get(0).getOffset()
-                    );
-                    ch.add(node);
-                    seqCount = 0;
-                    seqChildren = new ArrayList<ASTItem> ();
-                } else if (seqCount == 1) {
-                    ch.add(seqChildren.get(0));
-                    seqCount = 0;
-                    seqChildren.clear();
-                }
-                ch.add(item);
-            } // if
-        } // for
-        if (seqCount > 1) {
-            ASTNode node = ASTNode.create (
-                "text/x-yaml",
-                "Collection",
-                seqChildren,
-                seqChildren.get(0).getOffset()
+        try {
+            Language language = LanguagesManager.get ().getLanguage ("text/x-yaml");
+            ASTNode root = (ASTNode) context.getASTPath ().getRoot ();
+            if (root.getChildren ().isEmpty ())
+                return root;
+            ASTNode result = parse (language, root.getChildren (), 0, new int[] {0});
+            List<ASTItem> ch = new ArrayList<ASTItem> ();
+            int seqCount = 0;
+            List<ASTItem> seqChildren = new ArrayList<ASTItem> ();
+            for (ASTItem item : result.getChildren()) {
+                if (item instanceof ASTNode && ((ASTNode)item).getNode("Item2.SequenceValue") != null) {
+                    seqCount++;
+                    seqChildren.add(item);
+                } else {
+                    if (seqCount > 1) {
+                        ASTNode node = ASTNode.create (
+                            language,
+                            "Collection",
+                            seqChildren,
+                            seqChildren.get(0).getOffset()
+                        );
+                        ch.add(node);
+                        seqCount = 0;
+                        seqChildren = new ArrayList<ASTItem> ();
+                    } else if (seqCount == 1) {
+                        ch.add(seqChildren.get(0));
+                        seqCount = 0;
+                        seqChildren.clear();
+                    }
+                    ch.add(item);
+                } // if
+            } // for
+            if (seqCount > 1) {
+                ASTNode node = ASTNode.create (
+                    language,
+                    "Collection",
+                    seqChildren,
+                    seqChildren.get(0).getOffset()
+                );
+                ch.add(node);
+            } else if (seqCount == 1) {
+                ch.add(seqChildren.get(0));
+            }
+
+            return ASTNode.create (
+                language,
+                "S",
+                ch,
+                result.getOffset()
             );
-            ch.add(node);
-        } else if (seqCount == 1) {
-            ch.add(seqChildren.get(0));
+        } catch (LanguageDefinitionNotFoundException ex) {
+            return null;
         }
-        
-        return ASTNode.create (
-            "text/x-yaml",
-            "S",
-            ch,
-            result.getOffset()
-        );
     }
     
-    private static ASTNode parse (List<ASTItem> items, int indent, int[] index) {
+    private static ASTNode parse (Language language, List<ASTItem> items, int indent, int[] index) {
         List<ASTItem> ch = new ArrayList<ASTItem> ();
         while (index[0] < items.size ()) {
             ASTItem item = items.get (index[0]);
@@ -101,7 +109,7 @@ public class YAML {
             }
             if (ci > indent) {
                 int idx = index[0];
-                ASTNode subNode = parse (items, ci, index);
+                ASTNode subNode = parse (language, items, ci, index);
                 if (!(idx > 0 && addMapValue(idx - 1, items, subNode))) {
                     ch.add(subNode);
                 }
@@ -116,7 +124,7 @@ public class YAML {
         if (!ch.isEmpty ())
             offset = ch.get (0).getOffset( );
         return ASTNode.create (
-            "text/x-yaml",
+            language,
             "Collection",
             ch,
             offset
