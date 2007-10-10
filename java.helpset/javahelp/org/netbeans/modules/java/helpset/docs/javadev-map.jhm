@@ -138,6 +138,7 @@
 <mapID target="gui.mdi" url="gui/gui_creatingmdi.html" />
 
 <mapID target="gui.bind.about" url="gui/gui_bind_about.html" />
+<mapID target="gui.bind.working" url="gui/gui_bind_working.html" />
 
 <mapID target="gui.config" url="gui/gui_configuring.html" />
 <mapID target="gui.source.modifying" url="gui/gui_modifysource.html" />

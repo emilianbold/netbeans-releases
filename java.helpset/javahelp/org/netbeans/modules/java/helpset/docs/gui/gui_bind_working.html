@@ -5,26 +5,25 @@
 -->
 <html>
     <head>
-        <title>Working with the GUI Builder</title>
+        <title>Working with Beans Binding</title>
 <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
     </head>
     <body>
-        <h2>Working with the GUI Builder</h2>
+        <h2>Working with Beans Binding</h2>
         <p><small><a href="#seealso">See Also</a></small>
 
-        <p>The following table outlines the basic process of working with the GUI Builder.</p>
-        <table border="0" cellpadding="0" cellspacing="0" summary="The left column contains each
+        <p>The following table outlines the basic process of binding properties 
+        between JavaBeans components.</p>
+            <table border="0" cellpadding="0" cellspacing="0" summary="The left column contains each
             process step. The right column contains detailed information to accomplish that process.">
 
             <tr valign="top"> 
                 <td align="center"><img src="../images/circle1.gif" alt="Number One"><br>
-                <b>Create forms </b>
+                <b>Create GUI forms</b>
                 <p></td>
                 <td> 
                     <ul>
                         <li><a href="gui_creatingforms.html">Create a new form.</a></li>
-                        <li><a href="gui_addcomponent.html">Add a component to a form.</a></li>
-                        <li><a href="gui_accessibleform.html">Create accessible forms.</a></li>
                     </ul>
                 </td>
             </tr>
@@ -36,30 +35,16 @@
   
             <tr valign="top"> 
                 <td align="center"> <img src="../images/circle2.gif" alt="Number Two"><br>
-                <b>Edit forms</b>
+                <b>Add components</b>
                 <p></td>
                 <td><ul>
-                    <li><a href="gui_events_managing.html">Manage component events.</a></li>
-                    <li><a href="layout_managers/gui_settinglayout.html">Set the form's layout manager.</a></li>
+                        <li><a href="gui_addcomponent.html">Add necessary components to the form.</a>, 
+                    including custom beans for which you will create bindings.</li>
                 </ul>
                 </td>
             </tr>
-            <tr> 
-                <td colspan="2"> 
-                    <hr align="center" width="80%">
-                </td>
-            </tr>
   
-            <tr valign="top"> 
-                <td align="center"> <img src="../images/circle3.gif" alt="Number Three"><br>
-                <b>Preview forms</b>
-                <p></td>
-                <td> 
-                    <ul>
-                        <li><a href="gui_previewing.html">Test forms as you work.</a></li>
-                    </ul>
-                </td>
-            </tr>
+
             <tr> 
                 <td colspan="2"> 
                     <hr align="center" width="80%">
@@ -67,13 +52,22 @@
             </tr>
 
             <tr valign="top"> 
-                <td align="center"> <img src="../images/circle4.gif" alt="Number Four"><br>
-                <b>Deploy GUI Application</b>
+                <td align="center"> <img src="../images/circle3.gif" alt="Number Three"><br>
+                <b>Bind component properties</b>
                 <p></td>
                 <td> 
-                    <ul>
-                        <li><a href="gui_deploying.html">Deploy standalone Java GUI Applications.</a></li>
-                    </ul>
+                    <ol>
+                        <li>Right-click a component in the design area or in the 
+                    Inspector window, and choose a target property from the Bind menu.</li>
+                    <li>In the 
+                    <a href="csh/gui_bind_dialog.html">Binding tab of Bind dialog box</a>, 
+                        specify the source for the binding.</li>
+                        <li>In the <a href="csh/gui_bind_advanced_dialog.html">Advanced tab of Bind dialog box</a>, 
+                        specify any other customizations to the binding, if necessary. 
+                        For example, some bindings require custom converters, validators, 
+                        and code for handling unreadable or non-existent values from the 
+                        source.
+                    </ol>
                 </td>
             </tr>
 

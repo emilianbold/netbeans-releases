@@ -169,7 +169,8 @@
     <tocitem text="Adding a Bean to the Palette Window" target="beans.adding" />
     <tocitem text="Binding Beans to Data and Other Beans">
       <tocitem text="About Beans Binding" target="gui.bind.about"/>
-      </tocitem>
+      <tocitem text="Working With Beans Binding" target="gui.bind.working"/>
+  </tocitem>
     <tocitem text="Configuring the GUI Builder" target="gui.config" />
 
     </tocitem>
