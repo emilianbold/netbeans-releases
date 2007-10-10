@@ -54,6 +54,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -130,6 +131,9 @@ public final class NbPlatform {
         if (platforms == null) {
             platforms = new HashSet<NbPlatform>();
             Map<String,String> p = PropertyUtils.sequentialPropertyEvaluator(null, PropertyUtils.globalPropertyProvider()).getProperties();
+            if (p == null) { // #115909
+                p = Collections.emptyMap();
+            }
             boolean foundDefault = false;
             for (Map.Entry<String,String> entry : p.entrySet()) {
                 String key = entry.getKey();
@@ -342,6 +346,9 @@ public final class NbPlatform {
         try {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
                 public Void run() throws IOException {
+                    if (getPlatformByID(id) != null) {
+                        throw new IOException("ID " + id + " already taken");
+                    }
                     EditableProperties props = PropertyUtils.getGlobalProperties();
                     String plafDestDir = PLATFORM_PREFIX + id + PLATFORM_DEST_DIR_SUFFIX;
                     props.setProperty(plafDestDir, destdir.getAbsolutePath());

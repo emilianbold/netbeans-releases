@@ -79,10 +79,10 @@ public class PlatformInfoVisualPanel extends BasicVisualPanel {
     }
     
     private void checkForm() {
-        String plafName = plafNameValue.getText().trim();
-        if (plafName.equals("")) {
+        String name = plafNameValue.getText().trim();
+        if (name.equals("")) {
             setError(getMessage("MSG_BlankPlatformName"));
-        } else if (!NbPlatform.isLabelValid(plafName)) {
+        } else if (!NbPlatform.isLabelValid(name) || /* #115909 */ NbPlatform.getPlatformByID(name.replace(' ', '_')) != null) {
             setError(getMessage("MSG_NameIsAlreadyUsed"));
         } else {
             markValid();
@@ -94,7 +94,7 @@ public class PlatformInfoVisualPanel extends BasicVisualPanel {
                 plafNameValue.getText().trim());
     }
     
-    public void addNotify() {
+    public @Override void addNotify() {
         super.addNotify();
         if (!attached) {
             plafNameValue.getDocument().addDocumentListener(new UIUtil.DocumentAdapter() {

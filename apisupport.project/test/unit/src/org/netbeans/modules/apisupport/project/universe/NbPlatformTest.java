@@ -44,6 +44,7 @@ package org.netbeans.modules.apisupport.project.universe;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
@@ -220,6 +221,12 @@ public class NbPlatformTest extends TestBase {
         assertNull("custom platform was deleted", NbPlatform.getPlatformByID("custom"));
         NbPlatform.addPlatform(custom.getID(), custom.getDestDir(), "Some Label");
         NbPlatform.addPlatform(custom.getID() + 1, custom.getDestDir(), "Some Label 1");
+        try {
+            NbPlatform.addPlatform(custom.getID(), custom.getDestDir(), "Duplicate");
+            fail("should have rejected this");
+        } catch (IOException x) {
+            // OK
+        }
         assertEquals("have two platforms", 3, NbPlatform.getPlatforms().size());
         assertNotNull("custom platform was added", NbPlatform.getPlatformByID("custom"));
         assertNotNull("custom platform was added", NbPlatform.getPlatformByID("custom1"));
