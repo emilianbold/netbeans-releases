@@ -64,34 +64,29 @@ is suspended or waiting to be resumed.</p>
 </ul>
 
 <h3>Multi-threaded Applications</h3>
-<p>When debugging a multi-threaded application, all threads are suspended when a breakpoint is hit 
-(unless the breakpoint settings specifically are set to not suspend all threads).
-When you then proceed to step through the application, all threads are resumed.
+<p>When debugging a multi-threaded application, a step in a particular thread may be interrupted by
+    a breakpoint encountered in some other thread.
 This behavior is desirable in some cases but not in others.</p>
 
-<p>For example, when debugging a multi-threaded application, a step in one thread (<i>thread 1</i>) 
-may be interrupted by a breakpoint encountered in another thread (<i>thread 2</i>).
-You can control the threads that trigger breakpoints during the debugging session
-in the Threads window.</p> 
+<p>Let us suppose you are stepping through a thread (<i>thread 1</i>), 
+and one of the steps is interrupted by a breakpoint encountered in another thread (<i>thread 2</i>).
+When this happens, the program counter is set to the breakpoint in <i>thread 2</i>.</p>
 
-<ol>
-    <li>Start your debugging session.</li>
-    <li>When the debugger encounters a breakpoint in <i>thread 1</i>, all threads in the program 
-    are suspended and the program counter indicates the current breakpoint.</li>
-    <li>Invoke a step in <i>thread 1</i> to resume all threads.<br>
-    If a breakpoint is encountered in another thread <i>thread 2</i> before the step in <i>thread 1</i> is complete,
-    all threads are suspended and the program counter indicates the current breakpoint in <i>thread 2</i>.
-    <p>If you want to ignore breakpoints not on <i>thread 1</i>, do one of the following:</p>
+<p>You can continue stepping through your program in the following ways:</p>
+
+<ul>
+    <li>Continue stepping through your program from the breakpoint in <i>thread 2</i>.</li>
+    <li>Step through the program from the previous step (in <i>thread 1</i>) and ignore the breakpoint in <i>thread 2</i>.    
+    <p>To continue with the step in <i>thread 1</i>, do one of the following in the Threads window: </p>
     <ul>
-        <li>In the Threads window, click Ignore Breakpoint. Clicking this will cause the 
+        <li><b>Click Ignore Breakpoint.</b> Clicking this will cause the 
         debugger to ignore the specified breakpoint encountered in <i>thread 2</i> and you can continue to step
         through the program following <i>thread 1</i>.</li>
-        <li>In the Threads window, click Ignore All Such Breakpoints.
+        <li><b>Click Ignore All Such Breakpoints.</b>
         Clicking this will cause the debugger to ignore all breakpoints that do not occur on <i>thread 1</i>
         until the end of the debugging session.</li>
     </ul></li>
-    <li>Continue to step through your program.</li>
-</ol>
+</ul>
 
 
 <h3>Viewing Source Code for a Thread</h3>
