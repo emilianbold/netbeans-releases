@@ -70,9 +70,6 @@ import org.netbeans.spi.lexer.LanguageHierarchy;
 
 public final class EmbeddingContainer<T extends TokenId> {
     
-    /** Flag for additional correctness checks (may degrade performance). */
-    private static final boolean testing = Boolean.getBoolean("netbeans.debug.lexer.test");
-    
     /**
      * Get embedded token list.
      *
@@ -324,6 +321,7 @@ public final class EmbeddingContainer<T extends TokenId> {
                 @SuppressWarnings("unchecked")
                 EmbeddingContainer<T> ecUC = (EmbeddingContainer<T>)tokenOrEmbeddingContainer;
                 ec = ecUC;
+                ec.updateStatusImpl();
                 EmbeddedTokenList<?> etl = ec.firstEmbeddedTokenList();
                 EmbeddedTokenList<?> prevEtl = null;
                 while (etl != null) {
@@ -335,8 +333,15 @@ public final class EmbeddingContainer<T extends TokenId> {
                         } else { // etl was first
                             ec.setFirstEmbeddedTokenList(etl.nextEmbeddedTokenList());
                         }
-                        // Increase the version of the hierarchy
-                        // TBD
+                        etl.setNextEmbeddedTokenList(null);
+                        // Do not increase the version of the hierarchy since
+                        // all the existing token sequences would be invalidated.
+                        // Instead invalidate only TSes for the etl only and all its children.
+                        // Construct special EC just for the removed token list.
+                        ec = new EmbeddingContainer<T>(ec);
+                        ec.setFirstEmbeddedTokenList(etl);
+                        etl.setEmbeddingContainer(ec);
+                        ec.invalidateChildren();
 
                         // Fire the embedding creation to the clients
                         int startOffset = ec.tokenStartOffset();
@@ -430,18 +435,57 @@ public final class EmbeddingContainer<T extends TokenId> {
      */
     private EmbeddedTokenList<? extends TokenId> defaultEmbeddedTokenList; // 40 bytes
     
-    public EmbeddingContainer(AbstractToken<T> token, TokenList<?> rootTokenList) {
+    EmbeddingContainer(AbstractToken<T> token, TokenList<?> rootTokenList) {
         this.token = token;
         this.rootTokenList = rootTokenList;
         this.rootToken = token; // Has to be non-null since updateStatusImpl() would not update null rootToken
         // cachedModCount must differ from root's one to sync offsets
         // Root mod count can be >= 0 or -1 for non-incremental token lists
-        // It also cannot be -2 which means that this container is no longer
-        // attached to the token hierarchy.
-        this.cachedModCount = -3;
+        this.cachedModCount = -2;
         // Update the tokenStartOffset etc. - this assumes that the token
         // is already parented till the root token list.
         updateStatusImpl();
+    }
+    
+    /**
+     * Constructor used when a custom embedding gets removed.
+     * Such removal does not increase token hierarchy version
+     * (to not destroy existing token sequences) but need to invalidate
+     * token sequences over the removed embedded token list and all its children.
+     * <br/>
+     * A new special embedding container gets created in such case
+     * that will carry null root token since begining and will have a special modCount
+     * so that the token sequences become invalid.
+     * 
+     * @param ec non-null existing embedding container.
+     */
+    EmbeddingContainer(EmbeddingContainer<T> ec) {
+        this(ec.token(), ec.rootTokenList()); // Force init of tokenStartOffset and rootTokenOffsetShift
+        invalidate();
+    }
+    
+    private void invalidate() {
+        this.rootToken = null;
+        // Set cachedModCount to -2 which should not occur for regular cases
+        // which should force existing token sequences to be invalidated.
+        this.cachedModCount = -2;
+    }
+    
+    void invalidateChildren() {
+        EmbeddedTokenList etl = firstEmbeddedTokenList;
+        while (etl != null && etl != EmbeddedTokenList.NO_DEFAULT_EMBEDDING) {
+            for (int i = etl.tokenCountCurrent() - 1; i >= 0; i--) {
+                Object tokenOrEC = etl.tokenOrEmbeddingContainerUnsync(i);
+                if (tokenOrEC.getClass() == EmbeddingContainer.class) {
+                    ((EmbeddingContainer)tokenOrEC).invalidateChildren();
+                }
+            }
+            etl = etl.nextEmbeddedTokenList();
+        }
+    }
+    
+    public int cachedModCount() {
+        return cachedModCount;
     }
 
     public AbstractToken<T> token() {

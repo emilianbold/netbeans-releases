@@ -269,7 +269,7 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
 
     public int modCount() {
         // Delegate to root to have the most up-to-date value for token sequence's check.
-        return root().modCount();
+        return embeddingContainer.cachedModCount();
     }
     
     public int startOffset() { // used by FlyOffsetGapList

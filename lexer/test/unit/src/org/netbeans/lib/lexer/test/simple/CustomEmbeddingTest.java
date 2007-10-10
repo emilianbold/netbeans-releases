@@ -142,8 +142,17 @@ public class CustomEmbeddingTest extends NbTestCase {
         assertFalse(ets.moveNext());
         
 
+        ets = ts.embedded(); // Get the custom embedded token sequence
+        assertEquals(ets.language(), TestTokenId.language());
+        assertTrue(ets.moveNext());
+        assertTrue(ets.isValid());
+        assertNotNull(ets);
         // Test removal of the embedding
         assertTrue(ts.removeEmbedding(TestTokenId.language()));
+        // The embedded token sequence should no longer be valid
+        assertFalse(ets.isValid());
+        // Token sequence on which the removeEmbedding() was called should continue to be valid
+        assertTrue(ts.isValid());
         // Repetitive removal should return false
         assertFalse(ts.removeEmbedding(TestTokenId.language()));
 

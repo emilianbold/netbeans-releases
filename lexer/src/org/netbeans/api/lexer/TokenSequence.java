@@ -42,7 +42,6 @@
 package org.netbeans.api.lexer;
 
 import java.util.ConcurrentModificationException;
-import org.netbeans.lib.lexer.EmbeddedTokenList;
 import org.netbeans.lib.lexer.EmbeddingContainer;
 import org.netbeans.lib.lexer.LexerUtilsConstants;
 import org.netbeans.lib.lexer.SubSequenceTokenList;
@@ -136,15 +135,6 @@ public final class TokenSequence<T extends TokenId> {
      * changes (by modification) this token sequence will become invalid.
      */
     private final int modCount; // 28 bytes
-    
-    /**
-     * Parent token indexes allow to effectively determine parent tokens
-     * in the tree token hierarchy.
-     * <br/>
-     * The first index corresponds to the top language in the hierarchy
-     * and the ones that follow point to subsequent embedded levels.
-     */
-    private int[] parentTokenIndexes; // 32 bytes
 
     /**
      * Package-private constructor used by API accessor.
@@ -732,7 +722,7 @@ public final class TokenSequence<T extends TokenId> {
      * @return true if this token sequence is ready for use or false if it should be abandoned.
      */
     public boolean isValid() {
-        return (tokenList.modCount() != this.modCount);
+        return (tokenList.modCount() == this.modCount);
     }
     
     @Override
@@ -741,10 +731,6 @@ public final class TokenSequence<T extends TokenId> {
                 tokenIndex, 0, Integer.MAX_VALUE, true, 0).toString();
     }
     
-    int[] parentTokenIndexes() {
-        return parentTokenIndexes;
-    }
-
     private void resetTokenIndex(int index) {
         // Position to the given index e.g. by move() and moveIndex()
         tokenIndex = index;
@@ -764,8 +750,10 @@ public final class TokenSequence<T extends TokenId> {
     private void checkModCount() {
         if (tokenList.modCount() != this.modCount) {
             throw new ConcurrentModificationException(
-                "Caller uses token sequence which is no longer valid. Underlying token hierarchy" // NOI18N
-              + " has been modified: modCount=" + this.modCount + " != upToDateModCount=" + tokenList.modCount() // NOI18N
+                "Caller uses obsolete token sequence which is no longer valid. Underlying token hierarchy" + // NOI18N
+                " has been modified: modCount=" + this.modCount + // NOI18N
+                " != upToDateModCount=" + tokenList.modCount() + // NOI18N
+                "\nPlease report against caller's module which needs to be fixed (not the lexer module)." // NOI18N
             );
         }
     }
