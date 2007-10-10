@@ -438,6 +438,7 @@ class DragOperation {
     private void completePickAndPlopFromPalette(Point pt) {
         p("complete pick and plop from palette: target comp = " + targetComponent);
         PaletteItem paletteItem = PaletteUtils.getSelectedItem();
+        if(paletteItem == null) return;
         
         if(targetComponent == null) return;
         
