@@ -953,7 +953,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
             } else if (GdbUtils.isSimplePointer(parent.getType()) && name.startsWith("*")) { // NOI18N
                 fullname = '*' + pname;
             } else if (GdbUtils.isPointer(parent.getType())) {
-                fullname = pname + "->" + name;
+                fullname = pname + "->" + name; // NOI18N
             } else {
                 fullname = pname + '.' + name;
             }

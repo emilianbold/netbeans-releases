@@ -470,8 +470,8 @@ abstract class CommonConfigurationXMLCodec
 	    writeDirectories(xes, LINKER_DYN_SERCH_ELEMENT, linkerConfiguration.getDynamicSearch().getValueAsArray());
 	if (linkerConfiguration.getStripOption().getModified())
 	    xes.element(STRIP_SYMBOLS_ELEMENT, "" + linkerConfiguration.getStripOption().getValue()); // NOI18N
-	if (linkerConfiguration.getKpicOption().getModified())
-	    xes.element(LINKER_KPIC_ELEMENT, "" + linkerConfiguration.getKpicOption().getValue()); // NOI18N
+	if (linkerConfiguration.getPICOption().getModified())
+	    xes.element(LINKER_KPIC_ELEMENT, "" + linkerConfiguration.getPICOption().getValue()); // NOI18N
 	if (linkerConfiguration.getNorunpathOption().getModified())
 	    xes.element(LINKER_NORUNPATH_ELEMENT, "" + linkerConfiguration.getNorunpathOption().getValue()); // NOI18N
 	if (linkerConfiguration.getNameassignOption().getModified())

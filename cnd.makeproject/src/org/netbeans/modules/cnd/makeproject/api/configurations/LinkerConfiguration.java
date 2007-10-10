@@ -68,7 +68,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
     private VectorConfiguration additionalLibs;
     private VectorConfiguration dynamicSearch;
     private BooleanConfiguration stripOption;
-    private BooleanConfiguration kpicOption;
+    private BooleanConfiguration picOption;
     private BooleanConfiguration norunpathOption;
     private BooleanConfiguration nameassignOption;
     private OptionsConfiguration commandLineConfiguration;
@@ -83,7 +83,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
 	additionalLibs = new VectorConfiguration(null);
 	dynamicSearch = new VectorConfiguration(null);
 	stripOption = new BooleanConfiguration(null, false, "", "-s"); // NOI18N
-	kpicOption = new BooleanConfiguration(null, true, "", "-Kpic"); // NOI18N
+	picOption = new BooleanConfiguration(null, true, "", "-Kpic"); // NOI18N
 	norunpathOption = new BooleanConfiguration(null, true, "", "-norunpath"); // NOI18N
 	nameassignOption = new BooleanConfiguration(null, true);
 	commandLineConfiguration = new OptionsConfiguration();
@@ -141,11 +141,11 @@ public class LinkerConfiguration implements AllOptionsProvider {
     }
 
     // Kpic
-    public void setKpicOption(BooleanConfiguration kpicOption) {
-	this.kpicOption = kpicOption;
+    public void setPICOption(BooleanConfiguration picOption) {
+	this.picOption = picOption;
     }
-    public BooleanConfiguration getKpicOption() {
-	return kpicOption;
+    public BooleanConfiguration getPICOption() {
+	return picOption;
     }
 
     // Norunpath
@@ -207,7 +207,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
 	getCommandLineConfiguration().assign(conf.getCommandLineConfiguration());
 	getAdditionalDependencies().assign(conf.getAdditionalDependencies());
 	getStripOption().assign(conf.getStripOption());
-	getKpicOption().assign(conf.getKpicOption());
+	getPICOption().assign(conf.getPICOption());
 	getNorunpathOption().assign(conf.getNorunpathOption());
 	getNameassignOption().assign(conf.getNameassignOption());
 	getLibrariesConfiguration().assign(conf.getLibrariesConfiguration());
@@ -223,7 +223,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
 	clone.setCommandLineConfiguration((OptionsConfiguration)getCommandLineConfiguration().clone());
 	clone.setAdditionalDependencies((OptionsConfiguration)getAdditionalDependencies().clone());
 	clone.setStripOption((BooleanConfiguration)getStripOption().clone());
-	clone.setKpicOption((BooleanConfiguration)getKpicOption().clone());
+	clone.setPICOption((BooleanConfiguration)getPICOption().clone());
 	clone.setNorunpathOption((BooleanConfiguration)getNorunpathOption().clone());
 	clone.setNameassignOption((BooleanConfiguration)getNameassignOption().clone());
 	clone.setLibrariesConfiguration((LibrariesConfiguration)getLibrariesConfiguration().clone());
@@ -266,16 +266,33 @@ public class LinkerConfiguration implements AllOptionsProvider {
         }
 	options += getOutputOptions() + " "; // NOI18N
 	options += getStripOption().getOption() + " "; // NOI18N
-	if (getMakeConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_DYNAMIC_LIB &&
-                cs.isSunCompiler()) {
+	if (getMakeConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_DYNAMIC_LIB) {
             // FIXUP: should move to Platform
-	    options += getKpicOption().getOption() + " "; // NOI18N
-	    options += getNorunpathOption().getOption() + " "; // NOI18N
-	    options += getNameassignOption(getNameassignOption().getValue()) + " "; // NOI18N
+            if (getPICOption().getValue()) {
+                options += getPICOption(cs);
+            }
+            if (cs.isSunCompiler()) {
+                options += getNorunpathOption().getOption() + " "; // NOI18N
+                options += getNameassignOption(getNameassignOption().getValue()) + " "; // NOI18N
+            }
 	}
 	return CppUtils.reformatWhitespaces(options);
     }
 
+    public String getPICOption(CompilerSet cs) {
+        // FIXUP: should move to Platform
+        String option = null;
+        if (cs.isSunCompiler()) {
+            option = "-Kpic "; // NOI18N
+        } else if (cs.isGnuCompiler()) {
+            option = "-fPIC "; // NOI18N
+        }
+        else {
+            assert false;
+        }
+        return option;
+    }
+    
     public String getLibraryItems() {
         String libPrefix = "-L"; // NOI18N
         String dynSearchPrefix = ""; // NOI18N
@@ -328,10 +345,12 @@ public class LinkerConfiguration implements AllOptionsProvider {
 	set2.setDisplayName(getString("OptionsTxt"));
 	set2.setShortDescription(getString("OptionsHint"));
 	set2.put(new BooleanNodeProp(getStripOption(), true, "StripSymbols", getString("StripSymbolsTxt"), getString("StripSymbolsHint"))); // NOI18N
-	if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_DYNAMIC_LIB && compilerSet.isSunCompiler()) {
-	    set2.put(new BooleanNodeProp(getKpicOption(), true, "PositionIndependantCode", getString("PositionIndependantCodeTxt"), getString("PositionIndependantCodeHint"))); // NOI18N
-	    set2.put(new BooleanNodeProp(getNorunpathOption(), true, "NoRunPath", getString("NoRunPathTxt"), getString("NoRunPathHint"))); // NOI18N
-	    set2.put(new BooleanNodeProp(getNameassignOption(), true, "AssignName", getString("AssignNameTxt"), getString("AssignNameHint"))); // NOI18N
+	if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_DYNAMIC_LIB) {
+            set2.put(new BooleanNodeProp(getPICOption(), true, "PositionIndependantCode", getString("PositionIndependantCodeTxt"), getString("PositionIndependantCodeHint"))); // NOI18N
+            if (compilerSet.isSunCompiler()) {
+                set2.put(new BooleanNodeProp(getNorunpathOption(), true, "NoRunPath", getString("NoRunPathTxt"), getString("NoRunPathHint"))); // NOI18N
+                set2.put(new BooleanNodeProp(getNameassignOption(), true, "AssignName", getString("AssignNameTxt"), getString("AssignNameHint"))); // NOI18N
+            }
 	}
 	sheet.put(set2);
 	Sheet.Set set3 = new Sheet.Set();

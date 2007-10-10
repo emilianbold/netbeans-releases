@@ -343,7 +343,13 @@ public class ConfigurationMakefileWriter {
                     BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
                     target = compilerConfiguration.getOutputFile(items[i].getPath(true), conf, false);
                     if (compiler != null) {
-                        command += compilerConfiguration.getOptions(compiler) + " "; // NOI18N
+                        String fromLinker = ""; // NOI18N
+                        if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_DYNAMIC_LIB) {
+                            if (conf.getLinkerConfiguration().getPICOption().getValue()) {
+                                fromLinker = " " + conf.getLinkerConfiguration().getPICOption(compilerSet); // NOI18N
+                            }
+                        }
+                        command += compilerConfiguration.getOptions(compiler) + fromLinker + " "; // NOI18N
                         command += "-o " + target + " "; // NOI18N
                         command += IpeUtils.escapeOddCharacters(items[i].getPath(true));
                     }

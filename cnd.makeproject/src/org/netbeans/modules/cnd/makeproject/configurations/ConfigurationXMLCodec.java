@@ -499,7 +499,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         } else if (element.equals(LINKER_KPIC_ELEMENT)) {
             boolean ds = currentText.equals(TRUE_VALUE);
             if (currentLinkerConfiguration != null)
-                currentLinkerConfiguration.getKpicOption().setValue(ds);
+                currentLinkerConfiguration.getPICOption().setValue(ds);
         } else if (element.equals(LINKER_NORUNPATH_ELEMENT)) {
             boolean ds = currentText.equals(TRUE_VALUE);
             if (currentLinkerConfiguration != null)

@@ -1421,7 +1421,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             String number = map.get("number"); // NOI18N
             String fullname = map.get("fullname"); // NOI18N
             String line = map.get("line"); // NOI18N
-            if (number != null && number.equals("1")) {
+            if (number != null && number.equals("1")) { // NOI18N
                 firstBPfullname = fullname;
                 firstBPline = line;
             }
