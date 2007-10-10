@@ -53,6 +53,18 @@ public class CCTokenizePreprocessorUnitTestCase extends CCTokenizeUnitTestCase {
         super(testMethodName);
     }
     
+    public void testIncludeDirectiveNoSpace() {
+        doParse("#include<file.h>\n" +
+                "#include\"file.h\"\n",
+                new TokenID[] {
+                    CCTokenContext.CPPINCLUDE, 
+                    CCTokenContext.SYS_INCLUDE, CCTokenContext.WHITESPACE,
+                    CCTokenContext.CPPINCLUDE, 
+                    CCTokenContext.USR_INCLUDE, CCTokenContext.WHITESPACE
+                },
+                true);        
+    }
+    
     public void testIncludeDirective() {
         doParse("# include <folder/file.h>\n" +
                 "# include \"folder/file.h\"\n",
