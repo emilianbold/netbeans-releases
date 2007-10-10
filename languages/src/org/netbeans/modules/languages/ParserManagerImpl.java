@@ -354,19 +354,23 @@ public class ParserManagerImpl extends ParserManager {
     }
 
     public TokenInput createTokenInput () {
-        if (doc instanceof NbEditorDocument)
-            ((NbEditorDocument) doc).readLock ();
-        try {
-            if (tokenHierarchy == null) 
-                return TokenInputUtils.create (Collections.<ASTToken>emptyList ());
-            TokenSequence ts = tokenHierarchy.tokenSequence ();
-            List<ASTToken> tokens = getTokens (ts);
-            if (cancel [0]) return null;
-            return TokenInputUtils.create (tokens);
-        } finally {
-            if (doc instanceof NbEditorDocument)
-                ((NbEditorDocument) doc).readUnlock ();
-        }
+        final TokenInput[] ret = new TokenInput[1];
+        doc.render(new Runnable() {
+            public void run() {
+                if (tokenHierarchy == null) {
+                    ret[0] = TokenInputUtils.create(Collections.<ASTToken>emptyList());
+                    return;
+                }
+                TokenSequence ts = tokenHierarchy.tokenSequence();
+                List<ASTToken> tokens = getTokens(ts);
+                if (cancel[0]) {
+                    // Leave null in ret[0]
+                    return;
+                }
+                ret[0] = TokenInputUtils.create(tokens);
+            }
+        });
+        return ret[0];
     }
     
     private List<ASTToken> getTokens (TokenSequence ts) {
