@@ -38,18 +38,14 @@ import com.strikeiron.search.SISearchServiceSoap;
 import com.strikeiron.search.SORTBY;
 import com.strikeiron.search.SearchOutPut;
 import com.sun.xml.ws.developer.WSBindingProvider;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.EventListener;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
@@ -57,6 +53,7 @@ import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.table.DefaultTableModel;
 import javax.xml.namespace.QName;
+import org.netbeans.modules.websvc.components.ServiceData;
 import org.netbeans.modules.websvc.manager.api.WebServiceDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -75,7 +72,6 @@ public class ServiceTableModel extends DefaultTableModel {
     private static final String DEFAULT_USERID = "Sun_Search@strikeiron.com";
     private static final String DEFAULT_PASSWORD = "SearchSun.01";
     private static final String DEFAULT_URL = "http://ws.strikeiron.com/Searchsunsi01.StrikeIron/MarketplaceSearch?WSDL";
-    public static final String DEFAUL_PACKAGE_NAME = "com.strikeiron";
     
     private static final int COLUMN_WS_NAME = 0;
     private static final int COLUMN_SELECT = 2;
@@ -88,7 +84,7 @@ public class ServiceTableModel extends DefaultTableModel {
     private Boolean useCustomWSDL = Boolean.TRUE;
     private SORTBY sortBy = SORTBY.NAME;
     private SISearchService sservice;
-    private List<MarketPlaceService> result;
+    private List<? extends ServiceData> result;
 
     private String status;
     private Set<Integer> selectedRows = new HashSet<Integer>();
@@ -126,22 +122,24 @@ public class ServiceTableModel extends DefaultTableModel {
         return userId;
     }
     
+    public void setUserId(String value) {
+        userId = value;
+    }
+    
     public String getPassword() {
         return password;
+    }
+    
+    public void setPassword(String value) {
+        password = value;
     }
     
     public String getSearchServiceUrl() {
         return getWsdlLocation().toExternalForm();
     }
 
-    public MarketPlaceService getService(int row) {
+    public ServiceData getService(int row) {
         return result.get(row);
-    }
-    
-    public void setPackageName(String serviceName, String packageName) {
-        if (! DEFAUL_PACKAGE_NAME.equals(packageName)) {
-            packageNames.put(serviceName, packageName);
-        }
     }
     
     public static final String SEARCH_COMPLETE = "searchCompleted";
@@ -183,21 +181,12 @@ public class ServiceTableModel extends DefaultTableModel {
         }
     }
     
-    public Set<MarketPlaceService> getSelectedServices() {
-        Set<MarketPlaceService> selection = new HashSet<MarketPlaceService>();
+    public Set<? extends ServiceData> getSelectedServices() {
+        Set<ServiceData> selection = new HashSet<ServiceData>();
         for (int i : selectedRows) {
             selection.add(result.get(i));
         }
         return selection;
-    }
-    
-    private Map<String,String> packageNames = new HashMap<String,String>();
-    public String getPackageName(String serviceName) {
-        String ret = packageNames.get(serviceName);
-        if (ret == null) {
-            return DEFAUL_PACKAGE_NAME;
-        }
-        return ret;
     }
     
     public String getStatus() {
@@ -216,10 +205,21 @@ public class ServiceTableModel extends DefaultTableModel {
         }
     }
     
+    private List<? extends ServiceData> convertResult(List<MarketPlaceService> rawResult) {
+        List<ServiceData> converted = new ArrayList<ServiceData>();
+        if (rawResult != null) {
+            for (MarketPlaceService service : rawResult) {
+                ServiceData raw = new SiServiceData(service);
+                converted.add(raw);
+            }
+        }
+        return converted;
+    }
+    
     private void callSearch(String searchTerm, SORTBY sortBy) {
         status = null;
         selectedRows = new HashSet<Integer>();
-        result = new ArrayList<MarketPlaceService>();
+        result = new ArrayList<ServiceData>();
         fireTableDataChanged();
         
         if (sortBy == null) {
@@ -241,7 +241,7 @@ public class ServiceTableModel extends DefaultTableModel {
             if (output != null) {
                 ArrayOfMarketPlaceService amps = output.getStrikeIronWebServices();
                 if (amps != null) {
-                    result = output.getStrikeIronWebServices().getMarketPlaceService();
+                    result = convertResult(output.getStrikeIronWebServices().getMarketPlaceService());
                 }
             }
             if (output != null && output.getServiceStatus() != null) {
@@ -312,7 +312,8 @@ public class ServiceTableModel extends DefaultTableModel {
         } else if (result == null) {
             throw new IllegalStateException("Search has not started or has no results");
         }
-        MarketPlaceService mps = result.get(row);
+        
+        ServiceData mps = result.get(row);
         switch(column) {
         case COLUMN_WS_NAME:
             return mps.getServiceName();

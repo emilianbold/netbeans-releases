@@ -29,6 +29,7 @@
 package org.netbeans.modules.websvc.components.strikeiron.ui;
 
 import javax.swing.JLabel;
+import javax.swing.JTextField;
 
 /**
  *
@@ -43,6 +44,10 @@ public class HeaderPanel extends javax.swing.JPanel {
     
     JLabel getTitle() {
         return jlTitle;
+    }
+    
+    JTextField getPackageNameTF() {
+        return tfPackageName;
     }
     
     /** This method is called from within the constructor to

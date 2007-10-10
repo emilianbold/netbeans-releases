@@ -28,10 +28,10 @@
 
 package org.netbeans.modules.websvc.components.strikeiron.actions;
 
-import com.strikeiron.search.MarketPlaceService;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.websvc.components.ServiceData;
 import org.netbeans.modules.websvc.components.strikeiron.StrikeIronWebServiceManager;
 import org.netbeans.modules.websvc.components.strikeiron.ui.FindServicelDialog;
 import org.netbeans.modules.websvc.manager.model.WebServiceData;
@@ -70,13 +70,13 @@ public class FindServiceAction extends NodeAction {
                 Logger.global.log(Level.INFO, "Could not find 'Strike Iron Services' group"); //NOI18N
                 return;
             }
-            Set<MarketPlaceService> services = dialog.getSelectedServices();
-            for (MarketPlaceService service : services) {
-                String url = service.getWSDL();
+            Set<? extends ServiceData> services = dialog.getSelectedServices();
+            for (ServiceData service : services) {
+                String url = service.getWsdlURL();
                 String name = service.getServiceName();
                 WebServiceData wsData = WebServiceListModel.getInstance().findWebServiceData(url, name);
                 if (wsData == null) {
-                    WebServiceListModel.getInstance().addWebService(url, dialog.getPackageName(service.getServiceName()), group.getId());
+                    WebServiceListModel.getInstance().addWebService(url, service.getPackageName(), group.getId());
                 }
             }
         }

@@ -28,15 +28,18 @@
 
 package org.netbeans.modules.websvc.components.strikeiron.ui;
 
+import com.strikeiron.search.MarketPlaceService;
 import java.awt.Container;
 import java.awt.Font;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JScrollPane;
+import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.JViewport;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
+import org.netbeans.modules.websvc.components.ServiceData;
 
 /**
  *
@@ -46,8 +49,18 @@ public class ServiceDetailPanel extends JTextPane {
     private JScrollPane scrollPane;
     private HeaderPanel header;
     private JLabel title;
+    private JTextField tfPackageName;
+    private ServiceTableModel model;
+    private ServiceData current;
 
     public ServiceDetailPanel() {
+        initHtmlKit();
+        header = new HeaderPanel();
+        title = header.getTitle();
+        tfPackageName = header.getPackageNameTF();
+    }
+
+    private void initHtmlKit() {
         HTMLEditorKit htmlkit = new HTMLEditorKit();
         StyleSheet css = htmlkit.getStyleSheet();
         
@@ -62,17 +75,13 @@ public class ServiceDetailPanel extends JTextPane {
         }
         
         setEditorKit(htmlkit);
-        header = new HeaderPanel();
-        title = header.getTitle();
     }
-
+    
     @Override
     public void addNotify() {
         super.addNotify();
         getScrollPane();
     }
-    
-    
     
     JScrollPane getScrollPane() {
         if (scrollPane == null) {
@@ -85,6 +94,40 @@ public class ServiceDetailPanel extends JTextPane {
             }            
         }
         return scrollPane;
+    }
+    
+    void setCurrentService(ServiceData service) {
+        if (current != null) {
+            current.setPackageName(tfPackageName.getText());
+        }
+        current = service;
+        if (current != null) {
+            getScrollPane().setColumnHeaderView(header);
+            tfPackageName.setText(current.getPackageName());
+            title.setText(current.getServiceName());
+        }
+    }
+    
+    ServiceData getCurrentService() {
+        return current;
+    }
+    
+    String getPackageName() {
+        return tfPackageName.getText();
+    }
+    
+    ServiceTableModel getModel() {
+        if (model == null) {
+            Container p = getScrollPane().getParent();
+            while (p != null) {
+                if (p instanceof FindServicelDialog) {
+                    model = ((FindServicelDialog)p).getModel();
+                    break;
+                }
+                p = p.getParent();
+            }
+        }
+        return model;
     }
     
     public void setTitle(String value) {
