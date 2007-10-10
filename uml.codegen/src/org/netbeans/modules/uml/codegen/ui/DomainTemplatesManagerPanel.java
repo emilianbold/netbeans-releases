@@ -60,6 +60,7 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
+import javax.swing.tree.TreeSelectionModel;
 
 import org.netbeans.modules.uml.codegen.dataaccess.TemplateTableModel;
 import org.netbeans.modules.uml.codegen.dataaccess.xmlbeans.DomainObject;
@@ -100,7 +101,10 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
         populateElementTypeChoices();
         populateTemplatesTreeValues(false);
         clearTemplatesTable();
-
+        
+        templatesTree.getSelectionModel()
+            .setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+        
         // gets set to true on the initial expand/collapse setup
         // so need to reset to not expanded
         dirtyTreeExpand = false;
