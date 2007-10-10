@@ -17,14 +17,11 @@
 package org.netbeans.modules.cnd.loaders;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import org.netbeans.modules.cnd.MIMENames;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MIMEResolver;
-import org.openide.util.Utilities;
 
 /**
  * expensive resolver (read any file) not based neither on extension, name nor magic hex number
@@ -59,7 +56,7 @@ public class CndSniffyMIMEResolver extends MIMEResolver {
     }
 
     private String getFirstLine(FileObject fo) {
-        String line = "";
+        String line = ""; // NOI18N
         InputStreamReader isr = null;
         BufferedReader br = null;
         try {
@@ -69,7 +66,7 @@ public class CndSniffyMIMEResolver extends MIMEResolver {
                 try {
                     line = br.readLine();
                 } catch (IOException ex) {
-                    line = "";
+                    line = ""; // NOI18N
                 }
             }
         } catch (IOException ex) {
@@ -101,8 +98,7 @@ public class CndSniffyMIMEResolver extends MIMEResolver {
      */
     private boolean detectCPPByLine(String line) {
         if (line != null) {
-            if (line.startsWith("//") && line.indexOf("-*- C++ -*-") > 0) {
-                // NOI18N
+            if (line.startsWith("//") && line.indexOf("-*- C++ -*-") > 0) { // NOI18N
                 return true;
             }
         }
@@ -111,12 +107,12 @@ public class CndSniffyMIMEResolver extends MIMEResolver {
 
     private boolean detectShellByLine(String line) {
         if (line != null) {
-            line = line.replaceAll("\\s", "");
-            if (line.equals("#!/bin/bash") || 
-                    line.equals("#!/bin/sh") || 
-                    line.equals("#!/bin/ksh") || 
-                    line.equals("#!/bin/csh") || 
-                    line.equals("#!/bin/zsh")) {
+            line = line.replaceAll("\\s", ""); // NOI18N
+            if (line.equals("#!/bin/bash") ||  // NOI18N
+                    line.equals("#!/bin/sh") ||  // NOI18N
+                    line.equals("#!/bin/ksh") ||  // NOI18N
+                    line.equals("#!/bin/csh") ||  // NOI18N
+                    line.equals("#!/bin/zsh")) {  // NOI18N
                 return true;
             }
         }
