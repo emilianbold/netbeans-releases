@@ -109,33 +109,8 @@ public class ProjectDataSourceNode extends AbstractNode implements Node.Cookie, 
         addListener();      
     }
   
-    public Action[] getActions(boolean context) {
-         Action a = new Action() {
-            public Object getValue(String key) {
-                return null;
-            }
-
-            public void putValue(String key, Object value) {               
-            }
-
-            public void setEnabled(boolean b) {                
-            }
-
-            public boolean isEnabled() {
-                return false;
-            }
-
-            public void addPropertyChangeListener(PropertyChangeListener listener) {                
-            }
-
-            public void removePropertyChangeListener(PropertyChangeListener listener) {                
-            }
-
-            public void actionPerformed(ActionEvent e) {                
-            }
-        };    
-        
-        return new Action[]{a};
+    public Action[] getActions(boolean context) {         
+        return new Action[]{};
     }
     
     
