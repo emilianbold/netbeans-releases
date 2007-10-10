@@ -546,8 +546,12 @@ public class MercurialAnnotator extends VCSAnnotator {
         String fileName = mostImportantFile.getName();
         if (project == null || fileName.equals(name)) {
             fileName = null;
+        } else {
+            File repo = Mercurial.getInstance().getTopmostManagedParent(mostImportantFile);
+            if (!repo.equals(mostImportantFile)) {
+                fileName = repo.getName();
+            }
         }
-
 
         name = htmlEncode(name);
         if (mostImportantInfo.getStatus() == FileInformation.STATUS_NOTVERSIONED_EXCLUDED){
