@@ -70,7 +70,6 @@ import org.openide.filesystems.Repository;
 import org.openide.util.Lookup;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /** Layered file system serving itself as either the user or installation layer.
  * Holds one layer of a writable system directory, and some number
@@ -437,7 +436,7 @@ implements LookupListener {
         public long getHash() {
             return hash;
         }
-        public String toString() {
+        public @Override String toString() {
             StringBuilder buf = new StringBuilder();
             buf.append(managerName);
             buf.append('\n');
