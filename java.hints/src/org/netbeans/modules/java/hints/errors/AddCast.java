@@ -274,6 +274,10 @@ public final class AddCast implements ErrorRule<Void> {
                 return simpleName(((ParameterizedTypeTree) t).getType()) + "<...>"; // NOI18N
             }
             
+            if (t.getKind() == Kind.ARRAY_ACCESS) {
+                return simpleName(((ArrayAccessTree) t).getExpression()) + "[]"; //NOI18N
+            }
+            
             throw new IllegalStateException("Currently unsupported kind of tree: " + t.getKind()); // NOI18N
         }
     }

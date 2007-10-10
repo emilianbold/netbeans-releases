@@ -50,6 +50,13 @@ public class AddCastTest extends ErrorHintsTestBase {
                        "[AddCastFix:...length&0xFF00:byte]",
                        "package test; public class Test {private void test() {int length = 0; byte b = (byte) (length & 0xFF00); } }");
     }
+    
+    public void test118284() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test; public class Test {private Object[][] o; private String test() {return |o[0][0];} }",
+                       "[AddCastFix:...o[][]:String]",
+                       "package test; public class Test {private Object[][] o; private String test() {return (String) o[0][0];} }");
+    }
 
     @Override
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws Exception {
