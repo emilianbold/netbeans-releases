@@ -391,16 +391,12 @@ public final class NewWSDLWizardIterator implements TemplateWizard.Iterator {
                 jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
             }
         }
-        try {
-            String encoding = EncodingUtil.getProjectEncoding(project.getProjectDirectory());
-            if (encoding == null) {
-                encoding = "UTF8";
-            }
-            wiz.putProperty(WsdlPanel.ENCODING, encoding);
-        } catch (IOException e) {
-            wiz.putProperty(WsdlPanel.ENCODING, "UTF8");
-            
+        
+        String encoding = EncodingUtil.getProjectEncoding(project.getProjectDirectory());
+        if (encoding == null) {
+            encoding = "UTF8";
         }
+        wiz.putProperty(WsdlPanel.ENCODING, encoding);
         
     }
 
