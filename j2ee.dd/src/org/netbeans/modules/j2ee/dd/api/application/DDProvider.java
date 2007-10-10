@@ -67,7 +67,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 /**
- * Provides access to Deployment Descriptor root ({@link org.netbeans.modules.j2ee.dd.api.ejb.EjbJar} object)
+ * Provides access to Deployment Descriptor root ({@link Application} object)
  *
  * @author  Milan Kuchtiak
  */
@@ -81,7 +81,6 @@ public final class DDProvider {
     
     static ResourceBundle bundle = ResourceBundle.getBundle("org/netbeans/modules/j2ee/dd/Bundle");
     
-    /** Creates a new instance of EjbModule */
     private DDProvider() {
         //ddMap=new java.util.WeakHashMap(5);
         ddMap = new HashMap(5);
@@ -106,11 +105,11 @@ public final class DDProvider {
         if (fo == null) {
             return null;
         }
-        ApplicationProxy ejbJarProxy = null;
+        ApplicationProxy applicationProxy = null;
         synchronized (ddMap) {
-            ejbJarProxy = getFromCache (fo);
-            if (ejbJarProxy!=null) {
-                return ejbJarProxy;
+            applicationProxy = getFromCache (fo);
+            if (applicationProxy!=null) {
+                return applicationProxy;
             }
         }
         
@@ -119,32 +118,32 @@ public final class DDProvider {
                 FileObject fo=evt.getFile();
                 try {
                     synchronized (ddMap) {
-                        ApplicationProxy ejbJarProxy = getFromCache (fo);
+                        ApplicationProxy applicationProxy = getFromCache (fo);
                         String version = null;
-                        if (ejbJarProxy!=null) {
+                        if (applicationProxy!=null) {
                             try {
                                 DDParse parseResult = parseDD(fo);
                                 version = parseResult.getVersion();
-                                setProxyErrorStatus(ejbJarProxy, parseResult);
+                                setProxyErrorStatus(applicationProxy, parseResult);
                                 Application newValue = createApplication(parseResult);
                                 // replacing original file in proxy EjbJar
-                                if (!version.equals(ejbJarProxy.getVersion().toString())) {
-                                    ejbJarProxy.setOriginal(newValue);
+                                if (!version.equals(applicationProxy.getVersion().toString())) {
+                                    applicationProxy.setOriginal(newValue);
                                 } else {// the same version
                                     // replacing original file in proxy EjbJar
-                                    if (ejbJarProxy.getOriginal()==null) {
-                                        ejbJarProxy.setOriginal(newValue);
+                                    if (applicationProxy.getOriginal()==null) {
+                                        applicationProxy.setOriginal(newValue);
                                     } else {
-                                        ejbJarProxy.getOriginal().merge(newValue,Application.MERGE_UPDATE);
+                                        applicationProxy.getOriginal().merge(newValue,Application.MERGE_UPDATE);
                                     }
                                 }
                             } catch (SAXException ex) {
                                 if (ex instanceof SAXParseException) {
-                                    ejbJarProxy.setError((SAXParseException)ex);
+                                    applicationProxy.setError((SAXParseException)ex);
                                 } else if ( ex.getException() instanceof SAXParseException) {
-                                    ejbJarProxy.setError((SAXParseException)ex.getException());
+                                    applicationProxy.setError((SAXParseException)ex.getException());
                                 }
-                                ejbJarProxy.setStatus(Application.STATE_INVALID_UNPARSABLE);
+                                applicationProxy.setStatus(Application.STATE_INVALID_UNPARSABLE);
                                 // cbw if the state of the xml file transitions from
                                 // parsable to unparsable this could be due to a user
                                 // change or cvs change. We would like to still
@@ -152,7 +151,7 @@ public final class DDProvider {
                                 // so lets not set the original to null here but wait
                                 // until the file becomes parsable again to do a merge
                                 //ejbJarProxy.setOriginal(null);
-                                ejbJarProxy.setProxyVersion(version);
+                                applicationProxy.setProxyVersion(version);
                             }
                         }
                     }
@@ -164,16 +163,16 @@ public final class DDProvider {
             DDParse parseResult = parseDD(fo);
             SAXParseException error = parseResult.getWarning();
             Application original = createApplication(parseResult);
-            ejbJarProxy = new ApplicationProxy(original,parseResult.getVersion());
-            setProxyErrorStatus(ejbJarProxy, parseResult);
+            applicationProxy = new ApplicationProxy(original,parseResult.getVersion());
+            setProxyErrorStatus(applicationProxy, parseResult);
         } catch (SAXException ex) {
             // XXX lets throw an exception here
-            ejbJarProxy = new ApplicationProxy(org.netbeans.modules.j2ee.dd.impl.application.model_1_4.Application.createGraph(),"2.0");
-            ejbJarProxy.setStatus(Application.STATE_INVALID_UNPARSABLE);
+            applicationProxy = new ApplicationProxy(org.netbeans.modules.j2ee.dd.impl.application.model_1_4.Application.createGraph(),"2.0");
+            applicationProxy.setStatus(Application.STATE_INVALID_UNPARSABLE);
             if (ex instanceof SAXParseException) {
-                ejbJarProxy.setError((SAXParseException)ex);
+                applicationProxy.setError((SAXParseException)ex);
             } else if ( ex.getException() instanceof SAXParseException) {
-                ejbJarProxy.setError((SAXParseException)ex.getException());
+                applicationProxy.setError((SAXParseException)ex.getException());
             }
         }
         synchronized(ddMap){
@@ -181,18 +180,18 @@ public final class DDProvider {
             if (cached != null){
                 return cached;
             }
-            ddMap.put(fo, /*new WeakReference*/ (ejbJarProxy));
+            ddMap.put(fo, /*new WeakReference*/ (applicationProxy));
         }
-        return ejbJarProxy;
+        return applicationProxy;
     }
 
     /**
      * Returns the root of deployment descriptor bean graph for given file object.
      * The method is useful for clients planning to modify the deployment descriptor.
-     * Finally the {@link org.netbeans.modules.j2ee.dd.api.ejb.EjbJar#write(org.openide.filesystems.FileObject)} should be used
+     * Finally the {@link Application#write(org.openide.filesystems.FileObject)} should be used
      * for writing the changes.
-     * @param fo FileObject representing the ejb-jar.xml file
-     * @return EjbJar object - root of the deployment descriptor bean graph
+     * @param fo FileObject representing the application.xml file
+     * @return Application object - root of the deployment descriptor bean graph
      */
     public Application getDDRootCopy(FileObject fo) throws IOException {
         return (Application)getDDRoot(fo).clone();
@@ -214,13 +213,13 @@ public final class DDProvider {
     /**
      * Returns the root of deployment descriptor bean graph for java.io.File object.
      *
-     * @param is source representing the ejb-jar.xml file
-     * @return EjbJar object - root of the deployment descriptor bean graph
+     * @param is source representing the application.xml file
+     * @return Application object - root of the deployment descriptor bean graph
      */    
     public Application getDDRoot(InputSource is) throws IOException, SAXException {
         DDParse parse = parseDD(is);
-        Application ejbJar = createApplication(parse);
-        ApplicationProxy proxy = new ApplicationProxy(ejbJar, ejbJar.getVersion().toString());
+        Application application = createApplication(parse);
+        ApplicationProxy proxy = new ApplicationProxy(application, application.getVersion().toString());
         setProxyErrorStatus(proxy, parse);
         return proxy;
     }
@@ -238,13 +237,13 @@ public final class DDProvider {
         return null;
     }
 
-    private static void setProxyErrorStatus(ApplicationProxy ejbJarProxy, DDParse parse) {
+    private static void setProxyErrorStatus(ApplicationProxy applicationProxy, DDParse parse) {
         SAXParseException error = parse.getWarning();
-        ejbJarProxy.setError(error);
+        applicationProxy.setError(error);
         if (error!=null) {
-            ejbJarProxy.setStatus(Application.STATE_INVALID_PARSABLE);
+            applicationProxy.setStatus(Application.STATE_INVALID_PARSABLE);
         } else {
-            ejbJarProxy.setStatus(Application.STATE_VALID);
+            applicationProxy.setStatus(Application.STATE_VALID);
         }
     }
     
