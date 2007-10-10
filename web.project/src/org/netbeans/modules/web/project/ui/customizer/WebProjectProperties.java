@@ -50,6 +50,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.*;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.ButtonModel;
 import javax.swing.ComboBoxModel;
@@ -95,6 +96,7 @@ import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /** Helper class. Defines constants for properties. Knows the proper
  *  place where to store the properties.
@@ -261,6 +263,12 @@ public class WebProjectProperties {
     Document LAUNCH_URL_RELATIVE_MODEL;
     ButtonModel DISPLAY_BROWSER_MODEL; 
     ComboBoxModel J2EE_SERVER_INSTANCE_MODEL; 
+    
+    // ui logging
+    static final String UI_LOGGER_NAME = "org.netbeans.ui.web.project"; //NOI18N
+    static final Logger UI_LOGGER = Logger.getLogger(UI_LOGGER_NAME);
+    // for ui logging added frameworks
+    private List<String> addedFrameworkNames;
 
     // Private fields ----------------------------------------------------------
     private WebProject project;
@@ -401,6 +409,19 @@ public class WebProjectProperties {
                         project.fixRecommendedAndPrivilegedTemplates();
                     }
                 });
+                // ui logging of the added frameworks
+                if ((addedFrameworkNames != null) && (addedFrameworkNames.size() > 0)) {
+                    LogRecord logRecord = new LogRecord(Level.INFO, "UI_WEB_PROJECT_FRAMEWORK_ADDED");  //NOI18N
+                    logRecord.setLoggerName(UI_LOGGER_NAME); //NOI18N
+                    logRecord.setResourceBundle(NbBundle.getBundle(WebProjectProperties.class));
+                    StringBuffer frameworks = new StringBuffer();
+                    for (String framework : addedFrameworkNames) {
+                        frameworks.append('[').append(framework).append(']');   //NOI18N
+                    }
+
+                    logRecord.setParameters(new Object[] { frameworks.toString() });
+                    UI_LOGGER.log(logRecord);
+                }
             }
             
             //prevent deadlock reported in the issue #54643
@@ -862,6 +883,19 @@ public class WebProjectProperties {
         } else {
             privateProps.setProperty(DEPLOY_ANT_PROPS_FILE, antDeployPropsFile.getAbsolutePath());
         }
+        // ui log for the server change
+        if(newServInstID != null && !newServInstID.equals(oldServInstID)) {
+            LogRecord logRecord = new LogRecord(Level.INFO, "UI_WEB_PROJECT_SERVER_CHANGED");  //NOI18N
+            logRecord.setLoggerName(UI_LOGGER_NAME); //NOI18N
+            logRecord.setResourceBundle(NbBundle.getBundle(WebProjectProperties.class));
+            logRecord.setParameters(new Object[] { 
+                Deployment.getDefault().getServerID(oldServInstID),
+                oldServInstID,
+                Deployment.getDefault().getServerID(newServInstID),
+                newServInstID });
+                
+            UI_LOGGER.log(logRecord);
+        }
     }
     
     private static void setNewContextPathValue(String contextPath, Project project, EditableProperties projectProps, EditableProperties privateProps) {
@@ -986,5 +1020,9 @@ public class WebProjectProperties {
     
     public void setNewExtenders(List extenders) {
         newExtenders = extenders;
+    }
+    
+    public void setNewFrameworksNames(List<String> names) {
+        addedFrameworkNames = names;
     }
 }

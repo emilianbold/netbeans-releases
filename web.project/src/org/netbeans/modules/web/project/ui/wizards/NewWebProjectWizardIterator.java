@@ -44,14 +44,19 @@ package org.netbeans.modules.web.project.ui.wizards;
 import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
+import java.lang.StringBuffer;
 import java.text.MessageFormat;
 import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
 
 import org.openide.WizardDescriptor;
@@ -89,6 +94,7 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
     private static final long serialVersionUID = 1L;
     
     static final String PROP_NAME_INDEX = "nameIndex"; //NOI18N
+    static final String UI_LOGGER_NAME = "org.netbeans.ui.web.project"; //NOI18N
 
     /** Create a new wizard iterator. */
     public NewWebProjectWizardIterator() {}
@@ -183,6 +189,29 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
         
         handle.progress(NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_NewWebProjectWizardIterator_WizardProgress_PreparingToOpen"), 4);
 
+        LogRecord logRecord = new LogRecord(Level.INFO, "UI_WEB_PROJECT_CREATE");  //NOI18N
+        logRecord.setLoggerName(UI_LOGGER_NAME);                   //NOI18N
+        logRecord.setResourceBundle(NbBundle.getBundle(NewWebProjectWizardIterator.class));
+        List <String> selectedFrameworkNames = (List<String>) wiz.getProperty(WizardProperties.FRAMEWORK_NAMES);
+        String frameworkNames = "none"; //NOI8N
+        if (selectedFrameworkNames != null && selectedFrameworkNames.size() > 0) {
+            StringBuffer frameworks = new StringBuffer();
+            for (String frameworkName : selectedFrameworkNames) {
+                frameworks.append("[").append(frameworkName).append("]");
+            }
+            frameworkNames = frameworks.toString();
+        }
+        logRecord.setParameters(new Object[] {
+                    Deployment.getDefault().getServerID( createData.getServerInstanceID()),
+                    createData.getServerInstanceID(),
+                    createData.getJavaEEVersion(),
+                    createData.getSourceLevel(),
+                    createData.getSourceStructure(),
+                    frameworkNames
+                    });
+        
+        Logger.getLogger(UI_LOGGER_NAME).log(logRecord);
+        
         // Returning set of FileObject of project diretory. 
         // Project will be open and set as main
         return resultSet;

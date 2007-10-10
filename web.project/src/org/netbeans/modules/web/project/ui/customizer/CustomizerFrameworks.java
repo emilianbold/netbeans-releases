@@ -207,6 +207,7 @@ public class CustomizerFrameworks extends javax.swing.JPanel implements HelpCtx.
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
         inner.add(panel, gridBagConstraints);
  
+        List<String> addedFrameworks = new LinkedList<String>();
         DialogDescriptor desc = new DialogDescriptor(inner, NbBundle.getMessage(CustomizerFrameworks.class, "LBL_SelectWebExtension_DialogTitle")); //NOI18N
         Object res = DialogDisplayer.getDefault().notify(desc);
         if (res.equals(NotifyDescriptor.YES_OPTION)) {
@@ -236,6 +237,7 @@ public class CustomizerFrameworks extends javax.swing.JPanel implements HelpCtx.
                         extenders.put(framework, extender);
                         newExtenders.add(extender);
                         extender.addChangeListener(new ExtenderListener(extender));
+                        addedFrameworks.add(framework.getName());
                     }
                 }
 
@@ -243,6 +245,7 @@ public class CustomizerFrameworks extends javax.swing.JPanel implements HelpCtx.
             }
             
             uiProperties.setNewExtenders(newExtenders);
+            uiProperties.setNewFrameworksNames(addedFrameworks);
         }
         
         if (WebFrameworks.getFrameworks().size() == jListFrameworks.getModel().getSize())

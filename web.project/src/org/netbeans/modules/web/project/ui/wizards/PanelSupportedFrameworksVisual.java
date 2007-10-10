@@ -312,6 +312,7 @@ public class PanelSupportedFrameworksVisual extends JPanel implements HelpCtx.Pr
 //        }
         
         settings.putProperty(WizardProperties.EXTENDERS, getSelectedExtenders());    //NOI18N
+        settings.putProperty(WizardProperties.FRAMEWORK_NAMES, getSelectedFrameworkNames());
     }
 
     public List getSelectedExtenders() {
@@ -328,6 +329,22 @@ public class PanelSupportedFrameworksVisual extends JPanel implements HelpCtx.Pr
         }
         
         return selectedExtenders;
+    }
+    
+    private List<String> getSelectedFrameworkNames() {
+        List<String> selectedFrameworkNames = new LinkedList<String>();
+        FrameworksTableModel model = (FrameworksTableModel) jTableFrameworks.getModel();
+        for (int i = 0; i < model.getRowCount(); i++) {
+            FrameworkModelItem item = model.getItem(i);
+            if (item.isSelected()) {
+                String name = item.getFramework().getName();
+                if (name != null) {
+                    selectedFrameworkNames.add(name);
+                }
+            }
+        }
+        
+        return selectedFrameworkNames;
     }
     
     public Component[] getConfigComponents() {
