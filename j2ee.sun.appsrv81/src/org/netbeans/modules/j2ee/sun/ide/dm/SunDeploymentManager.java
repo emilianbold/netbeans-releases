@@ -168,6 +168,21 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
      */
     static final ResourceBundle bundle = ResourceBundle.getBundle("org.netbeans.modules.j2ee.sun.ide.dm.Bundle");// NOI18N
     
+    // This code allows the extra classes missing from the 8.x appserv-cmp.jar to be
+    // loaded from the copy in the appsrvbridge module.  If this code were not here, 
+    // netbeans rules of one jar per package would prevent those classes from being
+    // found.
+    static {
+        String packageWorkaroundPropName = "org.netbeans.core.startup.specialResource"; // NOI18N
+        String existingSysProp = System.getProperty(packageWorkaroundPropName);
+        String extraPackageName = "com.sun.jdo.api.persistence.mapping.ejb"; // NOI18N
+        if (existingSysProp != null) {
+            existingSysProp += ',';
+        }
+        existingSysProp += extraPackageName;
+        System.setProperty(packageWorkaroundPropName, existingSysProp);
+    }
+
     /* this is interesting: JMXREMOTE APIs create a factory and load it from the getContext classloader
      * which is a NetBeans class loader that does not know about our App Server Dynamic jars class loader.
      * So we need to hack on the fly the context classloader with the plugin classloader for any jxm calls
