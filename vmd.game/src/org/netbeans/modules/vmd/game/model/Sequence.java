@@ -128,6 +128,9 @@ public class Sequence implements Previewable, Editable, Identifiable {
 	}
 	
 	public void setName(String name) {
+		if (name == null) {
+			return;
+		}
 		if (this.getName().equals(name)) {
 			return;
 		}

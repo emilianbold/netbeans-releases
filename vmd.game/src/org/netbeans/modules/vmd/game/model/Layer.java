@@ -1,5 +1,7 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
  *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
@@ -92,6 +94,9 @@ public abstract class Layer implements Previewable, Editable, Transferable, Iden
 	}
 	
 	public void setName(String name) {
+		if (name == null) {
+			return;
+		}
 		if (this.getName().equals(name)) {
 			return;
 		}

@@ -56,8 +56,8 @@ import org.netbeans.modules.vmd.api.io.IOUtils;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -75,6 +75,7 @@ import org.netbeans.modules.vmd.game.model.AnimatedTileCD;
 import org.netbeans.modules.vmd.game.model.Editable;
 import org.netbeans.modules.vmd.game.model.GlobalRepository;
 import org.netbeans.modules.vmd.game.model.GlobalRepositoryListener;
+import org.netbeans.modules.vmd.game.model.Identifiable;
 import org.netbeans.modules.vmd.game.model.ImageResource;
 import org.netbeans.modules.vmd.game.model.ImageResourceCD;
 import org.netbeans.modules.vmd.game.model.ImageResourceListener;
@@ -117,7 +118,7 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 		SequenceListener, ImageResourceListener, PropertyChangeListener, DesignListener {
 	
 	private static boolean DEBUG = false;
-	private static boolean DEBUG_UNDO = false;
+	private static boolean DEBUG_UNDO = true;
 	
 	private final Map<Long, String> changeMap = new HashMap<Long, String>();
 	
@@ -180,35 +181,95 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 			this.modelComponent(designComponent);
 		}
 		
-		//then update exiting design components
-		for (DesignComponent designComponent : event.getFullyAffectedComponents()) {
-			TypeID typeId = designComponent.getType();
-			assert (typeId != null);
+		DesignComponent root = this.document.getRootComponent();
+		//we either added or removed a component from the game design root (scene, layer, image resource)
+		if (event.getFullyAffectedHierarchies().contains(root)) {
+			this.refreshGameDesign(root, event);
+		}
+		
+		//or we modified an existing component 
+		else {
+			//then update exiting design components
+			for (DesignComponent designComponent : event.getFullyAffectedComponents()) {
+				TypeID typeId = designComponent.getType();
+				assert (typeId != null);
 
-			if (DEBUG_UNDO) System.out.println("Affected ComponentID: " + designComponent.getComponentID() + ", type: " + designComponent.getType().getString());
+				if (DEBUG_UNDO) System.out.println("Affected ComponentID: " + designComponent.getComponentID() + ", type: " + designComponent.getType().getString());
 
-			if (typeId.equals(SceneCD.TYPEID)) {
-				this.refreshScene(designComponent, event);
-			}
-			else if (typeId.equals(TiledLayerCD.TYPEID)) {
-				this.refreshTiledLayer(designComponent, event);
-			}
-			else if (typeId.equals(SpriteCD.TYPEID)) {
-				this.refreshSprite(designComponent, event);
-			}
-			else if (typeId.equals(SequenceCD.TYPEID)) {
-				this.refreshSequence(designComponent, event);
-			}
-			else if (typeId.equals(ImageResourceCD.TYPEID)) {
-				this.refreshImageResource(designComponent, event);
-			}
-			else if (typeId.equals(AnimatedTileCD.TYPEID)) {
-				this.refreshAnimatedTile(designComponent, event);
-			}
-			else {
-				if (DEBUG_UNDO) System.out.println("Currently not handling this in type in GameController.designChanged() typeId: " + typeId.getString());
+				if (typeId.equals(SceneCD.TYPEID)) {
+					this.refreshScene(designComponent, event);
+				}
+				else if (typeId.equals(TiledLayerCD.TYPEID)) {
+					this.refreshTiledLayer(designComponent, event);
+				}
+				else if (typeId.equals(SpriteCD.TYPEID)) {
+					this.refreshSprite(designComponent, event);
+				}
+				else if (typeId.equals(SequenceCD.TYPEID)) {
+					this.refreshSequence(designComponent, event);
+				}
+				else if (typeId.equals(ImageResourceCD.TYPEID)) {
+					this.refreshImageResource(designComponent, event);
+				}
+				else if (typeId.equals(AnimatedTileCD.TYPEID)) {
+					this.refreshAnimatedTile(designComponent, event);
+				}
+				else {
+					if (DEBUG_UNDO) System.out.println("Currently not handling this in type in GameController.designChanged() typeId: " + typeId.getString());
+				}
 			}
 		}
+	}
+	
+	private void refreshGameDesign(DesignComponent designComponent, DesignEvent event) {
+		
+		if (changeMap.remove(designComponent.getComponentID()) != null) {
+			return;
+		}
+		
+		this.getGameDesign().removeGlobalRepositoryListener(this);
+		this.getGameDesign().removePropertyChangeListener(this);
+		
+		GlobalRepository globalRepo = this.getGameDesign();
+		Collection<DesignComponent> dcChildren = designComponent.getComponents();
+		
+		Set<Identifiable> children = new HashSet<Identifiable>();
+		children.addAll(globalRepo.getImageResources());
+		children.addAll(globalRepo.getScenes());
+		children.addAll(globalRepo.getSprites());
+		children.addAll(globalRepo.getTiledLayers());
+		
+		//add any components present in designDocument but not present in globalRepo
+		for (DesignComponent dc : dcChildren) {
+			boolean found = false;
+			for (Identifiable child : children) {
+				if (dc.getComponentID() == child.getId()) {
+					found = true;
+					continue;
+				}
+			}
+			if (!found) {
+				this.modelComponent(dc);
+			}
+		}		
+		
+		//remove any components present in globalRepo but not present in designComponent
+		for (Identifiable child : children) {
+			boolean found = false;
+			for (DesignComponent dc : dcChildren) {
+				if (child.getId() == dc.getComponentID()) {
+					found = true;
+					continue;
+				}
+			}
+			if (!found) {
+				globalRepo.removeIdentifiable(child.getId());
+			}
+		}
+
+		this.getGameDesign().addGlobalRepositoryListener(this);
+		this.getGameDesign().addPropertyChangeListener(this);
+		globalRepo.getMainView().requestEditing(globalRepo);
 	}
 	
 	private void refreshScene(DesignComponent designComponent, DesignEvent event) {
@@ -276,6 +337,7 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 		
 		scene.addPropertyChangeListener(this);
 		scene.addSceneListener(this);
+		this.getGameDesign().getMainView().requestEditing(scene);
 	}
 	
 	private void refreshLayerProperties(DesignComponent designComponent, DesignEvent event) {
@@ -320,6 +382,7 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 		
 		layer.addPropertyChangeListener(this);
 		layer.addTiledLayerListener(this);
+		this.getGameDesign().getMainView().requestEditing(layer);
 	}
 	
 	private void refreshSprite(DesignComponent designComponent, DesignEvent event) {
@@ -363,8 +426,9 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 					}
 				}
 
-				//remove sequences perviously contained but no longer present
-				for (Sequence sequence : sequences) {
+				List<Sequence> iterSequences = new ArrayList<Sequence>(layer.getSequences());
+				//remove sequences previously contained but no longer present
+				for (Sequence sequence : iterSequences) {
 					if (!newSequences.contains(sequence)) {
 						layer.remove(sequence);
 					}
@@ -374,17 +438,26 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 		
 		layer.addPropertyChangeListener(this);
 		layer.addSequenceContainerListener(this);
+		this.getGameDesign().getMainView().requestEditing(layer);
 	}
 	
 	private void refreshSequence(DesignComponent designComponent, DesignEvent event) {		
-		String name = (String) designComponent.readProperty(SequenceCD.PROPERTY_NAME).getPrimitiveValue();
 		DesignComponent imgResDC = designComponent.readProperty(SequenceCD.PROPERTY_IMAGE_RESOURCE).getComponent();
 		ImageResource imgRes = this.getGameDesign().getImageResource(imgResDC.getComponentID());
-				
-		Sequence sequence = imgRes.getSequenceByName(name);
+		
+		Sequence sequence = imgRes.getSequence(designComponent.getComponentID());
 		sequence.removePropertyChangeListener(this);
 		sequence.removeSequenceListener(this);
 		
+		if (SequenceCD.PROPERTY_NAME.equals(changeMap.get(designComponent.getComponentID()))) {
+			changeMap.remove(designComponent.getComponentID());
+		}
+		else {
+			if (event.isComponentPropertyChanged(designComponent, SequenceCD.PROPERTY_NAME)) {
+				String name = (String) designComponent.readProperty(SequenceCD.PROPERTY_NAME).getPrimitiveValue();
+				sequence.setName(name);
+			}
+		}
 		if (SequenceCD.PROPERTY_FRAME_MS.equals(changeMap.get(designComponent.getComponentID()))) {
 			changeMap.remove(designComponent.getComponentID());
 		}
@@ -424,7 +497,69 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 	}
 	
 	private void refreshAnimatedTile(DesignComponent designComponent, DesignEvent event) {
-		//similar to sprite
+		DesignComponent imgResDC = designComponent.readProperty(AnimatedTileCD.PROP_IMAGE_RESOURCE).getComponent();
+		ImageResource imgRes = this.getGameDesign().getImageResource(imgResDC.getComponentID());
+
+		AnimatedTile animTile = (AnimatedTile) imgRes.getAnimatedTile(designComponent.getComponentID());
+		
+		animTile.removePropertyChangeListener(this);
+		animTile.removeSequenceContainerListener(this);
+		
+		if (AnimatedTileCD.PROPERTY_NAME.equals(changeMap.get(designComponent.getComponentID()))) {
+			changeMap.remove(designComponent.getComponentID());
+		}
+		else {
+			if (event.isComponentPropertyChanged(designComponent, AnimatedTileCD.PROPERTY_NAME)) {
+				String name = (String) designComponent.readProperty(AnimatedTileCD.PROPERTY_NAME).getPrimitiveValue();
+				animTile.setName(name);
+			}
+		}
+		
+		
+		if (SequenceContainerCDProperties.PROP_DEFAULT_SEQUENCE.equals(changeMap.get(designComponent.getComponentID()))) {
+			changeMap.remove(designComponent.getComponentID());
+		}
+		else {
+			if (event.isComponentPropertyChanged(designComponent, SequenceContainerCDProperties.PROP_DEFAULT_SEQUENCE)) {
+				DesignComponent defaultSequenceDC = designComponent.readProperty(SequenceContainerCDProperties.PROP_DEFAULT_SEQUENCE).getComponent();
+				Sequence defSeq = imgRes.getSequence(defaultSequenceDC.getComponentID());
+				animTile.setDefaultSequence(defSeq);
+			}
+		}
+		
+		if (SequenceContainerCDProperties.PROP_SEQUENCES.equals(changeMap.get(designComponent.getComponentID()))) {
+			changeMap.remove(designComponent.getComponentID());
+		}
+		else {
+			if (event.isComponentPropertyChanged(designComponent, SequenceContainerCDProperties.PROP_SEQUENCES)) {
+				List<PropertyValue> sequenceDCs = designComponent.readProperty(SequenceContainerCDProperties.PROP_SEQUENCES).getArray();
+				List<Sequence> sequences = animTile.getSequences();
+				List<Sequence> newSequences = new ArrayList<Sequence>();
+
+				//add sequences not previously contained
+				for (PropertyValue propertyValue : sequenceDCs) {
+					DesignComponent sequenceDC = propertyValue.getComponent();
+					Sequence sequence = imgRes.getSequence(sequenceDC.getComponentID());
+					newSequences.add(sequence);
+
+					if (!sequences.contains(sequence)) {
+						animTile.append(sequence);
+					}
+				}
+
+				List<Sequence> iterSequences = new ArrayList<Sequence>(animTile.getSequences());
+				//remove sequences previously contained but no longer present
+				for (Sequence sequence : iterSequences) {
+					if (!newSequences.contains(sequence)) {
+						animTile.remove(sequence);
+					}
+				}
+			}
+		}
+		
+		animTile.addPropertyChangeListener(this);
+		animTile.addSequenceContainerListener(this);
+		this.getGameDesign().getMainView().requestEditing(animTile);
 	}
 
 	
@@ -1092,12 +1227,12 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 	//--------------- GlobalRepositoryListener ------------------
 	
     public void sceneAdded(final Scene scene, int index) {
+		final DesignDocument doc = document;
 		document.getTransactionManager().writeAccess(new Runnable() {
             public void run() {
-				DesignDocument doc = document;
 				DesignComponent sceneDC = createSceneDCFromScene(doc, designIdMap, scene);
 				designIdMap.put(scene, sceneDC);
-				changeMap.put(sceneDC.getComponentID(), null);
+				changeMap.put(doc.getRootComponent().getComponentID(), scene.getName());
 				scene.addSceneListener(GameController.this);
 				scene.addPropertyChangeListener(GameController.this);
 				doc.getRootComponent().addComponent(sceneDC);
@@ -1107,12 +1242,13 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
     }
 
     public void sceneRemoved(final Scene scene, int index) {
+		final DesignDocument doc = document;
 		scene.removeSceneListener(this);
-		final DesignComponent dcScene = designIdMap.remove(scene);
+		final DesignComponent dcScene = designIdMap.get(scene);
 		assert (dcScene != null);
 		document.getTransactionManager().writeAccess(new Runnable() {
             public void run() {
-				changeMap.put(dcScene.getComponentID(), null);
+				changeMap.put(doc.getRootComponent().getComponentID(), scene.getName());
 				scene.removeSceneListener(GameController.this);
 				scene.removePropertyChangeListener(GameController.this);
 				document.deleteComponent(dcScene);
@@ -1122,12 +1258,12 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
     }
 
     public void tiledLayerAdded(final TiledLayer tiledLayer, int index) {
+		final DesignDocument doc = document;
 		document.getTransactionManager().writeAccess(new Runnable() {
             public void run() {
 				DesignDocument doc = document;
 				DesignComponent tiledLayerDC = createTiledLayerDCFromTiledLayer(doc, designIdMap, tiledLayer);
-				designIdMap.put(tiledLayer, tiledLayerDC);
-				changeMap.put(tiledLayerDC.getComponentID(), null);
+				changeMap.put(doc.getRootComponent().getComponentID(), tiledLayer.getName());
 				tiledLayer.addTiledLayerListener(GameController.this);
 				tiledLayer.addPropertyChangeListener(GameController.this);
 				doc.getRootComponent().addComponent(tiledLayerDC);
@@ -1137,12 +1273,13 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
     }
 
     public void tiledLayerRemoved(final TiledLayer tiledLayer, int index) {
+		final DesignDocument doc = document;
 		tiledLayer.removeTiledLayerListener(this);
-		final DesignComponent dcLayer = designIdMap.remove(tiledLayer);
+		final DesignComponent dcLayer = designIdMap.get(tiledLayer);
 		assert (dcLayer != null);
 		document.getTransactionManager().writeAccess(new Runnable() {
             public void run() {
-				changeMap.put(dcLayer.getComponentID(), null);
+				changeMap.put(doc.getRootComponent().getComponentID(), tiledLayer.getName());
 				tiledLayer.removeTiledLayerListener(GameController.this);
 				tiledLayer.removePropertyChangeListener(GameController.this);
 				document.deleteComponent(dcLayer);
@@ -1152,11 +1289,12 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
     }
 
     public void spriteAdded(final Sprite sprite, int index) {
+		final DesignDocument doc = document;
 		document.getTransactionManager().writeAccess(new Runnable() {
             public void run() {
 				DesignComponent spriteDC = GameController.this.createSpriteDCFromSprite(sprite);
 				designIdMap.put(sprite, spriteDC);
-				changeMap.put(spriteDC.getComponentID(), null);
+				changeMap.put(doc.getRootComponent().getComponentID(), sprite.getName());
 				sprite.addSequenceContainerListener(GameController.this);
 				sprite.addPropertyChangeListener(GameController.this);
 				document.getRootComponent().addComponent(spriteDC);
@@ -1166,12 +1304,13 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
     }
 
     public void spriteRemoved(final Sprite sprite, int index) {
+		final DesignDocument doc = document;
 		sprite.removeSequenceContainerListener(this);
-		final DesignComponent dcLayer = designIdMap.remove(sprite);
+		final DesignComponent dcLayer = designIdMap.get(sprite);
 		assert (dcLayer != null);
 		document.getTransactionManager().writeAccess(new Runnable() {
             public void run() {
-				changeMap.put(dcLayer.getComponentID(), null);
+				changeMap.put(doc.getRootComponent().getComponentID(), sprite.getName());
 				sprite.removeSequenceContainerListener(GameController.this);
 				sprite.removePropertyChangeListener(GameController.this);
 				document.deleteComponent(dcLayer);
@@ -1181,12 +1320,13 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
     }
 
     public void imageResourceAdded(final ImageResource imageResource) {
+		final DesignDocument doc = document;
 		document.getTransactionManager().writeAccess(new Runnable() {
             public void run() {
 				DesignDocument doc = document;
 				DesignComponent imgResDC = createImageResourceDCFromImageResource(imageResource);
 				designIdMap.put(imageResource, imgResDC);
-				changeMap.put(imgResDC.getComponentID(), null);
+				changeMap.put(doc.getRootComponent().getComponentID(), imageResource.getName());
 				imageResource.addImageResourceListener(GameController.this);
 				doc.getRootComponent().addComponent(imgResDC);
             }

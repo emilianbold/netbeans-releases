@@ -63,6 +63,7 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
+import org.netbeans.modules.vmd.api.io.providers.IOSupport;
 
 /**
  *
@@ -72,7 +73,7 @@ public class GameEditorView implements DataEditorView, EditorManagerListener {
 
     private static final long serialVersionUID = 3317521472849153199L;
 
-    public static final boolean DEBUG = false;
+    public transient static final boolean DEBUG = false;
 
     private DataObjectContext context;
     private transient GameController controller;
@@ -80,6 +81,8 @@ public class GameEditorView implements DataEditorView, EditorManagerListener {
 
     private transient JComponent toolBarRepresentation;
     private transient JComboBox comboGlobal;
+	
+	private transient boolean firstTime = false;
 
     /** Creates a new instance of GameEditorView */
     public GameEditorView(DataObjectContext context) {
@@ -176,7 +179,6 @@ public class GameEditorView implements DataEditorView, EditorManagerListener {
                     }
                     return retValue;
                 }
-
             });
             comboGlobal.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
@@ -258,7 +260,10 @@ public class GameEditorView implements DataEditorView, EditorManagerListener {
     }
 
     public org.openide.awt.UndoRedo getUndoRedo() {
-        return null;
+		if (firstTime) {
+			IOSupport.getDocumentSerializer(context.getDataObject()).getUndoRedoManager().setLimit(100);
+		}
+		return null;
     }
 
     public void componentOpened() {

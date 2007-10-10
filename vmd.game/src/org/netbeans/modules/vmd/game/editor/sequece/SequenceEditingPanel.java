@@ -886,8 +886,8 @@ When having more than one frame selected only play the selected frames in the pr
 		}
 
 		public void frameRemoved(Sequence sequence, int index) {
-			this.clearSelections();
 			this.frameSelections.remove(index);
+			this.clearSelections();
 		}
 
 		public void frameModified(Sequence sequence, int index) {

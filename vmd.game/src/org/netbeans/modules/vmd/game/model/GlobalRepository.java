@@ -105,6 +105,26 @@ public class GlobalRepository implements PropertyChangeListener, Editable {
 		return this.mainView;
 	}
 		
+	public boolean removeIdentifiable(long id) {
+		Collection<Scene> tmpScene = new ArrayList<Scene>();
+		tmpScene.addAll(this.scenes);
+		for (Scene scene : tmpScene) {
+			if (scene.getId() == id) {
+				this.removeScene(scene);
+				return true;
+			}
+		}
+	    List<Layer> tmpLayer = new ArrayList<Layer>();
+	    tmpLayer.addAll(this.layers.values());
+	    for (Layer layer : tmpLayer) {
+			if (layer.getId() == id) {
+				this.removeLayer(layer);
+				return true;
+			}
+	    }
+		return false;
+	}
+	
 	/**
 	 * Removes all layers, scenes
 	 */

@@ -108,6 +108,9 @@ public class AnimatedTile extends Tile implements SequenceContainer, Editable, I
 	}
 
 	public void setName(String name) {
+		if (name == null) {
+			return;
+		}
 		if (this.getName().equals(name)) {
 			return;
 		}

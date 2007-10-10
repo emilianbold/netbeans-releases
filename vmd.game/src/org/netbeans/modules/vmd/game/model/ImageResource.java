@@ -250,6 +250,15 @@ public class ImageResource implements Identifiable{
 		}
 	}
 	
+	public AnimatedTile getAnimatedTile(long id) {
+		Collection c = this.animatedTiles.values();
+		for (Iterator iter = c.iterator(); iter.hasNext(); ) {
+			AnimatedTile tile = (AnimatedTile) iter.next();
+			if (tile.getId() == (id))
+				return tile;
+		}
+		return null;
+	}
 	
 	public AnimatedTile getAnimatedTileByName(String name) {
 		Collection c = this.animatedTiles.values();
@@ -437,7 +446,10 @@ public class ImageResource implements Identifiable{
 	public void setName(String imgResName) {
 		this.name = imgResName;
 	}
-	
+
+	public String getName() {
+		return this.getName(false);
+	}
 	
 	public String getName(boolean createIfNull) {
 		if (this.name == null && createIfNull) {
