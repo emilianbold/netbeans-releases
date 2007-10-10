@@ -56,6 +56,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -113,6 +114,7 @@ public class WebSampleProjectGenerator {
                 StringTokenizer st = new StringTokenizer(files, ",");
                 while (st.hasMoreElements()) {
                     String prjName = st.nextToken();
+                    if ((prjName == null) || (prjName.trim().equals(""))) continue;
                     InputStream is = WebSampleProjectGenerator.class.getResourceAsStream(prjName);
                     try {
                         FileObject prjLoc = createProjectFolder(new File(projectLocation, prjName.substring(0, prjName.indexOf('.'))));
@@ -122,24 +124,8 @@ public class WebSampleProjectGenerator {
                         if (needsDefaults) {
                             DevDefaultsProvider.getDefault().fillDefaultsToDefaultServer();
                         }
-//                        File projXml = FileUtil.toFile(prjLoc.getFileObject(prjName).getFileObject(AntProjectHelper.PROJECT_XML_PATH));
-//                        Document doc = XMLUtil.parse(new InputSource(projXml.toURI().toString()), false, true, null, null);
-//                        NodeList nlist = doc.getElementsByTagNameNS(PROJECT_CONFIGURATION_NAMESPACE, "name");       //NOI18N
-//                        if (nlist != null) {
-//                            for (int i=0; i < nlist.getLength(); i++) {
-//                                Node n = nlist.item(i);
-//                                if (n.getNodeType() != Node.ELEMENT_NODE) {
-//                                    continue;
-//                                }
-//                                Element e = (Element)n;
-//
-//                                replaceText(e, name);
-//                            }
-//                            saveXml(doc, prjLoc, AntProjectHelper.PROJECT_XML_PATH);
-//                        }
-                        
                     } catch (Exception e) {
-                        throw new IOException(e.toString());
+                        Exceptions.printStackTrace(e);
                     } finally {
                         if (is != null) is.close();
                     }
