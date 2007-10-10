@@ -626,7 +626,7 @@ public abstract class ETListCompartment extends ETSimpleListCompartment implemen
             IETSize compartmentSize = compartment.calculateOptimumSize(pDrawInfo, false);
 
             int height;
-            if (compartment.getTextWrapping())
+            if (compartment.getTextWrapping() && !iterator.hasNext())
             {
                height = Math.abs(lastDrawPointY - boundingRect.getBottom()); // Give it the rest of the bounding rect.				 
             }
