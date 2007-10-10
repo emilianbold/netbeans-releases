@@ -194,6 +194,7 @@ public class JavaSourceHelper {
             source.runUserActionTask(new AbstractTask<CompilationController>() {
 
                 public void run(CompilationController controller) throws IOException {
+                    controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                     TypeElement classElement = getTopLevelClassElement(controller);
                     List<VariableElement> fields = ElementFilter.fieldsIn(classElement.getEnclosedElements());
 
@@ -856,6 +857,7 @@ public class JavaSourceHelper {
             source.runUserActionTask(new AbstractTask<CompilationController>() {
 
                 public void run(CompilationController controller) throws IOException {
+                    controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                     TypeElement classElement = getTopLevelClassElement(controller);
                     List<ExecutableElement> methods = ElementFilter.methodsIn(classElement.getEnclosedElements());
 
