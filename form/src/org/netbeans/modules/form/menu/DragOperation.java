@@ -229,13 +229,10 @@ class DragOperation {
         }
         
         if(!menuEditLayer.doesFormContainMenuBar()) {
-            op = Op.NO_MENUBAR;
-            //josh: use the invalid drop target cursor instead
-            //menuEditLayer.glassLayer.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            //op = Op.NO_MENUBAR;
             menuEditLayer.showMenubarWarning = true;
             FormEditor.getAssistantModel(menuEditLayer.formDesigner.getFormModel()).setContext("missingMenubar"); // NOI18N
             menuEditLayer.repaint();
-            return;
         }
         
         op = Op.PICK_AND_PLOP_FROM_PALETTE;
@@ -329,6 +326,7 @@ class DragOperation {
         switch (op) {
         case PICK_AND_PLOP_FROM_PALETTE: completePickAndPlopFromPalette(pt); break;
         case INTER_MENU_DRAG: completeInterMenuDrag(pt); break ;
+        case NO_MENUBAR: /* do nothing */ break;
         }
         
         menuEditLayer.glassLayer.requestFocusInWindow();

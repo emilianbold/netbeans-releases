@@ -1718,6 +1718,9 @@ public class MenuEditLayer extends JPanel {
                 //return;
             }
             if(dragop.isStarted()) {
+                if(!doesFormContainMenuBar()) {
+                    FormEditor.getAssistantModel(formDesigner.getFormModel()).setContext("missingMenubar"); // NOI18N
+                }
                 dragop.move(e.getPoint());
             }                
             
