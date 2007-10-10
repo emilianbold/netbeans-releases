@@ -101,6 +101,13 @@ public class PathMatcherTest extends NbTestCase {
         assertMatches("**", null, "a/");
         assertMatches("**", null, "a/b");
         assertMatches("**", null, "a/b/");
+        // #98235
+        assertMatches("**", "**/b/*", "a/");
+        assertMatches("**", "**/b/*", "a/ClassA.java");
+        assertMatches("**", "**/b/*", "a/b/");
+        assertDoesNotMatch("**", "**/b/*", "a/b/ClassB.java");
+        assertMatches("**", "**/b/*", "a/b/c/");
+        assertMatches("**", "**/b/*", "a/b/c/ClassC.java");
     }
 
     public void testOddChars() throws Exception {

@@ -150,7 +150,7 @@ public final class PathMatcher {
                 rx.append(".*"); // NOI18N
                 break;
             }
-            Matcher m = Pattern.compile("/\\*\\*/|/\\*\\*|\\*\\*/|\\*|/|[^*/]+").matcher(pattern); // NOI18N
+            Matcher m = Pattern.compile("/\\*\\*/|/\\*\\*|\\*\\*/|/\\*$|\\*|/|[^*/]+").matcher(pattern); // NOI18N
             while (m.find()) {
                 String t = m.group();
                 if (t.equals("/**")) {
@@ -159,6 +159,8 @@ public final class PathMatcher {
                     rx.append("(.*/|)");
                 } else if (t.equals("/**/")) {
                     rx.append("(/.*/|/)");
+                } else if (t.equals("/*")) { // #98235
+                    rx.append("/[^/]+");
                 } else if (t.equals("*")) {
                     rx.append("[^/]*");
                 } else {
