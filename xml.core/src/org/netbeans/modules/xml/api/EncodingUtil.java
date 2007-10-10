@@ -51,13 +51,9 @@ import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.xml.core.lib.EncodingHelper;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Mutex;
-import org.openide.util.MutexException;
 
 /**
  * XML uses inband encoding detection - this class obtains it.
@@ -100,34 +96,18 @@ public class EncodingUtil {
     }
     
     /**
-     * Finds the project level encoding for the specified file.
+     * Returns the project's encoding for the specified file.
+     * Returns UTF-8 encoding, if none found.
      */
-    public static String getProjectEncoding(final FileObject file) throws IOException {
-        try {
-            final Project project = FileOwnerQuery.getOwner(file);
-            return ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<String>() {
-                public String run() throws IOException {
-                    FileObject propertiesFo = project.getProjectDirectory().
-                            getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                    EditableProperties ep = null;
-                    if (propertiesFo != null) {
-                        InputStream is = null;
-                        ep = new EditableProperties();
-                        try {
-                            is = propertiesFo.getInputStream();
-                            ep.load(is);
-                        } finally {
-                            if (is != null) {
-                                is.close();
-                            }
-                        }
-                    }
-                    return ep.getProperty("source.encoding"); //NOI18N
-                }
-            });
-        } catch (MutexException ex) {
-            return null;
-        }
+    public static String getProjectEncoding(FileObject file) {
+        Project project = FileOwnerQuery.getOwner(file);
+        if(project == null)
+            return "UTF-8"; //NOI18N
+        FileEncodingQueryImplementation feq = project.getLookup().
+                lookup(FileEncodingQueryImplementation.class);
+        if(feq == null)
+            return "UTF-8"; //NOI18N
+        return feq.getEncoding(file).name();
     }
-
+    
 }
