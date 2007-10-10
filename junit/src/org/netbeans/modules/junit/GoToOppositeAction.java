@@ -45,38 +45,26 @@ import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.awt.EventQueue;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
-import javax.swing.Action;
-import javax.swing.JEditorPane;
-import javax.swing.text.Document;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.spi.gototest.TestLocator;
 import org.netbeans.modules.junit.plugin.JUnitPlugin;
 import org.netbeans.modules.junit.plugin.JUnitPlugin.Location;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
-import org.openide.text.CloneableEditorSupport;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.actions.CallableSystemAction;
-import org.openide.windows.TopComponent;
 
 /**
  * Jumps to the opposite class or method.
@@ -89,64 +77,27 @@ import org.openide.windows.TopComponent;
  * @author  Marian Petras
  */
 @SuppressWarnings("serial")
-public final class GoToOppositeAction extends CallableSystemAction {
+public final class GoToOppositeAction implements TestLocator {
     
-    /**
-     *
-     */
     public GoToOppositeAction() {
-        super();
-        putValue("noIconInMenu", Boolean.TRUE); //NOI18N
-        String trimmedName = NbBundle.getMessage(
-                                        getClass(),
-                                        "LBL_Action_GoToTest_trimmed"); //NOI18N
-        putValue("PopupMenuText", trimmedName);                         //NOI18N
-        putValue("trimmed-text", trimmedName);                          //NOI18N
     }
     
-    /**
-     */
-    @Override
-    public void performAction() {
-        assert EventQueue.isDispatchThread();
+
+    public boolean asynchronous() {
+        return true;
+    }
+
+    public LocationResult findOpposite(FileObject fileObj) {
+        throw new UnsupportedOperationException("JUnit's GoToOppositeAction is asynchronous");
+    }
         
-        TopComponent comp;
-        JEditorPane editorPane;
-        FileObject fileObj;
+    public void findOpposite(FileObject fileObj, LocationListener callback) {
+        boolean isJavaFile = false;
         ClassPath srcCP;
         FileObject fileObjRoot;
         Project project;
-        
         boolean sourceToTest = true;
-        comp = TopComponent.getRegistry().getActivated();
-        if (comp == null) {
-            return;
-        }
-
-        if (comp instanceof CloneableEditorSupport.Pane) {
-            editorPane = ((CloneableEditorSupport.Pane) comp).getEditorPane();
-            if (editorPane == null) {
-                return;
-            }
-            
-            fileObj = getFileObject(editorPane.getDocument());
-        } else {
-            editorPane = null;
-            
-            Node[] selectedNodes = comp.getActivatedNodes();
-            if ((selectedNodes == null) || (selectedNodes.length != 1)) {
-                return;
-            }
-            
-            DataObject dataObj = selectedNodes[0].getLookup().lookup(DataObject.class);
-            if (dataObj == null) {
-                return;
-            }
-            
-            fileObj = dataObj.getPrimaryFile();
-        }
         
-        boolean isJavaFile = false;
         if ((fileObj == null)
           || !fileObj.isFolder() && !(isJavaFile = TestUtil.isJavaFile(fileObj))
           || ((srcCP = ClassPath.getClassPath(fileObj, ClassPath.SOURCE)) == null)
@@ -155,6 +106,7 @@ public final class GoToOppositeAction extends CallableSystemAction {
           || (UnitTestForSourceQuery.findUnitTests(fileObjRoot).length == 0)
               && !(sourceToTest = false)         //side effect - assignment
               && (!isJavaFile || (UnitTestForSourceQuery.findSources(fileObjRoot).length == 0))) {
+            callback.foundLocation(fileObj, new LocationResult(null));
             return;
         }
         
@@ -193,6 +145,7 @@ public final class GoToOppositeAction extends CallableSystemAction {
         */
         RequestProcessor.getDefault().post(
                 new ActionImpl(plugin,
+                               callback,
                                new Location(fileObj/*, element*/),
                                sourceToTest,
                                srcClassPath));
@@ -280,10 +233,12 @@ public final class GoToOppositeAction extends CallableSystemAction {
         private final Location currLocation;
         private final boolean sourceToTest;
         private final ClassPath srcClassPath;
+        private final LocationListener callback;
         
         private Location oppoLocation;
         
         ActionImpl(JUnitPlugin plugin,
+                   LocationListener callback,
                    Location currLocation,
                    boolean sourceToTest,
                    ClassPath srcClassPath) {
@@ -291,6 +246,7 @@ public final class GoToOppositeAction extends CallableSystemAction {
             this.currLocation = currLocation;
             this.sourceToTest = sourceToTest;
             this.srcClassPath = srcClassPath;
+            this.callback = callback;
         }
         
         public void run() {
@@ -330,7 +286,8 @@ public final class GoToOppositeAction extends CallableSystemAction {
 //            if (elementHandle != null) {
 //                OpenTestAction.openFileAtElement(oppoFile, elementHandle);
 //            } else {
-                OpenTestAction.openFile(oppoFile);
+//                OpenTestAction.openFile(oppoFile);
+                  callback.foundLocation(currLocation.getFileObject(), new LocationResult(oppoFile, -1));
 //            }
         }
         
@@ -345,29 +302,9 @@ public final class GoToOppositeAction extends CallableSystemAction {
                             : (sourceClsName.length() != 0)
                               ? "MSG_testsuite_class_not_found"         //NOI18N
                               : "MSG_testsuite_class_not_found_def_pkg";//NOI18N
-            TestUtil.notifyUser(
-                    NbBundle.getMessage(getClass(), msgKey, sourceClsName),
-                    NotifyDescriptor.INFORMATION_MESSAGE);
+            callback.foundLocation(currLocation.getFileObject(), 
+                    new LocationResult(NbBundle.getMessage(getClass(), msgKey, sourceClsName)));
         }
-
-    }
-    
-    /**
-     */
-    @Override
-    public boolean isEnabled() {
-        assert EventQueue.isDispatchThread();
-        
-        return checkDirection() != null;
-    }
-    
-    /**
-     */
-    public String getName() {
-        return NbBundle.getMessage(getClass(),
-                                   checkDirection() == Boolean.FALSE
-                                        ? "LBL_Action_GoToSource"       //NOI18N
-                                        : "LBL_Action_GoToTest");       //NOI18N
     }
     
     /**
@@ -380,29 +317,7 @@ public final class GoToOppositeAction extends CallableSystemAction {
      *          &quot;Go To Tested Class&quot;,<br />
      *          {@code null} if this action should be disabled
      */
-    private Boolean checkDirection() {
-        TopComponent comp = TopComponent.getRegistry().getActivated();
-        if (comp == null) {
-            return null;
-        }
-
-        FileObject fileObj = null;
-        
-        if (comp instanceof CloneableEditorSupport.Pane) {
-            JEditorPane editorPane = ((CloneableEditorSupport.Pane) comp).getEditorPane();
-            if (editorPane != null) {
-                fileObj = getFileObject(editorPane.getDocument());
-            }
-        } else {
-            Node[] selectedNodes = comp.getActivatedNodes();
-            if ((selectedNodes != null) && (selectedNodes.length == 1)) {
-                DataObject dataObj = selectedNodes[0].getLookup().lookup(DataObject.class);
-                if (dataObj != null) {
-                    fileObj = dataObj.getPrimaryFile();
-                }
-            }
-        }
-        
+    private Boolean checkDirection(FileObject fileObj) {
         ClassPath srcCP;
         FileObject fileObjRoot;
         
@@ -420,42 +335,19 @@ public final class GoToOppositeAction extends CallableSystemAction {
                        : null;
     }
     
-    /**
-     */
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-    
-    /**
-     */
-    protected void initialize () {
-	super.initialize ();
-        putProperty(Action.SHORT_DESCRIPTION,
-                    NbBundle.getMessage(getClass(),
-                                        "HINT_Action_GoToTest"));       //NOI18N
+    public boolean appliesTo(FileObject fo) {
+        return TestUtil.isJavaFile(fo);
     }
 
-    /**
-     */
-    @Override
-    protected boolean asynchronous() {
-        return false;
-    }
-    
-    /**
-     */
-    private static FileObject getFileObject(Document document) {
+    public FileType getFileType(FileObject fo) {
+        Boolean b = checkDirection(fo);
         
-        /* copied from org.netbeans.modules.editor.NbEditorUtilities */
-        
-        Object sdp = document.getProperty(Document.StreamDescriptionProperty);
-        if (sdp instanceof FileObject) {
-            return (FileObject) sdp;
+        if (b == null) {
+            return FileType.NEITHER;
+        } else if (b.booleanValue()) {
+            return FileType.TESTED;
+        } else {
+            return FileType.TEST;
         }
-        if (sdp instanceof DataObject) {
-            return ((DataObject) sdp).getPrimaryFile();
-        }
-        return null;
     }
-
 }
