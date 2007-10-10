@@ -78,7 +78,11 @@ public final class JavadocForBinaryImpl implements JavadocForBinaryQueryImplemen
         if (!binaryRoot.equals(Util.urlForJar(project.getModuleJarLocation()))) {
             return null;
         }
-        String cnbdashes = project.getCodeNameBase().replace('.', '-');
+        String cnb = project.getCodeNameBase();
+        if (cnb == null) { // #115521
+            return null;
+        }
+        String cnbdashes = cnb.replace('.', '-');
         try {
             final List<URL> candidates = new ArrayList<URL>();
             NbPlatform platform = project.getPlatform(false);
