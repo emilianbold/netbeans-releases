@@ -366,7 +366,7 @@ public class ExportDiffAction extends ContextAction {
         File file = setup.getBaseFile();
         try {
             InputStream is;
-            if (!Subversion.getInstance().getMimeType(file).startsWith("text/") && differences.length == 0) {
+            if (!SvnUtils.getMimeType(file).startsWith("text/") && differences.length == 0) {
                 // assume the file is binary 
                 is = new ByteArrayInputStream(exportBinaryFile(file).getBytes("utf8"));  // NOI18N
             } else {

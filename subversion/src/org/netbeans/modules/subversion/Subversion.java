@@ -45,8 +45,6 @@ import org.netbeans.modules.subversion.config.SvnConfigFiles;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.client.*;
 import org.netbeans.modules.subversion.util.SvnUtils;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.tigris.subversion.svnclientadapter.*;
 import org.openide.util.RequestProcessor;
 import java.io.*;
@@ -167,37 +165,6 @@ public class Subversion {
             nodes[i] = new SvnFileNode(files[i]);
         }
         return nodes;
-    }
-
-    /**
-     * Reads the svn:mime-type property or uses content analysis for unversioned files.
-     * 
-     * @param file file to examine
-     * @return String mime type of the file (or best guess)
-     */ 
-    public String getMimeType(File file) {
-        FileObject fo = FileUtil.toFileObject(file);
-        String foMime;
-        if (fo == null) {
-            foMime = "content/unknown";
-        } else {
-            foMime = fo.getMIMEType();
-            if ("content/unknown".equals(foMime)) {
-                foMime = "text/plain";
-            }
-        }
-        if ((fileStatusCache.getStatus(file).getStatus() & FileInformation.STATUS_VERSIONED) == 0) {
-            return SvnUtils.isFileContentBinary(file) ? "application/octet-stream" : foMime;
-        } else {
-            PropertiesClient client = new PropertiesClient(file);
-            try {
-                byte [] mimeProperty = client.getProperties().get("svn:mime-type");
-                if (mimeProperty == null) return foMime;
-                return new String(mimeProperty);
-            } catch (IOException e) {
-                return foMime;
-            }
-        }
     }
 
     /**

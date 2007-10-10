@@ -43,30 +43,27 @@ package org.netbeans.modules.subversion.util;
 
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.openide.*;
-import org.openide.cookies.EditorCookie;
 import org.openide.nodes.Node;
 import org.openide.windows.TopComponent;
 import org.openide.util.Lookup;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.netbeans.api.project.*;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.subversion.FileStatusCache;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.FileInformation;
 import java.io.*;
-import java.lang.Character;
 import java.util.*;
 import java.text.ParseException;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import org.netbeans.modules.subversion.SvnModuleConfig;
+import org.netbeans.modules.subversion.client.PropertiesClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.options.AnnotationExpression;
 import org.netbeans.modules.versioning.spi.VCSContext;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.NbBundle;
 import org.tigris.subversion.svnclientadapter.*;
 import org.tigris.subversion.svnclientadapter.utils.SVNUrlUtils;
@@ -595,25 +592,7 @@ public class SvnUtils {
         SVNUrl rootUrl = getRepositoryRootUrl(file);
         return SVNUrlUtils.getRelativePath(rootUrl, url, true);
     }
-    
-    /**
-     * Checks if the file is binary.
-     *
-     * @param file file to check
-     * @return true if the file cannot be edited in NetBeans text editor, false otherwise
-     */
-    public static boolean isFileContentBinary(File file) {
-        FileObject fo = FileUtil.toFileObject(file);
-        if (fo == null) return false;
-        try {
-            DataObject dao = DataObject.find(fo);
-            return dao.getCookie(EditorCookie.class) == null;
-        } catch (DataObjectNotFoundException e) {
-            // not found, continue
-        }
-        return false;
-    }
-    
+        
     /**
      * @return true if the buffer is almost certainly binary.
      * Note: Non-ASCII based encoding encoded text is binary,
@@ -892,4 +871,38 @@ public class SvnUtils {
         
         return exp;
     }
+    
+    /**
+     * Reads the svn:mime-type property or uses content analysis for unversioned files.
+     * 
+     * @param file file to examine
+     * @return String mime type of the file (or best guess)
+     */ 
+    public static String getMimeType(File file) {
+        FileObject fo = FileUtil.toFileObject(file);
+        String foMime;
+        if (fo == null) {
+            foMime = "content/unknown";
+        } else {
+            foMime = fo.getMIMEType();
+        }
+        FileStatusCache cache = Subversion.getInstance().getStatusCache();
+        if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_VERSIONED) == 0) {
+            if(foMime.startsWith("text")) {
+                return foMime;
+            }
+            return Utils.isFileContentText(file) ? "text/plain" : "application/octet-stream";
+        } else {
+            PropertiesClient client = new PropertiesClient(file);
+            try {
+                byte [] mimeProperty = client.getProperties().get("svn:mime-type");
+                if (mimeProperty == null) {
+                    return foMime;
+                }
+                return new String(mimeProperty);
+            } catch (IOException e) {
+                return foMime;
+            }
+        }
+    }    
 }

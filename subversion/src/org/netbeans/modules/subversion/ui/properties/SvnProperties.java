@@ -249,9 +249,7 @@ public class SvnProperties implements ActionListener, DocumentListener {
                 if (state.equals(JFileChooser.APPROVE_SELECTION)) {
                     File source = chooser.getSelectedFile();                    
                   
-                    if (SvnUtils.isFileContentBinary(source)) {
-                        handleBinaryFile(source);
-                    } else {
+                    if (Utils.isFileContentText(source)) {
                         if (source.canRead()) {
                             StringWriter sw = new StringWriter();
                             try {
@@ -261,6 +259,8 @@ public class SvnProperties implements ActionListener, DocumentListener {
                                 ErrorManager.getDefault().notify(ex);
                             }
                         }
+                    } else {
+                        handleBinaryFile(source);                        
                     }
                 }
                 dialog.dispose();

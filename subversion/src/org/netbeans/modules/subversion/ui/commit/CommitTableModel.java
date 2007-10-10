@@ -49,7 +49,9 @@ import org.netbeans.modules.subversion.SvnModuleConfig;
 import javax.swing.table.AbstractTableModel;
 import java.util.*;
 import java.io.File;
+import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
+import org.netbeans.modules.versioning.util.Utils;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
@@ -251,10 +253,10 @@ public class CommitTableModel extends AbstractTableModel {
 
     private CommitOptions getDefaultCommitOptions(File file) {
         if (file.isFile()) {
-            if (SvnUtils.isFileContentBinary(file)) {
-                return CommitOptions.ADD_BINARY;
-            } else {
+            if (SvnUtils.getMimeType(file).startsWith("text")) {
                 return CommitOptions.ADD_TEXT;
+            } else {
+                return CommitOptions.ADD_BINARY;                
             }
         } else {
             return CommitOptions.ADD_DIRECTORY;

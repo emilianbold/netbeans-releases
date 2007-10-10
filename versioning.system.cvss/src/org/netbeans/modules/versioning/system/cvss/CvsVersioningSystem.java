@@ -524,18 +524,12 @@ public class CvsVersioningSystem {
         } catch (IOException e) {
             // ignore, probably new or nonexistent file
         }
-        FileObject fo = FileUtil.toFileObject(file);
-        if (fo == null) return false;
-        try {
-            DataObject dao = DataObject.find(fo);
-            return dao.getCookie(EditorCookie.class) != null;
-        } catch (DataObjectNotFoundException e) {
-            // not found, continue
+        if(org.netbeans.modules.versioning.util.Utils.isFileContentText(file)) {
+            return true;
         }
-        if (fo.getMIMEType().startsWith("text")) { // NOI18N
-            return true;            
-        }
+
         // TODO: HACKS begin, still needed?
+        FileObject fo = FileUtil.toFileObject(file);
         return textExtensions.contains(fo.getExt());
     }
 

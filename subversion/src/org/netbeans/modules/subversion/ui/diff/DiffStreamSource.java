@@ -49,6 +49,7 @@ import org.netbeans.modules.versioning.util.Utils;
 
 import java.io.*;
 import java.util.*;
+import org.netbeans.modules.subversion.util.SvnUtils;
 
 import org.openide.util.*;
 import org.openide.util.lookup.Lookups;
@@ -176,7 +177,7 @@ public class DiffStreamSource extends StreamSource {
             mimeType = "content/unknown"; // NOI18N
             return;
         }
-        mimeType = Subversion.getInstance().getMimeType(baseFile);
+        mimeType = SvnUtils.getMimeType(baseFile);
         try {
             if (isEditable()) {
                 // we cannot move editable documents because that would break Document sharing
@@ -209,7 +210,7 @@ public class DiffStreamSource extends StreamSource {
                 }
             }
             if (!baseFile.exists() && remoteFile != null && remoteFile.exists()) {
-                mimeType = Subversion.getInstance().getMimeType(remoteFile);
+                mimeType = SvnUtils.getMimeType(remoteFile);
             }
         } catch (Exception e) {
             // TODO detect interrupted IO (exception subclass), i.e. user cancel

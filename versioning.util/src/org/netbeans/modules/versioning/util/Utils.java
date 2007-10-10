@@ -76,7 +76,9 @@ import java.beans.VetoableChangeListener;
 import java.nio.charset.Charset;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.openide.ErrorManager;
+import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
+import org.openide.util.Lookup;
 
 /**
  * Utilities class.
@@ -206,6 +208,27 @@ public final class Utils {
         }
         return null;
     }
+    
+    /**
+     * Checks if the file is to be considered as textuall.
+     *
+     * @param file file to check
+     * @return true if the file cannot be edited in NetBeans text editor, false otherwise
+     */
+    public static boolean isFileContentText(File file) {
+        FileObject fo = FileUtil.toFileObject(file);
+        if (fo == null) return false;        
+        if (fo.getMIMEType().startsWith("text")) { // NOI18N  
+            return true;            
+        }        
+        try {
+            DataObject dao = DataObject.find(fo); 
+            return dao.getLookup().lookupItem(new Lookup.Template<EditorCookie>(EditorCookie.class)) != null; 
+        } catch (DataObjectNotFoundException e) {
+            // not found, continue
+        }
+        return false;
+    }    
     
     /**
      * Copies all content from the supplied reader to the supplies writer and closes both streams when finished.
