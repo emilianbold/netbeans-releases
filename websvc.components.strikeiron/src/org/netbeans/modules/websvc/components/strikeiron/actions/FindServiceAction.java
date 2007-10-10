@@ -25,6 +25,7 @@
  *
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.websvc.components.strikeiron.actions;
 
 import com.strikeiron.search.MarketPlaceService;
