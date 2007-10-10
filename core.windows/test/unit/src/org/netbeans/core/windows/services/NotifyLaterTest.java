@@ -112,7 +112,7 @@ public class NotifyLaterTest extends NbTestCase {
         LOG.info("done notifyLater");
         waitAWT();
         LOG.info("check");
-        assertEquals("No notify yet", 0, obj.called);fail("Ok");
+        assertEquals("No notify yet", 0, obj.called);//fail("Ok");
         
         DialogDisplayerImplTest.postInAwtAndWaitOutsideAwt(new Runnable () {
             public void run() {
