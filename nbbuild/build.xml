@@ -1097,7 +1097,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <delete dir="${netbeans.dest.dir}"/>
   </target>
 
-  <target name="rebuild-cluster" depends="init" description="Builds only one cluster with dependencies - takes '-Drebuild.cluster.name=nb.visualweb' as parameter">
+  <target name="rebuild-cluster" depends="init" description="Builds only one cluster with dependencies - takes '-Drebuild.cluster.name=nb.cluster.visualweb' as parameter">
     <delete file="netbeans/${rebuild.cluster.name}.built" failonerror="false"/>
     <fail unless="${rebuild.cluster.name}" message="You need to specify 'rebuild.cluster.name' attribute"/>
     <antcall target="build-one-cluster">
@@ -1109,7 +1109,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <delete file="netbeans/nb.cluster.visualweb.built" failonerror="false"/>
     <antcall target="build-one-cluster">
       <param name="one.cluster.name" value="nb.cluster.visualweb"/>
-      <param name="one.cluster.name-hasNoDependencies" value="true"/>
+      <param name="nb.cluster.visualweb-hasNoDependencies" value="true"/>
     </antcall>
   </target>
   
