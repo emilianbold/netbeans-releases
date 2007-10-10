@@ -70,10 +70,14 @@ public class Clone implements PropertyChangeListener {
     /** Creates a new instance of Clone */
     public Clone(File repository, File to) {
         panel = new ClonePanel(repository, to);
-        okButton = new JButton(org.openide.util.NbBundle.getMessage(Clone.class, "CTL_CloneForm_Action_Clone")); // NOI18N
+        okButton = new JButton();
+        org.openide.awt.Mnemonics.setLocalizedText(okButton, org.openide.util.NbBundle.getMessage(CloneAction.class, "CTL_CloneForm_Action_Clone"));
+        okButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(Clone.class, "ACSN_CloneForm_Action_Clone")); // NOI18N
         okButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(Clone.class, "ACSD_CloneForm_Action_Clone")); // NOI18N
-        cancelButton = new JButton(org.openide.util.NbBundle.getMessage(Clone.class, "CTL_CloneForm_Action_Cancel")); // NOI18N
+        cancelButton = new JButton();
+        org.openide.awt.Mnemonics.setLocalizedText(cancelButton, org.openide.util.NbBundle.getMessage(CloneAction.class, "CTL_CloneForm_Action_Cancel"));
         cancelButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(Clone.class, "ACSD_CloneForm_Action_Cancel")); // NOI18N
+        cancelButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(Clone.class, "ACSN_CloneForm_Action_Cancel")); // NOI18N
         this.listener = new DocumentListener() {
             public void insertUpdate(DocumentEvent e) { nameChange(); }
             public void removeUpdate(DocumentEvent e) { nameChange(); }
@@ -84,9 +88,9 @@ public class Clone implements PropertyChangeListener {
     
     public boolean showDialog() {
         DialogDescriptor dialogDescriptor = new DialogDescriptor(panel, org.openide.util.NbBundle.getMessage(Clone.class, "CTL_CloneDialog")); // NOI18N
-        dialogDescriptor.setOptions(new Object[] {okButton, cancelButton});
         
         dialogDescriptor.setModal(true);
+        dialogDescriptor.setOptions(new Object[] {okButton, cancelButton});
         dialogDescriptor.setHelpCtx(new HelpCtx(this.getClass()));
         dialogDescriptor.setValid(false);
         

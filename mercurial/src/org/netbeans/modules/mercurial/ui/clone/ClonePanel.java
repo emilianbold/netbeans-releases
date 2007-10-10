@@ -98,43 +98,49 @@ public class ClonePanel extends javax.swing.JPanel implements ActionListener {
         destinationLabel = new javax.swing.JLabel();
         openProjectCheckBox = new javax.swing.JCheckBox();
 
-        fromLabel.setText(org.openide.util.NbBundle.getMessage(ClonePanel.class, "ClonePanel.fromLabel.text")); // NOI18N
+        fromLabel.setLabelFor(fromTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(fromLabel, org.openide.util.NbBundle.getMessage(ClonePanel.class, "ClonePanel.fromLabel.text")); // NOI18N
 
         toLabel.setLabelFor(toTextField);
-        toLabel.setText(org.openide.util.NbBundle.getMessage(ClonePanel.class, "ClonePanel.toLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(toLabel, org.openide.util.NbBundle.getMessage(ClonePanel.class, "ClonePanel.toLabel.text")); // NOI18N
 
-        browseButton.setText(org.openide.util.NbBundle.getMessage(ClonePanel.class, "ClonePanel.browseButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(ClonePanel.class, "ClonePanel.browseButton.text")); // NOI18N
 
         fromTextField.setEditable(false);
 
-        toNameLabel.setText(org.openide.util.NbBundle.getMessage(ClonePanel.class, "ClonePanel.toName.text")); // NOI18N
+        toNameLabel.setLabelFor(toCloneField);
+        org.openide.awt.Mnemonics.setLocalizedText(toNameLabel, org.openide.util.NbBundle.getMessage(ClonePanel.class, "ClonePanel.toName.text")); // NOI18N
 
-        destinationLabel.setText(org.openide.util.NbBundle.getMessage(ClonePanel.class, "destinationLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(destinationLabel, org.openide.util.NbBundle.getMessage(ClonePanel.class, "destinationLabel.text")); // NOI18N
 
-        openProjectCheckBox.setText(org.openide.util.NbBundle.getMessage(ClonePanel.class, "openCheckbox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(openProjectCheckBox, org.openide.util.NbBundle.getMessage(ClonePanel.class, "openCheckbox.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(destinationLabel)
-                    .add(fromLabel)
                     .add(layout.createSequentialGroup()
-                        .add(12, 12, 12)
+                        .addContainerGap()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(toNameLabel)
-                            .add(toLabel)
-                            .add(openProjectCheckBox))))
+                            .add(destinationLabel)
+                            .add(fromLabel)
+                            .add(layout.createSequentialGroup()
+                                .add(12, 12, 12)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(toNameLabel)
+                                    .add(openProjectCheckBox)))))
+                    .add(layout.createSequentialGroup()
+                        .add(34, 34, 34)
+                        .add(toLabel)))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(fromTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 242, Short.MAX_VALUE)
+                    .add(fromTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 234, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(toCloneField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 173, Short.MAX_VALUE)
-                            .add(toTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 173, Short.MAX_VALUE))
+                            .add(toCloneField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 157, Short.MAX_VALUE)
+                            .add(toTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 157, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(browseButton)))
                 .addContainerGap())
@@ -150,9 +156,9 @@ public class ClonePanel extends javax.swing.JPanel implements ActionListener {
                 .add(destinationLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(toLabel)
                     .add(browseButton)
-                    .add(toTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(toTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(toLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(toCloneField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
