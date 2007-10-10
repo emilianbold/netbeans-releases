@@ -49,6 +49,7 @@ import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
@@ -58,10 +59,12 @@ import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.java.guards.JavaGuardedSectionsFactory;
 import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.spi.editor.guards.GuardedEditorSupport;
 import org.netbeans.spi.editor.guards.GuardedSectionsFactory;
 import org.netbeans.spi.editor.guards.GuardedSectionsProvider;
+import org.netbeans.spi.editor.mimelookup.MimeDataProvider;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.cookies.EditCookie;
@@ -84,6 +87,8 @@ import org.openide.loaders.SaveAsCapable;
 import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.DataEditorSupport;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 import org.openide.windows.CloneableOpenSupport;
 import static org.netbeans.api.java.source.JavaSource.Phase.*;
 
@@ -112,8 +117,11 @@ public class GuardedBlockTest extends GeneratorTestMDRCompat {
     @Override
     protected void setUp() throws Exception {
         XMLFileSystem system = new XMLFileSystem();
+        assert GeneratorTestMDRCompat.class.getResource("/org/netbeans/modules/java/guards/layer.xml") != null;
         system.setXmlUrls(new URL[] {
-            GeneratorTestMDRCompat.class.getResource("/org/netbeans/modules/java/source/resources/layer.xml")
+            GeneratorTestMDRCompat.class.getResource("/org/netbeans/modules/java/source/resources/layer.xml"),
+            GeneratorTestMDRCompat.class.getResource("/org/netbeans/modules/java/guards/layer.xml"),
+            GeneratorTestMDRCompat.class.getResource("/org/netbeans/modules/java/editor/resources/layer.xml")
         });
         Repository repository = new Repository(system);
         ClassPathProvider cpp = new ClassPathProvider() {
@@ -127,8 +135,13 @@ public class GuardedBlockTest extends GeneratorTestMDRCompat {
                     return null;
             }
         };
+//        MockServices.setServices(GuardedDataLoader.class);
         GuardedDataLoader loader = GuardedDataLoader.findObject(GuardedDataLoader.class, true);
-        SourceUtilsTestUtil.prepareTest(new String[0], new Object[] {repository, loader, cpp});
+        SourceUtilsTestUtil.prepareTest(new String[0], new Object[] {repository, loader, cpp, new MimeDataProvider() {
+            public Lookup getLookup(MimePath mimePath) {
+                return Lookups.singleton(new JavaGuardedSectionsFactory());
+            }
+        }});
         JEditorPane.registerEditorKitForContentType("text/x-java", "org.netbeans.modules.editor.java.JavaKit");
         File cacheFolder = new File(getWorkDir(), "var/cache/index");
         cacheFolder.mkdirs();
@@ -223,10 +236,9 @@ public class GuardedBlockTest extends GeneratorTestMDRCompat {
         return "";
     }
 
-}
 
 // other top level classes used for getting guarded section initialized
-class GuardedDataLoader extends MultiFileLoader {
+public static class GuardedDataLoader extends MultiFileLoader {
     private final String JAVA_EXTENSION = "java";
 
     public GuardedDataLoader() {
@@ -260,7 +272,7 @@ class GuardedDataLoader extends MultiFileLoader {
 
 } // GuardedDataLoader
 
-class GuardedDataObject extends MultiDataObject {
+public static class GuardedDataObject extends MultiDataObject {
 
     private MyGuardedEditorSupport fes = null;
 
@@ -381,7 +393,7 @@ class GuardedDataObject extends MultiDataObject {
         protected void loadFromStreamToKit(StyledDocument doc, InputStream stream, EditorKit kit) throws IOException, BadLocationException {
             if (guardedEditor == null) {
                 guardedEditor = new FormGEditor();
-                GuardedSectionsFactory gFactory = GuardedSectionsFactory.find(((DataEditorSupport.Env) env).getMimeType());
+                GuardedSectionsFactory gFactory = GuardedSectionsFactory.find("text/x-java");
                 if (gFactory != null) {
                     guardedProvider = gFactory.create(guardedEditor);
                 }
@@ -417,3 +429,5 @@ class GuardedDataObject extends MultiDataObject {
         }
     }
 } // GuardedDataObject
+
+}
