@@ -109,6 +109,7 @@ public class Language extends org.netbeans.api.languages.Language {
     
     public static final String ERROR_TOKEN_TYPE_NAME = "error";
     public static final String EMBEDDING_TOKEN_TYPE_NAME = "PE";
+    public static final String GAP_TOKEN_TYPE_NAME = "GAP";
     
     private Parser              parser;
     private List<TokenType>     tokenTypes = new ArrayList<TokenType> ();
@@ -132,7 +133,9 @@ public class Language extends org.netbeans.api.languages.Language {
         this.mimeType = mimeType;
         addToken (null, ERROR_TOKEN_TYPE_NAME, null, null, null);
         addToken (null, EMBEDDING_TOKEN_TYPE_NAME, null, null, null);
-        skipTokenTypeNames.add ("error");
+        addToken (null, GAP_TOKEN_TYPE_NAME, null, null, null);
+        skipTokenTypeNames.add (ERROR_TOKEN_TYPE_NAME);
+        skipTokenTypeNames.add (GAP_TOKEN_TYPE_NAME);
         isLexicalAnalyseSupported = false;
     }
     
