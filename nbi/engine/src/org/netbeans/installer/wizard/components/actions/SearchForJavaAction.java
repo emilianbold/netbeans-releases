@@ -226,6 +226,7 @@ public class SearchForJavaAction extends WizardAction {
         if (!javaLocations.contains(location)) {
             javaLocations.add(location);
             javaLabels.add(getLabel(location, version, vendor));
+            JavaUtils.addJavaInfo(location, new JavaInfo(version, vendor));
         }
     }
     

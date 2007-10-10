@@ -128,7 +128,11 @@ public class JavaUtils {
         
         return true;
     }
-    
+    public static void addJavaInfo(final File location, final JavaInfo info) {
+        if(knownJdks.get(location)==null) {
+            knownJdks.put(location, info);
+        }
+    }
     public static Version getVersion(File javaHome) {
         final JavaInfo info = getInfo(javaHome);
         
