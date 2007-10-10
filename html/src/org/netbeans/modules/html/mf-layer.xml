@@ -147,6 +147,16 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
 
+    <folder name="Navigator">
+        <folder name="Panels">
+            <folder name="text">
+                <folder name="html">
+                    <file name="org-netbeans-modules-languages-features-LanguagesNavigator.instance"/>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+    
     <folder name="Menu">
         <folder name="Tools">
             <folder name="PaletteManager">
