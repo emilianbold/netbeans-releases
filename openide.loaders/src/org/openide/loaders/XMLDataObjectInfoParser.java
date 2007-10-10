@@ -443,6 +443,68 @@ implements FileChangeListener, LexicalHandler, LookupListener {
         stop();
     }
 
+    @Override
+    public void characters(char[] ch, int start, int length) throws SAXException {
+        XMLDataObject.ERR.log(Level.FINEST, "characters len: {0}", length);
+    }
+
+    @Override
+    public void endElement(String uri, String localName, String qName) throws SAXException {
+        XMLDataObject.ERR.log(Level.FINEST, "endElement: {0}", qName);
+    }
+
+    @Override
+    public void endPrefixMapping(String prefix) throws SAXException {
+        XMLDataObject.ERR.log(Level.FINEST, "endPrefix: {0}", prefix);
+    }
+
+    @Override
+    public void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {
+        XMLDataObject.ERR.log(Level.FINEST, "ignorableWhitespace: {0}", length);
+    }
+
+    @Override
+    public void notationDecl(String name, String publicId, String systemId) throws SAXException {
+        XMLDataObject.ERR.log(Level.FINEST, "notationDecl: {0}", name);
+    }
+
+    @Override
+    public void processingInstruction(String target, String data) throws SAXException {
+        XMLDataObject.ERR.log(Level.FINEST, "processingInstruction: {0}", target);
+    }
+
+    @Override
+    public InputSource resolveEntity(String publicId, String systemId) throws IOException, SAXException {
+        XMLDataObject.ERR.log(Level.FINEST, "resolveEntity: {0}", publicId);
+        return super.resolveEntity(publicId, systemId);
+    }
+
+    @Override
+    public void skippedEntity(String name) throws SAXException {
+        XMLDataObject.ERR.log(Level.FINEST, "skippedEntity: {0}", name);
+    }
+
+    @Override
+    public void startDocument() throws SAXException {
+        XMLDataObject.ERR.log(Level.FINEST, "startDocument");
+    }
+
+    @Override
+    public void startElement(String uri, String localName, String qName, org.xml.sax.Attributes attributes) throws SAXException {
+        XMLDataObject.ERR.log(Level.FINEST, "startElement: {0}", qName);
+        stop();
+    }
+
+    @Override
+    public void startPrefixMapping(String prefix, String uri) throws SAXException {
+        XMLDataObject.ERR.log(Level.FINEST, "startPrefixMapping: {0}", prefix);
+    }
+
+    @Override
+    public void unparsedEntityDecl(String name, String publicId, String systemId, String notationName) throws SAXException {
+        XMLDataObject.ERR.log(Level.FINEST, "unparsedEntityDecl: {0}", name);
+    }
+
     private void stop() throws SAXException {
         XMLDataObject.ERR.log(Level.FINEST, "stop");
         throw STOP;

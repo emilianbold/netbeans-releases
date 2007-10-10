@@ -198,7 +198,7 @@ public class XMLDataObject extends MultiDataObject {
                     if (editor == null) editor = createEditorCookie();  // the first pass
                     if (editor == null) return null;                    //??? gc unfriendly
 
-                    return klass.isAssignableFrom(editor.getClass()) ? (T)editor : null;
+                    return klass.isAssignableFrom(editor.getClass()) ? klass.cast(editor) : null;
                 } else {
                     return null;
                 }
@@ -336,7 +336,7 @@ public class XMLDataObject extends MultiDataObject {
      * @param cls constraining class
      * @return instance of InstanceCookie.Of
      */
-    private InstanceCookie ofCookie (InstanceCookie ic, Class cls) {
+    private InstanceCookie ofCookie (InstanceCookie ic, Class<?> cls) {
         if (ic instanceof InstanceCookie.Of) {
             return ic;
         } else if (! cls.isAssignableFrom (ICDel.class)) {
@@ -1204,11 +1204,12 @@ public class XMLDataObject extends MultiDataObject {
             * of class c.
             */
             protected boolean instanceOf (Class c) {
+                Class<?> cc = c;
                 Class<?> temp = clazz;
                 if (temp == null) {
-                    return c.isInstance (obj);
+                    return cc.isInstance (obj);
                 } else {
-                    return c.isAssignableFrom (temp);
+                    return cc.isAssignableFrom (temp);
                 }
             }
 
@@ -1378,7 +1379,7 @@ public class XMLDataObject extends MultiDataObject {
             return ic.instanceCreate ();
         }
 
-        public boolean instanceOf (Class cls2) {
+        public boolean instanceOf (Class<?> cls2) {
             if (ic instanceof InstanceCookie.Of) {
                 return ((InstanceCookie.Of) ic).instanceOf (cls2);
             } else {

@@ -173,7 +173,7 @@ implements Node.Cookie {
             "xmlns=\"http://www.epa.gov/exchangenetwork\" xsi" +
             ":schemaLocation=\"http://www.epa.gov/exchangenetwork EN_NEI_Point_v3_0.xsd\" " +
             "schemaVersion=\"3.0\">");
-        for (int i = 0; i < 10000; i++) {
+        for (int i = 0; i < 500; i++) {
             ps.println("<SystemRecordCountValues schemaVersion='3.0'>");
             ps.println("  <SystemRecordCountTransmittalValue>46</SystemRecordCountTransmittalValue>");
             ps.println("  <SystemRecordCountSiteValue>740</SystemRecordCountSiteValue>");
@@ -201,8 +201,8 @@ implements Node.Cookie {
         assertNotNull( "Can be editored", cookie);
 
         String s = log.toString();
-        if (s.indexOf("stop") > 1000) {
-            fail("Too much logged data:\n" + log);
+        if (s.indexOf("stop") > 5000) {
+            fail("Too much logged data:\n" + s.substring(0, 500));
         }
     }
     
