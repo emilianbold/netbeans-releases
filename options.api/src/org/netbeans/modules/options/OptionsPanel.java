@@ -249,22 +249,14 @@ public class OptionsPanel extends JPanel {
     }
         
     private void initActions () {
-        if (getActionMap ().get("UP") == null) {
-            InputMap inputMap = getInputMap 
-                (JComponent.WHEN_IN_FOCUSED_WINDOW);
-            inputMap.put (
-                KeyStroke.getKeyStroke (KeyEvent.VK_LEFT, 0), "UP"
-            );
-            getActionMap ().put ("UP", new PreviousAction ());
-            inputMap.put (
-                KeyStroke.getKeyStroke (KeyEvent.VK_SPACE, 0), 
-                "SPACE"
-            );
-            getActionMap ().put ("SPACE", new SelectCurrentAction ());
-            inputMap.put (
-                KeyStroke.getKeyStroke (KeyEvent.VK_RIGHT, 0),"DOWN"
-            );
-            getActionMap ().put ("DOWN", new NextAction ());
+        if (getActionMap ().get("PREVIOUS") == null) {//NOI18N
+            InputMap inputMap = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+            
+            inputMap.put (KeyStroke.getKeyStroke (KeyEvent.VK_LEFT, 0), "PREVIOUS");//NOI18N
+            getActionMap ().put ("PREVIOUS", new PreviousAction ());//NOI18N
+            
+            inputMap.put (KeyStroke.getKeyStroke (KeyEvent.VK_RIGHT, 0),"NEXT");//NOI18N
+            getActionMap ().put ("NEXT", new NextAction ());//NOI18N
         }
     }
     
