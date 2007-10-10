@@ -52,7 +52,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.jar.Attributes;
@@ -312,9 +311,7 @@ public final class ModuleSystem {
             Set<Module> toReenable = new HashSet<Module>();
             // First see if this refers to an existing module.
             // (If so, make sure it is reloadable.)
-            Iterator it = mgr.getModules().iterator();
-            while (it.hasNext()) {
-                Module m = (Module)it.next();
+            for (Module m : mgr.getModules()) {
                 if (m.getJarFile() != null) {
                     if (jar.equals(m.getJarFile())) {
                         // Hah, found it.
@@ -360,9 +357,7 @@ public final class ModuleSystem {
             // Also any of them marked as reloadable, reload them now.
             if (! toReenable.isEmpty()) {
                 System.err.println("Also re-enabling:"); // NOI18N
-                it = toReenable.iterator();
-                while (it.hasNext()) {
-                    Module m = (Module)it.next();
+                for (Module m : toReenable) {
                     System.err.println("\t" + m.getDisplayName()); // NOI18N
                     if (m.isReloadable()) {
                         m.reload();
