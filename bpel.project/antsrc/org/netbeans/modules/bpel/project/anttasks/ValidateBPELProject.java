@@ -377,7 +377,7 @@ public class ValidateBPELProject extends Task {
                     validateBPEL(bpelFile);
                 } catch (Throwable e) {
                   System.out.println();
-                  System.out.println("Error: " + e);
+                  System.out.println("Exception: " + e);
 //e.printStackTrace();
                   if ( !mAllowBuildWithError) {
                       throw new BuildException(e);
