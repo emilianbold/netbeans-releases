@@ -1,12 +1,12 @@
 Name: TopLink Essentials
-Version: V2 build 58g
+Version: v2-build-58g
 Description: Implementation of Java Persistence API in GlassFish
 License: CDDL-1.0
 OSR: 1304
 Origin: http://glassfish.dev.java.net
-Comment: Needed for providing out-of-the-box support for developing JPA applications 
+Comment: Needed for providing out-of-the-box support for developing JPA applications
 
-Use of TopLink Essentials version V2 build 58g is governed by the terms of the license below:
+Use of TopLink Essentials version v2-build-58g is governed by the terms of the license below:
 
       COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.0
 
