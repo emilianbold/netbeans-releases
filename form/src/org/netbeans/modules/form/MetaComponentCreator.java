@@ -111,11 +111,19 @@ public class MetaComponentCreator {
                                         RADComponent targetComp,
                                         Object constraints)
     {
+        return createComponent(classSource, targetComp, constraints, true);
+    }
+
+    RADComponent createComponent(ClassSource classSource,
+                                 RADComponent targetComp,
+                                 Object constraints,
+                                 boolean exactTargetMatch)
+    {
         Class compClass = prepareClass(classSource);
         if (compClass == null)
             return null; // class loading failed
 
-        return createAndAddComponent(compClass, targetComp, constraints);
+        return createAndAddComponent(compClass, targetComp, constraints, exactTargetMatch);
     }
 
     /** Creates a copy of a metacomponent and adds it to FormModel. The new 
@@ -319,14 +327,15 @@ public class MetaComponentCreator {
 
     private RADComponent createAndAddComponent(final Class compClass,
                                                final RADComponent targetComp,
-                                               final Object constraints)
+                                               final Object constraints,
+                                               boolean exactTargetMatch)
     {
         // check adding form class to itself
         if (!checkFormClass(compClass))
             return null;
 
         final int targetPlacement =
-            getTargetPlacement(compClass, targetComp, true, true);
+            getTargetPlacement(compClass, targetComp, !exactTargetMatch, !exactTargetMatch);
 
         if (targetPlacement == NO_TARGET)
             return null;

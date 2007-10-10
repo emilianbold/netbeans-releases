@@ -2720,7 +2720,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                     movingBounds = new Rectangle[0];
                     EventQueue.invokeLater(new Runnable() {
                         public void run() {
-                            endDragging(null);
+                            formDesigner.toggleSelectionMode(); // calls endDragging(null)
                         }
                     });
                 }
@@ -2788,7 +2788,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                         targetComponent = HandleLayer.this.getMetaComponentAt(p, mode);
                     }
                     addedComponent = getComponentCreator().createComponent(
-                            paletteItem.getComponentClassSource(), targetComponent, null);
+                            paletteItem.getComponentClassSource(), targetComponent, null, false);
                     if (addedComponent == null) {
                         repaint();
                     }

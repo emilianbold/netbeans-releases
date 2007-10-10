@@ -709,8 +709,8 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                     FormUtils.getBundleString("TITLE_Choose_Bean")); // NOI18N
                 DialogDisplayer.getDefault().notify(desc);
                 if (NotifyDescriptor.OK_OPTION.equals(desc.getValue())) {
-                    pitem.setComponentClassSource(ClassPathUtils.getProjectClassSource(
-                            formEditor.getFormDataObject().getPrimaryFile(), desc.getInputText()));
+                    pitem.setClassFromCurrentProject(desc.getInputText(),
+                            formEditor.getFormDataObject().getPrimaryFile());
                 } else {
                     toggleSelectionMode();
                     return;

@@ -49,6 +49,7 @@ import org.openide.nodes.Node;
 
 import org.netbeans.modules.form.FormUtils;
 import org.netbeans.modules.form.project.*;
+import org.openide.filesystems.FileObject;
 
 /**
  * PaletteItem holds important information about one component (item)
@@ -66,6 +67,7 @@ public final class PaletteItem implements Node.Cookie {
 //    Boolean isContainer_explicit;
     String componentType_explicit;
     Image icon;
+    private FileObject cpRepresentative;
 
     // resolved data (derived from the raw data)
     private Class componentClass;
@@ -107,6 +109,17 @@ public final class PaletteItem implements Node.Cookie {
 
     void setComponentExplicitType(String type) {
         componentType_explicit = type;
+    }
+
+    /**
+     * Used by Choose Bean palette item where the user can fill in whatever
+     * class from the actual project classpath. Such a palette item will be
+     * used in the same project, so ClassSource is not really needed (it is
+     * normally used only for project output).
+     */
+    public void setClassFromCurrentProject(String className, FileObject fileInProject) {
+        setComponentClassSource(new ClassSource(className, null, null));
+        cpRepresentative = fileInProject;
     }
 
     // -------
@@ -245,7 +258,11 @@ public final class PaletteItem implements Node.Cookie {
         } catch (ClassNotFoundException cnfex) {}
 
         try {
-            return ClassPathUtils.loadClass(getComponentClassSource());
+            if (cpRepresentative != null) {
+                return ClassPathUtils.loadClass(getComponentClassSource().getClassName(), cpRepresentative);
+            } else {
+                return ClassPathUtils.loadClass(getComponentClassSource());
+            }
         }
         catch (Exception ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);

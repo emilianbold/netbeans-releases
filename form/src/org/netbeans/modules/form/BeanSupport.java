@@ -82,7 +82,12 @@ public class BeanSupport
         }
         catch (Exception ex) {
             Logger.getLogger(BeanSupport.class.getName())
-                    .log(Level.INFO, "[WARNING] Cannot create default instance of: "+beanClass.getName(), ex); // NOI18N
+                    .log(Level.INFO, "Cannot create default instance of: "+beanClass.getName(), ex); // NOI18N
+            return null;
+        }
+        catch (LinkageError ex) {
+            Logger.getLogger(BeanSupport.class.getName())
+                    .log(Level.INFO, "Cannot create default instance of: "+beanClass.getName(), ex); // NOI18N
             return null;
         }
     }
