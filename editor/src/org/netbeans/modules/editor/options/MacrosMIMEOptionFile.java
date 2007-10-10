@@ -96,7 +96,8 @@ public class MacrosMIMEOptionFile extends MIMEOptionFile{
             }
 
             // gets current macro map
-            Map mapa = new HashMap((Map) Settings.getValue(base.getKitClass(), SettingsNames.MACRO_MAP));
+            Map existing = (Map) Settings.getValue(base.getKitClass(), SettingsNames.MACRO_MAP);
+            Map mapa = existing != null ? new HashMap(existing) : new HashMap();
 
             properties.clear();
 
