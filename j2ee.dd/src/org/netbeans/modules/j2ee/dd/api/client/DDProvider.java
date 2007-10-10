@@ -158,7 +158,13 @@ public final class DDProvider {
                 appClient.setError((SAXParseException) ex.getException());
             }
         }
-        ddMap.put(fo.getURL(), new WeakReference<AppClientProxy>(appClient));
+        synchronized(ddMap){
+            AppClient cached = getFromCache(fo);
+            if (cached != null) {
+                return cached;
+            }
+            ddMap.put(fo.getURL(), new WeakReference<AppClientProxy>(appClient));
+        }
         return appClient;
     }
     

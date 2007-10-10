@@ -176,7 +176,13 @@ public final class DDProvider {
                 ejbJarProxy.setError((SAXParseException)ex.getException());
             }
         }
-        ddMap.put(fo, /*new WeakReference*/ (ejbJarProxy));
+        synchronized(ddMap){
+            ApplicationProxy cached = getFromCache(fo);
+            if (cached != null){
+                return cached;
+            }
+            ddMap.put(fo, /*new WeakReference*/ (ejbJarProxy));
+        }
         return ejbJarProxy;
     }
 

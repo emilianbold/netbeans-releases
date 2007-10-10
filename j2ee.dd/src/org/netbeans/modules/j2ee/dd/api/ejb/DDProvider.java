@@ -130,7 +130,13 @@ public final class DDProvider {
         fo.addFileChangeListener(new DDFileChangeListener());
 
         ejbJarProxy = DDUtils.createEjbJarProxy(fo.getInputStream());
-        putToCache(fo, ejbJarProxy);
+        synchronized(ddMap){
+            EjbJarProxy cached = getFromCache(fo);
+            if (cached != null){
+                return cached;
+            }
+            putToCache(fo, ejbJarProxy);
+        }
         
         return ejbJarProxy;
     }
