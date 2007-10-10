@@ -135,7 +135,7 @@ public enum JspTokenId implements TokenId {
         Token<JspTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
             switch(token.id()) {
                 case TEXT:
-                    return LanguageEmbedding.create(HTMLTokenId.language(), 0, 0);
+                    return LanguageEmbedding.create(HTMLTokenId.language(), 0, 0, true);
                 case EL:
                     //lexer infrastructure workaround - need to adjust skiplenghts in case of short token
                     int startSkipLength = token.length() > 2 ? 2 : token.length();
@@ -143,7 +143,7 @@ public enum JspTokenId implements TokenId {
                     return LanguageEmbedding.create(ELTokenId.language(), startSkipLength, endSkipLength);
                     
                 case SCRIPTLET:
-                    return LanguageEmbedding.create(JavaTokenId.language(), 0, 0);
+                    return LanguageEmbedding.create(JavaTokenId.language(), 0, 0, true);
                     
                 default:
                     return null;

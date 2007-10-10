@@ -370,14 +370,12 @@ public class JspLexer implements Lexer<JspTokenId> {
                             }
                             
                             lexerState = ISI_TAGNAME;
-                            break;
+                            return token(JspTokenId.SYMBOL); //return the read '<' symbol first
                         } else {
                             //just a content language
                             lexerState = INIT;
                             break;
                         }
-                        //                        input.backup(1);
-                        //                        return token(JspTokenId.SYMBOL);
                     }
                     
                     switch (actChar) {
@@ -411,8 +409,9 @@ public class JspLexer implements Lexer<JspTokenId> {
                                 return token(JspTokenId.TEXT);
                             } else {
                                 lexerState = ISI_ENDTAG;
+                                return token(JspTokenId.SYMBOL);  //return the read '</' symbol first
                             }
-                            break;
+                            //break;
                         } else {
                             //just a content language
                             lexerState = INIT;
@@ -447,7 +446,8 @@ public class JspLexer implements Lexer<JspTokenId> {
                                     //switch to java scriptlet
                                     lexerState = ISI_SCRIPTLET;
                                 } else {
-                                    lexerState = INIT;
+                                    input.backup(1); //backup the '<' char
+                                    lexerState = ((lexerState == ISI_TAGNAME) ? ISP_TAG : ISP_DIR);
                                 }
                                 break;
                             case ' ':

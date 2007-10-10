@@ -289,25 +289,17 @@ public class JSP {
                     //ignore simple (empty) tags
                 } else {
                     String name = node.getTokenTypeIdentifier ("TAG");
-                    if (name == null) 
+                    if (name == null) {
                         name = "";
-                    else {
-                        //cut off the leading '<' char
-                        name = name.toLowerCase ().substring(1); 
-                        //the open tag can have the closing > symbol as a part of the TAG token :-|
-                        if(name.endsWith(">")) {
-                            name = name.substring(0, name.length() -1 ); 
-                        }
                     }
                     s.add (new NodeInfo(name, node));
                 }
             } else
             if (node.getNT ().equals ("endTag")) {
                 String name = node.getTokenTypeIdentifier ("ENDTAG");
-                if (name == null) 
+                if (name == null) {
                     name = "";
-                else
-                    name = name.toLowerCase ().substring(2); //cut off the leading '</' chars;
+                }
                 int indexS = s.lastIndexOf (new NodeInfo(name, null)); //find last 'name' element in the stack
                 if (indexS >= 0) {
                     //found matching tag

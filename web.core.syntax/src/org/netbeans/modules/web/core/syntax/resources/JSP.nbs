@@ -57,8 +57,8 @@ etext = <TEXT>;
 scriptlet = (<SYMBOL2, "<%"> | <SYMBOL2, "<%="> | <SYMBOL2, "<%!">) <SCRIPTLET> <SYMBOL2, "%>">;
 directive = <SYMBOL, "<%@"> <TAG> (attribute)* <SYMBOL, "%>">;
 tag = ( startTag | endTag );
-startTag = <TAG> (attribute)* ( <SYMBOL, ">"> | <SYMBOL, "/>"> );
-endTag = <ENDTAG> <SYMBOL, ">">;
+startTag = <SYMBOL, "<"> <TAG> (attribute)* ( <SYMBOL, ">"> | <SYMBOL, "/>"> );
+endTag = <SYMBOL, "</"> <ENDTAG> <SYMBOL, ">">;
 
 attribute = <ATTRIBUTE>;
 attribute = <ATTR_VALUE>;
