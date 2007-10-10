@@ -1659,7 +1659,11 @@ public class MenuEditLayer extends JPanel {
                 repaint();
             }
             if(dragop.isStarted()) {
-                 dragop.setTargetVisible(true);
+                if(PaletteUtils.getSelectedItem() == null && dragop.isPickAndPlop()) {
+                    dragop.fastEnd();
+                } else {
+                    dragop.setTargetVisible(true);
+                }
             }
             if(!dragop.isStarted() || PaletteUtils.getSelectedItem() != dragop.getCurrentItem()) {
                 PaletteItem item = PaletteUtils.getSelectedItem();
