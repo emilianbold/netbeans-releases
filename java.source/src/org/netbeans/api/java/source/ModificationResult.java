@@ -153,7 +153,7 @@ public final class ModificationResult {
                                     doc.insertString(diff.getStartPosition().getOffset(), diff.getNewText(), null);
                                     break;
                                 case CREATE:
-                                    createUnit(diff);
+                                    createUnit(diff, out);
                                     break;
                             }
                         } catch (BadLocationException ex) {
@@ -195,7 +195,8 @@ public final class ModificationResult {
                 if (diff.isExcluded())
                     continue;
                 if (Difference.Kind.CREATE == diff.getKind()) {
-                    createUnit(diff);
+                    StringWriter o = new StringWriter();
+                    createUnit(diff, o);
                     continue;
                 }
                 int pos = diff.getStartPosition().getOffset();
@@ -241,12 +242,14 @@ public final class ModificationResult {
         }            
     }
 
-    private void createUnit(Difference diff) {
+    private void createUnit(Difference diff, Writer out) {
         CreateChange change = (CreateChange) diff;
-        Writer w = null;
+        Writer w = out;
         try {
-            change.getFileObject().openOutputStream();
-            w = change.getFileObject().openWriter();
+            if (w == null) {
+                change.getFileObject().openOutputStream();
+                w = change.getFileObject().openWriter();
+            }
             w.append(change.getNewText());
         } catch (IOException e) {
             Logger.getLogger(WorkingCopy.class.getName()).log(Level.SEVERE, e.getMessage(), e);
