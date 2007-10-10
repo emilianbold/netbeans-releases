@@ -412,12 +412,8 @@ public class WebProjectProperties {
                     LogRecord logRecord = new LogRecord(Level.INFO, "UI_WEB_PROJECT_FRAMEWORK_ADDED");  //NOI18N
                     logRecord.setLoggerName(UI_LOGGER_NAME); //NOI18N
                     logRecord.setResourceBundle(NbBundle.getBundle(WebProjectProperties.class));
-                    StringBuffer frameworks = new StringBuffer();
-                    for (String framework : addedFrameworkNames) {
-                        frameworks.append('[').append(framework).append(']');   //NOI18N
-                    }
 
-                    logRecord.setParameters(new Object[] { frameworks.toString() });
+                    logRecord.setParameters(addedFrameworkNames.toArray());
                     UI_LOGGER.log(logRecord);
                 }
             }

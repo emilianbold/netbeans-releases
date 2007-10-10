@@ -192,24 +192,22 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
         LogRecord logRecord = new LogRecord(Level.INFO, "UI_WEB_PROJECT_CREATE");  //NOI18N
         logRecord.setLoggerName(UI_LOGGER_NAME);                   //NOI18N
         logRecord.setResourceBundle(NbBundle.getBundle(NewWebProjectWizardIterator.class));
-        List <String> selectedFrameworkNames = (List<String>) wiz.getProperty(WizardProperties.FRAMEWORK_NAMES);
-        String frameworkNames = "none"; //NOI8N
-        if (selectedFrameworkNames != null && selectedFrameworkNames.size() > 0) {
-            StringBuffer frameworks = new StringBuffer();
-            for (String frameworkName : selectedFrameworkNames) {
-                frameworks.append("[").append(frameworkName).append("]");
-            }
-            frameworkNames = frameworks.toString();
-        }
-        logRecord.setParameters(new Object[] {
-                    Deployment.getDefault().getServerID( createData.getServerInstanceID()),
-                    createData.getServerInstanceID(),
-                    createData.getJavaEEVersion(),
-                    createData.getSourceLevel(),
-                    createData.getSourceStructure(),
-                    frameworkNames
-                    });
         
+        List <String> selectedFrameworkNames = (List<String>) wiz.getProperty(WizardProperties.FRAMEWORK_NAMES);
+        int frameworkCount = (selectedFrameworkNames != null) ? selectedFrameworkNames.size() : 0;
+        Object[] parameters = new Object [5 + frameworkCount];
+        parameters[0] = Deployment.getDefault().getServerID( createData.getServerInstanceID());
+        parameters[1] = createData.getServerInstanceID();
+        parameters[2] = createData.getJavaEEVersion();
+        parameters[3] = createData.getSourceLevel();
+        parameters[4] = createData.getSourceStructure();
+        if (selectedFrameworkNames != null) {
+            for (int i = 0; i < selectedFrameworkNames.size(); i++) {
+                parameters[5 + i] = selectedFrameworkNames.get(i);
+            }
+        }
+        
+        logRecord.setParameters(parameters);
         Logger.getLogger(UI_LOGGER_NAME).log(logRecord);
         
         // Returning set of FileObject of project diretory. 
