@@ -911,7 +911,7 @@ private void targetClassButtonActionPerformed(java.awt.event.ActionEvent evt) {/
         public boolean accept(FileObject file) {
             return true;
         }
-    },true,true);
+    },false,true);
 
     cp.getDialog(getLocalizedString("classChooserDialogTitle"), null).setVisible(true); // NOI18N
     if(cp.getSelectedFile() != null) {
