@@ -150,7 +150,7 @@ public class MenuBar extends JMenuBar implements Externalizable {
         }
     }
     
-    public void addImpl (Component c, Object constraint, int idx) {
+    public @Override void addImpl (Component c, Object constraint, int idx) {
         //Issue 17559, Apple's screen menu bar implementation blindly casts
         //added components as instances of JMenu.  Silently ignore any non-menu
         //items on Mac if the screen menu flag is true.
@@ -167,7 +167,7 @@ public class MenuBar extends JMenuBar implements Externalizable {
      * Overridden to handle mac conversion from Alt to Ctrl and vice versa so
      * Alt can be used as the compose character on international keyboards.
      */
-    protected boolean processKeyBinding(KeyStroke ks,
+    protected @Override boolean processKeyBinding(KeyStroke ks,
                                     KeyEvent e,
                                     int condition,
                                     boolean pressed) {
@@ -313,14 +313,14 @@ public class MenuBar extends JMenuBar implements Externalizable {
         /** Full name of the data folder's primary file separated by dots.
          * @return the name
          */
-        public String instanceName () {
+        public @Override String instanceName () {
             return MenuBar.class.getName();
         }
 
         /** Returns the root class of all objects.
          * @return MenuBar.class
          */
-        public Class instanceClass () {
+        public @Override Class instanceClass () {
             return MenuBar.class;
         }
 
@@ -329,7 +329,7 @@ public class MenuBar extends JMenuBar implements Externalizable {
          * @param cookie the instance cookie to test
          * @return true if the cookie is accepted.
          */
-        protected InstanceCookie acceptCookie(InstanceCookie cookie)
+        protected @Override InstanceCookie acceptCookie(InstanceCookie cookie)
                 throws IOException, ClassNotFoundException {
             Class cls = cookie.instanceClass();
             boolean is =
@@ -345,7 +345,7 @@ public class MenuBar extends JMenuBar implements Externalizable {
          * @param df a <code>DataFolder</code> to create the cookie for
          * @return an <code>InstanceCookie</code> for the specified folder
          */
-        protected InstanceCookie acceptFolder (DataFolder df) {
+        protected @Override InstanceCookie acceptFolder (DataFolder df) {
             return new LazyMenu(df, false).slave;
         }
 
@@ -405,7 +405,7 @@ public class MenuBar extends JMenuBar implements Externalizable {
         }
 
         /** Recreate the instance in AWT thread. */
-        protected Task postCreationTask (Runnable run) {
+        protected @Override Task postCreationTask (Runnable run) {
             return new AWTTask (run);
         }
 
@@ -416,7 +416,7 @@ public class MenuBar extends JMenuBar implements Externalizable {
      * on mac - allows them to be recognized by LazyMenu. 
      */
     private static final class MarkedKeyEvent extends KeyEvent {
-        public MarkedKeyEvent (Component c, int id, 
+        MarkedKeyEvent (Component c, int id, 
                     long when, int mods, int code, char kchar, 
                     int loc) {
             super(c, id, when, mods, code, kchar, loc);
@@ -445,7 +445,7 @@ public class MenuBar extends JMenuBar implements Externalizable {
 
         }
         
-        protected boolean processKeyBinding(KeyStroke ks,
+        protected @Override boolean processKeyBinding(KeyStroke ks,
                                         KeyEvent e,
                                         int condition,
                                         boolean pressed) {
@@ -579,23 +579,23 @@ public class MenuBar extends JMenuBar implements Externalizable {
     	    /** The name of the menu
              * @return the name
              */
-    	    public String instanceName () {
+    	    public @Override String instanceName () {
                 return LazyMenu.class.getName();
     	    }
 
     	    /** Returns the class of represented menu.
              * @return JMenu.class
              */
-    	    public Class instanceClass () {
+    	    public @Override Class instanceClass () {
                 return JMenu.class;
     	    }
             
             
-            public Object instanceCreate() throws IOException, ClassNotFoundException {
+            public @Override Object instanceCreate() throws IOException, ClassNotFoundException {
                 return LazyMenu.this;
             }
 
-            public void waitFinished() {
+            public @Override void waitFinished() {
 //                super.waitFinished();
             }
             
@@ -607,7 +607,7 @@ public class MenuBar extends JMenuBar implements Externalizable {
     	    /** If no instance cookie, tries to create execution action on the
              * data object.
              */
-    	    protected InstanceCookie acceptDataObject (DataObject dob) {
+    	    protected @Override InstanceCookie acceptDataObject (DataObject dob) {
                 InstanceCookie ic = super.acceptDataObject(dob);
                 if (ic == null) {
                     JMenuItem item = ExecBridge.createMenuItem(dob);
@@ -622,7 +622,7 @@ public class MenuBar extends JMenuBar implements Externalizable {
              * @param cookie an <code>InstanceCookie</code> to test
              * @return true if the cookie can provide accepted instances
              */
-    	    protected InstanceCookie acceptCookie(InstanceCookie cookie)
+    	    protected @Override InstanceCookie acceptCookie(InstanceCookie cookie)
     	    throws IOException, ClassNotFoundException {
 		// [pnejedly] Don't try to optimize this by InstanceCookie.Of
 		// It will load the classes few ms later from instanceCreate
@@ -642,7 +642,7 @@ public class MenuBar extends JMenuBar implements Externalizable {
              * @param df a <code>DataFolder</code> to create the cookie for
     	     * @return a <code>Menu.Folder</code> for the specified folder
     	     */
-    	    protected InstanceCookie acceptFolder(DataFolder df) {
+    	    protected @Override InstanceCookie acceptFolder(DataFolder df) {
                 boolean hasIcon = df.getPrimaryFile().getAttribute("SystemFileSystem.icon") != null;
             	return new LazyMenu(df, hasIcon).slave;
     	    }
@@ -696,7 +696,7 @@ public class MenuBar extends JMenuBar implements Externalizable {
 
     	    /** Recreate the instance in AWT thread.
     	     */
-    	    protected Task postCreationTask (Runnable run) {
+    	    protected @Override Task postCreationTask(Runnable run) {
             	return new AWTTask (run);
     	    }
 	}
