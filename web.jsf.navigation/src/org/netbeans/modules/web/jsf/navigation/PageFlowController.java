@@ -576,10 +576,12 @@ public class PageFlowController {
     private int PageFlowDestroyCount = 0;
 
     public void destroyPageFlowNode(Page pageNode) {
-        pageNode.destroy2();
-        Calendar rightNow = Calendar.getInstance();
-        PageFlowDestroyStack.push("\n" + PageFlowDestroyCount + ". " + rightNow.get(Calendar.MINUTE) + ":" + rightNow.get(Calendar.SECOND) + " -  " + pageNode);
-        PageFlowDestroyCount++;
+	if( pageNode != null ) {	
+           pageNode.destroy2();
+           Calendar rightNow = Calendar.getInstance();
+           PageFlowDestroyStack.push("\n" + PageFlowDestroyCount + ". " + rightNow.get(Calendar.MINUTE) + ":" + rightNow.get(Calendar.SECOND) + " -  " + pageNode);
+           PageFlowDestroyCount++;
+	} 
     }
 
     private void createAllProjectPages(Collection<String> pagesInConfig) {
