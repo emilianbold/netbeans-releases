@@ -13,10 +13,10 @@ All rights reserved.
 <p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
 
 
-<p>In this panel of the New Ruby on Rails Application wizard, you set the name of the project and can change its default location. You can also  make choices concerning the database to use and whether or not to use Rake. </p>
+<p>In this panel of the New Ruby on Rails Application wizard, you set the name of the project and can change its default location. You can also  make choices concerning the database to use, whether or not to use Rake, and which Ruby interpreter to use. </p>
 <p><i>You get to this panel by choosing File &gt; New Project, and, in the New Project wizard, selecting the category Ruby and the project type Ruby on Rails Application.</i></p>
 <ul class="note">
-  <li>Clicking the Next button will take you to the next panel, which enables you to install or update Rails and to install OpenSSL support. Clicking the Finish button creates the project without these options. </li>
+  <li>Clicking the Next button will take you a wizard panel that enables you to install or update Rails and to install OpenSSL support. Clicking the Finish button creates the project without using these options. If you have ever installed OpenSSL support, you do not need to do so again. </li>
 </ul>
 <p>The panel displays the following options:</p>
 <ul>
@@ -24,7 +24,7 @@ All rights reserved.
 <li><b>Project Location.</b>  Specifies the location where you want to store the project metadata and source code.</li>
 <li><b>Project Folder.</b>  Specifies the folder where you want to store the project metadata and source code. The folder is a concatenation of the project location and the project name.</li>
 <li><b>Set as Main Project.</b> Sets the newly created project as the main project in the Projects window.</li>
-<li><b>Database.</b> Specifies the database you will use with the project. If you want use a database other than one of those on the list, choose Other. When the project starts up, your <code>database.yml</code> file  automatically opens so you can edit it.
+<li><b>Database.</b> Specifies the database you will use with the project. If you want use a database other than one of those on the list, choose Other (JDBC). When the project starts up, your <code>database.yml</code> file  automatically opens so you can edit it.
   
 </li>
 <li> <b>If Using JRuby.</b> The following two options are useful only if you are using JRuby.
@@ -58,6 +58,12 @@ All rights reserved.
         <param name="textColor" value="blue">
    </object>&nbsp;</li>
   </ul>
+</li>
+<li><b>Ruby Interpreter: <i>interpreter-name</i>.</b> If you want to use an interpreter other than the one indicated, click Change, then click OK in the message window that lets you know that changing the interpreter affects the entire IDE. The <a href="rubyoptions.html">Options window</a> opens with the Ruby options selected. If necessary, select the Platform tab, then click the Browse button next to the Ruby Interpreter field, navigate to the interpreter file in your Ruby or Rails installation, and  click the Open button.
+  <ul class="note">
+      <li>If you are switching back to the JRuby interpreter, the path to the interpreter file is<br> 
+      <code><i>netbeans-install-dir</i>/ruby1/jruby-1.0.1/bin/jruby.bat</code>.</li>
+    </ul>
 </li>
 </ul>
  <dl>
