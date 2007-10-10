@@ -109,6 +109,7 @@ public class ASTItem {
      * @return MIME type of this item
      */
     public String getMimeType () {
+        if (language == null) return null;
         return language.getMimeType ();
     }
 

@@ -369,7 +369,7 @@ public class CompletionProviderImpl implements CompletionProvider {
 
             for (int i = path.size () - 1; i >= 0; i--) {
                 item = path.get (i);
-                if (!item.getMimeType ().equals (language.getMimeType ())) break;
+                if (item.getLanguage () == language) break;
                 List<Feature> features = language.getFeatures (COMPLETION, path.subPath (i));
                 Iterator<Feature> it2 = features.iterator ();
                 while (it2.hasNext ()) {

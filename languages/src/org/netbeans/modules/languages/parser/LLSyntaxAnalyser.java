@@ -381,13 +381,13 @@ public class LLSyntaxAnalyser {
             Language outerLanguage = (Language) token.getLanguage ();
             Feature f = outerLanguage.getPreprocessorImport ();
             if (f != null && 
-                mimeType.equals (f.getValue ("mimeType")) &&
+                f.getValue ("mimeType").equals (mimeType) &&
                 f.getBoolean ("continual", false)
             )
                 return skipEmbedding (token, embeddings, children, mimeType);
             f = outerLanguage.getTokenImports ().get (token.getTypeName ());
             if (f != null && 
-                mimeType.equals (f.getValue ("mimeType")) &&
+                f.getValue ("mimeType").equals (mimeType) &&
                 f.getBoolean ("continual", false)
             )
                 return skipEmbedding (token, embeddings, children, mimeType);
