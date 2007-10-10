@@ -50,11 +50,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.j2ee.earproject.EarProject;
 import org.netbeans.modules.j2ee.earproject.EarProjectGenerator;
-import org.netbeans.modules.j2ee.earproject.ProjectEar;
+import org.netbeans.modules.j2ee.spi.ejbjar.EarImplementation;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 
@@ -110,14 +107,12 @@ public final class ApplicationXmlWizardIterator implements WizardDescriptor.Inst
     public Set instantiate() throws IOException {
         ApplicationXmlWizardPanel1 panel = (ApplicationXmlWizardPanel1) panels[0];
         FileObject confRoot = panel.getSelectedLocation();
-        EarProject earProject = (EarProject) panel.getProject();
-        ProjectEar projectEar = earProject.getLookup().lookup(ProjectEar.class);
-        J2eeModuleProvider j2eeModuleProvider = earProject.getLookup().lookup(J2eeModuleProvider.class);
-        J2eeModule j2eeModule = j2eeModuleProvider.getJ2eeModule();
-        if (confRoot != null) {
+        //#118047 avoid using the EarProject instance directly to allow for alternate implementations.
+        EarImplementation projectEar = panel.getProject().getLookup().lookup(EarImplementation.class);
+        if (confRoot != null && projectEar != null) {
             try {
                 FileObject dd =
-                        EarProjectGenerator.setupDD(earProject.getJ2eePlatformVersion(), projectEar.getMetaInf(), earProject, true);
+                        EarProjectGenerator.setupDD(projectEar.getJ2eePlatformVersion(), projectEar.getMetaInf(), panel.getProject(), true);
                 return Collections.singleton(dd);
             } catch (IOException ioe) {
                 Logger.getLogger("global").log(Level.INFO, null, ioe);

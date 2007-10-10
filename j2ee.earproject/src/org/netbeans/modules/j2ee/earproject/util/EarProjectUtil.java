@@ -40,8 +40,10 @@
  */
 package org.netbeans.modules.j2ee.earproject.util;
 
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.earproject.EarProject;
+import org.netbeans.modules.j2ee.spi.ejbjar.EarImplementation;
 
 /**
  * Common utilities for Enterprise project.
@@ -54,13 +56,18 @@ public final class EarProjectUtil {
 
     /**
      * Return <code>true</code> if deployment descriptor is compulsory for given EAR project.
-     * @param earProject EAR project instance.
+     * @param earProject EAR project instance, shall include EarImplementation in it's lookup.
      * @return <code>true</code> if deployment descriptor is compulsory for given EAR project.
      * @see #isDDCompulsory(String)
      */
-    public static boolean isDDCompulsory(EarProject earProject) {
+    public static boolean isDDCompulsory(Project earProject) {
         assert earProject != null;
-        return isDDCompulsory(earProject.getJ2eePlatformVersion());
+        //#118047 avoid using the EarProject instance directly to allow for alternate implementations.
+        EarImplementation impl = earProject.getLookup().lookup(EarImplementation.class);
+        if (impl != null) {
+            return isDDCompulsory(impl.getJ2eePlatformVersion());
+        }
+        return isDDCompulsory(J2eeModule.J2EE_14);
     }
 
     /**

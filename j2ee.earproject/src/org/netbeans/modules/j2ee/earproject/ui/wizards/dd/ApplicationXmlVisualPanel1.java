@@ -51,6 +51,7 @@ import javax.swing.JPanel;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.earproject.ProjectEar;
+import org.netbeans.modules.j2ee.spi.ejbjar.EarImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -70,10 +71,13 @@ public final class ApplicationXmlVisualPanel1 extends JPanel {
 
     void setProject(Project project) {
         // initialize visual components
-        ProjectEar projectEar = project.getLookup().lookup(ProjectEar.class);
+        //#118047 avoid using the EarProject instance directly to allow for alternate implementations.
+        EarImplementation projectEar = project.getLookup().lookup(EarImplementation.class);
         fileNameText.setText(ProjectEar.FILE_DD); // NOI18N
         projectText.setText(ProjectUtils.getInformation(project).getDisplayName());
-        FileObject docBase = projectEar.getMetaInf();
+        // a nasty fallback to getProjectDirectory if the metainf folder doesn't exist.
+        // not sure if there are ways of checking for the right location and creating it upon request.
+        FileObject docBase = projectEar != null ? projectEar.getMetaInf() : project.getProjectDirectory(); 
         locationText.setText(FileUtil.getFileDisplayName(docBase));
         refreshLocation();
         locationText.addActionListener(new ActionListener() {

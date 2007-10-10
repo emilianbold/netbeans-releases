@@ -414,7 +414,7 @@ public final class EarProjectGenerator {
      * @throws java.io.IOException if any error occurs.
      */
     public static FileObject setupDD(final String j2eeLevel, final FileObject docBase,
-            final EarProject earProject, boolean force) throws IOException {
+            final Project earProject, boolean force) throws IOException {
         FileObject dd = docBase.getFileObject(ProjectEar.FILE_DD);
         if (dd != null) {
             return dd; // already created
@@ -436,7 +436,7 @@ public final class EarProjectGenerator {
                     sb.append(newLine);
                 }*/
 
-                Logger.getLogger("global").log(Level.WARNING,
+                Logger.getLogger("global").log(Level.FINE,
                         "Deployment descriptor (application.xml) is not compulsory for JAVA EE 5." + newLine +
                         "If it\'s *really* needed, set force param to true." + newLine);
             }
@@ -447,9 +447,14 @@ public final class EarProjectGenerator {
             dd = FileUtil.copyFile(template, docBase, "application"); // NOI18N
             Application app = DDProvider.getDefault().getDDRoot(dd);
             app.setDisplayName(ProjectUtils.getInformation(earProject).getDisplayName());
-            EarProjectProperties epp = earProject.getProjectProperties();
-            for (VisualClassPathItem vcpi : epp.getJarContentAdditional()) {
-                epp.addItemToAppDD(app, vcpi);
+            //#118047 avoiding the use of EarProject not possible here.
+            // API for retrieval of getJarContentAdditional() not present.
+            EarProject defInst = earProject.getLookup().lookup(EarProject.class);
+            if (defInst != null) {
+                EarProjectProperties epp = defInst.getProjectProperties();
+                for (VisualClassPathItem vcpi : epp.getJarContentAdditional()) {
+                    epp.addItemToAppDD(app, vcpi);
+                }
             }
             app.write(dd);
         }
