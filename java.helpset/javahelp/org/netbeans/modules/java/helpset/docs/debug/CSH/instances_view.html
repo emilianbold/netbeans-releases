@@ -14,38 +14,34 @@
 
 <h2>Debugging: Instances Window</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
-<p>The Instances view displays a list of instances and the referrers.</p>
+<p>The Instances view displays the instances and referrers for the class that you select in the Debugging Loaded Classes window.
+You open this window by right-clicking a class in the Debugging Loaded Classes window and choosing Show in Instances view. </p>
 
+<p>The legend at the bottom of the Instances view displays the icons and the type of elements that they represent.</p>
 
 <ul class="note">
-    <li>The Instances view is not available if you are running the IDE on JDK 1.5.</li>
+    <li>The Instances view requires that the IDE and your application are running on JDK 1.6.</li>
 </ul>
-<!-- TODO -->
-<!--<h3>Actions</h3>
-<p>The pop-up menu in the Call Stack window includes the following items.</p>
-<table border="1" cellpadding="5" cellspacing="0">
-	<tr align="left" valign="top">
-		<th scope="col">Menu Item</th>
-		<th scope="col">Description</th>
-	</tr>
-	<tr valign="top">
-		<td>Make Current</td>
-		<td>Makes the call the current call. This command is equivalent to double-clicking the call.</td>
-	</tr>
-	<tr valign="top">
-		<td>Pop to Here</td>
-		<td>Removes the calls that are listed above the selected call from the call stack.</td>
-	</tr>
-	<tr valign="top">
-		<td>List Options</td>
-		<td>Enables you to customize the display of the Call Stack window, including adding and removing columns of information, reordering the columns, and sorting the columns. 
-See <a href="../debug_customize_views.html">Customizing a Debugger Window</a> for more information. </td>
-	</tr>
-</table>-->
+
+<p>For each instance in the Instance browser, you can do the following:</p>
+<ul>
+    <li>Select an instance to browse the fields of the instance in the the Field Browser.</li> 
+    <li>Select an instance to browse the references to the instance in the Reference Browser.</li>
+</ul>
+
+<p>For each object in the Field browser, you can right-click and choose to display the following:</p>
+<ul>
+    <li><b>Show Instance.</b> Choose this to show the instance in the Instance Browser.</li> 
+    <li><b>Show in Classes View.</b>Choose this to display the object in the Debugging Loaded Classes window.</li>
+    <li><b>Go to Source.</b> Choose this to open the Java source file in the Source Editor.</li>
+</ul>
+
+
+
 
 <dl>
 	<dt><a name="seealso">See Also</a></dt>
-	<dd><a href="classes_view.html">Classes Window</a></dd>
+	<dd><a href="classes_view.html">Loaded Classes Window</a></dd>
         <dd><a href="classes_view.html">Local Variables Window</a></dd>
     </dl>
 <hr>

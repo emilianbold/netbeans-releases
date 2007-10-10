@@ -7,22 +7,22 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-<title>Debugging Classes Window</title>
+<title>Debugging: Loaded Classes Window</title>
 	<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
 <body>
 
-<h2>Debugging Classes Window</h2>
+<h2>Debugging Loaded Classes Window</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
 
-<p>You can open the Classes window by choosing Window &gt; Debugging &gt; Classes. 
-If you open the Classes window when a debugging session is running, it closes automatically when you end the debugging session.
+<p>You can open the Loaded Classes window by choosing Window &gt; Debugging &gt; Classes. 
+If you open the Loaded Classes window when a debugging session is running, it closes automatically when you end the debugging session.
 If you open the window when no debugging session is running, it stays open until you close it.</p>
 
-<p>The contents of the Classes window is dependent on the current context. 
-When you change the current session, the Classes window is updated to show the classes for that session.</p>
+<p>The contents of the Loaded Classes window is dependent on the current context. 
+When you change the current session, the Loaded Classes window is updated to show the classes for that session.</p>
 
-<p>The Classes window displays the classes loaded on the heap and the percentage and number of object instances.
+<p>The Loaded Classes window displays the classes loaded on the heap and the percentage and number of object instances.
 You can sort the classes by class name or the number or percentage of instances.
 You can also use the filter box at the bottom of the window to filter the list by class name.</p>
 
@@ -33,21 +33,24 @@ You can also use the filter box at the bottom of the window to filter the list b
     <th scope="col">Description</th>
   </tr>
   <tr valign="top">
-    <td>Show in Instances View</td>
+    <td>Show in Instances View<br>(requires JDK 1.6)</td>
     <td>Opens the Instances window displaying the object instances allocated by the constructor of the selected class.
     The Instances window enables you to browse the instances of each class, the fields of each instance and the references to each instance.</td>
-    </tr>
-    <tr>
-        <td>Show Only Subclasses</td>
-        <td>Enables you to limit the classes displayed to the subclasses of the selected class. 
-        This functions by using the selected class as the filter criteria. 
+  </tr>
+  <tr>
+    <td>Show Only Subclasses</td>
+    <td>Enables you to limit the classes displayed to the subclasses of the selected class. 
+    This functions by using the selected class as the filter criteria. 
     To restore the full list of classes, click the Clear Filter button to the right of the filter class box.</td>
+  </tr>
+<tr><td>Go to Source</td>
+    <td>Opens the Java source file in the Source Editor.</td>
     </tr>
 </table>
 
 
 <ul class="note">
-    <li>If you are running the IDE on JDK 1.5, the Classes window is limited to displaying the classes that have been loaded into the 
+    <li>If you are running the IDE on JDK 1.5, the Loaded Classes window is limited to displaying the classes that have been loaded into the 
 virtual machine hosting the program that is being debugged. The Instances view is not available.</li>
 </ul>
  
@@ -71,11 +74,11 @@ virtual machine hosting the program that is being debugged. The Instances view i
 	</tr>
     </table>
     <p>You can expand the class loader node to view the class.
-    You can use the pop-up menu in the Classes window to access the following items.</p>
+    You can use the pop-up menu in the Loaded Classes window to access the following items.</p>
     
     <ul>
         <li><b>List Options.</b>
-        Enables you to customize the Classes window by choosing how classes are sorted in the display.
+        Enables you to customize the Loaded Classes window by choosing how classes are sorted in the display.
         See <a href="../debug_customize_views.html">Customizing a Debugger Window</a> for more information.</li>
         <li><b>View Packages As</b>
         Enables you to customize how packages are displayed in the window. 
@@ -86,7 +89,7 @@ virtual machine hosting the program that is being debugged. The Instances view i
 
     <dl>
 	<dt><a name="seealso">See Also</a></dt>
-	<dd><a href="instances_view.html">Class Instances Window</a></dd>
+	<dd><a href="instances_view.html">Instances Window</a></dd>
         <dd><a href="../debug_customize_views.html">Customizing a Debugger Window</a></dd>
         <dd><a href="../debug_context.html">Current Context in the Debugger</a></dd>
 	<dd><a href="debug_window.html">Debugger Windows</a></dd>
