@@ -1790,6 +1790,10 @@ public class FacesModel extends Model {
             }
         }
 
+        // XXX #118178 Clear also the transient stylesheets.
+        CssProvider.getEngineService().clearTransientStyleSheetNodesForDocument(getJspDom());
+        CssProvider.getEngineService().clearTransientStyleSheetNodesForDocument(getHtmlDom());
+        
 //        CssLookup.refreshEffectiveStyles(webform.getDom());
         CssProvider.getEngineService().refreshStylesForDocument(getJspDom());
         // XXX Should this be here too (or the above?).
