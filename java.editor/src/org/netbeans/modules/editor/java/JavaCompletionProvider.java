@@ -51,7 +51,6 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
 import javax.lang.model.element.*;
-import org.netbeans.api.editor.EditorRegistry;
 import static javax.lang.model.element.ElementKind.*;
 import static javax.lang.model.element.Modifier.*;
 import javax.lang.model.type.*;
@@ -64,6 +63,7 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.tools.Diagnostic;
 
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.*;
@@ -1429,6 +1429,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             TokenSequence<JavaTokenId> ts = findLastNonWhitespaceToken(env, mi, env.getOffset());
             if (ts == null || (ts.token().id() != JavaTokenId.LPAREN && ts.token().id() != JavaTokenId.COMMA))
                 return;
+            addMethodArguments(env, mi);
             addLocalMembersAndVars(env);
             addValueKeywords(env);
             addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, ANNOTATION_TYPE, TYPE_PARAMETER), null, null);
@@ -1485,6 +1486,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         break;
                     case LPAREN:
                     case COMMA:
+                        addConstructorArguments(env, nc);
                         addLocalMembersAndVars(env);
                         addValueKeywords(env);
                         addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, ANNOTATION_TYPE, TYPE_PARAMETER), null, null);
@@ -2730,6 +2732,119 @@ public class JavaCompletionProvider implements CompletionProvider {
             return subtypes;
         }
         
+        private void addMethodArguments(Env env, MethodInvocationTree mit) throws IOException {
+            CompilationController controller = env.getController();
+            TreePath path = env.getPath();
+            CompilationUnitTree root = env.getRoot();
+            SourcePositions sourcePositions = env.getSourcePositions();
+            List<Tree> argTypes = getArgumentsUpToPos(env, mit.getArguments(), (int)sourcePositions.getEndPosition(root, mit.getMethodSelect()), env.getOffset());
+            if (argTypes != null) {
+                controller.toPhase(Phase.ELEMENTS_RESOLVED);
+                TypeMirror[] types = new TypeMirror[argTypes.size()];
+                int j = 0;
+                for (Tree t : argTypes)
+                    types[j++] = controller.getTrees().getTypeMirror(new TreePath(path, t));
+                List<Pair<ExecutableElement, ExecutableType>> methods = null;
+                Tree mid = mit.getMethodSelect();
+                path = new TreePath(path, mid);
+                switch (mid.getKind()) {
+                    case MEMBER_SELECT: {
+                        ExpressionTree exp = ((MemberSelectTree)mid).getExpression();
+                        path = new TreePath(path, exp);
+                        Trees trees = controller.getTrees();
+                        final TypeMirror type = trees.getTypeMirror(path);
+                        final Element element = trees.getElement(path);
+                        final boolean isStatic = element != null && (element.getKind().isClass() || element.getKind().isInterface() || element.getKind() == TYPE_PARAMETER);
+                        final boolean isSuperCall = element != null && element.getKind().isField() && element.getSimpleName().contentEquals(SUPER_KEYWORD);
+                        final Scope scope = env.getScope();
+                        final TreeUtilities tu = controller.getTreeUtilities();
+                        TypeElement enclClass = scope.getEnclosingClass();
+                        final TypeMirror enclType = enclClass != null ? enclClass.asType() : null;
+                        ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
+                            public boolean accept(Element e, TypeMirror t) {
+                                return (!isStatic || e.getModifiers().contains(STATIC) || e.getKind() == CONSTRUCTOR) && tu.isAccessible(scope, e, isSuperCall && enclType != null ? enclType : t);
+                            }
+                        };
+                        methods = getMatchingExecutables(type, controller.getElementUtilities().getMembers(type, acceptor), ((MemberSelectTree)mid).getIdentifier().toString(), types, controller.getTypes());
+                        break;
+                    }
+                    case IDENTIFIER: {
+                        final Scope scope = env.getScope();
+                        final TreeUtilities tu = controller.getTreeUtilities();
+                        final TypeElement enclClass = scope.getEnclosingClass();
+                        final boolean isStatic = enclClass != null ? (tu.isStaticContext(scope) || (env.getPath().getLeaf().getKind() == Tree.Kind.BLOCK && ((BlockTree)env.getPath().getLeaf()).isStatic())) : false;
+                        final Collection<? extends Element> illegalForwardRefs = env.getForwardReferences();
+                        final ExecutableElement method = scope.getEnclosingMethod();
+                        ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
+                            public boolean accept(Element e, TypeMirror t) {
+                                switch (e.getKind()) {
+                                    case LOCAL_VARIABLE:
+                                    case EXCEPTION_PARAMETER:
+                                    case PARAMETER:
+                                        return (method == e.getEnclosingElement() || e.getModifiers().contains(FINAL)) &&
+                                                !illegalForwardRefs.contains(e);
+                                    case FIELD:
+                                        if (illegalForwardRefs.contains(e))
+                                            return false;
+                                        if (e.getSimpleName().contentEquals(THIS_KEYWORD) || e.getSimpleName().contentEquals(SUPER_KEYWORD))
+                                            return !isStatic;
+                                    default:
+                                        return (!isStatic || e.getModifiers().contains(STATIC)) && tu.isAccessible(scope, e, t);
+                                }
+                            }
+                        };
+                        String name = ((IdentifierTree)mid).getName().toString();
+                        if (SUPER_KEYWORD.equals(name) && enclClass != null) {
+                            TypeMirror superclass = enclClass.getSuperclass();
+                            methods = getMatchingExecutables(superclass, controller.getElementUtilities().getMembers(superclass, acceptor), INIT, types, controller.getTypes());
+                        } else if (THIS_KEYWORD.equals(name) && enclClass != null) {
+                            TypeMirror thisclass = enclClass.asType();
+                            methods = getMatchingExecutables(thisclass, controller.getElementUtilities().getMembers(thisclass, acceptor), INIT, types, controller.getTypes());
+                        } else {
+                            methods = getMatchingExecutables(enclClass != null ? enclClass.asType() : null, controller.getElementUtilities().getLocalMembersAndVars(scope, acceptor), name, types, controller.getTypes());
+                        }
+                        break;
+                    }
+                }
+                if (methods != null) {
+                    Elements elements = controller.getElements();
+                    for (Pair<ExecutableElement, ExecutableType> method : methods)
+                        results.add(JavaCompletionItem.createParametersItem(method.a, method.b, anchorOffset, elements.isDeprecated(method.a), types.length));
+                }
+            }
+        }
+        
+        private void addConstructorArguments(Env env, NewClassTree nct) throws IOException {
+            CompilationController controller = env.getController();
+            TreePath path = env.getPath();
+            CompilationUnitTree root = env.getRoot();
+            SourcePositions sourcePositions = env.getSourcePositions();
+            List<Tree> argTypes = getArgumentsUpToPos(env, nct.getArguments(), (int)sourcePositions.getEndPosition(root, nct.getIdentifier()), env.getOffset());
+            if (argTypes != null) {
+                controller.toPhase(Phase.ELEMENTS_RESOLVED);
+                TypeMirror[] types = new TypeMirror[argTypes.size()];
+                int j = 0;
+                for (Tree t : argTypes)
+                    types[j++] = controller.getTrees().getTypeMirror(new TreePath(path, t));
+                path = new TreePath(path, nct.getIdentifier());
+                Trees trees = controller.getTrees();
+                final TypeMirror type = trees.getTypeMirror(path);
+                final Element el = trees.getElement(path);
+                final Scope scope = env.getScope();
+                final TreeUtilities tu = controller.getTreeUtilities();
+                final boolean isAnonymous = nct.getClassBody() != null || el.getKind().isInterface() || el.getModifiers().contains(ABSTRACT);
+                ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
+                    public boolean accept(Element e, TypeMirror t) {
+                        return e.getKind() == CONSTRUCTOR && (tu.isAccessible(scope, e, t) || isAnonymous && e.getModifiers().contains(PROTECTED));
+                    }
+                };
+                List<Pair<ExecutableElement, ExecutableType>> ctors = getMatchingExecutables(type, controller.getElementUtilities().getMembers(type, acceptor), INIT, types, controller.getTypes());
+                Elements elements = controller.getElements();
+                for (Pair<ExecutableElement, ExecutableType> ctor : ctors)
+                    results.add(JavaCompletionItem.createParametersItem(ctor.a, ctor.b, anchorOffset, elements.isDeprecated(ctor.a), types.length));
+            }
+        }
+
         private void addKeyword(Env env, String kw, String postfix, boolean smartType) {
             if (Utilities.startsWith(kw, env.getPrefix()))
                 results.add(JavaCompletionItem.createKeywordItem(kw, postfix, anchorOffset, smartType));
@@ -3677,6 +3792,43 @@ public class JavaCompletionProvider implements CompletionProvider {
             return null;
         }
         
+        private List<Pair<ExecutableElement, ExecutableType>> getMatchingExecutables(TypeMirror type, Iterable<? extends Element> elements, String name, TypeMirror[] argTypes, Types types) {
+            List<Pair<ExecutableElement, ExecutableType>> ret = new ArrayList<Pair<ExecutableElement, ExecutableType>>();
+            for (Element e : elements) {
+                if ((e.getKind() == CONSTRUCTOR || e.getKind() == METHOD) && name.contentEquals(e.getSimpleName())) {
+                    List<? extends VariableElement> params = ((ExecutableElement)e).getParameters();
+                    int parSize = params.size();
+                    boolean varArgs = ((ExecutableElement)e).isVarArgs();
+                    if (!varArgs && (parSize < argTypes.length)) {
+                        continue;
+                    }
+                    ExecutableType eType = (ExecutableType)asMemberOf(e, type, types);
+                    if (parSize == 0) {
+                        ret.add(new Pair(e, eType));
+                    } else {
+                        Iterator<? extends TypeMirror> parIt = eType.getParameterTypes().iterator();
+                        TypeMirror param = null;
+                        for (int i = 0; i <= argTypes.length; i++) {
+                            if (parIt.hasNext()) {
+                                param = parIt.next();
+                                if (!parIt.hasNext() && param.getKind() == TypeKind.ARRAY)
+                                    param = ((ArrayType)param).getComponentType();
+                            } else if (!varArgs) {
+                                break;
+                            }
+                            if (i == argTypes.length) {
+                                ret.add(new Pair(e, eType));
+                                break;
+                            }
+                            if (!types.isAssignable(argTypes[i], param))
+                                break;
+                        }
+                    }
+                }
+            }
+            return ret;
+        }
+        
         private List<List<String>> getMatchingParams(TypeMirror type, Iterable<? extends Element> elements, String name, TypeMirror[] argTypes, Types types) {
             List<List<String>> ret = new ArrayList<List<String>>();
             for (Element e : elements) {
@@ -4120,6 +4272,17 @@ public class JavaCompletionProvider implements CompletionProvider {
                     }
                 }
                 return smartTypes;
+            }
+        }
+        
+        private static class Pair<A, B> {
+
+            private A a;
+            private B b;
+
+            private Pair(A a, B b) {
+                this.a = a;
+                this.b = b;
             }
         }
     }

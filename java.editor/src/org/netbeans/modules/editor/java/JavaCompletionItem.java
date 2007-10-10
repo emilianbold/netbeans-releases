@@ -188,6 +188,10 @@ public abstract class JavaCompletionItem implements CompletionItem {
         return new DefaultConstructorItem(elem, substitutionOffset, smartType);
     }
     
+    public static final JavaCompletionItem createParametersItem(ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean isDeprecated, int activeParamIndex) {
+        return new ParametersItem(elem, type, substitutionOffset, isDeprecated, activeParamIndex);
+    }
+
     public static final JavaCompletionItem createAnnotationItem(TypeElement elem, DeclaredType type, int substitutionOffset, boolean isDeprecated) {
         return new AnnotationItem(elem, type, substitutionOffset, isDeprecated, true);
     }
@@ -2052,6 +2056,198 @@ public abstract class JavaCompletionItem implements CompletionItem {
         public String toString() {
             return simpleName + "()";
         }        
+    }
+    
+    static class ParametersItem extends JavaCompletionItem {
+        
+        private static final String PARAMETERS_COLOR = "<font color=#808080>"; //NOI18N
+        private static final String ACTIVE_PARAMETER_COLOR = "<font color=#000000>"; //NOI18N
+
+        protected ElementHandle<ExecutableElement> elementHandle;
+        private boolean isDeprecated;
+        private int activeParamsIndex;
+        private String simpleName;
+        private ArrayList<ParamDesc> params;
+        private String typeName;
+        private String sortText;
+        private String leftText;
+        private String rightText;
+
+        private ParametersItem(ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean isDeprecated, int activeParamsIndex) {
+            super(substitutionOffset);
+            this.elementHandle = ElementHandle.create(elem);
+            this.isDeprecated = isDeprecated;
+            this.activeParamsIndex = activeParamsIndex;
+            this.simpleName = elem.getKind() == ElementKind.CONSTRUCTOR ? elem.getEnclosingElement().getSimpleName().toString() : elem.getSimpleName().toString();
+            this.params = new ArrayList<ParamDesc>();
+            Iterator<? extends VariableElement> it = elem.getParameters().iterator();
+            Iterator<? extends TypeMirror> tIt = type.getParameterTypes().iterator();
+            while(it.hasNext() && tIt.hasNext()) {
+                TypeMirror tm = tIt.next();
+                this.params.add(new ParamDesc(tm.toString(), Utilities.getTypeName(tm, false, elem.isVarArgs() && !tIt.hasNext()).toString(), it.next().getSimpleName().toString()));
+            }
+            TypeMirror retType = type.getReturnType();
+            this.typeName = Utilities.getTypeName(retType, false).toString();
+        }
+
+        public int getSortPriority() {
+            return 100;
+        }
+
+        public CharSequence getSortText() {
+            if (sortText == null) {
+                StringBuilder sortParams = new StringBuilder();
+                sortParams.append('(');
+                int cnt = 0;
+                for(Iterator<ParamDesc> it = params.iterator(); it.hasNext();) {
+                    ParamDesc param = it.next();
+                    sortParams.append(param.typeName);
+                    if (it.hasNext()) {
+                        sortParams.append(',');
+                    }
+                    cnt++;
+                }
+                sortParams.append(')');
+                sortText = "#" + ((cnt < 10 ? "0" : "") + cnt) + "#" + sortParams.toString(); //NOI18N
+            }
+            return sortText;
+        }
+
+        public CharSequence getInsertPrefix() {
+            return ""; //NOI18N
+        }
+        
+        protected String getLeftHtmlText() {
+            if (leftText == null) {
+                StringBuilder lText = new StringBuilder();
+                lText.append(PARAMETERS_COLOR);
+                if (isDeprecated)
+                    lText.append(STRIKE);
+                lText.append(simpleName);
+                if (isDeprecated)
+                    lText.append(STRIKE_END);
+                lText.append('(');
+                for (int i = 0; i < params.size(); i++) {
+                    ParamDesc paramDesc = params.get(i);
+                    if (i == activeParamsIndex)
+                        lText.append(COLOR_END).append(ACTIVE_PARAMETER_COLOR).append(BOLD);
+                    lText.append(escape(paramDesc.typeName));
+                    lText.append(' ');
+                    lText.append(paramDesc.name);
+                    if (i < params.size() - 1)
+                        lText.append(", "); //NOI18N
+                    else
+                        lText.append(BOLD_END).append(COLOR_END).append(PARAMETERS_COLOR);                        
+                }
+                lText.append(')');
+                lText.append(COLOR_END);
+                return lText.toString();
+            }
+            return leftText;
+        }
+        
+        protected String getRightHtmlText() {
+            if (rightText == null)
+                rightText = PARAMETERS_COLOR + escape(typeName) + COLOR_END;
+            return rightText;
+        }
+        
+        public CompletionTask createDocumentationTask() {
+            return JavaCompletionProvider.createDocTask(elementHandle);
+        }
+
+        protected void substituteText(final JTextComponent c, int offset, int len, String toAdd) {
+            String add = ")"; //NOI18N
+            if (toAdd != null && !add.startsWith(toAdd))
+                add += toAdd;
+            if (params.isEmpty()) {
+                super.substituteText(c, offset, len, add);
+            } else {                
+                BaseDocument doc = (BaseDocument)c.getDocument();
+                String text = ""; //NOI18N
+                int semiPos = add.endsWith(";") ? findPositionForSemicolon(c) : -2; //NOI18N
+                if (semiPos > -2)
+                    add = add.length() > 1 ? add.substring(0, add.length() - 1) : null;
+                TokenSequence<JavaTokenId> sequence = SourceUtils.getJavaTokenSequence(TokenHierarchy.get(doc), offset + len);
+                if (sequence == null || !sequence.moveNext() && !sequence.movePrevious()) {
+                    text += add;
+                    add = null;
+                }
+                boolean added = false;
+                while(add != null && add.length() > 0) {
+                    String tokenText = sequence.token().text().toString();
+                    if (tokenText.startsWith(add)) {
+                        len = sequence.offset() - offset + add.length();
+                        text += add;
+                        add = null;
+                    } else if (add.startsWith(tokenText)) {
+                        sequence.moveNext();
+                        len = sequence.offset() - offset;
+                        text += add.substring(0, tokenText.length());
+                        add = add.substring(tokenText.length());
+                        added = true;
+                    } else if (sequence.token().id() == JavaTokenId.WHITESPACE && sequence.token().text().toString().indexOf('\n') < 0) {//NOI18N
+                        if (!sequence.moveNext()) {
+                            text += add;
+                            add = null;
+                        }
+                    } else {
+                        if (!added)
+                            text += add;
+                        add = null;
+                    }
+                }
+                doc.atomicLock();
+                try {
+                    Position semiPosition = semiPos > -1 ? doc.createPosition(semiPos) : null;
+                    if (len > 0)
+                        doc.remove(offset, len);
+                    if (semiPosition != null)
+                        doc.insertString(semiPosition.getOffset(), ";", null); //NOI18N
+                } catch (BadLocationException e) {
+                    // Can't update
+                } finally {
+                    doc.atomicUnlock();
+                }
+                CodeTemplateManager ctm = CodeTemplateManager.get(doc);
+                if (ctm != null) {
+                    StringBuilder sb = new StringBuilder();
+                    for (int i = activeParamsIndex; i < params.size(); i++) {
+                        ParamDesc paramDesc = params.get(i);
+                        sb.append("${"); //NOI18N
+                        sb.append(paramDesc.name);
+                        sb.append(" named instanceof="); //NOI18N
+                        sb.append(paramDesc.fullTypeName);
+                        sb.append("}"); //NOI18N
+                        if (i < params.size() - 1)
+                            sb.append(", "); //NOI18N
+                    }
+                    if (text.length() > 0)
+                        sb.append(text);
+                    ctm.createTemporary(sb.toString()).insert(c);
+                    Completion.get().showToolTip();
+                }
+            }
+        }        
+
+        public String toString() {
+            StringBuilder sb = new StringBuilder();
+            sb.append(typeName);
+            sb.append(' ');
+            sb.append(simpleName);
+            sb.append('(');
+            for (Iterator<ParamDesc> it = params.iterator(); it.hasNext();) {
+                ParamDesc paramDesc = it.next();
+                sb.append(paramDesc.typeName);
+                sb.append(' ');
+                sb.append(paramDesc.name);
+                if (it.hasNext()) {
+                    sb.append(", "); //NOI18N
+                }
+            }
+            sb.append(')');
+            return sb.toString();
+        }
     }
     
     static class AnnotationItem extends AnnotationTypeItem {
