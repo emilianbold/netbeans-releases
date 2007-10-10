@@ -62,6 +62,10 @@ import org.netbeans.modules.cnd.test.BaseTestCase;
  */
 public abstract class ModelImplBaseTestCase extends BaseTestCase {
     
+    public static final String PROPERTY_DATA_PATH = "cnd.modelimpl.unit.data";
+    public static final String PROPERTY_GOLDEN_PATH = "cnd.modelimpl.unit.golden";
+    public static final String PROPERTY_WORK_PATH = "cnd.modelimpl.unit.workdir";
+    
     /**
      * Creates a new instance of ModelImplBaseTestCase
      */
@@ -71,7 +75,7 @@ public abstract class ModelImplBaseTestCase extends BaseTestCase {
     
     @Override 
     public String getWorkDirPath() {
-        String workDirPath = System.getProperty("cnd.modelimpl.unit.workdir"); // NOI18N
+        String workDirPath = System.getProperty(PROPERTY_WORK_PATH); // NOI18N
         if (workDirPath == null || workDirPath.length() == 0) {
             return super.getWorkDirPath();
         } else {
@@ -81,7 +85,7 @@ public abstract class ModelImplBaseTestCase extends BaseTestCase {
     
     @Override 
     public File getGoldenFile(String filename) {
-        String goldenDirPath = System.getProperty("cnd.modelimpl.unit.golden"); // NOI18N
+        String goldenDirPath = System.getProperty(PROPERTY_GOLDEN_PATH); // NOI18N
         if (goldenDirPath == null || goldenDirPath.length() == 0) {
             return super.getGoldenFile(filename);
         } else {
@@ -91,7 +95,7 @@ public abstract class ModelImplBaseTestCase extends BaseTestCase {
 
     @Override
     protected File getDataFile(String filename) {
-        String dataDirPath = System.getProperty("cnd.modelimpl.unit.data"); // NOI18N
+        String dataDirPath = System.getProperty(PROPERTY_DATA_PATH); // NOI18N
         if (dataDirPath == null || dataDirPath.length() == 0) {
             return super.getDataFile(filename);
         } else {
