@@ -55,6 +55,8 @@ import java.awt.dnd.DropTarget;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -130,9 +132,11 @@ import org.netbeans.modules.bpel.design.decoration.providers.ValidationDecoratio
 import org.netbeans.modules.bpel.design.geometry.FDimension;
 import org.netbeans.modules.bpel.design.geometry.FPoint;
 import org.netbeans.modules.bpel.design.geometry.FShape;
+import org.netbeans.modules.bpel.design.phmode.PhSelectionListener;
 import org.netbeans.modules.bpel.design.phmode.PlaceHolderIterator;
 import org.netbeans.modules.bpel.design.phmode.PlaceHolderIteratorImpl;
 import org.netbeans.modules.bpel.design.phmode.PlaceHolderSelectionModel;
+import org.netbeans.modules.bpel.design.selection.DiagramSelectionListener;
 import org.netbeans.modules.bpel.design.selection.PlaceHolder;
 import org.netbeans.modules.soa.ui.nodes.NodeFactory;
 import org.netbeans.modules.bpel.editors.api.ExternalBpelEditorTopComponentListener;
@@ -148,6 +152,7 @@ public class DesignView extends JPanel implements
         Autoscroll, HelpCtx.Provider, ThumbScrollPane.Thumbnailable {
     
     public static double CORNER45 = Math.PI/4.0;
+    public static final String DESIGN_VIEW_MODE = "designViewMode"; // NOI18N
     private static final long serialVersionUID = 1;
     private double zoom = 1;
     private Lookup lookup;
@@ -183,6 +188,7 @@ public class DesignView extends JPanel implements
     private NavigationTools navigationTools;
     private RightStripe rightStripe;
     private DesignViewMode designViewMode = DesignViewMode.DESIGN;
+    private DesignContextActionHandler designContextActionHandler;
     
     public DesignView(Lookup lookup) {
         super(new DesignViewLayout());
@@ -216,10 +222,13 @@ public class DesignView extends JPanel implements
         
         // register before to get esc action first (117432)
         ToolTipManager.sharedInstance().registerComponent(this);
+        designContextActionHandler = new DesignContextActionHandler();
+        designContextActionHandler.subscribe();
         registerActions();
         errorPanel = new ErrorPanel(this);
         decorationManager = new DecorationManager(this);
         loadDecorationProviders();
+        
         
         reloadModel();
         diagramChanged();
@@ -397,6 +406,9 @@ public class DesignView extends JPanel implements
     }
     
     public void closeView() {
+        designContextActionHandler.unsubscribe();
+        designContextActionHandler = null;
+        
         if (diagramModel != null){
             diagramModel.release();
             diagramModel = null;
@@ -687,6 +699,11 @@ public class DesignView extends JPanel implements
     
     
     public void diagramChanged() {
+        if (!isDesignMode()) {
+            exitPlaceHolderMode();
+        }        
+        designContextActionHandler.updateActionsState();
+
         if (getProcessModel() != null
                 && getBPELModel().getState() == Model.State.VALID
                 && getModel().getRootPattern() != null) {
@@ -1223,6 +1240,65 @@ public class DesignView extends JPanel implements
     }
     
     
+    private class DesignContextActionHandler 
+            implements PropertyChangeListener, DiagramSelectionListener, PhSelectionListener 
+    {
+
+        private List<Action> actions2update = new ArrayList<Action>();
+        
+        public void addAction(Action action) {
+            actions2update.add(action);
+        }
+        
+        public void removeAction(Action action) {
+            actions2update.remove(action);
+        }
+
+        public void subscribe() {
+            DesignView.this.addPropertyChangeListener(DESIGN_VIEW_MODE, this);
+            DesignView.this.selectionModel.addSelectionListener(this);
+            DesignView.this.phSelectionModel.addSelectionListener(this);
+        }
+        
+        public void unsubscribe() {
+            DesignView.this.removePropertyChangeListener(DESIGN_VIEW_MODE, this);
+            DesignView.this.selectionModel.removeSelectionListener(this);
+            DesignView.this.phSelectionModel.removeSelectionListener(this);
+        }
+        
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (DESIGN_VIEW_MODE.equals(evt.getPropertyName())) {
+                updateActionsState();
+            }
+        }
+
+        public void selectionChanged(BpelEntity oldSelection, BpelEntity newSelection) {
+            updateActionsState();
+        }
+        
+        public void updateActionsState() {
+            assert actions2update != null;
+            for (Action action : actions2update) {
+                action.setEnabled(action.isEnabled());
+            }
+        }
+
+        public void updateActionsState(Class<? extends Action> filter) {
+            assert actions2update != null;
+            assert filter != null;
+            for (Action action : actions2update) {
+                if (filter == action.getClass()) {
+                    action.setEnabled(action.isEnabled());
+                }
+            }
+        }
+
+        public void selectionChanged(PlaceHolder oldPh, PlaceHolder newPh) {
+            assert actions2update != null;
+            updateActionsState(PasteAction.class);
+        }
+    }
+    
     abstract class DesignModeAction extends AbstractAction {
         private static final long serialVersionUID = 1L;
 
@@ -1232,6 +1308,8 @@ public class DesignView extends JPanel implements
          */
         public DesignModeAction() {
             super();
+            // TODO m
+            designContextActionHandler.addAction(this);
         }
 
         /**
@@ -1252,22 +1330,38 @@ public class DesignView extends JPanel implements
 
         @Override
         public boolean isEnabled() {
-            return super.isEnabled() && !getModel().isReadOnly() && isDesignMode();
+            return /*super.isEnabled() && */getModel() != null && !getModel().isReadOnly() && isDesignMode();
         }
     }
     
     abstract class PhModeAction extends AbstractAction {
         private static final long serialVersionUID = 1L;
+        
+        public PhModeAction() {
+            super();
+            // TODO m
+            designContextActionHandler.addAction(this);
+        }
 
         @Override
         public boolean isEnabled() {
-            return super.isEnabled() && !getModel().isReadOnly() && !isDesignMode();
+            return /*super.isEnabled() && */getModel() != null && !getModel().isReadOnly() && !isDesignMode();
         }
     }
 
     class DeleteAction extends DesignModeAction {
         private static final long serialVersionUID = 1L;
         
+        @Override
+        public boolean isEnabled() {
+            if (!super.isEnabled()) {
+                return false;
+            }
+            
+            Pattern selPattern = getSelectionModel().getSelectedPattern();
+            return selPattern != null && !(selPattern instanceof ProcessPattern); 
+        }
+
         public void actionPerformed(ActionEvent e) {
             if (!isEnabled()) return;
             
@@ -1412,6 +1506,14 @@ public class DesignView extends JPanel implements
     class PasteAction extends PhModeAction {
         private static final long serialVersionUID = 1L;
 
+        @Override
+        public boolean isEnabled() {
+            return super.isEnabled() 
+                    && getPhSelectionModel().getSelectedPlaceHolder() != null;
+        }
+
+        
+        
         public void actionPerformed(ActionEvent e) {
             if (isDesignMode() || getModel().isReadOnly()) {
                 return;
@@ -2055,7 +2157,11 @@ public class DesignView extends JPanel implements
         if (mode == null) {
             return;
         }
-        designViewMode = mode;
+        if (!mode.equals(designViewMode)) {
+            DesignViewMode oldMode = designViewMode;
+            designViewMode = mode;
+            firePropertyChange(DESIGN_VIEW_MODE, oldMode, mode);
+        }
     }
 
     public boolean isDesignMode() {

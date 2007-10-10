@@ -73,9 +73,11 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import javax.swing.ActionMap;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JToolBar;
+import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.JTextComponent;
 import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViewPerspective;
@@ -221,11 +223,6 @@ public class DesignerMultiViewElement extends TopComponent
         setActivatedNodes(new Node[] {getDataObject().getNodeDelegate()});
     }
     
-    public void writeExternal(ObjectOutput out) throws IOException {
-        super.writeExternal(out);
-        out.writeObject(myDataObject);
-    }
-    
     /**
      * we are using Externalization semantics so that we can get a hook to call
      * initialize() upon deserialization
@@ -243,6 +240,10 @@ public class DesignerMultiViewElement extends TopComponent
         initializeUI();
     }
     
+    public void writeExternal(ObjectOutput out) throws IOException {
+        super.writeExternal(out);
+        out.writeObject(myDataObject);
+    }
     
     ////////////////////////////////////////////////////////////////////////////
     //                                  UI
@@ -509,6 +510,18 @@ public class DesignerMultiViewElement extends TopComponent
         setLayout(new BorderLayout());
         
         myDesignView = createDesignView();
+        
+        // add copy, cut, paste actions into actionMap to be visible in external menus
+        ActionMap map = getActionMap();
+        ActionMap designViewMap = myDesignView.getActionMap();
+        map.setParent(designViewMap);
+        
+        designViewMap.put(DefaultEditorKit.copyAction, designViewMap.get("copy-pattern"));
+        designViewMap.put(DefaultEditorKit.cutAction, designViewMap.get("cut-pattern"));
+        designViewMap.put(DefaultEditorKit.pasteAction, designViewMap.get("paste-pattern"));
+//        map.put("delete", designViewMap.get("delete-something"));        
+        
+        
         ThumbScrollPane scroll = new ThumbScrollPane(myDesignView.getView());
         scroll.setBorder(null);
         scroll.getVerticalScrollBar().setUnitIncrement(16);
@@ -618,6 +631,7 @@ public class DesignerMultiViewElement extends TopComponent
     }
     
     private void initializeLookup() {
+//        System.out.println("try to initialise lookup");
         associateLookup(createAssociateLookup());
         initActiveNodeChangeListener();
 //        addPropertyChangeListener( new PropertyChangeListener() {        
@@ -646,6 +660,8 @@ public class DesignerMultiViewElement extends TopComponent
         //
         // see http://www.netbeans.org/issues/show_bug.cgi?id=67257
         //
+        
+        ActionMap actionMap = getActionMap();
         nodesHack = new InstanceContent();
         return new ProxyLookup(new Lookup[] {
             //
@@ -654,6 +670,8 @@ public class DesignerMultiViewElement extends TopComponent
             //
             myDataObject.getLookup(), // this lookup contain objects that are used in OM clients
             
+            //
+            Lookups.singleton(actionMap),
             // This lookup is used by BPELDataEditorSupport 
             // to obtain SelectBpelElement interface implementation
             Lookups.singleton(this),

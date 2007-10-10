@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.bpel.design.phmode;
 
+import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.bpel.design.selection.PlaceHolder;
 import org.netbeans.modules.bpel.design.selection.PlaceHolderManager;
@@ -50,11 +51,22 @@ import org.netbeans.modules.bpel.design.selection.PlaceHolderManager;
  */
 public class PlaceHolderSelectionModel {
     private PlaceHolderManager phManager;
+    private List<PhSelectionListener> listeners 
+            = new ArrayList<PhSelectionListener>();
+    
     
     public PlaceHolderSelectionModel(PlaceHolderManager phManager) {
         this.phManager = phManager;
     }
 
+    public void addSelectionListener(PhSelectionListener listener) {
+        listeners.add(listener);
+    }
+    
+    public void removeSelectionListener(PhSelectionListener listener) {
+        listeners.remove(listener);
+    }
+    
     public PlaceHolder getSelectedPlaceHolder() {
         List<PlaceHolder> phs = phManager.getPlaceHolders();
         if (phs == null) {
@@ -76,11 +88,24 @@ public class PlaceHolderSelectionModel {
         if (phs == null) {
             return;
         }
-        for (PlaceHolder curPh : phs) {
-            curPh.dragExit();
+        PlaceHolder curPh = null;
+        for (PlaceHolder tmpPh : phs) {
+            if (tmpPh.isMouseHover()) {
+                tmpPh.dragExit();
+                curPh = tmpPh;
+            }
+//            tmpPh.dragExit();
         }
 
         ph.dragEnter();
+        fireSelectionChanged(curPh, ph);
     }
 
+    private void fireSelectionChanged(PlaceHolder oldPh, PlaceHolder newPh) {
+        assert listeners != null;
+        for (PhSelectionListener listener : listeners) {
+            listener.selectionChanged(oldPh, newPh);
+        }
+    }
+    
 }
