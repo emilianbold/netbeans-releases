@@ -62,6 +62,8 @@ import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.mercurial.HgModuleConfig;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 
 
 /**
@@ -167,7 +169,8 @@ public class HgCommand {
     private static final String HG_NO_CHANGES_ERR = "no changes found"; // NOI18N
     private final static String HG_CREATE_NEW_BRANCH_ERR = "abort: push creates new remote branches!"; // NOI18N
     private final static String HG_HEADS_CREATED_ERR = "(+1 heads)"; // NOI18N
-    
+    private final static String HG_NO_HG_CMD_FOUND_ERR = "hg: not found";
+            
     private final static String HG_HEADS_CMD = "heads"; // NOI18N
     
     private static final String HG_NO_REPOSITORY_ERR = "abort: There is no Mercurial repository here"; // NOI18N
@@ -639,7 +642,7 @@ public class HgCommand {
 
         List<String> list = exec(command);
         if (!list.isEmpty() && isErrorNoRepository(list.get(0)))
-            handleError(command, list, NbBundle.getMessage(HgCommand.class, "NO_REPOSITORY_ERR"));
+            handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"));
         return list;
     }
     
@@ -669,7 +672,7 @@ public class HgCommand {
         
         List<String> list = exec(command);
         if (!list.isEmpty() && isErrorNoRepository(list.get(0)))
-            handleError(command, list, NbBundle.getMessage(HgCommand.class, "NO_REPOSITORY_ERR"));
+            handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"));
         return list;
     }
     
@@ -719,7 +722,7 @@ public class HgCommand {
         List<String> list = exec(command);
         
         if (!list.isEmpty() && isErrorNoRepository(list.get(0)))
-            handleError(command, list, NbBundle.getMessage(HgCommand.class, "NO_REPOSITORY_ERR"));
+            handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"));
     }
     
     /**
@@ -983,7 +986,7 @@ public class HgCommand {
         command.add(file.getAbsolutePath());
         List<String> list = exec(command);
         if (!list.isEmpty() && isErrorNoRepository(list.get(0)))
-            handleError(command, list, NbBundle.getMessage(HgCommand.class, "NO_REPOSITORY_ERR"));
+            handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"));
         return list;
     }
   
@@ -1629,7 +1632,7 @@ public class HgCommand {
         
         List<String> list =  exec(command);
         if (!list.isEmpty() && isErrorNoRepository(list.get(0)))
-            handleError(command, list, NbBundle.getMessage(HgCommand.class, "NO_REPOSITORY_ERR"));
+            handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"));
         return list;
     }
     /**
@@ -1713,7 +1716,14 @@ public class HgCommand {
             // calling func and raise exceptions there if needed
             Mercurial.LOG.log(Level.SEVERE, "execEnv():  execEnv(): IOException " + e); // NOI18N
              
-            throw new HgException(NbBundle.getMessage(HgCommand.class, "MSG_UNABLE_EXECUTE_COMMAND"));
+            // Handle low level failure when you cannot find Mercurial: "hg: not found"
+            if (isErrorNoHg(e.getMessage())){
+                NotifyDescriptor.Message msg = new NotifyDescriptor.Message(NbBundle.getMessage(HgCommand.class, "MSG_NO_HG_CMD_ERR"));              
+                DialogDisplayer.getDefault().notifyLater(msg);
+                handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_HG_CMD_ERR"));
+            }else{
+                throw new HgException(NbBundle.getMessage(HgCommand.class, "MSG_UNABLE_EXECUTE_COMMAND"));
+            }
         }finally{
             if (input != null) {
                 try {
@@ -1773,6 +1783,10 @@ public class HgCommand {
     
     private static boolean isErrorNoRepository(String msg) {
         return msg.indexOf(HG_NO_REPOSITORY_ERR) > -1; // NOI18N
+    }
+    
+    private static boolean isErrorNoHg(String msg) {
+        return msg.indexOf(HG_NO_HG_CMD_FOUND_ERR) > -1; // NOI18N
     }
     
     private static boolean isErrorUpdateSpansBranches(String msg) {
