@@ -45,6 +45,7 @@ made subject to such option by the copyright holder.
 <filesystem>
     <folder name="Keymaps">
         <folder name="Emacs">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
             <file name="CS-8.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-palette-ShowPaletteAction.instance"/>
             </file>
@@ -383,6 +384,7 @@ made subject to such option by the copyright holder.
             </file>
         </folder>
         <folder name="NetBeans55">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
             <file name="CS-8.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-palette-ShowPaletteAction.instance"/>
             </file>
@@ -699,6 +701,7 @@ made subject to such option by the copyright holder.
         
         
         <folder name="NetBeans">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
             <file name="CS-8.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-palette-ShowPaletteAction.instance"/>
             </file>
@@ -974,6 +977,7 @@ made subject to such option by the copyright holder.
         
         
         <folder name="Eclipse">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
 <!--retouche:-->
 <!--            <file name="DO-F.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-refactoring-ui-FindUsagesOpenAction.instance"/>

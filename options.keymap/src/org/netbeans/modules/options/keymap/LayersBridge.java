@@ -59,6 +59,7 @@ import org.openide.ErrorManager;
 
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
@@ -170,20 +171,28 @@ public class LayersBridge extends KeymapManager {
     
     private List<String> keymapNames;
     
-    public List<String> getProfiles () {
+    public List<String> getProfiles() {
         if (keymapNames == null) {
-            DataFolder root = getRootFolder (KEYMAPS_FOLDER, null);
-            Enumeration en = root.children (false);
-            keymapNames = new ArrayList<String> ();
-            while (en.hasMoreElements ()) {
-                DataObject dataObject = (DataObject) en.nextElement ();
-                if (!(dataObject instanceof DataFolder)) continue;
-                keymapNames.add (dataObject.getName ());
+            DataFolder root = getRootFolder(KEYMAPS_FOLDER, null);
+            Enumeration en = root.children(false);
+            keymapNames = new ArrayList<String>();
+            while (en.hasMoreElements()) {
+                FileObject f = ((DataObject) en.nextElement()).getPrimaryFile();
+                if (f.isFolder()) {
+                    String name = f.getNameExt();
+                    try {
+                        name = f.getFileSystem().getStatus().annotateName(name, Collections.singleton(f));
+                    } catch (FileStateInvalidException fsie) {
+                    // ignore
+                    }
+                    keymapNames.add(name);
+                }
             }
-            if (!keymapNames.contains ("NetBeans"))
-                keymapNames.add ("NetBeans");
+            if (keymapNames.isEmpty()) {
+                keymapNames.add("NetBeans"); //NOI18N
+            }
         }
-        return Collections.unmodifiableList (keymapNames);
+        return Collections.unmodifiableList(keymapNames);
     }
     
     /** Profile to Map of GlobalAction to set of shortcuts. */
