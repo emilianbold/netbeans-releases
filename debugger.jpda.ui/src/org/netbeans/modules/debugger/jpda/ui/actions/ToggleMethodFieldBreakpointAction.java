@@ -194,7 +194,7 @@ public class ToggleMethodFieldBreakpointAction extends AbstractAction {//impleme
                     String mn = (exs[2] != null) ? exs[2].getMessage() : methodName;
                     String ms = (exs[2] != null) ? exs[2].getLocalizedMessage() : methodSignature;
                     if (fn != null && fn.length() == 0) fn = null;
-                    if (submitFieldOrMethodBreakpoint(cn, fn, mn, ms)) {
+                    if (submitFieldOrMethodBreakpoint(cn, fn, mn, ms, url, ln)) {
                         // We've submitted a field or method breakpoint, so delete the line one:
                         LineBreakpoint lb = ToggleBreakpointActionProvider.findBreakpoint (
                             url, ln
@@ -207,7 +207,11 @@ public class ToggleMethodFieldBreakpointAction extends AbstractAction {//impleme
             });
             return false;
         } else {
-            return submitFieldOrMethodBreakpoint(className[0], fieldName[0], methodName, methodSignature);
+            int ln = EditorContextBridge.getContext().getCurrentLineNumber ();
+            String url = EditorContextBridge.getContext().getCurrentURL ();
+            return submitFieldOrMethodBreakpoint(className[0], fieldName[0],
+                                                 methodName, methodSignature,
+                                                 url, ln);
         }
         
         /*
@@ -240,7 +244,8 @@ public class ToggleMethodFieldBreakpointAction extends AbstractAction {//impleme
     }
         
     private boolean submitFieldOrMethodBreakpoint(String className, String fieldName,
-                                                  String methodName, String methodSignature) {
+                                                  String methodName, String methodSignature,
+                                                  String url, int line) {
         // 2) find and remove existing line breakpoint
         JPDABreakpoint b;
         if (fieldName != null) {
@@ -249,6 +254,9 @@ public class ToggleMethodFieldBreakpointAction extends AbstractAction {//impleme
             b = findBreakpoint (className, methodName, methodSignature);
         } else {
             return false;
+        }
+        if (b == null) {
+            b = ToggleBreakpointActionProvider.findBreakpoint(url, line);
         }
         DebuggerManager d = DebuggerManager.getDebuggerManager();
         if (b != null) {
