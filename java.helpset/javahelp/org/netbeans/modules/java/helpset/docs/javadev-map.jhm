@@ -137,6 +137,8 @@
 <mapID target="gui.connectionwizard" url="gui/gui_events_setting.html" />
 <mapID target="gui.mdi" url="gui/gui_creatingmdi.html" />
 
+<mapID target="gui.bind.about" url="gui/gui_bind_about.html" />
+
 <mapID target="gui.config" url="gui/gui_configuring.html" />
 <mapID target="gui.source.modifying" url="gui/gui_modifysource.html" />
 <mapID target="gui.accessibleform" url="gui/gui_accessibleform.html" />

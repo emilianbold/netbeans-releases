@@ -1,0 +1,66 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+ *     Copyright (c) 2007 Sun Microsystems, Inc. All rights reserved.
+ *     Use is subject to license terms.
+ *
+-->
+<html>
+    <head>
+        <title>About Beans Binding in Java Desktop Applications</title>
+        <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>About Beans Binding in Java Desktop Applications</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        <p>The IDE supports the Beans Binding specification (JSR 295), 
+            which enables you to synchronize the values of properties of different beans. 
+        This feature is useful in desktop applications for things such as the following:</p> 
+        <ul>
+            <li>Creating database applications.</li>
+            <li>Incorporating web services into applications.</li>
+            <li>Creating dynamic interaction between visual components.</li>
+        </ul>
+        <p>To take full advantage of the IDE's beans binding support, use the 
+            IDE's <a href="gui_about.html">GUI Builder</a>.  
+            You can open the GUI Builder in either of the 
+        following ways:</p>
+        <ul>
+            <li>Choose File &gt; New Project, select the Java category, and 
+            create a project with the Java Desktop Application template.</li>
+            <li>In another type of Java project, choose File &gt; New File and 
+            select any of the templates in the Swing GUI Forms category.</li>
+        </ul>
+        <p>When the GUI Builder is open, you can generate bindings for 
+        components by using the 
+        <a href="csh/gui_bind_dialog.html">Bind dialog box</a>. The Bind dialog box 
+        enables you to designate a source for the binding and generate 
+        other necessary code for the binding, such as converters or validators. 
+        Open the Bind dialog box by right-clicking the component that you want 
+        to be the target of the binding and choosing the appropriate 
+        property from the Bind submenu.</p>
+
+
+        <p>When using the Bind dialog box, the IDE generates binding code that 
+            contains Expression Language syntax. This syntax makes it 
+        easy to bind simple properties, nested properties, and expressions.</p>
+        <ul class="note">
+            <li>As of JDK 6, the Beans Binding library is not a part of the JDK. 
+                Applications that use beans binding need to be packaged with 
+                the Beans Binding JAR file. When you create bindings using the 
+                IDE's Bind dialog box, the IDE adds the Beans Binding JAR file to your 
+                project automatically. When you build your project, you can find the 
+            JAR file in the project's <tt>dist/lib</tt> folder.</li>
+        </ul>
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="gui_creatingforms.html">Creating a New Form</a></dd>
+            <dd><a href="gui_addcomponent.html">Adding a Component to a Form</a></dd>
+        </dl>
+        <hr><small><a href="../credits.html">Legal Notices</a></small>
+        <table border="0" cellpadding="50">
+            <tr>
+                <td>&nbsp;</td>
+            </tr>
+        </table>
+    </body>
+</html>
