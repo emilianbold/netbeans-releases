@@ -63,6 +63,7 @@ import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
+import org.openide.util.WeakListeners;
 
 /**
  * Translation utility for handling of lines that are shifted during source modifications.
@@ -77,6 +78,7 @@ class LineTranslations {
     private Map<Object, Registry>   timeStampToRegistry = new WeakHashMap<Object, Registry>();
     private Map<LineBreakpoint, BreakpointLineUpdater> lineUpdaters = new HashMap<LineBreakpoint, BreakpointLineUpdater>();
     private Map<Object, Map<LineBreakpoint, Integer>> originalBreakpointLines = new WeakHashMap<Object, Map<LineBreakpoint, Integer>>();
+    private Map<Object, PropertyChangeListener> breakpointListeners = new WeakHashMap<Object, PropertyChangeListener>();
     
     private LineTranslations() {
     }
@@ -131,7 +133,7 @@ class LineTranslations {
      */
     synchronized int getOriginalLineNumber (
         LineBreakpoint lb,
-        Object timeStamp
+        final Object timeStamp
     ) {
         Map<LineBreakpoint, Integer> bpLines = originalBreakpointLines.get(timeStamp);
         if (bpLines != null) {
@@ -146,6 +148,22 @@ class LineTranslations {
         }
         int line = getOriginalLineNumber(lb.getURL(), lb.getLineNumber(), timeStamp);
         bpLines.put(lb, line);
+        PropertyChangeListener lineNumberListener = new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (LineBreakpoint.PROP_LINE_NUMBER.equals(evt.getPropertyName())) {
+                    synchronized (LineTranslations.this) {
+                        Map<LineBreakpoint, Integer> bpLines = originalBreakpointLines.get(timeStamp);
+                        if (bpLines != null) {
+                            LineBreakpoint lb = (LineBreakpoint) evt.getSource();
+                            int line = getOriginalLineNumber(lb.getURL(), lb.getLineNumber(), timeStamp);
+                            bpLines.put(lb, line);
+                        }
+                    }
+                }
+            }
+        };
+        breakpointListeners.put(timeStamp, lineNumberListener);
+        lb.addPropertyChangeListener(WeakListeners.propertyChange(lineNumberListener, lb));
         return line;
     }
     
