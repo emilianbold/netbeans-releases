@@ -45,7 +45,6 @@ import org.netbeans.modules.xml.xpath.LocationStep;
 import org.netbeans.modules.xml.xpath.StepNodeTest;
 import org.netbeans.modules.xml.xpath.StepNodeNameTest;
 import org.netbeans.modules.xml.xpath.StepNodeTypeTest;
-import org.netbeans.modules.xml.xpath.XPathExpression;
 import org.netbeans.modules.xml.xpath.XPathPredicateExpression;
 import org.netbeans.modules.xml.xpath.visitor.XPathVisitor;
 
@@ -144,27 +143,62 @@ public class LocationStepImpl extends XPathExpressionImpl implements LocationSte
         //
         StepNodeTest nodeTest = getNodeTest();
         if (nodeTest instanceof StepNodeNameTest) {
+            //
+            String axisText = null;
+            switch (getAxis()) {
+            case LocationStep.AXIS_SELF:
+                // Don't try using "." instead because of the dot is not an axis 
+                // but rather the abbreviated location step 
+                axisText = "self::"; // NOI18N
+                break;
+            case LocationStep.AXIS_CHILD:
+                // nothing to append
+                break;
+            case LocationStep.AXIS_PARENT:
+                // Don't try using ".." instead because of the double dot is not an axis 
+                // but rather the abbreviated location step 
+                axisText = "parent::"; // NOI18N
+                break;
+            case LocationStep.AXIS_ANCESTOR:
+                axisText = "ancestor::"; // NOI18N
+                break;
+            case LocationStep.AXIS_ATTRIBUTE:
+                axisText = "@"; // NOI18N
+                break;
+            case LocationStep.AXIS_NAMESPACE:
+                axisText = "namespace::"; // NOI18N
+                break;
+            case LocationStep.AXIS_PRECEDING:
+                axisText = "preceding::"; // NOI18N
+                break;
+            case LocationStep.AXIS_FOLLOWING:
+                axisText = "following::"; // NOI18N
+                break;
+            case LocationStep.AXIS_DESCENDANT:
+                axisText = "descendant::"; // NOI18N
+                break;
+            case LocationStep.AXIS_ANCESTOR_OR_SELF:
+                axisText = "ancestor-or-self::"; // NOI18N
+                break;
+            case LocationStep.AXIS_DESCENDANT_OR_SELF:
+                axisText = "descendant-or-self::"; // NOI18N
+                break;
+            case LocationStep.AXIS_FOLLOWING_SIBLING:
+                axisText = "following-sibling::"; // NOI18N
+                break;
+            case LocationStep.AXIS_PRECEDING_SIBLING:
+                axisText = "preceding-sibling::"; // NOI18N
+                break;
+            }
+            //
+            if (axisText != null && axisText.length() != 0) {
+                sb.append(axisText);
+            }
+            //
             StepNodeNameTest snnt = (StepNodeNameTest)nodeTest;
             if (snnt.isWildcard()) {
-                switch (getAxis()) {
-                case LocationStep.AXIS_ATTRIBUTE:
-                    sb.append("@*"); // NOI18N
-                    break;
-                case LocationStep.AXIS_CHILD:
-                    sb.append("*"); // NOI18N
-                    break;
-                default: 
-                    // other axis are not supported with the wildcard
-                }
+                sb.append("*"); // NOI18N
             } else {
-                switch (getAxis()) {
-                case LocationStep.AXIS_ATTRIBUTE:
-                    sb.append("@"); // NOI18N
-                    break;
-                default: 
-                    // other axis are not supported yet
-                }
-                // 
                 sb.append(((StepNodeNameTest) nodeTest).getNodeName());
             }
         } else if (nodeTest instanceof StepNodeTypeTest) {
@@ -172,14 +206,19 @@ public class LocationStepImpl extends XPathExpressionImpl implements LocationSte
             switch (sntt.getNodeType()) {
             case NODETYPE_NODE:
                 switch (getAxis()) {
+                case LocationStep.AXIS_CHILD: // it means that the location step is "node()"
+                    sb.append(sntt.getNodeTypeString());
+                    break;
                 case LocationStep.AXIS_SELF:   // it means that the location step is abbreviated step "."
                     sb.append(".");
                     break;
                 case LocationStep.AXIS_PARENT: // it means that the location step is abbreviated step ".."
                     sb.append("..");
                     break;
-                case LocationStep.AXIS_CHILD: // it means that the location step is "node()"
-                    sb.append(sntt.getNodeTypeString());
+                case LocationStep.AXIS_DESCENDANT_OR_SELF: // it means that the location step is abbreviated step "//"
+                    // It doesn't necessary to append anything here because 
+                    // the double slash "//" abbreviated step is a kind of "empty" step.
+                    // It is a step without a content between two slashes.
                     break;
                 default:
                     // other axis are not supported here
