@@ -599,7 +599,7 @@ public class DwarfSource implements SourceFileProperties{
         // filter out system macros
         // For example gcc windows dwarf contains following system macros as user:
         // unix=1 __unix=1 __unix__=1 __CYGWIN__=1 __CYGWIN32__=1
-        if (value == null || "1".equals(value)) {
+        if (value == null || "1".equals(value)) { // NOI18N
             return sysValue == null || "1".equals(sysValue); // NOI18N
         }
         return value.equals(sysValue); // NOI18N

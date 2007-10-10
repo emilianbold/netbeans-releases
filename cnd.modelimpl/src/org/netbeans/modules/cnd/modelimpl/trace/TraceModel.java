@@ -419,7 +419,7 @@ public class TraceModel {
 	    dumpModelAfterCleaningCache = true;
 	}
 	else if ( "repeat".equals(flag) || flag.startsWith("repeat:")) { // NOI18N
-	    int len = "repeat".length();
+	    int len = "repeat".length(); // NOI18N
 	    if( flag.length() == len ) {
 		repeatCount = 2;
 	    }
@@ -457,7 +457,7 @@ public class TraceModel {
     void doTest() {
 	if( repeatCount > 1 ) {
 	    for (int i = 0; i < repeatCount; i++) {
-		print("\n\n==================== Pass " + i + "====================\n");
+		print("\n\n==================== Pass " + i + "====================\n"); // NOI18N
                 doTest2();
 		resetProject();
 		//sleep(2000, "Waiting for repository to shutdown");
