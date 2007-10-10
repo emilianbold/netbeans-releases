@@ -48,6 +48,8 @@ import static com.sun.source.tree.Tree.*;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 
+import com.sun.tools.javac.code.Flags;
+import com.sun.tools.javac.tree.JCTree.JCModifiers;
 import javax.lang.model.element.*;
 import javax.lang.model.type.*;
 import javax.tools.JavaFileObject;
@@ -1844,6 +1846,46 @@ public final class TreeMaker {
      */
     public ModifiersTree removeModifiersAnnotation(ModifiersTree modifiers, int index) {
         return delegate.removeModifiersAnnotation(modifiers, index);
+    }
+    
+    public ModifiersTree addModifiersModifier(ModifiersTree modifiers, Modifier modifier) {
+        long c = ((JCModifiers) modifiers).flags;
+        switch (modifier) {
+            case ABSTRACT: c = c | Flags.ABSTRACT; break;
+            case FINAL: c = c | Flags.FINAL; break;
+            case NATIVE: c = c | Flags.NATIVE; break;
+            case PRIVATE: c = c | Flags.PRIVATE; break;
+            case PROTECTED: c = c | Flags.PROTECTED; break;
+            case PUBLIC: c = c | Flags.PUBLIC; break;
+            case STATIC: c = c | Flags.STATIC; break;
+            case STRICTFP: c = c | Flags.STRICTFP; break;
+            case SYNCHRONIZED: c = c | Flags.SYNCHRONIZED; break;
+            case TRANSIENT: c = c | Flags.TRANSIENT; break;
+            case VOLATILE: c = c | Flags.VOLATILE; break;
+            default:
+                break;
+        }
+        return Modifiers(c, modifiers.getAnnotations());
+    }
+    
+    public ModifiersTree removeModifiersModifier(ModifiersTree modifiers, Modifier modifier) {
+        long c = ((JCModifiers) modifiers).flags;
+        switch (modifier) {
+            case ABSTRACT: c = c & ~Flags.ABSTRACT; break;
+            case FINAL: c = c & ~Flags.FINAL; break;
+            case NATIVE: c = c & ~Flags.NATIVE; break;
+            case PRIVATE: c = c & ~Flags.PRIVATE; break;
+            case PROTECTED: c = c & ~Flags.PROTECTED; break;
+            case PUBLIC: c = c & ~Flags.PUBLIC; break;
+            case STATIC: c = c & ~Flags.STATIC; break;
+            case STRICTFP: c = c & ~Flags.STRICTFP; break;
+            case SYNCHRONIZED: c = c & ~Flags.SYNCHRONIZED; break;
+            case TRANSIENT: c = c & ~Flags.TRANSIENT; break;
+            case VOLATILE: c = c & ~Flags.VOLATILE; break;
+            default:
+                break;
+        }
+        return Modifiers(c, modifiers.getAnnotations());
     }
     
     // NewArray
