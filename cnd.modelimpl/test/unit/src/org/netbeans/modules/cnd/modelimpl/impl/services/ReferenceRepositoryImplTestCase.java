@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.modelimpl.impl.services;
 import java.io.File;
 import java.io.PrintStream;
 import java.util.Collection;
+import org.netbeans.junit.Manager;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.util.CsmTracer;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
@@ -67,6 +68,13 @@ public class ReferenceRepositoryImplTestCase extends TraceModelTestBase {
     }
     ////////////////////////////////////////////////////////////////////////////
     // general staff
+    
+    @Override 
+    protected File getTestCaseDataDir() {
+        File dataDir = super.getDataDir();
+        String filePath = "common/quote_nosyshdr";
+        return Manager.normalizeFile(new File(dataDir, filePath));
+    }
     
     protected void postSetUp() throws Exception {
         super.postSetUp();
