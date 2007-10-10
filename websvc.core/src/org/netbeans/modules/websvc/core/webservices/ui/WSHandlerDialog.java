@@ -217,25 +217,29 @@ public class WSHandlerDialog {
                 // test if class extends "javax.xml.ws.handler.LogicalHandler<C extends javax.xml.ws.handler.LogicalMessageContext>"
                 TypeElement handlerElement = cc.getElements().getTypeElement("javax.xml.ws.handler.LogicalHandler"); //NOI18N
                 DeclaredType handlerType=null;
+  
                 if (handlerElement!=null) {
                     TypeElement messageContextElement = cc.getElements().getTypeElement("javax.xml.ws.handler.LogicalMessageContext"); //NOI18N
                     WildcardType wildcardType = cc.getTypes().getWildcardType(messageContextElement.asType(), null);
                     handlerType = cc.getTypes().getDeclaredType(handlerElement, wildcardType);
                 }
-                if (handlerType!=null && cc.getTypes().isSubtype(classMirror, handlerType)) {
+                if (handlerType!=null && cc.getTypes().isAssignable(classMirror, handlerType)) {
                     return JAXWS_LOGICAL_HANDLER;
                 }
+ 
                 // test if class extends "javax.xml.ws.handler.Handler<C extends javax.xml.ws.handler.MessageContext>"
                 handlerElement = cc.getElements().getTypeElement("javax.xml.ws.handler.Handler"); //NOI18N
                 handlerType=null;
+  
                 if (handlerElement!=null) {
                     TypeElement messageContextElement = cc.getElements().getTypeElement("javax.xml.ws.handler.MessageContext"); //NOI18N
                     WildcardType wildcardType = cc.getTypes().getWildcardType(messageContextElement.asType(), null);
                     handlerType = cc.getTypes().getDeclaredType(handlerElement, wildcardType);
                 }
-                if (handlerType!=null && cc.getTypes().isSubtype(classMirror, handlerType)) {
+                if (handlerType!=null && cc.getTypes().isAssignable(classMirror, handlerType)) {
                     return JAXWS_MESSAGE_HANDLER;
                 }
+
             } else {
                 // test if class extends "javax.xml.rpc.handler.Handler"
                 TypeElement handlerElement = cc.getElements().getTypeElement("javax.xml.rpc.handler.Handler"); //NOI18N

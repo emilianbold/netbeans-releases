@@ -79,19 +79,18 @@ import org.openide.util.NbBundle;
  * @author  rico
  */
 public class MessageHandlerPanel extends javax.swing.JPanel {
-    
+
     private Project project;
     private List<String> handlerClasses;
     private boolean isJaxWS;
     private String componentName;
     private boolean isChanged;
     private int protocolIndex = -1;
-    private final static String LOGICAL_TYPE = "Logical";
-    private final static String PROTOCOL_TYPE = "Protocol";
-    
+    private static final String LOGICAL_TYPE = "Logical";
+    private static final String PROTOCOL_TYPE = "Protocol";
+
     /** Creates new form HandlerPanel */
-    public MessageHandlerPanel(Project project, List<String> handlerClasses, boolean isJaxWS,
-            String componentName) {
+    public MessageHandlerPanel(Project project, List<String> handlerClasses, boolean isJaxWS, String componentName) {
         this.project = project;
         this.handlerClasses = handlerClasses;
         this.isJaxWS = isJaxWS;
@@ -103,45 +102,46 @@ public class MessageHandlerPanel extends javax.swing.JPanel {
         isChanged = false;
         handlerTable.getColumnModel().getColumn(1).setCellRenderer(new TypeCellRenderer());
     }
-    
-    
-    
-    public boolean isChanged(){
+
+    public boolean isChanged() {
         return isChanged;
     }
-    
-    public TableModel getHandlerTableModel(){
+
+    public TableModel getHandlerTableModel() {
         return handlerTableModel;
     }
-    
-    private FileObject getFileObjectOfClass(String className){
+
+    private FileObject getFileObjectOfClass(String className) {
         Sources sources = ProjectUtils.getSources(project);
         SourceGroup[] sourceGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        for(int i = 0; i < sourceGroups.length; i++){
+        for (int i = 0; i < sourceGroups.length; i++) {
             FileObject rootFolder = sourceGroups[i].getRootFolder();
             FileObject classFileObject = rootFolder.getFileObject(className.replaceAll("\\.", "/") + ".java");
-            if(classFileObject != null){
+            if (classFileObject != null) {
                 return classFileObject;
             }
         }
         return null;
     }
-    
-    private void populateHandlers(){
+
+    private void populateHandlers() {
         ListIterator<String> listIterator = handlerClasses.listIterator();
         final int[] handlerType = new int[]{WSHandlerDialog.JAXWS_LOGICAL_HANDLER};
-        while(listIterator.hasNext()){
+        while (listIterator.hasNext()) {
             String handlerClass = listIterator.next();
             CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
+
                 public void run(CompilationController controller) throws IOException {
                     controller.toPhase(Phase.ELEMENTS_RESOLVED);
                     handlerType[0] = WSHandlerDialog.getHandlerType(controller, isJaxWS);
                 }
-                public void cancel() {}
+
+                public void cancel() {
+                }
             };
-            
+
             FileObject classFO = getFileObjectOfClass(handlerClass);
-            if(classFO != null){
+            if (classFO != null) {
                 try {
                     JavaSource javaSource = JavaSource.forFileObject(classFO);
                     javaSource.runUserActionTask(task, true);
@@ -149,24 +149,27 @@ public class MessageHandlerPanel extends javax.swing.JPanel {
                     ErrorManager.getDefault().notify(ex);
                 }
             }
-            if(handlerType[0] == WSHandlerDialog.JAXWS_LOGICAL_HANDLER){
+            if (handlerType[0] == WSHandlerDialog.JAXWS_LOGICAL_HANDLER) {
                 protocolIndex++;
             }
-            handlerTableModel.addRow(new Object[] {handlerClass, handlerType[0]});
+            handlerTableModel.addRow(new Object[]{handlerClass, handlerType[0]});
         }
-        if(handlerTableModel.getRowCount() > 0){
-            ((ListSelectionModel)handlerTable.getSelectionModel()).setSelectionInterval(0, 0);
+        if (handlerTableModel.getRowCount() > 0) {
+            ((ListSelectionModel) handlerTable.getSelectionModel()).setSelectionInterval(0, 0);
         }
     }
-    
-    class RemoveButtonActionListener implements ActionListener{
+
+    class RemoveButtonActionListener implements ActionListener {
+
         public void actionPerformed(ActionEvent e) {
             int selectedRow = getSelectedRow();
-            if(selectedRow == -1) return;
-            String className = (String)handlerTableModel.getValueAt(selectedRow, 0);
-            if(confirmDeletion(className)){
-                Integer type = (Integer)handlerTableModel.getValueAt(selectedRow, 1);
-                if(type == WSHandlerDialog.JAXWS_LOGICAL_HANDLER){
+            if (selectedRow == -1) {
+                return;
+            }
+            String className = (String) handlerTableModel.getValueAt(selectedRow, 0);
+            if (confirmDeletion(className)) {
+                Integer type = (Integer) handlerTableModel.getValueAt(selectedRow, 1);
+                if (type == WSHandlerDialog.JAXWS_LOGICAL_HANDLER) {
                     --protocolIndex;
                 }
                 handlerTableModel.removeRow(selectedRow);
@@ -175,36 +178,34 @@ public class MessageHandlerPanel extends javax.swing.JPanel {
                 isChanged = true;
             }
         }
-        
+
         private boolean confirmDeletion(String className) {
-            NotifyDescriptor.Confirmation notifyDesc =
-                    new NotifyDescriptor.Confirmation(NbBundle.getMessage
-                    (MessageHandlerPanel.class, "MSG_CONFIRM_DELETE", className, componentName),
-                    NbBundle.getMessage(MessageHandlerPanel.class, "TTL_CONFIRM_DELETE"),
-                    NotifyDescriptor.YES_NO_OPTION);
+            NotifyDescriptor.Confirmation notifyDesc = new NotifyDescriptor.Confirmation(NbBundle.getMessage(MessageHandlerPanel.class, "MSG_CONFIRM_DELETE", className, componentName), NbBundle.getMessage(MessageHandlerPanel.class, "TTL_CONFIRM_DELETE"), NotifyDescriptor.YES_NO_OPTION);
             DialogDisplayer.getDefault().notify(notifyDesc);
-            return (notifyDesc.getValue() == NotifyDescriptor.YES_OPTION);
+            return notifyDesc.getValue() == NotifyDescriptor.YES_OPTION;
         }
     }
-    
-    class AddButtonActionListener implements ActionListener{
+
+    class AddButtonActionListener implements ActionListener {
+
         DialogDescriptor dlgDesc = null;
-        public void actionPerformed(ActionEvent evt){
+
+        public void actionPerformed(ActionEvent evt) {
             WSHandlerDialog wsHandlerDialog = new WSHandlerDialog(project, isJaxWS);
             wsHandlerDialog.show();
-            if(wsHandlerDialog.okButtonPressed()){
+            if (wsHandlerDialog.okButtonPressed()) {
                 Map<String, Integer> selectedClasses = wsHandlerDialog.getSelectedClasses();
-                if(selectedClasses.size() > 0){
+                if (selectedClasses.size() > 0) {
                     int newSelectedRow = 0;
                     Set<String> classes = selectedClasses.keySet();
-                    for(String selectedClass : classes){
-                        int type = selectedClasses.get(selectedClass);
-                        if(type == WSHandlerDialog.JAXWS_LOGICAL_HANDLER){
-                            handlerTableModel.insertRow( ++protocolIndex, new Object[]{selectedClass, type});
-                            newSelectedRow = protocolIndex ;
-                        } else{
-                            handlerTableModel.addRow( new Object[]{selectedClass, type});
-                            newSelectedRow = handlerTableModel.getRowCount() -1;
+                    for (String selectedClass : classes) {
+                        Integer type = selectedClasses.get(selectedClass);
+                        if (type == WSHandlerDialog.JAXWS_LOGICAL_HANDLER) {
+                            handlerTableModel.insertRow(++protocolIndex, new Object[]{selectedClass, type});
+                            newSelectedRow = protocolIndex;
+                        } else {
+                            handlerTableModel.addRow(new Object[]{selectedClass, type});
+                            newSelectedRow = handlerTableModel.getRowCount() - 1;
                         }
                     }
                     handlerTable.getSelectionModel().setSelectionInterval(newSelectedRow, newSelectedRow);
@@ -213,42 +214,42 @@ public class MessageHandlerPanel extends javax.swing.JPanel {
             }
         }
     }
-    
-    class HandlerTable extends JTable{
-        public HandlerTable(){
+
+    class HandlerTable extends JTable {
+
+        public HandlerTable() {
             JTableHeader header = getTableHeader();
             header.setResizingAllowed(false);
             header.setReorderingAllowed(false);
             ListSelectionModel model = getSelectionModel();
             model.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
             model.addListSelectionListener(new HandlerListSelectionListener());
-            
         }
     }
-    
-    class HandlerListSelectionListener implements ListSelectionListener{
-        
+
+    class HandlerListSelectionListener implements ListSelectionListener {
+
         public void valueChanged(ListSelectionEvent e) {
-            if(!e.getValueIsAdjusting()){
+            if (!e.getValueIsAdjusting()) {
                 int selectedRow = getSelectedRow();
-                if(selectedRow == 0){
+                if (selectedRow == 0) {
                     upBtn.setEnabled(false);
-                } else{
-                    if(!upBtn.isEnabled()){
+                } else {
+                    if (!upBtn.isEnabled()) {
                         upBtn.setEnabled(true);
                     }
                 }
-                if(selectedRow == handlerTableModel.getRowCount() - 1){
+                if (selectedRow == handlerTableModel.getRowCount() - 1) {
                     downBtn.setEnabled(false);
-                } else{
-                    if(!downBtn.isEnabled()){
+                } else {
+                    if (!downBtn.isEnabled()) {
                         downBtn.setEnabled(true);
                     }
                 }
             }
         }
-        
     }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -326,17 +327,16 @@ public class MessageHandlerPanel extends javax.swing.JPanel {
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
-    
+
 private void moveUpHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moveUpHandler
     int selectedRow = getSelectedRow();
-    if(selectedRow == -1) return;
-    Integer type = (Integer)handlerTableModel.getValueAt(selectedRow, 1);
-    if(type == WSHandlerDialog.JAXWS_MESSAGE_HANDLER){
-        if((selectedRow -1) == protocolIndex){
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    NbBundle.getMessage(MessageHandlerPanel.class,"TXT_CannotMoveUp",
-                    NotifyDescriptor.WARNING_MESSAGE)
-                    ));
+    if (selectedRow == -1) {
+        return;
+    }
+    Integer type = (Integer) handlerTableModel.getValueAt(selectedRow, 1);
+    if (type == WSHandlerDialog.JAXWS_MESSAGE_HANDLER) {
+        if ((selectedRow - 1) == protocolIndex) {
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(MessageHandlerPanel.class, "TXT_CannotMoveUp", NotifyDescriptor.WARNING_MESSAGE)));
             return;
         }
     }
@@ -348,61 +348,60 @@ private void moveUpHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mo
 
 private void moveDownHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moveDownHandler
     int selectedRow = getSelectedRow();
-    if(selectedRow == -1) return;
-    Integer type = (Integer)handlerTableModel.getValueAt(selectedRow, 1);
-    if(type == WSHandlerDialog.JAXWS_LOGICAL_HANDLER){
-        if(selectedRow == protocolIndex){
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    NbBundle.getMessage(MessageHandlerPanel.class,"TXT_CannotMoveDown",
-                    NotifyDescriptor.WARNING_MESSAGE)
-                    ));
+    if (selectedRow == -1) {
+        return;
+    }
+    Integer type = (Integer) handlerTableModel.getValueAt(selectedRow, 1);
+    if (type == WSHandlerDialog.JAXWS_LOGICAL_HANDLER) {
+        if (selectedRow == protocolIndex) {
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(MessageHandlerPanel.class, "TXT_CannotMoveDown", NotifyDescriptor.WARNING_MESSAGE)));
             return;
         }
     }
     int newSelectedRow = selectedRow + 1;
     handlerTableModel.moveRow(selectedRow, selectedRow, newSelectedRow);
     handlerTable.getSelectionModel().setSelectionInterval(newSelectedRow, newSelectedRow);
-    
+
     isChanged = true;
-    
 }//GEN-LAST:event_moveDownHandler
-private int getSelectedRow() {
-    ListSelectionModel lsm = (ListSelectionModel)handlerTable.getSelectionModel();
-    if (lsm.isSelectionEmpty()) {
-        return -1;
-    } else {
-        return lsm.getMinSelectionIndex();
-    }
-}
 
-class HandlerTableModel extends DefaultTableModel{
-    public HandlerTableModel(Object[] columnNames, int rowCount){
-        super(columnNames, rowCount);
-    }
-    public boolean isCellEditable(int row,
-                              int column){
-        return false;
-    }    
-}
-
-class TypeCellRenderer implements TableCellRenderer{
-    
-    public Component getTableCellRendererComponent(JTable table, Object value,
-            boolean isSelected, boolean hasFocus, int row, int column) {
-        JLabel typeLabel = new JLabel();
-        if(column == 1){
-            Integer type = (Integer)value;
-            if(type == WSHandlerDialog.JAXWS_LOGICAL_HANDLER){
-                typeLabel.setText(LOGICAL_TYPE);
-            }else{
-                typeLabel.setText(PROTOCOL_TYPE);
-            }
+    private int getSelectedRow() {
+        ListSelectionModel lsm = (ListSelectionModel) handlerTable.getSelectionModel();
+        if (lsm.isSelectionEmpty()) {
+            return -1;
+        } else {
+            return lsm.getMinSelectionIndex();
         }
-        return typeLabel;
     }
-    
-}
 
+    class HandlerTableModel extends DefaultTableModel {
+
+        public HandlerTableModel(Object[] columnNames, int rowCount) {
+            super(columnNames, rowCount);
+        }
+
+        public boolean isCellEditable(int row, int column) {
+            return false;
+        }
+    }
+
+    class TypeCellRenderer implements TableCellRenderer {
+
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            JLabel typeLabel = new JLabel();
+            if (column == 1) {
+                Integer type = (Integer) value;
+                if (type != null) {
+                    if (type == WSHandlerDialog.JAXWS_LOGICAL_HANDLER) {
+                        typeLabel.setText(LOGICAL_TYPE);
+                    } else {
+                        typeLabel.setText(PROTOCOL_TYPE);
+                    }
+                }
+            }
+            return typeLabel;
+        }
+    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addBtn;
     private javax.swing.JButton downBtn;
@@ -412,5 +411,4 @@ class TypeCellRenderer implements TableCellRenderer{
     private javax.swing.JButton removeBtn;
     private javax.swing.JButton upBtn;
     // End of variables declaration//GEN-END:variables
-    
 }
