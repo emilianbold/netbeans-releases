@@ -72,6 +72,9 @@ public class JaxWsServiceCreatorProvider implements ServiceCreatorProvider {
                    (projectType == ProjectInfo.WEB_PROJECT_TYPE)) {
                if ((!projectInfo.isJsr109Supported() && !projectInfo.isJsr109oldSupported())) {
                    return new JaxWsServiceCreator(projectInfo, wiz, true);
+               } 
+               if (projectInfo.isJaxWsInJ2ee14Supported()) {
+                   return new JaxWsServiceCreator(projectInfo, wiz, false);
                }
         }
         return null;

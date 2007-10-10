@@ -424,7 +424,7 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
     descriptorPanel.fireChangeEvent();
     String jaxwsVersion = (String)this.jComboBoxJaxVersion.getSelectedItem();
     String pName = (String)this.jCbxPackageName.getSelectedItem();
-    if(Util.isJavaEE5orHigher(project)||
+    if(Util.isJavaEE5orHigher(project) ||
             (projectType == 0 && jaxwsVersion.equals(ClientWizardProperties.JAX_WS)) ){
         if(pName == null || pName.trim().equals("")){
             jCbxPackageName.setToolTipText(NbBundle.getMessage(ClientInfo.class, "TOOLTIP_DEFAULT_PACKAGE"));
@@ -659,14 +659,15 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
         boolean jsr109OldSupported = isJsr109OldSupported(project);
         boolean jsr109Supported = isJsr109Supported(project);
         boolean jwsdpSupported = isJwsdpSupported(project);
+        boolean jaxWsInJ2ee14Supported = isJaxWsInJ2ee14Supported(project);
         if (projectType > 0) {
             jLabelJaxVersion.setEnabled(false);
             jComboBoxJaxVersion.setEnabled(false);
             if (projectType==3 || Util.isJavaEE5orHigher(project) || JaxWsUtils.isEjbJavaEE5orHigher(project)) //NOI18N
                 jComboBoxJaxVersion.setSelectedItem(ClientWizardProperties.JAX_WS);
             else{
-                if((!jsr109OldSupported && !jsr109Supported)
-                        || (!jsr109Supported && jsr109OldSupported && jwsdpSupported )){
+                if ((!jsr109OldSupported && !jsr109Supported) || jaxWsInJ2ee14Supported ||
+                        (!jsr109Supported && jsr109OldSupported && jwsdpSupported )){
                     jComboBoxJaxVersion.setSelectedItem(ClientWizardProperties.JAX_WS);
                 } else{
                     jComboBoxJaxVersion.setSelectedItem(ClientWizardProperties.JAX_RPC);
@@ -710,7 +711,7 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
             jCbxPackageName.setModel(getPackageModel(p));
             String pName = (String) d.getProperty(ClientWizardProperties.WSDL_PACKAGE_NAME);
             String jaxwsVersion = (String)this.jComboBoxJaxVersion.getSelectedItem();
-            if(Util.isJavaEE5orHigher(project)||
+            if(Util.isJavaEE5orHigher(project) ||
                     (projectType == 0 && jaxwsVersion.equals(ClientWizardProperties.JAX_WS)) ){
                 if(pName == null){
                     jCbxPackageName.setToolTipText(NbBundle.getMessage(ClientInfo.class, "TOOLTIP_DEFAULT_PACKAGE"));
@@ -1163,6 +1164,14 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
         return false;
     }
     
+    public boolean isJaxWsInJ2ee14Supported(Project project) {
+        J2eePlatform j2eePlatform = getJ2eePlatform(project);
+        if(j2eePlatform != null){
+            return j2eePlatform.isToolSupported("JaxWs-in-j2ee14-supported");
+        }
+        return false;
+    }
+    
     /**
      * If the project the web service client is being created is not on a JSR 109 platform,
      * its Java source level must be at least 1.5
@@ -1172,7 +1181,8 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
         boolean jsr109Supported = isJsr109Supported(project);
         boolean jsr109oldSupported = isJsr109OldSupported(project);
         boolean jwsdpSupported = isJwsdpSupported(project);
-        if (!jsr109Supported && !jsr109oldSupported ||
+        boolean jaxWsInJ2ee14Supported = isJaxWsInJ2ee14Supported(project);
+        if ( (!jsr109Supported && !jsr109oldSupported) || jaxWsInJ2ee14Supported ||
                 (!jsr109Supported && jsr109oldSupported && jwsdpSupported)) {
             if (Util.isSourceLevel14orLower(project)) {
                 wizardDescriptor.putProperty("WizardPanel_errorMessage",

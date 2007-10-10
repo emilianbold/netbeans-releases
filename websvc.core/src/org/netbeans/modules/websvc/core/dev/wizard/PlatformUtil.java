@@ -113,6 +113,14 @@ public class PlatformUtil {
         return false;
     }
     
+    public static boolean isJaxWsInJ2ee14Supported(Project project) {
+        J2eePlatform j2eePlatform = getJ2eePlatform(project);
+        if(j2eePlatform != null){
+            return j2eePlatform.isToolSupported("JaxWs-in-j2ee14-supported");
+        }
+        return false;
+    }
+    
     public static boolean hasJAXWSLibrary(Project project){
         SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         ClassPath classPath = ClassPath.getClassPath(sgs[0].getRootFolder(),ClassPath.COMPILE);

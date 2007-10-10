@@ -87,6 +87,7 @@ public class WebServiceTypePanel extends javax.swing.JPanel implements HelpCtx.P
     private boolean jsr109Supported;
     private boolean jsr109oldSupported;
     private boolean jwsdpSupported;
+    private boolean jaxWsInJ2ee14Supported;
     private WebModule wm;
     private EjbJar em;
     
@@ -99,6 +100,7 @@ public class WebServiceTypePanel extends javax.swing.JPanel implements HelpCtx.P
         jsr109Supported = PlatformUtil.isJsr109Supported(project);
         jsr109oldSupported = PlatformUtil.isJsr109OldSupported(project);
         jwsdpSupported = PlatformUtil.isJWSDPSupported(project);
+        jaxWsInJ2ee14Supported = PlatformUtil.isJaxWsInJ2ee14Supported(project);
         
         //convert Java class not implemented for 5.5 release, disable components
         jRadioButtonConvert.setEnabled(false);
@@ -290,7 +292,7 @@ public class WebServiceTypePanel extends javax.swing.JPanel implements HelpCtx.P
             return false;
         }
         boolean noJsr109InWeb = wm != null && !jsr109Supported && !jsr109oldSupported;
-        if (!Util.isJavaEE5orHigher(project) && !noJsr109InWeb  && WebServicesClientSupport.getWebServicesClientSupport(project.getProjectDirectory()) == null) {
+        if (!Util.isJavaEE5orHigher(project) && !noJsr109InWeb && !jaxWsInJ2ee14Supported && WebServicesClientSupport.getWebServicesClientSupport(project.getProjectDirectory()) == null) {
             // check if jaxrpc plugin installed
             wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(WebServiceFromWSDLPanel.class, "ERR_NoJaxrpcPluginFound")); // NOI18N
             return false;
@@ -326,7 +328,7 @@ public class WebServiceTypePanel extends javax.swing.JPanel implements HelpCtx.P
      * its Java source level must be at least 1.5
      */
     private boolean checkNonJsr109Valid(WizardDescriptor wizardDescriptor){
-        if(!jsr109Supported && !jsr109oldSupported ||
+        if( (!jsr109Supported && !jsr109oldSupported) || jaxWsInJ2ee14Supported || 
                 (!jsr109Supported && jsr109oldSupported && jwsdpSupported )){
             if (Util.isSourceLevel14orLower(project)) {
                 wizardDescriptor.putProperty("WizardPanel_errorMessage",

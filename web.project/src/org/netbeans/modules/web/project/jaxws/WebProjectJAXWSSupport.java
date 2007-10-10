@@ -43,6 +43,7 @@ package org.netbeans.modules.web.project.jaxws;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -60,6 +61,8 @@ import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.webservices.WebservicesMetadata;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.project.ProjectWebModule;
@@ -71,6 +74,7 @@ import org.netbeans.modules.websvc.api.jaxws.project.config.Endpoints;
 import org.netbeans.modules.websvc.api.jaxws.project.config.EndpointsProvider;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
+import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.modules.websvc.jaxws.spi.ProjectJAXWSSupport;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -167,15 +171,87 @@ public class WebProjectJAXWSSupport extends ProjectJAXWSSupport /*implements JAX
         }
     }
     
+    protected void addServletElement(Project project, String wsName, String serviceImpl) throws IOException {
+        WebApp webApp = getWebApp();
+        if(webApp != null) {
+            boolean addServletEntry = false;
+            JAXWSSupport wss = JAXWSSupport.getJAXWSSupport(project.getProjectDirectory());
+            if (wss != null) {
+                Map properties = wss.getAntProjectHelper().getStandardPropertyEvaluator().getProperties();
+                String serverInstance = (String)properties.get("j2ee.server.instance"); //NOI18N
+                if (serverInstance != null) {
+                    J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstance);
+                    if (j2eePlatform != null) {
+                        if (j2eePlatform.isToolSupported("JaxWs-in-j2ee14-supported")) addServletEntry = true;
+                    }
+                }
+            }
+            if (addServletEntry) {
+                try{
+                    Servlet servlet = (Servlet)webApp.addBean("Servlet", new String[]{"ServletName","ServletClass"},
+                            new Object[]{wsName,serviceImpl}, "ServletName");
+                    servlet.setLoadOnStartup(new java.math.BigInteger("1"));
+                    ServletMapping servletMapping = (ServletMapping)
+                    webApp.addBean("ServletMapping", new String[]{"ServletName","UrlPattern"},
+                            new Object[]{wsName, "/" + wsName}, "UrlPattern");
+                    // This also saves server specific configuration, if necessary.
+                    webApp.write(getDeploymentDescriptor());
+                } catch (ClassNotFoundException exc) {
+                    Logger.getLogger("global").log(Level.INFO, exc.getLocalizedMessage());
+                } catch (NameAlreadyUsedException exc) {
+                    Logger.getLogger("global").log(Level.INFO, exc.getLocalizedMessage());
+                }
+            }
+        }
+    }    
     /**
      * Remove the web.xml entries for the non-JSR 109 web service.
      *
      * @param serviceName Name of the web service to be removed
-     * @param serviceNames List of names of other non-JSR 109 web services in the project
      */
     private void removeServiceEntriesFromDD(String serviceName) {
-        boolean changed = false;
         WebApp webApp = getWebApp();
+        if (webApp != null) {
+            boolean changed = removeNonJsr109ServletsFromDD(webApp, serviceName);
+
+            //determine if there are other web services in the project
+            //if none, remove the listener
+            boolean hasMoreWebServices = false;
+            Servlet[] remainingServlets = webApp.getServlet();
+            for(int i = 0; i < remainingServlets.length; i++){
+                if(remainingServlets[i].getServletClass().equals(servletClassName)){
+                    hasMoreWebServices = true;
+                    break;
+                }
+            }
+            if(!hasMoreWebServices){
+                Listener[] listeners = webApp.getListener();
+                for(int i = 0; i < listeners.length; i++){
+                    Listener listener = listeners[i];
+                    if(listener.getListenerClass().equals(servletListener)){
+                        webApp.removeListener(listener);
+                        changed = true;
+                        break;
+                    }
+                }
+            }
+            if(changed){
+                try{
+                    webApp.write(getDeploymentDescriptor());
+                } catch(IOException e){
+                    Exceptions.printStackTrace(e);
+                }
+            }
+        }
+    }
+    
+    /**
+     * Remove the web.xml servlets for the non-JSR 109 web service.
+     *
+     * @param serviceName Name of the web service to be removed
+     */
+    private boolean removeNonJsr109ServletsFromDD(WebApp webApp, String serviceName) {
+        boolean changed = false;
         //first remove the servlet
         Servlet[] servlets = webApp.getServlet();
         for(int i = 0; i < servlets.length; i++){
@@ -196,35 +272,7 @@ public class WebProjectJAXWSSupport extends ProjectJAXWSSupport /*implements JAX
                 break;
             }
         }
-        
-        //determine if there are other web services in the project
-        //if none, remove the listener
-        boolean hasMoreWebServices = false;
-        Servlet[] remainingServlets = webApp.getServlet();
-        for(int i = 0; i < remainingServlets.length; i++){
-            if(remainingServlets[i].getServletClass().equals(servletClassName)){
-                hasMoreWebServices = true;
-                break;
-            }
-        }
-        if(!hasMoreWebServices){
-            Listener[] listeners = webApp.getListener();
-            for(int i = 0; i < listeners.length; i++){
-                Listener listener = listeners[i];
-                if(listener.getListenerClass().equals(servletListener)){
-                    webApp.removeListener(listener);
-                    changed = true;
-                    break;
-                }
-            }
-        }
-        if(changed){
-            try{
-                webApp.write(getDeploymentDescriptor());
-            } catch(IOException e){
-                Exceptions.printStackTrace(e);
-            }
-        }
+        return changed;
     }
     
     private boolean webAppHasListener(WebApp webApp, String listenerClass){
@@ -375,6 +423,12 @@ public class WebProjectJAXWSSupport extends ProjectJAXWSSupport /*implements JAX
             }catch(IOException e){
                 Exceptions.printStackTrace(e);
             }
+        } else {
+            try{
+                removeJsr109Entries(serviceName);
+            }catch(IOException e){
+                Exceptions.printStackTrace(e);
+            }            
         }
         
     }
@@ -383,7 +437,7 @@ public class WebProjectJAXWSSupport extends ProjectJAXWSSupport /*implements JAX
      * Removes the servlet entry from web.xml and
      * the endpoint entry from the sun-jaxws.xml file
      */
-    public void removeNonJsr109Entries(String serviceName) throws IOException{
+    public void removeNonJsr109Entries(String serviceName) throws IOException {
         //delete web.xml entry
         removeServiceEntriesFromDD(serviceName);
         //delete entry in sun-jaxws.xml file.
@@ -437,7 +491,64 @@ public class WebProjectJAXWSSupport extends ProjectJAXWSSupport /*implements JAX
         
         //TODO if no more web services, remove the jaxws21 library
     }
-
+    
+    /**
+     * Removes the servlet entry from web.xml and
+     * the endpoint entry from the sun-jaxws.xml file
+     */
+    public void removeJsr109Entries(String serviceName) throws IOException {
+        WebApp webApp = getWebApp();       
+        if (webApp != null) {
+            JaxWsModel jaxWsModel = (JaxWsModel)project.getLookup().lookup(JaxWsModel.class);
+            if (jaxWsModel != null) {
+                Service service = jaxWsModel.findServiceByName(serviceName);
+                if (service != null) {
+                    boolean changed = removeJsr109ServletsFromDD(webApp, service);
+                    if(changed){
+                        try{
+                            webApp.write(getDeploymentDescriptor());
+                        } catch(IOException e){
+                            Exceptions.printStackTrace(e);
+                        }
+                    }
+                }
+            }
+        }
+    }
+ 
+    /**
+     * Remove the web.xml servlets for the non-JSR 109 web service.
+     *
+     * @param serviceName Name of the web service to be removed
+     */
+    private boolean removeJsr109ServletsFromDD(WebApp webApp, Service service) {
+        boolean changed = false;
+        //first remove the servlet
+        String implClass = service.getImplementationClass();
+        if (implClass != null) {
+            String servletName = null;
+            for(Servlet servlet:webApp.getServlet()){
+                if(implClass.equals(servlet.getServletClass())) {
+                    webApp.removeServlet(servlet);
+                    servletName = servlet.getServletName();
+                    changed = true;
+                    break;
+                }
+            }
+            //remove the servlet mapping
+            if (servletName != null) {
+                for(ServletMapping mapping:webApp.getServletMapping()) {
+                    if(mapping.getServletName().equals(servletName)){
+                        webApp.removeServletMapping(mapping);
+                        changed = true;
+                        break;
+                    }
+                }
+            }
+        }
+        return changed;
+    }
+ 
     public String addService(String name, String serviceImpl, String wsdlUrl, String serviceName, String portName, String packageName, boolean isJsr109) {
         // create jax-ws.xml if necessary
         FileObject fo = WSUtils.findJaxWsFileObject(project);

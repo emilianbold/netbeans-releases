@@ -67,6 +67,10 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.common.source.SourceUtils;
+import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
+import org.netbeans.modules.j2ee.dd.api.web.Servlet;
+import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
+import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
@@ -84,6 +88,7 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModeler;
 import org.netbeans.modules.websvc.core.JaxWsUtils;
 import org.netbeans.modules.websvc.core.WebServiceReference;
 import org.netbeans.modules.websvc.core.WebServiceTransferable;
+import org.netbeans.modules.websvc.core.dev.wizard.PlatformUtil;
 import org.netbeans.modules.websvc.core.jaxws.actions.AddOperationAction;
 import org.netbeans.modules.websvc.core.jaxws.actions.JaxWsRefreshAction;
 import org.netbeans.modules.websvc.core.jaxws.actions.WsTesterPageAction;
@@ -318,13 +323,21 @@ public class JaxWsNode extends AbstractNode implements WsWsdlCookie, JaxWsTester
         // need to compute from annotations
         
         String wsURI=null;
-        if (isJsr109Supported(project) && Util.isJavaEE5orHigher(project) || JaxWsUtils.isEjbJavaEE5orHigher(project) ) {
+        if (J2eeModule.WAR.equals(moduleType) && PlatformUtil.isJaxWsInJ2ee14Supported(project)) { // JBoss type
+            try {
+                wsURI = getUriFromDD(moduleType);
+            } catch (UnsupportedEncodingException ex) {
+                // this shouldn't happen'
+            }
+        } else if (J2eeModule.EJB.equals(moduleType) && PlatformUtil.isJaxWsInJ2ee14Supported(project)) { // JBoss type
+            wsURI = getNameFromPackageName(service.getImplementationClass());
+        } else if (isJsr109Supported(project) && Util.isJavaEE5orHigher(project) || JaxWsUtils.isEjbJavaEE5orHigher(project) ) {
             try {
                 wsURI = getServiceUri(moduleType);
             } catch (UnsupportedEncodingException ex) {
                 // this shouldn't happen'
             }
-        } else {
+        } else { // non jsr109 type (Tomcat)
             try {
                 wsURI = getNonJsr109Uri(moduleType);
             } catch (UnsupportedEncodingException ex) {
@@ -341,9 +354,9 @@ public class JaxWsNode extends AbstractNode implements WsWsdlCookie, JaxWsTester
             if(contextRoot != null && contextRoot.startsWith("/")) { //NOI18N
                 contextRoot = contextRoot.substring(1);
             }
-        }/* else if(J2eeModule.EJB.equals(moduleType)) {
-            contextRoot = "webservice";//NO18N for now, we need to find the real value (see bug...57034 and 52265)
-        }*/
+        } else if(J2eeModule.EJB.equals(moduleType) && PlatformUtil.isJaxWsInJ2ee14Supported(project) ) { // JBoss type
+            contextRoot = project.getProjectDirectory().getName();
+        }
         
         return "http://"+hostName+":" + portNumber +"/" + (contextRoot != null && !contextRoot.equals("") ? contextRoot + "/" : "") + wsURI; //NOI18N
     }
@@ -371,6 +384,25 @@ public class JaxWsNode extends AbstractNode implements WsWsdlCookie, JaxWsTester
         return URLEncoder.encode(getNameFromPackageName(service.getImplementationClass()),"UTF-8"); //NOI18N
     }
     
+    private String getUriFromDD(Object moduleType) throws UnsupportedEncodingException {
+        WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
+        if (webModule!=null) {
+            FileObject ddFo = webModule.getDeploymentDescriptor();
+            if (ddFo != null) {
+                try {
+                    WebApp webApp = DDProvider.getDefault().getDDRoot(ddFo);
+                    if (webApp!=null) {
+                        String urlPattern = findUrlPattern(webApp, service.getImplementationClass());
+                        if (urlPattern!=null) return URLEncoder.encode(urlPattern, "UTF-8"); //NOI18N
+                    }
+                } catch (IOException ex) {
+                    ErrorManager.getDefault().log(ex.getLocalizedMessage());
+                }
+            }
+        }
+        return URLEncoder.encode(getNameFromPackageName(service.getImplementationClass()),"UTF-8"); //NOI18N
+    }
+    
     private String findUrlPattern(Endpoints endpoints, String implementationClass) {
         Endpoint[] endp = endpoints.getEndpoints();
         for (int i=0;i<endp.length;i++) {
@@ -378,6 +410,24 @@ public class JaxWsNode extends AbstractNode implements WsWsdlCookie, JaxWsTester
                 String urlPattern = endp[i].getUrlPattern();
                 if (urlPattern!=null) {
                     return urlPattern.startsWith("/")?urlPattern.substring(1):urlPattern; //NOI18N
+                }
+            }
+        }
+        return null;
+    }
+    
+    private String findUrlPattern(WebApp webApp, String implementationClass) {
+        Servlet[] servlets = webApp.getServlet();
+        for (Servlet servlet:webApp.getServlet()) {
+            if (implementationClass.equals(servlet.getServletClass())) {
+                String servletName = servlet.getServletName();
+                if (servletName != null) {
+                    for (ServletMapping servletMapping:webApp.getServletMapping()) {
+                        if (servletName.equals(servletMapping.getServletName())) {
+                            String urlPattern = servletMapping.getUrlPattern();
+                            return urlPattern.startsWith("/")?urlPattern.substring(1):urlPattern; //NOI18N
+                        }
+                    }
                 }
             }
         }

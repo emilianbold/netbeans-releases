@@ -45,6 +45,7 @@ import org.netbeans.modules.websvc.core.ClientCreator;
 import org.netbeans.modules.websvc.core.ClientCreatorProvider;
 import org.netbeans.modules.websvc.core.ClientWizardProperties;
 import org.netbeans.modules.websvc.core.JaxWsUtils;
+import org.netbeans.modules.websvc.core.dev.wizard.PlatformUtil;
 import org.openide.WizardDescriptor;
 
 /**
@@ -62,6 +63,9 @@ public class JaxWsClientCreatorProvider implements ClientCreatorProvider {
             return new JaxWsClientCreator(project, wiz);
         }
         if (JaxWsUtils.isEjbJavaEE5orHigher(project)) {
+            return new JaxWsClientCreator(project, wiz);
+        }
+        if (PlatformUtil.isJaxWsInJ2ee14Supported(project)) {
             return new JaxWsClientCreator(project, wiz);
         }
         if (JaxWsUtils.isCarProject(project)) {

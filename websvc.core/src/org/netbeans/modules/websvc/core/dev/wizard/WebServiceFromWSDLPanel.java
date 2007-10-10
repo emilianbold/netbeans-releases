@@ -112,6 +112,7 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
     private boolean jsr109Supported;
     private boolean jsr109oldSupported;
     private boolean jwsdpSupported;
+    private boolean jaxWsInJ2ee14Supported;
     private WebModule wm;
     
     private RequestProcessor.Task generateWsdlModelTask;
@@ -321,7 +322,7 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
         Object result = DialogDisplayer.getDefault().notify(dd);
         
         if (result == DialogDescriptor.OK_OPTION) {
-            if (Util.isJavaEE5orHigher(project) ||
+            if (Util.isJavaEE5orHigher(project) || jaxWsInJ2ee14Supported ||
                     (!jsr109Supported && !jsr109oldSupported ||
                     (!jsr109Supported && jsr109oldSupported && jwsdpSupported ))) {
                 jTextFieldPort.setText(chooser.getSelectedPortOwnerName() + "#" + chooser.getSelectedNodes()[0].getDisplayName()); //NOI18N
@@ -371,6 +372,7 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
                     jsr109Supported = j2eePlatform.isToolSupported(J2eePlatform.TOOL_JSR109);
                     jsr109oldSupported = j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSCOMPILE);
                     jwsdpSupported = j2eePlatform.isToolSupported(J2eePlatform.TOOL_JWSDP);
+                    jaxWsInJ2ee14Supported = j2eePlatform.isToolSupported("JaxWs-in-j2ee14-supported");
                 }
             }
         }
@@ -382,7 +384,7 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
      */
     private boolean checkNonJsr109Valid() {
         if (wss != null) {
-            if(!jsr109Supported && !jsr109oldSupported ||
+            if((!jsr109Supported && !jsr109oldSupported) || jaxWsInJ2ee14Supported || 
                     (!jsr109Supported && jsr109oldSupported && jwsdpSupported )){
                 if (Util.isSourceLevel14orLower(project)) {
                     wizardDescriptor.putProperty("WizardPanel_errorMessage",
@@ -410,7 +412,7 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
         
         boolean noJsr109InWeb = wm != null && !jsr109Supported && !jsr109oldSupported;
         
-        if (!Util.isJavaEE5orHigher(project) && !noJsr109InWeb && WebServicesClientSupport.getWebServicesClientSupport(project.getProjectDirectory()) == null) {
+        if (!Util.isJavaEE5orHigher(project) && !noJsr109InWeb && !jaxWsInJ2ee14Supported && WebServicesClientSupport.getWebServicesClientSupport(project.getProjectDirectory()) == null) {
             // check if jaxrpc plugin installed
             wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(WebServiceFromWSDLPanel.class, "ERR_NoJaxrpcPluginFound")); // NOI18N
             return false;
@@ -441,7 +443,7 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
             }
         }
         
-        if (Util.isJavaEE5orHigher(project) || JaxWsUtils.isEjbJavaEE5orHigher(project) ||
+        if (Util.isJavaEE5orHigher(project) || JaxWsUtils.isEjbJavaEE5orHigher(project) || jaxWsInJ2ee14Supported ||
                 (!jsr109Supported && !jsr109oldSupported ||
                 (!jsr109Supported && jsr109oldSupported && jwsdpSupported ))) {
             if (wsdlModel != null) {
@@ -556,7 +558,7 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
                 }
             }
             fireChange(); //call to disable Finish button
-            if (Util.isJavaEE5orHigher(project) || JaxWsUtils.isEjbJavaEE5orHigher(project) ||
+            if (Util.isJavaEE5orHigher(project) || JaxWsUtils.isEjbJavaEE5orHigher(project) || jaxWsInJ2ee14Supported ||
                     (!jsr109Supported && !jsr109oldSupported ||
                     (!jsr109Supported && jsr109oldSupported && jwsdpSupported))) {
                 createModel();

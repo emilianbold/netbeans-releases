@@ -116,7 +116,6 @@ import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.wsdl.model.PortType;
-import org.netbeans.modules.xml.wsdl.model.WSDLModelFactory;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPBinding;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPHeader;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
@@ -139,6 +138,7 @@ public class JaxWsUtils {
     
     private static boolean jwsdpSupported = false;
     private static boolean jsr109Supported = false;
+    private static boolean jaxWsInJ2ee14Supported = false;
     
     /** Creates a new instance of JaxWsUtils */
     public JaxWsUtils() {
@@ -175,7 +175,7 @@ public class JaxWsUtils {
         String artifactsPckg =  "service."+targetName.toLowerCase(); //NOI18N
         ClassPath classPath = ClassPath.getClassPath(targetFolder, ClassPath.SOURCE);
         String serviceImplPath = classPath.getResourceName(targetFolder, '.', false);
-        jaxWsSupport.addService(targetName, serviceImplPath+"."+targetName, wsdlURL.toExternalForm(), service, port, artifactsPckg, jsr109Supported && Util.isJavaEE5orHigher(project));
+        jaxWsSupport.addService(targetName, serviceImplPath+"."+targetName, wsdlURL.toExternalForm(), service, port, artifactsPckg, jaxWsInJ2ee14Supported || (jsr109Supported && Util.isJavaEE5orHigher(project)));
     }
     
     
@@ -321,7 +321,7 @@ public class JaxWsUtils {
         String portJavaName = port.getJavaName();
         String artifactsPckg = portJavaName.substring(0, portJavaName.lastIndexOf("."));
         if (addService) {
-            serviceID = jaxWsSupport.addService(targetName, serviceImplPath, wsdlURL.toString(), service.getName(), port.getName(), artifactsPckg, jsr109Supported && Util.isJavaEE5orHigher(project));
+            serviceID = jaxWsSupport.addService(targetName, serviceImplPath, wsdlURL.toString(), service.getName(), port.getName(), artifactsPckg, jaxWsInJ2ee14Supported || (jsr109Supported && Util.isJavaEE5orHigher(project)));
         }
         
         final String wsdlLocation = jaxWsSupport.getWsdlLocation(serviceID);
@@ -503,6 +503,7 @@ public class JaxWsUtils {
                 if (j2eePlatform != null) {
                     jwsdpSupported = j2eePlatform.isToolSupported(J2eePlatform.TOOL_JWSDP); //NOI18N
                     jsr109Supported = j2eePlatform.isToolSupported(J2eePlatform.TOOL_JSR109);
+                    jaxWsInJ2ee14Supported = j2eePlatform.isToolSupported("JaxWs-in-j2ee14-supported");
                 }
             }
         }
@@ -521,8 +522,8 @@ public class JaxWsUtils {
         if (clientProject==targetProject) {
             return true;
         } else {
-            ProjectClassPathExtender pce = (ProjectClassPathExtender)targetProject.getLookup().lookup(ProjectClassPathExtender.class);
-            AntArtifactProvider antArtifactProvider = (AntArtifactProvider)clientProject.getLookup().lookup(AntArtifactProvider.class);
+            ProjectClassPathExtender pce = targetProject.getLookup().lookup(ProjectClassPathExtender.class);
+            AntArtifactProvider antArtifactProvider = clientProject.getLookup().lookup(AntArtifactProvider.class);
             if (antArtifactProvider!=null) {
                 AntArtifact jarArtifact = getJarArtifact(antArtifactProvider);
                 if (jarArtifact!=null) return true;
@@ -536,7 +537,7 @@ public class JaxWsUtils {
             assert clientProject!=null && targetProject!=null;
             if (clientProject!=targetProject) {
                 ProjectClassPathExtender pce = (ProjectClassPathExtender)targetProject.getLookup().lookup(ProjectClassPathExtender.class);
-                AntArtifactProvider antArtifactProvider = (AntArtifactProvider)clientProject.getLookup().lookup(AntArtifactProvider.class);
+                AntArtifactProvider antArtifactProvider = clientProject.getLookup().lookup(AntArtifactProvider.class);
                 if (antArtifactProvider!=null) {
                     AntArtifact jarArtifact = getJarArtifact(antArtifactProvider);
                     if (jarArtifact!=null) {
@@ -686,8 +687,8 @@ public class JaxWsUtils {
     }
     
     public static boolean isEjbJavaEE5orHigher(ProjectInfo projectInfo) {
-        int projectType = projectInfo.getProjectType();
-        if (projectType == ProjectInfo.EJB_PROJECT_TYPE) {
+        int projType = projectInfo.getProjectType();
+        if (projType == ProjectInfo.EJB_PROJECT_TYPE) {
             FileObject ddFolder = JAXWSSupport.getJAXWSSupport(projectInfo.getProject().getProjectDirectory()).getDeploymentDescriptorFolder();
             if (ddFolder==null || ddFolder.getFileObject("ejb-jar.xml")==null) { //NOI18N
                 return true;
@@ -702,8 +703,8 @@ public class JaxWsUtils {
     }
     
     public static boolean isCarProject(ProjectInfo projectInfo) {
-        int projectType = projectInfo.getProjectType();
-        return projectType == ProjectInfo.CAR_PROJECT_TYPE;
+        int projType = projectInfo.getProjectType();
+        return projType == ProjectInfo.CAR_PROJECT_TYPE;
     }
     
     /** Setter for WebService annotation attribute, e.g. serviceName = "HelloService"

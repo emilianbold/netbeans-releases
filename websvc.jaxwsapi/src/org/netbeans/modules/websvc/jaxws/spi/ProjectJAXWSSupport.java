@@ -153,11 +153,20 @@ public abstract class ProjectJAXWSSupport implements JAXWSSupportImpl {
             } catch(Exception e){
                 ErrorManager.getDefault().notify(e); //TODO handle this
             }
+        } else {
+            try {
+                addServletElement(project, serviceName, serviceImpl);
+            } catch(IOException e){
+                ErrorManager.getDefault().notify(e); //TODO handle this
+            }
         }
     }
     
     protected abstract void addJaxwsArtifacts(Project project, String wsName,
             String serviceImpl) throws Exception;
+    
+    protected void addServletElement(Project project, String wsName, String serviceImpl) throws IOException {        
+    }
     
     /*
      * Add web service to jax-ws.xml
@@ -259,6 +268,12 @@ public abstract class ProjectJAXWSSupport implements JAXWSSupportImpl {
                         addJaxwsArtifacts(project, serviceName, serviceImpl);
                     } catch(Exception e){
                         ErrorManager.getDefault().notify(e); //TODO handle this
+                    }
+                } else {
+                    try {
+                        addServletElement(project, serviceName, serviceImpl);
+                    } catch (IOException ex) {
+                        ErrorManager.getDefault().notify(ex); //TODO handle this
                     }
                 }
                 FileObject buildImplFo = project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_IMPL_XML_PATH);
