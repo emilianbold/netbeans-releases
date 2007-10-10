@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.apt.support.APTSystemStorage;
 import org.netbeans.modules.cnd.apt.utils.FilePathCache;
 import org.netbeans.modules.cnd.apt.utils.TextCache;
 import org.netbeans.modules.cnd.modelimpl.cache.CacheManager;
+import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.memory.LowMemoryEvent;
 import org.netbeans.modules.cnd.modelimpl.memory.LowMemoryListener;
@@ -78,13 +79,13 @@ import org.openide.util.RequestProcessor;
  * @author Vladimir Kvashin
  */
 public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startupable, CsmModelAccessor.CsmModelEx {
-    
+
     public ModelImpl() {
         if( ! isStandalone() ) {
             ModelSupport.instance().init(this);
         }
     }
-
+    
     public static boolean isStandalone() {
         return ! ModelImpl.class.getClassLoader().getClass().getName().startsWith("org.netbeans."); // NOI18N
     }
@@ -492,7 +493,13 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
         return processor.post(new Runnable() {
             public void run() {
                 Thread.currentThread().setName(taskName); // NOI18N
-                task.run();
+		try {
+		    task.run();
+		}
+		catch( Throwable thr ) {
+		    DiagnosticExceptoins.register(thr);
+		    thr.printStackTrace();
+		}
             }
         });
     }

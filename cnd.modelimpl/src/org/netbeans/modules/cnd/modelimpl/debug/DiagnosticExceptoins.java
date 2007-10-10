@@ -39,54 +39,43 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.modelimpl.trace;
-
-import java.io.File;
-import java.util.List;
-import org.netbeans.modules.cnd.api.model.CsmModel;
-import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
+package org.netbeans.modules.cnd.modelimpl.debug;
 
 /**
- *
- * @author Vladimir Voskresensky
+ * Allows to get control as soon as an exception occurs
+ * in one of the code model threads
+ * (parser thread, repository writing thread, code model request processor)
+ * 
+ * Use for testing purposes only
+ * 
+ * @author Vladimir Kvashin
  */
-public final class TestModelHelper {
-    private TraceModel traceModel;
+public class DiagnosticExceptoins {
+    
+    public interface Hook {
+	/**
+	 * Is called whenether an exception or error occurs 
+	 * in one of the code model threads
+	 * (parser thread, repository writing thread, 
+	 * code model request processor)
+	 */
+	void exception(Throwable thr);
+    }
+    
+    private static Hook hook;
+    
+    public static void setHook(Hook aHook) {
+	hook = aHook;
+    }
     
     /**
-     * Creates a new instance of TestModelHelper
+     * This method is called from within catch(...) in code model threads.
+     * See Hook.exception description for more details
      */
-    public TestModelHelper() {
-        traceModel = new TraceModel();
-    }
-    
-    /*package-local*/ TraceModel getTraceModel() {
-        return traceModel;
-    }
-    
-    public void initParsedProject(String projectRoot, 
-            List<String> sysIncludes, List<String> usrIncludes) throws Exception {
-        traceModel.setIncludePaths(sysIncludes, usrIncludes);
-        traceModel.test(new File(projectRoot), System.out, System.err);
-    } 
-    
-    public void initParsedProject(String projectRoot) throws Exception {
-        traceModel.test(new File(projectRoot), System.out, System.err);
-    }     
-    
-    public ProjectBase getProject(){
-        return traceModel.getProject();
-    }
-    
-    public void resetProject() {
-	traceModel.resetProject();
-    }
-
-    public CsmModel getModel(){
-        return traceModel.getModel();
-    }
-    
-    public void shutdown() {
-        traceModel.shutdown();
+    public static void register(Throwable thr) {
+	Hook aHook = hook;
+	if( aHook != null ) {
+	    hook.exception(thr);
+	}
     }
 }

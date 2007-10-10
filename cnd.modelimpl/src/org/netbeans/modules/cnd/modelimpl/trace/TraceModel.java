@@ -1785,7 +1785,7 @@ public class TraceModel {
         }
     }
     
-    private void resetProject() {
+    /*package*/ void resetProject() {
 	if (getProject() != null) {
 	    Object platformProject = getProject().getPlatformProject();
 	    ((ModelImpl) CsmModelAccessor.getModel()).closeProject(platformProject);

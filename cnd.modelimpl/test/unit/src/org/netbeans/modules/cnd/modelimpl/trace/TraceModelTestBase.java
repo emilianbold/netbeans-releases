@@ -78,6 +78,10 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
     protected final CsmProject getCsmProject(){
         return helper.getProject();
     }
+    
+    protected final void resetProject() {
+	helper.resetProject();
+    }
 
     protected final CsmModel getModel(){
         return helper.getModel();

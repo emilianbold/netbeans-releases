@@ -47,6 +47,7 @@ import java.util.*;
 import javax.swing.Timer;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
+import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.repository.api.*;
 import org.netbeans.modules.cnd.repository.spi.*;
@@ -153,6 +154,7 @@ public class RepositoryListenerImpl implements RepositoryListener {
         if (exc.getCause() != null) {
             exc.getCause().printStackTrace(System.err);
         }
+	DiagnosticExceptoins.register(exc.getCause());
     }
 
     // NB: un-synchronized!

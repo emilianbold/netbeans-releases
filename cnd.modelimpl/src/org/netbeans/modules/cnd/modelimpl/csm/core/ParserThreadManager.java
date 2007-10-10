@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArraySet;
+import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.openide.util.RequestProcessor;
 
@@ -80,6 +81,10 @@ public class ParserThreadManager  {
                 wrappers.add(this);
                 delegate.run();
             }
+	    catch(Throwable thr) {
+		DiagnosticExceptoins.register(thr);
+		thr.printStackTrace();
+	    }
             finally {
                 wrappers.remove(this);
             }
