@@ -184,7 +184,7 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor,
     }
 
     public boolean isPaintable () {
-        return false;
+        return true;
     }
 
     public void paintValue (Graphics g, Rectangle rectangle) {
