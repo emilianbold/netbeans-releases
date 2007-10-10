@@ -249,7 +249,7 @@ public class GuardedBlockHandlerFactoryImpl implements GuardedBlockHandlerFactor
         void addChange(ModificationResult.Difference diff) {
             changes.add(new ChangeInfo(
                     diff.getStartPosition().getOffset() - originalPosition,
-                    diff.getOldText().length(),
+                    diff.getOldText() != null ? diff.getOldText().length() : 0,
                     diff.getNewText()));
         }
 
