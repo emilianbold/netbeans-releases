@@ -610,6 +610,7 @@ public class ProfilesModelHelper {
         if (sc != null) {
             try {
                 FileObject webXmlFO = getDDFO(c);
+                if (webXmlFO == null) return; // currently we only know what to do if it's WebProject and DD exists
                 WebApp webXmlDD = DDProvider.getDefault().getDDRoot(webXmlFO);
                 if ((webXmlDD != null) && (webXmlDD.getStatus()!=WebApp.STATE_INVALID_UNPARSABLE)) {
                     webXmlDD.removeSecurityConstraint(sc);
@@ -624,6 +625,7 @@ public class ProfilesModelHelper {
     public static void setSSLAttributes(final WSDLComponent c) {
         if (getSecurityConstraint(c) == null) {
             FileObject webXmlFO = getDDFO(c);
+            if (webXmlFO == null) return; // currently we only know what to do if it's WebProject and DD exists
             try {
                 WebApp webXmlDD = DDProvider.getDefault().getDDRoot(webXmlFO);
                 if ((webXmlDD != null) && (webXmlDD.getStatus()!=WebApp.STATE_INVALID_UNPARSABLE)) {
