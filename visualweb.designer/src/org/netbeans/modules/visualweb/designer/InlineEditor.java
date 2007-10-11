@@ -238,10 +238,10 @@ public abstract class InlineEditor {
         }
 
         if (chosenProperty == -1) {
-            if (useDefault) {
+            if (!useDefault) {
                 // #104462 No default inline editable property specified.
-                warn("There is no default inline editable property specified for the component (missing '*' char)" // NOI18N
-                        + ", inline editable properties=" + Arrays.asList(properties) // NOI18N
+                // XXX #118293.
+                warn("There is no value found for specified inline editable properties, properties=" + Arrays.asList(properties) // NOI18N
                         + ", component root element=" + componentRootElement); // NOI18N
             }
             return null;
