@@ -5,7 +5,7 @@ Description: Library for automate HTTP unit testing.
 License: HttpUnit
 Origin: http://httpunit.sourceforge.net
 
-Copyright © 2000-2006, Russell Gold
+Copyright (c) 2000-2006, Russell Gold
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
