@@ -43,9 +43,6 @@ package org.netbeans.modules.xml.api.model;
 
 import java.util.Enumeration;
 
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
 /**
  * A query interface returning possible fenomens as given by document grammar.
  * <p>
@@ -95,7 +92,7 @@ public interface GrammarQuery {
      * @return enumeration of <code>GrammarResult</code>s (ELEMENT_NODEs) that can be queried on name, and attributes.
      *         Every list member represents one possibility.  
      */
-    Enumeration queryElements(HintContext virtualElementCtx);
+    Enumeration<GrammarResult> queryElements(HintContext virtualElementCtx);
 
     /**
      * Query attribute options for given context. All implementations must handle
@@ -107,7 +104,7 @@ public interface GrammarQuery {
      * @return enumeration of <code>GrammarResult</code>s (ATTRIBUTE_NODEs) that can be queried on name, and attributes.
      *         Every list member represents one possibility.  
      */
-    Enumeration queryAttributes(HintContext ownerElementCtx);
+    Enumeration<GrammarResult> queryAttributes(HintContext ownerElementCtx);
 
     /**
      * Return options for value at given context.
@@ -120,7 +117,7 @@ public interface GrammarQuery {
      * @return enumeration of <code>GrammarResult</code>s (TEXT_NODEs) that can be queried on name, and attributes.
      *         Every list member represents one possibility.  
      */
-    Enumeration queryValues(HintContext virtualTextCtx);
+    Enumeration<GrammarResult> queryValues(HintContext virtualTextCtx);
 
     /**
      * query default value for given context. Two context types must be handled:
@@ -135,21 +132,21 @@ public interface GrammarQuery {
      * @param prefix prefix filter
      * @return enumeration of <code>GrammarResult</code>s (ENTITY_REFERENCE_NODEs)
      */
-    Enumeration queryEntities(String prefix);
+    Enumeration<GrammarResult> queryEntities(String prefix);
 
     /**
      * Allow to get names of <b>declared notations</b>.
      * @param prefix prefix filter
      * @return enumeration of <code>GrammarResult</code>s (NOTATION_NODEs)
      */    
-    Enumeration queryNotations(String prefix);
+    Enumeration<GrammarResult> queryNotations(String prefix);
 
     /**
      * Distinquieshes between empty enumaration types.
      * @return <code>true</code> there is no known result 
      *         <code>false</code> grammar does not allow here a result
      */
-    boolean isAllowed(Enumeration en);
+    boolean isAllowed(Enumeration<GrammarResult> en);
     
     
     
