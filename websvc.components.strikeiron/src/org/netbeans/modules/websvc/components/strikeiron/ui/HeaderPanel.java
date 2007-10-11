@@ -28,8 +28,10 @@
 
 package org.netbeans.modules.websvc.components.strikeiron.ui;
 
+import java.awt.event.KeyEvent;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
+import org.netbeans.modules.websvc.components.ServiceData;
 
 /**
  *
@@ -40,6 +42,11 @@ public class HeaderPanel extends javax.swing.JPanel {
     /** Creates new form HeaderPanel */
     public HeaderPanel() {
         initComponents();
+    }
+    
+    private ServiceData service;
+    void setServiceData(ServiceData service) {
+        this.service = service;
     }
     
     JLabel getTitle() {
@@ -94,7 +101,7 @@ public class HeaderPanel extends javax.swing.JPanel {
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
-    
+        
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;

@@ -30,6 +30,7 @@ package org.netbeans.modules.websvc.components.strikeiron.ui;
 
 import java.awt.Container;
 import java.awt.Font;
+import java.awt.event.KeyEvent;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -42,7 +43,6 @@ import javax.swing.JViewport;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkEvent.EventType;
 import javax.swing.event.HyperlinkListener;
-import javax.swing.text.Utilities;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
 import org.netbeans.modules.websvc.components.ServiceData;
@@ -64,6 +64,22 @@ public class ServiceDetailPanel extends JTextPane {
         header = new HeaderPanel();
         title = header.getTitle();
         tfPackageName = header.getPackageNameTF();
+        tfPackageName.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                if (KeyEvent.VK_ENTER == evt.getKeyCode()) {
+                    if (currentData != null) {
+                        currentData.setPackageName(tfPackageName.getText());
+                    }
+                }
+            }
+        });
+        tfPackageName.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                if (currentData != null) {
+                    currentData.setPackageName(tfPackageName.getText());
+                }
+            }
+        });
     }
 
     private void initHtmlKit() {
@@ -134,7 +150,8 @@ public class ServiceDetailPanel extends JTextPane {
     }
     
     String getPackageName() {
-        return tfPackageName.getText();
+        currentData.setPackageName(tfPackageName.getText());
+        return currentData.getPackageName();
     }
     
     public void setTitle(String value) {

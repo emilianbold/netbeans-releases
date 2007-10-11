@@ -73,7 +73,8 @@ public class SiServiceData extends ServiceData {
     }
 
     public void setPackageName(String packageName) {
-        if (DEFAUL_PACKAGE_NAME.equals(packageName)) {
+        if (packageName == null || packageName.trim().length() == 0 ||
+            DEFAUL_PACKAGE_NAME.equals(packageName)) {
             this.packageName = null;
         }
         this.packageName = packageName;
