@@ -126,6 +126,9 @@ public class JavaRefactoringsFactory implements RefactoringPluginFactory {
             if (RetoucheUtils.isJavaFile(f)) {
                 return true;
             }
+            if (f.isFolder()) {
+                return true;
+            }
         }
         return false;
     }
