@@ -104,8 +104,6 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter {
 
     private static final Logger logger = Logger.getLogger(TagBasedLexerFormatter.class.getName());
 
-    private enum LineFormattingType {NORMAL, RELATIVE, NONE}
-
     /** Creates a new instance of TagBases */
     public TagBasedLexerFormatter(Class kitClass) {
         super(kitClass);
@@ -205,7 +203,7 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter {
         return thereAreMoreTokens;
     }
 
-    private void calcIndents_processClosingTag(final String tagName, final int tagClosedOnLine, final LineFormattingType[] lineFormatting, final LinkedList<TagIndentationData> unprocessedOpeningTags, final Collection<TagIndentationData> matchedOpeningTags) throws BadLocationException {
+    private void calcIndents_processClosingTag(final String tagName, final int tagClosedOnLine, final TransferData transferData, final LinkedList<TagIndentationData> unprocessedOpeningTags, final Collection<TagIndentationData> matchedOpeningTags) throws BadLocationException {
         LinkedList<TagIndentationData> tagsToBeRemoved = new LinkedList<TagIndentationData>();
 
         while (!unprocessedOpeningTags.isEmpty()) {
@@ -218,7 +216,7 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter {
                 // mark all the stuff between unformattable tag as unformattable
                 if (isUnformattableTag(tagName)) {
                     for (int i = tagClosedOnLine - 1; i > processedTD.getLine(); i--) {
-                        lineFormatting[i] = LineFormattingType.NONE;
+                        transferData.setNonFormattable(i);
                     }
                 }
 
@@ -247,16 +245,22 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter {
         }
 
         try {
-            int lastLine = Utilities.getLineOffset(doc, doc.getLength());
+            TransferData transferData = null;
+            
+            if (isTopLevelLanguage(doc)){
+                transferData = new TransferData();
+                transferData.init(doc);
+            } else {
+                transferData = TransferData.readFromDocument(doc);
+                assert transferData != null;
+            }
+            
             int firstRefBlockLine = Utilities.getLineOffset(doc, startOffset);
             int lastRefBlockLine = Utilities.getLineOffset(doc, endOffset);
             int firstUnformattableLine = -1;
 
-            LineFormattingType[] lineFormatting = new LineFormattingType[lastLine + 1];
-            
-            // Only reindent lines that start with tokens of current language
-            Arrays.fill(lineFormatting, LineFormattingType.RELATIVE);
-            int[] indentsWithinTags = new int[lastLine + 1];
+            boolean currentLanguage[] = new boolean[transferData.getNumberOfLines()];
+            int[] indentsWithinTags = new int[transferData.getNumberOfLines()];
 
             TokenSequence[] tokenSequences = (TokenSequence[]) tokenHierarchy.tokenSequenceList(supportedLanguagePath(), 0, Integer.MAX_VALUE).toArray(new TokenSequence[0]);
             TextBounds[] tokenSequenceBounds = new TextBounds[tokenSequences.length];
@@ -266,7 +270,7 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter {
 
                 if (tokenSequenceBounds[i].getStartLine() > -1) {
                     // skip white-space blocks
-                    markCurrentLanguageLinesAsFormattable(doc, tokenSequenceBounds[i], lineFormatting);
+                    markCurrentLanguageLinesAsFormattable(doc, tokenSequenceBounds[i], currentLanguage);
                 }
             }
 
@@ -289,7 +293,7 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter {
                             thereAreMoreTokens &= calcIndents_processOpeningTag(doc, tokenSequence, tagName, unprocessedOpeningTags, indentsWithinTags);
                         } else {
                             int tagLine = Utilities.getLineOffset(doc, tokenSequence.offset());
-                            calcIndents_processClosingTag(tagName, tagLine, lineFormatting, unprocessedOpeningTags, matchedOpeningTags);
+                            calcIndents_processClosingTag(tagName, tagLine, transferData, unprocessedOpeningTags, matchedOpeningTags);
                         }
                     }
 
@@ -305,10 +309,10 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter {
                     // detect the end of an unformattable block; mark it
                     if (firstUnformattableLine > -1 && (!wasPreviousTokenUnformattable || !thereAreMoreTokens)) {
 
-                        int lastUnformattableLine = thereAreMoreTokens ? Utilities.getLineOffset(doc, tokenSequence.offset() - 1) : lastLine;
+                        int lastUnformattableLine = thereAreMoreTokens ? Utilities.getLineOffset(doc, tokenSequence.offset() - 1) : transferData.getNumberOfLines() - 1;
 
                         for (int i = firstUnformattableLine + 1; i < lastUnformattableLine; i++) {
-                            lineFormatting[i] = LineFormattingType.NONE;
+                            transferData.setNonFormattable(i);
                         }
 
                         firstUnformattableLine = -1;
@@ -325,7 +329,7 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter {
                         }
 
                         for (int i = firstLineOfEmbeddedBlock; i <= lastLineOfEmbeddedBlock; i++) {
-                            lineFormatting[i] = LineFormattingType.RELATIVE;
+                            currentLanguage[i] = false;
                         }
                     }
 
@@ -338,7 +342,7 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter {
             //****************
             // calc line indents - pass 3
             // TODO: optimize it
-            int[] indentLevels = new int[lastLine + 1];
+            int[] indentLevels = new int[transferData.getNumberOfLines()];
             Arrays.fill(indentLevels, 0);
 
             for (TagIndentationData td : matchedOpeningTags) {
@@ -349,42 +353,33 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter {
                 }
             }
             
-            int[] originalIndents = new int[lastLine + 1];
-            int[] absoluteIndents = new int[lastLine + 1];
+            int[] previousIndents = transferData.getTransformedOffsets();
+            int[] absoluteIndents = new int[transferData.getNumberOfLines()];
             
-            for (int i = 0; i < lastLine; i++) {
-                int lineStart = Utilities.getRowStartFromLineOffset(doc, i);
-                int eol = Utilities.getRowEnd(doc, lineStart);
-                
-                originalIndents[i] = Math.min(eol - lineStart,
-                        Utilities.getFirstNonWhiteFwd(doc, lineStart) - lineStart);
-                
+            for (int i = 0; i < transferData.getNumberOfLines(); i++) {
                 absoluteIndents[i] = indentLevels[i] * doc.getShiftWidth() + indentsWithinTags[i];
             }
             
-            LineFormattingType lastFormattingType = null;
+            boolean lastLineIsCurrentLanguage = false;
             int lastCrossPoint = 0;
-            int[] newIndents = new int[lastLine + 1];
-            boolean topLevel = isTopLevelLanguage(doc);
+            int[] newIndents = new int[transferData.getNumberOfLines()];
 
-            for (int i = 0; i < lastLine; i++) {
+            for (int i = 0; i < transferData.getNumberOfLines(); i++) {
+                if (transferData.isFormattable(i)){
+                    newIndents[i] = transferData.getOriginalIndent(i);
+                } else {
 
-                if (lastFormattingType != lineFormatting[i]) {
-                    // crosspoint
-                    lastFormattingType = lineFormatting[i];
-                    lastCrossPoint = i;
-                }
+                    if (lastLineIsCurrentLanguage != currentLanguage[i]) {
+                        // crosspoint
+                        lastLineIsCurrentLanguage = currentLanguage[i];
+                        lastCrossPoint = i;
+                    }
 
-                switch (lastFormattingType) {
-                    case NORMAL:
-                        newIndents[i] = (topLevel ? 0 : originalIndents[lastCrossPoint]) + absoluteIndents[i];
-                        break;
-                    case RELATIVE:
-                        newIndents[i] = (topLevel ? 0 : originalIndents[i]) + absoluteIndents[i];
-                        break;
-                    case NONE:
-                        newIndents[i] = originalIndents[i];
-                        break;
+                    if (lastLineIsCurrentLanguage) {
+                            newIndents[i] = previousIndents[lastCrossPoint] + absoluteIndents[i];
+                    } else {
+                        newIndents[i] = previousIndents[i] + absoluteIndents[i];
+                    }
                 }
             }
                         
@@ -392,25 +387,23 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter {
                 int lineStart = Utilities.getRowStartFromLineOffset(doc, line);
                 changeRowIndent(doc, lineStart, newIndents[line]);
             }
+            
+            transferData.setTransformedOffsets(newIndents);
 
             if (logger.isLoggable(Level.FINE)) {
                 StringBuilder buff = new StringBuilder();
 
-                for (int i = 0; i <= lastLine; i++) {
+                for (int i = 0; i < transferData.getNumberOfLines(); i++) {
                     int lineStart = Utilities.getRowStartFromLineOffset(doc, i);
 
                     char formattingTypeSymbol = 0;
-
-                    switch (lineFormatting[i]) {
-                        case NORMAL:
-                            formattingTypeSymbol = 'N';
-                            break;
-                        case RELATIVE:
-                            formattingTypeSymbol = 'R';
-                            break;
-                        case NONE:
-                            formattingTypeSymbol = '-';
-                            break;
+                    
+                    if (!transferData.isFormattable(i)){
+                        formattingTypeSymbol = '-';
+                    } else if (currentLanguage[i]){
+                        formattingTypeSymbol = 'N';
+                    } else {
+                        formattingTypeSymbol = 'R';
                     }
 
                     buff.append(i + ":" + indentLevels[i] + ":" + formattingTypeSymbol + ":" + doc.getText(lineStart, Utilities.getRowEnd(doc, lineStart) - lineStart) + ".\n"); //NOI18N
@@ -506,7 +499,7 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter {
     }
 
     protected static int getNumberOfLines(BaseDocument doc) throws BadLocationException {
-        return Utilities.getLineOffset(doc, doc.getLength() - 1) + 1;
+        return Utilities.getLineOffset(doc, doc.getLength()) + 1;
     }
 
     protected int getNextClosingTagOffset(JoinedTokenSequence tokenSequence, int offset) throws BadLocationException {
@@ -595,7 +588,7 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter {
         return new TextBounds(absoluteStart, absoluteEnd, languageBlockStart, languageBlockEnd, firstLineOfTheLanguageBlock, lastLineOfTheLanguageBlock);
     }
 
-    private void markCurrentLanguageLinesAsFormattable(BaseDocument doc, TextBounds languageBounds, LineFormattingType[] lineFormatting) throws BadLocationException {
+    private void markCurrentLanguageLinesAsFormattable(BaseDocument doc, TextBounds languageBounds, boolean[] currentLanguage) throws BadLocationException {
         if (languageBounds.getStartPos() == -1){
             return; // only white spaces
         }
@@ -609,12 +602,65 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter {
         }
 
         for (int i = firstLineOfTheLanguageBlock; i <= languageBounds.getEndLine(); i++) {
-            lineFormatting[i] = LineFormattingType.NORMAL;
+            currentLanguage[i] = true;
         }
     }
     
     protected boolean isTopLevelLanguage(BaseDocument doc) {
         return supportedLanguagePath().size() == 1;
+    }
+    
+    public static class TransferData{
+        private static final String DOC_PROPERTY = "TagBasedFormatterData"; //NOI18N
+        private boolean formattableLines[];
+        private int originalIndents[];
+        private int transformedOffsets[];
+        private int numberOfLines;
+        
+        public void init(BaseDocument doc) throws BadLocationException {
+            numberOfLines = TagBasedLexerFormatter.getNumberOfLines(doc);
+            formattableLines = new boolean[numberOfLines];
+            originalIndents = new int[numberOfLines];
+            transformedOffsets = new int[numberOfLines];
+            
+            for (int i = 0; i < numberOfLines; i++) {
+                int lineStart = Utilities.getRowStartFromLineOffset(doc, i);
+                int eol = Utilities.getRowEnd(doc, lineStart);
+                
+                originalIndents[i] = Math.min(eol - lineStart,
+                        Utilities.getFirstNonWhiteFwd(doc, lineStart) - lineStart);
+            }
+            
+            doc.putProperty(DOC_PROPERTY, this);
+        }
+        
+        public static TransferData readFromDocument(BaseDocument doc){
+            return (TransferData) doc.getProperty(DOC_PROPERTY);
+        }
+        
+        public int getNumberOfLines(){
+            return numberOfLines;
+        }
+        
+        public boolean isFormattable(int line){
+            return formattableLines[line];
+        }
+        
+        public void setNonFormattable(int line){
+            formattableLines[line] = false;
+        }
+
+        public int[] getTransformedOffsets() {
+            return transformedOffsets;
+        }
+       
+        public void setTransformedOffsets(int[] transformedOffsets) {
+            this.transformedOffsets = transformedOffsets;
+        }
+        
+        private int getOriginalIndent(int i) {
+            return originalIndents[i];
+        }
     }
     
     //    protected void enterPressed(JTextComponent txtComponent, int dotPos) throws BadLocationException {
@@ -779,60 +825,6 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter {
         @Override
         public String toString() {
             return "pos " + startPos + "-" + endPos + ", lines " + startLine + "-" + endLine; //NOI18N
-        }
-    }
-
-    protected class InitialIndentData {
-
-        private final int indentLevelBias;
-        private final int indentBias;
-        private final int[] indentLevels;
-        private final int[] indentsWithinTags;
-        private BaseDocument doc;
-
-        public InitialIndentData(BaseDocument doc, int[] indentLevels, int[] indentsWithinTags, int firstRefBlockLine, int lastRefBlockLine) throws BadLocationException {
-
-            boolean thereIsALineBeforeSelection = firstRefBlockLine > 0;
-            
-            int initialIndent = getInitialIndentFromPreviousLine(doc, firstRefBlockLine) 
-                    - (thereIsALineBeforeSelection ? indentsWithinTags[firstRefBlockLine - 1] : 0);
-            
-            int indentLevelBiasFromTheTop = thereIsALineBeforeSelection ?
-                initialIndent / doc.getShiftWidth() - indentLevels[firstRefBlockLine - 1]
-                : initialIndent / doc.getShiftWidth();
-
-//            boolean thereIsALineBehindSelection = lastRefBlockLine + 1 < getNumberOfLines(doc);
-//            
-//            int initialIndentFromTheBottom = getInitialIndentFromNextLine(doc, lastRefBlockLine) 
-//                    - (thereIsALineBehindSelection ? indentsWithinTags[lastRefBlockLine + 1] : 0);
-//            
-//            int indentLevelBiasFromTheBottom = thereIsALineBehindSelection ?
-//                initialIndentFromTheBottom / doc.getShiftWidth() - indentLevels[lastRefBlockLine + 1]
-//                : initialIndentFromTheBottom / doc.getShiftWidth();
-//
-//            if (indentLevelBiasFromTheBottom > indentLevelBiasFromTheTop) {
-//                indentLevelBias = indentLevelBiasFromTheBottom;
-//                initialIndent = initialIndentFromTheBottom;
-//            } else {
-                indentLevelBias = indentLevelBiasFromTheTop;
-//            }
-
-            indentBias = initialIndent % doc.getShiftWidth();
-            this.indentLevels = indentLevels;
-            this.indentsWithinTags = indentsWithinTags;
-            this.doc = doc;
-        }
-
-        public boolean isEligibleToIndent(int line) {
-            return getActualIndentLevel(line) >= 0;
-        }
-
-        public int getIndent(int line) {
-            return indentBias + indentsWithinTags[line] + getActualIndentLevel(line) * doc.getShiftWidth();
-        }
-
-        private int getActualIndentLevel(int line) {
-            return indentLevels[line] + indentLevelBias;
         }
     }
 
