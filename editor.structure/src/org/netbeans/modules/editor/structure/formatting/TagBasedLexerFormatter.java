@@ -382,10 +382,16 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter {
                     }
                 }
             }
+            
+            int lineBeforeSelectionBias = 0;
+            
+            if (firstRefBlockLine > 0){
+                lineBeforeSelectionBias = transferData.getOriginalIndent(firstRefBlockLine - 1) - newIndents[firstRefBlockLine - 1];
+            }
                         
             for (int line = firstRefBlockLine; line <= lastRefBlockLine; line++) {
                 int lineStart = Utilities.getRowStartFromLineOffset(doc, line);
-                changeRowIndent(doc, lineStart, newIndents[line]);
+                changeRowIndent(doc, lineStart, newIndents[line] + lineBeforeSelectionBias);
             }
             
             transferData.setTransformedOffsets(newIndents);
