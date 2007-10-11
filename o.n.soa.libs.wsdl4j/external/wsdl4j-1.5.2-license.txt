@@ -1,13 +1,11 @@
 Name: WSDL4J
 Version: 1.5.2
-Description: Library for creation, representation, and manipulation of WSDL documents.
-License: SourceForge License
-Origin: http://sourceforge.net/projects/wsdl4j
-Files: wsdl4j-1.5.2.zip
-Source: http://sourceforge.net/project/showfiles.php?group_id=128811&package_id=141069&release_id=373235
 OSR: 4277
-
-Use of WSDL4J version 1.5.2 is governed by the terms of the license below:
+Description: Library for creation, representation, and manipulation of WSDL documents.
+License: SourceForge
+Files: wsdl4j-1.5.2.zip
+Origin: http://sourceforge.net/projects/wsdl4j
+Source: http://sourceforge.net/project/showfiles.php?group_id=128811&package_id=141069&release_id=373235
 
 Common Public License - v 1.0
 
