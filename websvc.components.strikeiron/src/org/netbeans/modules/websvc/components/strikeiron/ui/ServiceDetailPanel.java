@@ -104,7 +104,7 @@ public class ServiceDetailPanel extends JTextPane {
         if (current != null) {
             getScrollPane().setColumnHeaderView(header);
             tfPackageName.setText(current.getPackageName());
-            title.setText(current.getServiceName());
+            setTitle(current.getServiceName());
         }
     }
     
@@ -131,7 +131,7 @@ public class ServiceDetailPanel extends JTextPane {
     }
     
     public void setTitle(String value) {
-        getScrollPane().setColumnHeaderView(value != null ? header : null);
+        //getScrollPane().setColumnHeaderView(value != null ? header : null);
         //getScrollPane().setCorner(JScrollPane.UPPER_RIGHT_CORNER, value != null ? rightCornerHeader : null);
         if (value != null) {                            
             title.setText("<html><h3>"+value+"</h3></html>");
