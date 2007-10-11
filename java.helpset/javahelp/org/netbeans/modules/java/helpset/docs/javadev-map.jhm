@@ -191,10 +191,10 @@
 <mapID target="i18n.pe.i18nregexp" url="internationalize/i18nstringformat.html" />
 <!-- CSH Help ID : Options : Advanced Options : Editing : Internationalization -->
 <mapID target="org.netbeans.modules.i18n.I18nOptions" url="internationalize/options_custominter.html" />
-<mapID target="netbeans.optionsDialog.java.formatting" url="tbd.html" />
-<mapID target="netbeans.optionsDialog.java.tasklist" url="tbd.html" />
-<mapID target="netbeans.optionsDialog.java.hints" url="tbd.html" />
-<mapID target="netbeans.optionsDialog.java.markoccurrences" url="tbd.html" />
+<mapID target="netbeans.optionsDialog.java.formatting" url="configure/options_javacode.html" />
+<mapID target="netbeans.optionsDialog.java.hints" url="configure/options_javacode.html" />
+<mapID target="netbeans.optionsDialog.java.tasklist" url="configure/options_javacode.html" />
+<mapID target="netbeans.optionsDialog.java.markoccurrences" url="configure/options_javacode.html" />
 <mapID target="ant_docs" url="ant/ant_docs.html" />
 <mapID target="ant_editing" url="ant/ant_editing.html" />
 <mapID target="ant_intro" url="ant/ant_intro.html" />
