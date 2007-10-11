@@ -267,7 +267,7 @@ public class RepositoryUtils {
     }
     
     public static void onProjectDeleted(NativeProject nativeProject) {
-	Key key = KeyUtilities.createProjectKey(nativeProject.getProjectRoot());
+	Key key = KeyUtilities.createProjectKey(nativeProject);
 	RepositoryAccessor.getRepository().removeUnit(key.getUnit());
     }
 

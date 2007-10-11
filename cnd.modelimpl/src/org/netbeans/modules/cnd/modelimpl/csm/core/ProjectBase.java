@@ -150,8 +150,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
         
         assert TraceFlags.PERSISTENT_REPOSITORY;
-        String qName = getUniqueName(platformProject);
-        Key key = KeyUtilities.createProjectKey(qName);
+        Key key = KeyUtilities.createProjectKey(getUniqueName(platformProject));
         RepositoryUtils.openUnit(key);
         Persistent o = RepositoryUtils.get(key);
         if( o != null ) {
@@ -1116,8 +1115,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         List<Key> res = new ArrayList<Key>();
         if (platformProject instanceof NativeProject){
             for(NativeProject nativeLib : ((NativeProject)platformProject).getDependences()){
-                final String qName = getUniqueName(nativeLib);
-                final Key key = KeyUtilities.createProjectKey(qName);
+                final Key key = KeyUtilities.createProjectKey(getUniqueName(nativeLib));
                 if (key != null) {
                     res.add(key);
                 }

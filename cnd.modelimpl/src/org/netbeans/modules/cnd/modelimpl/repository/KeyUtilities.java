@@ -46,6 +46,7 @@ import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
@@ -78,6 +79,10 @@ public class KeyUtilities {
     
     public static Key createProjectKey(String projectQualifiedName) {
         return new ProjectKey(projectQualifiedName);
+    }
+
+    public static Key createProjectKey(NativeProject nativeProject) {
+        return new ProjectKey(ProjectBase.getUniqueName(nativeProject));
     }
     
     public static Key createOffsetableDeclarationKey(OffsetableDeclarationBase obj) {
