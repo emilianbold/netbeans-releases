@@ -1650,6 +1650,20 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             
             //XXX: getting encoding for the folder is (technically speaking) incorrect:
             Charset encoding = FileEncodingQuery.getEncoding(rootFo);
+            Set<File> existingFilesInError = new HashSet<File>();
+            if (isInitialCompilation) {
+                if (TasklistSettings.isTasklistEnabled()) {
+                    for (URL u : TaskCache.getDefault().getAllFilesWithRecord(root)) {
+                        try {
+                            existingFilesInError.add(FileUtil.normalizeFile(new File(u.toURI())));
+                        } catch (URISyntaxException ex) {
+                            LOGGER.log(Level.FINE, null, ex);
+                        }
+                    }
+                } else {
+                    ensureAttributeValue(root, CONTAINS_TASKLIST_DATA, "false", false);
+                }
+            }
             Set<ElementHandle<TypeElement>> removed = isInitialCompilation ? null : new HashSet<ElementHandle<TypeElement>> ();
             Set<ElementHandle<TypeElement>> added =   isInitialCompilation ? null : new HashSet<ElementHandle<TypeElement>> ();
             Set<URL> errorBadgesToRefresh = new HashSet<URL>();
@@ -1660,6 +1674,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         compiledFiles.add(child);
                     }
                     continue;
+                }
+                if (!existingFilesInError.isEmpty()) {
+                    existingFilesInError.remove(child);
                 }
                 final String relativePath = FileObjects.getRelativePath(rootFile,child);
                 if (entry == null || entry.includes(relativePath.replace(File.separatorChar,'/'))) {
@@ -1771,6 +1788,10 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 }
             }
             if (TasklistSettings.isTasklistEnabled()) {
+                //delete .err files for files that were deleted while the IDE was stopped:
+                for (File f : existingFilesInError) {
+                    errorBadgesToRefresh.addAll(TaskCache.getDefault().dumpErrors(root, f.toURI().toURL(), f, Collections.<Diagnostic>emptyList()));
+                }
                 if (TasklistSettings.isBadgesEnabled() && !errorBadgesToRefresh.isEmpty()) {
                     ErrorAnnotator an = ErrorAnnotator.getAnnotator();
 
