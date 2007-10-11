@@ -1,0 +1,94 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+*     Copyright (c) 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+    <head>
+        <title>New Java Project with Existing Sources Wizard: Includes &amp; Excludes</title>
+        <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+
+    <body>
+        <h2>New Java Project with Existing Sources Wizard: Includes &amp; Excludes</h2>
+
+        <p><small><a href="#seealso">See Also</a></small>
+
+        <p>The New Java Project with Existing Sources wizard enables you to create a new 
+
+        <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+            <param name="content" value="./glossary_standard.html">
+            <param name="viewerActivator" value="javax.help.LinkLabel">
+            <param name="viewerStyle" value="javax.help.Popup">
+            <param name="viewerSize" value="400,220">
+            <param name="text" value="standard project">
+            <param name="textFontSize" value="medium">
+            <param name="textFontFamily" value="SansSerif">
+            <param name="textFontStyle" value="italic">
+            <param name="textFontWeight" value="bold">
+            <param name="textColor" value="blue">
+        </object> from an existing Java SE source folder. You open the wizard by opening 
+            the New Project wizard and selecting the Java Application with Existing Sources 
+            template from the General category.</p>
+
+        <p>The Includes &amp; Excludes panel is an optional step in the wizard which allows 
+            you to specify the packages you want to include when creating a new project. 
+            This can be useful if, for example, you are working from a large project that 
+            contains many packages maintained in the same location. You can filter the
+            packages scanned from your existing sources by entering paths to the packages
+            you want to either include or exclude. Classes that are not included will 
+            not be scanned when the wizard completes.</p>
+
+        <p>You can set the following properties:</p>
+
+        <ul>
+            <li><strong>Includes.</strong>Specifies the path or paths to packages you want 
+                to include. To enter a path, type in a path relative to the existing source
+                folder that points to a package containing classes that you want included.</li>
+            <li><strong>Excludes.</strong>Specifies the path or paths to packages you want 
+                to be excluded. To enter a path, type in a path relative to the existing 
+                source folder that points to a package containing classes that you want 
+                to be excluded.</li>
+        </ul>
+
+        <ul class="note">
+            <li>When you enter a valid path in either the Includes or Excludes field, the
+                corresponding <strong>Included Files</strong> and <strong>Excluded Files</strong> 
+                text areas automatically update to inform you of the files contained in the 
+                directories you specified.</li>
+             <li>Sample paths provided include: com/mycorp/, **/doc-files/, **/*.html. When using
+                wildcards, note that an asterisk (*) signifies all existing options, and a double 
+                asterisk (**) represents all possible combinations of super-directories from the
+                root folder.</li>
+        </ul>
+
+        <p>When you click Finish, the specified packages are scanned and included in the new
+            project. The project is created on your computer and opened in both the Projects 
+            window and the Files window.</p>
+
+        <p><strong>Notes:</strong></p>
+
+        <ul>
+            <li>Each Java Project with Existing Sources can only contain one source packages 
+                folder and its corresponding test packages folder. To work with multiple source 
+                folders, you have to create a separate project for each source folder and 
+                <a href="../../compile/comp_dependencies.html">create build dependencies between 
+                the projects</a>.</li>
+        </ul>
+
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="../../project/proj_stand_about.html">About Standard Projects</a></dd>
+            <dd><a href="../proj_free_about.html">About Free-Form Projects</a></dd>
+        </dl>
+
+        <hr><small><a href="../../credits.html">Legal Notices</a></small>
+        
+        <table border="0" cellpadding="20">
+            <tr><td>&nbsp;</td></tr>
+            <tr><td>&nbsp;</td></tr>
+            <tr><td>&nbsp;</td></tr>
+        </table>
+
+    </body>
+</html>

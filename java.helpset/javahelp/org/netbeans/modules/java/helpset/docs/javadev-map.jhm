@@ -229,6 +229,7 @@
 <!-- New J2SE project from existing sources Project wizard:-->
 <mapID target="org.netbeans.modules.java.j2seproject.ui.wizards.PanelConfigureProject_EXT" url="project/csh/proj_j2seexistsrc_wiz1.html" />
 <mapID target="org.netbeans.modules.java.j2seproject.ui.wizards.PanelSourceFolders" url="project/csh/proj_j2seexistsrc_wiz2.html" />
+<mapID target="org.netbeans.modules.java.j2seproject.ui.wizards.PanelIncludesExcludes" url="project/csh/proj_j2seexistsrc_wiz3.html" />
 
 <!-- Freeform J2SE and Web Project wizards:-->
 <mapID target="org.netbeans.modules.ant.freeform.ui.BasicProjectInfoWizardPanel" url="project/csh/proj_j2sefree_wiz1.html" />
