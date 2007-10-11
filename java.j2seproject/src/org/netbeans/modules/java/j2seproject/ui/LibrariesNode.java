@@ -141,7 +141,7 @@ final class LibrariesNode extends AbstractNode {
     LibrariesNode (String displayName, Project project, PropertyEvaluator eval, UpdateHelper helper, ReferenceHelper refHelper,
                    String classPathProperty, String[] classPathIgnoreRef, String platformProperty,
                    Action[] librariesNodeActions) {
-        super (new LibrariesChildren (eval, helper, refHelper, classPathProperty, classPathIgnoreRef, platformProperty), Lookups.singleton(project));
+        super (new LibrariesChildren (project, eval, helper, refHelper, classPathProperty, classPathIgnoreRef, platformProperty), Lookups.singleton(project));
         this.displayName = displayName;
         this.librariesNodeActions = librariesNodeActions;
     }
@@ -234,6 +234,7 @@ final class LibrariesNode extends AbstractNode {
         private static final String LIBRARIES_ICON = "org/netbeans/modules/java/j2seproject/ui/resources/libraries.gif"; //NOI18N
         private static final String ARCHIVE_ICON = "org/netbeans/modules/java/j2seproject/ui/resources/jar.gif";//NOI18N        
 
+        private final Project project;
         private final PropertyEvaluator eval;
         private final UpdateHelper helper;
         private final ReferenceHelper refHelper;
@@ -247,8 +248,9 @@ final class LibrariesNode extends AbstractNode {
         private ClassPath fsListener;
 
 
-        LibrariesChildren (PropertyEvaluator eval, UpdateHelper helper, ReferenceHelper refHelper,
+        LibrariesChildren (Project project, PropertyEvaluator eval, UpdateHelper helper, ReferenceHelper refHelper,
                            String classPathProperty, String[] classPathIgnoreRef, String platformProperty) {
+            this.project = project;
             this.eval = eval;
             this.helper = helper;
             this.refHelper = refHelper;
@@ -259,7 +261,8 @@ final class LibrariesNode extends AbstractNode {
 
         public void propertyChange(PropertyChangeEvent evt) {
             String propName = evt.getPropertyName();
-            if (classPathProperty.equals(propName) || ClassPath.PROP_ROOTS.equals(propName) || LibraryManager.PROP_LIBRARIES.equals(propName)) {
+            final boolean propRoots = ClassPath.PROP_ROOTS.equals(propName);
+            if (classPathProperty.equals(propName) || propRoots || LibraryManager.PROP_LIBRARIES.equals(propName)) {
                 synchronized (this) {
                     if (fsListener!=null) {
                         fsListener.removePropertyChangeListener (this);
@@ -268,8 +271,14 @@ final class LibrariesNode extends AbstractNode {
                 rp.post (new Runnable () {
                     public void run () {
                         setKeys(getKeys());
+                        if (propRoots) {
+                            J2SELogicalViewProvider lvp = project.getLookup().lookup(J2SELogicalViewProvider.class);
+                            if (lvp != null) {
+                                lvp.testBroken();
+                            }
+                        }
                     }
-                });
+                });                
             }
         }
 
