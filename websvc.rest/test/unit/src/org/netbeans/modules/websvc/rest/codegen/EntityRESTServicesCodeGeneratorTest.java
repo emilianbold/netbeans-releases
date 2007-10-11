@@ -75,7 +75,7 @@ public class EntityRESTServicesCodeGeneratorTest extends TestBase {
         assertEquals("Address", Util.singularize("Address"));
         assertEquals("Addresses", Util.pluralize("Address"));
         assertEquals("Addresses", Util.pluralize("Addresses"));
-        assertEquals("Airline", Util.singularize("Airline"));
+        assertEquals("Airline", Util.singularize("Airlines"));
         assertEquals("Airlines", Util.pluralize("Airlines"));
     }
 }
