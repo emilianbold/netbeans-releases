@@ -259,9 +259,9 @@ public class WebServiceNode extends AbstractNode implements Node.Cookie, Propert
             //attempt to recover
             File f = new File(wsdlURL);
             try{
-                url = f.toURL();
-            }catch(MalformedURLException e){
-                ErrorManager.getDefault().notify(e);
+                url = f.getCanonicalFile().toURI().normalize().toURL();
+            } catch (IOException exc) {
+                ErrorManager.getDefault().notify(exc);
             }
         }catch(MalformedURLException ex){
             ErrorManager.getDefault().notify(ex);
