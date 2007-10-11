@@ -304,11 +304,12 @@ public class WebProjectUtilities {
             if (welcomeFiles.sizeWelcomeFile() == 0) {
                 //create default index.jsp
                 FileObject indexJSPFo = createIndexJSP(webRoot);
-                assert indexJSPFo != null : "webRoot: " + webRoot + ", defaultJSP: index";//NOI18N
-                // Returning FileObject of main class, will be called its preferred action
-                resultSet.add(indexJSPFo);
-                welcomeFiles.addWelcomeFile("index.jsp"); //NOI18N
-                ddRoot.write(dd);
+                if (indexJSPFo != null) {
+                    // Returning FileObject of index.jsp, will be called its preferred action
+                    resultSet.add(indexJSPFo);
+                    welcomeFiles.addWelcomeFile("index.jsp"); //NOI18N
+                    ddRoot.write(dd);
+                }
             }
         } catch (ClassNotFoundException cnfe) {
             LOGGER.log(Level.SEVERE, cnfe.getLocalizedMessage(), cnfe);
