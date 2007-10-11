@@ -754,15 +754,15 @@ made subject to such option by the copyright holder.
                     </file>
                     <file name="Separator4.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="100"/>
+                        <attr name="position" intvalue="1500"/>
                     </file>
                     <file name="ToolsAction.instance">
                         <attr name="instanceClass" stringvalue="org.openide.actions.ToolsAction"/>
-                        <attr name="position" intvalue="200"/>
+                        <attr name="position" intvalue="1600"/>
                     </file>
                     <file name="PropertiesAction.instance">
                         <attr name="instanceClass" stringvalue="org.openide.actions.PropertiesAction"/>
-                        <attr name="position" intvalue="300"/>
+                        <attr name="position" intvalue="1700"/>
                     </file>
                 </folder> <!-- Actions -->
             </folder> <!-- x-cnd-sourcefile -->
@@ -831,15 +831,15 @@ made subject to such option by the copyright holder.
                     </file>
                     <file name="Separator5.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="100"/>
+                        <attr name="position" intvalue="1900"/>
                     </file>
                     <file name="ToolsAction.instance">
                         <attr name="instanceClass" stringvalue="org.openide.actions.ToolsAction"/>
-                        <attr name="position" intvalue="200"/>
+                        <attr name="position" intvalue="2000"/>
                     </file>
                     <file name="PropertiesAction.instance">
                         <attr name="instanceClass" stringvalue="org.openide.actions.PropertiesAction"/>
-                        <attr name="position" intvalue="400"/>
+                        <attr name="position" intvalue="2100"/>
                     </file>
                 </folder> <!-- Actions -->
             </folder> <!-- x-make -->
@@ -900,15 +900,15 @@ made subject to such option by the copyright holder.
                     </file>
                     <file name="Separator5.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="100"/>
+                        <attr name="position" intvalue="1700"/>
                     </file>
                     <file name="ToolsAction.instance">
                         <attr name="instanceClass" stringvalue="org.openide.actions.ToolsAction"/>
-                        <attr name="position" intvalue="200"/>
+                        <attr name="position" intvalue="1800"/>
                     </file>
                     <file name="PropertiesAction.instance">
                         <attr name="instanceClass" stringvalue="org.openide.actions.PropertiesAction"/>
-                        <attr name="position" intvalue="400"/>
+                        <attr name="position" intvalue="1900"/>
                     </file>
                 </folder> <!-- Actions -->
             </folder> <!-- x-shell -->
