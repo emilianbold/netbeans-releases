@@ -1623,7 +1623,7 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
 
         for (IndexedMethod method : methods) {
             String attributes = method.getEncodedAttributes();
-            if (attributes.length() > 3) {
+            if (attributes != null && attributes.length() > 3) {
                 candidates.add(method);
             }
         }
