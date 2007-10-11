@@ -134,10 +134,10 @@ public class J2SEProjectJAXWSClientSupport extends ProjectJAXWSClientSupport /*i
         }
         FileObject webServiceClass=null;
         if (classPath!=null) {
-            webServiceClass = classPath.findResource("javax/jws/WebService.class"); // NOI18N
+            webServiceClass = classPath.findResource("javax/xml/ws/WebServiceFeature.class"); // NOI18N
         }
         if (webServiceClass==null) {
-            // add JAX-WS 2.0 if WsImport is not on classpath
+            // add JAX-WS 2.1 if WsImport is not on classpath
             ProjectClassPathExtender pce = (ProjectClassPathExtender)project.getLookup().lookup(ProjectClassPathExtender.class);
             Library jaxwslib = LibraryManager.getDefault().getLibrary("jaxws21"); //NOI18N
             if ((pce!=null) && (jaxwslib != null)) {

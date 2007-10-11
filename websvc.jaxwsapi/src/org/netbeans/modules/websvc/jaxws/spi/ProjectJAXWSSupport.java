@@ -49,7 +49,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.stream.StreamSource;
@@ -91,7 +90,7 @@ public abstract class ProjectJAXWSSupport implements JAXWSSupportImpl {
     }
     
     public void removeService(String serviceName) {
-        JaxWsModel jaxWsModel = (JaxWsModel)project.getLookup().lookup(JaxWsModel.class);
+        JaxWsModel jaxWsModel = project.getLookup().lookup(JaxWsModel.class);
         if (jaxWsModel!=null) {
             Service service = jaxWsModel.findServiceByName(serviceName);
             if (service!=null) {
@@ -111,7 +110,7 @@ public abstract class ProjectJAXWSSupport implements JAXWSSupportImpl {
     public void serviceFromJavaRemoved(String serviceName) {}
     
     public boolean isFromWSDL(String serviceName) {
-        JaxWsModel jaxWsModel = (JaxWsModel)project.getLookup().lookup(JaxWsModel.class);
+        JaxWsModel jaxWsModel = project.getLookup().lookup(JaxWsModel.class);
         Service service = jaxWsModel.findServiceByName(serviceName);
         if (service!=null && service.getWsdlUrl()!=null) return true;
         else return false;
@@ -122,7 +121,7 @@ public abstract class ProjectJAXWSSupport implements JAXWSSupportImpl {
      * given the service (ide) name
      */
     public String getServiceImpl(String serviceName) {
-        JaxWsModel jaxWsModel = (JaxWsModel)project.getLookup().lookup(JaxWsModel.class);
+        JaxWsModel jaxWsModel = project.getLookup().lookup(JaxWsModel.class);
         if (jaxWsModel!=null) {
             Service service = jaxWsModel.findServiceByName(serviceName);
             return service==null?null:service.getImplementationClass();
@@ -135,8 +134,8 @@ public abstract class ProjectJAXWSSupport implements JAXWSSupportImpl {
     }
     
     public void addService(String serviceName, String serviceImpl, boolean isJsr109) {
-        JaxWsModel jaxWsModel = (JaxWsModel)project.getLookup().lookup(JaxWsModel.class);
-        if (jaxWsModel!=null) {
+        JaxWsModel jaxWsModel = project.getLookup().lookup(JaxWsModel.class);
+        if (jaxWsModel!=null) {           
             Boolean value = jaxWsModel.getJsr109();
             if((value == null || Boolean.TRUE.equals(value)) && !isJsr109){
                 jaxWsModel.setJsr109(Boolean.FALSE);
@@ -176,22 +175,21 @@ public abstract class ProjectJAXWSSupport implements JAXWSSupportImpl {
     
     public String addService(String name, String serviceImpl, String wsdlUrl, String serviceName,
             String portName, String packageName, boolean isJsr109) {
-        JaxWsModel jaxWsModel = (JaxWsModel)project.getLookup().lookup(JaxWsModel.class);
+        JaxWsModel jaxWsModel = project.getLookup().lookup(JaxWsModel.class);
         if (jaxWsModel!=null) {
             String finalServiceName = WSUtils.findProperServiceName(name, jaxWsModel);
             boolean serviceAdded=false;
             
             // HACK to enable filesystems to fire events when new folder will be created
-            // need to ask for children recursively
-            List<FileObject> subfolders = null;
-            FileObject serviceArtifactsFolder = project.getProjectDirectory().getFileObject("build/generated/wsimport/service"); //NOI18N
+            // need to ask for children           
+            FileObject projectDir = project.getProjectDirectory();
+            FileObject serviceArtifactsFolder = projectDir.getFileObject("build/generated/wsimport/service"); //NOI18N
             if (serviceArtifactsFolder!=null) {
-                Enumeration en = serviceArtifactsFolder.getChildren(true);
-                subfolders = new ArrayList<FileObject>();
-                while (en.hasMoreElements()) {
-                    FileObject ch = (FileObject) en.nextElement();
-                    if (ch.isFolder()) subfolders.add(ch);
-                }
+                serviceArtifactsFolder.getChildren(true);
+            } else {
+                try {
+                    FileUtil.createFolder(projectDir, "build/generated/wsimport/service");
+                } catch (IOException ex) {}
             }
             
             FileObject localWsdl=null;
@@ -281,19 +279,6 @@ public abstract class ProjectJAXWSSupport implements JAXWSSupportImpl {
                     ExecutorTask wsimportTask =
                             ActionUtils.runTarget(buildImplFo,new String[]{"wsimport-service-"+finalServiceName},null); //NOI18N
                     wsimportTask.waitFinished();
-                    
-                    // refresh service artifacts directory due to code copletion
-                    if (serviceArtifactsFolder==null)
-                        serviceArtifactsFolder = project.getProjectDirectory().getFileObject("build/generated/wsimport/service/"+packageName.replace('.','/'));
-                    if (serviceArtifactsFolder!=null) {
-                        serviceArtifactsFolder.refresh();
-                        // refresh also all sub-folders
-                        if (subfolders!=null) {
-                            for (int i=0;i<subfolders.size();i++) {
-                                ((FileObject) subfolders.get(i)).refresh();
-                            }
-                        }
-                    }
                 } catch (IOException ex) {
                     ErrorManager.getDefault().log(ex.getLocalizedMessage());
                 } catch (IllegalArgumentException ex) {
@@ -309,7 +294,7 @@ public abstract class ProjectJAXWSSupport implements JAXWSSupportImpl {
      * Returns the list of web services in the project
      */
     public List<Service> getServices() {
-        JaxWsModel jaxWsModel = (JaxWsModel)project.getLookup().lookup(JaxWsModel.class);
+        JaxWsModel jaxWsModel = project.getLookup().lookup(JaxWsModel.class);
         if (jaxWsModel!=null) {
             Service[] services = jaxWsModel.getServices();
             if (services!=null) {
