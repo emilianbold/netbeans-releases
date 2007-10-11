@@ -146,6 +146,7 @@ MouseListener {
                     tokenSequence.moveNext ();
                     Language language = LanguagesManager.getDefault ().getLanguage (mimeType);
                     Token token = tokenSequence.token ();
+                    if (token == null) return;
                     Feature hyperlinkFeature = language.getFeature 
                         ("HYPERLINK", token.id ().name ());
                     if (hyperlinkFeature == null) return;
