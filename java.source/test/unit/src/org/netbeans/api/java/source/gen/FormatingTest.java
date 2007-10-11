@@ -50,11 +50,18 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.prefs.Preferences;
 import javax.lang.model.element.Modifier;
+import javax.swing.text.Document;
+import org.netbeans.api.editor.indent.Reformat;
+import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.java.ui.FmtOptions;
+import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 
 /**
  * Test different formating options
@@ -71,14 +78,19 @@ public class FormatingTest extends GeneratorTestMDRCompat {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTestSuite(FormatingTest.class);
-//        suite.addTest(new FormatingTest("testEnum"));
+//        suite.addTest(new FormatingTest("testLabelled"));
         return suite;
     }
 
     public void testClass() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, " ");
-        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        FileObject testSourceFO = FileUtil.toFileObject(testFile);
+        DataObject testSourceDO = DataObject.find(testSourceFO);
+        EditorCookie ec = (EditorCookie) testSourceDO.getCookie(EditorCookie.class);
+        final Document doc = ec.openDocument();
+        doc.putProperty(Language.class, JavaTokenId.language());
+        JavaSource testSource = JavaSource.forDocument(doc);
         final int[] counter = new int[] {0};
         Preferences preferences = FmtOptions.getPreferences(FmtOptions.getCurrentProfileId());
         preferences.putInt("rightMargin", 30);
@@ -136,8 +148,8 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         preferences.putBoolean("alignMultilineImplements", false);
         testSource.runModificationTask(task).commit();
         preferences.put("wrapExtendsImplementsList", CodeStyle.WrapStyle.WRAP_NEVER.name());
-        preferences.putInt("rightMargin", 120);
 
+        ec.saveDocument();
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
 
@@ -206,12 +218,151 @@ public class FormatingTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
         assertEquals(golden, res);
+        
+        String content = 
+            "package hierbas.del.litoral;" +
+            "class Test extends Integer implements Runnable, Serializable{" +
+            "public void run(){" +
+            "}" +
+            "}\n";
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "class Test extends Integer implements Runnable, Serializable {\n\n" +
+            "    public void run() {\n" +
+            "    }\n" +
+            "}\n";
+        reformat(doc, content, golden);
+        
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "class Test extends Integer implements Runnable, Serializable{\n\n" +
+            "    public void run() {\n" +
+            "    }\n" +
+            "}\n";
+        preferences.putBoolean("spaceBeforeClassDeclLeftBrace", false);
+        reformat(doc, content, golden);
+        preferences.putBoolean("spaceBeforeClassDeclLeftBrace", true);
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "class Test extends Integer implements Runnable, Serializable\n" +
+            "{\n\n" +
+            "    public void run() {\n" +
+            "    }\n" +
+            "}\n";
+        preferences.put("classDeclBracePlacement", CodeStyle.BracePlacement.NEW_LINE.name());
+        reformat(doc, content, golden);
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "class Test extends Integer implements Runnable, Serializable\n" +
+            "  {\n\n" +
+            "    public void run() {\n" +
+            "    }\n" +
+            "  }\n";
+        preferences.put("classDeclBracePlacement", CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        reformat(doc, content, golden);
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "class Test extends Integer implements Runnable, Serializable\n" +
+            "    {\n\n" +
+            "    public void run() {\n" +
+            "    }\n" +
+            "    }\n";
+        preferences.put("classDeclBracePlacement", CodeStyle.BracePlacement.NEW_LINE_INDENTED.name());
+        reformat(doc, content, golden);
+        preferences.put("classDeclBracePlacement", CodeStyle.BracePlacement.SAME_LINE.name());
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "class Test extends Integer implements Runnable, Serializable {\n\n" +
+            "public void run() {\n" +
+            "}\n" +
+            "}\n";
+        preferences.putBoolean("indentTopLevelClassMembers", false);
+        reformat(doc, content, golden);
+        preferences.putBoolean("indentTopLevelClassMembers", true);
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "class Test extends Integer\n" +
+            "        implements Runnable, Serializable {\n\n" +
+            "    public void run() {\n" +
+            "    }\n" +
+            "}\n";
+        preferences.put("wrapExtendsImplementsKeyword", CodeStyle.WrapStyle.WRAP_IF_LONG.name());
+        reformat(doc, content, golden);
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "class Test\n" +
+            "        extends Integer\n" +
+            "        implements Runnable, Serializable {\n\n" +
+            "    public void run() {\n" +
+            "    }\n" +
+            "}\n";
+        preferences.put("wrapExtendsImplementsKeyword", CodeStyle.WrapStyle.WRAP_ALWAYS.name());
+        reformat(doc, content, golden);
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "class Test\n" +
+            "        extends Integer\n" +
+            "        implements Runnable,\n" +
+            "        Serializable {\n\n" +
+            "    public void run() {\n" +
+            "    }\n" +
+            "}\n";
+        preferences.put("wrapExtendsImplementsList", CodeStyle.WrapStyle.WRAP_IF_LONG.name());
+        reformat(doc, content, golden);
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "class Test\n" +
+            "        extends Integer\n" +
+            "        implements Runnable,\n" +
+            "                   Serializable {\n\n" +
+            "    public void run() {\n" +
+            "    }\n" +
+            "}\n";
+        preferences.putBoolean("alignMultilineImplements", true);
+        reformat(doc, content, golden);
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "class Test extends Integer implements Runnable,\n" +
+            "                                      Serializable {\n\n" +
+            "    public void run() {\n" +
+            "    }\n" +
+            "}\n";
+        preferences.put("wrapExtendsImplementsKeyword", CodeStyle.WrapStyle.WRAP_NEVER.name());
+        preferences.put("wrapExtendsImplementsList", CodeStyle.WrapStyle.WRAP_ALWAYS.name());
+        reformat(doc, content, golden);
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "class Test extends Integer implements Runnable,\n" +
+            "        Serializable {\n\n" +
+            "    public void run() {\n" +
+            "    }\n" +
+            "}\n";
+
+        preferences.putBoolean("alignMultilineImplements", false);
+        reformat(doc, content, golden);
+        preferences.put("wrapExtendsImplementsList", CodeStyle.WrapStyle.WRAP_NEVER.name());
+        preferences.putInt("rightMargin", 120);
     }
     
     public void testEnum() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, " ");
-        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        FileObject testSourceFO = FileUtil.toFileObject(testFile);
+        DataObject testSourceDO = DataObject.find(testSourceFO);
+        EditorCookie ec = (EditorCookie) testSourceDO.getCookie(EditorCookie.class);
+        final Document doc = ec.openDocument();
+        doc.putProperty(Language.class, JavaTokenId.language());
+        JavaSource testSource = JavaSource.forDocument(doc);
         final int[] counter = new int[] {0};
         Preferences preferences = FmtOptions.getPreferences(FmtOptions.getCurrentProfileId());
         preferences.putInt("rightMargin", 20);
@@ -261,8 +412,8 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         preferences.put("wrapEnumConstants", CodeStyle.WrapStyle.WRAP_ALWAYS.name());
         testSource.runModificationTask(task).commit();
         preferences.put("wrapEnumConstants", CodeStyle.WrapStyle.WRAP_NEVER.name());
-        preferences.putInt("rightMargin", 120);
 
+        ec.saveDocument();
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
 
@@ -300,7 +451,87 @@ public class FormatingTest extends GeneratorTestMDRCompat {
             "    WEST\n" +
             "}\n";
         assertEquals(golden, res);
-    }
+
+        String content =
+            "package hierbas.del.litoral;" +
+            "enum Test{" +
+            "NORTH,EAST,SOUTH,WEST" +
+            "}\n";
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "enum Test {\n\n" +
+            "    NORTH, EAST, SOUTH, WEST\n" +
+            "}\n";
+        reformat(doc, content, golden);
+        
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "enum Test{\n\n" +
+            "    NORTH, EAST, SOUTH, WEST\n" +
+            "}\n";
+        preferences.putBoolean("spaceBeforeClassDeclLeftBrace", false);
+        reformat(doc, content, golden);
+        preferences.putBoolean("spaceBeforeClassDeclLeftBrace", true);
+        
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "enum Test\n" +
+            "{\n\n" +
+            "    NORTH, EAST, SOUTH, WEST\n" +
+            "}\n";
+        preferences.put("classDeclBracePlacement", CodeStyle.BracePlacement.NEW_LINE.name());
+        reformat(doc, content, golden);
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "enum Test\n" +
+            "  {\n\n" +
+            "    NORTH, EAST, SOUTH, WEST\n" +
+            "  }\n";
+        preferences.put("classDeclBracePlacement", CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        reformat(doc, content, golden);
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "enum Test\n" +
+            "    {\n\n" +
+            "    NORTH, EAST, SOUTH, WEST\n" +
+            "    }\n";
+        preferences.put("classDeclBracePlacement", CodeStyle.BracePlacement.NEW_LINE_INDENTED.name());
+        reformat(doc, content, golden);
+        preferences.put("classDeclBracePlacement", CodeStyle.BracePlacement.SAME_LINE.name());
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "enum Test {\n\n" +
+            "NORTH, EAST, SOUTH, WEST\n" +
+            "}\n";
+        preferences.putBoolean("indentTopLevelClassMembers", false);
+        reformat(doc, content, golden);
+        preferences.putBoolean("indentTopLevelClassMembers", true);
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "enum Test {\n\n" +
+            "    NORTH, EAST,\n" +
+            "    SOUTH, WEST\n" +
+            "}\n";
+        preferences.put("wrapEnumConstants", CodeStyle.WrapStyle.WRAP_IF_LONG.name());
+        reformat(doc, content, golden);
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "enum Test {\n\n" +
+            "    NORTH,\n" +
+            "    EAST,\n" +
+            "    SOUTH,\n" +
+            "    WEST\n" +
+            "}\n";
+        preferences.put("wrapEnumConstants", CodeStyle.WrapStyle.WRAP_ALWAYS.name());
+        reformat(doc, content, golden);
+        preferences.put("wrapEnumConstants", CodeStyle.WrapStyle.WRAP_NEVER.name());
+        preferences.putInt("rightMargin", 120);
+     }
     
     public void testMethod() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
@@ -309,7 +540,12 @@ public class FormatingTest extends GeneratorTestMDRCompat {
             "public class Test {\n" +
             "}\n"
             );
-        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        FileObject testSourceFO = FileUtil.toFileObject(testFile);
+        DataObject testSourceDO = DataObject.find(testSourceFO);
+        EditorCookie ec = (EditorCookie) testSourceDO.getCookie(EditorCookie.class);
+        final Document doc = ec.openDocument();
+        doc.putProperty(Language.class, JavaTokenId.language());
+        JavaSource testSource = JavaSource.forDocument(doc);
         final int[] counter = new int[] {0};
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
@@ -342,6 +578,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         testSource.runModificationTask(task).commit();
         preferences.put("methodDeclBracePlacement", CodeStyle.BracePlacement.SAME_LINE.name());
 
+        ec.saveDocument();
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
 
@@ -368,6 +605,72 @@ public class FormatingTest extends GeneratorTestMDRCompat {
             "        }\n" +
             "}\n";
         assertEquals(golden, res);
+        
+        String content = 
+            "package hierbas.del.litoral;" +
+            "public class Test{" +
+            "int test(int i){" +
+            "return i;" +
+            "}" +
+            "}\n";
+
+        golden = 
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    int test(int i) {\n" +
+            "        return i;\n" +
+            "    }\n" +
+            "}\n";
+        reformat(doc, content, golden);
+
+        golden = 
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    int test ( int i ){\n" +
+            "        return i;\n" +
+            "    }\n" +
+            "}\n";
+        preferences.putBoolean("spaceBeforeMethodDeclParen", true);
+        preferences.putBoolean("spaceWithinMethodDeclParens", true);
+        preferences.putBoolean("spaceBeforeMethodDeclLeftBrace", false);
+        reformat(doc, content, golden);
+        preferences.putBoolean("spaceBeforeMethodDeclParen", false);
+        preferences.putBoolean("spaceWithinMethodDeclParens", false);
+        preferences.putBoolean("spaceBeforeMethodDeclLeftBrace", true);
+
+        golden = 
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    int test(int i)\n" +
+            "    {\n" +
+            "        return i;\n" +
+            "    }\n" +
+            "}\n";
+        preferences.put("methodDeclBracePlacement", CodeStyle.BracePlacement.NEW_LINE.name());
+        reformat(doc, content, golden);
+
+        golden = 
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    int test(int i)\n" +
+            "      {\n" +
+            "        return i;\n" +
+            "      }\n" +
+            "}\n";
+        preferences.put("methodDeclBracePlacement", CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        reformat(doc, content, golden);
+
+        golden = 
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    int test(int i)\n" +
+            "        {\n" +
+            "        return i;\n" +
+            "        }\n" +
+            "}\n";
+        preferences.put("methodDeclBracePlacement", CodeStyle.BracePlacement.NEW_LINE_INDENTED.name());
+        reformat(doc, content, golden);
+        preferences.put("methodDeclBracePlacement", CodeStyle.BracePlacement.SAME_LINE.name());
     }
     
     public void testStaticBlock() throws Exception {
@@ -377,7 +680,12 @@ public class FormatingTest extends GeneratorTestMDRCompat {
             "public class Test {\n" +
             "}\n"
             );
-        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        FileObject testSourceFO = FileUtil.toFileObject(testFile);
+        DataObject testSourceDO = DataObject.find(testSourceFO);
+        EditorCookie ec = (EditorCookie) testSourceDO.getCookie(EditorCookie.class);
+        final Document doc = ec.openDocument();
+        doc.putProperty(Language.class, JavaTokenId.language());
+        JavaSource testSource = JavaSource.forDocument(doc);
         final int[] counter = new int[] {0};
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
@@ -405,6 +713,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         testSource.runModificationTask(task).commit();
         preferences.put("otherBracePlacement", CodeStyle.BracePlacement.SAME_LINE.name());
 
+        ec.saveDocument();
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
 
@@ -426,6 +735,62 @@ public class FormatingTest extends GeneratorTestMDRCompat {
             "        }\n" +
             "}\n";
         assertEquals(golden, res);
+
+        String content = 
+            "package hierbas.del.litoral;" +
+            "public class Test{" +
+            "static{" +
+            "}" +
+            "}\n";
+        
+        golden = 
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    static {\n" +
+            "    }\n" +
+            "}\n";
+        reformat(doc, content, golden);
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    static{\n" +
+            "    }\n" +
+            "}\n";
+        preferences.putBoolean("spaceBeforeStaticInitLeftBrace", false);
+        reformat(doc, content, golden);
+        preferences.putBoolean("spaceBeforeStaticInitLeftBrace", true);
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    static\n" +
+            "    {\n" +
+            "    }\n" +
+            "}\n";
+        preferences.put("otherBracePlacement", CodeStyle.BracePlacement.NEW_LINE.name());
+        reformat(doc, content, golden);
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    static\n" +
+            "      {\n" +
+            "      }\n" +
+            "}\n";
+        preferences.put("otherBracePlacement", CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        reformat(doc, content, golden);
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    static\n" +
+            "        {\n" +
+            "        }\n" +
+            "}\n";
+        preferences.put("otherBracePlacement", CodeStyle.BracePlacement.NEW_LINE_INDENTED.name());
+        reformat(doc, content, golden);
+        preferences.put("otherBracePlacement", CodeStyle.BracePlacement.SAME_LINE.name());
     }
     
     public void testFor() throws Exception {
@@ -437,7 +802,12 @@ public class FormatingTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n"
             );
-        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        FileObject testSourceFO = FileUtil.toFileObject(testFile);
+        DataObject testSourceDO = DataObject.find(testSourceFO);
+        EditorCookie ec = (EditorCookie) testSourceDO.getCookie(EditorCookie.class);
+        final Document doc = ec.openDocument();
+        doc.putProperty(Language.class, JavaTokenId.language());
+        JavaSource testSource = JavaSource.forDocument(doc);
         final String stmt = 
             "for (int i = 0; i < 10; i++) System.out.println(\"TRUE\");";
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
@@ -479,6 +849,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         preferences.put("redundantForBraces", CodeStyle.BracesGenerationStyle.GENERATE.name());
         preferences.put("wrapForStatement", CodeStyle.WrapStyle.WRAP_ALWAYS.name());
 
+        ec.saveDocument();
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
 
@@ -510,6 +881,106 @@ public class FormatingTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
         assertEquals(golden, res);
+
+        String content = 
+            "package hierbas.del.litoral;" +
+            "public class Test{" +
+            "public void taragui(){" +
+            "for(int i=0;i<10;i++)" +
+            "System.out.println(\"TRUE\");" +
+            "}" +
+            "}\n";
+        
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui() {\n" +
+            "        for (int i = 0; i < 10; i++) {\n" +
+            "            System.out.println(\"TRUE\");\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        reformat(doc, content, golden);
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui() {\n" +
+            "        for( int i = 0; i < 10; i++ ){\n" +
+            "            System.out.println(\"TRUE\");\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        preferences.putBoolean("spaceBeforeForParen", false);
+        preferences.putBoolean("spaceWithinForParens", true);
+        preferences.putBoolean("spaceBeforeForLeftBrace", false);
+        reformat(doc, content, golden);
+        preferences.putBoolean("spaceBeforeForParen", true);
+        preferences.putBoolean("spaceWithinForParens", false);
+        preferences.putBoolean("spaceBeforeForLeftBrace", true);
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui() {\n" +
+            "        for (int i = 0; i < 10; i++)\n" +
+            "        {\n" +
+            "            System.out.println(\"TRUE\");\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        preferences.put("otherBracePlacement", CodeStyle.BracePlacement.NEW_LINE.name());
+        reformat(doc, content, golden);
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui() {\n" +
+            "        for (int i = 0; i < 10; i++)\n" +
+            "          {\n" +
+            "            System.out.println(\"TRUE\");\n" +
+            "          }\n" +
+            "    }\n" +
+            "}\n";
+        preferences.put("otherBracePlacement", CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        reformat(doc, content, golden);
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui() {\n" +
+            "        for (int i = 0; i < 10; i++)\n" +
+            "            {\n" +
+            "            System.out.println(\"TRUE\");\n" +
+            "            }\n" +
+            "    }\n" +
+            "}\n";
+        preferences.put("otherBracePlacement", CodeStyle.BracePlacement.NEW_LINE_INDENTED.name());
+        reformat(doc, content, golden);
+        preferences.put("otherBracePlacement", CodeStyle.BracePlacement.SAME_LINE.name());
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui() {\n" +
+            "        for (int i = 0; i < 10; i++)\n" +
+            "            System.out.println(\"TRUE\");\n" +
+            "    }\n" +
+            "}\n";
+        preferences.put("redundantForBraces", CodeStyle.BracesGenerationStyle.ELIMINATE.name());
+        reformat(doc, content, golden);
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui() {\n" +
+            "        for (int i = 0; i < 10; i++) System.out.println(\"TRUE\");\n" +
+            "    }\n" +
+            "}\n";
+        preferences.put("wrapForStatement", CodeStyle.WrapStyle.WRAP_NEVER.name());
+        reformat(doc, content, golden);
+        preferences.put("redundantForBraces", CodeStyle.BracesGenerationStyle.GENERATE.name());
+        preferences.put("wrapForStatement", CodeStyle.WrapStyle.WRAP_ALWAYS.name());
     }
     
     public void testForEach() throws Exception {
@@ -521,7 +992,12 @@ public class FormatingTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n"
             );
-        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        FileObject testSourceFO = FileUtil.toFileObject(testFile);
+        DataObject testSourceDO = DataObject.find(testSourceFO);
+        EditorCookie ec = (EditorCookie) testSourceDO.getCookie(EditorCookie.class);
+        final Document doc = ec.openDocument();
+        doc.putProperty(Language.class, JavaTokenId.language());
+        JavaSource testSource = JavaSource.forDocument(doc);
         final String stmt = 
             "for (String s : args) System.out.println(s);";
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
@@ -559,6 +1035,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         testSource.runModificationTask(task).commit();
         preferences.put("redundantForBraces", CodeStyle.BracesGenerationStyle.GENERATE.name());
 
+        ec.saveDocument();
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
 
@@ -589,6 +1066,95 @@ public class FormatingTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
         assertEquals(golden, res);
+
+        String content =
+            "package hierbas.del.litoral;" +
+            "public class Test{" +
+            "public void taragui(String[] args){" +
+            "for(String s:args)" +
+            "System.out.println(s);" +
+            "}" +
+            "}\n";
+        
+        golden = 
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui(String[] args) {\n" +
+            "        for (String s : args) {\n" +
+            "            System.out.println(s);\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        reformat(doc, content, golden);
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui(String[] args) {\n" +
+            "        for( String s : args ){\n" +
+            "            System.out.println(s);\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        preferences.putBoolean("spaceBeforeForParen", false);
+        preferences.putBoolean("spaceWithinForParens", true);
+        preferences.putBoolean("spaceBeforeForLeftBrace", false);
+        reformat(doc, content, golden);
+        preferences.putBoolean("spaceBeforeForParen", true);
+        preferences.putBoolean("spaceWithinForParens", false);
+        preferences.putBoolean("spaceBeforeForLeftBrace", true);
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui(String[] args) {\n" +
+            "        for (String s : args)\n" +
+            "        {\n" +
+            "            System.out.println(s);\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        preferences.put("otherBracePlacement", CodeStyle.BracePlacement.NEW_LINE.name());
+        reformat(doc, content, golden);
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui(String[] args) {\n" +
+            "        for (String s : args)\n" +
+            "          {\n" +
+            "            System.out.println(s);\n" +
+            "          }\n" +
+            "    }\n" +
+            "}\n";
+        preferences.put("otherBracePlacement", CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        reformat(doc, content, golden);
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui(String[] args) {\n" +
+            "        for (String s : args)\n" +
+            "            {\n" +
+            "            System.out.println(s);\n" +
+            "            }\n" +
+            "    }\n" +
+            "}\n";
+        preferences.put("otherBracePlacement", CodeStyle.BracePlacement.NEW_LINE_INDENTED.name());
+        reformat(doc, content, golden);
+        preferences.put("otherBracePlacement", CodeStyle.BracePlacement.SAME_LINE.name());
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui(String[] args) {\n" +
+            "        for (String s : args)\n" +
+            "            System.out.println(s);\n" +
+            "    }\n" +
+            "}\n";
+        preferences.put("redundantForBraces", CodeStyle.BracesGenerationStyle.ELIMINATE.name());
+        reformat(doc, content, golden);
+        preferences.put("redundantForBraces", CodeStyle.BracesGenerationStyle.GENERATE.name());
     }
     
     public void testIf() throws Exception {
@@ -600,7 +1166,12 @@ public class FormatingTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n"
             );
-        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        FileObject testSourceFO = FileUtil.toFileObject(testFile);
+        DataObject testSourceDO = DataObject.find(testSourceFO);
+        EditorCookie ec = (EditorCookie) testSourceDO.getCookie(EditorCookie.class);
+        final Document doc = ec.openDocument();
+        doc.putProperty(Language.class, JavaTokenId.language());
+        JavaSource testSource = JavaSource.forDocument(doc);
         final String stmt = 
             "if (a) System.out.println(\"A\") else if (b) System.out.println(\"B\") else System.out.println(\"NONE\");";
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
@@ -650,6 +1221,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         testSource.runModificationTask(task).commit();
         preferences.putBoolean("specialElseIf", true);
         
+        ec.saveDocument();
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
 
@@ -728,6 +1300,171 @@ public class FormatingTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
         assertEquals(golden, res);
+
+        String content =
+            "package hierbas.del.litoral;" +
+            "public class Test{" +
+            "public void taragui(boolean a,boolean b){" +
+            "if(a)" +
+            "System.out.println(\"A\");" +
+            "else if(b)" +
+            "System.out.println(\"B\");" +
+            "else " +
+            "System.out.println(\"NONE\");" +
+            "}" +
+            "}\n";
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui(boolean a, boolean b) {\n" +
+            "        if (a) {\n" +
+            "            System.out.println(\"A\");\n" +
+            "        } else if (b) {\n" +
+            "            System.out.println(\"B\");\n" +
+            "        } else {\n" +
+            "            System.out.println(\"NONE\");\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        reformat(doc, content, golden);
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui(boolean a, boolean b) {\n" +
+            "        if( a ){\n" +
+            "            System.out.println(\"A\");\n" +
+            "        }else if( b ){\n" +
+            "            System.out.println(\"B\");\n" +
+            "        }else{\n" +
+            "            System.out.println(\"NONE\");\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        preferences.putBoolean("spaceBeforeIfParen", false);
+        preferences.putBoolean("spaceWithinIfParens", true);
+        preferences.putBoolean("spaceBeforeIfLeftBrace", false);
+        preferences.putBoolean("spaceBeforeElse", false);
+        preferences.putBoolean("spaceBeforeElseLeftBrace", false);
+        reformat(doc, content, golden);
+        preferences.putBoolean("spaceBeforeIfParen", true);
+        preferences.putBoolean("spaceWithinIfParens", false);
+        preferences.putBoolean("spaceBeforeIfLeftBrace", true);
+        preferences.putBoolean("spaceBeforeElse", true);
+        preferences.putBoolean("spaceBeforeElseLeftBrace", true);
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui(boolean a, boolean b) {\n" +
+            "        if (a)\n" +
+            "        {\n" +
+            "            System.out.println(\"A\");\n" +
+            "        } else if (b)\n" +
+            "        {\n" +
+            "            System.out.println(\"B\");\n" +
+            "        } else\n" +
+            "        {\n" +
+            "            System.out.println(\"NONE\");\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        preferences.put("otherBracePlacement", CodeStyle.BracePlacement.NEW_LINE.name());
+        reformat(doc, content, golden);
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui(boolean a, boolean b) {\n" +
+            "        if (a)\n" +
+            "          {\n" +
+            "            System.out.println(\"A\");\n" +
+            "          } else if (b)\n" +
+            "          {\n" +
+            "            System.out.println(\"B\");\n" +
+            "          } else\n" +
+            "          {\n" +
+            "            System.out.println(\"NONE\");\n" +
+            "          }\n" +
+            "    }\n" +
+            "}\n";
+        preferences.put("otherBracePlacement", CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        reformat(doc, content, golden);
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui(boolean a, boolean b) {\n" +
+            "        if (a)\n" +
+            "            {\n" +
+            "            System.out.println(\"A\");\n" +
+            "            } else if (b)\n" +
+            "            {\n" +
+            "            System.out.println(\"B\");\n" +
+            "            } else\n" +
+            "            {\n" +
+            "            System.out.println(\"NONE\");\n" +
+            "            }\n" +
+            "    }\n" +
+            "}\n";
+        preferences.put("otherBracePlacement", CodeStyle.BracePlacement.NEW_LINE_INDENTED.name());
+        reformat(doc, content, golden);
+        preferences.put("otherBracePlacement", CodeStyle.BracePlacement.SAME_LINE.name());
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui(boolean a, boolean b) {\n" +
+            "        if (a)\n" +
+            "            System.out.println(\"A\");\n" +
+            "        else if (b)\n" +
+            "            System.out.println(\"B\");\n" +
+            "        else\n" +
+            "            System.out.println(\"NONE\");\n" +
+            "    }\n" +
+            "}\n";
+        preferences.put("redundantIfBraces", CodeStyle.BracesGenerationStyle.ELIMINATE.name());
+        reformat(doc, content, golden);
+        preferences.put("redundantIfBraces", CodeStyle.BracesGenerationStyle.GENERATE.name());
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui(boolean a, boolean b) {\n" +
+            "        if (a) {\n" +
+            "            System.out.println(\"A\");\n" +
+            "        }\n" +
+            "        else if (b) {\n" +
+            "            System.out.println(\"B\");\n" +
+            "        }\n" +
+            "        else {\n" +
+            "            System.out.println(\"NONE\");\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        preferences.putBoolean("placeElseOnNewLine", true);
+        reformat(doc, content, golden);
+        preferences.putBoolean("placeElseOnNewLine", false);
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui(boolean a, boolean b) {\n" +
+            "        if (a) {\n" +
+            "            System.out.println(\"A\");\n" +
+            "        } else {\n" +
+            "            if (b) {\n" +
+            "                System.out.println(\"B\");\n" +
+            "            } else {\n" +
+            "                System.out.println(\"NONE\");\n" +
+            "            }\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        preferences.putBoolean("specialElseIf", false);
+        reformat(doc, content, golden);
+        preferences.putBoolean("specialElseIf", true);
     }
     
     public void testWhile() throws Exception {
@@ -739,7 +1476,12 @@ public class FormatingTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n"
             );
-        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        FileObject testSourceFO = FileUtil.toFileObject(testFile);
+        DataObject testSourceDO = DataObject.find(testSourceFO);
+        EditorCookie ec = (EditorCookie) testSourceDO.getCookie(EditorCookie.class);
+        final Document doc = ec.openDocument();
+        doc.putProperty(Language.class, JavaTokenId.language());
+        JavaSource testSource = JavaSource.forDocument(doc);
         final String stmt = 
             "while (b) System.out.println(\"TRUE\");";
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
@@ -777,6 +1519,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         testSource.runModificationTask(task).commit();
         preferences.put("redundantWhileBraces", CodeStyle.BracesGenerationStyle.GENERATE.name());
 
+        ec.saveDocument();
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
 
@@ -807,6 +1550,95 @@ public class FormatingTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
         assertEquals(golden, res);
+
+        String content = 
+            "package hierbas.del.litoral;" +
+            "public class Test{" +
+            "public void taragui(boolean b){" +
+            "while(b)" +
+            "System.out.println(\"TRUE\");" +
+            "}" +
+            "}\n";
+        
+        golden = 
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui(boolean b) {\n" +
+            "        while (b) {\n" +
+            "            System.out.println(\"TRUE\");\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        reformat(doc, content, golden);
+        
+        golden = 
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui(boolean b) {\n" +
+            "        while( b ){\n" +
+            "            System.out.println(\"TRUE\");\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        preferences.putBoolean("spaceBeforeWhileParen", false);
+        preferences.putBoolean("spaceWithinWhileParens", true);
+        preferences.putBoolean("spaceBeforeWhileLeftBrace", false);
+        reformat(doc, content, golden);
+        preferences.putBoolean("spaceBeforeWhileParen", true);
+        preferences.putBoolean("spaceWithinWhileParens", false);
+        preferences.putBoolean("spaceBeforeWhileLeftBrace", true);
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui(boolean b) {\n" +
+            "        while (b)\n" +
+            "        {\n" +
+            "            System.out.println(\"TRUE\");\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        preferences.put("otherBracePlacement", CodeStyle.BracePlacement.NEW_LINE.name());
+        reformat(doc, content, golden);
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui(boolean b) {\n" +
+            "        while (b)\n" +
+            "          {\n" +
+            "            System.out.println(\"TRUE\");\n" +
+            "          }\n" +
+            "    }\n" +
+            "}\n";
+        preferences.put("otherBracePlacement", CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        reformat(doc, content, golden);
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui(boolean b) {\n" +
+            "        while (b)\n" +
+            "            {\n" +
+            "            System.out.println(\"TRUE\");\n" +
+            "            }\n" +
+            "    }\n" +
+            "}\n";
+        preferences.put("otherBracePlacement", CodeStyle.BracePlacement.NEW_LINE_INDENTED.name());
+        reformat(doc, content, golden);
+        preferences.put("otherBracePlacement", CodeStyle.BracePlacement.SAME_LINE.name());
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui(boolean b) {\n" +
+            "        while (b)\n" +
+            "            System.out.println(\"TRUE\");\n" +
+            "    }\n" +
+            "}\n";
+        preferences.put("redundantWhileBraces", CodeStyle.BracesGenerationStyle.ELIMINATE.name());
+        reformat(doc, content, golden);
+        preferences.put("redundantWhileBraces", CodeStyle.BracesGenerationStyle.GENERATE.name());
     }
     
     public void testSwitch() throws Exception {
@@ -818,7 +1650,12 @@ public class FormatingTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n"
             );
-        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        FileObject testSourceFO = FileUtil.toFileObject(testFile);
+        DataObject testSourceDO = DataObject.find(testSourceFO);
+        EditorCookie ec = (EditorCookie) testSourceDO.getCookie(EditorCookie.class);
+        final Document doc = ec.openDocument();
+        doc.putProperty(Language.class, JavaTokenId.language());
+        JavaSource testSource = JavaSource.forDocument(doc);
         final String stmt = 
             "switch (i) {case 0: System.out.println(i); break; default: System.out.println(\"DEFAULT\");}";
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
@@ -856,6 +1693,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         testSource.runModificationTask(task).commit();
         preferences.putBoolean("indentCasesFromSwitch", true);
 
+        ec.saveDocument();
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
 
@@ -911,6 +1749,125 @@ public class FormatingTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
         assertEquals(golden, res);
+
+        String content = 
+            "package hierbas.del.litoral;" +
+            "public class Test{" +
+            "public void taragui(int i){" +
+            "switch(i){" +
+            "case 0:" +
+            "System.out.println(i);" +
+            "break;" +
+            "default:" +
+            "System.out.println(\"DEFAULT\");" +
+            "}" +
+            "}" +
+            "}\n";
+            
+        golden = 
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui(int i) {\n" +
+            "        switch (i) {\n" +
+            "            case 0:\n" +
+            "                System.out.println(i);\n" +
+            "                break;\n" +
+            "            default:\n" +
+            "                System.out.println(\"DEFAULT\");\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        reformat(doc, content, golden);
+            
+        golden = 
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui(int i) {\n" +
+            "        switch( i ){\n" +
+            "            case 0:\n" +
+            "                System.out.println(i);\n" +
+            "                break;\n" +
+            "            default:\n" +
+            "                System.out.println(\"DEFAULT\");\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        preferences.putBoolean("spaceBeforeSwitchParen", false);
+        preferences.putBoolean("spaceWithinSwitchParens", true);
+        preferences.putBoolean("spaceBeforeSwitchLeftBrace", false);
+        reformat(doc, content, golden);
+        preferences.putBoolean("spaceBeforeSwitchParen", true);
+        preferences.putBoolean("spaceWithinSwitchParens", false);
+        preferences.putBoolean("spaceBeforeSwitchLeftBrace", true);
+            
+        golden = 
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui(int i) {\n" +
+            "        switch (i)\n" +
+            "        {\n" +
+            "            case 0:\n" +
+            "                System.out.println(i);\n" +
+            "                break;\n" +
+            "            default:\n" +
+            "                System.out.println(\"DEFAULT\");\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        preferences.put("otherBracePlacement", CodeStyle.BracePlacement.NEW_LINE.name());
+        reformat(doc, content, golden);
+            
+        golden = 
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui(int i) {\n" +
+            "        switch (i)\n" +
+            "          {\n" +
+            "            case 0:\n" +
+            "                System.out.println(i);\n" +
+            "                break;\n" +
+            "            default:\n" +
+            "                System.out.println(\"DEFAULT\");\n" +
+            "          }\n" +
+            "    }\n" +
+            "}\n";
+        preferences.put("otherBracePlacement", CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        reformat(doc, content, golden);
+            
+        golden = 
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui(int i) {\n" +
+            "        switch (i)\n" +
+            "            {\n" +
+            "            case 0:\n" +
+            "                System.out.println(i);\n" +
+            "                break;\n" +
+            "            default:\n" +
+            "                System.out.println(\"DEFAULT\");\n" +
+            "            }\n" +
+            "    }\n" +
+            "}\n";
+        preferences.put("otherBracePlacement", CodeStyle.BracePlacement.NEW_LINE_INDENTED.name());
+        reformat(doc, content, golden);
+        preferences.put("otherBracePlacement", CodeStyle.BracePlacement.SAME_LINE.name());
+            
+        golden = 
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui(int i) {\n" +
+            "        switch (i) {\n" +
+            "        case 0:\n" +
+            "            System.out.println(i);\n" +
+            "            break;\n" +
+            "        default:\n" +
+            "            System.out.println(\"DEFAULT\");\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        preferences.putBoolean("indentCasesFromSwitch", false);
+        reformat(doc, content, golden);
+        preferences.putBoolean("indentCasesFromSwitch", true);
     }
     
     public void testDoWhile() throws Exception {
@@ -922,7 +1879,12 @@ public class FormatingTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n"
             );
-        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        FileObject testSourceFO = FileUtil.toFileObject(testFile);
+        DataObject testSourceDO = DataObject.find(testSourceFO);
+        EditorCookie ec = (EditorCookie) testSourceDO.getCookie(EditorCookie.class);
+        final Document doc = ec.openDocument();
+        doc.putProperty(Language.class, JavaTokenId.language());
+        JavaSource testSource = JavaSource.forDocument(doc);
         final String stmt = 
             "do System.out.println(\"TRUE\"); while (b);\n";
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
@@ -966,6 +1928,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         testSource.runModificationTask(task).commit();
         preferences.putBoolean("placeWhileOnNewLine", false);
         
+        ec.saveDocument();
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
 
@@ -1001,6 +1964,113 @@ public class FormatingTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
         assertEquals(golden, res);
+
+        String content = 
+            "package hierbas.del.litoral;" +
+            "public class Test{" +
+            "public void taragui(boolean b){" +
+            "do " +
+            "System.out.println(\"TRUE\");" +
+            "while(b);" +
+            "}" +
+            "}\n";
+        
+        golden = 
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui(boolean b) {\n" +
+            "        do {\n" +
+            "            System.out.println(\"TRUE\");\n" +
+            "        } while (b);\n" +
+            "    }\n" +
+            "}\n";
+        reformat(doc, content, golden);
+        
+        golden = 
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui(boolean b) {\n" +
+            "        do{\n" +
+            "            System.out.println(\"TRUE\");\n" +
+            "        }while( b );\n" +
+            "    }\n" +
+            "}\n";
+        preferences.putBoolean("spaceBeforeWhileParen", false);
+        preferences.putBoolean("spaceWithinWhileParens", true);
+        preferences.putBoolean("spaceBeforeDoLeftBrace", false);
+        preferences.putBoolean("spaceBeforeWhile", false);
+        reformat(doc, content, golden);
+        preferences.putBoolean("spaceBeforeWhileParen", true);
+        preferences.putBoolean("spaceWithinWhileParens", false);
+        preferences.putBoolean("spaceBeforeDoLeftBrace", true);
+        preferences.putBoolean("spaceBeforeWhile", true);
+        
+        golden = 
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui(boolean b) {\n" +
+            "        do\n" +
+            "        {\n" +
+            "            System.out.println(\"TRUE\");\n" +
+            "        } while (b);\n" +
+            "    }\n" +
+            "}\n";
+        preferences.put("otherBracePlacement", CodeStyle.BracePlacement.NEW_LINE.name());
+        reformat(doc, content, golden);
+        
+        golden = 
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui(boolean b) {\n" +
+            "        do\n" +
+            "          {\n" +
+            "            System.out.println(\"TRUE\");\n" +
+            "          } while (b);\n" +
+            "    }\n" +
+            "}\n";
+        preferences.put("otherBracePlacement", CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        reformat(doc, content, golden);
+        
+        golden = 
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui(boolean b) {\n" +
+            "        do\n" +
+            "            {\n" +
+            "            System.out.println(\"TRUE\");\n" +
+            "            } while (b);\n" +
+            "    }\n" +
+            "}\n";
+        preferences.put("otherBracePlacement", CodeStyle.BracePlacement.NEW_LINE_INDENTED.name());
+        reformat(doc, content, golden);
+        preferences.put("otherBracePlacement", CodeStyle.BracePlacement.SAME_LINE.name());
+        
+        golden = 
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui(boolean b) {\n" +
+            "        do\n" +
+            "            System.out.println(\"TRUE\");\n" +
+            "        while (b);\n" +
+            "    }\n" +
+            "}\n";
+        preferences.put("redundantDoWhileBraces", CodeStyle.BracesGenerationStyle.ELIMINATE.name());
+        reformat(doc, content, golden);
+        preferences.put("redundantDoWhileBraces", CodeStyle.BracesGenerationStyle.GENERATE.name());
+        
+        golden = 
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui(boolean b) {\n" +
+            "        do {\n" +
+            "            System.out.println(\"TRUE\");\n" +
+            "        }\n" +
+            "        while (b);\n" +
+            "    }\n" +
+            "}\n";
+        preferences.putBoolean("placeWhileOnNewLine", true);
+        reformat(doc, content, golden);
+        preferences.putBoolean("placeWhileOnNewLine", false);
     }
     
     public void testSynchronized() throws Exception {
@@ -1012,7 +2082,12 @@ public class FormatingTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n"
             );
-        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        FileObject testSourceFO = FileUtil.toFileObject(testFile);
+        DataObject testSourceDO = DataObject.find(testSourceFO);
+        EditorCookie ec = (EditorCookie) testSourceDO.getCookie(EditorCookie.class);
+        final Document doc = ec.openDocument();
+        doc.putProperty(Language.class, JavaTokenId.language());
+        JavaSource testSource = JavaSource.forDocument(doc);
         final String stmt = 
             "synchronized (this) {System.out.println(\"TRUE\");}";
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
@@ -1046,6 +2121,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         testSource.runModificationTask(task).commit();
         preferences.put("otherBracePlacement", CodeStyle.BracePlacement.SAME_LINE.name());
 
+        ec.saveDocument();
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
 
@@ -1074,6 +2150,84 @@ public class FormatingTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
         assertEquals(golden, res);
+
+        String content =
+            "package hierbas.del.litoral;" +
+            "public class Test{" +
+            "public void taragui(){" +
+            "synchronized(this){" +
+            "System.out.println(\"TRUE\");" +
+            "}" +
+            "}" +
+            "}\n";
+
+        golden = 
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui() {\n" +
+            "        synchronized (this) {\n" +
+            "            System.out.println(\"TRUE\");\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        reformat(doc, content, golden);
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui() {\n" +
+            "        synchronized( this ){\n" +
+            "            System.out.println(\"TRUE\");\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        preferences.putBoolean("spaceBeforeSynchronizedParen", false);
+        preferences.putBoolean("spaceWithinSynchronizedParens", true);
+        preferences.putBoolean("spaceBeforeSynchronizedLeftBrace", false);
+        reformat(doc, content, golden);
+        preferences.putBoolean("spaceBeforeSynchronizedParen", true);
+        preferences.putBoolean("spaceWithinSynchronizedParens", false);
+        preferences.putBoolean("spaceBeforeSynchronizedLeftBrace", true);
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui() {\n" +
+            "        synchronized (this)\n" +
+            "        {\n" +
+            "            System.out.println(\"TRUE\");\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        preferences.put("otherBracePlacement", CodeStyle.BracePlacement.NEW_LINE.name());
+        reformat(doc, content, golden);
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui() {\n" +
+            "        synchronized (this)\n" +
+            "          {\n" +
+            "            System.out.println(\"TRUE\");\n" +
+            "          }\n" +
+            "    }\n" +
+            "}\n";
+        preferences.put("otherBracePlacement", CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        reformat(doc, content, golden);
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui() {\n" +
+            "        synchronized (this)\n" +
+            "            {\n" +
+            "            System.out.println(\"TRUE\");\n" +
+            "            }\n" +
+            "    }\n" +
+            "}\n";
+        preferences.put("otherBracePlacement", CodeStyle.BracePlacement.NEW_LINE_INDENTED.name());
+        reformat(doc, content, golden);
+        preferences.put("otherBracePlacement", CodeStyle.BracePlacement.SAME_LINE.name());
     }
     
     public void testTry() throws Exception {
@@ -1085,7 +2239,12 @@ public class FormatingTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n"
             );
-        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        FileObject testSourceFO = FileUtil.toFileObject(testFile);
+        DataObject testSourceDO = DataObject.find(testSourceFO);
+        EditorCookie ec = (EditorCookie) testSourceDO.getCookie(EditorCookie.class);
+        final Document doc = ec.openDocument();
+        doc.putProperty(Language.class, JavaTokenId.language());
+        JavaSource testSource = JavaSource.forDocument(doc);
         final String stmt = 
             "try {System.out.println(\"TEST\");} catch(Exception e) {System.out.println(\"CATCH\");} finally {System.out.println(\"FINALLY\");}";
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
@@ -1133,6 +2292,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         preferences.putBoolean("placeCatchOnNewLine", false);
         preferences.putBoolean("placeFinallyOnNewLine", false);
         
+        ec.saveDocument();
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
 
@@ -1196,6 +2356,143 @@ public class FormatingTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
         assertEquals(golden, res);
+
+        String content = 
+            "package hierbas.del.litoral;" +
+            "public class Test{" +
+            "public void taragui(){" +
+            "try{" +
+            "System.out.println(\"TEST\");" +
+            "}catch(Exception e){" +
+            "System.out.println(\"CATCH\");" +
+            "}finally{" +
+            "System.out.println(\"FINALLY\");" +
+            "}" +
+            "}" +
+            "}\n";
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui() {\n" +
+            "        try {\n" +
+            "            System.out.println(\"TEST\");\n" +
+            "        } catch (Exception e) {\n" +
+            "            System.out.println(\"CATCH\");\n" +
+            "        } finally {\n" +
+            "            System.out.println(\"FINALLY\");\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        reformat(doc, content, golden);
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui() {\n" +
+            "        try{\n" +
+            "            System.out.println(\"TEST\");\n" +
+            "        }catch( Exception e ){\n" +
+            "            System.out.println(\"CATCH\");\n" +
+            "        }finally{\n" +
+            "            System.out.println(\"FINALLY\");\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        preferences.putBoolean("spaceBeforeCatchParen", false);
+        preferences.putBoolean("spaceWithinCatchParens", true);
+        preferences.putBoolean("spaceBeforeTryLeftBrace", false);
+        preferences.putBoolean("spaceBeforeCatchLeftBrace", false);
+        preferences.putBoolean("spaceBeforeFinallyLeftBrace", false);
+        preferences.putBoolean("spaceBeforeCatch", false);
+        preferences.putBoolean("spaceBeforeFinally", false);
+        reformat(doc, content, golden);
+        preferences.putBoolean("spaceBeforeCatchParen", true);
+        preferences.putBoolean("spaceWithinCatchParens", false);
+        preferences.putBoolean("spaceBeforeTryLeftBrace", true);
+        preferences.putBoolean("spaceBeforeCatchLeftBrace", true);
+        preferences.putBoolean("spaceBeforeFinallyLeftBrace", true);
+        preferences.putBoolean("spaceBeforeCatch", true);
+        preferences.putBoolean("spaceBeforeFinally", true);
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui() {\n" +
+            "        try\n" +
+            "        {\n" +
+            "            System.out.println(\"TEST\");\n" +
+            "        } catch (Exception e)\n" +
+            "        {\n" +
+            "            System.out.println(\"CATCH\");\n" +
+            "        } finally\n" +
+            "        {\n" +
+            "            System.out.println(\"FINALLY\");\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        preferences.put("otherBracePlacement", CodeStyle.BracePlacement.NEW_LINE.name());
+        reformat(doc, content, golden);
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui() {\n" +
+            "        try\n" +
+            "          {\n" +
+            "            System.out.println(\"TEST\");\n" +
+            "          } catch (Exception e)\n" +
+            "          {\n" +
+            "            System.out.println(\"CATCH\");\n" +
+            "          } finally\n" +
+            "          {\n" +
+            "            System.out.println(\"FINALLY\");\n" +
+            "          }\n" +
+            "    }\n" +
+            "}\n";
+        preferences.put("otherBracePlacement", CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        reformat(doc, content, golden);
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui() {\n" +
+            "        try\n" +
+            "            {\n" +
+            "            System.out.println(\"TEST\");\n" +
+            "            } catch (Exception e)\n" +
+            "            {\n" +
+            "            System.out.println(\"CATCH\");\n" +
+            "            } finally\n" +
+            "            {\n" +
+            "            System.out.println(\"FINALLY\");\n" +
+            "            }\n" +
+            "    }\n" +
+            "}\n";
+        preferences.put("otherBracePlacement", CodeStyle.BracePlacement.NEW_LINE_INDENTED.name());
+        reformat(doc, content, golden);
+        preferences.put("otherBracePlacement", CodeStyle.BracePlacement.SAME_LINE.name());
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui() {\n" +
+            "        try {\n" +
+            "            System.out.println(\"TEST\");\n" +
+            "        }\n" +
+            "        catch (Exception e) {\n" +
+            "            System.out.println(\"CATCH\");\n" +
+            "        }\n" +
+            "        finally {\n" +
+            "            System.out.println(\"FINALLY\");\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        preferences.putBoolean("placeCatchOnNewLine", true);
+        preferences.putBoolean("placeFinallyOnNewLine", true);
+        reformat(doc, content, golden);
+        preferences.putBoolean("placeCatchOnNewLine", false);
+        preferences.putBoolean("placeFinallyOnNewLine", false);
     }
     
     public void testOperators() throws Exception {
@@ -1207,7 +2504,12 @@ public class FormatingTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n"
             );
-        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        FileObject testSourceFO = FileUtil.toFileObject(testFile);
+        DataObject testSourceDO = DataObject.find(testSourceFO);
+        EditorCookie ec = (EditorCookie) testSourceDO.getCookie(EditorCookie.class);
+        final Document doc = ec.openDocument();
+        doc.putProperty(Language.class, JavaTokenId.language());
+        JavaSource testSource = JavaSource.forDocument(doc);
         final String stmt = 
             "for (int i = 0; i < x; i++) y += (y ^ 123) << 2;";
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
@@ -1239,6 +2541,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         testSource.runModificationTask(task).commit();
         preferences.putBoolean("spaceAroundAssignOps", true);
 
+        ec.saveDocument();
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
 
@@ -1264,6 +2567,79 @@ public class FormatingTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
         assertEquals(golden, res);
+
+        String content = 
+            "package hierbas.del.litoral;" +
+            "public class Test{" +
+            "public void taragui(int x, int y){" +
+            "for(int i=0;i<x;i++)" +
+            "y+=(y^123)<<2;" +
+            "}" +
+            "}\n";
+
+        golden = 
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui(int x, int y) {\n" +
+            "        for (int i = 0; i < x; i++) {\n" +
+            "            y += (y ^ 123) << 2;\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        reformat(doc, content, golden);
+
+        golden = 
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui(int x, int y) {\n" +
+            "        for (int i = 0; i < x; i++) {\n" +
+            "            y += ( y ^ 123 ) << 2;\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        preferences.putBoolean("spaceWithinParens", true);
+        reformat(doc, content, golden);
+        preferences.putBoolean("spaceWithinParens", false);
+
+        golden = 
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui(int x, int y) {\n" +
+            "        for (int i = 0; i < x; i ++) {\n" +
+            "            y += (y ^ 123) << 2;\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        preferences.putBoolean("spaceAroundUnaryOps", true);
+        reformat(doc, content, golden);
+        preferences.putBoolean("spaceAroundUnaryOps", false);
+
+        golden = 
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui(int x, int y) {\n" +
+            "        for (int i = 0; i<x; i++) {\n" +
+            "            y += (y^123)<<2;\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        preferences.putBoolean("spaceAroundBinaryOps", false);
+        reformat(doc, content, golden);
+        preferences.putBoolean("spaceAroundBinaryOps", true);
+
+        golden = 
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui(int x, int y) {\n" +
+            "        for (int i=0; i < x; i++) {\n" +
+            "            y+=(y ^ 123) << 2;\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        preferences.putBoolean("spaceAroundAssignOps", false);
+        reformat(doc, content, golden);
+        preferences.putBoolean("spaceAroundAssignOps", true);
+
     }
     
     public void testTypeCast() throws Exception {
@@ -1275,7 +2651,12 @@ public class FormatingTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n"
             );
-        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        FileObject testSourceFO = FileUtil.toFileObject(testFile);
+        DataObject testSourceDO = DataObject.find(testSourceFO);
+        EditorCookie ec = (EditorCookie) testSourceDO.getCookie(EditorCookie.class);
+        final Document doc = ec.openDocument();
+        doc.putProperty(Language.class, JavaTokenId.language());
+        JavaSource testSource = JavaSource.forDocument(doc);
         final String stmt = 
             "if (cs instanceof String) {String s = (String)cs;}";
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
@@ -1297,6 +2678,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         preferences.putBoolean("spaceWithinTypeCastParens", false);
         preferences.putBoolean("spaceAfterTypeCast", true);
 
+        ec.saveDocument();
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
 
@@ -1313,6 +2695,42 @@ public class FormatingTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
         assertEquals(golden, res);
+
+        String content =
+            "package hierbas.del.litoral;" +
+            "public class Test{" +
+            "public void taragui(CharSequence cs){" +
+            "if(cs instanceof String){" +
+            "String s=(String)cs;" +
+            "}" +
+            "}" +
+            "}\n";
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui(CharSequence cs) {\n" +
+            "        if (cs instanceof String) {\n" +
+            "            String s = (String) cs;\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        reformat(doc, content, golden);
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui(CharSequence cs) {\n" +
+            "        if (cs instanceof String) {\n" +
+            "            String s = ( String )cs;\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        preferences.putBoolean("spaceWithinTypeCastParens", true);
+        preferences.putBoolean("spaceAfterTypeCast", false);
+        reformat(doc, content, golden);
+        preferences.putBoolean("spaceWithinTypeCastParens", false);
+        preferences.putBoolean("spaceAfterTypeCast", true);
     }
     
     public void testLabelled() throws Exception {
@@ -1324,7 +2742,12 @@ public class FormatingTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n"
             );
-        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        FileObject testSourceFO = FileUtil.toFileObject(testFile);
+        DataObject testSourceDO = DataObject.find(testSourceFO);
+        EditorCookie ec = (EditorCookie) testSourceDO.getCookie(EditorCookie.class);
+        final Document doc = ec.openDocument();
+        doc.putProperty(Language.class, JavaTokenId.language());
+        JavaSource testSource = JavaSource.forDocument(doc);
         final String stmt = 
             "label: System.out.println();";
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
@@ -1348,6 +2771,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         testSource.runModificationTask(task).commit();
         preferences.putBoolean("absoluteLabelIndent", false);
 
+        ec.saveDocument();
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
 
@@ -1363,6 +2787,48 @@ public class FormatingTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
         assertEquals(golden, res);
+
+        String content = 
+            "package hierbas.del.litoral;" +
+            "public class Test{" +
+            "public void taragui(CharSequence cs){" +
+            "label:" +
+            "System.out.println();" +
+            "}" +
+            "}\n";
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui(CharSequence cs) {\n" +
+            "        label:\n" +
+            "        System.out.println();\n" +
+            "    }\n" +
+            "}\n";
+        reformat(doc, content, golden);
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui(CharSequence cs) {\n" +
+            "        label:\n" +
+            "            System.out.println();\n" +
+            "    }\n" +
+            "}\n";
+        preferences.putInt("labelIndent", 4);
+        reformat(doc, content, golden);
+        preferences.putInt("labelIndent", 0);
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui(CharSequence cs) {\n" +
+            "label:  System.out.println();\n" +
+            "    }\n" +
+            "}\n";
+        preferences.putBoolean("absoluteLabelIndent", true);
+        reformat(doc, content, golden);
+        preferences.putBoolean("absoluteLabelIndent", false);
     }
     
     /**
@@ -1380,7 +2846,12 @@ public class FormatingTest extends GeneratorTestMDRCompat {
             "public class Test {\n" +
             "}\n"
             );
-        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        FileObject testSourceFO = FileUtil.toFileObject(testFile);
+        DataObject testSourceDO = DataObject.find(testSourceFO);
+        EditorCookie ec = (EditorCookie) testSourceDO.getCookie(EditorCookie.class);
+        final Document doc = ec.openDocument();
+        doc.putProperty(Language.class, JavaTokenId.language());
+        JavaSource testSource = JavaSource.forDocument(doc);
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -1405,6 +2876,8 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         preferences.putBoolean("spaceWithinMethodDeclParens", true);
         preferences.putBoolean("spaceWithinMethodCallParens", true);
         testSource.runModificationTask(task).commit();
+
+        ec.saveDocument();
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
 
@@ -1422,6 +2895,51 @@ public class FormatingTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
         assertEquals(golden, res);
+
+        String content = 
+            "package hierbas.del.litoral;" +
+            "public class Test{" +
+            "int test(){" +
+            "System.err.println(i);" +
+            "System.err.println();" +
+            "new ArrayList();" +
+            "new ArrayList(i);" +
+            "return i;" +
+            "}" +
+            "}\n";
+
+        golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "\n" +
+            "    int test() {\n" +
+            "        System.err.println( i );\n" +
+            "        System.err.println();\n" +
+            "        new ArrayList();\n" +
+            "        new ArrayList( i );\n" +
+            "        return i;\n" +
+            "    }\n" +
+            "}\n";
+        reformat(doc, content, golden);
+        preferences.putBoolean("spaceWithinMethodDeclParens", false);
+        preferences.putBoolean("spaceWithinMethodCallParens", false);
+    }
+    
+    private void reformat(Document doc, String content, String golden) throws Exception {
+        doc.remove(0, doc.getLength());
+        doc.insertString(0, content, null);
+        
+        Reformat reformat = Reformat.get(doc);
+        reformat.lock();
+        try {
+            reformat.reformat(0, doc.getLength());
+        } finally {
+            reformat.unlock();
+        }
+        String res = doc.getText(0, doc.getLength());
+        System.err.println(res);
+        assertEquals(golden, res);        
     }
     
     String getGoldenPckg() {

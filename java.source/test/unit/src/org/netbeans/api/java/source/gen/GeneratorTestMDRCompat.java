@@ -64,8 +64,6 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
-import org.openide.filesystems.XMLFileSystem;
 import org.openide.util.SharedClassObject;
 
 /**
@@ -82,11 +80,6 @@ public abstract class GeneratorTestMDRCompat extends NbTestCase {
     
     @Override
     protected void setUp() throws Exception {
-        XMLFileSystem system = new XMLFileSystem();
-        system.setXmlUrls(new URL[] {
-            GeneratorTestMDRCompat.class.getResource("/org/netbeans/modules/java/source/resources/layer.xml")
-        });
-        Repository repository = new Repository(system);
         ClassPathProvider cpp = new ClassPathProvider() {
             public ClassPath findClassPath(FileObject file, String type) {
                 if (type == ClassPath.SOURCE)
@@ -99,7 +92,7 @@ public abstract class GeneratorTestMDRCompat extends NbTestCase {
             }
         };
         SharedClassObject loader = JavaDataLoader.findObject(JavaDataLoader.class, true);
-        SourceUtilsTestUtil.prepareTest(new String[0], new Object[] {repository, loader, cpp});
+        SourceUtilsTestUtil.prepareTest(new String[] {"org/netbeans/modules/java/source/resources/layer.xml"}, new Object[] {loader, cpp});
         JEditorPane.registerEditorKitForContentType("text/x-java", "org.netbeans.modules.editor.java.JavaKit");
         File cacheFolder = new File(getWorkDir(), "var/cache/index");
         cacheFolder.mkdirs();
