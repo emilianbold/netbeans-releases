@@ -158,10 +158,13 @@ public class Occurrences {
      */
     public static class ManagedBeanClassItem extends OccurrenceItem{
         private final ManagedBean bean;
+        // needed for undo
+        private final ManagedBean copy;
         
         public ManagedBeanClassItem(FileObject config, ManagedBean bean, String newValue){
             super(config, newValue, bean.getManagedBeanClass());
             this.bean = bean;
+            this.copy = (ManagedBean) bean.copy(bean.getParent());
         }
         
         protected String getXMLElementName(){
@@ -203,7 +206,7 @@ public class Occurrences {
         public void undoSafeDelete() {
             FacesConfig facesConfig = ConfigurationUtils.getConfigModel(config, true).getRootComponent();
             facesConfig.getModel().startTransaction();
-            facesConfig.addManagedBean(bean);
+            facesConfig.addManagedBean(copy);
             facesConfig.getModel().endTransaction();
         }
         
@@ -249,10 +252,13 @@ public class Occurrences {
     
     public static class ConverterClassItem extends OccurrenceItem {
         private final Converter converter;
+        // needed for undo
+        private final Converter copy;
         
         public ConverterClassItem(FileObject config, Converter converter, String newValue){
             super(config, newValue, converter.getConverterClass());
             this.converter = converter;
+            this.copy = (Converter) converter.copy(converter.getParent());
         }
         
         protected String getXMLElementName(){
@@ -292,7 +298,7 @@ public class Occurrences {
         public void undoSafeDelete() {
             FacesConfig facesConfig = ConfigurationUtils.getConfigModel(config, true).getRootComponent();
             facesConfig.getModel().startTransaction();
-            facesConfig.addConverter(converter);
+            facesConfig.addConverter(copy);
             facesConfig.getModel().endTransaction();
         }
         
@@ -337,10 +343,14 @@ public class Occurrences {
     
     public static class ConverterForClassItem extends OccurrenceItem {
         private final Converter converter;
-        
+        //needed for undo
+        private final Converter copy;
+
         public ConverterForClassItem(FileObject config, Converter converter, String newValue){
             super(config, newValue, converter.getConverterForClass());
             this.converter = converter;
+            this.copy = (Converter) converter.copy(converter.getParent());
+
         }
         
         protected String getXMLElementName(){
@@ -380,8 +390,9 @@ public class Occurrences {
         public void undoSafeDelete() {
             FacesConfig facesConfig = ConfigurationUtils.getConfigModel(config, true).getRootComponent();
             facesConfig.getModel().startTransaction();
-            facesConfig.addConverter(converter);
-            facesConfig.addConverter(converter);
+            facesConfig.addConverter(copy);
+            // XXX why this is twice here?
+            //facesConfig.addConverter(converter);
             facesConfig.getModel().endTransaction();
         }
         
