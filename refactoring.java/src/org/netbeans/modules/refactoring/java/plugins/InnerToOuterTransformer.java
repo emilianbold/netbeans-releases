@@ -223,8 +223,8 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
                 MemberSelectTree m = make.MemberSelect(((MemberSelectTree) ex).getExpression(),refactoring.getClassName());
                 rewrite(memberSelect,m);
             }
-        } else if (isThisReferenceToOuter()&& !"class".equals(memberSelect.getIdentifier().toString())) { //NOI18N
-            MemberSelectTree m = make.MemberSelect(memberSelect, refactoring.getReferenceName());
+        } else if (isThisReferenceToOuter()&& !"class".equals(memberSelect.getIdentifier().toString()) && refactoring.getReferenceName()!=null) { //NOI18N
+            MemberSelectTree m = make.MemberSelect(make.Identifier(refactoring.getReferenceName()), memberSelect.getIdentifier());
             rewrite(memberSelect, m);
         }
         
