@@ -84,10 +84,17 @@ public class GotoOppositeAction extends CallableSystemAction {
 
     public GotoOppositeAction() {
         putValue("noIconInMenu", Boolean.TRUE); //NOI18N
+
+        String name = NbBundle.getMessage(
+                GotoOppositeAction.class,
+                "LBL_Action_GoToTest"); //NOI18N
+        putValue("PopupMenuText", name); //NOI18N
+
+        // Not sure what the following is used for - a grep for trimmed-text
+        // doesn't reveal any clients. Obsolete code perhaps?
         String trimmedName = NbBundle.getMessage(
                 GotoOppositeAction.class,
                 "LBL_Action_GoToTest_trimmed"); //NOI18N
-        putValue("PopupMenuText", trimmedName); //NOI18N
         putValue("trimmed-text", trimmedName); //NOI18N
     }
     
