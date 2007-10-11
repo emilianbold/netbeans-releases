@@ -1451,11 +1451,12 @@ public class HgCommand {
      * @param outputFileName path of the output file
      * @throws org.netbeans.modules.mercurial.HgException
      */
-    public static void doExport(File repository, String revStr, String outputFileName)  throws HgException {
+    public static List<String> doExport(File repository, String revStr, String outputFileName)  throws HgException {
         List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
         command.add(HG_EXPORT_CMD);
+        command.add(HG_VERBOSE_CMD);
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
         command.add(HG_FLAG_OUTPUT_CMD);
@@ -1463,8 +1464,11 @@ public class HgCommand {
         command.add(revStr);
 
         List<String> list = exec(command);
-        if (!list.isEmpty())
+        if (!list.isEmpty() &&
+             isErrorAbort(list.get(list.size() -1))) {
             handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_EXPORT_FAILED"));
+        }
+        return list;
     }
     
     /**
