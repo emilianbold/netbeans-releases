@@ -368,11 +368,15 @@ public final class Deployment {
         if (serInst == null) return null;
         return J2eePlatform.create(serInst);
     }
-    
-    public String getServerDisplayName (String id) {
-        return ServerRegistry.getInstance ().getServer (id).getDisplayName();
+
+    public String getServerDisplayName(String id) {
+        Server server = ServerRegistry.getInstance ().getServer(id);
+        if (server == null) { // probably uninstalled
+            return null;
+        }
+        return server.getDisplayName();
     }
-    
+
     /**
      * Returns <code>true</code> if the given server instance exists and is running, 
      * <code>false</code> otherwise.
