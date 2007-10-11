@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -55,19 +55,17 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
-import java.util.Vector;
 import java.util.jar.Attributes;
+import java.util.jar.Attributes.Name;
 import java.util.jar.JarFile;
 import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.apache.tools.ant.BuildException;
@@ -311,8 +309,18 @@ public class MakeNBM extends Task {
     private Signature signature = null;
     private long mostRecentInput = 0L;
     private boolean isStandardInclude = true;
-    private Vector<ExternalPackage> externalPackages = null;
+    private ArrayList<ExternalPackage> externalPackages = null;
+    private ArrayList<String> locales = null;
+    private ArrayList<Attributes> moduleAttributes = null;
+    private Attributes englishAttr = null;
     
+    /** Try to find and create localized info.xml files */
+    public void setLocales(String s) {
+        locales = new ArrayList<String>();
+        for (String st : s.split("[, ]+")) {
+            locales.add(st);
+        }
+    }
     /** Include netbeans directory - default is true */
     public void setIsStandardInclude(boolean isStandardInclude) {
         this.isStandardInclude = isStandardInclude;
@@ -410,7 +418,7 @@ public class MakeNBM extends Task {
     public ExternalPackage createExternalPackage(){
 	ExternalPackage externalPackage = new ExternalPackage ();
 	if (externalPackages == null)
-	    externalPackages = new Vector<ExternalPackage>();
+	    externalPackages = new ArrayList<ExternalPackage>();
 	externalPackages.add( externalPackage );
 	return externalPackage;
     }
@@ -420,7 +428,116 @@ public class MakeNBM extends Task {
     public ZipFileSet createMain () {
         return (main = new ZipFileSet());
     }
+    
+    private Attributes getModuleAttributesForLocale(String locale) throws BuildException {
+        if (locale == null) {
+            throw new BuildException("Unknown locale: null",getLocation());
+        }
+        log("Processing module attributes for locale '"+locale+"'", Project.MSG_VERBOSE);
+        Attributes attr = null;
+        if ((!locale.equals("")) && (englishAttr != null)) {
+            attr = new Attributes(englishAttr);
+            attr.putValue("locale", locale);
+            log("Copying English module attributes to localized attributes in locale "+locale,Project.MSG_VERBOSE);
+            String om = attr.getValue("OpenIDE-Module");
+            String omn = attr.getValue("OpenIDE-Module-Name");
+            String omdc = attr.getValue("OpenIDE-Module-Display-Category");
+            String omsd = attr.getValue("OpenIDE-Module-Short-Description");
+            String omld = attr.getValue("OpenIDE-Module-Long-Description");
+            if (om != null) log("OpenIDE-Module"+(locale.equals("")?"":"_"+locale)+" is "+om,Project.MSG_DEBUG);
+            if (omn != null) log("OpenIDE-Module-Name"+(locale.equals("")?"":"_"+locale)+" is "+omn,Project.MSG_DEBUG);
+            if (omdc != null) log("OpenIDE-Module-Display-Category"+(locale.equals("")?"":"_"+locale)+" is "+omdc,Project.MSG_DEBUG);
+            if (omsd != null) log("OpenIDE-Module-Short-Description"+(locale.equals("")?"":"_"+locale)+" is "+omsd,Project.MSG_DEBUG);
+            if (omld != null) log("OpenIDE-Module-Long-Description"+(locale.equals("")?"":"_"+locale)+" is "+omld,Project.MSG_DEBUG);
+        } else {
+            attr = new Attributes();
+            attr.putValue("locale", locale);
+        }
+        moduleName = moduleName.replace(File.separatorChar, '/');
+        String jarName = moduleName;
+        String filename; String fname; String fext;
+        if (!locale.equals("")) {
+            // update file name for current locale
+            filename = moduleName.substring(moduleName.lastIndexOf('/')+1);
+            fname = filename.substring(0,filename.lastIndexOf('.'));
+            fext = filename.substring(filename.lastIndexOf('.'));
+            jarName = moduleName.substring(0,moduleName.lastIndexOf('/')) + "/locale/" + fname + "_" + locale + fext;
+        }
+        log("Going to open jarfile "+jarName,Project.MSG_VERBOSE);
+        File mfile = new File(productDir, jarName );
+        if ((mfile == null) || (!mfile.exists())) {
+            // localizing jarfile does not exist, try to return english data
+            if (englishAttr != null) {
+                Attributes xattr = new Attributes(englishAttr);
+                xattr.putValue("locale", locale);
+                return xattr;
+            } else {
+                throw new BuildException("Unable to find English/localized data about module (locale is '"+locale+"')", getLocation());
+            }
+        }
+        try {
+            JarFile mjar = new JarFile(mfile);
+            try {
+                if (attr.getValue("OpenIDE-Module") == null ) {
+                    attr = mjar.getManifest().getMainAttributes();
+                    attr.putValue("locale", locale);
+                }
+                String bundlename = mjar.getManifest().getMainAttributes().getValue("OpenIDE-Module-Localizing-Bundle");
+                if ((bundlename == null) && (englishAttr != null)) {
+                    String bname = englishAttr.getValue("OpenIDE-Module-Localizing-Bundle");
+                    String bfname; String bfext;
+                    if (bname != null) {
+                        bname = bname.replace(File.separatorChar, '/');
+                        bfname = bname.substring(0,bname.lastIndexOf('.'));
+                        bfext = bname.substring(bname.lastIndexOf('.'));
+                        bundlename = bfname + "_" + locale + bfext;
+                        log("Determined ("+locale+") localizing bundle name: "+bundlename,Project.MSG_VERBOSE);
+                    }
+                }
+                if (bundlename != null) {
+                    Properties p = new Properties();
+                    ZipEntry bundleentry = mjar.getEntry(bundlename);
+                    if (bundleentry != null) {
+                        InputStream is = mjar.getInputStream(bundleentry);
+                        try {
+                            p.load(is);
+                        } finally {
+                            is.close();
+                        }
+                        // Now pick up attributes from the bundle.
+                        Iterator it = p.entrySet().iterator();
+                        while (it.hasNext()) {
+                            Map.Entry entry = (Map.Entry)it.next();
+                            String name = (String)entry.getKey();
+                            if (! name.startsWith("OpenIDE-Module-")) continue;
+                            attr.putValue(name, (String)entry.getValue());
+                        }
+                    }
+                }
+            } finally {
+                mjar.close();
+            }
+        } catch (IOException ioe) {
+            throw new BuildException("exception while reading " + mfile.getName(), ioe, getLocation());
+        }
+        if (locale.equals("") && (englishAttr == null)) {
+            log("Populating English module attributes", Project.MSG_VERBOSE);
+            englishAttr = new Attributes(attr);
+        }
+        String om = attr.getValue("OpenIDE-Module");
+        String omn = attr.getValue("OpenIDE-Module-Name");
+        String omdc = attr.getValue("OpenIDE-Module-Display-Category");
+        String omsd = attr.getValue("OpenIDE-Module-Short-Description");
+        String omld = attr.getValue("OpenIDE-Module-Long-Description");
+        if (om != null) log("OpenIDE-Module"+(locale.equals("")?"":"_"+locale)+" is "+om,Project.MSG_VERBOSE);
+        if (omn != null) log("OpenIDE-Module-Name"+(locale.equals("")?"":"_"+locale)+" is "+omn,Project.MSG_VERBOSE);
+        if (omdc != null) log("OpenIDE-Module-Display-Category"+(locale.equals("")?"":"_"+locale)+" is "+omdc,Project.MSG_VERBOSE);
+        if (omsd != null) log("OpenIDE-Module-Short-Description"+(locale.equals("")?"":"_"+locale)+" is "+omsd,Project.MSG_VERBOSE);
+        if (omld != null) log("OpenIDE-Module-Long-Description"+(locale.equals("")?"":"_"+locale)+" is "+omld,Project.MSG_VERBOSE);
+        return attr;
+    }
 
+    @Override
     public void execute () throws BuildException {
         if (productDir == null) {
             throw new BuildException("must set directory of compiled product", getLocation());
@@ -434,6 +551,9 @@ public class MakeNBM extends Task {
         if (manifest != null && moduleName != null) {
             throw new BuildException("cannot set both manifest and module for makenbm", getLocation());
         }
+        if (locales == null) {
+            locales = new ArrayList<String>();
+        }
 
     File file;
     String rootDir = getProject ().getProperty ("nbm.target.dir");
@@ -446,66 +566,23 @@ public class MakeNBM extends Task {
 	// If desired, override the license and/or URL. //
         overrideURLIfNeeded() ;
 	overrideLicenseIfNeeded() ;
+        
+        
+        moduleAttributes = new ArrayList<Attributes> ();
+        moduleAttributes.add(getModuleAttributesForLocale(""));
+        for (String locale : locales) {
+            Attributes a = getModuleAttributesForLocale(locale);
+            if (a != null) moduleAttributes.add(a);
+        }
 
         File module = new File( productDir, moduleName );
         // Will create a file Info/info.xml to be stored in tmp
-        Attributes attr = null;
         if (module != null) {
             // The normal case; read attributes from its manifest and maybe bundle.
             long mMod = module.lastModified();
             if (mostRecentInput < mMod) mostRecentInput = mMod;
-            try {
-                JarFile modulejar = new JarFile(module);
-                try {
-                    attr = modulejar.getManifest().getMainAttributes();
-                    String bundlename = attr.getValue("OpenIDE-Module-Localizing-Bundle");
-                    if (bundlename != null) {
-                        Properties p = new Properties();
-                        ZipEntry bundleentry = modulejar.getEntry(bundlename);
-                        if (bundleentry != null) {
-                            InputStream is = modulejar.getInputStream(bundleentry);
-                            try {
-                                p.load(is);
-                            } finally {
-                                is.close();
-                            }
-                        } else {
-                            // Not found in main JAR, check locale variant JAR.
-                            File variant = new File(new File(module.getParentFile(), "locale"), module.getName());
-                            if (!variant.isFile()) throw new BuildException(bundlename + " not found in " + module, getLocation());
-                            long vmMod = variant.lastModified();
-                            if (mostRecentInput < vmMod) mostRecentInput = vmMod;
-                            ZipFile variantjar = new ZipFile(variant);
-                            try {
-                                bundleentry = variantjar.getEntry(bundlename);
-                                if (bundleentry == null) throw new BuildException(bundlename + " not found in " + module + " nor in " + variant, getLocation());
-                                InputStream is = variantjar.getInputStream(bundleentry);
-                                try {
-                                    p.load(is);
-                                } finally {
-                                    is.close();
-                                }
-                            } finally {
-                                variantjar.close();
-                            }
-                        }
-                        // Now pick up attributes from the bundle.
-                        Iterator it = p.entrySet().iterator();
-                        while (it.hasNext()) {
-                            Map.Entry entry = (Map.Entry)it.next();
-                            String name = (String)entry.getKey();
-                            if (! name.startsWith("OpenIDE-Module-")) continue;
-                            attr.putValue(name, (String)entry.getValue());
-                        }
-                    } // else all loc attrs in main manifest, OK
-                } finally {
-                    modulejar.close();
-                }
-            } catch (IOException ioe) {
-                throw new BuildException("exception while reading " + module, ioe, getLocation());
-            }
         }
-        
+
         if (mostRecentInput < file.lastModified()) {
             log("Skipping NBM creation as most recent input is younger: " + mostRecentInput + " than the target file: " + file.lastModified(), Project.MSG_VERBOSE);
             return;
@@ -513,58 +590,41 @@ public class MakeNBM extends Task {
             log("Most recent input: " + mostRecentInput + " file: " + file.lastModified(), Project.MSG_DEBUG);
         }
         
-        
-        Document infoXmlContents = createInfoXml(attr);
-        File infofile;
-        try {
-	    infofile = File.createTempFile("info",".xml");
-            OutputStream infoStream = new FileOutputStream (infofile);
+        ArrayList<ZipFileSet> infoXMLFileSets = new ArrayList<ZipFileSet>();
+        for (Attributes modAttr : moduleAttributes) {
+            Document infoXmlContents = createInfoXml(modAttr);
+            File infofile;
+            String loc = modAttr.getValue("locale");
+            if (loc == null)
+                throw new BuildException("Found attributes without assigned locale code", getLocation());
             try {
-                XMLUtil.write(infoXmlContents, infoStream);
-            } finally {
-                infoStream.close ();
+                infofile = File.createTempFile("info_"+loc,".xml");
+                OutputStream infoStream = new FileOutputStream (infofile);
+                try {
+                    XMLUtil.write(infoXmlContents, infoStream);
+                } finally {
+                    infoStream.close ();
+                }
+            } catch (IOException e) {
+                throw new BuildException("exception when creating Info/info.xml for locale '"+loc+"'", e, getLocation());
             }
-        } catch (IOException e) {
-            throw new BuildException("exception when creating Info/info.xml", e, getLocation());
+            infofile.deleteOnExit();
+            ZipFileSet infoXML = new ZipFileSet();
+            infoXML.setFile( infofile );
+            if (loc.equals("")) {
+                infoXML.setFullpath("Info/info.xml");
+            } else {
+                infoXML.setFullpath("Info/locale/info_"+loc+".xml");
+                log("Adding Info/locale/info_"+loc+".xml file", Project.MSG_VERBOSE);
+            }
+            infoXMLFileSets.add(infoXML);
         }
-        infofile.deleteOnExit();
-        ZipFileSet infoXML = new ZipFileSet();
-        infoXML.setFile( infofile );
-        infoXML.setFullpath("Info/info.xml");
-
-        String codename = attr.getValue("OpenIDE-Module");
+        String codename = englishAttr.getValue("OpenIDE-Module");
         if (codename == null)
  	    new BuildException( "Can't get codenamebase" );
  	
  	UpdateTracking tracking = new UpdateTracking(productDir.getAbsolutePath());
  	String files[] = tracking.getListOfNBM( codename );
-	log("Going to update module_tracking.xml record for "+codename+" in file "+file.getName(), Project.MSG_DEBUG);
-	String mtdir = (new File(productDir.getAbsolutePath())).getParent();
-	log("  attempting to use module_tracking.xml file in directory "+mtdir,Project.MSG_DEBUG);
-        ModuleTracking mt = new ModuleTracking (mtdir);
-        ModuleTracking.Module mtm = (ModuleTracking.Module) mt.getModulesByCodeName().get(codename);
-        if (mtm != null) {
-	    log("  file: \""+mtm.getNbmFileName()+"\" => \""+file.getName()+"\"",Project.MSG_DEBUG);
-            mtm.setNbmFileName(file.getName());
-	    log("  homepage: \""+mtm.getNbmHomePage()+ "\" => \"" + homepage + "\"",Project.MSG_DEBUG);
-            mtm.setNbmHomePage(homepage);
-	    log("  moduleauthor: \""+mtm.getNbmModuleAuthor()+ "\" => \"" + moduleauthor + "\"", Project.MSG_DEBUG);
-            mtm.setNbmModuleAuthor(moduleauthor);
-	    log("  needsrestart: \""+mtm.getNbmNeedsRestart()+ "\" => \"" + needsrestart + "\"", Project.MSG_DEBUG);
-            mtm.setNbmNeedsRestart(needsrestart);
-	    log("  global: \""+mtm.getNbmIsGlobal()+ "\" => \"" + global + "\"", Project.MSG_DEBUG);
-            mtm.setNbmIsGlobal(global);
-            // XXX this makes no sense. Why should targetcluster be defined in update_tracking/*.xml?
-            // (In fact it is not, but I can't tell why it isn't. -jglick)
-	    log("  targetcluster: \""+mtm.getNbmTargetCluster ()+ "\" => \"" + targetcluster + "\"", Project.MSG_DEBUG);
-            mtm.setNbmTargetCluster (targetcluster);
-	    log("  releasedate: \""+mtm.getNbmReleaseDate() + "\" => \"" + releasedate+"\"", Project.MSG_DEBUG);
-            mtm.setNbmReleaseDate(releasedate);
-            mt.write();
-        } else {
-	    log("ModuleTracking.Module record doesn't exist for "+codename+" and file "+file.getName(), Project.MSG_DEBUG);
-        }
-        
  	ZipFileSet fs = new ZipFileSet();
  	fs.setDir( productDir );
  	for (int i=0; i < files.length; i++)
@@ -578,7 +638,10 @@ public class MakeNBM extends Task {
     
         jar.setDestFile(file);
         jar.addZipfileset(fs);
-        jar.addFileset (infoXML);
+        for (ZipFileSet zfs : infoXMLFileSets) {
+            jar.addFileset(zfs);
+        }
+
         if (main != null) { // Add the main dir
             main.setPrefix("main"); // use main prefix
             jar.addZipfileset(main);
@@ -646,6 +709,13 @@ public class MakeNBM extends Task {
         } catch (ParserConfigurationException x) {
             throw new BuildException(x, getLocation());
         }
+        String loc = attr.getValue("locale");
+        if (loc == null) {
+            throw new BuildException("Got module attributes for undefined locale", getLocation());
+        } else {
+            log("Creating info.xml from module attributes for locale '"+loc+"'", Project.MSG_VERBOSE);
+        }
+        
         String pub, sys;
         if (attr.getValue("AutoUpdate-Show-In-Client") != null || attr.getValue("AutoUpdate-Essential-Module") != null) {
             pub = "-//NetBeans//DTD Autoupdate Module Info 2.5//EN";
@@ -661,6 +731,13 @@ public class MakeNBM extends Task {
         Document doc = domimpl.createDocument(null, "module", domimpl.createDocumentType("module", pub, sys));
         String codenamebase = attr.getValue("OpenIDE-Module");
         if (codenamebase == null) {
+            Iterator it = attr.keySet().iterator();
+            Name key; String val;
+            while (it.hasNext()) {
+                key = (Name) it.next();
+                val = attr.getValue(key);
+                log(key+" is '"+val+"'", Project.MSG_VERBOSE);
+            }
             throw new BuildException("invalid manifest, does not contain OpenIDE-Module", getLocation());
         }
         // Strip major release number if any.
@@ -709,9 +786,9 @@ public class MakeNBM extends Task {
             module.appendChild(doc.createElement("module_notification")).appendChild(notification.getTextNode(doc));
         }
         if (externalPackages != null) {
-            Enumeration exp = externalPackages.elements();
-            while (exp.hasMoreElements()) {
-                ExternalPackage externalPackage = (ExternalPackage) exp.nextElement();
+            Iterator<ExternalPackage> exp = externalPackages.iterator();
+            while (exp.hasNext()) {
+                ExternalPackage externalPackage = exp.next();
                 if (externalPackage.name == null ||
                         externalPackage.targetName == null ||
                         externalPackage.startUrl == null)

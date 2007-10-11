@@ -115,6 +115,7 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
         <property name="manifest.mf" location="manifest.mf"/>
         <property name="src.dir" location="src"/>
         <property name="build.classes.dir" location="build/classes"/>
+        <property name="build.classes.dir.ml" location="build/ml/classes"/>
         <property name="nbm" value="${code.name.base.dashes}.nbm"/>
         <property name="nbm.homepage" value="http://${nbm.domain}.netbeans.org/"/>
         <property name="nbm.distribution" value="${dist.base}/${nbm}"/>
@@ -143,8 +144,15 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
         <property name="javahelp.search" value="JavaHelpSearch"/>
         <property name="javahelp.excludes" value="credits.html"/>
         <property name="netbeans.zipped.sources.dir" value="build/sources"/>
+        <property name="locales" value=""/>
+        <property name="brandings" value=""/>
+        <property name="locjar.locales" value="${locales}"/>
+        <property name="locjar.brands" value="${brandings}"/>
+        <property name="locjhindexer.locales" value="${locales}"/>
+        <property name="locmakenbm.locales" value="${locales}"/>
+        <property name="locmakenbm.brands" value="${brandings}"/>
     </target>
-    
+
     <!-- See: http://wiki.netbeans.org/wiki/view/DevFaqExternalLibrariesUpdated -->
     <target name="-release.files" depends="projectized-common.-release.files">
         <taskdef name="releasefilesextra" classname="org.netbeans.nbbuild.extlibs.ReleaseFilesExtra" classpath="${nb_all}/nbbuild/nbantext.jar"/>
@@ -306,6 +314,104 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
                 <exclude name="org/netbeans/modules/usersguide/ide.css"/>
             </fileset>
         </jar>
+    </target>
+
+    <target name="netbeans-ml" depends="check-run-mlbuild,jar-ml,netbeans-extra-ml,javahelp-ml,files-init">
+        <property name="module.files.toString" refid="module.files"/>
+        <echo level="verbose">Basic matching module files: ${module.files.toString}</echo>
+        <genlist outputfiledir="${cluster}" module="${module.jar}" locales="${locales}" brandings="${brandings}">
+            <fileset dir="${cluster}">
+                <patternset refid="module.files"/>
+            </fileset>
+        </genlist>
+    </target>
+    
+    <target name="netbeans-extra-ml"/>
+    
+    <target name="check-run-mlbuild" depends="build-init">
+        <!-- try to determine if src.dir property has been set
+             in project.properties or build-init target -->
+        <property name="default.src.dir" location="${nb_all}/${module.name}/src"/>
+        <condition property="used.default.src.dir" value="true">
+            <equals arg1="${src.dir}" arg2="${default.src.dir}"/>
+        </condition>
+        <property name="nb_all.native" location="${nb_all}"/>
+        <property name="nb_all.tfsrc.native" location="${nb_all}/translatedfiles/src"/>
+        <!-- convert custom src.dir path to path in translatedfiles module -->
+        <path id="src.dir">
+            <pathelement location="${src.dir}"/>
+        </path>
+        <pathconvert property="custom.src.dir" refid="src.dir">
+            <map from="${nb_all.native}" to="${nb_all.tfsrc.native}"/>
+        </pathconvert>
+        <condition property="translated.src.candir" value="${custom.src.dir}">
+            <not>
+                <isset property="used.default.src.dir"/>
+            </not>
+        </condition>
+        <condition property="translated.src.candir" value="${nb_all}/translatedfiles/src/${module.name}/src">
+            <isset property="used.default.src.dir"/>
+        </condition>
+        <property name="translated.src.dir" location="${translated.src.candir}"/>
+        <available file="${translated.src.dir}" type="dir" property="translated.src.dir.exist"/>
+        <condition property="run.ml.build" value="true">
+            <and>
+                <isset property="translated.src.dir.exist"/>
+                <isset property="locjar.locales"/>
+                <length string="${locjar.locales}" when="greater" length="0"/>
+            </and>
+        </condition>
+    </target>
+    
+    <target name="pre-jar-ml" depends="build-init,check-run-mlbuild" if="run.ml.build"/>
+    
+    <target name="jar-ml" depends="build-init,check-run-mlbuild,pre-jar-ml" if="run.ml.build">
+        <mkdir dir="${build.classes.dir.ml}"/>
+        <copy todir="${build.classes.dir.ml}">
+            <!-- #58298: strip comments to save some space -->
+            <fileset dir="${translated.src.dir}" includes="**/*.properties"/>
+            <filterchain>
+                <tokenfilter>
+                    <!-- #61965: preserve #NOI18N and similar comments -->
+                    <filetokenizer/>
+                    <replaceregex pattern="^#(?!(PART)?(NO)?I18N).*[\r\n]+" replace="" flags="gm"/>
+                </tokenfilter>
+            </filterchain>
+        </copy>
+        <copy todir="${build.classes.dir.ml}">
+            <fileset dir="${translated.src.dir}" includes="**/*" excludes="**/*.properties"/>
+        </copy>
+        <locjar jarfile="${cluster}/${module.jar}"
+                basedir="${build.classes.dir.ml}"
+                compress="${build.package.compress}"/>
+    </target>
+    
+    
+    <target name="check-run-ml-javahelp" if="run.ml.build">
+        <condition property="run.ml.javahelp">
+            <and>
+                <available file="${nb_all}/translatedfiles/src/${module.name}/javahelp" type="dir"/>
+                <isset property="locjar.locales"/>
+                <isset property="locjhindexer.locales"/>
+                <isset property="has.javahelp"/>
+                <isset property="run.ml.build"/>
+            </and>
+        </condition>
+    </target>
+    
+    <target name="javahelp-ml" depends="build-init,check-run-ml-javahelp" if="run.ml.javahelp">
+        <mkdir dir="${build.javahelp.dir}-ml/"/>
+        <copy todir="${build.javahelp.dir}-ml">
+            <fileset dir="${nb_all}/translatedfiles/src/${module.name}/javahelp"/>
+        </copy>
+        <property name="locjhindexer.jhall" value="${nb_all}/apisupport/harness/external/jsearch*.jar"/>
+        <locjhindexer locales="${locales}"
+                      basedir="${build.javahelp.dir}-ml/${javahelp.base}"
+                      dbdir="${javahelp.search}"/>
+        <mkdir dir="${cluster}/${javahelp.jar.dir}/locale"/>
+        <locjar basedir="${build.javahelp.dir}-ml"
+                compress="${build.package.compress}"
+                jarfile="${cluster}/${javahelp.jar.dir}/${code.name.base.dashes}.jar"/>
     </target>
 
     <target name="check-javahelp" depends="javahelp" description="Validate helpset for various errors." if="has.javahelp">

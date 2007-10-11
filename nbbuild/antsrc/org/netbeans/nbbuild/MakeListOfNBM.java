@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -44,6 +44,7 @@ package org.netbeans.nbbuild;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.StringTokenizer;
 import java.util.jar.Attributes;
@@ -64,7 +65,17 @@ public class MakeListOfNBM extends Task {
     String moduleName = null;
     boolean pok = true;
     FileSet fs = null;
-    
+    private ArrayList<String> locales;
+    private ArrayList<String> brandings;
+
+    public MakeListOfNBM() {
+        // initialize locales and brandings lists, add empty value at beginning
+        locales = new ArrayList<String>();
+        locales.add("");
+        brandings = new ArrayList<String>();
+        brandings.add("");
+    }
+
     /** Sets the directory used to create the NBM list file */
     public void setOutputfiledir(File s) {
         outputFile = s;
@@ -74,7 +85,7 @@ public class MakeListOfNBM extends Task {
     public FileSet createFileSet() {
         return (fs = new FileSet());
     }
-    
+
     /** Sets the module file */
     public void setModule(String s) {
         moduleName = s;
@@ -86,6 +97,31 @@ public class MakeListOfNBM extends Task {
         log("<"+this.getTaskName()+"> attribute targetname has been DEPRECATED");
     }
 
+    /** Sets the list of locales in multilanguage build */
+    public void setLocales (String s) {
+        for (String st : s.split("[, ]+")) {
+            locales.add(st);
+        }
+    }
+
+    public ArrayList getLocales () {
+        return this.locales;
+    }
+
+    /** Sets the list of brandings in multilanguage build */
+    public void setBrandings (String s) {
+        if (s.startsWith("${")) return;
+        StringTokenizer st = new StringTokenizer(s,", ");
+        while (st.hasMoreTokens()) {
+            brandings.add(st.nextToken());
+        }
+    }
+
+    public ArrayList getBrandings () {
+        return this.brandings;
+    }
+
+    @Override
     public void execute () throws BuildException {
         if (!pok) throw new BuildException("Use the fileset to specify the content of the NBM");
         if ( outputFile == null ) throw new BuildException( "You have to specify output directoty" );
@@ -110,28 +146,29 @@ public class MakeListOfNBM extends Task {
                 String exmsg = ex1.getMessage();
                 if (exmsg == null) exmsg = "Unknown error";
                 log("Caught I/O Exception (msg:\""+exmsg+"\") when trying to close jar file "+module.getAbsolutePath(),Project.MSG_WARN);
+                }
             }
-        }
-        
+
         String codename = attr.getValue("OpenIDE-Module"); //NOI18N
         if (codename == null) {
             throw new BuildException("Manifest in jar file "+module.getAbsolutePath()+" does not contain OpenIDE-Module", getLocation());
         }
-        
+
         String versionSpecNum = attr.getValue("OpenIDE-Module-Specification-Version"); //NOI18N
         if (versionSpecNum == null) {
             log("Manifest in jar file "+module.getAbsolutePath()+" does not contain tag OpenIDE-Module-Specification-Version");
             return;
         }
-        
+
         UpdateTracking.Version version = track.addNewModuleVersion( codename, versionSpecNum );
 
         fs.createInclude().setName("config" + File.separator + "Modules" + File.separator + track.getTrackingFileName()); //NOI18N
         
+        updateFileSetForLorB (fs);
         // get directory scanner for "default" files
         DirectoryScanner ds = fs.getDirectoryScanner( this.getProject() );
         ds.scan();
-        
+
         // check if we need also localized and branded files
         String lmnl = this.getProject().getProperty("locmakenbm.locales"); // NOI18N
         String lmnb = this.getProject().getProperty("locmakenbm.brands"); // NOI18N
@@ -149,7 +186,7 @@ public class MakeListOfNBM extends Task {
                 log("  lmnLocales[j] == "+lmnLocales[j], Project.MSG_DEBUG); // NOI18N
             }
 
-            // handle brandings   
+            // handle brandings
             String[] lmnBrands = null;
             if ((!(lmnb == null)) && (!(lmnb.trim().equals("")))) { // NOI18N
                 tokenizer = new StringTokenizer( lmnb, ", ") ; //NOI18N
@@ -206,14 +243,14 @@ public class MakeListOfNBM extends Task {
                     // localized & branded files
                     if (!(lmnBrands == null)) {
                     	for (int i=0; i < lmnBrands.length; i++) {
-                    	    if (skipLocaleDir) {
+                            if (skipLocaleDir) {
                     	        newinc = dirName + File.separator + fname + "_"+lmnBrands[i]+"_"+lmnLocales[j]+"*" + fext; //NOI18N
                             } else {
                     	        newinc = dirName + File.separator + "locale" + File.separator + fname + "_"+lmnBrands[i]+"_"+lmnLocales[j]+"*" + fext; //NOI18N
-                    	    }
+                            }
                             log("  adding include mask \""+newinc+"\"", Project.MSG_DEBUG);
                             fs.setIncludes( newinc );
-                    	}
+                        }
                     }
                 }
             }
@@ -221,7 +258,7 @@ public class MakeListOfNBM extends Task {
             ds = fs.getDirectoryScanner(this.getProject());
             ds.scan();
         }
-        
+
         String include[] = ds.getIncludedFiles();
         log("Including files " + Arrays.toString(include), Project.MSG_VERBOSE);
         for( int j=0; j < include.length; j++ ){
@@ -247,22 +284,58 @@ public class MakeListOfNBM extends Task {
             // external module?
             return;
         }
-        String[] inc = new String[include.length+2];
-        for (int i=0; i < include.length; i++)
-            inc[i] = include[i];
-        inc[include.length] = "config" + File.separator + "Modules" + File.separator + track.getTrackingFileName(); // NOI18N
-        inc[include.length+1] = UpdateTracking.TRACKING_DIRECTORY + File.separator + track.getTrackingFileName();
-        // Hack. We assume outputFile is a direct subdir of the dest dir.
-        ModuleTracking moduleTracking = new ModuleTracking(outputFile.getParentFile().getAbsolutePath());
-        String nbmfilename = this.getProject().getProperty("nbm"); // NOI18N
-        String nbmhomepage = this.getProject().getProperty("nbm.homepage"); // NOI18N
-        String nbmneedsrestart = this.getProject().getProperty("nbm.needs.restart"); // NOI18N
-        String nbmreleasedate = this.getProject().getProperty("nbm.release.date"); // NOI18N
-	String nbmmoduleauthor = this.getProject().getProperty("nbm.module.author"); // NOI18N
-	String nbmisglobal = this.getProject().getProperty("nbm.is.global"); // NOI18N
-	String nbmtargetcluster = this.getProject().getProperty("nbm.target.cluster"); // NOI18N
-        // ...and again here.
-        moduleTracking.putModule(moduleName, codename, outputFile.getName(), nbmfilename, nbmhomepage, nbmneedsrestart, nbmreleasedate, nbmmoduleauthor, nbmisglobal, nbmtargetcluster, inc);
-        moduleTracking.write();
+    }
+
+    private void updateFileSetForLorB(FileSet fs) {
+        if ((locales.size() == 1) && (brandings.size() == 1)) return;
+        // update the fileset only if we have got at least one locale or one branding
+        DirectoryScanner ds = fs.getDirectoryScanner();
+        String[] included = ds.getIncludedFiles();
+        ArrayList<String> newIncludes = new ArrayList<String>();
+        String dirName; String filename; String fname; String fext; String newinc;
+        
+        for (String include : included) {
+            include = include.replace(File.separatorChar, '/');
+            int sepPos = include.lastIndexOf('/');
+            if (sepPos < 0) {
+                dirName = ""; //NOI18N
+                filename = include;
+            } else {
+                dirName = include.substring(0,sepPos);
+                filename = include.substring(sepPos+1);
+            }
+            int extPos = filename.lastIndexOf('.'); //NOI18N
+            if (extPos < 0) {
+                fname = filename;
+                fext = ""; //NOI18N
+            } else {
+                fname = filename.substring(0, extPos);
+                fext = filename.substring(extPos);
+            }
+            for (String branding : brandings) {
+                for (String loc : locales) {
+                    newinc = dirName + "/locale/" + fname;
+                    if (branding.length()>0) newinc += "_" + branding;
+                    if (loc.length()>0) newinc += "_" + loc;
+                    newinc+=fext;
+                    if (newinc.startsWith("/")) newinc = newinc.substring(1); //avoid root referring masks on unix boxes
+                    newIncludes.add(newinc);
+                    log("Added include mask: "+newinc,Project.MSG_VERBOSE);
+                    if (dirName.length() == 0) {
+                        // if file is located in root of the cluster, add also
+                        // a mask without "locale/" subdirectory
+                        newinc = fname;
+                        if (branding.length()>0) newinc += "_" + branding;
+                        if (loc.length()>0) newinc += "_" + loc;
+                        newinc+=fext;
+                        newIncludes.add(newinc);
+                        log("Added cluster-root include mask: "+newinc,Project.MSG_VERBOSE);
+                    }
+                }
+            }
+        }
+        for (String inc : newIncludes) {
+            fs.setIncludes(inc);
+        }
     }
 }

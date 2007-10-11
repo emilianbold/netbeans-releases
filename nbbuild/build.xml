@@ -592,7 +592,7 @@ Branch:   trunk
 Tag:
     </echo>
   </target>
-
+  
   <target name="build" depends="build-nozip"
           description="Create a complete build including a ZIP distribution (but do not try it).">
     <delete file="NetBeans-${buildnum}.zip"/>
@@ -766,6 +766,307 @@ the ${netbeans.dest}/bin/ directory.
         <patternset refID="${one.cluster.name}.files"/>
       </zipfileset>
     </zip>
+  </target>
+
+  <target name="build-nozip-ml" depends="bootstrap" description="Build the Multilanguage IDE but do not create a final ZIP file.">
+    <taskdef name="resolvelist" classname="org.netbeans.nbbuild.ResolveList" classpath="nbantext.jar"/>
+    <resolvelist name="modules.for.mlbuild.list" list="${nb.clusters.list}"/>
+
+    <pathconvert property="modules.fullpath" >
+        <path>
+            <dirset dir="${nb_all}" includes="${modules.for.mlbuild.list}" />
+        </path>
+        <mapper type="identity" />
+    </pathconvert>
+      
+    <subant target="netbeans-ml" buildpath="${modules.fullpath}">
+        <property name="netbeans.dest.dir" value="${netbeans.dest.dir}"/>
+    </subant>
+  </target>
+  
+  <target name="build-zip-ml" depends="bootstrap,set-buildnumber,check-locales-set,build-nozip-ml"
+          description="Create a compleate multilanguage build including a ZIP distributions">
+      <fail message="Property locales must be set to reasonable value" unless="locales.is.set"/>
+      <echo message="nb.clusters.list is ${nb.clusters.list}"/>
+      <taskdef name="repeat" classname="org.netbeans.nbbuild.Repeat"
+               classpath="nbantext.jar"/>
+      <property name="buildnum" value="dev-${buildnumber}"/>
+      <repeat target="pack-one-cluster-ml" name="one.cluster.name.ml" values="${nb.clusters.list}"/>
+  </target>
+  
+  <target name="pack-one-cluster-ml" if="one.cluster.name.ml">
+      <resolve name="one.cluster.dir.ml.pre" value="${one.cluster.name.ml}.dir"/>
+      <pathconvert property="one.cluster.dir.ml" setonempty="false">
+          <path path="${one.cluster.dir.ml.pre}"/>
+          <chainedmapper>
+          <filtermapper>
+              <replacestring from="," to="_"/>
+              <replacestring from="-" to="_"/>
+              <replacestring from="." to="_"/>
+          </filtermapper>
+          <flattenmapper/>
+          </chainedmapper>
+      </pathconvert>
+      <echo message="one.cluster.name.ml is ${one.cluster.name.ml}" level="verbose"/>
+      <echo message="one.cluster.dir.ml is ${one.cluster.dir.ml}" level="verbose"/>
+      <echo message="one.cluster.dir.ml.pre is ${one.cluster.dir.ml.pre}" level="verbose"/>
+      <mkdir dir="build/ml"/>
+      <delete file="build/ml/NetBeans-${one.cluster.dir.ml}-${buildnum}.zip"/>
+      <repeat target="pack-one-locale-for-cluster" name="one.locale" values="${locales}"/>
+  </target>
+
+  <target name="pack-one-locale-for-cluster" if="one.locale">
+      <echo message="cluster-locale is ${one.cluster.dir.ml}-${one.locale}" level="verbose"/>
+      <zip destfile="build/ml/NetBeans-${one.cluster.dir.ml}-${buildnum}.zip" update="true" duplicate="preserve">
+          <zipfileset dir="${netbeans.dest.dir}/${one.cluster.dir.ml.pre}" prefix="${netbeans.dest}">
+              <include name="**/locale/*_${one.locale}.*"/>
+          </zipfileset>
+      </zip>    
+  </target>
+
+  <target name="check-locales-set">
+      <condition property="locales.is.set" value="true">
+          <and>
+              <isset property="locales"/>
+              <length string="${locales}" when="ge" length="2" trim="yes"/>
+          </and>
+      </condition>
+  </target>
+
+  <target name="build-nbms-ml" depends="bootstrap,set-buildnumber,init-tasks">
+      <taskdef name="repeat" classname="org.netbeans.nbbuild.Repeat"
+               classpath="${nb_all}/nbbuild/nbantext.jar"/>
+      <property name="buildnum" value="dev-${buildnumber}"/>
+      <mkdir dir="build/ml/nbms"/>
+      <property name="netbeans.dest.dir.ml" location="build/ml/nbms"/>
+      <delete dir="build/ml/nbms"/>
+      <mkdir dir="build/ml/nbms"/>
+      <copy todir="build/ml/nbms">
+          <fileset dir="build/ml">
+              <include name="NetBeans-*-${buildnum}.zip"/>
+          </fileset>
+      </copy>
+      <pathconvert property="dlocales" setonempty="false">
+          <path path="${locales}"/>
+          <chainedmapper>
+          <filtermapper>
+              <replacestring from="," to="_"/>
+              <replacestring from="-" to="_"/>
+          </filtermapper>
+          <flattenmapper/>
+          </chainedmapper>
+      </pathconvert>
+      <tstamp>
+      	  <format property="spec.version" pattern="yyyy.M.d.kmm" locale="en" />
+      </tstamp>
+      <echo level="verbose" message="dlocales is ${dlocales}"/>
+      <echo level="verbose" message="locales is ${locales}"/>
+      <echo level="verbose" message="spec.version is ${spec.version}"/>
+      <delete file="build/ml/cluster-nbms-ml.properties"/>
+      <repeat target="build-one-nbm-ml" name="one.cluster.name.ml" values="${nb.clusters.list}"/>
+      <antcall target="build-one-nbm-ml" inheritall="false">
+          <param name="is.kit" value="true"/>
+          <param name="locales" value="${locales}"/>
+          <param name="dlocales" value="${dlocales}"/>
+          <param name="one.cluster.name.ml" value="nb.cluster.nb"/>
+          <param name="nb.cluster.nb" value="${nb.cluster.nb}"/>
+          <param name="nb.clusters.list" value="${nb.clusters.list}"/>
+          <param name="spec.version" value="${spec.version}"/>
+          <param name="netbeans.dest.dir.ml" value="${netbeans.dest.dir.ml}"/>
+          <param name="buildnumber" value="${buildnumber}"/>
+      </antcall>
+      <taskdef name="makeupdatedesc" classname="org.netbeans.nbbuild.MakeUpdateDesc"
+               classpath="${nb_all}/nbbuild/nbantext.jar"/>
+      <makeupdatedesc desc="nbms/catalog.xml" distbase=".">
+          <fileset dir="nbms">
+              <include name="*.nbm"/>
+          </fileset>
+      </makeupdatedesc>
+  </target>
+
+  <target name="-check-ml-nbm-props">
+      <condition property="run.ml.nbm.build" value="true">
+          <and>
+              <isset property="locales"/>
+              <isset property="dlocales"/>
+              <isset property="one.cluster.name.ml"/>
+              <isset property="nb.clusters.list"/>
+              <isset property="spec.version"/>
+              <isset property="netbeans.dest.dir.ml"/>
+              <isset property="buildnumber"/>
+          </and>
+      </condition>
+  </target>
+  
+  <target name="-unpack-cluster-ml-zipfile" unless="is.kit">
+      <unzip dest="${netbeans.dest.dir.ml}" src="build/ml/NetBeans-${cluster.package.dir}-${buildnum}.zip">
+          <mapper type="glob" from="netbeans/*" to="${one.cluster.dir.ml}/*"/>
+      </unzip>
+  </target>
+  
+  <target name="-create-cluster-ml-nbm-metadata" unless="is.kit">
+      <echo file="build/ml/nbms/tmp/manifest.mf">OpenIDE-Module: ${code.name}
+OpenIDE-Module-Localizing-Bundle: ${code.name.base.slashes}/Bundle.properties
+OpenIDE-Module-Specification-Version: ${spec.version}
+</echo>
+      <echo file="build/ml/nbms/classes/${code.name.base.slashes}/Bundle.properties">
+OpenIDE-Module-Name=NetBeans 6.0 ${one.cluster.dir.ml} cluster localization (${locales})
+OpenIDE-Module-Display-Category=Localization
+OpenIDE-Module-Short-Description=NetBeans 6.0 ${one.cluster.dir.ml} cluster localization (${locales})
+OpenIDE-Module-Long-Description=Delivers ${locales} localization for all modules in ${one.cluster.dir.ml} cluster of NetBeans 6.0
+</echo>
+  </target>
+  
+    <target name="-create-kit-ml-nbm-metadata" if="is.kit">
+      <echo file="build/ml/nbms/tmp/manifest.mf">OpenIDE-Module: ${code.name}
+OpenIDE-Module-Localizing-Bundle: ${code.name.base.slashes}/Bundle.properties
+OpenIDE-Module-Specification-Version: ${spec.version}
+OpenIDE-Module-Module-Dependencies: ${kit.deps}
+</echo>
+       <echo file="build/ml/nbms/classes/${code.name.base.slashes}/Bundle.properties">
+OpenIDE-Module-Name=NetBeans 6.0 ${locales} localization kit
+OpenIDE-Module-Display-Category=Localization
+OpenIDE-Module-Short-Description=NetBeans 6.0 ${locales} localization kit
+OpenIDE-Module-Long-Description=Delivers ${locales} localization of whole NetBeans 6.0
+</echo>
+  </target>
+
+  <target name="build-one-nbm-ml" depends="init-tasks,-check-ml-nbm-props" if="run.ml.nbm.build">
+      <property file="build/ml/cluster-nbms-ml.properties"/>
+      <echo level="verbose" message="kit.deps is ${kit.deps}"/>
+      <echo level="verbose" message="locales is ${locales}"/>
+      <echo level="verbose" message="dlocales is ${dlocales}"/>
+      <echo level="verbose" message="nb.clusters.list is ${nb.clusters.list}"/>
+      <echo level="verbose" message="netbeans.dest.dir.ml is ${netbeans.dest.dir.ml}"/>
+      <echo level="verbose" message="spec.version is ${spec.version}"/>
+
+      <resolve name="one.cluster.dir.ml" value="${one.cluster.name.ml}.dir"/>
+      <pathconvert property="cluster.package.dir" setonempty="false">
+          <path path="${one.cluster.dir.ml}"/>
+          <chainedmapper>
+          <filtermapper>
+              <replacestring from="," to="_"/>
+              <replacestring from="-" to="_"/>
+              <replacestring from="." to="_"/>
+          </filtermapper>
+          <flattenmapper/>
+          </chainedmapper>
+      </pathconvert>
+      <delete dir="build/ml/nbms"/>
+      <delete dir="${netbeans.dest.dir.ml}"/>
+      <mkdir dir="${netbeans.dest.dir.ml}"/>
+      <antcall target="-unpack-cluster-ml-zipfile"/>
+      <property name="cluster" location="${netbeans.dest.dir.ml}/${one.cluster.dir.ml}"/>
+      <condition property="code.name.base" value="org.netbeans.localization.${cluster.package.dir}.${dlocales}">
+          <not>
+              <isset property="is.kit"/>
+          </not>
+      </condition>
+      <condition property="code.name.base" value="org.netbeans.localization.kit.${cluster.package.dir}.${dlocales}">
+          <isset property="is.kit"/>
+      </condition>
+
+      <pathconvert property="code.name.base.slashes" setonempty="false">
+          <path path="${code.name.base}"/>
+          <chainedmapper>
+              <flattenmapper/>
+              <filtermapper>
+                  <replacestring from="." to="/"/>
+              </filtermapper>
+          </chainedmapper>
+      </pathconvert>
+      <pathconvert property="code.name.base.dashes" setonempty="false">
+          <path path="${code.name.base}"/>
+          <chainedmapper>
+              <flattenmapper/>
+              <filtermapper>
+                  <replacestring from="." to="-"/>
+              </filtermapper>
+          </chainedmapper>
+      </pathconvert>
+      <property name="public.packages" value="${code.name.base}.*"/>
+      <property name="code.name" value="${code.name.base}/1"/>
+      <mkdir dir="build/ml/nbms/classes/${code.name.base.slashes}"/>
+      <mkdir dir="build/ml/nbms/tmp"/>
+      <antcall target="-create-cluster-ml-nbm-metadata"/>
+      <antcall target="-create-kit-ml-nbm-metadata"/>
+      <property name="is.autoload" value="false"/>
+      <property name="is.eager" value="false"/>
+      <condition property="module.jar.dir" value="modules">
+          <!-- set module.jar.dir property only when building kit NBM - leads to
+               AutoUpdate-Show-In-Client manifest attribute is set to true -->
+          <isset property="is.kit"/>
+      </condition>
+      <property name="module.jar" value="modules/${code.name.base.dashes}.jar"/>
+      <mkdir dir="${cluster}/modules"/>
+      <jarwithmoduleattributes jarfile="${cluster}/${module.jar}"
+          compress="${build.package.compress}" 
+          index="${build.package.index}" 
+          manifest="build/ml/nbms/tmp/manifest.mf">
+          <fileset dir="build/ml/nbms/classes"/>
+      </jarwithmoduleattributes>
+      <createmodulexml xmldir="${cluster}/config/Modules">
+          <enabled dir="${cluster}">
+              <include name="${module.jar}"/>
+          </enabled>
+      </createmodulexml>
+      <patternset id="module.files">
+          <!-- include name="${module.jar}"/ -->
+          <include name="**/*.jar"/>
+          <include name="config/Modules/${code.name.base.dashes}.xml"/>
+      </patternset>
+
+      <property name="module.files.toString" refid="module.files"/>
+      <echo level="verbose">Basic matching module files (${code.name.base.dashes}): ${module.files.toString}</echo>
+      <genlist outputfiledir="${cluster}" module="${module.jar}">
+          <fileset dir="${cluster}">
+              <patternset refid="module.files"/>
+          </fileset>
+      </genlist>
+      <property name="license.file.override" location="build/ml/nbms/license"/>
+      <property name="extra.license.files" value=""/>
+      <taskdef name="releasefileslicense" classname="org.netbeans.nbbuild.extlibs.ReleaseFilesLicense" classpath="${nb_all}/nbbuild/nbantext.jar"/>
+      <releasefileslicense license="${license.file.override}" standardlicense="${nb_all}/nbbuild/standard-nbm-license.txt" extralicensefiles="${extra.license.files}"/>
+      <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nb_all}/nbbuild/nbantext.jar"/>
+      <makenbm file="build/ml/${code.name.base.dashes}.nbm"
+               productdir="${cluster}"
+               module="${module.jar}"
+               homepage="http://translatedfiles.netbeans.org/"
+               distribution="http://translatedfiles.netbeans.org/"
+               needsrestart="true"
+               global="true"
+               targetcluster="${one.cluster.dir.ml}"
+               releasedate=""
+               moduleauthor="">
+          <license file="${license.file.override}"/>
+          <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
+      </makenbm>
+      <move todir="nbms" file="build/ml/${code.name.base.dashes}.nbm"/>
+      <property file="build/ml/cluster-nbms-ml.properties"/>
+      <condition property="new.kit.deps" value="${code.name} &gt; ${spec.version}">
+          <and>
+              <not>
+                  <isset property="kit.deps"/>
+              </not>
+              <not>
+                  <isset property="is.kit"/>
+              </not>
+          </and>
+      </condition>
+      <condition property="new.kit.deps" value="${kit.deps},${code.name} &gt; ${spec.version}">
+          <and>
+              <isset property="kit.deps"/>
+              <not>
+                  <isset property="is.kit"/>
+              </not>
+          </and>
+      </condition>
+      <condition property="new.kit.deps" value="${kit.deps}">
+          <isset property="is.kit"/>
+      </condition>
+      <propertyfile file="build/ml/cluster-nbms-ml.properties">
+          <entry key="kit.deps" value="${new.kit.deps}"/>
+      </propertyfile>
   </target>
 
   <target name="create-rpms-proto">
