@@ -19,13 +19,11 @@ following Source Editor operations:
   <li><a href="#mvpt">Scrolling and Selecting</a> 
   <li><a href="#modtxt">Modifying Text</a> 
   <li><a href="#fold">Code Folding</a>
-  <li><a href="#macros">Recording Macros</a> 
   <li><a href="#ccpdtxt">Cutting, Copying, Pasting, and Deleting Text</a> 
   <li><a href="#searchtxt">Searching Text</a> 
   <li><a href="#settabs">Setting Tabs</a> 
   <li><a href="#openfiles">Opening Files</a> 
   <li><a href="#usebkmks">Using Bookmarks</a> 
-  <li><a href="#annotations">Cycling Through Annotations</a> 
 </ul>
 
 
@@ -133,17 +131,17 @@ insertion point is.</td>
 an internationalized string at the insertion point.</td> 
 </tr>
 <tr>
-<td valign="top">Alt-U, U</td>
+<td valign="top">Ctrl-U, U</td>
 <td>Makes the selected characters or the character to the right of the
 insertion point uppercase.</td>
 </tr>
 <tr>
-<td valign="top">Alt-U, L</td>
+<td valign="top">Ctrl-U, L</td>
 <td>Makes the selected characters or the character to the right of the
 insertion point lowercase.</td>
 </tr>
 <tr>
-<td valign="top">Alt-U, R</td>
+<td valign="top">Ctrl-U, S</td>
 <td>Reverses the case of the selected characters or the character to
 the right of the insertion point.</td>
 </tr>
@@ -173,22 +171,6 @@ the right of the insertion point.</td>
     <td>Expands all blocks of code.</td>
   </tr>
 </table>
-<h3>Recording Macros<a name="macros"></a></h3>
-<table border="1" summary="This table displays keyboard shortcuts for recording macros in the source editor.">
-<tr>
-<th align="left" scope="col">Keys</th>
-<th align="left" scope="col">Action</th>
-</tr>
-<tr>
-<td valign="top">Ctrl-J, S</td>
-<td valign="top">Begins recording key sequence for macro. 
-</tr>
-<tr>
-<td valign="top">Ctrl-J, E</td>
-<td valign="top">Stops recording key sequence for macro. 
-</tr>
-</table>
-
 
 <h3>Cutting, Copying, Pasting, and Deleting Text<a name="ccpdtxt"></a></h3>
 <table border="1" summary="This table displays keyboard shortcuts for clipboard operations in the source editor.">
@@ -313,12 +295,12 @@ higlights all occurrences of that word.
 <td valign="top">Shifts all text to right of insertion point to the right.</td>
 </tr>
 <tr>
-<td valign="top">Ctrl-T</td>
+<td valign="top">Alt-Shift-Right</td>
 <td valign="top">Shifts text in line containing the insertion point to
 the right.</td>
 </tr>
 <tr>
-<td valign="top">Ctrl-D</td>
+<td valign="top">Alt-Shift-Left</td>
 <td valign="top">Shifts text in line containing the insertion point to
 the left.</td>
 </tr>
@@ -343,8 +325,7 @@ for opening files when you are working in the source editor.">
 </tr>
 	<tr>
             <td valign="top">Ctrl-B</td>
-            <td>Opens the source of the base method 
-            that the current method implements or overrides.</td>
+            <td>Go to declaration.</td>
 	</tr>
 <tr>
 <td valign="top">Alt-F1</td>
@@ -364,27 +345,15 @@ Javadoc documentation for other libraries through the Library Manager window.</t
 <th align="left" scope="col">Action</th>
 </tr>
 <tr>
-<td valign="top">Ctrl-F2</td>
+<td valign="top">Ctrl-Shift-M</td>
 <td>Sets or unsets a bookmark at current line.</td>
 </tr>
 <tr>
-<td valign="top">F2</td>
-<td>Goes to next bookmark.</td>
+<td valign="top">Ctrl-Shift-Period/Comma</td>
+<td>Goes to next/previous bookmark.</td>
 </tr>
 </table>
 
-
-<h3>Cycling Through Annotations<a name="annotations"></a></h3>
-<table border="1" summary="This table displays keyboard shortcuts for using annotations in the source editor.">
-<tr>
-<th align="left" scope="col">Keys</th>
-<th align="left" scope="col">Action</th>
-</tr>
-<tr>
-<td valign="top">Ctrl-Shift-C</td>
-<td>Cycles through the annotations for the selected line.</td>
-</tr>
-</table>
 
 <dl>
     <dt><a name="seealso">See Also</a></dt>
