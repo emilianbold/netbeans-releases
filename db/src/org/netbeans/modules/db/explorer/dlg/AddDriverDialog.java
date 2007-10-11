@@ -417,7 +417,7 @@ public class AddDriverDialog extends javax.swing.JPanel {
             }
         });
         
-        if (fc.showOpenDialog(WindowManager.getDefault().getMainWindow()) == JFileChooser.APPROVE_OPTION) { //NOI18N
+        if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) { //NOI18N
             File[] files = fc.getSelectedFiles();            
             for (int i = 0; i < files.length; i++)
                 if (files[i] != null && files[i].isFile()) {
