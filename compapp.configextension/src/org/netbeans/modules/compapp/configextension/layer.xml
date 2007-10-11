@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="JbiExtensions">
+     <folder name="ConfigExtension">
+       <attr name="xsdFileName" stringvalue="config-ext.xsd" />
+       <attr name="extensionType" stringvalue="endpoint" />
+       <attr name="extensionTarget" stringvalue="sun-http-binding" />
+       <attr name="prefix" stringvalue="config" />
+       <attr name="namespace" stringvalue="http://www.sun.com/jbi/descriptor/configuration"/>
+       <attr name="SystemFileSystem.localizingBundle" stringvalue="org.namebeans.modules.compapp.configextension.Bundle" />
+       <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/namebeans/modules/compapp/configextension/resources/config-ext.png" />
+       <file name="ApplicationConfigurationName">
+         <attr name="type" stringvalue="String"/>
+         <attr name="description" stringvalue="Application Configuration Name"/>
+       </file>
+     </folder>
+    </folder>
+</filesystem>
