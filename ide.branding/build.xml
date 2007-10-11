@@ -27,7 +27,7 @@ Contributor(s):
 
 The Original Software is NetBeans.
 The Initial Developer of the Original Software is Sun Microsystems, Inc.
-Portions Copyright 1997-2006 Sun Microsystems, Inc. All Rights Reserved.
+Portions Copyright 1997-2007 Sun Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
 or only the GPL Version 2, indicate your decision by adding
@@ -96,12 +96,14 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
   </target>
 
   <!-- Need todo: Decide how to handle genlist, especially since it's changing. -->
-  <!-- Note: jars has to be the last use of locjar so that inferring the        -->
+  <!-- Note: jar has to be the last use of locjar so that inferring the        -->
   <!-- location of the localizing bundle works!					-->
-  <target name="netbeans" depends="init,release,jars">
+  <target name="netbeans" depends="init,release,jar,netbeans-ml">
     <genlist 
       outputfiledir="${cluster}" 
       module="modules/org-netbeans-modules-ide-branding.jar"
+      locales="${locales}"
+      brandings="${locjar.brands}"
     >
       <fileset dir="${cluster}">
         <patternset refID="ide/branding.files"/>
@@ -109,8 +111,9 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
     </genlist>
   </target>
 
-
+  
   <target name="netbeans-extra" depends="release"/>
+  <target name="netbeans-extra-ml" depends="release-ml" if="locales"/>
 
   <target name="release" depends="init">
     <copy todir="${netbeans.dest.dir}">
@@ -134,8 +137,41 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
     <copy todir="${cluster}" file="release/THIRDPARTYLICENSE.txt"/>
 -->
   </target>
+
+  <target name="check-run-mlbuild" depends="basic-init">
+    <available file="${nb_all}/translatedfiles/src/ide/branding" type="dir" property="translated.src.dir.exist"/>
+    <condition property="run.ml.build" value="true">
+      <and>
+        <isset property="translated.src.dir.exist"/>
+        <isset property="locjar.locales"/>
+        <length string="${locjar.locales}" when="greater" length="0"/>
+      </and>
+    </condition>
+  </target>
+
+  <target name="release-ml" depends="basic-init,check-run-mlbuild" if="run.ml.build">
+      <taskdef name="repeat" classname="org.netbeans.nbbuild.Repeat"
+               classpath="${nbroot}/nbbuild/nbantext.jar"/>
+      <repeat target="release-one-locale" name="locale" values="${locales}"/>
+  </target>
   
-  <target name="jars" depends="init">
+  <target name="release-one-locale" if="locale">
+      <copy todir="${netbeans.dest.dir}">
+          <fileset dir="${nb_all}/translatedfiles/src/ide/branding/release">
+              <include name="*_${locale}.*"/>
+              <exclude name="netbeans*.png"/>
+              <exclude name="netbeans*.icns"/>
+              <exclude name="shortcuts*.pdf"/>
+          </fileset>
+      </copy>
+      <copy todir="${cluster}">
+          <fileset dir="${nb_all}/translatedfiles/src/ide/branding/release">
+              <include name="shortcuts_${locale}.pdf"/>
+          </fileset>
+      </copy>
+  </target>
+  
+  <target name="jar" depends="init">
    <!-- <property name="locjar.writeSrcDir" value="true"/> -->
 
     <mkdir  dir="build/org/netbeans/modules/ide/branding" />
@@ -177,7 +213,64 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
       basedir="autoupdate/libsrc"
       jarfile="${cluster}/modules/ext/updater.jar"
     />
+  </target>
+  
+  <target name="-jar-localized-module-jar" if="locjar.locales" unless="locjar.brands">
+      <locjar basedir="build/classes-ml"
+              jarfile="${cluster}/modules/org-netbeans-modules-ide-branding.jar"/>      
+  </target>
 
+  <target name="jar-ml" depends="basic-init,check-run-mlbuild" if="run.ml.build">
+      <mkdir  dir="build/classes-ml/org/netbeans/modules/ide/branding" />
+      <copy todir="build/classes-ml/org/netbeans/modules/ide/branding">
+          <fileset dir="${nb_all}/translatedfiles/src/ide/branding">
+              <include name="Bundle_*.properties"/>
+          </fileset>
+      </copy>
+      <mkdir  dir="${cluster}/modules" />
+      <antcall target="-jar-localized-module-jar" inheritAll="false">
+          <!-- call LocalizedJar task for module jar, but avoid passing
+               locjar.brands property, which is not supposed to be used
+               for module jar -->
+          <propertyset negate="true">
+              <propertyref name="locjar.brands"/>
+          </propertyset>
+      </antcall>
+      <mkdir dir="build/classes-ml/core/startup/src"/>
+      <copy todir="build/classes-ml/core/startup/src">
+          <fileset dir="${nbroot}/translatedfiles/src/ide/branding/core/startup/src">
+              <include name="**/*"/>
+          </fileset>
+      </copy>
+      <locjar basedir="build/classes-ml/core/startup/src"
+              jarfile="${cluster}/core/core.jar"/>
+
+      <mkdir dir="build/classes-ml/core/src"/>
+      <copy todir="build/classes-ml/core/src">
+          <fileset dir="${nbroot}/translatedfiles/src/ide/branding/core/src">
+              <include name="**/*"/>
+          </fileset>
+      </copy>
+      <locjar basedir="build/classes-ml/core/src"
+              jarfile="${cluster}/modules/org-netbeans-core.jar"/>
+
+      <mkdir dir="build/classes-ml/core/windows/src"/>
+      <copy todir="build/classes-ml/core/windows/src">
+          <fileset dir="${nbroot}/translatedfiles/src/ide/branding/core/windows/src">
+              <include name="**/*"/>
+          </fileset>
+      </copy>
+      <locjar basedir="build/classes-ml/core/windows/src"
+              jarfile="${cluster}/modules/org-netbeans-core-windows.jar"/>
+
+      <mkdir dir="build/classes-ml/autoupdate/libsrc"/>
+      <copy todir="build/classes-ml/autoupdate/libsrc">
+          <fileset dir="${nbroot}/translatedfiles/src/ide/branding/autoupdate/libsrc">
+              <include name="**/*"/>
+          </fileset>
+      </copy>
+      <locjar basedir="build/classes-ml/autoupdate/libsrc"
+              jarfile="${cluster}/modules/ext/updater.jar"/>
   </target>
   
     <target name="clean" depends="init" >
