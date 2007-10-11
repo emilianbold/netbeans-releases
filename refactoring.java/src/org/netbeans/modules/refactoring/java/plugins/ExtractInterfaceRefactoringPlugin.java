@@ -40,8 +40,10 @@
  */
 package org.netbeans.modules.refactoring.java.plugins;
 
+import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
@@ -68,6 +70,7 @@ import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.TreeMaker;
@@ -429,13 +432,28 @@ public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlug
             List<Tree> members = new ArrayList<Tree>();
             for (ElementHandle<VariableElement> handle : refactoring.getFields()) {
                 VariableElement memberElm = handle.resolve(wc);
-                Tree tree = wc.getTrees().getTree(memberElm);
-                members.add(tree);
+                VariableTree tree = (VariableTree) wc.getTrees().getTree(memberElm);
+                VariableTree newVarTree = make.Variable(
+                        make.Modifiers(Collections.<Modifier>emptySet(), tree.getModifiers().getAnnotations()),
+                        tree.getName(),
+                        tree.getType(),
+                        tree.getInitializer());
+                members.add(make.copyTree(newVarTree, null));
             }
             // add newmethods
             for (ElementHandle<ExecutableElement> handle : refactoring.getMethods()) {
                 ExecutableElement memberElm = handle.resolve(wc);
-                members.add(make.Method(memberElm, null));
+                MethodTree tree = wc.getTrees().getTree(memberElm);
+                MethodTree newMethodTree = make.Method(
+                        make.Modifiers(Collections.<Modifier>emptySet(), tree.getModifiers().getAnnotations()),
+                        tree.getName(),
+                        tree.getReturnType(),
+                        tree.getTypeParameters(),
+                        tree.getParameters(),
+                        tree.getThrows(),
+                        (BlockTree) null,
+                        null);
+                members.add(make.copyTree(newMethodTree, null));
             }
             // add super interfaces
             List <Tree> extendsList = new ArrayList<Tree>();
@@ -451,8 +469,10 @@ public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlug
                     interfaceTree.getSimpleName(),
                     newTypeParams,
                     extendsList,
-                    members);
+                    Collections.<Tree>emptyList());
             
+            newInterfaceTree = GeneratorUtilities.get(wc).
+                    insertClassMembers(newInterfaceTree, members);
             wc.rewrite(interfaceTree, newInterfaceTree);
         }
         

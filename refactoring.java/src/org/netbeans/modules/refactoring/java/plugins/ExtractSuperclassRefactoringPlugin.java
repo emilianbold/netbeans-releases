@@ -78,6 +78,7 @@ import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.TreeMaker;
@@ -471,6 +472,7 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
                             tree.getType(),
                             tree.getInitializer()
                     );
+                    copy = make.copyTree(copy, null);
                     members.add(copy);
                 } else if (member.getGroup() == MemberInfo.Group.METHOD) {
                     @SuppressWarnings("unchecked")
@@ -488,6 +490,7 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
                                 (BlockTree) null,
                                 null);
                     }
+                    methodTree = make.copyTree(methodTree, null);
                     makeAbstract |= methodTree.getModifiers().getFlags().contains(Modifier.ABSTRACT);
                     members.add(methodTree);
                 } else if (member.getGroup() == MemberInfo.Group.IMPLEMENTS) {
@@ -503,15 +506,21 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
             // create superclass
             Tree superClass = makeSuperclass(make, sourceTypeElm);
             
+            ModifiersTree classModifiersTree = makeAbstract
+                    ? makeAbstract(make, classTree.getModifiers())
+                    : classTree.getModifiers();
+            classModifiersTree = make.copyTree(classModifiersTree, null);
+            
             // create new class
             ClassTree newClassTree = make.Class(
-                    makeAbstract? makeAbstract(make, classTree.getModifiers()): classTree.getModifiers(),
+                    classModifiersTree,
                     classTree.getSimpleName(),
                     newTypeParams,
                     superClass,
                     implementsList,
-                    members);
+                    Collections.<Tree>emptyList());
             
+            newClassTree = GeneratorUtilities.get(wc).insertClassMembers(newClassTree, members);
             wc.rewrite(classTree, newClassTree);
         }
         
@@ -589,6 +598,7 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
                                         template.getParameters(),
                                         template.getThrows(),
                                         block);
+                                newConstr = make.copyTree(newConstr, null);
                                 members.add(newConstr);
                             }
                             
