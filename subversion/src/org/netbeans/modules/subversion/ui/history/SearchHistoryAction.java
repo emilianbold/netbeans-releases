@@ -100,7 +100,7 @@ public class SearchHistoryAction extends ContextAction {
                 tc.open();
                 tc.requestActive();
                 File [] files = context.getFiles();
-                if (Utils.shareCommonDataObject(files)) {
+                if (files.length == 1 && files[0].isFile() || files.length > 1 && Utils.shareCommonDataObject(files)) {
                     tc.search();
                 }
             }

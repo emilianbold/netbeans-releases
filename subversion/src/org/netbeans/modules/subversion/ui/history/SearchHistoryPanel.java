@@ -114,6 +114,11 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         refreshComponents(true);
     }
 
+    void setSearchCriteria(boolean b) {
+        criteriaVisible = b;
+        refreshComponents(false);
+    }
+
     private void setupComponents() {
         remove(jPanel1);
 
