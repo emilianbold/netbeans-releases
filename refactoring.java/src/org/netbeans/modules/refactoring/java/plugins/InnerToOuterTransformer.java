@@ -99,7 +99,7 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
     @Override
     public Tree visitNewClass(NewClassTree arg0, Element arg1) {
         Element currentElement = workingCopy.getTrees().getElement(getCurrentPath());
-        if (currentElement!=null && workingCopy.getTypes().isSubtype(getCurrentElement().getEnclosingElement().asType(), inner.asType())) {
+        if (refactoring.getReferenceName()!=null && currentElement!=null && workingCopy.getTypes().isSubtype(getCurrentElement().getEnclosingElement().asType(), inner.asType())) {
             String thisString;
             if (getCurrentClass()==inner) {
                 thisString = refactoring.getReferenceName();
