@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -256,9 +256,19 @@ class SearchThreadJdk12_japan extends IndexSearchThread {
     private static final String STR_ENUM = NbBundle.getMessage(SearchThreadJdk12_japan.class, "JDK15_ENUM"); //NOI18N
     private static final String STR_ANNTYPE = NbBundle.getMessage(SearchThreadJdk12_japan.class, "JDK15_ANNOTATION_TYPE"); //NOI18N
 
-    static private final String STR_CONSTRUCTOR_JA = NbBundle.getMessage(SearchThreadJdk12_japan.class, "JDK12_CONSTRUCTOR_JA" );   //NOI18N
-    static private final String STR_METHOD_JA = NbBundle.getMessage(SearchThreadJdk12_japan.class, "JDK12_METHOD_JA" );   //NOI18N
-    static private final String STR_VARIABLE_JA = NbBundle.getMessage(SearchThreadJdk12_japan.class, "JDK12_VARIABLE_JA" );   //NOI18N
+    /* Same translations from JDK javadoc */
+    static private final String STR_CLASS_LOC = "\u30AF\u30E9\u30B9";       //NOI18N
+    static private final String STR_INTERFACE_LOC = "\u30A4\u30F3\u30BF\u30D5\u30A7\u30FC\u30B9";   //NOI18N
+    static private final String STR_EXCEPTION_LOC = "\u4F8B\u5916";   //NOI18N
+    static private final String STR_CONSTRUCTOR_LOC = "\u30B3\u30F3\u30B9\u30C8\u30E9\u30AF\u30BF";   //NOI18N
+    static private final String STR_METHOD_LOC = "\u30E1\u30BD\u30C3\u30C9";   //NOI18N
+    static private final String STR_ERROR_LOC = "\u30A8\u30E9\u30FC";   //NOI18N
+    static private final String STR_VARIABLE_LOC = "\u5909\u6570";   //NOI18N
+    static private final String STR_STATIC_LOC = "static";   //NOI18N
+    static private final String STR_DASH_LOC = "-";   //NOI18N
+    static private final String STR_PACKAGE_LOC = "\u30D1\u30C3\u30B1\u30FC\u30B8";   //NOI18N
+    private static final String STR_ENUM_LOC = "\u5217\u6319\u578B"; //NOI18N
+    private static final String STR_ANNTYPE_LOC = "\u6CE8\u91C8\u578B"; //NOI18N
     
     static private final int IN_BALAST = 0;
     static private final int IN_DT = 1;
@@ -436,23 +446,37 @@ class SearchThreadJdk12_japan extends IndexSearchThread {
             else if ( where == IN_DESCRIPTION_SUFFIX ) {
                 boolean isStatic = false;
                 String remark = String.valueOf(data);
+
+                if (remark.contains( STR_STATIC_LOC ) ) {
+                            isStatic = true;
+		}
+
+                if ( remark.contains( STR_CLASS_LOC ) )
+                    currentDii.setIconIndex( DocSearchIcons.ICON_CLASS);
+                else if ( remark.contains( STR_INTERFACE_LOC ) )
+                    currentDii.setIconIndex( DocSearchIcons.ICON_INTERFACE);
+                else if ( remark.contains( STR_ENUM_LOC ) )
+                    currentDii.setIconIndex( DocSearchIcons.ICON_ENUM );
+                else if ( remark.contains( STR_ANNTYPE_LOC ) )
+                    currentDii.setIconIndex( DocSearchIcons.ICON_ANNTYPE );
+                else if ( remark.contains( STR_EXCEPTION_LOC ) )
+                    currentDii.setIconIndex( DocSearchIcons.ICON_EXCEPTION );
+                else if ( remark.contains( STR_ERROR_LOC ) )
+                    currentDii.setIconIndex( DocSearchIcons.ICON_ERROR );
+                else if ( remark.contains( STR_PACKAGE_LOC ) )
+                    currentDii.setIconIndex( DocSearchIcons.ICON_PACKAGE );
+                else if ( remark.contains( STR_CONSTRUCTOR_LOC ) )
+                    currentDii.setIconIndex( DocSearchIcons.ICON_CONSTRUCTOR );
+                else if ( remark.contains( STR_METHOD_LOC ) )
+                                currentDii.setIconIndex( isStatic ? DocSearchIcons.ICON_METHOD_ST : DocSearchIcons.ICON_METHOD );
+                else if ( remark.contains( STR_VARIABLE_LOC ) )
+                                currentDii.setIconIndex( isStatic ? DocSearchIcons.ICON_VARIABLE_ST : DocSearchIcons.ICON_VARIABLE );
+		
                 currentDii.setRemark( currentDii.getRemark() + remark);
                 String declaringClass = remark.trim();
                 if( !(".".equals(declaringClass))){    //NOI18N
                     if (currentDii.getDeclaringClass() == null) {
                         currentDii.setDeclaringClass(declaringClass);
-
-                        // System.out.println("Data: " + text );
-                        remark = remark.toUpperCase();
-                        if( remark.indexOf( STR_STATIC ) != -1 )
-                            isStatic = true;
-
-                            if( remark.indexOf( STR_CONSTRUCTOR_JA ) != -1 )
-                                currentDii.setIconIndex(DocSearchIcons.ICON_CONSTRUCTOR );
-                            else if( remark.indexOf( STR_METHOD_JA ) != -1 )
-                                currentDii.setIconIndex( isStatic ? DocSearchIcons.ICON_METHOD_ST : DocSearchIcons.ICON_METHOD );
-                            else if( remark.indexOf( STR_VARIABLE_JA ) != -1 )
-                                currentDii.setIconIndex( isStatic ? DocSearchIcons.ICON_VARIABLE_ST : DocSearchIcons.ICON_VARIABLE );
                         insertDocIndexItem( currentDii );
                     }
                 }
