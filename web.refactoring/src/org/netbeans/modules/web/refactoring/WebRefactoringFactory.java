@@ -50,9 +50,11 @@ import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.refactoring.rename.TldFolderMove;
 import org.netbeans.modules.web.refactoring.rename.TldMove;
 import org.netbeans.modules.web.refactoring.rename.TldPackageRename;
 import org.netbeans.modules.web.refactoring.rename.TldRename;
+import org.netbeans.modules.web.refactoring.rename.WebXmlFolderMove;
 import org.netbeans.modules.web.refactoring.rename.WebXmlMove;
 import org.netbeans.modules.web.refactoring.rename.WebXmlPackageRename;
 import org.netbeans.modules.web.refactoring.rename.WebXmlRename;
@@ -132,10 +134,15 @@ public class WebRefactoringFactory implements RefactoringPluginFactory{
             refactorings.add(new TldSafeDelete(safeDelete, wm));
         }
         
-        if (refactoring instanceof MoveRefactoring && javaFile){
+        if (refactoring instanceof MoveRefactoring){
             MoveRefactoring move = (MoveRefactoring) refactoring;
-            refactorings.add(new WebXmlMove(ddFile, webApp, move));
-            refactorings.add(new TldMove(move, wm));
+            if (javaFile){
+                refactorings.add(new WebXmlMove(ddFile, webApp, move));
+                refactorings.add(new TldMove(move, wm));
+            } else if (folder){
+                refactorings.add(new WebXmlFolderMove(ddFile, webApp, sourceFO, move));
+                refactorings.add(new TldFolderMove(wm, sourceFO, move));
+            }
         }
         
         return refactorings.isEmpty() ? null : new WebRefactoringPlugin(refactorings);
