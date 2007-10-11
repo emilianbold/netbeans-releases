@@ -56,6 +56,10 @@ public class CCBasicCompletionTestCase extends CompletionBaseTestCase {
         super(testName, true);
     }
     
+    public void testCompletionInEmptyFile() throws Exception {
+        super.performTest("empty.cc", 1,1);
+    }
+    
     public void testRecoveryBeforeFoo() throws Exception {
         super.performTest("file.cc", 43, 5, "a.");
     }
