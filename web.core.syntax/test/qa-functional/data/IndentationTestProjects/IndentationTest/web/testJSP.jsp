@@ -16,12 +16,25 @@ on Libraries node in Projects view can be used to add the JSTL 1.1 library.
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <title>JSP Page</title>
+        <style type="text/css">
+            h1{/*CC */
+                font-size:/*CC */block;
+            }
+            h2{
+            }/*CC */
+        </style>
     </head>
     <body>
         
-        <% public int fce(int a, int b, <!--CC -->int c)
+        <%! public int fce(int a, int b, int c){/*CC */
+            return 0;
+           }
+        %>
         
-        if ((MyClass.a == MyClass.b) && <!--CC -->(MyClass.c == MyClass.d))
+        <%
+            if ((Integer.MAX_VALUE == Integer.MIN_VALUE) && /*CC */(Boolean.TRUE == Boolean.FALSE)){
+                
+            }
         %>
         
         <h1><!--CC -->JSP Page</h1>
@@ -36,7 +49,7 @@ on Libraries node in Projects view can be used to add the JSTL 1.1 library.
         <%--
     This example uses JSTL, uncomment the taglib directive above.
     To test, display the page like this: index.jsp?sayHello=true&name=Murphy
-    --%>
+    --%><!--CC -->
         <%--
     <c:if test="${param.sayHello}">
         <!-- Let's welcome the user ${param.name} -->
@@ -45,19 +58,20 @@ on Libraries node in Projects view can be used to add the JSTL 1.1 library.
     --%>
         <%@ include file="WEB-INF/web.xml"%>
         
-        <% 
-        <!--CC 43-->
-                public int first(int i, String str){
-            if (true){<!--CC -->
-                    switch(number){
-                        case 10:<!--CC -->
-                            sayHallo();
+        <%! /*CC */
+        public int first(int i, String str){
+            if (true){/*CC */
+                    switch(i){
+                        case 10:/*CC */
+                            Integer.toString(10);
                         case 11:
-                            a=b;<!--CC -->
+                            i=str.length();/*CC */
                         default:
-                            continue;
+                            fce(0, 41, 8);
                     }
             }
+            return 0;
+        }
         %>    
         
         

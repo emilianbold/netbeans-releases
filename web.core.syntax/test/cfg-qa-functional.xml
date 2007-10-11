@@ -77,15 +77,16 @@ made subject to such option by the copyright holder.
         </testset>
     </testbag>
 
-    <!-- other testcases -->
-     <testbag testattribs="writing" executor="ide_as" name="JSP text writing">
+    <testbag testattribs="indentation" executor="ide_as" name="JSP indentation test">
         <testset dir="qa-functional/src">
             <patternset>
-                <include name="**/WritingCompletionTest.class"/>
+                <include name="**/IndentationTest.class"/>
+                <include name="**/ReformatingTest.class"/>
             </patternset>
         </testset>
     </testbag>
-        
+
+    <!-- other testcases -->
     <testbag testattribs="j2eecompletion" executor="ide_as" name="JSP Syntax EE5 validation">
         <testset dir="qa-functional/src">
             <patternset>
@@ -94,14 +95,6 @@ made subject to such option by the copyright holder.
         </testset>
     </testbag>
     
-    <testbag testattribs="indentation" executor="ide_as" name="JSP indentation test">
-        <testset dir="qa-functional/src">
-            <patternset>
-                <include name="**/IndentationTest.class"/>
-            </patternset>
-        </testset>
-    </testbag>
-
     <testbag testattribs="validation-debug" executor="ide-debug" name="JSP Syntax validation - debug">
         <testset dir="qa-functional/src">
             <patternset>
