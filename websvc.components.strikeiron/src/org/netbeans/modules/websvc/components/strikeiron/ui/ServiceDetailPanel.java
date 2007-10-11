@@ -144,19 +144,24 @@ public class ServiceDetailPanel extends JTextPane {
     }
 
     private void setDetails() {
-        String details = "";
+        StringBuilder details = new StringBuilder();
         if (currentData != null) {
-            details += "<b>Version: </b>"+currentData.getVersion()+"<br>";
-            details += "<b>Provider: </b>"+currentData.getProviderName()+"<br>";
-            details += "<h3>Description: </h3>"+currentData.getDescription()+"<br>";
-            details += "<br>";
-            details += "<b>WSDL Location: </b><br><a href=\""+currentData.getWsdlURL()+"\">"+currentData.getWsdlURL()+"</a><br>";
-            details += "<br>";
-            details += "<b>Info Page: </b><br><a href=\""+currentData.getInfoPage()+"\">"+currentData.getInfoPage()+"</a><br>";
-            details += "<br>";
-            details += "<b>Purchase Link: </b><br><a href=\""+currentData.getPurchaseLink()+"\">"+currentData.getPurchaseLink()+"</a><br>";
+            String wsdl = currentData.getWsdlURL();
+            String info = currentData.getInfoPage();
+            String link = currentData.getPurchaseLink();
+            
+            details.append("<b>Version: </b>"+currentData.getVersion()+"<br>");
+            details.append("<b>Provider: </b>"+currentData.getProviderName()+"<br>");
+            details.append("<h3>Description: </h3>"+currentData.getDescription()+"<br>");
+            details.append("<br>");
+            details.append("<b>WSDL Location: </b><br><a href=\""+wsdl+"\">"+wsdl+"</a><br>");
+            details.append("<br>");
+            details.append("<b>Info Page: </b><br><a href=\""+info+"\">"+info+"</a><br>");
+            details.append("<br>");
+            details.append("<b>Purchase Link: </b><br><a href=\""+link+"\">"+link+"</a><br>");
         }
-        setText(details);
+        setText(details.toString());
+        setCaretPosition(0);
     }
 
     public static void showURL (URL href) {
