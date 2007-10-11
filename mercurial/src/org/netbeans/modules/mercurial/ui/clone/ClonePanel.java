@@ -189,15 +189,15 @@ public class ClonePanel extends javax.swing.JPanel implements ActionListener {
             fileChooser.removeChoosableFileFilter(fileFilter);
 
         }
-        //fileChooser.addChoosableFileFilter(new FileFilter() {
-        //    public boolean accept(File f) {
-        //        return f.isDirectory();
-        //    }
-        //    public String getDescription() {
-        //        return NbBundle.getMessage(ClonePanel.class, "Folders");// NOI18N
-        //    }
-        //});
-        //fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        fileChooser.addChoosableFileFilter(new FileFilter() {
+            public boolean accept(File f) {
+                return f.isDirectory();
+            }
+            public String getDescription() {
+                return NbBundle.getMessage(ClonePanel.class, "Folders");// NOI18N
+            }
+        });
+        fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         fileChooser.showDialog(this, NbBundle.getMessage(ClonePanel.class, "OK_Button"));                                            // NO I18N
         File f = fileChooser.getSelectedFile();
         if (f != null) {
