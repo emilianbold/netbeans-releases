@@ -66,7 +66,6 @@ import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.util.*;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
-import org.netbeans.modules.cnd.apt.debug.DebugUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.apt.support.APTMacroExpandedStream;
 import org.netbeans.modules.cnd.apt.structure.APT;
@@ -82,13 +81,12 @@ import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
 import org.openide.util.Lookup;
-import org.openide.util.Utilities;
 
 /**
  * Tracer for model
  * @author Vladimir Kvasihn
  */
-public class TraceModel {
+public class TraceModel extends TraceModelBase {
 	
     private static class TestResult {
 
@@ -159,12 +157,6 @@ public class TraceModel {
 	//System.out.println("" + org.netbeans.modules.cnd.apt.utils.APTIncludeUtils.getHitRate());
     }
 	
-    private ModelImpl model;
-
-    // only one of project/projectUID must be used 
-    private ProjectBase project;
-    private CsmUID<CsmProject> projectUID;
-
     private Cache cache;
 
     private static CsmTracer tracer = new CsmTracer(false);
@@ -175,13 +167,10 @@ public class TraceModel {
     private boolean dumpLib = false;
     private boolean dumpFileOnly = false;
     private boolean showTime = false;
-    private boolean recursive = false;
     //private boolean showErrorCount = false;
     private boolean writeAst = false;
     private boolean readAst = false;
-    private boolean readWriteTokens = false;
     private boolean useZip = false;
-    private boolean testParser = false;
     private boolean testLibProject = false;
     private boolean deep = true;
     private boolean showMemoryUsage = false;
@@ -202,13 +191,6 @@ public class TraceModel {
     private boolean dumpModelAfterCleaningCache = false; // --clean4dump
     
     private int repeatCount = 1; // --repeat
-
-    private List<String> quoteIncludePaths = new ArrayList<String>();
-    private List<String> systemIncludePaths = new ArrayList<String>();
-    private List<File> files = new ArrayList<File>();
-    private List<String> currentIncludePaths = null;
-
-    private List<String> macros = new ArrayList<String>();
 
     private boolean dumpStatistics = false;
     private static final int DEFAULT_TRACEMODEL_STATISTICS_LEVEL = 1;
@@ -231,9 +213,6 @@ public class TraceModel {
 	this.dumpPPState = dumpPPState;
     }
 	
-    // if true, then relative include paths oin -I option are considered
-    // to be based on the file that we currently compile rather then current dir
-    private boolean pathsRelCurFile = false;
 
     private boolean listFilesAtEnd = false;
     private boolean testRawPerformance = false;
@@ -258,31 +237,17 @@ public class TraceModel {
     };
     
     public TraceModel() {
-	RepositoryUtils.cleanCashes();
-	model = (ModelImpl) CsmModelAccessor.getModel(); // new ModelImpl(true);
-	if (model == null) {
-	    model = new ModelImpl();
-	}
-	model.startup();
-	currentIncludePaths = quoteIncludePaths;
 	FileImpl.setHook(hook);
     }
 
-    /*package*/
-    final void setIncludePaths(List<String> sysIncludes, List<String> usrIncludes) {
-	this.quoteIncludePaths = usrIncludes;
-	this.systemIncludePaths = sysIncludes;
-	this.currentIncludePaths = this.quoteIncludePaths;
-    }
-
-    /*package*/
-    final void shutdown() {
-	model.shutdown();
-	RepositoryUtils.cleanCashes();
-    }
-
-    private boolean processFlag(char flag, String argRest) {
-	boolean argHasBeenEaten = false;
+    @Override
+    protected ProcessFlagResult processFlag(char flag, String argRest) {
+	ProcessFlagResult result = super.processFlag(flag, argRest);
+	if( result != ProcessFlagResult.NONE_PROCESSED ) {
+	    return result;
+	}
+	// it's easier to set the most "popular" return value here and NONE_... in default case
+	result = ProcessFlagResult.CHAR_PROCESSED;
 	switch( flag ) {
 	    case 'n':   deep = false; break;
 	    case 'e':	System.setErr(System.out); break;
@@ -298,34 +263,14 @@ public class TraceModel {
 			break;
 	    case 't':	showTime = true; break;
 	    //            case 'L':   testLexer = true; break;
-	    case 'r':   recursive = true; break;
 	    //case 'c':   showErrorCount = true; break;
 	    case 'W':   writeAst = true; break;
 	    case 'R':   readAst = true; break;
 	    case 'Z':   useZip = true; break;
-	    case 'T':   readWriteTokens = true; break;
-	    case 'P':   testParser = true; break;
 	    case 'C':   enableCache = true; break;
 	    case 'l':   testLibProject = true; break;
-	    // TODO: support not only "-Idir" but "-I dir" as well
-	    // TODO: support -iquote. Now I disabled this since the contract reads:
-	    // -iquote<dir> Add the directory dir to the head of the list of directories to be searched for header files
-	    // ONLY for the case of #include "file"; they are NOT searched for #include <file>
-	    case 'I':   
-		    if (argRest.length() > 0) {
-			if (argRest.charAt(0) == '-') {
-			    // switch following include paths destination list
-			    currentIncludePaths = (currentIncludePaths == quoteIncludePaths) ? systemIncludePaths : quoteIncludePaths;
-			    argRest = argRest.substring(1);
-			}
-			String includePath = argRest;
-			currentIncludePaths.add(includePath);
-			argHasBeenEaten = true;
-		    }
-	    break;
 	    case 'c':   testCache = true; break;
 	    case 'p':   dumpPPState = true; break;
-	    case 'D':   macros.add(argRest);argHasBeenEaten = true;break;
 	    // "-SDir" defines dump directory for per file statistics
 	    case 'S':   dumpStatistics=true;
 		if (argRest.length() > 0) {
@@ -337,7 +282,7 @@ public class TraceModel {
 		    } else {
 			this.dumpDir = perFileDumpDir.getAbsolutePath();
 		    }
-		    argHasBeenEaten = true;
+		    result = ProcessFlagResult.ALL_PROCESSED;
 		}
 		break;
 		    // "-sFileName" defines global statistics dump file
@@ -352,10 +297,7 @@ public class TraceModel {
 			    globalDumpFile.getParentFile().mkdirs();
 			    globalDumpFile.createNewFile();
 			    this.dumpFile = globalDumpFile.getAbsolutePath();
-			    argHasBeenEaten = true;
-			} else {
-			    //                                    System.err.println("failed to create statistics file");
-			    argHasBeenEaten = false;
+			    result = ProcessFlagResult.ALL_PROCESSED;
 			}
 		    } catch (IOException ex) {
 			ex.printStackTrace();
@@ -379,22 +321,22 @@ public class TraceModel {
 	    case 'G':   testAPTWalkerGetExpandedStream = true; testAPT = true; breakAfterAPT = true; break;
 	    case 'F':   testAPTWalkerGetFilteredStream = true; testAPT = true; breakAfterAPT = true; break;
 	    case 'd':   testAPTDriver = true; testAPT = true; breakAfterAPT = true; break;
-	    case 'h':   testParser = true; testAPT = true; breakAfterAPT = true; break;
+	    case 'h':   testAPT = true; breakAfterAPT = true; break;
 	    case 'H':   testAPTParser = true; testAPT = true; breakAfterAPT = true; break;
 	    case 'O':   stopBeforeAll = true; stopAfterAll = true; break;
 	    case 'q':	quiet = true; break;
-	    default:
+	    default:	result = ProcessFlagResult.NONE_PROCESSED;
 	}
-	return argHasBeenEaten;
+	return result;
     }
 	
-    protected void processFlag(String flag) {
-	if ("dumplib".equals(flag)) { // NOI18N
+    @Override
+    protected boolean processFlag(String flag) {
+	if( super.processFlag(flag) ) {
+	    return true;
+	} else if ("dumplib".equals(flag)) { // NOI18N
 	    // NOI18N
 	    dumpLib = true;
-	} else if ("relpath".equals(flag)) { // NOI18N
-	    // NOI18N
-	    pathsRelCurFile = true;
 	} else if ("listfiles".equals(flag)) { // NOI18N
 	    // NOI18N
 	    listFilesAtEnd = true;
@@ -427,17 +369,10 @@ public class TraceModel {
 		repeatCount = Integer.parseInt(flag.substring(len + 1));
 	    }
 	}
-    }
-	
-    private void addFile(List<File> files, File file) {
-	if (file.isDirectory()) {
-	    String[] list = file.list();
-	    for (int i = 0; i < list.length; i++) {
-		addFile(files, new File(file, list[i]));
-	    }
-	} else {
-	    files.add(file);
+	else {
+	    return false;
 	}
+	return true;
     }
 	
     private void test(String[] args) {
@@ -449,7 +384,7 @@ public class TraceModel {
 	    thr.printStackTrace();
 	    return;
 	} finally {
-	    model.shutdown();
+	    getModel().shutdown();
 	}
     }
     
@@ -701,26 +636,6 @@ public class TraceModel {
 	}
     }
 
-    /*package*/
-    void processArguments(final String[] args) {
-	for (int i = 0; i < args.length; i++) {
-	    if (args[i].startsWith("--")) { // NOI18N
-		// NOI18N
-		processFlag(args[i].substring(2));
-	    } else if (args[i].startsWith("-")) { // NOI18N
-		// NOI18N
-		for (int charIdx = 1; charIdx < args[i].length(); charIdx++) {
-		    boolean argHasBeenEaten = processFlag(args[i].charAt(charIdx), args[i].substring(charIdx + 1));
-		    if (argHasBeenEaten) {
-			break;
-		    }
-		}
-	    } else {
-		addFile(files, new File(args[i]));
-	    }
-	}
-    }
-	
     private void anyKey(String message) {
 	System.err.println(message);
 	try {
@@ -846,20 +761,14 @@ public class TraceModel {
 	}
     }
 	
-    private static final boolean C_SYS_INCLUDE = Boolean.getBoolean("cnd.modelimpl.c.include");
-    private static final boolean C_DEFINE = Boolean.getBoolean("cnd.modelimpl.c.define");
-    private static final boolean CPP_SYS_INCLUDE = Boolean.getBoolean("cnd.modelimpl.cpp.include");
-    private static final boolean CPP_DEFINE = Boolean.getBoolean("cnd.modelimpl.cpp.define");
-    private static final boolean DISABLE_PREDEFINED = DebugUtils.getBoolean("cnd.modelimpl.disable.predefined", true);
-
     private APTSystemStorage sysAPTData = APTSystemStorage.getDefault();
 	
     private APTIncludeHandler getIncludeHandler(File file) {
 	List<String> sysIncludes = sysAPTData.getIncludes("TraceModelSysIncludes", getSystemIncludes()); // NOI18N
-	List<String> qInc = quoteIncludePaths;
-	if (pathsRelCurFile) {
-	    qInc = new ArrayList<String>(quoteIncludePaths.size());
-	    for (Iterator it = quoteIncludePaths.iterator(); it.hasNext();) {
+	List<String> qInc = getQuoteIncludePaths();
+	if (isPathsRelCurFile()) {
+	    qInc = new ArrayList<String>(getQuoteIncludePaths().size());
+	    for (Iterator it = getQuoteIncludePaths().iterator(); it.hasNext();) {
 		String path = (String) it.next();
 		if (!(new File(path).isAbsolute())) {
 		    File dirFile = file.getParentFile();
@@ -876,7 +785,7 @@ public class TraceModel {
     private APTMacroMap getMacroMap(File file) {
 	//print("SystemIncludePaths: " + systemIncludePaths.toString() + "\n");
 	//print("QuoteIncludePaths: " + quoteIncludePaths.toString() + "\n");
-	APTMacroMap map = APTHandlersSupport.createMacroMap(getSysMap(file), this.macros);
+	APTMacroMap map = APTHandlersSupport.createMacroMap(getSysMap(file), getMacros());
 	return map;
     }
 
@@ -889,295 +798,27 @@ public class TraceModel {
 	APTMacroMap map = sysAPTData.getMacroMap("TraceModelSysMacros", getSysMacros()); // NOI18N
 	return map;
     }
-	
-    private List<String> getSystemIncludes() {
-	Set<String> all = new HashSet<String>(systemIncludePaths);
-	if (DISABLE_PREDEFINED) {
-	    return new ArrayList<String>(all);
-	}
-	if (CPP_SYS_INCLUDE) {
-	    // add generated by gcc 3.3.4 on SuSe 9.2
-	    // #gcc -x c++ -v -E - < /dev/null
-	    if ((Utilities.getOperatingSystem() & Utilities.OS_SOLARIS) != 0) {
-		all.add("/usr/sfw/lib/gcc/i386-pc-solaris2.10/3.4.3/../../../../include/c++/3.4.3"); // NOI18N
-		all.add("/usr/sfw/lib/gcc/i386-pc-solaris2.10/3.4.3/../../../../include/c++/3.4.3/i386-pc-solaris2.10"); // NOI18N
-		all.add("/usr/sfw/lib/gcc/i386-pc-solaris2.10/3.4.3/../../../../include/c++/3.4.3/backward"); // NOI18N
-		all.add("/usr/local/include"); // NOI18N
-		all.add("/usr/sfw/include"); // NOI18N
-		all.add("/usr/sfw/lib/gcc/i386-pc-solaris2.10/3.4.3/include"); // NOI18N
-		all.add("/usr/include"); // NOI18N
-	    } else {
-		all.add("/usr/include/g++"); // NOI18N
-		all.add("/usr/include/g++/i586-suse-linux"); // NOI18N
-		all.add("/usr/include/g++/backward"); // NOI18N
-		all.add("/usr/local/include"); // NOI18N
-		all.add("/usr/lib/gcc-lib/i586-suse-linux/3.3.4/include"); // NOI18N
-		all.add("/usr/i586-suse-linux/include"); // NOI18N
-		all.add("/usr/include"); // NOI18N
-	    }
-	} else if (C_SYS_INCLUDE) {
-	    // add generated by gcc 3.3.4 on SuSe 9.2
-	    // #gcc -x c -v -E - < /dev/null
-	    all.add("/usr/local/include"); // NOI18N
-	    all.add("/usr/lib/gcc-lib/i586-suse-linux/3.3.4/include"); // NOI18N
-	    all.add("/usr/i586-suse-linux/include"); // NOI18N
-	    all.add("/usr/include"); // NOI18N
-	} else {
-	    // NB: want any fake value but not for suite.sh which is run with dumpPPState
-	    if (!dumpPPState) {
-		all.add("/usr/non-exists"); // NOI18N
-	    }
-	}
-	return new ArrayList<String>(all);
-    }
 
-    private List<String> getSysMacros() {
-	Set<String> all = new HashSet<String>();
-	if (DISABLE_PREDEFINED) {
-	    return Collections.emptyList();
-	}
-	if (CPP_DEFINE) {
-	    if ((Utilities.getOperatingSystem() & Utilities.OS_SOLARIS) != 0) {
-		// Solaris 10, amd x86
-		// gcc -x c++ -dM -E /dev/null | awk '{print "all.add(\"" $2 "=" $3 $4 $5 $6 $7 "\");" }'
-		all.add("__DBL_MIN_EXP__=(-1021)"); // NOI18N
-		all.add("__EXTENSIONS__=1"); // NOI18N
-		all.add("__FLT_MIN__=1.17549435e-38F"); // NOI18N
-		all.add("__CHAR_BIT__=8"); // NOI18N
-		all.add("_XOPEN_SOURCE=500"); // NOI18N
-		all.add("__WCHAR_MAX__=2147483647"); // NOI18N
-		all.add("__DBL_DENORM_MIN__=4.9406564584124654e-324"); // NOI18N
-		all.add("__FLT_EVAL_METHOD__=2"); // NOI18N
-		all.add("__DBL_MIN_10_EXP__=(-307)"); // NOI18N
-		all.add("__FINITE_MATH_ONLY__=0"); // NOI18N
-		all.add("__GNUC_PATCHLEVEL__=3"); // NOI18N
-		all.add("__SHRT_MAX__=32767"); // NOI18N
-		all.add("__LDBL_MAX__=1.18973149535723176502e+4932L"); // NOI18N
-		all.add("__unix=1"); // NOI18N
-		all.add("__LDBL_MAX_EXP__=16384"); // NOI18N
-		all.add("__SCHAR_MAX__=127"); // NOI18N
-		all.add("__USER_LABEL_PREFIX__="); // NOI18N
-		all.add("__STDC_HOSTED__=1"); // NOI18N
-		all.add("_LARGEFILE64_SOURCE=1"); // NOI18N
-		all.add("__LDBL_HAS_INFINITY__=1"); // NOI18N
-		all.add("__DBL_DIG__=15"); // NOI18N
-		all.add("__FLT_EPSILON__=1.19209290e-7F"); // NOI18N
-		all.add("__GXX_WEAK__=1"); // NOI18N
-		all.add("__LDBL_MIN__=3.36210314311209350626e-4932L"); // NOI18N
-		all.add("__unix__=1"); // NOI18N
-		all.add("__DECIMAL_DIG__=21"); // NOI18N
-		all.add("_LARGEFILE_SOURCE=1"); // NOI18N
-		all.add("__LDBL_HAS_QUIET_NAN__=1"); // NOI18N
-		all.add("__GNUC__=3"); // NOI18N
-		all.add("__DBL_MAX__=1.7976931348623157e+308"); // NOI18N
-		all.add("__DBL_HAS_INFINITY__=1"); // NOI18N
-		all.add("__SVR4=1"); // NOI18N
-		all.add("__cplusplus=1"); // NOI18N
-		all.add("__DEPRECATED=1"); // NOI18N
-		all.add("__DBL_MAX_EXP__=1024"); // NOI18N
-		all.add("__GNUG__=3"); // NOI18N
-		all.add("__LONG_LONG_MAX__=9223372036854775807LL"); // NOI18N
-		all.add("__GXX_ABI_VERSION=1002"); // NOI18N
-		all.add("__FLT_MIN_EXP__=(-125)"); // NOI18N
-		all.add("__DBL_MIN__=2.2250738585072014e-308"); // NOI18N
-		all.add("__FLT_MIN_10_EXP__=(-37)"); // NOI18N
-		all.add("__DBL_HAS_QUIET_NAN__=1"); // NOI18N
-		all.add("__tune_i386__=1"); // NOI18N
-		all.add("__sun=1"); // NOI18N
-		all.add("__REGISTER_PREFIX__="); // NOI18N
-		all.add("__NO_INLINE__=1"); // NOI18N
-		all.add("__i386=1"); // NOI18N
-		all.add("__FLT_MANT_DIG__=24"); // NOI18N
-		all.add("__VERSION__=\"3.4.3(csl-sol210-3_4-branch+sol_rpath)\""); // NOI18N
-		all.add("i386=1"); // NOI18N
-		all.add("sun=1"); // NOI18N
-		all.add("unix=1"); // NOI18N
-		all.add("__i386__=1"); // NOI18N
-		all.add("__SIZE_TYPE__=unsignedint"); // NOI18N
-		all.add("__ELF__=1"); // NOI18N
-		all.add("__FLT_RADIX__=2"); // NOI18N
-		all.add("__LDBL_EPSILON__=1.08420217248550443401e-19L"); // NOI18N
-		all.add("__FLT_HAS_QUIET_NAN__=1"); // NOI18N
-		all.add("__FLT_MAX_10_EXP__=38"); // NOI18N
-		all.add("__LONG_MAX__=2147483647L"); // NOI18N
-		all.add("__FLT_HAS_INFINITY__=1"); // NOI18N
-		all.add("__PRAGMA_REDEFINE_EXTNAME=1"); // NOI18N
-		all.add("__EXCEPTIONS=1"); // NOI18N
-		all.add("__LDBL_MANT_DIG__=64"); // NOI18N
-		all.add("__WCHAR_TYPE__=longint"); // NOI18N
-		all.add("__FLT_DIG__=6"); // NOI18N
-		all.add("__INT_MAX__=2147483647"); // NOI18N
-		all.add("__FLT_MAX_EXP__=128"); // NOI18N
-		all.add("__DBL_MANT_DIG__=53"); // NOI18N
-		all.add("__WINT_TYPE__=longint"); // NOI18N
-		all.add("__LDBL_MIN_EXP__=(-16381)"); // NOI18N
-		all.add("__LDBL_MAX_10_EXP__=4932"); // NOI18N
-		all.add("__DBL_EPSILON__=2.2204460492503131e-16"); // NOI18N
-		all.add("__sun__=1"); // NOI18N
-		all.add("__svr4__=1"); // NOI18N
-		all.add("__FLT_DENORM_MIN__=1.40129846e-45F"); // NOI18N
-		all.add("__FLT_MAX__=3.40282347e+38F"); // NOI18N
-		all.add("__GNUC_MINOR__=4"); // NOI18N
-		all.add("__DBL_MAX_10_EXP__=308"); // NOI18N
-		all.add("__LDBL_DENORM_MIN__=3.64519953188247460253e-4951L"); // NOI18N
-		all.add("__PTRDIFF_TYPE__=int"); // NOI18N
-		all.add("__LDBL_MIN_10_EXP__=(-4931)"); // NOI18N
-		all.add("__LDBL_DIG__=18"); // NOI18N
-	    } else {
-		// add generated by gcc 3.3.4 on SuSe 9.2
-		// #gcc -x c++ -dM -E - < /dev/null
-		all.add("__CHAR_BIT__=8"); // NOI18N
-		all.add("__cplusplus=1"); // NOI18N
-		all.add("__DBL_DENORM_MIN__=4.9406564584124654e-324"); // NOI18N
-		all.add("__DBL_DIG__=15"); // NOI18N
-		all.add("__DBL_EPSILON__=2.2204460492503131e-16"); // NOI18N
-		all.add("__DBL_MANT_DIG__=53"); // NOI18N
-		all.add("__DBL_MAX_10_EXP__=308"); // NOI18N
-		all.add("__DBL_MAX__=1.7976931348623157e+308"); // NOI18N
-		all.add("__DBL_MAX_EXP__=1024"); // NOI18N
-		all.add("__DBL_MIN_10_EXP__=(-307)"); // NOI18N
-		all.add("__DBL_MIN__=2.2250738585072014e-308"); // NOI18N
-		all.add("__DBL_MIN_EXP__=(-1021)"); // NOI18N
-		all.add("__DECIMAL_DIG__=21"); // NOI18N
-		all.add("__DEPRECATED=1"); // NOI18N
-		all.add("__ELF__=1"); // NOI18N
-		all.add("__EXCEPTIONS=1"); // NOI18N
-		all.add("__FINITE_MATH_ONLY__=0"); // NOI18N
-		all.add("__FLT_DENORM_MIN__=1.40129846e-45F"); // NOI18N
-		all.add("__FLT_DIG__=6"); // NOI18N
-		all.add("__FLT_EPSILON__=1.19209290e-7F"); // NOI18N
-		all.add("__FLT_EVAL_METHOD__=2"); // NOI18N
-		all.add("__FLT_MANT_DIG__=24"); // NOI18N
-		all.add("__FLT_MAX_10_EXP__=38"); // NOI18N
-		all.add("__FLT_MAX__=3.40282347e+38F"); // NOI18N
-		all.add("__FLT_MAX_EXP__=128"); // NOI18N
-		all.add("__FLT_MIN_10_EXP__=(-37)"); // NOI18N
-		all.add("__FLT_MIN__=1.17549435e-38F"); // NOI18N
-		all.add("__FLT_MIN_EXP__=(-125)"); // NOI18N
-		all.add("__FLT_RADIX__=2"); // NOI18N
-		all.add("__GNUC__=3"); // NOI18N
-		all.add("__GNUC_MINOR__=3"); // NOI18N
-		all.add("__GNUC_PATCHLEVEL__=4"); // NOI18N
-		all.add("__GNUG__=3"); // NOI18N
-		all.add("__gnu_linux__=1"); // NOI18N
-		all.add("_GNU_SOURCE=1"); // NOI18N
-		all.add("__GXX_ABI_VERSION=102"); // NOI18N
-		all.add("__GXX_WEAK__=1"); // NOI18N
-		all.add("__i386=1"); // NOI18N
-		all.add("__i386__=1"); // NOI18N
-		all.add("i386=1"); // NOI18N
-		all.add("__INT_MAX__=2147483647"); // NOI18N
-		all.add("__LDBL_DENORM_MIN__=3.64519953188247460253e-4951L"); // NOI18N
-		all.add("__LDBL_DIG__=18"); // NOI18N
-		all.add("__LDBL_EPSILON__=1.08420217248550443401e-19L"); // NOI18N
-		all.add("__LDBL_MANT_DIG__=64"); // NOI18N
-		all.add("__LDBL_MAX_10_EXP__=4932"); // NOI18N
-		all.add("__LDBL_MAX__=1.18973149535723176502e+4932L"); // NOI18N
-		all.add("__LDBL_MAX_EXP__=16384"); // NOI18N
-		all.add("__LDBL_MIN_10_EXP__=(-4931)"); // NOI18N
-		all.add("__LDBL_MIN__=3.36210314311209350626e-4932L"); // NOI18N
-		all.add("__LDBL_MIN_EXP__=(-16381)"); // NOI18N
-		all.add("__linux=1"); // NOI18N
-		all.add("__linux__=1"); // NOI18N
-		all.add("linux=1"); // NOI18N
-		all.add("__LONG_LONG_MAX__=9223372036854775807LL"); // NOI18N
-		all.add("__LONG_MAX__=2147483647L"); // NOI18N
-		all.add("__NO_INLINE__=1"); // NOI18N
-		all.add("__PTRDIFF_TYPE__=int"); // NOI18N
-		all.add("__REGISTER_PREFIX__"); // NOI18N
-		all.add("__SCHAR_MAX__=127"); // NOI18N
-		all.add("__SHRT_MAX__=32767"); // NOI18N
-		all.add("__SIZE_TYPE__=unsigned int"); // NOI18N
-		all.add("__STDC_HOSTED__=1"); // NOI18N
-		all.add("__tune_i586__=1"); // NOI18N
-		all.add("__tune_pentium__=1"); // NOI18N
-		all.add("__unix=1"); // NOI18N
-		all.add("__unix__=1"); // NOI18N
-		all.add("unix=1"); // NOI18N
-		all.add("__USER_LABEL_PREFIX__"); // NOI18N
-		all.add("__VERSION__=\"3.3.4 (pre 3.3.5 20040809)\""); // NOI18N
-		all.add("__WCHAR_MAX__=2147483647"); // NOI18N
-		all.add("__WCHAR_TYPE__=long int"); // NOI18N
-		all.add("__WINT_TYPE__=unsigned int"); // NOI18N
-	    }
-	} else if (C_DEFINE) {
-	    // add generated by gcc 3.3.4 on SuSe 9.2
-	    // #gcc -x c -dM -E - < /dev/null
-	    all.add("__DBL_MIN_EXP__=(-1021)"); // NOI18N
-	    all.add("__FLT_MIN__=1.17549435e-38F"); // NOI18N
-	    all.add("__CHAR_BIT__=8"); // NOI18N
-	    all.add("__WCHAR_MAX__=2147483647"); // NOI18N
-	    all.add("__DBL_DENORM_MIN__=4.9406564584124654e-324"); // NOI18N
-	    all.add("__FLT_EVAL_METHOD__=2"); // NOI18N
-	    all.add("__unix__=1"); // NOI18N
-	    all.add("unix=1"); // NOI18N
-	    all.add("__i386__=1"); // NOI18N
-	    all.add("__SIZE_TYPE__=unsigned=int"); // NOI18N
-	    all.add("__ELF__=1"); // NOI18N
-	    all.add("__DBL_MIN_10_EXP__=(-307)"); // NOI18N
-	    all.add("__FINITE_MATH_ONLY__=0"); // NOI18N
-	    all.add("__GNUC_PATCHLEVEL__=4"); // NOI18N
-	    all.add("__FLT_RADIX__=2"); // NOI18N
-	    all.add("__LDBL_EPSILON__=1.08420217248550443401e-19L"); // NOI18N
-	    all.add("__SHRT_MAX__=32767"); // NOI18N
-	    all.add("__LDBL_MAX__=1.18973149535723176502e+4932L"); // NOI18N
-	    all.add("__linux=1"); // NOI18N
-	    all.add("__unix=1"); // NOI18N
-	    all.add("__LDBL_MAX_EXP__=16384"); // NOI18N
-	    all.add("__LONG_MAX__=2147483647L"); // NOI18N
-	    all.add("__linux__=1"); // NOI18N
-	    all.add("__SCHAR_MAX__=127"); // NOI18N
-	    all.add("__DBL_DIG__=15"); // NOI18N
-	    all.add("__USER_LABEL_PREFIX__"); // NOI18N
-	    all.add("linux=1"); // NOI18N
-	    all.add("__tune_pentium__=1"); // NOI18N
-	    all.add("__STDC_HOSTED__=1"); // NOI18N
-	    all.add("__LDBL_MANT_DIG__=64"); // NOI18N
-	    all.add("__FLT_EPSILON__=1.19209290e-7F"); // NOI18N
-	    all.add("__LDBL_MIN__=3.36210314311209350626e-4932L"); // NOI18N
-	    all.add("__WCHAR_TYPE__=long int"); // NOI18N
-	    all.add("__FLT_DIG__=6"); // NOI18N
-	    all.add("__FLT_MAX_10_EXP__=38"); // NOI18N
-	    all.add("__INT_MAX__=2147483647"); // NOI18N
-	    all.add("__gnu_linux__=1"); // NOI18N
-	    all.add("__FLT_MAX_EXP__=128"); // NOI18N
-	    all.add("__DECIMAL_DIG__=21"); // NOI18N
-	    all.add("__DBL_MANT_DIG__=53"); // NOI18N
-	    all.add("__WINT_TYPE__=unsigned int"); // NOI18N
-	    all.add("__GNUC__=3"); // NOI18N
-	    all.add("__LDBL_MIN_EXP__=(-16381)"); // NOI18N
-	    all.add("__tune_i586__=1"); // NOI18N
-	    all.add("__LDBL_MAX_10_EXP__=4932"); // NOI18N
-	    all.add("__DBL_EPSILON__=2.2204460492503131e-16"); // NOI18N
-	    all.add("__DBL_MAX__=1.7976931348623157e+308"); // NOI18N
-	    all.add("__DBL_MAX_EXP__=1024"); // NOI18N
-	    all.add("__FLT_DENORM_MIN__=1.40129846e-45F"); // NOI18N
-	    all.add("__LONG_LONG_MAX__=9223372036854775807LL"); // NOI18N
-	    all.add("__FLT_MAX__=3.40282347e+38F"); // NOI18N
-	    all.add("__GXX_ABI_VERSION=102"); // NOI18N
-	    all.add("__FLT_MIN_10_EXP__=(-37)"); // NOI18N
-	    all.add("__FLT_MIN_EXP__=(-125)"); // NOI18N
-	    all.add("i386=1"); // NOI18N
-	    all.add("__GNUC_MINOR__=3"); // NOI18N
-	    all.add("__DBL_MAX_10_EXP__=308"); // NOI18N
-	    all.add("__LDBL_DENORM_MIN__=3.64519953188247460253e-4951L"); // NOI18N
-	    all.add("__DBL_MIN__=2.2250738585072014e-308"); // NOI18N
-	    all.add("__PTRDIFF_TYPE__=int"); // NOI18N
-	    all.add("__LDBL_MIN_10_EXP__=(-4931)"); // NOI18N
-	    all.add("__REGISTER_PREFIX__"); // NOI18N
-	    all.add("__LDBL_DIG__=18"); // NOI18N
-	    all.add("__NO_INLINE__=1"); // NOI18N
-	    all.add("__i386=1"); // NOI18N
-	    all.add("__FLT_MANT_DIG__=24"); // NOI18N
-	    all.add("__VERSION__=\"3.3.4 (pre 3.3.5 20040809)\""); // NOI18N
-	} else {
-	    if (!dumpPPState) {
-		// NB: want any fake value but not for suite.sh which is run with dumpPPState
-		all.add("NO_DEFAULT_DEFINED_SYSTEM_MACROS"); // NOI18N
-	    }
-	}
-	return new ArrayList<String>(all);
-    }
+//    
+//    @Override
+//    protected List<String> getSystemIncludes() {
+//	List<String> result = super.getSystemIncludes();
+//	if( result.isEmpty() && ! dumpPPState ) {
+//	    // NB: want any fake value but not for suite.sh which is run with dumpPPState
+//	    result.add("/usr/non-exists"); // NOI18N
+//	}
+//	return result;
+//    }
+//
+//    @Override
+//    protected List<String> getSysMacros() {
+//	List<String> result = super.getSysMacros();
+//	if( result.isEmpty() && ! dumpPPState ) {
+//	    // NB: want any fake value but not for suite.sh which is run with dumpPPState
+//	    result.add("NO_DEFAULT_DEFINED_SYSTEM_MACROS"); // NOI18N
+//	}
+//	return result;
+//    }
     
     private long testAPTLexer(File file, boolean printTokens) throws FileNotFoundException, RecognitionException, TokenStreamException, IOException, ClassNotFoundException {
 	print("Testing APT lexer:"); // NOI18N
@@ -1659,8 +1300,8 @@ public class TraceModel {
     }
 
     private void testLibProject() {
-	LibProjectImpl libProject = LibProjectImpl.createInstance(model, "/usr/include"); // NOI18N
-	model.addProject(libProject);
+	LibProjectImpl libProject = LibProjectImpl.createInstance(getModel(), "/usr/include"); // NOI18N
+	getModel().addProject(libProject);
 	tracer.dumpModel(libProject);
     }
 
@@ -1768,52 +1409,6 @@ public class TraceModel {
 	    }
 	}
     };
-
-    /*package*/ ProjectBase getProject() {
-        if (TraceFlags.USE_REPOSITORY) {
-	    synchronized( this ) {
-		if( projectUID == null ) {
-		    projectUID = createProject().getUID();
-		}
-	    }
-            return (projectUID == null) ? null : (ProjectBase) projectUID.getObject();
-        } else {
-	    if( this.project == null ) {
-		this.project = createProject();
-	    }
-            return this.project;
-        }
-    }
-    
-    /*package*/ void resetProject() {
-	if (getProject() != null) {
-	    Object platformProject = getProject().getPlatformProject();
-	    ((ModelImpl) CsmModelAccessor.getModel()).closeProject(platformProject);
-	}
-	projectUID = null;
-	project = null;
-	//getProject();
-    }
-    
-    
-    private ProjectBase createProject() {
-	NativeProject nativeProject = NativeProjectProvider.createProject("DummyProject", files, // NOI18N
-		systemIncludePaths, quoteIncludePaths, getSysMacros(), macros, pathsRelCurFile);
-	ProjectBase result = model.addProject(nativeProject, "DummyProject", true); // NOI18N
-	return result;
-    }
-
-    private void setProject(ProjectBase project) {
-        if (TraceFlags.USE_REPOSITORY) {
-            projectUID = project == null ? null : project.getUID();
-        } else {
-            this.project = project;
-        }
-    }
-    
-    /*package*/final CsmModel getModel() {
-        return model;
-    }
 
     boolean isShowTime() {
         return showTime;

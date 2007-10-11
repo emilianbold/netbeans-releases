@@ -180,7 +180,7 @@ public class TraceXRef extends TraceModel {
         return super.getProject().findFile(new File(path).getAbsolutePath());
     }
     
-    protected void processFlag(String flag) {
+    protected boolean processFlag(String flag) {
         String xRef = "xref"; // NOI18N
         if (flag.startsWith(xRef)) {
             String[] split = flag.split("#"); // NOI18N
@@ -206,7 +206,9 @@ public class TraceXRef extends TraceModel {
                 System.err.println("unexpected parameter " + flag);
                 System.err.println("should be --xref#file_path#1_based_line#1_based_column or --xref#name");
             }
+	    return true;
         }
+        return false;
     }
     
     public static void traceRefs(Collection<CsmReference> out, CsmObject target, PrintStream streamOut) {
