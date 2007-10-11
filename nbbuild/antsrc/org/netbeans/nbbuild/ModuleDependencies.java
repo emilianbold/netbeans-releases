@@ -41,11 +41,14 @@
 
 package org.netbeans.nbbuild;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -145,6 +148,10 @@ public class ModuleDependencies extends Task {
                 }
                 if ("kits".equals(o.type.getValue())) {
                     generateKits(o.file);
+                    continue;
+                }
+                if ("kit-dependencies".equals(o.type.getValue())) {
+                    generateKitDependencies(o.file);
                     continue;
                 }
             }
@@ -251,11 +258,39 @@ public class ModuleDependencies extends Task {
 			m.friends = set;
                     }
                 }
-
+                String essential = file.getManifest ().getMainAttributes ().getValue ("AutoUpdate-Essential-Module");
+                m.isEssential = essential == null ? 
+                    false : 
+                    Boolean.parseBoolean(file.getManifest().getMainAttributes().getValue("AutoUpdate-Essential-Module"));
+                m.isAutoload = determineAutoload(f);
                 modules.add (m);
             }
         }
     }
+    
+    private boolean determineAutoload(File moduleFile) throws IOException {
+        String name = moduleFile.getName();
+        name = name.substring(0, name.length() - 3) + "xml";
+        File configFile = new File(moduleFile.getParentFile().getParentFile(), "config/Modules/" + name);
+        log ("config " + configFile, Project.MSG_VERBOSE);
+        if (!configFile.exists())
+            return true; // probably a classpath module, treat like autoload
+        final String fragment = "<param name=\"autoload\">true</param>";
+        BufferedReader br = new BufferedReader (new FileReader (configFile));
+        try {
+            String line;
+            while ((line = br.readLine ()) != null) {
+                if (line.indexOf (fragment) != -1) {
+                    log ("autoload module: " + moduleFile, Project.MSG_VERBOSE);
+                    return true;
+                }
+            }
+        } finally {
+            br.close ();
+        }
+        return false;
+    }
+    
 
     private void generatePublicPackages(File output, boolean justPublic, boolean justInterCluster) throws BuildException, IOException {
         TreeSet<String> packages = new TreeSet<String>();
@@ -440,6 +475,157 @@ public class ModuleDependencies extends Task {
     }
     
     private void generateKits(File output) throws BuildException, IOException {
+        PrintWriter w = new PrintWriter(new FileWriter(output));
+        // calculate transitive closure of kits
+        TreeMap<String, TreeSet<String>> allKitDeps = transitiveClosureOfKits();
+        // create a map of <module, kits that depend on it>
+        TreeMap<ModuleInfo, Set<String>> dependingKits = new TreeMap<ModuleInfo, Set<String>>();
+        for (ModuleInfo m : modules) {
+            if (regexp != null && !regexp.matcher(m.group).matches()) {
+                continue;
+            }
+            if (m.showInAutoupdate) {
+                // this is a kit
+//                w.print("KIT ");
+//                w.print(m.getName());
+//                w.println();
+                for (Dependency d : m.depends) {
+                    if (regexp != null && !regexp.matcher(m.group).matches()) {
+                        continue;
+                    }
+                    if (!d.isSpecial()) {
+                        ModuleInfo theModuleOneIsDependingOn = findModuleInfo(d, m);
+                        if (!theModuleOneIsDependingOn.showInAutoupdate && 
+                            !theModuleOneIsDependingOn.isAutoload &&
+                            !theModuleOneIsDependingOn.isEssential) {
+                            // regular module, not a kit
+                            Set<String> kits = dependingKits.get(theModuleOneIsDependingOn);
+                            if (kits == null) {
+                                kits = new TreeSet<String>();
+                                dependingKits.put(theModuleOneIsDependingOn, kits);
+                            }
+                            kits.add(m.getName(false));
+//                            w.print("  REQUIRES " + theModuleOneIsDependingOn.getName());
+//                            w.println();
+                        }
+                    }
+                }
+            }
+        }
+        // now check that there is one canonical kit that "contains" the module
+        // at the same time create a map of <kit, set of <module>>
+        TreeMap<String, TreeSet<String>> allKits = new TreeMap<String, TreeSet<String>>();
+        for (ModuleInfo module : dependingKits.keySet()) {
+            Set<String> kits = dependingKits.get(module);
+            // candidate for the lowest kit
+            String lowestKitCandidate = null;
+            for (String kit : kits) {
+                if (lowestKitCandidate == null) {
+                    lowestKitCandidate = kit;
+                }
+                else {
+                    if (dependsOnTransitively(lowestKitCandidate, kit, allKitDeps)) {
+                        kit = lowestKitCandidate;
+                    }
+                }
+            }
+            // check that all kits depend on the lowest kit candidate
+            boolean passed = true;
+            for (String kit : kits) {
+                if (!kit.equals(lowestKitCandidate) && 
+                    !dependsOnTransitively(kit, lowestKitCandidate, allKitDeps)) {
+                    passed = false;
+                    break;
+                }
+            }
+            if (passed) {
+                dependingKits.put(module, Collections.singleton(lowestKitCandidate));
+                registerModuleInKit(module, lowestKitCandidate, allKits);
+            } else {
+                w.print("Warning: ambiguous module ownership - module ");
+                w.print(module.getName(false));
+                w.print(" is contained in kits ");
+                w.println();
+                for (String kit : kits) {
+                    registerModuleInKit(module, kit, allKits);
+                    w.print("  " + kit);
+                    w.println();
+                }
+            }
+        }
+        // now actually print out the kit contents
+        for (String kit : allKits.keySet()) {
+            w.print("KIT ");
+            w.print(kit);
+            w.println();
+            for (String m : allKits.get(kit)) {
+                w.print("  CONTAINS " + m);
+                w.println();
+            }
+        }
+        
+        w.close();
+    }
+
+    private boolean dependsOnTransitively(String kit1, String kit2, 
+        TreeMap<String, TreeSet<String>> dependingKits) {
+        TreeSet kits = dependingKits.get(kit1);
+        if (kits == null) {
+            return false;
+        }
+        return kits.contains(kit2);
+    }
+
+    private void registerModuleInKit(ModuleInfo module, String kit, TreeMap<String, TreeSet<String>> allKits) {
+        TreeSet<String> modules = allKits.get(kit);
+        if (modules == null) {
+            modules = new TreeSet<String>();
+            allKits.put(kit, modules);
+        }
+        modules.add(module.getName(false));
+    }
+
+    
+    private TreeMap<String, TreeSet<String>> transitiveClosureOfKits() {
+        TreeMap<String, TreeSet<String>> kitDepsAll = new TreeMap<String, TreeSet<String>>();
+        // populate with kits first
+        for (ModuleInfo m : modules) {
+            if (m.showInAutoupdate) {
+                TreeSet<String> deps = new TreeSet<String>();
+                kitDepsAll.put(m.getName(false), deps);
+                for (Dependency d : m.depends) {
+                    if (!d.isSpecial()) {
+                        ModuleInfo theModuleOneIsDependingOn = findModuleInfo(d, m);
+                        if (theModuleOneIsDependingOn.showInAutoupdate) {
+                            deps.add(theModuleOneIsDependingOn.getName(false));
+                        }
+                    }
+                }
+            }
+        }
+        // add transitively all dependencies
+        boolean needAnotherIteration = true;
+        while (needAnotherIteration) {
+            needAnotherIteration = false;
+            for (String m: kitDepsAll.keySet()) {
+                TreeSet<String> deps = kitDepsAll.get(m);
+                for (String d : new TreeSet<String>(deps)/*(TreeSet<String>)deps.clone()*/) {
+                    for (String d2: kitDepsAll.get(d)) {
+                        if (!deps.contains(d2)) {
+                            // we found one that was not added
+                            //log ("need to add " + d2 + " to " + m);
+                            deps.add(d2);
+                            needAnotherIteration = true;
+                        }
+                    }
+                }
+
+            }
+        }
+        return kitDepsAll;
+    }
+
+    private void generateKitDependencies(File output) throws BuildException, IOException {
         PrintWriter w = new PrintWriter(new FileWriter(output));
         for (ModuleInfo m : modules) {
             if (regexp != null && !regexp.matcher(m.group).matches()) {
@@ -735,6 +921,7 @@ public class ModuleDependencies extends Task {
                 "group-friend-packages",
                 "external-libraries",
                 "kits",
+                "kit-dependencies",
             };
         }
     }
@@ -751,6 +938,8 @@ public class ModuleDependencies extends Task {
         public Set<Dependency> depends;
         public Set<Dependency> provides;
         public boolean showInAutoupdate;
+        public boolean isEssential;
+        public boolean isAutoload;
         
         public ModuleInfo (String g, File f, String a) {
             this.group = g;
