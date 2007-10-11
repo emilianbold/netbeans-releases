@@ -12,7 +12,7 @@
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
-    <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
@@ -41,16 +41,15 @@
                       <Component id="warCheckBox" min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
-              <EmptySpace pref="26" max="32767" attributes="0"/>
+              <EmptySpace pref="35" max="32767" attributes="0"/>
           </Group>
-          <Component id="jSeparator1" alignment="0" pref="438" max="32767" attributes="0"/>
+          <Component id="jSeparator1" alignment="0" pref="384" max="32767" attributes="0"/>
           <Group type="102" alignment="0" attributes="0">
               <Component id="interpreterDesc" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="rubyLabel" min="-2" max="-2" attributes="0"/>
+              <Component id="rubyField" pref="191" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="changeRubyButton" min="-2" max="-2" attributes="0"/>
-              <EmptySpace min="-2" pref="184" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -74,8 +73,8 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="interpreterDesc" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="rubyLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="changeRubyButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="rubyField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
           </Group>
       </Group>
@@ -152,11 +151,6 @@
         <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
       </AuxValues>
     </Component>
-    <Component class="javax.swing.JLabel" name="rubyLabel">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="x"/>
-      </Properties>
-    </Component>
     <Component class="javax.swing.JButton" name="changeRubyButton">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
@@ -166,6 +160,14 @@
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="changeRuby"/>
       </Events>
+    </Component>
+    <Component class="javax.swing.JTextField" name="rubyField">
+      <Properties>
+        <Property name="editable" type="boolean" value="false"/>
+      </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Ruby Interpreter"/>
+      </AccessibilityProperties>
     </Component>
   </SubComponents>
 </Form>

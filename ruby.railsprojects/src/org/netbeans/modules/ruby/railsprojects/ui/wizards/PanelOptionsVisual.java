@@ -39,7 +39,6 @@
  * made subject to such option by the copyright holder.
  */
 
-
 package org.netbeans.modules.ruby.railsprojects.ui.wizards;
 
 import java.awt.event.ActionEvent;
@@ -48,17 +47,12 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.ruby.platform.RubyInstallation;
-import org.netbeans.modules.ruby.RubyUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.NbBundle;
 
-/**
- *
- * @author  phrebejk
- */
 public class PanelOptionsVisual extends SettingsPanel implements ActionListener, PropertyChangeListener {
     
     private static boolean lastMainClassCheck = true; // XXX Store somewhere
@@ -173,33 +167,33 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
         warCheckBox = new javax.swing.JCheckBox();
         jSeparator1 = new javax.swing.JSeparator();
         interpreterDesc = new javax.swing.JLabel();
-        rubyLabel = new javax.swing.JLabel();
         changeRubyButton = new javax.swing.JButton();
+        rubyField = new javax.swing.JTextField();
 
         setAsMainCheckBox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(setAsMainCheckBox, org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("LBL_setAsMainCheckBox")); // NOI18N
         setAsMainCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         dbLabel.setLabelFor(dbCombo);
-        dbLabel.setText(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "Database")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(dbLabel, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "Database")); // NOI18N
 
-        jdbcCheckBox.setText(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "UseJdbc")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jdbcCheckBox, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "UseJdbc")); // NOI18N
 
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "UsingRuby")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "UsingRuby")); // NOI18N
 
-        warCheckBox.setText(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "WarFile")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(warCheckBox, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "WarFile")); // NOI18N
 
         interpreterDesc.setLabelFor(changeRubyButton);
         org.openide.awt.Mnemonics.setLocalizedText(interpreterDesc, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "RubyInterpreter")); // NOI18N
 
-        rubyLabel.setText("x");
-
-        changeRubyButton.setText(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "Change")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(changeRubyButton, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "Change")); // NOI18N
         changeRubyButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 changeRuby(evt);
             }
         });
+
+        rubyField.setEditable(false);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -219,15 +213,14 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
                     .add(layout.createSequentialGroup()
                         .addContainerGap()
                         .add(warCheckBox)))
-                .addContainerGap(26, Short.MAX_VALUE))
-            .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 438, Short.MAX_VALUE)
+                .addContainerGap(35, Short.MAX_VALUE))
+            .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 384, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
                 .add(interpreterDesc)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(rubyLabel)
+                .add(rubyField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 191, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(changeRubyButton)
-                .add(184, 184, 184))
+                .add(changeRubyButton))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -248,12 +241,13 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(interpreterDesc)
-                    .add(rubyLabel)
-                    .add(changeRubyButton)))
+                    .add(changeRubyButton)
+                    .add(rubyField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
         );
 
         setAsMainCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("ACSN_setAsMainCheckBox")); // NOI18N
         setAsMainCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("ACSD_setAsMainCheckBox")); // NOI18N
+        rubyField.getAccessibleContext().setAccessibleName("Ruby Interpreter");
 
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSN_PanelOptionsVisual")); // NOI18N
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSD_PanelOptionsVisual")); // NOI18N
@@ -295,7 +289,6 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
     }
     
     void read (WizardDescriptor d) {
-        //TODO:
         RubyInstallation.getInstance().addPropertyChangeListener(this);
     }
     
@@ -326,7 +319,7 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
     private javax.swing.JLabel jLabel1;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JCheckBox jdbcCheckBox;
-    private javax.swing.JLabel rubyLabel;
+    private javax.swing.JTextField rubyField;
     private javax.swing.JCheckBox setAsMainCheckBox;
     private javax.swing.JCheckBox warCheckBox;
     // End of variables declaration//GEN-END:variables
@@ -348,9 +341,7 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
     //}
     
     public void interpreterChanged() {
-        String rubylabel = RubyInstallation.getInstance().getShortName();
-        rubyLabel.setText(RubyUtils.truncate(rubylabel, 40));
-        rubyLabel.setToolTipText(rubylabel);
+        rubyField.setText(RubyInstallation.getInstance().getShortName());
         this.panel.fireChangeEvent();
     }
 }
