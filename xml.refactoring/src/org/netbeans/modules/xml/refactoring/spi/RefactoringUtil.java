@@ -235,6 +235,14 @@ public class RefactoringUtil {
             
             SaveCookie save = (SaveCookie) obj.getCookie(SaveCookie.class);
             FileObject fo = obj.getPrimaryFile();
+            
+            //fix for issue 118106
+            //we were not able to determine why the SaveCookie is not
+            //generated on rename undo for referenced schemas
+            //this is a temp fix
+            if(!obj.isModified())
+                obj.setModified(true);
+            
             if (save != null) {
                 try {
                     save.save();
