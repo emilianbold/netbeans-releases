@@ -44,10 +44,19 @@ package org.netbeans.modules.autoupdate.ui.wizards;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.Rectangle;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -58,6 +67,7 @@ public class PanelBodyContainer extends javax.swing.JPanel {
     private String message = null;
     private JScrollPane customPanel;
     private JPanel bodyPanel = null;
+    private JComponent progressPanel = null;
     private boolean isWaiting = false;
     
     /** Creates new form InstallPanelContainer */
@@ -65,14 +75,9 @@ public class PanelBodyContainer extends javax.swing.JPanel {
         head = heading;
         message = msg;
         this.bodyPanel = bodyPanel;
-        customPanel = new JScrollPane ();
-        customPanel.setBorder (null);
         initComponents ();
-        pBodyPanel.add (customPanel, BorderLayout.CENTER);
         writeToHeader (head, message);
-        customPanel.setViewportView (bodyPanel);
-        customPanel.getVerticalScrollBar ().setUnitIncrement (10);
-        customPanel.getHorizontalScrollBar ().setUnitIncrement (10);
+        initBodyPanel ();
     }
     
     @Override
@@ -89,19 +94,25 @@ public class PanelBodyContainer extends javax.swing.JPanel {
     }
     
     public void setBody (JPanel bodyPanel) {
-        pBodyPanel.removeAll ();
         this.bodyPanel = bodyPanel;
-        customPanel = new JScrollPane ();
-        customPanel.setBorder (null);
-        pBodyPanel.add (customPanel, BorderLayout.CENTER);
-        customPanel.setViewportView (bodyPanel);
-        customPanel.getVerticalScrollBar ().setUnitIncrement (10);
-        customPanel.getHorizontalScrollBar ().setUnitIncrement (10);
-        revalidate ();
+        initBodyPanel ();
     }
     
     public void setWaitingState (boolean isWaiting) {
         this.isWaiting = isWaiting;
+        if (isWaiting) {
+            SwingUtilities.invokeLater (new Runnable () {
+                public void run () {
+                    addProgressLine ();
+                }
+            });
+        } else {
+            SwingUtilities.invokeLater (new Runnable () {
+                public void run () {
+                    removeProgressLine ();
+                }
+            });
+        }
         Component rootPane = getRootPane ();
         /* Component parent = getParent ();
         if (parent != null) {
@@ -113,6 +124,50 @@ public class PanelBodyContainer extends javax.swing.JPanel {
             } else {
                 rootPane.setCursor (null);
             }
+        }
+    }
+    
+    private void addProgressLine () {
+        ProgressHandle handle = ProgressHandleFactory.createHandle ("PanelBodyContainer_ProgressLine"); // NOI18N
+        JLabel title = new JLabel (NbBundle.getMessage (PanelBodyContainer.class, "PanelBodyContainer_PleaseWait"));
+        JComponent progress = ProgressHandleFactory.createProgressComponent (handle);
+        progressPanel = new JPanel (new GridBagLayout ());
+        
+        GridBagConstraints gridBagConstraints = new GridBagConstraints ();
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        gridBagConstraints.insets = new Insets (7, 0, 0, 12);
+        progressPanel.add (progress, gridBagConstraints);
+
+        gridBagConstraints = new GridBagConstraints ();
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        gridBagConstraints.insets = new Insets (7, 0, 0, 20);
+        gridBagConstraints.weightx = 1.0;
+        progressPanel.add (title, gridBagConstraints);
+
+        revalidate ();
+        handle.setInitialDelay (0);
+        initBodyPanel ();
+        handle.start ();
+    }
+    
+    private void initBodyPanel () {
+        pBodyPanel.removeAll ();
+        customPanel = new JScrollPane ();
+        customPanel.setBorder (null);
+        pBodyPanel.add (customPanel, BorderLayout.CENTER);
+        if (isWaiting) {
+            pBodyPanel.add (progressPanel, BorderLayout.SOUTH);
+        }
+        customPanel.setViewportView (bodyPanel);
+        customPanel.getVerticalScrollBar ().setUnitIncrement (10);
+        customPanel.getHorizontalScrollBar ().setUnitIncrement (10);
+        revalidate ();
+    }
+    
+    private void removeProgressLine () {
+        if (progressPanel != null) {
+            pBodyPanel.remove (progressPanel);
+            revalidate ();
         }
     }
     

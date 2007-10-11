@@ -152,7 +152,7 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
             }
             body = new OperationDescriptionPanel (tableTitle,
                     preparePluginsForShow (OperationWizardModel.getVisibleUpdateElements (model.getPrimaryUpdateElements (), false, model.getOperation ()), model.getCustomHandledComponents ()),
-                        getBundle ("OperationDescriptionStep_PleaseWait"), // NOI18N
+                        "",
                         "",
                         true);
             component = new PanelBodyContainer (head, content, body);
