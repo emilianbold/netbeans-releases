@@ -98,7 +98,7 @@ public class FileMovePlugin implements RefactoringPlugin {
             this.fo = fo;
         }
         public String getText() {
-            return NbBundle.getMessage(FileMovePlugin.class, "TXT_MoveFile") + fo.getNameExt();
+            return NbBundle.getMessage(FileMovePlugin.class, "TXT_MoveFile", fo.getNameExt());
         }
 
         public String getDisplayText() {

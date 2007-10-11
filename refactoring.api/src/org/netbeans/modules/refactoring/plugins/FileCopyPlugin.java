@@ -98,7 +98,7 @@ public class FileCopyPlugin implements RefactoringPlugin {
             this.session = session;
         }
         public String getText() {            
-            return NbBundle.getMessage(FileCopyPlugin.class, "TXT_CopyFile") + fo.getNameExt();
+            return NbBundle.getMessage(FileCopyPlugin.class, "TXT_CopyFile", fo.getNameExt());
         }
         
         public String getDisplayText() {

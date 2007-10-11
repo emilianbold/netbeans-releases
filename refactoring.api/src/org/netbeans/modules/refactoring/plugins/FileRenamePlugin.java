@@ -94,7 +94,7 @@ public class FileRenamePlugin implements RefactoringPlugin {
             this.fo = fo;
         }
         public String getText() {
-            return NbBundle.getMessage(FileRenamePlugin.class, "TXT_RenameFile") + fo.getNameExt();
+            return NbBundle.getMessage(FileRenamePlugin.class, "TXT_RenameFile", fo.getNameExt());
         }
 
         public String getDisplayText() {
