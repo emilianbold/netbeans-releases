@@ -45,7 +45,10 @@ import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
@@ -62,6 +65,7 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.editor.Registry;
 import org.netbeans.editor.view.spi.EstimatedSpanView;
 import org.netbeans.editor.view.spi.LockView;
+import org.netbeans.modules.web.core.palette.JSPPaletteFactory;
 import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -134,7 +138,7 @@ public class JspEditorWarmUpTask implements Runnable{
     
     //signals whether the warmuptask has already been performed
     public static boolean ALREADY_RUN = false;
-    
+
     public void run() {
         switch (status) {
             case STATUS_INIT:
@@ -317,6 +321,15 @@ public class JspEditorWarmUpTask implements Runnable{
                 frame.dispose();
                 pane.setEditorKit(null);
 
+                // #45934 - initialize palette here to make first-time 
+                // JSP opening faster
+                try {
+                    JSPPaletteFactory.getPalette();
+                } catch (IOException e) {
+                    Logger.getLogger("global").log(Level.INFO, 
+                            "Palette per-initialization failed", e);
+                }
+                
                 // Candidates Annotations.getLineAnnotations()
 
                 if (debug) {
