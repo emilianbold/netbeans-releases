@@ -114,7 +114,7 @@ public final class EditorUtil {
         currentLineDA = createDebuggerAnnotation(line,
                 DebuggerAnnotation.CURRENT_LINE_ANNOTATION_TYPE,
                 DebuggerAnnotation.CURRENT_LINE_PART_ANNOTATION_TYPE);
-        showLine(line);
+        showLine(line, true);
     }
     
     public static DebuggerAnnotation[] createDebuggerAnnotation(final Object line,
@@ -183,7 +183,7 @@ public final class EditorUtil {
         return result;
     }
     
-    public static void showLine(final Object line) {
+    public static void showLine(final Object line, final boolean toFront) {
         if (line == null) {
             return;
         }
@@ -198,9 +198,13 @@ public final class EditorUtil {
         }
         EventQueue.invokeLater(new Runnable() {
             public void run() {
-                lineToShow.show(Line.SHOW_GOTO);
+                lineToShow.show(toFront ? Line.SHOW_TOFRONT : Line.SHOW_GOTO);
             }
         });
+    }
+    
+    public static void showLine(final Object line) {
+        showLine(line, false);
     }
     
     // <editor-fold defaultstate="collapsed" desc=" Editor boilerplate ">
