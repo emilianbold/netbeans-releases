@@ -311,7 +311,7 @@ public class IDEValidateBPELProject extends Task {
         try {
           model = IDEBPELCatalogModel.getDefault().getBPELModel(bpel);
         }
-        catch (Exception ex) {
+        catch (Exception e) {
           throw new RuntimeException("Error while trying to create BPEL Model", e);
         }
         Validation validation = new Validation();
