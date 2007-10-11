@@ -39,7 +39,6 @@
  * made subject to such option by the copyright holder.
  */
 
-
 package org.netbeans.modules.ruby.rubyproject.ui.wizards;
 
 import java.awt.event.ActionEvent;
@@ -52,20 +51,14 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.ruby.platform.RubyInstallation;
-import org.netbeans.modules.ruby.RubyUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
-/**
- *
- * @author  phrebejk
- */
-public class PanelOptionsVisual extends SettingsPanel implements ActionListener, PropertyChangeListener {
+public final class PanelOptionsVisual extends SettingsPanel implements ActionListener, PropertyChangeListener {
     
     private static boolean lastMainClassCheck = true; // XXX Store somewhere
     
@@ -149,8 +142,8 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
         createMainCheckBox = new javax.swing.JCheckBox();
         mainClassTextField = new javax.swing.JTextField();
         interpreterDesc = new javax.swing.JLabel();
-        rubyLabel = new javax.swing.JLabel();
         changeRubyButton = new javax.swing.JButton();
+        rubyField = new javax.swing.JTextField();
 
         setAsMainCheckBox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(setAsMainCheckBox, org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("LBL_setAsMainCheckBox")); // NOI18N
@@ -160,19 +153,17 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
         org.openide.awt.Mnemonics.setLocalizedText(createMainCheckBox, org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("LBL_createMainCheckBox")); // NOI18N
         createMainCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-        mainClassTextField.setText("com.myapp.Main");
-
         interpreterDesc.setLabelFor(changeRubyButton);
-        interpreterDesc.setText(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "RubyInterpreter")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(interpreterDesc, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "RubyInterpreter")); // NOI18N
 
-        rubyLabel.setText("x");
-
-        changeRubyButton.setText(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "Change")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(changeRubyButton, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "Change")); // NOI18N
         changeRubyButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 changeRuby(evt);
             }
         });
+
+        rubyField.setEditable(false);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -184,11 +175,11 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
                     .add(layout.createSequentialGroup()
                         .add(createMainCheckBox)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(mainClassTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 184, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .add(mainClassTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 184, Short.MAX_VALUE))
                     .add(layout.createSequentialGroup()
                         .add(interpreterDesc)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(rubyLabel)
+                        .add(rubyField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(changeRubyButton)))
                 .addContainerGap())
@@ -204,8 +195,8 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
                 .add(18, 18, 18)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(interpreterDesc)
-                    .add(rubyLabel)
-                    .add(changeRubyButton))
+                    .add(changeRubyButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 24, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(rubyField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
 
@@ -245,7 +236,6 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
     }
     
     void read (WizardDescriptor d) {
-        //TODO:
         RubyInstallation.getInstance().addPropertyChangeListener(this);
     }
     
@@ -264,12 +254,11 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
     private javax.swing.JCheckBox createMainCheckBox;
     private javax.swing.JLabel interpreterDesc;
     private javax.swing.JTextField mainClassTextField;
-    private javax.swing.JLabel rubyLabel;
+    private javax.swing.JTextField rubyField;
     private javax.swing.JCheckBox setAsMainCheckBox;
     // End of variables declaration//GEN-END:variables
     
     private void mainClassChanged () {
-        
         String mainClassName = this.mainClassTextField.getText ();
         StringTokenizer tk = new StringTokenizer (mainClassName, "."); //NOI18N
         boolean valid = true;
@@ -285,9 +274,7 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
     }
 
     public void interpreterChanged() {
-        String rubylabel = RubyInstallation.getInstance().getShortName();
-        rubyLabel.setText(RubyUtils.truncate(rubylabel, 40));
-        rubyLabel.setToolTipText(rubylabel);
+        rubyField.setText(RubyInstallation.getInstance().getShortName());
         this.panel.fireChangeEvent();
     }    
 }
