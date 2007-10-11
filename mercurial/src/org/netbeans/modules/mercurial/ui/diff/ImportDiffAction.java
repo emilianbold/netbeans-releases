@@ -45,6 +45,7 @@ import org.netbeans.modules.versioning.spi.VCSContext;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.util.List;
 
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
@@ -111,10 +112,22 @@ public class ImportDiffAction extends AbstractAction {
 
     private static void performImport(File repository, File patchFile) {
     try {
+        HgUtils.outputMercurialTabInRed(
+                NbBundle.getMessage(ImportDiffAction.class,
+                "MSG_IMPORT_TITLE")); // NOI18N
+        HgUtils.outputMercurialTabInRed(
+                NbBundle.getMessage(ImportDiffAction.class,
+                "MSG_IMPORT_TITLE_SEP")); // NOI18N
+
+        List<String> list = HgCommand.doImport(repository, patchFile);
+        HgUtils.outputMercurialTab(list); // NOI18N
+
         HgCommand.doImport(repository, patchFile);
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
             DialogDisplayer.getDefault().notifyLater(e);
         }
+        HgUtils.outputMercurialTabInRed(NbBundle.getMessage(ImportDiffAction.class, "MSG_IMPORT_DONE")); // NOI18N
+        HgUtils.outputMercurialTab(""); // NOI18N
     }
 }

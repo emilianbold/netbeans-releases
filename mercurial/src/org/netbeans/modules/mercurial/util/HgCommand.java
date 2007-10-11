@@ -1478,11 +1478,12 @@ public class HgCommand {
      * @param File patchFile of the patch file
      * @throws org.netbeans.modules.mercurial.HgException
      */
-    public static void doImport(File repository, File patchFile)  throws HgException {
+    public static List<String> doImport(File repository, File patchFile)  throws HgException {
         List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
         command.add(HG_IMPORT_CMD);
+        command.add(HG_VERBOSE_CMD);
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
         command.add(HG_OPT_CWD_CMD);
@@ -1490,10 +1491,11 @@ public class HgCommand {
         command.add(patchFile.getAbsolutePath());
 
         List<String> list = exec(command);
-        // The first line of output is "applying <filename>" // NOI18N
-        if (!list.isEmpty() && list.size() > 1) {
+        if (!list.isEmpty() &&
+             isErrorAbort(list.get(list.size() -1))) {
             handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_IMPORT_FAILED"));
         }
+        return list;
     }
     
     /**

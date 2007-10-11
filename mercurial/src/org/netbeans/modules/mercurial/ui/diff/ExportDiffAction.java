@@ -114,7 +114,7 @@ public class ExportDiffAction extends AbstractAction {
             DialogDisplayer.getDefault().notifyLater(e);
         }
         HgUtils.outputMercurialTabInRed(NbBundle.getMessage(ExportDiffAction.class, "MSG_EXPORT_DONE")); // NOI18N
-                HgUtils.outputMercurialTab(""); // NOI18N
+        HgUtils.outputMercurialTab(""); // NOI18N
 
     }
 }
