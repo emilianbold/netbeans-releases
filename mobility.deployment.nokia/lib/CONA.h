@@ -1,6 +1,6 @@
 // DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 // 
-// Copyright 2005, 2007 Nokia Corporation. All rights reserved.
+// Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
 // 
 // The contents of this file are subject to the terms of either the GNU
 // General Public License Version 2 only ("GPL") or the Common
@@ -22,10 +22,11 @@
 // 
 // Contributor(s):
 // 
-// The Original Software is NetBeans. The Initial Developer of the Original
-// Software is Nokia Corporation. 2005, 2007 Nokia Corporation.
-// All Rights Reserved.
-// 
+// The Original Software is the Nokia Deployment.                      
+// The Initial Developer of the Original Software is Nokia Corporation.
+// Portions created by Nokia Corporation Copyright 2005, 2007.         
+// All Rights Reserved.  
+//                                              
 // If you wish your version of this file to be governed by only the CDDL
 // or only the GPL Version 2, indicate your decision by adding
 // "[Contributor] elects to include this software in this distribution
