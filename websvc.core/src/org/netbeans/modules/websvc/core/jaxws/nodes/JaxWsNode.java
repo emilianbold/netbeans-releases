@@ -44,6 +44,7 @@ import java.awt.Dialog;
 import java.awt.Image;
 import java.awt.datatransfer.Transferable;
 import java.beans.PropertyVetoException;
+import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
@@ -124,28 +125,31 @@ import org.netbeans.modules.websvc.core.wseditor.support.EditWSAttributesCookieI
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 
 public class JaxWsNode extends AbstractNode implements WsWsdlCookie, JaxWsTesterCookie, ConfigureHandlerCookie {
+
     Service service;
     FileObject srcRoot;
     JaxWsModel jaxWsModel;
     private FileObject implBeanClass;
     InstanceContent content;
     Project project;
-    
+
     public JaxWsNode(JaxWsModel jaxWsModel, Service service, FileObject srcRoot, FileObject implBeanClass) {
         this(jaxWsModel, service, srcRoot, implBeanClass, new InstanceContent());
     }
-    
+
     private JaxWsNode(JaxWsModel jaxWsModel, Service service, FileObject srcRoot, FileObject implBeanClass, InstanceContent content) {
-        super(new JaxWsChildren(service,srcRoot, implBeanClass),new AbstractLookup(content));
-        this.jaxWsModel=jaxWsModel;
-        this.service=service;
-        this.srcRoot=srcRoot;
+        super(new JaxWsChildren(service, srcRoot, implBeanClass), new AbstractLookup(content));
+        this.jaxWsModel = jaxWsModel;
+        this.service = service;
+        this.srcRoot = srcRoot;
         this.content = content;
-        this.implBeanClass=implBeanClass;
-        if(implBeanClass.getAttribute("jax-ws-service")==null) {
+        this.implBeanClass = implBeanClass;
+        if (implBeanClass.getAttribute("jax-ws-service") == null) {
             try {
                 implBeanClass.setAttribute("jax-ws-service", java.lang.Boolean.TRUE);
                 getDataObject().setValid(false);
@@ -162,6 +166,7 @@ public class JaxWsNode extends AbstractNode implements WsWsdlCookie, JaxWsTester
             content.add(new RefreshServiceImpl());
         }
         OpenCookie cookie = new OpenCookie() {
+
             public void open() {
                 OpenCookie oc = getOpenCookie();
                 if (oc != null) {
@@ -172,208 +177,198 @@ public class JaxWsNode extends AbstractNode implements WsWsdlCookie, JaxWsTester
         content.add(cookie);
         project = FileOwnerQuery.getOwner(srcRoot);
     }
-    
+
     public String getDisplayName() {
-        if (service.getWsdlUrl()!=null)
-            return NbBundle.getMessage(JaxWsNode.class,"LBL_serviceNodeName",service.getServiceName(),service.getPortName());
-        else
+        if (service.getWsdlUrl() != null) {
+            return NbBundle.getMessage(JaxWsNode.class, "LBL_serviceNodeName", service.getServiceName(), service.getPortName());
+        } else {
             return service.getName();
+        }
     }
-    
+
     public String getShortDescription() {
         return getWsdlURL();
     }
-    
-    private static final java.awt.Image WAITING_BADGE =
-            org.openide.util.Utilities.loadImage( "org/netbeans/modules/websvc/core/webservices/ui/resources/waiting.png"); // NOI18N
-    private static final java.awt.Image ERROR_BADGE =
-            org.openide.util.Utilities.loadImage( "org/netbeans/modules/websvc/core/webservices/ui/resources/error-badge.gif" ); //NOI18N
-    private static final java.awt.Image SERVICE_BADGE =
-            org.openide.util.Utilities.loadImage( "org/netbeans/modules/websvc/core/webservices/ui/resources/XMLServiceDataIcon.gif" ); //NOI18N
-    
+    private static final java.awt.Image WAITING_BADGE = org.openide.util.Utilities.loadImage("org/netbeans/modules/websvc/core/webservices/ui/resources/waiting.png"); // NOI18N
+    private static final java.awt.Image ERROR_BADGE = org.openide.util.Utilities.loadImage("org/netbeans/modules/websvc/core/webservices/ui/resources/error-badge.gif"); //NOI18N
+    private static final java.awt.Image SERVICE_BADGE = org.openide.util.Utilities.loadImage("org/netbeans/modules/websvc/core/webservices/ui/resources/XMLServiceDataIcon.gif"); //NOI18N
+
     public java.awt.Image getIcon(int type) {
-        WsdlModeler wsdlModeler = ((JaxWsChildren)getChildren()).getWsdlModeler();
-        if (wsdlModeler==null) return SERVICE_BADGE;
-        else if (wsdlModeler.getCreationException()==null) {
-            if (((JaxWsChildren)getChildren()).isModelGenerationFinished())
+        WsdlModeler wsdlModeler = ((JaxWsChildren) getChildren()).getWsdlModeler();
+        if (wsdlModeler == null) {
+            return SERVICE_BADGE;
+        } else if (wsdlModeler.getCreationException() == null) {
+            if (((JaxWsChildren) getChildren()).isModelGenerationFinished()) {
                 return SERVICE_BADGE;
-            else
+            } else {
                 return org.openide.util.Utilities.mergeImages(SERVICE_BADGE, WAITING_BADGE, 15, 8);
+            }
         } else {
             Image dirtyNodeImage = org.openide.util.Utilities.mergeImages(SERVICE_BADGE, ERROR_BADGE, 6, 6);
-            if (((JaxWsChildren)getChildren()).isModelGenerationFinished())
+            if (((JaxWsChildren) getChildren()).isModelGenerationFinished()) {
                 return dirtyNodeImage;
-            else
+            } else {
                 return org.openide.util.Utilities.mergeImages(dirtyNodeImage, WAITING_BADGE, 15, 8);
+            }
         }
     }
-    
+
     void changeIcon() {
         fireIconChange();
     }
-    
-    public Image getOpenedIcon(int type){
-        return getIcon( type);
+
+    public Image getOpenedIcon(int type) {
+        return getIcon(type);
     }
-    
+
     private DataObject getDataObject() {
         FileObject f = getImplBean();
         if (f != null) {
             try {
-                return  DataObject.find(f);
+                return DataObject.find(f);
             } catch (DataObjectNotFoundException de) {
                 ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, de.toString());
             }
         }
         return null;
     }
-    
-    private <T extends Node.Cookie> T getCookieFromImplBean(Class<T> type){
+
+    private <T extends Node.Cookie> T getCookieFromImplBean(Class<T> type) {
         T oc = null;
         FileObject f = getImplBean();
         if (f != null) {
             try {
                 DataObject d = DataObject.find(f);
-                oc = (T)d.getCookie(type);
+                oc = (T) d.getCookie(type);
             } catch (DataObjectNotFoundException de) {
                 ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, de.toString());
             }
         }
         return oc;
     }
-    
+
     private OpenCookie getOpenCookie() {
         OpenCookie oc = null;
         FileObject f = getImplBean();
         if (f != null) {
             try {
                 DataObject d = DataObject.find(f);
-                oc = (OpenCookie)d.getCookie(OpenCookie.class);
+                oc = (OpenCookie) d.getCookie(OpenCookie.class);
             } catch (DataObjectNotFoundException de) {
                 ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, de.toString());
             }
         }
         return oc;
     }
-    
-    
-    
+
     public Action getPreferredAction() {
         return SystemAction.get(OpenAction.class);
     }
-    
+
     // Create the popup menu:
     public Action[] getActions(boolean context) {
-        return new SystemAction[] {
-            SystemAction.get(OpenAction.class),
-            SystemAction.get(JaxWsRefreshAction.class),
-            null,
-            SystemAction.get(AddOperationAction.class),
-            null,
-            SystemAction.get(WsTesterPageAction.class),
-            null,
-            SystemAction.get(WSEditAttributesAction.class),
-            null,
-            SystemAction.get(ConfigureHandlerAction.class),
-            null,
-            SystemAction.get(DeleteAction.class),
-            null,
-            SystemAction.get(PropertiesAction.class),
-        };
+        return new SystemAction[]{SystemAction.get(OpenAction.class), SystemAction.get(JaxWsRefreshAction.class), null, SystemAction.get(AddOperationAction.class), null, SystemAction.get(WsTesterPageAction.class), null, SystemAction.get(WSEditAttributesAction.class), null, SystemAction.get(ConfigureHandlerAction.class), null, SystemAction.get(DeleteAction.class), null, SystemAction.get(PropertiesAction.class)};
     }
-    
+
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
-    
+
     // Handle deleting:
     public boolean canDestroy() {
         return true;
     }
-    
-    
+
     /**
      * get URL for Web Service WSDL file
      */
     public String getWebServiceURL() {
-        J2eeModuleProvider provider = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
+        J2eeModuleProvider provider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
         InstanceProperties instanceProperties = provider.getInstanceProperties();
-        if (instanceProperties==null) {
-            DialogDisplayer.getDefault().notify(
-                    new NotifyDescriptor.Message(NbBundle.getMessage(JaxWsNode.class,"MSG_MissingServer"),NotifyDescriptor.ERROR_MESSAGE));
+        if (instanceProperties == null) {
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(JaxWsNode.class, "MSG_MissingServer"), NotifyDescriptor.ERROR_MESSAGE));
             return "";
         }
         // getting port
         String portNumber = instanceProperties.getProperty(InstanceProperties.HTTP_PORT_NUMBER);
-        if(portNumber == null || portNumber.equals("")) {
+        if (portNumber == null || portNumber.equals("")) {
             portNumber = "8080"; //NOI18N
         }
-        
+
         // getting hostName
         String serverUrl = instanceProperties.getProperty(InstanceProperties.URL_ATTR);
-        String hostName="localhost"; //NOI18N
-        if (serverUrl!=null && serverUrl.indexOf("::")>0) { //NOI18N
+        String hostName = "localhost"; //NOI18N
+        if (serverUrl != null && serverUrl.indexOf("::") > 0) {
+            //NOI18N
             int index1 = serverUrl.indexOf("::"); //NOI18N
             int index2 = serverUrl.lastIndexOf(":"); //NOI18N
-            if (index2>index1+2) hostName = serverUrl.substring(index1+2,index2);
+            if (index2 > index1 + 2) {
+                hostName = serverUrl.substring(index1 + 2, index2);
+            }
         }
-        
+
         String contextRoot = null;
         Object moduleType = provider.getJ2eeModule().getModuleType();
         // need to compute from annotations
-        
-        String wsURI=null;
-        if (J2eeModule.WAR.equals(moduleType) && PlatformUtil.isJaxWsInJ2ee14Supported(project)) { // JBoss type
+        String wsURI = null;
+        if (J2eeModule.WAR.equals(moduleType) && PlatformUtil.isJaxWsInJ2ee14Supported(project)) {
+            // JBoss type
             try {
                 wsURI = getUriFromDD(moduleType);
             } catch (UnsupportedEncodingException ex) {
                 // this shouldn't happen'
             }
-        } else if (J2eeModule.EJB.equals(moduleType) && PlatformUtil.isJaxWsInJ2ee14Supported(project)) { // JBoss type
+        } else if (J2eeModule.EJB.equals(moduleType) && PlatformUtil.isJaxWsInJ2ee14Supported(project)) {
+            // JBoss type
             wsURI = getNameFromPackageName(service.getImplementationClass());
-        } else if (isJsr109Supported(project) && Util.isJavaEE5orHigher(project) || JaxWsUtils.isEjbJavaEE5orHigher(project) ) {
+        } else if (isJsr109Supported(project) && Util.isJavaEE5orHigher(project) || JaxWsUtils.isEjbJavaEE5orHigher(project)) {
             try {
                 wsURI = getServiceUri(moduleType);
             } catch (UnsupportedEncodingException ex) {
                 // this shouldn't happen'
             }
-        } else { // non jsr109 type (Tomcat)
+        } else {
+            // non jsr109 type (Tomcat)
             try {
                 wsURI = getNonJsr109Uri(moduleType);
             } catch (UnsupportedEncodingException ex) {
                 // this shouldn't happen'
             }
         }
-        if(J2eeModule.WAR.equals(moduleType)) {
+        if (J2eeModule.WAR.equals(moduleType)) {
             J2eeModuleProvider.ConfigSupport configSupport = provider.getConfigSupport();
             try {
                 contextRoot = configSupport.getWebContextRoot();
             } catch (ConfigurationException e) {
                 // TODO the context root value could not be read, let the user know about it
             }
-            if(contextRoot != null && contextRoot.startsWith("/")) { //NOI18N
+            if (contextRoot != null && contextRoot.startsWith("/")) {
+                //NOI18N
                 contextRoot = contextRoot.substring(1);
             }
-        } else if(J2eeModule.EJB.equals(moduleType) && PlatformUtil.isJaxWsInJ2ee14Supported(project) ) { // JBoss type
+        } else if (J2eeModule.EJB.equals(moduleType) && PlatformUtil.isJaxWsInJ2ee14Supported(project)) {
+            // JBoss type
             contextRoot = project.getProjectDirectory().getName();
         }
-        
-        return "http://"+hostName+":" + portNumber +"/" + (contextRoot != null && !contextRoot.equals("") ? contextRoot + "/" : "") + wsURI; //NOI18N
+
+        return "http://" + hostName + ":" + portNumber + "/" + (contextRoot != null && !contextRoot.equals("") ? contextRoot + "/" : "") + wsURI; //NOI18N
     }
-    
+
     private String getNonJsr109Uri(Object moduleType) throws UnsupportedEncodingException {
         JAXWSSupport support = JAXWSSupport.getJAXWSSupport(project.getProjectDirectory());
         if (J2eeModule.WAR.equals(moduleType)) {
             WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
             FileObject webInfFo = webModule.getWebInf();
-            if (webInfFo!=null) {
-                FileObject sunJaxwsFo = webInfFo.getFileObject("sun-jaxws","xml"); //NOI18N
-                if (sunJaxwsFo!=null) {
+            if (webInfFo != null) {
+                FileObject sunJaxwsFo = webInfFo.getFileObject("sun-jaxws", "xml"); //NOI18N
+                if (sunJaxwsFo != null) {
                     try {
                         Endpoints endpoints = EndpointsProvider.getDefault().getEndpoints(sunJaxwsFo);
-                        if (endpoints!=null) {
+                        if (endpoints != null) {
                             String urlPattern = findUrlPattern(endpoints, service.getImplementationClass());
-                            if (urlPattern!=null) return URLEncoder.encode(urlPattern, "UTF-8"); //NOI18N
+                            if (urlPattern != null) {
+                                return URLEncoder.encode(urlPattern, "UTF-8"); //NOI18N
+                            }
                         }
                     } catch (IOException ex) {
                         ErrorManager.getDefault().log(ex.getLocalizedMessage());
@@ -381,51 +376,53 @@ public class JaxWsNode extends AbstractNode implements WsWsdlCookie, JaxWsTester
                 }
             }
         }
-        return URLEncoder.encode(getNameFromPackageName(service.getImplementationClass()),"UTF-8"); //NOI18N
+        return URLEncoder.encode(getNameFromPackageName(service.getImplementationClass()), "UTF-8"); //NOI18N
     }
-    
+
     private String getUriFromDD(Object moduleType) throws UnsupportedEncodingException {
         WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
-        if (webModule!=null) {
+        if (webModule != null) {
             FileObject ddFo = webModule.getDeploymentDescriptor();
             if (ddFo != null) {
                 try {
                     WebApp webApp = DDProvider.getDefault().getDDRoot(ddFo);
-                    if (webApp!=null) {
+                    if (webApp != null) {
                         String urlPattern = findUrlPattern(webApp, service.getImplementationClass());
-                        if (urlPattern!=null) return URLEncoder.encode(urlPattern, "UTF-8"); //NOI18N
+                        if (urlPattern != null) {
+                            return URLEncoder.encode(urlPattern, "UTF-8"); //NOI18N
+                        }
                     }
                 } catch (IOException ex) {
                     ErrorManager.getDefault().log(ex.getLocalizedMessage());
                 }
             }
         }
-        return URLEncoder.encode(getNameFromPackageName(service.getImplementationClass()),"UTF-8"); //NOI18N
+        return URLEncoder.encode(getNameFromPackageName(service.getImplementationClass()), "UTF-8"); //NOI18N
     }
-    
+
     private String findUrlPattern(Endpoints endpoints, String implementationClass) {
         Endpoint[] endp = endpoints.getEndpoints();
-        for (int i=0;i<endp.length;i++) {
+        for (int i = 0; i < endp.length; i++) {
             if (implementationClass.equals(endp[i].getImplementation())) {
                 String urlPattern = endp[i].getUrlPattern();
-                if (urlPattern!=null) {
-                    return urlPattern.startsWith("/")?urlPattern.substring(1):urlPattern; //NOI18N
+                if (urlPattern != null) {
+                    return urlPattern.startsWith("/") ? urlPattern.substring(1) : urlPattern; //NOI18N
                 }
             }
         }
         return null;
     }
-    
+
     private String findUrlPattern(WebApp webApp, String implementationClass) {
         Servlet[] servlets = webApp.getServlet();
-        for (Servlet servlet:webApp.getServlet()) {
+        for (Servlet servlet : webApp.getServlet()) {
             if (implementationClass.equals(servlet.getServletClass())) {
                 String servletName = servlet.getServletName();
                 if (servletName != null) {
-                    for (ServletMapping servletMapping:webApp.getServletMapping()) {
+                    for (ServletMapping servletMapping : webApp.getServletMapping()) {
                         if (servletName.equals(servletMapping.getServletName())) {
                             String urlPattern = servletMapping.getUrlPattern();
-                            return urlPattern.startsWith("/")?urlPattern.substring(1):urlPattern; //NOI18N
+                            return urlPattern.startsWith("/") ? urlPattern.substring(1) : urlPattern; //NOI18N
                         }
                     }
                 }
@@ -433,25 +430,21 @@ public class JaxWsNode extends AbstractNode implements WsWsdlCookie, JaxWsTester
         }
         return null;
     }
-    
+
     private String getServiceUri(final Object moduleType) throws UnsupportedEncodingException {
-        final String[] serviceName=new String[1];
-        final String[] name=new String[1];
+        final String[] serviceName = new String[1];
+        final String[] name = new String[1];
         final boolean[] isProvider = {false};
         JavaSource javaSource = getImplBeanJavaSource();
-        if (javaSource!=null) {
+        if (javaSource != null) {
             CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
+
                 public void run(CompilationController controller) throws IOException {
                     controller.toPhase(Phase.ELEMENTS_RESOLVED);
                     SourceUtils srcUtils = SourceUtils.newInstance(controller);
                     TypeElement wsElement = controller.getElements().getTypeElement("javax.jws.WebService"); //NOI18N
-                    if (srcUtils!=null && wsElement!=null) {
-                        boolean foundWsAnnotation = resolveServiceUrl(  moduleType,
-                                controller,
-                                srcUtils,
-                                wsElement,
-                                serviceName,
-                                name);
+                    if (srcUtils != null && wsElement != null) {
+                        boolean foundWsAnnotation = resolveServiceUrl(moduleType, controller, srcUtils, wsElement, serviceName, name);
                         if (!foundWsAnnotation) {
                             TypeElement wsProviderElement = controller.getElements().getTypeElement("javax.xml.ws.WebServiceProvider"); //NOI18N
                             List<? extends AnnotationMirror> annotations = srcUtils.getTypeElement().getAnnotationMirrors();
@@ -463,8 +456,9 @@ public class JaxWsNode extends AbstractNode implements WsWsdlCookie, JaxWsTester
                         }
                     }
                 }
-                
-                public void cancel() {}
+
+                public void cancel() {
+                }
             };
             try {
                 javaSource.runUserActionTask(task, true);
@@ -472,107 +466,112 @@ public class JaxWsNode extends AbstractNode implements WsWsdlCookie, JaxWsTester
                 ErrorManager.getDefault().notify(ex);
             }
         }
-        
+
         String qualifiedImplClassName = service.getImplementationClass();
         String implClassName = getNameFromPackageName(qualifiedImplClassName);
-        if (serviceName[0]==null) {
-            serviceName[0]=URLEncoder.encode(implClassName+"Service","UTF-8"); //NOI18N
+        if (serviceName[0] == null) {
+            serviceName[0] = URLEncoder.encode(implClassName + "Service", "UTF-8"); //NOI18N
         }
         if (J2eeModule.WAR.equals(moduleType)) {
             return serviceName[0];
         } else if (J2eeModule.EJB.equals(moduleType)) {
-            if (name[0]==null){
-                if(isProvider[0]){
+            if (name[0] == null) {
+                if (isProvider[0]) {
                     //per JSR 109, use qualified impl class name for EJB
-                    name[0]=qualifiedImplClassName;
-                } else{
-                    name[0]=implClassName;
+                    name[0] = qualifiedImplClassName;
+                } else {
+                    name[0] = implClassName;
                 }
-                name[0] = URLEncoder.encode(name[0],"UTF-8"); //NOI18N
+                name[0] = URLEncoder.encode(name[0], "UTF-8"); //NOI18N
             }
-            return serviceName[0]+"/"+ name[0];
-        } else
+            return serviceName[0] + "/" + name[0];
+        } else {
             return serviceName[0];
+        }
     }
-    
-    private boolean resolveServiceUrl(  Object moduleType,
-            CompilationController controller,
-            SourceUtils srcUtils,
-            TypeElement wsElement,
-            String[] serviceName,
-            String[] name) throws IOException {
+
+    private boolean resolveServiceUrl(Object moduleType, CompilationController controller, SourceUtils srcUtils, TypeElement wsElement, String[] serviceName, String[] name) throws IOException {
         boolean foundWsAnnotation = false;
         List<? extends AnnotationMirror> annotations = srcUtils.getTypeElement().getAnnotationMirrors();
         for (AnnotationMirror anMirror : annotations) {
             if (controller.getTypes().isSameType(wsElement.asType(), anMirror.getAnnotationType())) {
-                foundWsAnnotation=true;
+                foundWsAnnotation = true;
                 Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = anMirror.getElementValues();
-                for(ExecutableElement ex:expressions.keySet()) {
+                for (ExecutableElement ex : expressions.keySet()) {
                     if (ex.getSimpleName().contentEquals("serviceName")) {
-                        serviceName[0] = (String)expressions.get(ex).getValue();
-                        if (serviceName[0]!=null) serviceName[0] = URLEncoder.encode(serviceName[0],"UTF-8"); //NOI18N
+                        serviceName[0] = (String) expressions.get(ex).getValue();
+                        if (serviceName[0] != null) {
+                            serviceName[0] = URLEncoder.encode(serviceName[0], "UTF-8"); //NOI18N
+                        }
                     } else if (ex.getSimpleName().contentEquals("name")) {
-                        name[0] = (String)expressions.get(ex).getValue();
-                        if (name[0]!=null) name[0] = URLEncoder.encode(name[0],"UTF-8");
+                        name[0] = (String) expressions.get(ex).getValue();
+                        if (name[0] != null) {
+                            name[0] = URLEncoder.encode(name[0], "UTF-8");
+                        }
                     }
-                    if (serviceName[0]!=null && name[0]!=null) break;
+                    if (serviceName[0] != null && name[0] != null) {
+                        break;
+                    }
                 }
                 break;
             } // end if
         } // end for
         return foundWsAnnotation;
     }
-    
+
     private String getNameFromPackageName(String packageName) {
         int index = packageName.lastIndexOf("."); //NOI18N
-        return index>=0?packageName.substring(index+1):packageName;
+        return index >= 0 ? packageName.substring(index + 1) : packageName;
     }
-    
+
     public String getWsdlURL() {
         String wsdlUrl = getWebServiceURL();
-        return wsdlUrl.length()==0?"":wsdlUrl+"?wsdl"; //NOI18N
+        return wsdlUrl.length() == 0 ? "" : wsdlUrl + "?wsdl"; //NOI18N
     }
+
     /**
      * get URL for Web Service Tester Page
      */
     public String getTesterPageURL() {
         if (isJsr109Supported(project) && (Util.isJavaEE5orHigher(project) || JaxWsUtils.isEjbJavaEE5orHigher(project))) {
-            return getWebServiceURL()+"?Tester"; //NOI18N
+            return getWebServiceURL() + "?Tester"; //NOI18N
         } else {
             return getWebServiceURL(); //NOI18N
         }
-        
     }
-    
+
     public void destroy() throws java.io.IOException {
         String serviceName = service.getName();
-        NotifyDescriptor.Confirmation notifyDesc =
-                new NotifyDescriptor.Confirmation(NbBundle.getMessage(JaxWsNode.class, "MSG_CONFIRM_DELETE", serviceName));
+        NotifyDescriptor.Confirmation notifyDesc = new NotifyDescriptor.Confirmation(NbBundle.getMessage(JaxWsNode.class, "MSG_CONFIRM_DELETE", serviceName));
         DialogDisplayer.getDefault().notify(notifyDesc);
-        if(notifyDesc.getValue() == NotifyDescriptor.YES_OPTION) {
+        if (notifyDesc.getValue() == NotifyDescriptor.YES_OPTION) {
             JAXWSSupport wss = JAXWSSupport.getJAXWSSupport(project.getProjectDirectory());
-            if (wss!=null) {
-                FileObject localWsdlFolder = wss.getLocalWsdlFolderForService(serviceName,false);
-                if (localWsdlFolder!=null) {
+            if (wss != null) {
+                FileObject localWsdlFolder = wss.getLocalWsdlFolderForService(serviceName, false);
+                if (localWsdlFolder != null) {
                     // removing local wsdl and xml artifacts
-                    FileLock lock=null;
+                    FileLock lock = null;
                     FileObject clientArtifactsFolder = localWsdlFolder.getParent();
                     try {
                         lock = clientArtifactsFolder.lock();
                         clientArtifactsFolder.delete(lock);
                     } finally {
-                        if (lock!=null) lock.releaseLock();
+                        if (lock != null) {
+                            lock.releaseLock();
+                        }
                     }
                     // removing wsdl and xml artifacts from WEB-INF/wsdl
                     FileObject wsdlFolder = wss.getWsdlFolder(false);
-                    if (wsdlFolder!=null) {
+                    if (wsdlFolder != null) {
                         FileObject serviceWsdlFolder = wsdlFolder.getFileObject(serviceName);
-                        if (serviceWsdlFolder!=null) {
+                        if (serviceWsdlFolder != null) {
                             try {
                                 lock = serviceWsdlFolder.lock();
                                 serviceWsdlFolder.delete(lock);
                             } finally {
-                                if (lock!=null) lock.releaseLock();
+                                if (lock != null) {
+                                    lock.releaseLock();
+                                }
                             }
                         }
                     }
@@ -580,9 +579,7 @@ public class JaxWsNode extends AbstractNode implements WsWsdlCookie, JaxWsTester
                     Project project = FileOwnerQuery.getOwner(srcRoot);
                     FileObject buildImplFo = project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_IMPL_XML_PATH);
                     try {
-                        ExecutorTask wsimportTask =
-                                ActionUtils.runTarget(buildImplFo,
-                                new String[]{"wsimport-service-clean-"+serviceName},null); //NOI18N
+                        ExecutorTask wsimportTask = ActionUtils.runTarget(buildImplFo, new String[]{"wsimport-service-clean-" + serviceName}, null); //NOI18N
                         wsimportTask.waitFinished();
                     } catch (java.io.IOException ex) {
                         ErrorManager.getDefault().log(ex.getLocalizedMessage());
@@ -590,14 +587,15 @@ public class JaxWsNode extends AbstractNode implements WsWsdlCookie, JaxWsTester
                         ErrorManager.getDefault().log(ex.getLocalizedMessage());
                     }
                 }
-                
+
                 // removing service from jax-ws.xml
                 wss.removeService(serviceName);
-                
+
                 // remove non JSR109 entries
                 Boolean isJsr109 = jaxWsModel.getJsr109();
-                if(isJsr109!=null && !isJsr109.booleanValue()){
-                    if(service.getWsdlUrl() != null){ //if coming from wsdl
+                if (isJsr109 != null && !isJsr109.booleanValue()) {
+                    if (service.getWsdlUrl() != null) {
+                        //if coming from wsdl
                         serviceName = service.getServiceName();
                     }
                     wss.removeNonJsr109Entries(serviceName);
@@ -606,37 +604,37 @@ public class JaxWsNode extends AbstractNode implements WsWsdlCookie, JaxWsTester
             }
         }
     }
-    
+
     private FileObject getImplBean() {
         String implBean = service.getImplementationClass();
-        if(implBean != null) {
-            return srcRoot.getFileObject(implBean.replace('.','/')+".java");
+        if (implBean != null) {
+            return srcRoot.getFileObject(implBean.replace('.', '/') + ".java");
         }
         return null;
     }
-    
+
     private JavaSource getImplBeanJavaSource() {
         FileObject implBean = getImplBean();
-        if(implBean != null) {
+        if (implBean != null) {
             return JavaSource.forFileObject(implBean);
         }
         return null;
     }
-    
+
     /**
      * Adds possibility to display custom delete dialog
      */
-    
     public Object getValue(String attributeName) {
         Object retValue;
-        if (attributeName.equals("customDelete")) { //NOI18N
+        if (attributeName.equals("customDelete")) {
+            //NOI18N
             retValue = Boolean.TRUE;
         } else {
             retValue = super.getValue(attributeName);
         }
         return retValue;
     }
-    
+
     /**
      * Implementation of the ConfigureHandlerCookie
      */
@@ -650,70 +648,80 @@ public class JaxWsNode extends AbstractNode implements WsWsdlCookie, JaxWsTester
         final boolean[] isNew = new boolean[]{true};
         JavaSource implBeanJavaSrc = JavaSource.forFileObject(implBeanFo);
         CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
+
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(Phase.ELEMENTS_RESOLVED);
                 SourceUtils srcUtils = SourceUtils.newInstance(controller);
                 AnnotationMirror handlerAnnotation = getAnnotation(controller, srcUtils, "javax.jws.HandlerChain");
-                if (handlerAnnotation!=null) {
+                if (handlerAnnotation != null) {
                     isNew[0] = false;
                     Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = handlerAnnotation.getElementValues();
-                    for(ExecutableElement ex:expressions.keySet()) {
+                    for (ExecutableElement ex : expressions.keySet()) {
                         if (ex.getSimpleName().contentEquals("file")) {
-                            handlerFileName[0] = (String)expressions.get(ex).getValue();
+                            handlerFileName[0] = (String) expressions.get(ex).getValue();
                             break;
                         }
                     }
                 }
             }
-            public void cancel() {}
+
+            public void cancel() {
+            }
         };
         try {
             implBeanJavaSrc.runUserActionTask(task, true);
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ex);
         }
-        
-        if (!isNew[0] && handlerFileName[0]!=null) {
-            // look for handlerFile in the same directory as the implbean
-            handlerFO = implBeanFo.getParent().getFileObject(handlerFileName[0]);
-            if (handlerFO!=null) {
-                try{
-                    handlerChains =
-                            HandlerChainsProvider.getDefault().getHandlerChains(handlerFO);
-                }catch(Exception e){
-                    ErrorManager.getDefault().notify(e);
-                    return; //TODO handle this
+
+        if (!isNew[0] && handlerFileName[0] != null) {
+            try {
+                // look for handlerFile
+                FileObject parent = implBeanFo.getParent();
+                File parentFile = FileUtil.toFile(parent);
+
+                File file = new File(parentFile, handlerFileName[0]);
+                if (file.exists()) {
+                    file = file.getCanonicalFile();
+                    handlerFO = FileUtil.toFileObject(file);
                 }
-                HandlerChain[] handlerChainArray = handlerChains.getHandlerChains();
-                //there is always only one, so get the first one
-                HandlerChain chain = handlerChainArray[0];
-                Handler[] handlers = chain.getHandlers();
-                for(int i = 0; i < handlers.length; i++){
-                    handlerClasses.add(handlers[i].getHandlerClass());
+                if (handlerFO != null) {
+                    try {
+                        handlerChains = HandlerChainsProvider.getDefault().getHandlerChains(handlerFO);
+                    } catch (Exception e) {
+                        ErrorManager.getDefault().notify(e);
+                        return; //TODO handle this
+                    }
+                    HandlerChain[] handlerChainArray = handlerChains.getHandlerChains();
+                    //there is always only one, so get the first one
+                    HandlerChain chain = handlerChainArray[0];
+                    Handler[] handlers = chain.getHandlers();
+                    for (int i = 0; i < handlers.length; i++) {
+                        handlerClasses.add(handlers[i].getHandlerClass());
+                    }
+                } else {
+                    //unable to find the handler file, display a warning
+                    NotifyDescriptor.Message dialogDesc = new NotifyDescriptor.Message(NbBundle.getMessage(JaxWsNode.class, "MSG_HANDLER_FILE_NOT_FOUND", handlerFileName), NotifyDescriptor.INFORMATION_MESSAGE);
+                    DialogDisplayer.getDefault().notify(dialogDesc);
                 }
-            } else {  //unable to find the handler file, display a warning
-                NotifyDescriptor.Message dialogDesc
-                        = new NotifyDescriptor.Message(NbBundle.getMessage(JaxWsNode.class,
-                        "MSG_HANDLER_FILE_NOT_FOUND", handlerFileName), NotifyDescriptor.INFORMATION_MESSAGE);
-                DialogDisplayer.getDefault().notify(dialogDesc);
+            } catch (IOException ex) {
+                ErrorManager.getDefault().notify(ex);
             }
         }
-        final MessageHandlerPanel panel = new MessageHandlerPanel(project,
-                handlerClasses, true, service.getName());
-        String title = NbBundle.getMessage(JaxWsNode.class,"TTL_MessageHandlerPanel");
+        final MessageHandlerPanel panel = new MessageHandlerPanel(project, handlerClasses, true, service.getName());
+        String title = NbBundle.getMessage(JaxWsNode.class, "TTL_MessageHandlerPanel");
         DialogDescriptor dialogDesc = new DialogDescriptor(panel, title);
-        dialogDesc.setButtonListener(new HandlerButtonListener( panel,
-                handlerChains, handlerFO, implBeanFo, service, isNew[0]));
+        dialogDesc.setButtonListener(new HandlerButtonListener(panel, handlerChains, handlerFO, implBeanFo, service, isNew[0]));
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDesc);
         dialog.getAccessibleContext().setAccessibleDescription(dialog.getTitle());
         dialog.setVisible(true);
     }
-    
+
     static AnnotationMirror getAnnotation(CompilationController controller, SourceUtils srcUtils, String annotationType) {
         TypeElement anElement = controller.getElements().getTypeElement(annotationType);
-        if (anElement!=null) {
+        if (anElement != null) {
             List<? extends AnnotationMirror> annotations = srcUtils.getTypeElement().getAnnotationMirrors();
-            for(AnnotationMirror annotation : annotations) {
+            for (AnnotationMirror annotation : annotations) {
                 if (controller.getTypes().isSameType(anElement.asType(), annotation.getAnnotationType())) {
                     return annotation;
                 }
@@ -721,12 +729,12 @@ public class JaxWsNode extends AbstractNode implements WsWsdlCookie, JaxWsTester
         }
         return null;
     }
-    
+
     private boolean isJsr109Supported(Project project) {
         JAXWSSupport wss = JAXWSSupport.getJAXWSSupport(project.getProjectDirectory());
         if (wss != null) {
             Map properties = wss.getAntProjectHelper().getStandardPropertyEvaluator().getProperties();
-            String serverInstance = (String)properties.get("j2ee.server.instance"); //NOI18N
+            String serverInstance = (String) properties.get("j2ee.server.instance"); //NOI18N
             if (serverInstance != null) {
                 J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstance);
                 if (j2eePlatform != null) {
@@ -736,7 +744,7 @@ public class JaxWsNode extends AbstractNode implements WsWsdlCookie, JaxWsTester
         }
         return false;
     }
-    
+
     void refreshImplClass() {
         if (implBeanClass != null) {
             content.remove(implBeanClass);
@@ -744,35 +752,37 @@ public class JaxWsNode extends AbstractNode implements WsWsdlCookie, JaxWsTester
         implBeanClass = getImplBean();
         content.add(implBeanClass);
     }
-    
+
     public boolean canCopy() {
         return true;
     }
-    
+
     public boolean canCut() {
         return true;
     }
-    
+
     public Transferable clipboardCopy() throws IOException {
         URL url = new URL(getWsdlURL());
-        boolean connectionOK=false;
+        boolean connectionOK = false;
         try {
             URLConnection connection = url.openConnection();
             if (connection instanceof HttpURLConnection) {
-                HttpURLConnection httpConnection = (HttpURLConnection)connection;
+                HttpURLConnection httpConnection = (HttpURLConnection) connection;
                 try {
                     httpConnection.setRequestMethod("GET"); //NOI18N
                     httpConnection.connect();
-                    if (HttpURLConnection.HTTP_OK == httpConnection.getResponseCode())
-                        connectionOK=true;
+                    if (HttpURLConnection.HTTP_OK == httpConnection.getResponseCode()) {
+                        connectionOK = true;
+                    }
                 } catch (java.net.ConnectException ex) {
                     //TODO: throw exception here?
                     url = null;
                 } finally {
-                    if (httpConnection!=null)
+                    if (httpConnection != null) {
                         httpConnection.disconnect();
+                    }
                 }
-                if(!connectionOK){
+                if (!connectionOK) {
                     //TODO: throw exception here?
                     url = null;
                 }
@@ -781,36 +791,38 @@ public class JaxWsNode extends AbstractNode implements WsWsdlCookie, JaxWsTester
             //TODO: throw exception here?
             url = null;
         }
-        
-        return new WebServiceTransferable(new WebServiceReference(url,
-                service.getWsdlUrl() != null ? service.getServiceName() :service.getName(), project.getProjectDirectory().getName()));
+
+        return new WebServiceTransferable(new WebServiceReference(url, service.getWsdlUrl() != null ? service.getServiceName() : service.getName(), project.getProjectDirectory().getName()));
     }
-    
+
     private class RefreshServiceImpl implements JaxWsRefreshCookie {
+
         /**
          * refresh service information obtained from wsdl (when wsdl file was changed)
          */
         public void refreshService(boolean downloadWsdl) {
             if (downloadWsdl) {
                 String result = RefreshWsDialog.open(downloadWsdl, service.getImplementationClass(), service.getWsdlUrl());
-                if (RefreshWsDialog.CLOSE.equals(result)) return;
-                if (result.startsWith(RefreshWsDialog.DO_ALL))
-                    ((JaxWsChildren)getChildren()).refreshKeys(true, true, result.substring(1));
-                else if (result.startsWith(RefreshWsDialog.DOWNLOAD_WSDL))
-                    ((JaxWsChildren)getChildren()).refreshKeys(true, false, result.substring(1));
-                else if (RefreshWsDialog.REGENERATE_IMPL_CLASS.equals(result))
-                    ((JaxWsChildren)getChildren()).refreshKeys(false, true, null);
-                else
-                    ((JaxWsChildren)getChildren()).refreshKeys(false, false, null);
+                if (RefreshWsDialog.CLOSE.equals(result)) {
+                    return;
+                }
+                if (result.startsWith(RefreshWsDialog.DO_ALL)) {
+                    ((JaxWsChildren) getChildren()).refreshKeys(true, true, result.substring(1));
+                } else if (result.startsWith(RefreshWsDialog.DOWNLOAD_WSDL)) {
+                    ((JaxWsChildren) getChildren()).refreshKeys(true, false, result.substring(1));
+                } else if (RefreshWsDialog.REGENERATE_IMPL_CLASS.equals(result)) {
+                    ((JaxWsChildren) getChildren()).refreshKeys(false, true, null);
+                } else {
+                    ((JaxWsChildren) getChildren()).refreshKeys(false, false, null);
+                }
             } else {
-                String result = RefreshWsDialog.openWithOKButtonOnly(downloadWsdl, service.getImplementationClass(),
-                        service.getWsdlUrl());
-                if(RefreshWsDialog.REGENERATE_IMPL_CLASS.equals(result)) {
-                    ((JaxWsChildren)getChildren()).refreshKeys(false, true, null);
-                } else{
-                    ((JaxWsChildren)getChildren()).refreshKeys(false, false, null);
+                String result = RefreshWsDialog.openWithOKButtonOnly(downloadWsdl, service.getImplementationClass(), service.getWsdlUrl());
+                if (RefreshWsDialog.REGENERATE_IMPL_CLASS.equals(result)) {
+                    ((JaxWsChildren) getChildren()).refreshKeys(false, true, null);
+                } else {
+                    ((JaxWsChildren) getChildren()).refreshKeys(false, false, null);
                 }
             }
-        }        
+        }
     }
 }
