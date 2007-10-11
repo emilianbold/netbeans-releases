@@ -490,9 +490,14 @@ public final class MasterMatcher {
                 }
             } catch (BadLocationException ble) {
                 LOG.log(Level.WARNING, null, ble);
-            } catch (InterruptedException e) {
-                // We were interrupted, no results
-                return;
+            } catch (Exception e) {
+                for(Throwable t = e; t != null; t = t.getCause()) {
+                    if (t instanceof InterruptedException) {
+                        // We were interrupted, no results
+                        return;
+                    }
+                }
+                LOG.log(Level.WARNING, null, e);
             }
 
             // Show the results
