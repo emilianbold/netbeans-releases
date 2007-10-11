@@ -1301,6 +1301,8 @@ made subject to such option by the copyright holder.
                     <xsl:attribute name="failonerror">true</xsl:attribute> <!-- #47325 -->
                     <xsl:attribute name="useexternalfile">true</xsl:attribute> <!-- #57375, requires Ant >=1.6.5 -->
                     <xsl:attribute name="encoding">${javadoc.encoding.used}</xsl:attribute>
+                    <xsl:attribute name="docencoding">${javadoc.encoding.used}</xsl:attribute>
+                    <xsl:attribute name="charset">${javadoc.encoding.used}</xsl:attribute>
                     <xsl:if test="/p:project/p:configuration/carproject:data/carproject:explicit-platform">
                         <xsl:attribute name="executable">${platform.javadoc}</xsl:attribute>
                     </xsl:if>                                                        
