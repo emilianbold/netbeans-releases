@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.visualweb.web.ui.dt.component;
 
+import com.sun.data.provider.FieldKey;
 import com.sun.data.provider.TableDataProvider;
 import com.sun.data.provider.impl.CachedRowSetDataProvider;
 import com.sun.rave.designtime.DesignBean;
@@ -203,6 +204,13 @@ public class TableRowGroupDesignInfo extends AbstractDesignInfo {
                     return Result.FAILURE;
                 }
             }
+            
+            TableDataProvider tdp = (TableDataProvider) sourceBean.getInstance();
+            FieldKey[] columns = tdp.getFieldKeys();
+            if((columns == null) || (columns.length == 0)){
+                return Result.FAILURE;
+            }
+            
             TableRowGroupDesignState ts = new TableRowGroupDesignState(targetBean);
             ts.setDataProviderBean(sourceBean);
             ts.saveState();

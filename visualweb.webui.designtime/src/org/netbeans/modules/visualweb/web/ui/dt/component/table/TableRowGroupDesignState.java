@@ -202,6 +202,12 @@ public class TableRowGroupDesignState {
             }else{
                 throw new IllegalArgumentException(dataProviderBean.getInstanceName() + bundle.getString("NOT_DATA_PROVIDER"));
             }
+            
+            FieldKey[] columns = tableDataProvider.getFieldKeys();
+            if ((columns == null) || (columns.length == 0)) {
+                return;
+            }
+             
             // OK new Table Data Provider is added. Remove all old columns
             DesignBean[] children = tableRowGroupBean.getChildBeans();
             for(int i=0; i< children.length; i++){
@@ -555,27 +561,27 @@ public class TableRowGroupDesignState {
      */
     public void saveState() {
         
-        if (selectedColumnNames.size() > 0){
-            String defDataBindingExpr = ((FacesDesignContext)dataProviderBean.getDesignContext()).getBindingExpr(dataProviderBean);
-            setPropertyValue(SOURCE_DATA_PROPERTY, defDataBindingExpr);
-            setPropertyValue(EMPTY_DATA_MSG_PROPERTY, emptyDataMsg);
-            setBooleanPropertyValue(PAGINATED_PROPERTY, rowGroupPaginated);
-            
-            if(sourceVarName == null){
-                sourceVarName = sourceVarNameBase;
-            }
-            
-            setPropertyValue(SOURCE_VARIABLE_PROPERTY, sourceVarName);
-            
-            try{
-                setPropertyValue(ROWS_PROPERTY, new Integer(paginationRows));
-            }catch(Exception exc){
-                exc.printStackTrace();
-            }
-        }else{
-            setPropertyValue(SOURCE_DATA_PROPERTY, "");
-            setPropertyValue(SOURCE_VARIABLE_PROPERTY, "");
+        if (selectedColumnNames.size() < 1){
+            return;
         }
+        
+        String defDataBindingExpr = ((FacesDesignContext) dataProviderBean.getDesignContext()).getBindingExpr(dataProviderBean);
+        setPropertyValue(SOURCE_DATA_PROPERTY, defDataBindingExpr);
+        setPropertyValue(EMPTY_DATA_MSG_PROPERTY, emptyDataMsg);
+        setBooleanPropertyValue(PAGINATED_PROPERTY, rowGroupPaginated);
+
+        if (sourceVarName == null) {
+            sourceVarName = sourceVarNameBase;
+        }
+
+        setPropertyValue(SOURCE_VARIABLE_PROPERTY, sourceVarName);
+
+        try {
+            setPropertyValue(ROWS_PROPERTY, new Integer(paginationRows));
+        } catch (Exception exc) {
+            exc.printStackTrace();
+        }
+         
         
         if(dataProviderReset){
             // OK new Table Data Provider is reset. Remove all old columns
