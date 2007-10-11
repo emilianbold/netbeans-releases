@@ -57,8 +57,16 @@ import org.netbeans.modules.websvc.manager.WebServicePersistenceManager;
 import org.netbeans.modules.websvc.manager.ui.AddWebServiceDlg;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.Repository;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor.Task;
+import org.openide.util.WeakListeners;
 
 /**
  * A model to keep track of web service data and their group
@@ -90,6 +98,7 @@ public class WebServiceListModel {
     private static WebServiceListModel websvcNodeModel = new WebServiceListModel();
 
     private boolean initialized = false;
+    private RestFolderListener partnerServiceListener;
     
     private WebServiceListModel() {
     }
@@ -330,6 +339,14 @@ public class WebServiceListModel {
             WebServicePersistenceManager manager = new WebServicePersistenceManager();
             manager.load();
             
+            // TODO doesn't do anything useful yet
+            partnerServiceListener = new RestFolderListener();
+            FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
+            FileObject restFolder = sfs.findResource("RestComponents"); // NOI18N
+            if (restFolder != null) {
+                restFolder.addFileChangeListener(WeakListeners.create(FileChangeListener.class, partnerServiceListener, restFolder));
+            }
+            
             for (WebServiceGroup wsGroup : webServiceGroups) {
                 if (wsGroup.getId().equals(DEFAULT_GROUP)) {
                     for (WebServiceGroupListener defaultGroupListener : defaultGroupListeners) {
@@ -410,4 +427,27 @@ public class WebServiceListModel {
         
     }
 
+    private static final class RestFolderListener implements FileChangeListener {
+        public void fileFolderCreated(FileEvent fe) {
+            //new WebServicePersistenceManager().loadPartnerServices();
+        }
+
+        public void fileDataCreated(FileEvent fe) {
+        }
+
+        public void fileChanged(FileEvent fe) {
+        }
+
+        public void fileDeleted(FileEvent fe) {
+            
+        }
+
+        public void fileRenamed(FileRenameEvent fe) {
+            
+        }
+
+        public void fileAttributeChanged(FileAttributeEvent fe) {
+            
+        }
+    }    
 }

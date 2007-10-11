@@ -207,6 +207,20 @@ public final class WebServiceManager {
         wsdlModeler.generateWsdlModel(listener);
     }
     
+    public void resetWebService(WebServiceData wsData) {
+        removeWebService(wsData, false);
+        // TODO this is strange - WebServiceData objects in the uncompiled state
+        // shouldn't rely on this property but should get the original wsdl field
+        wsData.setURL(wsData.getOriginalWsdl());
+        wsData.setCompiled(false);
+        wsData.setCatalog(null);
+        wsData.setWsdlService(null);
+        wsData.setJaxRpcDescriptorPath(null);
+        wsData.setJaxRpcDescriptor(null);
+        wsData.setJaxWsDescriptor(null);
+        wsData.setJaxWsDescriptorPath(null);        
+    }
+    
     /**
      * Add webservice to the Web Service List Model.
      * 

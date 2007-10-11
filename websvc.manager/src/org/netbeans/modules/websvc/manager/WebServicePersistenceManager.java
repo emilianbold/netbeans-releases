@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.websvc.manager;
 
-import org.netbeans.modules.websvc.manager.WebServiceManager;
 import org.netbeans.modules.websvc.manager.api.WebServiceDescriptor;
 import java.beans.DefaultPersistenceDelegate;
 import java.beans.Encoder;
@@ -220,8 +219,21 @@ public class WebServicePersistenceManager implements ExceptionListener {
         
     }
     
-    public void loadPartnerServices() {
-        List<String> partnerUrls = WebServiceListModel.getInstance().getPartnerServices();
+    /**
+     * Loads (or reloads if the services already exist) a set of partner services
+     * 
+     * @param serviceFolder the folder location of the component definitions in the system filesystem
+     * @param partnerName optional partner name for the web service group folder name, should be null 
+     *        or identical to existing group name if overwriting an existing component's folder
+     */
+    public static void loadPartnerService(String serviceFolder, String partnerName) {
+        FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
+        FileObject folder = sfs.findResource(serviceFolder);
+        
+        loadPartnerFromFolder(folder, partnerName, true);
+    }
+    
+    public static void loadPartnerServices() {
         FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
         
         FileObject f = sfs.findResource("RestComponents"); // NOI18N
@@ -229,58 +241,115 @@ public class WebServicePersistenceManager implements ExceptionListener {
             Enumeration<? extends FileObject> en = f.getFolders(false);
             while (en.hasMoreElements()) {
                 FileObject nextFolder = en.nextElement();
-                Map<String,String> currentUrls = new HashMap<String,String>(); //url->name
+                String groupName = nextFolder.getName();
+                //TODO: (nam) if and how to internalize partner's name
+                if (groupName.equals("StrikeIron")) { // NOI18N
+                    groupName = NbBundle.getMessage(WebServicePersistenceManager.class, "STRIKE_IRON_GROUP");
+                }
                 
-                FileObject[] contents = nextFolder.getChildren();
-                for (int i = 0; i < contents.length; i++) {
-                    try {
-                        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-                        DocumentBuilder db = dbf.newDocumentBuilder();
-                        Document doc = db.parse(contents[i].getInputStream());
-                        NodeList nodes = doc.getElementsByTagName("method"); // NOI18N
+                loadPartnerFromFolder(nextFolder, groupName, false);
+            }
+        }
+    }
+    
+    private static void loadPartnerFromFolder(FileObject folder, String groupName, boolean reloadIfExists) {
+        if (folder == null || !folder.isFolder()) {
+            return;
+        }
+        
+        Map<String, String> currentUrls = new HashMap<String, String>(); //url->name
+        List<String> partnerUrls = WebServiceListModel.getInstance().getPartnerServices();
+
+        FileObject[] contents = folder.getChildren();
+        for (int i = 0; i < contents.length; i++) {
+            try {
+                DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+                DocumentBuilder db = dbf.newDocumentBuilder();
+                Document doc = db.parse(contents[i].getInputStream());
+                NodeList nodes = doc.getElementsByTagName("method"); // NOI18N
+
+                for (int j = 0; j < nodes.getLength(); j++) {
+                    NamedNodeMap attributes = nodes.item(j).getAttributes();
+                    String type = attributes.getNamedItem("type").getNodeValue(); // NOI18N
+                    String url = attributes.getNamedItem("url").getNodeValue(); // NOI18N
+
+                    boolean addUrl = !currentUrls.containsKey(url) && (reloadIfExists ||
+                            (!reloadIfExists && !partnerUrls.contains(url)));
                     
-                        for (int j = 0; j < nodes.getLength(); j++) {
-                            NamedNodeMap attributes = nodes.item(j).getAttributes();
-                            String type = attributes.getNamedItem("type").getNodeValue(); // NOI18N
-                            String url = attributes.getNamedItem("url").getNodeValue(); // NOI18N
-                            
-                            if ("http://schemas.xmlsoap.org/wsdl/".equals(type) && !partnerUrls.contains(url)) { // NOI18N
-                                partnerUrls.add(url);
-                                String serviceName = attributes.getNamedItem("serviceName").getNodeValue(); //NOI18N
-                                currentUrls.put(url, serviceName);
-                            }
-                        }
-                    }catch (Exception ex) {
-                        String msg = NbBundle.getMessage(WebServicePersistenceManager.class, "MSG_BadContent", contents[i].getPath());
-                        Throwable t = ErrorManager.getDefault().annotate(ex, msg);
-                        ErrorManager.getDefault().notify(t);
+                    if ("http://schemas.xmlsoap.org/wsdl/".equals(type) && addUrl) { // NOI18N
+                        String serviceName = attributes.getNamedItem("serviceName").getNodeValue(); //NOI18N
+                        currentUrls.put(url, serviceName);
                     }
                 }
+            } catch (Exception ex) {
+                String msg = NbBundle.getMessage(WebServicePersistenceManager.class, "MSG_BadContent", contents[i].getPath());
+                Throwable t = ErrorManager.getDefault().annotate(ex, msg);
+                ErrorManager.getDefault().notify(t);
+            }
+        }
 
-                if (currentUrls.size() > 0) {
-                    String groupName = nextFolder.getName();
-                    //TODO: (nam) if and how to internalize partner's name
-                    if (groupName.equals("StrikeIron")) { // NOI18N
-                        groupName = NbBundle.getMessage(WebServicePersistenceManager.class, "STRIKE_IRON_GROUP");
+        if (currentUrls.size() > 0) {
+            if (groupName == null) {
+                groupName = folder.getName();
+                //TODO: (nam) if and how to internalize partner's name
+                if (groupName.equals("StrikeIron")) { // NOI18N
+                    groupName = NbBundle.getMessage(WebServicePersistenceManager.class, "STRIKE_IRON_GROUP");
+                }
+            }
+            
+            WebServiceGroup newGroup = null;
+            List<WebServiceGroup> webServiceGroups = WebServiceListModel.getInstance().getWebServiceGroupSet();
+            for (WebServiceGroup group : webServiceGroups) {
+                if (!group.isUserDefined() && group.getName().equals(groupName)) {
+                    newGroup = group;
+                    break;
+                }
+            }
+            
+            if (newGroup == null) {
+                newGroup = new WebServiceGroup(WebServiceListModel.getInstance().getUniqueWebServiceGroupId());
+                newGroup.setName(groupName);
+                newGroup.setUserDefined(false);
+            }
+
+            for (Map.Entry<String, String> entry : currentUrls.entrySet()) {
+                String url = entry.getKey();
+                
+                // !reloadIfExists -> !partnerUrls.contains(url)
+                if (!reloadIfExists || !partnerUrls.contains(url)) {
+                    // Add a new web service
+                    partnerUrls.add(url);
+                    WebServiceData wsData = new WebServiceData(url, url, newGroup.getId());
+                    wsData.setName(entry.getValue());
+                    WebServiceListModel.getInstance().addWebService(wsData);
+
+                    newGroup.add(wsData.getId(), true);
+                }else {
+                    // reset an existing service
+                    WebServiceData existingData = null;
+                    List<WebServiceData> wsDatas = WebServiceListModel.getInstance().getWebServiceSet();
+                    for (WebServiceData wsData : wsDatas) {
+                        if (wsData.getOriginalWsdl().equals(url)) {
+                            existingData = wsData;
+                            break;
+                        }
                     }
                     
-                    WebServiceGroup newGroup = new WebServiceGroup(WebServiceListModel.getInstance().getUniqueWebServiceGroupId());
-                    newGroup.setName(groupName);
-                    newGroup.setUserDefined(false);
-                    
-                    for (Map.Entry<String,String> entry : currentUrls.entrySet()) {
-                        String url = entry.getKey();
+                    if (existingData != null) {
+                        WebServiceManager.getInstance().resetWebService(existingData);
+                        existingData.setName(entry.getValue());
+                    }else {
                         WebServiceData wsData = new WebServiceData(url, url, newGroup.getId());
                         wsData.setName(entry.getValue());
                         WebServiceListModel.getInstance().addWebService(wsData);
-                        
+
                         newGroup.add(wsData.getId(), true);
                     }
-                    
-                    WebServiceListModel.getInstance().addWebServiceGroup(newGroup);
                 }
             }
-        }
+
+            WebServiceListModel.getInstance().addWebServiceGroup(newGroup);
+        }     
     }
     
     private void saveWebServiceDescriptor(WebServiceDescriptor descriptor) {
