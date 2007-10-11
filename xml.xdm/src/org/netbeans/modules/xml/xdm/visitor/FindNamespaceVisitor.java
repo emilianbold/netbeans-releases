@@ -102,6 +102,8 @@ public class FindNamespaceVisitor extends ChildVisitor {
             }
             if(!found) {
                 for(Map<String,String> map:ancestorNamespaceMaps) {
+                    if(map == null)
+                        continue;
                     if(map.containsKey(prefix)) {
                         namespaceMap.put(node.getId(),map.get(prefix));
                         break;
