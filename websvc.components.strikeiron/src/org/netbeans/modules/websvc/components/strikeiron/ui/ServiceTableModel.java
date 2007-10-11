@@ -147,6 +147,7 @@ public class ServiceTableModel extends DefaultTableModel {
     
     public interface SearchListener extends EventListener {
         void searchCompleted(ChangeEvent e);
+        void serviceSelectionChanged(ChangeEvent e);    
     }
     
     List<SearchListener> listeners = new ArrayList<SearchListener>();
@@ -159,6 +160,11 @@ public class ServiceTableModel extends DefaultTableModel {
     private void fireSearchEnded() {
         for (SearchListener l : listeners) {
             l.searchCompleted(new ChangeEvent(this));
+        }
+    }
+    private void fireServiceSelectionChanged() {
+        for (SearchListener l : listeners) {
+            l.serviceSelectionChanged(new ChangeEvent(this));
         }
     }
     
@@ -329,6 +335,7 @@ public class ServiceTableModel extends DefaultTableModel {
             } else {
                 selectedRows.remove(row);
             }
+            fireServiceSelectionChanged();
         }
     }
 
