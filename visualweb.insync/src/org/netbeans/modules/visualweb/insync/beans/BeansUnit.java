@@ -303,14 +303,15 @@ public class BeansUnit implements Unit {
     private void flush(UndoEvent event) {
         junit.writeLock(event);
         try {
-            if (beansToAdd.size() > 0) {
-                javaClass.addBeans(beansToAdd);
-                beansToAdd.clear();
-            }
             if (beansToRemove.size() > 0) {
                 javaClass.removeBeans(beansToRemove);
                 beansToRemove.clear();
             }
+            
+            if (beansToAdd.size() > 0) {
+                javaClass.addBeans(beansToAdd);
+                beansToAdd.clear();
+            }            
             
             for (Bean b : beans) {
                 if(b.unit.getPropertiesInitMethod() != null) {
@@ -458,9 +459,7 @@ public class BeansUnit implements Unit {
      * Return a new Bean instance bound to an existing field, getter & setter
      */
     protected Bean newBoundBean(BeanInfo beanInfo, String name, List<String> typeNames) {
-         Bean bean = new Bean(this, beanInfo, name, typeNames);
-         bean.setInserted(true);
-         return bean;
+         return new Bean(this, beanInfo, name, typeNames);
     }
 
     /**
@@ -529,7 +528,9 @@ public class BeansUnit implements Unit {
         if (bi == null) {
             return null;
         }
-        return newBoundBean(bi, name, typeNames.subList(1, typeNames.size()));
+        Bean bean = newBoundBean(bi, name, typeNames.subList(1, typeNames.size()));
+        bean.setInserted(true);
+        return bean;
     }
     
     /**
@@ -778,11 +779,14 @@ public class BeansUnit implements Unit {
         Bean parent = bean.getParent();
         if (parent != null)
             parent.removeChild(bean);  // remove from parent list
-        beansToRemove.add(bean);
-        //It may exist in the beansToAdd list if the removal happens before
-        //the bean is inserted into java source
-        if(beansToAdd.contains(bean)) {
-            beansToAdd.remove(bean);
+        if(bean.isInserted()) {
+            beansToRemove.add(bean);
+        }else {
+            //It may exist in the beansToAdd list if the removal happens before
+            //the bean is inserted into java source
+            if (beansToAdd.contains(bean)) {
+                beansToAdd.remove(bean);
+            }
         }
     }
 
