@@ -45,6 +45,7 @@ import java.awt.*;
 import java.awt.event.MouseListener;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import javax.swing.*;
 
 import org.netbeans.editor.LocaleSupport;
@@ -119,6 +120,23 @@ public class CompletionJList extends JList {
         });
         getAccessibleContext().setAccessibleName(LocaleSupport.getString("ACSN_CompletionView"));
         getAccessibleContext().setAccessibleDescription(LocaleSupport.getString("ACSD_CompletionView"));
+    }
+
+    public @Override void paint(Graphics g) {
+        Object value = (Map)(Toolkit.getDefaultToolkit().getDesktopProperty("awt.font.desktophints")); //NOI18N
+        Map renderingHints = (value instanceof Map) ? (java.util.Map)value : null;
+        if (renderingHints != null && g instanceof Graphics2D) {
+            Graphics2D g2d = (Graphics2D) g;
+            RenderingHints oldHints = g2d.getRenderingHints();
+            g2d.setRenderingHints(renderingHints);
+            try {
+                super.paint(g2d);
+            } finally {
+                g2d.setRenderingHints(oldHints);
+            }
+        } else {
+            super.paint(g);
+        }
     }
     
     void setData(List data) {
@@ -262,7 +280,7 @@ public class CompletionJList extends JList {
             this.separator = separator;
         }
 
-        public void paintComponent(Graphics g) {
+        public @Override void paintComponent(Graphics g) {
             // Although the JScrollPane without horizontal scrollbar
             // is explicitly set with a preferred size
             // it does not force its items with the only width into which
@@ -290,7 +308,7 @@ public class CompletionJList extends JList {
             }
         }
         
-        public Dimension getPreferredSize() {
+        public @Override Dimension getPreferredSize() {
             if (cellPreferredSizeGraphics == null) {
                 // CompletionJList.this.getGraphics() is null
                 cellPreferredSizeGraphics = java.awt.GraphicsEnvironment.
