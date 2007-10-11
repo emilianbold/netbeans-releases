@@ -174,24 +174,25 @@ public class PaletteItemDataNode extends DataNode {
         if (document != null) {
             DataObjectContext context = ProjectUtils.getDataObjectContextForDocument(document);
             if (context != null) {
+                final ComponentProducer[] producer = new ComponentProducer[1];
                 final DescriptorRegistry registry = DescriptorRegistry.getDescriptorRegistry(context.getProjectType(), context.getProjectID());
-                registry.writeAccess(new Runnable() {
+                registry.readAccess(new Runnable() {
 
                     public void run() {
                         List<ComponentProducer> producers = registry.getComponentProducers();
-                        ComponentProducer producer = null;
                         for (ComponentProducer p : producers) {
                             if (p.getProducerID().equals(obj.getProducerID())) {
-                                producer = p;
+                                producer[0] = p;
                                 break;
                             }
                         }
-
-                        if (producer != null && "custom".equalsIgnoreCase(producer.getPaletteDescriptor().getCategoryID())) { // NOI18N
-                            registry.removeComponentDescriptor(producer.getMainComponentTypeID());
-                        }
                     }
                 });
+                
+                //if (producer[0] != null && "custom".equalsIgnoreCase(producer[0].getPaletteDescriptor().getCategoryID())) { // NOI18N
+                if (producer[0] != null) {
+                    registry.removeComponentDescriptor(producer[0].getMainComponentTypeID());
+                }
             }
         }
     }

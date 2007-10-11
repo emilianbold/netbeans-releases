@@ -111,10 +111,6 @@ public final class DescriptorRegistry {
         return mutex.isReadAccess () || mutex.isWriteAccess ();
     }
 
-    private boolean isWriteAccess () {
-        return mutex.isWriteAccess ();
-    }
-
     /**
      * Executes a Runnable.run method with read access.
      * @param runnable the runnable
@@ -127,7 +123,7 @@ public final class DescriptorRegistry {
         });
     }
 
-    public void writeAccess (final Runnable runnable) {
+    private void writeAccess (final Runnable runnable) {
         globalDescriptorRegistry.readAccess (new Runnable() {
             public void run () {
                 mutex.writeAccess (runnable);
@@ -192,12 +188,16 @@ public final class DescriptorRegistry {
         return descriptors.get (componentType);
     }
 
-    public void removeComponentDescriptor (TypeID componentType) {
-        assert isWriteAccess();
+    public void removeComponentDescriptor(final TypeID componentType) {
         if (componentType == null) {
             return;
         }
-        descriptors.remove(componentType);
+        
+        writeAccess (new Runnable() {
+            public void run () {
+                
+            }
+        });
     }
 
     // TODO - proxy for GlobalDescriptorRegistry and ProjectRegistry

@@ -48,14 +48,16 @@ import org.openide.filesystems.*;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.XMLDataObject;
+import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
-
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.*;
+import java.util.HashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
+import org.openide.filesystems.FileSystem.AtomicAction;
 
 /**
  * @author David Kaspar
@@ -85,6 +87,7 @@ final class GlobalDescriptorRegistry {
     private final DataFolder registryFolder;
     private final DataFolder producersFolder;
     private final Mutex mutex = new Mutex ();
+    private Map<TypeID, WeakReference<FileObject>> customFileObjects = new HashMap<TypeID, WeakReference<FileObject>>();
     private HashMap<TypeID, ComponentDescriptor> descriptors = new HashMap<TypeID, ComponentDescriptor> ();
     private ArrayList<ComponentProducer> producers = new ArrayList<ComponentProducer> ();
     private final CopyOnWriteArraySet<DescriptorRegistryListener> listeners = new CopyOnWriteArraySet<DescriptorRegistryListener> ();
@@ -172,13 +175,14 @@ final class GlobalDescriptorRegistry {
         ArrayList<ComponentDescriptor> descriptorsList = new ArrayList<ComponentDescriptor> ();
         HashMap<TypeID, ComponentDescriptor> tempDescriptors = new HashMap<TypeID, ComponentDescriptor> ();
         ArrayList<ComponentProducer> tempProducers = new ArrayList<ComponentProducer> ();
+        Map<TypeID, FileObject> tempFileObjects = new HashMap<TypeID, FileObject>();
 
         if (registryFolder != null) {
             Enumeration<DataObject> enumeration = registryFolder.children ();
 
             while (enumeration.hasMoreElements ()) {
                 DataObject dataObject = enumeration.nextElement ();
-                ComponentDescriptor descriptor = dao2descriptor (dataObject);
+                ComponentDescriptor descriptor = dao2descriptor (dataObject, tempFileObjects);
 
                 if (descriptor == null) {
                     Debug.warning ("No descriptor", dataObject.getPrimaryFile ().getNameExt ()); // NOI18N
@@ -219,6 +223,14 @@ final class GlobalDescriptorRegistry {
             }
             tempDescriptors.put (typeDescriptor.getThisType (), descriptor);
         }
+        
+        customFileObjects = new HashMap<TypeID, WeakReference<FileObject>>();
+        for (TypeID key : tempFileObjects.keySet()) {
+            if (tempDescriptors.containsKey(key)) {
+                customFileObjects.put(key, new WeakReference(tempFileObjects.get(key)));
+            }
+        }
+
 
         if (producersFolder != null) {
             Enumeration<DataObject> enumeration = producersFolder.children ();
@@ -335,7 +347,7 @@ final class GlobalDescriptorRegistry {
         descriptor.setPropertyDescriptors (propertyDescriptors);
     }
 
-    private ComponentDescriptor dao2descriptor (DataObject dataObject) {
+    private ComponentDescriptor dao2descriptor (DataObject dataObject, Map<TypeID, FileObject> fileObjects) {
         InstanceCookie.Of instanceCookie = dataObject.getCookie (InstanceCookie.Of.class);
         if (instanceCookie != null) {
             try {
@@ -350,8 +362,11 @@ final class GlobalDescriptorRegistry {
             Debug.warning ("Instance is not ComponentDescriptor class"); // NOI18N
             return null;
         }
+        
         if (dataObject instanceof XMLDataObject) {
-            return deserializeComponentDescriptorFromXML ((XMLDataObject) dataObject);
+            ComponentDescriptor descriptor = deserializeComponentDescriptorFromXML ((XMLDataObject) dataObject);
+            fileObjects.put(descriptor.getTypeDescriptor().getThisType(), dataObject.getPrimaryFile());
+            return descriptor;
         }
         return null;
     }
@@ -433,4 +448,26 @@ final class GlobalDescriptorRegistry {
         listeners.remove (listener);
     }
 
+    
+    void removeComponentDescriptor(TypeID typeID) {
+        assert Debug.isFriend(DescriptorRegistry.class, "removeComponentDescriptor"); // NOI18N
+        
+        final FileObject fo = customFileObjects.get(typeID).get();
+        if (fo != null) {
+            try {
+                Repository.getDefault().getDefaultFileSystem().runAtomicAction(new AtomicAction() {
+                    public void run() {
+                        try {
+                            fo.delete();
+                        } catch (IOException ex) {
+                            Debug.error(ex);
+                        }
+                    }
+                });
+            } catch (IOException ex) {
+                Debug.error(ex);
+            }
+            reload();
+        }
+    }
 }
