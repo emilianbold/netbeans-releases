@@ -150,8 +150,6 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     /** Cache the hash code */
     private int hash; // Default to 0
     
-    private NativeFileItem nativeFileItem;
-    
     /** For test purposes only */
     public interface Hook {
 	void parsingFinished(CsmFile file, APTPreprocHandler preprocHandler);
@@ -161,7 +159,6 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     
     public FileImpl(FileBuffer fileBuffer, ProjectBase project, int fileType, NativeFileItem nativeFileItem) {
 	state = State.INITIAL;
-	this.nativeFileItem = nativeFileItem;
         setBuffer(fileBuffer);
         if (TraceFlags.USE_REPOSITORY && TraceFlags.UID_CONTAINER_MARKER) {
             this.projectUID = UIDCsmConverter.projectToUID(project);
@@ -173,6 +170,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         this.fileType = fileType;
         this.fakeLock = new String("File Lock for " + fileBuffer.getFile().getAbsolutePath()); // NOI18N
         this.guardState = new GuardBlockState();
+        if (nativeFileItem != null){
+            project.putNativeFileItem(getUID(), nativeFileItem);
+        }
         Notificator.instance().registerNewFile(this);
     }
     
@@ -182,11 +182,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
     
     public final NativeFileItem getNativeFileItem() {
-	return nativeFileItem;
-    }
-    
-    /*package-local*/ final void setNativeFileItem(NativeFileItem nativeFileItem) {
-	this.nativeFileItem = nativeFileItem;
+        return getProjectImpl().getNativeFileItem(getUID());
     }
     
     private ProjectBase _getProject(boolean assertNotNull) {

@@ -43,7 +43,9 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.io.*;
 import java.util.*;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.utils.FilePathCache;
@@ -92,6 +94,7 @@ public final class LibProjectImpl extends ProjectBase {
         return includePath;
     }
     
+    @Override
     protected void ensureFilesCreated() {
     }
     
@@ -99,11 +102,13 @@ public final class LibProjectImpl extends ProjectBase {
         return true;
     }
     
+    @Override
     protected Collection<Key> getLibrariesKeys() {
         return Collections.EMPTY_SET;
     }
     
     /** override parent to avoid inifinite recursion */
+    @Override
     public Collection<CsmProject> getLibraries() {
         return Collections.EMPTY_SET;
     }
@@ -122,6 +127,7 @@ public final class LibProjectImpl extends ProjectBase {
      * @return true if it's first time of file including
      *          false if file was included before
      */
+    @Override
     public FileImpl onFileIncluded(ProjectBase base, String file, APTPreprocHandler preprocHandler, int mode) throws IOException {
         if( ONLY_LEX_SYS_INCLUDES ) {
             return super.onFileIncluded(base, file, preprocHandler, GATHERING_MACROS);
@@ -139,10 +145,28 @@ public final class LibProjectImpl extends ProjectBase {
     public boolean isArtificial() {
         return true;
     }
+
+    @Override
+    public NativeFileItem getNativeFileItem(CsmUID<CsmFile> file) {
+        return null;
+    }
+
+    @Override
+    protected void putNativeFileItem(CsmUID<CsmFile> file, NativeFileItem nativeFileItem) {
+    }
+
+    @Override
+    protected void removeNativeFileItem(CsmUID<CsmFile> file) {
+    }
+    
+    @Override
+    protected void clearNativeFileContainer() {
+    }
     
     ////////////////////////////////////////////////////////////////////////////
     // impl of persistent
     
+    @Override
     public void write(DataOutput aStream) throws IOException {
         super.write(aStream);
         assert this.includePath != null;

@@ -47,6 +47,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
@@ -174,6 +175,7 @@ public final class ProjectImpl extends ProjectBase {
             synchronized( editedFiles ) {
                 editedFiles.remove(impl);
             }
+            removeNativeFileItem(impl.getUID());
             impl.dispose();
             removeFile(new File(impl.getAbsolutePath()));
             if (TraceFlags.USE_AST_CACHE) {
@@ -291,6 +293,28 @@ public final class ProjectImpl extends ProjectBase {
     public boolean isArtificial() {
         return false;
     }
+
+    @Override
+    public NativeFileItem getNativeFileItem(CsmUID<CsmFile> file) {
+        return nativeFiles.getNativeFileItem(file);
+    }
+
+    @Override
+    protected void putNativeFileItem(CsmUID<CsmFile> file, NativeFileItem nativeFileItem) {
+        nativeFiles.putNativeFileItem(file, nativeFileItem);
+    }
+
+    @Override
+    protected void removeNativeFileItem(CsmUID<CsmFile> file) {
+        nativeFiles.removeNativeFileItem(file);
+    }
+
+    @Override
+    protected void clearNativeFileContainer() {
+        nativeFiles.clear();
+    }
+    
+    private NativeFileContainer nativeFiles = new NativeFileContainer();
     
     ////////////////////////////////////////////////////////////////////////////
     // impl of persistent
@@ -310,5 +334,7 @@ public final class ProjectImpl extends ProjectBase {
         //CsmUID uid = aFactory.readUID(input);
         //LibraryManager.getInsatnce().read(uid, input);
 	LibraryManager.getInsatnce().readProjectLibraries(getUID(), input);
+        nativeFiles = new NativeFileContainer();
     }
+
 }

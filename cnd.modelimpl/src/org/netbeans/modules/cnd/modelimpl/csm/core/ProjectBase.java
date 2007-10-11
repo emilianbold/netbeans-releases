@@ -981,6 +981,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     public abstract void onFilePropertyChanged(NativeFileItem nativeFile);
     public abstract void onFilePropertyChanged(List<NativeFileItem> items);
     protected abstract void scheduleIncludedFileParsing(FileImpl csmFile, APTPreprocHandler.State state);
+    public abstract NativeFileItem getNativeFileItem(CsmUID<CsmFile> file);
+    protected abstract void putNativeFileItem(CsmUID<CsmFile> file, NativeFileItem nativeFileItem);
+    protected abstract void removeNativeFileItem(CsmUID<CsmFile> file);
+    protected abstract void clearNativeFileContainer();
     
     public void onFileRemoved(File nativeFile) {
         onFileRemoved(getFile(nativeFile));
@@ -1025,6 +1029,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 if( impl == null ) {
                     preprocHandler = (preprocHandler == null) ? getPreprocHandler(file) : preprocHandler;
                     impl = new FileImpl(ModelSupport.instance().getFileBuffer(file), this, fileType, nativeFileItem);
+                    if (nativeFileItem != null) {
+                        putNativeFileItem(impl.getUID(), nativeFileItem);
+                    }
                     putFile(file, impl, initial);
                     // NB: parse only after putting into a map
                     if( scheduleParseIfNeed ) {
@@ -1079,12 +1086,13 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     assert preprocHandler != null;
                     impl = new FileImpl(buf, this, fileType, nativeFile);
                     putFile(file, impl, preprocHandler.getState());
+                } else {
+                    putNativeFileItem(impl.getUID(), nativeFile);
                 }
             }
+        } else {
+            putNativeFileItem(impl.getUID(), nativeFile);
         }
-	else {
-	    impl.setNativeFileItem(nativeFile);
-	}
         return new FileAndHandler(impl, preprocHandler);
     }
     
@@ -1301,6 +1309,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 APTDriver.getInstance().invalidateAPT(file.getBuffer());
             }
         }
+        clearNativeFileContainer();
     }
     
     private NamespaceImpl _getGlobalNamespace() {
