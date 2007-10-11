@@ -344,9 +344,8 @@ public class DesignerMultiViewElement extends TopComponent
     }
     
     public void componentShowing() {
-        Node[] curNodes = getActivatedNodes();
         super.componentShowing();
-        
+        Node[] curNodes = getActivatedNodes();
         //
         // memory conservation?
         //
