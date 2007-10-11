@@ -166,9 +166,13 @@ public class DefaultModel implements Model, NodeListener {
         categoriesNeedRefresh = true;
         if( isRefreshingChildren )
             return;
-        getCategories();
-        Category[] addedCategories = findCategories( ev.getDelta() );
-        fireCategoriesChanged( addedCategories, true );
+        final Node[] nodes = ev.getDelta();
+        SwingUtilities.invokeLater( new Runnable() {
+            public void run() {
+                Category[] addedCategories = findCategories( nodes );
+                fireCategoriesChanged( addedCategories, true );
+            }
+        });
     }
 
     /** Fired when a set of children is removed.
