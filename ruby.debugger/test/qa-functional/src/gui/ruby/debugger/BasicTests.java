@@ -63,11 +63,10 @@ import org.openide.util.Utilities;
  */
 public class BasicTests extends JellyTestCase {
     
-    
     /** Need to be defined because of JUnit */
     public BasicTests(String name) {
         super(name);
-            }
+    }
 
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
@@ -86,13 +85,8 @@ public class BasicTests extends JellyTestCase {
         //junit.textui.TestRunner.run(new RubyValidation("testCreateRubyProject"));
     }
     
-    /** Setup before every test case. */
-    public void setUp() {
+    public @Override void setUp() {
         System.out.println("########  "+getName()+"  #######");
-    }
-    
-    /** Teardown after every test case. */
-    public void tearDown() {
     }
     
     // name of sample projects
@@ -107,7 +101,7 @@ public class BasicTests extends JellyTestCase {
         outOp.waitText("ruby 1.8.5 debugger listens");
         Util.waitForDebuggingActions();
         if (Utilities.isWindows()){
-            // see issue #113007, cannot kill session, so invoking Continue for now
+            // FIXME: when problems of issue #113007 are solved -> cannot kill session, so invoking Continue for now
             Util.invokeContinue();
         } else {
             Util.invokeFinishDebuggerSession();
@@ -135,7 +129,6 @@ public class BasicTests extends JellyTestCase {
         Util.invokeStepOver();
     }
 
-    
     public void testNativeRubyDebugging() throws InterruptedException{
         String nativeRuby = Util.detectNativeRuby();
         ProjectSupport.waitScanFinished();
@@ -181,8 +174,5 @@ public class BasicTests extends JellyTestCase {
         // wait classpath scanning finished
         ProjectSupport.waitScanFinished();
     }
-    
-    
-    
     
 }
