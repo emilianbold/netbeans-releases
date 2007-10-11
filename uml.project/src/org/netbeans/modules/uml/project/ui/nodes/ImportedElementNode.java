@@ -42,54 +42,121 @@
 package org.netbeans.modules.uml.project.ui.nodes;
 
 import java.io.IOException;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.IElementImport;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import javax.swing.Action;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.UMLXMLManip;
+import org.netbeans.modules.uml.core.metamodel.structure.IProject;
+import org.netbeans.modules.uml.project.ui.cookies.ImportedElementCookie;
+import org.netbeans.modules.uml.project.ui.nodes.actions.RemoveFromImport;
 import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeItem;
-import org.openide.nodes.Children;
-import org.openide.util.Lookup;
+import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeItem;
+import org.netbeans.modules.uml.ui.support.projecttreesupport.ProjectTreeComparable;
+import org.openide.nodes.FilterNode;
+import org.openide.nodes.Node;
 
 /**
  *
  * @author Trey Spiva
  */
-public class ImportedElementNode extends UMLModelElementNode
+public class ImportedElementNode extends FilterNode implements Comparable, ImportedElementCookie
 {
-    private IElementImport importedElement = null;
-    
-    /** Creates a new instance of ImportedElementNode */
-    public ImportedElementNode()
+
+    private IProject referencingProject;
+    private IElement elementImport;
+    private static RemoveFromImport remove = new RemoveFromImport();
+
+    public ImportedElementNode(IProject project, Node orig,
+            IElement elementImport)
     {
-    }
-    
-    public ImportedElementNode(IElementImport imported)
-    {
-        super();
-        setImportedElement(imported);
-    }
-    
-    public ImportedElementNode(Lookup lookup, IElementImport imported)
-    {
-        super(lookup);
-        setImportedElement(imported);
-    }
-    
-    public ImportedElementNode(Children ch, Lookup lookup, IElementImport imported)
-    {
-        super(ch, lookup);
-        setImportedElement(imported);
-    }
-    
-    public IElementImport getImportedElement()
-    {
-        return importedElement;
+        super(orig);
+        this.referencingProject = project;
+        this.elementImport = elementImport;
+        disableDelegation(DELEGATE_DESTROY);
     }
 
-    public void setImportedElement(IElementImport importedElement)
+    public <T extends Node.Cookie> T getCookie(Class<T> type)
     {
-        this.importedElement = importedElement;
+        if (type.isInstance(this))
+        {
+            return type.cast(this);
+        }
+        return super.getCookie(type);
     }
-    
+
+    public javax.swing.Action[] getActions(boolean context)
+    {
+        ArrayList<Action> ac = new ArrayList<Action>();
+        ac.add(remove);
+        Action[] actions = super.getActions(context);
+
+        List<Action> list = Arrays.asList(actions);
+        ac.addAll(1, list);
+        Action[] a = new Action[list.size()];
+        return ac.toArray(a);
+    }
+
+    public boolean canDestroy()
+    {
+        return true;
+    }
+
     public void destroy() throws IOException
     {
-        importedElement.delete();
+        destroy(true);
     }
+
+    public void destroy(boolean fromOriginal) throws IOException
+    {
+        if (fromOriginal == true)
+        {
+            this.getOriginal().destroy();
+        }
+        super.destroy(); // calls Node.destroy(), not orig.destroy()
+    }
+
+    public void removeImportedElement()
+    {
+        IProjectTreeItem item = getOriginal().getCookie(IProjectTreeItem.class);
+        if (item != null)
+        {
+            UMLXMLManip.removeChild(referencingProject.getNode(), elementImport);
+            referencingProject.setDirty(true);
+        }
+        try
+        {
+            destroy(false);
+        } catch (IOException e)
+        {
+        }
+    }
+
+    public int compareTo(Object o)
+    {
+        if (!(o instanceof ImportedElementNode))
+        {
+            return -1;
+        }
+        IProjectTreeItem item1 = getOriginal().getCookie(IProjectTreeItem.class);
+        IProjectTreeItem item2 = ((ImportedElementNode) o).getOriginal().getCookie(IProjectTreeItem.class);
+        if (item1 != null && item2 != null)
+        {
+            return ProjectTreeComparable.compareTo(item1, item2);
+        }
+        return -1;
+    }
+
+    public IProject getReferencingProject()
+    {
+        return referencingProject;
+    }
+
+    public String getElementXMIID()
+    {
+        IProjectTreeItem item = getOriginal().getCookie(IProjectTreeItem.class);
+        return (item != null) ? item.getModelElementXMIID() : "";
+    }
+
 }

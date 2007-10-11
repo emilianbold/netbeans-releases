@@ -115,15 +115,16 @@ public class ProjectUtil
         {
             //IProject project = element.getProject();
             IElement owningElement = element.getOwner();
-            if (owningElement != null) { //JM: Fix an NPE
+            if (owningElement != null)
+            { //JM: Fix an NPE
                 IProject project = owningElement.getProject();
                 
                 retVal = findNetBeansProjectForModel(project);
             }
-			else
-			{
-				retVal = findNetBeansProjectForModel(element.getProject());
-			}
+            else
+            {
+                retVal = findNetBeansProjectForModel(element.getProject());
+            }
         }
         
         return retVal;
@@ -161,14 +162,32 @@ public class ProjectUtil
     
     public static boolean findElementInProjectTree(IElement element)
     {
+        Node selectedNode = findNodeInProjectTree(element);
+        if (selectedNode != null)
+        {
+            selectNodeAsync(selectedNode);
+            return true; 
+        }
+        return false;
+    }
+    
+    
+    public static Node findNodeInProjectTree(IElement element)
+    {
         Project project = findReferencingProject(element);
         
+        return findNodeInProjectTree(project, element);
+    }
+    
+    
+    public static Node findNodeInProjectTree(Project project, IElement element)
+    {
         TopComponent tc = WindowManager.getDefault().findTopComponent( "projectTabLogical_tc" );
         if (tc==null)
-            return false;
+            return null;
         
         ExplorerManager explorerManager =
-            ((ExplorerManager.Provider)tc).getExplorerManager();
+                ((ExplorerManager.Provider)tc).getExplorerManager();
         Node root = explorerManager.getRootContext();
         Children c = root.getChildren();
         Node[] projectNodes = c.getNodes(true);
@@ -178,22 +197,21 @@ public class ProjectUtil
             if (p==project)
             {
                 Node selectedNode = findNodeQuick(projectNodes[i],  element);
-		if (selectedNode == null) 
-		{
-		    selectedNode = findNode(projectNodes[i],  element);
-		}
-                selectNodeAsync(selectedNode);
-                return true;
+                if (selectedNode == null)
+                {
+                    selectedNode = findNode(projectNodes[i],  element);
+                }
+                return selectedNode;
             }
         }
-        return false;
+        return null;
     }
     
     
     public static AntProjectHelper getAntProjectHelper(UMLProject umlProject)
     {
         return (AntProjectHelper)((UMLProjectHelper)umlProject
-            .getLookup().lookup(UMLProjectHelper.class)).getAntProjectHelper();
+                .getLookup().lookup(UMLProjectHelper.class)).getAntProjectHelper();
     }
     
     public static String getTargetJavaProjectName(UMLProject umlProject)
@@ -201,25 +219,25 @@ public class ProjectUtil
         AntProjectHelper umlAntProjectHelper = getAntProjectHelper(umlProject);
         
         EditableProperties editableProperties =
-            umlAntProjectHelper.getProperties(
+                umlAntProjectHelper.getProperties(
                 AntProjectHelper.PROJECT_PROPERTIES_PATH);
         
         return (String)editableProperties
-            .getProperty(UMLProjectProperties.REFERENCED_JAVA_PROJECT);
+                .getProperty(UMLProjectProperties.REFERENCED_JAVA_PROJECT);
     }
     
     
     private static String getTargetJavaProjectName(IProject iProject)
     {
         return ProjectUtil.getTargetJavaProjectName((UMLProject)ProjectUtil
-            .findNetBeansProjectForModel(iProject));
+                .findNetBeansProjectForModel(iProject));
     }
     
     
     public static String getTargetJavaProjectName(IElement element)
     {
-        UMLProject umlProject = 
-            (UMLProject)ProjectUtil.findReferencingProject(element);
+        UMLProject umlProject =
+                (UMLProject)ProjectUtil.findReferencingProject(element);
         
         return ProjectUtil.getTargetJavaProjectName(umlProject);
     }
@@ -239,7 +257,7 @@ public class ProjectUtil
         String name = ProjectUtil.getTargetJavaProjectName(node);
         return  name == null || name.length() == 0 ? false : true;
     }
-
+    
     public static boolean hasTargetJavaProject(IProject umlProject)
     {
         String name = ProjectUtil.getTargetJavaProjectName(umlProject);
@@ -249,17 +267,17 @@ public class ProjectUtil
     
     public static Node findNode(Node root, IElement element)
     {
-
+        
         if (root.isLeaf())
             return null;
         
         Children children = root.getChildren();
-
+        
         Node[] nodes = children.getNodes(true);
         for (int j=0; j<nodes.length; j++)
         {
             IProjectTreeItem item = (IProjectTreeItem)nodes[j].
-                getCookie(IProjectTreeItem.class);
+                    getCookie(IProjectTreeItem.class);
             if (item != null)
             {
                 IElement modelElement = item.getModelElement();
@@ -270,12 +288,12 @@ public class ProjectUtil
                         // the unique diagram file name is used to determine
                         // if two diagram objects are same
                         if (item.getDiagram()!=null && item.getDescription().
-                            equals(((IDiagram)element).getFilename()))
+                                equals(((IDiagram)element).getFilename()))
                             return nodes[j];
                     }
                 }
                 if (modelElement!=null &&
-                    element.getXMIID().equals(modelElement.getXMIID()))
+                        element.getXMIID().equals(modelElement.getXMIID()))
                 {
                     if (nodes[j].getCookie(RelationshipCookie.class) != null)
                         continue;
@@ -288,40 +306,41 @@ public class ProjectUtil
             if (nodes[j].isLeaf())
                 continue;
             Node val = findNode(nodes[j],  element);
-            if (val!=null) {
+            if (val!=null)
+            {
                 return val;
-	    }
+            }
         }
         return null;
     }
     
-
+    
     private static Node findNodeQuick(Node root, IElement element)
     {
         if (root.isLeaf())
             return null;
-
-	if (element == null) 
-	{
-	    return null;
-	}
-
-	IElement owner = element.getOwner();
-	if (owner == null) 
-	{
-	    return findNode(root, element);
-	} 
-	else  
-	{
-	    Node ownerNode = findNodeQuick(root, owner);
-	    if (ownerNode != null) 
-	    {
-		return findNode(ownerNode, element);
-	    }
-	}	
-	return null;
+        
+        if (element == null)
+        {
+            return null;
+        }
+        
+        IElement owner = element.getOwner();
+        if (owner == null)
+        {
+            return findNode(root, element);
+        }
+        else
+        {
+            Node ownerNode = findNodeQuick(root, owner);
+            if (ownerNode != null)
+            {
+                return findNode(ownerNode, element);
+            }
+        }
+        return null;
     }
-	   
+    
     
     public static Project[] getSelectedProjects(Class projectClass)
     {
@@ -385,13 +404,13 @@ public class ProjectUtil
             {
                 // now check for Java sources
                 SourceGroup[] javaSrcGrps =
-                    srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+                        srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
                 if (javaSrcGrps.length > 0)
                 {
-					ClassPathProvider cpProvider = (ClassPathProvider)
-								p.getLookup().lookup(ClassPathProvider.class);
-					if (cpProvider!=null)
-						result.add(p);
+                    ClassPathProvider cpProvider = (ClassPathProvider)
+                            p.getLookup().lookup(ClassPathProvider.class);
+                    if (cpProvider!=null)
+                        result.add(p);
                 }
             }
         }
@@ -400,9 +419,9 @@ public class ProjectUtil
         return projects;
     }
     
-    public final static String DEFAULT_PACKAGE_DISPLAY_NAME = 
-        "<default package>"; // NOI18N
-
+    public final static String DEFAULT_PACKAGE_DISPLAY_NAME =
+            "<default package>"; // NOI18N
+    
     
     public static void selectInModel(Project proj, DataObject obj)
     {
@@ -423,7 +442,7 @@ public class ProjectUtil
         {
             resourceName = resourceName.substring(0, resourceName.indexOf("."));
             className = resourceName.substring(resourceName.lastIndexOf("/") + 1);
-
+            
             // cvc - CR 6409539
             // if class is in default package, the packageName has no slashes
             // and therefore, the substring call breaks
@@ -439,13 +458,13 @@ public class ProjectUtil
         
         StringTokenizer st = new StringTokenizer(packageName, "/");
         TopComponent tc = WindowManager.getDefault()
-            .findTopComponent("projectTabLogical_tc");
+                .findTopComponent("projectTabLogical_tc");
         
         if (tc==null)
             return ;
         
         ExplorerManager explorerManager =
-            ((ExplorerManager.Provider)tc).getExplorerManager();
+                ((ExplorerManager.Provider)tc).getExplorerManager();
         
         Node root = explorerManager.getRootContext();
         Children c = root.getChildren();
@@ -454,10 +473,10 @@ public class ProjectUtil
         for (int i=0; i<projectNodes.length; i++)
         {
             Project p = (Project) projectNodes[i]
-                .getLookup().lookup(Project.class);
+                    .getLookup().lookup(Project.class);
             
             Node selected = null;
-
+            
             if (p == proj)
             {
                 Node selectedNode = null;
@@ -501,13 +520,13 @@ public class ProjectUtil
             if (curNode.getCookie(ModelRootNodeCookie.class) != null)
             {
                 // cvc - CR 6409539
-                // if the class source is in the default package, the 
-                // findNodeByName doesn't know that Model root node 
+                // if the class source is in the default package, the
+                // findNodeByName doesn't know that Model root node
                 // is the default package
                 if (name.equals(DEFAULT_PACKAGE_DISPLAY_NAME))
                     return curNode;
                 
-                else 
+                else
                     return findNodeByName(curNode, name, isPackage);
             }
             
@@ -521,7 +540,7 @@ public class ProjectUtil
             if (isPackage)
             {
                 if (curNode.getName().equals(name) &&
-                    type.equals(AbstractModelElementNode.ELEMENT_TYPE_PACKAGE))
+                        type.equals(AbstractModelElementNode.ELEMENT_TYPE_PACKAGE))
                 {
                     return curNode;
                 }
@@ -530,8 +549,8 @@ public class ProjectUtil
             else
             {
                 if (curNode.getName().equals(name) &&
-                    (type.equals(AbstractModelElementNode.ELEMENT_TYPE_CLASS)) ||
-                    (type.equals(AbstractModelElementNode.ELEMENT_TYPE_INTERFACE)))
+                        (type.equals(AbstractModelElementNode.ELEMENT_TYPE_CLASS)) ||
+                        (type.equals(AbstractModelElementNode.ELEMENT_TYPE_INTERFACE)))
                 {
                     return nodes[j];
                 }
@@ -551,7 +570,7 @@ public class ProjectUtil
             return ;
         
         final ExplorerManager manager =
-            ((ExplorerManager.Provider)tc).getExplorerManager();
+                ((ExplorerManager.Provider)tc).getExplorerManager();
         tc.setCursor( Utilities.createProgressCursor( tc ) );
         tc.open();
         tc.requestActive();
@@ -582,7 +601,7 @@ public class ProjectUtil
                         else
                         {
                             StatusDisplayer.getDefault().setStatusText(
-                                NbBundle.getMessage( ProjectUtil.class,  "MSG_NodeNotFound" ));
+                                    NbBundle.getMessage( ProjectUtil.class,  "MSG_NodeNotFound" ));
                         }
                         tc.setCursor( null );
                     }
@@ -591,20 +610,20 @@ public class ProjectUtil
         } );
         
     }
-
+    
     public static String createUniqueProjectName(
-        File location, String baseName, boolean tryNoIndexFirst)
+            File location, String baseName, boolean tryNoIndexFirst)
     {
         String projectName = null;
-
+        
         if (baseName == null || baseName.length() == 0)
         {
             baseName = NbBundle.getMessage(
-                ProjectUtil.class, "TXT_UMLProject"); // NOI18N
+                    ProjectUtil.class, "TXT_UMLProject"); // NOI18N
         }
         
         int baseCount =
-            UMLProjectSettings.getDefault().getNewProjectCount() + 1;
+                UMLProjectSettings.getDefault().getNewProjectCount() + 1;
         
         if (tryNoIndexFirst)
             projectName = validFreeProjectName(location, baseName, -1);
@@ -612,7 +631,7 @@ public class ProjectUtil
         while (projectName == null)
         {
             projectName = validFreeProjectName(
-                location, baseName+"{0}", baseCount);
+                    location, baseName+"{0}", baseCount);
             
             baseCount++;
         }
@@ -621,25 +640,25 @@ public class ProjectUtil
     }
     
     private static String validFreeProjectName(
-        final File parentFolder, 
-        final String formatter, 
-        final int index)
+            final File parentFolder,
+            final String formatter,
+            final int index)
     {
         String name = "";
         
         if (index == -1)
             name = formatter;
-                
+        
         else
         {
             name = MessageFormat.format(
-                formatter, new Object[]{new Integer(index)});
+                    formatter, new Object[]{new Integer(index)});
         }
         
         File file = new File(parentFolder, name);
         return file.exists() ? null : name;
     }
-
+    
     
     public static class ProjectByDisplayNameComparator implements Comparator
     {

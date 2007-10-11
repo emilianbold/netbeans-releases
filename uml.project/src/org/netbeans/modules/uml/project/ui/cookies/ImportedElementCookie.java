@@ -40,84 +40,19 @@
  */
 
 
+package org.netbeans.modules.uml.project.ui.cookies;
 
-package org.netbeans.modules.uml.ui.swing.drawingarea;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
+import org.netbeans.modules.uml.core.metamodel.structure.IProject;
+import org.openide.nodes.Node;
 
 /**
- * A convience class to allow the method verifyDataDeletion on IDiagramEngine
- * to specify how to handle diagram interactions.  The user can cancel the
- * operation or affect the model.
  *
- * @author Trey Spiva
+ * @author Sheryl
  */
-public class DataVerificationResults
+public interface ImportedElementCookie extends Node.Cookie
 {
-   /** Specifies if the action was canceled by the user. */
-   private boolean m_CancelAction = false;
-
-   /** Specifies if the model element should be affected by the change. */
-   private boolean m_AffectModelElement = false;
-   private boolean m_RemoveFromImport = false;
-   
-   public DataVerificationResults()
-   {
-      
-   }
-   
-   public DataVerificationResults(boolean cancel, boolean affect)
-   {
-      setCancelAction(cancel);
-      setAffectModelElement(affect);
-   }
-   
-   /**
-    * Determines if the user canceled the action.
-    * 
-    * @return <code>true</code> if the user canceled the action.
-    */
-   public boolean isCancelAction()
-   {
-      return m_CancelAction;
-   }
-
-   /**
-    * Sets whether or not the user canceled the action.
-    * 
-    * @param b <code>true</code> if the user canceled the action.
-    */
-   public void setCancelAction(boolean b)
-   {
-      m_CancelAction = b;
-   }
-
-   /**
-    * Determines if the user want to change the data model.
-    * 
-    * @return <code>true</code> if the user wants the action to affect the model. 
-    */
-   public boolean isAffectModelElement()
-   {
-      return m_AffectModelElement;
-   }
-
-   /**
-    * Set whether or not the user want to change the data model.
-    * 
-    * @param b <code>true</code> if the user wants the action to affect the model. 
-    */
-   public void setAffectModelElement(boolean b)
-   {
-      m_AffectModelElement = b;
-   }
-   
-   public void setRemoveFromImport(boolean remove)
-   {
-       m_RemoveFromImport = remove;
-   }
-   
-   public boolean getRemoveFromImport()
-   {
-       return m_RemoveFromImport;
-   }
-
+    public IProject getReferencingProject();
+    public String getElementXMIID();
+    public void removeImportedElement();
 }

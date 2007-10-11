@@ -2530,5 +2530,41 @@ public class Project extends org.netbeans.modules.uml.core.metamodel.structure.M
         return retrieveElementCollection(dummy, "//UML:Package.elementImport/*", IElementImport.class);
     }
     
+    public void removePackageImport(IPackageImport elem)
+    {
+        IElement remEle = removeElement( elem, "//UML:Package.packageImport/*");
+    }
+    
+    
+    public void removeElementImport(IElement elem)
+    {
+        if (elem instanceof IPackage)
+        {
+            ETList<IPackageImport> imports = getPackageImports();
+            for (IPackageImport im: imports)
+            {
+                IPackage element = im.getImportedPackage();
+                if (elem.getXMIID().equals(element.getXMIID()))
+                {
+//                    UMLXMLManip.removeChild(this.getNode(), im);
+                    im.delete();
+                }
+            }
+        }
+        else
+        {
+            ETList<IElementImport> imports = getElementImports();
+            for (IElementImport im: imports)
+            {
+                IElement element = im.getImportedElement();
+
+                if (element!=null && elem.getXMIID().equals(element.getXMIID()))
+                {
+//                    UMLXMLManip.removeChild(this.getNode(), im);
+                    im.delete();
+                }
+            }
+        }
+    }
 
 }

@@ -50,10 +50,10 @@
  */
 
 package org.netbeans.modules.uml.project.ui.nodes;
+
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElementImport;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPackageImport;
-
 import org.netbeans.modules.uml.project.UMLProject;
 import org.netbeans.modules.uml.project.UMLProjectHelper;
 import org.netbeans.modules.uml.project.ui.customizer.ImportElementListener;
@@ -68,11 +68,11 @@ import org.openide.util.NbBundle;
  *
  * @author Administrator
  */
-public class ImportProjectRootNode extends AbstractNode 
-    implements ImportElementListener
+public class ImportProjectRootNode extends AbstractNode implements ImportElementListener
 {
+
     IProject project = null;
-    
+
     /** Creates a new instance of ImportProjectRootNode */
     public ImportProjectRootNode(UMLProjectHelper helper)
     {
@@ -80,66 +80,74 @@ public class ImportProjectRootNode extends AbstractNode
         this.project = helper.getProject();
         setIconBaseWithExtension(ImageUtil.IMAGE_FOLDER + "import-elements.png"); // NOI18N
     }
-    
+
     public String getDisplayName()
     {
-        return (String)NbBundle.getMessage(ImportProjectRootNode.class, "ImportedNode_Name"); // NOI18N
+        return (String) NbBundle.getMessage(ImportProjectRootNode.class, "ImportedNode_Name"); // NOI18N
     }
-    
+
     public String getName()
     {
         return this.getDisplayName();
     }
-    
     ////////////////////////////////////////////////////////////////////////////
     // ImportElementListener methods
-    
+
     public void elementImported(IProject project,
-        IElement element,
-        IElementImport importElement)
+            IElement element,
+            IElementImport importElement)
     {
-        ImportedProjectChildren children = (ImportedProjectChildren)getChildren();
+        ImportedProjectChildren children = (ImportedProjectChildren) getChildren();
         children.addNewImportedElement(project, element, importElement, true);
     }
-    
+
     public void packageImported(IProject project,
-        IElement element,
-        IPackageImport importElement)
+            IElement element,
+            IPackageImport importElement)
     {
-        ImportedProjectChildren children = (ImportedProjectChildren)getChildren();
+        ImportedProjectChildren children = (ImportedProjectChildren) getChildren();
         children.addNewImportedElement(project, element, importElement, true);
     }
-    
-    public void elementDeleted(IProject project, IElement element)
+
+    public void elementDeleted(IProject proj,
+            IElement element)
     {
-        this.project.removeElementImport(element);
-        ImportedProjectChildren children = (ImportedProjectChildren)getChildren();
-        children.removeImportElement(project, element);
+        IElement e = element;
+        IProject ownerProject = proj;
+        if (element instanceof IElementImport)
+        {
+            e = ((IElementImport) element).getImportedElement();
+        } else if (element instanceof IPackageImport)
+        {
+            e = ((IPackageImport) element).getImportedPackage();
+        }
+        ownerProject = e.getOwner() == null ? proj : e.getOwner().getProject();
+        ImportedProjectChildren children = (ImportedProjectChildren) getChildren();
+        children.removeImportElement(ownerProject, element);
     }
-    
+
     public boolean canCopy()
     {
         return false;
     }
-    
+
     public boolean canCut()
     {
         return false;
     }
-    
+
     public boolean canDestroy()
     {
         return false;
     }
-    
+
     public boolean canRename()
     {
         return false;
     }
-    
+
     public Action[] getActions(boolean context)
     {
-        return new Action[] {null};
+        return new Action[]{null};
     }
-    
 }

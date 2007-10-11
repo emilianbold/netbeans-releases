@@ -65,14 +65,19 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.ExternalFileManager;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IDirectedRelationship;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.UMLXMLManip;
 import org.netbeans.modules.uml.core.support.umlsupport.XMLManip;
+import org.netbeans.modules.uml.project.ProjectUtil;
+import org.netbeans.modules.uml.project.ui.cookies.ImportedElementCookie;
 import org.netbeans.modules.uml.resources.images.ImageUtil;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -83,7 +88,7 @@ public class ImportedProjectChildren extends Children.Keys //Children.Array
 {
     private UMLProjectHelper mHelper = null;
     private HashMap < Object, AbstractNode > mNodeMap = new HashMap < Object, AbstractNode >();
-    private HashMap <String, IProject> ownerMap = new HashMap();
+    private HashMap <String, IProject> ownerMap = new HashMap<String, IProject>();
     
     
     /** Creates a new instance of ImportedProjectChildren */
@@ -92,64 +97,87 @@ public class ImportedProjectChildren extends Children.Keys //Children.Array
         mHelper = helper;
     }
     
-    public void addNewImportedElement(IProject project,
-            IElement element,
-            IDirectedRelationship imported,
-            boolean refresh)
+    public void addNewImportedElement(final IProject project,
+            final IElement element,
+            final IDirectedRelationship imported,
+            final boolean refresh)
     {
-        ITreeElement node = null;
-        if (imported instanceof IElementImport)
-            node = new ImportedElementNode((IElementImport)imported);
-        else if (imported instanceof IPackageImport)
-            node = new PackageImportNode((IPackageImport)imported);
-        else
+        if (!(imported instanceof IElementImport) && !(imported instanceof IPackageImport))
             return;
-        
-        node.setElement(element);
-        
-        addImportNode(project, refresh, node);
+         
+        Project p = ProjectUtil.findNetBeansProjectForModel(project);
+        if (SwingUtilities.isEventDispatchThread())
+        {
+            addImportNode(project, refresh, element, imported);
+        }
+        else
+        {
+            try
+            {
+                SwingUtilities.invokeLater(new Runnable()
+                {
+                    public void run()
+                    {
+                        addImportNode(project, refresh, element, imported);
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                Exceptions.printStackTrace(ex);
+            }
+        }
     }
     
     
-    protected void addImportNode(final IProject project,
-            final boolean refresh,
-            final ITreeElement node)
-    {
+    protected void addImportNode(IProject project,
+            boolean refresh,
+            IElement element,
+            IElement elementImport)
+    {        
         // keep the logic for the moment to filter out duplicate elements, as UMLImportsUiSupport fires
-        // multiple events for one import, 
+        // multiple events for one import,
         // For some reason I am getting the event more than one time.  So, I have
         // to make sure that the node is only added to the collection once.
         Node projectNode = getOwningProject(project);
         
-        boolean foundOne = false;
+        boolean found = false;
         Children children = projectNode.getChildren();
         for(Node child : children.getNodes())
         {
-            if(node.equals(child) == true)
+            if(((ImportedElementNode)child).getElementXMIID().equals(element.getXMIID()))
             {
-                foundOne = true;
-                /*
-                children.remove(new Node[] {child});
-                children.add(new Node[] {(Node)node});
-                if (refresh)
-                    refreshKeys();
-                 */
+                found = true;
                 break;
             }
         }
-        
-        if(foundOne == false)
+        if (!found)
         {
+            Project p = ProjectUtil.findNetBeansProjectForModel(project);
+            Node orig = ProjectUtil.findNodeInProjectTree(p, element);
+            if (orig == null)
+            {
+                Logger.getLogger(ImportedProjectChildren.class.getName()).
+                        log(Level.WARNING,
+                        NbBundle.getMessage(ImportedProjectChildren.class,
+                        "MSG_InvalidImportedElement", element.getElementType(), 
+                        element.toString()));
+                return;
+            }
+            ImportedElementNode node = new ImportedElementNode(mHelper.getProject(), 
+                    orig, elementImport);
             Node[] nodes = { (Node)node };
+
             if(children != null)
             {
                 children.add(nodes);
-                if(refresh == true)
-                {
-                    refreshKeys();
-                }
+                refreshKeys();
+//                if(refresh == true)
+//                {
+//                    refreshKeys();
+//                }
             }
-        }     
+        }
     }
     
     public void removeImportElement(IProject project, IElement element)
@@ -165,11 +193,7 @@ public class ImportedProjectChildren extends Children.Keys //Children.Array
             IPackageImport imported = (IPackageImport)element;
             targetElement = imported.getImportedPackage();
         }
-        else
-        {
-            return;
-        }
-        
+       
         Node projectNode = mNodeMap.get(project);
         if (projectNode == null)
             return;
@@ -178,13 +202,14 @@ public class ImportedProjectChildren extends Children.Keys //Children.Array
         Node[] nodes = children.getNodes();
         for(int x = 0; x < nodes.length; x++)
         {
-            IElement elem = ((ITreeElement) nodes[x]).getElement();
-            if (targetElement.equals(elem))
+            ImportedElementCookie cookie = nodes[x].getCookie(ImportedElementCookie.class);
+            if (cookie != null)
             {
-                children.remove(new Node[] {nodes[x]});
-                if (children.getNodesCount()==0)
-                    mNodeMap.remove(project);
-                break;
+                if (cookie.getElementXMIID().equals(targetElement.getXMIID()))
+                {
+                    cookie.removeImportedElement();
+                    return;
+                }
             }
         }
     }
@@ -219,8 +244,8 @@ public class ImportedProjectChildren extends Children.Keys //Children.Array
                     if (p == null)
                     {
                         Logger.getLogger(ImportedProjectChildren.class.getName()).
-                                log(Level.WARNING, 
-                                NbBundle.getMessage(ImportedProjectChildren.class, 
+                                log(Level.WARNING,
+                                NbBundle.getMessage(ImportedProjectChildren.class,
                                 "MSG_InvalidOwner", ns.getElementType(), ns.toString()));
                         continue;
                     }
@@ -242,8 +267,8 @@ public class ImportedProjectChildren extends Children.Keys //Children.Array
             if (owner == null)
             {
                 Logger.getLogger(ImportedProjectChildren.class.getName()).
-                        log(Level.WARNING, 
-                        NbBundle.getMessage(ImportedProjectChildren.class, 
+                        log(Level.WARNING,
+                        NbBundle.getMessage(ImportedProjectChildren.class,
                         "MSG_InvalidOwner", elem.getElementType(), elem.toString()));
                 continue;
             }
@@ -251,7 +276,7 @@ public class ImportedProjectChildren extends Children.Keys //Children.Array
             addNewImportedElement(owner, elem, importedElement, false);
             
         }
-        refreshKeys();
+//        refreshKeys();
     }
     
     
@@ -308,6 +333,6 @@ public class ImportedProjectChildren extends Children.Keys //Children.Array
     
     protected void refreshKeys()
     {
-        setKeys(mNodeMap.keySet());
+       setKeys(mNodeMap.keySet());
     }
 }
