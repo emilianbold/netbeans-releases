@@ -1,6 +1,9 @@
-Name: Java EE 5 Javadoc
-Version: 5
-Description: Java EE 5 Javadoc
+Name: Java EE API Stripped version
+Version: 5.0
+Description: Stripped version of Java EE 5 API.
+License: CDDL-1.0
+Origin: http://java.sun.com/javaee
+Comment: Typically added on classpath of tests to resolve Java EE anotations.
 
 COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.0
 

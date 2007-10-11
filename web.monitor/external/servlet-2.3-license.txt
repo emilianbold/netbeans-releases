@@ -1,8 +1,11 @@
-Software: Java API for Servlets, Java API for JavaServer Pages
+Name: Java API for Servlets, Java API for JavaServer Pages
 Version: 2.3
 License: Apache-1.1
+OSR: 105464
+Description: Java API for Servlets, Java API for JavaServer Pages
+Origin: http://tomcat.apache.org
 
-        The Apache Software License, Version 1.1
+The Apache Software License, Version 1.1
 
 Copyright (c) 2000 The Apache Software Foundation.  All rights
 reserved.
@@ -53,7 +56,3 @@ This software consists of voluntary contributions made by many
 individuals on behalf of the Apache Software Foundation.  For more
 information on the Apache Software Foundation, please see
 <http://www.apache.org/>.
-
-Portions of this software are based upon public domain software
-originally written at the National Center for Supercomputing Applications,
-University of Illinois, Urbana-Champaign.
