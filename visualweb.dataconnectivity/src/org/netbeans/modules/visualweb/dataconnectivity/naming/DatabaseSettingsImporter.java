@@ -105,6 +105,7 @@ public class DatabaseSettingsImporter {
     private File         userCtxFile;
     private List <String[]>    dataSources;            
     List <DataSourceInfo> dataSourcesInfo;   
+    private List<File> driversList = new ArrayList<File>();
     
     private static ResourceBundle rb = ResourceBundle.getBundle("org.netbeans.modules.visualweb.dataconnectivity.naming.Bundle", // NOI18N
             Locale.getDefault());
@@ -162,7 +163,7 @@ public class DatabaseSettingsImporter {
     
     private File[] driversToRegister(String driversPath) {
         File driverDir = new File(driversPath);
-        
+       
         if (driverDir != null) {
             File[] drivers = driverDir.listFiles(
                     new FilenameFilter() {
@@ -170,7 +171,7 @@ public class DatabaseSettingsImporter {
                     return name.endsWith(".jar") || name.endsWith(".zip"); // NOI18N
                 }
             });
-            
+                        
             return drivers;
         } else {
             return null;
@@ -178,30 +179,43 @@ public class DatabaseSettingsImporter {
 
     }
     
+    private synchronized JarFile prepareJar(File driverJarFile) {
+        JarFile jarFile = null;
+        try {
+            jarFile = new JarFile(driverJarFile);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return jarFile;
+    }
+    
     private void registerDriver(File driverJar) {
         String[] drivers = (String[]) DriverListUtil.getDrivers().toArray(new String[DriverListUtil.getDrivers().size()]);
         
         try {
-            JarFile jf = new JarFile(driverJar);
-            
-            String drv;
-            Set drvs = DriverListUtil.getDrivers();
-            Iterator it = drvs.iterator();
-            while (it.hasNext()) {
-                drv = (String) it.next();
-                if (jf.getEntry(drv.replace('.', '/') + ".class") != null) {//NOI18N
-                    String driverName = DriverListUtil.getName(drv);
-                    if (DataSourceResolver.getInstance().findMatchingDriver(DriverListUtil.getDriver(driverName)) != null)
-                        break;
-                    JDBCDriver driver = JDBCDriver.create(driverName, driverName, drv, new URL[] {driverJar.toURI().toURL()});
-                    try {
-                        JDBCDriverManager.getDefault().addDriver(driver);
-                    } catch (DatabaseException e) {
-                        ErrorManager.getDefault().notify(e);
+            JarFile jf = prepareJar(driverJar);            
+            if (jf != null) {
+                String drv;
+                Set drvs = DriverListUtil.getDrivers();
+                Iterator it = drvs.iterator();
+                while (it.hasNext()) {
+                    drv = (String) it.next();
+                    if (jf.getEntry(drv.replace('.', '/') + ".class") != null) {
+                        //NOI18N
+                        String driverName = DriverListUtil.getName(drv);
+                        if (DataSourceResolver.getInstance().findMatchingDriver(DriverListUtil.getDriver(driverName)) != null) {
+                            break;
+                        }
+                        JDBCDriver driver = JDBCDriver.create(driverName, driverName, drv, new URL[]{driverJar.toURI().toURL()});
+                        try {
+                            JDBCDriverManager.getDefault().addDriver(driver);
+                        } catch (DatabaseException e) {
+                            ErrorManager.getDefault().notify(e);
+                        }
                     }
                 }
+                jf.close();
             }
-            jf.close();
             
         } catch (IOException ioe) {
             ErrorManager.getDefault().notify(ioe);
@@ -209,9 +223,12 @@ public class DatabaseSettingsImporter {
     }
     
     
-    private void registerDrivers(File[] driverFiles) {
+    private void registerDrivers(File[] driverFiles) {        
         for (File drv : driverFiles) {
-            registerDriver(drv);            
+            if (!driversList.contains(drv)) {
+                registerDriver(drv);
+                driversList.add(drv);
+            }
         }
     }
     
