@@ -207,8 +207,8 @@ public class HTMLLexerFormatter extends TagBasedLexerFormatter {
 	return false;
     }
     
-    @Override protected boolean processLanguageBlockOffsets(BaseDocument doc) {
-        return doc.getProperty(HTML_FORMATTER_ACTS_ON_TOP_LEVEL) == null;
+    @Override protected boolean isTopLevelLanguage(BaseDocument doc) {
+        return super.isTopLevelLanguage(doc) || doc.getProperty(HTML_FORMATTER_ACTS_ON_TOP_LEVEL) != null;
     }
 
     protected LanguagePath supportedLanguagePath() {
