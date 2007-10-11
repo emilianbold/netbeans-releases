@@ -63,6 +63,7 @@ import org.netbeans.modules.ruby.rubyproject.RakeSupport;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.NbUtilities;
+import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.rubyproject.GotoTest;
 import org.netbeans.modules.ruby.rubyproject.RSpecSupport;
 import org.netbeans.modules.ruby.rubyproject.TestNotifier;
@@ -246,6 +247,9 @@ public class RailsActionProvider implements ActionProvider {
                 file = location.getFileObject();
                 // Save the test file too
                 saveFile(file);
+            } else if (RubyUtils.isRhtmlFile(file)) {
+                // Can't run RHTML files if there's no corresponding test
+                return;
             }
 
             boolean isDebug = COMMAND_DEBUG_TEST_SINGLE.equals(command);

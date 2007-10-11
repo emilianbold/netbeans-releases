@@ -102,9 +102,9 @@ public class Generator {
         List<Generator> list = new ArrayList<Generator>();
         list.add(CONTROLLER);
         list.add(INTEGRATION_TEST);
-        list.add(MAILER);
-        list.add(MIGRATION);
         list.add(MODEL);
+        list.add(MIGRATION);
+        list.add(MAILER);
         list.add(PLUGIN);
         list.add(SCAFFOLD);
         list.add(SESSION_MIGRATION);

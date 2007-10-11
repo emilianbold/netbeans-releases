@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.ruby.rubyproject;
 
-import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.EnumSet;
@@ -48,15 +47,11 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.swing.AbstractAction;
-import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.JTextComponent;
 
 import org.netbeans.api.gsf.CancellableTask;
 import org.netbeans.api.gsf.CompilationInfo;
 import org.netbeans.api.gsf.DeclarationFinder.DeclarationLocation;
-import org.netbeans.api.gsf.EditorAction;
 import org.netbeans.api.gsf.Index.SearchScope;
 import org.netbeans.api.gsf.NameKind;
 import org.netbeans.api.gsf.SourceModel;
@@ -67,9 +62,11 @@ import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.ruby.AstUtilities;
-import org.netbeans.modules.ruby.NbUtilities;
 import org.netbeans.modules.ruby.RubyIndex;
+import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.elements.IndexedClass;
+import org.netbeans.spi.gototest.TestLocator;
+import org.netbeans.spi.gototest.TestLocator.LocationResult;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -84,7 +81,7 @@ import org.openide.util.NbBundle;
  *
  * @author Tor Norbye
  */
-public class GotoTest extends AbstractAction implements EditorAction {
+public class GotoTest implements TestLocator {
     private static final String FILE = "(.+)"; // NOI18N
     private static final String EXT = "(.+)"; // NOI18N
     private final String[] ZENTEST_PATTERNS =
@@ -116,22 +113,6 @@ public class GotoTest extends AbstractAction implements EditorAction {
         };
 
     public GotoTest() {
-        super(NbBundle.getMessage(GotoTest.class, "menu-goto-test")); // NOI18N
-        putValue("PopupMenuText", // NOI18N
-            NbBundle.getBundle(getShortDescriptionBundleClass()).getString(getName()));
-    }
-
-    public String getName() {
-        return "ruby-goto-test"; // NOI18N
-    }
-
-    public Class getShortDescriptionBundleClass() {
-        return GotoTest.class;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return true;
     }
 
     private boolean isZenTestInstalled() {
@@ -318,14 +299,6 @@ public class GotoTest extends AbstractAction implements EditorAction {
         return null;
     }
 
-    public void actionPerformed(ActionEvent ev) {
-        JEditorPane pane = NbUtilities.getOpenPane();
-
-        if (pane != null) {
-            actionPerformed(ev, pane);
-        }
-    }
-    
     private DeclarationLocation find(FileObject fileObject, int caretOffset, boolean findTest) {
         FileObject matching = findMatchingFile(fileObject, findTest);
 
@@ -378,50 +351,7 @@ public class GotoTest extends AbstractAction implements EditorAction {
     public DeclarationLocation findTested(FileObject fileObject, int caretOffset) {
         return find(fileObject, caretOffset, false);
     }
-
-    /**
-     * Find the "opposite" file from the given file; if it's a test, find the
-     * tested file and if it's a tested file, find the test.
-     * @param fileObject The file we want to find the opposite file for
-     * @param caretOffset The current caret offset, or -1 if not known. The caret offset
-     *    can be used to look into the file and see if we're inside a class, and if so
-     *    look for a class that is named say Test+name or name+Test.
-     * @return The declaration location for the opposite file, or {@link DeclarationLocation.NONE} if
-     *   not found.
-     */
-    public DeclarationLocation findOpposite(FileObject fileObject, int caretOffset) {
-        DeclarationLocation location = findTest(fileObject, caretOffset);
-
-        if (location == DeclarationLocation.NONE) {
-            location = findTested(fileObject, caretOffset);
-        }
-
-        return location;
-    }
     
-    public void actionPerformed(ActionEvent evt, JTextComponent target) {
-        FileObject fo = NbUtilities.findFileObject(target);
-
-        if (fo != null) {
-            int caretOffset = -1;
-            if (target.getCaret() != null) {
-                caretOffset = target.getCaret().getDot();
-            }
-            
-            DeclarationLocation location = findOpposite(fo, caretOffset);
-
-            if (location != DeclarationLocation.NONE) {
-                NbUtilities.open(location.getFileObject(), location.getOffset(), null);
-            } else {
-                notFound(target);
-            }
-        }
-    }
-
-    private void notFound(JTextComponent target) {
-        Utilities.setStatusBoldText(target, NbBundle.getMessage(GotoTest.class, "OppositeNotFound"));
-    }
-
     private DeclarationLocation findTestPair(FileObject fo, final int offset, final boolean findTest) {
         SourceModel js = SourceModelFactory.getInstance().getModel(fo);
 
@@ -567,5 +497,38 @@ public class GotoTest extends AbstractAction implements EditorAction {
         }
 
         return DeclarationLocation.NONE;
+    }
+
+    public boolean appliesTo(FileObject fo) {
+        return RubyUtils.isRubyFile(fo) || RubyUtils.isRhtmlFile(fo);
+    }
+
+    public boolean asynchronous() {
+        return false;
+    }
+
+    public LocationResult findOpposite(FileObject fileObject, int caretOffset) {
+        DeclarationLocation location = findTest(fileObject, caretOffset);
+
+        if (location == DeclarationLocation.NONE) {
+            location = findTested(fileObject, caretOffset);
+        }
+
+        if (location != DeclarationLocation.NONE) {
+            return new LocationResult(location.getFileObject(), location.getOffset());
+        } else {
+            return new LocationResult(NbBundle.getMessage(GotoTest.class, "OppositeNotFound"));
+        }
+    }
+
+    public void findOpposite(FileObject fo, int caretOffset, LocationListener callback) {
+        throw new UnsupportedOperationException("GotoTest is synchronous");
+    }
+
+    public FileType getFileType(FileObject fo) {
+        String name = fo.getName();
+        return name.indexOf("_test") != -1 || name.indexOf("test_") != -1 || name.indexOf("_spec") != -1 ? // NOI18N
+            TestLocator.FileType.TEST :
+            TestLocator.FileType.TESTED;
     }
 }

@@ -269,7 +269,8 @@ made subject to such option by the copyright holder.
                 <folder name="Popup">
                     <folder name="goto">
                         <attr name="position" intvalue="500"/>
-                        <file name="ruby-goto-test">
+                        <file name="org-netbeans-modules-gototest-GotoOppositeAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/UnitTests/org-netbeans-modules-gototest-GotoOppositeAction.instance"/>
                             <attr name="position" intvalue="200"/>
                         </file>
                     </folder>
@@ -284,26 +285,29 @@ made subject to such option by the copyright holder.
                 </folder>
             </folder>
         </folder>
-        <!--
         <folder name="application">
             <folder name="x-httpd-eruby">
                 <folder name="Popup">
-                    <attr name="format/org-netbeans-modules-project-ui-RunSingle.shadow" boolvalue="true"/>
-                    <attr name="SeparatorAfterFormat.instance/org-netbeans-modules-project-ui-RunSingle.shadow" boolvalue="true"/>
+                    <folder name="goto">
+                        <attr name="position" intvalue="500"/>
+                        <file name="org-netbeans-modules-gototest-GotoOppositeAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/UnitTests/org-netbeans-modules-gototest-GotoOppositeAction.instance"/>
+                            <attr name="position" intvalue="200"/>
+                        </file>
+                    </folder>
                     <file name="org-netbeans-modules-project-ui-RunSingle.shadow">
                         <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunSingle.instance"/>
+                        <attr name="position" intvalue="800"/>
                     </file>
-                    <folder name="goto">
-                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.rubyproject.Bundle"/>
-                        <file name="org-netbeans-modules-ruby-rubyproject-GotoTest.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-ruby-rubyproject-GotoTest.instance"/>
-                        </file>
-                        <attr name="org-netbeans-modules-ruby-rubyproject-GotoTest.shadow/goto" boolvalue="true"/>
-                    </folder>
-                </folder>
+                    <!--
+                    <file name="org-netbeans-modules-project-ui-TestSingle.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-TestSingle.instance"/>
+                        <attr name="position" intvalue="805"/>
+                    </file>
+                    -->
+               </folder>
             </folder>
         </folder>
-        -->
     </folder>
                 
     <!-- I have to implement #actionsContext in GsfDataLoader first

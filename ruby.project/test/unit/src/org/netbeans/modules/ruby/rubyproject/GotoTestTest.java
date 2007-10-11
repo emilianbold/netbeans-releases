@@ -43,6 +43,7 @@ package org.netbeans.modules.ruby.rubyproject;
 
 import java.io.File;
 import org.netbeans.api.gsf.DeclarationFinder.DeclarationLocation;
+import org.netbeans.spi.gototest.TestLocator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -234,12 +235,12 @@ public class GotoTestTest extends RubyProjectTestBase {
             loc = gotoTest.findTested(test, -1);
             assertEquals(source, loc.getFileObject());
             
-            loc = gotoTest.findOpposite(test, -1);
-            assertEquals(source, loc.getFileObject());
-            assertEquals(-1, loc.getOffset());
-            loc = gotoTest.findOpposite(source, -1);
-            assertEquals(test, loc.getFileObject());
-            assertEquals(-1, loc.getOffset());
+            TestLocator.LocationResult res = gotoTest.findOpposite(test, -1);
+            assertEquals(source, res.getFileObject());
+            assertEquals(-1, res.getOffset());
+            res = gotoTest.findOpposite(source, -1);
+            assertEquals(test, res.getFileObject());
+            assertEquals(-1, res.getOffset());
         }
     }
     
