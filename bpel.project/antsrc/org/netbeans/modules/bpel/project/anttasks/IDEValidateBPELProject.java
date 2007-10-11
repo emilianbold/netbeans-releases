@@ -312,10 +312,10 @@ public class IDEValidateBPELProject extends Task {
           model = IDEBPELCatalogModel.getDefault().getBPELModel(bpel);
         }
         catch (Exception ex) {
-          throw new RuntimeException("Error while trying to create BPEL Model ",ex);
+          throw new RuntimeException("Error while trying to create BPEL Model", e);
         }
         Validation validation = new Validation();
-        validation.validate((org.netbeans.modules.xml.xam.Model)model,  ValidationType.COMPLETE);
+        validation.validate((org.netbeans.modules.xml.xam.Model)model, ValidationType.COMPLETE);
         Collection col = validation.getValidationResult();
         boolean isError = false;
         StringBuffer buffer = new StringBuffer();
