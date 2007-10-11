@@ -398,7 +398,11 @@ public class ReflowParagraphAction extends AbstractAction implements EditorActio
                             line = doc.getText(textBegin, oldCaretPosition - textBegin);
                         }
                         if (oldCaretPosition < textBegin) {
-                            line = CARET_MARKER + line;
+                            if (line.startsWith("#")) {
+                                line = "#" + CARET_MARKER + line.substring(1);
+                            } else {
+                                line = CARET_MARKER + line;
+                            }
                         } else if (oldCaretPosition > textEnd) {
                             line = line + CARET_MARKER;
                         } else {
@@ -555,7 +559,7 @@ public class ReflowParagraphAction extends AbstractAction implements EditorActio
                 sb.append("\n");
 
                 return;
-            } else if (text.startsWith("=") || text.startsWith("#---")) {
+            } else if (text.startsWith("=") || text.startsWith("#---") || text.startsWith("---")) {
                 flush();
                 finishSection();
                 startComment();

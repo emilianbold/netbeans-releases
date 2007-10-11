@@ -81,6 +81,31 @@ public class ReflowParagraphActionTest extends RubyTestBase {
         assertEquals(before, after);
     }
 
+    private void formatParagraphFile(String file, String caretLine) throws Exception {
+        FileObject fo = getTestFile(file);
+        assertNotNull(fo);
+        BaseDocument doc = getDocument(fo);
+        assertNotNull(doc);
+        String before = doc.getText(0, doc.getLength());
+
+        int caretDelta = caretLine.indexOf('^');
+        assertTrue(caretDelta != -1);
+        caretLine = caretLine.substring(0, caretDelta) + caretLine.substring(caretDelta + 1);
+        int lineOffset = before.indexOf(caretLine);
+        assertTrue(lineOffset != -1);
+        int caretOffset = lineOffset+caretDelta;
+
+        
+        ReflowParagraphAction action = new ReflowParagraphAction();
+        JTextArea ta = new JTextArea(doc);
+        Caret caret = ta.getCaret();
+        caret.setDot(caretOffset);
+        action.actionPerformed(ta);
+        
+        String after = doc.getText(0, doc.getLength());
+        assertDescriptionMatches(file, after, false, ".formatted");
+    }
+
     public void testScanfFormatting() throws Exception {
         formatParagraph("testfiles/scanf.comment", "Matches an opti^onally signed decimal integer");
     }
@@ -95,5 +120,13 @@ public class ReflowParagraphActionTest extends RubyTestBase {
     
     public void testHttpFormatting2() throws Exception {
         formatParagraph("testfiles/http.comment", "#^ Example #4: More generic GET+prin");
+    }
+
+    public void testParagraph() throws Exception {
+        formatParagraphFile("testfiles/paragraph.comment", " ^  # foo");
+    }
+
+    public void testSeparator() throws Exception {
+        formatParagraphFile("testfiles/separator.comment", "This is s^ome text");
     }
 }
