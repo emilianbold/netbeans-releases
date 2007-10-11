@@ -256,6 +256,7 @@ made subject to such option by the copyright holder.
    <p>
     This file should be registered in the <code>Databases/Connections</code> folder 
     of the module layer.  
+    </p>
     <p>
     The password element is optional, but if it is included, 
     its value must be the Base64 encoding of the UTF-8 representation of the 
