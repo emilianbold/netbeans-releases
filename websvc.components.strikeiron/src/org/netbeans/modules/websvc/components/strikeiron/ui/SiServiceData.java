@@ -64,6 +64,14 @@ public class SiServiceData extends ServiceData {
         return packageName;
     }
 
+    public String getPurchaseLink() {
+        return service.getPurchaseLink();
+    }
+
+    public String getVersion() {
+        return service.getVersion();
+    }
+
     public void setPackageName(String packageName) {
         if (DEFAUL_PACKAGE_NAME.equals(packageName)) {
             this.packageName = null;

@@ -73,9 +73,8 @@ public class ServiceTableModel extends DefaultTableModel {
     private static final String DEFAULT_PASSWORD = "SearchSun.01";
     private static final String DEFAULT_URL = "http://ws.strikeiron.com/Searchsunsi01.StrikeIron/MarketplaceSearch?WSDL";
     
-    private static final int COLUMN_WS_NAME = 0;
-    private static final int COLUMN_SELECT = 2;
-    private static final int COLUMN_PROVIDER = 1;
+    static final int COLUMN_WS_NAME = 0;
+    static final int COLUMN_SELECT = 1;
     
     private String wsdlLocation;
     private String userId = "Sun_Search@strikeiron.com";
@@ -170,7 +169,6 @@ public class ServiceTableModel extends DefaultTableModel {
                 callSearch(searchTerm, sortBy);
             }
         });
-        searchTask.run();
     }
     
     public void cancelSearch() {
@@ -268,7 +266,7 @@ public class ServiceTableModel extends DefaultTableModel {
 
     @Override
     public int getColumnCount() {
-        return 3;
+        return 2;
     }
 
     @Override
@@ -286,10 +284,8 @@ public class ServiceTableModel extends DefaultTableModel {
             return NbBundle.getMessage(ServiceTableModel.class, "LBL_ServiceName");
         case COLUMN_SELECT:
             return NbBundle.getMessage(ServiceTableModel.class, "LBL_Select");
-        case COLUMN_PROVIDER:
-            return NbBundle.getMessage(ServiceTableModel.class, "LBL_ProviderName");
         }
-        throw new IllegalArgumentException("column > 2"); //NOI18N
+        throw new IllegalArgumentException("column > 1"); //NOI18N
     }
 
     public boolean isSearching() {
@@ -319,8 +315,6 @@ public class ServiceTableModel extends DefaultTableModel {
             return mps.getServiceName();
         case COLUMN_SELECT:
             return selectedRows.contains(row);
-        case COLUMN_PROVIDER:
-            return mps.getProviderName();
         default:
             throw new IllegalArgumentException("column = "+column); //NOI18N
         }

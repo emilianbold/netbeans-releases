@@ -28,18 +28,25 @@
 
 package org.netbeans.modules.websvc.components.strikeiron.ui;
 
-import com.strikeiron.search.MarketPlaceService;
 import java.awt.Container;
 import java.awt.Font;
+import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.JViewport;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkEvent.EventType;
+import javax.swing.event.HyperlinkListener;
+import javax.swing.text.Utilities;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
 import org.netbeans.modules.websvc.components.ServiceData;
+import org.openide.awt.HtmlBrowser;
 
 /**
  *
@@ -50,8 +57,7 @@ public class ServiceDetailPanel extends JTextPane {
     private HeaderPanel header;
     private JLabel title;
     private JTextField tfPackageName;
-    private ServiceTableModel model;
-    private ServiceData current;
+    private ServiceData currentData;
 
     public ServiceDetailPanel() {
         initHtmlKit();
@@ -75,12 +81,26 @@ public class ServiceDetailPanel extends JTextPane {
         }
         
         setEditorKit(htmlkit);
+        
+        addHyperlinkListener(new HyperlinkListener() {
+            public void hyperlinkUpdate(HyperlinkEvent hlevt) {
+                if (EventType.ACTIVATED == hlevt.getEventType()) {
+                    assert hlevt.getURL() != null;
+                    showURL(hlevt.getURL());
+                }
+            }
+        });
     }
     
     @Override
     public void addNotify() {
         super.addNotify();
         getScrollPane();
+    }
+
+    @Override
+    public boolean isEditable() {
+        return false;
     }
     
     JScrollPane getScrollPane() {
@@ -97,44 +117,55 @@ public class ServiceDetailPanel extends JTextPane {
     }
     
     void setCurrentService(ServiceData service) {
-        if (current != null) {
-            current.setPackageName(tfPackageName.getText());
+        if (currentData != null) {
+            currentData.setPackageName(tfPackageName.getText());
         }
-        current = service;
-        if (current != null) {
+        currentData = service;
+        if (currentData != null) {
             getScrollPane().setColumnHeaderView(header);
-            tfPackageName.setText(current.getPackageName());
-            setTitle(current.getServiceName());
+            tfPackageName.setText(currentData.getPackageName());
+            setTitle(currentData.getServiceName());
+            setDetails();
         }
     }
     
     ServiceData getCurrentService() {
-        return current;
+        return currentData;
     }
     
     String getPackageName() {
         return tfPackageName.getText();
     }
     
-    ServiceTableModel getModel() {
-        if (model == null) {
-            Container p = getScrollPane().getParent();
-            while (p != null) {
-                if (p instanceof FindServicelDialog) {
-                    model = ((FindServicelDialog)p).getModel();
-                    break;
-                }
-                p = p.getParent();
-            }
-        }
-        return model;
-    }
-    
     public void setTitle(String value) {
-        //getScrollPane().setColumnHeaderView(value != null ? header : null);
-        //getScrollPane().setCorner(JScrollPane.UPPER_RIGHT_CORNER, value != null ? rightCornerHeader : null);
         if (value != null) {                            
             title.setText("<html><h3>"+value+"</h3></html>");
+        }
+    }
+
+    private void setDetails() {
+        String details = "";
+        if (currentData != null) {
+            details += "<b>Version: </b>"+currentData.getVersion()+"<br>";
+            details += "<b>Provider: </b>"+currentData.getProviderName()+"<br>";
+            details += "<h3>Description: </h3>"+currentData.getDescription()+"<br>";
+            details += "<br>";
+            details += "<b>WSDL Location: </b><br><a href=\""+currentData.getWsdlURL()+"\">"+currentData.getWsdlURL()+"</a><br>";
+            details += "<br>";
+            details += "<b>Info Page: </b><br><a href=\""+currentData.getInfoPage()+"\">"+currentData.getInfoPage()+"</a><br>";
+            details += "<br>";
+            details += "<b>Purchase Link: </b><br><a href=\""+currentData.getPurchaseLink()+"\">"+currentData.getPurchaseLink()+"</a><br>";
+        }
+        setText(details);
+    }
+
+    public static void showURL (URL href) {
+        HtmlBrowser.URLDisplayer displayer = HtmlBrowser.URLDisplayer.getDefault ();
+        assert displayer != null : "HtmlBrowser.URLDisplayer found.";
+        if (displayer != null) {
+            displayer.showURL (href);
+        } else {
+            Logger.global.log (Level.INFO, "No URLDisplayer found.");
         }
     }
     

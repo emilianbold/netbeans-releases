@@ -21,12 +21,14 @@ package org.netbeans.modules.websvc.components;
  * @author nam
  */
 public abstract class ServiceData {
+    public abstract String getVersion();
     public abstract String getWsdlURL();
     public abstract Object getRawService();
     public abstract String getServiceName();
     public abstract String getProviderName();
     public abstract String getDescription();
     public abstract String getInfoPage();
+    public abstract String getPurchaseLink();
     public abstract String getPackageName();
     public abstract void setPackageName(String value);
 }
