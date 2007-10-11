@@ -96,7 +96,9 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                 
                 logFile = new File(LogManager.getLogFile().getParentFile(),name);
             }
-            logFile = null;
+            if(!SystemUtils.isWindows()) {
+                logFile = null;
+            }
             String [] commands = null;
             ExecutionResults results = null;
             progress.setDetail(PROGRESS_DETAIL_RUNNING_JDK_INSTALLER);
