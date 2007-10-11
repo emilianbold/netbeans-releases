@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU General
  * Public License Version 2 only ("GPL") or the Common Development and Distribution
  * License("CDDL") (collectively, the "License"). You may not use this file except in
@@ -16,13 +16,13 @@
  * accompanied this code. If applicable, add the following below the License Header,
  * with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * Contributor(s):
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL or only the
  * GPL Version 2, indicate your decision by adding "[Contributor] elects to include
  * this software in this distribution under the [CDDL or GPL Version 2] license." If
@@ -101,7 +101,7 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
         setProperty(ERROR_WRONG_VERSION_NEWER_PROPERTY,
                 DEFAULT_ERROR_WRONG_VERSION_NEWER);
         setProperty(ERROR_WRONG_VENDOR_PROPERTY,
-                DEFAULT_ERROR_WRONG_VENDOR);        
+                DEFAULT_ERROR_WRONG_VENDOR);
         setProperty(ERROR_UNKNOWN_PROPERTY,
                 DEFAULT_ERROR_UNKNOWN);
         setProperty(ERROR_NOTHING_FOUND_PROPERTY,
@@ -291,19 +291,23 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
                     getProperty(ERROR_NOT_VALID_PATH_PROPERTY), path);
         }
         
+        
         if (!file.exists()) {
-            return StringUtils.format(
-                    getProperty(ERROR_PATH_NOT_EXISTS_PROPERTY), path);
-        }
-        
-        if (!JavaUtils.isJavaHome(file)) {
-            return StringUtils.format(
-                    getProperty(ERROR_NOT_JAVAHOME_PROPERTY), path);
-        }
-        
-        if (!JavaUtils.isJdk(file)) {
-            return StringUtils.format(
-                    getProperty(ERROR_NOT_JDK_PROPERTY), path);
+            if(JavaUtils.getInfo(file)==null) { 
+                // JDK location does not exist and is not in the list of installable JDKs
+                return StringUtils.format(
+                        getProperty(ERROR_PATH_NOT_EXISTS_PROPERTY), path);
+            }
+        } else {            
+            if (!JavaUtils.isJavaHome(file)) {
+                return StringUtils.format(
+                        getProperty(ERROR_NOT_JAVAHOME_PROPERTY), path);
+            }
+            
+            if (!JavaUtils.isJdk(file)) {
+                return StringUtils.format(
+                        getProperty(ERROR_NOT_JDK_PROPERTY), path);                
+            }
         }
         
         Version version = JavaUtils.getVersion(file);
@@ -343,13 +347,13 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
                     vendor,
                     vendorAllowed);
         }
-    
+        
         return null;
     }
     
     public void setLocation(final File location) {
         lastSelectedJava = location;
-        SearchForJavaAction.addJavaLocation(location);        
+        SearchForJavaAction.addJavaLocation(location);
         getWizard().setProperty(JDK_LOCATION_PROPERTY, location.getAbsolutePath());
     }
     
@@ -368,10 +372,10 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
                     for (Product jdk: Registry.getInstance().getProducts(JDK_PRODUCT_UID)) {
                         if (jdk.getStatus() == Status.TO_BE_INSTALLED &&
                                 !SearchForJavaAction.getJavaLocations().
-                                contains(jdk.getInstallationLocation())) {                            
+                                contains(jdk.getInstallationLocation())) {
                             SearchForJavaAction.addJavaLocation(
-                                    jdk.getInstallationLocation(), 
-                                    jdk.getVersion(), 
+                                    jdk.getInstallationLocation(),
+                                    jdk.getVersion(),
                                     SUN_MICROSYSTEMS_VENDOR);
                             sort = true;
                         }
@@ -385,8 +389,8 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
             SearchForJavaAction.sortJavaLocations();
         }
     }
-    /////////////////////////////////////////////////////////////////////////////////
-    // Constants
+/////////////////////////////////////////////////////////////////////////////////
+// Constants
     public static final String JDK_LOCATION_PROPERTY =
             "jdk.location"; // NOI18N
     
