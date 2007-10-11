@@ -1112,7 +1112,58 @@ jarsigner.storepass=${jarsigner.storepass}
                 value=""/>
         </ant>
         -->
-        
+
+        <!--
+        <echo message="BUILDING JDK5 ========================================"/>
+        <ant dir="${nbi.netbeans.dir}/infra/build/products/jdk" antfile="build_jdk5.xml" target="release-all">
+            <property 
+                name="basedir" 
+                value="${nbi.netbeans.dir}/infra/build/products/jdk"/>
+            <property 
+                name="environment.properties" 
+                value="${environment.properties}"/>
+            
+            <property
+                name="dist.dir"
+                value="${output.dir}/components"/>
+            
+            <property
+                name="release.parent.uid"
+                value=""/>
+            <property
+                name="release.parent.version"
+                value=""/>
+            <property
+                name="release.parent.platforms"
+                value=""/>
+        </ant>
+        <echo message="BUILDING JDK6 ========================================"/>
+        <ant dir="${nbi.netbeans.dir}/infra/build/products/jdk" antfile="build_jdk6.xml" target="release-all">
+            <property 
+                name="basedir" 
+                value="${nbi.netbeans.dir}/infra/build/products/jdk"/>
+            <property 
+                name="environment.properties" 
+                value="${environment.properties}"/>
+            
+            <property
+                name="dist.dir"
+                value="${output.dir}/components"/>
+            
+            <property
+                name="release.parent.uid"
+                value=""/>
+            <property
+                name="release.parent.version"
+                value=""/>
+            <property
+                name="release.parent.platforms"
+                value=""/>
+        </ant>
+	-->
+
+
+
         <export-registry 
             root="${output.dir}/registry-temp" 
             destination="${output.dir}/registry" 
