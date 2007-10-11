@@ -16,22 +16,22 @@ with each other so that the values of those properties are synchronized. For exa
     you can bind the <tt>value</tt> property of a JSlider component to the value of  
     an object in a table so that the value in the table cell is updated as the user 
     adjusts the slider.</p>
-    <!--TODO finish topic-->
+    <p>The property for which you open the Bind dialog box serves as the <i>target</i> of the 
+binding. In the Bind dialog box, you specify the binding <i>source</i> and configure 
+the binding.</p>
     <p>The dialog box opens when you do one of the following things:</p>
     <ul>
         <li>Right-click a component in the GUI Builder and choose a property from 
         the Bind submenu.</li>
         <li>Click the ellipsis (...) button for a property in the property 
-    sheet of a bean.</li><!--TODO icon for ellipsis button-->
+    sheet of a bean.</li>
 </ul> 
-<p>The property for which you open the Bind dialog box serves as the <i>target</i> of the 
-binding. In the Bind dialog box, you specify the binding <i>source</i> and configure 
-the binding.</p>
 <p>The Advanced tab of the dialog box contains the following fields:</p>
 <ul>
     <li><b>Name. </b>Enables you to create a name for the binding, 
-which you can use to refer to binding from other parts of your application. 
-<!--TODO clarify --></li>
+which gives you more flexibility for managing your bindings. The name is added to 
+the constructor of the binding and can be referenced with the binding's <tt>getName()</tt> 
+method.</li>
 <li><b>Update Mode. </b> Specifies the way that the properties are kept synchronized. 
 The possible values are: 
 <ul>
@@ -43,36 +43,57 @@ The possible values are:
 the source.</li>        
             <li><b>Read from source once (read once).</b>  The target is only updated 
             when the target and source are initially bound.</li>        
-    </ul></li>    
-<li><b>Ignore Adjusting. </b> If this checkbox is selected, any changes made to one 
+    </ul></li> 
+<li><b>Update Source When </b>(available only to the <tt>text</tt> property of JTextField and 
+    JTextArea components). Enables you to select the frequency with which 
+the properties are synchronized.
+</li>     
+    <li><b>Ignore Adjusting</b> (available to the <tt>value</tt> property of JSlider; 
+    to the <tt>selectedElement</tt> property of JTable and JList; 
+and to the <tt>selectedElements</tt> property of JTable and JList). 
+If this checkbox is selected, any changes made to one 
 property are not propagated to the other property until the user is finished making the 
 change. For example, when the application's user drags a slider, the value 
 of the property to which the slider's <tt>value</tt> property is bound is only 
 updated once the user releases the mouse button.
-<p>This option is available to the <tt>value</tt> property of JSlider, 
-    to the <tt>selectedElement</tt> property of JTable and JList components, 
-and to the <tt>selectedElements</tt> property of JTable and JList components.</p></li>    
-<li><b>Converter. </b> If your binding involves properties with different data 
-types, you can specify a class that converts values between the types. 
+</li> 
+<li><b>Converter.</b> If your binding involves properties with different data 
+types, you can specify code that converts values between the types. 
 The beans binding library handles many commonly needed conversions, but you might 
 need to provide your own converters for other combinations of property types. 
-Such converters should extend the <tt>org.jdesktop.beansbinding.Converter</tt> 
+Such converters need to extend the <tt>org.jdesktop.beansbinding.Converter</tt> 
 class.
+<p>The Converter drop-down list is populated with any converters that have 
+<a href="../gui_addcomponent.html">added as beans</a> 
+to your form. You can also add the conversion code directly by 
+clicking the ellipsis (...) button, and selecting Custom Code from the 
+Select Converter Property Using drop-down list.</p>
 </li>    
-<li><b>Validator. </b> Enables you to specify a class to validate a change in the target 
+<li><b>Validator. </b> Enables you to specify code to validate a change in the target 
 property value before propagating that change back to the source property. Such 
-validators should extend the 
-<tt>org.jdesktop.beansbinding.Validator</tt> class.</li>
-<li><b>Null Source Value. </b> </li>   
-<li><b>Unreadable Source Value. </b> </li>    
+a validator needs to extend the 
+<tt>org.jdesktop.beansbinding.Validator</tt> class.
+<p>The Validator drop-down list is populated with any validators that have 
+<a href="../gui_addcomponent.html">added as beans</a> 
+to your form. You can also add the validation code directly by 
+clicking the ellipsis (...) button, and selecting Custom Code from the 
+Select Validator Property Using drop-down list.</p></li>
+<li><b>Null Source Value. </b> Enables you to specify a different value to use if 
+the source property has a <tt>null</tt> value when the binding is attempted. 
+This field corresponds with the <tt>setSourceNullValue()</tt> method 
+    of the <tt>org.jdesktop.beansbinding.Binding</tt> class.</li>     
+    <li><b>Unreadable Source Value. </b> Enables you to specify a different value to use if 
+the binding expression can not be resolved when the binding is attempted. 
+This field corresponds with the <tt>setSourceUnreadableValue()</tt> method 
+    of the <tt>org.jdesktop.beansbinding.Binding</tt> class.</li>    
 </ul>
-
 <ul class="note">
-<li>You can access the Javadoc documentation for the Converter and Validator classes 
+<li>To better understand the classes and methods mentioned above, you can 
+access the beans binding Javadoc documentation directly 
 from the IDE. Choose Help &gt; Javadoc References &gt; Beans Binding. In the browser 
 window that opens, click the <tt>org.jdesktop.beansbinding</tt> link to access 
 documentation for those classes.</li>
-</ul>
+        </ul>
 
         <dl>
             <dt><a name="seealso">See Also</a></dt>

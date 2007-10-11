@@ -16,17 +16,17 @@ with each other so that the values of those properties are synchronized. For exa
     you can bind the <tt>value</tt> property of a JSlider component to the value of  
     an object in a table so that the value in the table cell is updated as the user 
     adjusts the slider.</p>
-    
+<p>The property for which you open the Bind dialog box serves as the <i>target</i> of the 
+binding. In the Bind dialog box, you specify the binding <i>source</i> and configure 
+the binding.</p>    
     <p>The dialog box opens when you do one of the following things:</p>
     <ul>
         <li>Right-click a component in the GUI Builder and choose a property from 
         the Bind submenu.</li>
         <li>Click the ellipsis (...) button for a property in the property 
-    sheet of a bean.</li><!--TODO icon for ellipsis button-->
+    sheet of a bean.</li>
 </ul> 
-<p>The property for which you open the Bind dialog box serves as the <i>target</i> of the 
-binding. In the Bind dialog box, you specify the binding <i>source</i> and configure 
-the binding.</p>
+
 <p>The Binding tab of the dialog box contains a combination of the following fields:</p>
 <ul>
     <!--TODO explain target/source -->
@@ -46,6 +46,12 @@ be possible with the base set of properties for some components.
 <p>The expressions in this dialog box use Expression Language syntax.</p>
 <p>Some bindings do not require a binding expression.</p>
     <!--TODO link to EL topic--></li>   
+       <li><b>Display Expression </b>(only for <tt>elements</tt> property of 
+    JList components). Similar to the Binding Expression field, this property enables you to 
+    determine what is displayed for the user in the JList.
+        <p>This field corresponds to the <tt>JListBinding.DetailBinding</tt> 
+    class.</p>
+    </li>
     <li><b>Import Data to Form </b>(only for <tt>elements</tt> property of 
     JTable, JList, and JComboBox components). Enables you to select a database 
     table for which to generate an entity class to which you can bind 
