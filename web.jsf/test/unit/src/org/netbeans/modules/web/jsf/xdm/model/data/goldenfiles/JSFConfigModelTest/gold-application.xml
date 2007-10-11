@@ -19,6 +19,18 @@
             <supported-locale>en</supported-locale>
             <supported-locale>jn</supported-locale>
         </locale-config>
+        <resource-bundle>
+            <description>
+                This is a test resource bundle.
+            </description>
+            <display-name>Test Resource Bundle</display-name>
+            <base-name>org.test.TestMessages</base-name>
+            <var>testMessages</var>
+        </resource-bundle>
+        <resource-bundle>
+            <base-name>org.test.Messages</base-name>
+            <var>msg</var>
+        </resource-bundle>
     </application>
     <application>
         <view-handler>a.b.c.Handler1</view-handler>
@@ -29,6 +41,10 @@
             <supported-locale>hr</supported-locale>
             <supported-locale>en</supported-locale>
         </locale-config>
+        <resource-bundle>
+            <base-name>org.test.Messages</base-name>
+            <var>czech</var>
+        </resource-bundle>
     </application>
 </faces-config>
 

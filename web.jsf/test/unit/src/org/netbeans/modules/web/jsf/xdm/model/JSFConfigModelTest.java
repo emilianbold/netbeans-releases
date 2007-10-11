@@ -413,18 +413,31 @@ public class JSFConfigModelTest extends NbTestCase {
         assertEquals("Suported locale ", "cz", supportedLocales.get(0).getLocale());
         assertEquals("Suported locale ", "jn", supportedLocales.get(1).getLocale());
         
+        List<ResourceBundle> resourceBundles = applications.get(0).getResourceBundles();
+        assertEquals("Number of resource-bundle ", 2, resourceBundles.size());
+        ResourceBundle resourceBundle = resourceBundles.get(0);
+        assertEquals("Description of resource-bundle ", "This is a test resource bundle.", resourceBundle.getDescriptions().get(0).getValue().trim());
+        assertEquals("Display name of resource-bundle ", "Test Resource Bundle", resourceBundle.getDisplayNames().get(0).getValue());
+        assertEquals("Base name of resource-bundle ", "org.test.TestMessages", resourceBundle.getBaseName());
+        assertEquals("Var of resource-bundle ", "test", resourceBundle.getVar());
+        resourceBundle = resourceBundles.get(1);
+        assertEquals("Base name of resource-bundle ", "org.test.Messages", resourceBundle.getBaseName());
+        assertEquals("Var of resource-bundle ", "msg", resourceBundle.getVar());
+        
         events.clear();
         
         model.startTransaction();
         viewHandlers.get(0).setFullyQualifiedClassType("a.b.c.Handler");
         locale.getDefaultLocale().setLocale("cz");
         supportedLocales.get(0).setLocale("en");
+        resourceBundles.get(0).setVar("testMessages");
         model.endTransaction();
         model.sync();
         
         checkEvent(ViewHandler.VIEW_HANDLER, "org.test.ViewHandler", "a.b.c.Handler");
         checkEvent(LocaleConfig.DEFAULT_LOCALE, "en", "cz");
         checkEvent(LocaleConfig.SUPPORTED_LOCALE, "cz", "en");
+        checkEvent(ResourceBundle.VAR, "test", "testMessages");
         
         assertEquals("Name of handler ", "a.b.c.Handler", viewHandlers.get(0).getFullyQualifiedClassType());
         
@@ -450,9 +463,15 @@ public class JSFConfigModelTest extends NbTestCase {
         newLocale.getSupportedLocales().get(0).setLocale("hr");
         newApplication.addLocaleConfig(newLocale);
         
+        ResourceBundle newResourceBundle = model.getFactory().createResourceBundle();
+        newResourceBundle.setVar("czech");
+        newResourceBundle.setBaseName("org.test.Messages");
+        
+        newApplication.addResourceBundle(0, newResourceBundle);
         model.endTransaction();
         model.sync();
         
+        //Util.dumpToStream(((AbstractDocumentModel)model).getBaseDocument(), System.out);
         assertFile(dumpModelToFile(model, "test-application.xml"), getGoldenFile("gold-application.xml"));
     }
     

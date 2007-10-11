@@ -21,6 +21,18 @@
             <supported-locale>cz</supported-locale>
             <supported-locale>jn</supported-locale>
         </locale-config>
+        <resource-bundle>
+            <description>
+                This is a test resource bundle.
+            </description>
+            <display-name>Test Resource Bundle</display-name>
+            <base-name>org.test.TestMessages</base-name>
+            <var>test</var>
+        </resource-bundle>
+        <resource-bundle>
+            <base-name>org.test.Messages</base-name>
+            <var>msg</var>
+        </resource-bundle>
     </application>
 </faces-config>
 

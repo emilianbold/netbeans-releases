@@ -76,6 +76,7 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
 
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
@@ -344,6 +345,55 @@ public class Util {
             }
         }
         return new File[0];
+    }
+    
+    /**
+     * Returns true if the specified classpath contains a class of the given name,
+     * false otherwise.
+     * 
+     * @param classpath consists of jar urls and folder urls containing classes
+     * @param className the name of the class
+     * 
+     * @return true if the specified classpath contains a class of the given name,
+     *         false otherwise.
+     * 
+     * @throws IOException if an I/O error has occurred
+     * 
+     * @since 1.15
+     */
+    public static boolean containsClass(List<URL> classPath, String className) throws IOException {
+        Parameters.notNull("classpath", classPath); // NOI18N
+        Parameters.notNull("className", className); // NOI18N
+        
+        List<File> diskFiles = new ArrayList<File>();
+        for (URL url : classPath) {
+            URL archiveURL = FileUtil.getArchiveFile(url);
+            
+            if (archiveURL != null) {
+                url = archiveURL;
+            }
+            
+            if ("nbinst".equals(url.getProtocol())) { // NOI18N
+                // try to get a file: URL for the nbinst: URL
+                FileObject fo = URLMapper.findFileObject(url);
+                if (fo != null) {
+                    URL localURL = URLMapper.findURL(fo, URLMapper.EXTERNAL);
+                    if (localURL != null) {
+                        url = localURL;
+                    }
+                }
+            }
+            
+            FileObject fo = URLMapper.findFileObject(url);
+            if (fo != null) {
+                File diskFile = FileUtil.toFile(fo);
+                if (diskFile != null) {
+                    diskFiles.add(diskFile);
+                }
+            }
+        }
+        
+        return containsClass(diskFiles, className);
     }
     
     /**

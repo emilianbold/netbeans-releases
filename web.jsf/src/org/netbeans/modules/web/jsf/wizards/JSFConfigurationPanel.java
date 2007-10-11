@@ -173,6 +173,7 @@ public class JSFConfigurationPanel extends WebModuleExtender {
     
     public void setNewLibraryName(String version){
         this.newLibraryName = version;
+        fireChangeEvent();
     }
 
     public File getInstallFolder(){
@@ -181,6 +182,7 @@ public class JSFConfigurationPanel extends WebModuleExtender {
     
     public void setInstallFolder(File folder){
         installedFolder = folder;
+        fireChangeEvent();
     }
 
     public LibraryType getLibraryType(){
@@ -197,6 +199,7 @@ public class JSFConfigurationPanel extends WebModuleExtender {
     
     protected void setLibrary(Library library){
         this.jsfCoreLibrary = library;
+        fireChangeEvent();
     }
 
 }

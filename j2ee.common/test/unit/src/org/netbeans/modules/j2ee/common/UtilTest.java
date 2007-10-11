@@ -43,11 +43,15 @@ package org.netbeans.modules.j2ee.common;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 import org.netbeans.junit.Manager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -73,13 +77,27 @@ public class UtilTest extends NbTestCase {
             new File(dataDir, "testcp/shared/classes"), 
         };
         
+        List<URL> urlClasspath1 = new LinkedList<URL>();
+        urlClasspath1.add(FileUtil.getArchiveRoot(classpath1[0].toURL()));
+        urlClasspath1.add(FileUtil.getArchiveRoot(classpath1[1].toURL()));
+        
+        List<URL> urlClasspath2 = new LinkedList<URL>();
+        urlClasspath2.add(FileUtil.getArchiveRoot(classpath2[0].toURL()));
+        urlClasspath2.add(FileUtil.getArchiveRoot(classpath2[1].toURL()));
+        urlClasspath2.add(FileUtil.getArchiveRoot(classpath2[2].toURL()));
+        
+        
         assertFalse(Util.containsClass(Arrays.asList(classpath1), "com.mysql.Driver"));
         assertFalse(Util.containsClass(Arrays.asList(classpath2), "com.mysql.Driver"));
+        assertFalse(Util.containsClass(urlClasspath1, "com.mysql.Driver"));
+        assertFalse(Util.containsClass(urlClasspath2, "com.mysql.Driver"));
         
         // the driver is in the jar file
         assertTrue(Util.containsClass(Arrays.asList(classpath1), "org.netbeans.test.db.driver.TestDriver"));
+        assertTrue(Util.containsClass(urlClasspath1, "org.netbeans.test.db.driver.TestDriver"));
         // the driver is among the classes
         assertTrue(Util.containsClass(Arrays.asList(classpath2), "org.netbeans.test.db.driver.TestDriver"));
+        assertTrue(Util.containsClass(urlClasspath2, "org.netbeans.test.db.driver.TestDriver"));
     } 
     
     public void testGetJ2eeSpecificationLabel() {

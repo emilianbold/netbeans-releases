@@ -49,7 +49,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.math.BigInteger;
+import java.net.URL;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -66,6 +68,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileLock;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -102,12 +105,12 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
         JSFConfigurationPanel.LibraryType libraryType = panel.getLibraryType();
         if (libraryType == JSFConfigurationPanel.LibraryType.NEW) {
             // create new jsf library
-            String libraryVersion = panel.getNewLibraryName();
+            String libraryName = panel.getNewLibraryName();
             File installFolder = panel.getInstallFolder();
-            if (installFolder != null && libraryVersion != null) {
+            if (installFolder != null && libraryName != null) {
                 try {
-                    JSFUtils.createJSFUserLibrary2(installFolder, libraryVersion);
-                    jsfLibrary = JSFUtils.getJSFLibrary(libraryVersion);
+                    JSFUtils.createJSFUserLibrary(installFolder, libraryName);
+                    jsfLibrary = LibraryManager.getDefault().getLibrary(libraryName);
                 } catch (IOException exception) {
                     LOGGER.log(Level.WARNING, "Exception during extending an web project", exception); //NOI18N
                 }
@@ -116,18 +119,18 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             if (libraryType == JSFConfigurationPanel.LibraryType.USED) {
                 //use a selected library
                 jsfLibrary = panel.getLibrary();
+                // if the selected library is a default one, add also JSTL library
                 if (jsfLibrary.getName().equals(JSFUtils.DEFAULT_JSF_1_2_NAME) 
                         || jsfLibrary.getName().equals(JSFUtils.DEFAULT_JSF_1_1_NAME)) {
                     jstlLibrary = LibraryManager.getDefault().getLibrary(JSFUtils.DEFAULT_JSTL_1_1_NAME);
                 }
             }
         }
-
+        
         try {
             FileObject fileObject = webModule.getDocumentBase();
             FileObject[] javaSources = webModule.getJavaSources();
             if (jsfLibrary != null  && javaSources.length > 0) {
-                
                 Library[] libraries;
                 if (jstlLibrary != null) {
                     libraries = new Library[]{jsfLibrary, jstlLibrary};
@@ -140,8 +143,17 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                 ProjectClassPathModifier.addLibraries(libraries, javaSources[0], ClassPath.COMPILE);
             }
             
-            ClassPath cp = ClassPath.getClassPath(fileObject, ClassPath.COMPILE);
-            boolean isMyFaces = cp.findResource("org/apache/myfaces/webapp/StartupServletContextListener.class") != null; //NOI18N
+            boolean isMyFaces;
+            if (jsfLibrary != null) {
+                // find out whether the added library is myfaces jsf implementation
+                List<URL> content = jsfLibrary.getContent("classpath"); //NOI18N
+                isMyFaces = Util.containsClass(content, JSFUtils.MYFACES_SPAECIFIC_CLASS); 
+            } else {
+                // find out whether the target server has myfaces jsf implementation on the classpath
+                ClassPath cp = ClassPath.getClassPath(fileObject, ClassPath.COMPILE);
+                isMyFaces = cp.findResource(JSFUtils.MYFACES_SPAECIFIC_CLASS.replace('.', '/') + ".class") != null; //NOI18N
+            }            
+            
             FileSystem fileSystem = webModule.getWebInf().getFileSystem();
             fileSystem.runAtomicAction(new CreateFacesConfig(webModule, isMyFaces));
             result.add(webModule.getDocumentBase().getFileObject("welcomeJSF", "jsp")); //NOI18N
