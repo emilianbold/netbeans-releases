@@ -1,7 +1,7 @@
 Name: JUnit 4.1
 Version: 4.1
 OSR: 6529
-License: CDL-1.0
+License: CPL-1.0
 Description: JUnit harness runtime
 Origin: http://www.junit.org/
 
