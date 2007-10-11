@@ -271,14 +271,14 @@ public class AppserverJBIMgmtController {
         if (instanceHost.equals("localhost")) { // NOI18N
             instanceHost = getHostName();
             isLocalHost = true;
-        }
+        } 
         
         try {            
             ObjectName objectName = new ObjectName(HOST_MBEAN_NAME);
             
             String host = (String) mBeanServerConnection.getAttribute(objectName, "hosts-current");  // NOI18N
-            if (host.toLowerCase().startsWith(instanceHost.toLowerCase()) ||
-                    instanceHost.toLowerCase().startsWith(host.toLowerCase())) {    // FIXME: domain name
+            if (InetAddress.getByName(instanceHost).getCanonicalHostName().equals(
+                    InetAddress.getByName(host).getCanonicalHostName())) {
                 objectName = new ObjectName(HOST_ASADMIN_MBEAN_NAME);
                 String appBase = (String) mBeanServerConnection.getAttribute(objectName, "appBase");    // NOI18N
                                 
