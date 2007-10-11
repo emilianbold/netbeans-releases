@@ -114,14 +114,11 @@ public abstract class BaseFileObj extends FileObject {
 
     static String getNameExt(final File file) {
         String retVal = (file.getParentFile() == null) ? file.getAbsolutePath() : file.getName();
-        if (retVal.endsWith(String.valueOf(UNC_PREFIX)) || retVal.endsWith(PATH_SEPARATOR)) {//NOI18N
-            assert (file.getParentFile() == null) : 
-                (file.getAbsolutePath()  + " exists: " + file.exists());//NOI18N
+        if (retVal.endsWith(PATH_SEPARATOR)) {//NOI18N
             final boolean isPermittedToStripSlash = !(file.getParentFile() == null && new FileInfo(file).isUNCFolder());
             if (isPermittedToStripSlash) {
                 retVal = retVal.substring(0, retVal.length() - 1);
             }
-
         }
         return retVal;
     }
