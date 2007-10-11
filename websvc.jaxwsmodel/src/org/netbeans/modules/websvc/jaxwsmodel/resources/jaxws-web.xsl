@@ -64,9 +64,9 @@ made subject to such option by the copyright holder.
                     <target name="wsgen-init" depends="init, -do-compile">
                         <mkdir dir="${{build.generated.dir}}/wsgen/service"/>
                         <mkdir dir="${{build.generated.dir}}/wsgen/binaries"/>
-                        <mkdir dir="${{build.classes.dir.real}}"/>
+                        <mkdir dir="${{build.classes.dir}}"/>
                         <taskdef name="wsgen" classname="com.sun.tools.ws.ant.WsGen">
-                            <classpath path="${{java.home}}/../lib/tools.jar:${{build.classes.dir.real}}:${{j2ee.platform.wsgen.classpath}}:${{javac.classpath}}"/>
+                            <classpath path="${{java.home}}/../lib/tools.jar:${{build.classes.dir}}:${{j2ee.platform.wsgen.classpath}}:${{javac.classpath}}"/>
                         </taskdef>
                     </target>
                 </xsl:if>
@@ -85,7 +85,7 @@ made subject to such option by the copyright holder.
                                 genwsdl="true"
                                 sei="{$seiclass}"
                             >   
-                                <classpath path="${{java.home}}/../lib/tools.jar:${{build.classes.dir.real}}:${{j2ee.platform.wsgen.classpath}}:${{javac.classpath}}"/>
+                                <classpath path="${{java.home}}/../lib/tools.jar:${{build.classes.dir}}:${{j2ee.platform.wsgen.classpath}}:${{javac.classpath}}"/>
                                 <jvmarg value="-Djava.endorsed.dirs=${{jaxws.endorsed.dir}}"/>
                             </wsgen>
                         </target>
@@ -99,7 +99,7 @@ made subject to such option by the copyright holder.
                                 <xsl:text>wsgen-</xsl:text><xsl:value-of select="@name"/>
                             </xsl:for-each>
                         </xsl:attribute>
-                        <webproject2:javac srcdir="${{build.generated.dir}}/wsgen/service" classpath="${{j2ee.platform.wsimport.classpath}}:${{javac.classpath}}" destdir="${{build.classes.dir.real}}" javac.compilerargs.jaxws="-Djava.endorsed.dirs='${{jaxws.endorsed.dir}}'"/>
+                        <webproject2:javac srcdir="${{build.generated.dir}}/wsgen/service" classpath="${{j2ee.platform.wsimport.classpath}}:${{javac.classpath}}" destdir="${{build.classes.dir}}" javac.compilerargs.jaxws="-Djava.endorsed.dirs='${{jaxws.endorsed.dir}}'"/>
                     </target>
                 </xsl:if>
             </xsl:if>
@@ -170,7 +170,7 @@ made subject to such option by the copyright holder.
                         <xsl:with-param name="wsdlUrlActual" select="$wsdl_url_actual"/>
                         <xsl:with-param name="Catalog" select="$catalog"/>  
                     </xsl:call-template>                       
-                    <copy todir="${{build.classes.dir.real}}">
+                    <copy todir="${{build.classes.dir}}">
                         <fileset dir="${{build.generated.dir}}/wsimport/binaries" includes="**/*.xml"/>
                     </copy>
                 </target>
@@ -242,7 +242,7 @@ made subject to such option by the copyright holder.
                     </xsl:attribute>
                 </target>
                 <target name="wsimport-client-compile" depends="-pre-pre-compile">
-                    <webproject2:javac srcdir="${{build.generated.dir}}/wsimport/client" classpath="${{j2ee.platform.wsimport.classpath}}:${{javac.classpath}}" destdir="${{build.classes.dir.real}}" javac.compilerargs.jaxws="-Djava.endorsed.dirs='${{jaxws.endorsed.dir}}'"/>
+                    <webproject2:javac srcdir="${{build.generated.dir}}/wsimport/client" classpath="${{j2ee.platform.wsimport.classpath}}:${{javac.classpath}}" destdir="${{build.classes.dir}}" javac.compilerargs.jaxws="-Djava.endorsed.dirs='${{jaxws.endorsed.dir}}'"/>
                 </target>
             </xsl:if>
             
@@ -262,7 +262,7 @@ made subject to such option by the copyright holder.
                     </xsl:attribute>
                 </target>
                 <target name="wsimport-service-compile" depends="-pre-pre-compile">
-                    <webproject2:javac srcdir="${{build.generated.dir}}/wsimport/service" classpath="${{j2ee.platform.wsimport.classpath}}:${{javac.classpath}}" destdir="${{build.classes.dir.real}}" javac.compilerargs.jaxws="-Djava.endorsed.dirs='${{jaxws.endorsed.dir}}'"/>
+                    <webproject2:javac srcdir="${{build.generated.dir}}/wsimport/service" classpath="${{j2ee.platform.wsimport.classpath}}:${{javac.classpath}}" destdir="${{build.classes.dir}}" javac.compilerargs.jaxws="-Djava.endorsed.dirs='${{jaxws.endorsed.dir}}'"/>
                 </target>
             </xsl:if>
             <!-- END: wsimport-client-generate and wsimport-client-compile targets -->
