@@ -581,9 +581,12 @@ public abstract class DocumentBox extends ContainerBox {
         if (box instanceof ContainerBox) {
             parentBox = (ContainerBox)box;
         } else {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                    new IllegalStateException("There was expected ContainerBox for parent element=" + parentElement // NOI18N
-                    + ", but it is box=" + box)); // NOI18N
+            // XXX #118387 Only when non-null report issue, if null it means it is added to top (html).
+            if (box != null) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                        new IllegalStateException("There was expected ContainerBox for parent element=" + parentElement // NOI18N
+                        + ", but it is box=" + box)); // NOI18N
+            }
             parentBox = null;
         }
 
