@@ -1490,7 +1490,77 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="sjsam" version="5.0.3.${glassfish.milestone.number}.${sjsam.build.number}"/>
             -->
         </create-bundle>
-
+        
+	<!-- JavaSE + JDK5 bundles --> 
+	<!--       
+        <create-bundle root="${output.dir}/registry-temp" 
+                       platform="windows" 
+                       target="${output.dir}/bundles/jdk-1_5_0_13-${nb.files.prefix}-${build.number}-javase-windows.exe">
+            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
+            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
+	    <component uid="jdk" version="1.5.0.13.5"/>
+	    <bundleProperty name="${welcome.type}" value="javase"/>
+        </create-bundle>
+        <create-bundle root="${output.dir}/registry-temp" 
+                       platform="linux" 
+                       target="${output.dir}/bundles/jdk-1_5_0_13-${nb.files.prefix}-${build.number}-javase-linux.sh">
+            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
+            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
+	    <component uid="jdk" version="1.5.0.13.5"/>
+	    <bundleProperty name="${welcome.type}" value="javase"/>
+        </create-bundle>
+        <create-bundle root="${output.dir}/registry-temp" 
+                       platform="solaris-x86" 
+                       target="${output.dir}/bundles/jdk-1_5_0_13-${nb.files.prefix}-${build.number}-javase-solaris-x86.sh">
+            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
+            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
+	    <component uid="jdk" version="1.5.0.13.5"/>
+	    <bundleProperty name="${welcome.type}" value="javase"/>
+        </create-bundle>
+        <create-bundle root="${output.dir}/registry-temp" 
+                       platform="solaris-sparc" 
+                       target="${output.dir}/bundles/jdk-1_5_0_13-${nb.files.prefix}-${build.number}-javase-solaris-sparc.sh">
+            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
+            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
+	    <component uid="jdk" version="1.5.0.13.5"/>
+	    <bundleProperty name="${welcome.type}" value="javase"/>
+        </create-bundle>
+        -->
+        <!-- JavaSE + JDK6 bundles -->
+	<!--        
+        <create-bundle root="${output.dir}/registry-temp" 
+                       platform="windows" 
+                       target="${output.dir}/bundles/jdk6-u3-${nb.files.prefix}-${build.number}-javase-windows.exe">
+            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
+            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
+	    <component uid="jdk" version="1.6.0.3.5"/>
+	    <bundleProperty name="${welcome.type}" value="javase"/>
+        </create-bundle>
+        <create-bundle root="${output.dir}/registry-temp" 
+                       platform="linux" 
+                       target="${output.dir}/bundles/jdk6-u3-${nb.files.prefix}-${build.number}-javase-linux.sh">
+            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
+            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
+	    <component uid="jdk" version="1.6.0.3.5"/>
+	    <bundleProperty name="${welcome.type}" value="javase"/>
+        </create-bundle>
+        <create-bundle root="${output.dir}/registry-temp" 
+                       platform="solaris-x86" 
+                       target="${output.dir}/bundles/jdk6-u3-${nb.files.prefix}-${build.number}-javase-solaris-x86.sh">
+            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
+            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
+	    <component uid="jdk" version="1.6.0.3.5"/>
+	    <bundleProperty name="${welcome.type}" value="javase"/>
+        </create-bundle>
+        <create-bundle root="${output.dir}/registry-temp" 
+                       platform="solaris-sparc" 
+                       target="${output.dir}/bundles/jdk6-u3-${nb.files.prefix}-${build.number}-javase-solaris-sparc.sh">
+            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
+            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
+	    <component uid="jdk" version="1.6.0.3.5"/>
+	    <bundleProperty name="${welcome.type}" value="javase"/>
+        </create-bundle>
+        -->
         <!-- Java Tools Bundle installer -->
 	<!--
         <create-bundle root="${output.dir}/registry-temp" 
