@@ -656,6 +656,8 @@ public final class DBMetaData {
             }
 
             final ResultSet rs = connection.getMetaData().getTables(catalog, schemaPattern, tablePattern, tableTypes);
+            // modified for 
+            //final ResultSet rs = connection.getMetaData().getTables(null, null, null, null);
 
             final Vector v = new Vector();
             String[][] tables = null; // array of table structures: Name, Catalog, Schema

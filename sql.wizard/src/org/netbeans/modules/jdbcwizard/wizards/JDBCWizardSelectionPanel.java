@@ -312,7 +312,7 @@ public class JDBCWizardSelectionPanel extends javax.swing.JPanel implements Wiza
                 this.dbtype = DBMetaData.getDBType(this.selectedConnection.getJDBCConnection());
                 this.dbmodel = new DatabaseModelImpl(this.selectedConnection.getDisplayName(), def);
     
-    		    final String[][] tableList = DBMetaData.getTablesOnly("", this.selectedConnection.getSchema(), "", false,connection);
+    		    final String[][] tableList = DBMetaData.getTablesAndViews("", this.selectedConnection.getSchema(), "", true,connection);
     		    if ("ORACLE".equalsIgnoreCase(this.dbtype) && DBMetaData.getDatabaseMajorVersion(connection) >= 10) { // NOI18N
                     recycleBinTables = DBMetaData.getOracleRecycleBinTables(connection);
                 } else {
@@ -504,7 +504,7 @@ public class JDBCWizardSelectionPanel extends javax.swing.JPanel implements Wiza
 	public DBTable populateDBTable(String tableName){
 		final Connection connection = this.selectedConnection.getJDBCConnection();
 		try{
-		 final String[][] tableList = DBMetaData.getTablesOnly("", "", "", false,connection);
+		 final String[][] tableList = DBMetaData.getTablesAndViews("", "", "", true,connection);
             DBTable ffTable = null;
             String[] currTable = null;
             if (tableList != null) {
