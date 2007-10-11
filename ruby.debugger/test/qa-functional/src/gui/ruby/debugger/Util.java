@@ -40,6 +40,7 @@
  */
 package gui.ruby.debugger;
 
+import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 import java.io.File;
 import java.io.IOException;
@@ -70,7 +71,15 @@ public final class Util {
 
     static void waitForDebuggingActions() {
         Action a = new Action("Run|Step Over", null);
-        while (!a.isEnabled());
+        while (!a.isEnabled()) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+                Thread.interrupted();
+                throw new RuntimeException(ex);
+            }
+        }
     }
     
     static String detectNativeRuby() {
