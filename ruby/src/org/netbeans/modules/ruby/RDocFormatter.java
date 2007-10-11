@@ -297,9 +297,9 @@ class RDocFormatter {
             appendTokenized(text);
 
             return;
-        } else if (text.startsWith("#---")) { // NOI18N
-                                              // Generate a separator
-                                              // See if the line contains only -'s
+        } else if (text.startsWith("#---") || (text.startsWith("---"))) { // NOI18N
+            // Generate a separator
+            // See if the line contains only -'s
 
             int i = 1;
             int n = text.length();
@@ -384,7 +384,12 @@ class RDocFormatter {
                 if ((t.id() == RubyCommentTokenId.COMMENT_TEXT) ||
                         (t.id() == RubyCommentTokenId.COMMENT_TODO)) {
                     try {
-                        sb.append(XMLUtil.toElementContent(t.text().toString()));
+                        String s = t.text().toString();
+                        s = XMLUtil.toElementContent(s);
+                        if (s.indexOf("---") != -1) {
+                            s = s.replace("---", "&#8212;");
+                        }
+                        sb.append(s);
                     } catch (CharConversionException cce) {
                         Exceptions.printStackTrace(cce);
                     }

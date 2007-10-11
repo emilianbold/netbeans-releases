@@ -131,6 +131,10 @@ public class RDocFormatterTest extends RubyTestBase {
         formatFile("testfiles/date.rb");
     }
 
+    public void testFormatSeparators() throws Exception {
+        formatFile("testfiles/rdocdashes.rb");
+    }
+    
     public void testToHtml() {
         RDocFormatter instance = new RDocFormatter();
 
