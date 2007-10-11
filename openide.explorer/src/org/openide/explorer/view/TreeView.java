@@ -1829,15 +1829,7 @@ public abstract class TreeView extends JScrollPane {
                 add(searchpanel);
                 revalidate();
                 repaint();
-
-                // bugfix #28501, avoid the chars duplicated on jdk1.3
-                SwingUtilities.invokeLater(
-                    new Runnable() {
-                        public void run() {
-                            searchTextField.requestFocus();
-                        }
-                    }
-                );
+                searchTextField.requestFocus();
             }
         }
 
