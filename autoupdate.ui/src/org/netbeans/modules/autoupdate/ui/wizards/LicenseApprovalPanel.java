@@ -62,7 +62,13 @@ public class LicenseApprovalPanel extends javax.swing.JPanel {
     public LicenseApprovalPanel (InstallUnitWizardModel model) {
         initComponents ();
         rbDismis.setSelected (true);
-        writeLicenses (model);
+        if (model != null) {
+            writeLicenses(model);
+        } else {
+            rbAccept.setEnabled (false);
+            rbDismis.setEnabled (false);
+            taLicenses.setEnabled (false);
+        }
     }
     
     Collection<String> getLicenses () {

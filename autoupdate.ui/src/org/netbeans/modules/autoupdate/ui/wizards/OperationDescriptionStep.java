@@ -167,6 +167,11 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
         lazyDependingTask = RequestProcessor.getDefault ().post (new Runnable () {
             public void run () {
                 JPanel body = null;
+                if (model instanceof InstallUnitWizardModel) {
+                    ((InstallUnitWizardModel) model).allLicensesApproved ();
+                    ((InstallUnitWizardModel) model).hasCustomComponents ();
+                    ((InstallUnitWizardModel) model).hasStandardComponents ();
+                }
                 if (model.hasBrokenDependencies ()) {
                     body = new OperationDescriptionPanel ("", "",
                             prepareBrokenDependenciesForShow (model),
@@ -268,8 +273,8 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
     }
 
     public void readSettings(WizardDescriptor wd) {
-        boolean approved = ! (model instanceof InstallUnitWizardModel) || ((InstallUnitWizardModel) model).allLicensesApproved ();
-        if (approved) {
+        boolean doOperation = ! (model instanceof InstallUnitWizardModel);
+        if (doOperation) {
             model.modifyOptionsForDoOperation (wd);
         } else {
             model.modifyOptionsForStartWizard (wd);

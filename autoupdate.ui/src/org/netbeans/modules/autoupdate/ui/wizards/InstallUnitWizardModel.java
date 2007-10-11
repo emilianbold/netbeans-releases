@@ -116,12 +116,14 @@ public class InstallUnitWizardModel extends OperationWizardModel {
     }
     
     public boolean allLicensesApproved () {
-        for (UpdateElement el : getVisibleUpdateElements (getAllUpdateElements (), false, getOperation ())) {
+        boolean res = true;
+        for (UpdateElement el : getAllUpdateElements ()) {
             if (el.getLicence () != null && ! approvedLicences.contains (el.getLicence ())) {
-                return false;
+                res = false;
+                break;
             }
         }
-        return true;
+        return res;
     }
     
     public void addApprovedLicenses (Collection<String> licences) {
@@ -183,5 +185,5 @@ public class InstallUnitWizardModel extends OperationWizardModel {
             super.doCleanup (false);
         }
     }
-
+    
 }

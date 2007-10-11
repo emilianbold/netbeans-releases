@@ -48,12 +48,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.autoupdate.OperationException;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -61,13 +64,14 @@ import org.openide.util.NbBundle;
  */
 public class LicenseApprovalStep implements WizardDescriptor.FinishablePanel<WizardDescriptor> {
     private LicenseApprovalPanel panel;
-    private Component component;
+    private PanelBodyContainer component;
     private InstallUnitWizardModel model = null;
     private boolean isApproved = false;
     private WizardDescriptor wd;
     private final List<ChangeListener> listeners = new ArrayList<ChangeListener> ();
     private static final String HEAD = "LicenseApprovalPanel_Header_Head";
     private static final String CONTENT = "LicenseApprovalPanel_Header_Content";
+    private RequestProcessor.Task lazyLoadingTask = null;
     
     /** Creates a new instance of OperationDescriptionStep */
     public LicenseApprovalStep (InstallUnitWizardModel model) {
@@ -79,22 +83,39 @@ public class LicenseApprovalStep implements WizardDescriptor.FinishablePanel<Wiz
 
     public Component getComponent() {
         if (component == null) {
-            panel = new LicenseApprovalPanel (model);
-            panel.addPropertyChangeListener (LicenseApprovalPanel.LICENSE_APPROVED, new PropertyChangeListener () {
-                    public void propertyChange (PropertyChangeEvent arg0) {
-                        isApproved = panel.isApproved ();
-                        fireChange ();
-                    }
-            });
-            component = new PanelBodyContainer (getBundle (HEAD), getBundle (CONTENT), panel);
+            JPanel tmp = new LicenseApprovalPanel (null);
+            component = new PanelBodyContainer (getBundle (HEAD), getBundle (CONTENT), tmp);
             component.setPreferredSize (OperationWizardModel.PREFFERED_DIMENSION);
             if (wd != null) {
                 model.modifyOptionsForDoOperation (wd);
             }
+            component.setWaitingState (true);
+            appendLoadingLazy ();
         }
         return component;
     }
 
+    private void appendLoadingLazy () {
+        lazyLoadingTask = RequestProcessor.getDefault ().post (new Runnable () {
+            public void run () {
+                panel = new LicenseApprovalPanel (model);
+                panel.addPropertyChangeListener (LicenseApprovalPanel.LICENSE_APPROVED, new PropertyChangeListener () {
+                        public void propertyChange (PropertyChangeEvent arg0) {
+                            isApproved = panel.isApproved ();
+                            fireChange ();
+                        }
+                });
+                SwingUtilities.invokeLater (new Runnable () {
+                    public void run () {
+                        component.setBody (panel);
+                        component.setWaitingState (false);
+                        fireChange ();
+                    }
+                });
+            }
+        });
+    }
+    
     public HelpCtx getHelp() {
         return null;
     }
@@ -114,6 +135,9 @@ public class LicenseApprovalStep implements WizardDescriptor.FinishablePanel<Wiz
         }
         if (WizardDescriptor.CANCEL_OPTION.equals (wd.getValue ()) || WizardDescriptor.CLOSED_OPTION.equals (wd.getValue ())) {
             try {
+                if (lazyLoadingTask != null && ! lazyLoadingTask.isFinished ()) {
+                    lazyLoadingTask.cancel ();
+                }
                 model.doCleanup (true);
             } catch (OperationException x) {
                 Logger.getLogger (InstallUnitWizardModel.class.getName ()).log (Level.INFO, x.getMessage (), x);

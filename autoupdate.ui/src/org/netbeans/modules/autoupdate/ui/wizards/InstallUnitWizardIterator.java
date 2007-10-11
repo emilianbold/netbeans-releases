@@ -57,6 +57,10 @@ public final class InstallUnitWizardIterator implements WizardDescriptor.Iterato
     private int index;
     private List<WizardDescriptor.Panel> panels = new ArrayList<WizardDescriptor.Panel> ();
     private InstallUnitWizardModel installModel;
+    private WizardDescriptor.Panel licenseApprovalStep = null;
+    private WizardDescriptor.Panel customHandleStep = null;
+    private WizardDescriptor.Panel installStep = null;
+    private boolean isCompact = false;
     
     public InstallUnitWizardIterator (InstallUnitWizardModel model) {
         this.installModel = model;
@@ -72,15 +76,12 @@ public final class InstallUnitWizardIterator implements WizardDescriptor.Iterato
     private void createPanels () {
         assert panels != null && panels.isEmpty() : "Panels are still empty";
         panels.add (new OperationDescriptionStep (installModel));
-        if (! installModel.allLicensesApproved ()) {
-            panels.add (new LicenseApprovalStep (installModel));
-        }
-        if (installModel.hasCustomComponents ()) {
-            panels.add (new CustomHandleStep (installModel));
-        }
-        if (installModel.hasStandardComponents ()) {
-            panels.add (new InstallStep (installModel));
-        }
+        licenseApprovalStep = new LicenseApprovalStep (installModel);
+        panels.add (licenseApprovalStep);
+        customHandleStep = new CustomHandleStep (installModel);
+        panels.add (customHandleStep);
+        installStep = new InstallStep (installModel);
+        panels.add (installStep);
     }
     
     @SuppressWarnings ("unchecked") // XXX Can I fix it?
@@ -102,6 +103,7 @@ public final class InstallUnitWizardIterator implements WizardDescriptor.Iterato
     }
     
     public void nextPanel () {
+        compactPanels ();
         if (!hasNext ()) {
             throw new NoSuchElementException ();
         }
@@ -109,6 +111,7 @@ public final class InstallUnitWizardIterator implements WizardDescriptor.Iterato
     }
     
     public void previousPanel () {
+        compactPanels ();
         if (!hasPrevious ()) {
             throw new NoSuchElementException ();
         }
@@ -118,5 +121,21 @@ public final class InstallUnitWizardIterator implements WizardDescriptor.Iterato
     // If nothing unusual changes in the middle of the wizard, simply:
     public void addChangeListener (ChangeListener l) {}
     public void removeChangeListener (ChangeListener l) {}
+    
+    private void compactPanels () {
+        if (isCompact) {
+            return ;
+        }
+        if (getModel ().allLicensesApproved ()) {
+            panels.remove (licenseApprovalStep);
+        }
+        if (! getModel ().hasCustomComponents ()) {
+            panels.remove (customHandleStep);
+        }
+        if (! getModel ().hasStandardComponents ()) {
+            panels.remove (installStep);
+        }
+        isCompact = true;
+    }
     
 }
