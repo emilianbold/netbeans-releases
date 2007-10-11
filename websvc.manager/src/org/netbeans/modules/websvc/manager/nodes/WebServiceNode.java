@@ -252,10 +252,8 @@ public class WebServiceNode extends AbstractNode implements Node.Cookie, Propert
         URL url = null;
         java.lang.String wsdlURL = wsData.getURL();
         try {
-            java.net.URI uri = new java.net.URI(wsdlURL);
-            uri = uri.normalize();
-            url =  uri.toURL();
-        } catch (URISyntaxException ex) {
+            url = new URL(wsdlURL);
+        } catch (MalformedURLException ex) {
             //attempt to recover
             File f = new File(wsdlURL);
             try{
@@ -263,8 +261,6 @@ public class WebServiceNode extends AbstractNode implements Node.Cookie, Propert
             } catch (IOException exc) {
                 ErrorManager.getDefault().notify(exc);
             }
-        }catch(MalformedURLException ex){
-            ErrorManager.getDefault().notify(ex);
         }
         return url;
     }
