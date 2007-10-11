@@ -14,7 +14,7 @@ rootnames:
   Functional Tests
   Test Fixtures
   Test Mocks
-  Test Integration
+  Integration Tests
   Scripts
   Documentation
   Vendor
