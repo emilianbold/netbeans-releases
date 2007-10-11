@@ -914,7 +914,7 @@ private void targetClassButtonActionPerformed(java.awt.event.ActionEvent evt) {/
     },false,true);
 
     cp.getDialog(getLocalizedString("classChooserDialogTitle"), null).setVisible(true); // NOI18N
-    if(cp.getSelectedFile() != null) {
+    if(cp.getSelectedFile() != null && cp.isConfirmed()) {
         selectedSourceFile = cp.getSelectedFile();
         String selectedClass = AppFrameworkSupport.getClassNameForFile(cp.getSelectedFile());
         if(AppFrameworkSupport.getFileForClass(sourceFile, selectedClass) == null) {
