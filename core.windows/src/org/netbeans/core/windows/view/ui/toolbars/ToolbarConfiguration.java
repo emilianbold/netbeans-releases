@@ -67,6 +67,8 @@ import java.io.Writer;
 import java.util.*;
 import java.util.logging.Level;
 import org.netbeans.core.windows.view.ui.MainWindow;
+import org.openide.awt.Actions;
+import org.openide.awt.Mnemonics;
 import org.openide.windows.WindowManager;
 
 /** Toolbar configuration.
@@ -538,7 +540,7 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
     public void rebuildMenu() {
         if (toolbarMenu != null) {
             toolbarMenu.removeAll();
-            fillToolbarsMenu(toolbarMenu);
+            fillToolbarsMenu(toolbarMenu, false);
             revalidateWindow();
         }
     }
@@ -750,14 +752,14 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
      */
     public JPopupMenu getContextMenu () {
         JPopupMenu menu = new JPopupMenu();
-        fillToolbarsMenu(menu);
+        fillToolbarsMenu(menu, true);
         return menu;
     }
 
     /** Fills given menu with toolbars and configurations items and returns
      * filled menu. */ 
     public JMenu getToolbarsMenu (JMenu menu) {
-        fillToolbarsMenu(menu);
+        fillToolbarsMenu(menu, false);
         toolbarMenu = menu;
         return menu;
     }
@@ -773,7 +775,7 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
     }
     
     /** Fills given menu instance with list of toolbars and configurations */
-    private void fillToolbarsMenu (JComponent menu) {
+    private void fillToolbarsMenu (JComponent menu, boolean isContextMenu) {
         MainWindow frame = (MainWindow)WindowManager.getDefault().getMainWindow();
         boolean fullScreen = frame.isFullScreenMode();
         
@@ -784,14 +786,6 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
             final Toolbar tb = (Toolbar)it.next();
             final String tbName = tb.getName();
             ToolbarConstraints tc = allToolbars.get(tb.getName());
-/*            
-            if (tc == null) {
-                System.err.println("ToolbarConfiguration.java - error"); // NOI18N
-                System.err.println("name: " + name); // NOI18N
-                System.err.println(" all: " + allToolbars); // NOI18N
-                continue;
-            }
-*/
             if (tc == null || tb == null) {
                 //a toolbar configuration has been renamed (for whatever reason,
                 //we permit this - I'm sure it's a popular feature).
@@ -865,6 +859,19 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
         });
         menuItem.setEnabled( !fullScreen );
         menu.add( menuItem );
+        
+        for( Component c : menu instanceof JPopupMenu 
+                ? menu.getComponents() 
+                : ((JMenu)menu).getPopupMenu().getComponents()) {
+            if( c instanceof AbstractButton ) {
+                AbstractButton b = (AbstractButton)c;
+                if( isContextMenu ) {
+                    b.setText( Actions.cutAmpersand(b.getText()) );
+                } else {
+                    Mnemonics.setLocalizedText( b, b.getText() );
+                }
+            }
+        }
     } // getContextMenu
     
     boolean isTogglingIconSize () {
