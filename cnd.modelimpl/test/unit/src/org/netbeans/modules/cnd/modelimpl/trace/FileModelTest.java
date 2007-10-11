@@ -68,6 +68,10 @@ public class FileModelTest extends TraceModelTestBase {
         performTest("parser_recover.cc");
     }
     
+    public void testBitFields() throws Exception {
+        performTest("bitFields.cc");
+    }
+    
     public void testFunWithoutRetTypeInClassBody() throws Exception {
         performTest("constructors_and_fun_no_ret_types.cc");
     }
