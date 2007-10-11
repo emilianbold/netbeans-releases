@@ -220,7 +220,7 @@ made subject to such option by the copyright holder.
                             <xsl:with-param name="wsdlUrl" select="$wsdl_url"/>
                             <xsl:with-param name="Catalog" select="$catalog"/>  
                         </xsl:call-template>
-                        <copy todir="${{build.web.dir.real}}/WEB-INF/wsdl/{$wsname}">
+                        <copy todir="${{build.web.dir}}/WEB-INF/wsdl/{$wsname}">
                             <fileset dir="${{basedir}}/${{conf-dir}}xml-resources/web-services/{$wsname}/wsdl/" />
                         </copy>                            
                     </target>
