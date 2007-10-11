@@ -66,14 +66,14 @@ public class EntityRESTServicesCodeGeneratorTest extends TestBase {
         //gen.generate();
     }
 
-    public void testSingularize() {
-        //assertEquals("Product", Util.singularize("Products"));
+    public void testSingularize() throws Exception {
+        assertEquals("Product", Util.singularize("Products"));
         assertEquals("Product", Util.singularize("Product"));
-        //assertEquals("Products", Util.pluralize("Products"));
+        assertEquals("Products", Util.pluralize("Products"));
         assertEquals("Products", Util.pluralize("Product"));
-        //assertEquals("Address", Util.singularize("Addresses"));
-        //assertEquals("Address", Util.singularize("Address"));
+        assertEquals("Address", Util.singularize("Addresses"));
+        assertEquals("Address", Util.singularize("Address"));
         assertEquals("Addresses", Util.pluralize("Address"));
-        //assertEquals("Addresses", Util.pluralize("Addresses"));
+        assertEquals("Addresses", Util.pluralize("Addresses"));
     }
 }

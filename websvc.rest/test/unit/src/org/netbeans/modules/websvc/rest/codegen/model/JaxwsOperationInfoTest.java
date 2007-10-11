@@ -26,8 +26,9 @@ public class JaxwsOperationInfoTest extends TestBase {
     }
 
     public void testDerivePackageName() throws Exception {
-        String url = "http://wsparam.strikeiron.com/ZipInfo3?WSDL";
-        assertEquals("com.strikeiron.zipInfo", JaxwsOperationInfo.derivePackageName(url, "zipInfo"));
+        // the method has moved to websvc/manager
+        //String url = "http://wsparam.strikeiron.com/ZipInfo3?WSDL";
+        //assertEquals("com.strikeiron.zipInfo", JaxwsOperationInfo.derivePackageName(url, "zipInfo"));
     }
     
 }

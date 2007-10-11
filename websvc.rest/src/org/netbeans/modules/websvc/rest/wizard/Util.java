@@ -294,7 +294,7 @@ public class Util {
     }
     
     public static String pluralize(String name) {
-        if (name.endsWith("s")) {
+        if (name.endsWith("s") && ! name.endsWith("ss")) {
             name = Inflector.getInstance().singularize(name);
         }
         
