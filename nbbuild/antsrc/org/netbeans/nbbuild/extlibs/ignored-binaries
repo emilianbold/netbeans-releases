@@ -81,3 +81,6 @@ visualweb/gravy/builds/gravy.jar
 
 # Not used in NB6.0:
 visualweb/ravelibs/jsf-portlet/jsf-portlet-src.zip
+
+# Not distributed with product, only used during build:
+nbbuild/external/apitest-*.jar
