@@ -504,7 +504,9 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     int pos1 = msg.substring(13).indexOf("\""); // NOI18N
                     if (pos1 != -1 && msg.substring(13, pos1 + 12).equals(type)) {
                         String var = varToTypeMap.get(type);
-                        addTypeCompletion(var);
+                        if (var != null) {
+                            addTypeCompletion(var);
+                        }
                     }
                 }
             } else if (token == ttToken) { // invalid tooltip request
@@ -1669,12 +1671,22 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
      * @param Frame to make current (or null)
      */
     public void setCurrentCallStackFrame(CallStackFrame callStackFrame){
-        CallStackFrame old = setCurrentCallStackFrameNoFire(callStackFrame);
-        updateLocalVariables(callStackFrame.getFrameNumber());
-        if (old == callStackFrame) {
-            return;
+        if (isValidStackFrame(callStackFrame)) {
+            CallStackFrame old = setCurrentCallStackFrameNoFire(callStackFrame);
+            updateLocalVariables(callStackFrame.getFrameNumber());
+            if (old == callStackFrame) {
+                return;
+            }
+            pcs.firePropertyChange(PROP_CURRENT_CALL_STACK_FRAME, old, callStackFrame);
+        } else {
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
+                           "ERR_InvalidCallStackFrame"))); // NOI18N
+            
         }
-        pcs.firePropertyChange(PROP_CURRENT_CALL_STACK_FRAME, old, callStackFrame);
+    }
+    
+    private boolean isValidStackFrame(CallStackFrame csf) {
+        return csf.getFileName() != null && csf.getFullname() != null && csf.getFunctionName() != null;
     }
     
     private CallStackFrame setCurrentCallStackFrameNoFire(CallStackFrame callStackFrame) {
