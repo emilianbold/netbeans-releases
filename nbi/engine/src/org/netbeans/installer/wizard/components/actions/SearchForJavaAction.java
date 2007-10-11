@@ -172,8 +172,7 @@ public class SearchForJavaAction extends WizardAction {
                 LogManager.unindent();
             }
             
-            progress.setPercentage(Progress.COMPLETE * i / locations.size());
-            SystemUtils.sleep(50);
+            progress.setPercentage(Progress.COMPLETE * i / locations.size());            
         }
         
     }
@@ -280,9 +279,11 @@ public class SearchForJavaAction extends WizardAction {
             
             if (parent.exists() && parent.isDirectory()) {
                 locations.add(parent);
+                final boolean isWindows = SystemUtils.isWindows();
                 final File[] children = parent.listFiles(new FileFilter() {
                     public boolean accept(final File pathname) {
-                        return pathname.isDirectory();
+                        return pathname.isDirectory() && 
+                                (isWindows || !pathname.getName().startsWith("."));
                     }
                 });
                 
