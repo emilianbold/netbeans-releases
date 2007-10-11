@@ -113,7 +113,7 @@ public class TestUtilTest extends NbTestCase {
     private static class Bar implements Quux {}
     private static class Baz extends Bar {}
     public void testFindAllInterfaces() throws Exception {
-        Set s = new HashSet();
+        Set<Class> s = new HashSet<Class>();
         TestUtil.findAllInterfaces(Baz.class, s);
         assertEquals("two interfaces here", 2, s.size());
         assertTrue("Foo included", s.contains(Foo.class));

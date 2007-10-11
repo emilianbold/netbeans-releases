@@ -52,6 +52,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.junit.MockServices;
+import org.netbeans.modules.xml.api.model.GrammarResult;
 import org.netbeans.modules.xml.api.model.HintContext;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.xml.XMLUtil;
@@ -73,7 +74,7 @@ final class TestUtil {
     private TestUtil() {}
     
     static {
-        MockServices.setServices(new Class[] {IFL.class});
+        MockServices.setServices(IFL.class);
     }
     
     public static final class IFL extends InstalledFileLocator {
@@ -100,7 +101,7 @@ final class TestUtil {
     }
     
     private static HintContext createHintContext(final Node n, final String prefix) {
-        Set/*<Class>*/ interfaces = new HashSet();
+        Set<Class> interfaces = new HashSet<Class>();
         findAllInterfaces(n.getClass(), interfaces);
         interfaces.add(HintContext.class);
         class Handler implements InvocationHandler {
@@ -113,11 +114,10 @@ final class TestUtil {
                 }
             }
         }
-        return (HintContext)Proxy.newProxyInstance(TestUtil.class.getClassLoader(),
-            (Class[])interfaces.toArray(new Class[interfaces.size()]), new Handler());
+        return (HintContext)Proxy.newProxyInstance(TestUtil.class.getClassLoader(), interfaces.toArray(new Class[interfaces.size()]), new Handler());
     }
     
-    static void findAllInterfaces(Class c, Set/*<Class>*/ interfaces) {
+    static void findAllInterfaces(Class c, Set<Class> interfaces) {
         if (c.isInterface()) {
             interfaces.add(c);
         }
@@ -234,10 +234,10 @@ final class TestUtil {
      * for text nodes, the value.
      * (No namespaces returned.)
      */
-    public static List/*<String>*/ grammarResultValues(Enumeration/*<Node>*/ e) {
-        List l = new ArrayList();
+    public static List<String> grammarResultValues(Enumeration<GrammarResult> e) {
+        List<String> l = new ArrayList<String>();
         while (e.hasMoreElements()) {
-            Object o = e.nextElement();
+            GrammarResult o = e.nextElement();
             String s;
             if (o instanceof Element) {
                 s = ((Element)o).getNodeName();

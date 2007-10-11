@@ -63,7 +63,7 @@ public class AntGrammarTest extends NbTestCase {
 
     private AntGrammar g;
 
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         super.setUp();
         g = new AntGrammar();
     }
@@ -71,20 +71,19 @@ public class AntGrammarTest extends NbTestCase {
     public void testTypeOf() throws Exception {
         String simpleProject = "<project default='all'><target name='all'/></project>";
         Element e = TestUtil.createElementInDocument(simpleProject, "project", null);
-        String[] type = AntGrammar.typeOf(e);
-        assertEquals("is special", AntGrammar.KIND_SPECIAL, type[0]);
-        assertEquals("is project", AntGrammar.SPECIAL_PROJECT, type[1]);
+        AntGrammar.ElementType type = AntGrammar.typeOf(e);
+        assertEquals(AntGrammar.Kind.PROJECT, type.kind);
         // XXX other specials...
         String projectWithTasks = "<project default='all'><target name='all'><echo>hello</echo></target></project>";
         e = TestUtil.createElementInDocument(projectWithTasks, "echo", null);
         type = AntGrammar.typeOf(e);
-        assertEquals("is task", AntGrammar.KIND_TASK, type[0]);
-        assertEquals("is <echo>", "org.apache.tools.ant.taskdefs.Echo", type[1]);
+        assertEquals(AntGrammar.Kind.TASK, type.kind);
+        assertEquals("org.apache.tools.ant.taskdefs.Echo", type.name);
         String projectWithTypes = "<project default='all'><path id='foo'/><target name='all'/></project>";
         e = TestUtil.createElementInDocument(projectWithTypes, "path", null);
         type = AntGrammar.typeOf(e);
-        assertEquals("is type", AntGrammar.KIND_TYPE, type[0]);
-        assertEquals("is <path>", "org.apache.tools.ant.types.Path", type[1]);
+        assertEquals(AntGrammar.Kind.TYPE, type.kind);
+        assertEquals("org.apache.tools.ant.types.Path", type.name);
         // XXX more...
     }
     
@@ -114,13 +113,12 @@ public class AntGrammarTest extends NbTestCase {
     
     public void testSpecialAttrCompletion() throws Exception {
         String p = "<project default='x'><target nHERE=''/></project>";
-        List l = TestUtil.grammarResultValues(g.queryAttributes(TestUtil.createCompletion(p)));
+        List<String> l = TestUtil.grammarResultValues(g.queryAttributes(TestUtil.createCompletion(p)));
         assertEquals("matched name on <target>", Collections.singletonList("name"), l);
         p = "<project default='x'><target dHERE=''/></project>";
         l = TestUtil.grammarResultValues(g.queryAttributes(TestUtil.createCompletion(p)));
         Collections.sort(l);
-        assertEquals("matched depends and description on <target>",
-            Arrays.asList(new String[] {"depends", "description"}), l);
+        assertEquals("matched depends and description on <target>", Arrays.asList("depends", "description"), l);
         // XXX more...
     }
     
@@ -132,10 +130,9 @@ public class AntGrammarTest extends NbTestCase {
     
     public void testBooleanValueCompletion() throws Exception {
         String p = "<project default='x'><target><echo append='HERE'/></target></project>";
-        List l = TestUtil.grammarResultValues(g.queryValues(TestUtil.createCompletion(p)));
+        List<String> l = TestUtil.grammarResultValues(g.queryValues(TestUtil.createCompletion(p)));
         Collections.sort(l);
-        assertEquals("true or false for append on <echo>",
-            Arrays.asList(new String[] {"false", "true"}), l);
+        assertEquals("true or false for append on <echo>", Arrays.asList("false", "true"), l);
     }
     
     public void testStockProperties() throws Exception {
@@ -244,7 +241,7 @@ public class AntGrammarTest extends NbTestCase {
         p = "<project default='x'><target><echo message='${basedir}HERE'/></target></project>";
         l = TestUtil.grammarResultValues(g.queryValues(TestUtil.createCompletion(p)));
         assertFalse("${basedir} is already complete: " + l, l.contains("${basedir}"));
-        assertEquals("in fact there are no completions here", Collections.EMPTY_LIST, l);
+        assertEquals("in fact there are no completions here", Collections.emptyList(), l);
     }
     
     public void testCompleteImpliedProperties() throws Exception {
@@ -259,7 +256,7 @@ public class AntGrammarTest extends NbTestCase {
     
     public void testImport() throws Exception {
         String p = "<project default='x'><impHERE/></project>";
-        List l = TestUtil.grammarResultValues(g.queryElements(TestUtil.createCompletion(p)));
+        List<String> l = TestUtil.grammarResultValues(g.queryElements(TestUtil.createCompletion(p)));
         assertTrue("matched <import>", l.contains("import"));
         p = "<project default='x'><import fHERE=''/></project>";
         l = TestUtil.grammarResultValues(g.queryAttributes(TestUtil.createCompletion(p)));
@@ -270,8 +267,7 @@ public class AntGrammarTest extends NbTestCase {
         p = "<project default='x'><import file='y' optional='HERE'/></project>";
         l = TestUtil.grammarResultValues(g.queryValues(TestUtil.createCompletion(p)));
         Collections.sort(l);
-        assertEquals("true or false for optional on <import>",
-            Arrays.asList(new String[] {"false", "true"}), l);
+        assertEquals("true or false for optional on <import>", Arrays.asList("false", "true"), l);
     }
 
 }

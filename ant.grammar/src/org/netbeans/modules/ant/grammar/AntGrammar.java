@@ -42,15 +42,31 @@
 package org.netbeans.modules.ant.grammar;
 
 import java.text.Collator;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import javax.swing.Icon;
-
 import org.apache.tools.ant.module.api.IntrospectedInfo;
-
-import org.w3c.dom.*;
-
-import org.netbeans.modules.xml.api.model.*;
-import org.netbeans.modules.xml.spi.dom.*;
+import org.netbeans.modules.xml.api.model.GrammarQuery;
+import org.netbeans.modules.xml.api.model.GrammarResult;
+import org.netbeans.modules.xml.api.model.HintContext;
+import org.netbeans.modules.xml.spi.dom.AbstractNode;
+import org.openide.util.Enumerations;
+import org.w3c.dom.Attr;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Element;
+import org.w3c.dom.EntityReference;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
 
 /**
  * Rather simple query implemetation based on static Ant introspection info.
@@ -60,30 +76,22 @@ import org.netbeans.modules.xml.spi.dom.*;
  */
 class AntGrammar implements GrammarQuery {
 
-    private static Enumeration empty;
-    private static Enumeration empty () {
-        if (empty == null) {
-            empty = Collections.enumeration (Collections.EMPTY_LIST);
-        }
-        return empty;
-    }
-    
     /**
      * Allow to get names of <b>parsed general entities</b>.
      * @return list of <code>CompletionResult</code>s (ENTITY_REFERENCE_NODEs)
      */
-    public Enumeration queryEntities(String prefix) {
-        ArrayList list = new ArrayList ();
-        
+    public Enumeration<GrammarResult> queryEntities(String prefix) {
+        List<GrammarResult> list = new ArrayList<GrammarResult>();
+
         // add well-know build-in entity names
-        
+
         if ("lt".startsWith(prefix)) list.add(new MyEntityReference("lt"));
         if ("gt".startsWith(prefix)) list.add(new MyEntityReference("gt"));
         if ("apos".startsWith(prefix)) list.add(new MyEntityReference("apos"));
         if ("quot".startsWith(prefix)) list.add(new MyEntityReference("quot"));
         if ("amp".startsWith(prefix)) list.add(new MyEntityReference("amp"));
-        
-        return java.util.Collections.enumeration (list);
+
+        return Collections.enumeration(list);
     }
 
     /*
@@ -94,31 +102,39 @@ class AntGrammar implements GrammarQuery {
 
     private static String getTypeClassFor(String elementName) {
         Map defs = getAntGrammar().getDefs("type");
-        return (String) defs.get(elementName);        
+        return (String) defs.get(elementName);
     }
      */
-    
+
     private static IntrospectedInfo getAntGrammar() {
         return IntrospectedInfo.getKnownInfo();
     }
-    
-    /** this element is a special thing, like the root project element */
-    static final String KIND_SPECIAL = "special"; // NOI18N
-    /** this element is a task */
-    static final String KIND_TASK = "task"; // NOI18N
-    /** this element is a data type */
-    static final String KIND_TYPE = "type"; // NOI18N
-    /** this element is part of some other structure (task or type) */
-    static final String KIND_DATA = "data"; // NOI18N
-    /** tag for root project element */
-    static final String SPECIAL_PROJECT = "project"; // NOI18N
-    /** tag for a target element */
-    static final String SPECIAL_TARGET = "target"; // NOI18N
-    /** tag for a project description element */
-    static final String SPECIAL_DESCRIPTION = "description"; // NOI18N
-    /** tag for an import statement */
-    static final String SPECIAL_IMPORT = "import"; // NOI18N
-    
+
+    enum Kind {
+        /** this element is a task */
+        TASK,
+         /** this element is a data type */
+        TYPE,
+         /** this element is part of some other structure (task or type) */
+        DATA,
+         /** tag for root project element */
+        PROJECT,
+         /** tag for a target element */
+        TARGET,
+         /** tag for a project description element */
+        DESCRIPTION,
+         /** tag for an import statement */
+        IMPORT;
+    }
+    static class ElementType {
+        final Kind kind;
+        final String name; // null for PROJECT, TARGET, DESCRIPTION, IMPORT
+        ElementType(Kind kind, String name) {
+            this.kind = kind;
+            this.name = name;
+        }
+    }
+
     /**
      * Determine what a particular element in a build script represents,
      * based on its name and the names of all of its parents.
@@ -128,7 +144,7 @@ class AntGrammar implements GrammarQuery {
      * @param e an element
      * @return a two-element string (kind and details), or null if this element is anomalous
      */
-    static final String[] typeOf(Element e) {
+    static final ElementType typeOf(Element e) {
         String name = e.getNodeName();
         Node p = e.getParentNode();
         if (p == null) {
@@ -136,68 +152,64 @@ class AntGrammar implements GrammarQuery {
         }
         if (p.getNodeType() == Node.DOCUMENT_NODE) {
             if (name.equals("project")) { // NOI18N
-                return new String[] {KIND_SPECIAL, SPECIAL_PROJECT};
+                return new ElementType(Kind.PROJECT, null);
             } else {
                 // Weird root element? Ignore.
                 return null;
             }
         } else if (p.getNodeType() == Node.ELEMENT_NODE) {
             // Find ourselves in context.
-            String[] ptype = typeOf((Element)p);
+            ElementType ptype = typeOf((Element)p);
             if (ptype == null) {
                 // Unknown parent, therefore this is unknown too.
                 return null;
             }
-            if (ptype[0] == KIND_SPECIAL) {
-                if (ptype[1] == SPECIAL_PROJECT) {
-                    // <project> may have <description>, or types, or targets, or tasks
-                    if (name.equals("description")) { // NOI18N
-                        return new String[] {KIND_SPECIAL, SPECIAL_DESCRIPTION};
-                    } else if (name.equals("target")) { // NOI18N
-                        return new String[] {KIND_SPECIAL, SPECIAL_TARGET};
-                    } else if (name.equals("import")) { // NOI18N
-                        return new String[] {KIND_SPECIAL, SPECIAL_IMPORT};
-                    } else {
-                        String taskClazz = (String)getAntGrammar().getDefs("task").get(name); // NOI18N
-                        if (taskClazz != null) {
-                            return new String[] {KIND_TASK, taskClazz};
-                        } else {
-                            String typeClazz = (String)getAntGrammar().getDefs("type").get(name); // NOI18N
-                            if (typeClazz != null) {
-                                return new String[] {KIND_TYPE, typeClazz};
-                            } else {
-                                return null;
-                            }
-                        }
-                    }
-                } else if (ptype[1] == SPECIAL_TARGET) {
-                    // <target> may have tasks and types
-                    String taskClazz = (String)getAntGrammar().getDefs("task").get(name); // NOI18N
+            switch (ptype.kind) {
+            case PROJECT:
+                // <project> may have <description>, or types, or targets, or tasks
+                if (name.equals("description")) { // NOI18N
+                    return new ElementType(Kind.DESCRIPTION, null);
+                } else if (name.equals("target")) { // NOI18N
+                    return new ElementType(Kind.TARGET, null);
+                } else if (name.equals("import")) { // NOI18N
+                    return new ElementType(Kind.IMPORT, null);
+                } else {
+                    String taskClazz = getAntGrammar().getDefs("task").get(name); // NOI18N
                     if (taskClazz != null) {
-                        return new String[] {KIND_TASK, taskClazz};
+                        return new ElementType(Kind.TASK, taskClazz);
                     } else {
-                        String typeClazz = (String)getAntGrammar().getDefs("type").get(name); // NOI18N
+                        String typeClazz = getAntGrammar().getDefs("type").get(name); // NOI18N
                         if (typeClazz != null) {
-                            return new String[] {KIND_TYPE, typeClazz};
+                            return new ElementType(Kind.TYPE, typeClazz);
                         } else {
                             return null;
                         }
                     }
-                } else if (ptype[1] == SPECIAL_DESCRIPTION) {
-                    // <description> should have no children!
-                    return null;
-                } else if (ptype[1] == SPECIAL_IMPORT) {
-                    // <import> should have no children!
-                    return null;
-                } else {
-                    throw new IllegalStateException(ptype[1]);
                 }
-            } else {
+            case TARGET:
+                // <target> may have tasks and types
+                String taskClazz = getAntGrammar().getDefs("task").get(name); // NOI18N
+                if (taskClazz != null) {
+                    return new ElementType(Kind.TASK, taskClazz);
+                } else {
+                    String typeClazz = getAntGrammar().getDefs("type").get(name); // NOI18N
+                    if (typeClazz != null) {
+                        return new ElementType(Kind.TYPE, typeClazz);
+                    } else {
+                        return null;
+                    }
+                }
+            case DESCRIPTION:
+                // <description> should have no children!
+                return null;
+            case IMPORT:
+                // <import> should have no children!
+                return null;
+            default:
                 // We must be data.
-                String pclazz = ptype[1];
-                String clazz = (String)getAntGrammar().getElements(pclazz).get(name);
+                String clazz = getAntGrammar().getElements(ptype.name).get(name);
                 if (clazz != null) {
-                    return new String[] {KIND_DATA, clazz};
+                    return new ElementType(Kind.DATA, clazz);
                 } else {
                     // Unknown data.
                     return null;
@@ -207,7 +219,7 @@ class AntGrammar implements GrammarQuery {
             throw new IllegalArgumentException("Bad parent for " + e.toString() + ": " + p); // NOI18N
         }
     }
-    
+
     /**
      * @stereotype query
      * @output list of results that can be queried on name, and attributes
@@ -216,8 +228,8 @@ class AntGrammar implements GrammarQuery {
      * @return list of <code>CompletionResult</code>s (ATTRIBUTE_NODEs) that can be queried on name, and attributes.
      *        Every list member represents one possibility.
      */
-    public Enumeration queryAttributes(HintContext ctx) {
-        
+    public Enumeration<GrammarResult> queryAttributes(HintContext ctx) {
+
         Element ownerElement = null;
         // Support both versions of GrammarQuery contract
         if (ctx.getNodeType() == Node.ATTRIBUTE_NODE) {
@@ -225,45 +237,49 @@ class AntGrammar implements GrammarQuery {
         } else if (ctx.getNodeType() == Node.ELEMENT_NODE) {
             ownerElement = (Element) ctx;
         }
-        if (ownerElement == null) return empty ();
-        
-        NamedNodeMap existingAttributes = ownerElement.getAttributes();        
-        List possibleAttributes;
-        String[] typePair = typeOf(ownerElement);
-        if (typePair == null) {
-            return empty ();
+        if (ownerElement == null) {
+            return Enumerations.empty();
         }
-        String kind = typePair[0];
-        String clazz = typePair[1];
-        
-        if (kind == KIND_SPECIAL && clazz == SPECIAL_PROJECT) {
-            possibleAttributes = new LinkedList();
+
+        NamedNodeMap existingAttributes = ownerElement.getAttributes();
+        List<String> possibleAttributes;
+        ElementType type = typeOf(ownerElement);
+        if (type == null) {
+            return Enumerations.empty();
+        }
+
+        switch (type.kind) {
+        case PROJECT:
+            possibleAttributes = new LinkedList<String>();
             possibleAttributes.add("default");
             possibleAttributes.add("name");
             possibleAttributes.add("basedir");
-        } else if (kind == KIND_SPECIAL && clazz == SPECIAL_TARGET) {
-            possibleAttributes = new LinkedList();
+            break;
+        case TARGET:
+            possibleAttributes = new LinkedList<String>();
             possibleAttributes.add("name");
             possibleAttributes.add("depends");
             possibleAttributes.add("description");
             possibleAttributes.add("if");
             possibleAttributes.add("unless");
-        } else if (kind == KIND_SPECIAL && clazz == SPECIAL_DESCRIPTION) {
-            return empty ();
-        } else if (kind == KIND_SPECIAL && clazz == SPECIAL_IMPORT) {
-            possibleAttributes = new LinkedList();
+            break;
+        case DESCRIPTION:
+            return Enumerations.empty();
+        case IMPORT:
+            possibleAttributes = new LinkedList<String>();
             possibleAttributes.add("file");
             possibleAttributes.add("optional");
-        } else {
+            break;
+        default:
             // task, type, or data; anyway, we have the defining class
-            possibleAttributes = new LinkedList();
-            if (kind == KIND_TYPE) {
+            possibleAttributes = new LinkedList<String>();
+            if (type.kind == Kind.TYPE) {
                 possibleAttributes.add("id");
             }
-            if (getAntGrammar().isKnown(clazz)) {
-                possibleAttributes.addAll(new TreeSet(getAntGrammar().getAttributes(clazz).keySet()));
+            if (getAntGrammar().isKnown(type.name)) {
+                possibleAttributes.addAll(new TreeSet<String>(getAntGrammar().getAttributes(type.name).keySet()));
             }
-            if (kind == KIND_TASK) {
+            if (type.kind == Kind.TASK) {
                 // Can have an ID too, but less important; leave at end.
                 possibleAttributes.add("id");
                 // Currently IntrospectedInfo includes this in the props for a type,
@@ -274,23 +290,21 @@ class AntGrammar implements GrammarQuery {
                 possibleAttributes.add("taskname");
             }
         }
-        
+
         String prefix = ctx.getCurrentPrefix();
-        
-        ArrayList list = new ArrayList ();
-        Iterator it = possibleAttributes.iterator();
-        while ( it.hasNext()) {
-            String next = (String) it.next();
-            if (next.startsWith(prefix)) {
-                if (existingAttributes.getNamedItem(next) == null) {
-                    list.add(new MyAttr(next));
+
+        List<GrammarResult> list = new ArrayList<GrammarResult>();
+        for (String attribute : possibleAttributes) {
+            if (attribute.startsWith(prefix)) {
+                if (existingAttributes.getNamedItem(attribute) == null) {
+                    list.add(new MyAttr(attribute));
                 }
             }
         }
-        
+
         return Collections.enumeration (list);
     }
-    
+
     /**
      * @semantics Navigates through read-only Node tree to determine context and provide right results.
      * @postconditions Let ctx unchanged
@@ -300,79 +314,80 @@ class AntGrammar implements GrammarQuery {
      * @return list of <code>CompletionResult</code>s (ELEMENT_NODEs) that can be queried on name, and attributes
      *        Every list member represents one possibility.
      */
-    public Enumeration queryElements(HintContext ctx) {
-        
+    public Enumeration<GrammarResult> queryElements(HintContext ctx) {
+
         Node parent = ((Node)ctx).getParentNode();
-        if (parent == null) return empty ();
+        if (parent == null) {
+            return Enumerations.empty();
+        }
         if (parent.getNodeType() != Node.ELEMENT_NODE) {
-            return empty ();
+            return Enumerations.empty();
         }
-        
-        List elements;
-        String[] typePair = typeOf((Element)parent);
-        if (typePair == null) {
-            return empty ();
+
+        List<String> elements;
+        ElementType type = typeOf((Element)parent);
+        if (type == null) {
+            return Enumerations.empty();
         }
-        String kind = typePair[0];
-        String clazz = typePair[1];
-        
-        if (kind == KIND_SPECIAL && clazz == SPECIAL_PROJECT) {
-            elements = new LinkedList();
+
+        switch (type.kind) {
+        case PROJECT:
+            elements = new LinkedList<String>();
             elements.add("target");
             elements.add("import");
             elements.add("property");
             elements.add("description");
-            SortedSet/*<String>*/ tasks = getSortedDefs("task");
+            SortedSet<String> tasks = getSortedDefs("task");
             tasks.remove("property");
             tasks.remove("import");
             elements.addAll(tasks); // Ant 1.6 permits any tasks at top level
             elements.addAll(getSortedDefs("type"));
-        } else if (kind == KIND_SPECIAL && clazz == SPECIAL_TARGET) {
-            elements = new ArrayList(getSortedDefs("task"));
+            break;
+        case TARGET:
+            elements = new ArrayList<String>(getSortedDefs("task"));
             // targets can have embedded types too, though less common:
             elements.addAll(getSortedDefs("type")); // NOI18N
-        } else if (kind == KIND_SPECIAL && clazz == SPECIAL_DESCRIPTION) {
-            return empty ();
-        } else if (kind == KIND_SPECIAL && clazz == SPECIAL_IMPORT) {
-            return empty ();
-        } else {
+            break;
+        case DESCRIPTION:
+            return Enumerations.empty();
+        case IMPORT:
+            return Enumerations.empty();
+        default:
             // some introspectable class
-            if (getAntGrammar().isKnown(clazz)) {
-                elements = new ArrayList(new TreeSet(getAntGrammar().getElements(clazz).keySet()));
+            if (getAntGrammar().isKnown(type.name)) {
+                elements = new ArrayList<String>(new TreeSet<String>(getAntGrammar().getElements(type.name).keySet()));
             } else {
-                elements = Collections.EMPTY_LIST;
+                elements = Collections.emptyList();
             }
         }
-                
+
         String prefix = ctx.getCurrentPrefix();
-        
-        ArrayList list = new ArrayList ();
-        Iterator it = elements.iterator();
-        while ( it.hasNext()) {
-            String next = (String) it.next();
-            if (next.startsWith(prefix)) {
-                list.add (new MyElement(next));
+
+        List<GrammarResult> list = new ArrayList<GrammarResult>();
+        for (String element : elements) {
+            if (element.startsWith(prefix)) {
+                list.add (new MyElement(element));
             }
         }
-        
-        return Collections.enumeration (list);                        
+
+        return Collections.enumeration(list);
     }
-    
-    private static SortedSet/*<String>*/ getSortedDefs(String kind) {
-        SortedSet/*<String>*/ defs = new TreeSet(Collator.getInstance());
+
+    private static SortedSet<String> getSortedDefs(String kind) {
+        SortedSet<String> defs = new TreeSet<String>(Collator.getInstance());
         defs.addAll(getAntGrammar().getDefs(kind).keySet());
         return defs;
     }
-    
+
     /**
      * Allow to get names of <b>declared notations</b>.
      * @return list of <code>CompletionResult</code>s (NOTATION_NODEs)
      */
-    public Enumeration queryNotations(String prefix) {
-        return empty ();
+    public Enumeration<GrammarResult> queryNotations(String prefix) {
+        return Enumerations.empty();
     }
-    
-    public Enumeration queryValues(HintContext ctx) {
+
+    public Enumeration<GrammarResult> queryValues(HintContext ctx) {
         // #38341: ctx is apparently instanceof Attr or Text
         // (actually never instanceof Text, just TEXT_NODE: #38339)
         Attr ownerAttr;
@@ -381,47 +396,48 @@ class AntGrammar implements GrammarQuery {
         } else if (ctx.getNodeType() == Node.ATTRIBUTE_NODE) {
             ownerAttr = (Attr)ctx;
         } else {
-            return empty ();
+            return Enumerations.empty();
         }
         Element ownerElement = ownerAttr.getOwnerElement();
         String attrName = ownerAttr.getName();
-        String[] typePair = typeOf(ownerElement);
-        if (typePair == null) {
-            return empty ();
+        ElementType type = typeOf(ownerElement);
+        if (type == null) {
+            return Enumerations.empty();
         }
-        List/*<String>*/ choices = new ArrayList();
-        
-        if (typePair[0].equals(KIND_SPECIAL)) {
-            if (typePair[1].equals(SPECIAL_PROJECT)) {
-                if (attrName.equals("default")) {
-                    // XXX list known targets?
-                } else if (attrName.equals("basedir")) {
-                    // XXX file completion?
-                }
-                // freeform: name
-            } else if (typePair[1].equals(SPECIAL_TARGET)) {
-                if (attrName.equals("depends")) {
-                    // XXX list known targets?
-                } else if (attrName.equals("if") || attrName.equals("unless")) {
-                    choices.addAll(Arrays.asList(likelyPropertyNames(ctx)));
-                }
-                // freeform: description
-            } else if (typePair[1].equals(SPECIAL_DESCRIPTION)) {
-                // nothing applicable
-            } else if (typePair[1].equals(SPECIAL_IMPORT)) {
-                if (attrName.equals("file")) {
-                    // freeform
-                } else if (attrName.equals("optional")) {
-                    choices.add("true");
-                    choices.add("false");
-                }
-            } else {
-                assert false : typePair[1];
+        List<String> choices = new ArrayList<String>();
+
+        switch (type.kind) {
+        case PROJECT:
+            if (attrName.equals("default")) {
+            // XXX list known targets?
+            } else if (attrName.equals("basedir")) {
+            // XXX file completion?
             }
-        } else {
-            String elementClazz = typePair[1];
+            // freeform: name
+            break;
+        case TARGET:
+            if (attrName.equals("depends")) {
+                // XXX list known targets?
+            } else if (attrName.equals("if") || attrName.equals("unless")) {
+                choices.addAll(Arrays.asList(likelyPropertyNames(ctx)));
+            }
+            // freeform: description
+            break;
+        case DESCRIPTION:
+            // nothing applicable
+            break;
+        case IMPORT:
+            if (attrName.equals("file")) {
+                // freeform
+            } else if (attrName.equals("optional")) {
+                choices.add("true");
+                choices.add("false");
+            }
+            break;
+        default:
+            String elementClazz = type.name;
             if (getAntGrammar().isKnown(elementClazz)) {
-                String attrClazzName = (String)getAntGrammar().getAttributes(elementClazz).get(attrName);
+                String attrClazzName = getAntGrammar().getAttributes(elementClazz).get(attrName);
                 if (attrClazzName != null) {
                     if (getAntGrammar().isKnown(attrClazzName)) {
                         String[] enumTags = getAntGrammar().getTags(attrClazzName);
@@ -447,20 +463,18 @@ class AntGrammar implements GrammarQuery {
                 }
             }
         }
-        
+
         // Create the completion:
         String prefix = ctx.getCurrentPrefix();
-        ArrayList list = new ArrayList ();
-        Iterator it = choices.iterator();
-        while (it.hasNext()) {
-            String next = (String)it.next();
-            if (next.startsWith(prefix)) {
-                list.add (new MyText(next));
+        List<GrammarResult> list = new ArrayList<GrammarResult>();
+        for (String choice : choices) {
+            if (choice.startsWith(prefix)) {
+                list.add (new MyText(choice));
             }
         }
-        return Collections.enumeration (list);
+        return Collections.enumeration(list);
     }
-    
+
     /**
      * Check whether a given content string (of an attribute value or of an element's
      * content) has an uncompleted "${" sequence in it, i.e. one that has not been matched
@@ -483,8 +497,8 @@ class AntGrammar implements GrammarQuery {
         int idx = content.lastIndexOf("${");
         return idx != -1 && content.indexOf('}', idx) == -1;
     }
-    
-    private static Enumeration completeProperties(HintContext ctx) {
+
+    private static Enumeration<GrammarResult> completeProperties(HintContext ctx) {
         String content = ctx.getCurrentPrefix();
         assert content.length() > 0;
         String header;
@@ -502,20 +516,20 @@ class AntGrammar implements GrammarQuery {
         // completion on text works differently from attrs:
         // the context should not be returned (#38342)
         boolean shortHeader = ctx.getNodeType() == Node.TEXT_NODE;
-        ArrayList list = new ArrayList ();
+        List<GrammarResult> list = new ArrayList<GrammarResult>();
         for (int i = 0; i < props.length; i++) {
             if (props[i].startsWith(propPrefix)) {
-                String text = header + props[i] + '}';;
+                String text = header + props[i] + '}';
                 if (shortHeader) {
                     assert text.startsWith(content) : "text=" + text + " content=" + content;
                     text = text.substring(content.length());
                 }
-                list.add (new MyText(text));
+                list.add(new MyText(text));
             }
         }
-        return Collections.enumeration (list);
+        return Collections.enumeration(list);
     }
-    
+
     /**
      * Names of Ant properties that are generally present and defined in any script.
      */
@@ -558,7 +572,7 @@ class AntGrammar implements GrammarQuery {
         "user.home", // NOI18N
         "user.dir", // NOI18N
     };
-    
+
     private static String[] likelyPropertyNames(HintContext ctx) {
         // #38343: ctx.getOwnerDocument returns some bogus unusable empty thing
         // so find the root element manually
@@ -583,20 +597,20 @@ class AntGrammar implements GrammarQuery {
             parent = (Element)parent.getParentNode();
         }
         // #38343: getElementsByTagName just throws an exception, you can't use it...
-        Set/*<String>*/ choices = new TreeSet(Arrays.asList(STOCK_PROPERTY_NAMES));
+        Set<String> choices = new TreeSet<String>(Arrays.asList(STOCK_PROPERTY_NAMES));
         visitForLikelyPropertyNames(parent, choices);
-        Iterator it = choices.iterator();
+        Iterator<String> it = choices.iterator();
         while (it.hasNext()) {
-            String propname = (String)it.next();
+            String propname = it.next();
             if (propname.indexOf("${") != -1) {
                 // Not actually a direct property name, rather a computed name.
                 // Skip it as it cannot be used here.
                 it.remove();
             }
         }
-        return (String[])choices.toArray(new String[choices.size()]);
+        return choices.toArray(new String[choices.size()]);
     }
-    
+
     private static final String[] PROPERTY_NAME_VALUED_PROPERTY_NAMES = {
         "if",
         "unless",
@@ -606,8 +620,8 @@ class AntGrammar implements GrammarQuery {
         "errorproperty",
         "addproperty",
     };
-    
-    private static void visitForLikelyPropertyNames(Node n, Set/*<String>*/ choices) {
+
+    private static void visitForLikelyPropertyNames(Node n, Set<String> choices) {
         int type = n.getNodeType();
         switch (type) {
             case Node.ELEMENT_NODE:
@@ -677,7 +691,7 @@ class AntGrammar implements GrammarQuery {
             }
         }
     }
-    
+
     /**
      * Remove pairs of '$$' to avoid being confused by them.
      * They do not introduce property references.
@@ -691,18 +705,18 @@ class AntGrammar implements GrammarQuery {
     public GrammarResult queryDefault(final HintContext ctx) {
         return null;
     }
-    
+
     // it is not yet implemented
-    public boolean isAllowed(Enumeration en) {
+    public boolean isAllowed(Enumeration<GrammarResult> en) {
         return true;
     }
-    
+
     // customizers section ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    
+
     public java.awt.Component getCustomizer(HintContext ctx) {
         return null;
     }
-    
+
     public boolean hasCustomizer(HintContext ctx) {
         return false;
     }
@@ -710,120 +724,120 @@ class AntGrammar implements GrammarQuery {
     public org.openide.nodes.Node.Property[] getProperties(HintContext ctx) {
         return null;
     }
-    
+
 
     // Result classes ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    
+
     private static abstract class AbstractResultNode extends AbstractNode implements GrammarResult {
-        
+
         public Icon getIcon(int kind) {
             return null;
         }
-        
+
         public String getDescription() {
             return null;
         }
-        
+
         public String getDisplayName() {
             return null;
         }
-       
+
         // TODO in MyElement return true for really empty elements such as "pathelement"
         public boolean isEmptyElement() {
             return false;
-        } 
+        }
     }
-    
+
     private static class MyEntityReference extends AbstractResultNode implements EntityReference {
-        
+
         private String name;
-        
+
         MyEntityReference(String name) {
             this.name = name;
         }
-        
+
         public short getNodeType() {
             return Node.ENTITY_REFERENCE_NODE;
         }
-        
-        public String getNodeName() {
+
+        public @Override String getNodeName() {
             return name;
         }
-                
+
     }
-    
+
     private static class MyElement extends AbstractResultNode implements Element {
-        
+
         private String name;
-        
+
         MyElement(String name) {
             this.name = name;
         }
-        
+
         public short getNodeType() {
             return Node.ELEMENT_NODE;
         }
-        
-        public String getNodeName() {
+
+        public @Override String getNodeName() {
             return name;
         }
-        
-        public String getTagName() {
+
+        public @Override String getTagName() {
             return name;
         }
-        
+
     }
 
     private static class MyAttr extends AbstractResultNode implements Attr {
-        
+
         private String name;
-        
+
         MyAttr(String name) {
             this.name = name;
         }
-        
+
         public short getNodeType() {
             return Node.ATTRIBUTE_NODE;
         }
-        
-        public String getNodeName() {
+
+        public @Override String getNodeName() {
             return name;
         }
-        
-        public String getName() {
-            return name;                
+
+        public @Override String getName() {
+            return name;
         }
 
-        public String getValue() {
+        public @Override String getValue() {
             return null;  //??? what spec says
         }
-        
-        
+
+
     }
 
     private static class MyText extends AbstractResultNode implements Text {
-        
+
         private String data;
-        
+
         MyText(String data) {
             this.data = data;
         }
-        
+
         public short getNodeType() {
             return Node.TEXT_NODE;
         }
 
-        public String getNodeValue() {
-            return data;
-        }
-        
-        public String getData() throws DOMException {
+        public @Override String getNodeValue() {
             return data;
         }
 
-        public int getLength() {
+        public @Override String getData() throws DOMException {
+            return data;
+        }
+
+        public @Override int getLength() {
             return data == null ? -1 : data.length();
-        }    
+        }
     }
-        
+
 }
