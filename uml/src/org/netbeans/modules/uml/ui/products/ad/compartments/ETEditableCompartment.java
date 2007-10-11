@@ -85,7 +85,7 @@ import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl;
 import java.awt.font.FontRenderContext;
 import java.awt.font.LineMetrics;
 import org.netbeans.modules.uml.ui.swing.drawingarea.ADDrawingAreaControl;
-import com.tomsawyer.graph.TSGraphObject;
+//import com.tomsawyer.graph.TSGraphObject;
 import org.netbeans.modules.uml.ui.products.ad.graphobjects.ETEdgeLabel;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.IETGraphObject;
 import org.openide.util.NbBundle;
@@ -398,9 +398,15 @@ public class ETEditableCompartment extends ETCompartment implements IADEditableC
       m_bNew = (bNew == true);
       if (m_EditDialog == null)
       {
-         m_EditDialog = new JDialog();
+         IDrawingAreaControl pDrawingArea = getDrawingArea();
+         
+         // Fixed issue 116054 and 
+         // Should set parent frame to the edit control JDialog.
+         m_EditDialog = pDrawingArea != null ?
+                 new JDialog(pDrawingArea.getOwnerFrame()) :
+                 new JDialog();
+         
          m_EditControl = new EditControlImpl(this);
-         m_EditControl.setOpaque(false);
          m_EditControl.setForeColor(getCompartmentFontColor());
          //m_EditControl.setStyle(m_style);
          m_EditControl.setStyle(getHorizontalAlignment());
@@ -411,9 +417,10 @@ public class ETEditableCompartment extends ETCompartment implements IADEditableC
 
          if (m_engine != null && m_engine instanceof ETNodeDrawEngine)
          {
-            m_EditControl.setEditControlBackground(((ETNodeDrawEngine)m_engine).getBkColor());
-            m_EditDialog.setBackground(((ETNodeDrawEngine)m_engine).getBkColor());
-            m_EditDialog.getRootPane().setBackground(((ETNodeDrawEngine)m_engine).getBkColor());
+            Color bkColor = ((ETNodeDrawEngine)m_engine).getBkColor();
+            m_EditControl.setEditControlBackground(bkColor);
+            m_EditDialog.setBackground(bkColor);
+            m_EditDialog.getRootPane().setBackground(bkColor);
          }
          m_EditDialog.setUndecorated(true);
 
@@ -422,7 +429,7 @@ public class ETEditableCompartment extends ETCompartment implements IADEditableC
             reattach();
          }
          m_EditControl.setElement(m_modelElement);
-         IDrawingAreaControl pDrawingArea = getDrawingArea();
+         
          if (pDrawingArea != null)
          {
             m_EditControl.setFont(getCompartmentFont(pDrawingArea.getCurrentZoom()));
@@ -438,7 +445,8 @@ public class ETEditableCompartment extends ETCompartment implements IADEditableC
 
          this.getEngine().getDrawingArea().setEditCompartment(this);
          //editCtrl.setPreferredSize(new Dimension(300,25));
-         m_EditDialog.setContentPane(m_EditControl);
+         //m_EditDialog.setContentPane(m_EditControl);
+         m_EditDialog.add(m_EditControl);
          
          // Fix IZ=87193. When the Overwiew window is opened, the m_boundingRect of an edge label contains the data 
          // (i.e. x,y,w,h) corresponding the overview window; hence the computed location of the edit control dialog
@@ -497,7 +505,7 @@ public class ETEditableCompartment extends ETCompartment implements IADEditableC
          }
          m_EditDialog.getRootPane().setBorder(null);
          m_EditDialog.getRootPane().setOpaque(false);
-         //dialog.setModal(true);
+         m_EditDialog.setModal(true);
          m_EditControl.requestFocus();
          m_EditDialog.setVisible(true);
       }
@@ -701,18 +709,18 @@ public class ETEditableCompartment extends ETCompartment implements IADEditableC
    }
    
    //Jyothi
-   public void printSelectedObjects(ETList list) {
-       if (list == null) {
-//           Debug.out.println(" ETEditableCompartment : printSelectedObjects...... LIST EMPTY @@@@@@@@@@@@@@@@@@@@@@@@");
-           return;
-       }
-       java.util.Iterator iter = list.iterator();
-		while (iter.hasNext())
-		{
-			TSGraphObject go = (TSGraphObject)iter.next();
-//			Debug.out.println(" next element's = "+go);							
-		}
-   }
+//   public void printSelectedObjects(ETList list) {
+//       if (list == null) {
+////           Debug.out.println(" ETEditableCompartment : printSelectedObjects...... LIST EMPTY @@@@@@@@@@@@@@@@@@@@@@@@");
+//           return;
+//       }
+//       java.util.Iterator iter = list.iterator();
+//		while (iter.hasNext())
+//		{
+//			TSGraphObject go = (TSGraphObject)iter.next();
+////			Debug.out.println(" next element's = "+go);							
+//		}
+//   }
 
    public void cancelEditing()
    {

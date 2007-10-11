@@ -39,8 +39,6 @@
  * made subject to such option by the copyright holder.
  */
 
-
-
 package org.netbeans.modules.uml.ui.controls.editcontrol;
 
 import java.awt.BorderLayout;
@@ -82,12 +80,10 @@ import javax.swing.event.CaretListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.DefaultEditorKit;
-import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Keymap;
 
 import org.netbeans.modules.uml.core.coreapplication.ICoreProduct;
-import org.netbeans.modules.uml.core.coreapplication.IPreferenceManager2;
 import org.netbeans.modules.uml.core.eventframework.EventBlocker;
 import org.netbeans.modules.uml.core.eventframework.IEventDispatcher;
 import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityNode;
@@ -111,7 +107,6 @@ import org.netbeans.modules.uml.ui.support.ProductHelper;
 import org.netbeans.modules.uml.ui.support.applicationmanager.IProduct;
 import org.netbeans.modules.uml.ui.support.drawingproperties.DrawingPropertyResource;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.ICompartment;
-import org.netbeans.modules.uml.ui.swing.projecttree.JProjectTree;
 import org.netbeans.modules.uml.ui.swing.projecttree.ProjectTreeCellEditor;
 
 /**
@@ -164,10 +159,6 @@ public class EditControlImpl extends JPanel implements IEditControl, InputMethod
    private boolean m_ShowTooltips = true;
 
    private IStrings m_List = null;
-
-   private JProjectTree m_ProjectTree = null;
-   // transient private ISwingProjectTreeModel m_Model = null;
-   private int caretPosBefore = -1;
 
    // state maintenance variables for in-between InputMethodTextChanged calls
    private int ime_SelectionStartPos = 0;
@@ -1006,10 +997,11 @@ public class EditControlImpl extends JPanel implements IEditControl, InputMethod
       }
    }
 
-   DefaultStyledDocument doc = new DefaultStyledDocument();
+   //DefaultStyledDocument doc = new DefaultStyledDocument();
 
    private void initComponents()
    {
+      setOpaque(false); 
       setBorder(null);
       m_Panel = new JPanel();
       m_Panel.setBorder(null);
@@ -1034,7 +1026,9 @@ public class EditControlImpl extends JPanel implements IEditControl, InputMethod
          compartment = (ETCompartment)getAssociatedParent();
          if (compartment.getTextWrapping() == true)
          {
-            JTextArea area = new JTextArea(doc);
+            // Fixed 115914.
+            //JTextArea area = new JTextArea(doc);
+            JTextArea area = new JTextArea();
             area.setLineWrap(true);
             area.setWrapStyleWord(true);
             m_Field = area;
@@ -1069,8 +1063,8 @@ public class EditControlImpl extends JPanel implements IEditControl, InputMethod
          else
          {
             JTextField field = new JTextField();
-            field.setDocument(doc);
-            //            field.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+            // field.setDocument(doc);
+            // field.setHorizontalAlignment(javax.swing.JTextField.CENTER);
             m_Field = field;
             add(m_Field, BorderLayout.CENTER);
          }
@@ -1098,11 +1092,8 @@ public class EditControlImpl extends JPanel implements IEditControl, InputMethod
             handleHint();
          }
       });
-      //setLayout(new BorderLayout());
-      //add(m_Field, BorderLayout.CENTER);
-      //m_Panel.add(m_Button);
+      
       m_Button.setBounds(0, 0, 15, 3);
-      setOpaque(false);
       add(m_Panel, BorderLayout.SOUTH);
       m_Panel.setBounds(0, 0, 200, 3);
       m_Panel.setOpaque(false);
