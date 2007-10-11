@@ -36,12 +36,5 @@
 -->
 
 <wizard xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="wizard-components.xsd">
-    <component class="org.netbeans.installer.wizard.components.panels.DestinationPanel">
-        <properties>
-            <property name="title">$P{org.netbeans.installer.products.jdk.Bundle, DP.title}</property>
-            <property name="description">$P{org.netbeans.installer.products.jdk.Bundle, DP.description}</property>            
-            <property name="destination.label.text">$P{org.netbeans.installer.products.jdk.Bundle, DP.destination.label.text}</property>
-            <property name="destination.button.text">$P{org.netbeans.installer.products.jdk.Bundle, DP.destination.button.text}</property>
-        </properties>
-    </component>
+    <component class="org.netbeans.installer.products.jdk.wizard.panels.JDKPanel"/>    
 </wizard>
