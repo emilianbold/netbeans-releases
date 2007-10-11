@@ -136,7 +136,7 @@ public class DbDriverManager {
         try {
             Connection conn = DriverManager.getConnection(databaseURL, props);
             synchronized (conn2Driver) {
-                conn2Driver.put(conn, driver);
+                conn2Driver.put(conn, null);
             }
             return conn;
         } catch (SQLException e) {
