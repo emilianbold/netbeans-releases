@@ -200,7 +200,7 @@ made subject to such option by the copyright holder.
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/2">
             <compilation-unit>
                 <package-root>antsrc</package-root>
-                <classpath mode="compile">${ant.home}/lib/ant.jar:${nb_all}/core/javahelp/external/jh-2.0_04.jar</classpath>
+                <classpath mode="compile">${ant.home}/lib/ant.jar:${nb_all}/core/javahelp/external/jh-2.0_05.jar</classpath>
                 <classpath mode="boot">${nbjdk.bootclasspath}</classpath>
                 <built-to>build/antclasses</built-to>
                 <built-to>nbantext.jar</built-to>
