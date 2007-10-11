@@ -104,9 +104,9 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             progress.setDetail(PROGRESS_DETAIL_RUNNING_JDK_INSTALLER);
             
             if(SystemUtils.isWindows()) {
-                results = runJDKInstallerWindows(location, installer, logFile);
+                results = runJDKInstallerWindows(location, installer, logFile, progress);
             } else {
-                results = runJDKInstallerUnix(location, installer, logFile);
+                results = runJDKInstallerUnix(location, installer, logFile, progress);
             }
             
             
@@ -129,7 +129,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         progress.setPercentage(Progress.COMPLETE);
     }
     
-    private ExecutionResults runJDKInstallerWindows(File location, File installer, File logFile) throws InstallationException {
+    private ExecutionResults runJDKInstallerWindows(File location, File installer, File logFile, Progress progress) throws InstallationException {
         try {
             SystemUtils.setEnvironmentVariable("TEMP",
                     SystemUtils.getTempDirectory().getAbsolutePath(),
@@ -161,7 +161,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         }
     }
     
-    private ExecutionResults runJDKInstallerUnix(File location, File installer, File logFile) throws InstallationException {
+    private ExecutionResults runJDKInstallerUnix(File location, File installer, File logFile, Progress progress) throws InstallationException {
         File yesFile = null;
         ExecutionResults results = null;
         try {
@@ -179,7 +179,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                         loggingOption
             };
             results = SystemUtils.executeCommand(location, commands);
-            
+            progress.addPercentage(50);
             // unix JDK installers create extra level directory jdkxxx
             File [] jdkDirs = location.listFiles(new FileFilter() {
                 public boolean accept(File pathname) {
@@ -191,8 +191,9 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             try {
                 for(File dir : jdkDirs) {
                     for(File f : dir.listFiles()) {
-                        FileUtils.moveFile(f, location);
+                        SystemUtils.executeCommand("mv", "-f","-v", f.getPath(), location.getAbsolutePath());                        
                     }
+                    FileUtils.deleteFile(dir);
                 }
             }  catch (IOException e) {
                 throw new InstallationException(
