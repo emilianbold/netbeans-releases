@@ -323,14 +323,18 @@ class LanguagesNavigatorModel implements TreeModel {
                 nodes,
                 model
             );
-            Language language = (Language) item.getLanguage ();
-            Feature properties = language.getFeature ("PROPERTIES");
-            if (properties != null &&
-                properties.getBoolean ("navigator-sort", false)
-            ) {
-                if (navigatorComparator == null)
-                    navigatorComparator = new NavigatorComparator ();
-                Collections.<ASTNavigatorNode>sort (nodes, navigatorComparator);
+            try {
+                Language language = LanguagesManager.getDefault ().
+                    getLanguage (item.getMimeType ());
+                Feature properties = language.getFeature ("PROPERTIES");
+                if (properties != null &&
+                    properties.getBoolean ("navigator-sort", false)
+                ) {
+                    if (navigatorComparator == null)
+                        navigatorComparator = new NavigatorComparator ();
+                    Collections.<ASTNavigatorNode>sort (nodes, navigatorComparator);
+                }
+            } catch (ParseException ex) {
             }
             return nodes;
         }
@@ -369,8 +373,13 @@ class LanguagesNavigatorModel implements TreeModel {
         ) {
             ASTPath astPath = ASTPath.create (path);
             Feature navigator = null;
-            Language language = (Language) item.getLanguage ();
-            navigator = language.getFeature ("NAVIGATOR", astPath);
+            try {
+                Language language = LanguagesManager.getDefault ().
+                    getLanguage (item.getMimeType ());
+                navigator = language.getFeature ("NAVIGATOR", astPath);
+            } catch (ParseException ex) {
+                return null;
+            }
             if (navigator == null) return null;
             Context context = SyntaxContext.create (document, astPath);
             String displayName = (String) navigator.getValue ("display_name", context);

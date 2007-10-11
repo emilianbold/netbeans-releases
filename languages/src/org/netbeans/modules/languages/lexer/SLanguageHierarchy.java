@@ -41,13 +41,11 @@
 
 package org.netbeans.modules.languages.lexer;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
 import org.netbeans.api.languages.ParseException;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.HashMap;
+import java.util.Iterator;
 import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.Language.TokenType;
 import org.netbeans.api.languages.ParseException;
@@ -64,7 +62,8 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 public class SLanguageHierarchy extends LanguageHierarchy<STokenId> {
     
     private String                      mimeType;
-    private STokenId[]                  tokenIDs;
+    private Collection<STokenId>        tokenIds;
+    private HashMap<String,STokenId>    tokensMap;
     
     
     public SLanguageHierarchy (String mimeType) {
@@ -72,34 +71,44 @@ public class SLanguageHierarchy extends LanguageHierarchy<STokenId> {
     }
     
     protected Collection<STokenId> createTokenIds () {
-        if (tokenIDs == null) {
-            Language language = getLanguage ();
-            List<TokenType> tokenTypes = language.getTokenTypes ();
-            List<STokenId> tokenIDsList = new ArrayList<STokenId> ();
-            Set<String> types = new HashSet<String> ();
-            int size = tokenTypes.size ();
-            for (int i = 0; i < size; i++) {
-                TokenType tokenType = tokenTypes.get (i);
-                String typeName = tokenType.getType ();
-                if (types.contains (typeName)) continue; // there can be more TokenTypes with same name!!
-                types.add (typeName);
+        if (tokenIds == null) {
+            tokenIds = new ArrayList<STokenId> ();
+            tokensMap = new HashMap<String,STokenId> ();
+            Iterator<TokenType> it = getLanguage ().getTokenTypes ().iterator ();
+            while (it.hasNext ()) {
+                TokenType t = it.next ();
+                if (tokensMap.containsKey (t.getType ())) continue;
                 STokenId tokenId = new STokenId (
-                    typeName, 
-                    language.getTokenID (typeName), 
-                    typeName
+                    t.getType (), 
+                    tokenIds.size (), 
+                    t.getType ()
                 );
-                tokenIDsList.add (tokenId);
+                tokenIds.add (tokenId);
+                tokensMap.put (t.getType (), tokenId);
             }
-            tokenIDs = tokenIDsList.toArray (new STokenId [tokenIDsList.size ()]);
+            STokenId errorTokenId = new STokenId (
+                "error",
+                tokenIds.size (), 
+                "error"
+            );
+            tokenIds.add (errorTokenId);
+            tokensMap.put ("error", errorTokenId);
+            STokenId embeddingTokenId = new STokenId (
+                "PE",
+                tokenIds.size (), 
+                "PE"
+            );
+            tokenIds.add (embeddingTokenId);
+            tokensMap.put ("PE", embeddingTokenId);
         }
-        return Arrays.asList (tokenIDs);
+        return tokenIds;
     }
 
     protected Lexer<STokenId> createLexer (LexerRestartInfo<STokenId> info) {
-        if (tokenIDs == null) createTokenIds ();
+        if (tokensMap == null) createTokenIds ();
         return new SLexer (
             getLanguage (), 
-            tokenIDs, 
+            tokensMap, 
             info
         );
     }

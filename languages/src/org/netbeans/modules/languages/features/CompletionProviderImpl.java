@@ -301,11 +301,12 @@ public class CompletionProviderImpl implements CompletionProvider {
             String start = null;
             Token token = tokenSequence.token ();
             start = token.text ().toString ();
-            List<Feature> features = language.getFeatures (COMPLETION, token.id ().ordinal ());
+            String tokenType = token.id ().name ();
+            List<Feature> features = language.getFeatures (COMPLETION, tokenType);
             Iterator<Feature> it = features.iterator ();
             while (it.hasNext ()) {
                 Feature feature =  it.next ();
-                String completionType = getCompletionType (feature, token.id ().name ());
+                String completionType = getCompletionType (feature, tokenType);
                 int tokenOffset = tokenSequence.offset();
                 if (completionType == null) continue;
                 if (COMPLETION_APPEND.equals (completionType) && 
@@ -365,16 +366,17 @@ public class CompletionProviderImpl implements CompletionProvider {
                 // add tokens for language borders...
                 return;
             }
+            String tokenType = token.getType ();
             int tokenOffset = token.getOffset ();
 
             for (int i = path.size () - 1; i >= 0; i--) {
                 item = path.get (i);
-                if (item.getLanguage () == language) break;
+                if (!item.getMimeType ().equals(language.getMimeType ())) break;
                 List<Feature> features = language.getFeatures (COMPLETION, path.subPath (i));
                 Iterator<Feature> it2 = features.iterator ();
                 while (it2.hasNext ()) {
                     Feature feature =  it2.next ();
-                    String completionType = getCompletionType (feature, token.getTypeName ());
+                    String completionType = getCompletionType (feature, tokenType);
                     if (completionType == null) continue;
                     if (COMPLETION_APPEND.equals (completionType) && 
                         offset < tokenOffset + token.getLength ()

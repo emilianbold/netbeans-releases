@@ -50,8 +50,6 @@ import java.io.InputStream;
  */
 public abstract class Language {
 
-    public abstract String getMimeType ();
-    
     public abstract ASTNode parse (InputStream is) throws IOException, ParseException;
   
     {

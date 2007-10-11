@@ -195,6 +195,9 @@ public class ParserManagerImpl extends ParserManager {
         final ASTNode                         root
     ) {
         cancel [0] = true;
+        if (parsingTask != null) {
+            parsingTask.cancel ();
+        }
         parsingTask = rp.post (new Runnable () {
             public void run () {
                 cancel [0] = false;
@@ -264,12 +267,15 @@ public class ParserManagerImpl extends ParserManager {
         Map<String,Set<ASTEvaluator>> evaluatorsMap2                            //, Map<Object,Long> times                                         
     ) {
         path.add (item);
-        Language l = (Language) item.getLanguage ();
-        l.evaluate (
-             state, 
-             path, 
-             evaluatorsMap2                                                 //, times
-        );
+        try {
+            Language l = LanguagesManager.getDefault ().getLanguage (item.getMimeType ());
+            l.evaluate (
+                 state, 
+                 path, 
+                 evaluatorsMap2                                                 //, times
+            );
+        } catch (LanguageDefinitionNotFoundException ex) {
+        }
         Iterator<ASTItem> it2 = item.getChildren ().iterator ();
         while (it2.hasNext ()) {
             if (cancel [0]) return;
@@ -354,36 +360,27 @@ public class ParserManagerImpl extends ParserManager {
     }
 
     public TokenInput createTokenInput () {
-        final TokenInput[] ret = new TokenInput[1];
-        doc.render(new Runnable() {
-            public void run() {
-                if (tokenHierarchy == null) {
-                    ret[0] = TokenInputUtils.create(Collections.<ASTToken>emptyList());
-                    return;
-                }
-                TokenSequence ts = tokenHierarchy.tokenSequence();
-                List<ASTToken> tokens = getTokens(ts);
-                if (cancel[0]) {
-                    // Leave null in ret[0]
-                    return;
-                }
-                ret[0] = TokenInputUtils.create(tokens);
-            }
-        });
-        return ret[0];
+        if (doc instanceof NbEditorDocument)
+            ((NbEditorDocument) doc).readLock ();
+        try {
+            if (tokenHierarchy == null) 
+                return TokenInputUtils.create (Collections.<ASTToken>emptyList ());
+            TokenSequence ts = tokenHierarchy.tokenSequence ();
+            List<ASTToken> tokens = getTokens (ts);
+            if (cancel [0]) return null;
+            return TokenInputUtils.create (tokens);
+        } finally {
+            if (doc instanceof NbEditorDocument)
+                ((NbEditorDocument) doc).readUnlock ();
+        }
     }
     
     private List<ASTToken> getTokens (TokenSequence ts) {
-        Language language = null;
-        try {
-            language = LanguagesManager.getDefault ().getLanguage (ts.language ().mimeType ());
-        } catch (LanguageDefinitionNotFoundException ex) {
-        }
         List<ASTToken> tokens = new ArrayList<ASTToken> ();
         while (ts.moveNext ()) {
             if (cancel [0]) return null;
             Token t = ts.token ();
-            int type = t.id ().ordinal ();
+            String type = t.id ().name ();
             int offset = ts.offset ();
             String ttype = (String) t.getProperty ("type");
             if (ttype == null || ttype.equals ("E")) {
@@ -392,7 +389,7 @@ public class ParserManagerImpl extends ParserManager {
                 if (ts2 != null)
                     children = getTokens (ts2);
                 tokens.add (ASTToken.create (
-                    language,
+                    ts.language ().mimeType (),
                     type, 
                     t.text ().toString (), 
                     offset,
@@ -442,13 +439,13 @@ public class ParserManagerImpl extends ParserManager {
 //                        children.addAll (
 //                            getTokens (ts2)
 //                        );
-                    if (type != t.id ().ordinal ())
+                    if (!type.equals (t.id ().name ()))
                         throw new IllegalArgumentException ();
                     sb.append (t.text ());
                 }
                 int no = ts.offset () + ts.token ().length ();
                 tokens.add (ASTToken.create (
-                    language,
+                    ts.language ().mimeType (),
                     type, 
                     sb.toString (), 
                     offset,

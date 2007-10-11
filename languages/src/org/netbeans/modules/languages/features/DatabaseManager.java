@@ -117,56 +117,60 @@ public class DatabaseManager {
                 return;
             ASTItem item =  it.next ();
             path.add (item);
-            Language language = (Language) item.getLanguage ();
-            ASTPath astPath = ASTPath.create (path);
-            Feature feature = language.getFeature ("SEMANTIC_DECLARATION", astPath);
-            if (feature != null) {
-                SyntaxContext sc = SyntaxContext.create (doc, astPath);
-                String name = ((String) feature.getValue ("name", sc)).trim ();
-                String type = (String) feature.getValue ("type", sc);
-                if (name != null && name.length() > 0) {
-                    //S ystem.out.println("add " + name + " " + item);
-                    String local = (String) feature.getValue ("local", sc);
-                    if (local != null) {
-                        DatabaseContext c = context;
-                        while (c != null && !local.equals (c.getType ()))
-                            c = c.getParent ();
-                        if (c != null) 
-                            type = "local";
-                    }
-                    DatabaseContext con = context;
-                    if ("method".equals(type)) { // NOI18N
-                        con = con.getParent();
-                        if (con == null) {
-                            con = context;
+            try {
+                Language language = LanguagesManager.getDefault ().
+                    getLanguage (item.getMimeType ());
+                ASTPath astPath = ASTPath.create (path);
+                Feature feature = language.getFeature ("SEMANTIC_DECLARATION", astPath);
+                if (feature != null) {
+                    SyntaxContext sc = SyntaxContext.create (doc, astPath);
+                    String name = ((String) feature.getValue ("name", sc)).trim ();
+                    String type = (String) feature.getValue ("type", sc);
+                    if (name != null && name.length() > 0) {
+                        //S ystem.out.println("add " + name + " " + item);
+                        String local = (String) feature.getValue ("local", sc);
+                        if (local != null) {
+                            DatabaseContext c = context;
+                            while (c != null && !local.equals (c.getType ()))
+                                c = c.getParent ();
+                            if (c != null) 
+                                type = "local";
                         }
+                        DatabaseContext con = context;
+                        if ("method".equals(type)) { // NOI18N
+                            con = con.getParent();
+                            if (con == null) {
+                                con = context;
+                            }
+                        }
+                        con.addDefinition (new DatabaseDefinition (name, type, item.getOffset (), item.getEndOffset ()));
                     }
-                    con.addDefinition (new DatabaseDefinition (name, type, item.getOffset (), item.getEndOffset ()));
                 }
-            }
-            feature = language.getFeature ("SEMANTIC_CONTEXT", astPath);
-            if (feature != null) {
-                String type = (String) feature.getValue ("type");
-                DatabaseContext newContext = new DatabaseContext (context, type, item.getOffset (), item.getEndOffset ());
-                context.addContext (item, newContext);
-                process (path, newContext, unresolvedUsages, doc, parser);
-                path.remove (path.size () - 1);
-                continue;
-            }
-            feature = language.getFeature ("SEMANTIC_USAGE", astPath);
-            if (feature != null) {
-                SyntaxContext sc = SyntaxContext.create (doc, astPath);
-                String name = (String) feature.getValue ("name", sc);
-                DatabaseDefinition definition = context.getDefinition (name, item.getOffset ());
-                DatabaseUsage usage = new DatabaseUsage (name, item.getOffset (), item.getEndOffset ());
-                if (definition != null) {
-                    definition.addUsage (usage);
-                    usage.setDatabaseDefinition (definition);
-                    context.addUsage (usage);
-                } else {
-                    unresolvedUsages.add (usage);
-                    unresolvedUsages.add (context);
+                feature = language.getFeature ("SEMANTIC_CONTEXT", astPath);
+                if (feature != null) {
+                    String type = (String) feature.getValue ("type");
+                    DatabaseContext newContext = new DatabaseContext (context, type, item.getOffset (), item.getEndOffset ());
+                    context.addContext (item, newContext);
+                    process (path, newContext, unresolvedUsages, doc, parser);
+                    path.remove (path.size () - 1);
+                    continue;
                 }
+                feature = language.getFeature ("SEMANTIC_USAGE", astPath);
+                if (feature != null) {
+                    SyntaxContext sc = SyntaxContext.create (doc, astPath);
+                    String name = (String) feature.getValue ("name", sc);
+                    DatabaseDefinition definition = context.getDefinition (name, item.getOffset ());
+                    DatabaseUsage usage = new DatabaseUsage (name, item.getOffset (), item.getEndOffset ());
+                    if (definition != null) {
+                        definition.addUsage (usage);
+                        usage.setDatabaseDefinition (definition);
+                        context.addUsage (usage);
+                    } else {
+                        unresolvedUsages.add (usage);
+                        unresolvedUsages.add (context);
+                    }
+                }
+            } catch (LanguageDefinitionNotFoundException ex) {
             }
             process (path, context, unresolvedUsages, doc, parser);
             path.remove (path.size () - 1);

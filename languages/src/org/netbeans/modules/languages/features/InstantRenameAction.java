@@ -158,8 +158,7 @@ public class InstantRenameAction extends BaseAction implements KeyListener, Docu
                 Iterator<Element> it = elements.iterator ();
                 while (it.hasNext ()) {
                     Element element = it.next ();
-                    ASTItem item = element.getItem ();
-                    highlights.add (highlighting.highlight (item.getOffset (), item.getEndOffset (), getHighlightAS ()));
+                    highlights.add (highlighting.highlight (element.getItem (), getHighlightAS ()));
                 }
             }
         });

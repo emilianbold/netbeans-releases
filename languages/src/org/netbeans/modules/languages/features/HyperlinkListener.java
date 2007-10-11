@@ -150,14 +150,13 @@ MouseListener {
                         ("HYPERLINK", token.id ().name ());
                     if (hyperlinkFeature == null) return;
                     ASTToken stoken = ASTToken.create (
-                        language,
-                        token.id ().ordinal (),
+                        tokenSequence.language ().mimeType (),
+                        token.id ().name (),
                         token.text ().toString (),
                         tokenSequence.offset ()
                     );
                     highlight = Highlighting.getHighlighting (document).highlight (
-                        tokenSequence.offset (),
-                        tokenSequence.offset () + token.length (),
+                        stoken,
                         getHyperlinkAS ()
                     );
                     runnable = (Runnable) hyperlinkFeature.getValue (Context.create (document, offset));
@@ -171,12 +170,11 @@ MouseListener {
             int i, k = path.size ();
             for (i = 0; i < k; i++) {
                 ASTPath p = path.subPath (i);
-                Language language = (Language) p.getLeaf ().getLanguage ();
+                Language language = LanguagesManager.getDefault ().getLanguage (p.getLeaf ().getMimeType ());
                 Feature hyperlinkFeature = language.getFeature ("HYPERLINK", p);
                 if (hyperlinkFeature == null) continue;
                 highlight = Highlighting.getHighlighting (document).highlight (
-                    p.getLeaf ().getOffset (),
-                    p.getLeaf ().getEndOffset (),
+                    p.getLeaf (),
                     getHyperlinkAS ()
                 );
                 runnable = (Runnable) hyperlinkFeature.getValue (SyntaxContext.create (document, p));
@@ -186,8 +184,7 @@ MouseListener {
                 final DatabaseItem item = root.getDatabaseItem (offset);
                 if (item != null && item instanceof DatabaseUsage) {
                     highlight = Highlighting.getHighlighting (document).highlight (
-                        path.getLeaf ().getOffset (),
-                        path.getLeaf ().getEndOffset (),
+                        path.getLeaf (),
                         getHyperlinkAS ()
                     );
                     runnable = new Runnable () {
@@ -214,8 +211,7 @@ MouseListener {
                             final FileObject fo = map.keySet ().iterator ().next ();
                             final DatabaseDefinition definition = map.get (fo).iterator ().next ();
                             highlight = Highlighting.getHighlighting (document).highlight (
-                                path.getLeaf ().getOffset (),
-                                path.getLeaf ().getEndOffset (),
+                                path.getLeaf (),
                                 getHyperlinkAS ()
                             );
                             runnable = new Runnable () {

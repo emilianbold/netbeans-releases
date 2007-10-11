@@ -66,7 +66,6 @@ import java.util.Vector;
 import java.io.OutputStream;
 import java.util.HashSet;
 import java.util.List;
-import org.netbeans.api.lexer.TokenId;
 
 /**
  *
@@ -105,8 +104,6 @@ public class LanguagesManager extends org.netbeans.api.languages.LanguagesManage
     
     public synchronized Language getLanguage (String mimeType) 
     throws LanguageDefinitionNotFoundException {
-        if (mimeType.equals (NBSLanguage.NBS_MIME_TYPE))
-            return NBSLanguage.getNBSLanguage ();
         if (!mimeTypeToLanguage.containsKey (mimeType)) {
             mimeTypeToLanguage.put (mimeType, parsingLanguage);
             FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
@@ -120,15 +117,6 @@ public class LanguagesManager extends org.netbeans.api.languages.LanguagesManage
             Language l = null;
             try {
                 l = NBSLanguageReader.readLanguage (fo, mimeType);
-                //l.print ();
-                if (l.getTokenTypes ().size () < 3) {
-                    org.netbeans.api.lexer.Language lexerLanguage = org.netbeans.api.lexer.Language.find (mimeType);
-                    Iterator it = lexerLanguage.tokenIds ().iterator ();
-                    while (it.hasNext()) {
-                        TokenId tokenId = (TokenId) it.next();
-                        l.addTokenType (tokenId.ordinal (), tokenId.name ());
-                    }
-                }
                 l.getAnalyser ();
                 initLanguage (l);
             } catch (ParseException ex) {
@@ -138,6 +126,7 @@ public class LanguagesManager extends org.netbeans.api.languages.LanguagesManage
                 l = new Language (mimeType);
                 Utils.message ("Editors/" + mimeType + "/language.nbs: " + ex.getMessage ());
             }
+            //l.print ();
             mimeTypeToLanguage.put (mimeType, l);
         }
         if (parsingLanguage == mimeTypeToLanguage.get (mimeType))

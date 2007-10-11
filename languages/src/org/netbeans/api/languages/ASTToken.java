@@ -49,7 +49,7 @@ import java.util.List;
 public final class ASTToken extends ASTItem {
 
     private String      identifier;
-    private int         type;
+    private String      type;
     
     
     /**
@@ -64,46 +64,16 @@ public final class ASTToken extends ASTItem {
      * @return new ASTToken
      */
     public static ASTToken create (
-        Language        language,
-        int             type,
+        String          mimeType,
+        String          type,
         String          identifier,
         int             offset,
         int             length,
         List<? extends ASTItem> children
     ) {
         return new ASTToken (
-            language,
+            mimeType,
             type, 
-            identifier, 
-            offset, 
-            length,
-            children
-        );
-    }
-    
-    /**
-     * Creates new token with given parameters.
-     * 
-     * @param mimeType a mime type of token 
-     * @param type a type of token 
-     * @param identifier token identifier
-     * @param offset token offset
-     * @param length token length
-     * @param children a list of token children
-     * @return new ASTToken
-     */
-    public static ASTToken create (
-        Language        language,
-        String          typeName,
-        String          identifier,
-        int             offset,
-        int             length,
-        List<? extends ASTItem> children
-    ) {
-        int typeID = ((org.netbeans.modules.languages.Language) language).getTokenID (typeName);
-        return new ASTToken (
-            language,
-            typeID, 
             identifier, 
             offset, 
             length,
@@ -123,13 +93,13 @@ public final class ASTToken extends ASTItem {
      * @return new ASTToken
      */
     public static ASTToken create (
-        Language        language,
-        int             type,
-        String          identifier,
-        int             offset
+        String  mimeType,
+        String  type,
+        String  identifier,
+        int     offset
     ) {
         return new ASTToken (
-            language,
+            mimeType,
             type, 
             identifier, 
             offset, 
@@ -140,14 +110,14 @@ public final class ASTToken extends ASTItem {
 
     
     private ASTToken (
-        Language                language,
-        int                     type, 
+        String                  mimeType,
+        String                  type, 
         String                  identifier, 
         int                     offset,
         int                     length,
         List<? extends ASTItem> children
     ) {
-        super (language, offset, length, children);
+        super (mimeType, offset, length, children);
         this.identifier = identifier;
         this.type = type;
     }
@@ -157,13 +127,10 @@ public final class ASTToken extends ASTItem {
      * 
      * @return type of token
      */
-    public int getTypeID () {
+    public String getType () {
         return type;
     }
     
-    public String getTypeName () {
-        return ((org.netbeans.modules.languages.Language) getLanguage ()).getTokenType (type);
-    }
 
     /**
      * Retruns token identifier.
@@ -184,7 +151,7 @@ public final class ASTToken extends ASTItem {
     public String toString () {
         if (toString == null) {
             StringBuffer sb = new StringBuffer ();
-            sb.append ('<').append (getTypeName ());
+            sb.append ('<').append (type);
             if (identifier != null)
                 sb.append (",'").
                    append (e (identifier)).

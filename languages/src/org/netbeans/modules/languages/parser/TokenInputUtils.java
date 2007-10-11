@@ -45,21 +45,24 @@ import org.netbeans.api.languages.*;
 import org.netbeans.api.languages.CharInput;
 import org.netbeans.api.languages.ASTToken;
 import org.netbeans.modules.languages.Feature;
+import org.netbeans.modules.languages.parser.Parser;
 import org.netbeans.modules.languages.parser.Parser.Cookie;
-
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 
 public abstract class TokenInputUtils {
 
     public static TokenInput create (
-        Language        language,
-        Parser          parser, 
-        CharInput       input
+        String      mimeType,
+        Parser      parser, 
+        CharInput   input, 
+        Set         skip
     ) {
         return new TokenInputImpl (
-            new TokenReader (language, parser, input),
+            new TokenReader (mimeType, parser, input, skip),
             input
         );
     }
@@ -77,21 +80,24 @@ public abstract class TokenInputUtils {
 
     private static class TokenReader {
         
-        private Language        language;
-        private Parser          parser;
-        private CharInput       input;
-        private int             state = -1;
-        private Cookie          cookie = new MyCookie ();
+        private String      mimeType;
+        private Parser      parser;
+        private CharInput   input;
+        private Set         skip;
+        private int         state = -1;
+        private Cookie      cookie = new MyCookie ();
 
 
         private TokenReader (
-            Language            language,
-            Parser              parser, 
-            CharInput           input
+            String mimeType,
+            Parser parser, 
+            CharInput input, 
+            Set skip
         ) {
-            this.language = language;
+            this.mimeType = mimeType;
             this.parser = parser;
             this.input = input;
+            this.skip = skip;
         }
 
         private ASTToken next;
@@ -108,7 +114,13 @@ public abstract class TokenInputUtils {
                 next = null;
                 return p;
             }
-            return parser.read (cookie, input, language);
+            ASTToken token = null;
+            do {
+                int start = input.getIndex ();
+                token = parser.read (cookie, input, mimeType);
+                if (token == null) return null;
+            } while (skip.contains (token.getType ()));
+            return token;
         }
     
         private class MyCookie implements Cookie {

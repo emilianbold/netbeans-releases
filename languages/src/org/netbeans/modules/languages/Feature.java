@@ -49,13 +49,16 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.swing.text.AbstractDocument;
+import javax.swing.text.Document;
 import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ASTToken;
 import org.netbeans.api.languages.Context;
 import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.languages.parser.Pattern;
 import org.netbeans.modules.languages.parser.Pattern;
 import org.openide.ErrorManager;
@@ -271,18 +274,6 @@ public class Feature {
         if (m == null) return null;
         return m.getMethodName ();
     }
-    
-    public String toString () {
-        StringBuilder sb = new StringBuilder ();
-        sb.append("Feature ");
-        if (featureName != null)
-            sb.append (featureName).append (' ');
-        if (selector != null)
-            sb.append (selector).append (' ');
-        if (value != null)
-            sb.append (value).append (' ');
-        return sb.toString ();
-    }
 
 
     // innerclasses ............................................................
@@ -333,8 +324,8 @@ public class Feature {
                     TokenSequence tokenSequence = Utils.getTokenSequence (document, context.getOffset ());
                     Token token = tokenSequence.token ();
                     stoken = ASTToken.create (
-                        null,
-                        token.id ().ordinal (),
+                        tokenSequence.language ().mimeType (),
+                        token.id ().name (),
                         token.text ().toString (),
                         tokenSequence.offset ()
                     );
@@ -399,7 +390,7 @@ public class Feature {
                     sb.append (token.getIdentifier ());
                 else
                 if (names [i + 1].equals ("type"))
-                    sb.append (token.getTypeName ());
+                    sb.append (token.getType ());
             }
             return sb.toString ();
         }

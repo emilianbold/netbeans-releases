@@ -49,7 +49,6 @@ import java.util.Stack;
 import javax.swing.text.AbstractDocument;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.languages.ASTItem;
-import org.netbeans.api.languages.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.languages.Context;
@@ -149,7 +148,7 @@ public class HTML {
         ASTNode n = (ASTNode) context.getASTPath ().getRoot ();
         List l = new ArrayList ();
         resolve (n, new Stack (), l, true);
-        return ASTNode.create (n.getLanguage (), n.getNT (), l, n.getOffset ());
+        return ASTNode.create (n.getMimeType (), n.getNT (), l, n.getOffset ());
     }
     
     
@@ -171,11 +170,11 @@ public class HTML {
         return library;
     }
     
-    private static ASTNode clone (Language language, String nt, int offset, List children) {
-        return clone (language, nt, offset, children, true);
+    private static ASTNode clone (String mimeType, String nt, int offset, List children) {
+        return clone(mimeType, nt, offset, children, true);
     }
     
-    private static ASTNode clone (Language language, String nt, int offset, List children, boolean cloneChildren) {
+    private static ASTNode clone (String mimeType, String nt, int offset, List children, boolean cloneChildren) {
         if(cloneChildren) {
             Iterator it = children.iterator ();
             List l = new ArrayList ();
@@ -186,14 +185,14 @@ public class HTML {
                 else
                     l.add (clone ((ASTNode) o));
             }
-            return ASTNode.create (language, nt, l, offset);
+            return ASTNode.create (mimeType, nt, l, offset);
         } else {
-            return ASTNode.create (language, nt, children, offset);
+            return ASTNode.create(mimeType, nt, children, offset);
         }
     }
     
     private static ASTNode clone (ASTNode n) {
-        return clone (n.getLanguage (), n.getNT (), n.getOffset (), n.getChildren ());
+        return clone (n.getMimeType (), n.getNT (), n.getOffset (), n.getChildren ());
     }
     
     private static ASTToken clone (ASTToken token) {
@@ -207,8 +206,8 @@ public class HTML {
                 children.add (clone ((ASTToken) item));
         }
         return ASTToken.create (
-            token.getLanguage (),
-            token.getTypeID (),
+            token.getMimeType (),
+            token.getType (),
             token.getIdentifier (),
             token.getOffset (),
             token.getLength (),
@@ -217,7 +216,7 @@ public class HTML {
     }
     
     private static ASTNode clone (ASTNode n, String nt) {
-        return clone (n.getLanguage (), nt, n.getOffset (), n.getChildren (), false);
+        return clone (n.getMimeType (), nt, n.getOffset (), n.getChildren (), false);
     }
     
     public static void resolve (ASTNode n, Stack s, List l, boolean findUnpairedTags) {
@@ -266,7 +265,7 @@ public class HTML {
                     List ll1 = new ArrayList (ll);
                     ll1.add (node);
                     ASTNode tag = clone (
-                        node.getLanguage (),
+                        node.getMimeType (),
                         "tag",
                         ((ASTNode) ll1.get (0)).getOffset (),
                         ll1

@@ -63,6 +63,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Collections;
 import java.util.Iterator;
  
     
@@ -111,12 +112,12 @@ public class NBSLanguageReader {
         ASTNode node = null;
         TokenInput tokenInput = null;
         try {
-            Language nbsLanguage = NBSLanguage.getNBSLanguage ();
+            Language nbsLanguage = getNBSLanguage ();
             tokenInput = TokenInputUtils.create (
-                NBSLanguage.getNBSLanguage (),
+                mimeType,
                 nbsLanguage.getParser (), 
-                input
-            
+                input, 
+                Collections.EMPTY_SET
             );
             node = nbsLanguage.getAnalyser ().read (tokenInput, false, new boolean[] {false});
             if (node == null) 
@@ -135,6 +136,14 @@ public class NBSLanguageReader {
         }
         readBody (source, sourceName, node, language);
         return language;
+    }
+    
+    private static Language nbsLanguage;
+    
+    private static Language getNBSLanguage () throws ParseException {
+        if (nbsLanguage == null)
+            nbsLanguage = NBSLanguage.getNBSLanguage ();
+        return nbsLanguage;
     }
     
     private static void readBody (
@@ -358,7 +367,7 @@ public class NBSLanguageReader {
             if (token.getIdentifier ().equals ("."))
                 sb.append ('.');
             else
-            if (token.getTypeID () == NBSLanguage.IDENTIFIER_ID)
+            if (token.getType ().equals ("identifier"))
                 sb.append (token.getIdentifier ());
         }
         return sb.toString ();
@@ -394,9 +403,9 @@ public class NBSLanguageReader {
                 getText (elem, sb);
             else {
                 ASTToken token = (ASTToken) elem;
-                int type = token.getTypeID ();
-                if (type == NBSLanguage.WHITESPACE_ID ||
-                    type == NBSLanguage.COMMENT_ID
+                String type = token.getType ();
+                if (type.equals ("whitespace") ||
+                    type.equals ("comment")
                 ) 
                     continue;
                 sb.append (token.getIdentifier ());

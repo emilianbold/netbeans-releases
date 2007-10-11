@@ -48,14 +48,13 @@ public class HighlighterSupport {
         color = c;
     }
     
-    public void highlight (Document doc, int start, int end) {
+    public void highlight (Document doc, ASTItem item) {
         removeHighlight ();
         highlight = Highlighting.getHighlighting (doc).highlight (
-            start, 
-            end,
+            item, 
             getHighlightAS ()
         );
-        refresh (doc, start);
+        refresh (doc, item.getOffset ());
     }
     
     private static void refresh (final Document doc, final int offset) {

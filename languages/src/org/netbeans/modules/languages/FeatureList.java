@@ -53,7 +53,6 @@ import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ASTPath;
 import org.netbeans.api.languages.ASTToken;
-import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
 import org.netbeans.api.languages.ParserManager.State;
 
 /**
@@ -116,7 +115,7 @@ class FeatureList {
         FeatureList list = this;
         for (int i = path.size () - 1; i > 0; i--) {
             ASTItem item = path.get (i);
-            String name = item instanceof ASTNode ? ((ASTNode) item).getNT () : ((ASTToken) item).getTypeName ();
+            String name = item instanceof ASTNode ? ((ASTNode) item).getNT () : ((ASTToken) item).getType ();
             if (list.lists == null) break;
             list = list.lists.get (name);
             if (list == null) break;
@@ -139,14 +138,14 @@ class FeatureList {
     }
     
     void evaluate (
-        State                           state, 
-        List<ASTItem>                   path, 
-        Map<String,Set<ASTEvaluator>>   evaluatorsMap                           //,Map<Object,Long> times
+        State state, 
+        List<ASTItem> path, 
+        Map<String,Set<ASTEvaluator>> evaluatorsMap                             //,Map<Object,Long> times
     ) {
         FeatureList list = this;
         for (int i = path.size () - 1; i > 0; i--) {
             ASTItem item = path.get (i);
-            String name = item instanceof ASTNode ? ((ASTNode) item).getNT () : ((ASTToken) item).getTypeName ();
+            String name = item instanceof ASTNode ? ((ASTNode) item).getNT () : ((ASTToken) item).getType ();
             if (list.lists == null) return;
             list = list.lists.get (name);
             if (list == null) return;
@@ -186,34 +185,6 @@ class FeatureList {
                         }
                     }
                 }
-            }
-        }
-    }
-    
-    public String toString () {
-        StringBuilder sb = new StringBuilder ();
-        toString (sb, "");
-        return sb.toString ();
-    }
-        
-    private void toString (StringBuilder sb, String selector) {
-        sb.append ("Selector: ").append (selector).append ("\n");
-        if (features != null) {
-            Iterator<String> it = features.keySet ().iterator ();
-            while (it.hasNext ()) {
-                String featureName = it.next ();
-                Iterator<Feature> it2 = features.get (featureName).iterator ();
-                while (it2.hasNext ()) {
-                    Feature feature = it2.next ();
-                    sb.append ("  ").append (featureName).append (": ").append (feature).append ("\n");
-                }
-            }
-        }
-        if (lists != null) {
-            Iterator<String> it = lists.keySet ().iterator ();
-            while (it.hasNext ()) {
-                String s = it.next ();
-                lists.get (s).toString (sb, selector + "." + s);
             }
         }
     }
