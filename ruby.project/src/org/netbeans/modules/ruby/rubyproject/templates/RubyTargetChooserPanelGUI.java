@@ -67,6 +67,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.ruby.RubyUtils;
+import org.netbeans.modules.ruby.spi.project.support.rake.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.awt.Mnemonics;
@@ -192,7 +193,8 @@ public class RubyTargetChooserPanelGUI extends JPanel implements ActionListener,
         putClientProperty ("NewFileWizard_Title", displayName);// NOI18N        
         // Setup comboboxes 
         rootComboBox.setModel(new DefaultComboBoxModel(groups));
-        SourceGroup preselectedGroup = getPreselectedGroup( preselectedFolder );
+        SourceGroup preselectedGroup = getPreselectedGroup(
+                preselectedFolder, (Boolean) template.getAttribute("isTest")); // NOI18N
         //ignoreRootCombo = true;
         rootComboBox.setSelectedItem(preselectedGroup);
         if (preselectedFolder != null) {
@@ -668,11 +670,22 @@ public class RubyTargetChooserPanelGUI extends JPanel implements ActionListener,
         fileTextField.setText( createdFileName.replace( '/', File.separatorChar ) ); // NOI18N        
     }
     
-    private SourceGroup getPreselectedGroup(FileObject folder) {
+    private SourceGroup getPreselectedGroup(final FileObject folder, final Boolean isTest) {
         for(int i = 0; folder != null && i < groups.length; i++) {
             FileObject root = groups[i].getRootFolder();
             if (root.equals(folder) || FileUtil.isParentOf(root, folder)) {
                 return groups[i];
+            }
+        }
+        if (isTest != null && isTest) { // #118440
+            for (SourceGroup group : groups) {
+                String relPath = PropertyUtils.relativizeFile(
+                        FileUtil.toFile(project.getProjectDirectory()),
+                        FileUtil.toFile(group.getRootFolder()));
+                // standard project (test) and rails(test/unit)
+                if ("test".equals(relPath) || "test/unit".equals(relPath)) { // NOI18N
+                    return group;
+                }
             }
         }
         return groups[0];

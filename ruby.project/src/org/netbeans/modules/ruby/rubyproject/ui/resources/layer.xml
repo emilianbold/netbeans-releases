@@ -136,6 +136,7 @@ made subject to such option by the copyright holder.
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.ruby.rubyproject.templates.RubyTemplates.createRubyTemplateIterator"/>
                 <!-- Pending attribute, not yet supported - see #91580 -->
                 <attr name="templateNamePrefix" stringvalue="ts_"/>
+                <attr name="isTest" boolvalue="true"/>
             </file>
             <file name="test.rb" url="test.rb">
                 <attr name="position" intvalue="700"/>
@@ -147,6 +148,7 @@ made subject to such option by the copyright holder.
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.ruby.rubyproject.templates.RubyTemplates.createRubyTestTemplateIterator"/>
                 <!-- Pending attribute, not yet supported - see #91580 -->
                 <attr name="templateNamePrefix" stringvalue=""/>
+                <attr name="isTest" boolvalue="true"/>
             </file>
             <file name="rspec.rb" url="rspec.rb">
                 <attr name="position" intvalue="801"/>
@@ -156,6 +158,7 @@ made subject to such option by the copyright holder.
                 <attr name="templateCategory" stringvalue="ruby"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/ruby/rubyproject/ui/resources/rubyspec.html"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.ruby.rubyproject.templates.RubyTemplates.createRubySpecTemplateIterator"/>
+                <attr name="isTest" boolvalue="true"/>
             </file>
         </folder>
         
