@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU General
  * Public License Version 2 only ("GPL") or the Common Development and Distribution
  * License("CDDL") (collectively, the "License"). You may not use this file except in
@@ -16,13 +16,13 @@
  * accompanied this code. If applicable, add the following below the License Header,
  * with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * Contributor(s):
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL or only the
  * GPL Version 2, indicate your decision by adding "[Contributor] elects to include
  * this software in this distribution under the [CDDL or GPL Version 2] license." If
@@ -53,9 +53,9 @@ import org.netbeans.installer.utils.helper.ErrorLevel;
 public final class LogManager {
     /////////////////////////////////////////////////////////////////////////////////
     // Static
-    public static final int DEFAULT_LOG_LEVEL = 
+    public static final int DEFAULT_LOG_LEVEL =
             ErrorLevel.DEBUG;
-    public static final boolean DEFAULT_LOG_TO_CONSOLE = 
+    public static final boolean DEFAULT_LOG_TO_CONSOLE =
             true;
     
     private static File logFile;
@@ -90,9 +90,11 @@ public final class LogManager {
         
         // init the log file and streams
         try {
-            logFile.getParentFile().mkdirs();
-            logFile.createNewFile();
-            logWriter = new PrintWriter(new FileWriter(logFile));
+            if(logFile!=null) {
+                logFile.getParentFile().mkdirs();
+                logFile.createNewFile();
+                logWriter = new PrintWriter(new FileWriter(logFile));
+            }
             
             // here is a small assumption that there will be no calls to log*(*)
             // during the cache dumping. Otherwise we'll get a concurrent
@@ -171,10 +173,10 @@ public final class LogManager {
     }
     
     public static synchronized void logEntry(String message) {
-        final StackTraceElement traceElement = 
+        final StackTraceElement traceElement =
                 Thread.currentThread().getStackTrace()[3];
         
-        log(ErrorLevel.DEBUG, 
+        log(ErrorLevel.DEBUG,
                 "entering -- " +
                 (traceElement.isNativeMethod() ? "[native] " : "") +
                 traceElement.getClassName() + "." +
@@ -234,12 +236,12 @@ public final class LogManager {
     
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
-    public static final String LOG_LEVEL_PROPERTY = 
+    public static final String LOG_LEVEL_PROPERTY =
             "nbi.utils.log.level"; // NOI18N
-    public static final String LOG_TO_CONSOLE_PROPERTY = 
+    public static final String LOG_TO_CONSOLE_PROPERTY =
             "nbi.utils.log.to.console"; // NOI18N
     
-    public static final String INDENT = 
-            "    "; // NOI18N    
-   
+    public static final String INDENT =
+            "    "; // NOI18N
+    
 }
