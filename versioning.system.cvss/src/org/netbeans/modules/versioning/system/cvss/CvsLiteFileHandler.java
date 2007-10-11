@@ -92,6 +92,7 @@ class CvsLiteFileHandler extends DefaultFileHandler implements FileReadOnlyHandl
     }
 
     protected OutputStream createOutputStream(File file) throws IOException {
+        file = FileUtil.normalizeFile(file);
         FileObject fo = FileUtil.toFileObject(file);
         if (fo == null) {
             // #69639: Try File I/O instead
