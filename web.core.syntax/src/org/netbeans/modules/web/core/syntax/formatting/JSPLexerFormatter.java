@@ -140,17 +140,7 @@ public class JSPLexerFormatter extends TagBasedLexerFormatter {
     @Override
     protected String extractTagName(JoinedTokenSequence tokenSequence, int tagOffset) {
         Token token = getTokenAtOffset(tokenSequence, tagOffset);
-        String tokenTxt = token.text().toString();
-        
-        int startInd = 1; // ">".length();
-        
-        if (token.id() == JspTokenId.ENDTAG){
-            startInd = 2; // "/>".length()
-        } 
-        
-        int cut = tokenTxt.endsWith(">") ? 1 : 0;
-        
-        return tokenTxt.substring(startInd, tokenTxt.length() - cut);
+        return token.text().toString();
     }
 
     @Override
@@ -168,6 +158,7 @@ public class JSPLexerFormatter extends TagBasedLexerFormatter {
             thereAreMoreTokens = tokenSequence.movePrevious();
         } while (thereAreMoreTokens && tokenSequence.token().id() != JspTokenId.TAG); // HTMLTokenId.TAG_OPEN_SYMBOL);
         if (thereAreMoreTokens) {
+            tokenSequence.movePrevious(); //move to the tag opening symbol </ or <
             int r = tokenSequence.offset();
             tokenSequence.move(originalOffset);
             tokenSequence.moveNext();
