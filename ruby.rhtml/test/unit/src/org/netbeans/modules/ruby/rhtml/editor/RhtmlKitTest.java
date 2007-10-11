@@ -48,7 +48,7 @@ public class RhtmlKitTest extends RhtmlTestBase {
     public void toggleComment(String text, String expected) throws Exception {
         JEditorPane pane = getPane(text);
 
-        runKitAction(pane, "comment", ""); // Should be toggle-comment, fix in GLF
+        runKitAction(pane, "toggle-comment", "");
 
         String toggled = pane.getText();
         assertEquals(expected, toggled);
