@@ -63,6 +63,7 @@ import org.netbeans.modules.websvc.design.javamodel.ServiceModel;
 import org.netbeans.modules.websvc.design.schema2java.OperationGeneratorHelper;
 import org.netbeans.modules.websvc.design.view.DesignView;
 import org.netbeans.modules.websvc.design.view.DesignViewPopupProvider;
+import org.netbeans.modules.websvc.design.view.actions.GotoSourceAction;
 import org.netbeans.modules.websvc.design.view.actions.RemoveOperationAction;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -113,6 +114,7 @@ public class OperationWidget extends AbstractTitledWidget {
         removeAction.setWorkingSet(Collections.singleton(operation));
         getActions().addAction(ActionFactory.createPopupMenuAction(
                 new DesignViewPopupProvider(new Action [] {
+            new GotoSourceAction(operation, serviceModel.getImplementationClass()),
             removeAction
         })));
         createContent();

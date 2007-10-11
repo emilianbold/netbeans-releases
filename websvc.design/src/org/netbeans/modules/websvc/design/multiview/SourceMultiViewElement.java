@@ -41,11 +41,21 @@
 
 package org.netbeans.modules.websvc.design.multiview;
 
+import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.util.SourcePositions;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.swing.AbstractAction;
 import javax.swing.JComponent;
 import javax.swing.text.Document;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
@@ -55,6 +65,9 @@ import org.openide.nodes.Node;
 import org.openide.text.CloneableEditor;
 import org.openide.text.DataEditorSupport;
 import org.openide.text.NbDocument;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  * The source editor element for JaxWs node.
@@ -66,13 +79,14 @@ public class SourceMultiViewElement extends CloneableEditor
     private static final long serialVersionUID = 4403502726950453345L;
     private transient JComponent toolbar;
     private transient MultiViewElementCallback multiViewCallback;
+    private transient Lookup myLookup;
     
     /**
      * Constructs a new instance of SourceMultiViewElement.
      */
     public SourceMultiViewElement() {
         // Needed for deserialization, do not remove.
-        super(null);
+        this(null);
     }
     
     /**
@@ -86,6 +100,42 @@ public class SourceMultiViewElement extends CloneableEditor
    }
     
     private void initialize() {
+        ShowComponentCookie showCookie = new ShowComponentCookie() {            
+            public void show(Object param) {
+                if(!(param instanceof ElementHandle)) return;
+                final ElementHandle handle = (ElementHandle)param;
+                try {
+                    JavaSource targetSource = JavaSource.forFileObject(getEditorSupport().getDataObject().getPrimaryFile());
+                    CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
+                       public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                            workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                            Element element = handle.resolve(workingCopy);
+                            SourcePositions srcPos = workingCopy.getTrees().getSourcePositions();
+                            int position = -1;
+                            // use visitor approach later
+                            switch(element.getKind()) {
+                            case METHOD:
+                                MethodTree methodTree = workingCopy.getTrees().getTree((ExecutableElement)element);
+                                BlockTree methodBody = methodTree.getBody();
+                                Tree tree = methodBody;
+                                if(!methodBody.getStatements().isEmpty())
+                                    tree = methodBody.getStatements().get(0);
+                                position = (int) srcPos.getStartPosition(workingCopy.getCompilationUnit(), tree);
+                                break;
+                            }
+                            if(position>0) {
+                                getEditorPane().setCaretPosition(position);
+                            }
+                        }
+                        public void cancel() {
+                        }
+                    };
+                    targetSource.runModificationTask(task).commit();
+                } catch (Exception ex) {
+                }
+            }
+        };
+        myLookup = Lookups.fixed(showCookie);
     }
     
     public JComponent getToolbarRepresentation() {
@@ -213,4 +263,10 @@ public class SourceMultiViewElement extends CloneableEditor
     private DataEditorSupport getEditorSupport() {
         return (DataEditorSupport) cloneableEditorSupport();
     }
+
+    @Override
+    public Lookup getLookup() {
+        return new ProxyLookup(super.getLookup(), myLookup);
+     }
+
 }

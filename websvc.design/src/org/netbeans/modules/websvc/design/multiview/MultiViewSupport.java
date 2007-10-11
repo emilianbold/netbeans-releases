@@ -191,6 +191,12 @@ public class MultiViewSupport implements OpenCookie, EditCookie {
             requestMultiviewActive(DesignMultiViewDesc.PREFERRED_ID);
             break;
         }
+        if(parameters!=null&&parameters.length>0) {
+            TopComponent activeTC = TopComponent.getRegistry().getActivated();
+            ShowComponentCookie cake = activeTC.getLookup().lookup(ShowComponentCookie.class);
+            if(cake!=null)
+                cake.show(parameters[0]);
+        }
     }
 
     /**
