@@ -95,6 +95,7 @@ import org.netbeans.modules.form.palette.PaletteUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeOp;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -652,7 +653,8 @@ public class MenuEditLayer extends JPanel {
             g.drawRect(width-ACCEL_PREVIEW_WIDTH+offset+1, 2,ACCEL_PREVIEW_WIDTH-3+ioffset, height-2+ioffset);
             g.setColor(Color.LIGHT_GRAY);
             g.setFont(new Font("SansSerif",Font.PLAIN,10));
-            g.drawString("shortcut", width-ACCEL_PREVIEW_WIDTH+15,height-3+ioffset);
+            String shortcut = NbBundle.getMessage(MenuEditLayer.class, "MENU_Shortcut"); // NOI18N
+            g.drawString(shortcut, width-ACCEL_PREVIEW_WIDTH+15,height-3+ioffset);
         }
 
         public Insets getBorderInsets(Component c) {
