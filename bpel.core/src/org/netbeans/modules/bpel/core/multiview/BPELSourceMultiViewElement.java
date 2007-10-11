@@ -484,7 +484,8 @@ public class BPELSourceMultiViewElement extends CloneableEditor
                         ? null 
                         : myMultiViewObserver.getTopComponent();
                 if (tc != null) {
-                    tc.setActivatedNodes(new Node[] {node});
+                    tc.setActivatedNodes(new Node[] {node, getDataObject().getNodeDelegate()});
+                    setActivatedNodes(new Node[] {node, getDataObject().getNodeDelegate()});
                 }
             }
         });
