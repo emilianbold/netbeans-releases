@@ -56,6 +56,7 @@ import org.netbeans.modules.j2ee.dd.api.common.ResourceRef;
 import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
 import org.netbeans.modules.j2ee.dd.api.common.SecurityRole;
 import org.netbeans.modules.j2ee.dd.api.common.ServiceRef;
+import org.netbeans.modules.j2ee.dd.api.ejb.CmpField;
 import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
@@ -471,6 +472,8 @@ public class DescriptorListener implements PropertyChangeListener {
             result = new MDBeanVisitor();
         } else if(bean instanceof Entity) {
             result = new EntityBeanVisitor();
+        } else if(bean instanceof CmpField) {
+            result = new CmpFieldNameVisitor();
         } else if(bean instanceof EjbRef) {
             result = new EjbRefVisitor();
         } else if(bean instanceof MessageDestinationRef) {
@@ -526,6 +529,15 @@ public class DescriptorListener implements PropertyChangeListener {
         }
     }
     
+    public static class CmpFieldNameVisitor implements NameVisitor {
+        public String getName(CommonDDBean bean) {
+            return ((CmpField) bean).getFieldName();
+        }
+        public String getNameProperty() {
+            return "/" + CmpField.FIELD_NAME;
+        }
+    }
+
     // All the common reference types
     public static class EjbRefVisitor implements NameVisitor {
         public String getName(CommonDDBean bean) {
@@ -614,11 +626,17 @@ public class DescriptorListener implements PropertyChangeListener {
     
     static {
         EntityAndSessionVisitor entitySessionVistor = new EntityAndSessionVisitor();
+        EntityVisitor entityVisitor = new EntityVisitor();
+        CmpEntityVisitor cmpEntityVisitor = new CmpEntityVisitor();
+        CmpFieldVisitor cmpFieldVisitor = new CmpFieldVisitor();
         EntityAndSessionRemoteVisitor entitySessionRemoteVistor = new EntityAndSessionRemoteVisitor();
         handlerCache.put("/EjbJar/EnterpriseBeans", entitySessionVistor);
         handlerCache.put("/EjbJar/EnterpriseBeans/Session", entitySessionVistor);
         handlerCache.put("/EjbJar/EnterpriseBeans/Session/Remote", entitySessionRemoteVistor);
-        handlerCache.put("/EjbJar/EnterpriseBeans/Entity", entitySessionVistor);
+        handlerCache.put("/EjbJar/EnterpriseBeans/Entity", entityVisitor);
+        handlerCache.put("/EjbJar/EnterpriseBeans/Entity/EjbName", cmpEntityVisitor);
+        handlerCache.put("/EjbJar/EnterpriseBeans/Entity/CmpField", cmpFieldVisitor);
+        handlerCache.put("/EjbJar/EnterpriseBeans/Entity/CmpField/FieldName", cmpFieldVisitor);
         handlerCache.put("/EjbJar/EnterpriseBeans/Entity/Remote", entitySessionRemoteVistor);
 //        handlerCache.put("/EjbJar/EnterpriseBeans/MessageDriven", new MessageDrivenVisitor());
 
@@ -726,7 +744,7 @@ public class DescriptorListener implements PropertyChangeListener {
         
     }
     
-    public static final class EntityAndSessionVisitor extends AbstractBeanVisitor {
+    public static class EntityAndSessionVisitor extends AbstractBeanVisitor {
 
         @Override
         public void beanCreated(final SunONEDeploymentConfiguration config, final String xpath, 
@@ -780,10 +798,81 @@ public class DescriptorListener implements PropertyChangeListener {
                     (operation == SunONEDeploymentConfiguration.ChangeOperation.DELETE || Utils.notEmpty(remote))) {
                 config.updateDefaultEjbJndiName(ejbName, "ejb/", operation);
             }
-        }
+         }
 
     }
-    
+
+    private static boolean isCMP(Object ddBean) {
+        if(ddBean instanceof Entity) {
+            Entity entity = (Entity)ddBean;
+            if (Entity.PERSISTENCE_TYPE_CONTAINER.equals(entity.getPersistenceType())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static final class CmpFieldVisitor extends AbstractBeanVisitor {
+        @Override
+        public void beanDeleted(SunONEDeploymentConfiguration config, String xpath, CommonDDBean sourceDD, CommonDDBean oldDD) {
+            super.beanDeleted(config, xpath, sourceDD, oldDD);
+            if(isCMP(sourceDD)) {
+                String ejbName = ((Entity)sourceDD).getEjbName();
+
+                if (Utils.notEmpty(ejbName) && (oldDD instanceof CmpField)) {
+                    String fieldName = ((CmpField)oldDD).getFieldName();
+                    if (Utils.notEmpty(fieldName)) {
+                        config.removeMappingForCmpField(ejbName, fieldName);
+                    }
+                }
+            }
+        }
+        @Override
+        public void fieldChanged(SunONEDeploymentConfiguration config, String xpath, 
+                Object sourceDD, Object oldValue, Object newValue) {
+            super.fieldChanged(config, xpath, sourceDD, oldValue, newValue);
+            if(isCMP(sourceDD)) {
+                String ejbName = ((Entity)sourceDD).getEjbName();
+                String oldFieldName = oldValue.toString();
+                String newFieldName = newValue.toString();
+
+                if (Utils.notEmpty(oldFieldName) && Utils.notEmpty(newFieldName) && 
+                        !(oldFieldName.equals(newFieldName))) {
+                    config.renameMappingForCmpField(ejbName, oldFieldName, newFieldName);
+                }
+            }
+        }
+    }
+    public static final class CmpEntityVisitor extends AbstractBeanVisitor {
+        @Override
+        public void fieldChanged(SunONEDeploymentConfiguration config, String xpath, 
+                Object sourceDD, Object oldValue, Object newValue) {
+            super.fieldChanged(config, xpath, sourceDD, oldValue, newValue);
+            if(isCMP(sourceDD)) {
+                String oldEjbName = oldValue.toString();
+                String newEjbName = newValue.toString();
+
+                if (Utils.notEmpty(oldEjbName) && Utils.notEmpty(newEjbName) && 
+                        !(oldEjbName.equals(newEjbName))) {
+                    config.renameMappingForCmp(oldEjbName, newEjbName);
+                }
+            }
+        }
+    }
+    public static final class EntityVisitor extends EntityAndSessionVisitor {
+        
+        @Override
+        public void beanDeleted(SunONEDeploymentConfiguration config, String xpath, CommonDDBean sourceDD, CommonDDBean oldDD) {
+            super.beanDeleted(config, xpath, sourceDD, oldDD);
+            if(isCMP(oldDD)) {
+                String ejbName = ((Entity)oldDD).getEjbName();
+                if(Utils.notEmpty(ejbName)) {
+                    config.removeMappingForCmp(ejbName);
+                }
+            }
+        }
+    }
+
     public static final class EntityAndSessionRemoteVisitor extends AbstractBeanVisitor {
 
         @Override

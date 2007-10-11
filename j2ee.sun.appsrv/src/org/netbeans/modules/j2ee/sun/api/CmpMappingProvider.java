@@ -37,4 +37,8 @@ import org.openide.filesystems.FileObject;
  */
 public interface CmpMappingProvider {
     public void mapCmpBeans(FileObject sunCmpDDFO, OriginalCMPMapping[] mapping, SunCmpMappings existingMapping);
+    public boolean removeMappingForCmp(SunCmpMappings sunCmpMappings, String beanName);
+    public boolean renameMappingForCmp(SunCmpMappings sunCmpMappings, String oldBeanName, String newBeanName);
+    public boolean removeMappingForCmpField(SunCmpMappings sunCmpMappings, String beanName, String fieldName);
+    public boolean renameMappingForCmpField(SunCmpMappings sunCmpMappings, String beanName, String oldFieldName, String newFieldName);
 }

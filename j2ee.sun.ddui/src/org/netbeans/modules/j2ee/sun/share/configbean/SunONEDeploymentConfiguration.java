@@ -67,6 +67,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
@@ -1091,7 +1092,106 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
      * Set or clear the default JNDI name for the specified EJB
      */
     enum ChangeOperation { CREATE, DELETE };
-    
+
+    private void handleEventRelatedIOException(IOException ex) {
+        // This is a legitimate exception that could occur, such as a problem
+        // writing the changed descriptor to disk.
+        // !PW FIXME notify user
+        // RR = could do handleEventRelatedException(ex) instead
+        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+    }
+    private void handleEventRelatedException(Exception ex) {
+        // This would probably be a runtime exception due to a bug, but we
+        // must trap it here so it doesn't cause trouble upstream.
+        // We handle it the same as above for now.
+        // !PW FIXME should we notify here, or just log?
+        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+    }
+
+    void removeMappingForCmp(String beanName) {
+        try {
+            FileObject sunCmpDDFO = getSunDD(configFiles[1], false);
+            if (sunCmpDDFO != null) {
+                RootInterface sunDDRoot = DDProvider.getDefault().getDDRoot(sunCmpDDFO);
+                if (sunDDRoot instanceof SunCmpMappings) {
+                    SunCmpMappings sunCmpMappings = (SunCmpMappings) sunDDRoot;
+                    CmpMappingProvider mapper = getSunCmpMapper();
+
+                    if (mapper.removeMappingForCmp(sunCmpMappings, beanName)) {
+                        sunCmpMappings.write(sunCmpDDFO);
+                    }
+                }
+            }
+        } catch (IOException ex) {
+            handleEventRelatedIOException(ex);
+        } catch (Exception ex) {
+            handleEventRelatedException(ex);
+        }
+    }
+
+    void removeMappingForCmpField(String beanName, String fieldName) {
+        try {
+            FileObject sunCmpDDFO = getSunDD(configFiles[1], false);
+            if (sunCmpDDFO != null) {
+                RootInterface sunDDRoot = DDProvider.getDefault().getDDRoot(sunCmpDDFO);
+                if (sunDDRoot instanceof SunCmpMappings) {
+                    SunCmpMappings sunCmpMappings = (SunCmpMappings) sunDDRoot;
+                    CmpMappingProvider mapper = getSunCmpMapper();
+
+                    if (mapper.removeMappingForCmpField(sunCmpMappings, beanName, fieldName)) {
+                        sunCmpMappings.write(sunCmpDDFO);
+                    }
+                }
+            }
+        } catch (IOException ex) {
+            handleEventRelatedIOException(ex);
+        } catch (Exception ex) {
+            handleEventRelatedException(ex);
+        }
+    }
+
+    void renameMappingForCmp(String oldBeanName, String newBeanName) {
+        try {
+            FileObject sunCmpDDFO = getSunDD(configFiles[1], false);
+            if (sunCmpDDFO != null) {
+                RootInterface sunDDRoot = DDProvider.getDefault().getDDRoot(sunCmpDDFO);
+                if (sunDDRoot instanceof SunCmpMappings) {
+                    SunCmpMappings sunCmpMappings = (SunCmpMappings) sunDDRoot;
+                    CmpMappingProvider mapper = getSunCmpMapper();
+
+                    if (mapper.renameMappingForCmp(sunCmpMappings, oldBeanName, newBeanName)) {
+                        sunCmpMappings.write(sunCmpDDFO);
+                    }
+                }
+            }
+        } catch (IOException ex) {
+            handleEventRelatedIOException(ex);
+        } catch (Exception ex) {
+            handleEventRelatedException(ex);
+        }
+    }
+
+    void renameMappingForCmpField(String beanName, String oldFieldName, String newFieldName) {
+        try {
+            FileObject sunCmpDDFO = getSunDD(configFiles[1], false);
+            if (sunCmpDDFO != null) {
+                RootInterface sunDDRoot = DDProvider.getDefault().getDDRoot(sunCmpDDFO);
+                if (sunDDRoot instanceof SunCmpMappings) {
+                    SunCmpMappings sunCmpMappings = (SunCmpMappings) sunDDRoot;
+                    CmpMappingProvider mapper = getSunCmpMapper();
+
+                    if (mapper.renameMappingForCmpField(sunCmpMappings, beanName, oldFieldName, newFieldName)) {
+                        sunCmpMappings.write(sunCmpDDFO);
+                    }
+                }
+            }
+        } catch (IOException ex) {
+            handleEventRelatedIOException(ex);
+        } catch (Exception ex) {
+            handleEventRelatedException(ex);
+        }
+    }
+
     void updateDefaultEjbJndiName(final String ejbName, final String prefix, final ChangeOperation op) {
         try {
             FileObject primarySunDDFO = getSunDD(configFiles[0], op == ChangeOperation.CREATE);
@@ -1141,16 +1241,9 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
                 }
             }
         } catch(IOException ex) {
-            // This is a legitimate exception that could occur, such as a problem
-            // writing the changed descriptor to disk.
-            // !PW FIXME notify user
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            handleEventRelatedIOException(ex);
         } catch(Exception ex) {
-            // This would probably be a runtime exception due to a bug, but we
-            // must trap it here so it doesn't cause trouble upstream.
-            // We handle it the same as above for now.
-            // !PW FIXME should we notify here, or just log?
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            handleEventRelatedException(ex);
         }
     }
     
@@ -1221,16 +1314,9 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
                 }
             }
         } catch(IOException ex) {
-            // This is a legitimate exception that could occur, such as a problem
-            // writing the changed descriptor to disk.
-            // !PW FIXME notify user
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            handleEventRelatedIOException(ex);
         } catch(Exception ex) {
-            // This would probably be a runtime exception due to a bug, but we
-            // must trap it here so it doesn't cause trouble upstream.
-            // We handle it the same as above for now.
-            // !PW FIXME should we notify here, or just log?
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            handleEventRelatedException(ex);
         }
     }
 

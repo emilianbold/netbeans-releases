@@ -818,28 +818,6 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
         }
     }
 
-    private void removeMappingForCmp(String beanName) {
-        try {
-            if ((beanName != null) && (mappingContext != null)) {
-                EJBInfoHelper infoHelper = getEJBInfoHelper();
-                ConversionHelper myConversionHelper = getConversionHelper();
-                Model model = mappingContext.getModel();
-                String pcClassName = conversionHelper.getMappedClassName(beanName);
-                MappingClassElement mce = model.getMappingClass(pcClassName);
-
-                if (mce != null) {
-                    // remove the listener then the mce from model's cache
-                    mce.removePropertyChangeListener(cmpMappingListener);
-                    model.updateKeyForClass(null, pcClassName);
-                }
-            }
-        } catch(NullPointerException ex) {
-            // The intent of this handler is to safely report bugs in the persistence code
-            // while keeping the rest of the system stable.
-            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
-        }
-    }
-
     private void addMappingForCmrField(String beanName, String fieldName) {
         addMappingForCmpField(beanName, fieldName, true);
     }
