@@ -89,9 +89,15 @@ public class PropertiesAction extends AbstractAction {
         HgProperties hgProperties = new HgProperties(panel, propTable, root);        
 
         DialogDescriptor dd = new DialogDescriptor(panel, org.openide.util.NbBundle.getMessage(PropertiesAction.class, "CTL_PropertiesDialog_Title", null), true, null); // NOI18N
-        final JButton okButton =  new JButton(org.openide.util.NbBundle.getMessage(PropertiesAction.class, "CTL_Properties_Action_OK")); // NOI18N
-        dd.setOptions(new Object[] {okButton, 
-                                    org.openide.util.NbBundle.getMessage(PropertiesAction.class, "CTL_Properties_Action_Cancel")}); // NOI18N
+        JButton okButton =  new JButton();
+        org.openide.awt.Mnemonics.setLocalizedText(okButton, org.openide.util.NbBundle.getMessage(PropertiesAction.class, "CTL_Properties_Action_OK"));
+        okButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PropertiesAction.class, "ACSN_Properties_Action_OK")); // NOI18N
+        okButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PropertiesAction.class, "ACSD_Properties_Action_OK")); 
+        JButton cancelButton =  new JButton();
+        org.openide.awt.Mnemonics.setLocalizedText(cancelButton, org.openide.util.NbBundle.getMessage(PropertiesAction.class, "CTL_Properties_Action_Cancel"));
+        cancelButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PropertiesAction.class, "ACSN_Properties_Action_Cancel")); // NOI18N
+        cancelButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PropertiesAction.class, "ACSD_Properties_Action_Cancel")); 
+        dd.setOptions(new Object[] {okButton, cancelButton});
         dd.setHelpCtx(new HelpCtx(PropertiesAction.class));
         panel.putClientProperty("contentTitle", null);  // NOI18N
         panel.putClientProperty("DialogDescriptor", dd); // NOI18N

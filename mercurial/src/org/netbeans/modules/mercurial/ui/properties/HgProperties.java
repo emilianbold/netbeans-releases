@@ -255,6 +255,7 @@ public class HgProperties implements ActionListener, DocumentListener {
 
     public void removeProperties() {
         final int[] rows = propTable.getSelectedItems();
+        if (rows.length == 0) return;
         HgPropertiesNode[] hgPropertiesNodes = propTable.getNodes();
         HgPropertiesNode[] hgProps = new HgPropertiesNode[hgPropertiesNodes.length - rows.length];
         int j = 0;
