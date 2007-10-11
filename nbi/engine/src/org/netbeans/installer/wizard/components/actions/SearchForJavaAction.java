@@ -81,6 +81,7 @@ public class SearchForJavaAction extends WizardAction {
         execute(new Progress());
     }
     public void execute(Progress progress) {
+        LogManager.logEntry("search for all java locations");
         getWizardUi().setProgress(progress);
         final List<File> locations = new LinkedList<File>();
         progress.setTitle(SEARCH_INSTALLED_JAVAS);
@@ -104,6 +105,7 @@ public class SearchForJavaAction extends WizardAction {
         progress.setPercentage(Progress.COMPLETE);
         
         SystemUtils.sleep(200);
+        LogManager.logExit("... end of search for all java locations");
     }
     @Override
     public boolean canExecuteForward() {
@@ -171,7 +173,7 @@ public class SearchForJavaAction extends WizardAction {
             } else {
                 LogManager.unindent();
             }
-            
+            SystemUtils.sleep(5);
             progress.setPercentage(Progress.COMPLETE * i / locations.size());            
         }
         
@@ -218,7 +220,7 @@ public class SearchForJavaAction extends WizardAction {
                     javaLabels.set(j - 1, label1);
                 }
             }
-        }
+        }        
     }
     
     public static void addJavaLocation(File location, Version version, String vendor) {
@@ -319,7 +321,7 @@ public class SearchForJavaAction extends WizardAction {
     }
     
     private void fetchLocationsFromWindowsRegistry(final List<File> locations) {
-        LogManager.logIndent("checking for possible java locations in environment");
+        LogManager.logIndent("checking for possible java locations in windows registry");
         
         final WindowsNativeUtils nativeUtils =
                 ((WindowsNativeUtils) SystemUtils.getNativeUtils());
