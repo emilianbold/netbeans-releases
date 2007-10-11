@@ -1,0 +1,12 @@
+    @product = Product.find_all(params[:id])
+                       --------
+HINT:find_all is deprecated in Rails, use find :all
+    @product = Product.find_first(params[:id])
+                       ----------
+HINT:find_first is deprecated in Rails, use find :first
+    @product = Foo::Product.find_first(params[:id])
+                            ----------
+HINT:find_first is deprecated in Rails, use find :first
+    @product = Foo::Bar::Product.find_first(params[:id])
+                                 ----------
+HINT:find_first is deprecated in Rails, use find :first

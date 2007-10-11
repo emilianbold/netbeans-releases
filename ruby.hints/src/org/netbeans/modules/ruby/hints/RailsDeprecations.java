@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
+import org.jruby.ast.CallNode;
 import org.jruby.ast.Node;
 import org.jruby.ast.NodeTypes;
 import org.jruby.ast.types.INameNode;
@@ -71,6 +72,11 @@ import org.openide.util.NbBundle;
  * 
  * @todo Limit this hint to Rails projects, or at least files containing
  *  rails-patterned names
+ * @todo Infer deprecations dynamically; Rails seems to annotate them - see
+ *   for example has_many_association.rb
+ *   <pre>
+ *       deprecate :find_all => "use find(:all, ...) instead"
+ *   </pre>
  *
  * @author Tor Norbye
  */
@@ -172,6 +178,22 @@ public class RailsDeprecations implements AstRule {
             String name = ((INameNode)node).getName();
             
             if (deprecatedMethods.containsKey(name)) {
+                // find_all is not only a deprecated Rails active record method,
+                // it's also a common method on Enumerable! Only warn about
+                // this when you're calling it as a static method!
+                // (It would be better to check the actual types here and
+                // make sure that the class on the left is actually a model,
+                // but that's costly and much less likely to be a problem
+                if (name.startsWith("find_")) { // NOI18N
+                    if (node.nodeId == NodeTypes.CALLNODE) {    
+                        Node receiver = ((CallNode)node).getReceiverNode();
+                        if (receiver.nodeId != NodeTypes.CONSTNODE && 
+                                receiver.nodeId != NodeTypes.COLON2NODE) {
+                            return;
+                        }
+                    }
+                }
+                
                 // Add a warning - you're using a deprecated field. Use the
                 // method/attribute instead!
                 String message = NbBundle.getMessage(RailsDeprecations.class, "DeprecatedMethodUse", name, deprecatedMethods.get(name));
