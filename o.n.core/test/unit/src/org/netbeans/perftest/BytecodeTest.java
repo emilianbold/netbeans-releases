@@ -374,7 +374,7 @@ public class BytecodeTest extends NbTestCase {
                     || f.getName().endsWith("jaxb-impl.jar")
                     || f.getName().endsWith("jaxb-xjc.jar")
                     || f.getName().endsWith("saaj-impl.jar")
-                    || f.getName().endsWith("jh-2.0_04.jar")
+                    || f.getName().endsWith("jh-2.0_05.jar")
                     || f.getName().endsWith("xerces-2.8.0.jar")
                     || f.getName().endsWith("svnClientAdapter.jar")
                     || f.getName().endsWith("beansbinding-0.5.jar")

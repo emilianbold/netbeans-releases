@@ -72,7 +72,7 @@ public class UpdateTrackingFileOwnerQueryTest extends TestBase {
         assertOwnership("ant", "nbbuild/netbeans/" + TestBase.CLUSTER_JAVA + "/config/Modules/org-apache-tools-ant-module.xml");
         assertOwnership("ant", "nbbuild/netbeans/" + TestBase.CLUSTER_JAVA + "/update_tracking/org-apache-tools-ant-module.xml");
         // Different pattern match ("modules/ext/jh*.jar"):
-        assertOwnership("core/javahelp", "nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/ext/jh-2.0_04.jar");
+        assertOwnership("core/javahelp", "nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/ext/jh-2.0_05.jar");
         // Use of release dir:
         assertOwnership("extbrowser", "nbbuild/netbeans/" + TestBase.CLUSTER_IDE + "/modules/lib/extbrowser.dll");
     }
