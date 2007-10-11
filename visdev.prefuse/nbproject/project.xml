@@ -86,8 +86,8 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.xml.schema.refactoring</friend>
             </friend-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/prefuse.jar</runtime-relative-path>
-                <binary-origin>external/prefuse.jar</binary-origin>
+                <runtime-relative-path>ext/prefuse-beta.jar</runtime-relative-path>
+                <binary-origin>external/prefuse-beta.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>
