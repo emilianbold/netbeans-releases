@@ -85,7 +85,7 @@ made subject to such option by the copyright holder.
    </folder> 
    
    <folder name="Shortcuts">
-	<file name="DS-C.shadow">
+	<file name="OS-W.shadow">
 	    <attr name="originalFile" stringvalue="Actions/Modeling/org-netbeans-modules-uml-designpattern-DesignCenterAction.instance"/>
 	</file>
    </folder>
