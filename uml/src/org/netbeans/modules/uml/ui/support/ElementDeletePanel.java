@@ -94,14 +94,14 @@ public class ElementDeletePanel extends javax.swing.JPanel {
 
         jLabel1.setText(org.openide.util.NbBundle.getMessage(ElementDeletePanel.class, "ElementDeletePanel.jLabel1.text_single")); // NOI18N
 
-        jCheckBox1.setText(org.openide.util.NbBundle.getMessage(ElementDeletePanel.class, "ElementDeletePanel.jCheckBox1.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBox1, org.openide.util.NbBundle.getMessage(ElementDeletePanel.class, "ElementDeletePanel.jCheckBox1.text")); // NOI18N
         jCheckBox1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jCheckBox1ActionPerformed(evt);
             }
         });
 
-        jCheckBox2.setText(org.openide.util.NbBundle.getMessage(ElementDeletePanel.class, "ElementDeletePanel.jCheckBox2.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBox2, org.openide.util.NbBundle.getMessage(ElementDeletePanel.class, "ElementDeletePanel.jCheckBox2.text")); // NOI18N
         jCheckBox2.setDoubleBuffered(true);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
@@ -109,16 +109,11 @@ public class ElementDeletePanel extends javax.swing.JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
+                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(jLabel1))
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(jCheckBox1))
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(jCheckBox2)))
+                    .add(jLabel1)
+                    .add(jCheckBox1)
+                    .add(jCheckBox2))
                 .addContainerGap(43, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(

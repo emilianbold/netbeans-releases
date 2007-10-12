@@ -2538,15 +2538,16 @@ public class Project extends org.netbeans.modules.uml.core.metamodel.structure.M
     
     public void removeElementImport(IElement elem)
     {
-        if (elem instanceof IPackage)
+        if (elem instanceof IPackage || elem instanceof IPackageImport)
         {
             ETList<IPackageImport> imports = getPackageImports();
             for (IPackageImport im: imports)
             {
                 IPackage element = im.getImportedPackage();
-                if (elem.getXMIID().equals(element.getXMIID()))
+                if ( im == elem || elem.getXMIID().equals(element.getXMIID()))
                 {
-//                    UMLXMLManip.removeChild(this.getNode(), im);
+                    UMLXMLManip.removeChild(this.getNode(), im);
+                    setDirty(true);
                     im.delete();
                 }
             }
@@ -2558,9 +2559,10 @@ public class Project extends org.netbeans.modules.uml.core.metamodel.structure.M
             {
                 IElement element = im.getImportedElement();
 
-                if (element!=null && elem.getXMIID().equals(element.getXMIID()))
+                if (im == elem || elem.getXMIID().equals(element.getXMIID()))
                 {
-//                    UMLXMLManip.removeChild(this.getNode(), im);
+                    UMLXMLManip.removeChild(this.getNode(), im);
+                    setDirty(true);
                     im.delete();
                 }
             }
