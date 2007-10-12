@@ -160,8 +160,9 @@ public final class ClientStubsSetupPanelVisual extends JPanel implements Abstrac
 
     private boolean isJmakiEnabled(Project project) {
         FileObject fo = project.getProjectDirectory();
-        if(fo.getFileObject("web"+File.separator+"glue.js") != null || 
-                fo.getFileObject("web"+File.separator+"resources"+File.separator+"jmaki.js") != null)
+
+        if(fo.getFileObject("web/glue.js") != null || 
+                fo.getFileObject("web/resources/jmaki.js") != null)     //NOI18N
             return true;
 //        try {
 //            Class wmc = Class.forName("org.netbeans.modules.web.api.webmodule.WebModule");
