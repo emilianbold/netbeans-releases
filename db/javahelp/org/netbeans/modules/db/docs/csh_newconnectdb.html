@@ -44,29 +44,47 @@ made subject to such option by the copyright holder.
 
     <head>
 
-        <title>Connect to Database Dialog Box</title>
+        <title>New Database Connection Dialog Box</title>
         <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
     </head>
 
     <body>
-        <h2>Connect to Database Dialog Box</h2>
+        <h2>New Database Connection Dialog Box</h2>
         <p><small><a href="#seealso">See Also</a></small></p>
-        <p>This dialog box enables you to supply the user name and password to open an
-        existing database connection.
-        You open this dialog box by doing the following right-clicking the database connection
-        node in the Services window and choosing Connect.</p>
+        <p>This dialog box enables you to supply the details to create a new database connection.
 
-        <p>To open an existing database connection, you need to supply the following details:</p>
+        You open this dialog box by doing the following:</p>
         <ul>
-            <li><b>User Name.</b> Type user name for the database.</li>
-            <li><b>Password.</b> Type the password for the database.</li>
-            <li><b>Remember Password</b> Select this if you want the IDE to remember your password. 
-            <p>If selected, you will not be prompted for the user name and password on subsequent connections to the database
-            and the Remember Password property is set to True.</p> 
-            <p>To set the Remember Password property to False, right-click the database connection node
-            in the Services window and choose Properties and modify the property in the Properties window.</p></li>
+            <li>Right-click the Databases node in the Services window and choose New Connection.</li>
+            <li>Right-click a driver node under the Databases node in the Services window and choose Connect Using.</li>
         </ul>
 
+        <p>When you create a database connection, you supply the details needed to connect to a specific database.
+        You need to supply the following database connection details.</p>
+            <ul>
+                <li><b>Name.</b> Choose the registered JDBC driver from the drop-down list.
+                The drop-down list only contains drivers registered with the IDE. 
+                If your driver is not listed, you need to <a href="adddriver.html">add the JDBC driver</a> before
+                you can connect to the database.</li>
+                <li><b>Driver.</b> This field is automatically supplied based on the selected registered driver.</li>
+                <li><b>Database URL.</b> Type the JDBC database URL for the database connection. 
+                <p>This URL typically begins with <tt>jdbc:</tt>and a short code name 
+                for the driver, followed by another colon. The rest of the URL depends on 
+                the type of driver you are using. For example, you might need to specify 
+                a host and port; alternatively, the name of a database file might suffice, 
+                or an ODBC DSN. For MySQL, the Database URL might look as follows:
+                <pre>jdbc:mysql://localhost:3306/mydatabase</pre>
+                To help you get started, the IDE provides templates for the correct URL format for
+                the most common drivers. If in doubt, refer to the documentation 
+                for the driver that you are using. </p></li>
+                <li><b>User Name.</b> Type user name for the database.</li>
+                <li><b>Password.</b> Type the password for the database.</li>
+                <li><b>Remember Password</b> Select this if you want the IDE to remember your password. 
+                <p>If selected, you will not be prompted for the user name and password on subsequent connections to the database
+                and the Remember Password property is set to True.</p> 
+                <p>To set the Remember Password property to False, right-click the database connection node
+                in the Services window and choose Properties and modify the property in the Properties window.</p></li>
+            </ul>
         <ul class="note">
             <li>Storing a password represents a potential security risk.</li>
         </ul>
