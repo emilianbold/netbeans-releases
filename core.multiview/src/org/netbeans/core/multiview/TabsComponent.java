@@ -54,6 +54,7 @@ import javax.swing.border.Border;
 import javax.swing.text.Keymap;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.openide.awt.Mnemonics;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CallbackSystemAction;
@@ -193,7 +194,8 @@ class TabsComponent extends JPanel {
     }
     
     private JToggleButton createButton(MultiViewDescription description) {
-        final JToggleButton button = new JToggleButton(description.getDisplayName());
+        final JToggleButton button = new JToggleButton();
+        Mnemonics.setLocalizedText(button, description.getDisplayName());
         button.setModel(new TabsButtonModel(description));
         button.setRolloverEnabled(true);
         Border b = (getButtonBorder());

@@ -106,7 +106,8 @@ public class EditorsAction extends AbstractAction
                             MultiViewPerspective thisPers = pers[i];
                             final WeakReference<MultiViewPerspective> persRef = new WeakReference<MultiViewPerspective>(thisPers);
                             
-                            JRadioButtonMenuItem item = new JRadioButtonMenuItem(thisPers.getDisplayName());
+                            JRadioButtonMenuItem item = new JRadioButtonMenuItem();
+                            Mnemonics.setLocalizedText(item, thisPers.getDisplayName());
                             item.addActionListener(new ActionListener() {
                                 public void actionPerformed(ActionEvent event) {
                                     //#88626 prevent a memory leak
@@ -124,7 +125,8 @@ public class EditorsAction extends AbstractAction
                             add(item);
                         }
                     } else { // handler == null
-                        JRadioButtonMenuItem but = new JRadioButtonMenuItem(NbBundle.getMessage(EditorsAction.class, "EditorsAction.source"));
+                        JRadioButtonMenuItem but = new JRadioButtonMenuItem();
+                        Mnemonics.setLocalizedText(but, NbBundle.getMessage(EditorsAction.class, "EditorsAction.source"));
                         but.setSelected(true);
                         add(but);
                     }
