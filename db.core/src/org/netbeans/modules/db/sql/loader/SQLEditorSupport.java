@@ -60,6 +60,7 @@ import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.api.sql.execute.SQLExecuteCookie;
 import org.netbeans.modules.db.api.sql.execute.SQLExecution;
+import org.netbeans.modules.db.core.SQLCoreUILogger;
 import org.netbeans.modules.db.sql.execute.ui.SQLResultPanelModel;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditCookie;
@@ -238,6 +239,16 @@ public class SQLEditorSupport extends DataEditorSupport implements OpenCookie, E
         container.setName(EDITOR_CONTAINER); // NOI18N
         container.add(editor, BorderLayout.CENTER);
         return container;
+    }
+    
+    public void open() {
+        SQLCoreUILogger.logEditorOpened();
+        super.open();
+    }
+    
+    public void edit() {
+        SQLCoreUILogger.logEditorOpened();
+        super.edit();
     }
     
     void addSQLPropertyChangeListener(PropertyChangeListener listener) {

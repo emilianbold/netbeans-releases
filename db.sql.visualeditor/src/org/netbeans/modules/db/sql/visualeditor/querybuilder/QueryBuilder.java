@@ -71,6 +71,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.netbeans.api.db.explorer.ConnectionManager;
+import org.netbeans.modules.db.sql.visualeditor.QueryEditorUILogger;
 
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
@@ -153,6 +154,7 @@ public class QueryBuilder extends TopComponent
     public static Component open( DatabaseConnection dbconn, String statement, VisualSQLEditorMetaData metadata, VisualSQLEditor vse)
     {
         Log.getLogger().entering("QueryBuilder", "open"); // NOI18N
+        QueryEditorUILogger.logEditorOpened();
 
 	showBusyCursor( true );
 

@@ -450,6 +450,8 @@ public class DatabaseConnection implements DBConnection {
             Connection connection = DbDriverManager.getDefault().getConnection(db, dbprops, useDriver);
             setConnection(connection);
             
+            DatabaseUILogger.logConnection(drv);
+            
             propertySupport.firePropertyChange("connected", null, null);
             
             // For Java Studio Enterprise.
@@ -530,6 +532,8 @@ public class DatabaseConnection implements DBConnection {
                     
                     conn = DbDriverManager.getDefault().getConnection(db, dbprops, useDriver);
                     setConnection(conn);
+                    
+                    DatabaseUILogger.logConnection(drv);
                         
                     propertySupport.firePropertyChange("connected", null, null);
 
