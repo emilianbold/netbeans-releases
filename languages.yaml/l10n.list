@@ -1,0 +1,3 @@
+# languages/yaml
+read global
+${l10n-module}/src/org/netbeans/modules/languages/yaml/EmptyYAMLFileDescription.html  
