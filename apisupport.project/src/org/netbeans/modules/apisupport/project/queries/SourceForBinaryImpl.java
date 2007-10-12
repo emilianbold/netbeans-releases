@@ -52,7 +52,6 @@ import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.universe.TestEntry;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.w3c.dom.Element;
@@ -64,7 +63,6 @@ import org.w3c.dom.Element;
 public final class SourceForBinaryImpl implements SourceForBinaryQueryImplementation {
     
     private final NbModuleProject project;
-    private String clusterPath;
     private URL classesUrl;
     private URL testClassesUrl;
     private Map<URL,SourceForBinaryQuery.Result> cache = new HashMap<URL,SourceForBinaryQuery.Result>();
@@ -81,7 +79,7 @@ public final class SourceForBinaryImpl implements SourceForBinaryQueryImplementa
             if (binaryJar != null) {
                 File binaryJarF = new File(URI.create(binaryJar.toExternalForm()));
                 FileObject srcDir = null;
-                if (binaryJarF.getAbsolutePath().endsWith(getModuleJarClusterPath())) {
+                if (binaryJarF.getAbsolutePath().endsWith(project.evaluator().getProperty("module.jar").replace('/', File.separatorChar))) {
                     srcDir = project.getSourceDirectory();
                 } else {
                     // maybe tests.jar in testdistribution
@@ -133,15 +131,6 @@ public final class SourceForBinaryImpl implements SourceForBinaryQueryImplementa
             }
         }
         return res;
-    }
-    
-    private String getModuleJarClusterPath() {
-        if (clusterPath == null) { // XXX should listen to changes on cluster property?
-            File cluster = project.getHelper().resolveFile(project.evaluator().evaluate("${cluster}")); // NOI18N
-            clusterPath = PropertyUtils.relativizeFile(cluster.getParentFile(), 
-                   project.getModuleJarLocation()).replace('/', File.separatorChar);
-        }
-        return clusterPath;
     }
     
     private URL getClassesUrl() {
