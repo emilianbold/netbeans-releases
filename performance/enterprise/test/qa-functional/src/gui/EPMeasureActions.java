@@ -39,7 +39,7 @@ public class EPMeasureActions  {
         suite.addTest(new AddNewXMLSchema("measureTime", "Add New XML Schema"));
         suite.addTest(new AddNewXMLDocument("measureTime", "Add New XML Document"));
         suite.addTest(new AddNewBpelProcess("measureTime", "Add New Bpel Process")); 
-
+        suite.addTest(new ValidateSchema("measureTime","Validate Schema"));
         suite.addTest(new OpenSchemaView("testOpenSchemaView", "Open Schema View")); 
 
 //TODO it's the same as SwitchSchemaView, isn't it ?                                     suite.addTest(new SchemaViewSwitchTest("measureTime", "Schema View Switch"));
@@ -52,7 +52,7 @@ public class EPMeasureActions  {
         suite.addTest(new SchemaNavigatorSchemaView("measureTime", "Schema Navigator Schema View"));
         suite.addTest(new NavigatorSchemaViewMode("measureTime","Schema Navigator Schema View mode"));
         
-       suite.addTest(new ValidateSchema("measureTime","Validate Schema"));
+
 //TODO there is an password dialog solve before enable to run again        suite.addTest(new DeployProject("measureTime","Deploy Project"));
          suite.addTest(new OpenComplexDiagram("measureTime","Open Complex Diagram"));         
          suite.addTest(new OpenBPELproject("measureTime","OpenBPELproject"));
