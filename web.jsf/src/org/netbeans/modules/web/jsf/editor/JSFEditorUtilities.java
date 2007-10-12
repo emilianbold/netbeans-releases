@@ -167,11 +167,11 @@ public class JSFEditorUtilities {
         return new int []{-1,-1};
     }
     
-    public static int[] getConverterDefinition(BaseDocument doc, String converterForClass){
+    public static int[] getConverterDefinition(BaseDocument doc, String byElement, String content){
         try{
             String text = doc.getText(0, doc.getLength());
             //find first possition of text that is the ruleName
-            int offset = text.indexOf(converterForClass);
+            int offset = text.indexOf(content);
             int start = 0;
             int end = 0;
             ExtSyntaxSupport sup = (ExtSyntaxSupport)doc.getSyntaxSupport();
@@ -186,7 +186,7 @@ public class JSFEditorUtilities {
                             && !token.getImage().equals(">")))
                         token = token.getPrevious();
                     // is it the rule definition?
-                    if (token != null && token.getImage().equals("<converter-for-class")){
+                    if (token != null && token.getImage().equals("<" + byElement)){
                         // find start of the rule definition
                         while (token != null
                                 && !(token.getTokenID().getNumericID() == JSFEditorUtilities.XML_ELEMENT
@@ -214,7 +214,7 @@ public class JSFEditorUtilities {
                         }
                     }
                 }
-                offset = text.indexOf(converterForClass, offset+converterForClass.length());
+                offset = text.indexOf(content, offset+content.length());
             }
             
         } catch (BadLocationException e) {

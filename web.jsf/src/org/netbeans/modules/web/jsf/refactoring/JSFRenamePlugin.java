@@ -65,6 +65,7 @@ import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.text.PositionBounds;
 
 /**
  *
@@ -173,9 +174,10 @@ public class JSFRenamePlugin implements RefactoringPlugin {
                     Modifications modification = new Modifications();
                     for (Occurrences.OccurrenceItem item : items) {
                        // refactoringElements.add(refactoring, new JSFConfigRenameClassElement(item));
+                        PositionBounds position = item.getChangePosition();
                         Modifications.Difference difference = new Modifications.Difference(
-                                Modifications.Difference.Kind.CHANGE, item.getChangePosition().getBegin(),
-                                item.getChangePosition().getEnd(), oldFQN, newFQN, item.getChangeMessage());
+                                Modifications.Difference.Kind.CHANGE, position.getBegin(),
+                                position.getEnd(), oldFQN, newFQN, item.getChangeMessage());
                         modification.addDifference(item.getFacesConfig(), difference);
                         refactoringElements.add(refactoring, new DiffElement.ChangeFQCNElement(difference, item, modification));
                     }

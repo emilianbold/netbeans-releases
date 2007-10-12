@@ -64,6 +64,7 @@ import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionBounds;
 import org.openide.text.PositionRef;
 import org.openide.util.NbBundle;
+import org.w3c.dom.NodeList;
 
 /**
  * These classes represents an occurence in a faces configuration file.
@@ -326,8 +327,8 @@ public class Occurrences {
             try{
                 DataObject dataObject = DataObject.find(config);
                 BaseDocument document = JSFEditorUtilities.getBaseDocument(dataObject);
-                int [] offsets = JSFEditorUtilities.getConverterDefinition(document, converter.getConverterForClass());
-                
+                int [] offsets = JSFEditorUtilities.getConverterDefinition(document, "converter-class", converter.getConverterClass()); //NOI18N
+                 
                 String text = document.getText(offsets);
                 int offset = offsets[0] + text.indexOf(oldValue);
                 position =  createPosition(offset, offset + oldValue.length());
@@ -420,7 +421,7 @@ public class Occurrences {
             try{
                 DataObject dataObject = DataObject.find(config);
                 BaseDocument document = JSFEditorUtilities.getBaseDocument(dataObject);
-                int [] offsets = JSFEditorUtilities.getConverterDefinition(document, converter.getConverterForClass());
+                int [] offsets = JSFEditorUtilities.getConverterDefinition(document, "converter-for-class", converter.getConverterForClass());
                 String text = document.getText(offsets);
                 int offset = offsets[0] + text.indexOf(oldValue);
                 position =  createPosition(offset, offset + oldValue.length());
