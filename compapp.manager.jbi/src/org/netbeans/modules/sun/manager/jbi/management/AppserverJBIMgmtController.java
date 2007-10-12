@@ -45,6 +45,8 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.io.File;
 import java.net.InetAddress;
+import java.util.List;
+import java.util.logging.Logger;
 import javax.management.Attribute;
 import javax.management.MBeanAttributeInfo;
 import javax.management.MBeanServerConnection;
@@ -74,6 +76,7 @@ public class AppserverJBIMgmtController {
     private static final String HTTP_PORT_MBEAN_NAME =
             "com.sun.appserv:type=http-listener,id=http-listener-1,config=server-config,category=config";  // NOI18N
     
+    private static Logger logger = Logger.getLogger("org.netbeans.modules.sun.manager.jbi.management"); // NOI18N
     
     /**
      * Creates a new instance of JBIAppserverMgmtController
@@ -118,42 +121,80 @@ public class AppserverJBIMgmtController {
                     String settingsFileName = 
                             netBeansUserDir + ServerInstanceReader.RELATIVE_FILE_PATH;
                     File settingsFile = new File(settingsFileName);
-                    if (settingsFile.exists()) {
-                        //System.out.println("Retrieving settings from " + settingsFileName);
+                    
+                    if (!settingsFile.exists()) {
+                        logger.warning("The application server definition file " +  // NOI18N
+                                    settingsFileName + " is missing."); // NOI18N
+                    } else {
                         ServerInstanceReader settings = 
-                                new ServerInstanceReader(settingsFileName);                        
-                        for (ServerInstance instance : settings.getServerInstances()) {
+                                new ServerInstanceReader(settingsFileName);   
+                        List<ServerInstance> instances = settings.getServerInstances();
+                        for (ServerInstance instance : instances) {
                             if (isCurrentInstance(instance)) {
                                 serverInstance = instance;
                                 break;
                             }
                         }
+                        
+                        // If there is no match, and there is only one instance 
+                        // available, then use it.
+                        if (serverInstance == null) {
+                            if (instances.size() == 1) {
+                                logger.warning("Could not find the server instance. Use the only instance available in " + settingsFileName + "."); // NOI18N
+                                serverInstance = instances.get(0);
+                            }
+                        }
+                        
+                        // If there is no match, and there is only one remote 
+                        // instance available, use it.
+                        if (serverInstance == null) {
+                            int remoteInstances = 0;
+                            for (ServerInstance instance : instances) {
+                                if (!instance.getHostName().equals("localhost")) { // NOI18N
+                                    remoteInstances++;
+                                }
+                            }
+                            
+                            if (remoteInstances == 1) {
+                                for (ServerInstance instance : instances) {
+                                    if (!instance.getHostName().equals("localhost")) { // NOI18N
+                                        logger.warning("Could not find the server instance. Use the only remote instance defined in " + settingsFileName + "."); // NOI18N
+                                        serverInstance = instance;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    
+                        if (serverInstance != null) {
+                            JBIClassLoader jbiClassLoader = new JBIClassLoader(serverInstance);
+
+                            String hostName = serverInstance.getHostName();
+                            String port     = serverInstance.getAdminPort();
+                            String userName = serverInstance.getUserName();
+                            String password = serverInstance.getPassword();                    
+
+                            HTTPServerConnector httpConnector = new HTTPServerConnector(
+                                    hostName, port, userName, password, jbiClassLoader);
+
+                            adminService = new AdministrationService(httpConnector);
+                        }
                     }
-                    
-                    if (serverInstance == null) {
-                        throw new RuntimeException(
-                                "The application server definition file " +  // NOI18N
-                                settingsFileName +
-                                " is missing or does not contain the expected server instance." // NOI18N
-                                );
-                    }
-                    JBIClassLoader jbiClassLoader = new JBIClassLoader(serverInstance);
-                    
-                    String hostName = serverInstance.getHostName();
-                    String port     = serverInstance.getAdminPort();
-                    String userName = serverInstance.getUserName();
-                    String password = serverInstance.getPassword();                    
-                    
-                    HTTPServerConnector httpConnector = new HTTPServerConnector(
-                            hostName, port, userName, password, jbiClassLoader);
-                    
-                    adminService = new AdministrationService(httpConnector);
-                }
-                
+                }                
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.warning(e.getMessage());
             }
         }              
+        
+        if (adminService == null) {
+            // Fall back on the mBeanServerConnection provided by NetBeans
+            try {
+                logger.warning("Could not find the server instance. Falling back on the mBeanServerConnection provided by NetBeans."); // NOI18N
+                adminService = new AdministrationService(mBeanServerConnection);
+            } catch (Exception e) {
+                logger.warning(e.getMessage());
+            }
+        }
         
         if (adminService == null) {
             String msg = NbBundle.getMessage(getClass(), "NULL_ADMIN_SERVICE_MSG"); // NOI18N
@@ -219,7 +260,6 @@ public class AppserverJBIMgmtController {
      * @param attrName
      * @return
      */
-// TMP
     public Object getJBIComponentConfigPropertyValue(String containerType,
             String componentName, String attrName) throws Exception {
         
@@ -277,8 +317,29 @@ public class AppserverJBIMgmtController {
             ObjectName objectName = new ObjectName(HOST_MBEAN_NAME);
             
             String host = (String) mBeanServerConnection.getAttribute(objectName, "hosts-current");  // NOI18N
-            if (InetAddress.getByName(instanceHost).getCanonicalHostName().equals(
-                    InetAddress.getByName(host).getCanonicalHostName())) {
+            
+            // InetAddress's getCanonicalHostName() is a best-effort method 
+            // and doesn't work if the name service is not available. (cordova)
+            // IP address is not reliable either. 
+            String instanceHostCanonicalHostName = InetAddress.getByName(instanceHost).getCanonicalHostName();
+            String hostCanonicalHostName = InetAddress.getByName(host).getCanonicalHostName();
+            String instanceHostAddress = InetAddress.getByName(instanceHost).getHostAddress();
+            String hostAddress = InetAddress.getByName(host).getHostAddress();
+            
+            logger.fine("isCurrentInstance():");
+            logger.fine("    isLocalHost? " + isLocalHost);
+            logger.fine("    instanceHost=" + instanceHost + 
+                    " CanonicalHostName=" + instanceHostCanonicalHostName + 
+                    " IP=" + instanceHostAddress);
+            logger.fine("            host=" + host + 
+                    " CanonicalHostName=" + hostCanonicalHostName + 
+                    " IP=" + hostAddress);
+//            for (InetAddress addr : InetAddress.getAllByName(host)) {
+//                logger.log(Level.FINE, "                   " +  addr.getHostAddress());
+//            }
+            
+            if (instanceHostCanonicalHostName.equals(hostCanonicalHostName) ||
+                    instanceHostAddress.equals(hostAddress)) {
                 objectName = new ObjectName(HOST_ASADMIN_MBEAN_NAME);
                 String appBase = (String) mBeanServerConnection.getAttribute(objectName, "appBase");    // NOI18N
                                 
@@ -286,16 +347,20 @@ public class AppserverJBIMgmtController {
                 String localInstanceLocation = instance.getLocation();
                 assert localInstanceLocation != null;                
                 localInstanceLocation = localInstanceLocation.replace('\\', '/'); // NOI18N
-                        
-                // FIXME
-                // For remote host, there is no point checking the server path.
-                // Here I am assuming there is no two remote servers running on
-                // the same machine.
+                                        
+                if (isLocalHost) {
+                    logger.fine("    localInstanceLocation=" + localInstanceLocation);
+                    logger.fine("                  appBase=" + appBase);
+                }
                 
                 if (!isLocalHost || appBase.toLowerCase().startsWith(localInstanceLocation.toLowerCase())) {
                     objectName = new ObjectName(HTTP_PORT_MBEAN_NAME);
                     String port = (String) mBeanServerConnection.getAttribute(objectName, "port");  // NOI18N
                     String instanceHttpPort = instance.getHttpPortNumber();
+                    
+                    logger.fine("    instanceHttpPort=" + instanceHttpPort);
+                    logger.fine("                port=" + port);
+                    
                     if (port.equals(instanceHttpPort)) {
                         return true;
                     }
@@ -311,7 +376,7 @@ public class AppserverJBIMgmtController {
     private static String getHostName() {
         String hostName = null;
         try {
-            InetAddress localMachine = InetAddress.getLocalHost();
+            InetAddress localMachine = InetAddress.getLocalHost(); 
             hostName = localMachine.getHostName();
         } catch (java.net.UnknownHostException e) {
             e.printStackTrace();
