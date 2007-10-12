@@ -864,6 +864,10 @@ class AntGrammar implements GrammarQuery {
             return data;
         }
 
+        public @Override String getDisplayName() {
+            return data; // #113804
+        }
+
     }
 
 }
