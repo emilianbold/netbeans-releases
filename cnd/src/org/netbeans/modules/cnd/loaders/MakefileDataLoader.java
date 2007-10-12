@@ -42,13 +42,11 @@
 package org.netbeans.modules.cnd.loaders;
 
 import java.io.IOException;
-import java.util.Enumeration;
 import org.netbeans.modules.cnd.MIMENames;
 
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.DataObjectExistsException;
-import org.openide.loaders.ExtensionList;
 import org.openide.loaders.UniFileLoader;
 import org.openide.util.NbBundle;
 import org.openide.util.SharedClassObject;
@@ -60,9 +58,6 @@ public class MakefileDataLoader extends UniFileLoader {
     /** Serial version number */
     static final long serialVersionUID = -7148711275717543299L;
 
-    /** Mark a file as a Makefile */
-    public static final String PROP_MAKEFILE_TYPE = "MAKEFILE_TYPE";	// NOI18N
-    
     private static MakefileDataLoader instance = null;
 
     public MakefileDataLoader() {
@@ -72,15 +67,10 @@ public class MakefileDataLoader extends UniFileLoader {
     
     /** Do various initializations */
     private void init() {
-        Enumeration en;
-        
         instance = this;
         
         /* initialize the extensions list */
-        ExtensionList extensionsList = new ExtensionList();
-        extensionsList.addExtension("mk"); // NOI18N
-        setExtensions(extensionsList);
-        
+        super.getExtensions().addExtension("mk"); // NOI18N
     }
 
     public static MakefileDataLoader getInstance(){
