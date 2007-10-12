@@ -42,7 +42,9 @@ package org.netbeans.modules.j2ee.sun.ddloaders.multiview.webservice;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
 import org.netbeans.modules.j2ee.dd.api.webservices.PortComponent;
@@ -80,8 +82,10 @@ public class WebServiceMetadataReader extends CommonBeanReader {
             if(dc != null) {
                 J2eeModule module = dc.getJ2eeModule();
                 if(module != null) {
-                    if(J2eeModule.WAR.equals(module.getModuleType()) || J2eeModule.EJB.equals(module.getModuleType())) {
+                    Object moduleType = module.getModuleType();
+                    if(J2eeModule.WAR.equals(moduleType) || J2eeModule.EJB.equals(moduleType)) {
                         result = readWebservicesMetadata(module.getMetadataModel(WebservicesMetadata.class));
+                        filterInvalidServices(result, moduleType);
                     }
                 }
             }
@@ -93,10 +97,56 @@ public class WebServiceMetadataReader extends CommonBeanReader {
         return result;
     }
     
+    /**
+     * Examine map of annotated web services we have detailed.  If any of the
+     * services contains ports of the wrong type (e.g ejb hosted service located
+     * in web app metadata, see IZ 118314), remove those services from the
+     * annotation map so they are not displayed and configurable.
+     * 
+     * @param annotationMap Organized details of the annotated web services 
+     *   described by the metadata for this module.
+     * @param moduleType Type of module being examined (WAR or EJB JAR only)
+     */
+    private void filterInvalidServices(Map<String, Object> annotationMap, Object moduleType) {
+        String invalidBindingType = J2eeModule.WAR.equals(moduleType) ? DDBinding.PROP_EJB_LINK : DDBinding.PROP_SERVLET_LINK;
+        
+        List<String> servicesToRemove = new ArrayList<String>();
+        for(Map.Entry<String, Object> serviceEntry: annotationMap.entrySet()) {
+            Object serviceValue = serviceEntry.getValue();
+            if(serviceValue instanceof Map<?, ?>) {
+                Map<String, Object> serviceDescMap = (Map<String, Object>) serviceValue;
+                Object pm = serviceDescMap.get(DDBinding.PROP_PORTCOMPONENT);
+                if(pm instanceof Map<?, ?>) {
+                    Map<String, Object> portMap = (Map<String, Object>) pm;
+                    for(Map.Entry<String, Object> portEntry: portMap.entrySet()) {
+                        Object portValue = portEntry.getValue();
+                        if(portValue instanceof Map<?, ?>) {
+                            Map<String, Object> portDescMap = (Map<String, Object>) portValue;
+                            if(portDescMap.get(invalidBindingType) != null) {
+                                // This port references an invalid binding so mark
+                                // the owning service for removal.
+                                servicesToRemove.add(serviceEntry.getKey());
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        for(String serviceKey: servicesToRemove) {
+            annotationMap.remove(serviceKey);
+        }
+        
+        return;
+    }
+    
     /** Maps interesting fields from service-ref descriptor to a multi-level property map.
      * 
+     * @param beans Array of WebserviceDescription DDBeans to extract data from.
+     * 
      * @return Map<String, Object> where Object is either a String value or nested map
-     *  with the same structure (and thus ad infinitum)
+     *  with the same structure (and so forth, ad infinitum)
      */
     public Map<String, Object> genProperties(CommonDDBean [] beans) {
         Map<String, Object> result = null;
