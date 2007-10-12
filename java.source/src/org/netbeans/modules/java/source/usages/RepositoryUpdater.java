@@ -264,14 +264,16 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
-        LOGGER.log(Level.FINER, "propertyChange from ClassPath: evt={0}, property name={1}", new Object[] {evt.toString(), evt.getPropertyName()});
+        if (LOGGER.isLoggable(Level.FINER))
+            LOGGER.log(Level.FINER, "propertyChange from ClassPath: evt={0}, property name={1}", new Object[] {evt.toString(), evt.getPropertyName()});
         if (ClassPath.PROP_ROOTS.equals(evt.getPropertyName())) {
             if (evt.getSource() == this.cp) {
                 submitBatch();
             } else {
                 ClassPath changedCp = (ClassPath) evt.getSource();
                 assert changedCp != null;
-                LOGGER.log(Level.FINER, "modified roots changedCp={0}", changedCp.toString());
+                if (LOGGER.isLoggable(Level.FINER))
+                    LOGGER.log(Level.FINER, "modified roots changedCp={0}", changedCp.toString());
 
                 URL root = classPath2Root.get(changedCp);
 
@@ -314,7 +316,8 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 || /*XXX: jlahoda: should not be necessary, IMO*/evt.getSource() == this.cp)) {
             ClassPath changedCp = (ClassPath) evt.getNewValue();
             assert changedCp != null;
-            LOGGER.log(Level.FINER, "changedCp={0}", changedCp.toString());
+            if (LOGGER.isLoggable(Level.FINER))
+                LOGGER.log(Level.FINER, "changedCp={0}", changedCp.toString());
             for (ClassPath.Entry e : changedCp.entries()) {
                 URL root = e.getURL();
                 scheduleCompilation(root,root, true);
