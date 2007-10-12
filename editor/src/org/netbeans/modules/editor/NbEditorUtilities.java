@@ -79,7 +79,7 @@ public class NbEditorUtilities {
 
     /** Get the dataobject from the document's StreamDescriptionProperty property. */
     public static DataObject getDataObject(Document doc) {
-        Object sdp = doc.getProperty(Document.StreamDescriptionProperty);
+        Object sdp = doc == null ? null : doc.getProperty(Document.StreamDescriptionProperty);
         if (sdp instanceof DataObject) {
             return (DataObject)sdp;
         }
