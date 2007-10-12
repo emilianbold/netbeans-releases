@@ -771,6 +771,18 @@ public class HgCommand {
     public static List<String> doClone(String repository, String target) throws HgException {
         if (repository == null || target == null) return null;
         
+        // Ensure that parent directory of target exists, creating if necessary
+        File fileTarget = new File (target);
+        File parentTarget = fileTarget.getParentFile();
+        try {
+            if (!parentTarget.mkdir()) {
+                if (!parentTarget.isDirectory()) {
+                    throw (new HgException (NbBundle.getMessage(HgCommand.class, "MSG_UNABLE_TO_CREATE_PARENT_DIR")));
+                }
+            }
+        } catch (SecurityException e) {
+            throw (new HgException (NbBundle.getMessage(HgCommand.class, "MSG_UNABLE_TO_CREATE_PARENT_DIR") + e.getMessage()));
+        }
         List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
