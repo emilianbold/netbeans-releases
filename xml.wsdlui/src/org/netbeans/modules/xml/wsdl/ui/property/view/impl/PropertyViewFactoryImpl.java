@@ -57,6 +57,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -124,7 +126,7 @@ public class PropertyViewFactoryImpl extends PropertyViewFactory {
     @Override
     public Sheet.Set[] getPropertySets(ExtensibilityElement exElement, 
                                               QName elementQName, 
-                                              Element schemaElement) {
+                                              Element schemaElement, ResourceBundle bundle) {
         Set<QName> processAttributeQNames = new HashSet<QName>();
         Sheet.Set defaultPropertiesSheetSet = Sheet.createPropertiesSet();
         ElementProperties elemProperties = null;
@@ -148,7 +150,14 @@ public class PropertyViewFactoryImpl extends PropertyViewFactory {
                 groupList.put(gName, new Integer(groupNumber));
                 nodePropertySet[groupNumber] = new Sheet.Set();
                 nodePropertySet[groupNumber].setName(gName);
-                String displayName = gName; //TODO: get from Bundle
+                String displayName = gName;
+                if (bundle != null) {
+                    try {
+                        displayName = bundle.getString("LBL_GRP" + gName);
+                    } catch (MissingResourceException e) {
+                        //ignore;
+                    }
+                }
                 nodePropertySet[groupNumber].setDisplayName(displayName);
                 if (group.isIsDefault()) {
                     defaultPropertiesSheetSet = nodePropertySet[groupNumber];
@@ -192,7 +201,7 @@ public class PropertyViewFactoryImpl extends PropertyViewFactory {
                     map.put(prop.getGroupName(), list);
                 }
                 //set Name and description if not done so before.
-                setNameAndDescription(nodeProperty, attributeQName.getLocalPart(), null, getAttributeShortDescription(schemaElement, attributeQName));
+                setNameAndDescription(nodeProperty, attributeQName.getLocalPart(), null, getAttributeShortDescription(schemaElement, attributeQName, bundle));
                 list.put(new Integer(prop.getPropertyOrder() - 1), nodeProperty);//PropertyOrder starts with one
             }
 
@@ -217,7 +226,22 @@ public class PropertyViewFactoryImpl extends PropertyViewFactory {
                     nodeProps = new TreeMap<Integer, Node.Property>();
                     map.put(groupedProp.getGroupName(), nodeProps);
                 }
-                setNameAndDescription(prop, groupedProp.getDisplayName(), groupedProp.getDisplayName(), "");
+                String displayName = groupedProp.getDisplayName();
+                String desc = "";
+                if (bundle != null && displayName != null) {
+                    try {
+                        displayName = bundle.getString("LBL_" + groupedProp.getDisplayName());
+                    } catch (MissingResourceException e) {
+                        //ignore
+                    }
+                    try {
+                        desc = bundle.getString("DESC_" + groupedProp.getDisplayName());
+                    } catch (MissingResourceException e) {
+                        //ignore.
+                    }
+                    
+                }
+                setNameAndDescription(prop, groupedProp.getDisplayName(), displayName, desc);
                 nodeProps.put(new Integer(groupedProp.getPropertyOrder() - 1), prop);
             }
             
@@ -236,7 +260,7 @@ public class PropertyViewFactoryImpl extends PropertyViewFactory {
         }
         
         //Add all remaining attributes which are not processed into default properties group.
-        populateDefaultPropertySet(defaultPropertiesSheetSet, schemaElement, elementQName, exElement, processAttributeQNames);
+        populateDefaultPropertySet(defaultPropertiesSheetSet, schemaElement, elementQName, exElement, processAttributeQNames, bundle);
 
         return nodePropertySet;
 
@@ -403,7 +427,7 @@ public class PropertyViewFactoryImpl extends PropertyViewFactory {
         return attrValueProperty;
     }
     
-    private void populateDefaultPropertySet(Sheet.Set propertySet, Element schemaElement, QName elementQName, ExtensibilityElement exElement, Set<QName> processAttributeQNames) {
+    private void populateDefaultPropertySet(Sheet.Set propertySet, Element schemaElement, QName elementQName, ExtensibilityElement exElement, Set<QName> processAttributeQNames, ResourceBundle bundle) {
         SchemaElementAttributeFinderVisitor seaFinder = new SchemaElementAttributeFinderVisitor(schemaElement, true);
         schemaElement.accept(seaFinder);
         List<Attribute> attributes = seaFinder.getAttributes();
@@ -415,7 +439,7 @@ public class PropertyViewFactoryImpl extends PropertyViewFactory {
                 if (!processAttributeQNames.contains(attrQName)) { 
                     boolean isOptional = isAttributeOptional(attr, namedAttr.getName());
                     Node.Property attrValueProperty = createDefaultNodeProperty(attr, exElement, attrQName, isOptional);
-                    setNameAndDescription(attrValueProperty, namedAttr.getName(), null, getAttributeShortDescription(schemaElement, attrQName));
+                    setNameAndDescription(attrValueProperty, namedAttr.getName(), null, getAttributeShortDescription(schemaElement, attrQName, bundle));
                     propertySet.put(attrValueProperty);
                 }
             }
@@ -438,13 +462,22 @@ public class PropertyViewFactoryImpl extends PropertyViewFactory {
 
     }
     
-    private String getAttributeShortDescription(Element schemaElement, QName attrQName) {
+    private String getAttributeShortDescription(Element schemaElement, QName attrQName, ResourceBundle bundle) {
         if (schemaElement != null) {
             Attribute attribute = SchemaUtility.findAttribute(attrQName, schemaElement);
             if(attribute != null) {
                 SchemaDocumentationFinderVisitor sdfFinder = new SchemaDocumentationFinderVisitor();
                 attribute.accept(sdfFinder);
-                return sdfFinder.getDocumentation();
+                String docStr = sdfFinder.getDocumentation();
+                String shortDesc = docStr;
+                if (bundle != null) {
+                    try {
+                        shortDesc = bundle.getString(docStr);
+                    } catch (MissingResourceException e) {
+                        //ignore exception
+                    }
+                }
+                return shortDesc;
             }
         }
         return null;
@@ -502,7 +535,7 @@ public class PropertyViewFactoryImpl extends PropertyViewFactory {
             assert name != null : "Name cannot be null";
             property.setName(name);
         }
-        if (isNullOrBlank(property.getDisplayName()) && displayName != null) {
+        if (displayName != null && (isNullOrBlank(property.getDisplayName()) || property.getDisplayName().equals(property.getName()))) {
             property.setDisplayName(displayName);
         }
         if (isNullOrBlank(property.getShortDescription()) || property.getShortDescription().equals(property.getDisplayName())) {

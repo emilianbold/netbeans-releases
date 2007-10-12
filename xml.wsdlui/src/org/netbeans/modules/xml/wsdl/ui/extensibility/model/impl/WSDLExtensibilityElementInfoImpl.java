@@ -49,6 +49,7 @@ package org.netbeans.modules.xml.wsdl.ui.extensibility.model.impl;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.ResourceBundle;
 import java.util.logging.Logger;
 
 import org.netbeans.modules.xml.schema.model.GlobalElement;
@@ -58,6 +59,7 @@ import org.netbeans.modules.xml.wsdl.ui.extensibility.model.WSDLExtensibilityEle
 import org.netbeans.modules.xml.wsdl.ui.extensibility.model.XMLSchemaFileInfo;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -132,6 +134,14 @@ public class WSDLExtensibilityElementInfoImpl implements WSDLExtensibilityElemen
 		}
 		
 		return null;
+	}
+	
+	public ResourceBundle getBundle() {
+	    String bundleBaseName = (String) mDataObject.getPrimaryFile().getAttribute(Constants.BUNDLE_KEY);
+	    if (bundleBaseName != null) {
+	        return NbBundle.getBundle(bundleBaseName);
+	    }
+	    return null;
 	}
 	
 }

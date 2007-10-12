@@ -50,6 +50,7 @@
 
 package org.netbeans.modules.xml.wsdl.ui.property.view;
 
+import java.util.ResourceBundle;
 import javax.xml.namespace.QName;
 
 import org.netbeans.modules.xml.schema.model.Element;
@@ -87,5 +88,5 @@ public abstract class PropertyViewFactory {
     /**
      * Get all the property set for a given extensibility element
      */
-    public abstract Sheet.Set[] getPropertySets(ExtensibilityElement exElement, QName elementQName, Element schemaElement);
+    public abstract Sheet.Set[] getPropertySets(ExtensibilityElement exElement, QName elementQName, Element schemaElement, ResourceBundle bundle);
 }

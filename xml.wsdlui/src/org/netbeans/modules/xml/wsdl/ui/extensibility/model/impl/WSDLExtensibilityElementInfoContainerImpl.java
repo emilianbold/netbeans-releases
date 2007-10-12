@@ -48,12 +48,11 @@
 package org.netbeans.modules.xml.wsdl.ui.extensibility.model.impl;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.logging.Logger;
+
 import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.wsdl.ui.common.Constants;
-
 import org.netbeans.modules.xml.wsdl.ui.extensibility.model.WSDLExtensibilityElementInfo;
 import org.netbeans.modules.xml.wsdl.ui.extensibility.model.WSDLExtensibilityElementInfoContainer;
 import org.netbeans.modules.xml.wsdl.ui.extensibility.model.XMLSchemaFileInfo;

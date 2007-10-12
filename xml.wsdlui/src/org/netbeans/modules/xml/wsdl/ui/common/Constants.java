@@ -64,5 +64,6 @@ public class Constants {
     public static final String PREFIX = "prefix"; //NOI18N
 
     public static final String NAMESPACE = "namespace";//NOI18N
+    public static final String BUNDLE_KEY = "SystemFileSystem.localizingBundle";
 
 }

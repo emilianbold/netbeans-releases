@@ -221,10 +221,10 @@ made subject to such option by the copyright holder.
     </folder>
     
     <folder name="WSDLEditor">
-        <file name="ws-bpel_plnktype.xsd" url="ws-bpel_plnktype.xsd">
+	    <file name="ws-bpel_plnktype.xsd" url="plnk/ws-bpel_plnktype.xsd">
             <attr name="prefix" stringvalue="plink"/>
         </file>
-        <file name="ws-bpel_varprop.xsd" url="ws-bpel_varprop.xsd">
+	<file name="ws-bpel_varprop.xsd" url="varprop/ws-bpel_varprop.xsd">
             <attr name="prefix" stringvalue="vprop"/>
         </file>
         <file name="wsdl.xsd" url="wsdl.xsd">
@@ -234,20 +234,20 @@ made subject to such option by the copyright holder.
             <file name="partnerLinkType">
                 <attr name="xsdFileName" stringvalue="ws-bpel_plnktype"/>
                 <attr name="element" stringvalue="partnerLinkType"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdl.ui.netbeans.module.resources.Bundle"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdl.ui.netbeans.module.resources.plnk.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdl/ui/view/treeeditor/extension/bpel/resources/partnerlinktype.png"/> 
             </file>
             <folder name="MessageProperties">
                 <file name="property">
                     <attr name="xsdFileName" stringvalue="ws-bpel_varprop"/>
                     <attr name="element" stringvalue="property"/>
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdl.ui.netbeans.module.resources.Bundle"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdl.ui.netbeans.module.resources.varprop.Bundle"/>
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdl/ui/view/resources/property.png"/> 
                 </file>
                 <file name="propertyAlias">
                     <attr name="xsdFileName" stringvalue="ws-bpel_varprop"/>
                     <attr name="element" stringvalue="propertyAlias"/>
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdl.ui.netbeans.module.resources.Bundle"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdl.ui.netbeans.module.resources.varprop.Bundle"/>
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdl/ui/view/resources/propertyalias.png"/> 
                 </file>
             </folder>

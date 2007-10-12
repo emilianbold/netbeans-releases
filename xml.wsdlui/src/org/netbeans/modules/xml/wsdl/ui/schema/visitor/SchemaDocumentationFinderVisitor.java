@@ -83,7 +83,7 @@ public class SchemaDocumentationFinderVisitor extends AbstractXSDVisitor {
     }
     
     public String getDocumentation() {
-        return this.mDocumentationBuf.toString().trim();
+        return this.mDocumentationBuf.toString();
     }
     
     public void visit(LocalAttribute la) {
@@ -183,6 +183,7 @@ public class SchemaDocumentationFinderVisitor extends AbstractXSDVisitor {
     public void visit(Documentation doc) {
         String content = doc.getContent();
         if(content != null) {
+            content = content.trim();
             mDocumentationBuf.append(content);
         }
     }

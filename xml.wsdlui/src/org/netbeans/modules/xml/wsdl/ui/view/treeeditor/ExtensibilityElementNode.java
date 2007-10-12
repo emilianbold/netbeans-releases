@@ -51,6 +51,8 @@ import java.awt.Image;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
 
 import javax.swing.Action;
 import javax.xml.namespace.QName;
@@ -109,7 +111,6 @@ public class ExtensibilityElementNode<T extends ExtensibilityElement> extends WS
    
     private Node mLayerDelegateNode;
     
-    private WSDLExtensibilityElement mExtensibilityElement;
     
     private Element mSchemaElement;
     
@@ -118,6 +119,9 @@ public class ExtensibilityElementNode<T extends ExtensibilityElement> extends WS
     private QName mQName = null;
     
     private ExtensibilityElementConfigurator mConfigurator;
+
+
+    private ResourceBundle bundle;
     
     public ExtensibilityElementNode(ExtensibilityElement wsdlConstruct) {
         super(new GenericWSDLComponentChildren<ExtensibilityElement>(wsdlConstruct), wsdlConstruct);
@@ -158,18 +162,21 @@ public class ExtensibilityElementNode<T extends ExtensibilityElement> extends WS
                 setShortDescription(mQName != null ?  mQName.toString() : "Missing Name");
             }
         }
+        
+        WSDLExtensibilityElementInfo info = null;
         try {
             WSDLComponent parentComponent = mWSDLConstruct.getParent();
             String extensibilityElementType = ExtensibilityUtils.getExtensibilityElementType(parentComponent);
             if(extensibilityElementType != null) {
                 WSDLExtensibilityElements elements = WSDLExtensibilityElementsFactory.getInstance().getWSDLExtensibilityElements();
-                mExtensibilityElement = elements.getWSDLExtensibilityElement(extensibilityElementType);
+                WSDLExtensibilityElement mExtensibilityElement = elements.getWSDLExtensibilityElement(extensibilityElementType);
                 if(mExtensibilityElement != null) {
-                    WSDLExtensibilityElementInfo info = mExtensibilityElement.getWSDLExtensibilityElementInfos(mQName);
+                    info = mExtensibilityElement.getWSDLExtensibilityElementInfos(mQName);
                     if(info != null && info.getElement() != null) {
                         this.mLayerDelegateNode = getLayerDelegateNode(info);
                         
                         this.mSchemaElement = info.getElement();
+                        bundle = info.getBundle();
                         /*SchemaElementCookie sCookie = new SchemaElementCookie(mElement);
                         getLookupContents().add(sCookie);*/
                     }
@@ -210,9 +217,19 @@ public class ExtensibilityElementNode<T extends ExtensibilityElement> extends WS
             SchemaDocumentationFinderVisitor sdFinder = new SchemaDocumentationFinderVisitor();
             this.mSchemaElement.accept(sdFinder);
             String docStr = sdFinder.getDocumentation();
-            if(docStr != null && !docStr.trim().equals("")) {
-                this.setShortDescription(docStr);
+            if(docStr != null && docStr.length() > 0) {
+                String shortDesc = docStr;
                 
+                if (info != null) {
+                    if (bundle != null) {
+                        try {
+                            shortDesc = bundle.getString(docStr);
+                        } catch (MissingResourceException e) {
+                            //ignore exception
+                        }
+                    }
+                }
+                this.setShortDescription(shortDesc);
             }
         }
         
@@ -307,7 +324,7 @@ public class ExtensibilityElementNode<T extends ExtensibilityElement> extends WS
         Sheet.Set defaultSet = null;
         if (mSchemaElement != null) {
             try {
-                Sheet.Set[] sets = PropertyViewFactory.getInstance().getPropertySets(mWSDLConstruct, mQName, mSchemaElement);
+                Sheet.Set[] sets = PropertyViewFactory.getInstance().getPropertySets(mWSDLConstruct, mQName, mSchemaElement, bundle);
                 if (sets != null) {
                     for (Sheet.Set set : sets) {
                         sheet.put(set);

@@ -47,6 +47,7 @@
  */
 package org.netbeans.modules.xml.wsdl.ui.extensibility.model;
 
+import java.util.ResourceBundle;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.Schema;
 import org.openide.loaders.DataObject;
@@ -88,5 +89,10 @@ public interface WSDLExtensibilityElementInfo {
 	 * @return prefix.
 	 */
 	String getPrefix();
-	
+
+	/** Gets the resource bundle associated with this databoject.
+	 * 
+	 * @return resource bundle.
+	 */
+	ResourceBundle getBundle();
 }
