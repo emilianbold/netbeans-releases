@@ -52,6 +52,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
@@ -110,8 +111,7 @@ public class JAXBRefreshAction extends NodeAction  {
     }
     
     private static void log(Exception ex){
-        // XXX TODO log 
-        ex.printStackTrace();
+        Exceptions.printStackTrace(ex);
     }
     
     public String getName() {

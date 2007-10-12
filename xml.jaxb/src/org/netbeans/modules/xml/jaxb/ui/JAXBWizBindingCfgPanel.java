@@ -262,82 +262,86 @@ public class JAXBWizBindingCfgPanel implements WizardDescriptor.Panel,
     }
         
     public void readSettings(Object settings) {
-        this.wd = (WizardDescriptor)settings;
+        try {
+            this.wd = (WizardDescriptor) settings;
+            this.bindingInfoPnl.setInitializing(true);
+            
+            if (wd.getProperty(JAXBWizModuleConstants.SCHEMA_NAME) != null) {
+                this.bindingInfoPnl.setSchemaName((String) 
+                        wd.getProperty(JAXBWizModuleConstants.SCHEMA_NAME));
+            }
 
-        if (wd.getProperty(JAXBWizModuleConstants.SCHEMA_NAME) != null) {
-            this.bindingInfoPnl.setSchemaName((String) 
-                    wd.getProperty(JAXBWizModuleConstants.SCHEMA_NAME));    
-        }
+            if (wd.getProperty(JAXBWizModuleConstants.PROJECT_NAME) != null) {
+                this.bindingInfoPnl.setProjectName((String) 
+                        wd.getProperty(JAXBWizModuleConstants.PROJECT_NAME));
+            }
 
-        if (wd.getProperty(JAXBWizModuleConstants.PROJECT_NAME) != null) {
-            this.bindingInfoPnl.setProjectName((String) 
-                    wd.getProperty(JAXBWizModuleConstants.PROJECT_NAME));    
-        }
- 
-        if (wd.getProperty(JAXBWizModuleConstants.PROJECT_DIR) != null) {
-            this.bindingInfoPnl.setProjectDir((File) 
-                    wd.getProperty(JAXBWizModuleConstants.PROJECT_DIR));    
-        }
- 
-        if (wd.getProperty(JAXBWizModuleConstants.PACKAGE_NAME) != null) {
-            this.bindingInfoPnl.setPackageName((String) 
-                    wd.getProperty(JAXBWizModuleConstants.PACKAGE_NAME));    
-        }
+            if (wd.getProperty(JAXBWizModuleConstants.PROJECT_DIR) != null) {
+                this.bindingInfoPnl.setProjectDir((File) 
+                        wd.getProperty(JAXBWizModuleConstants.PROJECT_DIR));
+            }
 
-        if (wd.getProperty(JAXBWizModuleConstants.SCHEMA_TYPE) != null){
-            this.bindingInfoPnl.setSchemaType((String)
-                    wd.getProperty(JAXBWizModuleConstants.SCHEMA_TYPE));
-        }
-        
-        Map<String, Boolean> options =  (Map<String, Boolean>)
-                wd.getProperty(JAXBWizModuleConstants.XJC_OPTIONS);
-        if (options != null){
-            this.bindingInfoPnl.setOptions(options);
-        }
-        
-        String origSrcLocType = (String) wd.getProperty(
-                JAXBWizModuleConstants.SOURCE_LOCATION_TYPE);  
-        List<String> xsdFileList = (List<String>) wd.getProperty(
-                JAXBWizModuleConstants.XSD_FILE_LIST);
-        
-        if ((origSrcLocType != null) && 
-                (JAXBWizModuleConstants.SRC_LOC_TYPE_URL.equals(
-                origSrcLocType))){
-            if ((xsdFileList != null) && (xsdFileList.size() > 0)){
-                Iterator<String> itr = xsdFileList.iterator();
-                String file = itr.next();
-                this.bindingInfoPnl.setSchemaURL(file);
-            }                                
-        } else {
-            if ((xsdFileList != null) && (xsdFileList.size() > 0)){
-                Iterator<String> itr = xsdFileList.iterator();
-                String file = itr.next();
-                this.bindingInfoPnl.setSchemaFile(file);
-            }                    
-        }
+            if (wd.getProperty(JAXBWizModuleConstants.PACKAGE_NAME) != null) {
+                this.bindingInfoPnl.setPackageName((String) 
+                        wd.getProperty(JAXBWizModuleConstants.PACKAGE_NAME));
+            }
 
-        // Bindig files
-        List<String> bindingFileList = (List<String>) wd.getProperty(
-                JAXBWizModuleConstants.JAXB_BINDING_FILES);
-        if (bindingFileList != null){
-            this.bindingInfoPnl.setBindingFiles(bindingFileList);
-        }
-        
-        String catalog = (String) wd.getProperty(
-                JAXBWizModuleConstants.CATALOG_FILE);
-        if (catalog != null){
-            this.bindingInfoPnl.setCatalogFile(catalog);
-        }
-        
-        this.existingSchemaNames = (List<String>) (List<String>) wd.getProperty(
-                JAXBWizModuleConstants.EXISTING_SCHEMA_NAMES);
-        
-        // XXX hack, TemplateWizard in final setTemplateImpl() forces new 
-        // wizard's title this name is used in NewFileWizard to modify the title
-        if (wd instanceof TemplateWizard){
-            wd.putProperty(WIZ_NEW_FILE_TITLE, 
-                    NbBundle.getMessage(this.getClass(),
-                    "LBL_TemplateWizardTitle")); //NOI18N
+            if (wd.getProperty(JAXBWizModuleConstants.SCHEMA_TYPE) != null) {
+                this.bindingInfoPnl.setSchemaType((String) 
+                        wd.getProperty(JAXBWizModuleConstants.SCHEMA_TYPE));
+            }
+
+            Map<String, Boolean> options = (Map<String, Boolean>) 
+                    wd.getProperty(JAXBWizModuleConstants.XJC_OPTIONS);
+            if (options != null) {
+                this.bindingInfoPnl.setOptions(options);
+            }
+
+            String origSrcLocType = (String) 
+                    wd.getProperty(JAXBWizModuleConstants.SOURCE_LOCATION_TYPE);
+            List<String> xsdFileList = (List<String>) 
+                    wd.getProperty(JAXBWizModuleConstants.XSD_FILE_LIST);
+
+            if ((origSrcLocType != null) && (
+                    JAXBWizModuleConstants.SRC_LOC_TYPE_URL.equals(
+                        origSrcLocType))) {
+                if ((xsdFileList != null) && (xsdFileList.size() > 0)) {
+                    Iterator<String> itr = xsdFileList.iterator();
+                    String file = itr.next();
+                    this.bindingInfoPnl.setSchemaURL(file);
+                }
+            } else {
+                if ((xsdFileList != null) && (xsdFileList.size() > 0)) {
+                    Iterator<String> itr = xsdFileList.iterator();
+                    String file = itr.next();
+                    this.bindingInfoPnl.setSchemaFile(file);
+                }
+            }
+
+            // Bindig files
+            List<String> bindingFileList = (List<String>) 
+                    wd.getProperty(JAXBWizModuleConstants.JAXB_BINDING_FILES);
+            if (bindingFileList != null) {
+                this.bindingInfoPnl.setBindingFiles(bindingFileList);
+            }
+
+            String catalog = (String) 
+                    wd.getProperty(JAXBWizModuleConstants.CATALOG_FILE);
+            if (catalog != null) {
+                this.bindingInfoPnl.setCatalogFile(catalog);
+            }
+
+            this.existingSchemaNames = (List<String>) 
+                    wd.getProperty(JAXBWizModuleConstants.EXISTING_SCHEMA_NAMES);
+
+            // XXX hack, TemplateWizard in final setTemplateImpl() forces new 
+            // wizard's title this name is used in NewFileWizard to modify the title
+            if (wd instanceof TemplateWizard) {
+                wd.putProperty(WIZ_NEW_FILE_TITLE, NbBundle.getMessage(
+                        this.getClass(), "LBL_TemplateWizardTitle")); //NOI18N
+            }
+        } finally {
+            this.bindingInfoPnl.setInitializing(false);
         }
     }    
 }

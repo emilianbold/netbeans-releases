@@ -640,13 +640,14 @@ private void fireChangeEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
 }//GEN-LAST:event_btnSelectionHandler
 
     private void schemaTypeChangeHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_schemaTypeChangeHandler
-        // TODO add your handling code here:
-        if (!SCHEMA_TYPE_XML.equals(this.cmbSchemaType.getSelectedItem())){
-            NotifyDescriptor nd = new NotifyDescriptor.Message(
-                    getMsg("MSG_SchemaTypeNotSupported", // NOI18N
-                    this.cmbSchemaType.getSelectedItem()),
-                    NotifyDescriptor.INFORMATION_MESSAGE);
-            DialogDisplayer.getDefault().notify(nd);
+        if (!this.isInitializing()){
+            if (!SCHEMA_TYPE_XML.equals(this.cmbSchemaType.getSelectedItem())){
+                NotifyDescriptor nd = new NotifyDescriptor.Message(
+                        getMsg("MSG_SchemaTypeNotSupported", // NOI18N
+                        this.cmbSchemaType.getSelectedItem()),
+                        NotifyDescriptor.INFORMATION_MESSAGE);
+                DialogDisplayer.getDefault().notify(nd);
+            }
         }
     }//GEN-LAST:event_schemaTypeChangeHandler
 
@@ -739,6 +740,7 @@ private void fireChangeEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
     private String prevSchemaPath = null;
     private String prevSchemaURL = null;    
     private File projDir = null;
+    private boolean initializing = false;
             
     private static String getMessage(String key){
         return org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, key);
@@ -796,6 +798,14 @@ private void fireChangeEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
         return ret;
     }
 
+    private synchronized boolean isInitializing(){
+        return this.initializing;
+    }
+
+    public synchronized void setInitializing(boolean ini){
+        this.initializing = ini;
+    }
+    
     private javax.swing.DefaultComboBoxModel getSchemaTypeComboBoxModel(){
         javax.swing.DefaultComboBoxModel ret =
                 new javax.swing.DefaultComboBoxModel(getSchemaTypes());
