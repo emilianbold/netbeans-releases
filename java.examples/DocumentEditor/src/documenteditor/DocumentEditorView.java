@@ -152,7 +152,7 @@ public class DocumentEditorView extends FrameView {
     private void setFile(File file) {
         File oldValue = this.file;
         this.file = file;
-	String appId = getResourceMap().getString("Application.id");
+        String appId = getResourceMap().getString("Application.id");
         getFrame().setTitle(file.getName() + " - " + appId);
         firePropertyChange("file", oldValue, this.file);
     }
@@ -167,15 +167,15 @@ public class DocumentEditorView extends FrameView {
      * @see #isModified
      */
     public boolean isModified() { 
-	return modified;
+        return modified;
     }
 
     /* Set the bound modified property and update the GUI.
      */
     private void setModified(boolean modified) {
-	boolean oldValue = this.modified;
-	this.modified = modified;
-	firePropertyChange("modified", oldValue, this.modified);
+        boolean oldValue = this.modified;
+        this.modified = modified;
+        firePropertyChange("modified", oldValue, this.modified);
     }
 
     /**
@@ -220,7 +220,7 @@ public class DocumentEditorView extends FrameView {
          * They're defined in resources/DocumentEditorView.properties.
          */
         LoadFileTask(File file) {
-	    super(DocumentEditorApp.getApplication(), file);
+            super(DocumentEditorView.this.getApplication(), file);
         }
 
         /* Called on the EDT if doInBackground completes without 
@@ -261,7 +261,7 @@ public class DocumentEditorView extends FrameView {
      */
     @Action(enabledProperty = "modified")
     public Task save() {
-	return new SaveFileTask(getFile());
+        return new SaveFileTask(getFile());
     }
 
     /**
@@ -291,7 +291,7 @@ public class DocumentEditorView extends FrameView {
      */
     private class SaveFileTask extends DocumentEditorApp.SaveTextFileTask {
         SaveFileTask(File file) {
-            super(DocumentEditorApp.getApplication(), file, textArea.getText());
+            super(DocumentEditorView.this.getApplication(), file, textArea.getText());
         }
 
         @Override protected void succeeded(Void ignored) {
@@ -322,8 +322,8 @@ public class DocumentEditorView extends FrameView {
         JFileChooser fc = new JFileChooser();
         fc.setDialogTitle(getResourceMap().getString(name + ".dialogTitle"));
         String textFilesDesc = getResourceMap().getString("txtFileExtensionDescription");
-	fc.setFileFilter(new TextFileFilter(textFilesDesc));
-	return fc;
+        fc.setFileFilter(new TextFileFilter(textFilesDesc));
+        return fc;
     }
 
     /** This is a substitute for FileNameExtensionFilter, which is

@@ -102,7 +102,7 @@ public class DocumentEditorApp extends SingleFrameApplication {
      * At startup create and show the main frame of the application.
      */
     @Override protected void startup() {
-       show(new DocumentEditorView(this));
+        show(new DocumentEditorView(this));
     }
 
     /**
@@ -244,7 +244,7 @@ public class DocumentEditorApp extends SingleFrameApplication {
          *
          * @param file the file to load from.
          */
-        LoadTextFileTask(SingleFrameApplication application, File file) {
+        LoadTextFileTask(Application application, File file) {
             super(application);
             this.file = file;
         }

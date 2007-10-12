@@ -149,36 +149,36 @@ public class MarsRoverViewerView extends FrameView {
 
     @Action(enabledProperty = "nextImageEnabled")
     public Task nextImage() {
-	Task task = null;
-	if (imageIndex < (imageLocations.size() - 1)) {
-	    imageIndex += 1;
-	    updateNextPreviousEnabledProperties();
-	    task = new ShowImageTask(imageLocations.get(imageIndex));
-	}
-	return task;
+        Task task = null;
+        if (imageIndex < (imageLocations.size() - 1)) {
+            imageIndex += 1;
+            updateNextPreviousEnabledProperties();
+            task = new ShowImageTask(imageLocations.get(imageIndex));
+        }
+        return task;
     }
 
     @Action(enabledProperty = "previousImageEnabled")
     public Task previousImage() {
-	Task task = null;
-	if (imageIndex > 0) {
-	    imageIndex -= 1;
-	    updateNextPreviousEnabledProperties();
-	    task = new ShowImageTask(imageLocations.get(imageIndex));
-	}
-	return task;
+        Task task = null;
+        if (imageIndex > 0) {
+            imageIndex -= 1;
+            updateNextPreviousEnabledProperties();
+            task = new ShowImageTask(imageLocations.get(imageIndex));
+        }
+        return task;
     }
 
     @Action
     public Task refreshImage() {
-	return new ShowImageTask(imageLocations.get(imageIndex));
+        return new ShowImageTask(imageLocations.get(imageIndex));
     }
 
     @Action
     public void stopLoading() {
-	if ((imageTask != null) && !imageTask.isDone()) {
-	    imageTask.cancel(true);
-	}
+        if ((imageTask != null) && !imageTask.isDone()) {
+            imageTask.cancel(true);
+        }
     }
 
     /* The properties below define the enabled state for the 
@@ -186,28 +186,28 @@ public class MarsRoverViewerView extends FrameView {
      */
 
     private void updateNextPreviousEnabledProperties() {
-	setNextImageEnabled(imageIndex < (imageLocations.size() - 1));
-	setPreviousImageEnabled(imageIndex > 0);
+        setNextImageEnabled(imageIndex < (imageLocations.size() - 1));
+        setPreviousImageEnabled(imageIndex > 0);
     }
 
     public boolean isNextImageEnabled() { 
-	return nextImageEnabled; 
+        return nextImageEnabled; 
     }
 
     public void setNextImageEnabled(boolean nextImageEnabled) {
-	boolean oldValue = this.nextImageEnabled;
-	this.nextImageEnabled = nextImageEnabled;
-	firePropertyChange("nextImageEnabled", oldValue, this.nextImageEnabled);
+        boolean oldValue = this.nextImageEnabled;
+        this.nextImageEnabled = nextImageEnabled;
+        firePropertyChange("nextImageEnabled", oldValue, this.nextImageEnabled);
     }
 
     public boolean isPreviousImageEnabled() { 
-	return previousImageEnabled; 
+        return previousImageEnabled; 
     }
 
     public void setPreviousImageEnabled(boolean previousImageEnabled) {
-	boolean oldValue = this.previousImageEnabled;
-	this.previousImageEnabled = previousImageEnabled;
-	firePropertyChange("previousImageEnabled", oldValue, this.previousImageEnabled);
+        boolean oldValue = this.previousImageEnabled;
+        this.previousImageEnabled = previousImageEnabled;
+        firePropertyChange("previousImageEnabled", oldValue, this.previousImageEnabled);
     }
 
     /* A application specific subclass of LoadImageTask.
@@ -220,53 +220,53 @@ public class MarsRoverViewerView extends FrameView {
      * When the task completes, we update the GUI.
      */
     private class ShowImageTask extends LoadImageTask {
-	ShowImageTask(URL imageURL) {
-	    super(MarsRoverViewerApp.getApplication(), imageURL);
-	    stopLoading();  
-	    imageTask = this;
-	    showImageMessage(imageURL, "loadingWait");
-	}
+        ShowImageTask(URL imageURL) {
+            super(MarsRoverViewerView.this.getApplication(), imageURL);
+            stopLoading();  
+            imageTask = this;
+            showImageMessage(imageURL, "loadingWait");
+        }
 
-	@Override protected void cancelled() {
-	    if (imageTask == this) {
-		showImageMessage(getImageURL(), "loadingCancelled");
-	    }
-	}
+        @Override protected void cancelled() {
+            if (imageTask == this) {
+                showImageMessage(getImageURL(), "loadingCancelled");
+            }
+        }
 
-	@Override protected void succeeded(BufferedImage image) {
+        @Override protected void succeeded(BufferedImage image) {
             super.succeeded(image);
-	    if (imageTask == this) {
-		showImage(getImageURL(), image);
-	    }
-	}
+            if (imageTask == this) {
+                showImage(getImageURL(), image);
+            }
+        }
 
-	@Override protected void failed(Throwable e) {
+        @Override protected void failed(Throwable e) {
             super.failed(e);
-	    if (imageTask == this) {
-		showImageMessage(getImageURL(), "loadingFailed");
-	    }
-	}
-    
-	@Override protected void finished() {
+            if (imageTask == this) {
+                showImageMessage(getImageURL(), "loadingFailed");
+            }
+        }
+
+        @Override protected void finished() {
             super.finished();
-	    imageTask = null;
-	}
+            imageTask = null;
+        }
     }
 
     private void showImage(URL imageURL, BufferedImage image) {
-	int width = image.getWidth();
-	int height = image.getHeight();
-	String tip = getResourceMap().getString("imageTooltip", imageURL, width, height);
-	imageLabel.setToolTipText(tip);
-	imageLabel.setText(null);
-	imageLabel.setIcon(new ImageIcon(image));
+        int width = image.getWidth();
+        int height = image.getHeight();
+        String tip = getResourceMap().getString("imageTooltip", imageURL, width, height);
+        imageLabel.setToolTipText(tip);
+        imageLabel.setText(null);
+        imageLabel.setIcon(new ImageIcon(image));
     }
 
     private void showImageMessage(URL imageURL, String key) {
-	String msg = getResourceMap().getString(key, imageURL);
-	imageLabel.setToolTipText("");
-	imageLabel.setText(msg);
-	imageLabel.setIcon(null);
+        String msg = getResourceMap().getString(key, imageURL);
+        imageLabel.setToolTipText("");
+        imageLabel.setText(msg);
+        imageLabel.setIcon(null);
     }
 
     /** This method is called from within the constructor to
