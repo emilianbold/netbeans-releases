@@ -92,6 +92,7 @@ public class NbPresenterLeakTest extends NbTestCase {
         p.add(btn, BorderLayout.NORTH);
         
         SwingUtilities.invokeAndWait (new EDTJob(d, true));
+        Thread.sleep(1000); // let it actually paint
         SwingUtilities.invokeAndWait (new EDTJob(d, false));
 
         //assertNull ("BufferStrategy was disposed.", dialog.getBufferStrategy ());
