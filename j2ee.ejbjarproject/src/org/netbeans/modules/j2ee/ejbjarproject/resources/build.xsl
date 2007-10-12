@@ -92,7 +92,7 @@ made subject to such option by the copyright holder.
 
     Example of pluging an obfuscator after the compilation could look like 
 
-        <target name="post-compile">
+        <target name="-post-compile">
             <obfuscate>
                 <fileset dir="${build.classes.dir}"/>
             </obfuscate>
