@@ -259,7 +259,7 @@ public class ClassDataRegistry {
                 // Assign id to all types
                 idMapping = new HashMap<ClassData, Integer>();
                 for ( ClassData cd : typeMap ) {
-                    System.err.println( " - " + cd.getFullyQualifiedName() + " = " + id );
+//                    System.err.println( " - " + cd.getFullyQualifiedName() + " = " + id );
                     idMapping.put( cd, id );
                     id++;
                 }
@@ -311,7 +311,7 @@ public class ClassDataRegistry {
     public int getRegisteredTypeId( ClassData type ) {
         if ( typeMap == null )
             updateClassDataTree();
-        System.err.println(" ~ " + type );
+//        System.err.println(" ~ " + type );
         return idMapping.get( type );
     }
 

@@ -104,7 +104,7 @@ public class GenericTypeSerializer implements JavonSerializer {
                 }
                 cd.setParameterTypes( typeParameters );                
                 for( ClassData ccd : typeParameters ) {
-                    System.err.println(" registering type : " + ccd.getFullyQualifiedName());
+//                    System.err.println(" registering type : " + ccd.getFullyQualifiedName());
                     traversable.registerType( ccd );
                 }
                 return cd;
