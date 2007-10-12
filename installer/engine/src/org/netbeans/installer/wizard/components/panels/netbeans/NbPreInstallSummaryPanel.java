@@ -301,7 +301,12 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                     downloadSizeValue.setVisible(true);
                 }
             }
-            
+            if(gfCheckbox!=null) {
+                gfCheckbox.doClick();
+            }
+            if(tomcatCheckbox!=null) {
+                tomcatCheckbox.doClick();
+            }
             super.initialize();
         }
         
@@ -492,8 +497,6 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                                             }
                                         }
                                     });
-                                    gfCheckbox.setSelected(true);
-                                    gfProduct.setStatus(Status.TO_BE_UNINSTALLED);
                                     
                                     add(runtimesToRemove, new GridBagConstraints(
                                             0, index++,                        // x, y
@@ -558,8 +561,7 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                                             }
                                         }
                                     });
-                                    tomcatCheckbox.setSelected(true);                                    
-                                    tomcatProduct.setStatus(Status.TO_BE_UNINSTALLED);
+                                    
                                     add(tomcatCheckbox, new GridBagConstraints(
                                             0, index++,                        // x, y
                                             1, 1,                             // width, height
