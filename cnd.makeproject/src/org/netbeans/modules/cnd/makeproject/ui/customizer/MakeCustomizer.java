@@ -80,7 +80,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.explorer.ExplorerManager;
-import org.openide.explorer.propertysheet.PropertySheetView;
+import org.openide.explorer.propertysheet.PropertySheet;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -462,21 +462,17 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
                         customizerPanel.remove( currentCustomizer );
                     }
                     currentConfigurationNode = (ConfigurationNode)node;
-                    PropertySheetView currentPropertySheetView = new PropertySheetView();
+                    PropertySheet propertySheet = new PropertySheet(); // See IZ 105525 for details.
                     DummyNode[] dummyNodes = new DummyNode[selectedConfigurations.length];
                     for (int i = 0; i < selectedConfigurations.length; i++) {
                         dummyNodes[i] = new DummyNode(currentConfigurationNode.getSheet(project, projectDescriptor, selectedConfigurations[i]), selectedConfigurations[i].getName());
                     }
-                    currentPropertySheetView.setNodes(dummyNodes);
-                    // Work-around for problem with setNodes. Nodes are added asynchronsly with a delay of up to max .17 secs.
-                    // Wait until the nodes has been added before continuing. There seem to no good way to track when it has happen.
-                    // See IZ 105525 for details.
-                    try {Thread.currentThread().sleep(200);}catch(Exception e){;};
+                    propertySheet.setNodes(dummyNodes);
                     
                     JPanel panel = new JPanel();
                     panel.setLayout(new java.awt.GridBagLayout());
                     panel.setBorder(new javax.swing.border.EtchedBorder());
-                    panel.add(currentPropertySheetView, fillConstraints);
+                    panel.add(propertySheet, fillConstraints);
                     customizerPanel.add(panel, fillConstraints );
                     customizerPanel.validate();
                     customizerPanel.repaint();
