@@ -76,6 +76,7 @@ Cf. http://projects.netbeans.org/buildsys/design.html#freeform
                     </xsd:complexType>
                 </xsd:element>
                 <xsd:element name="subprojects" minOccurs="0" type="subprojects"/>
+                <xsd:element name="project-license" minOccurs="0" maxOccurs="1" type="substitutable-text"/>
             </xsd:sequence>
         </xsd:complexType>
     </xsd:element>
