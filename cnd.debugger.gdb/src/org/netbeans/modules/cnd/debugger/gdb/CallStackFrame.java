@@ -131,8 +131,8 @@ public class CallStackFrame {
     public Object getType(String key) {
         if (key != null) {
             Object o = typeMap.get(key);
-            Object o2;
-            while (o instanceof String && (o2 = typeMap.get(o)) != null) {
+            Object o2 = "";
+            while (o instanceof String && !(o.equals(o2)) && (o2 = typeMap.get(o)) != null) {
                 o = o2;
             }
             if (o == null && key.startsWith("class ")) { // NOI18N

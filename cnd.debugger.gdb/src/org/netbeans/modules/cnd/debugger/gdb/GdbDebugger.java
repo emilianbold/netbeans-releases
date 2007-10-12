@@ -1005,8 +1005,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     public void addTypeCompletion(String key) {
         key = trimKey(key);
         assert key != null && key.length() > 0;
-        if (!GdbUtils.isSimple(key) && !typePendingTable.contains(key) && getType(key) == null &&
-                !(isCplusPlus() && key.equals("bool"))) { // NOI18N
+        if (!GdbUtils.isSimple(key) && !typePendingTable.contains(key) &&
+                !(isCplusPlus() && key.equals("bool")) && getType(key) == null) { // NOI18N
             int token = gdb.symbol_type(key.replace('$', ' ').trim());
             typeCompletionTable.put(Integer.valueOf(token), new StringBuilder(key + '='));
             typePendingTable.add(key);
