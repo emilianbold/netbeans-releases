@@ -110,6 +110,15 @@ public class GotoTestTest extends RubyProjectTestBase {
         assertNotSame(DeclarationLocation.NONE, loc);
         assertIsProjFile("test/tc_bar.rb", loc.getFileObject());
     }
+    
+    public void testGotoTestUnit3() {
+        assertNotNull(project);
+        
+        DeclarationLocation loc = gotoTest.findTest(getProjFile("lib/main.rb"), -1);
+        assertNotSame(DeclarationLocation.NONE, loc);
+        assertIsProjFile("test/main_test.rb", loc.getFileObject());
+        assertEquals(-1, loc.getOffset());
+    }
 
     // The ZenTest patterns are only checked if the ZenTest gem is installed
     //public void testGotoTestZenTest() {

@@ -14,3 +14,5 @@ app/views/user/create.mab
 app/views/user/_partial.mab
 spec/views/user/create_spec.rb
 spec/views/user/_partial_spec.rb
+lib/main.rb
+test/main_test.rb

@@ -107,8 +107,10 @@ public class GotoTest implements TestLocator {
     private final String[] RUBYTEST_PATTERNS =
         {
             "lib/" + FILE + "\\." + EXT, "test/test_" + FILE + "\\." + EXT, // NOI18N
+            "lib/" + FILE + "\\." + EXT, "test/" + FILE + "_test\\." + EXT, // NOI18N
             "lib/" + FILE + "\\." + EXT, "test/tc_" + FILE + "\\." + EXT, // NOI18N
             FILE + "\\." + EXT, "test_" + FILE + "\\." + EXT, // NOI18N
+            FILE + "\\." + EXT, FILE + "_test\\." + EXT, // NOI18N
             FILE + "\\." + EXT, "tc_" + FILE + "\\." + EXT, // NOI18N
         };
 
