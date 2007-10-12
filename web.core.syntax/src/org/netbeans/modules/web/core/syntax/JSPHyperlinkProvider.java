@@ -288,94 +288,100 @@ public class JSPHyperlinkProvider implements HyperlinkProvider {
      * @param offset &gt;=0 offset to test (it generally should be offset &lt; doc.getLength(), but
      *               the implementations should not depend on it)
      */
-    public void performClickAction(Document doc, int offset){
-        try {
-            BaseDocument bdoc = (BaseDocument) doc;
-            JTextComponent target = Utilities.getFocusedComponent();
-            
-            if (target == null || target.getDocument() != bdoc)
-                return;
-            
-            SyntaxSupport sup = bdoc.getSyntaxSupport();
-            JspSyntaxSupport jspSup = (JspSyntaxSupport)sup.get(JspSyntaxSupport.class);
-            
-            TokenHierarchy tokenHierarchy = TokenHierarchy.get(bdoc);
-            TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
-            tokenSequence.move(offset);
-            if (!tokenSequence.moveNext() && !tokenSequence.movePrevious()) {
-                return; //no token found
-            }
-            Token token = tokenSequence.token();
-            
-            // is it a bean in EL
-            TokenSequence elTokenSequence = tokenSequence.embedded(ELTokenId.language());
-            if (elTokenSequence != null){
-                ELExpression exp = new ELExpression((JspSyntaxSupport)bdoc.getSyntaxSupport());
-                
-                elTokenSequence.move(offset);
-                if(!elTokenSequence.moveNext()) {
-                    return ;//not token
-                }
-                
-                int elEnd = elTokenSequence.offset() + elTokenSequence.token().length();
-                int res = exp.parse(elEnd);
-                if (res == ELExpression.EL_START ){
-                    navigateToUserBeanDef(doc, jspSup, target, elTokenSequence.token().text().toString());
-                    return;
-                }
-                if (res == ELExpression.EL_BEAN){
-                    if (!exp.gotoPropertyDeclaration(exp.getObjectClass())){
-                        gotoSourceFailed();
+    public void performClickAction(final Document doc, final int offset){
+        doc.render(new Runnable() {
+            public void run() {        
+                try {
+                    BaseDocument bdoc = (BaseDocument) doc;
+
+                    JTextComponent target = Utilities.getFocusedComponent();
+
+                    if (target == null || target.getDocument() != bdoc) {
+                        return;
                     }
+
+                    SyntaxSupport sup = bdoc.getSyntaxSupport();
+                    JspSyntaxSupport jspSup = (JspSyntaxSupport)sup.get(JspSyntaxSupport.class);
+
+                    TokenHierarchy tokenHierarchy = TokenHierarchy.get(bdoc);
+                    TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
+                    tokenSequence.move(offset);
+                    if (!tokenSequence.moveNext() && !tokenSequence.movePrevious()) {
+                        return; //no token found
+                    }
+                    Token token = tokenSequence.token();
+
+                    // is it a bean in EL
+                    TokenSequence elTokenSequence = tokenSequence.embedded(ELTokenId.language());
+                    if (elTokenSequence != null){
+                        ELExpression exp = new ELExpression((JspSyntaxSupport)bdoc.getSyntaxSupport());
+
+                        elTokenSequence.move(offset);
+                        if(!elTokenSequence.moveNext()) {
+                            return ;//not token
+                        }
+
+                        int elEnd = elTokenSequence.offset() + elTokenSequence.token().length();
+                        int res = exp.parse(elEnd);
+                        if (res == ELExpression.EL_START ){
+                            navigateToUserBeanDef(bdoc, jspSup, target, elTokenSequence.token().text().toString());
+                            return;
+                        }
+                        if (res == ELExpression.EL_BEAN){
+                            if (!exp.gotoPropertyDeclaration(exp.getObjectClass())){
+                                gotoSourceFailed();
+                            }
+                        }
+                        return;
+                    }
+
+                    // is ti declaration of userBean?
+                    while (tokenSequence.token().id() != JspTokenId.TAG && !"jsp:useBean".equals(tokenSequence.token().text().toString()) && tokenSequence.movePrevious());
+
+                    if (tokenSequence.index() != -1 && tokenSequence.token().id() == JspTokenId.TAG){
+                        //we are in useBean
+                        String className = token.text().toString().substring(1, token.length()-1).trim();
+
+                        GoToTypeDefTask gotoTask = new GoToTypeDefTask(className);
+
+                        ClasspathInfo cpInfo = ClasspathInfo.create(jspSup.getFileObject());
+                        JavaSource source = JavaSource.create(cpInfo, Collections.EMPTY_LIST);
+
+                        try{
+                            source.runUserActionTask(gotoTask, true);
+                        } catch (IOException e){
+                            logger.log(Level.SEVERE, e.getMessage(), e);
+                        }
+                    }
+
+                    tokenSequence.move(offset);//reset tokenSequence
+                    if(!tokenSequence.moveNext()) {
+                        return ; //no token
+                    }
+
+                    FileObject fObj = getTagFile(tokenSequence, jspSup);
+                    if ( fObj != null)
+                        openInEditor(fObj);
+                    else {
+                        String path = token.text().toString();
+                        path = path.substring(path.indexOf('"') +1);
+                        path = path.substring(0, path.indexOf('"'));
+
+                        fObj = getFileObject(bdoc, path);
+                        if (fObj != null) {
+                            openInEditor(fObj);
+                        } else {
+                            // when the file was not found.
+                            String msg = NbBundle.getMessage(JSPHyperlinkProvider.class, "LBL_file_not_found", path); //NOI18N
+                            StatusDisplayer.getDefault().setStatusText(msg);
+                        }
+
+                    }
+                } catch (BadLocationException e) {
+                    Exceptions.printStackTrace(e);
                 }
-                return;
             }
-            
-            // is ti declaration of userBean?
-            while (tokenSequence.token().id() != JspTokenId.TAG && !"jsp:useBean".equals(tokenSequence.token().text().toString()) && tokenSequence.movePrevious());
-            
-            if (tokenSequence.index() != -1 && tokenSequence.token().id() == JspTokenId.TAG){
-                //we are in useBean
-                String className = token.text().toString().substring(1, token.length()-1).trim();
-                
-                GoToTypeDefTask gotoTask = new GoToTypeDefTask(className);
-                
-                ClasspathInfo cpInfo = ClasspathInfo.create(jspSup.getFileObject());
-                JavaSource source = JavaSource.create(cpInfo, Collections.EMPTY_LIST);
-                
-                try{
-                    source.runUserActionTask(gotoTask, true);
-                } catch (IOException e){
-                    logger.log(Level.SEVERE, e.getMessage(), e);
-                }
-            }
-            
-            tokenSequence.move(offset);//reset tokenSequence
-            if(!tokenSequence.moveNext()) {
-                return ; //no token
-            }
-            
-            FileObject fObj = getTagFile(tokenSequence, jspSup);
-            if ( fObj != null)
-                openInEditor(fObj);
-            else {
-                String path = token.text().toString();
-                path = path.substring(path.indexOf('"') +1);
-                path = path.substring(0, path.indexOf('"'));
-                
-                fObj = getFileObject(doc, path);
-                if (fObj != null) {
-                    openInEditor(fObj);
-                } else {
-                    // when the file was not found.
-                    String msg = NbBundle.getMessage(JSPHyperlinkProvider.class, "LBL_file_not_found", path); //NOI18N
-                    StatusDisplayer.getDefault().setStatusText(msg);
-                }
-                
-            }
-        } catch (BadLocationException e) {
-            Exceptions.printStackTrace(e);
-        }
+        });
     }
     
     
