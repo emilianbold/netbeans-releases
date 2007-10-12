@@ -63,7 +63,8 @@ public class ConnectionDialog {
     private transient ConnectionDialogMediator mediator;
     private transient JTabbedPane tabs;
     private transient Exception storedExp;
-
+    private transient String dlgTitle;
+    
     ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
         
     final DialogDescriptor descriptor;
@@ -75,6 +76,7 @@ public class ConnectionDialog {
         }
         
         this.mediator = mediator;
+        this.dlgTitle = dlgTitle;
         ConnectionProgressListener progressListener = new ConnectionProgressListener() {
             public void connectionStarted() {
                 descriptor.setValid(false);
@@ -158,7 +160,14 @@ public class ConnectionDialog {
     }
     
     public HelpCtx getHelpCtx() {
-        return new HelpCtx("db_save_password"); // NOI18N
+        HelpCtx helpCtx = HelpCtx.DEFAULT_HELP; 
+        if (dlgTitle.equals("New Database Connection")) { // NOI18N
+            helpCtx = new HelpCtx("new_db_save_password"); // NOI18N
+        } else {
+            helpCtx = new HelpCtx("db_save_password"); // NOI18N
+        }
+        
+        return helpCtx;
     }
     
     private void updateValid() {

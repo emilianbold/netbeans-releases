@@ -45,3 +45,5 @@ made subject to such option by the copyright holder.
  "http://www.netbeans.org/dtds/helpcontext-1_0.dtd">
 <helpctx id="dbexpovew"/>
 <helpctx id="db_save_password"/>
+<helpctx id="new_db_save_password"/>
+
