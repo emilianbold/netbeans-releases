@@ -17,7 +17,7 @@
         constraints, buttons for adjusting the constraints, and a rough depiction of
         the layout of the components. The GUI Builder more closely reflects how the
         components will look at runtime. </p>
-        <h4>To use the GridBag customizer:</h4>
+        <p><b>To use the GridBag customizer:</b></p>
         <ol>
             <li> Add the components you require to your form and ensure the GridBagLayout
             is set for it. </li>
@@ -26,9 +26,6 @@
             <li> Drag the components in the right pane to reposition them as desired. As
                 you drag a component, its Grid X and Grid Y properties change to reflect
                 its new position.
-                <!--<p> The right pane serves only as a rough layout guide and does not reflect
-                the absolute positions of the components. The position of each component
-                is largely governed by other constraints set in the left pane.</p>-->
             </li>
             <li> Once the approximate layout of the components has been established,
             select a component  and adjust its constraints as desired
@@ -37,10 +34,10 @@
             <li>Once you are satisfied with the layout, click Close to exit the customizer.
             <p>The IDE updates the edited components to reflect there new positions. 
         </ol>
-        <h4>You can adjust the following constraints:</h4>
+        <p><b>You can adjust the following constraints:</b></p>
         <ul>
             <li><b>Grid X and Grid Y.</b>&nbsp; Fine-tune the component's horizontal
-            and vertical position if necessary by setting its X and Y grid positions. </p>
+            and vertical position if necessary by setting its X and Y grid positions. </li>
             <li><b>Grid Width and Grid Height.</b>&nbsp; Set Grid Width and Grid Height
             to specify how many grid positions are allocated for the component in each
             direction. Specify either:
@@ -53,34 +50,34 @@
                 its row or column
             </ul>
             <p> You can also adjust Grid Width and Height using the Grid Size buttons.
-            Click the rightmost button with yellow shading to set the value to Remainder. </p>
+            Click the rightmost button with yellow shading to set the value to Remainder. </p></li>
             <li><b>Fill.</b>&nbsp; The Fill constraint enables you to choose whether
             the component uses all of the vertical or horizontal space (or both) that
             is allocated to it. Any space allocated to a component that the component
-            does not fill is marked with blue in the right pane. </p>
+            does not fill is marked with blue in the right pane. </li>
             <li><b>Internal Padding X and Y.</b>&nbsp; The internal padding settings
             enable you to increase the horizontal and vertical dimensions of the component.
             You can adjust these by directly entering numbers for the properties or
-            by using the I-Padding buttons. </p>
+            by using the I-Padding buttons. </li>
             <li><b>Anchor.</b>&nbsp; The Anchor constraint enables you to place the component
             in one of nine positions within the space allocated to it (Center, North,
             North-West, and so on). This setting has no effect if there is no free
-            space remaining for the component. </p>
+            space remaining for the component. </li>
             <li><b>Weight X and Weight Y.</b>&nbsp; Adjust the weight settings to determine
             how much space a component should be given relative to other components
             in its row or column when the container window is resized. Generally, weight
             values range from zero to one. Components with larger weight values get
-            more space allocated in their row or column when the window is resized. </p>
+            more space allocated in their row or column when the window is resized. 
             <p> Components with a weight value of zero always retain their preferred
             size for that dimension. If all the components in a row or column have
             a weight of zero, any extra space goes to the outer edges of the row or
-            column and the components stay the same size. </p>
+            column and the components stay the same size. </p></li>
             <li><b>Insets.</b>&nbsp; The Insets determine the minimum amount of external
                 space on each of the four sides of the component. You can enter numbers
                 manually or use the inset buttons. The buttons are divided into four sets
                 that enable you to adjust the insets for each side separately, the left
                 and right insets simultaneously, the top and bottom insets simultaneously,
-                or all four insets simultaneously. </p>
+                or all four insets simultaneously. 
                 <p> As you change the insets, you will see the inset area marked by a yellow
                 background in the right pane. </p>
             </li>

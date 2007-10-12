@@ -274,7 +274,9 @@
     <mapID target="org.netbeans.modules.java.freeform.ui.OutputPanel.ejb.java" url="project/csh/proj_j2sefree_props_output.html" />
     <mapID target="org.netbeans.modules.ant.freeform.ui.TargetMappingPanel.ejb.java" url="project/csh/proj_j2sefree_props_buildrun.html" />
 
-
+    <!--Source Packages (and Test Packages node) - currently F1 here reverts to Projects window-->
+    <mapID target="org.netbeans.spi.java.project.support.ui.PackageView" url="pending.html" />
+    
 <!-- Refactoring CSH :-->
 <!--Find Usages dialog:-->
 <mapID target="org.netbeans.modules.refactoring.java.ui.WhereUsedQueryUI" url="refactor/csh/findUsages-CSH.html" /> 
