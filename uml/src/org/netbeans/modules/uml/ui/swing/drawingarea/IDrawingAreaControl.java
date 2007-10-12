@@ -254,7 +254,7 @@ public interface IDrawingAreaControl {
     /**
      * Load this diagram from a .etl file.
      */
-    public int load( String sFilename );
+    public int load( String sFilename, boolean fitToZoom);
     
     /**
      * Set the view description.  This will determine the type of node that gets created.

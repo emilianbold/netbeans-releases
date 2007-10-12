@@ -148,11 +148,11 @@ public class DiagramTopComponent extends CloneableTopComponent
      * Creates a new drawing area TopComponent.  The drawing area component is
      * initialized with the information in the file.
      */
-    public DiagramTopComponent(String filename)
+    public DiagramTopComponent(String filename, boolean fitToZoom)
     {
         super();
         initializeUI();
-        loadDrawingArea(filename);
+        loadDrawingArea(filename, fitToZoom);
         initialize();
     }
     
@@ -292,7 +292,7 @@ public class DiagramTopComponent extends CloneableTopComponent
     /**
      * @param filename
      */
-    public void loadDrawingArea(String filename)
+    public void loadDrawingArea(String filename, boolean fitToZoom)
     {
         if (filename != null)
         {
@@ -325,7 +325,7 @@ public class DiagramTopComponent extends CloneableTopComponent
                         if (product != null)
                             product.removeDiagram(dia);
                         
-                        mControl = createNewDiagram(filename);
+                        mControl = createNewDiagram(filename, fitToZoom);
                         setDiagramProperties(mControl);
                     }
                 }
@@ -333,13 +333,13 @@ public class DiagramTopComponent extends CloneableTopComponent
             
             else
             {
-                mControl = createNewDiagram(filename);
+                mControl = createNewDiagram(filename, fitToZoom);
                 setDiagramProperties(mControl);
             }
         }
         
         else
-            mControl = createNewDiagram(null);
+            mControl = createNewDiagram(null, false);
         
         addControl();
     }
@@ -453,7 +453,7 @@ public class DiagramTopComponent extends CloneableTopComponent
      * @param filename
      * @return
      */
-    private ADDrawingAreaControl createNewDiagram(String filename)
+    private ADDrawingAreaControl createNewDiagram(String filename, boolean fitToZoom)
     {
         ADDrawingAreaControl retVal = null;
         
@@ -462,7 +462,7 @@ public class DiagramTopComponent extends CloneableTopComponent
             retVal = new ADDrawingAreaControl();
             retVal.addPropertyChangeListener(listener);
             mControl = retVal;
-            retVal.load(filename);
+            retVal.load(filename, fitToZoom);
         }
         
         catch(Throwable t)

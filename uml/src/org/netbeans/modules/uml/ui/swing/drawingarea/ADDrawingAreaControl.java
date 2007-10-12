@@ -1079,7 +1079,7 @@ public class ADDrawingAreaControl extends ApplicationView implements IDrawingPro
      * @param sFilename [in] The full path filename to load (this can be an etl or etlp file)
      * @param pFileCode [out,retval] Tells how the load went.
      */
-    public int load(String filename)
+    public int load(String filename, final boolean fitToZoom)
     {
         final ETSmartWaitCursor waitCursor = new ETSmartWaitCursor();
 
@@ -1332,14 +1332,17 @@ public class ADDrawingAreaControl extends ApplicationView implements IDrawingPro
                     getGraphWindow().resetWorkBounds();
                     getGraphWindow().updateScrollBarValues();
 
-                    SwingUtilities.invokeLater(new Runnable()
+                    if(fitToZoom == true)
                     {
-
-                        public void run()
+                        SwingUtilities.invokeLater(new Runnable()
                         {
-                            getGraphWindow().fitInWindow(true);
-                        }
-                    });
+
+                            public void run()
+                            {
+                                getGraphWindow().fitInWindow(true);
+                            }
+                        });
+                    }
                 }
                 getResources().setLayoutStyle(getLayoutStyle());
                 setPopulating(false);

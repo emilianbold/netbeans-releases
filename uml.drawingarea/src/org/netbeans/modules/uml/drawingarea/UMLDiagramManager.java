@@ -96,10 +96,10 @@ public class UMLDiagramManager
     * @see org.netbeans.modules.uml.ui.support.applicationmanager.IProductDiagramManager#openDiagram(java.lang.String, boolean, org.netbeans.modules.uml.ui.support.applicationmanager.IDiagramCallback)
     */
     public IDiagram openDiagram(String sTOMFilename,
-            boolean bMaximized,
+            boolean fitToZoom,
             IDiagramCallback pDiagramCreatedCallback)
     {
-        showDiagram(sTOMFilename);
+        showDiagram(sTOMFilename, fitToZoom);
         
         IDiagram retVal = retrieveDiagram(sTOMFilename);
         m_CurrentDiagram = retVal;
@@ -197,7 +197,7 @@ public class UMLDiagramManager
         
         else
         {
-            showDiagram(diagram.getFilename());
+            showDiagram(diagram.getFilename(), true);
         }
         
         return 0;
@@ -377,7 +377,7 @@ public class UMLDiagramManager
         }
     }
     
-    protected void showDiagram(String diagramFile)
+    protected void showDiagram(String diagramFile, boolean fitToZoom)
     {
         if(diagramFile != null)
         {
@@ -390,7 +390,7 @@ public class UMLDiagramManager
             }
             else
             {
-                DiagramTopComponent topComponent = new DiagramTopComponent(diagramFile);
+                DiagramTopComponent topComponent = new DiagramTopComponent(diagramFile, fitToZoom);
                 showDiagram(topComponent);
             }
         }

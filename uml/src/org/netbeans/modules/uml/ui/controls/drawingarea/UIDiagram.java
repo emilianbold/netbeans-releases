@@ -527,11 +527,11 @@ public class UIDiagram extends Diagram implements IUIDiagram, IDrawingPropertyPr
         return retVal;
     }
     
-    public int load(String sFilename) {
+    public int load(String sFilename, boolean fitToZoom) {
         if (m_RawDrawingAreaControl != null) {
             IDrawingAreaControl ctrl = (IDrawingAreaControl)m_RawDrawingAreaControl.get();
             if(ctrl != null) {
-                ctrl.load(sFilename);
+                ctrl.load(sFilename, fitToZoom);
             }
         }
         return 0;

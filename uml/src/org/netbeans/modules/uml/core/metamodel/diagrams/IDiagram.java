@@ -245,7 +245,7 @@ public interface IDiagram extends IPresentationElement
 	/**
 	 * Load this diagram from a .etl file.
 	*/
-	public int load( String sFilename );
+	public int load( String sFilename, boolean fitToZoom );
 
 	/**
 	 * Puts the drawing area into a certain mouse mode

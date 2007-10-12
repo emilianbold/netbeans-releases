@@ -63,7 +63,7 @@ public class MethodEvent extends MethodDetailParserData implements IMethodEvent
 
     public String getFullQNameOfOwner()
     {
-        String retVal = getTokenDescriptorValue("DeclaringType");
+        String retVal = "";
         
         if((retVal == null) || (retVal.length() <= 0))
         {
@@ -75,6 +75,10 @@ public class MethodEvent extends MethodDetailParserData implements IMethodEvent
                 retVal += rec.getName();
             }
                 
+        }
+        else
+        {
+            retVal = getTokenDescriptorValue("DeclaringType");
         }
         
         return retVal;
