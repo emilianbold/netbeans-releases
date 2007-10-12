@@ -67,4 +67,70 @@ made subject to such option by the copyright holder.
 
     <target name="netbeans-extra" depends="release,ext-jar"/>
 
+     <!-- location of glassfish instalation -->
+    <property name="glassfish_location" location="/space/servers/glassfishV2B58"/>
+    
+    <target name="create-jars-from-glassfish">
+        <!-- glassfish-jspparser.jar -->
+        <mkdir dir="./glassfishjspparser"/>
+        <unzip src="${glassfish_location}/lib/appserv-rt.jar" dest="./glassfishjspparser/"/>
+        <delete file="./glassfish-jspparser.jar" />
+        <zip  basedir="./glassfishjspparser" 
+        includes="org/apache/jasper/**, com/sun/el/**, com/sun/appserv/ClassLoaderUtil.class, com/sun/appserv/server/util/PreprocessorUtil.class" 
+            zipfile="./external/glassfish-jspparser.jar" />
+        
+        <!-- glassfish-logging.jar -->
+        <mkdir dir="./glassfishlogging"/>
+        <delete file="./glassfish-logging.jar" />
+        <zip  basedir="./glassfishjspparser" includes="com/sun/org/apache/commons/logging/**" 
+            zipfile="../libs/glassfish_logging/external/glassfish-logging.jar" />
+        
+        <delete dir="./glassfishjspparser" />
+        <delete dir="./glassfishlogging" />
+        
+        <!-- servlet2.5-jsp2.1-api.jar -->
+        <mkdir dir="./servletjspapi" />
+        <unzip src="${glassfish_location}/lib/javaee.jar" dest="./servletjspapi/"/>
+        <mkdir dir="./servletjspapi/javax/servlet/resources" />
+        <copy todir="./servletjspapi/javax/servlet/resources">
+            <fileset dir="${glassfish_location}/lib/dtds">
+                <include name="web-app_2_2.dtd"/>
+                <include name="web-app_2_3.dtd"/>
+            </fileset>
+            <fileset dir="${glassfish_location}/lib/schemas">
+                <include name="XMLSchema.dtd"/>
+                <include name="web-app_2_4.xsd"/>
+                <include name="web-app_2_5.xsd"/>
+                <include name="j2ee_1_4.xsd"/>
+                <include name="j2ee_web_services_1_1.xsd"/>
+                <include name="j2ee_web_services_client_1_1.xsd"/>
+                <include name="javaee_5.xsd"/>
+                <include name="javaee_web_services_client_1_2.xsdjsp_2_0.xsd"/>
+                <include name="jsp_2_1.xsd"/>
+                <include name="jsp_2_0.xsd"/>
+                <include name="datatypes.dtd"/>     
+                <include name="xml.xsd"/>
+                <include name="web-jsptaglibrary_2_0.xsd"/>
+                <include name="web-jsptaglibrary_2_1.xsd"/>
+            </fileset>
+        </copy>
+        
+        <mkdir dir="./servletjspapi/javax/servlet/jsp/resources" />
+        <copy todir="./servletjspapi/javax/servlet/jsp/resources">
+            <fileset dir="${glassfish_location}/lib/dtds">
+                <include name="web-jsptaglibrary_1_1.dtd"/>
+                <include name="web-jsptaglibrary_1_2.dtd"/>
+                <include name="web-app_2_3.dtd"/>
+            </fileset>
+            <fileset dir="${glassfish_location}/lib/schemas">
+                <include name="web-jsptaglibrary_2_0.xsd"/>
+                <include name="web-jsptaglibrary_2_1.xsd"/>
+                <include name="jsp_2_1.xsd"/>
+                <include name="jsp_2_0.xsd"/>
+            </fileset>
+        </copy>
+        <delete file="./servlet2.5-jsp2.1-api.jar"/>
+        <zip basedir="./servletjspapi" includes="javax/servlet/**, javax/el/**" zipfile="../libs/servletjspapi/external/servlet2.5-jsp2.1-api.jar" />
+        <delete dir="./servletjspapi" />
+    </target>
 </project>

@@ -540,6 +540,46 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         return items;
     }
     
+    /** This method merges tagInfos of tags and file tags from a tagLibrary.
+     * @param tagLibrary
+     * @return array of TagInfo of all tags and tag files from the library
+     * or an empty array of if there is not any tag or tagfile defined in the library.
+     */
+    private TagInfo[] getAllTagInfos(TagLibraryInfo tagLibrary) {
+        
+        // if there is not any tag or file tag, then the empty array is returned
+        TagInfo[] allTags = new TagInfo[0];
+        
+        if (tagLibrary != null) {
+            int tagInfosLength = 0;
+            int tagAllInfosLength = 0;
+            TagInfo[] tagInfos = tagLibrary.getTags();
+            TagFileInfo[] tagFileInfos = tagLibrary.getTagFiles();
+            
+            if (tagInfos != null) { // it can be null, when the jsp parser finished unexpectedly
+                tagInfosLength = tagInfos.length;
+                tagAllInfosLength = tagInfosLength;
+            }
+            if (tagFileInfos != null) { // it can be null, when the jsp parser finished unexpectedly
+                tagAllInfosLength = tagAllInfosLength + tagFileInfos.length;
+            }
+            
+            allTags = new TagInfo[tagAllInfosLength];
+            
+            if (tagInfos != null) {
+                for (int i = 0; i < tagInfosLength; i++) {
+                    allTags[i] = tagInfos[i];
+                }
+            }
+            if (tagFileInfos != null) {
+                for (int i = 0; i < tagFileInfos.length; i++) {
+                    allTags[tagInfosLength + i] = tagFileInfos[i].getTagInfo();
+                }
+            }
+        }
+        return allTags;
+    }
+    
     /**  Returns a list of strings - tag names available for a particular prefix.
      */
     protected List getAllTags(String prefix) {
@@ -556,7 +596,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         
         TagLibraryInfo info = getTagLibrary(prefix);
         if (info != null && info.getTags() != null) {
-            TagInfo[] tags = getSortedTagInfos(info.getTags());
+            TagInfo[] tags = getSortedTagInfos(getAllTagInfos(info));
             String url = (String)helpMap.get(info.getURI());
             if (url != null && !url.equals("")){
                 for (int i = 0; i < tags.length; i++) {
@@ -600,6 +640,12 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         TagLibraryInfo info = getTagLibrary(prefix);
         if (info != null) {
             TagInfo tagInfo = info.getTag(tag);
+            if (tagInfo == null) {
+                TagFileInfo tagFile = info.getTagFile(tag);
+                if (tagFile != null) {
+                    tagInfo = tagFile.getTagInfo();
+                }
+            }
             if (tagInfo != null) {
                 TagAttributeInfo[] attributes = tagInfo.getAttributes();
                 String url = (String)helpMap.get(tagInfo.getTagLibrary().getURI());
@@ -1712,6 +1758,13 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                 TagLibraryInfo tli = getTagLibrary(prefix);
                 if (tli != null) {
                     ti = tli.getTag(name);
+                    if (ti == null) {
+                        // try to find the info among tag files
+                        TagFileInfo tagFileInfo = tli.getTagFile(name);
+                        if (tagFileInfo != null) {
+                            ti = tagFileInfo.getTagInfo();
+                        }
+                    }
                 }
                 
                 if (STANDARD_JSP_PREFIX.equals(prefix)) {

@@ -500,12 +500,12 @@ public class GetParseData {
         }
     }
 
-    private static class TagInfoCacheRecord{
+    private static class TagFileInfoCacheRecord{
         long time;
-        TagInfo tagInfo;
+        TagFileInfo tagFileInfo;
         
-        public TagInfoCacheRecord(long time, TagInfo info){
-            this.tagInfo = info;
+        public TagFileInfoCacheRecord(long time, TagFileInfo info){
+            this.tagFileInfo = info;
             this.time = time;
         }
     }
@@ -515,7 +515,7 @@ public class GetParseData {
      * The cache is changed, when a jsp page is parsed and a tag file was changed. 
      */
     
-    private static Hashtable tagInfoCache = new Hashtable();
+    private static Hashtable<URL, TagFileInfoCacheRecord> tagFileInfoCache = new Hashtable<URL, TagFileInfoCacheRecord>();
     
     private static Map getTaglibsMapReflect(PageInfo pageInfo, JspCompilationContext ctxt) {
         initPageInfoFields();
@@ -523,11 +523,9 @@ public class GetParseData {
             Map taglibs = (Map)taglibsMapF.get(pageInfo);
             Iterator iter = taglibs.values().iterator();
             TagLibraryInfo libInfo;    
-            TagInfo [] tagInfos;
-            // Caching information about tag files
+            // Caching information about tag files from implicit libraries
             while (iter.hasNext()){
-                libInfo = (TagLibraryInfo)iter.next();                
-                tagInfos = null;
+                libInfo = (TagLibraryInfo)iter.next();
                 try {
                     ArrayList tags = new ArrayList();
                     if (libInfo instanceof ImplicitTagLibraryInfo){
@@ -535,9 +533,10 @@ public class GetParseData {
                         Field tagFileMapF = ImplicitTagLibraryInfo.class.getDeclaredField("tagFileMap");
                         tagFileMapF.setAccessible(true);
                         Hashtable tagFileMap = (Hashtable)tagFileMapF.get(libInfo);
+                        TagFileInfo[] tagFiles = new TagFileInfo[tagFileMap.size()];
+                        int index = 0;
                         //Check every file in tag library
                         Enumeration e = tagFileMap.keys();
-                        
                         while (e.hasMoreElements()){
                             //Find the path for the file
                             String name = (String) e.nextElement();
@@ -546,77 +545,28 @@ public class GetParseData {
                             URL path =  ctxt.getResource(filePath);
                             File file = new File (new URI( path.toExternalForm() ));
                             // Is there the file in the cache?
-                            if (tagInfoCache.containsKey(path)){
-                                TagInfoCacheRecord r = (TagInfoCacheRecord)tagInfoCache.get(path);
+                            if (tagFileInfoCache.containsKey(path)){
+                                TagFileInfoCacheRecord r = (TagFileInfoCacheRecord)tagFileInfoCache.get(path);
                                 // Is there a change in the tagfile?
                                 if (r.time < file.lastModified()){
-                                    tagInfoCache.put(path, new TagInfoCacheRecord (file.lastModified(), libInfo.getTagFile(name).getTagInfo()));
+                                    tagFileInfoCache.put(path, new TagFileInfoCacheRecord (file.lastModified(), libInfo.getTagFile(name)));
                                 }
                             }
                             else {
-                                tagInfoCache.put(path, new TagInfoCacheRecord (file.lastModified(), libInfo.getTagFile(name).getTagInfo()));
+                                tagFileInfoCache.put(path, new TagFileInfoCacheRecord (file.lastModified(), libInfo.getTagFile(name)));
                             }
                             //Obtain information from the cache
-                            tags.add(((TagInfoCacheRecord)tagInfoCache.get(path)).tagInfo);
-                            tagInfos = new TagInfo[tags.size()];
-                            for (int i = 0; i < tags.size(); i++){
-                                tagInfos[i] = (TagInfo)tags.get(i);
-                            }
+                            tagFiles[index++] = tagFileInfoCache.get(path).tagFileInfo;
                         }
-                    }
-                    else {
-                        TagFileInfo[] tagFiles = libInfo.getTagFiles();  
-                        if (tagFiles != null && tagFiles.length > 0){
-                            tagInfos = new TagInfo[tagFiles.length + libInfo.getTags().length];
-                            for (int i = 0; i < tagFiles.length; i++){
-                                // Is it tag file from jar or form WEB-INF/tags
-                                // fix for issue #56810                              
-                                String[] location = ctxt.getTldLocation(libInfo.getURI());
-                                if (location != null){
-                                    String path = location[0];
-                                    File file = new File (path);
-                                    path = path + tagFiles[i].getPath();
-                                    // Is there the file in the cache?
-                                    if (tagInfoCache.containsKey(path)){
-                                        TagInfoCacheRecord r = (TagInfoCacheRecord)tagInfoCache.get(path);
-                                        // Is there a change in the tagfile?
-                                        if (r.time < file.lastModified()){
-                                            tagInfoCache.put(path, new TagInfoCacheRecord (file.lastModified(), 
-                                                libInfo.getTagFile(tagFiles[i].getName()).getTagInfo()));
-                                        }
-                                    }
-                                    else {
-                                        tagInfoCache.put(path, 
-                                            new TagInfoCacheRecord (file.lastModified(), 
-                                            libInfo.getTagFile(tagFiles[i].getName()).getTagInfo()));
-                                    }
-                                    //Obtain information from the cache
-                                    tagInfos[i] = ((TagInfoCacheRecord)tagInfoCache.get(path)).tagInfo;
-                                }
-                                else
-                                    tagInfos[i] = libInfo.getTagFile(tagFiles[i].getName()).getTagInfo();
-                            }
-                            // add tags (created from tag handlers, if there are any one
-                            for (int i = 0 ; i < libInfo.getTags().length; i++){
-                                tagInfos[tagFiles.length + i] = libInfo.getTags()[i]; 
-                            }
-                        }
-                    }
-                    
-                    if (tagInfos != null && tagInfos.length > 0){
-                        // Setting the taginfos directly to the library. 
-                        Field tagInfosF = ImplicitTagLibraryInfo.class.getSuperclass().getDeclaredField("tags");
+                        Field tagInfosF = ImplicitTagLibraryInfo.class.getSuperclass().getDeclaredField("tagFiles");
                         tagInfosF.setAccessible(true);    
-                        tagInfosF.set(libInfo, tagInfos);
+                        tagInfosF.set(libInfo, tagFiles);
                     }
                 }
                 catch (java.lang.NoSuchFieldException e){
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                 }
                 catch (java.net.MalformedURLException e){
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                }
-                catch (org.apache.jasper.JasperException e) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                 }
                 catch (java.net.URISyntaxException e) {

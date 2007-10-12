@@ -63,15 +63,6 @@
             urn         : null
             info        : null
             uri         : null
-              tag name     : testx
-                  class    : org.apache.jsp.tag.web.myTags.testx_tagx
-                  attribs  : [a]
-              tag name     : first
-                  class    : org.apache.jsp.tag.web.myTags.first_tag
-                  attribs  : [title, author, price_info]
-              tag name     : test
-                  class    : org.apache.jsp.tag.web.myTags.test_tag
-                  attribs  : [a]
               tagfile path : /WEB-INF/tags/myTags/testx.tagx
               tag name     : testx
                   class    : org.apache.jsp.tag.web.myTags.testx_tagx
@@ -91,12 +82,6 @@
             urn         : /TestTagLibrary
             info        : Test tag library.
             uri         : /TestTagLibrary
-              tag name     : helloTag
-                  class    : org.apache.jsp.tag.meta.hTag_tag
-                  attribs  : []
-              tag name     : book
-                  class    : org.apache.jsp.tag.meta.book_tag
-                  attribs  : [title, author]
               tagfile path : /META-INF/tags/hTag.tag
               tag name     : helloTag
                   class    : org.apache.jsp.tag.meta.hTag_tag
@@ -112,15 +97,13 @@
             urn         : null
             info        : null
             uri         : null
-              tag name     : linklist
-                  class    : org.apache.jsp.tag.web.linklist_tag
-                  attribs  : [separator]
-              tag name     : othertag
-                  class    : org.apache.jsp.tag.web.othertag_tag
-                  attribs  : [separator]
               tagfile path : /WEB-INF/tags/linklist.tag
               tag name     : linklist
                   class    : org.apache.jsp.tag.web.linklist_tag
+                  attribs  : [separator]
+              tagfile path : /WEB-INF/tags/othertag.tag
+              tag name     : othertag
+                  class    : org.apache.jsp.tag.web.othertag_tag
                   attribs  : [separator]
       prefixMapper:
         myTags -> urn:jsptagdir:/WEB-INF/tags/myTags/

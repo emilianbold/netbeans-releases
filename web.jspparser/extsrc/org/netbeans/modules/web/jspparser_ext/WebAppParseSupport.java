@@ -51,18 +51,18 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.security.CodeSource;
 import java.security.PermissionCollection;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.servlet.ServletContext;
+import javax.servlet.jsp.tagext.TagLibraryInfo;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileStateInvalidException;
@@ -519,6 +519,15 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         }
         // Compare the maps
         if (!checkedFiles.equals(mappingFiles)){
+            // clear the cache of tagLibrary map
+            ConcurrentHashMap<String, TagLibraryInfo> map = (ConcurrentHashMap)editorContext.getAttribute("com.sun.jsp.taglibraryCache");
+            if (map != null) {
+                map.clear();
+            }
+            map = (ConcurrentHashMap)editorContext.getAttribute("com.sun.jsp.taglibraryCache");
+            if (map != null) {
+                map.clear();
+            }
             return false;
         }
         return true;

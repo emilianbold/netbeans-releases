@@ -240,11 +240,10 @@ public class JSPHyperlinkProvider implements HyperlinkProvider {
         if (getTagFile(tokenSequence, jspSup) != null){
             // a reachable tag file.
             int start = token.offset(tokenHierarchy);
-            int end = token.offset(tokenHierarchy) + token.length()-1;
+            int end = token.offset(tokenHierarchy) + token.length();
             String text = token.text().toString().trim();
             if (text.startsWith("<")) {
                 start = start + 1;
-                end = end + 1;
             }
             return new int[]{start, end};
         } else{
