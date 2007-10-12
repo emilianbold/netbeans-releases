@@ -50,6 +50,7 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -148,6 +149,8 @@ import org.openide.util.Exceptions;
 public class EjbJarProject implements Project, AntProjectListener, FileChangeListener, PropertyChangeListener {
     
     private static final Icon PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/j2ee/ejbjarproject/ui/resources/ejbjarProjectIcon.gif")); // NOI18N
+    
+    private static final String UI_LOGGER_NAME = "org.netbeans.ui.ejb.project"; //NOI18N
     
     private final AuxiliaryConfiguration aux;
     private final AntProjectHelper helper;
@@ -824,6 +827,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                     true);
                 
                 String servInstID = getProperty(AntProjectHelper.PRIVATE_PROPERTIES_PATH, EjbJarProjectProperties.J2EE_SERVER_INSTANCE);
+                String serverType = null;
                 J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(servInstID);
                 if (platform != null) {
                     // updates j2ee.platform.cp & wscompile.cp & reg. j2ee platform listener
@@ -831,7 +835,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 } else {
                     // if there is some server instance of the type which was used
                     // previously do not ask and use it
-                    String serverType = getProperty(AntProjectHelper.PROJECT_PROPERTIES_PATH, EjbJarProjectProperties.J2EE_SERVER_TYPE);
+                    serverType = getProperty(AntProjectHelper.PROJECT_PROPERTIES_PATH, EjbJarProjectProperties.J2EE_SERVER_TYPE);
                     if (serverType != null) {
                         String[] servInstIDs = Deployment.getDefault().getInstancesOfServer(serverType);
                         if (servInstIDs.length > 0) {
@@ -843,6 +847,14 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                         BrokenServerSupport.showAlert();
                     }
                 }
+                // UI Logging
+                LogRecord logRecord = new LogRecord(Level.INFO, "UI_EJB_PROJECT_OPENED");  //NOI18N
+                logRecord.setLoggerName(UI_LOGGER_NAME);                   //NOI18N
+                logRecord.setResourceBundle(NbBundle.getBundle(EjbJarProject.class));
+                logRecord.setParameters(new Object[] {
+                    (serverType != null ? serverType : Deployment.getDefault().getServerID(servInstID)),
+                    servInstID});
+                Logger.getLogger(UI_LOGGER_NAME).log(logRecord);
             } catch (IOException e) {
                 Logger.getLogger("global").log(Level.INFO, null, e);
             }

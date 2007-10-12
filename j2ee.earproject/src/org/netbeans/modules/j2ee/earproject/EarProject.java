@@ -50,6 +50,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -121,6 +122,8 @@ public final class EarProject implements Project, AntProjectListener, FileChange
     
     private static final Icon EAR_PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/j2ee/earproject/ui/resources/projectIcon.gif")); // NOI18N
     public static final String ARTIFACT_TYPE_EAR = "ear";
+    
+    private static final String UI_LOGGER_NAME = "org.netbeans.ui.ear.project"; //NOI18N
     
     private final AntProjectHelper helper;
     private final PropertyEvaluator eval;
@@ -475,6 +478,13 @@ public final class EarProject implements Project, AntProjectListener, FileChange
             if (J2eeArchiveLogicalViewProvider.hasBrokenLinks(helper, refHelper)) {
                 BrokenReferencesSupport.showAlert();
             }
+            
+            // UI Logging
+            LogRecord logRecord = new LogRecord(Level.INFO, "UI_EAR_PROJECT_OPENED");  //NOI18N
+            logRecord.setLoggerName(UI_LOGGER_NAME);                   //NOI18N
+            logRecord.setResourceBundle(NbBundle.getBundle(EarProject.class));
+            logRecord.setParameters(new Object[] { pwm.getServerID(), pwm.getServerInstanceID()});
+            Logger.getLogger(UI_LOGGER_NAME).log(logRecord);
         }
         
         private void updateProject() {
