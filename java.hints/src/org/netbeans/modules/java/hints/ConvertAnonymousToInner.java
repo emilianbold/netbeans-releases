@@ -63,6 +63,9 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.Position;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
@@ -151,7 +154,7 @@ public class ConvertAnonymousToInner extends AbstractHint {
         private TreePathHandle tph;
         private JavaSource js;
         private FileObject file;
-        private int instantRenamePosition;
+        private Position instantRenamePosition;
         
         public FixImpl(TreePathHandle tph, JavaSource js, FileObject file) {
             this.tph = tph;
@@ -166,7 +169,7 @@ public class ConvertAnonymousToInner extends AbstractHint {
         public ChangeInfo implement() throws IOException {
             js.runModificationTask(this).commit();
             
-            if (instantRenamePosition != (-1)) {
+            if (instantRenamePosition != null) {
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
                         try {
@@ -175,7 +178,7 @@ public class ConvertAnonymousToInner extends AbstractHint {
                             if (arr == null) {
                                 return;
                             }
-                            arr[0].setCaretPosition(instantRenamePosition);
+                            arr[0].setCaretPosition(instantRenamePosition.getOffset());
                             InstantRenamePerformer.invokeInstantRename(arr[0]);
                         } catch (DataObjectNotFoundException ex) {
                             Exceptions.printStackTrace(ex);
@@ -193,7 +196,21 @@ public class ConvertAnonymousToInner extends AbstractHint {
             
             convertAnonymousToInner(parameter, tp);
             
-            instantRenamePosition = (int) parameter.getTrees().getSourcePositions().getStartPosition(parameter.getCompilationUnit(), ((NewClassTree) tp.getLeaf()).getIdentifier());
+            final int instantRenamePositionOffset = (int) parameter.getTrees().getSourcePositions().getStartPosition(parameter.getCompilationUnit(), ((NewClassTree) tp.getLeaf()).getIdentifier());
+            
+            final Document doc = parameter.getDocument();
+            
+            if (doc != null) {
+                doc.render(new Runnable() {
+                    public void run() {
+                        try {
+                            instantRenamePosition = doc.createPosition(instantRenamePositionOffset);
+                        } catch (BadLocationException ex) {
+                            Logger.getLogger(ConvertAnonymousToInner.class.getName()).log(Level.INFO, null, ex);
+                        }
+                    }
+                });
+            }
         }
     }
 
