@@ -115,7 +115,8 @@ public class WSDLEndpointNode extends CasaNode {
         }
     }
 
-    // todo: 05/31/07, enable WSIT GUI
+    // todo: 10/10/07, T. Li, WSIT GUI to be enabled post NB6.0 FCS...
+    /*
     @Override
     protected void addCustomActions(List<Action> actions) {
         CasaPort cp = (CasaPort) this.getData();
@@ -126,6 +127,7 @@ public class WSDLEndpointNode extends CasaNode {
             }
         }
     }
+    */
 
     protected void setupPropertySheet(Sheet sheet) {
         final CasaPort casaPort = (CasaPort) getData();
