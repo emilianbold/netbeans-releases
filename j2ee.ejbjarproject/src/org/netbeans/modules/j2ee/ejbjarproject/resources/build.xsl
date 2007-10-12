@@ -82,8 +82,8 @@ made subject to such option by the copyright holder.
       -post-compile:             called after javac compilation
       -pre-compile-single:       called before javac compilation of single file
       -post-compile-single:      called after javac compilation of single file
-      -pre-dist:                 called before jar building
-      -post-dist:                called after jar building
+      -pre-dist:                 called before archive building
+      -post-dist:                called after archive building
       -post-clean:               called after cleaning build products
       -pre-run-deploy:           called before deploying
       -post-run-deploy:          called after deploying
@@ -107,7 +107,7 @@ made subject to such option by the copyright holder.
 
       init-macrodef-javac:    defines macro for javac compilation
       init-macrodef-debug:    defines macro for class debugging
-      do-dist:                jar archive building
+      do-dist:                archive building
       run:                    execution of project 
       javadoc-build:          javadoc generation 
 

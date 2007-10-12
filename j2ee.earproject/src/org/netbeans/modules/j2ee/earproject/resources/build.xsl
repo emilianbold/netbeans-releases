@@ -80,8 +80,8 @@ made subject to such option by the copyright holder.
       post-init:                called after initialization of project properties 
       pre-compile:              called before javac compilation 
       post-compile:             called after javac compilation 
-      pre-dist:                 called before jar building 
-      post-dist:                called after jar building 
+      pre-dist:                 called before archive building 
+      post-dist:                called after archive building 
       post-clean:               called after cleaning build products 
       pre-run-deploy:           called before deploying
       post-run-deploy:          called after deploying
@@ -101,7 +101,7 @@ made subject to such option by the copyright holder.
     Other way how to customize the build is by overriding existing main targets.
     The target of interest are: 
 
-      do-dist:                jar archive building
+      do-dist:                archive building
       run:                    execution of project 
 
     Example of overriding the target for project execution could look like 
