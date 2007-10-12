@@ -1720,14 +1720,14 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     }
     
     /**
-     *  Gdbmi doesn't handle spaces in paths (see http://sourceware.org/ml/gdb/2006-02/msg00283.html
+     *  Gdb/mi doesn't handle spaces in paths (see http://sourceware.org/ml/gdb/2006-02/msg00283.html
      *  for more details). So try an alternate if the path has embedded spaces.
      *
      *  @param path The absolute path to convert
      *  @return The possibly modified path
      */
     public String getBestPath(String path) {
-        if (path.indexOf(' ') == -1) {
+        if (path.indexOf(' ') == -1 && Utilities.getOperatingSystem() != Utilities.OS_MAC) {
             return path;
         } else if (path.startsWith(runDirectory)) {
             return (path.substring(runDirectory.length()));
