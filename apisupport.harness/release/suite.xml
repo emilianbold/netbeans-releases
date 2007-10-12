@@ -230,6 +230,12 @@ made subject to such option by the copyright holder.
             
         </zip>
     </target>
+    <target name="create-platform" depends="build-zip" description="Creates an unzipped platform from the suite, launchers, and selected modules from the platform.">
+        <mkdir dir="dist/${app.name}"/>
+        <unzip src="dist/${app.name}.zip" dest="dist/${app.name}">
+            <globmapper from="${app.name}/*" to="*"/>
+        </unzip>
+    </target>
     
     <target name="build-mac" depends="build,build-launchers" description="Builds a ZIP distribution of the suite, launchers, and selected modules from the platform.">
         <mkdir dir="dist"/>
