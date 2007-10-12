@@ -43,7 +43,7 @@ made subject to such option by the copyright holder.
 <project xmlns="http://www.netbeans.org/ns/project/1">
     <type>org.netbeans.modules.ant.freeform</type>
     <configuration>
-        <general-data xmlns="http://www.netbeans.org/ns/freeform-project/1">
+        <general-data xmlns="http://www.netbeans.org/ns/freeform-project/2">
             <name>NetBeans Build System</name>
             <properties>
                 <property name="nb_all">${basedir}/..</property>
@@ -196,6 +196,7 @@ made subject to such option by the copyright holder.
                     </action>
                 </context-menu>
             </view>
+            <project-license>cddl-netbeans-sun</project-license>
         </general-data>
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/2">
             <compilation-unit>
