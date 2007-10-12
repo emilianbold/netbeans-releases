@@ -1204,6 +1204,8 @@ public class TraceModel extends TraceModelBase {
 	    CsmProject prj = fileImpl.getProject();
 	    String absPath = fileImpl.getAbsolutePath();
 	    fileImpl = null;
+            ParserThreadManager.instance().waitEmptyProjectQueue((ProjectBase)prj);
+            sleep(100); 
 	    RepositoryAccessor.getRepository().debugClear();
 	    fileImpl = (FileImpl) prj.findFile(absPath);
 	}
