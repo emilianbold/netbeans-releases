@@ -143,12 +143,12 @@ made subject to such option by the copyright holder.
     </folder>
     
     <folder name="Actions">
-       <folder name="Build">
-            <file name="org-netbeans-modules-uml-project-ui-nodes-actions-RemoveFromImport.instance"/>
-        </folder>
         <folder name="UML">
           <file name="UMLNewAction.instance">
              <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.project.ui.nodes.actions.UMLNewAction"/>
+          </file>
+          <file name="UMLDeleteImportedElementAction.instance">
+             <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.project.ui.nodes.actions.UMLDeleteImportedElementAction"/>
           </file>
        </folder>
     </folder>

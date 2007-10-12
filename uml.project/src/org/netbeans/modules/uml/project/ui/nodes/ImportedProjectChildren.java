@@ -195,10 +195,38 @@ public class ImportedProjectChildren extends Children.Keys //Children.Array
         }
        
         Node projectNode = mNodeMap.get(project);
-        if (projectNode == null)
+        if (project != null && projectNode == null)
             return;
         
-        Children children = projectNode.getChildren();
+        if (projectNode != null)
+            removeNode(projectNode, targetElement);
+        
+        for (Node node: mNodeMap.values())
+            removeNode(node, targetElement);
+        
+//        Children children = projectNode.getChildren();
+//        Node[] nodes = children.getNodes();
+//        for(int x = 0; x < nodes.length; x++)
+//        {
+//            ImportedElementCookie cookie = nodes[x].getCookie(ImportedElementCookie.class);
+//            if (cookie != null)
+//            {
+//                if (cookie.getElementXMIID().equals(targetElement.getXMIID()))
+//                {
+//                    try {
+//                    nodes[x].destroy();
+//                    }catch (Exception e)
+//                    {}
+////                    cookie.removeImportedElement();
+//                    return;
+//                }
+//            }
+//        }
+    }
+    
+    private void removeNode(Node root, IElement targetElement)
+    {
+        Children children = root.getChildren();
         Node[] nodes = children.getNodes();
         for(int x = 0; x < nodes.length; x++)
         {
@@ -207,12 +235,16 @@ public class ImportedProjectChildren extends Children.Keys //Children.Array
             {
                 if (cookie.getElementXMIID().equals(targetElement.getXMIID()))
                 {
-                    cookie.removeImportedElement();
+                    try {
+                        ((ImportedElementNode)nodes[x]).destroy(false);
+                    }catch (Exception e)
+                    {}
                     return;
                 }
             }
         }
     }
+    
     
    /* retreives the imported projects from the project
     * @see org.openide.nodes.Children#addNotify()
@@ -280,7 +312,7 @@ public class ImportedProjectChildren extends Children.Keys //Children.Array
     }
     
     
-    private IProject getOwningProjectOfImportedElement(IElement elem)
+    protected IProject getOwningProjectOfImportedElement(IElement elem)
     {
         org.dom4j.Node node = null;
         IProject p = null;

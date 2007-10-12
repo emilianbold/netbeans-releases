@@ -109,9 +109,14 @@ public class ImportProjectRootNode extends AbstractNode implements ImportElement
         children.addNewImportedElement(project, element, importElement, true);
     }
 
-    public void elementDeleted(IProject proj,
-            IElement element)
+    public void elementDeleted(IProject proj, IElement element)
     {
+        if (!(element instanceof IElementImport) && !(element instanceof IPackageImport))
+        {
+            project.removeElementImport(element);
+            return;
+        }
+
         IElement e = element;
         IProject ownerProject = proj;
         if (element instanceof IElementImport)

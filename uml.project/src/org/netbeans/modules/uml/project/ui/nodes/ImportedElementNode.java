@@ -42,7 +42,6 @@
 package org.netbeans.modules.uml.project.ui.nodes;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.swing.Action;
@@ -50,32 +49,27 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.UMLXMLManip;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.project.ui.cookies.ImportedElementCookie;
-import org.netbeans.modules.uml.project.ui.nodes.actions.RemoveFromImport;
-import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeItem;
 import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeItem;
 import org.netbeans.modules.uml.ui.support.projecttreesupport.ProjectTreeComparable;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 
-/**
- *
- * @author Trey Spiva
- */
+
 public class ImportedElementNode extends FilterNode implements Comparable, ImportedElementCookie
 {
 
     private IProject referencingProject;
     private IElement elementImport;
-    private static RemoveFromImport remove = new RemoveFromImport();
-
+   
     public ImportedElementNode(IProject project, Node orig,
             IElement elementImport)
     {
         super(orig);
         this.referencingProject = project;
         this.elementImport = elementImport;
-        disableDelegation(DELEGATE_DESTROY);
+        this.disableDelegation(DELEGATE_DESTROY);
     }
+    
 
     public <T extends Node.Cookie> T getCookie(Class<T> type)
     {
@@ -86,17 +80,6 @@ public class ImportedElementNode extends FilterNode implements Comparable, Impor
         return super.getCookie(type);
     }
 
-    public javax.swing.Action[] getActions(boolean context)
-    {
-        ArrayList<Action> ac = new ArrayList<Action>();
-        ac.add(remove);
-        Action[] actions = super.getActions(context);
-
-        List<Action> list = Arrays.asList(actions);
-        ac.addAll(1, list);
-        Action[] a = new Action[list.size()];
-        return ac.toArray(a);
-    }
 
     public boolean canDestroy()
     {
@@ -122,8 +105,7 @@ public class ImportedElementNode extends FilterNode implements Comparable, Impor
         IProjectTreeItem item = getOriginal().getCookie(IProjectTreeItem.class);
         if (item != null)
         {
-            UMLXMLManip.removeChild(referencingProject.getNode(), elementImport);
-            referencingProject.setDirty(true);
+            referencingProject.removeElementImport(elementImport);
         }
         try
         {
