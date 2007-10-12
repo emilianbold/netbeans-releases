@@ -58,6 +58,8 @@ import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.JPDAThread;
@@ -650,32 +652,42 @@ public final class JPDAThreadImpl implements JPDAThread {
         } catch (ObjectCollectedException ocex) {
             return null;
         }
-        try {
-            ObjectReference or;
-            synchronized (this) {
-                if (!isSuspended()) return null;
-                if ("DestroyJavaVM".equals(threadReference.name())) {
-                    // See defect #6474293
-                    return null;
-                }
-                or = threadReference.currentContendedMonitor ();
+        ObjectReference or;
+        synchronized (this) {
+            if (!isSuspended()) return null;
+            if ("DestroyJavaVM".equals(threadReference.name())) {
+                // See defect #6474293
+                return null;
             }
-            if (or == null) return null;
-            return new ThisVariable (debugger, or, "");
-        } catch (IllegalThreadStateException ex) {
-            // Thrown when thread has exited
-        } catch (ObjectCollectedException ex) {
-        } catch (IncompatibleThreadStateException e) {
-            ErrorManager.getDefault().notify(e);
-        } catch (com.sun.jdi.InternalException iex) {
-            String msg = "Thread '"+threadReference.name()+
-                         "': status = "+threadReference.status()+
-                         ", is suspended = "+threadReference.isSuspended()+
-                         ", suspend count = "+threadReference.suspendCount()+
-                         ", is at breakpoint = "+threadReference.isAtBreakpoint();
-            ErrorManager.getDefault().notify(ErrorManager.getDefault().annotate(iex, msg));
+            try {
+                or = threadReference.currentContendedMonitor ();
+            } catch (IllegalThreadStateException ex) {
+                // Thrown when thread has exited
+                return null;
+            } catch (ObjectCollectedException ex) {
+                return null;
+            } catch (IncompatibleThreadStateException e) {
+                String msg = "Thread '"+threadReference.name()+
+                             "': status = "+threadReference.status()+
+                             ", is suspended = "+threadReference.isSuspended()+
+                             ", suspend count = "+threadReference.suspendCount()+
+                             ", is at breakpoint = "+threadReference.isAtBreakpoint()+
+                             ", internal suspend status = "+suspended;
+                Logger.getLogger(JPDAThreadImpl.class.getName()).log(Level.WARNING, msg, e);
+                return null;
+            } catch (com.sun.jdi.InternalException iex) {
+                String msg = "Thread '"+threadReference.name()+
+                             "': status = "+threadReference.status()+
+                             ", is suspended = "+threadReference.isSuspended()+
+                             ", suspend count = "+threadReference.suspendCount()+
+                             ", is at breakpoint = "+threadReference.isAtBreakpoint()+
+                             ", internal suspend status = "+suspended;
+                Logger.getLogger(JPDAThreadImpl.class.getName()).log(Level.WARNING, msg, iex);
+                return null;
+            }
         }
-        return null;
+        if (or == null) return null;
+        return new ThisVariable (debugger, or, "");
     }
     
     /**
@@ -694,36 +706,46 @@ public final class JPDAThreadImpl implements JPDAThread {
         } catch (ObjectCollectedException ocex) {
             return new ObjectVariable [0];
         }
-        try {
-            List l;
-            synchronized (this) {
-                if (!isSuspended()) return new ObjectVariable [0];
-                if ("DestroyJavaVM".equals(threadReference.name())) {
-                    // See defect #6474293
-                    return new ObjectVariable[0];
-                }
+        List l;
+        synchronized (this) {
+            if (!isSuspended()) return new ObjectVariable [0];
+            if ("DestroyJavaVM".equals(threadReference.name())) {
+                // See defect #6474293
+                return new ObjectVariable[0];
+            }
+            try {
                 l = threadReference.ownedMonitors ();
+            } catch (IllegalThreadStateException ex) {
+                // Thrown when thread has exited
+                return new ObjectVariable [0];
+            } catch (ObjectCollectedException ex) {
+                return new ObjectVariable [0];
+            } catch (IncompatibleThreadStateException e) {
+                String msg = "Thread '"+threadReference.name()+
+                             "': status = "+threadReference.status()+
+                             ", is suspended = "+threadReference.isSuspended()+
+                             ", suspend count = "+threadReference.suspendCount()+
+                             ", is at breakpoint = "+threadReference.isAtBreakpoint()+
+                             ", internal suspend status = "+suspended;
+                Logger.getLogger(JPDAThreadImpl.class.getName()).log(Level.WARNING, msg, e);
+                return new ObjectVariable [0];
+            } catch (com.sun.jdi.InternalException iex) {
+                String msg = "Thread '"+threadReference.name()+
+                             "': status = "+threadReference.status()+
+                             ", is suspended = "+threadReference.isSuspended()+
+                             ", suspend count = "+threadReference.suspendCount()+
+                             ", is at breakpoint = "+threadReference.isAtBreakpoint()+
+                             ", internal suspend status = "+suspended;
+                Logger.getLogger(JPDAThreadImpl.class.getName()).log(Level.WARNING, msg, iex);
+                return new ObjectVariable [0];
             }
-            int i, k = l.size ();
-            ObjectVariable[] vs = new ObjectVariable [k];
-            for (i = 0; i < k; i++) {
-                vs [i] = new ThisVariable (debugger, (ObjectReference) l.get (i), "");
-            }
-            return vs;
-        } catch (IllegalThreadStateException ex) {
-            // Thrown when thread has exited
-        } catch (ObjectCollectedException ex) {
-        } catch (IncompatibleThreadStateException e) {
-            ErrorManager.getDefault().notify(e);
-        } catch (com.sun.jdi.InternalException iex) {
-            String msg = "Thread '"+threadReference.name()+
-                         "': status = "+threadReference.status()+
-                         ", is suspended = "+threadReference.isSuspended()+
-                         ", suspend count = "+threadReference.suspendCount()+
-                         ", is at breakpoint = "+threadReference.isAtBreakpoint();
-            ErrorManager.getDefault().notify(ErrorManager.getDefault().annotate(iex, msg));
         }
-        return new ObjectVariable [0];
+        int i, k = l.size ();
+        ObjectVariable[] vs = new ObjectVariable [k];
+        for (i = 0; i < k; i++) {
+            vs [i] = new ThisVariable (debugger, (ObjectReference) l.get (i), "");
+        }
+        return vs;
     }
     
     public ThreadReference getThreadReference () {
