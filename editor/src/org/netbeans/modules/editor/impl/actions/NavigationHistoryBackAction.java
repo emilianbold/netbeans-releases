@@ -106,7 +106,7 @@ public final class NavigationHistoryBackAction extends TextAction implements Con
                 "NavigationHistoryBackAction_Tooltip", actionName)); //NOI18N
             this.popupMenu = null;
         } else if (component != null) {
-            putValue(SMALL_ICON, new ImageIcon(Utilities.loadImage("org/netbeans/modules/editor/resources/navigate_back.png"))); //NOI18N
+            putValue(SMALL_ICON, new ImageIcon(Utilities.loadImage("org/netbeans/modules/editor/resources/navigate_back_16.png"))); //NOI18N
             this.popupMenu = new JPopupMenu();
             update();
             NavigationHistory nav = NavigationHistory.getNavigations();
@@ -119,8 +119,8 @@ public final class NavigationHistoryBackAction extends TextAction implements Con
     }
     
     public Action createContextAwareInstance(Lookup actionContext) {
-        JTextComponent component = findComponent(actionContext);
-        return new NavigationHistoryBackAction(component, null, null);
+        JTextComponent c = findComponent(actionContext);
+        return new NavigationHistoryBackAction(c, null, null);
     }
 
     public void actionPerformed(ActionEvent evt) {

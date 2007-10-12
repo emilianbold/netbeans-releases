@@ -44,13 +44,10 @@ package org.netbeans.modules.editor.impl.actions;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.JMenuItem;
-import javax.swing.KeyStroke;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseAction;
-import org.netbeans.editor.BaseKit;
 import org.netbeans.modules.editor.MainMenuAction;
 import org.netbeans.modules.editor.lib.NavigationHistory;
 import org.openide.util.NbBundle;
@@ -66,7 +63,7 @@ public final class NavigationHistoryLastEditAction extends BaseAction implements
     
     public NavigationHistoryLastEditAction() {
         super("jump-list-last-edit"); //NOI18N
-        putValue(ICON_RESOURCE_PROPERTY, "org/netbeans/modules/editor/resources/navigate_last_edit.png"); // NOI18N
+        putValue(ICON_RESOURCE_PROPERTY, "org/netbeans/modules/editor/resources/last_edit_location_16.png"); // NOI18N
 
         update();
         NavigationHistory nav = NavigationHistory.getEdits();

@@ -91,7 +91,7 @@ public final class NavigationHistoryForwardAction extends TextAction implements 
                 "NavigationHistoryForwardAction_Tooltip", actionName)); //NOI18N
             this.popupMenu = null;
         } else if (component != null) {
-            putValue(SMALL_ICON, new ImageIcon(Utilities.loadImage("org/netbeans/modules/editor/resources/navigate_forward.png"))); //NOI18N
+            putValue(SMALL_ICON, new ImageIcon(Utilities.loadImage("org/netbeans/modules/editor/resources/navigate_forward_16.png"))); //NOI18N
             this.popupMenu = new JPopupMenu();
             update();
             NavigationHistory nav = NavigationHistory.getNavigations();
@@ -104,8 +104,8 @@ public final class NavigationHistoryForwardAction extends TextAction implements 
     }
     
     public Action createContextAwareInstance(Lookup actionContext) {
-        JTextComponent component = NavigationHistoryBackAction.findComponent(actionContext);
-        return new NavigationHistoryForwardAction(component, null, null);
+        JTextComponent c = NavigationHistoryBackAction.findComponent(actionContext);
+        return new NavigationHistoryForwardAction(c, null, null);
     }
 
     public void actionPerformed(ActionEvent evt) {
