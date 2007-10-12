@@ -237,16 +237,7 @@ final class TestUtil {
     public static List<String> grammarResultValues(Enumeration<GrammarResult> e) {
         List<String> l = new ArrayList<String>();
         while (e.hasMoreElements()) {
-            GrammarResult o = e.nextElement();
-            String s;
-            if (o instanceof Element) {
-                s = ((Element)o).getNodeName();
-            } else if (o instanceof Attr) {
-                s = ((Attr)o).getName();
-            } else {
-                s = ((Text)o).getData();
-            }
-            l.add(s);
+            l.add(e.nextElement().toString());
         }
         return l;
     }

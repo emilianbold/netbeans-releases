@@ -52,6 +52,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import org.apache.tools.ant.module.api.IntrospectedInfo;
 import org.netbeans.modules.xml.api.model.GrammarQuery;
@@ -76,6 +78,8 @@ import org.w3c.dom.Text;
  */
 class AntGrammar implements GrammarQuery {
 
+    private static final Logger LOG = Logger.getLogger(AntGrammar.class.getName());
+
     /**
      * Allow to get names of <b>parsed general entities</b>.
      * @return list of <code>CompletionResult</code>s (ENTITY_REFERENCE_NODEs)
@@ -91,6 +95,7 @@ class AntGrammar implements GrammarQuery {
         if ("quot".startsWith(prefix)) list.add(new MyEntityReference("quot"));
         if ("amp".startsWith(prefix)) list.add(new MyEntityReference("amp"));
 
+        LOG.log(Level.FINE, "queryEntities({0}) -> {1}", new Object[] {prefix, list});
         return Collections.enumeration(list);
     }
 
@@ -302,7 +307,8 @@ class AntGrammar implements GrammarQuery {
             }
         }
 
-        return Collections.enumeration (list);
+        LOG.log(Level.FINE, "queryAttributes({0}) -> {1}", new Object[] {prefix, list});
+        return Collections.enumeration(list);
     }
 
     /**
@@ -370,6 +376,7 @@ class AntGrammar implements GrammarQuery {
             }
         }
 
+        LOG.log(Level.FINE, "queryElements({0}) -> {1}", new Object[] {prefix, list});
         return Collections.enumeration(list);
     }
 
@@ -388,20 +395,24 @@ class AntGrammar implements GrammarQuery {
     }
 
     public Enumeration<GrammarResult> queryValues(HintContext ctx) {
+        LOG.log(Level.FINE, "queryValues({0})", ctx.getCurrentPrefix());
         // #38341: ctx is apparently instanceof Attr or Text
         // (actually never instanceof Text, just TEXT_NODE: #38339)
         Attr ownerAttr;
         if (canCompleteProperty(ctx.getCurrentPrefix())) {
+            LOG.fine("...can complete property");
             return completeProperties(ctx);
         } else if (ctx.getNodeType() == Node.ATTRIBUTE_NODE) {
             ownerAttr = (Attr)ctx;
         } else {
+            LOG.fine("...unknown node type");
             return Enumerations.empty();
         }
         Element ownerElement = ownerAttr.getOwnerElement();
         String attrName = ownerAttr.getName();
         ElementType type = typeOf(ownerElement);
         if (type == null) {
+            LOG.fine("...unknown type");
             return Enumerations.empty();
         }
         List<String> choices = new ArrayList<String>();
@@ -472,6 +483,8 @@ class AntGrammar implements GrammarQuery {
                 list.add (new MyText(choice));
             }
         }
+
+        LOG.log(Level.FINE, "queryValues({0}) -> {1}", new Object[] {prefix, list});
         return Collections.enumeration(list);
     }
 
@@ -527,6 +540,7 @@ class AntGrammar implements GrammarQuery {
                 list.add(new MyText(text));
             }
         }
+        LOG.log(Level.FINE, "completeProperties({0}) -> {1}", new Object[] {content, list});
         return Collections.enumeration(list);
     }
 
@@ -786,6 +800,10 @@ class AntGrammar implements GrammarQuery {
             return name;
         }
 
+        public @Override String toString() {
+            return name;
+        }
+
     }
 
     private static class MyAttr extends AbstractResultNode implements Attr {
@@ -812,6 +830,9 @@ class AntGrammar implements GrammarQuery {
             return null;  //??? what spec says
         }
 
+        public @Override String toString() {
+            return name;
+        }
 
     }
 
@@ -838,6 +859,11 @@ class AntGrammar implements GrammarQuery {
         public @Override int getLength() {
             return data == null ? -1 : data.length();
         }
+
+        public @Override String toString() {
+            return data;
+        }
+
     }
 
 }
