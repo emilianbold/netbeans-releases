@@ -55,6 +55,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
+import org.netbeans.api.editor.indent.Indent;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
@@ -134,9 +135,8 @@ final class AddTagFix implements Fix, CancellableTask<WorkingCopy> {
             if (doc == null || insertPosition == null || insertJavadoc == null) {
                 return null;
             }
-            int open = insertPosition.getOffset() + openOffset;
             insertJavadoc();
-            JavadocUtilities.open(file, open);
+            JavadocUtilities.open(file, openOffset);
         } catch (BadLocationException ex) {
             Logger.getLogger(AddTagFix.class.getName()).
                     log(Level.SEVERE, ex.getMessage(), ex);
@@ -208,39 +208,98 @@ final class AddTagFix implements Fix, CancellableTask<WorkingCopy> {
         int jdEndLine = NbDocument.findLineNumber((StyledDocument) doc, jdBounds[1].getOffset());
         int insertLine = NbDocument.findLineNumber((StyledDocument) doc, insertPosition.getOffset());
 
-        String indentation = JavadocGenerator.guessJavadocIndentation(wc, doc, jdoc); // NOI18N
         if (jdBeginLine == insertLine && insertLine == jdEndLine) {
             // one line javadoc
-            insertJavadoc = '\n' + indentation + "* " + insertJavadoc; // NOI18N
+            insertJavadoc = '\n' + insertJavadoc;
             openOffset = insertJavadoc.length();
-            insertJavadoc += '\n' + indentation;
-        } else if (insertLine == jdEndLine && !isLastTag[0]) {
-            // multiline javadoc but empty
-            openOffset = 2 + insertJavadoc.length();
-            insertJavadoc = "* " + insertJavadoc + '\n' + indentation; // NOI18N
+            insertJavadoc += '\n';
+        } else if (insertLine == jdEndLine) {
+            if (isLastTag[0]) {
+                // /**\n* @return r |*/ or /**\n* \n*/
+                // insert after the last block tag that ends with */
+                if (!isEmptyLine(doc, insertPosition.getOffset())) {
+                    insertJavadoc = '\n' + insertJavadoc;
+                }
+            }
+            openOffset = insertJavadoc.length();
+            insertJavadoc += '\n';
+        } else if (insertLine == jdBeginLine) {
+            /** |@return r\n*/
+            insertJavadoc = '\n' + insertJavadoc;
+            openOffset = insertJavadoc.length();
+            if (!isLastTag[0]) {
+                insertJavadoc += '\n';
+            }
         } else if (isLastTag[0]) {
             // insert after the last block tag
-            insertJavadoc = '\n' + indentation + "* " + insertJavadoc; // NOI18N
+            insertJavadoc = '\n' + insertJavadoc;
             openOffset = insertJavadoc.length();
         } else {
             // insert before some block tag
             openOffset = insertJavadoc.length();
-            insertJavadoc = insertJavadoc + '\n' + indentation + "* "; // NOI18N
+            insertJavadoc = insertJavadoc + '\n';
         }
+    }
+    
+    /**
+     * checks if the chars before offset can be considered as an empty line.
+     */
+    private boolean isEmptyLine(Document doc, int offset) throws BadLocationException {
+        CharSequence txt = (CharSequence) doc.getProperty(CharSequence.class);
+        if (txt == null) {
+            txt = doc.getText(0, offset + 1);
+        }
+        
+        // line contains non white space other then '*'
+        boolean isClean = true;
+        int asterisks = 0;
+        
+        for (int i = offset; i >= 0 ; i--) {
+            char c = txt.charAt(i);
+            if (c == '\n') {
+                break;
+            } else if (c == '*') {
+                if (asterisks > 0) {
+                    isClean = false;
+                    break;
+                }
+                ++asterisks;
+            } else if (Character.isSpaceChar(c)) {
+                continue;
+            } else {
+                isClean = false;
+                break;
+            }
+        }
+
+        return isClean;
     }
 
     private void insertJavadoc() throws BadLocationException {
-        NbDocument.runAtomicAsUser((StyledDocument) doc, new Runnable() {
-            public void run() {
-                try {
-                    // insert indented string to text
-                    doc.insertString(insertPosition.getOffset(), insertJavadoc, null);
-                } catch (BadLocationException ex) {
-                    Logger.getLogger(AddTagFix.class.getName()).
-                            log(Level.SEVERE, ex.getMessage(), ex);
+        final Indent indent = Indent.get(doc);
+        try {
+            indent.lock();
+            NbDocument.runAtomicAsUser((StyledDocument) doc, new Runnable() {
+                public void run() {
+                    try {
+                        // insert indented string to text
+                        int begin = insertPosition.getOffset();
+                        int end = begin + insertJavadoc.length() + 1;
+                        doc.insertString(begin, insertJavadoc, null);
+                        Position openPos = doc.createPosition(begin + openOffset - 1);
+                        indent.reindent(begin, end);
+                        // insert space since the JavaFormatter cleans up trailing spaces :-(
+                        doc.insertString(openPos.getOffset(), " ", null); // NOI18N
+                        openOffset = openPos.getOffset();
+                    } catch (BadLocationException ex) {
+                        Logger.getLogger(AddTagFix.class.getName()).
+                                log(Level.SEVERE, ex.getMessage(), ex);
+                    }
                 }
-            }
-        });
+            });
+        } finally {
+            indent.unlock();
+        }
     }
 
     public void cancel() {
@@ -348,7 +407,7 @@ final class AddTagFix implements Fix, CancellableTask<WorkingCopy> {
             // 3. if not, insert at the last token; resolve \n and /***/ cases
             bounds = JavadocUtilities.findLastTokenBounds(wc, doc, jdoc);
             insertBefore = false;
-            isLastTag[0] = false;
+            isLastTag[0] = true;
         }
 
         return insertBefore? bounds[0]: bounds[1];

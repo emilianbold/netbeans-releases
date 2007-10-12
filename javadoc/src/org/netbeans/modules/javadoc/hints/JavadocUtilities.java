@@ -246,16 +246,18 @@ public class JavadocUtilities {
             last = tseq.token();
         }
         
+        if (isLastToken != null && isLastToken.length > 0) {
+                isLastToken[0] = false;
+        }
+        
         int lastTokenCleanUp = 0;
         if (token == null) {
             tseq.moveEnd();
             tseq.movePrevious();
             lastTokenCleanUp = tseq.token().text().toString().indexOf('\n');
-            lastTokenCleanUp = lastTokenCleanUp > 0? lastTokenCleanUp: 0;
+            lastTokenCleanUp = lastTokenCleanUp >= 0? lastTokenCleanUp: tseq.token().length();
             if (isLastToken != null && isLastToken.length > 0) {
                 isLastToken[0] = true;
-            } else if (isLastToken != null && isLastToken.length > 0) {
-                isLastToken[0] = false;
             }
         }
         
@@ -273,15 +275,21 @@ public class JavadocUtilities {
         if (tseq == null)
             return null;
         
-        tseq.moveEnd();
-        if (tseq.movePrevious()) {
-            Position[] positions = new Position[2];
+        Position[] positions;
+        if (tseq.isEmpty()) {
+            // empty javadoc /***/
+            positions = findDocBounds(javac, doc, jdoc);
+            positions[0] = doc.createPosition(positions[0].getOffset() + "/**".length()); // NOI18N
+            positions[1] = positions[0];
+        } else {
+            tseq.moveEnd();
+            tseq.movePrevious();
+            positions = new Position[2];
             positions[0] = doc.createPosition(tseq.offset());
             positions[1] = doc.createPosition(tseq.offset() + tseq.token().length());
-            return positions;
         }
         
-        return null;
+        return positions;
     }
 
     public static TokenSequence<JavaTokenId> findMethodNameToken(CompilationInfo javac, ClassTree enclosing, MethodTree t) {

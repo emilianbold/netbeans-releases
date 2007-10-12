@@ -47,7 +47,6 @@ import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
-import java.util.StringTokenizer;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.swing.text.BadLocationException;
@@ -137,10 +136,8 @@ public final class GenerateJavadocAction extends TextAction {
                     TokenId tid = ts.token().id();
                     if (tid != JavaTokenId.WHITESPACE && tid != JavaTokenId.LINE_COMMENT && tid != JavaTokenId.BLOCK_COMMENT) {
                         offsetBehindJavadoc = ts.offset();
-                        if (ts.token().length() > 1) {
-                            // it is magic for TreeUtilities.pathFor to proper tree
-                            ++offsetBehindJavadoc;
-                        }
+                        // it is magic for TreeUtilities.pathFor
+                        ++offsetBehindJavadoc;
                         break;
                     }
                 }
@@ -206,24 +203,17 @@ public final class GenerateJavadocAction extends TextAction {
     }
 
     private void generateJavadoc(Document doc, Descriptor desc, Indent ie) throws BadLocationException {
-        StringTokenizer lines = new StringTokenizer(desc.javadoc, "\n"); // NOI18N
+        // skip javadoc header /** and tail */ since they were already generated
+        String content = desc.javadoc.substring(
+                "/**\n".length(),
+                desc.javadoc.length() - "\n*/\n".length());
+        if (content.length() == 0) {
+            return;
+        }
+        
         Position pos = desc.caret;
         int startOffset = pos.getOffset();
-        for (String line; lines.hasMoreTokens(); ) {
-            line = lines.nextToken();
-            if (line.startsWith("/**") || line.endsWith("*/")) { // NOI18N
-                // ignore first and last line since they are already generated
-                continue;
-            } else if (line.startsWith(" * ")) { // NOI18N
-                line = line.substring(3);
-            }
-            
-            if (line.length() > 0) {
-                // ignore empty line
-                doc.insertString(pos.getOffset(), '\n' + line, null);
-            }
-            
-        }
+        doc.insertString(startOffset, content, null);
         
         if (startOffset != pos.getOffset()) {
             ie.reindent(startOffset + 1, pos.getOffset());

@@ -50,6 +50,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
+import org.netbeans.api.editor.indent.Indent;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.Comment;
 import org.netbeans.api.java.source.ElementHandle;
@@ -59,6 +60,7 @@ import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.filesystems.FileObject;
 import org.openide.text.NbDocument;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -108,8 +110,8 @@ final class GenerateJavadocFix implements Fix {
                     if (t != null) {
                         JavadocGenerator gen = new JavadocGenerator(GenerateJavadocFix.this.spec);
                         String javadocTxt = gen.generateComment(elm, wc);
-                        Comment javadoc = Comment.create(Comment.Style.JAVADOC, NOPOS, NOPOS, 0, javadocTxt);
-                        wc.getTreeMaker().addComment(t, javadoc, true);
+//                        Comment javadoc = Comment.create(Comment.Style.JAVADOC, NOPOS, NOPOS, 0, javadocTxt);
+//                        wc.getTreeMaker().addComment(t, javadoc, true);
 
                         // XXX workaround until the generator start to do its job
                         javadocForDocument[0] = javadocTxt;
@@ -128,33 +130,38 @@ final class GenerateJavadocFix implements Fix {
         }
 
         // XXX follows workaround until the generator starts to do its job
+        final Indent indent = Indent.get(docs[0]);;
         try {
             if (docs[0] == null) {
                 // nothing to do; TreeMaker did his job likely.
                 return null;
             }
 
+            indent.lock();
             NbDocument.runAtomicAsUser((StyledDocument) docs[0], new Runnable() {
                 public void run() {
                     try {
-                        String tab = JavadocGenerator.guessIndentation(docs[0], position);
-                        String iJavadoc = JavadocGenerator.indentJavadoc(javadocForDocument[0], tab);
-                        docs[0].insertString(position.getOffset(), iJavadoc, null);
+                        String iJavadoc = javadocForDocument[0];
+                        int begin = position.getOffset();
+                        docs[0].insertString(begin, iJavadoc, null);
                         // move the caret to proper position
                         int offset = iJavadoc.indexOf("/**"); // NOI18N
                         offset = iJavadoc.indexOf("\n", offset + 1);
                         offset = iJavadoc.indexOf("\n", offset + 1);
-                        offset = position.getOffset() + offset - iJavadoc.length();
+                        Position openPos = docs[0].createPosition(begin + offset);
+                        indent.reindent(begin, begin + iJavadoc.length() + 1);
                         if (open) {
-                            JavadocUtilities.open(file, offset);
+                            JavadocUtilities.open(file, openPos.getOffset());
                         }
                     } catch (BadLocationException ex) {
-                        ex.printStackTrace();
+                        Exceptions.printStackTrace(ex);
                     }
                 }
             });
         } catch (BadLocationException ex) {
             Logger.getLogger(GenerateJavadocFix.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
+        } finally {
+            indent.unlock();
         }
         return null;
     }

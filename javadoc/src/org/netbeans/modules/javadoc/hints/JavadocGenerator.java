@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.javadoc.hints;
 
-import com.sun.javadoc.Doc;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -53,9 +52,6 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import javax.swing.text.Position;
 import org.netbeans.api.java.source.CompilationInfo;
 
 /**
@@ -74,25 +70,25 @@ public final class JavadocGenerator {
     public String generateComment(TypeElement clazz, CompilationInfo javac) {
         StringBuilder builder = new StringBuilder(
                 "/**\n" + // NOI18N
-                " * \n" // NOI18N
+                "\n" // NOI18N
                 );
         
         if (clazz.getNestingKind() == NestingKind.TOP_LEVEL) {
-            builder.append(" * @author " + System.getProperty("user.name") + "\n"); // NOI18N
+            builder.append("@author " + System.getProperty("user.name") + "\n"); // NOI18N
         }
         
         if (SourceVersion.RELEASE_5.compareTo(srcVersion) <= 0) {
             for (TypeParameterElement param : clazz.getTypeParameters()) {
-                builder.append(" * @param " + param.getSimpleName().toString() + " \n"); // NOI18N
+                builder.append("@param " + param.getSimpleName().toString() + " \n"); // NOI18N
             }
         }
         
         if (SourceVersion.RELEASE_5.compareTo(srcVersion) <= 0 &&
                 JavadocUtilities.isDeprecated(javac, clazz)) {
-            builder.append(" * @deprecated\n"); // NOI18N
+            builder.append("@deprecated\n"); // NOI18N
         }
         
-        builder.append(" */\n"); // NOI18N
+        builder.append("*/\n"); // NOI18N
 
         return builder.toString();
     }
@@ -100,15 +96,15 @@ public final class JavadocGenerator {
     public String generateComment(ExecutableElement method, CompilationInfo javac) {
         StringBuilder builder = new StringBuilder(
                 "/**\n" + // NOI18N
-                " * \n" // NOI18N
+                "\n" // NOI18N
                 );
         
         for (VariableElement param : method.getParameters()) {
-            builder.append(" * @param ").append(param.getSimpleName().toString()).append(" \n"); // NOI18N
+            builder.append("@param ").append(param.getSimpleName().toString()).append(" \n"); // NOI18N
         }
         
         if (method.getReturnType().getKind() != TypeKind.VOID) {
-            builder.append(" * @return \n"); // NOI18N
+            builder.append("@return \n"); // NOI18N
         }
         
         for (TypeMirror exceptionType : method.getThrownTypes()) {
@@ -123,15 +119,15 @@ public final class JavadocGenerator {
             } else {
                 throw new IllegalStateException("Illegal kind: " + exceptionType.getKind()); // NOI18N
             }
-            builder.append(" * @throws ").append(name).append(" \n"); // NOI18N
+            builder.append("@throws ").append(name).append(" \n"); // NOI18N
         }
         
         if (SourceVersion.RELEASE_5.compareTo(srcVersion) <= 0 &&
                 JavadocUtilities.isDeprecated(javac, method)) {
-            builder.append(" * @deprecated\n"); // NOI18N
+            builder.append("@deprecated\n"); // NOI18N
         }
 
-        builder.append(" */\n"); // NOI18N
+        builder.append("*/\n"); // NOI18N
         
         return builder.toString();
     }
@@ -139,16 +135,16 @@ public final class JavadocGenerator {
     public String generateComment(VariableElement field, CompilationInfo javac) {
         StringBuilder builder = new StringBuilder(
                 "/**\n" + // NOI18N
-                " * \n" // NOI18N
+                "\n" // NOI18N
                 );
         
         if (SourceVersion.RELEASE_5.compareTo(srcVersion) <= 0 &&
                 JavadocUtilities.isDeprecated(javac, field)) {
-            builder.append(" * @deprecated\n"); // NOI18N
+            builder.append("@deprecated\n"); // NOI18N
         }
         
 
-        builder.append(" */\n"); // NOI18N
+        builder.append("*/\n"); // NOI18N
         
         return builder.toString();
     }
@@ -174,72 +170,6 @@ public final class JavadocGenerator {
     
     public String generateInheritComment() {
         return "/** {@inheritDoc} */"; //NOI18N
-    }
-    
-    public static String indentJavadoc(String jdoc, String tab) {
-        int lastNL = tab.lastIndexOf('\n');
-        String prefix;
-        String tab2;
-        if (lastNL >= 0) {
-            prefix = tab;
-            tab2 = lastNL + 1 >= tab.length()? "": tab.substring(lastNL + 1); // NOI18N
-        } else {
-            prefix = ""; // NOI18N
-            tab2 = tab;
-        }
-        return prefix + jdoc.replace("\n *", "\n" + tab2 + " *") + tab2; // NOI18N
-    }
-    
-    /**
-     * guesses indentation for a given position.
-     */
-    public static String guessIndentation(Document doc, Position pos) throws BadLocationException {
-        String content = doc.getText(0, doc.getLength());
-        int offset;
-        boolean dirty = false;
-        for (offset = pos.getOffset() - 1; offset >= 0; offset--) {
-            char c = content.charAt(offset);
-            if (Character.isWhitespace(c)) {
-                if (c == '\n') {
-                    break;
-                }
-            } else {
-                // dirty guess
-                dirty = true;
-            }
-        }
-        
-        if (dirty) {
-            int offset2 = offset + 1;
-            for (;Character.isWhitespace(content.charAt(offset2)); offset2++);
-            return '\n' + content.substring(offset + 1, offset2);
-        }
-        return content.substring(offset + 1, pos.getOffset());
-    }
-    
-    /**
-     * guesses indentation inside a javadoc block
-     */
-    public static String guessJavadocIndentation(CompilationInfo javac, Document doc, Doc jdoc) throws BadLocationException {
-        Position[] jdBounds = JavadocUtilities.findDocBounds(javac, doc, jdoc);
-        String indent = ""; // NOI18N
-        if (jdBounds == null) {
-            return indent;
-        }
-        
-        String txt = doc.getText(0, doc.getLength());
-        for (int offset = jdBounds[0].getOffset() - 1; offset >= 0; offset--) {
-            char c = txt.charAt(offset);
-            if (c == '\n' || !Character.isWhitespace(c)) {
-                int length = jdBounds[0].getOffset() - offset - 1;
-                if (length > 0) {
-                    indent = doc.getText(offset + 1, length) + ' ';
-                }
-                break;
-            }
-        }
-        
-        return indent;
     }
     
 }
