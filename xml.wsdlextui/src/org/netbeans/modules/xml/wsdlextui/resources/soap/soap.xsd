@@ -82,18 +82,14 @@ POSSIBILITY OF SUCH DAMAGES.
 
   <xs:simpleType name="encodingStyle" >
     <xs:annotation>
-      <xs:documentation>
-      "encodingStyle" indicates any canonicalization conventions followed in the contents of the containing element.  For example, the value "http://schemas.xmlsoap.org/soap/encoding/" indicates the pattern described in SOAP specification
-      </xs:documentation>
+      <xs:documentation>DESC_SimpleType_encodingStyle</xs:documentation>
     </xs:annotation>
     <xs:list itemType="xs:anyURI" />
   </xs:simpleType>
 
   <xs:element name="binding" type="soap:tBinding" >
   <xs:annotation>
-      <xs:documentation>
-      	"binding" indicates a soap protocol binding.
-      </xs:documentation>
+      <xs:documentation>DESC_Element_binding</xs:documentation>
     </xs:annotation>
     </xs:element>
     
@@ -115,9 +111,7 @@ POSSIBILITY OF SUCH DAMAGES.
 
   <xs:element name="operation" type="soap:tOperation" >
 	  <xs:annotation>
-	      <xs:documentation>
-	      	"operation" indicates a soap protocol operation.
-	      </xs:documentation>
+	      <xs:documentation>DESC_Element_operation</xs:documentation>
 	    </xs:annotation>
     </xs:element>
   <xs:complexType name="tOperation" >
@@ -131,9 +125,7 @@ POSSIBILITY OF SUCH DAMAGES.
 
   <xs:element name="body" type="soap:tBody" >
       <xs:annotation>
-          <xs:documentation>
-              "body" indicates a  soap protocol body.
-          </xs:documentation>
+          <xs:documentation>DESC_Element_body</xs:documentation>
           <xs:appinfo>
               <prop:ElementProperties  xmlns:prop="http://xml.netbeans.org/schema/wsdlui/property">
                   <prop:Property attributeName="parts" propertyOrder="1">
@@ -169,9 +161,7 @@ POSSIBILITY OF SUCH DAMAGES.
 
   <xs:element name="fault" type="soap:tFault" >
     <xs:annotation>
-	      <xs:documentation>
-	      	"fault" indicates a soap protocol fault.
-	      </xs:documentation>
+	      <xs:documentation>DESC_Element_fault</xs:documentation>
 	    </xs:annotation>
     </xs:element>
     
@@ -195,9 +185,7 @@ POSSIBILITY OF SUCH DAMAGES.
 
   <xs:element name="header" type="soap:tHeader" >
   	  <xs:annotation>
-	      <xs:documentation>
-	      	"header" indicates a soap protocol header.
-        </xs:documentation>
+	      <xs:documentation>DESC_Element_header</xs:documentation>
         <xs:appinfo>
             <prop:ElementProperties  xmlns:prop="http://xml.netbeans.org/schema/wsdlui/property">
                 <prop:Property attributeName="message" propertyOrder="1">
@@ -237,9 +225,7 @@ POSSIBILITY OF SUCH DAMAGES.
 
   <xs:element name="headerfault" type="soap:tHeaderFault" >
    <xs:annotation>
-	      <xs:documentation>
-	      	"headerfault" indicates a soap protocol headerfault.
-	      </xs:documentation>
+	      <xs:documentation>DESC_Element_headerfault</xs:documentation>
           <xs:appinfo>
             <prop:ElementProperties  xmlns:prop="http://xml.netbeans.org/schema/wsdlui/property">
                 <prop:Property attributeName="message" propertyOrder="1">
@@ -265,9 +251,7 @@ POSSIBILITY OF SUCH DAMAGES.
 
   <xs:element name="address" type="soap:tAddress" >
    <xs:annotation>
-	      <xs:documentation>
-	      	"address" indicates a address of a soap protocol based service.
-	      </xs:documentation>
+	      <xs:documentation>DESC_Element_address</xs:documentation>
 	    </xs:annotation>
    </xs:element>
    

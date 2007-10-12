@@ -57,13 +57,13 @@ made subject to such option by the copyright holder.
 	      <file name="SoapBinding">
 	        <attr name="xsdFileName" stringvalue="soap" />
 	        <attr name="element" stringvalue="binding" />
-	        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdlextui.resources.Bundle" />
+	        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdlextui.resources.soap.Bundle" />
 	        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdlextui/resources/soap/binding.png" /> 
 	      </file>
             <file name="HttpBinding">
                 <attr name="xsdFileName" stringvalue="http" />
                 <attr name="element" stringvalue="binding" />
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdlextui.resources.Bundle" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdlextui.resources.http.Bundle" />
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdlextui/resources/http/choose.png" /> 
             </file>
 	      </folder>
@@ -72,13 +72,13 @@ made subject to such option by the copyright holder.
 	      <file name="SoapBindingOperation" >
             <attr name="xsdFileName" stringvalue="soap" />
 	        <attr name="element" stringvalue="operation" />
-	        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdlextui.resources.Bundle" />
+	        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdlextui.resources.soap.Bundle" />
 	        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdlextui/resources/soap/operation.png" /> 
 	      </file>
             <file name="HttpBindingOperation" >
                 <attr name="xsdFileName" stringvalue="http" />
                 <attr name="element" stringvalue="operation" />
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdlextui.resources.Bundle" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdlextui.resources.http.Bundle" />
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdlextui/resources/http/for_icon.jpg" /> 
             </file>
 	      </folder>
@@ -87,28 +87,28 @@ made subject to such option by the copyright holder.
 	      <file name="SoapBindingOperationInput">
             <attr name="xsdFileName" stringvalue="soap" />
 	        <attr name="element" stringvalue="body" />
-	        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdlextui.resources.Bundle" />
+	        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdlextui.resources.soap.Bundle" />
 	        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdlextui/resources/soap/body.png" /> 
 	      </file>
 	      
 	       <file name="SoapBindingOperationInputHeader">
             <attr name="xsdFileName" stringvalue="soap" />
 	        <attr name="element" stringvalue="header" />
-	        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdlextui.resources.Bundle" />
+	        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdlextui.resources.soap.Bundle" />
 	        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdlextui/resources/soap/header.png" /> 
 	      </file>
 	      
             <file name="HttpBindingOperationInputUrlEncoded">
                 <attr name="xsdFileName" stringvalue="http" />
                 <attr name="element" stringvalue="urlEncoded" />
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdlextui.resources.Bundle" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdlextui.resources.http.Bundle" />
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdlextui/resources/http/code.gif" /> 
             </file>
             
             <file name="HttpBindingOperationInputUrlReplacement">
                 <attr name="xsdFileName" stringvalue="http" />
                 <attr name="element" stringvalue="urlReplacement" />
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdlextui.resources.Bundle" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdlextui.resources.http.Bundle" />
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdlextui/resources/http/code.gif" /> 
             </file>
             
@@ -118,14 +118,14 @@ made subject to such option by the copyright holder.
 		      <file name="SoapBindingOperationOutput">
 	            <attr name="xsdFileName" stringvalue="soap" />
 		        <attr name="element" stringvalue="body" />
-		        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdlextui.resources.Bundle" />
+		        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdlextui.resources.soap.Bundle" />
 		        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdlextui/resources/soap/body.png" /> 
 		      </file>
 		      
 		       <file name="BindingOperationOutputHeader">
                <attr name="xsdFileName" stringvalue="soap" />
 		        <attr name="element" stringvalue="header" />
-		        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdlextui.resources.Bundle" />
+		        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdlextui.resources.soap.Bundle" />
 		        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdlextui/resources/soap/header.png" /> 
 		      </file>
 		      
@@ -135,7 +135,7 @@ made subject to such option by the copyright holder.
 		      <file name="SoapBindingOperationFault">
 	            <attr name="xsdFileName" stringvalue="soap" />
 		        <attr name="element" stringvalue="fault" />
-		        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdlextui.resources.Bundle" />
+		        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdlextui.resources.soap.Bundle" />
 		        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdlextui/resources/soap/fault.png" /> 
 		      </file>
 		      
@@ -145,13 +145,13 @@ made subject to such option by the copyright holder.
 		      <file name="SoapServicePort">
 	            <attr name="xsdFileName" stringvalue="soap" />
 		        <attr name="element" stringvalue="address" />
-		        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdlextui.resources.Bundle" />
+		        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdlextui.resources.soap.Bundle" />
 		        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdlextui/resources/soap/address.png" /> 
 		      </file>
             <file name="HttpServicePort">
                 <attr name="xsdFileName" stringvalue="http" />
                 <attr name="element" stringvalue="address" />
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdlextui.resources.Bundle" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdlextui.resources.http.Bundle" />
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdlextui/resources/http/code.gif" /> 
             </file>
 	      </folder>	        
