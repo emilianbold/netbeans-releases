@@ -74,6 +74,10 @@ public final class PatchedShapeNode extends ShapeNode implements PatchedTransfor
             id = m_idBackup;
         }
     }
+
+    public String [] optimizeTransform() {
+        return null;
+    }
     
     public ElementNode newInstance(final DocumentNode doc) {
         return new PatchedShapeNode(doc, getLocalName());

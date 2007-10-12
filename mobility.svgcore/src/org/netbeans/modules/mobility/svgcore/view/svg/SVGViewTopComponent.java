@@ -511,6 +511,10 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
         removeSvgPanel();
     }
 
+    public boolean isFocusable() {
+        return true;
+    }
+    
     public void componentActivated() {
         super.componentActivated();
         updateDataTransferActions();

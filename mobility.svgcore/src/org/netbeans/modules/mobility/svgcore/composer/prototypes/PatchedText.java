@@ -43,7 +43,11 @@ package org.netbeans.modules.mobility.svgcore.composer.prototypes;
 import com.sun.perseus.model.DocumentNode;
 import com.sun.perseus.model.ElementNode;
 import com.sun.perseus.model.Text;
+import com.sun.perseus.util.SVGConstants;
 import org.netbeans.modules.mobility.svgcore.composer.SVGObject;
+import org.w3c.dom.svg.SVGMatrix;
+import org.netbeans.modules.mobility.svgcore.composer.PerseusController;
+
 
 /**
  *
@@ -68,12 +72,30 @@ public final class PatchedText extends Text implements PatchedTransformableEleme
     public void setNullId(boolean isNull) {
         if (isNull) {
             m_idBackup = id;
-            id       = null;
+            id         = null;
         } else {
             id = m_idBackup;
         }
     }
+
+    public String [] optimizeTransform() {
+        String []  changedAttrs = null;
+        SVGMatrix  tfm          = getTransform();
+
+        if ( tfm != null && PerseusController.isIdentityTransform(tfm, true)) {            
+            float xCoord = getFloatTrait( SVGConstants.SVG_X_ATTRIBUTE) + tfm.getComponent(4);
+            float yCoord = getFloatTrait( SVGConstants.SVG_Y_ATTRIBUTE) + tfm.getComponent(5);
             
+            changedAttrs = new String [] {
+                SVGConstants.SVG_X_ATTRIBUTE, String.valueOf(xCoord),
+                SVGConstants.SVG_Y_ATTRIBUTE, String.valueOf(yCoord),
+                SVGConstants.SVG_TRANSFORM_ATTRIBUTE, null
+            };
+        }
+        
+        return changedAttrs;            
+    }        
+    
     public ElementNode newInstance(final DocumentNode doc) {
         return new PatchedText(doc);
     }   

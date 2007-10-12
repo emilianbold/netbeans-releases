@@ -43,6 +43,7 @@ package org.netbeans.modules.mobility.svgcore.composer.prototypes;
 import com.sun.perseus.model.AnimateTransform;
 import com.sun.perseus.model.DocumentNode;
 import com.sun.perseus.model.ElementNode;
+import com.sun.perseus.util.SVGConstants;
 import org.netbeans.modules.mobility.svgcore.composer.SVGObject;
 
 /**

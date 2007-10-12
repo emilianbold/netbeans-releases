@@ -38,47 +38,45 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.mobility.svgcore.composer.prototypes;
+package org.netbeans.modules.mobility.svgcore.palette;
 
-import com.sun.perseus.model.DocumentNode;
-import com.sun.perseus.model.ElementNode;
-import com.sun.perseus.model.LinearGradient;
-import org.netbeans.modules.mobility.svgcore.composer.SVGObject;
+import java.io.IOException;
+import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.CallableSystemAction;
 
 /**
  *
  * @author Pavel Benes
  */
-public final class PatchedLinearGradient extends LinearGradient implements PatchedTransformableElement {
-    private String    m_idBackup  = null;
-    private SVGObject m_svgObject = null; 
+public final class SVGPaletteManagerAction extends CallableSystemAction {
 
-    public PatchedLinearGradient(final DocumentNode ownerDocument) {
-        super(ownerDocument);
-    }
-    
-    public void attachSVGObject(SVGObject obj) {
-        m_svgObject = obj;
-    }
-
-    public SVGObject getSVGObject() {
-        return m_svgObject;
-    }
-    
-    public void setNullId(boolean isNull) {
-        if (isNull) {
-            m_idBackup = id;
-            id       = null;
-        } else {
-            id = m_idBackup;
+    public void performAction() {
+        try {
+            SVGPaletteFactory.getPalette().showCustomizer();
+        } catch( IOException e) {
+            SceneManager.error("Cannot show the palette", e); //NOI18N
         }
     }
 
-    public String [] optimizeTransform() {
-        return null;
+    public String getName() {
+        return NbBundle.getMessage(SVGPaletteManagerAction.class, "CTL_SVGPaletteManagerAction"); // NOI18N
+    }
+    
+    @Override
+    protected void initialize() {
+        super.initialize();
+        // see org.openide.util.actions.SystemAction.iconResource() javadoc for more details
+        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
 
-    public ElementNode newInstance(final DocumentNode doc) {
-        return new PatchedLinearGradient(doc);
-    }    
+    public HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
+    }
+
+    @Override
+    protected boolean asynchronous() {
+        return false;
+    }
 }

@@ -74,7 +74,11 @@ public final class PatchedAnchor extends Anchor implements PatchedTransformableE
             id = m_idBackup;
         }
     }
-            
+           
+    public String [] optimizeTransform() {
+        return null;
+    }
+    
     public ElementNode newInstance(final DocumentNode doc) {
         return new PatchedAnchor(doc);
     }    

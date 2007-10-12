@@ -15,7 +15,8 @@ import com.sun.perseus.j2d.Transform;
  *
  * @author Pavel Benes
  */
-public interface PatchedTransformableElement extends PatchedElement{
+public interface PatchedTransformableElement extends PatchedElement {
     public Transform getTransform();
     public void      setTransform(Transform tfx);
+    public String [] optimizeTransform();
 }

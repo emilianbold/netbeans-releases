@@ -1,4 +1,43 @@
-
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ */   
 package org.netbeans.modules.mobility.svgcore.export;
 
 import java.awt.*;
@@ -7,131 +46,111 @@ import java.awt.image.IndexColorModel;
 import java.awt.image.MemoryImageSource;
 import java.awt.image.WritableRaster;
 
-/** Converts an RGB image to 8-bit index color using Heckbert's median-cut
- color quantization algorithm. Based on median.c by Anton Kruger from the
- September, 1994 issue of Dr. Dobbs Journal.
-
- @author Wayne Rasband (wayne@codon.nih.gov)
-
- This version is based on ij.process.MedianCut (from http://rsb.info.nih.gov/ij/ ImageJ library) with some changes to work standalone
- */
-
 public final class Quantizer {
-    private static final int MAXCOLORS = 255;  // maximum # of output colors
+    private static final int MAXCOLORS         = 255; 
     private static final int TRANSPARENT_COLOR = 255;
-    private static final int HSIZE = 32768;    // size of image histogram
+    private static final int HSIZE             = 32768;
+
+    private static final class ColorCube {
+        private int lower;
+        private int upper;
+        private int count;
+        private int level;
+        private int rmin;
+        private int rmax;
+        private int gmin;
+        private int gmax;
+        private int bmin;
+        private int bmax;
+
+        ColorCube() {
+            count = 0;
+        }
+    }
     
-    private int[]           hist;          // RGB histogram and reverse color lookup table
-    private int[]           histPtr;        // points to colors in "hist"
-    private Cube[]          list;        // list of cubes
-    private int[]           pixels32;
-    private int             width, height;
-    private IndexColorModel cm;
+    private final int[]           m_pixels32;
+    private final int             m_width;
+    private final int             m_height;
+    private final int[]           m_hist;
+    private       int[]           m_histPtr;
+    private       ColorCube[]     m_list;
+    private       IndexColorModel m_cm;
 
     public Quantizer(int[] pixels, int width, int height) {
-        int color16;
+        m_pixels32 = pixels;
+        m_width    = width;
+        m_height   = height;
 
-        pixels32 = pixels;
-        this.width = width;
-        this.height = height;
-
-        //build 32x32x32 RGB histogram
-        hist = new int[HSIZE];
+        m_hist = new int[HSIZE];
         for (int i = 0; i < width * height; i++) {
-            color16 = rgb(pixels32[i]);
-            hist[color16]++;
+            m_hist[rgb(m_pixels32[i])]++;
         }
     }
 
     public int getColorCount() {
         int count = 0;
-        for (int i = 0; i < HSIZE; i++)
-            if (hist[i] > 0) count++;
+        
+        for (int i = 0; i < HSIZE; i++) {
+            if (m_hist[i] > 0) {
+                count++;
+            }
+        }
+        
         return count;
     }
 
-
     public Color getModalColor() {
         int max = 0;
-        int c = 0;
-        for (int i = 0; i < HSIZE; i++)
-            if (hist[i] > max) {
-                max = hist[i];
+        int c   = 0;
+        
+        for (int i = 0; i < HSIZE; i++) {
+            if (m_hist[i] > max) {
+                max = m_hist[i];
                 c = i;
             }
+        }
         return new Color(red(c), green(c), blue(c));
     }
 
-    // Convert from 24-bit to 15-bit color
-    private final int rgb(int c) {
-        int r = (c & 0xf80000) >> 19;
-        int g = (c & 0xf800) >> 6;
-        int b = (c & 0xf8) << 7;
-        return b | g | r;
-    }
-
-    // Get red component of a 15-bit color
-    private final int red(int x) {
-        return (x & 31) << 3;
-    }
-
-    // Get green component of a 15-bit color
-    private final int green(int x) {
-        return (x >> 2) & 0xf8;
-    }
-
-    // Get blue component of a 15-bit color
-    private final int blue(int x) {
-        return (x >> 7) & 0xf8;
-    }
-
-    /** Uses Heckbert's median-cut algorithm to divide the color space defined by
-     "hist" into "maxcubes" cubes. The centroids (average value) of each cube
-     are are used to create a color table. "hist" is then updated to function
-     as an inverse color map that is used to generate an 8-bit image. */
-    public BufferedImage convertToByte() {
+    public BufferedImage toImage() {
         int lr, lg, lb;
         int i, median, color;
         int count;
         int k, level, ncubes, splitpos;
-        int longdim = 0;  //longest dimension of cube
-        Cube cube, cubeA, cubeB;
+        int longdim = 0; 
+        ColorCube cube, cubeA, cubeB;
 
-        // Create initial cube
-        list = new Cube[MAXCOLORS];
-        histPtr = new int[HSIZE];
+        m_list = new ColorCube[MAXCOLORS];
+        m_histPtr = new int[HSIZE];
         ncubes = 0;
-        cube = new Cube();
+        cube = new ColorCube();
         for (i = 0, color = 0; i <= HSIZE - 1; i++) {
-            if (hist[i] != 0) {
-                histPtr[color++] = i;
-                cube.count = cube.count + hist[i];
+            if (m_hist[i] != 0) {
+                m_histPtr[color++] = i;
+                cube.count = cube.count + m_hist[i];
             }
         }
         cube.lower = 0;
         cube.upper = color - 1;
         cube.level = 0;
-        Shrink(cube);
-        list[ncubes++] = cube;
+        reduce(cube);
+        m_list[ncubes++] = cube;
 
-        //Main loop
         while (ncubes < MAXCOLORS) {
-            // Search the list of cubes for next cube to split, the lowest level cube
             level = 255;
             splitpos = -1;
             for (k = 0; k <= ncubes - 1; k++) {
-                if (list[k].lower == list[k].upper)
+                if (m_list[k].lower == m_list[k].upper)
                     ;  // single color; cannot be split
-                else if (list[k].level < level) {
-                    level = list[k].level;
+                else if (m_list[k].level < level) {
+                    level = m_list[k].level;
                     splitpos = k;
                 }
             }
-            if (splitpos == -1)  // no more cubes to split
+            if (splitpos == -1)
                 break;
 
-            // Find longest dimension of this cube
-            cube = list[splitpos];
+            cube = m_list[splitpos];
             lr = cube.rmax - cube.rmin;
             lg = cube.gmax - cube.gmin;
             lb = cube.bmax - cube.bmin;
@@ -139,50 +158,40 @@ public final class Quantizer {
             if (lg >= lr && lg >= lb) longdim = 1;
             if (lb >= lr && lb >= lg) longdim = 2;
 
-            // Sort along "longdim"
-            reorderColors(histPtr, cube.lower, cube.upper, longdim);
-            quickSort(histPtr, cube.lower, cube.upper);
-            restoreColorOrder(histPtr, cube.lower, cube.upper, longdim);
+            changeColorOrder(m_histPtr, cube.lower, cube.upper, longdim);
+            quickSort(m_histPtr, cube.lower, cube.upper);
+            resetColorOrder(m_histPtr, cube.lower, cube.upper, longdim);
 
-            // Find median
             count = 0;
             for (i = cube.lower; i <= cube.upper - 1; i++) {
                 if (count >= cube.count / 2) break;
-                color = histPtr[i];
-                count = count + hist[color];
+                color = m_histPtr[i];
+                count = count + m_hist[color];
             }
             median = i;
 
-            // Now split "cube" at the median and add the two new
-            // cubes to the list of cubes.
-            cubeA = new Cube();
+            cubeA = new ColorCube();
             cubeA.lower = cube.lower;
             cubeA.upper = median - 1;
             cubeA.count = count;
             cubeA.level = cube.level + 1;
-            Shrink(cubeA);
-            list[splitpos] = cubeA;        // add in old slot
+            reduce(cubeA);
+            m_list[splitpos] = cubeA;
 
-            cubeB = new Cube();
+            cubeB = new ColorCube();
             cubeB.lower = median;
             cubeB.upper = cube.upper;
             cubeB.count = cube.count - count;
             cubeB.level = cube.level + 1;
-            Shrink(cubeB);
-            list[ncubes++] = cubeB;        // add in new slot */
+            reduce(cubeB);
+            m_list[ncubes++] = cubeB;
         }
 
-        // We have enough cubes, or we have split all we can. Now
-        // compute the color map, the inverse color map, and return
-        // an 8-bit image.
-        makeInverseMap(hist, ncubes);
+        invertMap(m_hist, ncubes);
         return makeBufferedImage();
     }
 
-    private void Shrink(Cube cube) {
-        // Encloses "cube" with a tight-fitting cube by updating the
-        // (rmin,gmin,bmin) and (rmax,gmax,bmax) members of "cube".
-
+    private void reduce(ColorCube cube) {
         int r, g, b;
         int color;
         int rmin, rmax, gmin, gmax, bmin, bmax;
@@ -194,7 +203,7 @@ public final class Quantizer {
         bmin = 255;
         bmax = 0;
         for (int i = cube.lower; i <= cube.upper; i++) {
-            color = histPtr[i];
+            color = m_histPtr[i];
             r = red(color);
             g = green(color);
             b = blue(color);
@@ -213,25 +222,20 @@ public final class Quantizer {
         cube.gmax = gmax;
     }
 
-    private void makeInverseMap(int[] hist, int ncubes) {
-        // For each cube in the list of cubes, computes the centroid
-        // (average value) of the colors enclosed by that cube, and
-        // then loads the centroids in the color map. Next loads
-        // "hist" with indices into the color map
-
+    private void invertMap(int[] hist, int ncubes) {
+        ColorCube cube;
         int r, g, b;
-        int color;
         float rsum, gsum, bsum;
-        Cube cube;
+        int color;
         byte[] rLUT = new byte[MAXCOLORS+1];
         byte[] gLUT = new byte[MAXCOLORS+1];
         byte[] bLUT = new byte[MAXCOLORS+1];
 
         for (int k = 0; k <= ncubes - 1; k++) {
-            cube = list[k];
+            cube = m_list[k];
             rsum = gsum = bsum = (float) 0.0;
             for (int i = cube.lower; i <= cube.upper; i++) {
-                color = histPtr[i];
+                color = m_histPtr[i];
                 r = red(color);
                 rsum += (float) r * (float) hist[color];
                 g = green(color);
@@ -240,44 +244,37 @@ public final class Quantizer {
                 bsum += (float) b * (float) hist[color];
             }
 
-            // Update the color map
             r = (int) (rsum / (float) cube.count);
             g = (int) (gsum / (float) cube.count);
             b = (int) (bsum / (float) cube.count);
             if (r == 248 && g == 248 && b == 248)
-                r = g = b = 255;  // Restore white (255,255,255)
+                r = g = b = 255;
             rLUT[k] = (byte) r;
             gLUT[k] = (byte) g;
             bLUT[k] = (byte) b;
         }
-        cm = new IndexColorModel(8, MAXCOLORS+1, rLUT, gLUT, bLUT, TRANSPARENT_COLOR);
+        m_cm = new IndexColorModel(8, MAXCOLORS+1, rLUT, gLUT, bLUT, TRANSPARENT_COLOR);
 
-        // For each color in each cube, load the corre-
-        // sponding slot in "hist" with the centroid of the cube.
         for (int k = 0; k <= ncubes - 1; k++) {
-            cube = list[k];
+            cube = m_list[k];
             for (int i = cube.lower; i <= cube.upper; i++) {
-                color = histPtr[i];
+                color = m_histPtr[i];
                 hist[color] = k;
             }
         }
     }
 
-
-    private void reorderColors(int[] a, int lo, int hi, int longDim) {
-        // Change the ordering of the 5-bit colors in each word of int[]
-        // so we can sort on the 'longDim' color
-
+    private void changeColorOrder(int[] a, int lo, int hi, int longDim) {
         int c, r, g, b;
         switch (longDim) {
-            case 0: //red
+            case 0:
                 for (int i = lo; i <= hi; i++) {
                     c = a[i];
                     r = c & 31;
                     a[i] = (r << 10) | (c >> 5);
                 }
                 break;
-            case 1: //green
+            case 1:
                 for (int i = lo; i <= hi; i++) {
                     c = a[i];
                     r = c & 31;
@@ -286,25 +283,23 @@ public final class Quantizer {
                     a[i] = (g << 10) | (b << 5) | r;
                 }
                 break;
-            case 2: //blue; already in the needed order
+            case 2:
                 break;
         }
     }
 
 
-    void restoreColorOrder(int[] a, int lo, int hi, int longDim) {
-        // Restore the 5-bit colors to the original order
-
+    void resetColorOrder(int[] a, int lo, int hi, int longDim) {
         int c, r, g, b;
         switch (longDim) {
-            case 0: //red
+            case 0:
                 for (int i = lo; i <= hi; i++) {
                     c = a[i];
                     r = c >> 10;
                     a[i] = ((c & 1023) << 5) | r;
                 }
                 break;
-            case 1: //green
+            case 1:
                 for (int i = lo; i <= hi; i++) {
                     c = a[i];
                     r = c & 31;
@@ -313,15 +308,12 @@ public final class Quantizer {
                     a[i] = (b << 10) | (g << 5) | r;
                 }
                 break;
-            case 2: //blue
+            case 2:
                 break;
         }
     }
 
-
     void quickSort(int a[], int lo0, int hi0) {
-        // Based on the QuickSort method by James Gosling from Sun's SortDemo applet
-
         int lo = lo0;
         int hi = hi0;
         int mid, t;
@@ -349,28 +341,28 @@ public final class Quantizer {
         }
     }
 
-    byte [] createPixels() {
+    byte [] toByteArray() {
         byte[] pixels8;
         int color16;
-        pixels8 = new byte[width * height];
-        for (int i = 0; i < width * height; i++) {
-            color16 = rgb(pixels32[i]);
-            pixels8[i] = (byte) hist[color16];
+        pixels8 = new byte[m_width * m_height];
+        for (int i = 0; i < m_width * m_height; i++) {
+            color16 = rgb(m_pixels32[i]);
+            pixels8[i] = (byte) m_hist[color16];
         }
         return pixels8;
     }
     
     BufferedImage makeBufferedImage() {
-        byte [] pixels8 = createPixels();    
-        BufferedImage bufferedImage = new BufferedImage(cm, 
-            cm.createCompatibleWritableRaster(width, height), false, null);        
+        byte [] pixels8 = toByteArray();    
+        BufferedImage bufferedImage = new BufferedImage(m_cm, 
+            m_cm.createCompatibleWritableRaster(m_width, m_height), false, null);        
         
         WritableRaster raster = bufferedImage.getRaster();
         int[] pixelArray = new int[1];
         int i = 0;
-        for (int x = 0; x < width; x++) {
-            for (int y = 0; y < height; y++) {
-                int pixel = pixels32[i];
+        for (int x = 0; x < m_width; x++) {
+            for (int y = 0; y < m_height; y++) {
+                int pixel = m_pixels32[i];
                 if ( (pixel >>> 24) > 127) {
                     pixelArray[0] = pixels8[i++];
                 } else {
@@ -384,38 +376,29 @@ public final class Quantizer {
     }
     
     Image makeImage() {
-        // Generate 8-bit image
-        byte [] pixels8 = createPixels();    
+        byte [] pixels8 = toByteArray();    
         Image img8 = Toolkit.getDefaultToolkit().createImage(
-                new MemoryImageSource(width, height,
-                        cm, pixels8, 0, width));
+                new MemoryImageSource(m_width, m_height,
+                        m_cm, pixels8, 0, m_width));
         return img8;
     }
 
-
-} //class MedianCut
-
-
-class Cube {      // structure for a cube in color space
-    int lower;      // one corner's index in histogram
-    int upper;      // another corner's index in histogram
-    int count;      // cube's histogram count
-    int level;      // cube's level
-    int rmin, rmax;
-    int gmin, gmax;
-    int bmin, bmax;
-
-    Cube() {
-        count = 0;
+    private final int rgb(int c) {
+        int r = (c & 0xf80000) >> 19;
+        int g = (c & 0xf800) >> 6;
+        int b = (c & 0xf8) << 7;
+        return b | g | r;
     }
 
-    public String toString() {
-        String s = "lower=" + lower + " upper=" + upper;
-        s = s + " count=" + count + " level=" + level;
-        s = s + " rmin=" + rmin + " rmax=" + rmax;
-        s = s + " gmin=" + gmin + " gmax=" + gmax;
-        s = s + " bmin=" + bmin + " bmax=" + bmax;
-        return s;
+    private final int red(int x) {
+        return (x & 31) << 3;
     }
 
+    private final int green(int x) {
+        return (x >> 2) & 0xf8;
+    }
+
+    private final int blue(int x) {
+        return (x >> 7) & 0xf8;
+    }    
 }

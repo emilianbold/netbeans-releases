@@ -73,7 +73,11 @@ public final class PatchedRadialGradient extends RadialGradient implements Patch
             id = m_idBackup;
         }
     }
-            
+
+    public String [] optimizeTransform() {
+        return null;
+    }
+    
     public ElementNode newInstance(final DocumentNode doc) {
         return new PatchedRadialGradient(doc);
     }    

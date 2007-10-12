@@ -562,7 +562,7 @@ public class AnimationRasterizer {
             }
         }
         Quantizer quantizer = new Quantizer(pixels, w, h);
-        return quantizer.convertToByte();
+        return quantizer.toImage();
     }
     
     private static BufferedImage reduceColorsQuantize(BufferedImage image, Params params) {

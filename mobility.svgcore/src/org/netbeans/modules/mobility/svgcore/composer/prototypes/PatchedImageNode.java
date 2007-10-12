@@ -73,6 +73,10 @@ public final class PatchedImageNode extends ImageNode implements PatchedTransfor
             id = m_idBackup;
         }
     }
+
+    public String [] optimizeTransform() {
+        return null;
+    }
     
     public ElementNode newInstance(final DocumentNode doc) {
         return new PatchedImageNode(doc);

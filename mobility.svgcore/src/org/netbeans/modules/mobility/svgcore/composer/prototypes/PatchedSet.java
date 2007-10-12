@@ -49,8 +49,8 @@ import org.netbeans.modules.mobility.svgcore.composer.SVGObject;
  *
  * @author Pavel Benes
  */
-public final class PatchedSet extends Set implements PatchedElement {
-    private String m_idBackup = null;
+public final class PatchedSet extends Set implements PatchedAnimationElement {
+    private String    m_idBackup = null;
     private SVGObject m_svgObject = null; 
     
     

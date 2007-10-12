@@ -84,6 +84,10 @@ public final class PatchedGroup extends Group implements PatchedTransformableEle
             id = m_idBackup;
         }
     }
+
+    public String [] optimizeTransform() {
+        return null;
+    }
     
     public ElementNode newInstance(final DocumentNode doc) {
         return new PatchedGroup(doc);

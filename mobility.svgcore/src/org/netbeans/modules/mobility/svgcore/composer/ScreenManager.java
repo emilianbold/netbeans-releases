@@ -140,7 +140,7 @@ public final class ScreenManager {
         return m_statusBar;
     }
     
-    public void registerMouseController( InputControlManager.MouseController mouseListener) {
+    void registerMouseController( InputControlManager.MouseController mouseListener) {
         m_animatorView.addMouseListener(mouseListener);
         m_animatorView.addMouseMotionListener(mouseListener);
         //m_animatorView.addMouseWheelListener(mouseListener);

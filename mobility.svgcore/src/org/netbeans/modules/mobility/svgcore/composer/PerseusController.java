@@ -70,7 +70,6 @@ import org.netbeans.modules.mobility.svgcore.composer.prototypes.PatchedElement;
 import org.netbeans.modules.mobility.svgcore.composer.prototypes.PatchedGroup;
 import org.netbeans.modules.mobility.svgcore.composer.prototypes.PatchedTransformableElement;
 import org.netbeans.modules.mobility.svgcore.composer.prototypes.SVGComposerPrototypeFactory;
-import org.openide.util.Exceptions;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -98,9 +97,11 @@ public final class PerseusController {
     public static final String ID_BBOX_MARKER            = "$BBOX$"; //NOI18N
     
     private static final String [] ANIM_PATTERNS = new String [] {
-        "." + SVGConstants.SVG_DOMFOCUSIN_EVENT_TYPE, 
-        "." + SVGConstants.SVG_DOMFOCUSOUT_EVENT_TYPE + 
-        "." + SVGConstants.SVG_DOMACTIVATE_EVENT_TYPE};
+        "." + SVGConstants.SVG_DOMFOCUSIN_EVENT_TYPE, //NOI18N
+        "." + SVGConstants.SVG_DOMFOCUSOUT_EVENT_TYPE + //NOI18N
+        "." + SVGConstants.SVG_DOMACTIVATE_EVENT_TYPE}; //NOI18N
+    private static final SVGMatrix IDENTITY_TRANSFORM = new Transform(null);
+    
     
     private static int s_instanceCounter = 0;
 
@@ -168,7 +169,7 @@ public final class PerseusController {
         try {
             m_animator.invokeAndWait(command);
         } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
+            SceneManager.error("Command execution failed.", ex); //NOI18N
         }
     }
 
@@ -771,4 +772,14 @@ public final class PerseusController {
 
         return total;
     }    
+    
+    public static final boolean isIdentityTransform( SVGMatrix matrix, boolean ignoreTranslate) {
+        int length = ignoreTranslate ? 4 : 6;
+        for (int i = 0; i < length; i++) {
+            if (Math.abs( IDENTITY_TRANSFORM.getComponent(i) - matrix.getComponent(i)) > 0.001) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

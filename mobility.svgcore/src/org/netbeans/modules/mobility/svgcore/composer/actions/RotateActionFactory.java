@@ -119,6 +119,7 @@ public final class RotateActionFactory extends AbstractComposerActionFactory {
             m_rotated.repaint(SVGObjectOutline.SELECTOR_OVERLAP);
             repaintRotatePivot();
             m_rotated.applyTextChanges();
+            m_rotated.commitChanges();
             super.actionCompleted();
         }
         

@@ -64,6 +64,10 @@ public final class PatchedLine extends Line implements PatchedTransformableEleme
     public SVGObject getSVGObject() {
         return m_svgObject;
     }
+
+    public String [] optimizeTransform() {
+        return null;
+    }
     
     public void setNullId(boolean isNull) {
         if (isNull) {

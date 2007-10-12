@@ -43,14 +43,12 @@
  *
  * Created on November 30, 2005, 10:53 AM
  */
-
 package org.netbeans.modules.mobility.svgcore.palette;
 
 import java.io.File;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
-import javax.swing.filechooser.FileSystemView;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;

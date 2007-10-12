@@ -44,7 +44,11 @@ import com.sun.perseus.model.*;
 import com.sun.perseus.model.DocumentNode;
 import com.sun.perseus.model.ElementNode;
 import com.sun.perseus.model.Rect;
+import com.sun.perseus.util.SVGConstants;
 import org.netbeans.modules.mobility.svgcore.composer.SVGObject;
+import org.netbeans.modules.mobility.svgcore.composer.PerseusController;
+import org.w3c.dom.svg.SVGMatrix;
+
 
 /**
  *
@@ -74,6 +78,24 @@ public final class PatchedRect extends Rect implements PatchedTransformableEleme
             id = m_idBackup;
         }
     }
+        
+    public String [] optimizeTransform() {
+        String []  changedAttrs = null;
+        SVGMatrix  tfm          = getTransform();
+
+        if ( tfm != null && PerseusController.isIdentityTransform(tfm, true)) {            
+            float xCoord = getFloatTrait( SVGConstants.SVG_X_ATTRIBUTE) + tfm.getComponent(4);
+            float yCoord = getFloatTrait( SVGConstants.SVG_Y_ATTRIBUTE) + tfm.getComponent(5);
+            
+            changedAttrs = new String [] {
+                SVGConstants.SVG_X_ATTRIBUTE, String.valueOf(xCoord),
+                SVGConstants.SVG_Y_ATTRIBUTE, String.valueOf(yCoord),
+                SVGConstants.SVG_TRANSFORM_ATTRIBUTE, null
+            };
+        }
+        
+        return changedAttrs;            
+    }        
     
     public ElementNode newInstance(final DocumentNode doc) {
         return new PatchedRect(doc);

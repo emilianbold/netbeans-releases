@@ -92,7 +92,7 @@ public final class SVGFileModel {
     protected static final String   XML_TAG            = "tag"; //NOI18N
     protected static final String   XML_EMPTY_TAG      = "empty_tag"; //NOI18N
     protected static final String   XML_ERROR_TAG      = "error"; //NOI18N
-    protected static final String[] ANIMATION_TAGS     = {"animate", "animateTransform", "animateMotion", "animateColor"}; //NOI18N
+    protected static final String[] ANIMATION_TAGS     = {"animate", "animateTransform", "animateMotion", "animateColor", "set"}; //NOI18N
     protected static final String   TRANSACTION_TOKEN  = "transaction"; //NOI18N
     protected static final String   MODEL_UPDATE_TOKEN = "update"; //NOI18N
 
@@ -153,7 +153,7 @@ public final class SVGFileModel {
 
         protected abstract void transaction() throws Exception;
     }
-    
+        
     private final XmlMultiViewEditorSupport m_edSup;
     private final ElementMapping      m_mapping;
     private final List<ModelListener> m_modelListeners = new ArrayList<ModelListener>();
@@ -828,9 +828,95 @@ public final class SVGFileModel {
         return sb;
     }
 
+    public void setAttributes(final String id, final String [] attributes) {
+        runTransaction(new FileModelTransaction() {
+            protected void transaction() throws BadLocationException {
+                DocumentElement elem = checkIntegrity(id);
+                assert isTagElement(elem) : "Attribute change allowed only for tag elements"; //NOI18N
+
+                int startOff = elem.getStartOffset() + 1 + elem.getName().length();
+                int endOff;
+
+                List<DocumentElement> children = elem.getChildren();
+
+                if (children.size() > 0) {
+                    endOff = children.get(0).getStartOffset() - 1;
+                } else {
+                    endOff = elem.getEndOffset() - 1;
+                }
+                boolean injectId = !elem.getAttributes().isDefined(SVGConstants.SVG_ID_ATTRIBUTE);
+
+                assert attributes.length % 2 == 0;
+                BaseDocument doc     = getDoc();
+                
+                loop: for ( int i = 0; i < attributes.length; i+=2) {
+                    String fragment  = doc.getText(startOff, endOff - startOff + 1);
+                    String attrName  = attributes[i];
+                    String attrValue = attributes[i+1];
+                    
+                    int p;
+                    if ((p = fragment.indexOf(attrName)) != -1) {
+                        int start = p;
+                        p += attrName.length();
+                        while (++p < fragment.length()) {
+                            if (fragment.charAt(p) == '"') {
+                                int q = p;
+
+                                while (++q < fragment.length()) {
+                                    if (fragment.charAt(q) == '"') {
+                                        p++;
+                                        
+                                        if ( attrValue != null) {
+                                            int l;
+                                            String txt;
+                                            if (injectId) {
+                                                StringBuilder sb = new StringBuilder(attrValue);
+                                                sb.append("\" "); //NOI18N
+                                                injectId(sb, id);
+                                                injectId = false;
+                                                l = q - p + 1;
+                                                txt = sb.toString();
+                                                doc.replace(startOff + p, l, txt, null);
+                                            } else {
+                                                l = q - p;
+                                                txt = attrValue;
+                                                doc.replace(startOff + p, l, txt, null);
+                                            }
+                                            endOff = endOff - l + txt.length();
+                                        } else {
+                                            int l = q - start + 1;
+                                            doc.remove(startOff + start, l);
+                                            endOff -= l;
+                                        }
+                                        continue loop;
+                                    }
+                                }
+                            }
+                        }
+                        SceneManager.log(Level.SEVERE, "Attribute " + attrName + " not changed: \"" + fragment + "\""); //NOI18N
+                    } else {
+                        if (attrValue != null) {
+                            StringBuilder sb = new StringBuilder(" "); //NOI18N
+                            if (injectId) {
+                                injectId(sb, id);
+                                injectId = false;
+                            }
+                            sb.append(attrName);
+                            sb.append("=\""); //NOI18N
+                            sb.append(attrValue);
+                            sb.append("\" "); //NOI18N
+                            String txt = sb.toString();
+                            doc.insertString(startOff, txt, null);
+                            endOff += txt.length();
+                        }
+                    }
+                }
+            }
+        });
+    }
+        
     public void setAttribute(final String id, final String attrName, final String attrValue) {
         runTransaction(new FileModelTransaction() {
-
             protected void transaction() throws BadLocationException {
                 DocumentElement elem = checkIntegrity(id);
                 assert isTagElement(elem) : "Attribute change allowed only for tag elements"; //NOI18N

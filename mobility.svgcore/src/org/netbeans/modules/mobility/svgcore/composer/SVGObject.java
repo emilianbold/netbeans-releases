@@ -76,7 +76,7 @@ public final class SVGObject {
     private       float               m_tempSkewY       = 0;
     private       float               m_tempScale       = 1;
     private       float               m_tempRotate      = 0;
-       
+
     public SVGObject(SceneManager sceneMgr, SVGLocatableElement elem) {
         assert sceneMgr != null;
         assert elem != null;
@@ -272,8 +272,16 @@ public final class SVGObject {
     
     public void applyTextChanges() {
         if (m_elem != null && m_elem instanceof PatchedTransformableElement) {
-        String transform = getTransformAsText((PatchedTransformableElement) m_elem);
-        m_sceneMgr.getDataObject().getModel().setAttribute(getElementId(), SVGConstants.SVG_TRANSFORM_ATTRIBUTE, transform);
+            PatchedTransformableElement pte   = (PatchedTransformableElement) m_elem;
+            SVGFileModel                model = m_sceneMgr.getDataObject().getModel();
+            
+            String [] changedAttrs = pte.optimizeTransform();
+            if ( changedAttrs != null) {
+                model.setAttributes(getElementId(), changedAttrs);
+            } else {
+                String transform = getTransformAsText(pte.getTransform());
+                model.setAttribute(getElementId(), SVGConstants.SVG_TRANSFORM_ATTRIBUTE, transform);
+            }
         }
     }
     
@@ -358,7 +366,7 @@ public final class SVGObject {
     protected void applyUserTransform() {
         if (m_elem instanceof PatchedTransformableElement) {
             getScreenManager().incrementChangeTicker();
-            PatchedTransformableElement pg = (PatchedTransformableElement) m_elem;
+            PatchedTransformableElement pe = (PatchedTransformableElement) m_elem;
             SVGRect rect = PerseusController.getSafeBBox(m_elem);
             
             if (rect != null) {
@@ -391,9 +399,9 @@ public final class SVGObject {
                 txf.mTranslate( -rotatePivot[0], -rotatePivot[1]);
                 
                 txf.mMultiply(m_initialTransform);
-                pg.setTransform(txf);
+                pe.setTransform(txf);
             } else {
-                SceneManager.log( Level.SEVERE, "Null BBox for " + pg); //NOI18N                        
+                SceneManager.log( Level.SEVERE, "Null BBox for " + pe); //NOI18N                        
             }
         }
     }
@@ -423,18 +431,25 @@ public final class SVGObject {
         }
     }
     
-    private static String getTransformAsText(PatchedTransformableElement telem) {
-        Transform     tfm = telem.getTransform();
+    public static String getTransformAsText(SVGMatrix tfm) {
         StringBuilder sb  = new StringBuilder();
 
         if (tfm != null) {
-            sb.append("matrix("); //NOI18N
-            for (int i = 0; i < 5; i++) {
-                sb.append( tfm.getComponent(i));
+            if (PerseusController.isIdentityTransform(tfm, true)) {
+                sb.append("translate(");
+                sb.append( tfm.getComponent(4));
                 sb.append(',');
+                sb.append( tfm.getComponent(5));
+                sb.append(")"); //NOI18N
+            } else {
+                sb.append("matrix("); //NOI18N
+                for (int i = 0; i < 5; i++) {
+                    sb.append( tfm.getComponent(i));
+                    sb.append(',');
+                }
+                sb.append(tfm.getComponent(5));
+                sb.append(")"); //NOI18N
             }
-            sb.append(tfm.getComponent(5));
-            sb.append(")"); //NOI18N
         }
         return sb.toString();
     }    

@@ -111,6 +111,7 @@ public final class SkewActionFactory extends AbstractComposerActionFactory {
         public void actionCompleted() {
             m_skewed.repaint(SVGObjectOutline.SELECTOR_OVERLAP);
             m_skewed.applyTextChanges();
+            m_skewed.commitChanges();
             super.actionCompleted();
         }
     }
