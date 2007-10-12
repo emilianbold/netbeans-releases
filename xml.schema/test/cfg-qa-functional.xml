@@ -56,9 +56,6 @@ made subject to such option by the copyright holder.
       <testset dir="qa-functional/src">
         <patternset>
           <include name="org/netbeans/test/xml/schema/AcceptanceTestCase.class"/>
-          <exclude name="org/netbeans/test/xml/schema/AcceptanceTestCase.class/checkSourceCRC"/>
-          <exclude name="org/netbeans/test/xml/schema/AcceptanceTestCase.class/refactorComplexType"/>
-          <exclude name="org/netbeans/test/xml/schema/AcceptanceTestCase.class/applyDesignPattern"/>
         </patternset>
       </testset>
     </testbag>
