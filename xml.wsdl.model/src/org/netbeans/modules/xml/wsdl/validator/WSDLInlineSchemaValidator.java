@@ -3,7 +3,6 @@ package org.netbeans.modules.xml.wsdl.validator;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
 import java.net.URI;
@@ -29,8 +28,8 @@ import javax.xml.transform.Source;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
-import org.netbeans.modules.xml.schema.model.SchemaModel;
 
+import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.Types;
@@ -126,11 +125,11 @@ public class WSDLInlineSchemaValidator extends XsdBasedValidator {
     }
     
     private String getSystemId(WSDLModel model) {
-        Source source = (Source) model.getModelSource().getLookup().lookup(Source.class);
+        Source source = model.getModelSource().getLookup().lookup(Source.class);
 
         // Try to get Source via File from lookup.
         if(source == null) {
-            File file = (File) model.getModelSource().getLookup().lookup(File.class);
+            File file = model.getModelSource().getLookup().lookup(File.class);
             if(file != null) {
                 try {
                     source =  new SAXSource(new InputSource(new FileInputStream(file)));
@@ -153,6 +152,7 @@ public class WSDLInlineSchemaValidator extends XsdBasedValidator {
                           LSResourceResolver resolver) {
         try {
             SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+            sf.setFeature("http://apache.org/xml/features/allow-java-encodings", true);
             if (resolver != null) {
                 sf.setResourceResolver(resolver);
             }
@@ -229,7 +229,7 @@ public class WSDLInlineSchemaValidator extends XsdBasedValidator {
     }
     
     private String getWSDLText(WSDLModel model) {
-        javax.swing.text.Document d = (Document) model.getModelSource().getLookup().lookup(Document.class);
+        javax.swing.text.Document d = model.getModelSource().getLookup().lookup(Document.class);
         try {
             return d.getText(0, d.getLength());
         } catch (BadLocationException e) {
@@ -245,7 +245,7 @@ public class WSDLInlineSchemaValidator extends XsdBasedValidator {
             return (WSDLModel) currentModel;
         }
         try {
-            CatalogModel cm = (CatalogModel) currentModel.getModelSource().getLookup()
+            CatalogModel cm = currentModel.getModelSource().getLookup()
                 .lookup(CatalogModel.class);
             ModelSource ms = cm.getModelSource(new URI(systemId));
             if (ms != null) {
@@ -337,31 +337,29 @@ public class WSDLInlineSchemaValidator extends XsdBasedValidator {
                  //if we can not get an input from catalog, then it could that
                  //there as a schema in types section which refer to schema compoment from other inline schema
                  //so we try to check in other inline schema.
-                WSDLSchema schema = findSchema(namespaceURI);
-                if(schema != null) {
-                    Reader in = createInlineSchemaSource(mWsdlText, mWsdlPrefixes, mWsdlLinePositions, schema);
-                    if(in != null) {
-	                    //create LSInput object
-	                    DOMImplementation domImpl = null;
-	                    try {
-	                        domImpl =  DocumentBuilderFactory.newInstance().newDocumentBuilder().getDOMImplementation();
-	                    } catch (ParserConfigurationException ex) {
-	                         Logger.getLogger(getClass().getName()).log(Level.SEVERE, "resolveResource", ex); //NOI18N
-	                        return null;
-	                    }
-	                    
-	                    DOMImplementationLS dols = (DOMImplementationLS) domImpl.getFeature("LS","3.0");
-	                    lsi = dols.createLSInput();
-	                    if(in != null) {
-	                        lsi.setCharacterStream(in);
-	                    }
-	                    
-	                    if(mWsdlSystemId != null) {
-	                        lsi.setSystemId(mWsdlSystemId);
-	                    }
-                    return lsi;  
-                	}
-                }
+                 WSDLSchema schema = findSchema(namespaceURI);
+                 if(schema != null) {
+                     Reader in = createInlineSchemaSource(mWsdlText, mWsdlPrefixes, mWsdlLinePositions, schema);
+                     if(in != null) {
+                         //create LSInput object
+                         DOMImplementation domImpl = null;
+                         try {
+                             domImpl =  DocumentBuilderFactory.newInstance().newDocumentBuilder().getDOMImplementation();
+                         } catch (ParserConfigurationException ex) {
+                             Logger.getLogger(getClass().getName()).log(Level.SEVERE, "resolveResource", ex); //NOI18N
+                             return null;
+                         }
+
+                         DOMImplementationLS dols = (DOMImplementationLS) domImpl.getFeature("LS","3.0");
+                         lsi = dols.createLSInput();
+                         lsi.setCharacterStream(in);
+
+                         if(mWsdlSystemId != null) {
+                             lsi.setSystemId(mWsdlSystemId);
+                         }
+                         return lsi;  
+                     }
+                 }
              }
              return lsi;                      
         }
