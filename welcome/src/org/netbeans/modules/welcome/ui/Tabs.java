@@ -43,9 +43,11 @@ package org.netbeans.modules.welcome.ui;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
+import java.awt.Cursor;
 import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -54,7 +56,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.modules.welcome.content.Constants;
 import java.awt.Image;
-import java.awt.event.MouseAdapter;
+import java.awt.event.MouseListener;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
@@ -107,12 +109,12 @@ class Tabs extends JPanel implements Constants {
         leftButton.addActionListener( al );
         rightButton.addActionListener( al );
         
-        JPanel buttons = new JPanel( new GridBagLayout() );
+        JPanel buttons = new JPanel( new GridLayout(1,2) );
         buttons.setOpaque(false);
-        buttons.add( leftButton, new GridBagConstraints(0,0,1,1,1.0,0.0,
-                GridBagConstraints.WEST,GridBagConstraints.HORIZONTAL,new Insets(0,0,0,0),0,0) );
-        buttons.add( rightButton, new GridBagConstraints(1,0,1,1,1.0,0.0,
-                GridBagConstraints.EAST,GridBagConstraints.HORIZONTAL,new Insets(0,0,0,0),0,0) );
+        buttons.add( leftButton );//, new GridBagConstraints(0,0,1,1,1.0,0.0,
+//                GridBagConstraints.WEST,GridBagConstraints.HORIZONTAL,new Insets(0,0,0,0),0,0) );
+        buttons.add( rightButton );//, new GridBagConstraints(1,0,1,1,1.0,0.0,
+//                GridBagConstraints.EAST,GridBagConstraints.HORIZONTAL,new Insets(0,0,0,0),0,0) );
         
         add( buttons, BorderLayout.NORTH );
         
@@ -198,14 +200,35 @@ class Tabs extends JPanel implements Constants {
                     : COLOR_TAB_UNSEL_FOREGROUND ) );
             lbl.setHorizontalAlignment( JLabel.CENTER );
             
-            addMouseListener( new MouseAdapter() {
-                @Override
+            addMouseListener( new MouseListener() {
                 public void mouseClicked(MouseEvent e) {
-                    super.mouseClicked(e);
                     setSelected( !isSelected );
                     if( null != actionListener ) {
                         actionListener.actionPerformed( new ActionEvent( Tab.this, 0, "clicked") );
                     }
+                }
+
+                public void mousePressed(MouseEvent e) {
+                }
+
+                public void mouseReleased(MouseEvent e) {
+                }
+
+                public void mouseEntered(MouseEvent e) {
+                    if( !isSelected ) {
+                        setCursor( Cursor.getPredefinedCursor( Cursor.HAND_CURSOR ) );
+                        lbl.setForeground( Utils.getColor( MOUSE_OVER_LINK_COLOR  )  );
+                    } else {
+                        setCursor( Cursor.getDefaultCursor() );
+//                        lbl.setForeground( Utils.getColor( COLOR_TAB_UNSEL_FOREGROUND ) );
+                    }
+                }
+
+                public void mouseExited(MouseEvent e) {
+                    setCursor( Cursor.getDefaultCursor() );
+                    lbl.setForeground( Utils.getColor( isSelected
+                            ? COLOR_TAB_SEL_FOREGROUND 
+                            : COLOR_TAB_UNSEL_FOREGROUND ) );
                 }
             });
         }
@@ -226,7 +249,7 @@ class Tabs extends JPanel implements Constants {
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
-            g.setColor( Utils.getColor( isSelected ? COLOR_SCREEN_BACKGROUND : COLOR_TAB_UNSEL_BACKGROUND ) );
+            g.setColor( Utils.getColor( isSelected ? COLOR_TAB_SEL_BACKGROUND : COLOR_TAB_UNSEL_BACKGROUND ) );
             int width = getWidth();
             int height = getHeight();
             
@@ -238,23 +261,30 @@ class Tabs extends JPanel implements Constants {
                     g.setColor( Utils.getColor( COLOR_TAB_UNSEL_BACKGROUND ) );
                     g.fillRect( width-imgSelUpperLeft.getWidth(null), 0, width, height );
                     
+                    g.setColor( Utils.getColor( COLOR_TAB_SEL_BACKGROUND ) );
                     int rightImageWidth = imgSelLeft.getWidth(null);
                     g.drawImage(imgSelUpperLeft, width-imgSelUpperLeft.getWidth(null), 0, null);
-                    for( int i=0; i<(height-imgSelUpperLeft.getHeight(null)-imgSelLowerLeft.getHeight(null)); i++ ) {
-                        g.drawImage( imgSelLeft, width-rightImageWidth, imgSelUpperLeft.getHeight(null)+i, null);
+                    for( int i=0; i<(height-imgSelUpperLeft.getHeight(null)/*-imgSelLowerLeft.getHeight(null)*/); i++ ) {
+                        g.drawImage( imgSelLeft, width-rightImageWidth-1, imgSelUpperLeft.getHeight(null)+i, null);
                     }
-                    g.drawImage(imgSelLowerLeft, width-imgSelLowerLeft.getWidth(null), height-imgSelLowerLeft.getHeight(null), null);
+                    g.fillRect(width-imgSelUpperLeft.getWidth(null), imgSelUpperLeft.getHeight(null), imgSelUpperLeft.getWidth(null)-rightImageWidth, height-imgSelUpperLeft.getHeight(null));
+//                    g.drawImage(imgSelLowerLeft, width-imgSelLowerLeft.getWidth(null)-1, height-imgSelLowerLeft.getHeight(null), null);
                     
                 } else {
                     
                     g.setColor( Utils.getColor( COLOR_TAB_UNSEL_BACKGROUND ) );
                     g.fillRect( 0, 0, imgSelUpperRight.getWidth(null), height );
                     
+                    g.setColor( Utils.getColor( COLOR_TAB_SEL_BACKGROUND ) );
                     g.drawImage(imgSelUpperRight, 0, 0, null);
-                    for( int i=0; i<(height-imgSelUpperRight.getHeight(null)-imgSelLowerRight.getHeight(null)); i++ ) {
-                        g.drawImage( imgSelRight, 0, imgSelUpperRight.getHeight(null)+i, null);
+                    for( int i=0; i<(height-imgSelUpperRight.getHeight(null)/*-imgSelLowerRight.getHeight(null)*/); i++ ) {
+                        g.drawImage( imgSelRight, 1, imgSelUpperRight.getHeight(null)+i, null);
                     }
-                    g.drawImage(imgSelLowerRight, 0, height-imgSelLowerRight.getHeight(null), null);
+                    g.fillRect(imgSelRight.getWidth(null), imgSelUpperRight.getHeight(null), 
+                            imgSelUpperRight.getWidth(null)-imgSelRight.getWidth(null), height-imgSelUpperRight.getHeight(null));
+//                    g.drawImage(imgSelLowerRight, 0, height-imgSelLowerRight.getHeight(null), null);
+//                    g.fillRect(imgSelLowerRight.getWidth(null), height-imgSelLowerRight.getHeight(null), 
+//                            imgSelUpperRight.getWidth(null)-imgSelLowerRight.getWidth(null), imgSelLowerRight.getHeight(null));
                 }
             } else {
                 int imgWidth = imgUnselBottom.getWidth(null);

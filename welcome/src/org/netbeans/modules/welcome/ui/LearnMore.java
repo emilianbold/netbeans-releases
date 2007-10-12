@@ -43,6 +43,7 @@ package org.netbeans.modules.welcome.ui;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
@@ -66,8 +67,6 @@ import org.openide.loaders.DataObject;
  */
 class LearnMore extends JPanel implements Constants {
 
-    private int maxRow;
-
     /** Creates a new instance of RecentProjects */
     public LearnMore() {
         super( new GridBagLayout() );
@@ -76,29 +75,26 @@ class LearnMore extends JPanel implements Constants {
     }
     
     private void buildContent() {
-        int row = 0;
-        int col = 0;
         FileObject root = Repository.getDefault().getDefaultFileSystem().findResource( "WelcomePage/LearnMoreLinks" ); // NOI18N
         DataFolder folder = DataFolder.findFolder( root );
         DataObject[] children = folder.getChildren();
+        JPanel panel = new JPanel( new GridLayout(0, 2, 15, 5) );
+        panel.setOpaque( false );
         for( int i=0; i<children.length; i++ ) {
-            row = addLink( row, col, children[i] );
-            if( children.length >= 8 && i+1 == children.length/2+children.length%2 ) {
-                col = 1;
-                maxRow = row;
-                row = 0;
-            }
+            addLink( panel, children[i] );
         }
+        
+        add( panel, new GridBagConstraints(0, 0, 2, 1, 1.0, 0.0,
+                GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(0,0,0,0), 0, 0 ) );
 
         WebLink more = new WebLink( "MoreTutorials", false ); //NOI18N
-        add( more, new GridBagConstraints(0, maxRow == 0 ? row++ : maxRow+1, col+1, 1, 1.0, 0.0,
-                GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(15,0,0,0), 0, 0 ) );
-        
-//        add( new JLabel(), new GridBagConstraints(col+1, 0, 1, 1, 1.0, 0.0,
-//                GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,0,0,0), 0, 0 ) );
+        add( more, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0,
+                GridBagConstraints.NORTHEAST, GridBagConstraints.NONE, new Insets(20,0,0,0), 0, 0 ) );
+        add( new JLabel(), new GridBagConstraints(0, 1, 1, 1, 1.0, 1.0,
+                GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0,0,0,0), 0, 0 ) );
     }
 
-    private int addLink( int row, int col, DataObject dob ) {
+    private void addLink( JPanel panel, DataObject dob ) {
         OpenCookie oc = (OpenCookie)dob.getCookie( InstanceCookie.class );
         if( null != oc ) {
             LinkAction la = new LinkAction( dob );
@@ -106,11 +102,8 @@ class LearnMore extends JPanel implements Constants {
             lb.getAccessibleContext().setAccessibleName( lb.getText() );
             lb.getAccessibleContext().setAccessibleDescription( 
                     BundleSupport.getAccessibilityDescription( "LearnMore", lb.getText() ) ); //NOI18N
-            add( lb, new GridBagConstraints( col,row++,1,1,1.0,0.0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE,
-                new Insets(0,col == 0 ? 0 : 20,5,0), 0, 0 ) );
+            panel.add( lb );
         }
-        return row;
     }
 
     private static class LinkAction extends AbstractAction {

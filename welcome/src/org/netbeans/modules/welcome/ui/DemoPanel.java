@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.welcome.ui;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
@@ -50,6 +49,7 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -132,7 +132,7 @@ class DemoPanel extends RSSFeedReaderPanel {
             int row = 0;
 
             if( item.isValid() ) {
-                WebLink linkButton = new WebLink( item.title, item.link, true );
+                WebLink linkButton = new WebLink( item.title, item.link, false );
                 linkButton.getAccessibleContext().setAccessibleName( 
                         BundleSupport.getAccessibilityName( "WebLink", item.title ) ); //NOI18N
                 linkButton.getAccessibleContext().setAccessibleDescription( 
@@ -262,7 +262,7 @@ class DemoPanel extends RSSFeedReaderPanel {
         }
 
         public void mouseEntered(MouseEvent e) {
-            Color borderColor = Utils.getColor( visited ? VISITED_LINK_COLOR : LINK_COLOR );
+            Color borderColor = Utils.getColor( visited ? VISITED_LINK_COLOR : MOUSE_OVER_LINK_COLOR  );
             setBorder( BorderFactory.createLineBorder(borderColor, 1) );
             StatusDisplayer.getDefault().setStatusText( url );
         }
@@ -289,13 +289,15 @@ class DemoPanel extends RSSFeedReaderPanel {
         }
     }
     
-    private static class MaxSizeImageIcon implements Icon {
-        private static final int MAX_IMAGE_WIDTH = 200;
-        private static final int MAX_IMAGE_HEIGHT = 400;
+    private static class MaxSizeImageIcon implements Icon, Constants {
+        private static final int MAX_IMAGE_WIDTH = 202;
+        private static final int MAX_IMAGE_HEIGHT = 142;
+        private Image frame;
         
         ImageIcon orig;
         public MaxSizeImageIcon( ImageIcon orig ) {
             this.orig = orig;
+            frame = Utilities.loadImage( IMAGE_PICTURE_FRAME );
         }
 
         public void paintIcon(Component c, Graphics g, int x, int y) {
@@ -303,7 +305,9 @@ class DemoPanel extends RSSFeedReaderPanel {
                 x -= (orig.getIconWidth() - MAX_IMAGE_WIDTH) / 2;
             if( orig.getIconHeight() > MAX_IMAGE_HEIGHT )
                 y -= (orig.getIconHeight() - MAX_IMAGE_HEIGHT) / 2;
+            g.setClip(0,0,MAX_IMAGE_WIDTH,MAX_IMAGE_HEIGHT);
             orig.paintIcon(c, g, x, y);
+            g.drawImage(frame, 0, 0, c);
         }
 
         public int getIconWidth() {

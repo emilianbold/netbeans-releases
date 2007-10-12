@@ -45,6 +45,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
+import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -84,7 +85,6 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JToolTip;
 import javax.swing.SwingUtilities;
 import javax.xml.parsers.ParserConfigurationException;
 import org.openide.ErrorManager;
@@ -121,6 +121,8 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
     private boolean isCached = false;
     
     private final Logger LOGGER = Logger.getLogger( RSSFeed.class.getName() );
+    
+    private int maxDescriptionChars = -1;
 
 
     /** Returns file for caching of content. 
@@ -176,7 +178,7 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
     }
     
     protected int getMaxItemCount() {
-        return 10;
+        return 5;
     }
 
     protected List<FeedItem> buildItemList() throws SAXException, ParserConfigurationException, IOException {
@@ -277,6 +279,7 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
     } //end of inner class ErrorCatcher
 
     private class Reload extends Thread {
+        @Override
         public void run() {
             try {
                 lastReload = System.currentTimeMillis();
@@ -382,7 +385,7 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
 
 
         if (item.description != null) {
-            JLabel label = new DescriptionLabel(item.description);
+            JLabel label = new JLabel("<html>" + trimHtml(item.description) );
             label.setFont( RSS_DESCRIPTION_FONT );
             panel.add( label, new GridBagConstraints(0,row++,4,1,0.0,0.0,
                     GridBagConstraints.WEST,GridBagConstraints.HORIZONTAL,
@@ -423,12 +426,14 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
     @Override
     public void removeNotify() {
         stopReloading();
+        maxDescriptionChars = -1;
         super.removeNotify();
     }
 
     @Override
     public void addNotify() {
         super.addNotify();
+        getMaxDecsriptionLength();
         startReloading();
     }
 
@@ -452,7 +457,7 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
         }
     }
     
-    private static String trimHtml( String htmlSnippet ) {
+    private String trimHtml( String htmlSnippet ) {
         String res = htmlSnippet.replaceAll( "<[^>]*>", "" ); // NOI18N // NOI18N
         res = res.replaceAll( "&nbsp;", " " ); // NOI18N // NOI18N
         res = res.trim();
@@ -463,8 +468,27 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
         return res;
     }
     
-    protected static int getMaxDecsriptionLength() {
-        return 500;
+    protected int getMaxDecsriptionLength() {
+        if( maxDescriptionChars < 0 && getWidth() > 0 ) {
+            if( getWidth() <= 0 ) {
+                SwingUtilities.invokeLater( new Runnable() {
+                    public void run() {
+                        getMaxDecsriptionLength();
+                    }
+                });
+                return 200;
+            }
+            try {
+                Graphics2D g = (Graphics2D)getGraphics();
+                FontMetrics fm = g.getFontMetrics( RSS_DESCRIPTION_FONT );
+                double charWidth = fm.getStringBounds( "Ab c", g ).getWidth() / 4;
+                double feedWidth = getWidth() - 30;
+                maxDescriptionChars = (int)(1.8 * feedWidth / charWidth);
+            } catch( Throwable e ) {
+                maxDescriptionChars = 200;
+            }
+        }
+        return maxDescriptionChars;
     }
 
     protected Component getContentHeader() {
@@ -661,30 +685,6 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
         }
     }
 
-    private static class DescriptionLabel extends JLabel {
-        public DescriptionLabel( String label ) {
-            super( trimHtml(label) );
-            setToolTipText( "<html>"+trimHtml(label) );
-        }
-
-        @Override
-        public JToolTip createToolTip() {
-            JToolTip tip = super.createToolTip();
-            JLabel lbl = new JLabel( getToolTipText() );
-            Dimension preferredSize = lbl.getPreferredSize();
-            
-            FontMetrics fm = tip.getFontMetrics( tip.getFont() );
-            int lines = preferredSize.width / 500;
-            if( preferredSize.width % 500 > 0 )
-                lines++;
-            preferredSize.height =  Math.min( lines * fm.getHeight() + 10, 300 );
-            preferredSize.width = 500;
-            tip.setPreferredSize( preferredSize );
-            return tip;
-        }
-
-    }
-    
     static class CachingInputStream extends FilterInputStream {
         private OutputStream os;
         private String modTime;

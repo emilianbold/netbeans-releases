@@ -53,12 +53,12 @@ import javax.swing.border.Border;
  */
 public interface Constants {
 
-    static final String COLOR_SCREEN_BACKGROUND = "ScreenBackgrouncColor"; //NOI18N
-    static final String COLOR_TAB_UNSEL_BACKGROUND = "TabUnselectedBackgrouncColor"; //NOI18N
+    static final String COLOR_SCREEN_BACKGROUND = "ScreenBackgroundColor"; //NOI18N
+    static final String COLOR_TAB_UNSEL_BACKGROUND = "TabUnselectedBackgroundColor"; //NOI18N
+    static final String COLOR_TAB_SEL_BACKGROUND = "TabSelectedBackgroundColor"; //NOI18N
     
     static final String COLOR_TAB_SEL_FOREGROUND = "TabSelForegroundColor"; //NOI18N
     static final String COLOR_TAB_UNSEL_FOREGROUND = "TabUnselForegroundColor"; //NOI18N
-    static final String COLOR_WELCOME_LABEL = "WelcomeLabelColor"; //NOI18N
     static final String COLOR_SECTION_HEADER = "SectionHeaderColor"; //NOI18N
     
     static final int FONT_SIZE = Utils.getDefaultFontSize();
@@ -67,6 +67,7 @@ public interface Constants {
     static final Font TAB_FONT = new Font( null, Font.BOLD, FONT_SIZE+2 ); //NOI18N
     static final Font WELCOME_LABEL_FONT = new Font( null, Font.BOLD, FONT_SIZE+2 ) ; //NOI18N
     static final Font SECTION_HEADER_FONT = new Font( null, Font.BOLD, FONT_SIZE+12 ); //NOI18N
+    static final Font GET_STARTED_FONT = new Font( null, Font.BOLD, (int)(FONT_SIZE*1.4) ); //NOI18N
 
     static final String BULLET_IMAGE = "org/netbeans/modules/welcome/resources/bullet.png"; // NOI18N
     static final String SUN_LOGO_IMAGE = "org/netbeans/modules/welcome/resources/sun_logo.png"; // NOI18N
@@ -76,6 +77,9 @@ public interface Constants {
     static final String IMAGE_TOPBAR_LEFT = "org/netbeans/modules/welcome/resources/topbar_left.png"; // NOI18N
     static final String IMAGE_TOPBAR_RIGHT = "org/netbeans/modules/welcome/resources/topbar_right.png"; // NOI18N
     
+    static final String IMAGE_STRIPE_PATTERN = "org/netbeans/modules/welcome/resources/pattern.png"; // NOI18N
+    static final String IMAGE_STRIPE_BORDER_UPPER = "org/netbeans/modules/welcome/resources/stripe_border_upper.png"; // NOI18N
+    static final String IMAGE_STRIPE_BORDER_LOWER = "org/netbeans/modules/welcome/resources/stripe_border_lower.png"; // NOI18N
     static final String IMAGE_TAB_UNSEL = "org/netbeans/modules/welcome/resources/tab_unsel_bottom.png"; // NOI18N
     static final String IMAGE_TAB_SEL_LEFT = "org/netbeans/modules/welcome/resources/tab_sel_left.png"; // NOI18N
     static final String IMAGE_TAB_SEL_UPPER_LEFT = "org/netbeans/modules/welcome/resources/tab_sel_upper_left.png"; // NOI18N
@@ -95,11 +99,13 @@ public interface Constants {
     static final String IMAGE_STRIP_MIDDLE_CENTER = "org/netbeans/modules/welcome/resources/strip_middle_center.png"; // NOI18N
     
     static final String BROKEN_IMAGE = "org/netbeans/modules/welcome/resources/broken_image.png"; // NOI18N
+    static final String IMAGE_PICTURE_FRAME = "org/netbeans/modules/welcome/resources/picture_frame.png"; // NOI18N
 
     static final Stroke LINK_IN_FOCUS_STROKE = new BasicStroke(1, BasicStroke.CAP_SQUARE,
         BasicStroke.JOIN_BEVEL, 0, new float[] {0, 2}, 0);
     static final String LINK_IN_FOCUS_COLOR = "LinkInFocusColor"; //NOI18N
     static final String LINK_COLOR = "LinkColor"; //NOI18N
+    static final String MOUSE_OVER_LINK_COLOR = "MouseOverLinkColor"; //NOI18N
     static final String VISITED_LINK_COLOR = "VisitedLinkColor"; //NOI18N
 
     static final int RSS_FEED_TIMER_RELOAD_MILLIS = 60*60*1000;

@@ -43,6 +43,7 @@ package org.netbeans.modules.welcome.ui;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.GridLayout;
 import java.awt.Insets;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -61,52 +62,43 @@ import org.openide.loaders.DataShadow;
  */
 class Samples extends JPanel implements Constants {
 
-    protected int row = 0;
-    protected int col = 0;
-    protected int maxRow = 0;
-
     /** Creates a new instance of RecentProjects */
     public Samples() {
         super( new GridBagLayout() );
         setOpaque( false );
         
-        buildContent();
+        createLinks();
     }
     
-    private void buildContent() {
-        createLinks();
-
-        add( new JLabel(), new GridBagConstraints(col++, maxRow == 0 ? row++ : maxRow+1, 1, 1, 1.0, 1.0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(0,0,0,0), 0, 0 ) );
-    }
-
-    protected void addLink( String category, String title ) {
+    protected void addLink( JPanel panel, String category, String title ) {
         SampleProjectLink link = new SampleProjectLink( category, null, title );
-        add( link, new GridBagConstraints( col, row++, 1, 1, 0.0, 0.0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE,
-                new Insets(0,col == 0 ? 0 : 20, 3, 0), 0, 0 ) ); // NOI18N
+        panel.add( link );
     }
 
     protected void createLinks() {
         FileObject root = Repository.getDefault().getDefaultFileSystem().findResource( "Templates/Project/Samples" ); // NOI18N
         DataFolder df = DataFolder.findFolder( root );
         DataObject[] children = df.getChildren();
+        JPanel panel = new JPanel(new GridLayout( 0, 2, 15, 5 ));
+        panel.setOpaque( false );
         for( int i=0; i<children.length; i++ ) {
             try {
-                createLinkForCategory( children[i] );
-                if( children.length >= 8 && i+1 == children.length/2+children.length%2 ) {
-                    col = 1;
-                    maxRow = row;
-                    row = 0;
-                }
-
+                createLinkForCategory( panel, children[i] );
             } catch (DataObjectNotFoundException ex) {
                 ex.printStackTrace();
             }
         }
+        
+        add( panel, new GridBagConstraints( 0, 0, 1, 1, 1.0, 0.0,
+                GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL,
+                new Insets(0,0,0,0), 0, 0 ) ); // NOI18N
+        
+        add( new JLabel(), new GridBagConstraints( 0, 1, 1, 1, 1.0, 1.0,
+                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                new Insets(0,0,0,0), 0, 0 ) ); // NOI18N
     }
 
-    protected void createLinkForCategory( DataObject categoryDO ) throws DataObjectNotFoundException {
+    protected void createLinkForCategory( JPanel panel, DataObject categoryDO ) throws DataObjectNotFoundException {
         if( categoryDO instanceof DataShadow ) {
             categoryDO = ((DataShadow)categoryDO).getOriginal();
         }
@@ -134,6 +126,6 @@ class Samples extends JPanel implements Constants {
 
         String label = categoryDO.getNodeDelegate().getDisplayName();
 
-        addLink( category, label );
+        addLink( panel, category, label );
     }
 }

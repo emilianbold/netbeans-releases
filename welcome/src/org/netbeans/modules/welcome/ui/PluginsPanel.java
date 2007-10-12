@@ -65,9 +65,17 @@ class PluginsPanel extends JPanel {
     public PluginsPanel() {
         super( new BorderLayout() );
         setOpaque( false );
+        JPanel center = new JPanel( new GridBagLayout() );
+        center.setOpaque( false );
         JLabel lbl = new JLabel("<html>" + BundleSupport.getLabel( "PluginsContent" ) ); //NOI18N
-        lbl.setBorder( BorderFactory.createEmptyBorder(0, 69, 0, 0) );
-        add( lbl, BorderLayout.CENTER );
+        lbl.setBorder( BorderFactory.createEmptyBorder(0, 0, 0, 0) );
+        
+        center.add( lbl, new GridBagConstraints(0,0,1,1,0.0,0.0,GridBagConstraints.NORTHWEST,
+                GridBagConstraints.BOTH,new Insets(0,0,15,0),0,0) );
+        center.add( new JLabel(), new GridBagConstraints(0,1,1,1,1.0,1.0,GridBagConstraints.CENTER,
+                GridBagConstraints.BOTH,new Insets(0,0,0,0),0,0) );
+
+        add( center, BorderLayout.CENTER );
         JPanel bottom = new JPanel( new GridBagLayout() );
         bottom.setOpaque( false );
         

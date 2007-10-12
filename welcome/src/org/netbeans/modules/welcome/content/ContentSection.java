@@ -65,7 +65,6 @@ public class ContentSection extends JPanel implements Constants {
     private int location;
     private boolean maxSize;
     
-    private Image verticalLine;
     private Image center;
     
     private JLabel lblTitle;
@@ -89,27 +88,21 @@ public class ContentSection extends JPanel implements Constants {
         setBorder( BorderFactory.createEmptyBorder(8,12,6,12) );
         
         String centerImageName = null;
-        String verticalImageName = null;
         switch( location ) {
         case SwingConstants.NORTH_EAST:
             centerImageName = "section_upper_right.png"; //NOI18N
-            verticalImageName = "section_top.png"; //NOI18N
             break;
         case SwingConstants.NORTH_WEST:
             centerImageName = "section_upper_left.png"; //NOI18N
-            verticalImageName = "section_top.png"; //NOI18N
             break;
         case SwingConstants.SOUTH_WEST:
             centerImageName = "section_bottom_left.png"; //NOI18N
-            verticalImageName = "section_bottom.png"; //NOI18N
             break;
         case SwingConstants.SOUTH_EAST:
             centerImageName = "section_bottom_right.png"; //NOI18N
-            verticalImageName = "section_bottom.png"; //NOI18N
             break;
         }
         center = Utilities.loadImage( "org/netbeans/modules/welcome/resources/" + centerImageName ); //NOI18N
-        verticalLine = Utilities.loadImage( "org/netbeans/modules/welcome/resources/" + verticalImageName ); //NOI18N
     }
 
     @Override
@@ -122,21 +115,19 @@ public class ContentSection extends JPanel implements Constants {
         switch( location ) {
         case SwingConstants.NORTH_EAST:
             g.drawImage( center, 1, height-centerHeight-1, null );
-            g.drawLine( 0, height-1, width-25, height-1 );
-            g.drawLine( 0, verticalLine.getHeight(null)+25, 0, height );
-            g.drawImage( verticalLine, 0, 25, null );
+            g.drawLine( 0, height-1, width-13, height-1 );
+            g.drawLine( 0, 25, 0, height );
             break;
         case SwingConstants.NORTH_WEST:
             g.drawImage( center, width-centerWidth, height-centerHeight-1, null );
-            g.drawLine( 25, height-1, width, height-1 );
+            g.drawLine( 13, height-1, width, height-1 );
             break;
         case SwingConstants.SOUTH_WEST:
             g.drawImage( center, width-centerWidth, 0, null );
             break;
         case SwingConstants.SOUTH_EAST:
             g.drawImage( center, 1, 0, null );
-            g.drawLine( 0, 0, 0, height-verticalLine.getHeight(null)-25 );
-            g.drawImage( verticalLine, 0, height-verticalLine.getHeight(null)-25, null );
+            g.drawLine( 0, 0, 0, height-25 );
             break;
         }
     }

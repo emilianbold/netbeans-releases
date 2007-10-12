@@ -108,6 +108,7 @@ public abstract class LinkButton extends JButton
             setForeground( Utils.getColor(LINK_IN_FOCUS_COLOR) );
             repaint();
             onMouseEntered( e );
+            setForeground( Utils.getColor( MOUSE_OVER_LINK_COLOR  )  );
         }
     }
 
