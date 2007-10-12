@@ -411,8 +411,9 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
         }
         
         boolean noJsr109InWeb = wm != null && !jsr109Supported && !jsr109oldSupported;
+        boolean jaxWsInWeb14 = wm != null && jaxWsInJ2ee14Supported;
         
-        if (!Util.isJavaEE5orHigher(project) && !noJsr109InWeb && !jaxWsInJ2ee14Supported && WebServicesClientSupport.getWebServicesClientSupport(project.getProjectDirectory()) == null) {
+        if (!Util.isJavaEE5orHigher(project) && !noJsr109InWeb && !jaxWsInWeb14 && WebServicesClientSupport.getWebServicesClientSupport(project.getProjectDirectory()) == null) {
             // check if jaxrpc plugin installed
             wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(WebServiceFromWSDLPanel.class, "ERR_NoJaxrpcPluginFound")); // NOI18N
             return false;

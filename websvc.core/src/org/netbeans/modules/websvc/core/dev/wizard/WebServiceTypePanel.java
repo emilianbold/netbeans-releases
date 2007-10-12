@@ -292,7 +292,8 @@ public class WebServiceTypePanel extends javax.swing.JPanel implements HelpCtx.P
             return false;
         }
         boolean noJsr109InWeb = wm != null && !jsr109Supported && !jsr109oldSupported;
-        if (!Util.isJavaEE5orHigher(project) && !noJsr109InWeb && !jaxWsInJ2ee14Supported && WebServicesClientSupport.getWebServicesClientSupport(project.getProjectDirectory()) == null) {
+        boolean jaxWsInWeb14 = wm != null && jaxWsInJ2ee14Supported;
+        if (!Util.isJavaEE5orHigher(project) && !noJsr109InWeb && !jaxWsInWeb14 && WebServicesClientSupport.getWebServicesClientSupport(project.getProjectDirectory()) == null) {
             // check if jaxrpc plugin installed
             wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(WebServiceFromWSDLPanel.class, "ERR_NoJaxrpcPluginFound")); // NOI18N
             return false;
@@ -303,22 +304,7 @@ public class WebServiceTypePanel extends javax.swing.JPanel implements HelpCtx.P
             wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(WebServiceTypePanel.class, "LBL_SelectOneEJB")); //NOI18N
             return false;        
         }
-// Retouche        
-//        if (JavaMetamodel.getManager().isScanInProgress()) {
-//            if (!isWaitingForScan) {
-//                isWaitingForScan = true;
-//                RequestProcessor.getDefault().post(new Runnable() {
-//                    public void run() {
-//                        JavaMetamodel.getManager().waitScanFinished();
-//                        isWaitingForScan = false;
-//                        fireChange();
-//                    }
-//                });
-//            }
-//            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(WebServiceTypePanel.class, "MSG_ScanningInProgress")); //NOI18N
-//            return false;
-//        } else
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", ""); //NOI18N
+        wizardDescriptor.putProperty("WizardPanel_errorMessage", ""); //NOI18N
         
         return true;
     }
