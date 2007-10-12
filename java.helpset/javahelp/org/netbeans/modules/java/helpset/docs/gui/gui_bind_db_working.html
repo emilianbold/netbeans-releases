@@ -1,0 +1,169 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+*     Copyright (c) 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+    <head>
+        <title>Working with Desktop Database Applications</title>
+        <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>Working with Desktop Database Applications</h2>
+        <p><small><a href="#seealso">See Also</a></small>
+        
+        <p>The following table outlines the basic process of creating desktop 
+        database applications.</p>
+        <table border="0" cellpadding="0" cellspacing="0" summary="The left column contains each
+        process step. The right column contains detailed information to accomplish that process.">
+            
+            <tr valign="top"> 
+                <td align="center"><img src="../images/circle1.gif" alt="Number One"><br>
+                    <b>Set up the IDE to Work With Your Database</b>
+                <p></td>
+                <td> 
+                    <ol>
+                        <li>If necessary,
+                            <a href="nbdocs://org.netbeans.modules.db/org/netbeans/modules/db/docs/adddriver.html">Register the appropriate driver</a> 
+                        for your database with the IDE.</li>
+                        <li><a href="nbdocs://org.netbeans.modules.db/org/netbeans/modules/db/docs/connectdb.html">Connect to the database</a>
+                        from the IDE.</li>
+                        
+                    </ol>
+                </td>
+            </tr>
+            <tr> 
+                <td colspan="2"> 
+                    <hr align="center" width="80%">
+                </td>
+            </tr>            
+            <tr valign="top"> 
+                <td align="center"><img src="../images/circle2.gif" alt="Number Two"><br>
+                    <b>Create a project and a GUI form</b>
+                <p></td>
+                <td> 
+                    <a href="../project/proj_creating.html">Create a new project</a> using 
+                    the Java Desktop Application template or the Java Application template.
+                    <ul><li>If you want to create a simple master/detail application, 
+                            use the Java Desktop Application template and the Database Application 
+                            shell that the wizard offers. After completing this wizard, you will have 
+                            a running CRUD (create, read, update, delete) database application based on a 
+                        single database table.</li>
+                        <li>If your application or database is more complex and you 
+                            need to create the design from scratch, 
+                            use the Java Desktop Application template and the Basic Application 
+                            shell that the wizard offers. Or create a project with 
+                            the Java Application template and then 
+                            <a href="gui_creatingforms.html">create a GUI form</a>
+                        in the project.</li>
+                        
+                    </ul>
+                </td>
+            </tr>
+            <tr> 
+                <td colspan="2"> 
+                    <hr align="center" width="80%">
+                </td>
+            </tr>
+            <!--TODO database component-->
+            <tr valign="top"> 
+                <td align="center"> <img src="../images/circle3.gif" alt="Number Three"><br>
+                    <b>Add necessary bean and entity classes</b>
+                <p></td>
+                <td><ol>
+                        <li><a href="gui_addcomponent.html">Add necessary components to the form</a>, 
+                            including custom beans for which you will create bindings 
+                        and any necessary converter and validator classes.</li>
+                        <li>Add entity classes to the project to represent the 
+                            database tables with which your application will work. 
+                            You can 
+                            <a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/persistence/general/persistence_fromdb.html">generate entity classes</a> 
+                            or you can write them from scratch.
+                            <p>If you have created an application that is based on the 
+                                Database Application shell of the Java Desktop Application template, 
+                                an entity class will have been created for you. This entity class 
+                        is named according to the database table that it represents.</p></li>
+                    </ol>
+                    
+                </td>
+            </tr>
+            
+            
+            <tr> 
+                <td colspan="2"> 
+                    <hr align="center" width="80%">
+                </td>
+            </tr>
+            
+            <tr valign="top"> 
+                <td align="center"> <img src="../images/circle4.gif" alt="Number Four"><br>
+                    <b>Bind component properties</b>
+                <p></td>
+                <td> 
+                    <ol>
+                        <li>Right-click a component in the Design view of the 
+                            Source Editor or in the 
+                        Inspector window, and choose a target property from the Bind menu.</li>
+                        <li>In the 
+                            <a href="csh/gui_bind_dialog.html">Binding tab of Bind dialog box</a>, 
+                        specify the source for the binding.</li>
+                        <li>In the <a href="csh/gui_bind_advanced_dialog.html">Advanced tab of Bind dialog box</a>, 
+                        specify any other customizations to the binding, if necessary. 
+                        For example, some bindings require custom converters, validators, 
+                        and code for handling unreadable or non-existent values from the 
+                        source.
+                    </ol>
+                </td>
+            </tr>
+            <tr> 
+                <td colspan="2"> 
+                    <hr align="center" width="80%">
+                </td>
+            </tr>
+            
+            <tr valign="top"> 
+                <td align="center"> <img src="../images/circle5.gif" alt="Number Five"><br>
+                    <b>Connect Components With Event Handling Code</b>
+                <p></td>
+                <td> 
+                    <ol>
+                        <li><a href="gui_events_managing.html">Manage component events.</a></li>
+                    </ol>
+                </td>
+            </tr>
+            <tr> 
+                <td colspan="2"> 
+                    <hr align="center" width="80%">
+                </td>
+            </tr>
+            
+            <tr valign="top"> 
+                <td align="center"> <img src="../images/circle6.gif" alt="Number Six"><br>
+                    <b>Deploy the application</b>
+                <p></td>
+                <td> 
+                    <td> 
+                        <ul>
+                            <li><a href="gui_deploying.html">Deploy standalone Java GUI Applications.</a></li>
+                        </ul>
+                    </td>
+                </td>
+            </tr>            
+        </table>
+        
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="gui_about.html">About Java GUIs</a></dd>
+            <dd><a href="gui_quickref.html">GUI Builder Tasks: Quick Reference</a></dd>
+            <dd><a href="gui_designing.html">Designing Java GUIs with the GUI Builder</a></dd>
+        </dl>
+        
+        <hr>
+        <small><a href="../credits.html">Legal Notices</a></small> 
+        <table border="0" cellpadding="50">
+            <tr>
+                <td>&nbsp;</td>
+            </tr>
+        </table>
+    </body>
+</html>

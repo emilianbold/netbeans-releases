@@ -167,9 +167,10 @@
     <tocitem text="Setting Layout Properties" target="gui.layouts.props" />
     </tocitem>    
     <tocitem text="Adding a Bean to the Palette Window" target="beans.adding" />
-    <tocitem text="Binding Beans to Data and Other Beans">
+    <tocitem text="Database Applications and Beans Binding">
       <tocitem text="About Beans Binding" target="gui.bind.about"/>
       <tocitem text="Working With Beans Binding" target="gui.bind.working"/>
+      <tocitem text="Working With Desktop Database Applications" target="gui.bind.db.working"/>
   </tocitem>
     <tocitem text="Configuring the GUI Builder" target="gui.config" />
 
