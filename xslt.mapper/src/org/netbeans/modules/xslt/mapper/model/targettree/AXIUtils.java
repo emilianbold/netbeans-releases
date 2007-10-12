@@ -66,127 +66,134 @@ import org.netbeans.modules.xslt.model.XslVisitorAdapter;
  * @author Alexey
  */
 public class AXIUtils {
-    
+
     /**
      * Checks if XSL component this node represents creates an element in output tree of given schema type
      * @returns true if types are the same
      **/
-    public static boolean isSameSchemaType(XslComponent xslc, AXIComponent axic){
+    public static boolean isSameSchemaType(XslComponent xslc, AXIComponent axic) {
         TypeCheckVisitor visitor = new TypeCheckVisitor(axic);
         xslc.accept(visitor);
         return visitor.isMatching();
     }
-    
-    public static class TypeCheckVisitor extends XslVisitorAdapter{
+
+    public static class TypeCheckVisitor extends XslVisitorAdapter {
+
         private AXIComponent axic;
         private boolean isMatching = false;
-        public TypeCheckVisitor(AXIComponent axic){
+
+        public TypeCheckVisitor(AXIComponent axic) {
             this.axic = axic;
         }
-        public boolean isMatching(){
+
+        public boolean isMatching() {
             return isMatching;
         }
-        
+
         public void visit(org.netbeans.modules.xslt.model.Attribute attribute) {
-            if (axic instanceof org.netbeans.modules.xml.axi.Attribute){
+            if (axic instanceof org.netbeans.modules.xml.axi.Attribute) {
                 AttributeValueTemplate atv = attribute.getName();
-                if (atv != null){
-                    isMatching =  compareName(atv.getQName());
+                if (atv != null) {
+                    isMatching = compareName(atv.getQName());
                 }
             }
         }
-        
+
         public void visit(org.netbeans.modules.xslt.model.Element element) {
-            if (axic instanceof org.netbeans.modules.xml.axi.Element){
+            if (axic instanceof org.netbeans.modules.xml.axi.Element) {
                 AttributeValueTemplate atv = element.getName();
-                if (atv != null){
-                    isMatching =  compareName(atv.getQName());
+                if (atv != null) {
+                    isMatching = compareName(atv.getQName());
                 }
             }
         }
-        
-        
+
         public void visit(org.netbeans.modules.xslt.model.LiteralResultElement element) {
-            if (axic instanceof org.netbeans.modules.xml.axi.Element){
+            if (axic instanceof org.netbeans.modules.xml.axi.Element) {
                 QName qname = element.getQName();
                 isMatching = compareName(qname);
             }
         }
-        
-        private boolean compareName(QName qname){
-            if (qname == null){
+
+        private boolean compareName(QName qname) {
+            if (qname == null) {
                 return false;
             }
             //
             if (AxiomUtils.isUnqualified(axic)) {
                 return qname.getLocalPart().equals(((AXIType) axic).getName());
             } else {
-                return qname.getLocalPart().equals(((AXIType) axic).getName()) &&
-                        qname.getNamespaceURI().equals(axic.getTargetNamespace());
+                return qname.getLocalPart().equals(((AXIType) axic).getName()) && qname.getNamespaceURI().equals(axic.getTargetNamespace());
             }
         }
-        
     }
-    
+
     /**
      * Call visitor for all children of type Attribute and Element
      **/
     public static abstract class ElementVisitor {
+
         public abstract void visit(AXIComponent component);
-        public void visitSubelements(AXIComponent axic){
-            if (axic instanceof Element){
-                visitSubelements((Element) axic); 
-            } else if (axic instanceof AXIDocument){
-                visitSubelements((AXIDocument) axic); 
+
+        public void visitSubelements(AXIComponent axic) {
+            
+            if (axic instanceof Element) {
+                visitSubelements((Element) axic);
+            } else if (axic instanceof AXIDocument) {
+                visitSubelements((AXIDocument) axic);
             }
         }
-        
-        protected void visitSubelements(Element element){
-            for (AbstractAttribute a : element.getAttributes()){
-                if (a instanceof Attribute){
+
+        protected void visitSubelements(Element element) {
+            for (AbstractAttribute a : element.getAttributes()) {
+                if (a instanceof Attribute) {
+                    a = (Attribute) getReferent(a);
                     visit(a);
                 }
             }
-            
-            for (AbstractElement e : element.getChildElements()){
-                if (e instanceof Element){
+
+            for (AbstractElement e : element.getChildElements()) {
+                if (e instanceof Element) {
+                    e = (Element) getReferent(e);
                     visit(e);
                 }
             }
         }
-        
-        protected void visitSubelements(AXIDocument doc){
-            
-            for (AbstractElement e : doc.getChildElements()){
-                if (e instanceof Element){
+
+        protected void visitSubelements(AXIDocument doc) {
+
+            for (AbstractElement e : doc.getChildElements()) {
+                if (e instanceof Element) {
                     visit(e);
                 }
             }
-            
-            
-            
+
+
+
         }
-        
     }
-    
-    
-    public static List<AXIComponent> getChildTypes(AXIComponent axic)  {
-        
+
+    public static List<AXIComponent> getChildTypes(AXIComponent axic) {
+
         final List<AXIComponent> result = new ArrayList<AXIComponent>();
-        
+
         if (axic != null) {
-            
-            new AXIUtils.ElementVisitor(){
-                public void visit(AXIComponent c){
+
+            new AXIUtils.ElementVisitor() {
+
+                public void visit(AXIComponent c) {
+                    
+                    c = getReferent(c);
+                    
                     result.add(c);
                 }
             }.visitSubelements(axic);
         }
-        
+
         return result;
-        
+
     }
-    
+
     /**
      * Prepares XPath for the specified Schema node.
      */
@@ -197,9 +204,9 @@ public class AXIUtils {
         TreeNode currNode = schemaNode;
         SchemaNode lastProcessedSchemaNode = null;
         while (currNode != null && currNode instanceof SchemaNode) {
-            lastProcessedSchemaNode = (SchemaNode)currNode;
+            lastProcessedSchemaNode = (SchemaNode) currNode;
             if (currNode instanceof PredicatedSchemaNode) {
-                PredicatedSchemaNode psn = (PredicatedSchemaNode)currNode;
+                PredicatedSchemaNode psn = (PredicatedSchemaNode) currNode;
                 String pred = psn.getPredicatedAxiComp().getPredicatesText();
                 AxiomUtils.processNode(lastProcessedSchemaNode.getType(), pred, path);
             } else {
@@ -228,36 +235,51 @@ public class AXIUtils {
         //
         return path;
     }
-    
-    public static AXIComponent getType(XslComponent xslc, XsltMapper mapper){
-        if (xslc == null){
+
+    public static AXIComponent getType(XslComponent xslc, XsltMapper mapper) {
+        if (xslc == null) {
             return null;
         }
         XslComponent xsl_parent = xslc.getParent();
-        
-        if (xslc instanceof org.netbeans.modules.xslt.model.Element ||
-            xslc instanceof org.netbeans.modules.xslt.model.Attribute ||
-            xslc instanceof org.netbeans.modules.xslt.model.LiteralResultElement) {
+
+        if (xslc instanceof org.netbeans.modules.xslt.model.Element || xslc instanceof org.netbeans.modules.xslt.model.Attribute || xslc instanceof org.netbeans.modules.xslt.model.LiteralResultElement) {
             AXIComponent axi_parent = getType(xsl_parent, mapper);
-            if (axi_parent != null){
-                for (AXIComponent type: axi_parent.getChildElements()){
-                    if (type == null || 
-                        type.getPeer() == null || 
-                        type.getPeer().getModel() == null) {
+            if (axi_parent != null) {
+                for (AXIComponent type : axi_parent.getChildElements()) {
+                    if (type == null || type.getPeer() == null || type.getPeer().getModel() == null) {
                         continue;
                     }
-                    if (AXIUtils.isSameSchemaType(xslc, type)){
+                    
+                    type = getReferent(type); 
+                    
+                    if (AXIUtils.isSameSchemaType(xslc, type)) {
                         return type;
                     }
                 }
             }
-        } else if (xslc instanceof org.netbeans.modules.xslt.model.Template){ //no declaration nodes fond downtree
+        } else if (xslc instanceof org.netbeans.modules.xslt.model.Template) { //no declaration nodes fond downtree
             AXIComponent targetType = mapper.getContext().getTargetType();
             return targetType != null ? targetType.getModel().getRoot() : null;
-        }  else if (xsl_parent != null) {
+        } else if (xsl_parent != null) {
             return getType(xsl_parent, mapper);
         }
         return null;
     }
-    
+
+    public static AXIComponent getReferent(AXIComponent type) {
+        if (type instanceof Element) {
+            Element e = (Element) type;
+            if (e.isReference()) {
+                type = e.getReferent();
+            }
+        }
+        if (type instanceof Attribute) {
+            Attribute a = (Attribute) type;
+            if (a.isReference()) {
+                type = a.getReferent();
+            }
+        }
+        return type;
+
+    }
 }

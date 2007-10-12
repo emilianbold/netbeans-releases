@@ -50,6 +50,7 @@ import org.netbeans.modules.xml.axi.AbstractElement;
 import org.netbeans.modules.xml.axi.Attribute;
 import org.netbeans.modules.xml.axi.Element;
 import org.netbeans.modules.xslt.mapper.model.nodes.TreeNode;
+import org.netbeans.modules.xslt.mapper.model.targettree.AXIUtils;
 import org.netbeans.modules.xslt.mapper.view.XsltMapper;
 
 /**
@@ -78,6 +79,7 @@ public class AddNestedAxiGroup implements ActionGroupConstructor {
         List<AbstractAttribute> attributes =  parentElement.getAttributes();
         for (AbstractAttribute attribute : attributes) {
             if (attribute instanceof Attribute) {
+                attribute = (Attribute) AXIUtils.getReferent(attribute);
                 Action newAction = new AddNestedAxiAttribute(
                         myXsltMapper, myTreeNode, (Attribute)attribute);
                 actions.add(newAction);
@@ -87,6 +89,7 @@ public class AddNestedAxiGroup implements ActionGroupConstructor {
         List<AbstractElement> elements = parentElement.getChildElements();
         for (AbstractElement element : elements) {
             if (element instanceof Element) {
+                element = (Element) AXIUtils.getReferent(element);
                 Action newAction = new AddNestedAxiElement(
                         myXsltMapper, myTreeNode, (Element)element);
                 actions.add(newAction);
