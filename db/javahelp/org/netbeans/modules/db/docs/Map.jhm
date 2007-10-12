@@ -81,4 +81,7 @@ made subject to such option by the copyright holder.
 <mapID target="org.netbeans.modules.derby.CreateDatabaseAction" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/pending.html" />
 <mapID target="org.netbeans.modules.derby.DerbySettingsAction" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/pending.html" />
 
+<!-- connect to db dialog -->
+<mapID target="db_save_password" url="csh_connectdb.html" />
+
 </map>

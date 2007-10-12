@@ -1,0 +1,121 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+
+
+The contents of this file are subject to the terms of either the GNU
+General Public License Version 2 only ("GPL") or the Common
+Development and Distribution License("CDDL") (collectively, the
+"License"). You may not use this file except in compliance with the
+License. You can obtain a copy of the License at
+http://www.netbeans.org/cddl-gplv2.html
+or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+specific language governing permissions and limitations under the
+License.  When distributing the software, include this License Header
+Notice in each file and include the License file at
+nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+particular file as subject to the "Classpath" exception as provided
+by Sun in the GPL Version 2 section of the License file that
+accompanied this code. If applicable, add the following below the
+License Header, with the fields enclosed by brackets [] replaced by
+your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+Contributor(s):
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Microsystems, Inc. All Rights Reserved.
+
+If you wish your version of this file to be governed by only the CDDL
+or only the GPL Version 2, indicate your decision by adding
+"[Contributor] elects to include this software in this distribution
+under the [CDDL or GPL Version 2] license." If you do not indicate a
+single choice of license, a recipient has the option to distribute
+your version of this file under either the CDDL, the GPL Version 2 or
+to extend the choice of license to its licensees as provided above.
+However, if you add GPL Version 2 code and therefore, elected the GPL
+Version 2 license, then the option applies only if the new code is
+made subject to such option by the copyright holder.
+-->
+<html>
+
+    <head>
+
+        <title>Connect to Database Dialog Box</title>
+        <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+
+    <body>
+        <h2>Connect to Database Dialog Box</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        <p>This dialog box enables you to supply the details to open a connection to a database.
+        You see this dialog box when you create a new database connection or open an
+        existing database connection.</p>
+
+        <p>You open this dialog box by doing the following:</p>
+        <ul>
+            <li>When creating a new connection, right-click the Databases node in the Services window and choose New Connection.
+            Alternatively, right-click a driver node under the Databases node in the Services window and choose Connect Using.</li>
+            <li>When opening a connection to an existing database connection, right-click the database connection
+            node in the Services window and choose Connect.</li>
+        </ul>
+
+
+
+        <h3>Opening an existing database connection</h3>
+        <p>If you are connecting to an existing database, you need to supply the following details:</p>
+        <ul>
+            <li><b>User Name.</b> Type user name for the database.</li>
+            <li><b>Password.</b> Type the password for the database.</li>
+            <li><b>Remember Password</b> Select this if you want the IDE to remember your password. 
+            <p>If selected, you will not be prompted for the user name and password on subsequent connections to the database
+            and the Remember Password property is set to True.</p> 
+            <p>To set the Remember Password property to False, right-click the database connection node
+            in the Services window and choose Properties and modify the property in the Properties window.</p></li>
+        </ul>
+
+        <h3>Creating a new database connection</h3>
+        <p>When you create a database connection, you supply the details needed to connect to a specific database.
+        In addition to the user name and password, you also need to supply the following details about the location 
+        of the database and select a registered JDBC driver.</p>
+            <ul>
+                <li><b>Name.</b> Choose the registered driver from the drop-down list.</li>
+                <li><b>Driver.</b> This field is automatically supplied based on the selected registered driver.</li>
+                <li><b>Database URL.</b> Type the JDBC database URL for the database connection. 
+                <p>This URL typically begins with <tt>jdbc:</tt>and a short code name 
+                for the driver, followed by another colon. The rest of the URL depends on 
+                the type of driver you are using. For example, you might need to specify 
+                a host and port; alternatively, the name of a database file might suffice, 
+                or an ODBC DSN. For MySQL, the Database URL might look as follows:
+                <pre>jdbc:mysql://localhost:3306/mydatabase</pre>
+                To help you get started, the IDE provides templates for the correct URL format for
+                the most common drivers. If in doubt, refer to the documentation 
+                for the driver that you are using. </p></li>
+            </ul>
+        <ul class="note">
+            <li>Storing a password represents a potential security risk.</li>
+        </ul>
+
+
+
+        <dl>
+                <dt><a name="seealso">See Also</a></dt>
+                <dd><a href="connectdb.html">Connecting to a Database</a></dd>
+                <dd><a href="adddriver.html">Adding a JDBC Driver</a></dd>
+        </dl>
+
+        <hr>
+
+        <small><a href="credits.html">Legal Notices</a></small> 
+        <table border="0" cellpadding="50">
+            <tr><td>&nbsp;</td></tr>
+        </table>
+
+    </body>
+
+</html>
+
+
