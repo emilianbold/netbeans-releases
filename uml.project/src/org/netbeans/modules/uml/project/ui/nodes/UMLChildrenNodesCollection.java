@@ -43,11 +43,9 @@
 package org.netbeans.modules.uml.project.ui.nodes;
 
 import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Set;
@@ -188,7 +186,7 @@ public class UMLChildrenNodesCollection implements Collection<Node>, NodeListene
         return removed;
     }
 
-    public boolean removeFromMap(Node n, Key k) 
+    boolean removeFromMap(Node n, Key k) 
     {
         boolean removed = false;
         if (k != null) 
@@ -256,11 +254,13 @@ public class UMLChildrenNodesCollection implements Collection<Node>, NodeListene
         map.clear();
     }
 
+    @Override
     public boolean equals(Object o) 
     {
         return (o == null ? false : hashCode() == o.hashCode());
     }
     
+    @Override
     public int hashCode() 
     {
         int h = (hash == null ? 0 : hash.hashCode());
@@ -354,6 +354,7 @@ public class UMLChildrenNodesCollection implements Collection<Node>, NodeListene
             }
         }
 
+        @Override
         public boolean equals(Object o) 
         {
             if (! (o instanceof Key)) 
