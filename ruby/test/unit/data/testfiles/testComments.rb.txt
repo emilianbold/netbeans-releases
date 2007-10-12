@@ -61,9 +61,13 @@ mailto:foo@bar.com
 http://www.netbeans.org
 ftp:foo@bar:80/pub/hello.txt
 #mymethod
+File#exists?
+String#gsub!
 Class#mymethod
 MyClass123#my_method
 Scanf#foo,File#exists
+ActiveRecord::Migration#add
+ActiveRecord::Migration#add(
 .e.o.f.
 
 .t.e.s.t. Not Links
@@ -72,6 +76,9 @@ http\://netbeans.org
 \#mymethod
 #
 # 
+ActiveRecord::Migration
+#foo?bar
+#foo!b
 Class#
 Class# 
 class#method

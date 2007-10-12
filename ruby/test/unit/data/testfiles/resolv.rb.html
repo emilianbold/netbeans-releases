@@ -35,10 +35,10 @@ resolv.rb is a resolver library written in Ruby. Since it is written in Ruby, it
 <h2> Resolv::Hosts class</h2>
 hostname resolver using /etc/hosts format. <br><h3> class methods</h3>
 &#8212; Resolv::Hosts.new(hosts='/etc/hosts') <br><h3> methods</h3>
-&#8212; Resolv::Hosts#getaddress(name) &#8212; Resolv::Hosts#getaddresses(name) &#8212; Resolv::Hosts#each_address(name) {|address| ...} <pre style="color:#000000;">
+&#8212; <a href="Resolv::Hosts#getaddress">Resolv::Hosts#getaddress</a>(name) &#8212; <a href="Resolv::Hosts#getaddresses">Resolv::Hosts#getaddresses</a>(name) &#8212; <a href="Resolv::Hosts#each_address">Resolv::Hosts#each_address</a>(name) {|address| ...} <pre style="color:#000000;">
     address lookup methods.
 </pre>
-&#8212; Resolv::Hosts#getname(address) &#8212; Resolv::Hosts#getnames(address) &#8212; Resolv::Hosts#each_name(address) {|name| ...} <pre style="color:#000000;">
+&#8212; <a href="Resolv::Hosts#getname">Resolv::Hosts#getname</a>(address) &#8212; <a href="Resolv::Hosts#getnames">Resolv::Hosts#getnames</a>(address) &#8212; <a href="Resolv::Hosts#each_name">Resolv::Hosts#each_name</a>(address) {|name| ...} <pre style="color:#000000;">
     hostnames lookup methods.
 </pre>
 <h2> Resolv::DNS class</h2>
@@ -49,21 +49,21 @@ DNS stub resolver. <br><h3> class methods</h3>
       Resolv::DNS.new({:nameserver=>["210.251.121.21"], :search=>["ruby-lang.org"], :ndots=>1})
 </pre>
 &#8212; Resolv::DNS.open(config_info=nil) &#8212; Resolv::DNS.open(config_info=nil) {|dns| ...} <br><h3> methods</h3>
-&#8212; Resolv::<a href="DNS#close">DNS#close</a> <br><br>&#8212; Resolv::DNS#getaddress(name) &#8212; Resolv::DNS#getaddresses(name) &#8212; Resolv::DNS#each_address(name) {|address| ...} <pre style="color:#000000;">
+&#8212; <a href="Resolv::DNS#close">Resolv::DNS#close</a> <br><br>&#8212; <a href="Resolv::DNS#getaddress">Resolv::DNS#getaddress</a>(name) &#8212; <a href="Resolv::DNS#getaddresses">Resolv::DNS#getaddresses</a>(name) &#8212; <a href="Resolv::DNS#each_address">Resolv::DNS#each_address</a>(name) {|address| ...} <pre style="color:#000000;">
     address lookup methods.
 </pre>
 <pre style="color:#000000;">
     ((|name|)) must be a instance of Resolv::DNS::Name or String.  Lookupped
     address is represented as an instance of Resolv::IPv4 or Resolv::IPv6.
 </pre>
-&#8212; Resolv::DNS#getname(address) &#8212; Resolv::DNS#getnames(address) &#8212; Resolv::DNS#each_name(address) {|name| ...} <pre style="color:#000000;">
+&#8212; <a href="Resolv::DNS#getname">Resolv::DNS#getname</a>(address) &#8212; <a href="Resolv::DNS#getnames">Resolv::DNS#getnames</a>(address) &#8212; <a href="Resolv::DNS#each_name">Resolv::DNS#each_name</a>(address) {|name| ...} <pre style="color:#000000;">
     hostnames lookup methods.
 </pre>
 <pre style="color:#000000;">
     ((|address|)) must be a instance of Resolv::IPv4, Resolv::IPv6 or String.
     Lookupped name is represented as an instance of Resolv::DNS::Name.
 </pre>
-&#8212; Resolv::DNS#getresource(name, typeclass) &#8212; Resolv::DNS#getresources(name, typeclass) &#8212; Resolv::DNS#each_resource(name, typeclass) {|resource| ...} <pre style="color:#000000;">
+&#8212; <a href="Resolv::DNS#getresource">Resolv::DNS#getresource</a>(name, typeclass) &#8212; <a href="Resolv::DNS#getresources">Resolv::DNS#getresources</a>(name, typeclass) &#8212; <a href="Resolv::DNS#each_resource">Resolv::DNS#each_resource</a>(name, typeclass) {|resource| ...} <pre style="color:#000000;">
     They lookup DNS resources of ((|name|)).
     ((|name|)) must be a instance of Resolv::Name or String.
 </pre>
@@ -102,18 +102,18 @@ DNS stub resolver. <br><h3> class methods</h3>
 &#8212; address <br><h2> Resolv::DNS::Name class</h2>
 <h3> class methods</h3>
 &#8212; Resolv::DNS::Name.create(name) <br><h3> methods</h3>
-&#8212; Resolv::DNS::<a href="Name#to_s">Name#to_s</a> <br><h2> Resolv::DNS::Resource class</h2>
+&#8212; <a href="Resolv::DNS::Name#to_s">Resolv::DNS::Name#to_s</a> <br><h2> Resolv::DNS::Resource class</h2>
 <h2> Resolv::IPv4 class</h2>
 <h3> class methods</h3>
 &#8212; Resolv::IPv4.create(address) <br><h3> methods</h3>
-&#8212; Resolv::<a href="IPv4#to_s">IPv4#to_s</a> &#8212; Resolv::<a href="IPv4#to_name">IPv4#to_name</a> <br><h3> constants</h3>
+&#8212; <a href="Resolv::IPv4#to_s">Resolv::IPv4#to_s</a> &#8212; <a href="Resolv::IPv4#to_name">Resolv::IPv4#to_name</a> <br><h3> constants</h3>
 &#8212; Resolv::IPv4::Regex <pre style="color:#000000;">
     regular expression for IPv4 address.
 </pre>
 <h2> Resolv::IPv6 class</h2>
 <h3> class methods</h3>
 &#8212; Resolv::IPv6.create(address) <br><h3> methods</h3>
-&#8212; Resolv::<a href="IPv6#to_s">IPv6#to_s</a> &#8212; Resolv::<a href="IPv6#to_name">IPv6#to_name</a> <br><h3> constants</h3>
+&#8212; <a href="Resolv::IPv6#to_s">Resolv::IPv6#to_s</a> &#8212; <a href="Resolv::IPv6#to_name">Resolv::IPv6#to_name</a> <br><h3> constants</h3>
 &#8212; Resolv::IPv6::Regex <pre style="color:#000000;">
     regular expression for IPv6 address.
 </pre>

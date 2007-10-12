@@ -8,7 +8,7 @@ COMMENT_TEXT    "Italic", la=2
 COMMENT_HTMLTAG  "</i>"
 COMMENT_TEXT    "\n"
 COMMENT_HTMLTAG  "<i>"
-COMMENT_TEXT    "Generates", la=1
+COMMENT_TEXT    "Generates", la=2
 COMMENT_TEXT    ":", la=2
 COMMENT_HTMLTAG  "</i>"
 COMMENT_TEXT    "\n"
@@ -56,13 +56,13 @@ COMMENT_RDOC    ":include:"
 ----- EOF -----
 
 .t.e.s.t.  NOT RDoc directives
-COMMENT_TEXT    "\\:nodoc", la=1
+COMMENT_TEXT    "\\:nodoc", la=2
 COMMENT_TEXT    ":\n"
 COMMENT_TEXT    ":nodoc\n"
-COMMENT_TEXT    "nodoc", la=1
+COMMENT_TEXT    "nodoc", la=2
 COMMENT_TEXT    ":\n"
 COMMENT_TEXT    ":\n"
-COMMENT_TEXT    ": nodoc ", la=1
+COMMENT_TEXT    ": nodoc ", la=2
 COMMENT_TEXT    ":", la=1
 ----- EOF -----
 
@@ -94,6 +94,10 @@ COMMENT_LINK    "ftp:foo@bar:80/pub/hello.txt", la=1
 COMMENT_TEXT    "\n"
 COMMENT_LINK    "#mymethod", la=1
 COMMENT_TEXT    "\n"
+COMMENT_LINK    "File#exists?", la=1
+COMMENT_TEXT    "\n"
+COMMENT_LINK    "String#gsub!", la=1
+COMMENT_TEXT    "\n"
 COMMENT_LINK    "Class#mymethod", la=1
 COMMENT_TEXT    "\n"
 COMMENT_LINK    "MyClass123#my_method", la=1
@@ -101,15 +105,23 @@ COMMENT_TEXT    "\n"
 COMMENT_LINK    "Scanf#foo", la=1
 COMMENT_TEXT    ",", la=1
 COMMENT_LINK    "File#exists", la=1
+COMMENT_TEXT    "\n"
+COMMENT_LINK    "ActiveRecord::Migration#add", la=1
+COMMENT_TEXT    "\n"
+COMMENT_LINK    "ActiveRecord::Migration#add", la=1
+COMMENT_TEXT    "(", la=1
 ----- EOF -----
 
 .t.e.s.t. Not Links
 COMMENT_TEXT    "http\\://netbeans.org\n"
-COMMENT_TEXT    "\\file", la=1
+COMMENT_TEXT    "\\file", la=2
 COMMENT_TEXT    ":/tmp/foo.rb\n"
 COMMENT_TEXT    "\\#mymethod\n"
 COMMENT_TEXT    "#\n"
 COMMENT_TEXT    "# \n"
+COMMENT_TEXT    "ActiveRecord::Migration\n"
+COMMENT_TEXT    "#foo?bar\n"
+COMMENT_TEXT    "#foo!b\n"
 COMMENT_TEXT    "Class#\n"
 COMMENT_TEXT    "Class# \n"
 COMMENT_TEXT    "class#method", la=1

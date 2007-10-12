@@ -172,7 +172,7 @@ public final class RubyCommentLexer implements Lexer<RubyCommentTokenId> {
                 assert s.charAt(classIndex) == '#';
                 for (classIndex--; classIndex >= 0; classIndex--) {
                     char c = s.charAt(classIndex);
-                    if (!Character.isJavaIdentifierPart(c) && c != '_') {
+                    if (!Character.isJavaIdentifierPart(c) && c != '_' && c != ':') {
                         // The next character needs to be "#" or an uppercase character
                         assert classIndex < s.length()-1;
                         char next = s.charAt(classIndex+1);
@@ -200,18 +200,30 @@ public final class RubyCommentLexer implements Lexer<RubyCommentTokenId> {
 
                 // See if we have what looks like a method name:
                 // method-only characters followed by whitespace, newlines or EOF:
+                boolean seenSuffixChar = false;
+                boolean seenPrefixChar = false;
                 while (ch != EOF) {
                     ch = input.read();
 
-                    if ((ch == '$') || !Character.isJavaIdentifierPart(ch)) {
+                    if (ch == '$' || ch == '@') {
+                        // TODO - what do I do here?
+                        seenPrefixChar = true;
+                    } else if (ch == '?' || ch == '=' || ch == '!') {
+                        seenSuffixChar = true;
+                    } else if (ch == ':' || Character.isJavaIdentifierPart(ch)) {
+                        if (seenSuffixChar) {
+                            // These are only allowed at the end
+                            break;
+                        }
+                        continue;
+                    } else {
                         input.backup(1);
-
                         break;
                     }
                 }
 
                 if (Character.isWhitespace(ch) || (ch == EOF) || (ch == '.') || (ch == ',') ||
-                        (ch == ')') || (ch == '}')) {
+                        (ch == ')') || (ch == '}') || (ch == '(')) {
                     if (input.readLength() > 2 && input.readLength() > originalLength) {
                         return token(RubyCommentTokenId.COMMENT_LINK);
                     }
@@ -450,6 +462,16 @@ public final class RubyCommentLexer implements Lexer<RubyCommentTokenId> {
             }
 
             case ':': { // Possible rdoc tag, like :nodoc:
+                ch = input.read(); // input.readText()
+                if (ch == ':') {
+                    // :: - possibly part of something like Foo::Bar
+                    continue;
+                } else {
+                    input.backup(1);
+                    if (input.readText().toString().endsWith("::")) {
+                        continue;
+                    }
+                }
 
                 if (input.readLength() > 1) {
                     input.backup(1);
