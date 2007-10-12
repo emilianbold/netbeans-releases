@@ -49,6 +49,7 @@ import java.io.*;
 import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.Logger;
 import javax.swing.Icon;
@@ -57,10 +58,12 @@ import javax.swing.JButton;
 import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.web.api.webmodule.WebFrameworks;
 import org.netbeans.modules.web.project.api.WebPropertyEvaluator;
 import org.netbeans.modules.web.project.jaxws.WebProjectJAXWSClientSupport;
 import org.netbeans.modules.web.project.jaxws.WebProjectJAXWSSupport;
 import org.netbeans.modules.web.project.spi.BrokenLibraryRefFilterProvider;
+import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.modules.websvc.jaxws.spi.JAXWSSupportFactory;
@@ -147,6 +150,8 @@ import org.openide.util.RequestProcessor;
 public final class WebProject implements Project, AntProjectListener, FileChangeListener, PropertyChangeListener {
     
     private static final Logger LOGGER = Logger.getLogger(WebProject.class.getName());
+    
+    private static final String UI_LOGGER_NAME = "org.netbeans.ui.web.project"; //NOI18N
     
     private static final Icon WEB_PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif")); // NOI18
     
@@ -776,6 +781,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
                     
                     WebProjectProperties wpp = getWebProjectProperties();
                     String servInstID = (String) wpp.get(WebProjectProperties.J2EE_SERVER_INSTANCE);
+                    String serverType = null;
                     J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(servInstID);
                     if (platform != null) {
                         // updates j2ee.platform.cp & wscompile.cp & reg. j2ee platform listener
@@ -783,7 +789,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
                     } else {
                         // if there is some server instance of the type which was used
                         // previously do not ask and use it
-                        String serverType = (String) wpp.get(WebProjectProperties.J2EE_SERVER_TYPE);
+                        serverType = (String) wpp.get(WebProjectProperties.J2EE_SERVER_TYPE);
                         if (serverType != null) {
                             String[] servInstIDs = Deployment.getDefault().getInstancesOfServer(serverType);
                             if (servInstIDs.length > 0) {
@@ -795,6 +801,14 @@ public final class WebProject implements Project, AntProjectListener, FileChange
                             BrokenServerSupport.showAlert();
                         }
                     }
+                    // UI Logging
+                    LogRecord logRecord = new LogRecord(Level.INFO, "UI_WEB_PROJECT_OPENED");  //NOI18N
+                    logRecord.setLoggerName(UI_LOGGER_NAME);                   //NOI18N
+                    logRecord.setResourceBundle(NbBundle.getBundle(WebProject.class));
+                    logRecord.setParameters(new Object[] {
+                        (serverType != null ? serverType : Deployment.getDefault().getServerID(servInstID)),
+                        servInstID});
+                    Logger.getLogger(UI_LOGGER_NAME).log(logRecord);
                 }
                 
             } catch (IOException e) {
@@ -985,7 +999,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
             GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
             GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
             GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
-        }
+                }
         
     }
     
