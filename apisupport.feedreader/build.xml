@@ -62,8 +62,8 @@ made subject to such option by the copyright holder.
                 <include name="rome-fetcher-0.6-license.txt" />
             </zipfileset>
             <zipfileset dir="external" prefix="jdom/release/modules/ext/" >
-                <include name="jdom.jar" />
-                <include name="jdom-license.txt" />
+                <include name="jdom-1.0.jar" />
+                <include name="jdom-1.0-license.txt" />
             </zipfileset>
         </zip>
     </target>

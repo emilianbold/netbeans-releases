@@ -52,10 +52,6 @@ made subject to such option by the copyright holder.
             <exclude name="**/build/"/>
             <exclude name="**/dist/"/>
             <exclude name="**/nbproject/private/"/>
-            
-            <zipfileset dir="external" prefix="ColorChooser/release/modules/ext/" >
-                <include name="ColorChooser.jar" />
-            </zipfileset>
         </zip>
     </target>    
     

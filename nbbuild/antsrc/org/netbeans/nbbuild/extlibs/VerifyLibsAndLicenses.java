@@ -114,6 +114,7 @@ public class VerifyLibsAndLicenses extends Task {
     }
 
     private void testBinaryUniqueness() throws IOException {
+        List<String> ignoredPatterns = loadPatterns("ignored-overlaps");
         StringBuffer msg = new StringBuffer();
         Map<Long,String> binaries = new HashMap<Long,String>();
         for (String module : modules) {
@@ -133,10 +134,7 @@ public class VerifyLibsAndLicenses extends Task {
                     while ((read = is.read(buf)) != -1) {
                         crc.update(buf, 0, read);
                     }
-                    String existing = binaries.put(crc.getValue(), path);
-                    if (existing != null) {
-                        msg.append("\n" + existing + " and " + path + " are identical");
-                    }
+                    maybeAppendDuplicateMessage(msg, binaries.put(crc.getValue(), path), path, ignoredPatterns);
                 } finally {
                     is.close();
                 }
@@ -158,10 +156,7 @@ public class VerifyLibsAndLicenses extends Task {
                             while ((read = is.read(buf)) != -1) {
                                 crc.update(buf, 0, read);
                             }
-                            String existing = binaries.put(crc.getValue(), innerPath);
-                            if (existing != null) {
-                                msg.append("\n" + existing + " and " + innerPath + " are identical");
-                            }
+                            maybeAppendDuplicateMessage(msg, binaries.put(crc.getValue(), innerPath), innerPath, ignoredPatterns);
                         } finally {
                             is.close();
                         }
@@ -173,6 +168,19 @@ public class VerifyLibsAndLicenses extends Task {
         }
         //System.err.println("binaries: " + new TreeSet<String>(binaries.values()));
         pseudoTests.put("testBinaryUniqueness", msg.length() > 0 ? "Some binaries are duplicated" + msg : null);
+    }
+    private static void maybeAppendDuplicateMessage(StringBuffer msg, String path1, String path2, List<String> ignoredPatterns) {
+        if (path1 == null || path2 == null) {
+            return;
+        }
+        for (String pattern : ignoredPatterns) {
+            for (String path : new String[] {path1, path2}) {
+                if (SelectorUtils.matchPath(pattern, path.replaceFirst("^.+ in ", ""))) {
+                    return;
+                }
+            }
+        }
+        msg.append("\n" + path1 + " and " + path2 + " are identical");
     }
 
     private void testLicenseFilesAreProperlyFormattedPhysically() throws IOException {
@@ -381,9 +389,9 @@ public class VerifyLibsAndLicenses extends Task {
         return actual.matches(expected.replaceAll("([\\\\\\[\\].^$?*+{}()|])", "\\\\$1").replaceAll(" *__[A-Z_]+__ *", ".*"));
     }
 
-    private void testNoStrayThirdPartyBinaries() throws IOException {
-        List<String> ignoredPatterns = new ArrayList<String>();
-        InputStream is = VerifyLibsAndLicenses.class.getResourceAsStream("ignored-binaries");
+    private static List<String> loadPatterns(String resource) throws IOException {
+        List<String> patterns = new ArrayList<String>();
+        InputStream is = VerifyLibsAndLicenses.class.getResourceAsStream(resource);
         try {
             BufferedReader r = new BufferedReader(new InputStreamReader(is));
             String line;
@@ -393,12 +401,17 @@ public class VerifyLibsAndLicenses extends Task {
                     if (line.endsWith("/")) {
                         line += "**";
                     }
-                    ignoredPatterns.add(line);
+                    patterns.add(line);
                 }
             }
         } finally {
             is.close();
         }
+        return patterns;
+    }
+
+    private void testNoStrayThirdPartyBinaries() throws IOException {
+        List<String> ignoredPatterns = loadPatterns("ignored-binaries");
         Set<String> topLevelModules = new TreeSet<String>();
         for (String module : modules) {
             topLevelModules.add(module.replaceFirst("/.+", ""));
