@@ -71,13 +71,16 @@ public class Utils {
     
     /** Logger for web.debug module. */
     private static Logger err = Logger.getLogger("org.netbeans.modules.web.debug");   // NOI18N
-     
+    private static final boolean LOG = err.isLoggable(Level.FINE);
+    
     public static Logger getEM () {
         return err;
     }
     
     public static void log (String msg) {
-        err.log(Level.INFO, msg);
+        if(LOG) {
+            err.log(Level.FINE, msg);
+        }
     }
     
     public static FileObject getFileObjectFromUrl(String url) {
