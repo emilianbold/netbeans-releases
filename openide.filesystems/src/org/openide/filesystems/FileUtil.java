@@ -1618,7 +1618,7 @@ public final class FileUtil extends Object {
 
     /**
      * Checks whether a change in a given file attribute would affect the result of {@link #getOrder}.
-     * @param an attribute change event
+     * @param event an attribute change event
      * @return true if the attribute in question might affect the order of some folder
      * @since org.openide.filesystems 7.2
      */
