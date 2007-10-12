@@ -115,13 +115,13 @@ public class PluginPanel extends javax.swing.JPanel {
         repositoriesModified = false;
     }
     
-    // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
         pluginsTab = new javax.swing.JTabbedPane();
         installedPanel = new javax.swing.JPanel();
         instSearchText = new javax.swing.JTextField();
-        jLabel1 = new javax.swing.JLabel();
+        instSearchLbl = new javax.swing.JLabel();
         reloadInstalledButton = new javax.swing.JButton();
         uninstallButton = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -130,14 +130,14 @@ public class PluginPanel extends javax.swing.JPanel {
         updateAllButton = new javax.swing.JButton();
         newPanel = new javax.swing.JPanel();
         searchNewText = new javax.swing.JTextField();
-        jLabel2 = new javax.swing.JLabel();
+        newSearchLbl = new javax.swing.JLabel();
         reloadNewButton = new javax.swing.JButton();
         installButton = new javax.swing.JButton();
         jScrollPane2 = new javax.swing.JScrollPane();
         newList = new javax.swing.JList();
         repositoryPanel = new javax.swing.JPanel();
         searchReposText = new javax.swing.JTextField();
-        jLabel3 = new javax.swing.JLabel();
+        repSearchLbl = new javax.swing.JLabel();
         reloadReposButton = new javax.swing.JButton();
         unregisterButton = new javax.swing.JButton();
         jScrollPane3 = new javax.swing.JScrollPane();
@@ -152,25 +152,25 @@ public class PluginPanel extends javax.swing.JPanel {
         installedPanel.addComponentListener(formListener);
 
         instSearchText.setColumns(14);
-        instSearchText.setText(org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.instSearchText.text")); // NOI18N
         instSearchText.addActionListener(formListener);
 
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.jLabel1.text")); // NOI18N
+        instSearchLbl.setLabelFor(instSearchText);
+        org.openide.awt.Mnemonics.setLocalizedText(instSearchLbl, org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.instSearchLbl.text")); // NOI18N
 
-        reloadInstalledButton.setText(org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.reloadInstalledButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(reloadInstalledButton, org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.reloadInstalledButton.text")); // NOI18N
         reloadInstalledButton.addActionListener(formListener);
 
-        uninstallButton.setText(org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.uninstallButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(uninstallButton, org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.uninstallButton.text")); // NOI18N
         uninstallButton.setEnabled(false);
         uninstallButton.addActionListener(formListener);
 
         jScrollPane1.setViewportView(installedList);
 
-        updateButton.setText(org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.updateButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(updateButton, org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.updateButton.text")); // NOI18N
         updateButton.setEnabled(false);
         updateButton.addActionListener(formListener);
 
-        updateAllButton.setText(org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.updateAllButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(updateAllButton, org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.updateAllButton.text")); // NOI18N
         updateAllButton.addActionListener(formListener);
 
         org.jdesktop.layout.GroupLayout installedPanelLayout = new org.jdesktop.layout.GroupLayout(installedPanel);
@@ -180,11 +180,11 @@ public class PluginPanel extends javax.swing.JPanel {
             .add(installedPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(installedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 660, Short.MAX_VALUE)
+                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 692, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, installedPanelLayout.createSequentialGroup()
                         .add(reloadInstalledButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 329, Short.MAX_VALUE)
-                        .add(jLabel1)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 376, Short.MAX_VALUE)
+                        .add(instSearchLbl)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(instSearchText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 156, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(installedPanelLayout.createSequentialGroup()
@@ -200,11 +200,11 @@ public class PluginPanel extends javax.swing.JPanel {
             .add(installedPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(installedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel1)
+                    .add(instSearchLbl)
                     .add(reloadInstalledButton)
                     .add(instSearchText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 312, Short.MAX_VALUE)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 352, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(installedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(uninstallButton)
@@ -218,15 +218,15 @@ public class PluginPanel extends javax.swing.JPanel {
         newPanel.addComponentListener(formListener);
 
         searchNewText.setColumns(14);
-        searchNewText.setText(org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.searchNewText.text")); // NOI18N
         searchNewText.addActionListener(formListener);
 
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.jLabel2.text")); // NOI18N
+        newSearchLbl.setLabelFor(searchNewText);
+        org.openide.awt.Mnemonics.setLocalizedText(newSearchLbl, org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.newSearchLbl.text")); // NOI18N
 
-        reloadNewButton.setText(org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.reloadNewButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(reloadNewButton, org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.reloadNewButton.text")); // NOI18N
         reloadNewButton.addActionListener(formListener);
 
-        installButton.setText(org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.installButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(installButton, org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.installButton.text")); // NOI18N
         installButton.setEnabled(false);
         installButton.addActionListener(formListener);
 
@@ -239,11 +239,11 @@ public class PluginPanel extends javax.swing.JPanel {
             .add(newPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(newPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 660, Short.MAX_VALUE)
+                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 692, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, newPanelLayout.createSequentialGroup()
                         .add(reloadNewButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 329, Short.MAX_VALUE)
-                        .add(jLabel2)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 376, Short.MAX_VALUE)
+                        .add(newSearchLbl)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(searchNewText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 156, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(installButton))
@@ -254,11 +254,11 @@ public class PluginPanel extends javax.swing.JPanel {
             .add(newPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(newPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel2)
+                    .add(newSearchLbl)
                     .add(reloadNewButton)
                     .add(searchNewText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 312, Short.MAX_VALUE)
+                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 352, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(installButton)
                 .addContainerGap())
@@ -269,24 +269,24 @@ public class PluginPanel extends javax.swing.JPanel {
         repositoryPanel.addComponentListener(formListener);
 
         searchReposText.setColumns(14);
-        searchReposText.setText(org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.searchReposText.text")); // NOI18N
         searchReposText.addActionListener(formListener);
 
-        jLabel3.setText(org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.jLabel3.text")); // NOI18N
+        repSearchLbl.setLabelFor(searchReposText);
+        org.openide.awt.Mnemonics.setLocalizedText(repSearchLbl, org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.repSearchLbl.text")); // NOI18N
 
-        reloadReposButton.setText(org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.reloadReposButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(reloadReposButton, org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.reloadReposButton.text")); // NOI18N
         reloadReposButton.addActionListener(formListener);
 
-        unregisterButton.setText(org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.unregisterButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(unregisterButton, org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.unregisterButton.text")); // NOI18N
         unregisterButton.setEnabled(false);
         unregisterButton.addActionListener(formListener);
 
         jScrollPane3.setViewportView(repositoryList);
 
-        discoverButton.setText(org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.discoverButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(discoverButton, org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.discoverButton.text")); // NOI18N
         discoverButton.addActionListener(formListener);
 
-        addUrlButton.setText(org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.addUrlButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(addUrlButton, org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.addUrlButton.text")); // NOI18N
         addUrlButton.addActionListener(formListener);
 
         org.jdesktop.layout.GroupLayout repositoryPanelLayout = new org.jdesktop.layout.GroupLayout(repositoryPanel);
@@ -296,15 +296,15 @@ public class PluginPanel extends javax.swing.JPanel {
             .add(repositoryPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(repositoryPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 660, Short.MAX_VALUE)
+                    .add(jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 692, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, repositoryPanelLayout.createSequentialGroup()
                         .add(discoverButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                         .add(addUrlButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                         .add(reloadReposButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 106, Short.MAX_VALUE)
-                        .add(jLabel3)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 144, Short.MAX_VALUE)
+                        .add(repSearchLbl)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(searchReposText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 156, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(unregisterButton))
@@ -315,13 +315,13 @@ public class PluginPanel extends javax.swing.JPanel {
             .add(repositoryPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(repositoryPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel3)
+                    .add(repSearchLbl)
                     .add(searchReposText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(discoverButton)
                     .add(addUrlButton)
                     .add(reloadReposButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 312, Short.MAX_VALUE)
+                .add(jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 352, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(unregisterButton)
                 .addContainerGap())
@@ -329,7 +329,7 @@ public class PluginPanel extends javax.swing.JPanel {
 
         pluginsTab.addTab(org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.repositoryPanel.TabConstraints.tabTitle"), repositoryPanel); // NOI18N
 
-        proxyButton.setText(org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.proxyButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(proxyButton, org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.proxyButton.text")); // NOI18N
         proxyButton.addActionListener(formListener);
 
         org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
@@ -339,14 +339,14 @@ public class PluginPanel extends javax.swing.JPanel {
             .add(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .add(proxyButton)
-                .addContainerGap(531, Short.MAX_VALUE))
+                .addContainerGap(564, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .add(proxyButton)
-                .addContainerGap(376, Short.MAX_VALUE))
+                .addContainerGap(406, Short.MAX_VALUE))
         );
 
         pluginsTab.addTab(org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.jPanel1.TabConstraints.tabTitle"), jPanel1); // NOI18N
@@ -392,6 +392,9 @@ public class PluginPanel extends javax.swing.JPanel {
             else if (evt.getSource() == searchNewText) {
                 PluginPanel.this.searchNewTextActionPerformed(evt);
             }
+            else if (evt.getSource() == reloadNewButton) {
+                PluginPanel.this.reloadNewButtonActionPerformed(evt);
+            }
             else if (evt.getSource() == installButton) {
                 PluginPanel.this.installButtonActionPerformed(evt);
             }
@@ -412,9 +415,6 @@ public class PluginPanel extends javax.swing.JPanel {
             }
             else if (evt.getSource() == proxyButton) {
                 PluginPanel.this.proxyButtonActionPerformed(evt);
-            }
-            else if (evt.getSource() == reloadNewButton) {
-                PluginPanel.this.reloadNewButtonActionPerformed(evt);
             }
         }
 
@@ -947,24 +947,24 @@ private void installedPanelComponentShown(java.awt.event.ComponentEvent evt) {//
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addUrlButton;
     private javax.swing.JButton discoverButton;
+    private javax.swing.JLabel instSearchLbl;
     private javax.swing.JTextField instSearchText;
     private javax.swing.JButton installButton;
     private javax.swing.JList installedList;
     private javax.swing.JPanel installedPanel;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JList newList;
     private javax.swing.JPanel newPanel;
+    private javax.swing.JLabel newSearchLbl;
     private javax.swing.JTabbedPane pluginsTab;
     private javax.swing.JButton proxyButton;
     private javax.swing.JButton reloadInstalledButton;
     private javax.swing.JButton reloadNewButton;
     private javax.swing.JButton reloadReposButton;
+    private javax.swing.JLabel repSearchLbl;
     private javax.swing.JList repositoryList;
     private javax.swing.JPanel repositoryPanel;
     private javax.swing.JTextField searchNewText;
