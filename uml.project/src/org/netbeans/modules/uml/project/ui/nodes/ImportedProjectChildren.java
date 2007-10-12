@@ -193,35 +193,12 @@ public class ImportedProjectChildren extends Children.Keys //Children.Array
             IPackageImport imported = (IPackageImport)element;
             targetElement = imported.getImportedPackage();
         }
-       
+
         Node projectNode = mNodeMap.get(project);
-        if (project != null && projectNode == null)
+        if (projectNode == null)
             return;
         
-        if (projectNode != null)
-            removeNode(projectNode, targetElement);
-        
-        for (Node node: mNodeMap.values())
-            removeNode(node, targetElement);
-        
-//        Children children = projectNode.getChildren();
-//        Node[] nodes = children.getNodes();
-//        for(int x = 0; x < nodes.length; x++)
-//        {
-//            ImportedElementCookie cookie = nodes[x].getCookie(ImportedElementCookie.class);
-//            if (cookie != null)
-//            {
-//                if (cookie.getElementXMIID().equals(targetElement.getXMIID()))
-//                {
-//                    try {
-//                    nodes[x].destroy();
-//                    }catch (Exception e)
-//                    {}
-////                    cookie.removeImportedElement();
-//                    return;
-//                }
-//            }
-//        }
+        removeNode(projectNode, targetElement);
     }
     
     private void removeNode(Node root, IElement targetElement)

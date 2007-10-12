@@ -2545,10 +2545,12 @@ public class Project extends org.netbeans.modules.uml.core.metamodel.structure.M
             {
                 IPackage element = im.getImportedPackage();
                 if ( im == elem || elem.getXMIID().equals(element.getXMIID()))
-                {
-                    UMLXMLManip.removeChild(this.getNode(), im);
+                {      
+                    // im.delete() basically fires delete event, it's important to 
+                    // call im.delete() before removeChild
                     setDirty(true);
                     im.delete();
+                    UMLXMLManip.removeChild(this.getNode(), im);
                 }
             }
         }
@@ -2561,9 +2563,9 @@ public class Project extends org.netbeans.modules.uml.core.metamodel.structure.M
 
                 if (im == elem || elem.getXMIID().equals(element.getXMIID()))
                 {
-                    UMLXMLManip.removeChild(this.getNode(), im);
                     setDirty(true);
                     im.delete();
+                    UMLXMLManip.removeChild(this.getNode(), im);
                 }
             }
         }

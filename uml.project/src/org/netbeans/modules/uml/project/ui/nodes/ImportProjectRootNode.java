@@ -111,12 +111,23 @@ public class ImportProjectRootNode extends AbstractNode implements ImportElement
 
     public void elementDeleted(IProject proj, IElement element)
     {
+        // this is the case when original model element is deleted,
+        // just remove it from imported element list if it exists, no need to operate on
+        // the node, as filter node listens to original node events, it will be destroyed
+        // once the original node is deleted.
         if (!(element instanceof IElementImport) && !(element instanceof IPackageImport))
         {
             project.removeElementImport(element);
             return;
         }
 
+        // the event is triggered when imported element is deleted from diagram with
+        // 'remove from import' option is selected, or an imported element is deleted in 
+        // other projects.
+        // filter out the event for deleting imported element in a different project 85134
+        if (proj != project)
+            return;
+        
         IElement e = element;
         IProject ownerProject = proj;
         if (element instanceof IElementImport)
