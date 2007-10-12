@@ -177,12 +177,14 @@ public class ServiceTableModel extends DefaultTableModel {
         });
     }
     
-    public void cancelSearch() {
+    public boolean cancelSearch() {
         if (searchTask != null) {
-            searchTask.cancel();
-            fireSearchEnded();
+            boolean cancelled = searchTask.cancel();
             searchTask = null;
+            fireSearchEnded();
+            return cancelled;
         }
+        return true;
     }
     
     public Set<? extends ServiceData> getSelectedServices() {
@@ -194,6 +196,11 @@ public class ServiceTableModel extends DefaultTableModel {
     }
     
     public String getStatus() {
+        if (status == null || status.trim().length() == 0 || status.startsWith("Found")) { //NOI18N
+            status = NbBundle.getMessage(ServiceTableModel.class, "MSG_Found", result.size());
+        } else {
+            status = NbBundle.getMessage(ServiceTableModel.class, "MSG_ERROR", status);
+        }
         return status;
     }
 
