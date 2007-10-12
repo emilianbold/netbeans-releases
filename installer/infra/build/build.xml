@@ -463,6 +463,9 @@ jarsigner.storepass=${jarsigner.storepass}
                 <exclude name="**/sjsas*${sjsas.milestone.number}.${sjsas.build.number}*"/>
 		<exclude name="**/nb-portalpack*${portalpack.build.number}*"/>-->
 
+                <!-- JDK -->
+                <exclude name="**/jdk*"/>
+
             </fileset>
         </delete>
     </target>
