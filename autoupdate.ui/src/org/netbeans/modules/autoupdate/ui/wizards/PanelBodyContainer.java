@@ -48,12 +48,15 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.util.NbBundle;
@@ -126,9 +129,11 @@ public class PanelBodyContainer extends javax.swing.JPanel {
             }
         }
     }
-    
+
+    private Timer delay;
+    private ProgressHandle handle;
     private void addProgressLine () {
-        ProgressHandle handle = ProgressHandleFactory.createHandle ("PanelBodyContainer_ProgressLine"); // NOI18N
+        handle = ProgressHandleFactory.createHandle ("PanelBodyContainer_ProgressLine"); // NOI18N
         JLabel title = new JLabel (NbBundle.getMessage (PanelBodyContainer.class, "PanelBodyContainer_PleaseWait"));
         JComponent progress = ProgressHandleFactory.createProgressComponent (handle);
         progressPanel = new JPanel (new GridBagLayout ());
@@ -137,17 +142,24 @@ public class PanelBodyContainer extends javax.swing.JPanel {
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets (7, 0, 0, 12);
         progressPanel.add (progress, gridBagConstraints);
-
+        
         gridBagConstraints = new GridBagConstraints ();
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets (7, 0, 0, 20);
         gridBagConstraints.weightx = 1.0;
         progressPanel.add (title, gridBagConstraints);
-
-        revalidate ();
-        handle.setInitialDelay (0);
-        initBodyPanel ();
-        handle.start ();
+        progressPanel.setVisible(false);        
+        delay = new Timer(900, new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                delay.stop();
+                progressPanel.setVisible(true);
+                initBodyPanel();
+            }
+        });        
+        
+        handle.start();
+        delay.setRepeats(false);
+        delay.start();
     }
     
     private void initBodyPanel () {
@@ -167,6 +179,9 @@ public class PanelBodyContainer extends javax.swing.JPanel {
     private void removeProgressLine () {
         if (progressPanel != null) {
             pBodyPanel.remove (progressPanel);
+            if (handle != null) {
+                handle.finish();
+            }
             revalidate ();
         }
     }
