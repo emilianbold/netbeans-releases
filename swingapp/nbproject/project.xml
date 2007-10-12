@@ -258,8 +258,8 @@ made subject to such option by the copyright holder.
                 <binary-origin>external/appframework-1.0.1.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/swing-worker.jar</runtime-relative-path>
-                <binary-origin>external/swing-worker.jar</binary-origin>
+                <runtime-relative-path>ext/swing-worker-1.1.jar</runtime-relative-path>
+                <binary-origin>external/swing-worker-1.1.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>
