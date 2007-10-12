@@ -223,6 +223,16 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
 
+    <folder name="Navigator">
+        <folder name="Panels">
+            <folder name="text">
+                <folder name="x-jsp">
+                    <file name="org-netbeans-modules-languages-features-LanguagesNavigator.instance"/>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+    
     <folder name="Services">
         <folder name="IndentEngine">           
             <file name="org-netbeans-modules-web-core-syntax-formatting-JspIndentEngine.settings" url="../formatting/JspIndentEngine.settings">
