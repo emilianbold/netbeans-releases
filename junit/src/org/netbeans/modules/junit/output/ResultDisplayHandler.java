@@ -214,6 +214,7 @@ final class ResultDisplayHandler {
     private String runningSuite;
     private List<Report> reports;
     private String message;
+    private boolean sessionFinished;
     
     /**
      *
@@ -276,6 +277,23 @@ final class ResultDisplayHandler {
         displayInDispatchThread("displayMsg", msg);                     //NOI18N
     }
     
+    /**
+     */
+    void displayMessageSessionFinished(final String msg) {
+
+        /* Called from the AntLogger's thread */
+
+        synchronized (this) {
+            if (treePanel == null) {
+                sessionFinished = true;
+                message = msg;
+                return;
+            }
+        }
+        
+        displayInDispatchThread("displayMsgSessionFinished", msg);        //NOI18N
+    }
+    
     /** */
     private Map<String,Method> methodsMap;
     
@@ -327,6 +345,7 @@ final class ResultDisplayHandler {
                 paramType = Report.class;
             } else {
                 assert methodName.equals("displayMsg")                  //NOI18N
+                       || methodName.equals("displayMsgSessionFinished")//NOI18N
                        || methodName.equals("displaySuiteRunning");     //NOI18N
                 paramType = String.class;
             }
@@ -372,6 +391,9 @@ final class ResultDisplayHandler {
                                           ? runningSuite
                                           : null);
             runningSuite = null;
+        }
+        if (sessionFinished) {
+            treePanel.displayMsgSessionFinished(message);
         }
     }
 

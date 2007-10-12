@@ -304,7 +304,11 @@ final class Manager {
         /* Called from the AntLogger's thread */
 
         final ResultDisplayHandler displayHandler = getDisplayHandler(session);
-        displayHandler.displayMessage(message);
+        if (!sessionEnd) {
+            displayHandler.displayMessage(message);
+        } else {
+            displayHandler.displayMessageSessionFinished(message);
+        }
         displayInWindow(session, sessionType, displayHandler, sessionEnd);
         
         //<editor-fold defaultstate="collapsed" desc="disabled code">

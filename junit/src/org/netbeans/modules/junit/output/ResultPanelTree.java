@@ -138,6 +138,16 @@ final class ResultPanelTree extends JPanel
     
     /**
      */
+    void displayMsgSessionFinished(String msg) {
+        assert EventQueue.isDispatchThread();
+        
+        /* Called from the EventDispatch thread */
+        
+        rootNode.displayMessageSessionFinished(msg);
+    }
+    
+    /**
+     */
     @Override
     public void addNotify() {
         super.addNotify();

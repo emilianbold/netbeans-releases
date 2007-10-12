@@ -79,6 +79,7 @@ final class RootNode extends AbstractNode {
     private volatile int errors = 0;
     private volatile int elapsedTimeMillis = 0;
     private volatile int detectedPassedTests = 0;
+    private boolean sessionFinished;
     
     
     /**
@@ -102,6 +103,17 @@ final class RootNode extends AbstractNode {
         
         this.message = msg;
         updateDisplayName();
+    }
+    
+    /**
+     * Updates the display when the session is finished.
+     * 
+     * @param  msg  optional message to be displayed (e.g. notice that
+     *              the sessions has been interrupted); or {@code null}
+     */
+    void displayMessageSessionFinished(final String msg) {
+        sessionFinished = true;
+        displayMessage(msg);
     }
     
     /**
@@ -183,7 +195,12 @@ final class RootNode extends AbstractNode {
         String msg;
 
         if (totalTests == 0) {
-            msg = null;
+            if (sessionFinished) {
+                msg = NbBundle.getMessage(bundleRefClass,
+                                          "MSG_TestsInfoNoTests");      //NOI18N
+            } else {
+                msg = null;
+            }
         } else if ((failures == 0) && (errors == 0)) {
             msg = NbBundle.getMessage(bundleRefClass,
                                       "MSG_TestsInfoAllOK",             //NOI18N
