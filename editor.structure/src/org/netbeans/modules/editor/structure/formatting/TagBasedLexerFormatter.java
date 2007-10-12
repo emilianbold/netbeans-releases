@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -58,6 +59,9 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtFormatter;
+import org.netbeans.modules.editor.NbEditorUtilities;
+import org.openide.cookies.EditorCookie;
+import org.openide.loaders.DataObject;
 
 /**
  * Handling embedded languages:
@@ -132,15 +136,7 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter {
     protected abstract LanguagePath supportedLanguagePath();
 
     protected boolean isWSToken(Token token) {
-        char[] chars = token.text().toString().toCharArray();
-
-        for (char c : chars) {
-            if (!Character.isWhitespace(c)) {
-                return false;
-            }
-        }
-
-        return true;
+        return isOnlyWhiteSpaces(token.text());
     }
 
     protected int getIndentForTagParameter(BaseDocument doc, JoinedTokenSequence tokenSequence, int tagOffset) throws BadLocationException {
@@ -411,8 +407,11 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter {
                     } else {
                         formattingTypeSymbol = 'R';
                     }
+                    
+                    char formattingRange = (i >= firstRefBlockLine && i <= lastRefBlockLine) 
+                            ? '*' : ' ';
 
-                    buff.append(i + ":" + indentLevels[i] + ":" + formattingTypeSymbol + ":" + doc.getText(lineStart, Utilities.getRowEnd(doc, lineStart) - lineStart) + ".\n"); //NOI18N
+                    buff.append(i + ":" + formattingRange + ":" + indentLevels[i] + ":" + formattingTypeSymbol + ":" + doc.getText(lineStart, Utilities.getRowEnd(doc, lineStart) - lineStart) + ".\n"); //NOI18N
                 }
 
                 buff.append("\n-------------\n"); //NOI18N
@@ -439,6 +438,7 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter {
     protected int getMatchingOpeningTagStart(JoinedTokenSequence tokenSequence, int closingTagOffset) {
         int originalOffset = tokenSequence.offset();
         tokenSequence.move(closingTagOffset);
+        tokenSequence.moveNext();
 
         String searchedTagName = extractTagName(tokenSequence, closingTagOffset);
         int balance = 0;
@@ -669,116 +669,95 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter {
         }
     }
     
-    //    protected void enterPressed(JTextComponent txtComponent, int dotPos) throws BadLocationException {
-//        BaseDocument doc = Utilities.getDocument(txtComponent);
-//        int lineNumber = Utilities.getLineOffset(doc, dotPos);
-//        int initialIndent = getInitialIndentFromPreviousLine(doc, lineNumber);
-//        int endOfPreviousLine = Utilities.getFirstNonWhiteBwd(doc, dotPos);
-//        endOfPreviousLine = endOfPreviousLine == -1 ? 0 : endOfPreviousLine;
-//        TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
-//
-//        // workaround for \n passed from code completion to reformatter
-//        if (lineNumber == Utilities.getLineOffset(doc, endOfPreviousLine)) {
-//            return;
-//        }
-//
-//        int openingTagOffset = getTagEndingAtPosition(tokenSequence, endOfPreviousLine);
-//
-//        if (isOpeningTag(tokenHierarchy, openingTagOffset)) {
-//            int closingTagOffset = getNextClosingTagOffset(tokenHierarchy, dotPos + 1);
-//
-//            if (closingTagOffset != -1) {
-//                int matchingOpeningTagOffset = getMatchingOpeningTagStart(tokenHierarchy, closingTagOffset);
-//
-//                if (openingTagOffset == matchingOpeningTagOffset) {
-//
-//                    int openingTagLine = Utilities.getLineOffset(doc, openingTagOffset);
-//                    int closingTagLine = Utilities.getLineOffset(doc, closingTagOffset);
-//
-//                    if (closingTagLine == Utilities.getLineOffset(doc, dotPos)) {
-//
-//                        if (openingTagLine == closingTagLine - 1) {
-//                            /* "smart enter"
-//                             * <t>|optional text</t>
-//                             */
-//                            Position closingTagPos = doc.createPosition(getOpeningSymbolOffset(tokenHierarchy, closingTagOffset));
-//                            changeRowIndent(doc, dotPos, initialIndent + doc.getShiftWidth());
-//                            doc.insertString(closingTagPos.getOffset(), "\n", null); //NOI18N
-//                            int newCaretPos = closingTagPos.getOffset() - 1;
-//                            changeRowIndent(doc, closingTagPos.getOffset() + 1, initialIndent);
-//                            newCaretPos = Utilities.getRowEnd(doc, newCaretPos);
-//                            txtComponent.setCaretPosition(newCaretPos);
-//                        } else {
-//                            /*  <t>
-//                             *
-//                             *  |</t>
-//                             */
-//                            changeRowIndent(doc, dotPos, initialIndent);
-//                        }
-//                    }
-//                }
-//
-//                int indent = initialIndent;
-//
-//                if (isClosingTagRequired(doc, extractTagName(tokenHierarchy, openingTagOffset))) {
-//                    indent += doc.getShiftWidth();
-//                }
-//
-//                changeRowIndent(doc, dotPos, indent);
+    public void enterPressed(BaseDocument doc, int dotPos) {
+        doc.atomicLock();
+        try {
+//            if (isSmartEnter(doc, dotPos)) {
+//                handleSmartEnter(doc, dotPos);
+//            } else{
+            // if previous line is empty format it as well (issue #118661)
+            int previousLine = Utilities.getLineOffset(doc, dotPos) - 1;
+            int previousLineStart = Utilities.getRowStartFromLineOffset(doc, previousLine);
+            String previousLineText = doc.getText(previousLineStart, Utilities.getRowEnd(doc, previousLineStart) - previousLineStart);
+
+            int formattingStart = isOnlyWhiteSpaces(previousLineText) ? previousLineStart : dotPos;
+
+            reformat(doc, formattingStart, dotPos, true);
 //            }
-//        } else {
-//            int indent = initialIndent;
-//
-//            if (isJustBeforeClosingTag(tokenHierarchy, dotPos)) {
-//                indent -= doc.getShiftWidth();
-//                indent = indent < 0 ? 0 : indent;
-//            }
-//
-//            // preceeding token is not opening tag, keep same indentation
-//            changeRowIndent(doc, dotPos, indent);
-//        }
-//    }
-//
-//    @Override
-//    public int[] getReformatBlock(JTextComponent target, String typedText) {
-//        TokenHierarchy tokenHierarchy = TokenHierarchy.get(target.getDocument());
-//        if (tokenHierarchy == null) {
-//            logger.severe("Could not retrieve TokenHierarchy for document " + target.getDocument());
-//            return null;
-//        }
-//        char lastChar = typedText.charAt(typedText.length() - 1);
-//
-//        try {
-//            int dotPos = target.getCaret().getDot();
-//
-//            if (lastChar == '>') {
-//                int precedingTokenOffset = getTagEndingAtPosition(tokenHierarchy, dotPos - 1);
-//
-//                if (isClosingTag(tokenHierarchy, precedingTokenOffset)) {
-//                    // the user has just entered a closing tag
-//                    // - reformat it unless matching opening tag is on the same line
-//                    int openingTagOffset = getMatchingOpeningTagStart(tokenHierarchy, precedingTokenOffset);
-//
-//                    if (openingTagOffset != -1) {
-//                        BaseDocument doc = Utilities.getDocument(target);
-//                        int openingTagLine = Utilities.getLineOffset(doc, openingTagOffset);
-//                        int closingTagSymbolLine = Utilities.getLineOffset(doc, dotPos);
-//
-//                        if (openingTagLine != closingTagSymbolLine) {
-//                            return new int[]{precedingTokenOffset, dotPos};
-//                        }
-//                    }
-//                }
-//            } else if (lastChar == '\n') {
-//                // just pressed enter
-//                enterPressed(target, dotPos);
-//            }
-//        } catch (Exception e) {
-//            logger.log(Level.SEVERE, "Exception during code formatting", e); //NOI18N
-//        }
-//
-//        return null;
-//    }
+        } catch (BadLocationException e) {
+            logger.log(Level.SEVERE, e.getMessage(), e);
+        } finally {
+            doc.atomicUnlock();
+        }
+    }
+    
+    public boolean handleSmartEnter(BaseDocument doc, int dotPos) throws BadLocationException {
+        boolean wasSmartEnter = false;
+
+        wasSmartEnter = isSmartEnter(doc, dotPos);
+
+        if (wasSmartEnter) {
+            doc.insertString(dotPos - 1, "\n", null); //NOI18N
+            reformat(doc, dotPos, dotPos, true);
+
+            DataObject dataObj = NbEditorUtilities.getDataObject(doc);
+            EditorCookie editor = dataObj.getCookie(EditorCookie.class);
+
+            if (editor != null && editor.getOpenedPanes() != null) {
+
+                JTextComponent component = editor.getOpenedPanes()[0];
+                if (component != null) {
+                    component.setCaretPosition(0);
+                }
+            }
+        }
+
+
+        return wasSmartEnter;
+    }
+    
+    public boolean isSmartEnter(BaseDocument doc, int dotPos) {
+        
+        TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
+        TokenSequence[] tokenSequences = (TokenSequence[]) tokenHierarchy.tokenSequenceList(supportedLanguagePath(), 0, Integer.MAX_VALUE).toArray(new TokenSequence[0]);
+        TextBounds[] tokenSequenceBounds = new TextBounds[tokenSequences.length];
+        try {
+
+            for (int i = 0; i < tokenSequenceBounds.length; i++) {
+                tokenSequenceBounds[i] = findTokenSequenceBounds(doc, tokenSequences[i]);
+            }
+            
+            JoinedTokenSequence tokenSequence = new JoinedTokenSequence(tokenSequences, tokenSequenceBounds);
+            
+            tokenSequence.move(dotPos);
+            tokenSequence.moveNext();
+            
+            if (isJustBeforeClosingTag(tokenSequence, dotPos)){
+                int closingTagOffset = getNextClosingTagOffset(tokenSequence, dotPos);
+                int matchingOpeningTagOffset = getMatchingOpeningTagStart(tokenSequence, closingTagOffset);
+                int openingTagEnd = getTagEndOffset(tokenSequence, matchingOpeningTagOffset);
+                
+                return openingTagEnd + 1 == dotPos;
+            }
+            
+        } catch (BadLocationException e) {
+            logger.log(Level.WARNING, e.getMessage(), e);
+        }
+        
+
+        return false;
+    }
+    
+    
+    protected boolean isOnlyWhiteSpaces(CharSequence txt){
+        for (int i = 0; i < txt.length(); i ++){
+            if (!Character.isWhitespace(txt.charAt(i))){
+                return false;
+            }
+        }
+        
+        return true;
+    }
 
 //TODO: replace TextBounds with some generic class
     protected static class TextBounds {

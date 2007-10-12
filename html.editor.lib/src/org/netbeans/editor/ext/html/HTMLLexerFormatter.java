@@ -117,7 +117,7 @@ public class HTMLLexerFormatter extends TagBasedLexerFormatter {
             thereAreMoreTokens &= JoinedTokenSequence.moveNext();
         }
         
-        int r = JoinedTokenSequence.offset();
+        int r = JoinedTokenSequence.offset() + JoinedTokenSequence.token().length();
         JoinedTokenSequence.move(originalOffset);
         JoinedTokenSequence.moveNext();
         return thereAreMoreTokens ? r : -1;

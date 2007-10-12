@@ -66,7 +66,13 @@ public class HtmlIndentTask implements IndentTask {
     }
 
     public void reindent() throws BadLocationException {
-        getFormatter().reformat((BaseDocument) context.document(), context.startOffset(), context.endOffset(), true);
+        BaseDocument doc = (BaseDocument) context.document();
+        
+        if (context.isIndent()){
+            getFormatter().enterPressed(doc, context.startOffset());
+        } else {
+            getFormatter().reformat(doc, context.startOffset(), context.endOffset(), false);
+        }
     }
 
     public ExtraLock indentLock() {
