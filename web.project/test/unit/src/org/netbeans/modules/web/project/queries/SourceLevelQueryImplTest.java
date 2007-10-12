@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.project.queries;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.Collections;
 import java.util.Properties;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -54,6 +55,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.platform.JavaPlatformProvider;
 import org.netbeans.modules.web.project.test.TestBase;
 import org.netbeans.modules.web.project.test.TestUtil;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -203,7 +205,7 @@ public class SourceLevelQueryImplTest extends NbTestCase {
         }
 
         public ClassPath getBootstrapLibraries() {
-            return null;
+            return ClassPathSupport.createClassPath(new URL[0]);
         }
         
     }
