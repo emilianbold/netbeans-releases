@@ -83,9 +83,10 @@ public class IconButton extends JButton {
             
             String str = iconText;
             Rectangle2D bounds = g2.getFont().getStringBounds(str,g2.getFontRenderContext());
+            /*
             g2.drawString(str,
                     (float)(getWidth()-bounds.getWidth())/2,
-                    (float)((getHeight()-bounds.getHeight())/2 - bounds.getY()));
+                    (float)((getHeight()-bounds.getHeight())/2 - bounds.getY()));*/
             
             g2.dispose();
         } else {
