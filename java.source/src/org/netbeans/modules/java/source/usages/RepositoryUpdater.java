@@ -1550,7 +1550,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             return true;
         }
         
-        private void parseFiles(URL root, boolean isInitialCompilation, Iterable<File> children, boolean clean, ProgressHandle handle, JavaFileFilterImplementation filter, Map<String,List<File>> resources, Set<File> compiledFiles, Set<File> toRecompile) throws IOException {
+        private void parseFiles(URL root, final File classCache, boolean isInitialCompilation, Iterable<File> children, boolean clean, ProgressHandle handle, JavaFileFilterImplementation filter, Map<String,List<File>> resources, Set<File> compiledFiles, Set<File> toRecompile) throws IOException {
             LOGGER.fine("parseFiles: " + root);            
             final FileObject rootFo = URLMapper.findFileObject(root);
             if (rootFo == null) {
@@ -1637,7 +1637,6 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             }
 
             LinkedList<Pair> toCompile = new LinkedList<Pair>();
-            final File classCache = Index.getClassFolder(rootFile);
             ClassIndexImpl uqImpl = ClassIndexManager.getDefault().createUsagesQuery(root, true);
             if (uqImpl == null) {
                 //IDE is exiting, indeces are already closed.
@@ -1861,7 +1860,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 final File classCache = Index.getClassFolder(rootFile);
                 final Map <String,List<File>> resources = getAllClassFiles(classCache, FileObjects.getRelativePath(rootFile,folderFile),true);
                 final LazyFileList children = new LazyFileList(folderFile);
-                parseFiles(root, isInitialCompilation, children, clean, handle, filter, resources, null, null);
+                parseFiles(root, classCache, isInitialCompilation, children, clean, handle, filter, resources, null, null);
             } catch (OutputFileManager.InvalidSourcePath e) {
                 //Deleted project, ignore
             } finally {
@@ -2193,7 +2192,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 }
                 long start = System.currentTimeMillis();
                 final JavaFileFilterImplementation filter = JavaFileFilterQuery.getFilter(rootFO);
-                File cacheRoot = Index.getClassFolder(root);
+                final File cacheRoot = Index.getClassFolder(root);
                 Collection<File> files = toRecompile.get(root);
                 
                 long cur = System.currentTimeMillis();
@@ -2264,7 +2263,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         thisDepsToRecompile = null;
                     }
                     
-                    parseFiles(root, false, files, true, handle, filter, resources, compiledFiles, thisDepsToRecompile);
+                    parseFiles(root, cacheRoot, false, files, true, handle, filter, resources, compiledFiles, thisDepsToRecompile);
                     
                     if (thisDepsToRecompile != null && !thisDepsToRecompile.isEmpty()) {
                         depsToRecompile.put(root, thisDepsToRecompile);

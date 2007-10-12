@@ -209,7 +209,14 @@ public abstract class Index {
     }
     
     public static File getClassFolder (final File root) throws IOException {
-        return getClassFolderImpl(root.toURI().toURL(), false);
+        URL url = root.toURI().toURL();
+        if (!root.exists()) {
+            final String surl = url.toExternalForm();
+            if (!surl.endsWith("/")) {
+                url = new URL (surl+'/');
+            }
+        }
+        return getClassFolderImpl(url, false);
     }        
     
     private static File getClassFolderImpl (final URL url, boolean onlyIfAlreadyExists) throws IOException {
