@@ -86,7 +86,7 @@
             <file name="DojoTestResourcesTable.html" url="/org/netbeans/modules/websvc/rest/codegen/resources/DojoTestResourcesTable.template">
                 <attr name="position" intvalue="0"/>
             </file>
-            <file name="JmakiReadme.html" url="/org/netbeans/modules/websvc/rest/codegen/resources/JmakiReadMe.template">
+            <file name="JmakiReadme.html" url="/org/netbeans/modules/websvc/rest/codegen/resources/JmakiReadme.template">
                 <attr name="position" intvalue="0"/>
             </file>
             <file name="JmakiComponent.css" url="/org/netbeans/modules/websvc/rest/codegen/resources/JmakiComponentCss.template">
