@@ -1488,6 +1488,11 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         return dEditor.getAdminObjectResourcesFromXml();
     }
     
+    public void createSampleDataSourceinDomain(){
+        DomainEditor dEditor = new DomainEditor(this);
+        dEditor.createSampleDatasource();
+    }
+    
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         propertySupport.addPropertyChangeListener(listener);
     }

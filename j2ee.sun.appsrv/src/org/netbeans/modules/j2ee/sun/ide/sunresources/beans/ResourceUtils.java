@@ -1010,6 +1010,31 @@ public class ResourceUtils implements WizardConstants{
         return resourceDir;
     }
     
+    private static DeploymentManager getDeploymentManager(J2eeModuleProvider provider) {
+        DeploymentManager dm = null;
+        InstanceProperties ip = provider.getInstanceProperties();
+        if (ip != null) {
+            dm = ip.getDeploymentManager();
+        }
+        return dm;
+    }
+    
+    public static void createSampleDataSource(J2eeModuleProvider provider){
+        DeploymentManager dm = getDeploymentManager(provider);
+        if (dm != null) {
+            SunDeploymentManagerInterface eightDM = (SunDeploymentManagerInterface) dm;
+            try {
+                ObjectName configObjName = new ObjectName(MAP_RESOURCES);
+                if (eightDM.isRunning()) {
+                    updateSampleDatasource(eightDM, configObjName);
+                } else {
+                    eightDM.createSampleDataSourceinDomain();
+                }
+            } catch (Exception ex) {
+            }
+        }
+    }
+    
     /***************************************** DS Management API *****************************************************************************/
     
     public static HashSet getServerDataSources(DeploymentManager dm){

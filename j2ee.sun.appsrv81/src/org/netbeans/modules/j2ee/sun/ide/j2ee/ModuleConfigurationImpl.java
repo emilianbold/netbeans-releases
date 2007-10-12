@@ -131,6 +131,7 @@ public class ModuleConfigurationImpl implements DatasourceConfiguration, Deploym
             if (null != p) {
                 J2eeModuleProvider jmp = getProvider(p);
                 if (null != jmp) {
+                    ResourceUtils.createSampleDataSource(jmp);
                     InstanceListener il = new StaticBuildExtensionListener(f);
                     
                     // TODO : reenable when GF 3317 is resolved

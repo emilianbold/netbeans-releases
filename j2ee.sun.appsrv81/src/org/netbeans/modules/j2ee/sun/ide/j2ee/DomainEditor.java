@@ -540,6 +540,11 @@ public class DomainEditor {
         return pools;
     }
     
+    public void createSampleDatasource(){
+        Document domainDoc = getDomainDocument();
+        updateWithSampleDataSource(domainDoc);
+    }
+    
     private HashMap getDataSourcesAttrMap(Document domainDoc){
         HashMap dataSourceMap = new HashMap();
         updateWithSampleDataSource(domainDoc);
