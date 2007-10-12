@@ -42,6 +42,7 @@
 package org.netbeans.swing.plaf;
 
 import java.awt.Toolkit;
+import java.util.logging.Logger;
 import org.netbeans.swing.plaf.aqua.AquaLFCustoms;
 import org.netbeans.swing.plaf.gtk.GtkLFCustoms;
 import org.netbeans.swing.plaf.metal.MetalLFCustoms;
@@ -81,6 +82,9 @@ public final class Startup {
      */
     private static final boolean NO_CUSTOMIZATIONS = Boolean.getBoolean("netbeans.plaf.disable.ui.customizations"); //NOI18N
 
+    /** Constant for Nimbus L&F name */
+    private static final String NIMBUS="Nimbus";
+
     /** Singleton instance */
     private static Startup instance = null;
     
@@ -90,7 +94,7 @@ public final class Startup {
 
     private static URL themeURL = null;
     private static Class uiClass = null;
-
+    
     private boolean installed = false;
 
     /** Starts handling of LF customizers. Called only from getInstance. */
@@ -120,6 +124,13 @@ public final class Startup {
     }
 
     private LookAndFeel getLookAndFeel() {
+      // related to #118534 - log info about Nimbus L&F
+      if (uiClass != null && uiClass.getName().contains(NIMBUS)) {
+          Logger.getLogger(getClass().getName()).warning(
+                  "L&F Warning: Nimbus L&F is not supported L&F yet and system " +
+                  "may exhibit various drawing problems. Please use for experimental purposes only.");
+      }
+      
       if (uiClass == null) {
           String uiClassName;
           if (isWindows()) {
@@ -131,7 +142,6 @@ public final class Startup {
           } else {
               //Should get us metal where it doesn't get us GTK
               uiClassName = UIManager.getSystemLookAndFeelClassName();
-              
               // Enable GTK L&F only for JDK version 1.6.0 update 1 and later.
               // GTK L&F quality unacceptable for earlier versions.
               String javaVersion = System.getProperty("java.version");
@@ -145,6 +155,12 @@ public final class Startup {
                   if (uiClassName.indexOf("gtk") >= 0 && System.getProperty("useGtk") != null && !Boolean.getBoolean("useGtk")) {
                       uiClassName = "javax.swing.plaf.metal.MetalLookAndFeel";
                   }
+              }
+              
+              // #118534 - don't allow Nimbus L&F as default system L&F,
+              // as we're not ready to support it yet
+              if (uiClassName.contains("Nimbus")) {
+                  uiClassName = "javax.swing.plaf.metal.MetalLookAndFeel";
               }
           }
           try {
