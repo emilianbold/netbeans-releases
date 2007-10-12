@@ -788,7 +788,13 @@ public class HgCommand {
         command.add(getHgCommand());
         command.add(HG_CLONE_CMD);
         command.add(HG_VERBOSE_CMD);
-        command.add(repository);
+        // Workaround for http://www.selenic.com/mercurial/bts/issue776
+        // Strip off file:// from start of repository
+        if (repository.startsWith("file://")) {
+            command.add(repository.substring(7));
+        } else {
+            command.add(repository);
+        }
         command.add(target);
 
         List<String> list = exec(command);
