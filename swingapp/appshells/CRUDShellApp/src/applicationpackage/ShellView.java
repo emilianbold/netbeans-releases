@@ -206,17 +206,21 @@ public class ShellView extends FrameView {
 
     @Action(enabledProperty = "saveNeeded")
     public Task save() {
-        return new Task(getApplication()) {
-            protected Void doInBackground() {
-                entityManager.getTransaction().commit();
-                entityManager.getTransaction().begin();
-                return null;
-            }
-            @Override
-            protected void finished() {
-                setSaveNeeded(false);
-            }
-        };
+        return new SaveTask(getApplication());
+    }
+
+    private class SaveTask extends Task {
+        SaveTask(org.jdesktop.application.Application app) {
+            super(app);
+        }
+        @Override protected Void doInBackground() {
+            entityManager.getTransaction().commit();
+            entityManager.getTransaction().begin();
+            return null;
+        }
+        @Override protected void finished() {
+            setSaveNeeded(false);
+        }
     }
 
     /**
@@ -225,39 +229,44 @@ public class ShellView extends FrameView {
      * artificial 'Thread.sleep' calls making the task long enough to see the
      * progress visualization - remove the sleeps for real application.
      */
-     @Action
-     public Task refresh() {
-        return new Task(getApplication()) {
-            protected Void doInBackground() {
-                try {
-                    setProgress(0, 0, 4);
-                    setMessage("Rolling back the current changes...");
-                    setProgress(1, 0, 4);
-                    entityManager.getTransaction().rollback();
-                    Thread.sleep(1000L); // remove for real app
-                    setProgress(2, 0, 4);
+    @Action
+    public Task refresh() {
+       return new RefreshTask(getApplication());
+    }
 
-                    setMessage("Starting a new transaction...");
-                    entityManager.getTransaction().begin();
-                    Thread.sleep(500L); // remove for real app
-                    setProgress(3, 0, 4);
+    private class RefreshTask extends Task {
+        RefreshTask(org.jdesktop.application.Application app) {
+            super(app);
+        }
+        @Override protected Void doInBackground() {
+            try {
+                setProgress(0, 0, 4);
+                setMessage("Rolling back the current changes...");
+                setProgress(1, 0, 4);
+                entityManager.getTransaction().rollback();
+                Thread.sleep(1000L); // remove for real app
+                setProgress(2, 0, 4);
 
-                    setMessage("Fetching new data...");
-                    java.util.Collection data = query.getResultList();
-                    Thread.sleep(1300L); // remove for real app
-                    setProgress(4, 0, 4);
+                setMessage("Starting a new transaction...");
+                entityManager.getTransaction().begin();
+                Thread.sleep(500L); // remove for real app
+                setProgress(3, 0, 4);
 
-                    Thread.sleep(150L); // remove for real app
-                    list.clear();
-                    list.addAll(data);
-                } catch(InterruptedException ignore) { }
-                return null;
-            }
-            protected void finished() {
-                setMessage("Done.");
-                setSaveNeeded(false);
-            }
-        };
+                setMessage("Fetching new data...");
+                java.util.Collection data = query.getResultList();
+                Thread.sleep(1300L); // remove for real app
+                setProgress(4, 0, 4);
+
+                Thread.sleep(150L); // remove for real app
+                list.clear();
+                list.addAll(data);
+            } catch(InterruptedException ignore) { }
+            return null;
+        }
+        @Override protected void finished() {
+            setMessage("Done.");
+            setSaveNeeded(false);
+        }
     }
 
     @Action
