@@ -588,6 +588,9 @@ public class RubyParser implements Parser {
         }
 
         Node newRoot = AstUtilities.getRoot(info);
+        if (newRoot == null) {
+            return null;
+        }
 
         // Find newNode
         Node newNode = find(oldRoot, oldNode, newRoot);
