@@ -761,8 +761,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
     
     private APTIncludeHandler getIncludeHandler(NativeFileItem nativeFile) {
-        if (!isSourceFile(nativeFile)){
-            nativeFile = new DefaultFileItem(nativeFile);
+        if (!isSourceFile(nativeFile)) {
+            nativeFile = DefaultFileItem.toDefault(nativeFile);
         }
         List<String> userIncludePaths = nativeFile.getUserIncludePaths();
         List<String> sysIncludePaths = nativeFile.getSystemIncludePaths();
@@ -774,7 +774,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     
     private APTMacroMap getMacroMap(NativeFileItem nativeFile) {
         if (!isSourceFile(nativeFile)){
-            nativeFile = new DefaultFileItem(nativeFile);
+            nativeFile = DefaultFileItem.toDefault(nativeFile);
         }
         List<String> userMacros = nativeFile.getUserMacroDefinitions();
         List<String> sysMacros = nativeFile.getSystemMacroDefinitions();
@@ -1482,8 +1482,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
     
     private StartEntryInfo getStartEntryInfo(APTPreprocHandler preprocHandler, APTPreprocHandler.State state) {
-	FileImpl csmFile = getStartFile(state);
-	ProjectBase startProject = csmFile != null ? csmFile.getProjectImpl() : null;
+        StartEntry startEntry = APTHandlersSupport.extractStartEntry(state);
+	ProjectBase startProject = getStartProject(startEntry);
+        FileImpl csmFile = startProject == null ? null : startProject.getFile(new File(startEntry.getStartFile()));
 	if (csmFile != null) {
 	    NativeFileItem nativeFile = csmFile.getNativeFileItem();
 	    if( nativeFile != null ) {
@@ -1512,12 +1513,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 	    ProjectBase startProject = sei.startProject;
 	    preprocHandler = sei.preprocHandler;
 
-	    assert csmFile != null;
 	    APTFile aptLight = null;
 	    try {
-		aptLight = getAPTLight(csmFile);
-	    } catch (IOException ex) {
-		ex.printStackTrace(System.err);
+		aptLight = csmFile == null ? null : getAPTLight(csmFile);
+            } catch (IOException ex) {
+                System.err.println("can't restore preprocessor state for " + interestedFile + //NOI18N
+                        "\nreason: " + ex.getMessage());//NOI18N
 	    }
 	    if (aptLight != null) {
 		// for testing remember restored file
@@ -1540,11 +1541,64 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 		if (TRACE_PP_STATE_OUT) {
 		    System.err.println("after restoring " + preprocHandler); // NOI18N
 		}
-	    }
+	    } else {
+                // need to recover from the problem, when start file is invalid or absent
+                // try to find project who can create default handler with correct
+                // compiler settings
+                // preferences is start project
+                if (startProject == null) {
+                    // otherwise use the project owner
+                    startProject = this;
+                }
+                preprocHandler = startProject.createDefaultPreprocHandler(interestedFile);
+                // remember
+                // TODO: file container should accept all without checks
+                // otherwise state will not be replaced
+//                synchronized (getFileContainer().getLock(interestedFile)) {
+//                    if (state.equals(getPreprocState(interestedFile))) {
+//                        APTPreprocHandler.State recoveredState = preprocHandler.getState();
+//                        assert !recoveredState.isCompileContext();
+//                        putPreprocState(interestedFile, recoveredState);
+//                    }
+//                }
+            }
             return preprocHandler;
 	}
     }
-
+    
+    private NativeProject findNativeProjectHolder(Set<ProjectBase> visited) {
+        visited.add(this);
+        NativeProject nativeProject = ModelSupport.instance().getNativeProject(getPlatformProject());
+        if (nativeProject == null) {
+            // try to find dependent projects and ask them
+            List<ProjectBase> deps = this.getDependentProjects();
+            for (ProjectBase dependentPrj : deps) {
+                if (!visited.contains(dependentPrj)) {
+                    nativeProject = dependentPrj.findNativeProjectHolder(visited);
+                    if (nativeProject != null) {
+                        // found 
+                        break;
+                    }
+                }
+            }
+        }
+        return nativeProject;
+    }
+    
+    private APTPreprocHandler createDefaultPreprocHandler(File interestedFile) {
+        NativeProject nativeProject = findNativeProjectHolder(new HashSet(10));
+        APTPreprocHandler out = null;
+        if( nativeProject != null ) {        
+            // we have own native project to get settings from
+            NativeFileItem item = new DefaultFileItem(nativeProject, interestedFile.getAbsolutePath());
+            out = createPreprocHandler(item);
+        } else {
+            out = createEmptyPreprocHandler(interestedFile);
+        }
+        assert out != null : "failed creating default ppState for " + interestedFile;
+        return out;
+    }
+    
     private static <T> Stack<T> reverse(List<T> original) {
         Stack<T> reverse = new Stack<T>();
         for (int i = original.size() - 1; i >= 0; i--) {
@@ -1596,7 +1650,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return getGraphStorage();
     }
     
-    private static class DefaultFileItem implements NativeFileItem {
+    protected final static class DefaultFileItem implements NativeFileItem {
         
         private NativeProject project;
         private String absolutePath;
@@ -1609,6 +1663,14 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         public DefaultFileItem(NativeFileItem nativeFile) {
             this.project = nativeFile.getNativeProject();
             this.absolutePath = nativeFile.getFile().getAbsolutePath();
+        }
+        
+        public static NativeFileItem toDefault(NativeFileItem nativeFile) {
+            // if not already fake
+            if (!(nativeFile instanceof DefaultFileItem)) {
+                nativeFile = new DefaultFileItem(nativeFile);
+            }
+            return nativeFile;
         }
         
         public List<String> getUserMacroDefinitions() {
