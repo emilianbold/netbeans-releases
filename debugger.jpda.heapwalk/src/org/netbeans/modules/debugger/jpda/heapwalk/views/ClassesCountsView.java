@@ -48,6 +48,7 @@ import java.beans.PropertyChangeEvent;
 import java.lang.ref.WeakReference;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -87,12 +88,13 @@ public class ClassesCountsView extends TopComponent implements org.openide.util.
     private transient JPanel content;
     private transient HeapFragmentWalker hfw;
     private transient ClassesListController clc;
-    
+
     /**
      * Creates a new instance of ClassesCountsView
      */
     public ClassesCountsView () {
         setIcon (Utilities.loadImage ("org/netbeans/modules/debugger/resources/classesView/Classes.png")); // NOI18N
+        setLayout (new BorderLayout ());
     }
     
     protected String preferredID() {
@@ -109,7 +111,6 @@ public class ClassesCountsView extends TopComponent implements org.openide.util.
             return;
         }
         if (tree == null) {
-            setLayout (new BorderLayout ());
             tree = Models.createView  (Models.EMPTY_MODEL);
             tree.setName (NbBundle.getMessage (ClassesCountsView.class, "CTL_Classes_tooltip")); // NOI18N
             add (tree, "Center");  //NOI18N
@@ -158,19 +159,34 @@ public class ClassesCountsView extends TopComponent implements org.openide.util.
             content = null;
         }
         if (debugger != null && debugger.canGetInstanceInfo()) {
-            setLayout (new BorderLayout ());
-            ClassesController cc;
-            synchronized (this) {
-                Heap heap = new HeapImpl(debugger);
-                hfw = new DebuggerHeapFragmentWalker(heap);
-                cc = hfw.getClassesController();
-                content = cc.getPanel();
-                java.awt.Component header = cc.getClassesListController().getPanel().getComponent(0);
-                header.setVisible(false);
-                clc = cc.getClassesListController();
-            }
-            cc.getClassesListController().setColumnVisibility(3, false);
-            add(content, "Center");
+            final JPDADebugger fDebugger = debugger;
+            Task t = RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    final HeapFragmentWalker hfw;
+                    synchronized (this) {
+                        Heap heap = new HeapImpl(fDebugger);
+                        hfw = new DebuggerHeapFragmentWalker(heap);
+                    }
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            ClassesController cc;
+                            synchronized (this) {
+                                ClassesCountsView.this.hfw = hfw;
+                                cc = hfw.getClassesController();
+                                content = cc.getPanel();
+                                clc = cc.getClassesListController();
+                            }
+                            java.awt.Component header = cc.getClassesListController().getPanel().getComponent(0);
+                            header.setVisible(false);
+                            cc.getClassesListController().setColumnVisibility(3, false);
+                            add(content, "Center");
+                            repaint();
+                            revalidate();
+                            //System.err.println("  Added content "+content);
+                        }
+                    });
+                }
+            });
         }
     }
     

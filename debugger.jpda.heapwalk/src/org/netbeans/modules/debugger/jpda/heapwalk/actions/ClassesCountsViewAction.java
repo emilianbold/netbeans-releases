@@ -78,26 +78,18 @@ public class ClassesCountsViewAction extends AbstractAction {
     }
 
     public void actionPerformed (ActionEvent evt) {
-        if (activateComponent (ClassesCountsView.class)) return;
+        if (activateComponent ("classes")) return;
         ClassesCountsView v = new ClassesCountsView ();
         v.open ();
         v.requestActive ();
     }
 
-    // TODO Rewrite this code - it creates all TopComponents !!!
-    static boolean activateComponent (Class componentClass) {
-        //WindowManager.getDefault().findTopComponent("");
-        Iterator it = WindowManager.getDefault ().getModes ().iterator ();
-        while (it.hasNext ()) {
-            Mode m = (Mode) it.next ();
-            TopComponent[] tcs = m.getTopComponents ();
-            int i, k = tcs.length;
-            for (i = 0; i < k; i++)
-                if (tcs [i].getClass ().equals (componentClass)) {
-                    tcs [i].open ();
-                    tcs [i].requestActive ();
-                    return true;
-                }
+    private static boolean activateComponent (String componentName) {
+        TopComponent tc = WindowManager.getDefault().findTopComponent(componentName);
+        if (tc != null) {
+            tc.open ();
+            tc.requestActive ();
+            return true;
         }
         return false;
     }
