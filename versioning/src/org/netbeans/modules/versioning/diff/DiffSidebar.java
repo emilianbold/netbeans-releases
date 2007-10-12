@@ -101,6 +101,7 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
     private final BaseDocument    document;
     
     private boolean                 sidebarVisible;
+    private boolean                 sidebarInComponentHierarchy;
     private Difference []           currentDiff;
     private DiffMarkProvider        markProvider;
 
@@ -395,6 +396,7 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
     }
 
     void refresh() {
+        if (!sidebarInComponentHierarchy) return;
         shutdown();
         initialize();
         refreshDiff();
@@ -410,11 +412,13 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
 
     public void addNotify() {
         super.addNotify();
+        sidebarInComponentHierarchy = true;
         initialize();
     }
 
     public void removeNotify() {
         shutdown();
+        sidebarInComponentHierarchy = false;
         super.removeNotify();
     }
     
