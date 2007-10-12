@@ -71,7 +71,7 @@ import org.openide.filesystems.FileUtil;
 public final class LibraryManager {
     private static LibraryManager instance = new LibraryManager();
     
-    public static LibraryManager getInsatnce(){
+    public static LibraryManager getInstance(){
         return instance;
     }
     

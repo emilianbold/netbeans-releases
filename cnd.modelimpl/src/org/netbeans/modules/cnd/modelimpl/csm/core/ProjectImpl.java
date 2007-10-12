@@ -321,20 +321,20 @@ public final class ProjectImpl extends ProjectBase {
     
     public @Override void write(DataOutput aStream) throws IOException {
         super.write(aStream);
-        UIDObjectFactory aFactory = UIDObjectFactory.getDefaultFactory();
 	// we don't need this since ProjectBase persists fqn 
+        //UIDObjectFactory aFactory = UIDObjectFactory.getDefaultFactory();
         //aFactory.writeUID(getUID(), aStream);
-        LibraryManager.getInsatnce().writeProjectLibraries(getUID(),aStream);
+        LibraryManager.getInstance().writeProjectLibraries(getUID(),aStream);
     }
 
     public ProjectImpl(DataInput input) throws IOException {
         super(input);
-        UIDObjectFactory aFactory = UIDObjectFactory.getDefaultFactory();
 	// we don't need this since ProjectBase persists fqn 
+        //UIDObjectFactory aFactory = UIDObjectFactory.getDefaultFactory();
         //CsmUID uid = aFactory.readUID(input);
         //LibraryManager.getInsatnce().read(uid, input);
-	LibraryManager.getInsatnce().readProjectLibraries(getUID(), input);
-        nativeFiles = new NativeFileContainer();
+	LibraryManager.getInstance().readProjectLibraries(getUID(), input);
+        //nativeFiles = new NativeFileContainer();
     }
 
 }

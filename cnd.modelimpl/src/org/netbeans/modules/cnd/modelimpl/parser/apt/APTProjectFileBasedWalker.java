@@ -87,7 +87,7 @@ public abstract class APTProjectFileBasedWalker extends APTAbstractWalker {
             if (getIncludeHandler().pushInclude(path, apt.getToken().getLine(), resolvedPath.getIndex())) {
                 ProjectBase startProject = this.getStartProject();
                 if (startProject != null) {
-                    ProjectBase inclFileOwner = LibraryManager.getInsatnce().resolveFileProjectOnInclude(startProject, getFile(), resolvedPath);
+                    ProjectBase inclFileOwner = LibraryManager.getInstance().resolveFileProjectOnInclude(startProject, getFile(), resolvedPath);
                     try {
                         included = includeAction(inclFileOwner, path, mode, apt);
                     } catch (FileNotFoundException ex) {

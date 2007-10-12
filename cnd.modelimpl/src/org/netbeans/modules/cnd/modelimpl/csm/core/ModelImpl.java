@@ -338,7 +338,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
         if( prj != null ) {
             disposeProject(prj, cleanRepository);
             if (!prj.isArtificial()){
-                LibraryManager.getInsatnce().onProjectClose(prj.getUID());
+                LibraryManager.getInstance().onProjectClose(prj.getUID());
             }
         }   
       

@@ -377,7 +377,7 @@ public class ModelSupport implements PropertyChangeListener {
                 final ProjectBase project = getProject(items.get(0), true);
                 if( project != null ) {
                     if (project instanceof ProjectImpl) {
-                        LibraryManager.getInsatnce().onProjectClose(project.getUID());
+                        LibraryManager.getInstance().onProjectClose(project.getUID());
                     }
                     project.onFilePropertyChanged(items);
                 }
