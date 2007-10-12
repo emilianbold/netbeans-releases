@@ -42,9 +42,34 @@
 package org.netbeans.modules.debugger.jpda.heapwalk.views;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.util.List;
+import java.util.Set;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextArea;
+import javax.swing.SwingUtilities;
+import org.netbeans.api.debugger.ActionsManager;
+import org.netbeans.api.debugger.Breakpoint;
+import org.netbeans.api.debugger.DebuggerEngine;
+import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.DebuggerManagerAdapter;
+import org.netbeans.api.debugger.DebuggerManagerListener;
+import org.netbeans.api.debugger.Session;
+import org.netbeans.api.debugger.Watch;
+import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.modules.profiler.heapwalk.HeapFragmentWalker;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.util.WeakSet;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -57,21 +82,58 @@ public class InstancesView extends TopComponent {
     private javax.swing.JPanel hfwPanel;
     private HeapFragmentWalker hfw;
     private HeapFragmentWalkerProvider provider;
+    private DebuggerSessionListener listener;
     
     /** Creates a new instance of InstancesView */
     public InstancesView() {
         setIcon (Utilities.loadImage ("org/netbeans/modules/debugger/jpda/resources/root.gif")); // NOI18N
+        setLayout (new BorderLayout ());
     }
 
     protected void componentShowing() {
         super.componentShowing ();
-        ClassesCountsView cc = (ClassesCountsView) WindowManager.getDefault().findTopComponent("classes");
-        HeapFragmentWalker hfw = cc.getCurrentFragmentWalker();
-        if (hfw != null) {
-            setHeapFragmentWalker(hfw);
-            provider = null;
-        } else if (provider != null) {
-            setHeapFragmentWalker(provider.getHeapFragmentWalker());
+        listener = new DebuggerSessionListener();
+        DebuggerManager.getDebuggerManager().addDebuggerListener(listener);
+        showContent(listener.getState());
+    }
+    
+    private void showContent(final int state) {
+        if (SwingUtilities.isEventDispatchThread()) {
+            showTheContent(state);
+        } else {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    showTheContent(state);
+                }
+            });
+        }
+    }
+    
+    private void showTheContent(int state) {
+        if (state == JPDADebugger.STATE_STOPPED) {
+            ClassesCountsView cc = (ClassesCountsView) WindowManager.getDefault().findTopComponent("classes");
+            HeapFragmentWalker hfw = cc.getCurrentFragmentWalker();
+            if (hfw != null) {
+                setHeapFragmentWalker(hfw);
+                provider = null;
+            } else if (provider != null) {
+                setHeapFragmentWalker(provider.getHeapFragmentWalker());
+            } else if (this.hfw != null) {
+                setHeapFragmentWalker(this.hfw);
+            }
+        } else if (state == JPDADebugger.STATE_RUNNING) {
+            if (hfwPanel != null) {
+                remove(hfwPanel);
+            }
+            this.hfw = null;
+            hfwPanel = new SuspendInfoPanel();
+            add(hfwPanel, "Center");
+        } else {
+            if (hfwPanel != null) {
+                remove(hfwPanel);
+                hfwPanel = null;
+            }
+            this.hfw = null;
         }
     }
     
@@ -82,6 +144,8 @@ public class InstancesView extends TopComponent {
             hfwPanel = null;
         }
         hfw = null;
+        DebuggerManager.getDebuggerManager().removeDebuggerListener(listener);
+        listener = null;
     }
     
     public void setHeapFragmentWalkerProvider(HeapFragmentWalkerProvider hfwp) {
@@ -96,7 +160,6 @@ public class InstancesView extends TopComponent {
         }
         this.hfw = hfw;
         if (hfw == null) return ;
-        setLayout (new BorderLayout ());
         java.awt.Container header;
         header = (java.awt.Container) hfw.getInstancesController().getFieldsBrowserController().getPanel().getComponent(0);
         header.getComponent(1).setVisible(false);
@@ -106,6 +169,7 @@ public class InstancesView extends TopComponent {
         header.getComponent(1).setVisible(false);
         hfwPanel = hfw.getInstancesController().getPanel();
         add(hfwPanel, "Center");
+        repaint();
     }
     
     public HeapFragmentWalker getCurrentFragmentWalker() {
@@ -128,6 +192,122 @@ public class InstancesView extends TopComponent {
         
         HeapFragmentWalker getHeapFragmentWalker();
         
+    }
+    
+    private class DebuggerSessionListener extends DebuggerManagerAdapter {
+        
+        private Set attachedTo = new WeakSet();
+        private int lastState = -1;
+        
+        public int getState() {
+            int state = getTheState();
+            synchronized (this) {
+                lastState = state;
+            }
+            return state;
+        }
+        
+        private int getTheState() {
+            int state = JPDADebugger.STATE_DISCONNECTED;
+            DebuggerEngine de = DebuggerManager.getDebuggerManager().getCurrentEngine();
+            if (de != null) {
+                JPDADebugger d = (JPDADebugger) de.lookupFirst(null, JPDADebugger.class);
+                if (d != null) {
+                    state = getThreadsState(d);
+                    synchronized (this) {
+                        if (!attachedTo.contains(d)) {
+                            attachedTo.add(d);
+                            d.addPropertyChangeListener(this);
+                        }
+                    }
+                }
+            }
+            return state;
+        }
+        
+        private int getThreadsState(JPDADebugger d) {
+            try {
+                java.lang.reflect.Method allThreadsMethod =
+                        d.getClass().getMethod("getAllThreads", new Class[] {});
+                List<JPDAThread> threads = (List<JPDAThread>) allThreadsMethod.invoke(d, new Object[]{});
+                for (JPDAThread t : threads) {
+                    if (!t.isSuspended()) {
+                        return JPDADebugger.STATE_RUNNING;
+                    }
+                }
+                return JPDADebugger.STATE_STOPPED;
+            } catch (Exception ex) {
+                return d.getState();
+            }
+        }
+        
+        public void propertyChange(PropertyChangeEvent evt) {
+            String propertyName = evt.getPropertyName();
+            int state;
+            if (propertyName.equals(DebuggerManager.PROP_CURRENT_ENGINE) ||
+                propertyName.equals(JPDADebugger.PROP_STATE)) {
+                
+                state = getTheState();
+                synchronized (this) {
+                    if (state != lastState) {
+                        lastState = state;
+                    } else {
+                        return ;
+                    }
+                }
+                showContent(state);
+            }
+        }
+        
+    }
+    
+    private static class SuspendInfoPanel extends JPanel {
+        
+        public SuspendInfoPanel() {
+            setLayout(new java.awt.GridBagLayout());
+            JTextArea infoText = new JTextArea(NbBundle.getMessage(InstancesView.class, "MSG_NotSuspendedApp"));
+            infoText.setEditable(false);
+            infoText.setEnabled(false);
+            infoText.setBackground(getBackground());
+            infoText.setDisabledTextColor(new JLabel().getForeground());
+            infoText.setLineWrap(true);
+            infoText.setWrapStyleWord(true);
+            infoText.setPreferredSize(
+                    new Dimension(
+                        infoText.getFontMetrics(infoText.getFont()).stringWidth(infoText.getText()),
+                        infoText.getPreferredSize().height));
+            GridBagConstraints gridBagConstraints = new GridBagConstraints();
+            gridBagConstraints.gridx = 0;
+            gridBagConstraints.gridy = 1;
+            //gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+            //gridBagConstraints.weightx = 1.0;
+            gridBagConstraints.anchor = java.awt.GridBagConstraints.CENTER;
+            gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+            add(infoText, gridBagConstraints);
+            infoText.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(InstancesView.class, "MSG_NotSuspendedApp"));
+            
+            JButton pauseButton = new JButton();
+            pauseButton.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    doStopCurrentDebugger();
+                }
+            });
+            org.openide.awt.Mnemonics.setLocalizedText(pauseButton, NbBundle.getMessage(InstancesView.class, "CTL_Pause"));
+            pauseButton.setIcon(new ImageIcon (Utilities.loadImage ("org/netbeans/modules/debugger/resources/actions/Pause.gif")));
+            gridBagConstraints.gridx = 0;
+            gridBagConstraints.gridy = 2;
+            gridBagConstraints.anchor = java.awt.GridBagConstraints.CENTER;
+            gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+            add(pauseButton, gridBagConstraints);
+        }
+        
+        private void doStopCurrentDebugger() {
+            DebuggerEngine de = DebuggerManager.getDebuggerManager().getCurrentEngine();
+            if (de != null) {
+                de.getActionsManager().doAction(ActionsManager.ACTION_PAUSE);
+            }
+        }
+
     }
     
 }

@@ -86,6 +86,7 @@ public class ClassesCountsViewAction extends AbstractAction {
 
     // TODO Rewrite this code - it creates all TopComponents !!!
     static boolean activateComponent (Class componentClass) {
+        //WindowManager.getDefault().findTopComponent("");
         Iterator it = WindowManager.getDefault ().getModes ().iterator ();
         while (it.hasNext ()) {
             Mode m = (Mode) it.next ();
