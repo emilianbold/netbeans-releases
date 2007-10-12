@@ -367,6 +367,21 @@ public class CreateElementTest extends HintsTestBase {
         )));
     }
     
+    public void test117431() throws Exception {
+        //do not offer same hint more times for a same unknown variable
+        performTestAnalysisTest("org.netbeans.test.java.hints.Bug117431", 155, new HashSet<String>(Arrays.asList(
+		"AddParameterOrLocalFix:ii:int:true",
+		"CreateFieldFix:ii:org.netbeans.test.java.hints.Bug117431:int:[private, static]",
+                "AddParameterOrLocalFix:ii:int:false"
+        )));
+        //but do offer for a different one
+        performTestAnalysisTest("org.netbeans.test.java.hints.Bug117431", 219, new HashSet<String>(Arrays.asList(
+                "AddParameterOrLocalFix:kk:int:true",
+                "CreateFieldFix:kk:org.netbeans.test.java.hints.Bug117431:int:[private, static]",
+                "AddParameterOrLocalFix:kk:int:false"
+        )));
+    }
+    
     protected void performTestAnalysisTest(String className, int offset, Set<String> golden) throws Exception {
         prepareTest(className);
         

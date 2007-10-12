@@ -309,5 +309,33 @@ public class AddParameterOrLocalFix implements Fix {
     boolean isParameter() {
         return parameter;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final AddParameterOrLocalFix other = (AddParameterOrLocalFix) obj;
+        if (this.name != other.name && (this.name == null || !this.name.equals(other.name))) {
+            return false;
+        }
+        if (this.parameter != other.parameter) {
+            return false;
+        }
+        
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 97 * hash + (this.name != null ? this.name.hashCode() : 0);
+        hash = 97 * hash + (this.parameter ? 1 : 0);
+        return hash;
+    }
+    
     
 }

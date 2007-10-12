@@ -138,4 +138,36 @@ public final class CreateFieldFix implements Fix {
     String toDebugString(CompilationInfo info) {
         return "CreateFieldFix:" + name + ":" + target.getQualifiedName() + ":" + proposedType.resolve(info).toString() + ":" + modifiers; // NOI18N
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final CreateFieldFix other = (CreateFieldFix) obj;
+        if (this.target != other.target && (this.target == null || !this.target.equals(other.target))) {
+            return false;
+        }
+        if (this.modifiers != other.modifiers && (this.modifiers == null || !this.modifiers.equals(other.modifiers))) {
+            return false;
+        }
+        if (this.name != other.name && (this.name == null || !this.name.equals(other.name))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 79 * hash + (this.target != null ? this.target.hashCode() : 0);
+        hash = 79 * hash + (this.modifiers != null ? this.modifiers.hashCode() : 0);
+        hash = 79 * hash + (this.name != null ? this.name.hashCode() : 0);
+        return hash;
+    }
+    
+    
 }
