@@ -456,16 +456,21 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             installationSizeLabel = new NbiLabel();
             
             
-            leftImagePanel = new NbiPanel();
-            leftImagePanel.setBackgroundImage(WELCOME_PAGE_LEFT_IMAGE_RESOURCE,
-                    ANCHOR_BOTTOM_LEFT);
-            ImageIcon icon = leftImagePanel.getBackgroundImage(NbiPanel.ANCHOR_BOTTOM_LEFT);
-            leftImagePanel.setPreferredSize(new Dimension(icon.getIconWidth(),icon.getIconHeight()));
-            leftImagePanel.setMaximumSize(new Dimension(icon.getIconWidth(),icon.getIconHeight()));
-            leftImagePanel.setMinimumSize(new Dimension(icon.getIconWidth(),0));
-            leftImagePanel.setSize(new Dimension(icon.getIconWidth(),icon.getIconHeight()));
+            leftImagePanel = new NbiPanel();            
+            leftImagePanel.setBackgroundImage(WELCOME_PAGE_LEFT_TOP_IMAGE_RESOURCE,
+                    ANCHOR_TOP_LEFT);
+            leftImagePanel.setBackgroundImage(WELCOME_PAGE_LEFT_BOTTOM_IMAGE_RESOURCE,
+                    ANCHOR_BOTTOM_LEFT);                        
+            int width = leftImagePanel.getBackgroundImage(NbiPanel.ANCHOR_TOP_LEFT).getIconWidth();
+            int height = leftImagePanel.getBackgroundImage(NbiPanel.ANCHOR_TOP_LEFT).getIconHeight() + 
+                    leftImagePanel.getBackgroundImage(NbiPanel.ANCHOR_BOTTOM_LEFT).getIconHeight();
             
-            leftImagePanel.setOpaque(true);
+            leftImagePanel.setPreferredSize(new Dimension(width,height));
+            leftImagePanel.setMaximumSize(new Dimension(width,height));
+            leftImagePanel.setMinimumSize(new Dimension(width,0));
+            leftImagePanel.setSize(new Dimension(width,height));
+            
+            leftImagePanel.setOpaque(false);
             // this /////////////////////////////////////////////////////////////////
             int dy = 0;
             add(leftImagePanel, new GridBagConstraints(
@@ -780,9 +785,12 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             "cancel.button.text"; // NOI18N
     public static final String DEFAULT_COMPONENT_DESCRIPTION_PROPERTY =
             "default.component.description";
-    public static final String WELCOME_PAGE_LEFT_IMAGE_RESOURCE =
+    public static final String WELCOME_PAGE_LEFT_TOP_IMAGE_RESOURCE =
             FileProxy.RESOURCE_SCHEME_PREFIX +
-            "org/netbeans/installer/wizard/wizard-welcome-left.png";
+            "org/netbeans/installer/wizard/components/panels/netbeans/resources/welcome-left-top.png";
+    public static final String WELCOME_PAGE_LEFT_BOTTOM_IMAGE_RESOURCE =
+            FileProxy.RESOURCE_SCHEME_PREFIX +
+            "org/netbeans/installer/wizard/components/panels/netbeans/resources/welcome-left-bottom.png";
     public static final String DEFAULT_CUSTOMIZE_TITLE =
             ResourceUtils.getString(NbWelcomePanel.class,
             "NWP.customize.title"); // NOI18N

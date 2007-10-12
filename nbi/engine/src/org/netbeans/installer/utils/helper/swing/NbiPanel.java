@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU General
  * Public License Version 2 only ("GPL") or the Common Development and Distribution
  * License("CDDL") (collectively, the "License"). You may not use this file except in
@@ -16,13 +16,13 @@
  * accompanied this code. If applicable, add the following below the License Header,
  * with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * Contributor(s):
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL or only the
  * GPL Version 2, indicate your decision by adding "[Contributor] elects to include
  * this software in this distribution under the [CDDL or GPL Version 2] license." If
@@ -40,29 +40,35 @@ import java.awt.Graphics;
 import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.io.File;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import org.netbeans.installer.utils.FileProxy;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.exceptions.DownloadException;
+import org.netbeans.installer.utils.helper.Pair;
 
 /**
  *
  * @author Kirill Sorokin
  */
 public class NbiPanel extends JPanel {
-    private HashMap<Integer, ImageIcon> imagesMap ;
+    private List <Pair <Integer, ImageIcon>> images ;
     public static final int ANCHOR_TOP_LEFT  = 1;
     public static final int ANCHOR_TOP_RIGHT = 2;
     public static final int ANCHOR_BOTTOM_LEFT = 3;
     public static final int ANCHOR_BOTTOM_RIGHT = 4;
+    public static final int ANCHOR_LEFT  = 5;
+    public static final int ANCHOR_RIGHT = 6;
+    public static final int ANCHOR_BOTTOM = 7;
+    public static final int ANCHOR_TOP = 8;
     
     public NbiPanel() {
         super();
         
         setLayout(new GridBagLayout());
-        imagesMap = new HashMap <Integer, ImageIcon> ();
+        images = new ArrayList <Pair <Integer, ImageIcon>> ();
     }
     public void setBackgroundImage(String backgroundImageURI, int anchor) {
         if (backgroundImageURI != null) {
@@ -77,20 +83,26 @@ public class NbiPanel extends JPanel {
     }
     public void setBackgroundImage(ImageIcon backgroundImage, int anchor) {
         if (backgroundImage != null) {
-                imagesMap.put(anchor,backgroundImage);            
+            images.add(new Pair <Integer, ImageIcon> (anchor,backgroundImage));
         }
     }
     public ImageIcon getBackgroundImage(int anchor) {
-        return imagesMap.get(anchor);
+        for(Pair <Integer, ImageIcon> pair : images) {
+            if(pair.getFirst().intValue() == anchor) {
+                return pair.getSecond();
+            }
+        }
+        return null;
     }
     protected void paintComponent(Graphics graphics) {
         super.paintComponent(graphics);
         
-        for(Integer anchor : imagesMap.keySet()){
-            Image backgroundImage = imagesMap.get(anchor).getImage();
+        for(Pair <Integer, ImageIcon> pair : images){
+            final int anchor = pair.getFirst().intValue();
+            Image backgroundImage = pair.getSecond().getImage();
             if (backgroundImage != null) {
-                switch(anchor.intValue()) {
-                    case ANCHOR_TOP_LEFT :                        
+                switch(anchor) {
+                    case ANCHOR_TOP_LEFT :
                         graphics.drawImage(backgroundImage,
                                 0,
                                 0,
@@ -102,7 +114,7 @@ public class NbiPanel extends JPanel {
                                 0,
                                 this);
                         break;
-                    case ANCHOR_BOTTOM_LEFT:                        
+                    case ANCHOR_BOTTOM_LEFT:
                         graphics.drawImage(backgroundImage,
                                 0,
                                 this.getHeight() - backgroundImage.getHeight(this),
@@ -112,6 +124,31 @@ public class NbiPanel extends JPanel {
                         graphics.drawImage(backgroundImage,
                                 this.getWidth() - backgroundImage.getWidth(this),
                                 this.getHeight() - backgroundImage.getHeight(this),
+                                this);
+                        break;
+                        
+                    case ANCHOR_LEFT :
+                        graphics.drawImage(backgroundImage,
+                                0,
+                                (this.getHeight() - backgroundImage.getHeight(this)) / 2 ,
+                                this);
+                        break;
+                    case ANCHOR_RIGHT:
+                        graphics.drawImage(backgroundImage,
+                                this.getWidth() - backgroundImage.getWidth(this),
+                                (this.getHeight() - backgroundImage.getHeight(this)) / 2,
+                                this);
+                        break;
+                    case ANCHOR_BOTTOM:
+                        graphics.drawImage(backgroundImage,
+                                (this.getWidth() - backgroundImage.getWidth(this))/2,
+                                this.getHeight() - backgroundImage.getHeight(this),
+                                this);
+                        break;
+                    case ANCHOR_TOP:
+                        graphics.drawImage(backgroundImage,
+                                this.getWidth() - backgroundImage.getWidth(this),
+                                0,
                                 this);
                         break;
                 }
