@@ -75,6 +75,7 @@ public class PaletteKit implements Runnable {
     private LinkedList<Lookup> validationQueue;
     private DataFolder rootFolder;
     private FileSystem fs;
+    private final Object validationSynch = new Object();
 
     public PaletteKit(final String projectType) {
         this.fs = Repository.getDefault().getDefaultFileSystem();
@@ -102,7 +103,7 @@ public class PaletteKit implements Runnable {
         }
     }
 
-    void clean() {
+    synchronized void clean() {
         if (activeDocument == null || activeDocument.get() == null) {
             return;
         }
@@ -144,11 +145,11 @@ public class PaletteKit implements Runnable {
                 }
             }
         } catch (IOException ex) {
-            Debug.error(ex);
+            Debug.warning(ex);
         }
     }
 
-    void refreshDescriptorRegistry() {
+    synchronized void refreshDescriptorRegistry() {
         if (activeDocument == null || activeDocument.get() == null) {
             return;
         }
@@ -157,7 +158,7 @@ public class PaletteKit implements Runnable {
         ComponentSerializationSupport.refreshDescriptorRegistry(projectType);
     }
     
-    void update() {
+    synchronized void update() {
         if (activeDocument == null || activeDocument.get() == null) {
             return;
         }
@@ -231,7 +232,7 @@ public class PaletteKit implements Runnable {
                 try {
                     catFO = DataFolder.create(rootFolder, catID).getPrimaryFile();
                 } catch (IOException ex) {
-                    Debug.error("Can't create folder for palette category: " + ex); // NOI18N
+                    Debug.warning("Can't create folder for palette category: " + ex); // NOI18N
                 }
             }
 
@@ -273,7 +274,9 @@ public class PaletteKit implements Runnable {
                         lock.releaseLock();
                     }
                 } catch (IOException e) {
-                    Debug.error("Can't create file for palette item: " + e); // NOI18N
+                    Debug.warning("Can't create file for palette item: " + // NOI18N
+                            path + ", " + producerID + ", " + producerID + // NOI18N
+                            "." + PaletteItemDataLoader.EXTENSION + ": " + e); // NOI18N
                 }
             }
         }
@@ -300,7 +303,7 @@ public class PaletteKit implements Runnable {
 
     private void scheduleCheckValidityCore(Lookup lookup) {
         validationQueue.add(lookup);
-        synchronized (this) {
+        synchronized (validationSynch) {
             if (isValidationRunning) {
                 return;
             }
@@ -311,7 +314,7 @@ public class PaletteKit implements Runnable {
 
     public void run() {
         while (true) {
-            synchronized (this) {
+            synchronized (validationSynch) {
                 if (validationQueue.isEmpty()) {
                     isValidationRunning = false;
                     break;
@@ -430,7 +433,7 @@ public class PaletteKit implements Runnable {
                             }
                         });
                     } catch (IOException e) {
-                        throw Debug.error(e);
+                        Debug.warning(e);
                     }
                 }
             };
@@ -451,7 +454,7 @@ public class PaletteKit implements Runnable {
                             }
                         });
                     } catch (IOException e) {
-                        throw Debug.error(e);
+                        Debug.warning(e);
                     }
                 }
             };
