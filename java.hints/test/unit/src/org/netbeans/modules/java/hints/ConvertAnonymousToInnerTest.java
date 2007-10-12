@@ -422,6 +422,35 @@ public class ConvertAnonymousToInnerTest extends NbTestCase {
         "}\n");
     }
     
+    public void test114737() throws Exception {
+        performTest(
+        "package hierbas.del.litoral;\n\n" +
+        "public class TestClass {\n" +
+        "    public void test() {\n" +
+        "        new Runnable() {\n" +
+        "            public void run() {\n" +
+        "                test();\n" +
+        "            }\n" +
+        "        };\n" +
+        "    }\n" +
+        "    private void test() {}\n" +
+        "}\n",
+        "package hierbas.del.litoral;\n\n" +
+        "public class TestClass {\n" +
+        "    public void test() {\n" +
+        "    new RunnableImpl();\n" +
+        "    }\n" +
+        "    private void test() {}\n" +
+        "    private class RunnableImpl implements Runnable {\n" +
+        "        public RunnableImpl() {\n" + 
+        "        }\n" + 
+        "        public void run() {\n" +
+        "            test();\n" +
+        "        }\n" +
+        "    }\n" +
+        "}\n");
+    }
+    
     private void performTest(String test, String golden) throws Exception {
         File testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, test);

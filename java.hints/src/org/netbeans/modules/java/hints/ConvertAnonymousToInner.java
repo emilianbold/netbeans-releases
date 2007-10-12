@@ -200,12 +200,10 @@ public class ConvertAnonymousToInner extends AbstractHint {
     private static final class DetectUsedVars extends TreePathScanner<Void, Set<VariableElement>> {
         private CompilationInfo info;
         private TreePath newClassToConvert;
-        private boolean localVariables;
         
-        private DetectUsedVars(CompilationInfo info, TreePath newClassToConvert, boolean localVariables) {
+        private DetectUsedVars(CompilationInfo info, TreePath newClassToConvert) {
             this.info = info;
             this.newClassToConvert = newClassToConvert;
-            this.localVariables = localVariables;
         }
         
         private static final Set<ElementKind> VARIABLES = EnumSet.of(ElementKind.EXCEPTION_PARAMETER, ElementKind.PARAMETER, ElementKind.LOCAL_VARIABLE);
@@ -215,28 +213,52 @@ public class ConvertAnonymousToInner extends AbstractHint {
             Element el = info.getTrees().getElement(getCurrentPath());
             TreePath elPath = el != null ? info.getTrees().getPath(el) : null;
             
-            if (localVariables && el != null && elPath != null && VARIABLES.contains(el.getKind()) && !isParent(newClassToConvert, elPath)) {
-                p.add((VariableElement) el);
-            }
-            
-            if (!localVariables && el != null && el.getKind().isField() && !el.getModifiers().contains(Modifier.STATIC)) {
+            if (el != null && elPath != null && VARIABLES.contains(el.getKind()) && !isParent(newClassToConvert, elPath)) {
                 p.add((VariableElement) el);
             }
             
             return super.visitIdentifier(node, p);
         }
 
-        private boolean isParent(TreePath tp1, TreePath tp2) {
-            while (tp2 != null && tp1.getLeaf() != tp2.getLeaf()) {
-                tp2 = tp2.getParentPath();
-            }
-            
-            if (tp2 == null) {
-                return false;
-            }
-            
-            return tp1.getLeaf() == tp2.getLeaf();
+    }
+    
+    private static final class DetectUseOfNonStaticMembers extends TreePathScanner<Boolean, Void> {
+        private CompilationInfo info;
+        private TreePath newClassToConvert;
+        
+        private DetectUseOfNonStaticMembers(CompilationInfo info, TreePath newClassToConvert) {
+            this.info = info;
+            this.newClassToConvert = newClassToConvert;
         }
+        
+        @Override
+        public Boolean visitIdentifier(IdentifierTree node, Void p) {
+            Element el = info.getTrees().getElement(getCurrentPath());
+            
+            if (el != null && (el.getKind().isField() || el.getKind() == ElementKind.METHOD) && !el.getModifiers().contains(Modifier.STATIC)) {
+                return true;
+            }
+            
+            return super.visitIdentifier(node, p);
+        }
+
+        @Override
+        public Boolean reduce(Boolean r1, Boolean r2) {
+            return r1 == Boolean.TRUE || r2 == Boolean.TRUE;
+        }
+
+    }
+    
+    private static boolean isParent(TreePath tp1, TreePath tp2) {
+        while (tp2 != null && tp1.getLeaf() != tp2.getLeaf()) {
+            tp2 = tp2.getParentPath();
+        }
+
+        if (tp2 == null) {
+            return false;
+        }
+
+        return tp1.getLeaf() == tp2.getLeaf();
     }
     
     static void convertAnonymousToInner(WorkingCopy copy, TreePath newClassToConvert) {
@@ -244,10 +266,9 @@ public class ConvertAnonymousToInner extends AbstractHint {
         NewClassTree nct = (NewClassTree) newClassToConvert.getLeaf();
         
         Set<VariableElement> usedElementVariables = new LinkedHashSet<VariableElement>();
-        Set<VariableElement> usedFieldsVariables = new LinkedHashSet<VariableElement>();
         
-        new DetectUsedVars(copy, newClassToConvert, true).scan(new TreePath(newClassToConvert, nct.getClassBody()), usedElementVariables);
-        new DetectUsedVars(copy, newClassToConvert, false).scan(new TreePath(newClassToConvert, nct.getClassBody()), usedFieldsVariables);
+        new DetectUsedVars(copy, newClassToConvert).scan(new TreePath(newClassToConvert, nct.getClassBody()), usedElementVariables);
+        boolean usesNonStaticMembers = new DetectUseOfNonStaticMembers(copy, newClassToConvert).scan(new TreePath(newClassToConvert, nct.getClassBody()), null) == Boolean.TRUE;
                 
         TreePath tp = newClassToConvert;
         
@@ -278,11 +299,11 @@ public class ConvertAnonymousToInner extends AbstractHint {
         
         Tree superTypeTree = make.Type(superType);
         
-        Logger.getLogger(ConvertAnonymousToInner.class.getName()).log(Level.FINE, "usedFieldsVariables = {0}", usedFieldsVariables ); //NOI18N
+        Logger.getLogger(ConvertAnonymousToInner.class.getName()).log(Level.FINE, "usesNonStaticMembers = {0}", usesNonStaticMembers ); //NOI18N
         
         TreePath superConstructorCall = findSuperConstructorCall(newClassToConvert);
         
-        ModifiersTree classModifiers = make.Modifiers((isStaticContext && usedFieldsVariables.isEmpty()) ? EnumSet.of(Modifier.PRIVATE, Modifier.STATIC) : EnumSet.of(Modifier.PRIVATE));
+        ModifiersTree classModifiers = make.Modifiers((isStaticContext && !usesNonStaticMembers) ? EnumSet.of(Modifier.PRIVATE, Modifier.STATIC) : EnumSet.of(Modifier.PRIVATE));
         
         List<Tree> members = new ArrayList<Tree>();
         List<VariableTree> constrArguments = new ArrayList<VariableTree>();
