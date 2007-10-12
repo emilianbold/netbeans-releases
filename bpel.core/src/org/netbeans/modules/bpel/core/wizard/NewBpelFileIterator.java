@@ -38,8 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-
 package org.netbeans.modules.bpel.core.wizard;
 
 import java.awt.Component;
@@ -69,8 +67,15 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.bpel.project.BpelproProject;
 import org.openide.ErrorManager;
+import org.openide.cookies.SaveCookie;
+import javax.swing.text.BadLocationException;
+import org.openide.cookies.EditCookie;
+import org.openide.cookies.EditorCookie;
+import org.netbeans.modules.xml.api.EncodingUtil;
+import javax.swing.text.Document;
 
-/** A template wizard iterator (sequence of panels).
+/**
+ * A template wizard iterator (sequence of panels).
  * Used to fill in the second and subsequent panels in the New wizard.
  * Associate this to a template inside a layer using the
  * Sequence of Panels extra property.
@@ -82,26 +87,18 @@ public class NewBpelFileIterator implements TemplateWizard.Iterator {
     
     public static final Dimension PREF_SIZE = new Dimension(560,350);
     
-    // You should define what panels you want to use here:
-    protected WizardDescriptor.Panel[] createPanels(Project project, 
-            TemplateWizard wizard) 
-    {
+    protected WizardDescriptor.Panel[] createPanels(Project project, TemplateWizard wizard) {
         Sources sources = (Sources) project.getLookup().lookup(Sources.class);
-        // First look for the BPEL project defined sources type.
         sourceGroups = sources.getSourceGroups(BpelproProject.SOURCES_TYPE_BPELPRO);
         
         if(sourceGroups.length == 0 ) {  
-            // Default to Java sources type.
-            sourceGroups = sources.getSourceGroups(
-                    JavaProjectConstants.SOURCES_TYPE_JAVA);
+            sourceGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         }
         folderPanel=new NewBpelFilePanel(project,sourceGroups);
         
         if(sourceGroups.length > 0 && sourceGroups[0] != null) {
-            DataFolder folder = 
-                DataFolder.findFolder(sourceGroups[0].getRootFolder());
-            DataFolder projectFolder =
-                    DataFolder.findFolder(project.getProjectDirectory());
+            DataFolder folder = DataFolder.findFolder(sourceGroups[0].getRootFolder());
+            DataFolder projectFolder = DataFolder.findFolder(project.getProjectDirectory());
             try {
                 if (wizard.getTargetFolder().equals(projectFolder)) {
                     wizard.setTargetFolder(folder);
@@ -110,50 +107,56 @@ public class NewBpelFileIterator implements TemplateWizard.Iterator {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
             }
         }
-        
-        
-        // creates simple wizard panel with bottom panel
-        WizardDescriptor.Panel firstPanel = Templates.createSimpleTargetChooser(
-                project,sourceGroups,folderPanel);
-       
+        WizardDescriptor.Panel firstPanel = Templates.createSimpleTargetChooser(project,sourceGroups,folderPanel);
         JComponent c = (JComponent)firstPanel.getComponent();
-        // the bottom panel should listen to changes on file name text field
-        String fileNameLabel = NbBundle.getMessage(NewBpelFileIterator.class,
-                "LBL_SimpleTargetChooserPanel_FileName_Label"); // NOI18N
-        ((NewBpelFilePanel)folderPanel).setNameTF((JTextField)Utilities.
-                findTextFieldForLabel(c,fileNameLabel));
+        String fileNameLabel = NbBundle.getMessage(NewBpelFileIterator.class, "LBL_SimpleTargetChooserPanel_FileName_Label"); // NOI18N
+        ((NewBpelFilePanel)folderPanel).setNameTF((JTextField)Utilities.findTextFieldForLabel(c,fileNameLabel));
         
         return new WizardDescriptor.Panel[] {
             firstPanel
         };
-        
-        
     }
     
     public Set instantiate(TemplateWizard wiz) throws IOException {
-        // Here is the default plain behavior. Simply takes the selected
-        // template (you need to have included the standard second panel
-        // in createPanels(), or at least set the properties targetName and
-        // targetFolder correctly), instantiates it in the provided
-        // position, and returns the result.
-        // More advanced wizards can create multiple objects from template
-        // (return them all in the result of this method), populate file
-        // contents on the fly, etc.
-        
         NewBpelFilePanel panel = (NewBpelFilePanel)folderPanel;
-        final org.openide.filesystems.FileObject dir = Templates.getTargetFolder(
-                wiz );
+        org.openide.filesystems.FileObject dir = Templates.getTargetFolder(wiz);
+        DataObject dobj = createBpelFile(Templates.getTargetName(wiz), dir, panel.getNS());
+
+        // # 115502
+        if (dobj == null) {
+          return Collections.emptySet();
+        }
+        DataFolder df = DataFolder.findFolder(dir);
+        String encoding = EncodingUtil.getProjectEncoding(df.getPrimaryFile());
+
+        if ( !EncodingUtil.isValidEncoding(encoding)) {
+          encoding = "UTF-8"; // NOI18N
+        }
+        EditCookie edit = dobj.getCookie(EditCookie.class);
         
-        DataObject dobj = createBpelFile(Templates.getTargetName(wiz), dir,
-                panel.getNS());
-        
+        if (edit != null) {
+          EditorCookie editorCookie = dobj.getCookie(EditorCookie.class);
+          Document doc = (Document)editorCookie.openDocument();
+          fixEncoding(doc, encoding);
+          SaveCookie save = dobj.getCookie(SaveCookie.class);
+          
+          if (save != null) {
+            save.save();
+          }
+        }
         return Collections.singleton(dobj);
     }
     
-    // You can keep a reference to the TemplateWizard which can
-    // provide various kinds of useful information such as
-    // the currently selected target name.
-    // Also the panels will receive wiz as their "settings" object.
+    private void fixEncoding(javax.swing.text.Document document, String encoding) {
+      if (encoding == null) {
+        encoding = "UTF-8"; //NOI18N
+      }
+      try {
+        document.insertString(19, " encoding=\""+encoding+"\"", null);
+      }
+      catch (BadLocationException e) {}
+    }
+
     public void initialize(TemplateWizard wiz) {
         this.wiz = wiz;
         index = 0;
@@ -191,14 +194,8 @@ public class NewBpelFileIterator implements TemplateWizard.Iterator {
         panels = null;
     }
     
-    // --- WizardDescriptor.Iterator METHODS: ---
-    // Note that this is very similar to WizardDescriptor.Iterator, but with a
-    // few more options for customization. If you e.g. want to make panels appear
-    // or disappear dynamically, go ahead.
-    
     public String name() {
-        return NbBundle.getMessage(NewBpelFileIterator.class, "TITLE_x_of_y",
-                index + 1, panels.length);
+        return NbBundle.getMessage(NewBpelFileIterator.class, "TITLE_x_of_y", index + 1, panels.length);
     }
     
     public boolean hasNext() {
@@ -222,20 +219,9 @@ public class NewBpelFileIterator implements TemplateWizard.Iterator {
     public WizardDescriptor.Panel current() {
         return panels[index];
     }
-    
-    // If nothing unusual changes in the middle of the wizard, simply:
-    public final void addChangeListener(ChangeListener l) {
-        
-    }
-    public final void removeChangeListener(ChangeListener l) {
-        
-    }
-    // If something changes dynamically (besides moving between panels),
-    // e.g. the number of panels changes in response to user input, then
-    // uncomment the following and call when needed:
-    // fireChangeEvent ();
-    
-    
+
+    public final void addChangeListener(ChangeListener l) {}
+    public final void removeChangeListener(ChangeListener l) {}
     
     private DataObject createBpelFile(String bpelFileName, FileObject srcFolder,
             String namespace) throws IOException {
@@ -246,14 +232,12 @@ public class NewBpelFileIterator implements TemplateWizard.Iterator {
         boolean importSchemas=false;
         
         DataObject dTemplate = DataObject.find( template );
-        DataObject dobj = dTemplate.createFromTemplate( df, Templates.
-                getTargetName( wiz )  );
+        DataObject dobj = dTemplate.createFromTemplate( df, Templates.getTargetName( wiz )  );
         
         initialiseNames(dobj.getPrimaryFile(), bpelFileName, namespace, "url1");
         
         return dobj;
     }
-    
     
     /**
      *   Basically acts like a xslt tranformer by
@@ -294,12 +278,9 @@ public class NewBpelFileIterator implements TemplateWizard.Iterator {
         }
     }
     
-    // --- The rest probably does not need to be touched. ---
-    
     private transient int index;
     private transient WizardDescriptor.Panel[] panels;
     private transient TemplateWizard wiz;
-    
     private WizardDescriptor.Panel folderPanel;
     private transient SourceGroup[] sourceGroups;
 }
