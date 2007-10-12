@@ -321,21 +321,30 @@ class LuceneIndex extends Index {
                 }
                 break;
             case CASE_INSENSITIVE_REGEXP:
-                if (name.length() == 0 || !Character.isJavaIdentifierStart(name.charAt(0))) {
+                if (name.length() == 0) {
                     throw new IllegalArgumentException ();
                 }
-                {   
+                else {   
                     final Pattern pattern = Pattern.compile(name,Pattern.CASE_INSENSITIVE);
-                    regExpSearch(pattern, DocumentUtil.caseInsensitiveNameTerm(name.toLowerCase()), in, toSearch,cancel, false);      //XXX: Locale
+                    if (Character.isJavaIdentifierStart(name.charAt(0))) {
+                        regExpSearch(pattern, DocumentUtil.caseInsensitiveNameTerm(name.toLowerCase()), in, toSearch,cancel, false);      //XXX: Locale
+                    }
+                    else {
+                        regExpSearch(pattern, DocumentUtil.caseInsensitiveNameTerm(""), in, toSearch,cancel, false);      //NOI18N
+                    }
                     break;
                 }
             case REGEXP:
-                if (name.length() == 0 || !Character.isJavaIdentifierStart(name.charAt(0))) {
+                if (name.length() == 0) {
                     throw new IllegalArgumentException ();
-                }                
-                {   
-                    final Pattern pattern = Pattern.compile(name);                    
-                    regExpSearch(pattern, DocumentUtil.simpleNameTerm(name), in, toSearch, cancel, true);
+                } else {
+                    final Pattern pattern = Pattern.compile(name);
+                    if (Character.isJavaIdentifierStart(name.charAt(0))) {
+                        regExpSearch(pattern, DocumentUtil.simpleNameTerm(name), in, toSearch, cancel, true);
+                    }
+                    else {
+                        regExpSearch(pattern, DocumentUtil.simpleNameTerm(""), in, toSearch, cancel, true);             //NOI18N
+                    }
                     break;
                 }
             default:
@@ -377,17 +386,23 @@ class LuceneIndex extends Index {
     
     private void regExpSearch (final Pattern pattern, Term startTerm, final IndexReader in, final Set<Term> toSearch, final AtomicBoolean cancel, boolean caseSensitive) throws IOException, InterruptedException {        
         final String startText = startTerm.text();
-        final StringBuilder startBuilder = new StringBuilder ();
-        startBuilder.append(startText.charAt(0));
-        for (int i=1; i<startText.length(); i++) {
-            char c = startText.charAt(i);
-            if (!Character.isJavaIdentifierPart(c)) {
-                break;
+        String startPrefix;
+        if (startText.length() > 0) { 
+            final StringBuilder startBuilder = new StringBuilder ();
+            startBuilder.append(startText.charAt(0));
+            for (int i=1; i<startText.length(); i++) {
+                char c = startText.charAt(i);
+                if (!Character.isJavaIdentifierPart(c)) {
+                    break;
+                }
+                startBuilder.append(c);
             }
-            startBuilder.append(c);
+            startPrefix = startBuilder.toString();
+            startTerm = caseSensitive ? DocumentUtil.simpleNameTerm(startPrefix) : DocumentUtil.caseInsensitiveNameTerm(startPrefix);
         }
-        final String startPrefix = startBuilder.toString();
-        startTerm = caseSensitive ? DocumentUtil.simpleNameTerm(startPrefix) : DocumentUtil.caseInsensitiveNameTerm(startPrefix);
+        else {
+            startPrefix=startText;
+        }
         final String camelField = startTerm.field();
         final TermEnum en = in.terms(startTerm);
         try {
