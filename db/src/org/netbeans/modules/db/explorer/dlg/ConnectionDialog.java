@@ -161,7 +161,7 @@ public class ConnectionDialog {
     
     public HelpCtx getHelpCtx() {
         HelpCtx helpCtx = HelpCtx.DEFAULT_HELP; 
-        if (dlgTitle.equals("New Database Connection")) { // NOI18N
+        if (dlgTitle.equals(bundle.getString("NewConnectionDialogTitle"))) { // NOI18N
             helpCtx = new HelpCtx("new_db_save_password"); // NOI18N
         } else {
             helpCtx = new HelpCtx("db_save_password"); // NOI18N
