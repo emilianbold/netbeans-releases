@@ -153,7 +153,7 @@ public class PropertyViewFactoryImpl extends PropertyViewFactory {
                 String displayName = gName;
                 if (bundle != null) {
                     try {
-                        displayName = bundle.getString("LBL_GRP" + gName);
+                        displayName = bundle.getString("LBL_GRP_" + gName);
                     } catch (MissingResourceException e) {
                         //ignore;
                     }
