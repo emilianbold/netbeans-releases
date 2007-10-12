@@ -110,25 +110,18 @@ public class CustomizeProject extends ProjectAction implements Presenter.Popup {
                     
                     //#92011 - reducing the frequency of the dialog popping up.
                     Set<DataObject> candidates = new HashSet<DataObject>();
-                    List<FileObject> dataFiles = ProjectOperations.getDataFiles(projects[0]);
-                    boolean opSupported = ProjectOperations.isCopyOperationSupported(projects[0]) ||
-                                          ProjectOperations.isMoveOperationSupported(projects[0]) ||
-                                          ProjectOperations.isDeleteOperationSupported(projects[0]);
+                    List<FileObject> metadataFiles = ProjectOperations.getMetadataFiles(projects[0]);
                                           
                     for (DataObject dobj : DataObject.getRegistry().getModifiedSet()) {
                         // only consider files from our project
                         if (projects[0] == FileOwnerQuery.getOwner(dobj.getPrimaryFile())) {
                             // now check if it's metadata or data - not 100% bulletproof, but should reduce the probability significantly
-                            boolean found = false;
-                            for (FileObject df : dataFiles) {
+                            for (FileObject df : metadataFiles) {
                                 if (df.equals(dobj.getPrimaryFile()) || 
                                         (df.isFolder() && FileUtil.isParentOf(df, dobj.getPrimaryFile()))) {
-                                    found = true;
+                                    candidates.add(dobj);
                                     break;
                                 }
-                            }
-                            if (!found || !opSupported) {
-                                candidates.add(dobj);
                             }
                         }
                     }
