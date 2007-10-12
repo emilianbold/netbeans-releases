@@ -238,7 +238,7 @@ public class DatabaseSettingsImporter {
      * @param isStartup flag indicates that settings were migrated at startup or not
      * @return
      */
-    public synchronized boolean locateAndRegisterConnections(boolean isStartup) {
+    public boolean locateAndRegisterConnections(boolean isStartup) {
         File contextFile;
         Set <File> contextFiles = new HashSet<File>();
         
