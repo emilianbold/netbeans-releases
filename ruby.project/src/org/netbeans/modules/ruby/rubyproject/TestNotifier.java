@@ -43,7 +43,6 @@ package org.netbeans.modules.ruby.rubyproject;
 import java.awt.Color;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.editor.Coloring;
@@ -57,13 +56,14 @@ import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbBundle;
 
 /**
- * Notifier which listens on test output and if it sees what looks like a a failure,
+ * Notifier which listens on test output and if it sees what looks like a failure,
  * alerts to the problem in the editor status bar; otherwise it reports successes
  * in the status bar.
  *
  * @author Tor Norbye
  */
 public class TestNotifier extends OutputRecognizer implements Runnable {
+    
     /** Most recent message shown in the editor */
     private static String mostRecentMessage;
     
@@ -119,12 +119,13 @@ public class TestNotifier extends OutputRecognizer implements Runnable {
     @Override
     public void start() {
         // Possibly clear editor from previous error message (#115073)
-        if (mostRecentMessage != null) {
+        String lastMessage = mostRecentMessage;
+        if (lastMessage != null) {
             JTextComponent pane = EditorRegistry.lastFocusedComponent();
             if (pane != null) {
                 if (pane.isShowing()) {
                     String text = Utilities.getStatusText(pane);
-                    if (mostRecentMessage.equals(text)) {
+                    if (lastMessage.equals(text)) {
                         Utilities.clearStatusText(pane);
                     }
                 }
@@ -153,7 +154,7 @@ public class TestNotifier extends OutputRecognizer implements Runnable {
                     resetResults();
                 }
 
-                addTotals(pattern, match, line);
+                addTotals(pattern, match);
                 
                 if (isError() || isWarning() || showSuccesses) {
                     // Display in editor - asynchronously since it must be done
@@ -239,7 +240,7 @@ public class TestNotifier extends OutputRecognizer implements Runnable {
         return false;
     }
 
-    private void addTotals(Pattern pattern, Matcher matcher, String line) {
+    private void addTotals(Pattern pattern, Matcher matcher) {
         assert PATTERNS.length == 3; // If you add more patterns, make sure you update the below logic
         if (pattern == TEST_UNIT_PATTERN) {
             seenTestUnit = true;
