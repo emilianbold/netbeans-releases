@@ -86,7 +86,7 @@ public class TraceModelBase {
 	RepositoryUtils.cleanCashes();
     }
 
-    protected void processArguments(final String[] args) {
+    public void processArguments(final String... args) {
 	for (int i = 0; i < args.length; i++) {
 	    if (args[i].startsWith("--")) { // NOI18N
 		// NOI18N
@@ -163,7 +163,7 @@ public class TraceModelBase {
 	}
     }
 
-    protected ProjectBase getProject() {
+    public ProjectBase getProject() {
         if (TraceFlags.USE_REPOSITORY) {
 	    synchronized( this ) {
 		if( projectUID == null ) {
@@ -179,7 +179,7 @@ public class TraceModelBase {
         }
     }
     
-    protected void resetProject() {
+    public void resetProject() {
 	if (getProject() != null) {
 	    Object platformProject = getProject().getPlatformProject();
 	    ((ModelImpl) CsmModelAccessor.getModel()).closeProject(platformProject);
@@ -484,7 +484,7 @@ public class TraceModelBase {
 	return new ArrayList<String>(all);
     }
     
-    protected ModelImpl getModel() {
+    public ModelImpl getModel() {
 	return model;
     }
 
@@ -494,6 +494,10 @@ public class TraceModelBase {
 
     public boolean isPathsRelCurFile() {
 	return pathsRelCurFile;
+    }
+
+    public List<File> getFiles() {
+	return Collections.unmodifiableList(files);
     }
 
     public List<String> getQuoteIncludePaths() {
