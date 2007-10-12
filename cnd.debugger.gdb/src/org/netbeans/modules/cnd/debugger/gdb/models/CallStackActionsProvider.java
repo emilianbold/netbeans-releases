@@ -53,6 +53,8 @@ import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.TreeModel;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 
@@ -131,13 +133,18 @@ public class CallStackActionsProvider implements NodeActionsProvider {
     }
 
     private void popToHere(final CallStackFrame frame) {
-	ArrayList stack = debugger.getCallStack();
+	ArrayList<CallStackFrame> stack = debugger.getCallStack();
 	int i, k = stack.size();
 	if (k < 2) {
 	    return;
 	}
 	for (i = 1; i < k; i++) {
-	    if (stack.get(i - 1).equals(frame)) {
+            CallStackFrame sf = stack.get(i - 1);
+            if (!debugger.isValidStackFrame(sf)) {
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
+                           "ERR_InvalidCallStackFrame"))); // NOI18N
+                return;
+            } else if (sf.equals(frame)) {
                 return;
             } else {
                 debugger.getGdbProxy().stack_select_frame(0);
@@ -148,7 +155,12 @@ public class CallStackActionsProvider implements NodeActionsProvider {
     
     private void makeCurrent(final CallStackFrame frame) {
         if (debugger.getCurrentCallStackFrame() != frame) {
-	    frame.makeCurrent();
+            if (debugger.isValidStackFrame(frame)) {
+                frame.makeCurrent();
+            } else {
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
+                           "ERR_InvalidCallStackFrame"))); // NOI18N
+            }
 	} else {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {

@@ -1613,7 +1613,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
      *
      * @return call stack
      */
-    public ArrayList getCallStack() {
+    public ArrayList<CallStackFrame> getCallStack() {
         return callstack;
     }
     
@@ -1693,7 +1693,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         }
     }
     
-    private boolean isValidStackFrame(CallStackFrame csf) {
+    public boolean isValidStackFrame(CallStackFrame csf) {
         return csf.getFileName() != null && csf.getFullname() != null && csf.getFunctionName() != null;
     }
     
