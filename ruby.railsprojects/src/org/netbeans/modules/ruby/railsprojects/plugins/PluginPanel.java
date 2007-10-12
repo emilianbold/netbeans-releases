@@ -165,6 +165,8 @@ public class PluginPanel extends javax.swing.JPanel {
         uninstallButton.addActionListener(formListener);
 
         jScrollPane1.setViewportView(installedList);
+        installedList.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.installedList.AccessibleContext.accessibleName")); // NOI18N
+        installedList.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.installedList.AccessibleContext.accessibleDescription")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(updateButton, org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.updateButton.text")); // NOI18N
         updateButton.setEnabled(false);
@@ -213,6 +215,12 @@ public class PluginPanel extends javax.swing.JPanel {
                 .addContainerGap())
         );
 
+        instSearchText.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.instSearchText.AccessibleContext.accessibleDescription")); // NOI18N
+        reloadInstalledButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.reloadInstalledButton.AccessibleContext.accessibleDescription")); // NOI18N
+        uninstallButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.uninstallButton.AccessibleContext.accessibleDescription")); // NOI18N
+        updateButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.updateButton.AccessibleContext.accessibleDescription")); // NOI18N
+        updateAllButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.updateAllButton.AccessibleContext.accessibleDescription")); // NOI18N
+
         pluginsTab.addTab(org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.installedPanel.TabConstraints.tabTitle"), installedPanel); // NOI18N
 
         newPanel.addComponentListener(formListener);
@@ -231,6 +239,8 @@ public class PluginPanel extends javax.swing.JPanel {
         installButton.addActionListener(formListener);
 
         jScrollPane2.setViewportView(newList);
+        newList.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.newList.AccessibleContext.accessibleName")); // NOI18N
+        newList.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.newList.AccessibleContext.accessibleDescription")); // NOI18N
 
         org.jdesktop.layout.GroupLayout newPanelLayout = new org.jdesktop.layout.GroupLayout(newPanel);
         newPanel.setLayout(newPanelLayout);
@@ -264,6 +274,10 @@ public class PluginPanel extends javax.swing.JPanel {
                 .addContainerGap())
         );
 
+        searchNewText.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.searchNewText.AccessibleContext.accessibleDescription")); // NOI18N
+        reloadNewButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.reloadNewButton.AccessibleContext.accessibleDescription")); // NOI18N
+        installButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.installButton.AccessibleContext.accessibleDescription")); // NOI18N
+
         pluginsTab.addTab(org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.newPanel.TabConstraints.tabTitle"), newPanel); // NOI18N
 
         repositoryPanel.addComponentListener(formListener);
@@ -282,6 +296,8 @@ public class PluginPanel extends javax.swing.JPanel {
         unregisterButton.addActionListener(formListener);
 
         jScrollPane3.setViewportView(repositoryList);
+        repositoryList.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.repositoryList.AccessibleContext.accessibleName")); // NOI18N
+        repositoryList.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.repositoryList.AccessibleContext.accessibleDescription")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(discoverButton, org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.discoverButton.text")); // NOI18N
         discoverButton.addActionListener(formListener);
@@ -327,6 +343,12 @@ public class PluginPanel extends javax.swing.JPanel {
                 .addContainerGap())
         );
 
+        searchReposText.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.searchReposText.AccessibleContext.accessibleDescription")); // NOI18N
+        reloadReposButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.reloadReposButton.AccessibleContext.accessibleDescription")); // NOI18N
+        unregisterButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.unregisterButton.AccessibleContext.accessibleDescription")); // NOI18N
+        discoverButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.discoverButton.AccessibleContext.accessibleDescription")); // NOI18N
+        addUrlButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.addUrlButton.AccessibleContext.accessibleDescription")); // NOI18N
+
         pluginsTab.addTab(org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.repositoryPanel.TabConstraints.tabTitle"), repositoryPanel); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(proxyButton, org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.proxyButton.text")); // NOI18N
@@ -349,6 +371,8 @@ public class PluginPanel extends javax.swing.JPanel {
                 .addContainerGap(406, Short.MAX_VALUE))
         );
 
+        proxyButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.proxyButton.AccessibleContext.accessibleDescription")); // NOI18N
+
         pluginsTab.addTab(org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.jPanel1.TabConstraints.tabTitle"), jPanel1); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
@@ -367,6 +391,10 @@ public class PluginPanel extends javax.swing.JPanel {
                 .add(pluginsTab, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 468, Short.MAX_VALUE)
                 .addContainerGap())
         );
+
+        pluginsTab.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.pluginsTab.AccessibleContext.accessibleDescription")); // NOI18N
+
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PluginPanel.class, "PluginPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }
 
     // Code for dispatching events from components to event handlers.
