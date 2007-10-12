@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.modelimpl.parser.CPPParserEx;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.locks.ReadWriteLock;
+import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.support.APTLanguageFilter;
 import org.netbeans.modules.cnd.apt.support.APTLanguageSupport;
 import org.netbeans.modules.cnd.modelimpl.cache.CacheManager;
@@ -571,7 +572,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             try {
                 aptFull = APTDriver.getInstance().findAPT(this.getBuffer());
             } catch(FileNotFoundException ex){
-                System.err.println("File "+getBuffer().getFile().getAbsolutePath()+" not found.");
+                APTUtils.LOG.log(Level.WARNING, "FileImpl: file {0} not found", new Object[] {getBuffer().getFile().getAbsolutePath()});// NOI18N
             } catch (IOException ex) {
                 ex.printStackTrace(System.err);
             }

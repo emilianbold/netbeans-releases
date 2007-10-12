@@ -82,9 +82,8 @@ public class FileInfoQueryImpl extends CsmFileInfoQuery {
                     walker.visit();
                     out = walker.getBlocks();
                }
-            }
-            catch (IOException ex) {
-                ex.printStackTrace();
+            } catch (IOException ex) {
+                System.err.println("skip getting unused blockes\nreason:" + ex.getMessage()); //NOI18N
             }
         }
         return out;

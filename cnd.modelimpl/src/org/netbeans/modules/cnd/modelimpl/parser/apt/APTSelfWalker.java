@@ -28,6 +28,7 @@
 package org.netbeans.modules.cnd.modelimpl.parser.apt;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
@@ -58,8 +59,10 @@ public class APTSelfWalker extends APTAbstractWalker {
                 APTFile apt = APTDriver.getInstance().findAPTLight(new FileBufferFile(new File(resolvedPath.getPath())));
                 APTSelfWalker walker = new APTSelfWalker(apt, getPreprocHandler());
                 walker.visit();
+            } catch (FileNotFoundException ex) {
+                APTUtils.LOG.log(Level.WARNING, "APTSelfWalker: file {0} not found", new Object[] {resolvedPath.getPath()});// NOI18N
             } catch (IOException ex) {
-                APTUtils.LOG.log(Level.SEVERE, "error on include " + resolvedPath, ex); // NOI18N
+                APTUtils.LOG.log(Level.SEVERE, "APTSelfWalker: error on including {0}:\n{1}", new Object[] {resolvedPath.getPath(), ex});
             } finally {
                 getIncludeHandler().popInclude();
             }

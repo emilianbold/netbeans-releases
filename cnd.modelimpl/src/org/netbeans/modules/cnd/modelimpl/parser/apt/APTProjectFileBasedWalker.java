@@ -91,12 +91,12 @@ public abstract class APTProjectFileBasedWalker extends APTAbstractWalker {
                     try {
                         included = includeAction(inclFileOwner, path, mode, apt);
                     } catch (FileNotFoundException ex) {
-                        APTUtils.LOG.log(Level.SEVERE, "file {0} not found", new Object[] {path});// NOI18N
+                        APTUtils.LOG.log(Level.WARNING, "APTProjectFileBasedWalker: file {0} not found", new Object[] {path});// NOI18N
                     } catch (IOException ex) {
-                        APTUtils.LOG.log(Level.SEVERE, "error on including {0}:\n{1}", new Object[] {path, ex});
+                        APTUtils.LOG.log(Level.SEVERE, "APTProjectFileBasedWalker: error on including {0}:\n{1}", new Object[] {path, ex});
                     }
                 } else {
-                    APTUtils.LOG.log(Level.SEVERE, "file {0} without project!!!", new Object[] {file});// NOI18N
+                    APTUtils.LOG.log(Level.SEVERE, "APTProjectFileBasedWalker: file {0} without project!!!", new Object[] {file});// NOI18N
                     getIncludeHandler().popInclude();
                 }
             }
