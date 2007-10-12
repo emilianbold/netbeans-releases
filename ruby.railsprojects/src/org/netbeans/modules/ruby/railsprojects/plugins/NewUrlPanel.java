@@ -57,7 +57,7 @@ public class NewUrlPanel extends javax.swing.JPanel {
         return urlField.getText().trim();
     }
 
-    // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
         urlField = new javax.swing.JTextField();
@@ -80,6 +80,11 @@ public class NewUrlPanel extends javax.swing.JPanel {
                 .add(urlField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 22, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(64, Short.MAX_VALUE))
         );
+
+        urlField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NewUrlPanel.class, "NewUrlPanel.urlField.AccessibleContext.accessibleName")); // NOI18N
+        urlField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewUrlPanel.class, "NewUrlPanel.urlField.AccessibleContext.accessibleDescription")); // NOI18N
+
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewUrlPanel.class, "NewUrlPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     

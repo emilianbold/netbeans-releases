@@ -506,6 +506,10 @@ private void discoverButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
     String wait = getWaitMsg();
     RepositorySelectionPanel panel = new RepositorySelectionPanel();
     final JList list = panel.getList();
+    list.getAccessibleContext().setAccessibleName(
+            NbBundle.getMessage(PluginPanel.class, "SelectRepos.List"));
+    list.getAccessibleContext().setAccessibleDescription(
+            NbBundle.getMessage(PluginPanel.class, "SelectRepos.List.AccessibleContext.accessibleDescription"));
     list.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 
     DialogDescriptor descriptor = new DialogDescriptor(panel, NbBundle.getMessage(PluginPanel.class,
@@ -514,6 +518,8 @@ private void discoverButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
     //descriptor.setModal(true);
     try {
         dlg = DialogDisplayer.getDefault().createDialog(descriptor);
+        dlg.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(PluginPanel.class, "SelectRepos.AccessibleContext.accessibleDescription"));
         refreshRepositoryList(null, true, list, false);
         
         dlg.setVisible(true);
