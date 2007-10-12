@@ -338,10 +338,11 @@ public final class CssPreviewTopComponent extends TopComponent {
         lastSelectedPreviewable.addListener(PREVIEWABLE_LISTENER);
         
         //preview the content is available
-        if(previewable.content() != null) {
+        final CssRuleContext context = previewable.content();
+        if(context != null) {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    preview(previewable.content());
+                    preview(context);
                 }
             });
         } else {
