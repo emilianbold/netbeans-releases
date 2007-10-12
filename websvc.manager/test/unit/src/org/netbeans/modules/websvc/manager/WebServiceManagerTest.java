@@ -86,6 +86,7 @@ public class WebServiceManagerTest extends NbTestCase {
     }
 
     public void testLocalWebServiceData() throws Exception {
+        System.out.println("localWebServiceAdd");
         WebServiceListModel listModel = WebServiceListModel.getInstance();
         
         URL wsdlUrl = testData.getLocalOriginalWsdl().toURI().toURL();
@@ -113,6 +114,7 @@ public class WebServiceManagerTest extends NbTestCase {
     }
     
     public void testRemoteWebServiceData() throws Exception {
+        System.out.println("remoteWebServiceAdd");
         WebServiceListModel listModel = WebServiceListModel.getInstance();
         
         WebServiceData wsData = createWebServiceData(

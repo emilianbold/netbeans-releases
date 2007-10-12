@@ -31,11 +31,27 @@ package org.netbeans.modules.websvc.manager.test;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.net.URL;
 import java.nio.channels.FileChannel;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.jar.Manifest;
 import org.netbeans.junit.MockServices;
 import org.netbeans.modules.websvc.manager.WebServiceManager;
 import org.netbeans.modules.websvc.manager.api.WebServiceDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.LocalFileSystem;
+import org.openide.filesystems.MultiFileSystem;
+import org.openide.filesystems.Repository;
+import org.openide.filesystems.XMLFileSystem;
+import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
+import org.openide.util.NbCollections;
 
 /**
  *
@@ -75,7 +91,14 @@ public class SetupUtil {
         data.setLocalCatalogFile(new File(websvcUserDir, catalogDir.getName() + "/catalog.xml"));
         data.setLocalOriginalWsdl(new File(workingDir, wsdlFile.getName()));
         
-        MockServices.setServices(DialogDisplayerNotifier.class, InstalledFileLocatorImpl.class);
+        MainFS fs = new MainFS();
+        fs.setConfigRootDir(websvcHome.getParentFile());
+        TestRepository.defaultFileSystem = fs;
+        
+        MockServices.setServices(DialogDisplayerNotifier.class, InstalledFileLocatorImpl.class, TestRepository.class);
+        
+        InstalledFileLocatorImpl locator = (InstalledFileLocatorImpl)Lookup.getDefault().lookup(InstalledFileLocator.class);
+        locator.setUserConfigRoot(websvcHome.getParentFile());
         
         return data;
     }
@@ -114,4 +137,69 @@ public class SetupUtil {
             }
         }
     }
+    
+    public static final class TestRepository extends Repository {
+        static FileSystem defaultFileSystem = null;
+        
+        public TestRepository() {
+            super(defaultFileSystem);
+        }
+    }
+    
+    // Taken from org.openide.filesystems.ExternalUtil to allow layer files to be
+    // loaded into the default filesystem (since core/startup is in the classpath
+    // and registers a default Repository that we do not want)
+    public static final class MainFS extends MultiFileSystem implements LookupListener {
+        private final Lookup.Result<FileSystem> ALL = Lookup.getDefault().lookupResult(FileSystem.class);
+        private final FileSystem MEMORY = FileUtil.createMemoryFileSystem();
+        private final XMLFileSystem layers = new XMLFileSystem();
+        
+        private final LocalFileSystem configRoot = new LocalFileSystem();
+        
+        public void setConfigRootDir(File root) throws Exception {
+            configRoot.setRootDirectory(root);
+        }
+        
+        public MainFS() {
+            ALL.addLookupListener(this);
+            
+            List<URL> layerUrls = new ArrayList<URL>();
+            ClassLoader l = Thread.currentThread().getContextClassLoader();
+            try {
+                for (URL manifest : NbCollections.iterable(l.getResources("META-INF/MANIFEST.MF"))) { // NOI18N
+                    InputStream is = manifest.openStream();
+                    try {
+                        Manifest mani = new Manifest(is);
+                        String layerLoc = mani.getMainAttributes().getValue("OpenIDE-Module-Layer"); // NOI18N
+                        if (layerLoc != null) {
+                            URL layer = l.getResource(layerLoc);
+                            if (layer != null) {
+                                layerUrls.add(layer);
+                            }
+                        }
+                    } finally {
+                        is.close();
+                    }
+                }
+                layers.setXmlUrls(layerUrls.toArray(new URL[layerUrls.size()]));
+            } catch (Exception x) {
+            }
+            resultChanged(null); // run after add listener - see PN1 in #26338
+        }
+        
+        private FileSystem[] computeDelegates() {
+            List<FileSystem> arr = new ArrayList<FileSystem>();
+            arr.add(MEMORY);
+            arr.add(layers);
+            arr.add(configRoot);
+            arr.addAll(ALL.allInstances());
+            return arr.toArray(new FileSystem[0]);
+        }
+    
+        public void resultChanged(LookupEvent ev) {
+            setDelegates(computeDelegates());
+        }
+    }
+    
+    
 }

@@ -60,22 +60,32 @@ public class AddWebServiceGroupActionTest extends NbTestCase {
      * Test of performAction method, of class AddWebServiceGroupAction.
      */
     public void testPerformAction() {
+        System.out.println("performAction");
         AddWebServiceGroupAction action = new AddWebServiceGroupAction();
+        List<WebServiceGroup> groups = WebServiceListModel.getInstance().getWebServiceGroupSet();
+        WebServiceGroup[] originalGroups = groups.toArray(new WebServiceGroup[groups.size()]);
+        int originalSize = originalGroups.length;
+        
         action.performAction(new Node[0]);
 
-        List<WebServiceGroup> groups = WebServiceListModel.getInstance().getWebServiceGroupSet();
-        assertTrue("Web Service group was not added", groups.size() == 2);
+        assertTrue("Web Service group was not added", groups.size() == originalSize + 1);
 
         WebServiceGroup[] groupArr = groups.toArray(new WebServiceGroup[groups.size()]);
         for (int i = 0; i < groupArr.length; i++) {
             WebServiceGroup group = groupArr[i];
-            if (!group.getId().equals(WebServiceListModel.DEFAULT_GROUP)) {
+            boolean found = false;
+            for (int j = 0; j < originalGroups.length; j++) {
+                if (group == originalGroups[j]) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
                 WebServiceListModel.getInstance().removeWebServiceGroup(group.getId());
             }
-
         }
 
         groups = WebServiceListModel.getInstance().getWebServiceGroupSet();
-        assertTrue("Web Service group not removed", groups.size() == 1);
+        assertTrue("Web Service group not removed", groups.size() == originalSize);
     }
 }

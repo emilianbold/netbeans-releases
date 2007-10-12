@@ -107,6 +107,13 @@ public class WebServiceListModel {
         return websvcNodeModel;
     }
     
+    /**
+     * For unit test use
+     */
+    public static void resetInstance() {
+        websvcNodeModel = new WebServiceListModel();
+    }
+    
     public void addWebServiceListModelListener(WebServiceListModelListener listener){
         listeners.add(listener);
     }

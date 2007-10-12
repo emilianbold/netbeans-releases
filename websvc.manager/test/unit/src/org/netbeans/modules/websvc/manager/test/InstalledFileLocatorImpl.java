@@ -40,7 +40,8 @@ import org.openide.modules.InstalledFileLocator;
 public class InstalledFileLocatorImpl extends InstalledFileLocator {
 
     private ArrayList<File> baseDirs;
-
+    private File userDirConfigRoot;
+    
     public InstalledFileLocatorImpl() {
         super();
         File endorsedDir = new File(System.getProperty("java.endorsed.dirs"));
@@ -69,5 +70,17 @@ public class InstalledFileLocatorImpl extends InstalledFileLocator {
         }
 
         return null;
+    }
+    
+    public void setUserConfigRoot(File baseDir) {
+        if (userDirConfigRoot != null) {
+            baseDirs.remove(userDirConfigRoot);
+            userDirConfigRoot = null;
+        }
+        
+        if (baseDir != null) {
+            baseDirs.add(baseDir);
+            userDirConfigRoot = baseDir;
+        }
     }
 }
