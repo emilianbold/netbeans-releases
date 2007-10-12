@@ -161,6 +161,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private boolean cplusplus = false;
     private int tcwait = 0; // counter for type completion
     private String firstBPfullname;
+    private String firstBPfile;
     private String firstBPline;
         
     public GdbDebugger(ContextProvider lookupProvider) {
@@ -1418,11 +1419,16 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             } else if (o instanceof Map || o == null) {
                 pendingBreakpointMap.remove(Integer.valueOf(token));
                 impl.completeValidation((Map<String, String>) o);
-                if (o != null) {
+                if (o != null && impl.getBreakpoint().isEnabled()) {
                     Map<String, String> map = (Map) o;
                     String fullname = map.get("fullname"); // NOI18N
+                    String file = map.get("file"); // NOI18N
                     String line = map.get("line"); // NOI18N
                     if (firstBPfullname != null && firstBPfullname.equals(fullname) &&
+                            firstBPline != null && firstBPline.equals(line)) {
+                        continueAfterFirstStop = false;
+                    } else if (Utilities.getOperatingSystem() == Utilities.OS_MAC &&
+                            firstBPfile != null && firstBPfile.equals(file) &&
                             firstBPline != null && firstBPline.equals(line)) {
                         continueAfterFirstStop = false;
                     }
@@ -1435,9 +1441,11 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             Map<String, String> map = (Map) o;
             String number = map.get("number"); // NOI18N
             String fullname = map.get("fullname"); // NOI18N
+            String file = map.get("file"); // NOI18N
             String line = map.get("line"); // NOI18N
             if (number != null && number.equals("1")) { // NOI18N
                 firstBPfullname = fullname;
+                firstBPfile = file;
                 firstBPline = line;
             }
         }
