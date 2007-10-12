@@ -201,6 +201,7 @@
                 <package>org.netbeans.modules.vmd.midpnb.palette</package>
                 <package>org.netbeans.modules.vmd.midpnb.producers</package>
                 <package>org.netbeans.modules.vmd.midpnb.propertyeditors</package>
+                <package>org.netbeans.modules.vmd.midpnb.propertyeditors.table</package>
                 <package>org.netbeans.modules.vmd.midpnb.screen.display</package>
             </public-packages>
         </data>
