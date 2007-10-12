@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.java.navigation;
 
+import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Point;
 import java.awt.Toolkit;
@@ -54,6 +55,7 @@ import java.net.URL;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.swing.JComponent;
+import javax.swing.JEditorPane;
 import javax.swing.JRootPane;
 import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
@@ -174,6 +176,44 @@ public class JavaMembersPanel extends javax.swing.JPanel {
                     }
                 },
                 KeyStroke.getKeyStroke(KeyEvent.VK_END, 0, false),
+                JComponent.WHEN_FOCUSED);
+
+        filterTextField.registerKeyboardAction(
+                new ActionListener() {
+                    public void actionPerformed(ActionEvent actionEvent) {
+                        Component view = docPane.getViewport().getView();
+                        if (view instanceof JEditorPane) {
+                            JEditorPane editorPane = (JEditorPane) view;
+                            ActionListener actionForKeyStroke =
+                                editorPane.getActionForKeyStroke(
+                                        KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_UP, 0, false));                            
+                            actionForKeyStroke.actionPerformed(
+                                    new ActionEvent(editorPane, ActionEvent.ACTION_PERFORMED, ""));
+                        }
+                    }
+                },
+                KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_UP, KeyEvent.SHIFT_MASK, false),
+                JComponent.WHEN_FOCUSED);
+        filterTextField.registerKeyboardAction(
+                new ActionListener() {
+                    private boolean firstTime = true;
+                    public void actionPerformed(ActionEvent actionEvent) {
+                        Component view = docPane.getViewport().getView();
+                        if (view instanceof JEditorPane) {
+                            JEditorPane editorPane = (JEditorPane) view;
+                            ActionListener actionForKeyStroke =
+                                editorPane.getActionForKeyStroke(
+                                        KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_DOWN, 0, false));
+                            actionEvent = new ActionEvent(editorPane, ActionEvent.ACTION_PERFORMED, "");
+                            actionForKeyStroke.actionPerformed(actionEvent);
+                            if (firstTime) {
+                                actionForKeyStroke.actionPerformed(actionEvent);
+                                firstTime = false;
+                            }
+                        }
+                    }
+                },
+                KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_DOWN, KeyEvent.SHIFT_MASK, false),
                 JComponent.WHEN_FOCUSED);
 
         signatureEditorPane.putClientProperty(
@@ -480,6 +520,8 @@ public class JavaMembersPanel extends javax.swing.JPanel {
                                 Object node = treePath.getLastPathComponent();
                                 if (node instanceof JavaMembersModel.PackageTreeNode) {
                                     javaMembersTree.setSelectionRow(1);
+                                } else {
+                                    javaMembersTree.setSelectionRow(0);
                                 }
                             }
                         }

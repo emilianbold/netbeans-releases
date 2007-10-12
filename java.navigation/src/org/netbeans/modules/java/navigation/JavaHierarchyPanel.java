@@ -42,6 +42,7 @@
 package org.netbeans.modules.java.navigation;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Point;
 import java.awt.Toolkit;
@@ -55,6 +56,7 @@ import java.net.URL;
 
 import javax.lang.model.element.Element;
 import javax.swing.JComponent;
+import javax.swing.JEditorPane;
 import javax.swing.JRootPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
@@ -242,6 +244,44 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
             }
         },
                 KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, true),
+                JComponent.WHEN_FOCUSED);
+
+        filterTextField.registerKeyboardAction(
+                new ActionListener() {
+                    public void actionPerformed(ActionEvent actionEvent) {
+                        Component view = docPane.getViewport().getView();
+                        if (view instanceof JEditorPane) {
+                            JEditorPane editorPane = (JEditorPane) view;
+                            ActionListener actionForKeyStroke =
+                                editorPane.getActionForKeyStroke(
+                                        KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_UP, 0, false));                            
+                            actionForKeyStroke.actionPerformed(
+                                    new ActionEvent(editorPane, ActionEvent.ACTION_PERFORMED, ""));
+                        }
+                    }
+                },
+                KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_UP, KeyEvent.SHIFT_MASK, false),
+                JComponent.WHEN_FOCUSED);
+        filterTextField.registerKeyboardAction(
+                new ActionListener() {
+                    private boolean firstTime = true;
+                    public void actionPerformed(ActionEvent actionEvent) {
+                        Component view = docPane.getViewport().getView();
+                        if (view instanceof JEditorPane) {
+                            JEditorPane editorPane = (JEditorPane) view;
+                            ActionListener actionForKeyStroke =
+                                editorPane.getActionForKeyStroke(
+                                        KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_DOWN, 0, false));
+                            actionEvent = new ActionEvent(editorPane, ActionEvent.ACTION_PERFORMED, "");
+                            actionForKeyStroke.actionPerformed(actionEvent);
+                            if (firstTime) {
+                                actionForKeyStroke.actionPerformed(actionEvent);
+                                firstTime = false;
+                            }
+                        }
+                    }
+                },
+                KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_DOWN, KeyEvent.SHIFT_MASK, false),
                 JComponent.WHEN_FOCUSED);
 
         caseSensitiveFilterCheckBox.addActionListener(new ActionListener() {
