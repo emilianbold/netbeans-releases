@@ -98,7 +98,6 @@ public class VerifyLibsAndLicenses extends Task {
         try { // XXX workaround for http://issues.apache.org/bugzilla/show_bug.cgi?id=43398
         pseudoTests = new LinkedHashMap<String,String>();
         modules = new TreeSet<String>();
-        modules.add("nbbuild");
         for (String cluster : getProject().getProperty("nb.clusters.list").split("[, ]+")) {
             modules.addAll(Arrays.asList(getProject().getProperty(cluster).split("[, ]+")));
         }
