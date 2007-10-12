@@ -95,7 +95,7 @@ public class ConvertAnonymousToInnerTest extends NbTestCase {
                 "        new RunnableImpl();\n" +
                 "    }\n" +
                 "    private static class RunnableImpl implements Runnable {\n" +
-                "        private RunnableImpl() {\n" + 
+                "        public RunnableImpl() {\n" + 
                 "        }\n" + 
                 "        public void run() {\n" +
                 "        }\n" +
@@ -124,7 +124,7 @@ public class ConvertAnonymousToInnerTest extends NbTestCase {
                 "    }\n" +
                 "    private static class RunnableImpl implements Runnable {\n" +
                 "        private final int i;\n" +
-                "        private RunnableImpl(int i) {\n" + 
+                "        public RunnableImpl(int i) {\n" + 
                 "            this.i = i;\n" +
                 "        }\n" + 
                 "        public void run() {\n" +
@@ -160,7 +160,7 @@ public class ConvertAnonymousToInnerTest extends NbTestCase {
                 "    private static class RunnableImpl implements Runnable {\n" +
                 "        private final int i;\n" +
                 "        private final String s;\n" +
-                "        private RunnableImpl(int i, String s) {\n" + 
+                "        public RunnableImpl(int i, String s) {\n" + 
                 "            this.i = i;\n" +
                 "            this.s = s;\n" +
                 "        }\n" + 
@@ -193,7 +193,7 @@ public class ConvertAnonymousToInnerTest extends NbTestCase {
                 "        new RunnableImpl();\n" +
                 "    }\n" +
                 "    private class RunnableImpl implements Runnable {\n" +
-                "        private RunnableImpl() {\n" + 
+                "        public RunnableImpl() {\n" + 
                 "        }\n" + 
                 "        public void run() {\n" +
                 "            System.err.println(x);\n" +
@@ -217,7 +217,7 @@ public class ConvertAnonymousToInnerTest extends NbTestCase {
                 "        new ArrayListImpl(3);\n" +
                 "    }\n" +
                 "    private static class ArrayListImpl extends ArrayList {\n" +
-                "        private ArrayListImpl(int arg0) {\n" + 
+                "        public ArrayListImpl(int arg0) {\n" + 
                 "            super(arg0);\n" + 
                 "        }\n" + 
                 "    }\n" +
@@ -241,7 +241,7 @@ public class ConvertAnonymousToInnerTest extends NbTestCase {
                 "        new ArrayListImpl(i);\n" +
                 "    }\n" +
                 "    private static class ArrayListImpl extends ArrayList {\n" +
-                "        private ArrayListImpl(int arg0) {\n" + 
+                "        public ArrayListImpl(int arg0) {\n" + 
                 "            super(arg0);\n" + 
                 "        }\n" + 
                 "    }\n" +
@@ -265,7 +265,7 @@ public class ConvertAnonymousToInnerTest extends NbTestCase {
                 "        new ArrayListImpl(i);\n" +
                 "    }\n" +
                 "    private static class ArrayListImpl extends ArrayList {\n" +
-                "        private ArrayListImpl(int arg0) {\n" + 
+                "        public ArrayListImpl(int arg0) {\n" + 
                 "            super(arg0);\n" + 
                 "        }\n" + 
                 "    }\n" +
@@ -290,7 +290,7 @@ public class ConvertAnonymousToInnerTest extends NbTestCase {
                 "        new ArrayListImpl(l);\n" +
                 "    }\n" +
                 "    private static class ArrayListImpl extends ArrayList<CharSequence> {\n" +
-                "        private ArrayListImpl(Collection<? extends CharSequence> arg0) {\n" + 
+                "        public ArrayListImpl(Collection<? extends CharSequence> arg0) {\n" + 
                 "            super(arg0);\n" + 
                 "        }\n" + 
                 "    }\n" +
@@ -313,7 +313,7 @@ public class ConvertAnonymousToInnerTest extends NbTestCase {
                 "    }\n" +
                 "    class X {}\n" +
                 "    private class XImpl extends Test.X {\n" +
-                "        private XImpl() {\n" +
+                "        public XImpl() {\n" +
                 "        }\n" +
                 "    }\n" +
                 "}\n");
@@ -333,7 +333,7 @@ public class ConvertAnonymousToInnerTest extends NbTestCase {
                 "        new TestImpl();\n" +
                 "    }\n" +
                 "    private static class TestImpl extends Test {\n" +
-                "        private TestImpl() {\n" +
+                "        public TestImpl() {\n" +
                 "        }\n" +
                 "    }\n" +
                 "}\n");
@@ -349,14 +349,13 @@ public class ConvertAnonymousToInnerTest extends NbTestCase {
                 "    static class X {}\n" +
                 "}\n",
                 "package hierbas.del.litoral;\n\n" +
-                "import hierbas.del.litoral.Test.X;\n" +
                 "public class Test {\n" +
                 "    public void taragui() {\n" +
                 "        new XImpl();\n" +
                 "    }\n" +
                 "    static class X {}\n" +
                 "    private static class XImpl extends X {\n" +
-                "        private XImpl() {\n" +
+                "        public XImpl() {\n" +
                 "        }\n" +
                 "    }\n" +
                 "}\n");
@@ -372,14 +371,13 @@ public class ConvertAnonymousToInnerTest extends NbTestCase {
                 "    interface X {}\n" +
                 "}\n",
                 "package hierbas.del.litoral;\n\n" +
-                "import hierbas.del.litoral.Test.X;\n" +
                 "public class Test {\n" +
                 "    public void taragui() {\n" +
                 "        new XImpl();\n" +
                 "    }\n" +
                 "    interface X {}\n" +
                 "    private static class XImpl implements X {\n" +
-                "        private XImpl() {\n" +
+                "        public XImpl() {\n" +
                 "        }\n" +
                 "    }\n" +
                 "}\n");
@@ -409,7 +407,7 @@ public class ConvertAnonymousToInnerTest extends NbTestCase {
         "        new SuperClassImpl();\n" +
         "    }\n" +
         "    private static class SuperClassImpl extends SuperClass {\n" +
-        "        private SuperClassImpl() {\n" +
+        "        public SuperClassImpl() {\n" +
         "        }\n" +
         "            public void method() {\n" +
         "                new SubClass() {\n" +
