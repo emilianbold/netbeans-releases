@@ -80,33 +80,8 @@
         method is exported. The generated stub method creates a method on the 
         client called <tt>example_HelloService_sayHello().</tt> If this option 
         is not selected, only one method is generated on the client.</li>
-      <li><strong>Generate grouped calls. </strong>Generates additional code to 
-        support making multiple calls to server-side services in a single HTTP 
-        request or response. When turned on with the Generate Stub Methods option 
-        also turned on, a generated method is created on the client for each exported 
-        service with the stub method name ending in <tt>Grouped</tt>. Using <tt>HelloService</tt> 
-        for example, the <tt>sayHello()</tt> method is exported. The generated 
-        stub method<br>
-        creates a method on the client called <tt>example_HelloService_sayHelloGrouped()</tt>. 
-        <p> When the option is selected, the server is called only after several 
-          grouped calls are made and the <tt>getGroupedResults() </tt>method on 
-          the client class is called. All the method calls are invoked in a single 
-          HTTP request and response. Methods are invoked in the order they were 
-          called. Results are returned in an enumeration object. </p>
-        <p>If a server call causes an exception, the exception is thrown when 
-          <tt>getGroupedResults()</tt> is called. When an exception is thrown 
-          in a sequence of grouped calls, the calls following the exception are 
-          not processed. </p>
-      </li>
       <li><strong>Allow floating point.</strong> Activates support for float and 
         double data types.</li>
-      <li><strong>Generate tracing code.</strong> Generates tracing code that 
-        provides runtime information during the execution of remote calls. Client 
-        tracing output goes to the MIDP implementation standard output. Server 
-        tracing output goes to the server log file. Turn this option on to generate 
-        versions of client and server tracing code to help you if connection problems 
-        occur between the client and the server. </li>
-      <li>Optionally, choose Create sample MIDlet. </li>
     </ul>
   <li>Click the Finish button.<br>
     The settings file is opened in the Editor. Client stubs are generated in the 
