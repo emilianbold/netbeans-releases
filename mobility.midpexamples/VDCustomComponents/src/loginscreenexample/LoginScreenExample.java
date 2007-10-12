@@ -57,6 +57,7 @@ import org.netbeans.microedition.util.SimpleCancellableTask;
 
 /**
  * @author devil
+ * http://www.netbeans.org/kb/60/mobility/loginscreen.html
  */
 public class LoginScreenExample extends MIDlet implements CommandListener {
 

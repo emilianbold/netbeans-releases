@@ -134,6 +134,13 @@
                         </Component>
                     </Component>
                 </Component>
+                <Component componentID="37" typeID="Cjavax.microedition.lcdui.Alert">
+                    <Property name="instanceName" typeID="Pjava.lang.String" value="ValertFailure"/>
+                    <Property name="title" typeID="Pjava.lang.String" value="Valert"/>
+                    <Property name="commandListener" typeID="C#CommandListener" value="R7"/>
+                    <Property name="string" typeID="Pjava.lang.String" value="VWrong username or password"/>
+                    <Property name="timeout" typeID="Pint" value="V-2"/>
+                </Component>
                 <Component componentID="25" typeID="Corg.netbeans.microedition.lcdui.SplashScreen">
                     <Property name="instanceName" typeID="Pjava.lang.String" value="VsplashScreen"/>
                     <Property name="commands" typeID="1C#CommandEventSource" value="A1:3_R27"/>
@@ -150,22 +157,15 @@
                         </Component>
                     </Component>
                 </Component>
-                <Component componentID="37" typeID="Cjavax.microedition.lcdui.Alert">
-                    <Property name="instanceName" typeID="Pjava.lang.String" value="ValertFailure"/>
-                    <Property name="title" typeID="Pjava.lang.String" value="Valert"/>
-                    <Property name="commandListener" typeID="C#CommandListener" value="R7"/>
-                    <Property name="string" typeID="Pjava.lang.String" value="VWrong username or password"/>
-                    <Property name="timeout" typeID="Pint" value="V-2"/>
-                </Component>
             </Component>
         </Component>
     </Document>
     <FlowScene version="1">
+        <Node componentID="37" descriptorID="componentNode37" x="174" y="377"/>
+        <Node componentID="39" descriptorID="componentNode39" x="171" y="444"/>
+        <Node componentID="29" descriptorID="componentNode29" x="367" y="173"/>
         <Node componentID="25" descriptorID="componentNode25" x="173" y="97"/>
         <Node componentID="13" descriptorID="componentNode13" x="172" y="247"/>
-        <Node componentID="29" descriptorID="componentNode29" x="367" y="173"/>
         <Node componentID="2" descriptorID="componentNode2" x="15" y="12"/>
-        <Node componentID="39" descriptorID="componentNode39" x="171" y="444"/>
-        <Node componentID="37" descriptorID="componentNode37" x="174" y="377"/>
     </FlowScene>
 </VisualDesign>

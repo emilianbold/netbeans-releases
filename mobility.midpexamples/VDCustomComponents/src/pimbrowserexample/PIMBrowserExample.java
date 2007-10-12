@@ -39,37 +39,33 @@
  * made subject to such option by the copyright holder.
  */
 
-package smscomposerexample;
+package pimbrowserexample;
 
 import javax.microedition.midlet.*;
 import javax.microedition.lcdui.*;
+import javax.microedition.pim.PIM;
 import org.netbeans.microedition.lcdui.SplashScreen;
-import org.netbeans.microedition.lcdui.WaitScreen;
-import org.netbeans.microedition.lcdui.wma.SMSComposer;
-import org.netbeans.microedition.util.SimpleCancellableTask;
+import org.netbeans.microedition.lcdui.pda.PIMBrowser;
 
 /**
  * @author devil
- * http://www.netbeans.org/kb/60/mobility/smscomposer.html
+ * http://www.netbeans.org/kb/60/mobility/pimbrowser.html
  */
-public class SMSComposerExample extends MIDlet implements CommandListener {
+public class PIMBrowserExample extends MIDlet implements CommandListener {
 
     private boolean midletPaused = false;
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Fields ">//GEN-BEGIN:|fields|0|
     private Command exitCommand;
-    private SimpleCancellableTask task;
-    private WaitScreen waitScreen;
-    private Alert alertSent;
-    private SMSComposer smsComposer;
+    private Alert alert;
+    private PIMBrowser pimBrowser;
     private SplashScreen splashScreen;
-    private Alert alertError;
     //</editor-fold>//GEN-END:|fields|0|
 
     /**
-     * The SMSComposerExample constructor.
+     * The PIMBrowserExample constructor.
      */
-    public SMSComposerExample() {
+    public PIMBrowserExample() {
     }
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Methods ">//GEN-BEGIN:|methods|0|
@@ -127,8 +123,6 @@ public class SMSComposerExample extends MIDlet implements CommandListener {
     }//GEN-BEGIN:|5-switchDisplayable|2|
     //</editor-fold>//GEN-END:|5-switchDisplayable|2|
 
-
-
     //<editor-fold defaultstate="collapsed" desc=" Generated Method: commandAction for Displayables ">//GEN-BEGIN:|7-commandAction|0|7-preCommandAction
     /**
      * Called by a system to indicated that a command has been invoked on a particular displayable.
@@ -137,36 +131,27 @@ public class SMSComposerExample extends MIDlet implements CommandListener {
      */
     public void commandAction(Command command, Displayable displayable) {//GEN-END:|7-commandAction|0|7-preCommandAction
         // write pre-action user code here
-        if (displayable == smsComposer) {//GEN-BEGIN:|7-commandAction|1|19-preAction
-            if (command == SMSComposer.SEND_COMMAND) {//GEN-END:|7-commandAction|1|19-preAction
+        if (displayable == pimBrowser) {//GEN-BEGIN:|7-commandAction|1|19-preAction
+            if (command == PIMBrowser.SELECT_PIM_ITEM) {//GEN-END:|7-commandAction|1|19-preAction
                 // write pre-action user code here
-                switchDisplayable(null, getWaitScreen());//GEN-LINE:|7-commandAction|2|19-postAction
+                switchDisplayable(getAlert(), getPimBrowser());//GEN-LINE:|7-commandAction|2|19-postAction
                 // write post-action user code here
-            } else if (command == exitCommand) {//GEN-LINE:|7-commandAction|3|33-preAction
+            } else if (command == exitCommand) {//GEN-LINE:|7-commandAction|3|27-preAction
                 // write pre-action user code here
-                exitMIDlet();//GEN-LINE:|7-commandAction|4|33-postAction
+                exitMIDlet();//GEN-LINE:|7-commandAction|4|27-postAction
                 // write post-action user code here
             }//GEN-BEGIN:|7-commandAction|5|15-preAction
         } else if (displayable == splashScreen) {
             if (command == SplashScreen.DISMISS_COMMAND) {//GEN-END:|7-commandAction|5|15-preAction
                 // write pre-action user code here
-                switchDisplayable(null, getSmsComposer());//GEN-LINE:|7-commandAction|6|15-postAction
+                switchDisplayable(null, getPimBrowser());//GEN-LINE:|7-commandAction|6|15-postAction
                 // write post-action user code here
-            }//GEN-BEGIN:|7-commandAction|7|25-preAction
-        } else if (displayable == waitScreen) {
-            if (command == WaitScreen.FAILURE_COMMAND) {//GEN-END:|7-commandAction|7|25-preAction
-                // write pre-action user code here
-                switchDisplayable(getAlertError(), getSmsComposer());//GEN-LINE:|7-commandAction|8|25-postAction
-                // write post-action user code here
-            } else if (command == WaitScreen.SUCCESS_COMMAND) {//GEN-LINE:|7-commandAction|9|24-preAction
-                // write pre-action user code here
-                switchDisplayable(getAlertSent(), getSmsComposer());//GEN-LINE:|7-commandAction|10|24-postAction
-                // write post-action user code here
-            }//GEN-BEGIN:|7-commandAction|11|7-postCommandAction
-        }//GEN-END:|7-commandAction|11|7-postCommandAction
+            }//GEN-BEGIN:|7-commandAction|7|7-postCommandAction
+        }//GEN-END:|7-commandAction|7|7-postCommandAction
         // write post-action user code here
-    }//GEN-BEGIN:|7-commandAction|12|
-    //</editor-fold>//GEN-END:|7-commandAction|12|
+    }//GEN-BEGIN:|7-commandAction|8|
+    //</editor-fold>//GEN-END:|7-commandAction|8|
+
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Getter: splashScreen ">//GEN-BEGIN:|13-getter|0|13-preInit
     /**
@@ -179,121 +164,68 @@ public class SMSComposerExample extends MIDlet implements CommandListener {
             splashScreen = new SplashScreen(getDisplay());//GEN-BEGIN:|13-getter|1|13-postInit
             splashScreen.setTitle("splashScreen");
             splashScreen.setCommandListener(this);
-            splashScreen.setText("SMS Composer Example");//GEN-END:|13-getter|1|13-postInit
+            splashScreen.setText("PIM Browser Example");//GEN-END:|13-getter|1|13-postInit
             // write post-init user code here
         }//GEN-BEGIN:|13-getter|2|
         return splashScreen;
     }
     //</editor-fold>//GEN-END:|13-getter|2|
 
-    //<editor-fold defaultstate="collapsed" desc=" Generated Getter: smsComposer ">//GEN-BEGIN:|17-getter|0|17-preInit
+    //<editor-fold defaultstate="collapsed" desc=" Generated Getter: pimBrowser ">//GEN-BEGIN:|17-getter|0|17-preInit
     /**
-     * Returns an initiliazed instance of smsComposer component.
+     * Returns an initiliazed instance of pimBrowser component.
      * @return the initialized component instance
      */
-    public SMSComposer getSmsComposer() {
-        if (smsComposer == null) {//GEN-END:|17-getter|0|17-preInit
+    public PIMBrowser getPimBrowser() {
+        if (pimBrowser == null) {//GEN-END:|17-getter|0|17-preInit
             // write pre-init user code here
-            smsComposer = new SMSComposer(getDisplay());//GEN-BEGIN:|17-getter|1|17-postInit
-            smsComposer.setTitle("smsComposer");
-            smsComposer.addCommand(SMSComposer.SEND_COMMAND);
-            smsComposer.addCommand(getExitCommand());
-            smsComposer.setCommandListener(this);
-            smsComposer.setBGColor(-3355444);
-            smsComposer.setFGColor(-16777216);
-            smsComposer.setSendAutomatically(false);
-            smsComposer.setPhoneNumberLabel("Phone Number:");
-            smsComposer.setMessageLabel("Message:");//GEN-END:|17-getter|1|17-postInit
+            pimBrowser = new PIMBrowser(getDisplay(), PIM.CONTACT_LIST);//GEN-BEGIN:|17-getter|1|17-postInit
+            pimBrowser.setTitle("pimBrowser");
+            pimBrowser.addCommand(PIMBrowser.SELECT_PIM_ITEM);
+            pimBrowser.addCommand(getExitCommand());
+            pimBrowser.setCommandListener(this);//GEN-END:|17-getter|1|17-postInit
             // write post-init user code here
         }//GEN-BEGIN:|17-getter|2|
-        return smsComposer;
+        return pimBrowser;
     }
     //</editor-fold>//GEN-END:|17-getter|2|
 
-    //<editor-fold defaultstate="collapsed" desc=" Generated Getter: waitScreen ">//GEN-BEGIN:|21-getter|0|21-preInit
-    /**
-     * Returns an initiliazed instance of waitScreen component.
-     * @return the initialized component instance
-     */
-    public WaitScreen getWaitScreen() {
-        if (waitScreen == null) {//GEN-END:|21-getter|0|21-preInit
-            // write pre-init user code here
-            waitScreen = new WaitScreen(getDisplay());//GEN-BEGIN:|21-getter|1|21-postInit
-            waitScreen.setTitle("waitScreen");
-            waitScreen.setCommandListener(this);
-            waitScreen.setTask(getTask());//GEN-END:|21-getter|1|21-postInit
-            // write post-init user code here
-        }//GEN-BEGIN:|21-getter|2|
-        return waitScreen;
-    }
-    //</editor-fold>//GEN-END:|21-getter|2|
 
-    //<editor-fold defaultstate="collapsed" desc=" Generated Getter: alertError ">//GEN-BEGIN:|28-getter|0|28-preInit
-    /**
-     * Returns an initiliazed instance of alertError component.
-     * @return the initialized component instance
-     */
-    public Alert getAlertError() {
-        if (alertError == null) {//GEN-END:|28-getter|0|28-preInit
-            // write pre-init user code here
-            alertError = new Alert("alert", "Error", null, null);//GEN-BEGIN:|28-getter|1|28-postInit
-            alertError.setTimeout(Alert.FOREVER);//GEN-END:|28-getter|1|28-postInit
-            // write post-init user code here
-        }//GEN-BEGIN:|28-getter|2|
-        return alertError;
-    }
-    //</editor-fold>//GEN-END:|28-getter|2|
 
-    //<editor-fold defaultstate="collapsed" desc=" Generated Getter: alertSent ">//GEN-BEGIN:|29-getter|0|29-preInit
-    /**
-     * Returns an initiliazed instance of alertSent component.
-     * @return the initialized component instance
-     */
-    public Alert getAlertSent() {
-        if (alertSent == null) {//GEN-END:|29-getter|0|29-preInit
-            // write pre-init user code here
-            alertSent = new Alert("alert1", "Message Sent", null, null);//GEN-BEGIN:|29-getter|1|29-postInit
-            alertSent.setTimeout(Alert.FOREVER);//GEN-END:|29-getter|1|29-postInit
-            // write post-init user code here
-        }//GEN-BEGIN:|29-getter|2|
-        return alertSent;
-    }
-    //</editor-fold>//GEN-END:|29-getter|2|
 
-    //<editor-fold defaultstate="collapsed" desc=" Generated Getter: exitCommand ">//GEN-BEGIN:|32-getter|0|32-preInit
+
+    //<editor-fold defaultstate="collapsed" desc=" Generated Getter: exitCommand ">//GEN-BEGIN:|26-getter|0|26-preInit
     /**
      * Returns an initiliazed instance of exitCommand component.
      * @return the initialized component instance
      */
     public Command getExitCommand() {
-        if (exitCommand == null) {//GEN-END:|32-getter|0|32-preInit
+        if (exitCommand == null) {//GEN-END:|26-getter|0|26-preInit
             // write pre-init user code here
-            exitCommand = new Command("Exit", Command.EXIT, 0);//GEN-LINE:|32-getter|1|32-postInit
+            exitCommand = new Command("Exit", Command.EXIT, 0);//GEN-LINE:|26-getter|1|26-postInit
             // write post-init user code here
-        }//GEN-BEGIN:|32-getter|2|
+        }//GEN-BEGIN:|26-getter|2|
         return exitCommand;
     }
-    //</editor-fold>//GEN-END:|32-getter|2|
+    //</editor-fold>//GEN-END:|26-getter|2|
 
-    //<editor-fold defaultstate="collapsed" desc=" Generated Getter: task ">//GEN-BEGIN:|39-getter|0|39-preInit
+
+
+    //<editor-fold defaultstate="collapsed" desc=" Generated Getter: alert ">//GEN-BEGIN:|32-getter|0|32-preInit
     /**
-     * Returns an initiliazed instance of task component.
+     * Returns an initiliazed instance of alert component.
      * @return the initialized component instance
      */
-    public SimpleCancellableTask getTask() {
-        if (task == null) {//GEN-END:|39-getter|0|39-preInit
+    public Alert getAlert() {
+        if (alert == null) {//GEN-END:|32-getter|0|32-preInit
             // write pre-init user code here
-            task = new SimpleCancellableTask();//GEN-BEGIN:|39-getter|1|39-execute
-            task.setExecutable(new org.netbeans.microedition.util.Executable() {
-                public void execute() throws Exception {//GEN-END:|39-getter|1|39-execute
-                    smsComposer.sendSMS();
-                }//GEN-BEGIN:|39-getter|2|39-postInit
-            });//GEN-END:|39-getter|2|39-postInit
+            alert = new Alert("alert", "Contact Selected", null, null);//GEN-BEGIN:|32-getter|1|32-postInit
+            alert.setTimeout(Alert.FOREVER);//GEN-END:|32-getter|1|32-postInit
             // write post-init user code here
-        }//GEN-BEGIN:|39-getter|3|
-        return task;
+        }//GEN-BEGIN:|32-getter|2|
+        return alert;
     }
-    //</editor-fold>//GEN-END:|39-getter|3|
+    //</editor-fold>//GEN-END:|32-getter|2|
 
     /**
      * Returns a display instance.
