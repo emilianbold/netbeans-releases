@@ -108,11 +108,11 @@ public class CndSniffyMIMEResolver extends MIMEResolver {
     private boolean detectShellByLine(String line) {
         if (line != null) {
             line = line.replaceAll("\\s", ""); // NOI18N
-            if (line.equals("#!/bin/bash") ||  // NOI18N
-                    line.equals("#!/bin/sh") ||  // NOI18N
-                    line.equals("#!/bin/ksh") ||  // NOI18N
-                    line.equals("#!/bin/csh") ||  // NOI18N
-                    line.equals("#!/bin/zsh")) {  // NOI18N
+            if (line.startsWith("#!/bin/bash") ||  // NOI18N
+                    line.startsWith("#!/bin/sh") ||  // NOI18N
+                    line.startsWith("#!/bin/ksh") ||  // NOI18N
+                    line.startsWith("#!/bin/csh") ||  // NOI18N
+                    line.startsWith("#!/bin/zsh")) {  // NOI18N
                 return true;
             }
         }
