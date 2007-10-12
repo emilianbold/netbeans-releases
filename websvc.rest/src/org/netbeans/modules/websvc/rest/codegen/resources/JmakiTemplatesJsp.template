@@ -1,0 +1,2 @@
+<a:widget name="dojo.rest.rtable" 
+    service="http://localhost:8080/CustomerDB/resources/customers/" />

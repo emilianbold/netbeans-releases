@@ -206,7 +206,7 @@ public class Constants {
         }
     }
     
-    public static final String REST_STUBS = "reststubs"; //NOI18N
+    public static final String REST_STUBS = "resources"; //NOI18N
     
     public static final String PASSWORD = "password"; //NOI18N
 }

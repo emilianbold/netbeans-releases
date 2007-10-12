@@ -1,10 +1,11 @@
-dojo.provide("jersey.widget.ResourcesTable");
-dojo.require("dojo.widget.FilteringTable");
-dojo.require("dojo.lang.declare");
-dojo.widget.defineWidget("jersey.widget.ResourcesTable", dojo.widget.FilteringTable, {
+djd43.provide("rdj.widget.ResourcesTable");
+djd43.require("djd43.widget.FilteringTable");
+djd43.require("djd43.lang.declare");
+djd43.widget.defineWidget("rdj.widget.ResourcesTable", djd43.widget.FilteringTable, {
     createRow: function(obj){
+        //alert('create row');
         var row=document.createElement("tr");
-        dojo.html.disableSelection(row);
+        djd43.html.disableSelection(row);
         if(obj.key != null){
             row.setAttribute("value", obj.key);
         }
@@ -12,7 +13,7 @@ dojo.widget.defineWidget("jersey.widget.ResourcesTable", dojo.widget.FilteringTa
             var cell=document.createElement("td");
             cell.setAttribute("align", this.columns[j].align);
             cell.setAttribute("valign", this.columns[j].valign);
-            dojo.html.disableSelection(cell);
+            djd43.html.disableSelection(cell);
             var val = this.store.getField(obj.src, this.columns[j].getField());
             if(typeof(val)=="undefined"){
                 val="";
@@ -34,7 +35,7 @@ dojo.widget.defineWidget("jersey.widget.ResourcesTable", dojo.widget.FilteringTa
                     if(meta.format){
                             format = meta.format;
                     }
-                    _val = dojo.date.strftime(val, format);
+                    _val = djd43.date.strftime(val, format);
                 } else {
                     _val = val;
                 }
@@ -44,7 +45,7 @@ dojo.widget.defineWidget("jersey.widget.ResourcesTable", dojo.widget.FilteringTa
                 }
                 var n = parseFloat(val, 10) + "";
                 if(n.indexOf(".")>-1){
-                        n = dojo.math.round(parseFloat(val,10),2);
+                        n = djd43.math.round(parseFloat(val,10),2);
                 }
                 _val = n;
             } else {
@@ -57,7 +58,7 @@ dojo.widget.defineWidget("jersey.widget.ResourcesTable", dojo.widget.FilteringTa
             formElement.onsubmit = function() {
                 return false;
             }
-            dojo.event.connect(formElement, "onsubmit", this, "updateCell");
+            djd43.event.connect(formElement, "onsubmit", this, "updateCell");
             var inputElement = document.createElement("input");
             inputElement.setAttribute("type", "text");
             inputElement.className = "eTableEditable";
@@ -69,7 +70,7 @@ dojo.widget.defineWidget("jersey.widget.ResourcesTable", dojo.widget.FilteringTa
             cell.appendChild(_d);
             formElement.style.display = "none";
             cell.appendChild(formElement);
-            dojo.event.connect(cell, "ondblclick", this, "makeCellEditable");
+            djd43.event.connect(cell, "ondblclick", this, "makeCellEditable");
         }
     },
     makeCellEditable : function(e) {
@@ -79,7 +80,7 @@ dojo.widget.defineWidget("jersey.widget.ResourcesTable", dojo.widget.FilteringTa
             var _bh = cell.clientHeight;
             cell = cell.parentNode;
             //remove the onclick listener
-            dojo.event.disconnect(cell, "ondblclick",this, "makeCellEditable");
+            djd43.event.disconnect(cell, "ondblclick",this, "makeCellEditable");
             var div = cell.childNodes[0];
             div.style.display = "none";
             var form = cell.childNodes[1];
@@ -105,15 +106,15 @@ dojo.widget.defineWidget("jersey.widget.ResourcesTable", dojo.widget.FilteringTa
         var sp = id.split("_");
         this.onCellUpdate(sp[0], sp[1], value);
         // add event back
-        dojo.event.connect(cell, "ondblclick", this, "makeCellEditable");
+        djd43.event.connect(cell, "ondblclick", this, "makeCellEditable");
         return false;
     },
     onCellUpdate: function(col,row, value) { 
         var attribute = this.columns[col].getField();
-        for(var i=0;i<jerseyStore.getSize();i++) {
-        var id = jerseyStore._data[i][0]['Id'];
+        for(var i=0;i<restStore.getSize();i++) {
+        var id = restStore._data[i][0]['Id'];
         if(id == row) {
-            jerseyStore._data[i][0][attribute] = value;
+            restStore._data[i][0][attribute] = value;
             var data = this.getSelectedData();
             data[attribute] = value;
         }

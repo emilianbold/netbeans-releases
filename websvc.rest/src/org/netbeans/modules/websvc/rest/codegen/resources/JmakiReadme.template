@@ -1,0 +1,19 @@
+Steps to run Generated Stubs
+========================
+1. Navigate to "Web Pages/reststubs/reststub.html", right click and "Run". This prints the json strings returned by
+RESTful Web Service resources.
+
+Steps to run Jersey Dojo Components
+===============================
+1. Download dojo 0.4.3 from Dojo website (http://download.dojotoolkit.org/release-0.4.3/dojo-0.4.3-ajax.tar.gz)
+2. Unzip dojo library to "Web Pages" folder of your client project.
+3. Right click on "DojoSample.html" and click "Run". This displays a table of resources. You can Get, Add, Update, and Delete.
+
+Steps to run Jersey JMaki Components
+===============================
+1. Download Jmaki 1.0 Netbeans plugin from JMaki website (https://ajax.dev.java.net/files/documents/3115/69449/org-netbeans-modules-sun-jmaki.nbm)
+2. Install the plugin.
+3. Right click on the project, click "Properties, then add "Ajax Frameworks" after selecing "Frameworks". This adds the 
+necessary JMaki libraries to this your web project.
+4. Right click on "JmakiSample.html" and click "Run". This displays a table of resources. You can Get, Add, Update, and Delete.
+

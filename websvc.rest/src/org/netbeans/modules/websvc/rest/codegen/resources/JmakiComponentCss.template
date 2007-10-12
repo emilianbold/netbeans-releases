@@ -1,0 +1,44 @@
+.resourcesTable {
+  width: 100%
+}
+
+table.resourcesTable {
+    font-family:Lucida Grande, Verdana;
+    font-size:0.8em;
+    border:1px solid #ccc;
+    border-collapse:collapse;
+    cursor:default;
+}
+table.resourcesTable td,
+table.resourcesTable th{
+    padding:2px;
+    font-weight:normal;
+}
+table.resourcesTable thead td, table.resourcesTable thead th {
+    background-image:url(images/rtable.gif);
+    background-repeat:no-repeat;
+    background-position:top right;
+}
+table.resourcesTable thead td.selectedUp, table.resourcesTable thead th.selectedUp {
+    background-image:url(images/rtable1.gif);
+}
+
+table.resourcesTable thead td.selectedDown, table.resourcesTable thead th.selectedDown {
+    background-image:url(images/rtable2.gif);
+}
+    
+table.resourcesTable tbody tr td{
+    border-bottom:1px solid #ddd;
+}
+table.resourcesTable tbody tr.alt td{
+    background: #e3edfa;
+}
+table.resourcesTable tbody tr.selected td{
+    background: yellow;
+}
+table.resourcesTable tbody tr:hover td{
+    background: #a6c2e7;
+}
+table.resourcesTable tbody tr.selected:hover td{
+    background:#ff9;
+}

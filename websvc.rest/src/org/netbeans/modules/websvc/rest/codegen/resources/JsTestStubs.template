@@ -1,0 +1,21 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>REST Client Stubs</title>
+        <!-- JS_DECLARE_START - DO NOT REMOVE-->
+        <script type="text/javascript" src="./Support.js"></script>
+        <!-- JS_DECLARE_END - DO NOT REMOVE-->
+    </head>
+    <body>
+
+    <h1>Test Page - Javascript client stub for RESTful Web Services.</h1>
+
+    <div id="containerContent"> </div>
+
+    <!-- JS_USAGE_START - DO NOT REMOVE-->
+    <!-- JS_USAGE_END - DO NOT REMOVE--> 
+    
+    </body>
+</html>

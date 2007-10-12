@@ -395,14 +395,6 @@ public class ClientStubModel {
 
         public void setDescription(String desc) {
             this.desc = desc;
-        }
-
-        public String getFileName() {
-            return name.toLowerCase();
-        }
-        
-        public String getFileNameExt() {
-            return name.toLowerCase() + ".js";
         }        
 
         public List<Method> getMethods() {
