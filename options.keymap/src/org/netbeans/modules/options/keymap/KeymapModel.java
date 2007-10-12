@@ -51,10 +51,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.core.options.keymap.api.ShortcutAction;
 import org.netbeans.core.options.keymap.spi.KeymapManager;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -63,6 +65,7 @@ import org.openide.util.Lookup;
 public class KeymapModel {
     
     private static final Logger LOG = Logger.getLogger(KeymapModel.class.getName ());
+    private static final Logger UI_LOG = Logger.getLogger("org.netbeans.ui.options"); // NOI18N
                                     
     private static ArrayList<KeymapManager> al = new ArrayList<KeymapManager>();
     
@@ -133,6 +136,16 @@ public class KeymapModel {
     }
     
     public void setCurrentProfile (String profile) {
+        String prev = getCurrentProfile();
+        if (!prev.equals(profile)) {
+            LogRecord rec = new LogRecord(Level.CONFIG, "KEYMAP_SET_PROFILE"); // NOI18N
+            rec.setParameters(new Object[]{ profile, prev });
+            rec.setResourceBundle(NbBundle.getBundle(KeymapModel.class));
+            rec.setResourceBundleName(KeymapModel.class.getPackage().getName() + ".Bundle");
+            rec.setLoggerName(UI_LOG.getName());
+            UI_LOG.log(rec);
+        }
+        
         for (KeymapManager m : getKeymapManagerInstances()) {
             m.setCurrentProfile(profile);
         }
