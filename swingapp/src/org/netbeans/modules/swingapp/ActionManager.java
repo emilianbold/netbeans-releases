@@ -66,7 +66,10 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.TypeParameterTree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
@@ -305,38 +308,37 @@ public class ActionManager {
     private Timer rescanTimer = new Timer(5*1000, new ActionListener() {
         public void actionPerformed(ActionEvent e) {
             if(scanQueue.isEmpty()) return;
-            
+            List<FileObject> queue;
             synchronized(scanQueue) {
-                Iterator<FileObject> it = scanQueue.iterator();
-                while(it.hasNext()) {
-                    FileObject fo = it.next();
-                    if (fo == null || !fo.isValid()) { // might have been deleted meanwhile
-                        continue;
-                    }
-                    it.remove();
-                    //clear all of the actions for this file out of the master list
-                    String className = AppFrameworkSupport.getClassNameForFile(fo);
-                    if(actions.containsKey(className)) {
-                        List<ProxyAction> oldActions = actions.get(className);
-                        for(ProxyAction oldAct : oldActions) {
-                            Iterator<ProxyAction> ait = actionList.iterator();
-                            while(ait.hasNext()) {
-                                if(actionsMatch(ait.next(),oldAct)) {
-                                    ait.remove();
-                                }
+                queue = new ArrayList<FileObject>(scanQueue);
+                scanQueue.clear();
+            }
+            for (FileObject fo : queue) {
+                if (fo == null || !fo.isValid()) { // might have been deleted meanwhile
+                    continue;
+                }
+                //clear all of the actions for this file out of the master list
+                String className = AppFrameworkSupport.getClassNameForFile(fo);
+                if(actions.containsKey(className)) {
+                    List<ProxyAction> oldActions = actions.get(className);
+                    for(ProxyAction oldAct : oldActions) {
+                        Iterator<ProxyAction> ait = actionList.iterator();
+                        while(ait.hasNext()) {
+                            if(actionsMatch(ait.next(),oldAct)) {
+                                ait.remove();
                             }
                         }
-                        //then remove the actions for this file from the master hashtable
-                        actions.remove(className);
                     }
-                    //rescans this file and replaces the list of actions for this file
-                    getActionsFromFile(fo, actions);
-                    if(actions.containsKey(className)) {
-                        List<ProxyAction> newActions = actions.get(className);
-                        actionList.addAll(newActions);
-                    }
-                    fireStructureChanged();
+                    //then remove the actions for this file from the master hashtable
+                    actions.remove(className);
                 }
+                //rescans this file and replaces the list of actions for this file
+                getActionsFromFile(fo, actions);
+                if(actions.containsKey(className)) {
+                    List<ProxyAction> newActions = actions.get(className);
+                    actionList.addAll(newActions);
+                }
+                fireStructureChanged();
             }
         }
     });
@@ -443,75 +445,17 @@ public class ActionManager {
         }
 
         try {
-            FileObject sourceFile = getFileForClass(action.getClassname());
-            DataObject dobj = DataObject.find(sourceFile);
-            EditorCookie ec = (EditorCookie)dobj.getCookie(EditorCookie.class);
-            if (ec == null) {
-                return false;
-            }
-            if(ec.getDocument() == null) {
-                ec.openDocument();
-            }
-            //ec.open(); //josh: we fail if the document isn't opened yet. is there a better way to do this?
-            Document doc = ec.getDocument();
-            int pos;
-            if (ec instanceof FormEditorSupport) {
-                // in form's source add before the variables section
-                doc = ec.getDocument();
-                pos = ((FormEditorSupport)ec).getVariablesSection().getStartPosition().getOffset();
+            final FileObject sourceFile = getFileForClass(action.getClassname());
+            final String taskName;
+            final String newTaskName;
+            if (action.isTaskEnabled()) {
+                taskName = taskNameForAction(action);
+                newTaskName = getNonExistingTaskName(action.getClassname(), taskName);
             } else {
-                // in general java source add at the end of the class
-                Integer result = (Integer) new ClassTask(sourceFile) {
-                    Object run(CompilationController controller, ClassTree classTree, TypeElement classElement) {
-                        return (int) controller.getTrees().getSourcePositions().getEndPosition(
-                                controller.getCompilationUnit(), classTree);
-                    }
-                }.execute();
-                javax.swing.text.Element docRoot = doc.getDefaultRootElement();
-                pos = docRoot.getElement(docRoot.getElementIndex(result.intValue()))
-                        .getStartOffset();
+                taskName = null;
+                newTaskName = null;
             }
-            
-            StringBuilder buf = new StringBuilder();
-            String indent = "    "; // NOI18N
-            String taskName = action.isTaskEnabled() ? taskNameForAction(action) : null;
-            buf.append(indent);
-            buf.append(getAnnotationCode(action));
-            buf.append("\n"); // NOI18N
-            buf.append(indent);
-            buf.append("public "); // NOI18N
-            buf.append(taskName != null ? "org.jdesktop.application.Task " : "void "); // NOI18N
-            buf.append(action.getMethodName());
-            buf.append("() {\n"); // NOI18N
-            buf.append(indent).append(indent);
-            if (taskName != null) {
-                buf.append("return new "); // NOI18N
-                buf.append(taskName);
-                buf.append("();\n"); // NOI18N
-                taskName = getNonExistingTaskName(action.getClassname(), taskName);
-            } else {
-                buf.append("// put your action code here\n"); // NOI18N
-            }
-            buf.append(indent);
-            buf.append("}\n\n"); // NOI18N
-
-            if (taskName != null) {
-                buf.append(getTaskClassImplCode(taskName, null));
-                buf.append("\n"); // NOI18N
-            }
-            doc.insertString(pos, buf.toString(), null);
-            
-            //generate selected and enabled properties if they don't already exist
-            generateProperties(action, sourceFile);
-            
-            return true;
-        } catch (Exception ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-            return false;
-        }
-
-        // [would be better to use the java source infrastructure, but it is too buggy...]
-/*        try {
+            JavaSource js = JavaSource.forFileObject(sourceFile);
             ModificationResult result = js.runModificationTask(new CancellableTask<WorkingCopy>() {
                 public void cancel() {
                 }
@@ -532,38 +476,97 @@ public class ActionManager {
                     if (classTree == null) {
                         return;
                     }
-                    // create new method tree
+                    // create annotation
                     TreeMaker make = workingCopy.getTreeMaker();
-                    AnnotationTree annotation = make.Annotation(
-                            make.QualIdent(workingCopy.getElements().getTypeElement("org.jdesktop.application.Action")), // NOI18N
-                                           Collections.<ExpressionTree>emptyList());
-                    // TODO annotation attributes
+                    AnnotationTree annotation = createAnnotation(action, make, workingCopy);
+                    // create new method tree
+                    MethodTree newMethod;
                     ModifiersTree methodModifiers = make.Modifiers(
                         Collections.<Modifier>singleton(Modifier.PUBLIC),
                         Collections.<AnnotationTree>singletonList(annotation));
-                    Tree returnType = action.isTaskEnabled()
-                            ? make.QualIdent(workingCopy.getElements().getTypeElement("org.jdesktop.application.Task")) // NOI18N
-                            : make.PrimitiveType(TypeKind.VOID);
-                    MethodTree methodTree = make.Method(
+                    if (action.isTaskEnabled()) { // method returns a new Task
+                        boolean hasAppGetter = AppFrameworkSupport.isViewClass(classTree, workingCopy);
+                        newMethod = make.Method(
+                                methodModifiers,
+                                action.getMethodName(),
+                                make.QualIdent(workingCopy.getElements().getTypeElement("org.jdesktop.application.Task")), // NOI18N
+                                Collections.<TypeParameterTree>emptyList(),
+                                Collections.<VariableTree>emptyList(),
+                                Collections.<ExpressionTree>emptyList(),
+                                "{\n" + getTaskInstantiationCode(taskName, sourceFile, hasAppGetter) + "}", // NOI18N
+                                null);
+                    } else {
+                        newMethod = make.Method(
                             methodModifiers,
-                            action.getId(),
-                            returnType,
+                            action.getMethodName(),
+                            make.PrimitiveType(TypeKind.VOID),
                             Collections.<TypeParameterTree>emptyList(),
                             Collections.<VariableTree>emptyList(),
                             Collections.<ExpressionTree>emptyList(),
-                            make.Block(Collections.<StatementTree>emptyList(), false), // "// put your action code here", // NOI18N
+                            make.Block(Collections.<StatementTree>emptyList(), false), // "// put your action code here",
                             null);
+                    }
+                    // determine where to add the new method (ideally at the end
+                    // of class but before the guarded block of field variables)
+                    int insertIndex = -1;
+                    List<? extends Tree> members = classTree.getMembers();
+                    int index = members.size();
+                    ListIterator<? extends Tree> it = members.listIterator(index);
+                    while (it.hasPrevious()) {
+                        Tree t = it.previous();
+                        if (t.getKind() == Tree.Kind.METHOD || t.getKind() == Tree.Kind.CLASS) {
+                            insertIndex = index;
+                            break;
+                        }
+                        index--;
+                    }
                     // add the method tree to the class tree
-                    ClassTree modifiedClassTree = make.addClassMember(classTree, methodTree);
+                    ClassTree modifiedClassTree;
+                    if (insertIndex < 0) {
+                        modifiedClassTree = make.addClassMember(classTree, newMethod);
+                    } else {
+                        modifiedClassTree = make.insertClassMember(classTree, insertIndex, newMethod);
+                    }
                     workingCopy.rewrite(classTree, modifiedClassTree);
                 }
             });
             result.commit();
+
+            if (newTaskName != null) { // create the Task impl class
+                DataObject dobj = DataObject.find(sourceFile);
+                EditorCookie ec = dobj.getCookie(EditorCookie.class);
+                if (ec == null) {
+                    return false;
+                }
+                if (ec.getDocument() == null) {
+                    ec.openDocument();
+                }
+                Document doc = ec.getDocument();
+                Integer methodEndPosition = (Integer) new ActionMethodTask(sourceFile, action.getMethodName()) {
+                    Object run(CompilationController controller, MethodTree methodTree, ExecutableElement methodElement) {
+                        return (int) controller.getTrees().getSourcePositions().getEndPosition(
+                                controller.getCompilationUnit(), methodTree);
+                    }
+                }.execute();
+                javax.swing.text.Element docRoot = doc.getDefaultRootElement();
+                int pos = docRoot.getElement(docRoot.getElementIndex(methodEndPosition.intValue() + 1))
+                        .getStartOffset();
+
+                StringBuilder buf = new StringBuilder();
+                buf.append("\n") // NOI18N
+                   .append(getTaskClassImplCode(newTaskName, null))
+                   .append("\n"); // NOI18N
+                doc.insertString(pos, buf.toString(), null);
+            }
+
+            //generate selected and enabled properties if they don't already exist
+            generateProperties(action, sourceFile);
+            
             return true;
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            return false;
         }
-        return false; */
     }
 
     private static String taskNameForAction(ProxyAction action) {
@@ -596,12 +599,43 @@ public class ActionManager {
         }
     }
 
+    private static AnnotationTree createAnnotation(ProxyAction action, TreeMaker make, WorkingCopy workingCopy) {
+        List<AssignmentTree> annAttrs = new LinkedList<AssignmentTree>();
+        for (String attrName : ProxyAction.getAnnotationAttributeNames()) {
+            if (action.isAnnotationAttributeSet(attrName)) {
+                Object value = action.getAnnotationAttributeValue(attrName);
+                ExpressionTree expTree;
+                if (value instanceof String) {
+                    expTree = make.Literal(value);
+                } else if (value instanceof ProxyAction.BlockingType) {
+                    expTree = make.MemberSelect(
+                            make.MemberSelect(make.QualIdent(workingCopy.getElements().getTypeElement("org.jdesktop.application.Task")), // NOI18N
+                                              "BlockingScope"), // NOI18N
+                            value.toString());
+                } else {
+                    continue;
+                }
+                ExpressionTree identTree = make.Identifier(attrName);
+                AssignmentTree attrTree = make.Assignment(identTree, expTree);
+                annAttrs.add(attrTree);
+            }
+        }
+        return make.Annotation(make.QualIdent(workingCopy.getElements().getTypeElement("org.jdesktop.application.Action")), annAttrs); // NOI18N
+    }
+
+    private static String getTaskInstantiationCode(String taskName, FileObject sourceFile, boolean hasAppGetter) {
+        return "return new " + taskName + "(" // NOI18N
+                + (hasAppGetter ? "getApplication()" : AppFrameworkSupport.getApplicationCode(sourceFile)) // NOI18N
+                + ");\n"; // NOI18N
+    }
+
     private static final String TASK_CLASS_TEMPLATE =
             "    private class MyTask extends org.jdesktop.application.Task<Object, Void> {\n" // NOI18N
-          + "        MyTask() {\n" // NOI18N
+          + "        MyTask(org.jdesktop.application.Application app) {\n" // NOI18N
           + "            // Runs on the EDT.  Copy GUI state that\n" // NOI18N
           + "            // doInBackground() depends on from parameters\n" // NOI18N
           + "            // to MyTask fields, here.\n" // NOI18N
+          + "            super(app);\n" // NOI18N
           + "__CTOR_CODE__" // NOI18N
           + "        }\n" // NOI18N
           + "        @Override protected Object doInBackground() {\n" // NOI18N
@@ -623,8 +657,6 @@ public class ActionManager {
         if (ctorCode.length() > 0 && !ctorCode.endsWith("\n")) { // NOI18N
             ctorCode = ctorCode + "\n"; // NOI18N
         }
-        ctorCode = "super(" + AppFrameworkSupport.getApplicationCode(getRoot()) + ");\n" // NOI18N
-                   + ctorCode;
         if (ctorCode.length() > 0) { // provisional indentation, PENDING...
             StringBuilder buf = new StringBuilder();
             String indent = "            "; // NOI18N
@@ -818,114 +850,102 @@ public class ActionManager {
                 public void run(WorkingCopy workingCopy) throws Exception {
                     workingCopy.toPhase(JavaSource.Phase.RESOLVED);
                     CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                    // get the class tree
+                    ClassTree classTree = null;
                     for (Tree t: cut.getTypeDecls()) {
                         if (t.getKind() == Tree.Kind.CLASS) {
                             ClassTree classT = (ClassTree) t;
                             if (sourceFile.getName().equals(classT.getSimpleName().toString())) {
-                                Trees trees = workingCopy.getTrees();
-                                TreePath classTPath = trees.getPath(cut, classT);
-                                TypeElement classEl = (TypeElement) trees.getElement(classTPath);
-                                for (ExecutableElement el : ElementFilter.methodsIn(classEl.getEnclosedElements())) {
-                                    if (el.getSimpleName().toString().equals(action.getMethodName())
-                                            && el.getModifiers().contains(Modifier.PUBLIC)) {
-                                        // method name matches, now check the annotation
-                                        MethodTree method = trees.getTree(el);
-                                        AnnotationTree annotation = null;
-                                        for (AnnotationTree at : method.getModifiers().getAnnotations()) {
-                                            TypeElement annEl = (TypeElement) trees.getElement(
-                                                    trees.getPath(cut, at.getAnnotationType()));
-                                            if (annEl.getQualifiedName().toString().equals("org.jdesktop.application.Action")) { // NOI18N
-                                                annotation = at;
-                                                break;
-                                            }
-                                        }
-                                        if (annotation == null) {
-                                            continue; // the method does not have @Action annotation
-                                        }
-
-                                        TreeMaker make = workingCopy.getTreeMaker();
-
-                                        // update annotation
-                                        List<AssignmentTree> annAttrs = new LinkedList<AssignmentTree>();
-                                        for (String attrName : ProxyAction.getAnnotationAttributeNames()) {
-                                            if (action.isAnnotationAttributeSet(attrName)) {
-                                                Object value = action.getAnnotationAttributeValue(attrName);
-                                                ExpressionTree expTree;
-                                                if (value instanceof String) {
-                                                    expTree = make.Literal(value);
-                                                } else if (value instanceof ProxyAction.BlockingType) {
-                                                    expTree = make.MemberSelect(
-                                                            make.MemberSelect(make.QualIdent(workingCopy.getElements().getTypeElement("org.jdesktop.application.Task")), // NOI18N
-                                                                              "BlockingScope"), // NOI18N
-                                                            value.toString());
-                                                } else {
-                                                    continue;
-                                                }
-                                                ExpressionTree identTree = make.Identifier(attrName);
-                                                AssignmentTree attrTree = make.Assignment(identTree, expTree);
-                                                annAttrs.add(attrTree);
-                                            }
-                                        }
-                                        AnnotationTree newAnnotation = make.Annotation(make.QualIdent(workingCopy.getElements().getTypeElement("org.jdesktop.application.Action")), annAttrs); // NOI18N
-                                        workingCopy.rewrite(annotation, newAnnotation);
-
-                                        // update the method return type (task)
-                                        if (isAsyncActionMethod(el) != action.isTaskEnabled()) {
-                                            MethodTree newMethod;
-                                            BlockTree body = method.getBody();
-                                            SourcePositions sp = trees.getSourcePositions();
-                                            int start = (int) sp.getStartPosition(cut, body);
-                                            int end = (int) sp.getEndPosition(cut, body);
-                                            String bodyText = getMethodBodyWithoutBraces(workingCopy.getText().substring(start, end));
-                                            if (action.isTaskEnabled()) { // switch to Task
-                                                String genTaskName;
-                                                if (newTaskName != null) {
-                                                    genTaskName = newTaskName;
-                                                    oldBodyText[0] = bodyText;
-                                                    bodyText = ""; // NOI18N
-                                                } else {
-                                                    genTaskName = taskName;
-                                                    bodyText = getCommentedBodyText(bodyText);
-                                                }
-                                                newMethod = make.Method(
-                                                        method.getModifiers(),
-                                                        method.getName(),
-                                                        make.QualIdent(workingCopy.getElements().getTypeElement("org.jdesktop.application.Task")), // NOI18N
-                                                        method.getTypeParameters(),
-                                                        method.getParameters(),
-                                                        method.getThrows(),
-                                                        "{\nreturn new " + genTaskName + "();\n" + bodyText + "}", // NOI18N
-                                                        null);
-                                            } else { // switch to void
-                                                newMethod = make.Method(
-                                                        method.getModifiers(),
-                                                        method.getName(),
-                                                        make.PrimitiveType(TypeKind.VOID),
-                                                        method.getTypeParameters(),
-                                                        method.getParameters(),
-                                                        method.getThrows(),
-                                                        "{\n" + getCommentedBodyText(bodyText) + "}", // NOI18N
-                                                        null);
-                                            }
-                                            workingCopy.rewrite(method, newMethod);
-                                        }
-                                        break;
-                                    }
-                                }
+                                classTree = classT;
+                                break;
                             }
                         }
+                    }
+                    if (classTree == null) {
+                        return;
+                    }
+                    // get the action method tree
+                    Trees trees = workingCopy.getTrees();
+                    TypeElement classEl = (TypeElement) trees.getElement(trees.getPath(cut, classTree));
+                    MethodTree method = null;
+                    ExecutableElement methodEl = null;
+                    AnnotationTree annotation = null;
+                    for (ExecutableElement el : ElementFilter.methodsIn(classEl.getEnclosedElements())) {
+                        if (el.getSimpleName().toString().equals(action.getMethodName())
+                                && el.getModifiers().contains(Modifier.PUBLIC)) {
+                            // method name matches, now check the annotation
+                            MethodTree mt = trees.getTree(el);
+                            for (AnnotationTree at : mt.getModifiers().getAnnotations()) {
+                                TypeElement annEl = (TypeElement) trees.getElement(
+                                        trees.getPath(cut, at.getAnnotationType()));
+                                if (annEl.getQualifiedName().toString().equals("org.jdesktop.application.Action")) { // NOI18N
+                                    annotation = at;
+                                    break;
+                                }
+                            }
+                            if (annotation != null) {
+                                method = mt;
+                                methodEl = el;
+                                break;
+                            }
+                        }
+                    }
+                    if (method == null) {
+                        return;
+                    }
+                    TreeMaker make = workingCopy.getTreeMaker();
+                    // update annotation
+                    AnnotationTree newAnnotation = createAnnotation(action, make, workingCopy);
+                    workingCopy.rewrite(annotation, newAnnotation);
+                    // update the method return type (task)
+                    if (isAsyncActionMethod(methodEl) != action.isTaskEnabled()) {
+                        MethodTree newMethod;
+                        BlockTree body = method.getBody();
+                        SourcePositions sp = trees.getSourcePositions();
+                        int start = (int) sp.getStartPosition(cut, body);
+                        int end = (int) sp.getEndPosition(cut, body);
+                        String bodyText = getMethodBodyWithoutBraces(workingCopy.getText().substring(start, end));
+                        if (action.isTaskEnabled()) { // switch to Task
+                            if (newTaskName != null) {
+                                oldBodyText[0] = bodyText;
+                                bodyText = ""; // NOI18N
+                            } else {
+                                bodyText = getCommentedBodyText(bodyText);
+                            }
+                            boolean hasAppGetter = AppFrameworkSupport.isViewClass(classTree, workingCopy);
+                            newMethod = make.Method(
+                                    method.getModifiers(),
+                                    method.getName(),
+                                    make.QualIdent(workingCopy.getElements().getTypeElement("org.jdesktop.application.Task")), // NOI18N
+                                    method.getTypeParameters(),
+                                    method.getParameters(),
+                                    method.getThrows(),
+                                    "{\n" + getTaskInstantiationCode(taskName, sourceFile, hasAppGetter) + bodyText + "}", // NOI18N
+                                    null);
+                        } else { // switch to void
+                            newMethod = make.Method(
+                                    method.getModifiers(),
+                                    method.getName(),
+                                    make.PrimitiveType(TypeKind.VOID),
+                                    method.getTypeParameters(),
+                                    method.getParameters(),
+                                    method.getThrows(),
+                                    "{\n" + getCommentedBodyText(bodyText) + "}", // NOI18N
+                                    null);
+                        }
+                        workingCopy.rewrite(method, newMethod);
                     }
                 }
             });
             result.commit();
 
             DataObject dobj = DataObject.find(sourceFile);
-            EditorCookie ec = (EditorCookie)dobj.getCookie(EditorCookie.class);
+            EditorCookie ec = dobj.getCookie(EditorCookie.class);
             if (ec == null) {
                 return;
             }
             // make sure it's open before we access it
-            if(ec.getDocument() == null) {
+            if (ec.getDocument() == null) {
                 ec.openDocument();
             }
             Document doc = ec.getDocument();
@@ -945,15 +965,6 @@ public class ActionManager {
                                  "\n" + getTaskClassImplCode(newTaskName, oldBodyText[0]), // NOI18N
                                  null);
             }
-
-//            // update the annotation attributes
-//            int[] annotationPositions = getAnnotationPositions(action, sourceFile);
-//            if (annotationPositions != null) {
-//                int startPos = annotationPositions[0];
-//                int endPos = annotationPositions[1];
-//                doc.remove(startPos, endPos-startPos);
-//                doc.insertString(startPos, getAnnotationCode(action), null);
-//            }
 
             //generate selected and enabled properties if they don't already exist
             generateProperties(action, sourceFile);

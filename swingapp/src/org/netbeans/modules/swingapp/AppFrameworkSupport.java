@@ -244,6 +244,47 @@ class AppFrameworkSupport {
         return appClassName;
     }
 
+    static boolean isViewClass(FileObject fo) {
+        final String fileName = fo.getName();
+        final boolean[] result = new boolean[1];
+        JavaSource js = JavaSource.forFileObject(fo);
+        try {
+            js.runUserActionTask(new CancellableTask<CompilationController>() {
+                public void cancel() {
+                }
+                public void run(CompilationController controller) throws Exception {
+                    controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                    for (Tree t: controller.getCompilationUnit().getTypeDecls()) {
+                        if (t.getKind() == Tree.Kind.CLASS) {
+                            ClassTree classT = (ClassTree) t;
+                            if (fileName.equals(classT.getSimpleName().toString())) {
+                                if (isViewClass(classT, controller)) {
+                                    result[0] = true;
+                                    return;
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+            }, true);
+        } catch (IOException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        }
+        return result[0];
+    }
+
+    static boolean isViewClass(ClassTree classT, CompilationController controller) {
+        Trees trees = controller.getTrees();
+        TreePath classTPath = trees.getPath(controller.getCompilationUnit(), classT);
+        TypeElement classEl = (TypeElement) trees.getElement(classTPath);
+        TypeElement appEl = controller.getElements().getTypeElement("org.jdesktop.application.View"); // NOI18N
+        Types types = controller.getTypes();
+        TypeMirror tm1 = types.erasure(classEl.asType());
+        TypeMirror tm2 = types.erasure(appEl.asType());
+        return types.isSubtype(tm1, tm2);
+    }
+
     /**
      * @return corresponding class name for given source file
      */
@@ -335,7 +376,7 @@ class AppFrameworkSupport {
                                     Trees trees = controller.getTrees();
                                     TreePath classTPath = trees.getPath(controller.getCompilationUnit(), classT);
                                     TypeElement classEl = (TypeElement) trees.getElement(classTPath);
-                                    TypeElement appEl = controller.getElements().getTypeElement("org.jdesktop.application.Application");
+                                    TypeElement appEl = controller.getElements().getTypeElement("org.jdesktop.application.Application"); // NOI18N
                                     Types types = controller.getTypes();
                                     TypeMirror tm1 = types.erasure(classEl.asType());
                                     TypeMirror tm2 = types.erasure(appEl.asType());
