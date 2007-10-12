@@ -117,10 +117,11 @@ public class PullUpTransformer extends RefactoringVisitor {
                                 method.getThrows(),
                                 (BlockTree) null,
                                 (ExpressionTree)method.getDefaultValue());
-                        njuClass = GeneratorUtilities.get(workingCopy).insertClassMember(njuClass, nju);
+                        njuClass = GeneratorUtilities.get(workingCopy).insertClassMember(njuClass, (MethodTree) make.copyTree(nju, workingCopy.getCompilationUnit()));
                         rewrite(tree, njuClass);
                     } else {
-                        njuClass = GeneratorUtilities.get(workingCopy).insertClassMember(njuClass, workingCopy.getTrees().getTree(members[i].getElementHandle().resolve(workingCopy)));
+                        MethodTree newMethodTree = (MethodTree) make.copyTree(workingCopy.getTrees().getTree(members[i].getElementHandle().resolve(workingCopy)), workingCopy.getCompilationUnit());
+                        njuClass = GeneratorUtilities.get(workingCopy).insertClassMember(njuClass, newMethodTree);
                         rewrite(tree, njuClass);
                     }
                 }
