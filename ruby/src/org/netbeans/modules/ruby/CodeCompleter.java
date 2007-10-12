@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.ruby;
 
+import org.netbeans.api.gsf.ElementHandle;
 import org.netbeans.modules.ruby.elements.CommentElement;
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -81,6 +82,7 @@ import org.jruby.lexer.yacc.ISourcePosition;
 import org.netbeans.api.gsf.CompilationInfo;
 import org.netbeans.api.gsf.Completable;
 import org.netbeans.api.gsf.CompletionProposal;
+import org.netbeans.api.gsf.DeclarationFinder.DeclarationLocation;
 import org.netbeans.api.gsf.Element;
 import org.netbeans.api.gsf.ElementKind;
 import org.netbeans.api.gsf.GsfTokenId;
@@ -2998,6 +3000,17 @@ public class CodeCompleter implements Completable {
             }
             String html = formatter.toHtml();
             return html;
+        } else if (element instanceof ElementHandle.UrlHandle) {
+            String url = ((ElementHandle.UrlHandle)element).getUrl();
+            DeclarationLocation loc = new DeclarationFinder().findLinkedMethod(info, url);
+            if (loc != DeclarationLocation.NONE) {
+                element = loc.getElement();
+                if (element == null) {
+                    return null;
+                }
+            } else {
+                return null;
+            }
         }
         
         List<String> comments = getComments(info, element);

@@ -572,6 +572,10 @@ public class RubyParser implements Parser {
 
     @SuppressWarnings("unchecked")
     public <T extends Element> T resolveHandle(CompilationInfo info, ElementHandle<T> handle) {
+        if (handle instanceof ElementHandle.UrlHandle) {
+            return (T)handle;
+        }
+
         RubyElementHandle h = (RubyElementHandle)handle;
         Node oldRoot = h.root;
         Node oldNode;

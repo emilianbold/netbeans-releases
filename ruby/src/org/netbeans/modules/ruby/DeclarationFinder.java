@@ -1210,6 +1210,7 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
 
         // Is this a comment? If so, possibly do rdoc-method reference jump
         if ((token != null) && (token.id() == RubyCommentTokenId.COMMENT_LINK)) {
+            // TODO - use findLinkedMethod
             String method = token.text().toString();
 
             if (method.startsWith("#")) {
@@ -1247,6 +1248,56 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
             }
         }
 
+        return DeclarationLocation.NONE;
+    }
+    
+    DeclarationLocation findLinkedMethod(CompilationInfo info, String method) {
+        Node root = AstUtilities.getRoot(info);
+        AstPath path = new AstPath();
+        path.descend(root);
+        Node closest = root;
+        int astOffset = 0;
+        int lexOffset = 0;
+        RubyIndex index = RubyIndex.get(info.getIndex());
+
+        if (root == null) {
+            return DeclarationLocation.NONE;
+        }
+
+        if (method.startsWith("#")) {
+            method = method.substring(1);
+
+            DeclarationLocation loc = findMethod(info, root, method, Arity.UNKNOWN);
+
+            // It looks like "#foo" can refer not just to methods (as rdoc suggested)
+            // but to attributes as well - in Rails' initializer.rb this is used
+            // in a number of places.
+            if (loc == DeclarationLocation.NONE) {
+                loc = findInstance(info, root, "@" + method);
+            }
+
+            return loc;
+        } else {
+            // A URL such as http://netbeans.org - try to open it in a browser!
+            try {
+                URL url = new URL(method);
+
+                return new DeclarationLocation(url);
+            } catch (MalformedURLException mue) {
+                // URL is from user source... don't complain with exception dialogs etc.
+                ;
+            }
+        }
+
+        // Probably a Class#method
+        int methodIndex = method.indexOf("#");
+        if (methodIndex != -1 && methodIndex < method.length()-1) {
+            String clz = method.substring(0, methodIndex);
+            method = method.substring(methodIndex+1);
+
+            return findMethod(method, clz, null, info, astOffset, lexOffset, path, closest, index);
+        }
+        
         return DeclarationLocation.NONE;
     }
 

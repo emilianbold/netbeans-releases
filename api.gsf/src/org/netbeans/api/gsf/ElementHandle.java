@@ -41,6 +41,8 @@
 
 package org.netbeans.api.gsf;
 
+import java.util.Collections;
+import java.util.Set;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -68,4 +70,49 @@ public abstract class ElementHandle<T extends Element> {
      */
     public abstract boolean signatureEquals (final ElementHandle<? extends Element> handle);
 
+    /** 
+     * A special handle which holds URL. Can be used to handle documentation
+     * requests etc.
+     */
+    public static class UrlHandle<T extends Element> extends ElementHandle<T> implements Element {
+        private String url;
+
+        public UrlHandle(String url) {
+            this.url = url;
+        }
+
+        @Override
+        public FileObject getFileObject() {
+            return null;
+        }
+
+        @Override
+        public boolean signatureEquals(ElementHandle handle) {
+            if (handle instanceof UrlHandle) {
+                return url.equals(((UrlHandle)handle).url);
+            }
+            
+            return false;
+        }
+        
+        public String getUrl() {
+            return url;
+        }
+
+        public String getName() {
+            return url;
+        }
+
+        public String getIn() {
+            return null;
+        }
+
+        public ElementKind getKind() {
+            return ElementKind.OTHER;
+        }
+
+        public Set<Modifier> getModifiers() {
+            return Collections.emptySet();
+        }
+    }
 }
