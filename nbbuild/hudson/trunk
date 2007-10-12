@@ -46,7 +46,6 @@ cd nbbuild
 rm -f netbeans/nb.cluster.*
 # Do not delete. It is needed for tests to determine classpath.
 #rm -f netbeans/moduleCluster.properties
-rm -f netbeans/module_tracking.xml
 rm -f netbeans/build_info
 
 BASENAME=netbeans-$BUILDNUM
