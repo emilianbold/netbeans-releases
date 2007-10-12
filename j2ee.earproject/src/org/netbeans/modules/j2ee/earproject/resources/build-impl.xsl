@@ -70,7 +70,7 @@ is divided into following sections:
         <xsl:variable name="name" select="/p:project/p:configuration/ear2:data/ear2:name"/>
         <xsl:variable name="codename" select="translate($name, ' ', '_')"/>
         <project name="{$codename}-impl">
-            <xsl:attribute name="default">build</xsl:attribute>
+            <xsl:attribute name="default">default</xsl:attribute>
             <xsl:attribute name="basedir">..</xsl:attribute>
             <import file="ant-deploy.xml" />
             <target name="default">
