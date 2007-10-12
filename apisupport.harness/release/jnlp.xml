@@ -183,7 +183,7 @@ made subject to such option by the copyright holder.
     
     <target name="check-signjars">
         <condition property="unsign-the-jars">
-            <isfalse value="jnlp.sign.jars"/>
+            <isfalse value="${jnlp.sign.jars}"/>
         </condition>
     </target>
     
@@ -316,11 +316,11 @@ made subject to such option by the copyright holder.
         <loadfile property="jnlp.resources" srcfile="${jnlp.master.dir}/resources.xml"/>
 
         <condition property="netbeans.jnlp.fixPolicy">
-            <isfalse value="jnlp.sign.jars"/>
+            <isfalse value="${jnlp.sign.jars}"/>
         </condition>
         <!-- Anyone knows a better way to negate a property value? -->
         <condition property="netbeans.jnlp.fixPolicy" value="false">
-            <istrue value="jnlp.sign.jars"/>
+            <istrue value="${jnlp.sign.jars}"/>
         </condition>
         
         <copy file="${app.icon}" tofile="${jnlp.dest.dir}/master.png" failonerror="false"/>
