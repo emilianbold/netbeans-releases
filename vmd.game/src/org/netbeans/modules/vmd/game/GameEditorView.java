@@ -265,6 +265,10 @@ public class GameEditorView implements DataEditorView, EditorManagerListener {
 		}
 		return null;
     }
+	
+	public void discardAllEdits() {
+		IOSupport.getDocumentSerializer(context.getDataObject()).getUndoRedoManager().discardAllEdits();
+	}
 
     public void componentOpened() {
     }

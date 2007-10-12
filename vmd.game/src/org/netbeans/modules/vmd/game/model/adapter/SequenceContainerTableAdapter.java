@@ -138,6 +138,9 @@ public class SequenceContainerTableAdapter implements TableModel, SequenceContai
 
 	public Object getValueAt(int rowIndex, int columnIndex) {
 		Sequence s = this.sequenceContainer.getSequenceAt(rowIndex);
+		if (s == null) {
+			return null;
+		}
 		switch (columnIndex) {
 			case COL_DEFAULT:
 				return this.sequenceContainer.getDefaultSequence() == s;
@@ -226,7 +229,7 @@ public class SequenceContainerTableAdapter implements TableModel, SequenceContai
 		}
 		if (evt.getSource() instanceof  SequenceContainer) {
 			SequenceContainer sc = (SequenceContainer) evt.getSource();
-			if (evt.getPropertyName() == SequenceContainer.PROPERTY_DEFAULT_SEQUENCE) {
+			if (evt.getPropertyName().equals(SequenceContainer.PROPERTY_DEFAULT_SEQUENCE)) {
 				Sequence old = (Sequence) evt.getOldValue();
 				Sequence current = (Sequence) evt.getNewValue();
 				int oldIndex = this.sequenceContainer.indexOf(old);

@@ -71,6 +71,8 @@ public class AnimatedTile extends Tile implements SequenceContainer, Editable, I
 	private SequenceContainerImpl sequenceContainer;
 	
 	private SequenceContainerEditor editor;
+	private JComponent navigator;
+
 	private String name;
 	
 	
@@ -273,7 +275,7 @@ public class AnimatedTile extends Tile implements SequenceContainer, Editable, I
     }
 
 	public JComponent getNavigator() {
-		return new SequenceContainerNavigator(this);
+		return this.navigator == null ? this.navigator = new SequenceContainerNavigator(this) : this.navigator;
 	}
 
 	public long getId() {

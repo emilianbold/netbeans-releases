@@ -60,6 +60,7 @@ import org.openide.util.NbBundle;
 public class Sprite extends Layer implements SequenceContainer {
 	
 	private SequenceContainerEditor editor;
+	private JComponent navigator;
 	private SequenceContainerImpl sequenceContainer;
 	
 	/**
@@ -160,7 +161,7 @@ public class Sprite extends Layer implements SequenceContainer {
 	}
 	
 	public JComponent getNavigator() {
-		return new SequenceContainerNavigator(this);
+		return this.navigator == null ? this.navigator = new SequenceContainerNavigator(this) : this.navigator;
 	}
 
 	public int getHeight() {

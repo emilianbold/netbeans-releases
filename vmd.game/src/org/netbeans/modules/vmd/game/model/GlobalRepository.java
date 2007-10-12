@@ -66,6 +66,8 @@ import org.openide.util.NbBundle;
 
 public class GlobalRepository implements PropertyChangeListener, Editable {
 
+	private JComponent editor;
+	
 	private DesignDocument designDocument;
 	private MainView mainView;
 	
@@ -170,7 +172,7 @@ public class GlobalRepository implements PropertyChangeListener, Editable {
 			if (DEBUG) {
 				System.out.println("Added " + imageURL + ". ImgResourceMap now contains:"); // NOI18N 
 				for (Iterator iter = imgResourceMap.keySet().iterator(); iter.hasNext();) {
-					URL url = (URL) iter.next();
+					Object url = iter.next();
 					System.out.println("\t" + url); // NOI18N 
 				}
 			}//end DEBUG
@@ -492,13 +494,18 @@ public class GlobalRepository implements PropertyChangeListener, Editable {
 	}
 
     public JComponent getEditor() {
-		JPanel top = new JPanel(new BorderLayout());
-		top.setBackground(ColorConstants.COLOR_EDITOR_PANEL);
-		JScrollPane scroll = new JScrollPane();
-		scroll.setViewportView(new GameDesignOverViewPanel(this));
-		scroll.getViewport().setBackground(Color.WHITE);
-		top.add(scroll, BorderLayout.CENTER);
-		return top;
+		//we will be able to keep a single editor once the GameDesignOverViewPanel implements listeners for 
+		//scene, tiledlayer, and sprite so that it can redraw pewview components when changes occur
+//		if (this.editor == null) {
+			JPanel top = new JPanel(new BorderLayout());
+			top.setBackground(ColorConstants.COLOR_EDITOR_PANEL);
+			JScrollPane scroll = new JScrollPane();
+			scroll.setViewportView(new GameDesignOverViewPanel(this));
+			scroll.getViewport().setBackground(Color.WHITE);
+			top.add(scroll, BorderLayout.CENTER);
+			this.editor = top;
+//		}
+		return this.editor;
     }
 
     public ImageResourceInfo getImageResourceInfo() {
