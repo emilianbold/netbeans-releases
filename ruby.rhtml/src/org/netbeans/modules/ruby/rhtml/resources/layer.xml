@@ -184,8 +184,8 @@
 
     <folder name="Navigator">
         <folder name="Panels">
-            <folder name="text">
-                <folder name="application/x-httpd-eruby">
+            <folder name="application">
+                <folder name="x-httpd-eruby">
                     <file name="org-netbeans-modules-languages-features-LanguagesNavigator.instance"/>
                 </folder>
             </folder>
