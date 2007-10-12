@@ -1,0 +1,4 @@
+# scripting/javascript
+read global
+${l10n-module}/src/org/netbeans/modules/languages/javascript/EmptyJSONFileDescription.html
+${l10n-module}/src/org/netbeans/modules/languages/javascript/EmptyJavaScriptFileDescription.html
