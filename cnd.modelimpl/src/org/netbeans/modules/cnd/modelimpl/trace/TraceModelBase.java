@@ -179,10 +179,15 @@ public class TraceModelBase {
         }
     }
     
+    public static void closeProject(CsmProject project) {
+        Object platformProject = project.getPlatformProject();
+        ((ModelImpl) CsmModelAccessor.getModel()).closeProject(platformProject);
+    }
+    
     public void resetProject() {
-	if (getProject() != null) {
-	    Object platformProject = getProject().getPlatformProject();
-	    ((ModelImpl) CsmModelAccessor.getModel()).closeProject(platformProject);
+	ProjectBase aProject = getProject();
+	if (project != null) {
+	    closeProject(aProject);
 	}
 	projectUID = null;
 	project = null;
@@ -195,14 +200,6 @@ public class TraceModelBase {
 		systemIncludePaths, quoteIncludePaths, getSysMacros(), macros, pathsRelCurFile);
 	ProjectBase result = model.addProject(nativeProject, "DummyProject", true); // NOI18N
 	return result;
-    }
-
-    private void setProject(ProjectBase project) {
-        if (TraceFlags.USE_REPOSITORY) {
-            projectUID = project == null ? null : project.getUID();
-        } else {
-            this.project = project;
-        }
     }
 
     protected List<String> getSystemIncludes() {
