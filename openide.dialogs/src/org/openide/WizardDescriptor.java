@@ -2392,8 +2392,8 @@ public class WizardDescriptor extends DialogDescriptor {
 
             // #65506: the wizard panel should fit into window w/o scrollbar
             add(fullRightPanel, BorderLayout.CENTER);
-
-            if (getBorder() == null) {
+            
+            if ((getBorder() == null) || "GTK".equals(UIManager.getLookAndFeel().getID())) {
                 // Look & Feel has not set the border already
                 JSeparator sep = new JSeparator();
                 sep.setForeground(Color.darkGray);
