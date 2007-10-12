@@ -78,10 +78,11 @@ public final class DeepReparsingUtils {
                 if (!topParents.contains(parent)){
                     invalidateFileAndPreprocState(project, parent);
                 }
+            } 
+            if( scheduleParsing ) {
+                // coherence already invalidated, pass empty set
+		addToReparse(project, topParents, new HashSet(0), false);
             }
-	    if( scheduleParsing ) {
-		addToReparse(project, topParents, false);
-	    }
         } else {
 	    if( scheduleParsing ) {
 		ParserQueue.instance().addFirst(fileImpl, project.getPreprocHandler(fileImpl.getBuffer().getFile()).getState(), false);
@@ -107,7 +108,8 @@ public final class DeepReparsingUtils {
             }
             addToReparse(project, nativeFile, file);
             top.remove(file);
-            addToReparse(project, top, false);
+            // coherence already invalidated, pass empty set
+            addToReparse(project, top,new HashSet(0), false);
         } else {
             addToReparse(project, nativeFile, file);
         }
@@ -188,12 +190,7 @@ public final class DeepReparsingUtils {
                 top.addAll(project.getGraph().getTopParentFiles(file));
                 coherence.addAll(project.getGraph().getIncludedFiles(file));
             }
-            for(CsmFile parent : coherence){
-                if (!top.contains(parent)){
-                    invalidateFileAndPreprocState(project, parent);
-                }
-            }
-            addToReparse(project, top, true);
+            addToReparse(project, top, coherence, true);
         }
     }
 
@@ -219,12 +216,7 @@ public final class DeepReparsingUtils {
                 top.addAll(project.getGraph().getTopParentFiles(file));
                 coherence.addAll(project.getGraph().getIncludedFiles(file));
             }
-            for(CsmFile parent : coherence){
-                if (!top.contains(parent)){
-                    invalidateFileAndPreprocState(project, parent);
-                }
-            }
-            addToReparse(project, top, true);
+            addToReparse(project, top, coherence, true);
         }
     }
 
@@ -254,14 +246,7 @@ public final class DeepReparsingUtils {
         project.getGraph().removeFile(impl);
         topParents.remove(impl);
         coherence.remove(impl);
-        if (topParents.size()>0){
-            for(CsmFile parent : coherence){
-                if (!topParents.contains(parent)){
-                    invalidateFileAndPreprocState(project, parent);
-                }
-            }
-            addToReparse(project, topParents, false);
-        }
+        addToReparse(project, topParents, coherence, false);
     }
 
     static void reparseOnRemoved(List<FileImpl> toReparse, ProjectBase project) {
@@ -277,17 +262,15 @@ public final class DeepReparsingUtils {
             topParents.remove(impl);
             coherence.remove(impl);
         }
-        if (topParents.size()>0){
-            for(CsmFile parent : coherence){
-                if (!topParents.contains(parent)){
-                    invalidateFileAndPreprocState(project, parent);
-                }
-            }
-            addToReparse(project, topParents, false);
-        }
+        addToReparse(project, topParents, coherence, false);
     }
     
-    private static void addToReparse(final ProjectBase project, final Set<CsmFile> topParents, boolean invalidateCache) {
+    private static void addToReparse(final ProjectBase project, final Set<CsmFile> topParents,final Set<CsmFile> coherence, boolean invalidateCache) {
+        for(CsmFile incl : coherence){
+            if (!topParents.contains(incl)){
+                invalidateFileAndPreprocState(project, incl);
+            }
+        }        
         boolean progress = false;
         try {
             if (topParents.size()>5) {
