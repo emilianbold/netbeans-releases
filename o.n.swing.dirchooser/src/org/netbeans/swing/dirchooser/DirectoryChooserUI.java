@@ -2223,10 +2223,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                 ((JLabel)stringDisplayer).setText(getNodeText(node.getFile()));
             }
                 Font f = stringDisplayer.getFont();
-                System.out.println("Font metrics: " + stringDisplayer.getFontMetrics(f));
-                System.out.println("preferred size: " + stringDisplayer.getPreferredSize());
                 stringDisplayer.setPreferredSize(new Dimension(stringDisplayer.getPreferredSize().width, 30));
-                System.out.println("preferred size: " + stringDisplayer.getPreferredSize());
 
             // allow some space around icon of items
             ((JComponent)stringDisplayer).setBorder(BorderFactory.createEmptyBorder(1, 0, 1, 0));
