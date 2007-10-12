@@ -89,14 +89,14 @@ public class AntGrammarTest extends NbTestCase {
     
     public void testTaskCompletion() throws Exception {
         String p = "<project default='x'><target name='x'><ecHERE/></target></project>";
-        List l = TestUtil.grammarResultValues(g.queryElements(TestUtil.createCompletion(p)));
+        List<String> l = TestUtil.grammarResultValues(g.queryElements(TestUtil.createCompletion(p)));
         assertTrue("matched <echo>", l.contains("echo"));
         // XXX more...
     }
     
     public void testTypeCompletion() throws Exception {
         String p = "<project default='x'><target name='x'><paHERE/></target></project>";
-        List l = TestUtil.grammarResultValues(g.queryElements(TestUtil.createCompletion(p)));
+        List<String> l = TestUtil.grammarResultValues(g.queryElements(TestUtil.createCompletion(p)));
         assertTrue("matched <path>", l.contains("path"));
         p = "<project default='x'><filHERE/><target name='x'/></project>";
         l = TestUtil.grammarResultValues(g.queryElements(TestUtil.createCompletion(p)));
@@ -106,7 +106,7 @@ public class AntGrammarTest extends NbTestCase {
     
     public void testRegularAttrCompletion() throws Exception {
         String p = "<project default='x'><target name='x'><javac srcdHERE=''/></target></project>";
-        List l = TestUtil.grammarResultValues(g.queryAttributes(TestUtil.createCompletion(p)));
+        List<String> l = TestUtil.grammarResultValues(g.queryAttributes(TestUtil.createCompletion(p)));
         assertTrue("matched srcdir on <javac>: " + l, l.contains("srcdir"));
         // XXX more...
     }
@@ -124,7 +124,7 @@ public class AntGrammarTest extends NbTestCase {
     
     public void testEnumeratedValueCompletion() throws Exception {
         String p = "<project default='x'><target><echo level='vHERE'/></target></project>";
-        List l = TestUtil.grammarResultValues(g.queryValues(TestUtil.createCompletion(p)));
+        List<String> l = TestUtil.grammarResultValues(g.queryValues(TestUtil.createCompletion(p)));
         assertEquals("matched level='verbose' on <echo>", Collections.singletonList("verbose"), l);
     }
     
@@ -137,7 +137,7 @@ public class AntGrammarTest extends NbTestCase {
     
     public void testStockProperties() throws Exception {
         String p = "<project default='x'><target><echo message='${HERE'/></target></project>";
-        List l = TestUtil.grammarResultValues(g.queryValues(TestUtil.createCompletion(p)));
+        List<String> l = TestUtil.grammarResultValues(g.queryValues(TestUtil.createCompletion(p)));
         assertTrue("matched ${ant.home}: " + l, l.contains("${ant.home}"));
         assertTrue("matched ${basedir}: " + l, l.contains("${basedir}"));
         assertTrue("matched ${java.home}: " + l, l.contains("${java.home}"));
@@ -145,19 +145,19 @@ public class AntGrammarTest extends NbTestCase {
     
     public void testPropertiesWithoutBrace() throws Exception {
         String p = "<project default='x'><target><echo message='$HERE'/></target></project>";
-        List l = TestUtil.grammarResultValues(g.queryValues(TestUtil.createCompletion(p)));
+        List<String> l = TestUtil.grammarResultValues(g.queryValues(TestUtil.createCompletion(p)));
         assertTrue("matched ${basedir}: " + l, l.contains("${basedir}"));
     }
     
     public void testPropertiesInText() throws Exception {
         String p = "<project default='x'><target><echo>basedir=${baseHERE</echo></target></project>";
-        List l = TestUtil.grammarResultValues(g.queryValues(TestUtil.createCompletion(p)));
+        List<String> l = TestUtil.grammarResultValues(g.queryValues(TestUtil.createCompletion(p)));
         assertTrue("matched ${basedir}: " + l, l.contains("dir}"));
     }
     
     public void testPropertiesInInterior() throws Exception {
         String p = "<project default='x'><target><echo message='basedir=${baseHERE'/></target></project>";
-        List l = TestUtil.grammarResultValues(g.queryValues(TestUtil.createCompletion(p)));
+        List<String> l = TestUtil.grammarResultValues(g.queryValues(TestUtil.createCompletion(p)));
         assertTrue("matched ${basedir} after prefix: " + l, l.contains("basedir=${basedir}"));
         p = "<project default='x'><target><echo message='foo=${foo} basedir=${baseHERE'/></target></project>";
         l = TestUtil.grammarResultValues(g.queryValues(TestUtil.createCompletion(p)));
@@ -169,7 +169,7 @@ public class AntGrammarTest extends NbTestCase {
     
     public void testAlreadyUsedProperties() throws Exception {
         String p = "<project default='x'><target><echo message='${foo}'/><echo message='${HERE'/></target></project>";
-        List l = TestUtil.grammarResultValues(g.queryValues(TestUtil.createCompletion(p)));
+        List<String> l = TestUtil.grammarResultValues(g.queryValues(TestUtil.createCompletion(p)));
         assertTrue("matched already used property ${foo}: " + l, l.contains("${foo}"));
         p = "<project default='x'><target><echo message='${HERE'/></target><target><echo message='${foo}'/></target></project>";
         l = TestUtil.grammarResultValues(g.queryValues(TestUtil.createCompletion(p)));
@@ -188,13 +188,13 @@ public class AntGrammarTest extends NbTestCase {
     
     public void testAddedProperties() throws Exception {
         String p = "<project default='x'><property name='foo' value='whatever'/><target><echo message='${HERE'/></target></project>";
-        List l = TestUtil.grammarResultValues(g.queryValues(TestUtil.createCompletion(p)));
+        List<String> l = TestUtil.grammarResultValues(g.queryValues(TestUtil.createCompletion(p)));
         assertTrue("matched defined property ${foo}: " + l, l.contains("${foo}"));
     }
     
     public void testImpliedProperties() throws Exception {
         String p = "<project default='x'><target if='someprop'><echo message='${HERE'/></target></project>";
-        List l = TestUtil.grammarResultValues(g.queryValues(TestUtil.createCompletion(p)));
+        List<String> l = TestUtil.grammarResultValues(g.queryValues(TestUtil.createCompletion(p)));
         assertTrue("matched property ${someprop} from <target if>: " + l, l.contains("${someprop}"));
         p = "<project default='x'><target><junit errorproperty='failed'/><echo message='${HERE'/></target></project>";
         l = TestUtil.grammarResultValues(g.queryValues(TestUtil.createCompletion(p)));
@@ -204,20 +204,20 @@ public class AntGrammarTest extends NbTestCase {
     
     public void testImplicitProperties() throws Exception {
         String p = "<project default='x'><target><buildnumber/><echo message='${HERE'/></target></project>";
-        List l = TestUtil.grammarResultValues(g.queryValues(TestUtil.createCompletion(p)));
+        List<String> l = TestUtil.grammarResultValues(g.queryValues(TestUtil.createCompletion(p)));
         assertTrue("matched property ${build.number} from <buildnumber>: " + l, l.contains("${build.number}"));
         // XXX could also test other standard names
     }
     
     public void testIndirectProperties() throws Exception {
         String p = "<project default='x'><target><property name='${foo}' value='bar'/><echo message='${HERE'/></target></project>";
-        List l = TestUtil.grammarResultValues(g.queryValues(TestUtil.createCompletion(p)));
+        List<String> l = TestUtil.grammarResultValues(g.queryValues(TestUtil.createCompletion(p)));
         assertFalse("did not match non-property ${${foo}}: " + l, l.contains("${${foo}}"));
     }
     
     public void testNonProperties() throws Exception {
         String p = "<project default='x'><target><echo>${foo</echo><echo message='${HERE'/></target></project>";
-        List l = TestUtil.grammarResultValues(g.queryValues(TestUtil.createCompletion(p)));
+        List<String> l = TestUtil.grammarResultValues(g.queryValues(TestUtil.createCompletion(p)));
         assertFalse("did not match broken property ref '${foo': " + l, l.contains("${foo}"));
         p = "<project default='x'><target><echo>$${foo}</echo><echo message='${HERE'/></target></project>";
         l = TestUtil.grammarResultValues(g.queryValues(TestUtil.createCompletion(p)));
@@ -232,7 +232,7 @@ public class AntGrammarTest extends NbTestCase {
     
     public void testNonCompletingProperties() throws Exception {
         String p = "<project default='x'><target><echo message='$${baseHERE'/></target></project>";
-        List l = TestUtil.grammarResultValues(g.queryValues(TestUtil.createCompletion(p)));
+        List<String> l = TestUtil.grammarResultValues(g.queryValues(TestUtil.createCompletion(p)));
         assertFalse("did not match property non-ref $${basedir}: " + l, l.contains("$${basedir}"));
         assertEquals("in fact there are no completions here", Collections.EMPTY_LIST, l);
         p = "<project default='x'><target><echo message='$$${baseHERE'/></target></project>";
@@ -246,7 +246,7 @@ public class AntGrammarTest extends NbTestCase {
     
     public void testCompleteImpliedProperties() throws Exception {
         String p = "<project default='x'><target if='baseHERE'/></project>";
-        List l = TestUtil.grammarResultValues(g.queryValues(TestUtil.createCompletion(p)));
+        List<String> l = TestUtil.grammarResultValues(g.queryValues(TestUtil.createCompletion(p)));
         assertTrue("completing <target if>: " + l, l.contains("basedir"));
         p = "<project default='x'><target><condition><isset property='baseHERE'/></condition></target></project>";
         l = TestUtil.grammarResultValues(g.queryValues(TestUtil.createCompletion(p)));
