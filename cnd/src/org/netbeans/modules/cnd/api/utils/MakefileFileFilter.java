@@ -42,9 +42,6 @@
 package org.netbeans.modules.cnd.api.utils;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ResourceBundle;
 import org.openide.util.NbBundle;
 
