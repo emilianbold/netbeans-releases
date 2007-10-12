@@ -444,7 +444,7 @@
 <!--Help menu-->
 <mapID target="org.netbeans.modules.url.URLDataObject" url="pending.html" />
 <!--Project Groups menu-->
-<mapID target="org.netbeans.modules.project.ui.groups.GroupsMenu" url="pending.html" />
+<mapID target="org.netbeans.modules.project.ui.groups.GroupsMenu" url="project/csh/proj_group.html" />
 
 <!--obvious menu items-->
 <mapID target="org.netbeans.modules.openfile.OpenFileAction" url="pending.html" />
