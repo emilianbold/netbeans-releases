@@ -154,3 +154,4 @@ made subject to such option by the copyright holder.
 <replacefilter token="@org-netbeans-insane@" value="${javadoc.docs.org-netbeans-insane}"/>
 <replacefilter token="@org-netbeans-modules-editor-bracesmatching@" value="${javadoc.docs.org-netbeans-modules-editor-bracesmatching}"/>
 <replacefilter token="@org-netbeans-modules-editor-indent@" value="${javadoc.docs.org-netbeans-modules-editor-indent}"/>
+<replacefilter token="@org-netbeans-spi-tasklist@" value="${javadoc.docs.org-netbeans-spi-tasklist}"/>
