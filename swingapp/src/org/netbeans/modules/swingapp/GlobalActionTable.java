@@ -90,6 +90,8 @@ public class GlobalActionTable extends TopComponent {
         setName(NbBundle.getMessage(GlobalActionTable.class, "CTL_GlobalActionTable_Title"));
         setLayout(new BorderLayout());
         createComponents();
+        this.getAccessibleContext().setAccessibleName(NbBundle.getMessage(GlobalActionTable.class, "CTL_GlobalActionTable_Title"));
+        this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(GlobalActionTable.class, "CTL_GlobalActionTable_Description"));
     }
     
     private void createComponents() {
