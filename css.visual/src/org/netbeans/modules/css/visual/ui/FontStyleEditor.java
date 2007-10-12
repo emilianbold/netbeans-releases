@@ -533,9 +533,9 @@ public class FontStyleEditor extends StyleEditor {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(overlineCheckbox)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(noDecorationCheckbox)
+                        .add(strikethroughCheckbox)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(strikethroughCheckbox)))
+                        .add(noDecorationCheckbox)))
                 .addContainerGap(57, Short.MAX_VALUE))
         );
         decorationPanelLayout.setVerticalGroup(
@@ -560,8 +560,8 @@ public class FontStyleEditor extends StyleEditor {
                 .add(decorationPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(underlineCheckbox)
                     .add(overlineCheckbox)
-                    .add(strikethroughCheckbox)
-                    .add(noDecorationCheckbox)))
+                    .add(noDecorationCheckbox)
+                    .add(strikethroughCheckbox)))
         );
 
         underlineCheckbox.getAccessibleContext().setAccessibleDescription(null);

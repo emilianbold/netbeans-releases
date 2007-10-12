@@ -259,9 +259,9 @@
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="overlineCheckbox" min="-2" max="-2" attributes="2"/>
                                   <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="noDecorationCheckbox" min="-2" max="-2" attributes="1"/>
-                                  <EmptySpace max="-2" attributes="0"/>
                                   <Component id="strikethroughCheckbox" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="noDecorationCheckbox" min="-2" max="-2" attributes="1"/>
                               </Group>
                           </Group>
                           <EmptySpace pref="57" max="32767" attributes="0"/>
@@ -295,8 +295,8 @@
                           <Group type="103" groupAlignment="3" attributes="0">
                               <Component id="underlineCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="overlineCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="strikethroughCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="noDecorationCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="strikethroughCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
                       </Group>
                   </Group>
