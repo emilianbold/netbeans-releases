@@ -59,9 +59,6 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtFormatter;
-import org.netbeans.modules.editor.NbEditorUtilities;
-import org.openide.cookies.EditorCookie;
-import org.openide.loaders.DataObject;
 
 /**
  * Handling embedded languages:
@@ -700,16 +697,16 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter {
             doc.insertString(dotPos - 1, "\n", null); //NOI18N
             reformat(doc, dotPos, dotPos, true);
 
-            DataObject dataObj = NbEditorUtilities.getDataObject(doc);
-            EditorCookie editor = dataObj.getCookie(EditorCookie.class);
-
-            if (editor != null && editor.getOpenedPanes() != null) {
-
-                JTextComponent component = editor.getOpenedPanes()[0];
-                if (component != null) {
-                    component.setCaretPosition(0);
-                }
-            }
+//            DataObject dataObj = NbEditorUtilities.getDataObject(doc);
+//            EditorCookie editor = dataObj.getCookie(EditorCookie.class);
+//
+//            if (editor != null && editor.getOpenedPanes() != null) {
+//
+//                JTextComponent component = editor.getOpenedPanes()[0];
+//                if (component != null) {
+//                    component.setCaretPosition(0);
+//                }
+//            }
         }
 
 
