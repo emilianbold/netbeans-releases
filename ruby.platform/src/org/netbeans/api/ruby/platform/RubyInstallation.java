@@ -259,7 +259,10 @@ public class RubyInstallation {
                     f = new File(dir, "ruby"); // NOI18N
                     // Don't include /usr/bin/ruby on the Mac - it's no good
                     if (Utilities.isMac() && "/usr/bin/ruby".equals(f.getPath())) { // NOI18N
-                        continue;
+                        String version = System.getProperty("os.version"); // NOI18N
+                        if (version == null || version.startsWith("10.4")) { // Only a problem on Tiger
+                            continue;
+                        }
                     }
                 }
                 if (f.exists()) {
