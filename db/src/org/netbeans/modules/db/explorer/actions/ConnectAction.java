@@ -119,7 +119,9 @@ public class ConnectAction extends DatabaseAction {
         DatabaseNodeInfo info = (DatabaseNodeInfo) node.getCookie(DatabaseNodeInfo.class);
         ConnectionNodeInfo nfo = (ConnectionNodeInfo) info.getParent(DatabaseNode.CONNECTION);
                 
-        new ConnectionDialogDisplayer().showDialog(nfo, true);
+        // Don't show the dialog if all information is already available, 
+        // just make the connection
+        new ConnectionDialogDisplayer().showDialog(nfo, false);
     }
     
     public static final class ConnectionDialogDisplayer extends ConnectionDialogMediator {
