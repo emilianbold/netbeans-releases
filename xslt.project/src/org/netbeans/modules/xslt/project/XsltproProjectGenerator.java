@@ -59,7 +59,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
@@ -110,12 +109,12 @@ public class XsltproProjectGenerator {
                 h[0] = setupProject(fo, name);
                 final Project p = ProjectManager.getDefault().findProject(fo);
                 
-                FileObject srcRoot = fo.createFolder(DEFAULT_SRC_FOLDER); // NOI18N
-                FileObject bpelasaRoot = srcRoot;
-                FileUtil.copyFile(Repository.getDefault().getDefaultFileSystem()
-                        .findResource("org-netbeans-xsltpro/transformmap.xml"), //NOI18N
-                        bpelasaRoot, "transformmap"); //NOI18N
-
+                fo.createFolder(DEFAULT_SRC_FOLDER); // NOI18N
+//                FileObject bpelasaRoot = srcRoot;
+//                FileObject tMapFo = FileUtil.copyFile(Repository.getDefault().getDefaultFileSystem()
+//                        .findResource("org-netbeans-xsltpro/transformmap.xml"), //NOI18N
+//                        bpelasaRoot, "transformmap"); //NOI18N
+                
                 try {
                     ProjectManager.mutex().writeAccess(
                             new Mutex.ExceptionAction<Void>() {
@@ -138,7 +137,7 @@ public class XsltproProjectGenerator {
                 }
             }
         });
-
+        
         return h[0];
     }
     

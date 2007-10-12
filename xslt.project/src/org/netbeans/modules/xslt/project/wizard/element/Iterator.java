@@ -58,7 +58,6 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.netbeans.modules.xml.wsdl.model.Operation;
@@ -67,7 +66,6 @@ import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
 import org.netbeans.modules.xml.xam.Reference;
-import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xslt.tmap.model.api.Invoke;
 import org.netbeans.modules.xslt.tmap.model.api.Service;
 import org.netbeans.modules.xslt.tmap.model.api.TMapComponentFactory;
@@ -76,7 +74,6 @@ import org.netbeans.modules.xslt.tmap.model.api.Transform;
 import org.netbeans.modules.xslt.tmap.model.api.TransformMap;
 import org.netbeans.modules.xslt.tmap.model.api.Variable;
 import org.netbeans.modules.xslt.tmap.model.api.VariableDeclarator;
-import org.netbeans.modules.xslt.tmap.model.api.VariableReference;
 import org.netbeans.modules.xslt.tmap.model.api.WSDLReference;
 import org.netbeans.modules.xslt.tmap.model.impl.VariableReferenceImpl;
 import org.openide.cookies.SaveCookie;
@@ -263,7 +260,7 @@ public final class Iterator implements TemplateWizard.Iterator {
             dirs[i] = dirTokens.nextToken();
             i++;
         }
-        
+
         FileObject dirFo = Util.getSrcFolder(project);
         boolean isCreatedDir = false;
         if ( numDirs > 1 ) {
@@ -304,6 +301,7 @@ public final class Iterator implements TemplateWizard.Iterator {
                 if (!isCreatedDir) {
                     createdFos.add(xslFo);
                 }
+                org.netbeans.modules.xslt.tmap.util.Util.fixEncoding(xslFo, dirFo);
             }
         }
         return xslFo;
@@ -414,6 +412,26 @@ public final class Iterator implements TemplateWizard.Iterator {
             if (invoke != null) {
                 tMapOp.addInvoke(invoke);
             }
+            
+            if (tMapOp != null) {
+                List<Transform> children =  tMapOp.getTransforms();
+                if (children != null) {
+                    for (Transform child : children) {
+//                        System.out.println("child: "+child+";   orig: "+foTransform+"; isEquals::: "+(child.equals(foTransform)));
+                        if (child.equals(foTransform)) {
+                            foTransform = child;
+                            break;
+                        }
+                    }
+                }
+                
+               List<Invoke> invokes = tMapOp.getInvokes();
+//               System.out.println("invoke before changes: "+invoke);
+               invoke = invokes == null || invokes.size() < 1 ? invoke : invokes.get(invokes.size()-1);
+//               System.out.println("invoke after changes: "+invoke);
+                
+            }
+            
             if (foTransform != null) {
                 String result = getTMapVarRef(invoke.getInputVariable());
                 if (result != null) {

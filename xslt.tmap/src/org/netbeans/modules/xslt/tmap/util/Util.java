@@ -47,12 +47,15 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.StringTokenizer;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import javax.xml.namespace.QName;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.xml.api.EncodingUtil;
 import org.netbeans.modules.xml.catalogsupport.ProjectConstants;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
@@ -74,8 +77,14 @@ import org.netbeans.modules.xslt.tmap.model.xsltmap.TransformationDesc;
 import org.netbeans.modules.xslt.tmap.model.xsltmap.XmlUtil;
 import org.netbeans.modules.xslt.tmap.model.xsltmap.XsltMapConst;
 import org.openide.ErrorManager;
+import org.openide.cookies.EditCookie;
+import org.openide.cookies.EditorCookie;
+import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
 
 /**
  *
@@ -306,10 +315,19 @@ public class Util {
         }
         
         try {
-            tMapFo = XmlUtil.createNewXmlFo(
-                    projectSource.getPath(),
-                    "transformmap",
-                    TMapComponent.TRANSFORM_MAP_NS_URI);
+            tMapFo = FileUtil.copyFile(Repository.getDefault().getDefaultFileSystem()
+                    .findResource("org-netbeans-xsltpro/transformmap.xml"), //NOI18N
+                    projectSource, "transformmap"); //NOI18N
+            
+            
+//            tMapFo = XmlUtil.createNewXmlFo(
+//                    projectSource.getPath(),
+//                    "transformmap",
+//                    TMapComponent.TRANSFORM_MAP_NS_URI);
+            if (tMapFo != null) {
+                fixEncoding(tMapFo, projectSource);
+            }
+            
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ex);
             return null;
@@ -555,5 +573,43 @@ public class Util {
         }
         
         return messageType;
+    }
+
+    // TODO m
+    public static void fixEncoding(FileObject xslFo, FileObject dirFo) 
+            throws IOException 
+    {
+        DataObject xslDo = DataObject.find(xslFo);
+        if (xslDo != null) {
+            DataFolder df = DataFolder.findFolder(dirFo);
+            String encoding = EncodingUtil.getProjectEncoding(df.getPrimaryFile());
+
+            if ( !EncodingUtil.isValidEncoding(encoding)) {
+              encoding = "UTF-8"; // NOI18N
+            }
+            EditCookie edit = xslDo.getCookie(EditCookie.class);
+
+            if (edit != null) {
+              EditorCookie editorCookie = xslDo.getCookie(EditorCookie.class);
+              Document doc = (Document)editorCookie.openDocument();
+              fixEncoding(doc, encoding);
+              SaveCookie save = xslDo.getCookie(SaveCookie.class);
+
+              if (save != null) {
+                save.save();
+              }
+            }
+        }
+    }
+    
+    public static void fixEncoding(javax.swing.text.Document document, String encoding) {
+      if (encoding == null) {
+        encoding = "UTF-8"; //NOI18N
+      }
+      try {
+        document.insertString(19, " encoding=\""+encoding+"\"", null);
+      }
+      catch (BadLocationException e) {
+      }
     }
 }

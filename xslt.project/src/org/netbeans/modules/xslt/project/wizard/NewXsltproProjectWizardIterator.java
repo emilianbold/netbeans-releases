@@ -42,8 +42,16 @@ package org.netbeans.modules.xslt.project.wizard;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Iterator;
+import java.util.Set;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.compapp.projects.base.ui.wizards.NewIcanproProjectWizardIterator;
 import org.netbeans.modules.xslt.project.XsltproProjectGenerator;
+import org.netbeans.modules.xslt.tmap.util.Util;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
 import static org.netbeans.modules.xslt.project.XsltproConstants.*;
 import org.openide.util.NbBundle;
 
@@ -61,6 +69,13 @@ public class NewXsltproProjectWizardIterator extends NewIcanproProjectWizardIter
     }
 
     @Override
+    public Set instantiate() throws IOException {
+        Set set = super.instantiate();
+        createTMapFile(set);
+        return set;
+    }
+    
+    @Override
     protected void createProject(File dirF, String name, String j2eeLevel) throws IOException {
         XsltproProjectGenerator.createProject(dirF, name);
     }
@@ -73,5 +88,31 @@ public class NewXsltproProjectWizardIterator extends NewIcanproProjectWizardIter
     @Override
     protected String getDefaultName() {
         return NbBundle.getMessage(NewXsltproProjectWizardIterator.class, "LBL_NPW1_DefaultProjectName"); //NOI18N
+    }
+    
+    private void createTMapFile(Set resultSet) throws IOException {
+        
+        if (resultSet == null || resultSet.isEmpty()) {
+            return;
+        }
+        
+        FileObject fo = null;
+        Iterator setIterator = resultSet.iterator();
+        while (setIterator.hasNext()) {
+            Object obj = setIterator.next();
+            if (obj instanceof FileObject) {
+                fo = (FileObject)obj;
+                break;
+            }
+        }
+        Project p = ProjectManager.getDefault().findProject(fo);
+        if (p != null) {
+            FileObject srcFo = Util.getProjectSource(p);
+            FileObject tMapFo = FileUtil.copyFile(Repository.getDefault().getDefaultFileSystem()
+                    .findResource("org-netbeans-xsltpro/transformmap.xml"), //NOI18N
+                    srcFo, "transformmap"); //NOI18N
+            
+            Util.fixEncoding(tMapFo, srcFo);
+        }
     }
 }
