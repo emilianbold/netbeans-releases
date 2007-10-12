@@ -91,6 +91,7 @@ import org.openide.DialogDescriptor;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 
 /**
@@ -166,7 +167,12 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
             if (reader != null) {
                 reader.storeCachedClassName(breakpoint, null);
             }
-            update ();
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    // Update lazily in RP. We'll access java source parsing and JDI.
+                    update();
+                }
+            });
         }
     }
 
