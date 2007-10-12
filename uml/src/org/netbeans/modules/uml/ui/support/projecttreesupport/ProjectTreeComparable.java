@@ -116,7 +116,7 @@ public class ProjectTreeComparable implements Comparator
        
       // The NetBeans tree does not like it when two items are equal for some
       // reason. 
-      if(retVal == EQUAL_TO && (! (o1 != null && o1.equals(o2))) )
+      if(retVal == EQUAL_TO)
       {
 	  retVal = GREATER_THAN;
       }

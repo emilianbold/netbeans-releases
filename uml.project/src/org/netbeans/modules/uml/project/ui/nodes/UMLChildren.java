@@ -62,7 +62,7 @@ public class UMLChildren extends Children.Array
 
    public UMLChildren()
    {
-       super(new TreeSet());
+       super(new UMLChildrenNodesCollection());
    }
    
    /**
