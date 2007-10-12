@@ -43,6 +43,7 @@ package org.netbeans.modules.db.explorer;
 
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
+import java.nio.charset.CharacterCodingException;
 import java.util.Collection;
 import java.util.concurrent.CountDownLatch;
 import org.netbeans.modules.db.explorer.nodes.RootNode;
@@ -215,6 +216,15 @@ public class DatabaseConnectionConvertorTest extends TestBase {
         assertEquals(conn.getDatabase(), importedConn.getDatabase());
         assertEquals(conn.getSchema(), importedConn.getSchema());
         assertEquals(conn.getUser(), importedConn.getUser());
+    }
+    
+    public void testDecodePassword() throws Exception {
+        assertNull(DatabaseConnectionConvertor.decodePassword(new byte[0]));
+        assertEquals("password", DatabaseConnectionConvertor.decodePassword("password".getBytes("UTF-8")));
+        try {
+            DatabaseConnectionConvertor.decodePassword(new byte[] { (byte)0xff, (byte)0xff, (byte)0xff });
+            fail();
+        } catch (CharacterCodingException e) {}
     }
     
     private static FileObject createConnectionFile(String name, FileObject folder) throws Exception {

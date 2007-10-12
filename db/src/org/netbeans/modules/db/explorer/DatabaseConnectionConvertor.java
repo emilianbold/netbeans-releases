@@ -50,6 +50,12 @@ import java.io.PrintWriter;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.lang.ref.WeakReference;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CoderResult;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Vector;
@@ -170,11 +176,12 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
             if (obj == null) {
                 return null;
             }
-            Handler handler = new Handler();
+            FileObject connectionFO = obj.getPrimaryFile();
+            Handler handler = new Handler(connectionFO.getNameExt());
             try {
                 XMLReader reader = XMLUtil.createXMLReader();
                 InputSource is = new InputSource(obj.getPrimaryFile().getInputStream());
-                is.setSystemId(obj.getPrimaryFile().getURL().toExternalForm());
+                is.setSystemId(connectionFO.getURL().toExternalForm());
                 reader.setContentHandler(handler);
                 reader.setErrorHandler(handler);
                 reader.setEntityResolver(EntityCatalog.getDefault());
@@ -283,6 +290,26 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
         return lookup;
     }
     
+    static String decodePassword(byte[] bytes) throws CharacterCodingException {
+        CharsetDecoder decoder = Charset.forName("UTF-8").newDecoder(); // NOI18N
+        ByteBuffer input = ByteBuffer.wrap(bytes);
+        int outputLength = (int)(bytes.length * (double)decoder.maxCharsPerByte());
+        if (outputLength == 0) {
+            return null; // NOI18N
+        }
+        char[] chars = new char[outputLength];
+        CharBuffer output = CharBuffer.wrap(chars);
+        CoderResult result = decoder.decode(input, output, true);
+        if (!result.isError() && !result.isOverflow()) {
+            result = decoder.flush(output);
+        }
+        if (result.isError() || result.isOverflow()) {
+            throw new CharacterCodingException();
+        } else {
+            return new String(chars, 0, output.position());
+        }
+    }
+    
     /**
      * Atomic writer for writing a changed/new database connection.
      */
@@ -384,6 +411,8 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
         private static final String ELEMENT_PASSWORD = "password"; // NOI18N
         private static final String ATTR_PROPERTY_VALUE = "value"; // NOI18N
         
+        private final String connectionFileName;
+        
         String driverClass;
         String driverName;
         String connectionUrl;
@@ -391,6 +420,10 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
         String user;
         String password;
         boolean rememberPassword;
+        
+        public Handler(String connectionFileName) {
+            this.connectionFileName = connectionFileName;
+        }
 
         public void startDocument() throws SAXException {
         }
@@ -411,12 +444,24 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
             } else if (ELEMENT_USER.equals(qName)) {
                 user = value;
             } else if (ELEMENT_PASSWORD.equals(qName)) {
-                password = new String(Base64.base64ToByteArray(value));
-                
-                // If the password was saved, then it means the user checked
-                // the box to say the password should be remembered.  This is
-                // true even if the password is null.
-                rememberPassword = true;
+                byte[] bytes = null;
+                try {
+                    bytes = Base64.base64ToByteArray(value);
+                } catch (IllegalArgumentException e) {
+                    Logger.getLogger("global").log(Level.WARNING, "Illegal Base 64 string in password for connection " + connectionFileName); // NOI18N
+                }
+                if (bytes != null) {
+                    try {
+                        password = decodePassword(bytes);
+                    } catch (CharacterCodingException e) {
+                        Logger.getLogger("global").log(Level.WARNING, "Illegal UTF-8 bytes in password for connection " + connectionFileName); // NOI18N
+                    }
+                    if (password != null) {
+                        // If the password was saved, then it means the user checked
+                        // the box to say the password should be remembered.
+                        rememberPassword = true;
+                    }
+                }
             }
         }
     }
