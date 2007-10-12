@@ -818,6 +818,7 @@ public class MenuEditLayer extends JPanel {
         comps.addAll(selectedComponents);
         comps.add(comp);
         setSelectedRADComponents(comps);
+        formDesigner.addComponentToSelection(comp);
     }
     
     void setSelectedRADComponents(List<RADComponent> comps) {
@@ -844,9 +845,6 @@ public class MenuEditLayer extends JPanel {
             }
 
             registerKeyListeners();
-
-            //josh: what do I do about this?
-            //formDesigner.setSelectedComponent(selectedRADComponent);
 
             for(RADComponent rad : selectedComponents) {
                 JComponent c = (JComponent) formDesigner.getComponent(rad);
@@ -896,7 +894,10 @@ public class MenuEditLayer extends JPanel {
     
     private Map<JComponent, Color> backgroundMap = new HashMap<JComponent,Color>();
     private Color getSelectedBackground(JComponent c) {
-        backgroundMap.put(c,c.getBackground());
+        //don't put into the map twice
+        if(!backgroundMap.containsKey(c)) {
+            backgroundMap.put(c,c.getBackground());
+        }
         return SELECTED_MENU_BACKGROUND;
     }
     

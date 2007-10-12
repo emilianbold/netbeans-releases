@@ -897,7 +897,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         updateComponentInspector();
     }
 
-    void setSelectedComponents(RADComponent[] metacomps) {
+    public void setSelectedComponents(RADComponent[] metacomps) {
         clearSelectionImpl();
 
         for (int i=0; i < metacomps.length; i++)
@@ -931,7 +931,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         }
     }
 
-    void addComponentToSelection(RADComponent metacomp) {
+    public void addComponentToSelection(RADComponent metacomp) {
         addComponentToSelectionImpl(metacomp);
         repaintSelection();
         updateComponentInspector();
