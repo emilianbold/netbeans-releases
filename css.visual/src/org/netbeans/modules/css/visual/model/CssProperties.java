@@ -231,6 +231,7 @@ public final class CssProperties {
     static List<String> cssLengthUnits = new ArrayList<String>();
     private static void setCssLengthUnitNames(){
         cssLengthUnits.add("px"); //NOI18N
+        cssLengthUnits.add("pt"); //NOI18N
         cssLengthUnits.add("%"); //NOI18N
         cssLengthUnits.add("in"); //NOI18N
         cssLengthUnits.add("cm"); //NOI18N
