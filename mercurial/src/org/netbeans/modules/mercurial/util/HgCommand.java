@@ -76,6 +76,7 @@ public class HgCommand {
     private static final String HG_OPT_REPOSITORY = "--repository"; // NOI18N
     private static final String HG_OPT_BUNDLE = "--bundle"; // NOI18N
     private static final String HG_OPT_CWD_CMD = "--cwd"; // NOI18N
+    private static final String HG_OPT_FOLLOW = "--follow"; // NOI18N
     private static final String HG_STATUS_FLAG_ALL_CMD = "-marduicC"; // NOI18N
     private static final String HG_FLAG_REV_CMD = "--rev"; // NOI18N
     private static final String HG_STATUS_FLAG_TIP_CMD = "tip"; // NOI18N
@@ -635,14 +636,22 @@ public class HgCommand {
 
         command.add(getHgCommand());
         command.add(HG_LOG_CMD);
+        if (!file.isDirectory()) {
+            command.add(HG_OPT_FOLLOW);
+        }
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
         command.add(HG_LOG_TEMPLATE_CMD);
         command.add(file.getAbsolutePath());
 
         List<String> list = exec(command);
-        if (!list.isEmpty() && isErrorNoRepository(list.get(0)))
-            handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"));
+        if (!list.isEmpty()) {
+            if (isErrorNoRepository(list.get(0))) {
+                handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"));
+             } else if (isErrorAbort(list.get(0))) {
+                handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"));
+             }
+        }
         return list;
     }
     
@@ -663,6 +672,16 @@ public class HgCommand {
         command.add(getHgCommand());
         command.add(HG_VERBOSE_CMD);
         command.add(HG_LOG_CMD);
+        boolean doFollow = true;
+        for(File f: files){
+            if (f.isDirectory()) {
+                doFollow = false;
+                break;
+            }
+        }
+        if (doFollow) {
+            command.add(HG_OPT_FOLLOW);
+        }
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
 
@@ -671,8 +690,13 @@ public class HgCommand {
         }
         
         List<String> list = exec(command);
-        if (!list.isEmpty() && isErrorNoRepository(list.get(0)))
-            handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"));
+        if (!list.isEmpty()) {
+            if (isErrorNoRepository(list.get(0))) {
+                handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"));
+             } else if (isErrorAbort(list.get(0))) {
+                handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"));
+             }
+        }
         return list;
     }
     
@@ -721,8 +745,13 @@ public class HgCommand {
         command.add(file.getAbsolutePath());
         List<String> list = exec(command);
         
-        if (!list.isEmpty() && isErrorNoRepository(list.get(0)))
-            handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"));
+        if (!list.isEmpty()) {
+            if (isErrorNoRepository(list.get(0))) {
+                handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"));
+             } else if (isErrorAbort(list.get(0))) {
+                handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"));
+             }
+        }
     }
     
     /**
