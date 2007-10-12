@@ -461,9 +461,7 @@ public class Installer extends ModuleInstall implements Runnable {
             xmlHeader[3] != 'm' ||
             xmlHeader[4] != 'l'
         ) {
-            String header = "<?xml version='1.0' encoding='" +
-                Charset.defaultCharset().name() +
-                "'?>";
+            String header = "<?xml version='1.0' encoding='utf-8'?>";
             isWithProlog.unread(header.getBytes("utf-8"));
         }
         
@@ -831,7 +829,7 @@ public class Installer extends ModuleInstall implements Runnable {
                         text = new String(arr, 0, len, enc);
                     }
                 }
-                os.write(text.getBytes());
+                os.write(text.getBytes("UTF-8"));
             }
         }
         
