@@ -58,10 +58,14 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.editor.GuardedDocument;
+import org.netbeans.editor.MarkBlockChain;
+import org.netbeans.lib.editor.util.swing.MutablePositionRegion;
 import org.netbeans.spi.editor.indent.Context;
 import org.netbeans.spi.editor.indent.ExtraLock;
 import org.netbeans.spi.editor.indent.IndentTask;
 import org.netbeans.spi.editor.indent.ReformatTask;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
@@ -90,6 +94,8 @@ public final class TaskHandler {
      */
     private Position endPos;
     
+    private Position caretPos;
+    
     private final Set<Object> existingFactories = new HashSet<Object>();
     
 
@@ -104,6 +110,14 @@ public final class TaskHandler {
 
     public Document document() {
         return doc;
+    }
+    
+    public int caretOffset() {
+        return caretPos.getOffset();
+    }
+
+    public void setCaretOffset(int offset) throws BadLocationException {
+        caretPos = doc.createPosition(offset);
     }
     
     public Position startPos() {
@@ -121,26 +135,21 @@ public final class TaskHandler {
 
     boolean collectTasks() {
         TokenHierarchy<?> th = TokenHierarchy.get(document());
-        List<MimePath> mimePaths;
+        List<LanguagePath> languagePaths;
         
-        if (th != null) {
-            Set<LanguagePath> languagePaths = th.languagePaths();
-            mimePaths = new ArrayList<MimePath>(languagePaths.size());
+        Set<LanguagePath> languagePathSet;
+        if (th != null && (languagePathSet = th.languagePaths()).size() > 0) {
+            // Should contain top-level path and zero or more embedded paths
+            languagePaths = new ArrayList<LanguagePath>(languagePathSet);
             
-            for(LanguagePath languagePath : languagePaths) {
-                mimePaths.add(MimePath.parse(languagePath.mimePath()));
+            Collections.sort(languagePaths, LanguagePathSizeComparator.ASCENDING);
+            
+            for (LanguagePath lp : languagePaths) {
+                addItem(MimePath.parse(lp.mimePath()), lp);
             }
             
-            Collections.sort(mimePaths, MimePathSizeComparator.ASCENDING);
-        } else {
-            mimePaths = Collections.singletonList(MimePath.parse(docMimeType()));
-        }
-        
-        assert mimePaths.size() > 0 : "Each document must have at least one mime path"; //NOI18N
-        assert mimePaths.get(0).size() == 1  : "The first mime path should be document's mime type"; //NOI18N
-        
-        for(MimePath mp : mimePaths) {
-            addItem(mp);
+        } else { // Add a single item corresponding to the document's mime-type
+            addItem(MimePath.parse(docMimeType()), null);
         }
 
         // XXX: HACK TODO PENDING WORKAROUND
@@ -203,7 +212,7 @@ public final class TaskHandler {
 
     boolean hasFactories() {
         String mimeType = docMimeType();
-        return (mimeType != null && new MimeItem(this, MimePath.get(mimeType)).hasFactories());
+        return (mimeType != null && new MimeItem(this, MimePath.get(mimeType), null).hasFactories());
     }
 
     boolean hasItems() {
@@ -221,8 +230,8 @@ public final class TaskHandler {
         }
     }
 
-    private boolean addItem(MimePath mimePath) {
-        MimeItem item = new MimeItem(this, mimePath);
+    private boolean addItem(MimePath mimePath, LanguagePath languagePath) {
+        MimeItem item = new MimeItem(this, mimePath, languagePath);
         if (item.createTask(existingFactories)) {
             if (items == null) {
                 items = new ArrayList<MimeItem>();
@@ -280,6 +289,8 @@ public final class TaskHandler {
         
         private final MimePath mimePath;
         
+        private final LanguagePath languagePath;
+        
         private IndentTask indentTask;
         
         private ReformatTask reformatTask;
@@ -288,13 +299,18 @@ public final class TaskHandler {
         
         private Context context;
         
-        MimeItem(TaskHandler handler, MimePath mimePath) {
+        MimeItem(TaskHandler handler, MimePath mimePath, LanguagePath languagePath) {
             this.handler = handler;
             this.mimePath = mimePath;
+            this.languagePath = languagePath;
         }
 
         public MimePath mimePath() {
             return mimePath;
+        }
+        
+        public LanguagePath languagePath() {
+            return languagePath;
         }
         
         public Context context() {
@@ -310,8 +326,84 @@ public final class TaskHandler {
         
         boolean hasFactories() {
             Lookup lookup = MimeLookup.getLookup(mimePath);
-            return (lookup.lookup(IndentTask.Factory.class) != null)
-                || (lookup.lookup(ReformatTask.Factory.class) != null);
+            return handler().isIndent()
+                    ? (lookup.lookup(IndentTask.Factory.class) != null)
+                    : (lookup.lookup(ReformatTask.Factory.class) != null);
+        }
+        
+        public List<Context.Region> indentRegions() {
+            Document doc = handler.document();
+            List<Context.Region> indentRegions = new ArrayList<Context.Region>();
+            try {
+                if (languagePath != null) {
+                    int endOffset = handler.endPos().getOffset();
+                    if (endOffset >= doc.getLength())
+                        endOffset = Integer.MAX_VALUE;
+                    List<TokenSequence<?>> tsl = TokenHierarchy.get(doc).tokenSequenceList(languagePath,
+                            handler.startPos().getOffset(), endOffset);
+                    for (TokenSequence<?> ts : tsl) {
+                        ts.moveStart();
+                        if (ts.moveNext()) { // At least one token
+                            int regionStartOffset = ts.offset();
+                            ts.moveEnd(); // At least one token exists
+                            ts.movePrevious();
+                            int regionEndOffset = ts.offset() + ts.token().length();
+                            MutablePositionRegion region = new MutablePositionRegion(
+                                    doc.createPosition(regionStartOffset),
+                                    doc.createPosition(regionEndOffset)
+                            );
+                            indentRegions.add(IndentSpiPackageAccessor.get().createContextRegion(region));
+                        }
+                    }
+                } else { // used when no token hierarchy exists
+                    MutablePositionRegion wholeDocRegion = new MutablePositionRegion(doc.getStartPosition(),
+                            doc.createPosition(doc.getLength()));
+                    indentRegions.add(IndentSpiPackageAccessor.get().createContextRegion(wholeDocRegion));
+                }
+                
+                // Filter out guarded regions
+                if (indentRegions.size() > 0 && doc instanceof GuardedDocument) {
+                    MutablePositionRegion region = IndentSpiPackageAccessor.get().positionRegion(indentRegions.get(0));
+                    int regionStartOffset = region.getStartOffset();
+                    GuardedDocument gdoc = (GuardedDocument)doc;
+//                    int gbStartOffset = guardedBlocks.adjustToBlockEnd(region.getEndOffset());
+//                    MarkBlockChain guardedBlocks = gdoc.getGuardedBlockChain();
+//                    if (guardedBlocks != null && guardedBlocks.getChain() != null) {
+//                        int gbStartOffset = guardedBlocks.adjustToNextBlockStart(indentRegions.getStartOffset());
+//                        int regionIndex = 0;
+//                        while (regionIndex < indentRegions.size()) { // indentRegions can be mutated dynamically
+//                            MutablePositionRegion region = IndentSpiPackageAccessor.get().positionRegion(indentRegions.get(regionIndex));
+//                            int gbStartOffset = guardedBlocks.adjustToNextBlockStart(region.getStartOffset());
+//                            int gbEndOffset = guardedBlocks.adjustToBlockEnd(region.getEndOffset());
+//
+//                            while (pos < endPosition.getOffset()) {
+//                                int stopPos = endPosition.getOffset();
+//                                if (gdoc != null) { // adjust to start of the next guarded block
+//                                    stopPos = gdoc.getGuardedBlockChain().adjustToNextBlockStart(pos);
+//                                    if (stopPos == -1 || stopPos > endPosition.getOffset()) {
+//                                        stopPos = endPosition.getOffset();
+//                                    }
+//                                }
+//
+//                                if (pos < stopPos) {
+//                                    int reformattedLen = formatter.reformat(doc, pos, stopPos);
+//                                    pos = pos + reformattedLen;
+//                                } else {
+//                                    pos++; //ensure to make progress
+//                                }
+//
+//                                if (gdoc != null) { // adjust to end of current block
+//                                    pos = gdoc.getGuardedBlockChain().adjustToBlockEnd(pos);
+//                                }
+//                            }
+//                        }
+//                    }
+                }
+            } catch (BadLocationException e) {
+                Exceptions.printStackTrace(e);
+                indentRegions = Collections.emptyList();
+            }
+            return indentRegions;
         }
         
         boolean createTask(Set<Object> existingFactories) {
@@ -367,18 +459,18 @@ public final class TaskHandler {
         }
     }
     
-    private static final class MimePathSizeComparator implements Comparator<MimePath> {
+    private static final class LanguagePathSizeComparator implements Comparator<LanguagePath> {
         
-        static final MimePathSizeComparator ASCENDING = new MimePathSizeComparator(false);
+        static final LanguagePathSizeComparator ASCENDING = new LanguagePathSizeComparator(false);
 
         private final boolean reverse;
         
-        public MimePathSizeComparator(boolean reverse) {
+        public LanguagePathSizeComparator(boolean reverse) {
             this.reverse = reverse;
         }
         
-        public int compare(MimePath o1, MimePath o2) {
-            return reverse ? o2.size() - o1.size() : o1.size() - o2.size();
+        public int compare(LanguagePath lp1, LanguagePath lp2) {
+            return reverse ? lp2.size() - lp1.size() : lp1.size() - lp2.size();
         }
     } // End of MimePathSizeComparator class
     

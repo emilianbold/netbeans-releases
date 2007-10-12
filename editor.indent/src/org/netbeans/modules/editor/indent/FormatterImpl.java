@@ -68,7 +68,6 @@ public final class FormatterImpl extends ExtFormatter {
         this.indentImpl = IndentImpl.get(doc);
         this.defaultFormatter = defaultFormatter;
         indentImpl.setDefaultFormatter(defaultFormatter);
-        
     }
     
     @Override
@@ -99,20 +98,6 @@ public final class FormatterImpl extends ExtFormatter {
     }
 
     @Override
-    public int indentLine(Document doc, int offset) {
-        try {
-            Position pos = doc.createPosition(offset);
-            indentImpl.reindent(offset, offset);
-            return pos.getOffset();
-        } catch (GuardedException e) {
-            java.awt.Toolkit.getDefaultToolkit().beep();
-        } catch (BadLocationException e) {
-            throw new IllegalStateException(e);
-        }
-        return offset;
-    }
-
-    @Override
     public int getTabSize() {
         return defaultFormatter.getTabSize();
     }
@@ -132,6 +117,11 @@ public final class FormatterImpl extends ExtFormatter {
         return defaultFormatter.expandTabs();
     }
 
+    @Override
+    public int indentLine(Document doc, int offset) {
+        return indentLine(doc, offset, false);
+    }
+
     /** Inserts new line at given position and indents the new line with
     * spaces.
     *
@@ -141,10 +131,12 @@ public final class FormatterImpl extends ExtFormatter {
     */
     @Override
     public int indentNewLine(Document doc, int offset) {
+        return indentLine(doc, offset, true);
+    }
+
+    public int indentLine(Document doc, int offset, boolean indentNewLine) {
         try {
-            doc.insertString(offset, "\n", null); // NOI18N
-            offset++;
-            return indentLine(doc, offset);
+            return indentImpl.reindent(offset, offset, offset, indentNewLine);
         } catch (GuardedException e) {
             java.awt.Toolkit.getDefaultToolkit().beep();
         } catch (BadLocationException e) {

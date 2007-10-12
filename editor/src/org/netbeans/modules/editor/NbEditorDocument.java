@@ -52,7 +52,6 @@ import javax.swing.JEditorPane;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.GuardedDocument;
 import org.netbeans.editor.PrintContainer;
-import org.netbeans.editor.Formatter;
 import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsChangeEvent;
 import org.netbeans.editor.Utilities;
@@ -84,9 +83,6 @@ public class NbEditorDocument extends GuardedDocument
 implements NbDocument.PositionBiasable, NbDocument.WriteLockable,
 NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocument.Annotatable {
 
-    /** Name of the formatter setting. */
-    public static final String FORMATTER = "formatter"; // NOI18N
-
     /** Mime type of the document. The name of this property corresponds
      * to the property that is filled in the document by CloneableEditorSupport.
      */
@@ -94,9 +90,6 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocum
 
     /** Indent engine for the given kitClass. */
     public static final String INDENT_ENGINE = "indentEngine"; // NOI18N
-
-    /** Formatter being used. */
-    private Formatter formatter;
 
     /** Map of [Annotation, AnnotationDesc] */
     private HashMap annoMap;
@@ -143,10 +136,6 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocum
                 }
             }
         );
-
-        // Refresh formatter
-        formatter = null;
-
     }
 
     public void setCharacterAttributes(int offset, int length, AttributeSet s,
@@ -179,17 +168,6 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocum
         return Utilities.getEditorUI(j).getToolBarComponent();
     }
     
-    public Formatter getFormatter() {
-        Formatter f = formatter;
-        if (f == null) {
-            formatter = (Formatter)Settings.getValue(getKitClass(), FORMATTER);
-            f = formatter;
-        }
-        putProperty("defaultFormatter", f);
-        // The super implementation will inspect "defaultFormatter" property
-        return super.getFormatter();
-    }
-
     /** Add annotation to the document. For annotation of whole line
      * the length parameter can be ignored (specify value -1).
      * @param startPos position which represent begining 

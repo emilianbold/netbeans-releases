@@ -53,11 +53,8 @@ import org.netbeans.modules.editor.lib.FormatterOverride;
 public final class FormatterOverrideImpl implements FormatterOverride {
 
     public Formatter getFormatter(Document doc, Formatter defaultFormatter) {
-        IndentImpl indentImpl = IndentImpl.get(doc);
-        if (indentImpl.hasIndentOrReformatFactories()) {
-            defaultFormatter = new FormatterImpl(defaultFormatter, doc);
-        }
-        return defaultFormatter;
+        // Always override and possibly delegate to default formatter
+        return new FormatterImpl(defaultFormatter, doc);
     }
 
 }

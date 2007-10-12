@@ -69,6 +69,7 @@ public final class IndentImpl {
             indentImpl = new IndentImpl(doc);
             doc.putProperty(IndentImpl.class, indentImpl);
         }
+        indentImpl.refresh();
         return indentImpl;
     }
     
@@ -108,12 +109,16 @@ public final class IndentImpl {
         this.reformat = reformat;
     }
     
-    public boolean hasIndentOrReformatFactories() {
-        return new TaskHandler(true, doc).hasFactories();
-    }
-    
     void setDefaultFormatter(Formatter defaultFormatter) {
         this.defaultFormatter = defaultFormatter;
+    }
+    
+    void refresh() {
+        if (defaultFormatter == null) {
+            if (doc instanceof BaseDocument) {
+                defaultFormatter = ((BaseDocument)doc).getLegacyFormatter();
+            }
+        }
     }
     
     public synchronized void indentLock() {
@@ -170,7 +175,7 @@ public final class IndentImpl {
         return reformatHandler;
     }
 
-    public void reindent(int startOffset, int endOffset) throws BadLocationException {
+    public int reindent(int startOffset, int endOffset, int caretOffset, boolean indentNewLine) throws BadLocationException {
         if (startOffset > endOffset) {
             throw new IllegalArgumentException("startOffset=" + startOffset + " > endOffset=" + endOffset); // NOI18N
         }
@@ -185,16 +190,28 @@ public final class IndentImpl {
             if (runUnlocked) {
                 indentHandler.collectTasks();
             }
+            indentHandler.setCaretOffset(caretOffset);
             // Find begining of line
             Element lineRootElem = lineRootElement(doc);
             // Correct the start offset to point to the begining of the start line
-            int startLineIndex = lineRootElem.getElementIndex(startOffset);
-            if (startLineIndex < 0)
-                return; // Invalid line index => do nothing
-            Element lineElem = lineRootElem.getElement(startLineIndex);
-            int startLineOffset = lineElem.getStartOffset();
             boolean done = false;
             if (indentHandler.hasItems()) {
+                // When indenting newline first insert a plain newline
+                if (indentNewLine) {
+                    doc.insertString(startOffset, "\n", null);
+                    // Adjust start and end offsets after the inserted newline
+                    startOffset++;
+                    endOffset++;
+                    // Fix for Enter on first line - if it would have offset 0 the position would stay
+                    // at the begining of the document
+                    if (indentHandler.caretOffset() == 0) {
+                        indentHandler.setCaretOffset(1);
+                    }
+                }
+
+                int startLineIndex = lineRootElem.getElementIndex(startOffset);
+                Element lineElem = lineRootElem.getElement(startLineIndex);
+                int startLineOffset = lineElem.getStartOffset();
                 // Find ending line element - by default use the same as for start offset
                 if (endOffset > lineElem.getEndOffset()) { // need to get a different line element
                     int endLineIndex = lineRootElem.getElementIndex(endOffset);
@@ -218,19 +235,25 @@ public final class IndentImpl {
 
             // Fallback to Formatter
             if (!done && doc instanceof BaseDocument && defaultFormatter != null) {
-                // Original formatter does not have reindentation of multiple lines
-                // so reformat start line and continue for each line.
-                Position endPos = doc.createPosition(endOffset);
-                do {
-                    startOffset = defaultFormatter.indentLine(doc, startOffset);
-                    startLineIndex = lineRootElem.getElementIndex(startOffset) + 1;
-                    if (startLineIndex >= lineRootElem.getElementCount())
-                        break;
-                    lineElem = lineRootElem.getElement(startLineIndex);
-                    startOffset = lineElem.getStartOffset(); // Move to next line
-                } while (startOffset < endPos.getOffset());
-
+                if (indentNewLine) {
+                    // Fallback to indentNewLine() will insert '\n'
+                    int newCaretOffset = defaultFormatter.indentNewLine(doc, caretOffset);
+                    indentHandler.setCaretOffset(newCaretOffset);
+                } else { // Indent line
+                    // Original formatter does not have reindentation of multiple lines
+                    // so reformat start line and continue for each line.
+                    Position endPos = doc.createPosition(endOffset);
+                    do {
+                        startOffset = defaultFormatter.indentLine(doc, startOffset);
+                        int startLineIndex = lineRootElem.getElementIndex(startOffset) + 1;
+                        if (startLineIndex >= lineRootElem.getElementCount())
+                            break;
+                        Element lineElem = lineRootElem.getElement(startLineIndex);
+                        startOffset = lineElem.getStartOffset(); // Move to next line
+                    } while (startOffset < endPos.getOffset());
+                }
             }
+            return indentHandler.caretOffset();
         } finally {
             if (runUnlocked)
                 indentHandler = null;
@@ -280,6 +303,13 @@ public final class IndentImpl {
         return (doc instanceof StyledDocument)
             ? ((StyledDocument)doc).getParagraphElement(0).getParentElement()
             : doc.getDefaultRootElement();
+    }
+
+    public static void checkOffsetInDocument(Document doc, int offset) throws BadLocationException {
+        if (offset < 0)
+            throw new BadLocationException("offset=" + offset + " < 0", offset); // NOI18N
+        if (offset > doc.getLength())
+            throw new BadLocationException("offset=" + offset + " > doc.getLength()=" + doc.getLength(), offset);
     }
 
 }

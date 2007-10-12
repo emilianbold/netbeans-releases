@@ -105,6 +105,23 @@ is the proper place.
 
     <changes>
 
+        <change id="Context.indentRegions">
+            <summary>Added several methods to Context class</summary>
+            <version major="1" minor="2"/>
+            <date day="13" month="10" year="2007"/>
+            <author login="mmetelka"/>
+            <compatibility source="incompatible" deletion="no" addition="yes" modification="yes"/>
+            <description>
+                <p>
+                Added <code>Context.lineIndent()</code>, <code>Context.lineStartOffset()</code>,
+                <code>Context.caretOffset()</code>, <code>Context.setCaretOffset()</code>
+                and <code>Context.indentRegions()</code> methods (including Context.Region class).
+                Fixed <code>Context.modifyIndent()</code> signature and implementation.
+                </p>
+            </description>
+            <issue number="116022"/>
+        </change>
+
         <change id="Context.mimePath.added">
             <summary>Added Context.mimePath()</summary>
             <version major="1" minor="1"/>

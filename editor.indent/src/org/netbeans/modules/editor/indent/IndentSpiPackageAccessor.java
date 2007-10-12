@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.editor.indent;
 
+import org.netbeans.lib.editor.util.swing.MutablePositionRegion;
 import org.netbeans.spi.editor.indent.Context;
 
 /**
@@ -78,5 +79,9 @@ public abstract class IndentSpiPackageAccessor {
     }
     
     public abstract Context createContext(TaskHandler.MimeItem mimeItem);
+    
+    public abstract Context.Region createContextRegion(MutablePositionRegion region);
+    
+    public abstract MutablePositionRegion positionRegion(Context.Region region);
     
 }

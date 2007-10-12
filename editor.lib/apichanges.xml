@@ -105,6 +105,21 @@ is the proper place.
 
     <changes>
 
+        <change id="BaseDocument.getLegacyFormatter">
+            <summary>Added BaseDocument.getLegacyFormatter()</summary>
+            <version major="1" minor="19"/>
+            <date day="13" month="10" year="2007"/>
+            <author login="mmetelka"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+            <description>
+                <p>
+                    The <code>BaseDocument.getLegacyFormatter()</code> was added
+                    to allow the new indent infrastructure to delegate to legacy
+                    formatter in case the new indent API was called explicitly.
+                </p>
+            </description>
+        </change>
+        
         <change id="HyperlinkProviderExt">
             <summary>Extending HyperlinkProviders</summary>
             <version major="1" minor="18"/>
