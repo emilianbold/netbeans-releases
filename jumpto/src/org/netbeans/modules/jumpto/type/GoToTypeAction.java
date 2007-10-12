@@ -220,12 +220,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         }
         
         int wildcard = containsWildCard(text);
-        
-        if ( wildcard == 0 ) {
-            panel.setListPanelContent(NbBundle.getMessage(GoToTypeAction.class, "MSG_StartsWithWildcard"), false);
-            return;
-        }
-        
+                
         if (exact) {
             nameKind = panel.isCaseSensitive() ? SearchType.EXACT_NAME : SearchType.CASE_INSENSITIVE_EXACT_NAME;
         }
@@ -233,14 +228,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             nameKind = SearchType.CAMEL_CASE;
         }
         else if (wildcard != -1) {
-            if (Character.isJavaIdentifierStart(text.charAt(0))) {
-                nameKind = panel.isCaseSensitive() ? SearchType.REGEXP : SearchType.CASE_INSENSITIVE_REGEXP;
-            }
-            else {
-                panel.setModel(EMPTY_LIST_MODEL);
-                return;
-            }
-                
+            nameKind = panel.isCaseSensitive() ? SearchType.REGEXP : SearchType.CASE_INSENSITIVE_REGEXP;                
         }
         else {            
             nameKind = panel.isCaseSensitive() ? SearchType.PREFIX : SearchType.CASE_INSENSITIVE_PREFIX;
