@@ -12,13 +12,13 @@ cd NBI
 
 if [ ! -z $NATIVE_MAC_MACHINE ]; then
    ssh $NATIVE_MAC_MACHINE rm -f $MAC_PATH/zip/*
-   EXIT_CODE=$?
+   ERROR_CODE=$?
    if [ $ERROR_CODE != 0 ]; then
        echo "ERROR: $ERROR_CODE - Connection to MAC machine $NATIVE_MAC_MACHINE failed, can't remove old bits"
        exit $ERROR_CODE;
    fi
    scp -q -v $DIST/zip/$BASENAME*.zip $NATIVE_MAC_MACHINE:$MAC_PATH/zip
-   EXIT_CODE=$?
+   ERROR_CODE=$?
    if [ $ERROR_CODE != 0 ]; then
        echo "ERROR: $ERROR_CODE - Connection to MAC machine $NATIVE_MAC_MACHINE failed, can't put the zips"
        exit $ERROR_CODE;
