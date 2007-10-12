@@ -46,21 +46,14 @@ import java.awt.Insets;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.lang.reflect.Field;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Enumeration;
 import java.util.logging.Logger;
-import javax.swing.text.AttributeSet;
-import javax.swing.text.JTextComponent;
 import java.awt.Toolkit;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.api.editor.settings.FontColorNames;
-import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.editor.settings.KeyBindingSettings;
 import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsNames;
@@ -79,7 +72,6 @@ import org.openide.text.IndentEngine;
 import java.beans.IntrospectionException;
 import org.openide.loaders.DataObject;
 import java.io.ObjectOutput;
-import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.RequestProcessor;
 import org.openide.loaders.DataFolder;
@@ -89,19 +81,14 @@ import java.awt.event.KeyEvent;
 import org.openide.util.Lookup;
 import java.util.StringTokenizer;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import java.util.Set;
-import java.util.HashSet;
 import java.awt.RenderingHints;
 import java.util.logging.Level;
 import org.netbeans.api.editor.mimelookup.MimePath;
-import org.netbeans.api.editor.settings.CodeTemplateDescription;
-import org.netbeans.api.editor.settings.CodeTemplateSettings;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.impl.KitsTracker;
 import org.netbeans.modules.editor.lib.ColoringMap;
 import org.openide.filesystems.Repository;
 import org.openide.util.Utilities;
-import org.openide.util.WeakListeners;
 
 
 
@@ -254,6 +241,7 @@ public class BaseOptions extends OptionSupport {
     private transient Map defaultMacrosMap;
     private transient Map defaultKeyBindingsMap;
     private transient MIMEOptionFolder settingsFolder;
+    private transient boolean settingsFolderInitialization;
     private transient Boolean usingNewOptions = null;
     private transient KeyBindingSettings keyBindingsSettings;    
     
@@ -380,7 +368,7 @@ public class BaseOptions extends OptionSupport {
      *  via XML layers, if not, it will be created.
      *  Instances of all XML file in this folder will be created.
      */
-    protected MIMEOptionFolder getMIMEFolder(){
+    protected MIMEOptionFolder getMIMEFolder() {
         /* #25541 - Instead of synchronized getMIMEFolder() the kit
          * is first obtained and then the synchronization is done
          * to avoid the deadlock caused by locking in opposite order.
@@ -391,51 +379,57 @@ public class BaseOptions extends OptionSupport {
         }
 
         synchronized (Settings.class) {
-            // return already initialized folder
-            if (settingsFolder!=null) return settingsFolder;
-            
-            FileObject f = Repository.getDefault().getDefaultFileSystem().
-            findResource(AllOptionsFolder.FOLDER+"/"+name); //NOI18N
-            
-            // MIME folder doesn't exist, let's create it
-            if (f==null){
-                FileObject fo = Repository.getDefault().getDefaultFileSystem().
-                findResource(AllOptionsFolder.FOLDER);
-                
-                if (fo != null){
-                    try{
-                        StringTokenizer stok = new StringTokenizer(name,"/"); // NOI18N
-                        while (stok.hasMoreElements()) {
-                            String newFolder = stok.nextToken();
-                            if (fo.getFileObject(newFolder) == null){
-                                fo = fo.createFolder(newFolder);
+            if (settingsFolderInitialization) return null;
+            settingsFolderInitialization = true;
+            try {
+                // return already initialized folder
+                if (settingsFolder!=null) return settingsFolder;
+
+                FileObject f = Repository.getDefault().getDefaultFileSystem().
+                findResource(AllOptionsFolder.FOLDER+"/"+name); //NOI18N
+
+                // MIME folder doesn't exist, let's create it
+                if (f==null){
+                    FileObject fo = Repository.getDefault().getDefaultFileSystem().
+                    findResource(AllOptionsFolder.FOLDER);
+
+                    if (fo != null){
+                        try{
+                            StringTokenizer stok = new StringTokenizer(name,"/"); // NOI18N
+                            while (stok.hasMoreElements()) {
+                                String newFolder = stok.nextToken();
+                                if (fo.getFileObject(newFolder) == null){
+                                    fo = fo.createFolder(newFolder);
+                                }
+                                else
+                                    fo = fo.getFileObject(newFolder);
                             }
-                            else
-                                fo = fo.getFileObject(newFolder);
+                        }catch(IOException ioe){
+                            ioe.printStackTrace();
                         }
-                    }catch(IOException ioe){
-                        ioe.printStackTrace();
+
+                        f = Repository.getDefault().getDefaultFileSystem().
+                        findResource(AllOptionsFolder.FOLDER+"/"+name); // NOI18N
                     }
-                    
-                    f = Repository.getDefault().getDefaultFileSystem().
-                    findResource(AllOptionsFolder.FOLDER+"/"+name); // NOI18N
                 }
-            }
-            
-            if (f != null) {
-                try {
-                    DataObject d = DataObject.find(f);
-                    DataFolder df = (DataFolder)d.getCookie(DataFolder.class);
-                    if (df != null) {
-                        settingsFolder = new MIMEOptionFolder(df, this);
-                        return settingsFolder;
+
+                if (f != null) {
+                    try {
+                        DataObject d = DataObject.find(f);
+                        DataFolder df = (DataFolder)d.getCookie(DataFolder.class);
+                        if (df != null) {
+                            settingsFolder = new MIMEOptionFolder(df, this);
+                            return settingsFolder;
+                        }
+                    } catch (org.openide.loaders.DataObjectNotFoundException ex) {
+                        ex.printStackTrace();
                     }
-                } catch (org.openide.loaders.DataObjectNotFoundException ex) {
-                    ex.printStackTrace();
                 }
+
+                return null;
+            } finally {
+                settingsFolderInitialization = false;
             }
-            
-            return null;
         }
     }
     
@@ -461,7 +455,7 @@ public class BaseOptions extends OptionSupport {
         }
     }
     
-    protected void updateSettingsMap(Class kitClass, Map settingsMap) {
+    protected @Override void updateSettingsMap(Class kitClass, Map settingsMap) {
 //        final String id = "kitClass=" + kitClass + "; getKitClass()=" + getKitClass() + "; this=" + this;
 //        System.out.println("### USM: " + id);
         
@@ -1559,7 +1553,7 @@ public class BaseOptions extends OptionSupport {
         return optionsVersion;
     }
     
-    public void readExternal(ObjectInput in)
+    public @Override void readExternal(ObjectInput in)
     throws IOException, ClassNotFoundException {
         
         /** Hold the current indent engine due to #11212 */
@@ -1675,7 +1669,7 @@ public class BaseOptions extends OptionSupport {
         }
     }
     
-    public void setSettingValue(String settingName, Object newValue) {
+    public @Override void setSettingValue(String settingName, Object newValue) {
         setSettingValue(settingName, newValue, settingName);
     }
     
@@ -1696,7 +1690,7 @@ public class BaseOptions extends OptionSupport {
     
     /** Sets setting value to initializer Map and save the changes to XML file
      *  (properties.xml) */
-    public void setSettingValue(String settingName, Object newValue,
+    public @Override void setSettingValue(String settingName, Object newValue,
     String propertyName) {
         if (!isTheSame(settingName, newValue)){
             Map map = new HashMap();
@@ -1706,16 +1700,16 @@ public class BaseOptions extends OptionSupport {
         super.setSettingValue(settingName,newValue,propertyName);
     }
     
-    public Object getSettingValue(String settingName) {
+    public @Override Object getSettingValue(String settingName) {
         loadSettings(PropertiesMIMEProcessor.class);
         return super.getSettingValue(settingName);
     }
     
-    protected final void setSettingBoolean(String settingName, boolean newValue, String propertyName) {
+    protected final @Override void setSettingBoolean(String settingName, boolean newValue, String propertyName) {
         setSettingValue(settingName, newValue ? Boolean.TRUE : Boolean.FALSE);
     }
     
-    protected final void setSettingInteger(String settingName, int newValue, String propertyName) {
+    protected final @Override void setSettingInteger(String settingName, int newValue, String propertyName) {
         setSettingValue(settingName, new Integer(newValue));
     }
     
@@ -1745,10 +1739,10 @@ public class BaseOptions extends OptionSupport {
     }
     
     /** Overriden writeExternal method. BaseOptions are no longer serialized. */
-    public void writeExternal(ObjectOutput out) throws IOException{
+    public @Override void writeExternal(ObjectOutput out) throws IOException{
     }
 
-    protected void firePropertyChange(String name, Object oldValue, Object newValue){
+    protected @Override void firePropertyChange(String name, Object oldValue, Object newValue){
         // ignore firing... Quick fix of #47261. 
         // BaseOptions should be rewritten to not extend SystemOption ...
         // there is no need to be compatile with NB 3.2 and deserialize its options...
