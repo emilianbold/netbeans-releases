@@ -122,7 +122,6 @@ public class ImportDiffAction extends AbstractAction {
         List<String> list = HgCommand.doImport(repository, patchFile);
         HgUtils.outputMercurialTab(list); // NOI18N
 
-        HgCommand.doImport(repository, patchFile);
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
             DialogDisplayer.getDefault().notifyLater(e);
