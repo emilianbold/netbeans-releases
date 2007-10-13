@@ -111,7 +111,7 @@ public class TransformationDescNode extends AbstractNode {
                     "LBL_TRANSFORM_DESC_MESSAGE", // NOI18N
                     messageType);
         
-        return Util.getGrayString(name, messageType);
+        return org.netbeans.modules.xslt.tmap.util.Util.getGrayString(name, messageType);
     }
 
     public String getShortDescription() {

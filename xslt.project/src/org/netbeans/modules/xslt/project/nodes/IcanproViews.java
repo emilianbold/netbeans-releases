@@ -416,7 +416,7 @@ public class IcanproViews {
         Project project = FileOwnerQuery.getOwner(fo);
         FileObject srcFolder =null;
         if (project != null) {
-            srcFolder = Util.getSrcFolder(project);
+            srcFolder = org.netbeans.modules.xslt.tmap.util.Util.getSrcFolder(project);
         }
         
         // TODO m
