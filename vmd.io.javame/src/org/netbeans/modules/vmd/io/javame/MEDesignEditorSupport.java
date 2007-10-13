@@ -75,6 +75,7 @@ import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
 import java.io.*;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.mobility.project.J2MEProject;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.api.io.ProjectUtils;
 import org.netbeans.modules.vmd.api.io.serialization.DocumentErrorHandler;
@@ -159,7 +160,7 @@ public final class MEDesignEditorSupport extends J2MEEditorSupport implements Ed
         useEditPriority = false;
         DataObjectContext context = IOSupport.getDataObjectContext (dataObject);
         Project project = ProjectUtils.getProject(context);
-        if (project == null) {
+        if (project == null || !(project instanceof J2MEProject)) {
             DocumentErrorHandler errorHandler = new DocumentErrorHandler().addError(NbBundle.getMessage(MEDesignEditorSupport.class, "MSG_ProjectMissing")); //NOI18N
             DocumentErrorHandlerSupport.showDocumentErrorHandlerDialog(errorHandler, dataObject.getPrimaryFile());
             return;
