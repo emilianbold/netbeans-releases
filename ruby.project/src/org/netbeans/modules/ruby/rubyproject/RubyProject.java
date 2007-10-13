@@ -353,7 +353,7 @@ public final class RubyProject implements Project, RakeProjectListener {
         }
         
     }
-    
+
     private final class ProjectXmlSavedHookImpl extends ProjectXmlSavedHook {
         
         ProjectXmlSavedHookImpl() {}
@@ -377,6 +377,8 @@ public final class RubyProject implements Project, RakeProjectListener {
         }
         
     }
+    
+    static boolean bootRegistered = false;
     
     private final class ProjectOpenedHookImpl extends ProjectOpenedHook {
         
@@ -403,7 +405,10 @@ public final class RubyProject implements Project, RakeProjectListener {
 */
             // register project's classpaths to GlobalPathRegistry
             ClassPathProviderImpl cpProvider = (ClassPathProviderImpl)lookup.lookup(ClassPathProviderImpl.class);
-            GlobalPathRegistry.getDefault().register(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
+            if (!bootRegistered) {
+                GlobalPathRegistry.getDefault().register(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
+                bootRegistered = true;
+            }
             GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
             //GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
 
@@ -445,7 +450,7 @@ public final class RubyProject implements Project, RakeProjectListener {
             
             // unregister project's classpaths to GlobalPathRegistry
             ClassPathProviderImpl cpProvider = (ClassPathProviderImpl)lookup.lookup(ClassPathProviderImpl.class);
-            GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
+            //GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
             GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
             //GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
 
