@@ -118,11 +118,18 @@ public class RestUtils {
     }
     
     public static MetadataModel<RestServicesMetadata> getRestServicesMetadataModel(Project project) {
-        return getRestSupport(project).getRestServicesMetadataModel();
+        RestSupport support = getRestSupport(project);
+        if (support != null) {
+            return support.getRestServicesMetadataModel();
+        }
+        return null;
     }
     
     public static void disableRestServicesChangeListner(Project project) {
         final MetadataModel<RestServicesMetadata> wsModel = RestUtils.getRestServicesMetadataModel(project);
+        if (wsModel == null) {
+            return;
+        }
         try {
             wsModel.runReadAction(new MetadataModelAction<RestServicesMetadata, Void>() {
                 public Void run(final RestServicesMetadata metadata) {
@@ -136,7 +143,10 @@ public class RestUtils {
     }
     
     public static void enableRestServicesChangeListner(Project project) {
-     final MetadataModel<RestServicesMetadata> wsModel = RestUtils.getRestServicesMetadataModel(project);
+         final MetadataModel<RestServicesMetadata> wsModel = RestUtils.getRestServicesMetadataModel(project);
+        if (wsModel == null) {
+            return;
+        }
         try {
             wsModel.runReadAction(new MetadataModelAction<RestServicesMetadata, Void>() {
                 public Void run(final RestServicesMetadata metadata) {
@@ -151,7 +161,9 @@ public class RestUtils {
 
     public static void addRestApiJar(Project project) throws IOException {
         RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
-        restSupport.addJSR311apiJar();
+        if (restSupport != null) {
+            restSupport.addJSR311apiJar();
+        }
     }
     
     //
