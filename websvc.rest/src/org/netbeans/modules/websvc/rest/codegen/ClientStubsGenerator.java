@@ -68,6 +68,7 @@ import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.websvc.rest.codegen.model.ClientStubModel;
 import org.netbeans.modules.websvc.rest.codegen.model.ClientStubModel.*;
 import org.openide.filesystems.FileSystem;
+import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 
 /**
@@ -162,7 +163,6 @@ public class ClientStubsGenerator extends AbstractGenerator {
     private FileObject rjsDir;
     private FileObject rtableDir;
     private FileObject templatesDir;
-    private final int BUFFER = 2048;
     private static final int READ_BUF_SIZE = 65536;
     private static final int WRITE_BUF_SIZE = 65536;
     
@@ -184,8 +184,12 @@ public class ClientStubsGenerator extends AbstractGenerator {
         return p;
     }
     
-    public boolean isOverwrite() {
+    public boolean canOverwrite() {
         return overwrite;
+    }
+    
+    public boolean createJmaki() {
+        return createJmaki;
     }
     
     public String getProjectName() {
@@ -199,12 +203,26 @@ public class ClientStubsGenerator extends AbstractGenerator {
     public Set<FileObject> generate(ProgressHandle pHandle) throws IOException {
         initProgressReporting(pHandle, false);
         
-        init(p);
+        this.model = new ClientStubModel();
+        this.model.buildModel(p);
+        if (createJmaki()) {
+            resourcesDir = getRootDir();
+            dojoDir = createFolder(resourcesDir, DOJO);
+            restDir = createFolder(dojoDir, REST);
+            rjsDir = createFolder(restDir, RJS);
+            rdjDir = createFolder(restDir, RDJ);
+            rtableDir = createFolder(restDir, RTABLE);
+            initJs(p);
+            initDojo(p);
+            initJmaki(p);
+        } else {
+            rjsDir = createFolder(getRootDir().getParent(), REST);
+            initJs(p);
+        }
         
         String prjName = ProjectUtils.getInformation(getProject()).getName();
         FileObject prjStubDir = createFolder(rjsDir, prjName.toLowerCase());
-        if(prjStubDir.getFileObject(prjName, JS) == null)
-            RestUtils.createDataObjectFromTemplate(JS_PROJECTSTUB_TEMPLATE, prjStubDir, prjName);
+        createDataObjectFromTemplate(JS_PROJECTSTUB_TEMPLATE, prjStubDir, prjName, JS, canOverwrite());
         updateProjectStub(prjStubDir.getFileObject(prjName, JS), prjName, "");
         
         Set<FileObject> files = new HashSet<FileObject>();
@@ -216,29 +234,75 @@ public class ClientStubsGenerator extends AbstractGenerator {
             FileObject fo = new ResourceJavaScript(r, prjStubDir).generate();
             
             //Generate the resource dojo script
-            new ResourceDojoStore(r, dataDir).generate();
+            if (createJmaki())
+                new ResourceDojoStore(r, dataDir).generate();
         }
         updateRestStub(rjsDir.getFileObject(JS_TESTSTUBS, HTML), resourceList, "");
+ 
+        if (createJmaki()) {  
+            //copy dojo libs
+            reportProgress(NbBundle.getMessage(ClientStubsGenerator.class,
+                    "MSG_CopyLibs", "djd43", JS));//NoI18n
+            copyDojoLibs();
+
+            // Create the ZIP file
+            reportProgress(NbBundle.getMessage(ClientStubsGenerator.class,
+                    "MSG_GeneratingZip", prjName, "zip"));            
+            File projectDir = FileUtil.toFile(resourcesDir.getParent().getParent());
+            File zipFile = new File(projectDir, prjName + ".zip");
+            String[] sources = {
+                FileUtil.toFile(restDir).getAbsolutePath(),
+                FileUtil.toFile(templatesDir).getAbsolutePath(),
+                FileUtil.toFile(resourcesDir.getParent()).getAbsolutePath() + 
+                         File.separator + BUNDLE + "." + PROPERTIES
+            };
+            String[] paths = {
+                File.separator+RESOURCES+File.separator+DOJO,
+                "",
+                ""
+            };
+            zip(zipFile, sources, paths);
+            FileObject testFile = restDir.getFileObject(JMAKI_TESTRESOURCESTABLE, JSP);
+            if (testFile != null) {
+                files.add(testFile);
+            }
+            FileObject readme = restDir.getFileObject(JMAKI_README, HTML);
+            if(readme != null)
+                files.add(readme);
+        } else {
+            FileObject rjsTest = rjsDir.getFileObject(JS_TESTSTUBS, HTML);
+            if(rjsTest != null)
+                files.add(rjsTest);
+            FileObject readme = rjsDir.getFileObject(JMAKI_README, HTML);
+            if(readme != null)
+                files.add(readme);
+        }
+
         
-        //copy dojo libs
-        copyDojoLibs();
-        
-        // Create the ZIP file
-        File projectDir = FileUtil.toFile(resourcesDir.getParent().getParent());
-        File zipFile = new File(projectDir, prjName + ".zip");
-        zip(zipFile, new String[]{
-            FileUtil.toFile(resourcesDir).getAbsolutePath(), 
-            FileUtil.toFile(templatesDir).getAbsolutePath(),
-            FileUtil.toFile(resourcesDir.getParent()).getAbsolutePath()+
-                    File.separator+BUNDLE+"."+PROPERTIES});
-            
-        FileObject testFile = restDir.getFileObject(JMAKI_TESTRESOURCESTABLE, JSP);
-        if(testFile != null)
-            files.add(testFile);
-        FileObject readme = restDir.getFileObject(JMAKI_README, HTML);
-        if(readme != null)
-            files.add(readme);
+
         return files;
+    }
+    
+    private FileObject rF0 = null;
+    private FileObject createDataObjectFromTemplate(final String template, final FileObject dir, 
+            final String fileName, final String ext, final boolean overwrite) throws IOException {
+        FileSystem targetFS = dir.getFileSystem();
+        targetFS.runAtomicAction(new FileSystem.AtomicAction() {
+            public void run() throws IOException {
+                try {
+                    rF0 = dir.getFileObject(fileName, ext);
+                    if (rF0 != null) {
+                        if (overwrite) {
+                            rF0.delete();
+                        }
+                    }
+                    DataObject d0 = RestUtils.createDataObjectFromTemplate(template, dir, fileName);
+                    rF0 = d0.getPrimaryFile();
+                } finally {
+                }
+            }
+        });
+        return rF0;
     }
     
     private void copyDojoLibs() throws FileNotFoundException, IOException {
@@ -258,63 +322,32 @@ public class ClientStubsGenerator extends AbstractGenerator {
         }
         
         File dojoLib = new File(jmakiCompDir, "jmaki-dojo-1.0.zip");
-        unzip(new FileInputStream(dojoLib), resourcesDir.getParent());
-    }
-    
-    private void init(Project p) throws IOException {
-        this.model = new ClientStubModel();
-        this.model.buildModel(p);
-        
-        resourcesDir =  getRootDir();
-        dojoDir = createFolder(resourcesDir, DOJO);
-        restDir = createFolder(dojoDir, REST);
-        rdjDir = createFolder(restDir, RDJ);
-        rjsDir = createFolder(restDir, RJS);
-        rtableDir = createFolder(restDir, RTABLE);
-            
-        initJs(p);
-        
-        initDojo(p);
-        
-        initJmaki(p);
+        unzip(new FileInputStream(dojoLib), resourcesDir.getParent(), canOverwrite());
     }
     
     private void initJs(Project p) throws IOException {
-        if(rjsDir.getFileObject(JS_TESTSTUBS, HTML) == null)
-            RestUtils.createDataObjectFromTemplate(JS_TESTSTUBS_TEMPLATE, rjsDir, JS_TESTSTUBS);
-        if(rjsDir.getFileObject(JS_SUPPORT, JS) == null)
-            RestUtils.createDataObjectFromTemplate(JS_STUBSUPPORT_TEMPLATE, rjsDir, JS_SUPPORT);  
+        createDataObjectFromTemplate(JS_TESTSTUBS_TEMPLATE, rjsDir, JS_TESTSTUBS, HTML, canOverwrite());
+        createDataObjectFromTemplate(JS_STUBSUPPORT_TEMPLATE, rjsDir, JS_SUPPORT, JS, canOverwrite());  
     }
 
     private void initDojo(Project p) throws IOException {
         dataDir = createFolder(rdjDir, DATA);//NoI18n
         FileObject widgetDir = createFolder(rdjDir, WIDGET);//NoI18n
-        if(dataDir.getFileObject(DOJO_RESTSTORE, JS) == null)
-            RestUtils.createDataObjectFromTemplate(DOJO_RESTSTORE_TEMPLATE, dataDir, DOJO_RESTSTORE);
-        if(widgetDir.getFileObject(DOJO_RESOURCESTABLE, JS) == null)
-            RestUtils.createDataObjectFromTemplate(DOJO_RESOURCESTABLE_TEMPLATE, widgetDir, DOJO_RESOURCESTABLE);
-        if(rdjDir.getFileObject(DOJO_SUPPORT, JS) == null)
-            RestUtils.createDataObjectFromTemplate(DOJO_SUPPORT_TEMPLATE, rdjDir, DOJO_SUPPORT);
-        if(rdjDir.getFileObject(DOJO_TESTRESOURCESTABLE, HTML) == null)
-            RestUtils.createDataObjectFromTemplate(DOJO_TESTRESOURCESTABLE_TEMPLATE, rdjDir, DOJO_TESTRESOURCESTABLE);
+        createDataObjectFromTemplate(DOJO_RESTSTORE_TEMPLATE, dataDir, DOJO_RESTSTORE, JS, canOverwrite());
+        createDataObjectFromTemplate(DOJO_RESOURCESTABLE_TEMPLATE, widgetDir, DOJO_RESOURCESTABLE, JS, canOverwrite());
+        createDataObjectFromTemplate(DOJO_SUPPORT_TEMPLATE, rdjDir, DOJO_SUPPORT, JS, canOverwrite());
+        createDataObjectFromTemplate(DOJO_TESTRESOURCESTABLE_TEMPLATE, rdjDir, DOJO_TESTRESOURCESTABLE, HTML, canOverwrite());
     }
     
     private void initJmaki(Project p) throws IOException {
-        if(restDir.getFileObject(JMAKI_README, HTML) == null)
-            RestUtils.createDataObjectFromTemplate(JMAKI_README_TEMPLATE, restDir, JMAKI_README);
-        if(restDir.getFileObject(JMAKI_TESTRESOURCESTABLE, HTML) == null)
-            RestUtils.createDataObjectFromTemplate(JMAKI_TESTRESOURCESTABLE_TEMPLATE, restDir, JMAKI_TESTRESOURCESTABLE);
+        createDataObjectFromTemplate(JMAKI_README_TEMPLATE, restDir, JMAKI_README, HTML, canOverwrite());
+        createDataObjectFromTemplate(JMAKI_TESTRESOURCESTABLE_TEMPLATE, restDir, JMAKI_TESTRESOURCESTABLE, JSP, canOverwrite());
         
-        if(getRootDir().getParent().getFileObject(BUNDLE, PROPERTIES) == null)
-            RestUtils.createDataObjectFromTemplate(JMAKI_RESTBUNDLE_TEMPLATE, getRootDir().getParent(), BUNDLE);
-        if(rtableDir.getFileObject(JMAKI_COMPONENT, CSS) == null)
-            RestUtils.createDataObjectFromTemplate(JMAKI_COMPONENTCSS_TEMPLATE, rtableDir, JMAKI_COMPONENT);
-        if(rtableDir.getFileObject(JMAKI_COMPONENT, HTM) == null)
-            RestUtils.createDataObjectFromTemplate(JMAKI_COMPONENTHTM_TEMPLATE, rtableDir, JMAKI_COMPONENT);
-        if(rtableDir.getFileObject(JMAKI_COMPONENT, JS) == null)
-            RestUtils.createDataObjectFromTemplate(JMAKI_COMPONENTJS_TEMPLATE, rtableDir, JMAKI_COMPONENT);
-        if(rtableDir.getFileObject(WIDGET, JSON) == null)
-            RestUtils.createDataObjectFromTemplate(JMAKI_WIDGETJSON_TEMPLATE, rtableDir, WIDGET);
+        createDataObjectFromTemplate(JMAKI_RESTBUNDLE_TEMPLATE, getRootDir().getParent(), BUNDLE, PROPERTIES, canOverwrite());
+        createDataObjectFromTemplate(JMAKI_COMPONENTCSS_TEMPLATE, rtableDir, JMAKI_COMPONENT, CSS, canOverwrite());
+        createDataObjectFromTemplate(JMAKI_COMPONENTHTM_TEMPLATE, rtableDir, JMAKI_COMPONENT, HTM, canOverwrite());
+        createDataObjectFromTemplate(JMAKI_COMPONENTJS_TEMPLATE, rtableDir, JMAKI_COMPONENT, JS, canOverwrite());
+        createDataObjectFromTemplate(JMAKI_WIDGETJSON_TEMPLATE, rtableDir, WIDGET, JSON, canOverwrite());
         
         FileObject imagesDir = createFolder(rtableDir, IMAGES);//NoI18n
         File imgDir = FileUtil.toFile(imagesDir);
@@ -324,20 +357,15 @@ public class ClientStubsGenerator extends AbstractGenerator {
         
         //Jmaki templates dir
         templatesDir = createFolder(getRootDir().getParent(), TEMPLATES);
-        File t_rtableDir1 = new File(FileUtil.toFile(templatesDir), DOJO+"/"+REST+"/"+RTABLE);
+        File t_rtableDir1 = new File(FileUtil.toFile(templatesDir), DOJO+File.separator+REST+File.separator+RTABLE);
         t_rtableDir1.mkdirs();
         FileObject t_rtableDir = FileUtil.toFileObject(t_rtableDir1);
-        if(t_rtableDir.getFileObject(BUNDLE, PROPERTIES) == null)
-            RestUtils.createDataObjectFromTemplate(JMAKI_TEMPLATESBUNDLE_TEMPLATE, t_rtableDir, BUNDLE);
+        createDataObjectFromTemplate(JMAKI_TEMPLATESBUNDLE_TEMPLATE, t_rtableDir, BUNDLE, PROPERTIES, canOverwrite());
         replaceBundleTokens(t_rtableDir.getFileObject(BUNDLE, PROPERTIES), getProjectName());
-        if(t_rtableDir.getFileObject(RTABLE, JSP) == null)
-            RestUtils.createDataObjectFromTemplate(JMAKI_TEMPLATESJSP_TEMPLATE, t_rtableDir, RTABLE);
-        if(t_rtableDir.getFileObject(RTABLE, PHP) == null)
-            RestUtils.createDataObjectFromTemplate(JMAKI_TEMPLATESPHP_TEMPLATE, t_rtableDir, RTABLE);
-        if(t_rtableDir.getFileObject(RTABLE, EJS) == null)
-            RestUtils.createDataObjectFromTemplate(JMAKI_TEMPLATESEJS_TEMPLATE, t_rtableDir, RTABLE);
-        if(t_rtableDir.getFileObject(RTABLE, RHTML) == null)
-            RestUtils.createDataObjectFromTemplate(JMAKI_TEMPLATESRHTML_TEMPLATE, t_rtableDir, RTABLE);
+        createDataObjectFromTemplate(JMAKI_TEMPLATESJSP_TEMPLATE, t_rtableDir, RTABLE, JSP, canOverwrite());
+        createDataObjectFromTemplate(JMAKI_TEMPLATESPHP_TEMPLATE, t_rtableDir, RTABLE, PHP, canOverwrite());
+        createDataObjectFromTemplate(JMAKI_TEMPLATESEJS_TEMPLATE, t_rtableDir, RTABLE, EJS, canOverwrite());
+        createDataObjectFromTemplate(JMAKI_TEMPLATESRHTML_TEMPLATE, t_rtableDir, RTABLE, RHTML, canOverwrite());
     }
     
     /*
@@ -394,33 +422,48 @@ public class ClientStubsGenerator extends AbstractGenerator {
             folder = parent.createFolder(folderName);
         return folder;
     }
+    
+    private static void zip(File zipFile, String[] sources, String[] paths) {
+        try {
 
-    private void zip(File zipFile, final String[] source) throws FileNotFoundException, IOException {
-        FileOutputStream dest = new FileOutputStream(zipFile);
-        final ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(dest));
-        FileSystem targetFS = FileUtil.toFileObject(zipFile).getFileSystem();
-        targetFS.runAtomicAction(new FileSystem.AtomicAction() {
-            public void run() throws IOException {
-                FileOutputStream os = null;
-                try {
-                    for (int i = 0; i < source.length; i++) {
-                        File f = new File(source[i]);
-                        addEntry(f, "", out);
-                    }
-                } finally {
-                    if (os != null) {
-                        try {
-                            out.close();
-                        } catch (IOException ex) {
-                        }
-                    }
-                }
+            FileOutputStream dest = new FileOutputStream(zipFile);
+            ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(dest));
+            
+            for(int i=0;i<sources.length;i++) {
+                File f = new File(sources[i]);
+                addEntry(f, paths[i], out);
             }
-        });
+            out.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void addEntry(File file, String path, ZipOutputStream out) throws FileNotFoundException, IOException {
+        if (file.isDirectory()) {
+            String[] files = file.list();
+            for (int i = 0; i < files.length; i++) {
+                File f = new File(file + File.separator + files[i]);
+                addEntry(f, path + File.separator + file.getName(), out);
+            }
+        } else {
+            byte[] data = new byte[WRITE_BUF_SIZE];
+            BufferedInputStream origin = null;
+            //System.out.println("Adding: " + file);
+            FileInputStream fi = new FileInputStream(file);
+            origin = new BufferedInputStream(fi, READ_BUF_SIZE);
+            ZipEntry entry = new ZipEntry(path + File.separator + file.getName());
+            out.putNextEntry(entry);
+            int count;
+            while ((count = origin.read(data, 0, WRITE_BUF_SIZE)) != -1) {
+                out.write(data, 0, count);
+            }
+            origin.close();
+        }
     }
         
     private static boolean unzip(final InputStream source,
-            final FileObject targetFolderFO) throws IOException {
+            final FileObject targetFolderFO, boolean overwrite) throws IOException {
         boolean result = true;
         FileSystem targetFS = targetFolderFO.getFileSystem();
         File targetFolder = FileUtil.toFile(targetFolderFO);
@@ -431,22 +474,24 @@ public class ClientStubsGenerator extends AbstractGenerator {
             final InputStream in = zip;
             ZipEntry entry;
             while((entry = zip.getNextEntry()) != null) {
-                System.out.println("entry: "+entry.getName());
+                //System.out.println("entry: "+entry.getName());
                 if(!entry.getName().startsWith(RESOURCES+File.separator+DOJO+File.separator+RESOURCES+File.separator+LIBS)) {
-                    System.out.println("skipping entry: "+entry.getName());
+                    //System.out.println("skipping entry: "+entry.getName());
                     continue;
                 }
                 final File entryFile = new File(targetFolder, entry.getName());
-                if(entryFile.exists()) {
-                    // !PW FIXME entry already exists, offer overwrite option...
-                    throw new RuntimeException("Target " + entryFile.getPath() +
-                            " already exists.  Terminating archive installation.");
-                } else if(entry.isDirectory()) {
-                    if(!entryFile.mkdirs()) {
+                if(entry.isDirectory()) {
+                    if(!entryFile.exists() && !entryFile.mkdirs()) {
                         throw new RuntimeException("Failed to create folder: " +
                                 entryFile.getName() + ".  Terminating archive installation.");
                     }
                 } else {
+                    if(entryFile.exists() && overwrite) {
+                        if (!entryFile.delete()) {
+                            throw new RuntimeException("Failed to delete file: " +
+                                    entryFile.getName() + ".  Terminating archive installation.");
+                        }
+                    }
                     File parentFile = entryFile.getParentFile();
                     if(!parentFile.exists() && !parentFile.mkdirs()) {
                         throw new RuntimeException("Failed to create folder: " +
@@ -483,32 +528,6 @@ public class ClientStubsGenerator extends AbstractGenerator {
         }
         
         return result;
-    }
-
-    private void addEntry(File file, String path, ZipOutputStream out) throws FileNotFoundException, IOException {
-        if (file.isDirectory()) {
-            String[] files = file.list();
-            for (int i = 0; i < files.length; i++) {
-                File f = new File(file + File.separator + files[i]);
-                addEntry(f, path + File.separator + file.getName(), out);
-            }
-        } else {
-            byte[] data = new byte[BUFFER];
-            BufferedInputStream origin = null;
-            try {
-                System.out.println("Adding: " + file);
-                FileInputStream fi = new FileInputStream(file);
-                origin = new BufferedInputStream(fi, BUFFER);
-                ZipEntry entry = new ZipEntry(path + File.separator + file.getName());
-                out.putNextEntry(entry);
-                int count;
-                while ((count = origin.read(data, 0, BUFFER)) != -1) {
-                    out.write(data, 0, count);
-                }
-            } finally {
-                origin.close();
-            }
-        }
     }
 
     private void updateProjectStub(FileObject projectStub, String prjName, String pkg) throws IOException {
@@ -623,18 +642,18 @@ public class ClientStubsGenerator extends AbstractGenerator {
             String fileNameExt = r.getName() + "." + JS;
             FileObject fo = jsFolder.getFileObject(fileNameExt);
             if (fo != null) {
-                if(isOverwrite())
+                if(canOverwrite())
                     fo.delete();
                 else
-                    throw new IOException("File: "+jsFolder.getPath()+"/"+fileNameExt+" already exists.");
+                    throw new IOException("File: "+jsFolder.getPath()+File.separator+fileNameExt+" already exists.");
             }
             
             if(r.isContainer())
-                RestUtils.createDataObjectFromTemplate(JS_CONTAINERSTUB_TEMPLATE, jsFolder, fileName);
+                createDataObjectFromTemplate(JS_CONTAINERSTUB_TEMPLATE, jsFolder, fileName, JS, canOverwrite());
             else if(r.getRepresentation().getRoot() != null)
-                RestUtils.createDataObjectFromTemplate(JS_CONTAINERITEMSTUB_TEMPLATE, jsFolder, fileName);
+                createDataObjectFromTemplate(JS_CONTAINERITEMSTUB_TEMPLATE, jsFolder, fileName, JS, canOverwrite());
             else //generate only stub for no representation
-                RestUtils.createDataObjectFromTemplate(JS_GENERICSTUB_TEMPLATE, jsFolder, fileName);
+                createDataObjectFromTemplate(JS_GENERICSTUB_TEMPLATE, jsFolder, fileName, JS, canOverwrite());
             fo = jsFolder.getFileObject(fileNameExt);
             replaceTokens(fo);
             return fo;
@@ -984,14 +1003,14 @@ public class ClientStubsGenerator extends AbstractGenerator {
             String fileNameExt = fileName + "." + JS;
             FileObject fo = jsFolder.getFileObject(fileNameExt);
             if (fo != null) {
-                if(isOverwrite())
+                if(canOverwrite())
                     fo.delete();
                 else
-                    throw new IOException("File: "+jsFolder.getPath()+"/"+fileNameExt+" already exists.");
+                    throw new IOException("File: "+jsFolder.getPath()+File.separator+fileNameExt+" already exists.");
             }
             
             if(r.isContainer())
-                RestUtils.createDataObjectFromTemplate(DOJO_COLLECTIONSTORE_TEMPLATE, jsFolder, fileName);
+                createDataObjectFromTemplate(DOJO_COLLECTIONSTORE_TEMPLATE, jsFolder, fileName, JS, canOverwrite());
             else
                 return null;
             return fo;

@@ -114,7 +114,7 @@ public final class ClientStubsSetupPanelVisual extends JPanel implements Abstrac
             projectTextField.setText(ProjectUtils.getInformation(project).getDisplayName());
             sourceGroups = Util.getSourceGroups(project);
             SourceGroupUISupport.connect(locationCB, sourceGroups);
-            folderTextField.setText(Constants.REST_STUBS);
+            folderTextField.setText(Constants.REST_JMAKI_DIR);
         }
     }
 
@@ -130,7 +130,7 @@ public final class ClientStubsSetupPanelVisual extends JPanel implements Abstrac
         if (stubRootFolder == null && sourceGroups.length > 0) {
             String path = folderTextField.getText();
             if (path == null || path.trim().length() == 0) {
-                path = Constants.REST_STUBS;
+                path = Constants.REST_JMAKI_DIR;
             }
             SourceGroup sg = (SourceGroup) locationCB.getSelectedItem();
             try {
@@ -465,6 +465,10 @@ private void addButtonshowProjectDialog(java.awt.event.ActionEvent evt) {//GEN-F
 }//GEN-LAST:event_addButtonshowProjectDialog
 
 private void createJmakiCheckBoxStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_createJmakiCheckBoxStateChanged
+    if(createJmakiCheckBox.isSelected())
+        folderTextField.setText(Constants.REST_JMAKI_DIR);
+    else
+        folderTextField.setText(Constants.REST_STUBS_DIR);
     fireChange();
 }//GEN-LAST:event_createJmakiCheckBoxStateChanged
     
