@@ -545,7 +545,14 @@ public class DesignTimeDataSourceHelper {
                     Iterator it = dataSourcesInfo.iterator();
                     while (it.hasNext()) {
                         dsInfo = (DataSourceInfo)it.next();
-                        if (name.equals(DS_SUBCTX + "/" + dsInfo.getName())) { // NOI18N                                                                                    
+                        if (name.equals(DS_SUBCTX + "/VIR") && dsInfo.getUrl().equals("jdbc:derby://localhost:1527/sample")) {
+                            binding.put(name, new DesignTimeDataSource(null, false, dsInfo.getDriverClassName(),
+                                    "jdbc:derby://localhost:1527/vir", null, dsInfo.getUsername(), dsInfo.getPassword())); // NOI18N                            
+                            dataSourceService = (DesignTimeDataSourceService)Lookup.getDefault().lookup(DesignTimeDataSourceService.class);
+                            dataSourceService.updateProjectDataSource(currentProj, new RequestedJdbcResource("jdbc/VIR",
+                                    dsInfo.getDriverClassName(), "jdbc:derby://localhost:1527/vir", dsInfo.getUsername(),
+                                    dsInfo.getPassword()));  // NOI18N
+                        } else if (name.equals(DS_SUBCTX + "/" + dsInfo.getName())) { // NOI18N                                                                                    
                             binding.put(name, new DesignTimeDataSource(null, false, dsInfo.getDriverClassName(),
                                     dsInfo.getUrl(), null, dsInfo.getUsername(), dsInfo.getPassword())) ;
                             
@@ -562,15 +569,15 @@ public class DesignTimeDataSourceHelper {
                 Iterator it = jdbcResources.iterator();
                 boolean found = false;
                 
-                while (it.hasNext()) {
-                    
+                while (it.hasNext()) {                    
                     jdbcResource = (RequestedJdbcResource) it.next();
                     String name = ((String)jdbcResource.getResourceName());
                     name = name.substring(name.indexOf("/")+1);
                     found = false;
-                    if (!found)
-                        binding.put(DS_SUBCTX + "/" + name, new DesignTimeDataSource(null, false, jdbcResource.getDriverClassName(),
-                                jdbcResource.getUrl(), null, jdbcResource.getUsername(), jdbcResource.getPassword()));
+                    if (name.equals(DS_SUBCTX + "/VIR") && jdbcResource.getUrl().equals("jdbc:derby://localhost:1527/sample")) {
+                        binding.put(name, new DesignTimeDataSource(null, false, jdbcResource.getDriverClassName(), "jdbc:derby://localhost:1527/vir", null, jdbcResource.getUsername(), jdbcResource.getPassword())); // NOI18N
+                    } else if (!found)
+                        binding.put(DS_SUBCTX + "/" + name, new DesignTimeDataSource(null, false, jdbcResource.getDriverClassName(), jdbcResource.getUrl(), null, jdbcResource.getUsername(), jdbcResource.getPassword()));
                 }
             }
         }
