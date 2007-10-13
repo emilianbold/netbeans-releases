@@ -1043,6 +1043,9 @@ public class LexUtilities {
     /** Back up to the first space character prior to the given offset */
     public static int findSpaceBegin(BaseDocument doc, int lexOffset) {
         TokenSequence ts = LexUtilities.getRubyTokenSequence(doc, lexOffset);
+        if (ts == null) {
+            return lexOffset;
+        }
         ts.move(lexOffset);
         if (ts.moveNext()) {
             if (lexOffset > ts.offset()) {
