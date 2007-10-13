@@ -108,6 +108,14 @@ public class UtilityClassTest extends TreeRuleTestBase {
         
         performAnalysisTest("test/Test.java", before + after, before.length());
     }
+    public void testDisabledExtendingNonObject() throws Exception {
+        String before = "package test; public class Te";
+        String after = "st extends javax.swing.JPanel {" +
+            " public static String computeDiff(String x, String y) { return x + y; }" +
+            "}";
+        
+        performAnalysisTest("test/Test.java", before + after, before.length());
+    }
     public void testDisabledWhenConstructorIsThere() throws Exception {
         String before = "package test; public class Te";
         String after = "st extends Object {" +
