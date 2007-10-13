@@ -272,7 +272,7 @@ public class ModuleDependencies extends Task {
         String name = moduleFile.getName();
         name = name.substring(0, name.length() - 3) + "xml";
         File configFile = new File(moduleFile.getParentFile().getParentFile(), "config/Modules/" + name);
-        log ("config " + configFile, Project.MSG_VERBOSE);
+        log ("config " + configFile, Project.MSG_DEBUG);
         if (!configFile.exists())
             return true; // probably a classpath module, treat like autoload
         final String fragment = "<param name=\"autoload\">true</param>";
@@ -281,7 +281,7 @@ public class ModuleDependencies extends Task {
             String line;
             while ((line = br.readLine ()) != null) {
                 if (line.indexOf (fragment) != -1) {
-                    log ("autoload module: " + moduleFile, Project.MSG_VERBOSE);
+                    log ("autoload module: " + moduleFile, Project.MSG_DEBUG);
                     return true;
                 }
             }
@@ -478,6 +478,8 @@ public class ModuleDependencies extends Task {
         PrintWriter w = new PrintWriter(new FileWriter(output));
         // calculate transitive closure of kits
         TreeMap<String, TreeSet<String>> allKitDeps = transitiveClosureOfKits();
+        // calculate transitive closure of modules
+        TreeMap<String, TreeSet<String>> allModuleDeps = transitiveClosureOfModules();
         // create a map of <module, kits that depend on it>
         TreeMap<ModuleInfo, Set<String>> dependingKits = new TreeMap<ModuleInfo, Set<String>>();
         for (ModuleInfo m : modules) {
@@ -486,28 +488,25 @@ public class ModuleDependencies extends Task {
             }
             if (m.showInAutoupdate) {
                 // this is a kit
-//                w.print("KIT ");
-//                w.print(m.getName());
-//                w.println();
-                for (Dependency d : m.depends) {
+                Set<String> dep = allModuleDeps.get(m.codebasename);
+                for (String ds : dep) {
                     if (regexp != null && !regexp.matcher(m.group).matches()) {
                         continue;
                     }
-                    if (!d.isSpecial()) {
-                        ModuleInfo theModuleOneIsDependingOn = findModuleInfo(d, m);
-                        if (!theModuleOneIsDependingOn.showInAutoupdate && 
-                            !theModuleOneIsDependingOn.isAutoload &&
-                            !theModuleOneIsDependingOn.isEssential) {
-                            // regular module, not a kit
-                            Set<String> kits = dependingKits.get(theModuleOneIsDependingOn);
-                            if (kits == null) {
-                                kits = new TreeSet<String>();
-                                dependingKits.put(theModuleOneIsDependingOn, kits);
-                            }
-                            kits.add(m.getName(false));
+                    //log ("ds " + dep);
+                    ModuleInfo theModuleOneIsDependingOn = findModuleInfo(ds);
+                    if (!theModuleOneIsDependingOn.showInAutoupdate && 
+                        !theModuleOneIsDependingOn.isAutoload &&
+                        !theModuleOneIsDependingOn.isEssential) {
+                        // regular module, not a kit
+                        Set<String> kits = dependingKits.get(theModuleOneIsDependingOn);
+                        if (kits == null) {
+                            kits = new TreeSet<String>();
+                            dependingKits.put(theModuleOneIsDependingOn, kits);
+                        }
+                        kits.add(m.getName(false));
 //                            w.print("  REQUIRES " + theModuleOneIsDependingOn.getName());
 //                            w.println();
-                        }
                     }
                 }
             }
@@ -522,10 +521,14 @@ public class ModuleDependencies extends Task {
             for (String kit : kits) {
                 if (lowestKitCandidate == null) {
                     lowestKitCandidate = kit;
+                    log ("  initial lowest kit candidate for " + module.getName(false) + " : " +
+                            lowestKitCandidate, Project.MSG_DEBUG);
                 }
                 else {
                     if (dependsOnTransitively(lowestKitCandidate, kit, allKitDeps)) {
-                        kit = lowestKitCandidate;
+                        lowestKitCandidate = kit;
+                        log ("  new lowest kit candidate for " + module.getName(false) + " : " +
+                            lowestKitCandidate, Project.MSG_DEBUG);
                     }
                 }
             }
@@ -534,6 +537,8 @@ public class ModuleDependencies extends Task {
             for (String kit : kits) {
                 if (!kit.equals(lowestKitCandidate) && 
                     !dependsOnTransitively(kit, lowestKitCandidate, allKitDeps)) {
+                    log ("lowest kit not found for " + module.getName(false) + " : " +
+                            lowestKitCandidate + ", " + kit + " do not have a dependency", Project.MSG_VERBOSE);
                     passed = false;
                     break;
                 }
@@ -576,7 +581,7 @@ public class ModuleDependencies extends Task {
         return kits.contains(kit2);
     }
 
-    private void registerModuleInKit(ModuleInfo module, String kit, TreeMap<String, TreeSet<String>> allKits) {
+    private static void registerModuleInKit(ModuleInfo module, String kit, TreeMap<String, TreeSet<String>> allKits) {
         TreeSet<String> modules = allKits.get(kit);
         if (modules == null) {
             modules = new TreeSet<String>();
@@ -585,6 +590,23 @@ public class ModuleDependencies extends Task {
         modules.add(module.getName(false));
     }
 
+    private TreeMap<String, TreeSet<String>> transitiveClosureOfModules() {
+        TreeMap<String, TreeSet<String>> moduleDepsAll = new TreeMap<String, TreeSet<String>>();
+        // populate with modules first
+        for (ModuleInfo m : modules) {
+            TreeSet<String> deps = new TreeSet<String>();
+            moduleDepsAll.put(m.codebasename, deps);
+            for (Dependency d : m.depends) {
+                if (!d.isSpecial()) {
+                    ModuleInfo theModuleOneIsDependingOn = findModuleInfo(d, m);
+                    deps.add(theModuleOneIsDependingOn.codebasename);
+                }
+            }
+        }
+        transitiveClosure(moduleDepsAll);
+        return moduleDepsAll;
+    }
+    
     
     private TreeMap<String, TreeSet<String>> transitiveClosureOfKits() {
         TreeMap<String, TreeSet<String>> kitDepsAll = new TreeMap<String, TreeSet<String>>();
@@ -603,17 +625,25 @@ public class ModuleDependencies extends Task {
                 }
             }
         }
+        transitiveClosure(kitDepsAll);
+        return kitDepsAll;
+    }
+    
+    /** Computes the transitive closure of the dependency map passed as a parameter.
+     * 
+     * @param deps the dependency map, will contain the transitive closure when the method exits
+     */
+    private void transitiveClosure(TreeMap<String, TreeSet<String>> allDeps) {
         // add transitively all dependencies
         boolean needAnotherIteration = true;
         while (needAnotherIteration) {
             needAnotherIteration = false;
-            for (String m: kitDepsAll.keySet()) {
-                TreeSet<String> deps = kitDepsAll.get(m);
-                for (String d : new TreeSet<String>(deps)/*(TreeSet<String>)deps.clone()*/) {
-                    for (String d2: kitDepsAll.get(d)) {
+            for (String m: allDeps.keySet()) {
+                TreeSet<String> deps = allDeps.get(m);
+                for (String d : new TreeSet<String>(deps)) {
+                    for (String d2: allDeps.get(d)) {
                         if (!deps.contains(d2)) {
-                            // we found one that was not added
-                            //log ("need to add " + d2 + " to " + m);
+                            log ("transitive closure: need to add " + d2 + " to " + m, Project.MSG_DEBUG);
                             deps.add(d2);
                             needAnotherIteration = true;
                         }
@@ -621,8 +651,7 @@ public class ModuleDependencies extends Task {
                 }
 
             }
-        }
-        return kitDepsAll;
+        }       
     }
 
     private void generateKitDependencies(File output) throws BuildException, IOException {
