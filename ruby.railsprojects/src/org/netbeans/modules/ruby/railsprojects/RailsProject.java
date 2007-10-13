@@ -227,7 +227,8 @@ public class RailsProject implements Project, RakeProjectListener {
             LookupProviderSupport.createSourcesMerger(),
             new RailsProjectEncodingQueryImpl(evaluator()),
             evaluator(),
-            new RailsServer(this)
+            new RailsServer(this),
+            new RailsFileLocator(null, this)
         });
         return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-ruby-railsprojects/Lookup"); //NOI18N
     }

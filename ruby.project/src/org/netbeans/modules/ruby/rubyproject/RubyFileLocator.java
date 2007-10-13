@@ -147,6 +147,14 @@ public class RubyFileLocator implements FileLocator {
         }
         return null;
     }
+    
+    protected Lookup getContext() {
+        if (context == null) {
+            context = project.getLookup();
+        }
+        
+        return context;
+    }
 
     /**
      * Find selected sources, the sources has to be under single source root.
@@ -155,7 +163,7 @@ public class RubyFileLocator implements FileLocator {
      */
     protected FileObject[] findSources(List<FileObject> roots) {
         for (FileObject root : roots) {
-            FileObject[] files = RubyActionProvider.findSelectedFiles(context, root,
+            FileObject[] files = RubyActionProvider.findSelectedFiles(getContext(), root,
                     RubyInstallation.RUBY_MIME_TYPE, true);
 
             // TODO - what about RHTML files?

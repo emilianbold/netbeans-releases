@@ -67,7 +67,7 @@ public class RailsFileLocator extends RubyFileLocator {
             return files;
         }
         for (FileObject root : roots) {
-            files = RailsActionProvider.findSelectedFiles(context, root,
+            files = RailsActionProvider.findSelectedFiles(getContext(), root,
                     RhtmlTokenId.MIME_TYPE, true);
             if (files != null) {
                 return files;

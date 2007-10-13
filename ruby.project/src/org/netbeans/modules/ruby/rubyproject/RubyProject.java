@@ -228,7 +228,8 @@ public final class RubyProject implements Project, RakeProjectListener {
             UILookupMergerSupport.createRecommendedTemplatesMerger(),
             LookupProviderSupport.createSourcesMerger(),            
             new RubyProjectEncodingQueryImpl(evaluator()),
-            evaluator()
+            evaluator(),
+            new RubyFileLocator(null, this)
         });
         return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-ruby-rubyproject/Lookup"); //NOI18N
     }
