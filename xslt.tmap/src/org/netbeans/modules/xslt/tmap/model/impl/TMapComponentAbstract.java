@@ -128,6 +128,26 @@ public abstract class TMapComponentAbstract
 //////        }   
     }
 
+    @Override
+    public void setAttribute(String eventPropertyName, Attribute attr, Object value) {
+        boolean isTransact = true;
+        if (!getModel().isIntransaction()) {
+            getModel().startTransaction();
+        } else {
+            isTransact = true;
+        }
+        
+        try {
+        
+            super.setAttribute(eventPropertyName, attr, value);
+        
+        } finally {
+            if (!isTransact){
+                getModel().endTransaction();
+            }
+        }
+    }
+
     protected  VariableReference 
         getTMapVarReference(Attribute attr)
     {
@@ -153,4 +173,29 @@ public abstract class TMapComponentAbstract
     protected final AttributeAccess getAttributeAccess() {
         return myAttributeAcces;
     }
+    
+    protected final String getComponentName(){
+        return getPeer().getLocalName();
+    }
+    
+    
+//    
+//    protected final void readLock() {
+//        getModel().readLock();
+//    }
+//
+//    protected final void readUnlock() {
+//        getModel().readUnlock();
+//    }
+//
+//    protected final  void writeLock() {
+//        getModel().writeLock();
+//    }
+//
+//    protected final void writeUnlock() {
+//        getModel().writeUnlock();
+//    }
+//
+//    
+//    
 }

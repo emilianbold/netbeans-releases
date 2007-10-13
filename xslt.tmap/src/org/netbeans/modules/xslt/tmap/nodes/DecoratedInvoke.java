@@ -42,6 +42,8 @@
 package org.netbeans.modules.xslt.tmap.nodes;
 
 import org.netbeans.modules.xslt.tmap.model.api.Invoke;
+import org.netbeans.modules.xslt.tmap.util.Util;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -54,4 +56,52 @@ public class DecoratedInvoke extends DecoratedTMapComponentAbstract<Invoke>{
         super(orig);
     }
 
+    @Override
+    public String getHtmlDisplayName() {
+        Invoke ref = getOriginal();
+        String pltName = null;
+        String roleName = null;
+        String opName = null;
+        if (ref != null) {
+            pltName = Util.getReferenceLocalName(ref.getPartnerLinkType());
+            roleName = Util.getReferenceLocalName(ref.getRole());
+            opName = Util.getReferenceLocalName(ref.getOperation());
+        }
+        String addon = null;
+        if (pltName != null) {
+            addon = TMapComponentNode.WHITE_SPACE+pltName; // NOI18N
+        }
+        
+        if (roleName != null) {
+            addon = (addon == null ? TMapComponentNode.EMPTY_STRING : addon+TMapComponentNode.WHITE_SPACE) + roleName; // NOI18N
+        }
+        
+        if (opName != null) {
+            addon = (addon == null ? TMapComponentNode.EMPTY_STRING : addon+TMapComponentNode.WHITE_SPACE) + opName; // NOI18N
+        }
+
+        return Util.getGrayString(super.getHtmlDisplayName(), addon);
+    }
+
+    @Override
+    public String getTooltip() {
+        Invoke ref = getOriginal();
+        StringBuffer attributesTooltip = new StringBuffer();
+        if (ref != null) {
+            attributesTooltip.append(
+                    Util.getLocalizedAttribute(ref.getPartnerLinkType()
+                    , Invoke.PARTNER_LINK_TYPE));
+
+            attributesTooltip.append(
+                    Util.getLocalizedAttribute(ref.getRole()
+                    , Invoke.ROLE_NAME));
+
+            attributesTooltip.append(
+                    Util.getLocalizedAttribute(ref.getOperation()
+                    , Invoke.OPERATION_NAME));
+        }
+        return  NbBundle.getMessage(TMapComponentNode.class, 
+                "LBL_LONG_TOOLTIP_HTML_TEMPLATE", super.getName(), 
+                attributesTooltip.toString());      
+    }
 }

@@ -40,7 +40,12 @@
  */
 package org.netbeans.modules.xslt.tmap.nodes;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import org.netbeans.modules.xslt.tmap.model.api.Param;
+import org.netbeans.modules.xslt.tmap.model.api.ParamType;
+import org.netbeans.modules.xslt.tmap.util.Util;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -51,6 +56,41 @@ public class DecoratedParam extends DecoratedTMapComponentAbstract<Param> {
 
     public DecoratedParam(Param orig) {
         super(orig);
+    }
+    
+
+    @Override
+    public String getHtmlDisplayName() {
+        Param ref = getOriginal();
+        ParamType type = ref == null ? null : ref.getType();
+
+        String typeStr = null;
+        StringBuffer addon = new StringBuffer();
+        if (type != null) {
+            try {
+                typeStr = type.toString();
+                switch (type) {
+                    case URI:
+                        URI uri = ref.getUri();
+                        String uriStr = uri == null ? "" : uri.getPath();
+                        typeStr += " uri=" + uriStr;
+                        break;
+                    case PART:
+                        ref.getValue();
+                        typeStr += " part=";
+                        break;
+                    default:
+                        typeStr += " ...";
+                }
+
+
+                addon.append(TMapComponentNode.WHITE_SPACE).append(typeStr); // NOI18N
+            } catch (URISyntaxException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        
+        return Util.getGrayString(super.getHtmlDisplayName(), addon.toString());
     }
 }
 

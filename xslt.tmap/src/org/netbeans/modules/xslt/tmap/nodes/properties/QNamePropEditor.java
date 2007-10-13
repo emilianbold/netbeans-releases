@@ -38,66 +38,65 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.xslt.tmap.nodes.properties;
 
-package org.netbeans.modules.xslt.tmap.nodes;
-
-import org.netbeans.modules.xslt.tmap.model.api.Operation;
-import org.netbeans.modules.xslt.tmap.model.api.Variable;
-import org.netbeans.modules.xslt.tmap.util.Util;
-import org.openide.util.NbBundle;
+import javax.xml.namespace.QName;
+import org.netbeans.modules.xslt.tmap.model.api.TMapComponent;
+import org.netbeans.modules.xslt.tmap.nodes.DecoratedTMapComponent;
+import org.netbeans.modules.xslt.tmap.nodes.TMapComponentNode;
 
 /**
  *
  * @author Vitaly Bychkov
- * @version 1.0
+ * @author nk160297
  */
-public class DecoratedOperation  extends DecoratedTMapComponentAbstract<Operation> {
-
-    public DecoratedOperation(Operation orig) {
-        super(orig);
+public class QNamePropEditor extends StringPropEditor {
+    
+    public QNamePropEditor() {
     }
     
-
-    @Override
-    public String getHtmlDisplayName() {
-        Operation ref = getOriginal();
-        String opName = null;
-        if (ref != null) {
-            opName = Util.getReferenceLocalName(ref.getOperation());
-        }
-        String addon = null;
-        if (opName != null) {
-            addon = TMapComponentNode.WHITE_SPACE+opName; // NOI18N
-        }
-        
-        return Util.getGrayString(super.getHtmlDisplayName(), addon);
+    public boolean isEditable() {
+        return false;
     }
     
-    @Override
-    public String getTooltip() {
-        Operation ref = getOriginal();
-        StringBuffer attributesTooltip = new StringBuffer();
-        if (ref != null) {
-            attributesTooltip.append(
-                    Util.getLocalizedAttribute(ref.getOperation()
-                    , Operation.OPERATION_NAME));
-            
-            Variable inputVar = ref.getInputVariable();
-            attributesTooltip.append(
-                    Util.getLocalizedAttribute(inputVar.getName()
-                    , Operation.INPUT_VARIABLE));
-
-            Variable outputVar = ref.getOutputVariable();
-            attributesTooltip.append(
-                    Util.getLocalizedAttribute(outputVar.getName()
-                    , Operation.OUTPUT_VARIABLE));
+    public String getAsText() {
+        Object value = super.getValue();
+        if (value == null) return "";
+        assert(value instanceof QName);
+        //
+        String retValue = null;
+        QName qValue = (QName)value;
+        //
+        String prefix = qValue.getPrefix();
+        if (prefix == null || prefix.length() == 0) {
+            //
+            // Try calculate prefix here
+            if (myPropertyEnv != null) {
+                Object[] beans = myPropertyEnv.getBeans();
+                if (beans != null && beans.length > 0) {
+                    Object firstBean = beans[0];
+                    if (firstBean != null && firstBean instanceof TMapComponentNode) {
+                        DecoratedTMapComponent refDecObj = ((TMapComponentNode)firstBean).getReference();
+                        TMapComponent refObj = refDecObj == null ? null : refDecObj.getOriginal(); 
+                        if (refObj != null) {
+                            retValue = ResolverUtility.
+                                    qName2DisplayText(qValue, refObj);
+                        }
+                    }
+                }
+            }
+        } else {
+            retValue = ResolverUtility.qName2DisplayText(qValue);
         }
-
-
-        return NbBundle.getMessage(TMapComponentNode.class, 
-                "LBL_LONG_TOOLTIP_HTML_TEMPLATE", super.getName(), 
-                attributesTooltip.toString());        
+        return retValue;
     }
-   
+    
+    public void setAsText(String text) throws java.lang.IllegalArgumentException {
+        if (text == null || text.length() == 0) {
+            setValue(null);
+        } else {
+            setValue(QName.valueOf(text));
+        }
+    }
+    
 }
-

@@ -42,7 +42,11 @@
 package org.netbeans.modules.xslt.tmap.nodes;
 
 import org.netbeans.modules.xslt.tmap.model.api.Invoke;
+import org.netbeans.modules.xslt.tmap.nodes.properties.PropertyType;
+import org.netbeans.modules.xslt.tmap.nodes.properties.PropertyUtils;
 import org.openide.nodes.Children;
+import org.openide.nodes.Node;
+import org.openide.nodes.Sheet;
 import org.openide.util.Lookup;
 
 /**
@@ -59,4 +63,35 @@ public class InvokeNode extends  TMapComponentNode<DecoratedInvoke> {
     public InvokeNode(Invoke ref, Children children, Lookup lookup) {
         super(new DecoratedInvoke(ref), children, lookup);
     }
+    
+
+    protected Sheet createSheet() {
+        Sheet sheet = super.createSheet();
+        if (getReference() == null) {
+            // The related object has been removed!
+            return sheet;
+        }
+        //
+        Sheet.Set mainPropertySet =
+                getPropertySet(sheet);
+        //
+        Node.Property prop;
+        prop = PropertyUtils.registerProperty(this, mainPropertySet,
+                PropertyType.PARTNER_LINK_TYPE,
+                "getPartnerLinkType", "setPartnerLinkType"); // NOI18N
+        prop.setValue("canEditAsText", Boolean.FALSE); // NOI18N
+        //
+        prop = PropertyUtils.registerProperty(this, mainPropertySet,
+                PropertyType.ROLE,
+                "getRole", "setRole"); // NOI18N
+        prop.setValue("canEditAsText", Boolean.FALSE); // NOI18N
+        //
+        prop = PropertyUtils.registerProperty(this, mainPropertySet,
+                PropertyType.OPERATION,
+                "getOperation", "setOperation"); // NOI18N
+        prop.setValue("canEditAsText", Boolean.FALSE); // NOI18N
+        //
+        return sheet;
+    }
+    
 }

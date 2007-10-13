@@ -57,7 +57,7 @@ import org.w3c.dom.Element;
  * @author Vitaly Bychkov
  * @version 1.0
  */
-public class ServiceImpl extends TMapComponentAbstract 
+public class ServiceImpl extends TMapComponentContainerImpl 
     implements Service
 {
 

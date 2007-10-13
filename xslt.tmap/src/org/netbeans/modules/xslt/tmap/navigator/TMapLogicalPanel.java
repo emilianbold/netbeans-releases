@@ -207,12 +207,12 @@ public class TMapLogicalPanel extends JPanel
         
         
         // TODO add delete and some else actions support
-////        actionMap.put(DefaultEditorKit.copyAction,
-////            ExplorerUtils.actionCopy(myExplorerManager));
-////        actionMap.put(DefaultEditorKit.cutAction,
-////            ExplorerUtils.actionCut(myExplorerManager));
-////        actionMap.put(DefaultEditorKit.pasteAction,
-////            ExplorerUtils.actionPaste(myExplorerManager));
+//        actionMap.put(DefaultEditorKit.copyAction,
+//            ExplorerUtils.actionCopy(myExplorerManager));
+//        actionMap.put(DefaultEditorKit.cutAction,
+//            ExplorerUtils.actionCut(myExplorerManager));
+//        actionMap.put(DefaultEditorKit.pasteAction,
+//            ExplorerUtils.actionPaste(myExplorerManager));
 //        actionMap.put(GOTOSOURCE,SystemAction.get(GoToSourceAction.class));
 //        actionMap.put(GOTODIAGRAMM,SystemAction.get(GoToDiagrammAction.class));
         actionMap.put(DELETE, // NOI18N

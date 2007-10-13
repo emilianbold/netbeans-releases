@@ -41,6 +41,10 @@
 package org.netbeans.modules.xslt.tmap.nodes;
 
 import org.netbeans.modules.xslt.tmap.model.api.Transform;
+import org.netbeans.modules.xslt.tmap.model.api.Variable;
+import org.netbeans.modules.xslt.tmap.model.api.VariableReference;
+import org.netbeans.modules.xslt.tmap.util.Util;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -52,5 +56,43 @@ public class DecoratedTransform  extends DecoratedTMapComponentAbstract<Transfor
     public DecoratedTransform(Transform orig) {
         super(orig);
     }
+    
+
+    @Override
+    public String getHtmlDisplayName() {
+        Transform ref = getOriginal();
+        String file = ref == null ? null : ref.getFile();
+
+        String addon = null;
+        if (file != null) {
+            addon = TMapComponentNode.WHITE_SPACE+file; // NOI18N
+        }
+        
+        return Util.getGrayString(super.getHtmlDisplayName(), addon);
+    }
+    
+    @Override
+    public String getTooltip() {
+        Transform ref = getOriginal();
+        StringBuffer attributesTooltip = new StringBuffer();
+        if (ref != null) {
+            attributesTooltip.append(
+                    Util.getLocalizedAttribute(ref.getFile()
+                    , Transform.FILE));
+            
+            attributesTooltip.append(
+                    Util.getLocalizedAttribute(ref.getSource()
+                    , Transform.SOURCE));
+
+            attributesTooltip.append(
+                    Util.getLocalizedAttribute(ref.getResult()
+                    , Transform.RESULT));
+        }
+
+        return NbBundle.getMessage(TMapComponentNode.class, 
+                "LBL_LONG_TOOLTIP_HTML_TEMPLATE", super.getName(), 
+                attributesTooltip.toString());    
+    }
+    
 }
 

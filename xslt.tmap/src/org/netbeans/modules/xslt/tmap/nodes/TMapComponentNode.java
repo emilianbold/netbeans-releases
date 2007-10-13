@@ -42,14 +42,41 @@
 package org.netbeans.modules.xslt.tmap.nodes;
 
 import java.awt.Image;
+import java.awt.datatransfer.Transferable;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import javax.swing.Action;
+import javax.swing.JTree;
+import org.openide.actions.CopyAction;
+import org.openide.actions.CutAction;
+//import org.openide.actions.DeleteAction;
 import org.netbeans.modules.soa.ui.nodes.InstanceRef;
 import org.netbeans.modules.soa.ui.nodes.NodeTypeHolder;
 import org.netbeans.modules.xml.xam.ComponentEvent;
 import org.netbeans.modules.xml.xam.ComponentListener;
+import org.netbeans.modules.xml.xam.Model;
+import org.netbeans.modules.xml.xam.Model.State;
+import org.netbeans.modules.xml.xam.ui.XAMUtils;
+import org.netbeans.modules.xslt.tmap.model.api.TMapComponent;
 import org.netbeans.modules.xslt.tmap.model.api.TMapModel;
+import org.netbeans.modules.xslt.tmap.nodes.actions.ActionType;
+import org.netbeans.modules.xslt.tmap.nodes.actions.DeleteAction;
+import org.netbeans.modules.xslt.tmap.nodes.actions.TMapAbstractNodeAction;
+import org.netbeans.modules.xslt.tmap.nodes.actions.TMapNodeNewType;
+import org.openide.actions.NewAction;
+import org.openide.actions.PasteAction;
+import org.openide.actions.PropertiesAction;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.nodes.Node;
+import org.openide.nodes.Sheet;
 import org.openide.util.Lookup;
+import org.openide.util.actions.SystemAction;
+import org.openide.util.datatransfer.NewType;
+import org.openide.util.datatransfer.PasteType;
 
 /**
  *
@@ -60,6 +87,12 @@ public class TMapComponentNode<T extends DecoratedTMapComponent> extends Abstrac
         implements InstanceRef<T>, NodeTypeHolder<NodeType> 
 {
 
+    public static final String EMPTY_STRING = ""; // NOI18N
+    public static final String WHITE_SPACE = " "; // NOI18N
+
+    public static final String MAIN_SET = "Main"; // NOI18N
+    
+    
     private T myDecoratedComponent; 
     private NodeType myNodeType;
     private Synchronizer synchronizer = new Synchronizer();
@@ -68,16 +101,38 @@ public class TMapComponentNode<T extends DecoratedTMapComponent> extends Abstrac
     private String cachedShortDescription;
     private String cachedHtmlDisplayName;
 
+    private static final Map<ActionType, Action> ACTION_TYPE_MAP
+            = new HashMap<ActionType, Action>();
+    
+    static {
+        ACTION_TYPE_MAP.put(ActionType.REMOVE
+                ,SystemAction.get(DeleteAction.class));
+        ACTION_TYPE_MAP.put(ActionType.COPY
+                , SystemAction.get(CopyAction.class));
+        ACTION_TYPE_MAP.put(ActionType.CUT
+                ,SystemAction.get(CutAction.class));
+        ACTION_TYPE_MAP.put(ActionType.PASTE
+                ,SystemAction.get(PasteAction.class));
+        ACTION_TYPE_MAP.put(ActionType.PROPERTIES
+                , SystemAction.get(PropertiesAction.class));
+        ACTION_TYPE_MAP.put(ActionType.ADD_NEWTYPES
+                , SystemAction.get(NewAction.class));
+        
+
+    }
+
     public TMapComponentNode(T ref, Lookup lookup) {
         this(ref, Children.LEAF, lookup);
     }
     
     public TMapComponentNode(T ref, Children children, Lookup lookup) {
         super(children);
+        assert ref != null;
         setReference(ref);
         myNodeType = NodeType.getNodeType(ref.getOriginal());
         assert myNodeType != null;
         
+        assert ref.getOriginal() != null;
         TMapModel model = ref.getOriginal().getModel();
 
         assert model != null: "Can't create Node for orphaned TMapComponent"; // NOI18N
@@ -127,17 +182,17 @@ public class TMapComponentNode<T extends DecoratedTMapComponent> extends Abstrac
 
     @Override
     public boolean canCopy() {
-        return false;
+        return true;
     }
     
     @Override
     public boolean canCut() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean canDestroy() {
-        return false;
+        return true;
     }
 
     @Override
@@ -264,6 +319,157 @@ public class TMapComponentNode<T extends DecoratedTMapComponent> extends Abstrac
         fireShortDescriptionChange(null,getShortDescription());
     }
 
+    /**
+     * Looks for the Properties Set by the Group enum.
+     * If the group isn't
+     */
+    protected Sheet.Set getPropertySet(
+            Sheet sheet) {
+        Sheet.Set propSet = sheet.get(TMapComponentNode.MAIN_SET);
+        if (propSet == null) {
+            propSet = new Sheet.Set();
+            propSet.setName(TMapComponentNode.MAIN_SET);
+            sheet.put(propSet);
+        }
+        //
+        return propSet;
+    }
+
+    @Override
+    public Action[] getActions(boolean context) {
+        TMapComponent ref = getComponentRef();
+        TMapModel model = ref == null ? null : ref.getModel();
+        Action[] actions = null;
+        if (model !=null 
+                && TMapModel.State.VALID.equals(model.getState())) 
+        {
+            actions = createActionsArray(context);
+        }
+        return  actions == null ? super.getActions(context) : actions;
+    }
+
+    protected ActionType[] getActionsArray() {
+        List<ActionType> actionList = new ArrayList<ActionType>();
+        T ref = getReference(); 
+        
+//        if (ref instanceof Activity) {
+//            actionList.add(ActionType.ADD_FROM_PALETTE);
+//            if (!(ref instanceof Process)) {
+//                actionList.add(ActionType.WRAP);
+//            }
+//            actionList.add(ActionType.SEPARATOR);
+//        }
+//        if (ref instanceof CompositeActivity) {
+//            actionList.add(ActionType.CHANGE_ORDER_ACTION);
+//            actionList.add(ActionType.SEPARATOR);
+//        }
+//        
+//        actionList.add(ActionType.GO_TO_SOURCE);
+//        if (ref instanceof Activity) {
+//            actionList.add(ActionType.GO_TO_DIAGRAMM);
+//        }
+//        if (ref instanceof Activity) {
+//            actionList.add(ActionType.SEPARATOR);
+//            actionList.add(ActionType.MOVE_UP);
+//            actionList.add(ActionType.MOVE_DOWN);
+//            actionList.add(ActionType.SEPARATOR);
+//            actionList.add(ActionType.TOGGLE_BREAKPOINT);
+//        }
+//        actionList.add(ActionType.SEPARATOR);
+        actionList.add(ActionType.REMOVE);
+//        actionList.add(ActionType.SEPARATOR);
+//        actionList.add(ActionType.COPY);
+//        actionList.add(ActionType.CUT);
+//        actionList.add(ActionType.PASTE);
+//        actionList.add(ActionType.SEPARATOR);
+        PropertySet[] propertySets = getPropertySets();
+        if (propertySets != null && propertySets.length > 0) {
+            actionList.add(ActionType.SEPARATOR);
+            actionList.add(ActionType.PROPERTIES);
+        }
+        return actionList.toArray(new ActionType[actionList.size()]);
+    }
+    
+    /**
+     * @return actions type which used to create new elements
+     * used in #getNewTypes
+     */
+    public ActionType[] getAddActionArray() {
+        return new ActionType[0];
+    }
+    
+    /**
+     * @return the new types that can be created in this node
+     */
+    @Override
+    public NewType[] getNewTypes() {
+        List<TMapAbstractNodeAction> actions = getAddActions();
+        if (actions == null || actions.size() < 1) {
+            return super.getNewTypes();
+        }
+        NewType[] newTypes = new NewType[actions.size()];
+        for (int i = 0; i < newTypes.length; i++) {
+            newTypes[i] = new TMapNodeNewType(actions.get(i), this);
+        }
+        return newTypes;
+    }
+    
+    public List<TMapAbstractNodeAction> getAddActions() {
+        ActionType[] actions = getAddActionArray();
+        if (actions == null || actions.length == 0) {
+            return null;
+        }
+        List<TMapAbstractNodeAction> resultAddActions = new ArrayList<TMapAbstractNodeAction>();
+        for (ActionType elem : actions) {
+            if (elem != null) {
+                Action action = createAction(elem);
+                if (action != null
+                        && action instanceof TMapAbstractNodeAction
+                        && ((TMapAbstractNodeAction)action).enable(new Node[] {this})) {
+                    resultAddActions.add((TMapAbstractNodeAction)action);
+                }
+            }
+        }
+        
+        return resultAddActions;
+    }
+    
+    protected Action[] createActionsArray(boolean context) {
+        ActionType[] actions = getActionsArray();
+        if (actions == null) {
+            return null;
+        }
+        
+        Action[] actionsArray = new Action[actions.length];
+        for (int i = 0; i < actions.length; i++) {
+            actionsArray[i] = createAction(actions[i]);
+        }
+        return actionsArray;
+    }
+    
+    public Action createAction(ActionType actionType) {
+        Action action = null;
+        return ACTION_TYPE_MAP.get(actionType);
+    }
+    
+    
+    protected TMapComponent getComponentRef() {
+        T ref = getReference();
+        return ref.getOriginal();
+    }
+
+//    @Override
+//    public Transferable clipboardCopy() throws IOException {
+//        return super.clipboardCopy();
+//    }
+//
+//    @Override
+//    public Transferable clipboardCut() throws IOException {
+//        return super.clipboardCut();
+//    }
+
+    
+    
 //    /**
 //     * Iterates over all registered properties and update them.
 //     */
@@ -311,6 +517,8 @@ public class TMapComponentNode<T extends DecoratedTMapComponent> extends Abstrac
 //            }
 //        }
 //    }
+    
+    
     
     private class Synchronizer implements ComponentListener {
         public Synchronizer() {
@@ -494,6 +702,19 @@ public class TMapComponentNode<T extends DecoratedTMapComponent> extends Abstrac
 //////            updateComplexProperties(event);
 //////        }
         
+    }
+
+    /**
+     * Determines if this node represents a component that is contained
+     * is editable
+     *
+     * @return  true if component is editable, false otherwise.
+     */
+    
+    protected boolean isEditable() {
+        TMapComponent component = getComponentRef();
+        Model model = component == null ? null : component.getModel();
+        return model != null && XAMUtils.isWritable(model);
     }
 
 }

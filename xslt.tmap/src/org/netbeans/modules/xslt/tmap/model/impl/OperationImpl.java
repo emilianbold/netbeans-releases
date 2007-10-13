@@ -60,7 +60,7 @@ import org.w3c.dom.Element;
  * @author Vitaly Bychkov
  * @version 1.0
  */
-public class OperationImpl extends TMapComponentAbstract 
+public class OperationImpl extends TMapComponentContainerImpl 
     implements Operation 
 {
 

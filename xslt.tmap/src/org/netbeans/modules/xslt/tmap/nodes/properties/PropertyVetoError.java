@@ -38,66 +38,49 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.xslt.tmap.nodes.properties;
 
-package org.netbeans.modules.xslt.tmap.nodes;
-
-import org.netbeans.modules.xslt.tmap.model.api.Operation;
-import org.netbeans.modules.xslt.tmap.model.api.Variable;
-import org.netbeans.modules.xslt.tmap.util.Util;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.soa.ui.UserNotification;
+import org.netbeans.modules.xslt.tmap.model.api.events.VetoException;
+import org.openide.ErrorManager;
 
 /**
+ * This throwable is kind of workaround to prevent closing
+ * a property customizer dialog in case of an exception
+ * happens while setting property value.
+ *
+ * The throwable is declared ad extended the Error to prevent catching it 
+ * by the property sheet framework. 
  *
  * @author Vitaly Bychkov
- * @version 1.0
+ * @author nk160297
+ * 
  */
-public class DecoratedOperation  extends DecoratedTMapComponentAbstract<Operation> {
-
-    public DecoratedOperation(Operation orig) {
-        super(orig);
+public class PropertyVetoError extends Error {
+    
+    public PropertyVetoError() {
+        super();
     }
     
-
-    @Override
-    public String getHtmlDisplayName() {
-        Operation ref = getOriginal();
-        String opName = null;
-        if (ref != null) {
-            opName = Util.getReferenceLocalName(ref.getOperation());
-        }
-        String addon = null;
-        if (opName != null) {
-            addon = TMapComponentNode.WHITE_SPACE+opName; // NOI18N
-        }
-        
-        return Util.getGrayString(super.getHtmlDisplayName(), addon);
+    public PropertyVetoError(String message) {
+        super(message);
     }
     
-    @Override
-    public String getTooltip() {
-        Operation ref = getOriginal();
-        StringBuffer attributesTooltip = new StringBuffer();
-        if (ref != null) {
-            attributesTooltip.append(
-                    Util.getLocalizedAttribute(ref.getOperation()
-                    , Operation.OPERATION_NAME));
-            
-            Variable inputVar = ref.getInputVariable();
-            attributesTooltip.append(
-                    Util.getLocalizedAttribute(inputVar.getName()
-                    , Operation.INPUT_VARIABLE));
-
-            Variable outputVar = ref.getOutputVariable();
-            attributesTooltip.append(
-                    Util.getLocalizedAttribute(outputVar.getName()
-                    , Operation.OUTPUT_VARIABLE));
-        }
-
-
-        return NbBundle.getMessage(TMapComponentNode.class, 
-                "LBL_LONG_TOOLTIP_HTML_TEMPLATE", super.getName(), 
-                attributesTooltip.toString());        
+    public PropertyVetoError(String message, Throwable cause) {
+        super(message, cause);
     }
-   
+    
+    public PropertyVetoError(Throwable cause) {
+        super(cause);
+    }
+    
+    public static void defaultProcessing(PropertyVetoError ex) {
+        Throwable cause = ex.getCause();
+        if (cause instanceof VetoException) {
+            UserNotification.showMessage(cause.getLocalizedMessage());
+        } else {
+            ErrorManager.getDefault().notify(cause);
+        }
+    }
+    
 }
-

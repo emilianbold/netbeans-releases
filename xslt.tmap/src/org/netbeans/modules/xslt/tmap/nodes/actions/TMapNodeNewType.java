@@ -38,66 +38,34 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.xslt.tmap.nodes.actions;
 
-package org.netbeans.modules.xslt.tmap.nodes;
-
-import org.netbeans.modules.xslt.tmap.model.api.Operation;
-import org.netbeans.modules.xslt.tmap.model.api.Variable;
-import org.netbeans.modules.xslt.tmap.util.Util;
-import org.openide.util.NbBundle;
+import java.io.IOException;
+import org.netbeans.modules.xslt.tmap.nodes.TMapComponentNode;
+import org.openide.nodes.Node;
+import org.openide.util.datatransfer.NewType;
 
 /**
  *
  * @author Vitaly Bychkov
- * @version 1.0
  */
-public class DecoratedOperation  extends DecoratedTMapComponentAbstract<Operation> {
+public class TMapNodeNewType  extends NewType {
+    private TMapAbstractNodeAction action;
+    private TMapComponentNode node;
 
-    public DecoratedOperation(Operation orig) {
-        super(orig);
+    public TMapNodeNewType(TMapAbstractNodeAction action, TMapComponentNode node) {
+        this.action = action;
+        this.node = node;
+    }
+
+
+    public String getName() {
+        return action.getName();
     }
     
-
-    @Override
-    public String getHtmlDisplayName() {
-        Operation ref = getOriginal();
-        String opName = null;
-        if (ref != null) {
-            opName = Util.getReferenceLocalName(ref.getOperation());
+    public void create() throws IOException {
+        if (action.enable(new Node[] {node})) {
+            action.performAction(new Node[] {node});
         }
-        String addon = null;
-        if (opName != null) {
-            addon = TMapComponentNode.WHITE_SPACE+opName; // NOI18N
-        }
-        
-        return Util.getGrayString(super.getHtmlDisplayName(), addon);
     }
-    
-    @Override
-    public String getTooltip() {
-        Operation ref = getOriginal();
-        StringBuffer attributesTooltip = new StringBuffer();
-        if (ref != null) {
-            attributesTooltip.append(
-                    Util.getLocalizedAttribute(ref.getOperation()
-                    , Operation.OPERATION_NAME));
-            
-            Variable inputVar = ref.getInputVariable();
-            attributesTooltip.append(
-                    Util.getLocalizedAttribute(inputVar.getName()
-                    , Operation.INPUT_VARIABLE));
-
-            Variable outputVar = ref.getOutputVariable();
-            attributesTooltip.append(
-                    Util.getLocalizedAttribute(outputVar.getName()
-                    , Operation.OUTPUT_VARIABLE));
-        }
-
-
-        return NbBundle.getMessage(TMapComponentNode.class, 
-                "LBL_LONG_TOOLTIP_HTML_TEMPLATE", super.getName(), 
-                attributesTooltip.toString());        
-    }
-   
 }
-

@@ -64,7 +64,7 @@ import org.w3c.dom.Element;
  * @author Vitaly Bychkov
  * @version 1.0
  */
-public class TransformImpl extends TMapComponentAbstract 
+public class TransformImpl extends TMapComponentContainerImpl 
     implements Transform 
 {
 
@@ -98,6 +98,10 @@ public class TransformImpl extends TMapComponentAbstract
 
     public void setSource(String source) {
         setAttribute(Transform.SOURCE, TMapAttributes.SOURCE, source);
+    }
+
+    public void setSource(VariableReference source) {
+        setAttribute(Transform.SOURCE, TMapAttributes.SOURCE, source == null ? "" : source.getRefString());
     }
 
     public VariableReference getResult() {

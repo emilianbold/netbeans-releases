@@ -42,7 +42,11 @@
 package org.netbeans.modules.xslt.tmap.nodes;
 
 import org.netbeans.modules.xslt.tmap.model.api.Operation;
+import org.netbeans.modules.xslt.tmap.nodes.properties.PropertyType;
+import org.netbeans.modules.xslt.tmap.nodes.properties.PropertyUtils;
 import org.openide.nodes.Children;
+import org.openide.nodes.Node;
+import org.openide.nodes.Sheet;
 import org.openide.util.Lookup;
 
 /**
@@ -59,5 +63,26 @@ public class OperationNode extends TMapComponentNode<DecoratedOperation> {
     public OperationNode(Operation ref, Children children, Lookup lookup) {
         super(new DecoratedOperation(ref), children, lookup);
     }
+    
+
+    protected Sheet createSheet() {
+        Sheet sheet = super.createSheet();
+        if (getReference() == null) {
+            // The related object has been removed!
+            return sheet;
+        }
+        //
+        Sheet.Set mainPropertySet =
+                getPropertySet(sheet);
+        //
+        Node.Property prop;
+        prop = PropertyUtils.registerProperty(this, mainPropertySet,
+                PropertyType.OPERATION,
+                "getOperation", "setOperation"); // NOI18N
+        prop.setValue("canEditAsText", Boolean.FALSE); // NOI18N
+        //
+        return sheet;
+    }
+    
 }
 

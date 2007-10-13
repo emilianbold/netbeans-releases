@@ -38,66 +38,77 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.xslt.tmap.nodes.properties;
 
-package org.netbeans.modules.xslt.tmap.nodes;
-
-import org.netbeans.modules.xslt.tmap.model.api.Operation;
-import org.netbeans.modules.xslt.tmap.model.api.Variable;
-import org.netbeans.modules.xslt.tmap.util.Util;
-import org.openide.util.NbBundle;
+import java.awt.Component;
+import java.beans.PropertyEditorSupport;
+import org.netbeans.modules.xml.xam.Reference;
+import org.openide.explorer.propertysheet.ExPropertyEditor;
+import org.openide.explorer.propertysheet.PropertyEnv;
 
 /**
  *
  * @author Vitaly Bychkov
- * @version 1.0
+ * @author nk160297
  */
-public class DecoratedOperation  extends DecoratedTMapComponentAbstract<Operation> {
-
-    public DecoratedOperation(Operation orig) {
-        super(orig);
+public class ModelReferenceEditor extends PropertyEditorSupport
+        implements ExPropertyEditor {
+    
+    private Reference myRef;
+    private static StringPropertyCustomizer customizer = null;
+    private PropertyEnv myPropertyEnv = null;
+    
+    /** Creates a new instance of ModelReferenceEditor */
+    public ModelReferenceEditor() {
     }
     
-
-    @Override
-    public String getHtmlDisplayName() {
-        Operation ref = getOriginal();
-        String opName = null;
-        if (ref != null) {
-            opName = Util.getReferenceLocalName(ref.getOperation());
-        }
-        String addon = null;
-        if (opName != null) {
-            addon = TMapComponentNode.WHITE_SPACE+opName; // NOI18N
-        }
-        
-        return Util.getGrayString(super.getHtmlDisplayName(), addon);
+    public String getAsText() {
+        return getAsText(myRef);
     }
     
-    @Override
-    public String getTooltip() {
-        Operation ref = getOriginal();
-        StringBuffer attributesTooltip = new StringBuffer();
-        if (ref != null) {
-            attributesTooltip.append(
-                    Util.getLocalizedAttribute(ref.getOperation()
-                    , Operation.OPERATION_NAME));
-            
-            Variable inputVar = ref.getInputVariable();
-            attributesTooltip.append(
-                    Util.getLocalizedAttribute(inputVar.getName()
-                    , Operation.INPUT_VARIABLE));
-
-            Variable outputVar = ref.getOutputVariable();
-            attributesTooltip.append(
-                    Util.getLocalizedAttribute(outputVar.getName()
-                    , Operation.OUTPUT_VARIABLE));
-        }
-
-
-        return NbBundle.getMessage(TMapComponentNode.class, 
-                "LBL_LONG_TOOLTIP_HTML_TEMPLATE", super.getName(), 
-                attributesTooltip.toString());        
+    public boolean supportsCustomEditor() {
+        return true;
     }
-   
+    
+    public Component getCustomEditor() {
+        customizer = PropertyUtils.propertyCustomizerPool.
+                getObjectByClass(StringPropertyCustomizer.class);
+        customizer.init(myPropertyEnv, this);
+        return customizer;
+    }
+    
+    public Object getValue() {
+        if (myRef != null){
+            try {
+                //check if reference still pointing to valid element
+                myRef.get();
+                return myRef;
+            } catch (IllegalStateException ex){
+                return null;
+            }
+        }
+        return null;
+    }
+    
+    public void setValue(Object newValue) {
+        if (newValue != null) {
+            assert newValue instanceof Reference;
+        }
+        myRef = (Reference)newValue;
+        firePropertyChange();
+    }
+    
+    public void setAsText(String text) throws java.lang.IllegalArgumentException {
+        // DO NOTHING HERE!
+    }
+    
+    public static String getAsText(Reference ref) {
+        String result = ResolverUtility.getNameByRef(ref);
+        return result == null ? "" : result;
+    }
+    
+    public void attachEnv(PropertyEnv newPropertyEnv) {
+        myPropertyEnv = newPropertyEnv;
+    }
+    
 }
-

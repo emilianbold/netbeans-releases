@@ -51,7 +51,7 @@ import org.w3c.dom.Element;
  * @author Vitaly Bychkov
  * @version 1.0
  */
-public class TransformMapImpl extends TMapComponentAbstract 
+public class TransformMapImpl extends TMapComponentContainerImpl 
         implements TransformMap 
 {
     

@@ -38,12 +38,11 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.xslt.tmap.nodes.actions;
 
-package org.netbeans.modules.xslt.tmap.nodes;
-
-import org.netbeans.modules.xslt.tmap.model.api.Operation;
-import org.netbeans.modules.xslt.tmap.model.api.Variable;
-import org.netbeans.modules.xslt.tmap.util.Util;
+import org.netbeans.modules.xslt.tmap.model.api.TMapComponent;
+import org.netbeans.modules.xslt.tmap.model.api.TMapComponentContainer;
+import org.netbeans.modules.xslt.tmap.model.api.TransformMap;
 import org.openide.util.NbBundle;
 
 /**
@@ -51,53 +50,35 @@ import org.openide.util.NbBundle;
  * @author Vitaly Bychkov
  * @version 1.0
  */
-public class DecoratedOperation  extends DecoratedTMapComponentAbstract<Operation> {
-
-    public DecoratedOperation(Operation orig) {
-        super(orig);
-    }
-    
+public class DeleteAction extends TMapAbstractNodeAction {
 
     @Override
-    public String getHtmlDisplayName() {
-        Operation ref = getOriginal();
-        String opName = null;
-        if (ref != null) {
-            opName = Util.getReferenceLocalName(ref.getOperation());
-        }
-        String addon = null;
-        if (opName != null) {
-            addon = TMapComponentNode.WHITE_SPACE+opName; // NOI18N
+    protected String getBundleName() {
+        return NbBundle.getMessage(TMapAbstractNodeAction.class, "CTL_DeleteAction");
+    }
+
+    @Override
+    public ActionType getType() {
+        return ActionType.REMOVE;
+    }
+
+    @Override
+    protected void performAction(TMapComponent[] tmapComponents) {
+        if (!enable(tmapComponents)) {
+            return;
         }
         
-        return Util.getGrayString(super.getHtmlDisplayName(), addon);
+        TMapComponent component2remove = tmapComponents[0];
+        TMapComponentContainer parent = (TMapComponentContainer)component2remove.getParent();
+        assert parent != null;
+        
+        parent.remove(component2remove);
+    }
+
+    @Override
+    protected boolean enable(TMapComponent[] tmapComponents) {
+        return super.enable(tmapComponents) 
+                && !(tmapComponents[0] instanceof TransformMap);
     }
     
-    @Override
-    public String getTooltip() {
-        Operation ref = getOriginal();
-        StringBuffer attributesTooltip = new StringBuffer();
-        if (ref != null) {
-            attributesTooltip.append(
-                    Util.getLocalizedAttribute(ref.getOperation()
-                    , Operation.OPERATION_NAME));
-            
-            Variable inputVar = ref.getInputVariable();
-            attributesTooltip.append(
-                    Util.getLocalizedAttribute(inputVar.getName()
-                    , Operation.INPUT_VARIABLE));
-
-            Variable outputVar = ref.getOutputVariable();
-            attributesTooltip.append(
-                    Util.getLocalizedAttribute(outputVar.getName()
-                    , Operation.OUTPUT_VARIABLE));
-        }
-
-
-        return NbBundle.getMessage(TMapComponentNode.class, 
-                "LBL_LONG_TOOLTIP_HTML_TEMPLATE", super.getName(), 
-                attributesTooltip.toString());        
-    }
-   
 }
-

@@ -41,6 +41,7 @@
 package org.netbeans.modules.xslt.tmap.model.impl;
 
 import java.io.IOException;
+import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -110,5 +111,23 @@ public class TMapModelImpl extends AbstractDocumentModel<TMapComponent> implemen
 
     public TMapComponentFactory getFactory() {
         return myFactory;
+    }
+
+    public <V> V invoke(Callable<V> action) throws Exception {
+//        boolean isInTransaction = isIntransaction();
+        V result = null;
+        
+        try {
+//            if (!isInTransaction) {
+                startTransaction();         
+//            }
+
+            result = action.call();
+        } finally {
+//            if (!isInTransaction) {
+                endTransaction();
+//            }
+        }
+        return result;
     }
 }

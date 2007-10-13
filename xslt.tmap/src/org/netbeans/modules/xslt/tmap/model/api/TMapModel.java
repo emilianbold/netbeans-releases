@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.xslt.tmap.model.api;
 
+import java.util.concurrent.Callable;
 import org.netbeans.modules.xml.xam.dom.DocumentModel;
 
 /**
@@ -60,4 +61,15 @@ public interface TMapModel extends DocumentModel<TMapComponent> {
      * @return factory for tmapComponents
      */
     TMapComponentFactory getFactory();
+    
+    /**
+     * Performs execution inside transaction block
+     * 
+     * @param <V> type for return value.
+     * @param action group of calls to model.
+     * @return return value from action.
+     * @throws Exception {@link Exception} exception that could be thrown by <code>action</code>
+     */
+    <V> V invoke( Callable<V> action ) throws Exception;
+    
 }

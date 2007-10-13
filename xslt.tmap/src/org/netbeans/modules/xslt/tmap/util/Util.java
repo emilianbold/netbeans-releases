@@ -69,13 +69,16 @@ import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
 import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.xam.ModelSource;
+import org.netbeans.modules.xml.xam.Reference;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xslt.tmap.model.api.TMapComponent;
 import org.netbeans.modules.xslt.tmap.model.api.TMapModel;
+import org.netbeans.modules.xslt.tmap.model.api.WSDLReference;
 import org.netbeans.modules.xslt.tmap.model.spi.TMapModelFactory;
 import org.netbeans.modules.xslt.tmap.model.xsltmap.TransformationDesc;
 import org.netbeans.modules.xslt.tmap.model.xsltmap.XmlUtil;
 import org.netbeans.modules.xslt.tmap.model.xsltmap.XsltMapConst;
+import org.netbeans.modules.xslt.tmap.nodes.TMapComponentNode;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
@@ -85,6 +88,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -612,4 +616,102 @@ public class Util {
       catch (BadLocationException e) {
       }
     }
+
+// html names/tooltip/message presenter rel methods
+    public static String getGrayString(String message) {
+        return getGrayString("", message);
+    }
+    
+    public static String getGrayString(String nonGrayPrefix, String message) {
+        return message == null ? nonGrayPrefix : "<html>"+getCorrectedHtmlRenderedString(nonGrayPrefix) // NOI18N
+        +"<font color='"+GRAY_COLOR+"'>"+getCorrectedHtmlRenderedString(message)+"</font></html>";// NOI18N
+    }
+    
+    public static String getGrayString(String nonGrayPrefix, String message
+            , String nonGraySuffix) {
+        return getGrayString(nonGrayPrefix,message,nonGraySuffix, true);
+    }
+    
+    public static String getGrayString(String nonGrayPrefix, String message
+            , String nonGraySuffix, boolean isSetHtmlHeader) {
+        String htmlHeader = isSetHtmlHeader ? "<html>" : ""; // NOI18N
+        String htmlFooter = isSetHtmlHeader ? "</html>" : ""; // NOI18N
+        return message == null ? nonGrayPrefix : htmlHeader
+                +getCorrectedHtmlRenderedString(nonGrayPrefix)
+                +"<font color='"+GRAY_COLOR+"'>" // NOI18N
+                +getCorrectedHtmlRenderedString(message)
+                +"</font>" // NOI18N
+                +(nonGraySuffix == null ? ""
+                : getCorrectedHtmlRenderedString(nonGraySuffix))
+                +htmlFooter;// NOI18N
+    }
+
+    public static final String getCorrectedHtmlRenderedString(String htmlString) {
+        if (htmlString == null) {
+            return null;
+        }
+        htmlString = htmlString.replaceAll("&amp;","&"); // NOI18n
+        htmlString = htmlString.replaceAll("&gt;",">;"); // NOI18n
+        htmlString = htmlString.replaceAll("&lt;","<"); // NOI18n
+        
+        htmlString = htmlString.replaceAll("&","&amp;"); // NOI18n
+        htmlString = htmlString.replaceAll(">","&gt;"); // NOI18n
+        htmlString = htmlString.replaceAll("<","&lt;"); // NOI18n
+        return htmlString;
+    }
+  
+  public static FileObject getSrcFolder(Project project) {
+    return project.getProjectDirectory().getFileObject("src");
+  }
+
+  public static String getReferenceLocalName(WSDLReference wsdlRef) {
+      if (wsdlRef == null) {
+          return null;
+      }
+      
+      QName refQname = wsdlRef.getQName();
+      return refQname == null ? null : refQname.getLocalPart();
+  }
+  
+  public static String getReferenceLocalName(Reference ref) {
+      if (ref == null) {
+          return null;
+      }
+      
+      return ref == null ? null : ref.getRefString();
+  }
+
+        public static String getLocalizedAttribute(Reference attributeRef, String attributeName) {
+            if (attributeRef == null) {
+                return TMapComponentNode.EMPTY_STRING;
+            }
+            
+            attributeName = attributeName == null ? "" : attributeName;
+            return NbBundle.getMessage(
+                    TMapComponentNode.class,
+                    "LBL_ATTRIBUTE_HTML_TEMPLATE", // NOI18N
+                    attributeName,
+                    attributeRef.getRefString()
+                    );
+        }
+        
+        public static String getLocalizedAttribute(String attributeValue, String attributeName) {
+            if (attributeValue == null) {
+                return TMapComponentNode.EMPTY_STRING;
+            }
+            
+            attributeName = attributeName == null ? TMapComponentNode.EMPTY_STRING : attributeName;
+            attributeValue = attributeValue == null ? TMapComponentNode.EMPTY_STRING : attributeValue;
+            return NbBundle.getMessage(
+                    TMapComponentNode.class,
+                    "LBL_ATTRIBUTE_HTML_TEMPLATE", // NOI18N
+                    attributeName,
+                    attributeValue
+                    );
+        }
+  
+  
+  private static String GRAY_COLOR = "#999999";
+    
+
 }

@@ -62,6 +62,8 @@ public interface Transform extends TMapComponent, ReferenceCollection {
     
     VariableReference getSource();
     
+    void setSource(VariableReference source);
+
     void setSource(String source);
     
     VariableReference getResult();
