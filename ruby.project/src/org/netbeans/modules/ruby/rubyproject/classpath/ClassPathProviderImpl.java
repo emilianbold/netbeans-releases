@@ -245,7 +245,20 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
                     cp = ClassPathFactory.createClassPath(new SourcePathImplementation (this.sourceRoots, helper, evaluator));
                     break;
                 case 1:
-                    cp = ClassPathFactory.createClassPath(new SourcePathImplementation (this.testSourceRoots));
+                    //cp = ClassPathFactory.createClassPath(new SourcePathImplementation (this.testSourceRoots));
+                    // See #95927: I need to get the testRoots to also include the source roots.
+                    // For Java I assume this is done not via source paths but via compile paths.
+                    // Since I don't use compile paths I can't do that (well, I could make compile paths
+                    // work but I'm afraid to do that 12 hours before high resistance kicks in for beta2)
+                    // so the safest bet is just to include all the source paths here, the way it's done
+                    // for Rails projects.  So, I have a simple delegating class path implementation which
+                    // just delegates its method calls and merges the results as appropriate.
+                    cp = ClassPathFactory.createClassPath(
+                            new GroupClassPathImplementation(
+                            new SourcePathImplementation[] {
+                                new SourcePathImplementation(this.testSourceRoots),
+                                new SourcePathImplementation (this.sourceRoots, helper, evaluator)
+                    }));
                     break;
             }
         }
