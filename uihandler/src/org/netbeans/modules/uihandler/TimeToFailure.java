@@ -65,9 +65,8 @@ final class TimeToFailure {
             if ( time - lastAction < TRESHOLD ) {
                 totalTime += time - lastAction;
                 prefs.putLong(MTTF,totalTime);
-            } else {
-               lastAction = time;
-            }
+            } 
+            lastAction = time;
         }
         
     }

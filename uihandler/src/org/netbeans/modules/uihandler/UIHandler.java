@@ -96,6 +96,7 @@ implements ActionListener, Runnable, Callable<JButton> {
                 Installer.writeOut(r);
                 SUPPORT.firePropertyChange(null, null, null);
                 r = null;
+                TimeToFailure.logAction();
             }
         }
         WriteOut wo = new WriteOut();
