@@ -114,7 +114,7 @@ public class LocalDownloadSupport {
     public Collection<UpdateUnit> getInstalledUpdateUnits () {
         Collection<UpdateUnit> res = new HashSet<UpdateUnit> ();
         for (UpdateUnit uu : getUpdateUnits ()) {
-            if (uu.getInstalled () != null || uu.isPending ()) {
+            if ((uu.getInstalled () != null && uu.getAvailableUpdates ().isEmpty()) || uu.isPending ()) {
                 res.add (uu);
             }
         }
