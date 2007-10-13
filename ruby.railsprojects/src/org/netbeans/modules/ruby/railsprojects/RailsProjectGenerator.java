@@ -67,8 +67,6 @@ import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.modules.InstalledFileLocator;
@@ -587,46 +585,6 @@ public class RailsProjectGenerator {
         return h;
     }
 
-    private static void createMainClass( String mainClassName, FileObject srcFolder, String templateName ) throws IOException {
-        
-        int lastDotIdx = mainClassName.lastIndexOf( '/' );
-        String mName, pName;
-        if ( lastDotIdx == -1 ) {
-            mName = mainClassName.trim();
-            pName = null;
-        }
-        else {
-            mName = mainClassName.substring( lastDotIdx + 1 ).trim();
-            pName = mainClassName.substring( 0, lastDotIdx ).trim();
-        }
-        
-        if ( mName.length() == 0 ) {
-            return;
-        }
-        
-        FileObject mainTemplate = Repository.getDefault().getDefaultFileSystem().findResource( templateName );
-
-        if ( mainTemplate == null ) {
-            return; // Don't know the template
-        }
-                
-        DataObject mt = DataObject.find( mainTemplate );
-        
-        FileObject pkgFolder = srcFolder;
-        if ( pName != null ) {
-            String fName = pName.replace( '.', '/' ); // NOI18N
-            pkgFolder = FileUtil.createFolder( srcFolder, fName );        
-        }
-        DataFolder pDf = DataFolder.findFolder( pkgFolder );
-        // BEGIN SEMPLICE MODIFICATIONS
-        int extension = mName.lastIndexOf('.');
-        if (extension != -1) {
-            mName = mName.substring(0, extension);
-        }
-        // END SEMPLICE MODIFICATIONS
-        mt.createFromTemplate( pDf, mName );
-        
-    }
 }
 
 
