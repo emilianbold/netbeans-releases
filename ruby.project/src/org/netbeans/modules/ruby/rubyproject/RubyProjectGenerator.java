@@ -45,7 +45,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
-import java.util.Stack;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.ruby.rubyproject.ui.customizer.RubyProjectProperties;
@@ -57,7 +56,6 @@ import org.netbeans.modules.ruby.spi.project.support.rake.ReferenceHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.Mutex;
@@ -88,7 +86,7 @@ public class RubyProjectGenerator {
      * @throws IOException in case something went wrong
      */
     public static RakeProjectHelper createProject(File dir, String name, String mainClass) throws IOException {
-        FileObject dirFO = createProjectDir (dir);
+        FileObject dirFO = FileUtil.createFolder(dir);
         RakeProjectHelper h = createProject(dirFO, name, "lib", "test", mainClass, false); //NOI18N
         Project p = ProjectManager.getDefault().findProject(dirFO);
         ProjectManager.getDefault().saveProject(p);
@@ -113,7 +111,7 @@ public class RubyProjectGenerator {
     public static RakeProjectHelper createProject(final File dir, final String name,
             final File[] sourceFolders, final File[] testFolders) throws IOException {
         assert sourceFolders != null && testFolders != null: "Package roots can't be null";   //NOI18N
-        final FileObject dirFO = createProjectDir (dir);
+        final FileObject dirFO = FileUtil.createFolder(dir);
         // this constructor creates only java application type
         final RakeProjectHelper h = createProject(dirFO, name, null, null, null, false);
         final RubyProject p = (RubyProject) ProjectManager.getDefault().findProject(dirFO);
@@ -298,34 +296,6 @@ public class RubyProjectGenerator {
         return h;
     }
 
-    private static FileObject createProjectDir (File dir) throws IOException {
-        Stack<String> stack = new Stack<String>();
-        while (!dir.exists()) {
-            stack.push (dir.getName());
-            dir = dir.getParentFile();
-        }        
-        FileObject dirFO = FileUtil.toFileObject (dir);
-        if (dirFO == null) {
-            refreshFileSystem(dir);
-            dirFO = FileUtil.toFileObject (dir);
-        }
-        assert dirFO != null;
-        while (!stack.isEmpty()) {
-            dirFO = dirFO.createFolder(stack.pop());
-        }        
-        return dirFO;
-    }   
-    
-    private static void refreshFileSystem (final File dir) throws FileStateInvalidException {
-        File rootF = dir;
-        while (rootF.getParentFile() != null) {
-            rootF = rootF.getParentFile();
-        }
-        FileObject dirFO = FileUtil.toFileObject(rootF);
-        assert dirFO != null : "At least disk roots must be mounted! " + rootF; // NOI18N
-        dirFO.getFileSystem().refresh(false);
-    }
-    
     private static DataObject createFromTemplate( String mainClassName, FileObject srcFolder, String templateName ) throws IOException {
         int lastDotIdx = mainClassName.lastIndexOf( '/' );
         String mName, pName;

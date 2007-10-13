@@ -44,7 +44,6 @@ package org.netbeans.modules.ruby.railsprojects;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.Stack;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -69,7 +68,6 @@ import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -82,10 +80,12 @@ import org.w3c.dom.Element;
 
 /**
  * Creates a RailsProject from scratch according to some initial configuration.
+ * 
  * @todo Take the "README" file in the Rails project and run it through rdoc and
  *   display in internal HTML viewer?
  */
 public class RailsProjectGenerator {
+    
     public static final RegexpOutputRecognizer RAILS_GENERATOR =
         new RegexpOutputRecognizer("^   (   create|    force|identical|     skip)\\s+([\\w|/]+\\.(rb|mab|rjs|rxml|rake|erb|builder|rhtml|yml|js|html|cgi|fcgi|txt|png|gif|css))\\s*$", // NOI18N
             2, -1, -1);
@@ -104,7 +104,7 @@ public class RailsProjectGenerator {
      */
     public static RakeProjectHelper createProject(File dir, String name, boolean create, 
             String database, boolean jdbc, boolean deploy) throws IOException {
-        FileObject dirFO = createProjectDir (dir);
+        FileObject dirFO = FileUtil.createFolder(dir);
         boolean createJavaDb = false;
         boolean createJdbc = false;
         
@@ -395,7 +395,7 @@ public class RailsProjectGenerator {
 //    public static RakeProjectHelper createProject(final File dir, final String name,
 //                                                  final File[] sourceFolders, final File[] testFolders, final String manifestFile) throws IOException {
 //        assert sourceFolders != null && testFolders != null: "Package roots can't be null";   //NOI18N
-//        final FileObject dirFO = createProjectDir (dir);
+//        final FileObject dirFO = FileUtil.createFolder(dir);
 //        // this constructor creates only java application type
 //        final RakeProjectHelper h = createProject(dirFO, name, null, null, null, manifestFile, false);
 //        final RailsProject p = (RailsProject) ProjectManager.getDefault().findProject(dirFO);
@@ -586,35 +586,6 @@ public class RailsProjectGenerator {
         h.putProperties(RakeProjectHelper.PROJECT_PROPERTIES_PATH, ep);        
         return h;
     }
-
-    private static FileObject createProjectDir (File dir) throws IOException {
-        Stack<String> stack = new Stack<String>();
-        while (!dir.exists()) {
-            stack.push (dir.getName());
-            dir = dir.getParentFile();
-        }        
-        FileObject dirFO = FileUtil.toFileObject (dir);
-        if (dirFO == null) {
-            refreshFileSystem(dir);
-            dirFO = FileUtil.toFileObject (dir);
-        }
-        assert dirFO != null;
-        while (!stack.isEmpty()) {
-            dirFO = dirFO.createFolder(stack.pop());
-        }        
-        return dirFO;
-    }   
-    
-    private static void refreshFileSystem (final File dir) throws FileStateInvalidException {
-        File rootF = dir;
-        while (rootF.getParentFile() != null) {
-            rootF = rootF.getParentFile();
-        }
-        FileObject dirFO = FileUtil.toFileObject(rootF);
-        assert dirFO != null : "At least disk roots must be mounted! " + rootF; // NOI18N
-        dirFO.getFileSystem().refresh(false);
-    }
-    
 
     private static void createMainClass( String mainClassName, FileObject srcFolder, String templateName ) throws IOException {
         
