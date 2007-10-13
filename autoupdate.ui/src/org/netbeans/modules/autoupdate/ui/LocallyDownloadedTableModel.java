@@ -117,31 +117,33 @@ public class LocallyDownloadedTableModel extends UnitCategoryTableModel {
     public Object getValueAt(int row, int col) {
         Object res = null;
         Unit u = getUnitAtRow(row);
-        boolean isAvailable = (u instanceof Unit.Available);
-        switch (col) {
-        case 0 :
-            res = u.isMarked() ? Boolean.TRUE : Boolean.FALSE;
-            break;
-        case 1 :
-            res = u.getDisplayName();
-            break;
-        case 2 :
-            res = u.getCategoryName();
-            break;
-        case 3 :
-            if (isAvailable) {
-                res = ((Unit.Available)u).getAvailableVersion();
-            } else {
-                res = ((Unit.Update)u).getAvailableVersion();
+        if (u != null) {
+            boolean isAvailable = (u instanceof Unit.Available);
+            switch (col) {
+            case 0 :
+                res = u.isMarked() ? Boolean.TRUE : Boolean.FALSE;
+                break;
+            case 1 :
+                res = u.getDisplayName();
+                break;
+            case 2 :
+                res = u.getCategoryName();
+                break;
+            case 3 :
+                if (isAvailable) {
+                    res = ((Unit.Available)u).getAvailableVersion();
+                } else {
+                    res = ((Unit.Update)u).getAvailableVersion();
+                }
+                break;
+            case 4 :
+                if (isAvailable) {
+                    res = ((Unit.Available)u).getSize();
+                } else {
+                    res = ((Unit.Update)u).getSize();
+                }
+                break;
             }
-            break;
-        case 4 :
-            if (isAvailable) {
-                res = ((Unit.Available)u).getSize();
-            } else {
-                res = ((Unit.Update)u).getSize();
-            }
-            break;
         }
         
         return res;
