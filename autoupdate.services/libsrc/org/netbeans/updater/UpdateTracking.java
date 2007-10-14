@@ -123,19 +123,6 @@ public final class UpdateTracking {
     // Various factory and utility methods
     //
     
-    /** Finds update tracking for given cluster root. Automatically creates
-     * the cluster if this is user dir.
-     *
-     * @path root of a cluster
-     * @return the tracking for that cluster
-     */    
-    public static UpdateTracking getTracking (File path) {
-        // bugfix #54046: the cluster for install must be normalized
-        path = new File(path.toURI ().normalize ()).getAbsoluteFile ();
-        
-        return getTracking (path, path.toString().equals (getUserDir ().getPath ()));
-    }
-    
     /** Finds update tracking for given cluster root.
      * @path root of a cluster
      * @param createIfDoesNotExists should new tracking be created if it does not exists
@@ -195,14 +182,19 @@ public final class UpdateTracking {
      * @return the File directory.
      */
     public static File getPlatformDir () {
-        return new File (System.getProperty ("netbeans.home")); // NOI18N
+        String platform = System.getProperty ("netbeans.home");
+        return platform == null ? null : new File (platform); // NOI18N
     }
     
     public static File getUserDir () {
         // bugfix #50242: the property "netbeans.user" can return dir with non-normalized file e.g. duplicate //
         // and path and value of this property wrongly differs
-        File userDir = new File (System.getProperty ("netbeans.user"));
-        userDir = new File(userDir.toURI ().normalize ()).getAbsoluteFile ();
+        String user = System.getProperty ("netbeans.user");
+        File userDir = null;
+        if (user != null) {
+            userDir = new File (user);
+            userDir = new File (userDir.toURI ().normalize ()).getAbsoluteFile ();
+        }
         
         return userDir;
     }
@@ -217,7 +209,9 @@ public final class UpdateTracking {
         
         if (includeUserDir) {
             File ud = getUserDir ();
-            files.add (ud);
+            if (ud != null) {
+                files.add(ud);
+            }
         }
         
         String dirs = System.getProperty("netbeans.dirs"); // NOI18N
@@ -231,7 +225,9 @@ public final class UpdateTracking {
         
         
         File id = getPlatformDir ();
-        files.add (id);
+        if (id != null) {
+            files.add(id);
+        }
         
         return java.util.Collections.unmodifiableList (files);
     }
@@ -775,12 +771,12 @@ public final class UpdateTracking {
                 e_module.appendChild( e_version );
                 Iterator it3 = ver.getFiles().iterator();
                 while ( it3.hasNext() ) {
-                    ModuleFile file = (ModuleFile)it3.next();
+                    ModuleFile moduleFile = (ModuleFile)it3.next();
                     e_file = document.createElement(ELEMENT_FILE);
-                    e_file.setAttribute(ATTR_FILE_NAME, file.getName());
-                    e_file.setAttribute(ATTR_CRC, file.getCrc());
-                    if ( file.getLocaleversion() != null )
-                        e_file.setAttribute(ATTR_VERSION, file.getLocaleversion());
+                    e_file.setAttribute(ATTR_FILE_NAME, moduleFile.getName());
+                    e_file.setAttribute(ATTR_CRC, moduleFile.getCrc());
+                    if ( moduleFile.getLocaleversion() != null )
+                        e_file.setAttribute(ATTR_VERSION, moduleFile.getLocaleversion());
                     e_version.appendChild( e_file );                
                 }
             }

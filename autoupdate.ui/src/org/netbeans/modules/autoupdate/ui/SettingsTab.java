@@ -49,6 +49,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
@@ -302,20 +303,33 @@ public class SettingsTab extends javax.swing.JPanel {
     private void cbGlobalInstallActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbGlobalInstallActionPerformed
     if (cbGlobalInstall.isSelected ()) {
         // check write permissions
-        for (File f : Utilities.sharedDirs ()) {
-            if (f.exists () && f.isDirectory () && ! f.canWrite ()) {
-                NotifyDescriptor nd = new NotifyDescriptor (NbBundle.getMessage (SettingsTab.class, "SettingsTab.cbSharedInstall.ReadOnlyMessage", f),
-                        NbBundle.getMessage (SettingsTab.class, "SettingsTab.cbSharedInstall.ReadOnlyTitle"),
-                        NotifyDescriptor.ERROR_MESSAGE,
-                        NotifyDescriptor.ERROR_MESSAGE,
-                        new Object [] { NotifyDescriptor.OK_OPTION }, // options
-                        null); // default option
-                DialogDisplayer.getDefault ().notifyLater (nd);
-                cbGlobalInstall.setSelected (false);
-                return ;
+        Collection<File> dirs = Utilities.sharedDirs ();
+        if (dirs.isEmpty ()) {
+            NotifyDescriptor nd = new NotifyDescriptor (NbBundle.getMessage (SettingsTab.class, "SettingsTab.cbSharedInstall.NoSharedMessage"),
+                    NbBundle.getMessage (SettingsTab.class, "SettingsTab.cbSharedInstall.NoSharedTitle"),
+                    NotifyDescriptor.ERROR_MESSAGE,
+                    NotifyDescriptor.ERROR_MESSAGE,
+                    new Object [] { NotifyDescriptor.OK_OPTION }, // options
+                    null); // default option
+            DialogDisplayer.getDefault ().notifyLater (nd);
+            cbGlobalInstall.setSelected (false);
+            return ;
+        } else {
+            for (File f : dirs) {
+                if (f.exists () && f.isDirectory () && ! f.canWrite ()) {
+                    NotifyDescriptor nd = new NotifyDescriptor (NbBundle.getMessage (SettingsTab.class, "SettingsTab.cbSharedInstall.ReadOnlyMessage", f),
+                            NbBundle.getMessage (SettingsTab.class, "SettingsTab.cbSharedInstall.ReadOnlyTitle"),
+                            NotifyDescriptor.ERROR_MESSAGE,
+                            NotifyDescriptor.ERROR_MESSAGE,
+                            new Object [] { NotifyDescriptor.OK_OPTION }, // options
+                            null); // default option
+                    DialogDisplayer.getDefault ().notifyLater (nd);
+                    cbGlobalInstall.setSelected (false);
+                    return ;
+                }
             }
+            Utilities.setGlobalInstallation (true);
         }
-        Utilities.setGlobalInstallation (true);
     } else {
         Utilities.setGlobalInstallation (false);
     }

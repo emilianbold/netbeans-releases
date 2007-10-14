@@ -815,10 +815,10 @@ public final class ModuleUpdater extends Thread {
         }
         
         private String replaceVars(String original) {
-            original = replaceAll(original,VAR_IDE_HOME,
-                org.netbeans.updater.UpdateTracking.getPlatformDir ().getPath());
-            original = replaceAll(original,VAR_IDE_USER,
-                org.netbeans.updater.UpdateTracking.getPlatformDir ().getPath());            
+            original = replaceAll(original, VAR_IDE_HOME,
+                UpdateTracking.getPlatformDir () == null ? "" : UpdateTracking.getPlatformDir ().getPath());
+            original = replaceAll(original, VAR_IDE_USER,
+                UpdateTracking.getPlatformDir () == null ? "" : UpdateTracking.getPlatformDir ().getPath());
             original = replaceAll(original,VAR_FILE_SEPARATOR,
                 UpdateTracking.FILE_SEPARATOR);            
             original = replaceAll(original,VAR_JAVA_HOME,

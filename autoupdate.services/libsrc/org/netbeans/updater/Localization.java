@@ -207,7 +207,10 @@ class Localization {
         BufferedReader in = null;
         String s = null;
         try {
-            File brandf = new File (org.netbeans.updater.UpdateTracking.getPlatformDir(),
+            if (UpdateTracking.getPlatformDir () == null) {
+                return s;
+            }
+            File brandf = new File (UpdateTracking.getPlatformDir(),
                     "lib" + FILE_SEPARATOR + "branding");  // NOI18N
             in = new BufferedReader(new FileReader(brandf));
             if (in.ready()) {
