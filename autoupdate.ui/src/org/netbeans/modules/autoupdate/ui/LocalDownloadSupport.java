@@ -104,7 +104,7 @@ public class LocalDownloadSupport {
             synchronized(LocalDownloadSupport.class) {
                 updateUnits = null;
             }
-            getPreferences ().put(LOCAL_DOWNLOAD_DIRECTORY_KEY, chooser.getCurrentDirectory ().getAbsolutePath ()); // NOI18N 
+            getPreferences ().put(LOCAL_DOWNLOAD_DIRECTORY_KEY, chooser.getCurrentDirectory ().getAbsolutePath ());
             fileList.addFiles(chooser.getSelectedFiles());
             return true;
         }
@@ -207,7 +207,7 @@ public class LocalDownloadSupport {
         }
 
         public String getDescription () {
-            return getBundle ("CTL_FileFilterDescription");
+            return getBundle ("CTL_FileFilterDescription"); // NOI18N
         }
     }
     
@@ -258,9 +258,9 @@ public class LocalDownloadSupport {
         
         private static Set<File> loadPresistentState() {
             Set<File> retval = new HashSet<File>();
-            String files = getPreferences().get(LOCAL_DOWNLOAD_FILES, null); // NOI18N
+            String files = getPreferences().get(LOCAL_DOWNLOAD_FILES, null);
             if (files != null) {
-                String[] fileArray = files.split(",");                
+                String[] fileArray = files.split(","); // NOI18N  
                 for (String file : fileArray) {
                     retval.add(new File(file));
                 }                
@@ -275,7 +275,7 @@ public class LocalDownloadSupport {
                     if (sb == null) {
                         sb = new StringBuilder(file.getAbsolutePath());
                     } else {
-                        sb.append(',').append(file.getAbsolutePath());
+                        sb.append(',').append(file.getAbsolutePath()); // NOI18N
                     }
                 }
             } 

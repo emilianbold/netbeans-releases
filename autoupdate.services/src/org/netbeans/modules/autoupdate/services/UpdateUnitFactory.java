@@ -52,8 +52,6 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -151,39 +149,24 @@ public class UpdateUnitFactory {
         //assert !SwingUtilities.isEventDispatchThread();
         resetRunTime ("Measuring UpdateUnitFactory.getUpdateUnits (" + provider.getDisplayName () + ")"); // NOI18N
         
-        // prepare items accessible in provider
-        Collection<UpdateItem> itemsFromProvider = null;
-        
         try {
-            itemsFromProvider = provider.getUpdateItems ().values();
+            provider.getUpdateItems ().values();
             reportRunTime ("Get itemsFromProvider for " + provider.getDisplayName ());
         } catch (IOException ioe) {
             log.log (Level.INFO, "Cannot read UpdateItems from UpdateProvider " + provider, ioe);
-            itemsFromProvider = Collections.emptySet ();
         }
         
-        // check installed units
-        Map<String, UpdateUnit> temp  = appendUpdateItems (
-                new HashMap<String, UpdateUnit> (),
-                InstalledModuleProvider.getDefault ());
-        reportRunTime ("Get appendUpdateItems installed modules.");
-        
         // append units from provider
-        temp = appendUpdateItems (temp, provider);
+        Map<String, UpdateUnit> temp = appendUpdateItems (new HashMap<String, UpdateUnit> (), provider);
         reportRunTime ("Get appendUpdateItems for " + provider.getDisplayName ());
         
-        assert itemsFromProvider != null : provider + " UpdateProvider cannot returns null items.";
         Map<String, UpdateUnit> retval = new HashMap<String, UpdateUnit>();
-        for (UpdateItem updateItem : itemsFromProvider) {
-            UpdateItemImpl itemImpl = Trampoline.SPI.impl(updateItem);
-            UpdateUnit unit = temp.get (itemImpl.getCodeName ());
-            if (unit != null) {
-                retval.put (itemImpl.getCodeName (), unit);
-            }            
+        for (UpdateUnit unit : temp.values ()) {
+            retval.put (unit.getCodeName (), mergeInstalledUpdateUnit (unit));
         }
         reportRunTime ("Get filltering by " + provider.getDisplayName ());
         
-        return retval;
+        return temp;
     }
     
     Map<String, UpdateUnit> appendUpdateItems (Map<String, UpdateUnit> originalUnits, UpdateProvider provider) {
@@ -323,6 +306,15 @@ public class UpdateUnitFactory {
         // set UpdateUnit into element
         elImpl.setUpdateUnit (unit);
         
+    }
+    
+    private UpdateUnit mergeInstalledUpdateUnit (UpdateUnit uu) {
+        UpdateUnit fromCache = UpdateManagerImpl.getInstance ().getUpdateUnit (uu.getCodeName ());
+        if (fromCache != null && fromCache.getInstalled () != null) {
+            UpdateUnitImpl impl = Trampoline.API.impl (uu);
+            impl.setInstalled (fromCache.getInstalled ());
+        }
+        return uu;
     }
     
     private void resetRunTime (String msg) {

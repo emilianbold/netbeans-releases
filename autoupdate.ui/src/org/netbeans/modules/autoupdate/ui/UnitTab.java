@@ -92,7 +92,6 @@ import org.netbeans.modules.autoupdate.ui.wizards.OperationWizardModel.Operation
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
-import org.openide.modules.ModuleInfo;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -1533,12 +1532,13 @@ public class UnitTab extends javax.swing.JPanel {
                     if (pluginNames.length () > 0) {
                         pluginNames.append (',').append (' ');//NOI18N
                     }
-                    List<UpdateElement> elements = updateUnit.getAvailableUpdates ();
-                    if (elements.size () > 0) {
-                        pluginNames.append (elements.get (0).getDisplayName ());
+                    UpdateElement element = updateUnit.getInstalled ();
+                    if (element != null) {
+                        pluginNames.append (element.getDisplayName ());
+                    } else if (! updateUnit.getAvailableUpdates ().isEmpty ()) {
+                        pluginNames.append (updateUnit.getAvailableUpdates ().get (0).getDisplayName ());
                     } else {
-                        ModuleInfo m = ModuleProvider.getInstalledModules ().get (updateUnit.getCodeName ());
-                        pluginNames.append (m != null ? m.getDisplayName () : updateUnit.getCodeName ());
+                        pluginNames.append (updateUnit.getCodeName ());
                     }
                 }
                 if (installed.size () == 1) {

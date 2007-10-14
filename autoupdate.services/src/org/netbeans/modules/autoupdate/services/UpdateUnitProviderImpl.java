@@ -132,7 +132,7 @@ public final class UpdateUnitProviderImpl {
     }
     
     public List<UpdateUnit> getUpdateUnits (UpdateManager.TYPE... types) {
-        return UpdateManagerImpl.getInstance().getUpdateUnits (getUpdateProvider (), types);
+        return UpdateManagerImpl.getUpdateUnits (getUpdateProvider (), types);
     }
     
     /** Make refresh of content of the provider. The content can by read from
