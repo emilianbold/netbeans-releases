@@ -55,6 +55,7 @@ import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.ModificationResult.Difference;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.spi.DiffElement;
 import org.netbeans.modules.refactoring.java.api.UseSuperTypeRefactoring;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
@@ -156,7 +157,7 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
                     complController.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
 
                     FileObject fo = subClassHandle.getFileObject();
-                    ClasspathInfo classpathInfo = getClasspathInfo(refactoring);
+                    ClasspathInfo classpathInfo = JavaRefactoringUtils.getClasspathInfoFor(fo);
 
                     ClassIndex clsIndx = classpathInfo.getClassIndex();
                     TypeElement javaClassElement = (TypeElement) subClassHandle.
@@ -167,26 +168,27 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
 
                     if (!refFileObjSet.isEmpty()) {
                         fireProgressListenerStart(AbstractRefactoring.PREPARE, refFileObjSet.size());
-
-                        Collection<ModificationResult> results = processFiles(refFileObjSet, new FindRefTask(subClassHandle, refactoring.getTargetSuperType()));
-                        elemsBag.registerTransaction(new RetoucheCommit(results));
-                        for (ModificationResult result : results) {
-                            for (FileObject fileObj : result.getModifiedFileObjects()) {
-                                for (Difference diff : result.getDifferences(fileObj)) {
-                                    String old = diff.getOldText();
-                                    if (old != null) {
-                                        elemsBag.add(refactoring, DiffElement.create(diff, fileObj, result));
+                        try{
+                            Collection<ModificationResult> results = processFiles(refFileObjSet, new FindRefTask(subClassHandle, refactoring.getTargetSuperType()));
+                            elemsBag.registerTransaction(new RetoucheCommit(results));
+                            for (ModificationResult result : results) {
+                                for (FileObject fileObj : result.getModifiedFileObjects()) {
+                                    for (Difference diff : result.getDifferences(fileObj)) {
+                                        String old = diff.getOldText();
+                                        if (old != null) {
+                                            elemsBag.add(refactoring, DiffElement.create(diff, fileObj, result));
+                                        }
                                     }
                                 }
                             }
+                        }finally{
+                            fireProgressListenerStop();
                         }
                     }
                 }
             }, false);
         } catch (IOException ioex) {
             ioex.printStackTrace();
-        } finally {
-            fireProgressListenerStop();
         }
         return;
     }
@@ -264,7 +266,7 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
             return super.visitMemberSelect(memSelTree, elemToFind);
         }
 
-
+        
         @Override
         public Tree visitVariable(VariableTree varTree, Element elementToMatch) {
             TreePath treePath = getCurrentPath();
