@@ -42,7 +42,8 @@ public class JAXBWizLookupProvider implements LookupProvider {
     public Lookup createAdditionalLookup(Lookup baseContext) {
         Project project = baseContext.lookup(Project.class);
         JAXBWizModel model = new JAXBWizModelImpl(project);
-        return Lookups.fixed(new Object[] {model});
+        JAXBGenSourceClassPathProvider cpProvider = 
+                new JAXBGenSourceClassPathProvider(project);
+        return Lookups.fixed(new Object[] {model, cpProvider});
     }
-
 }
