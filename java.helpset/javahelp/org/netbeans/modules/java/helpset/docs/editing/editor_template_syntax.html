@@ -16,18 +16,19 @@
         <h2>Special Code Template Syntax</h2>
         
         <p>You can use code templates to speed up the entry of commonly used 
-         sequences of reserved words and common code patterns. For example, 
-         if you enter <tt>forc</tt> and press the Tab key, it expands into the
-     following:</p>
-<pre>for (Iterator it = collection.iterator(); it.hasNext();) {
+            sequences of reserved words and common code patterns. For example, 
+            if you enter <tt>forc</tt> and press the Tab key, it expands into the
+        following:</p>
+        <pre>for (Iterator it = collection.iterator(); it.hasNext();) {
        Object elem = (Object) it.next();
-} </pre>
-            
-            <p>When you create code templates, there are several constructs
+        } </pre>
+        
+        <p>When you create code templates, there are several constructs
             that you can use to customize the way the code template behaves.
             The most useful 
             of these constructs are listed below. You can look at the default IDE code 
-        templates in the Options window, under the Tools menu, for examples.</p>
+        templates in the Options window, under the Tools 
+        menu, for examples from which you can learn.</p>
         
         <table border="1">
             <tbody><tr>
@@ -41,85 +42,82 @@
                         <a name="pgfId-1167037"></a>Explanation</p>
                     </th>
                 </tr>
-                <tr>
-                    <td rowspan="1" colspan="1">
-                        <p class="TableTextCode">
-                        <a name="pgfId-1167039"></a>${cursor}</p>
+                <tr valign="top">
+                    <td><tt>${cursor}</tt>
                     </td>
-                    <td rowspan="1" colspan="1">
-                        <p class="TableText">
-                        <a name="pgfId-1167041"></a>Indicates where the insertion point should go after the code snippet has been added to your code.</p>
-                        
+                    
+                    <td>Indicates where the insertion point should go after the code snippet 
+                        has been added to your code. 
                     </td>
                 </tr>
-                <tr>
-                    <td rowspan="1" colspan="1">
-                        <p class="TableTextCode">
-                        <a name="pgfId-1167043"></a>${Identifier}</p>
+                <tr valign="top">
+                    <td><tt>${<i>Identifier</i>}</tt>
                     </td>
-                    <td rowspan="1" colspan="1">
-                        <p class="TableText">
-                            <a name="pgfId-1167045"></a>Indicates an identifer that needs to be filled in when you use the code template. When you use this construct in a template definition, replace <em class="Filename-Command">
-                            Identifier</em>
-                        with the identifer name that you want to appear in the template.</p>
-                        
+                    <td>Indicates an identifer that needs to be filled in when you use the code 
+                        template. When you use this construct in a template definition, replace <i>Identifier</i> with the 
+                        identifer name that you want to appear in the template.
                     </td>
+                    
                 </tr>
-                <tr>
-                    <td rowspan="1" colspan="1">
-                        <p class="TableTextCode">
-                        <a name="pgfId-1167047"></a>index</p>
+                <tr valign="top">
+                    <td><tt>index</tt>
                     </td>
-                    <td rowspan="1" colspan="1">
-                        <p class="TableText">
-                            <a name="pgfId-1167049"></a>An attribute that you can use within a <em class="Filename-Command">
-                            ${Identifier}</em>
-                            segment to designate that an unused variable name should be generated in the code snippet. For example, you could use <em class="Filename-Command">
-                                
-                            ${ind index}</em>
-                        .</p>
+                    <td>An attribute that you can use within a <tt>${<i>Identifier</i>}</tt> segment 
+                        to designate that an unused variable name should be generated in the code snippet. 
+                        For example, you could use <tt>${ind&nbsp;index}</tt>.
                     </td>
+                    
                 </tr>
-                <tr>
-                    <td rowspan="1" colspan="1">
-                        <p class="TableTextCode">
-                        <a name="pgfId-1167118"></a>type="FullyQualifiedType" editable="false"</p>
-                    </td>
-                    <td rowspan="1" colspan="1">
-                        <p class="TableText">
-                            <a name="pgfId-1167124"></a>An attribute that you can use within a <em class="Filename-Command">
-                            ${Identifier}</em>
-                            
-                            segment to generate a class name. When you use the code template, an import statement for the class is also inserted into your code. For example, you could use <em class="Filename-Command">
-                            ${cce itype="java.lang.ClassCastException" editable="false"}</em>
-                            to have <em class="Filename-Command">
-                            ClassCastException</em>
-                            inserted into your code and make sure that the import statement is generated, if necessary. Specifying <em class="Filename-Command">
-                            editable="false"</em>
-                            ensures that <em class="Filename-Command">
-                                
-                            ClassCastException</em>
-                        is not selected for editing once the template is inserted into your code. </p>
-                    </td>
+                <tr valign="top" class="wikitable" >
+                    <td><tt> ${selection} </tt> </td>
+                    <td> Defines a position for pasting a content of the editor selection. Used by <i>selection templates</i>, which appear as hints whenever you select some text in the editor (see next item).</td>
                 </tr>
-                <tr>
-                    <td rowspan="1" colspan="1">
-                        <p class="TableTextCode">
-                        <a name="pgfId-1167051"></a>instanceof="FullyQualifiedType"</p>
-                    </td>
-                    <td rowspan="1" colspan="1">
-                        <p class="TableText">
-                            <a name="pgfId-1167053"></a>An attribute that you can use within a <em class="Filename-Command">
-                                
-                            ${Identifier}</em>
-                            segment to designate the type that the identifier must represent an instance of. For example, you could use <em class="Filename-Command">
-                            ${collection instanceof="java.util.Collection"}</em>
-                            where collection is the default identifier in the template and <em class="Filename-Command">
-                            java.util.Collection</em>
-                        is the class of which the identifier must represent an instance.</p>
-                    </td>
+                <tr valign="top" class="wikitable" >
+                    <td><tt> ${selection line allowSurround} </tt> </td>
+                    <td> Defines a selection template by using the <tt>allowSurround</tt> parameter. When there is an editor selection, a lightbulb is presented to the
+                        user, and all the surround-with code templates are listed as possible
+                    fixes.</td>
                 </tr>
-                
+                <tr valign="top" class="wikitable">
+                    <td><tt> ${<i>param_name</i> default="value"} </tt> </td>
+                    <td> Defines the parameter's default value. Set to <code>empty</code> to create a tab stop.</td>
+                </tr>
+                <tr valign="top" class="wikitable" >
+                    <td><tt> ${<i>param_name</i> editable=false} </tt> </td>
+                    <td> Can be used to disable user's editing of the parameter. Useful for creating caret locations (tab stops).</td>
+                </tr>
+                <tr valign="top" class="wikitable">
+                    <td><tt> ${class} </tt> </td>
+                    <td> Expands to the name of the class surrounding the template expansion location, such as <tt>Foo</tt></td>
+                </tr>
+                <tr valign="top" class="wikitable" >
+                    <td><tt> ${classfqn} </tt> </td>
+                    <td> Same as <tt> ${class} </tt>, but instead of just the class name expands to the fully qualified class name, such as <tt>Bar::Baz::Foo</tt></td>
+                </tr>
+                <tr valign="top" class="wikitable">
+                    <td><tt> ${superclass} </tt> </td>
+                    <td> Expands to the name of the superclass of the class surrounding the template expansion location, such as <tt>SuperFoo</tt></td>
+                </tr>
+                <tr valign="top" class="wikitable" >
+                    <td><tt> ${method} </tt> </td>
+                    <td> Expands to the name of the method surrounding the template expansion location, such as <tt>foo</tt></td>
+                </tr>
+                <tr valign="top" class="wikitable">
+                    <td><tt> ${methodfqn} </tt> </td>
+                    <td> Same as <tt> ${method} </tt>, but instead of just the class method expands to the fully qualified name, such as <tt>Bar::Baz::Foo#foo</tt></td>
+                </tr>
+                <tr valign="top" class="wikitable" >
+                    <td><tt> ${file} </tt> </td>
+                    <td> Expands to the name of the current file, such as <tt>foo_bar.rb</tt></td>
+                </tr>
+                <tr valign="top" class="wikitable">
+                    <td><tt> ${path} </tt> </td>
+                    <td> Expands to the name of the current full file path, such as <tt>/foo/bar/baz.rb</tt></td>
+                </tr>
+                <tr valign="top" class="wikitable" >
+                    <td><tt> ${unusedlocal defaults="i,j,k"} </tt> </td>
+                    <td> Picks the name of an unused local variable in the current scope. It will first try each of the candidates listed in the <tt>defaults</tt> attribute, and if none of those succeed, create another unique name.</td>
+                </tr>
         </tbody></table>
         
         <hr>
