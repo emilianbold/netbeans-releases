@@ -888,7 +888,8 @@ public class RetoucheUtils {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     if (!cancel) {
-                        waitDialog.setVisible(false);
+                        if (waitDialog!=null)
+                            waitDialog.setVisible(false);
                         action.run();
                     }
                 }

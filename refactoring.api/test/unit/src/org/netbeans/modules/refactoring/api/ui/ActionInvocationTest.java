@@ -48,6 +48,7 @@ import javax.swing.Action;
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 import junit.framework.TestCase;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.java.LogTestCase;
@@ -58,6 +59,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -75,8 +77,13 @@ public class ActionInvocationTest extends LogTestCase {
     }
     
     protected void setUp() throws IOException {
-       super.setUp();
-       assertEquals(DD.class, Lookup.getDefault().lookup(DialogDisplayer.class).getClass());
+        try {
+            super.setUp();
+            SourceUtils.waitScanFinished();
+            assertEquals(DD.class, Lookup.getDefault().lookup(DialogDisplayer.class).getClass());
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
     
     public void testRenameAction() throws InterruptedException, InvocationTargetException, IOException {
