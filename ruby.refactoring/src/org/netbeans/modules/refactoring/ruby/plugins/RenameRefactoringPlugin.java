@@ -100,6 +100,7 @@ import org.jruby.ast.DVarNode;
 import org.jruby.ast.LocalAsgnNode;
 import org.jruby.ast.LocalVarNode;
 import org.jruby.ast.ModuleNode;
+import org.jruby.ast.NodeTypes;
 import org.jruby.ast.SClassNode;
 import org.netbeans.api.gsf.CancellableTask;
 import org.netbeans.api.gsf.ElementKind;
@@ -1032,7 +1033,8 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
     
         /** Search for local variables in local scope */
         private void findLocal(RubyElementCtx searchCtx, RubyElementCtx fileCtx, Node node, String name) {
-            if (node instanceof ArgumentNode) {
+            switch (node.nodeId) {
+            case NodeTypes.ARGUMENTNODE:
                 // TODO - check parent and make sure it's not a method of the same name?
                 // e.g. if I have "def foo(foo)" and I'm searching for "foo" (the parameter),
                 // I don't want to pick up the ArgumentNode under def foo that corresponds to the
@@ -1041,6 +1043,7 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
                     RubyElementCtx matchCtx = new RubyElementCtx(fileCtx, node);
                     rename(node, name, null, getString("RenameParam"));
                 }
+                break;
 // I don't have alias nodes within a method, do I?                
 //            } else if (node instanceof AliasNode) { 
 //                AliasNode an = (AliasNode)node;
@@ -1048,12 +1051,16 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
 //                    RubyElementCtx matchCtx = new RubyElementCtx(fileCtx, node);
 //                    elements.add(refactoring, WhereUsedElement.create(matchCtx));
 //                }
-            } else if (node instanceof LocalVarNode || node instanceof LocalAsgnNode) {
+//                break;
+            case NodeTypes.LOCALVARNODE:
+            case NodeTypes.LOCALASGNNODE:
                 if (((INameNode)node).getName().equals(name)) {
                     RubyElementCtx matchCtx = new RubyElementCtx(fileCtx, node);
                     rename(node, name, null, getString("UpdateLocalvar"));
                 }
-            } else if (node instanceof DVarNode || node instanceof DAsgnNode) {
+                break;
+            case NodeTypes.DVARNODE:
+            case NodeTypes.DASGNNODE:
                  if (((INameNode)node).getName().equals(name)) {
                     // Found a method call match
                     // TODO - make a node on the same line
@@ -1061,12 +1068,14 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
                     RubyElementCtx matchCtx = new RubyElementCtx(fileCtx, node);
                     rename(node, name, null, getString("UpdateDynvar"));
                  }                 
-            } else if (node instanceof SymbolNode) {
+                 break;
+            case NodeTypes.SYMBOLNODE:
                 // XXX Can I have symbols to local variables? Try it!!!
                 if (((SymbolNode)node).getName().equals(name)) {
                     RubyElementCtx matchCtx = new RubyElementCtx(fileCtx, node);
                     rename(node, name, null, getString("UpdateSymbol"));
                 }
+                break;
             }
 
             @SuppressWarnings("unchecked")
@@ -1096,7 +1105,9 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
                 
                 // Methods, attributes, etc.
                 // TODO - be more discriminating on the filetype
-                if (node instanceof MethodDefNode) {
+                switch (node.nodeId) {
+                case NodeTypes.DEFNNODE:
+                case NodeTypes.DEFSNODE: {
                     if (((MethodDefNode)node).getName().equals(name)) {
                                                 
                         boolean skip = false;
@@ -1137,7 +1148,21 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
                             rename(node, name, null, getString("UpdateMethodDef"));
                         }
                     }
-                } else if (AstUtilities.isCall(node)) {
+                    break;
+                }
+                case NodeTypes.FCALLNODE:
+                    if (AstUtilities.isAttr(node)) {
+                        SymbolNode[] symbols = AstUtilities.getAttrSymbols(node);
+                        for (SymbolNode symbol : symbols) {
+                            if (symbol.getName().equals(name)) {
+                                // TODO - can't replace the whole node here - I need to replace only the text!
+                                rename(node, name, null, null);
+                            }
+                        }
+                    }
+                    // Fall through for other call checking
+                case NodeTypes.VCALLNODE:
+                case NodeTypes.CALLNODE:
                      if (((INameNode)node).getName().equals(name)) {
                          // TODO - if it's a call without a lhs (e.g. Call.LOCAL),
                          // make sure that we're referring to the same method call
@@ -1146,38 +1171,42 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
                         // TODO - check arity - see OccurrencesFinder
                         rename(node, name, null, null);
                      }
-                } else if (AstUtilities.isAttr(node)) {
-                    SymbolNode[] symbols = AstUtilities.getAttrSymbols(node);
-                    for (SymbolNode symbol : symbols) {
-                        if (symbol.getName().equals(name)) {
-                            // TODO - can't replace the whole node here - I need to replace only the text!
-                            rename(node, name, null, null);
-                        }
-                    }
-                } else if (node instanceof SymbolNode) {
+                     break;
+                case NodeTypes.SYMBOLNODE:
                     if (((SymbolNode)node).getName().equals(name)) {
                         // TODO do something about the colon?
                         rename(node, name, null, null);
                     }
-                } else if (node instanceof GlobalVarNode || node instanceof GlobalAsgnNode ||
-                        node instanceof InstVarNode || node instanceof InstAsgnNode ||
-                        node instanceof ClassVarAsgnNode || node instanceof ClassVarDeclNode || node instanceof ClassVarNode) {
+                    break;
+                case NodeTypes.GLOBALVARNODE:
+                case NodeTypes.GLOBALASGNNODE:
+                case NodeTypes.INSTVARNODE:
+                case NodeTypes.INSTASGNNODE:
+                case NodeTypes.CLASSVARNODE:
+                case NodeTypes.CLASSVARASGNNODE:
+                case NodeTypes.CLASSVARDECLNODE:
                     if (((INameNode)node).getName().equals(name)) {
                         rename(node, name, null, null);
                     }
+                    break;
                 }
             } else {
                 // Classes, modules, constants, etc.
-                if (node instanceof Colon2Node) {
+                switch (node.nodeId) {
+                case NodeTypes.COLON2NODE: {
                     Colon2Node c2n = (Colon2Node)node;
                     if (c2n.getName().equals(name)) {
                         rename(node, name, null, null);
                     }
                     
-                } else if (node instanceof ConstNode || node instanceof ConstDeclNode) {
+                    break;
+                }
+                case NodeTypes.CONSTNODE:
+                case NodeTypes.CONSTDECLNODE:
                     if (((INameNode)node).getName().equals(name)) {
                         rename(node, name, null, null);
                     }
+                    break;
                 }
             }
             

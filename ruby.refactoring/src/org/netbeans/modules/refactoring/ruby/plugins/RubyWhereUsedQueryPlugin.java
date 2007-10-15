@@ -65,6 +65,7 @@ import org.jruby.ast.LocalAsgnNode;
 import org.jruby.ast.LocalVarNode;
 import org.jruby.ast.MethodDefNode;
 import org.jruby.ast.Node;
+import org.jruby.ast.NodeTypes;
 import org.jruby.ast.SymbolNode;
 import org.jruby.ast.types.INameNode;
 import org.netbeans.api.gsf.CancellableTask;
@@ -540,7 +541,7 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
                     RubyElementCtx matchCtx = new RubyElementCtx(fileCtx, node);
                     elements.add(refactoring, WhereUsedElement.create(matchCtx));
                 }
-            } else*/ if (node instanceof AliasNode) {
+            } else*/ if (node.nodeId == NodeTypes.ALIASNODE) {
                 AliasNode an = (AliasNode)node;
                 if (an.getNewName().equals(name) || an.getOldName().equals(name)) {
                     RubyElementCtx matchCtx = new RubyElementCtx(fileCtx, node);
@@ -551,7 +552,9 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
                 
                 // Methods, attributes, etc.
                 // TODO - be more discriminating on the filetype
-                if (node instanceof MethodDefNode) {
+                switch (node.nodeId) {
+                case NodeTypes.DEFNNODE:
+                case NodeTypes.DEFSNODE:
                     if (((MethodDefNode)node).getName().equals(name)) {
                                                 
                         boolean skip = false;
@@ -593,7 +596,20 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
                             elements.add(refactoring, WhereUsedElement.create(matchCtx));
                         }
                     }
-                } else if (AstUtilities.isCall(node)) {
+                    break;
+                case NodeTypes.FCALLNODE:
+                    if (AstUtilities.isAttr(node)) {
+                        SymbolNode[] symbols = AstUtilities.getAttrSymbols(node);
+                        for (SymbolNode symbol : symbols) {
+                            if (symbol.getName().equals(name)) {
+                                RubyElementCtx matchCtx = new RubyElementCtx(fileCtx, node);
+                                elements.add(refactoring, WhereUsedElement.create(matchCtx));
+                            }
+                        }                    
+                    }
+                    // Fall through for other call checking
+                case NodeTypes.VCALLNODE:
+                case NodeTypes.CALLNODE:
                      if (((INameNode)node).getName().equals(name)) {
                          // TODO - if it's a call without a lhs (e.g. Call.LOCAL),
                          // make sure that we're referring to the same method call
@@ -603,37 +619,38 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
                         RubyElementCtx matchCtx = new RubyElementCtx(fileCtx, node);
                         elements.add(refactoring, WhereUsedElement.create(matchCtx));
                      }
-                } else if (AstUtilities.isAttr(node)) {
-                    SymbolNode[] symbols = AstUtilities.getAttrSymbols(node);
-                    for (SymbolNode symbol : symbols) {
-                        if (symbol.getName().equals(name)) {
-                            RubyElementCtx matchCtx = new RubyElementCtx(fileCtx, node);
-                            elements.add(refactoring, WhereUsedElement.create(matchCtx));
-                        }
-                    }
-                } else if (node instanceof SymbolNode) {
+                     break;
+                case NodeTypes.SYMBOLNODE:
                     if (((SymbolNode)node).getName().equals(name)) {
                         RubyElementCtx matchCtx = new RubyElementCtx(fileCtx, node);
                         elements.add(refactoring, WhereUsedElement.create(matchCtx));
                     }
-                } else if (node instanceof GlobalVarNode || node instanceof GlobalAsgnNode ||
-                        node instanceof InstVarNode || node instanceof InstAsgnNode ||
-                        node instanceof ClassVarAsgnNode || node instanceof ClassVarDeclNode || node instanceof ClassVarNode) {
+                    break;
+                case NodeTypes.GLOBALVARNODE:
+                case NodeTypes.GLOBALASGNNODE:
+                case NodeTypes.INSTVARNODE:
+                case NodeTypes.INSTASGNNODE:
+                case NodeTypes.CLASSVARNODE:
+                case NodeTypes.CLASSVARASGNNODE:
+                case NodeTypes.CLASSVARDECLNODE:
                     if (((INameNode)node).getName().equals(name)) {
                         RubyElementCtx matchCtx = new RubyElementCtx(fileCtx, node);
                         elements.add(refactoring, WhereUsedElement.create(matchCtx));
                     }
+                    break;
                 }
             } else {
                 // Classes, modules, constants, etc.
-                if (node instanceof Colon2Node) {
+                switch (node.nodeId) {
+                case NodeTypes.COLON2NODE: {
                     Colon2Node c2n = (Colon2Node)node;
                     if (c2n.getName().equals(name)) {
                         RubyElementCtx matchCtx = new RubyElementCtx(fileCtx, node);
                         elements.add(refactoring, WhereUsedElement.create(matchCtx));
                     }
-                    
-                } else if (node instanceof ConstNode || node instanceof ConstDeclNode) {
+                }
+                case NodeTypes.CONSTNODE:
+                case NodeTypes.CONSTDECLNODE:
                     if (((INameNode)node).getName().equals(name)) {
                         RubyElementCtx matchCtx = new RubyElementCtx(fileCtx, node);
                         elements.add(refactoring, WhereUsedElement.create(matchCtx));
@@ -653,7 +670,8 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
         
         /** Search for local variables in local scope */
         private void findLocal(RubyElementCtx searchCtx, RubyElementCtx fileCtx, Node node, String name) {
-            if (node instanceof ArgumentNode) {
+            switch (node.nodeId) {
+            case NodeTypes.ARGUMENTNODE:
                 // TODO - check parent and make sure it's not a method of the same name?
                 // e.g. if I have "def foo(foo)" and I'm searching for "foo" (the parameter),
                 // I don't want to pick up the ArgumentNode under def foo that corresponds to the
@@ -662,6 +680,7 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
                     RubyElementCtx matchCtx = new RubyElementCtx(fileCtx, node);
                     elements.add(refactoring, WhereUsedElement.create(matchCtx));
                 }
+                break;
 // I don't have alias nodes within a method, do I?                
 //            } else if (node instanceof AliasNode) { 
 //                AliasNode an = (AliasNode)node;
@@ -669,12 +688,16 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
 //                    RubyElementCtx matchCtx = new RubyElementCtx(fileCtx, node);
 //                    elements.add(refactoring, WhereUsedElement.create(matchCtx));
 //                }
-            } else if (node instanceof LocalVarNode || node instanceof LocalAsgnNode) {
+//                break;
+            case NodeTypes.LOCALVARNODE:
+            case NodeTypes.LOCALASGNNODE:
                 if (((INameNode)node).getName().equals(name)) {
                     RubyElementCtx matchCtx = new RubyElementCtx(fileCtx, node);
                     elements.add(refactoring, WhereUsedElement.create(matchCtx));
                 }
-            } else if (node instanceof DVarNode || node instanceof DAsgnNode) {
+                break;
+            case NodeTypes.DVARNODE:
+            case NodeTypes.DASGNNODE:
                  if (((INameNode)node).getName().equals(name)) {
                     // Found a method call match
                     // TODO - make a node on the same line
@@ -682,12 +705,14 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
                     RubyElementCtx matchCtx = new RubyElementCtx(fileCtx, node);
                     elements.add(refactoring, WhereUsedElement.create(matchCtx));
                  }                 
-            } else if (node instanceof SymbolNode) {
+                 break;
+            case NodeTypes.SYMBOLNODE:
                 // XXX Can I have symbols to local variables? Try it!!!
                 if (((SymbolNode)node).getName().equals(name)) {
                     RubyElementCtx matchCtx = new RubyElementCtx(fileCtx, node);
                     elements.add(refactoring, WhereUsedElement.create(matchCtx));
                 }
+                break;
             }
 
             @SuppressWarnings("unchecked")

@@ -28,6 +28,7 @@
 package org.netbeans.modules.refactoring.ruby;
 
 
+import java.util.Iterator;
 import javax.swing.text.Document;
 
 import org.jruby.ast.AliasNode;
@@ -50,6 +51,7 @@ import org.jruby.ast.LocalVarNode;
 import org.jruby.ast.MethodDefNode;
 import org.jruby.ast.ModuleNode;
 import org.jruby.ast.Node;
+import org.jruby.ast.NodeTypes;
 import org.jruby.ast.SClassNode;
 import org.jruby.ast.SymbolNode;
 import org.netbeans.api.gsf.Element;
@@ -115,6 +117,37 @@ public class RubyElementCtx {
 
         Node leaf = path.leaf();
 
+        Iterator<Node> it = path.leafToRoot();
+    FindNode:
+        while (it.hasNext()) {
+            leaf = it.next();
+            switch (leaf.nodeId) {
+            case NodeTypes.ARGUMENTNODE:
+            case NodeTypes.LOCALVARNODE:
+            case NodeTypes.LOCALASGNNODE:
+            case NodeTypes.DVARNODE:
+            case NodeTypes.DASGNNODE:
+            case NodeTypes.SYMBOLNODE:
+            case NodeTypes.FCALLNODE:
+            case NodeTypes.VCALLNODE:
+            case NodeTypes.CALLNODE:
+            case NodeTypes.GLOBALVARNODE:
+            case NodeTypes.GLOBALASGNNODE:
+            case NodeTypes.INSTVARNODE:
+            case NodeTypes.INSTASGNNODE:
+            case NodeTypes.CLASSVARNODE:
+            case NodeTypes.CLASSVARASGNNODE:
+            case NodeTypes.CLASSVARDECLNODE:
+            case NodeTypes.COLON2NODE:
+            case NodeTypes.CONSTNODE:
+            case NodeTypes.CONSTDECLNODE:
+                break FindNode;
+            }
+            if (!it.hasNext()) {
+                leaf = path.leaf();
+                break;
+            }
+        }
         Element element = AstElement.create(leaf);
 
         initialize(root, leaf, element, info.getFileObject(), info);
