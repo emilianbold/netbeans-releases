@@ -163,7 +163,7 @@ public class JspEditorWarmUpTask implements Runnable{
                 assert SwingUtilities.isEventDispatchThread(); // This part must run in AWT
                 
                 // Init of JSPKit and JSPOptions
-                jspKit = CloneableEditorSupport.getEditorKit("text/x-jsp");
+                jspKit = CloneableEditorSupport.getEditorKit("text/x-jsp"); //NOI18N
         
                 //creating actions instances
                 jspKit.getActions();
