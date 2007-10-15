@@ -72,4 +72,3 @@ public class BluePrint1SampleWizardIterator extends BluePrintSampleWizardIterato
          return BluePrintSampleWizardIterator.BLUE_PRINT1_APP;
      }
 }
-

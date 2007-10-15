@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.bpel.samples;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -65,58 +64,29 @@ public class SynchronousSampleWizardIterator extends SampleWizardIterator {
     }
     
     protected String[] createSteps() {
-        return new String[] {
-            NbBundle.getMessage(SynchronousSampleWizardIterator.class, "MSG_CreateSynchronousSampleProject"),
-        };
+        return new String[] { NbBundle.getMessage(SynchronousSampleWizardIterator.class, "MSG_CreateSynchronousSampleProject")};
     }
     
     protected WizardDescriptor.Panel[] createPanels() {
-        return new WizardDescriptor.Panel[] {
-            new SynchronousSampleWizardPanel(),
-        };
+        return new WizardDescriptor.Panel[] { new SynchronousSampleWizardPanel() };
     }
     
-    public Set<FileObject> instantiate() throws IOException {
-        Set<FileObject> resultSet = super.instantiate();
-        FileObject dirParent = getProject().getProjectDirectory().getParent();
-
-        try {
-            String name = (String) wiz.getProperty(NAME) + "Application";
-            Set<FileObject> set = createSynchronousCompositeApplicationProject(dirParent, name);
-            resultSet.addAll(set);
-        }
-        catch(FileNotFoundException fnfe) {
-            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION,fnfe);
-        }
-        catch(IOException ioe) {
-            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION,ioe);
-        }
-        ProjectChooser.setProjectsFolder(FileUtil.toFile(dirParent.getParent()));
-
-        return resultSet;
-    }
-
-    private Set<FileObject> createSynchronousCompositeApplicationProject(FileObject targetProjectDir, String name)
-    throws FileNotFoundException, IOException {
+    protected Set<FileObject> createCompositeApplicationProject(FileObject projectDir, String name) throws IOException {
         Set<FileObject> resultSet = new HashSet<FileObject>();
-        
-        FileObject compApptargetProjectDir = targetProjectDir.createFolder(name);                
-        assert compApptargetProjectDir != null : "targetProjectDir for SynchronousCompositeApplicationProject project is null";
+        FileObject compAppProjectDir = projectDir.createFolder(name);                
         
         FileObject trsCompositeApp = Repository.getDefault().
                 getDefaultFileSystem().findResource("org-netbeans-modules-bpel-samples-resources-zip/SynchronousSampleApplication.zip");// NOI18N
-        SoaSampleUtils.unZipFile(trsCompositeApp.getInputStream(),compApptargetProjectDir);
+
+        SoaSampleUtils.unZipFile(trsCompositeApp.getInputStream(), compAppProjectDir);
         
-        SoaSampleUtils.setProjectName(compApptargetProjectDir, 
+        SoaSampleUtils.setProjectName(compAppProjectDir, 
                 SoaSampleProjectProperties.COMPAPP_PROJECT_CONFIGURATION_NAMESPACE,
                 name, "SynchronousSampleApplication");       
 
-        // add JbiModule
-        Project compAppProject = ProjectManager.getDefault().findProject(compApptargetProjectDir);
-        SoaSampleUtils.addJbiModule(compAppProject, getProject());
-        
-        resultSet.add(compApptargetProjectDir);               
-        
+        SoaSampleUtils.addJbiModule(compAppProjectDir, getProjectDir());
+        resultSet.add(compAppProjectDir);               
+
         return resultSet;
     }
 }

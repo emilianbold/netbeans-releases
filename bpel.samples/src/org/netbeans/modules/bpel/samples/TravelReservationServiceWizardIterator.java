@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.bpel.samples;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
@@ -73,63 +72,35 @@ public class TravelReservationServiceWizardIterator extends SampleWizardIterator
         };
     }
     
-    private Set<FileObject> createJ2eeReservationPartnerServicesProjects(FileObject targetProjectDir) throws FileNotFoundException , IOException {
-        assert targetProjectDir != null : "targetProjectDir for ReservationPartnerServices project is null";
+    private Set<FileObject> createJ2eeReservationPartnerServicesProjects(FileObject projectDir) throws IOException {
         Set<FileObject> resultSet = new HashSet<FileObject>();
-
-        final FileObject j2eeReservationProjectDir = targetProjectDir.createFolder(SoaSampleProjectProperties.RESERVATION_PARTNER_SERVICES);
+        FileObject j2eeProjectDir = projectDir.createFolder(SoaSampleProjectProperties.RESERVATION_PARTNER_SERVICES);
 
         FileObject j2eeSamples = Repository.getDefault().
                 getDefaultFileSystem().findResource("org-netbeans-modules-bpel-samples-resources-zip/ReservationPartnerServices.zip");// NOI18N
 
-        SoaSampleUtils.unZipFile(j2eeSamples.getInputStream(), j2eeReservationProjectDir);
-        resultSet.add(j2eeReservationProjectDir);
+        SoaSampleUtils.unZipFile(j2eeSamples.getInputStream(), j2eeProjectDir);
+        resultSet.add(j2eeProjectDir);
 
         return resultSet;
     }
     
-    private Set<FileObject> createTRSCompositeApplicationProject(FileObject targetProjectDir, String name)
-    throws FileNotFoundException, IOException {
-        Set<FileObject> resultSet = new HashSet<FileObject>();
-        
-        FileObject compApptargetProjectDir = targetProjectDir.createFolder(name);                
-        assert compApptargetProjectDir != null : "targetProjectDir for TRSCompositeApplicationProject project is null";
+    protected Set<FileObject> createCompositeApplicationProject(FileObject projectDir, String name) throws IOException {
+        Set<FileObject> resultSet = createJ2eeReservationPartnerServicesProjects(projectDir);
+        FileObject compAppProjectDir = projectDir.createFolder(name);                
         
         FileObject trsCompositeApp = Repository.getDefault().
                 getDefaultFileSystem().findResource("org-netbeans-modules-bpel-samples-resources-zip/TravelReservationServiceApplication.zip");// NOI18N
-        SoaSampleUtils.unZipFile(trsCompositeApp.getInputStream(), compApptargetProjectDir);
+
+        SoaSampleUtils.unZipFile(trsCompositeApp.getInputStream(), compAppProjectDir);
                 
-        SoaSampleUtils.setProjectName(compApptargetProjectDir, 
+        SoaSampleUtils.setProjectName(compAppProjectDir, 
                 SoaSampleProjectProperties.COMPAPP_PROJECT_CONFIGURATION_NAMESPACE,
                 name, "TravelReservationServiceApplication");                
         
-        // add JbiModule
-        Project compAppProject = ProjectManager.getDefault().findProject(compApptargetProjectDir);
-        SoaSampleUtils.addJbiModule(compAppProject, getProject());
+        SoaSampleUtils.addJbiModule(compAppProjectDir, getProjectDir());
+        resultSet.add(compAppProjectDir);               
         
-        resultSet.add(compApptargetProjectDir);               
-        
-        return resultSet;
-    }
-    
-    public Set<FileObject> instantiate() throws IOException {
-        Set<FileObject> resultSet = super.instantiate();
-        
-        FileObject dirParent = getProject().getProjectDirectory().getParent();
-        try {
-            Set<FileObject> jeeSet = createJ2eeReservationPartnerServicesProjects(dirParent);
-            resultSet.addAll(jeeSet);
-
-            String name = (String) wiz.getProperty(NAME) + "Application";
-            Set<FileObject> compositeSet = createTRSCompositeApplicationProject(dirParent, name);
-            resultSet.addAll(compositeSet);
-            
-        } catch(FileNotFoundException fnfe) {
-            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION,fnfe);
-        } catch(IOException ioe) {
-            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION,ioe);
-        }
-        ProjectChooser.setProjectsFolder(FileUtil.toFile(dirParent.getParent()));
         return resultSet;
     }
 }

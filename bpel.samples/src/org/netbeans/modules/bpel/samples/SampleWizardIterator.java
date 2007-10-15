@@ -55,92 +55,69 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 
 import org.netbeans.spi.project.ui.support.ProjectChooser;
+import org.openide.filesystems.Repository;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
-public class SampleWizardIterator implements WizardDescriptor.InstantiatingIterator {
+public abstract class SampleWizardIterator implements WizardDescriptor.InstantiatingIterator {
     
     private static final long serialVersionUID = 1L;
 
     public static final String PROJDIR = "projdir"; // NOI18N
     public static final String NAME = "name"; // NOI18N
-    private Project myProject;
     private transient int index;
     private transient WizardDescriptor.Panel[] panels;
     public transient WizardDescriptor wiz;
+    private FileObject dir;
  
-    public SampleWizardIterator() {}
-        
-    public static SampleWizardIterator createIterator() {
-        return new SampleWizardIterator();
-    }
-
     protected WizardDescriptor.Panel[] createPanels() {
-        return new WizardDescriptor.Panel[] {
-            new SampleWizardPanel(),
-        };
+        return new WizardDescriptor.Panel[] { new SampleWizardPanel() };
     }
     
     protected String[] createSteps() {
-        return new String[] {
-            NbBundle.getMessage(SampleWizardIterator.class, "MSG_SampleProject"),
-        };
+        return new String[] { NbBundle.getMessage(SampleWizardIterator.class, "MSG_SampleProject") };
     }
-    
-    public Project getProject() {
-        return myProject;
+
+    protected FileObject getProjectDir() {
+      return dir;
     }
     
     public Set<FileObject> instantiate() throws IOException {
-        Set<FileObject> resultSet = new LinkedHashSet<FileObject>();
-        File dirF = FileUtil.normalizeFile((File) wiz.getProperty(PROJDIR));
-        dirF.mkdirs();
-        
-        String name = (String) wiz.getProperty(NAME);
-        FileObject template = Templates.getTemplate(wiz);
+      final Set<FileObject> resultSet = new LinkedHashSet<FileObject>();
 
-        FileObject dir = FileUtil.toFileObject(dirF);
-        
-        // All projects associated with the sample are created within a 
-        // top level directory.       
-        dir = dir.createFolder(name);
-        dirF = FileUtil.toFile(dir);
-        
-        SoaSampleUtils.unZipFile(template.getInputStream(), dir);
-        
-        SoaSampleUtils.setProjectName(dir, 
-                SoaSampleProjectProperties.BPEL_PROJECT_CONFIGURATION_NAMESPACE, name,
-                template.getName());
-        
-        Project p = ProjectManager.getDefault().findProject(dir);
-        myProject = p;
-        // Always open top dir as a project:
-        resultSet.add(dir);
-        // Look for nested projects to open as well:
-        Enumeration e = dir.getFolders(true);
-        while (e.hasMoreElements()) {
-            FileObject subfolder = (FileObject) e.nextElement();
-            if (ProjectManager.getDefault().isProject(subfolder)) {
-                resultSet.add(subfolder);
-            }
-        }
+      Repository.getDefault().getDefaultFileSystem().runAtomicAction(new org.openide.filesystems.FileSystem.AtomicAction() {
+        public void run() throws IOException {
+          File dirF = FileUtil.normalizeFile((File) wiz.getProperty(PROJDIR));
+          dirF.mkdirs();
+          dir = FileUtil.toFileObject(dirF);
+          FileObject template = Templates.getTemplate(wiz);
+          String name = (String) wiz.getProperty(NAME);
 
-        File parent = dirF.getParentFile();
-        if (parent != null && parent.exists()) {
-            ProjectChooser.setProjectsFolder(parent);
-        }
+          dir = dir.createFolder(name);
+          dirF = FileUtil.toFile(dir);
 
+          SoaSampleUtils.unZipFile(template.getInputStream(), dir);
+
+          SoaSampleUtils.setProjectName(dir, SoaSampleProjectProperties.BPEL_PROJECT_CONFIGURATION_NAMESPACE, name, template.getName());
+          resultSet.add(dir);
+          FileObject dirParent = dir.getParent();
+
+          resultSet.addAll(createCompositeApplicationProject(dirParent, name + "Application"));
+        }});
         return resultSet;
     }
     
+    protected abstract Set<FileObject> createCompositeApplicationProject(FileObject projectDir, String name) throws IOException;
+
     public void initialize(WizardDescriptor wiz) {
         this.wiz = wiz;
         index = 0;
         panels = createPanels();
         // Make sure list of steps is accurate.
         String[] steps = createSteps();
+
         for (int i = 0; i < panels.length; i++) {
             Component c = panels[i].getComponent();
             if (steps[i] == null) {
@@ -167,8 +144,7 @@ public class SampleWizardIterator implements WizardDescriptor.InstantiatingItera
     }
     
     public String name() {
-        return MessageFormat.format("{0} of {1}",
-            new Object[] {new Integer (index + 1), new Integer (panels.length)});
+      return MessageFormat.format("{0} of {1}", new Object[] {new Integer (index + 1), new Integer (panels.length)});
     }
     
     public boolean hasNext() {
@@ -193,7 +169,6 @@ public class SampleWizardIterator implements WizardDescriptor.InstantiatingItera
         return panels[index];
     }
     
-    // If nothing unusual changes in the middle of the wizard, simply:
     public void addChangeListener(ChangeListener l) {}
     public void removeChangeListener(ChangeListener l) {}
 }

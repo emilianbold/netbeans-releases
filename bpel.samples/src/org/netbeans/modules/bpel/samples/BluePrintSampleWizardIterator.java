@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.bpel.samples;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -76,52 +75,25 @@ public abstract class BluePrintSampleWizardIterator extends SampleWizardIterator
     
     protected abstract String[] createSteps();
    
-    public Set<FileObject> instantiate() throws IOException {
-        Set<FileObject> resultSet = super.instantiate();
-        
-        FileObject dirParent = getProject().getProjectDirectory().getParent();
-        try {
-            String name = (String) wiz.getProperty(NAME) + "Application";
-
-            Set<FileObject> set = createBluePrintCompositeApplicationProject(dirParent, name);
-            Iterator<FileObject> iterator = set.iterator();
-            while(iterator.hasNext()) {
-                resultSet.add(iterator.next());
-            }
-        } catch(FileNotFoundException fnfe) {
-            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION,fnfe);
-        } catch(IOException ioe) {
-            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION,ioe);
-        }
-        ProjectChooser.setProjectsFolder(FileUtil.toFile(dirParent.getParent()));
-        return resultSet;
-    }
-
+    public abstract String getCompositeApplicationName();
+    public abstract String getCompositeApplicationArchiveName();
     
-    private Set<FileObject> createBluePrintCompositeApplicationProject(FileObject targetProjectDir, String name)
-    throws FileNotFoundException, IOException {
+    protected Set<FileObject> createCompositeApplicationProject(FileObject projectDir, String name) throws IOException {
         Set<FileObject> resultSet = new HashSet<FileObject>();
-        
-        FileObject compApptargetProjectDir = targetProjectDir.createFolder(name);                
-        assert compApptargetProjectDir != null : "targetProjectDir for Blue Print project is null";
+        FileObject compAppProjectDir = projectDir.createFolder(name);                
         
         FileObject bluePrintCompositeApp = Repository.getDefault().
                 getDefaultFileSystem().findResource("org-netbeans-modules-bpel-samples-resources-zip/" + getCompositeApplicationArchiveName());// NOI18N
         
-        SoaSampleUtils.unZipFile(bluePrintCompositeApp.getInputStream(),compApptargetProjectDir);
+        SoaSampleUtils.unZipFile(bluePrintCompositeApp.getInputStream(), compAppProjectDir);
         
-        SoaSampleUtils.setProjectName(compApptargetProjectDir, 
+        SoaSampleUtils.setProjectName(compAppProjectDir, 
                 SoaSampleProjectProperties.COMPAPP_PROJECT_CONFIGURATION_NAMESPACE,
                 name, getCompositeApplicationName());             
-        // add JbiModule
-        Project compAppProject = ProjectManager.getDefault().findProject(compApptargetProjectDir);
-        SoaSampleUtils.addJbiModule(compAppProject, getProject());
-        
-        resultSet.add(compApptargetProjectDir);               
+
+        SoaSampleUtils.addJbiModule(compAppProjectDir, getProjectDir());
+        resultSet.add(compAppProjectDir);               
         
         return resultSet;
     }
-    
-    public abstract String getCompositeApplicationName();
-    public abstract String getCompositeApplicationArchiveName();
 }
