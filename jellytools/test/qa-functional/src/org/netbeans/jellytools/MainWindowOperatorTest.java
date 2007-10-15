@@ -82,12 +82,14 @@ public class MainWindowOperatorTest extends JellyTestCase {
     
     /** Redirect output to log files, wait before each test case and
      * show dialog to test. */
+    @Override
     protected void setUp() {
         System.out.println("### "+getName()+" ###");
         mainWindowOper = MainWindowOperator.getDefault();
     }
     
     /** Tear down after test case. */
+    @Override
     protected void tearDown() {
     }
     
@@ -170,7 +172,7 @@ public class MainWindowOperatorTest extends JellyTestCase {
     public void testPushToolbarPopupMenu() {
         int expectedToolbarsCount = mainWindowOper.getToolbarCount();
         // "File"
-        String popupPath = Bundle.getString("org.netbeans.core.Bundle", "Toolbars/File");
+        String popupPath = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Toolbars/File");
         mainWindowOper.pushToolbarPopupMenu(popupPath);
         int actualToolbarCount = mainWindowOper.getToolbarCount();
         mainWindowOper.pushToolbarPopupMenu(popupPath);
@@ -182,7 +184,7 @@ public class MainWindowOperatorTest extends JellyTestCase {
         // at the time no item in menu is blocking so we use testPushToolbarPopupMenu
         int expectedToolbarsCount = mainWindowOper.getToolbarCount();
         // "File"
-        String popupPath = Bundle.getString("org.netbeans.core.Bundle", "Toolbars/File");
+        String popupPath = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Toolbars/File");
         mainWindowOper.pushToolbarPopupMenuNoBlock(popupPath);
         new EventTool().waitNoEvent(500);
         int actualToolbarCount = mainWindowOper.getToolbarCount();
