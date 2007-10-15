@@ -1,7 +1,7 @@
 <#if licenseFirst??>
 ${licenseFirst}
 </#if>
-${licensePrefix}To change this template, choose Tools | Templates
+${licensePrefix}To change this template, choose Tools | Templates | Licenses | Default License
 ${licensePrefix}and open the template in the editor.
 <#if licenseLast??>
 ${licenseLast}
