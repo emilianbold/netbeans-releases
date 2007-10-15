@@ -504,6 +504,10 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
             if (aWTEvent instanceof MouseEvent) {
                 MouseEvent mv = (MouseEvent)aWTEvent;
                 if (mv.getClickCount() > 0) {
+                    //#118828
+                    if (! (aWTEvent.getSource() instanceof Component)) {
+                        return;
+                    }
                     Component comp = (Component)aWTEvent.getSource();
                     Container par = SwingUtilities.getAncestorNamed("progresspopup", comp); //NOI18N
                     Container barpar = SwingUtilities.getAncestorOfClass(StatusLineComponent.class, comp);

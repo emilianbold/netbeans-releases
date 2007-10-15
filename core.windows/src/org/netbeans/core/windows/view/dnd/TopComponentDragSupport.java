@@ -187,6 +187,10 @@ implements AWTEventListener, DragSourceListener {
      * Implements <code>AWTEventListener</code>. */
     public void eventDispatched(AWTEvent evt) {
         MouseEvent me = (MouseEvent) evt;
+        //#118828
+        if (! (evt.getSource() instanceof Component)) {
+            return;
+        }
 
         // #40736: only left mouse button drag should start DnD
         if((me.getID() == MouseEvent.MOUSE_PRESSED) && SwingUtilities.isLeftMouseButton(me)) {

@@ -248,6 +248,11 @@ final class ButtonPopupSwitcher
      */
     private boolean onSwitcherTable(MouseEvent e) {
         Point p = e.getPoint();
+        //#118828
+        if (! (e.getSource() instanceof Component)) {
+            return false;
+        }
+        
         p = SwingUtilities.convertPoint((Component) e.getSource(), p, pTable);
         return pTable.contains(p);
     }

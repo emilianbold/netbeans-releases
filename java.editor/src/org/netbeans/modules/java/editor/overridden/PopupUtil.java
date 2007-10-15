@@ -201,6 +201,12 @@ public final class PopupUtil  {
             if (aWTEvent instanceof MouseEvent) {
                 MouseEvent mv = (MouseEvent)aWTEvent;
                 if (mv.getID() == MouseEvent.MOUSE_CLICKED && mv.getClickCount() > 0) {
+                    //#118828
+                    if (! (aWTEvent.getSource() instanceof Component)) {
+                        hidePopup();
+                        return;
+                    }
+                    
                     Component comp = (Component)aWTEvent.getSource();
                     Container par = SwingUtilities.getAncestorNamed(POPUP_NAME, comp); //NOI18N
                     // Container barpar = SwingUtilities.getAncestorOfClass(PopupUtil.class, comp);

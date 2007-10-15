@@ -405,7 +405,12 @@ final class CloseButtonTabbedPane extends JTabbedPane {
 
         public void eventDispatched (AWTEvent ev) {
             MouseEvent e = (MouseEvent) ev;
-
+            //#118828
+            if (! (ev.getSource() instanceof Component)) {
+                return;
+            }
+        
+            
             Component c = (Component) e.getSource();
             while (c != null && !(c instanceof CloseButtonTabbedPane))
                 c = c.getParent();
