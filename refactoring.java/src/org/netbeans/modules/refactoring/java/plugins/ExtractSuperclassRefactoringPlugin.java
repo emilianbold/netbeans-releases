@@ -432,6 +432,7 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
             ClassTree classTree = findClass(wc, superClassName);
             boolean makeAbstract = false;
             TreeMaker make = wc.getTreeMaker();
+            GeneratorUtilities genUtils = GeneratorUtilities.get(wc);
             
             // add type parameters
             List<TypeMirror> typeParams = findUsedGenericTypes(wc, sourceType.resolve(wc), refactoring);
@@ -472,7 +473,7 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
                             tree.getType(),
                             tree.getInitializer()
                     );
-                    copy = make.copyTree(copy, null);
+                    copy = genUtils.importFQNs(copy);
                     members.add(copy);
                 } else if (member.getGroup() == MemberInfo.Group.METHOD) {
                     @SuppressWarnings("unchecked")
@@ -490,7 +491,7 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
                                 (BlockTree) null,
                                 null);
                     }
-                    methodTree = make.copyTree(methodTree, null);
+                    methodTree = genUtils.importFQNs(methodTree);
                     makeAbstract |= methodTree.getModifiers().getFlags().contains(Modifier.ABSTRACT);
                     members.add(methodTree);
                 } else if (member.getGroup() == MemberInfo.Group.IMPLEMENTS) {
@@ -509,7 +510,7 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
             ModifiersTree classModifiersTree = makeAbstract
                     ? makeAbstract(make, classTree.getModifiers())
                     : classTree.getModifiers();
-            classModifiersTree = make.copyTree(classModifiersTree, null);
+            classModifiersTree = genUtils.importFQNs(classModifiersTree);
             
             // create new class
             ClassTree newClassTree = make.Class(
@@ -560,6 +561,8 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
         /* in case there are constructors delegating to old superclass it is necessery to create delegates in new superclass */
         private static void addConstructors(final WorkingCopy javac, final TypeElement origClass, final List<Tree> members) {
             final TreeMaker make = javac.getTreeMaker();
+            final GeneratorUtilities genUtils = GeneratorUtilities.get(javac);
+            
             // cache of already resolved constructors
             final Set<Element> added = new HashSet<Element>();
             for (ExecutableElement constr : ElementFilter.constructorsIn(origClass.getEnclosedElements())) {
@@ -598,7 +601,7 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
                                         template.getParameters(),
                                         template.getThrows(),
                                         block);
-                                newConstr = make.copyTree(newConstr, null);
+                                newConstr = genUtils.importFQNs(newConstr);
                                 members.add(newConstr);
                             }
                             

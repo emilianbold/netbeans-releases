@@ -34,6 +34,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.Task;
@@ -301,7 +302,7 @@ public class CompilationUnitTest extends GeneratorTestMDRCompat {
                         Collections.<ImportTree>emptyList(),
                         Collections.<Tree>emptyList()
                 );
-                newTree = make.addCompUnitTypeDecl(newTree, make.copyTree(clazz, cut));
+                newTree = make.addCompUnitTypeDecl(newTree, GeneratorUtilities.get(workingCopy).importFQNs(clazz));
                 workingCopy.rewrite(null, newTree);
                 workingCopy.rewrite(
                         cut.getTypeDecls().get(0), 
@@ -391,7 +392,7 @@ public class CompilationUnitTest extends GeneratorTestMDRCompat {
                         Collections.<ImportTree>emptyList(),
                         Collections.<Tree>emptyList()
                 );
-                newTree = make.addCompUnitTypeDecl(newTree, make.copyTree(clazz, cut));
+                newTree = make.addCompUnitTypeDecl(newTree, GeneratorUtilities.get(workingCopy).importFQNs(clazz));
                 workingCopy.rewrite(null, newTree);
                 workingCopy.rewrite(
                         cut.getTypeDecls().get(0), 

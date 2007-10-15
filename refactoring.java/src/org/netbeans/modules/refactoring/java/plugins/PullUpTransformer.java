@@ -76,6 +76,7 @@ public class PullUpTransformer extends RefactoringVisitor {
     @Override
     public Tree visitClass(ClassTree tree, Element p) {
         Element el = workingCopy.getTrees().getElement(getCurrentPath());
+        GeneratorUtilities genUtils = GeneratorUtilities.get(workingCopy); // helper
         boolean classIsAbstract = el.getKind().isInterface();
         ClassTree njuClass = tree;
         if (el.equals(targetType)) {
@@ -117,10 +118,10 @@ public class PullUpTransformer extends RefactoringVisitor {
                                 method.getThrows(),
                                 (BlockTree) null,
                                 (ExpressionTree)method.getDefaultValue());
-                        njuClass = GeneratorUtilities.get(workingCopy).insertClassMember(njuClass, (MethodTree) make.copyTree(nju, workingCopy.getCompilationUnit()));
+                        njuClass = genUtils.insertClassMember(njuClass, (MethodTree) genUtils.importFQNs(nju));
                         rewrite(tree, njuClass);
                     } else {                        
-                        Tree newMethodTree = (Tree) make.copyTree(workingCopy.getTrees().getTree(members[i].getElementHandle().resolve(workingCopy)), workingCopy.getCompilationUnit());
+                        Tree newMethodTree = genUtils.importFQNs(workingCopy.getTrees().getTree(members[i].getElementHandle().resolve(workingCopy)));
                         njuClass = GeneratorUtilities.get(workingCopy).insertClassMember(njuClass, newMethodTree);
                         rewrite(tree, njuClass);
                     }

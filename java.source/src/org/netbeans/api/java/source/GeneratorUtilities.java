@@ -45,7 +45,6 @@ import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
@@ -79,8 +78,6 @@ import javax.swing.text.Document;
 
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.editor.GuardedDocument;
-import org.netbeans.modules.java.source.JavaSourceAccessor;
-import org.netbeans.modules.java.source.transform.ImmutableTreeTranslator;
 import org.openide.filesystems.FileObject;
 import org.openide.modules.SpecificationVersion;
 
@@ -388,23 +385,9 @@ public final class GeneratorUtilities {
      * @return the new tree containing simple names (QualIdents). Imports for
      *         them will be added during task commit.
      */
-    public Tree importFQNs(Tree original) {
-        ImmutableTreeTranslator translator = new ImmutableTreeTranslator() {
-            @Override
-            public MemberSelectTree visitMemberSelect(MemberSelectTree tree, Object o) {
-                super.visitMemberSelect(tree, o);
-                TypeElement e = copy.getElements().getTypeElement(tree.toString());
-                if (e != null) {
-                    return (MemberSelectTree) copy.getTreeMaker().QualIdent(e);
-                } else {
-                    return tree;
-                }
-            }
-        };
-        translator.attach(JavaSourceAccessor.INSTANCE.getJavacTask(copy).getContext());
-        Tree rewritten = translator.translate(original);
-        translator.release();
-        return rewritten;
+    public <T extends Tree> T importFQNs(T original) {
+        TranslateIdentifier translator = new TranslateIdentifier(copy, false, true, null);
+        return (T) translator.translate(original);
     }
 
     // private implementation --------------------------------------------------

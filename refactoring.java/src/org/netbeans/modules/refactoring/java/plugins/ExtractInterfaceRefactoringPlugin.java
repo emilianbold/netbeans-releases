@@ -407,7 +407,7 @@ public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlug
             wc.toPhase(JavaSource.Phase.RESOLVED);
             ClassTree interfaceTree = findInterface(wc, ifcName);
             TreeMaker make = wc.getTreeMaker();
-            
+            GeneratorUtilities genUtils = GeneratorUtilities.get(wc);            
             
             // add type parameters
             List<TypeMirror> typeParams = findUsedGenericTypes(refactoring, wc, sourceType.resolve(wc));
@@ -438,7 +438,7 @@ public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlug
                         tree.getName(),
                         tree.getType(),
                         tree.getInitializer());
-                members.add(make.copyTree(newVarTree, null));
+                members.add(genUtils.importFQNs(newVarTree));
             }
             // add newmethods
             for (ElementHandle<ExecutableElement> handle : refactoring.getMethods()) {
@@ -453,7 +453,7 @@ public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlug
                         tree.getThrows(),
                         (BlockTree) null,
                         null);
-                members.add(make.copyTree(newMethodTree, null));
+                members.add(genUtils.importFQNs(newMethodTree));
             }
             // add super interfaces
             List <Tree> extendsList = new ArrayList<Tree>();
@@ -471,8 +471,7 @@ public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlug
                     extendsList,
                     Collections.<Tree>emptyList());
             
-            newInterfaceTree = GeneratorUtilities.get(wc).
-                    insertClassMembers(newInterfaceTree, members);
+            newInterfaceTree = genUtils.insertClassMembers(newInterfaceTree, members);
             wc.rewrite(interfaceTree, newInterfaceTree);
         }
         
