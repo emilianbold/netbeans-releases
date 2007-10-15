@@ -374,7 +374,7 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
         showFQNToggleButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
                 JavaMembersAndHierarchyOptions.setShowFQN(showFQNToggleButton.isSelected());
-                javaHierarchyTree.repaint();
+                javaHierarchyModel.fireTreeNodesChanged();
             }
         });
 
@@ -396,8 +396,6 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
                     }
                 });
     }
-
-    private boolean showingSubDialog = false;
 
     public void addNotify() {
         super.addNotify();
@@ -509,13 +507,13 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
     }
 
     private void selectMatchingRow() {
-        javaHierarchyModel.setPattern(filterTextField.getText());
         filterTextField.setForeground(UIManager.getColor("TextField.foreground"));
         // select first matching
         for (int row = 0; row < javaHierarchyTree.getRowCount(); row++) {
             Object o = javaHierarchyTree.getPathForRow(row).getLastPathComponent();
             if (o instanceof JavaElement) {
-                if (javaHierarchyModel.patternMatch((JavaElement)o)) {
+                String filterText = filterTextField.getText();
+                if (Utils.patternMatch((JavaElement)o, filterText, filterText.toLowerCase())) {
                     javaHierarchyTree.setSelectionRow(row);                    
                     return;
                 }

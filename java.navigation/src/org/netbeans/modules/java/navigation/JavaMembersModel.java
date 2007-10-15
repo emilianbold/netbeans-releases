@@ -346,6 +346,7 @@ public final class JavaMembersModel extends DefaultTreeModel {
 
             ElementOpen.open(fileObject, elementHandle);
         }
+        
     }
 
     class PackageTreeNode extends AbstractMembersTreeNode {
@@ -611,6 +612,10 @@ public final class JavaMembersModel extends DefaultTreeModel {
             } else {
                 patternLowerCase = pattern.toLowerCase();
             }
+        }
+        
+        void fireTreeNodesChanged() {
+            super.fireTreeNodesChanged(this, getPathToRoot((TreeNode)getRoot()), null, null);
         }
         
         private class FilterNode extends DefaultMutableTreeNode implements JavaElement {

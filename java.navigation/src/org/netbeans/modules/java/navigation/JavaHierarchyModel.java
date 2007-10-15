@@ -58,6 +58,8 @@ import javax.lang.model.util.Types;
 import javax.swing.Icon;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeNode;
+
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.ClassIndex;
@@ -95,8 +97,6 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
     /**
      * Holds value of property pattern.
      */
-    private String pattern = ""; // NOI18N
-    private String patternLowerCase = ""; // NOI18N
     private FileObject fileObject;
     private ElementHandle[] elementHandles;
 
@@ -120,29 +120,7 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
 
         update(elements, compilationInfo);
     }
-
-    /**
-     * Getter for property pattern.
-     * @return Value of property pattern.
-     */
-    public String getPattern() {
-        return this.pattern;
-    }
-
-    /**
-     * Setter for property pattern.
-     * @param pattern New value of property pattern.
-     */
-    public void setPattern(String pattern) {
-        this.pattern = pattern;
-        if (pattern == null) {
-            patternLowerCase = null;
-        } else {
-            patternLowerCase = pattern.toLowerCase();
-        }
-    }
-
-
+    
     public void update() {
         update(elementHandles);
     }
@@ -223,11 +201,11 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
         setRoot(root);
     }
 
-    public boolean patternMatch(JavaElement javaToolsJavaElement) {
-        return Utils.patternMatch(javaToolsJavaElement, pattern, patternLowerCase);
+    void fireTreeNodesChanged() {
+        super.fireTreeNodesChanged(this, getPathToRoot((TreeNode)getRoot()), null, null);
     }
-
-   private abstract class AbstractHierarchyTreeNode
+    
+    private abstract class AbstractHierarchyTreeNode
         extends DefaultMutableTreeNode implements JavaElement {
         private FileObject fileObject;
         private ElementHandle<?extends Element> elementHandle;
@@ -418,6 +396,7 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
 
             ElementOpen.open(fileObject, elementHandle);
         }
+
     }
 
     private class TypeTreeNode extends AbstractHierarchyTreeNode {
@@ -598,5 +577,4 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
             }
         }
     }
-
 }

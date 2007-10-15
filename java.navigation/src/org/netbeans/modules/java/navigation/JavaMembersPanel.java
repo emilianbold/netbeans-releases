@@ -374,7 +374,8 @@ public class JavaMembersPanel extends javax.swing.JPanel {
 
         showFQNToggleButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
-                applyFilter();
+                JavaMembersAndHierarchyOptions.setShowFQN(showFQNToggleButton.isSelected());
+                javaMembersFilterModel.fireTreeNodesChanged();
             }
         });
 
