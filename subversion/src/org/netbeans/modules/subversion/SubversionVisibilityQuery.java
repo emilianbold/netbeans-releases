@@ -52,6 +52,7 @@ import java.util.*;
 
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
+import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.openide.ErrorManager;
 
 /**
@@ -72,7 +73,10 @@ public class SubversionVisibilityQuery implements VisibilityQueryImplementation,
     public boolean isVisible(FileObject fileObject) {
         if (fileObject.isData()) return true;
         File file = FileUtil.toFile(fileObject);
-        if(file == null) return true;
+        if(file == null) return true;                     
+        if(!(VersioningSupport.getOwner(file) instanceof SubversionVCS)) {
+            return true;
+        }
         try {
             return cache.getStatus(file).getStatus() != FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY;
         } catch (Exception e) {
