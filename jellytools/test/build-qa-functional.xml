@@ -65,4 +65,7 @@ made subject to such option by the copyright holder.
         </buildTests>
     </target>
 
+    <!-- Temporarily turn logging on because of issue 118872. -->
+    <property name="xtest.ide.commandline.suffix" value="-J-Dorg.netbeans.modules.refactoring.spi.impl.SafeDeleteAction.level=100"/>
+
 </project>
