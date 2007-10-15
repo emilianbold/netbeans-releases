@@ -111,7 +111,7 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
     }
 
     public CsmObject getCsmObject() {
-        if (object instanceof CsmObject) {
+        if (CsmKindUtilities.isCsmObject(object)) {
             return (CsmObject) object;
         }
         return null;
