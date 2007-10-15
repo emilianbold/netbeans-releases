@@ -52,6 +52,7 @@ public final class EnterpriseCatalog implements CatalogReader, CatalogDescriptor
 
     private static final String J2EE_NS = "http://java.sun.com/xml/ns/j2ee"; //NOI18N
     private static final String JAVAEE_NS = "http://java.sun.com/xml/ns/javaee"; //NOI18N
+    private static final String XML_NS = "http://www.w3.org/2001/XMLSchema"; //NOI18N
     private static final String RESOURCE_PATH = "nbres:/org/netbeans/modules/j2ee/ddloaders/catalog/resources/"; //NO18N 
     
     private List<SchemaInfo> schemas = new ArrayList<SchemaInfo>();
@@ -61,6 +62,8 @@ public final class EnterpriseCatalog implements CatalogReader, CatalogDescriptor
     }
 
     private void initialize(){
+        // xml.xsd
+        schemas.add(new SchemaInfo("xml.xsd", XML_NS));
         // application-client
         schemas.add(new SchemaInfo("application-client_1_4.xsd", J2EE_NS));
         schemas.add(new SchemaInfo("application-client_5.xsd", JAVAEE_NS));
