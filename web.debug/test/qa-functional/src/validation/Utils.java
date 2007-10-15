@@ -186,7 +186,7 @@ public class Utils {
      * @return ContainerOperator representing Debug toolbar
      */
     public static ContainerOperator getDebugToolbar() {
-        String debugToolbarLabel = Bundle.getString("org.netbeans.modules.debugger.jpda.ui.Bundle", "Toolbars/Debug");
+        String debugToolbarLabel = Bundle.getStringTrimmed("org.netbeans.modules.debugger.jpda.ui.Bundle", "Toolbars/Debug");
         return MainWindowOperator.getDefault().getToolbar(debugToolbarLabel);
     }
     
@@ -279,7 +279,7 @@ public class Utils {
                     }
                     is.close();
                 } catch (Exception e) {
-                    e.printStackTrace();;
+                    e.printStackTrace();
                     return null;
                 } finally {
                     if(is != null) {
