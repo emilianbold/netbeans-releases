@@ -70,6 +70,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -88,15 +90,19 @@ import javax.lang.model.util.Types;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.GeneratorUtilities;
+import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.editor.GuardedDocument;
+import org.netbeans.editor.GuardedException;
+import org.netbeans.editor.Utilities;
 import org.openide.DialogDescriptor;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -789,6 +795,19 @@ public class GeneratorUtils {
                 return ((VariableTree)tree).getName().toString();
             }
             return ""; //NOI18N
+        }
+    }
+    
+    public static void guardedCommit(JTextComponent component, ModificationResult mr) throws IOException {
+        try {
+            mr.commit();
+        } catch (IOException e) {
+            if (e.getCause() instanceof GuardedException) {
+                String message = NbBundle.getMessage(GeneratorUtils.class, "ERR_CannotApplyGuarded");
+
+                Utilities.setStatusBoldText(component, message);
+                Logger.getLogger(GeneratorUtils.class.getName()).log(Level.FINE, null, e);
+            }
         }
     }
 }

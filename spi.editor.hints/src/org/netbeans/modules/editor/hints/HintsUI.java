@@ -49,6 +49,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -61,6 +62,7 @@ import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.editor.AnnotationDesc;
 import org.netbeans.editor.Annotations;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.GuardedException;
 import org.netbeans.editor.JumpList;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.hints.borrowed.ListCompletionView;
@@ -572,6 +574,14 @@ public class HintsUI implements MouseListener, KeyListener, PropertyChangeListen
                 public void run() {
                     try {
                         changes = f.implement();
+                    } catch (GuardedException ge) {
+                            reportGuardedException(component, ge);
+                    } catch (IOException e) {
+                        if (e.getCause() instanceof GuardedException) {
+                            reportGuardedException(component, e);
+                        } else {
+                            Exceptions.printStackTrace(e);
+                        }
                     } catch (Exception e) {
                         Exceptions.printStackTrace(e);
                     }
@@ -591,6 +601,17 @@ public class HintsUI implements MouseListener, KeyListener, PropertyChangeListen
                 });
             }
         }
+    }
+    
+    private static void reportGuardedException(final JTextComponent component, final Exception e) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                String message = NbBundle.getMessage(HintsUI.class, "ERR_CannotApplyGuarded");
+
+                Utilities.setStatusBoldText(component, message);
+                Logger.getLogger(HintsUI.class.getName()).log(Level.FINE, null, e);
+            }
+        });
     }
     
     private static void open(ChangeInfo changes, JTextComponent component) {

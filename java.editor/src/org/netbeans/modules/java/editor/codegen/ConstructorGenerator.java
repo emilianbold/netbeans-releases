@@ -63,6 +63,7 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.modules.java.editor.codegen.ui.ConstructorPanel;
@@ -162,8 +163,7 @@ public class ConstructorGenerator implements CodeGenerator {
         if (js != null) {
             try {
                 final int caretOffset = component.getCaretPosition();
-                js.runModificationTask(new Task<WorkingCopy>() {
-
+                ModificationResult mr = js.runModificationTask(new Task<WorkingCopy>() {
                     public void run(WorkingCopy copy) throws IOException {
                         copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                         TreePath path = copy.getTreeUtilities().pathFor(caretOffset);
@@ -183,7 +183,8 @@ public class ConstructorGenerator implements CodeGenerator {
                             GeneratorUtils.generateConstructor(copy, path, variableElements, constructorHandle != null ? (ExecutableElement)constructorHandle.resolve(copy) : null, idx);
                         }    
                     }
-                }).commit();
+                });
+                GeneratorUtils.guardedCommit(component, mr);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }

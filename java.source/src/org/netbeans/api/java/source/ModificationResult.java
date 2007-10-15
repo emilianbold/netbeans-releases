@@ -136,6 +136,7 @@ public final class ModificationResult {
             if (doc != null) {
                 if (doc instanceof BaseDocument)
                     ((BaseDocument)doc).atomicLock();
+                boolean success = false;
                 try {
                     for (Difference diff : differences) {
                         if (diff.isExcluded())
@@ -162,9 +163,15 @@ public final class ModificationResult {
                             throw ioe;
                         }
                     }
+                    success = true;
                 } finally {
-                    if (doc instanceof BaseDocument)
+                    if (doc instanceof BaseDocument) {
+                        if (!success) {
+                            //something went wrong, rollback the changes:
+                            ((BaseDocument)doc).atomicUndo();
+                        }
                         ((BaseDocument)doc).atomicUnlock();
+                    }
                 }
                 return;
             }
