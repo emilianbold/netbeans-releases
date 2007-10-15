@@ -43,10 +43,10 @@
 package org.netbeans.modules.palette.ui;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.FocusTraversalPolicy;
+import java.awt.Font;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.KeyboardFocusManager;
@@ -65,6 +65,7 @@ import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPopupMenu;
 import javax.swing.JToggleButton;
@@ -75,7 +76,6 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.MouseInputListener;
 import javax.swing.plaf.basic.BasicListUI;
@@ -140,7 +140,7 @@ public class CategoryList extends JList implements Autoscroll {
         map.put( "selectNextRow", new MoveFocusAction( map.get( "selectNextRow" ), true ) );
         map.put( "selectPreviousColumn", new MoveFocusAction( new ChangeColumnAction( map.get( "selectPreviousColumn" ), false ), false ) );
         map.put( "selectNextColumn", new MoveFocusAction( new ChangeColumnAction( map.get( "selectNextColumn" ), true ), true ) );
-        Node categoryNode = (Node)category.getLookup().lookup( Node.class );
+        Node categoryNode = category.getLookup().lookup(org.openide.nodes.Node.class);
         if( null != categoryNode )
             map.put( "paste", new Utils.PasteItemAction( categoryNode ) );
         else
@@ -160,6 +160,7 @@ public class CategoryList extends JList implements Autoscroll {
         return category;
     }
 
+    @Override
     public void updateUI () {
         if( null != rendererRef )
             rendererRef.clear();
@@ -175,6 +176,7 @@ public class CategoryList extends JList implements Autoscroll {
     // because it would force another repaint.
     Integer tempWidth;
 
+    @Override
     public int getWidth () {
         return (tempWidth == null) ? super.getWidth () : tempWidth.intValue ();
     }
@@ -208,6 +210,7 @@ public class CategoryList extends JList implements Autoscroll {
     // of the list.  An alternative would be to set the unitIncrement
     // of the JScrollBar to a fixed value. You wouldn't get the nice
     // aligned scrolling, but it should work.
+    @Override
     public int getScrollableUnitIncrement (Rectangle visibleRect, int orientation, int direction) {
         int row;
         if (orientation == SwingConstants.VERTICAL &&
@@ -277,6 +280,11 @@ public class CategoryList extends JList implements Autoscroll {
             if (button == null) {
                 button = new JToggleButton ();
                 button.setMargin (new Insets (1, 1, 1, 0));
+                if( CategoryButton.isAqua ) {
+                    //force button font on mac l&f
+                    button.setFont( new Font(null, Font.PLAIN, 
+                            new JLabel().getFont().getSize() ) );
+                }
                 
                 if (!CategoryButton.isGTK) {
                     toolbar = new JToolBar ();
@@ -375,6 +383,7 @@ public class CategoryList extends JList implements Autoscroll {
     
     static class CategoryListUI extends BasicListUI {
 
+        @Override
         protected void updateLayoutState () {
             super.updateLayoutState ();
 
@@ -399,6 +408,7 @@ public class CategoryList extends JList implements Autoscroll {
             return result;
         }
 
+        @Override
         protected MouseInputListener createMouseInputListener () {
             return new ListMouseInputHandler ();
         }
@@ -407,6 +417,7 @@ public class CategoryList extends JList implements Autoscroll {
 
                 int selIndex = -1;
                 
+            @Override
             public void mouseClicked(MouseEvent e) {
                 if( !list.isEnabled() )
                     return;
@@ -423,6 +434,7 @@ public class CategoryList extends JList implements Autoscroll {
                 }
             }
 
+            @Override
             public void mousePressed( MouseEvent e ) {
                 if( getValidIndex( e.getPoint() ) >= 0 ) {
                     selIndex = list.getSelectedIndex ();
@@ -430,23 +442,28 @@ public class CategoryList extends JList implements Autoscroll {
                 }
             }
 
+            @Override
             public void mouseDragged( MouseEvent e ) {
             }
 
+            @Override
             public void mouseMoved( MouseEvent e ) {
                 mouseEntered( e );
             }
 
+            @Override
             public void mouseEntered( MouseEvent e ) {
                 if( list.isEnabled() )
                     setRolloverIndex( getValidIndex( e.getPoint() ) );
             }
 
+            @Override
             public void mouseExited( MouseEvent e ) {
                 if( list.isEnabled() )
                     setRolloverIndex( -1 );
             }
 
+            @Override
             public void mouseReleased( MouseEvent e ) {
                 if( getValidIndex( e.getPoint() ) >= 0) {
                     super.mouseReleased (e);
@@ -491,6 +508,7 @@ public class CategoryList extends JList implements Autoscroll {
             item.invokePreferredAction( e );
         }
 
+        @Override
         public boolean isEnabled() {
             return list.isEnabled() && list.getSelectedIndex() >= 0;
         }
@@ -513,6 +531,7 @@ public class CategoryList extends JList implements Autoscroll {
             popup.show( getParent(), posX, posY );
         }
 
+        @Override
         public boolean isEnabled() {
             return CategoryList.this.isEnabled();
         }
@@ -595,7 +614,7 @@ public class CategoryList extends JList implements Autoscroll {
             Item item = getItemAt( getSelectedIndex() );
             if( null == item )
                 return;
-            Node itemNode = (Node)item.getLookup().lookup( Node.class );
+            Node itemNode = item.getLookup().lookup(org.openide.nodes.Node.class);
             if( null == itemNode )
                 return;
             Action performer;
@@ -607,6 +626,7 @@ public class CategoryList extends JList implements Autoscroll {
                 performer.actionPerformed( e );
         }
 
+        @Override
         public boolean isEnabled() {
             return getSelectedIndex() >= 0;
         }

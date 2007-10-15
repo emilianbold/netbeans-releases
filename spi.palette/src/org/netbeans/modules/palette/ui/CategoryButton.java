@@ -66,7 +66,7 @@ class CategoryButton extends JCheckBox implements Autoscroll {
     private static final Color AQUA_BK_COLOR = new Color(225, 235, 240);
     
     static final boolean isGTK = "GTK".equals( UIManager.getLookAndFeel().getID() );
-    private static final boolean isAqua = "Aqua".equals( UIManager.getLookAndFeel().getID() );
+    static final boolean isAqua = "Aqua".equals( UIManager.getLookAndFeel().getID() );
 
     private CategoryDescriptor descriptor;
     private Category category;
