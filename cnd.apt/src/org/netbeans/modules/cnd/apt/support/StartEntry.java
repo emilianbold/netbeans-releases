@@ -55,9 +55,9 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
  * @author Alexander Simon
  */
 public final class StartEntry implements Persistent, SelfPersistent{
-    private String startFile;
+    private final String startFile;
     //private boolean isCPP; // TODO: flag to be used for understanding C/C++ lang
-    private Key startFileProject;
+    private final Key startFileProject;
     public StartEntry(String startFile, Key startFileProject) {
         this.startFile = FilePathCache.getString(startFile);
         this.startFileProject = startFileProject;
@@ -81,5 +81,12 @@ public final class StartEntry implements Persistent, SelfPersistent{
         assert input != null;
         startFile = input.readUTF();
         startFileProject = KeyFactory.getDefaultFactory().readKey(input);
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder out = new StringBuilder();
+        out.append("Start Entry: from file=" + startFile + "\nof project="+startFileProject); //NOI18N
+        return out.toString();
     }
 }
