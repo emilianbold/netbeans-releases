@@ -72,6 +72,7 @@ import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import javax.swing.Action;
 import org.netbeans.modules.groovy.grailsproject.actions.NewControllerAction;
+import java.io.File;
 
 /**
  * 
@@ -206,7 +207,7 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
                 FileObject folder = fo.isFolder() ? fo : fo.getParent();
                 String relPath = FileUtil.getRelativePath(groupRoot, folder);
                 List<String> path = new ArrayList<String>();
-                StringTokenizer strtok = new StringTokenizer(relPath, "/"); // NOI18N
+                StringTokenizer strtok = new StringTokenizer(relPath, File.separator); // NOI18N
                 while (strtok.hasMoreTokens()) {
                     String token = strtok.nextToken();
                    path.add(token);

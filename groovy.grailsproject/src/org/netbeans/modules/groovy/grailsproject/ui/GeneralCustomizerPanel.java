@@ -7,6 +7,7 @@
 package org.netbeans.modules.groovy.grailsproject.ui;
 
 import org.netbeans.api.project.Project;
+import java.io.File;
 
 /**
  *
@@ -20,7 +21,7 @@ public class GeneralCustomizerPanel extends javax.swing.JPanel {
         this.project = project;
         initComponents();
         grailsEnvChooser.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Development", "Production", "Test" }));
-        projectFolderTextField.setText("/" + project.getProjectDirectory().getPath());
+        projectFolderTextField.setText(File.separator + project.getProjectDirectory().getPath());
     }
     
     /** This method is called from within the constructor to

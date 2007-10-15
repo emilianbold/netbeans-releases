@@ -62,8 +62,7 @@ public class GrailsServerRunnable implements Runnable {
         this.cmd = cmd;
         this.outputReady = outputReady;
         
-        String sep = System.getProperty("file.separator");
-        this.grailsExecutable = settings.getGrailsBase() + sep + "bin"+ sep +"grails";
+        this.grailsExecutable = settings.getGrailsBase() + File.separator + "bin"+ File.separator +"grails";
         }
     
     public void run() {

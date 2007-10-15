@@ -146,7 +146,7 @@ public class GrailsSources implements Sources {
                 throw new IllegalArgumentException();
             }
             if (file.isFolder()) {
-                path += "/"; // NOI18N
+                path += File.separator; // NOI18N
             }
             if (file.isFolder() && file != projectDir && ProjectManager.getDefault().isProject(file)) {
                 // #67450: avoid actually loading the nested project.

@@ -39,6 +39,7 @@ import java.util.concurrent.CountDownLatch;
 import java.io.BufferedReader;
 import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.io.File;
 
 /**
  *
@@ -63,7 +64,7 @@ public class ExternalGrailsServer implements GrailsServer{
             assert io ==  null;
                 
             // split dirName in directory to create and parent:
-            int lastSlash = dirName.lastIndexOf("/");
+            int lastSlash = dirName.lastIndexOf(File.separator);
             String workDir = dirName.substring(0, lastSlash);
             String newDir  = dirName.substring(lastSlash + 1);
             
@@ -88,7 +89,7 @@ public class ExternalGrailsServer implements GrailsServer{
                 
                 ExecutionEngine engine = ExecutionEngine.getDefault();
 
-                String cwdName = "/" + prj.getProjectDirectory().getPath();
+                String cwdName = File.separator + prj.getProjectDirectory().getPath();
                 
                 gsr = new GrailsServerRunnable(outputReady, cwdName, cmd);
                 ExecutorTask exTask = engine.execute(tabName, gsr, io);
