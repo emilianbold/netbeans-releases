@@ -1,2 +1,2 @@
-NAME_templates.dojo.rest.rtable=__CONTAINER_NAME__ Resource
-HINT_templates.dojo.rest.rtable=<html>__CONTAINER_NAME__ Resource</html>
+NAME_templates.dojo.rest.__CONTAINER_PATH_NAME__table=__CONTAINER_NAME__ Service
+HINT_templates.dojo.rest.__CONTAINER_PATH_NAME__table=<html>__CONTAINER_NAME__ Service</html>

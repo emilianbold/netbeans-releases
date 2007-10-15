@@ -53,6 +53,12 @@ __FIELDS_INIT__
          '}'+
       '}';
       return myObj;
+   },
+
+   getFields : function() {
+      var fields = [];
+__FIELD_NAMES_TOSTRING__
+      return fields;
    }
 
 }

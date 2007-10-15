@@ -1,18 +1,18 @@
 djd43.registerModulePath("rdj", "../../../../rest/rdj");
 djd43.require("rdj.widget.ResourcesTable");
-djd43.require("rdj.data.RestStore");
+djd43.require("rdj.data.__CONTAINER_NAME__Store");
 
 // define the namespaces
-jmaki.namespace("jmaki.widgets.dojo.rest.rtable");
+jmaki.namespace("jmaki.widgets.dojo.rest.__CONTAINER_PATH_NAME__table");
 
-jmaki.widgets.dojo.rest.rtable.Widget = function(wargs) {
+jmaki.widgets.dojo.rest.__CONTAINER_PATH_NAME__table.Widget = function(wargs) {
 
     var _widget = this;
     var columns = [];
 
     var uuid = wargs.uuid;
-    var topic = "/dojo/rest/rtable";
-    var subscribe = ["/dojo/rest/rtable", "/rtable"];
+    var topic = "/dojo/rest/__CONTAINER_PATH_NAME__table";
+    var subscribe = ["/dojo/rest/__CONTAINER_PATH_NAME__table", "/__CONTAINER_PATH_NAME__table"];
     var filter = "jmaki.filters.tableModelFilter";
     
     var container = document.getElementById(uuid);
@@ -127,7 +127,7 @@ jmaki.widgets.dojo.rest.rtable.Widget = function(wargs) {
 			}
 		}
 	};
-        var restStore = new rdj.data.RestStore({serviceUrl:wargs.service});
+        var restStore = new rdj.data.__CONTAINER_NAME__Store({serviceUrl:wargs.service});
         var query = null;
 	var result = restStore.find({query:query, sync:true, onnext:addRow});
 	var resourcesTable = djd43.widget.createWidget("rdj:ResourcesTable", {valueField:"Id"}, container);
@@ -244,7 +244,7 @@ jmaki.widgets.dojo.rest.rtable.Widget = function(wargs) {
         if (r.id) targetId = r.id;
         
         if (table.store.getDataByKey(targetId)) {
-            jmaki.log(wargs.uuid  + " : Warning. Attempt to add record to rest.rtable. with duplicate row id: " + targetId + ". Autogenerating new id.");
+            jmaki.log(wargs.uuid  + " : Warning. Attempt to add record to rest.__CONTAINER_PATH_NAME__table. with duplicate row id: " + targetId + ". Autogenerating new id.");
             r.id = genId();
         }
         

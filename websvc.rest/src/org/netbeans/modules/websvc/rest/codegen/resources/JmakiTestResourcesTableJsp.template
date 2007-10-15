@@ -8,13 +8,13 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <title>JSP Page</title>
+        <title>__CONTAINER_NAME__ table JMaki widget showing RestStore Dojo Component</title>
     </head>
     <body>
-    <h1>JSP Page</h1>
+    <h1>__CONTAINER_NAME__ table JMaki widget showing RestStore Dojo Component</h1>
     
     
-    <a:widget name="dojo.rest.rtable" service="http://localhost:8080/CustomerDB/resources/customers/" />
+    <a:widget name="dojo.rest.__CONTAINER_PATH_NAME__table" service="http://localhost:8080/__PROJECT_NAME__/resources/__CONTAINER_PATH_NAME__/" />
 
     
     </body>

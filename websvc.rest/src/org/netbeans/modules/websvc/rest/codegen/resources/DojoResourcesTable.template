@@ -3,7 +3,6 @@ djd43.require("djd43.widget.FilteringTable");
 djd43.require("djd43.lang.declare");
 djd43.widget.defineWidget("rdj.widget.ResourcesTable", djd43.widget.FilteringTable, {
     createRow: function(obj){
-        //alert('create row');
         var row=document.createElement("tr");
         djd43.html.disableSelection(row);
         if(obj.key != null){

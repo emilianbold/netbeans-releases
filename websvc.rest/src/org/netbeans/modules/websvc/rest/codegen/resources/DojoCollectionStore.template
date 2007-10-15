@@ -1,8 +1,8 @@
-djd43.provide("rdj.data.RestStore");
+djd43.provide("rdj.data.__CONTAINER_NAME__Store");
 djd43.require("djd43.data.core.RemoteStore");
 djd43.require("djd43.lang.declare");
 djd43.require("djd43.io.ScriptSrcIO");
-djd43.declare("rdj.data.RestStore", djd43.data.core.RemoteStore, {initializer:function (kwArgs) {
+djd43.declare("rdj.data.__CONTAINER_NAME__Store", djd43.data.core.RemoteStore, {initializer:function (kwArgs) {
 	if (!kwArgs) {
 		kwArgs = {};
 	}
@@ -14,6 +14,8 @@ djd43.declare("rdj.data.RestStore", djd43.data.core.RemoteStore, {initializer:fu
 	this._results = {};
 	this._data = {};
 	this._numItems = 0;
+        this._ref__CONTAINER_ITEM_NAME__ = null;
+        this._refData = {};
 },
     _setupQueryRequest:function (result, requestKw) {
 	var start = 1;
@@ -29,30 +31,31 @@ djd43.declare("rdj.data.RestStore", djd43.data.core.RemoteStore, {initializer:fu
         }
 }, _resultToQueryMetadata:function (json) {
         var myObj = eval('('+json+')');
-	return myObj.customers.customerRef;
+	return myObj.__CONTAINER_PATH_NAME__.__CONTAINER_ITEM_PATH_NAME__Ref;
 }, _resultToQueryData:function (json) {
         var myObj = eval('('+json+')');
-        var customers = myObj.customers;
-        var refs = customers.customerRef;
+        var __CONTAINER_PATH_NAME__ = myObj.__CONTAINER_PATH_NAME__;
+        var refs = __CONTAINER_PATH_NAME__.__CONTAINER_ITEM_PATH_NAME__Ref;
 	var data = {};
 	for (var i = 0; i < refs.length; ++i) {
 		var record = refs[i];
                 var url2 = record['@uri'];
 		var item = {};
-                var cust = new Customer(url2);
-		item["Id"] = [cust.getCustomerId()];
-                item["Name"] = [cust.getName()];
-                item["Email"] = [cust.getEmail()];
-                item["Addressline1"] = [cust.getAddressline1()];
-                item["Addressline2"] = [cust.getAddressline2()];
-                item["City"] = [cust.getCity()];
-                item["State"] = [cust.getState()];
-                item["Zip"] = [cust.getZip()];
-                item["Phone"] = [cust.getPhone()];
-                item["Fax"] = [cust.getFax()];
-                item["CreditLimit"] = [cust.getCreditLimit()];             
+                var ci = new __CONTAINER_ITEM_NAME__(url2);
+                ci.init();
+                var fields = ci.getFields();//first field is Id, second is uri
+                item['Id'] = [ci[fields[0]]];
+                for(var j=1;j<fields.length;j++) {
+                    var f = fields[j];
+                    item[f] = [ci[f]];
+                }
                 data[i] = item;
 	}
+        if(refs.length > 0) {
+            _ref__CONTAINER_ITEM_NAME__ = new __CONTAINER_ITEM_NAME__(refs[0]['@uri']);
+            _ref__CONTAINER_ITEM_NAME__.init();
+            _refData = data[0];
+        }
 	return data;
 }, _setupSaveRequest:function (saveKeywordArgs, requestKw) {
         var id = 1000+this.getSize()+1;
@@ -65,29 +68,21 @@ djd43.declare("rdj.data.RestStore", djd43.data.core.RemoteStore, {initializer:fu
         }
         var jsonStr = '';
         if(method == 'put') {
-             var cust = new Customer(this._serverSaveUrl+id+'/');
-             cust.initialized = true;
-             cust.setCustomerId(id);
-             cust.setName(data['Name']);
-             cust.setEmail(data['Email']);
-             cust.setAddressline1(data['Addressline1']);
-             cust.setAddressline2(data['Addressline2']);
-             cust.setCity(data['City']);
-             cust.setState(data['State']);
-             cust.setZip(data['Zip']);
-             cust.setPhone(data['Phone']);
-             cust.setFax(data['Fax']);
-             cust.setCreditLimit(data['CreditLimit']);  
-             var c1 = new Customer(this._serverSaveUrl+this._data[0][0]['Id']+'/');
-             cust.setDiscountCode(c1.getDiscountCode());
+             var ci = new __CONTAINER_ITEM_NAME__(this._serverSaveUrl+id+'/');
+             ci.init();
+             var fields = ci.getFields();//first field is Id, second is uri
+             for(var j=1;j<fields.length;j++) {
+                var f = fields[j];
+                ci[f] = data[f];
+             }
              
              //Hack: Since djd43 0.4.3 do not support PUT and DELETE methods, we are
             //using the generated Javascript to achieve these instead of djd43.io.bind
-            var status = cust.flush();
+            var status = ci.flush();
             if(status) {
-                alert('Update succeeded for customer with Id: \''+id+'\'.');
+                alert('Update succeeded for __CONTAINER_ITEM_PATH_NAME__ with Id: \''+id+'\'.');
             } else {
-                alert('Update failed for customer with Id: \''+id+'\'.');
+                alert('Update failed for __CONTAINER_ITEM_PATH_NAME__ with Id: \''+id+'\'.');
             }
             requestKw.url = this._serverSaveUrl+id+'/';
             method = 'get';
@@ -102,22 +97,16 @@ djd43.declare("rdj.data.RestStore", djd43.data.core.RemoteStore, {initializer:fu
             requestKw.mimetype = "application/json";          
         } else {
             for(var item in this._added) {
-                 var cust = new Customer(this._serverSaveUrl+id+'/');
-                 cust.initialized = true;
-                 cust.setCustomerId(id);
-                 cust.setName('xx');
-                 cust.setEmail('xx');
-                 cust.setAddressline1('xx');
-                 cust.setAddressline2('xx');
-                 cust.setCity('xx');
-                 cust.setState('xx');
-                 cust.setZip('xx');
-                 cust.setPhone('xx');
-                 cust.setFax('xx');
-                 cust.setCreditLimit('0');  
-                 var c1 = new Customer(this._serverSaveUrl+this._data[0][0]['Id']+'/');
-                 cust.setDiscountCode(c1.getDiscountCode());
-                 jsonStr += cust.toString();
+                 var ci = _ref__CONTAINER_ITEM_NAME__;
+                 ci.initialized = true;
+                 ci.uri = this._serverSaveUrl+id+'/';
+                 var fields = ci.getFields();//first field is Id, second is uri
+                 ci[fields[0]] = id;
+                 for(var j=1;j<fields.length;j++) {
+                    var f = fields[j];
+                    ci[f] = _refData[f];
+                 }
+                 jsonStr += ci.toString();
             }            
             requestKw.url = this._serverSaveUrl;
             requestKw.headers = {
@@ -131,6 +120,6 @@ djd43.declare("rdj.data.RestStore", djd43.data.core.RemoteStore, {initializer:fu
         }        
 }, deleteItem:function (item) {
         var id = item['Id'];
-	var cust = new Customer(this._serverSaveUrl+id+'/');
-        cust.delete_();
+	var ci = new __CONTAINER_ITEM_NAME__(this._serverSaveUrl+id+'/');
+        ci.delete_();
 }});

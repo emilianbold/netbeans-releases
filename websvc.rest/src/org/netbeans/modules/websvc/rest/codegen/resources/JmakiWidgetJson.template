@@ -37,18 +37,14 @@
            { 'id' : 'dojo', 
              'libs' : [
                    '/resources/dojo/resources/libs/dojo/v0.4.3/djd43.js',
-                   '../rjs/Support.js',
-                   '../rjs/customerdb/CustomerDB.js',
-                   '../rjs/customerdb/Customers.js',
-                   '../rjs/customerdb/DiscountCodes.js',
-                   '../rjs/customerdb/DiscountCode.js',
-                   '../rjs/customerdb/Customer.js'
+__LIBS_JS_SCRIPTS__
+                   '../rjs/Support.js'
                ],
                'preload' : 'if (typeof djConfig ==\'undefined\') djConfig = { parseWidgets: false, searchIds: [] };',
                'resources' : [
                    '../../resources/libs/dojo/v0.4.3/src',
                    '../../resources/libs/dojo/v0.4.3/djd43.js',
-                   '../rdj/data/RestStore.js',
+__RESOURCES_DOJO_SCRIPTS__
                    '../rdj/widget/ResourcesTable.js',
                    '../rdj/Support.js',
                    '../rdj/TestResourcesTable.html',

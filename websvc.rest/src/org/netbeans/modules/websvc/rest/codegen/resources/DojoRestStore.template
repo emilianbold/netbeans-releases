@@ -29,18 +29,18 @@ djd43.declare("rdj.data.RestStore", djd43.data.core.RemoteStore, {initializer:fu
         }
 }, _resultToQueryMetadata:function (json) {
         var myObj = eval('('+json+')');
-	return myObj.customers.customerRef;
+	return myObj.__CONTAINER_PATH_NAME__.__CONTAINER_ITEM_PATH_NAME__Ref;
 }, _resultToQueryData:function (json) {
         var myObj = eval('('+json+')');
-        var customers = myObj.customers;
-        var refs = customers.customerRef;
+        var __CONTAINER_PATH_NAME__ = myObj.__CONTAINER_PATH_NAME__;
+        var refs = __CONTAINER_PATH_NAME__.__CONTAINER_ITEM_PATH_NAME__Ref;
 	var data = {};
 	for (var i = 0; i < refs.length; ++i) {
 		var record = refs[i];
                 var url2 = record['@uri'];
 		var item = {};
-                var cust = new Customer(url2);
-		item["Id"] = [cust.getCustomerId()];
+                var cust = new __CONTAINER_ITEM_NAME(url2);
+		item["Id"] = [cust.get__CONTAINER_ITEM_NAMEId()];
                 item["Name"] = [cust.getName()];
                 item["Email"] = [cust.getEmail()];
                 item["Addressline1"] = [cust.getAddressline1()];
@@ -65,9 +65,9 @@ djd43.declare("rdj.data.RestStore", djd43.data.core.RemoteStore, {initializer:fu
         }
         var jsonStr = '';
         if(method == 'put') {
-             var cust = new Customer(this._serverSaveUrl+id+'/');
+             var cust = new __CONTAINER_ITEM_NAME(this._serverSaveUrl+id+'/');
              cust.initialized = true;
-             cust.setCustomerId(id);
+             cust.set__CONTAINER_ITEM_NAMEId(id);
              cust.setName(data['Name']);
              cust.setEmail(data['Email']);
              cust.setAddressline1(data['Addressline1']);
@@ -78,16 +78,16 @@ djd43.declare("rdj.data.RestStore", djd43.data.core.RemoteStore, {initializer:fu
              cust.setPhone(data['Phone']);
              cust.setFax(data['Fax']);
              cust.setCreditLimit(data['CreditLimit']);  
-             var c1 = new Customer(this._serverSaveUrl+this._data[0][0]['Id']+'/');
+             var c1 = new __CONTAINER_ITEM_NAME(this._serverSaveUrl+this._data[0][0]['Id']+'/');
              cust.setDiscountCode(c1.getDiscountCode());
              
              //Hack: Since djd43 0.4.3 do not support PUT and DELETE methods, we are
             //using the generated Javascript to achieve these instead of djd43.io.bind
             var status = cust.flush();
             if(status) {
-                alert('Update succeeded for customer with Id: \''+id+'\'.');
+                alert('Update succeeded for __CONTAINER_ITEM_PATH_NAME__ with Id: \''+id+'\'.');
             } else {
-                alert('Update failed for customer with Id: \''+id+'\'.');
+                alert('Update failed for __CONTAINER_ITEM_PATH_NAME__ with Id: \''+id+'\'.');
             }
             requestKw.url = this._serverSaveUrl+id+'/';
             method = 'get';
@@ -102,9 +102,9 @@ djd43.declare("rdj.data.RestStore", djd43.data.core.RemoteStore, {initializer:fu
             requestKw.mimetype = "application/json";          
         } else {
             for(var item in this._added) {
-                 var cust = new Customer(this._serverSaveUrl+id+'/');
+                 var cust = new __CONTAINER_ITEM_NAME(this._serverSaveUrl+id+'/');
                  cust.initialized = true;
-                 cust.setCustomerId(id);
+                 cust.set__CONTAINER_ITEM_NAMEId(id);
                  cust.setName('xx');
                  cust.setEmail('xx');
                  cust.setAddressline1('xx');
@@ -115,7 +115,7 @@ djd43.declare("rdj.data.RestStore", djd43.data.core.RemoteStore, {initializer:fu
                  cust.setPhone('xx');
                  cust.setFax('xx');
                  cust.setCreditLimit('0');  
-                 var c1 = new Customer(this._serverSaveUrl+this._data[0][0]['Id']+'/');
+                 var c1 = new __CONTAINER_ITEM_NAME(this._serverSaveUrl+this._data[0][0]['Id']+'/');
                  cust.setDiscountCode(c1.getDiscountCode());
                  jsonStr += cust.toString();
             }            
@@ -131,6 +131,6 @@ djd43.declare("rdj.data.RestStore", djd43.data.core.RemoteStore, {initializer:fu
         }        
 }, deleteItem:function (item) {
         var id = item['Id'];
-	var cust = new Customer(this._serverSaveUrl+id+'/');
+	var cust = new __CONTAINER_ITEM_NAME(this._serverSaveUrl+id+'/');
         cust.delete_();
 }});

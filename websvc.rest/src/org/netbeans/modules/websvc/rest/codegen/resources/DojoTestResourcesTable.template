@@ -1,6 +1,6 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-	<title>Customers table using RestStore Dojo Component</title>
+	<title>__CONTAINER_NAME__ table widget showing RestStore Dojo Component</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"></meta>
 	<!--<script type="text/javascript">
 		var djConfig = {
@@ -12,8 +12,7 @@
         <script type="text/javascript" src="./Support.js"></script>
 	<script type="text/javascript">
 		function loadResourcesTable() {
-                    
-			var restStore = new rdj.data.RestStore({serviceUrl:"http://localhost:8080/CustomerDB/resources/customers/"});
+			var restStore = new rdj.data.__CONTAINER_NAME__Store({serviceUrl:"http://localhost:8080/__PROJECT_NAME__/resources/__CONTAINER_PATH_NAME__/"});
 			var tableElement = djd43.byId("content");
 			var query = null;
 			rdj.displayResourcesTable(restStore, query, tableElement);
@@ -22,7 +21,7 @@
 	</script>
 </head>
 <body>
-	<h1>Customers table using RestStore Dojo Component</h1>
+	<h1>__CONTAINER_NAME__ table widget showing RestStore Dojo Component</h1>
         <table id="content" style="width: 500px; height: 100px;" class="resourcesTable"></table>
 	<p>&nbsp;</p>
 	<!--<h2>djd43.debug output</h2>-->

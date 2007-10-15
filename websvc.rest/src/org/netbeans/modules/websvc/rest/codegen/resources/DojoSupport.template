@@ -1,5 +1,5 @@
 djd43.registerModulePath("rdj", "../../../../../dojo/rest/rdj"); //relative to djd43.js
-djd43.require("rdj.data.RestStore");
+__REQUIRE_DOJO_SCRIPTS__
 djd43.require("rdj.widget.ResourcesTable");
 djd43.hostenv.writeIncludes();
 
@@ -30,19 +30,15 @@ rdj.includeCSS = function(file) {
     var scriptTag = document.createElement("link");
     scriptTag.setAttribute("rel", "stylesheet");
     scriptTag.setAttribute("type", "text/css");
-    scriptTag.setAttribute("href", "../rtable/component.css");
+    scriptTag.setAttribute("href", file);
     document.getElementsByTagName("head")[0].appendChild(scriptTag);
 }
 
 djd43.provide("rdj.displayResourcesTable");
 rdj.displayResourcesTable = function(datastore, query, tableElement) {
     rdj.includeJS('../rjs/Support.js');
-    rdj.includeJS('../rjs/customerdb/CustomerDB.js');
-    rdj.includeJS('../rjs/customerdb/Customers.js');
-    rdj.includeJS('../rjs/customerdb/DiscountCodes.js');
-    rdj.includeJS('../rjs/customerdb/DiscountCode.js');
-    rdj.includeJS('../rjs/customerdb/Customer.js');
-    rdj.includeCSS('../rtable/component.css');
+__INCLUDE_JS_SCRIPTS__
+    rdj.includeCSS('../__CONTAINER_PATH_NAME__table/component.css');
     var dataInSimpleStoreFormat = [];
     var columnsInResourcesTableFormat = null;
     var addRow = function(item, result) {
@@ -80,7 +76,7 @@ rdj.displayResourcesTable = function(datastore, query, tableElement) {
     actions.id = 'actions';
     var actionTable = actions.appendChild(document.createElement('table'));
     var tr = actionTable.appendChild(document.createElement('tr'));
-    var tab = ' background-image: url(../rtable/images/rtable.gif); width: 100px; border-right: #2574B7 1px solid; border-top: #2574B7 1px solid; border-left: #2574B7 1px solid; border-bottom: #2574B7 1px solid; color: #000000; text-align: center;';
+    var tab = ' background-image: url(../__CONTAINER_PATH_NAME__table/images/rtable.gif); width: 100px; border-right: #2574B7 1px solid; border-top: #2574B7 1px solid; border-left: #2574B7 1px solid; border-bottom: #2574B7 1px solid; color: #000000; text-align: center;';
     var text2 = 'color: #000000';
     var addActionStr = '<div style="'+tab+'"><a style="text-decoration: none" href="javascript:rdj.addResource()"><span style="'+text2+'">Add</span></a></div>';        
     var addAction = tr.appendChild(document.createElement('td'));
@@ -120,9 +116,9 @@ rdj.addResource = function () {
     restStore.newItem({Id: id}, kwArgs);
     var result = restStore.save({sync: true, Id: id, method: "post"});
     if(result.results[0] == true) {
-        alert('New customer created with Id: \''+id+'\'.');
+        alert('New item created with Id: \''+id+'\'.');
     } else {
-        alert('Creating new customer failed for Id: \''+id+'\'.');
+        alert('Creating new item failed for Id: \''+id+'\'.');
     }
     table.innerHTML = '';
     actions.innerHTML = '';

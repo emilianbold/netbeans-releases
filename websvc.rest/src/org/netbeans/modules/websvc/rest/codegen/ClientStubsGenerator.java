@@ -89,7 +89,8 @@ public class ClientStubsGenerator extends AbstractGenerator {
     public static final String DATA = "data"; //NOI18N
     public static final String WIDGET = "widget"; //NOI18N
     public static final String RJS = "rjs"; //NOI18N
-    public static final String RTABLE = "rtable"; //NOI18N
+    public static final String TABLE = "table"; //NOI18N
+    public static final String STORE = "Store"; //NOI18N
     public static final String CSS = "css"; //NOI18N
     public static final String JS = "js"; //NOI18N
     public static final String HTML = "html"; //NOI18N
@@ -104,6 +105,9 @@ public class ClientStubsGenerator extends AbstractGenerator {
     public static final String BUNDLE = "Bundle"; //NOI18N
     public static final String PROPERTIES = "properties"; //NOI18N
     public static final String LIBS = "libs"; //NOI18N
+    public static final String DJD43 = "djd43"; //NOI18N
+    public static final String JMAKI_DOJO_10_ZIP = "jmaki-dojo-1.0.zip"; //NOI18n
+    public static final String JMAKI_COMP_LIB = "jmakicomplib"; //NOI18n
     
     public static final String JS_SUPPORT = "Support"; //NOI18N
     public static final String JS_TESTSTUBS = "TestStubs"; //NOI18N
@@ -161,8 +165,11 @@ public class ClientStubsGenerator extends AbstractGenerator {
     private FileObject rdjDir;
     private FileObject dataDir;
     private FileObject rjsDir;
-    private FileObject rtableDir;
     private FileObject templatesDir;
+    private String includeJs = "";
+    private String libsJs = "";
+    private String resourcesDojo = "";
+    private String requireDojo = "";
     private static final int READ_BUF_SIZE = 65536;
     private static final int WRITE_BUF_SIZE = 65536;
     
@@ -173,7 +180,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
         this.p = p;
         this.createJmaki = createJmaki;
         this.overwrite = overwrite;
-        this.projectName = p.getProjectDirectory().getName();
+        this.projectName = ProjectUtils.getInformation(getProject()).getName();
     }
     
     public FileObject getRootDir() {
@@ -205,51 +212,69 @@ public class ClientStubsGenerator extends AbstractGenerator {
         
         this.model = new ClientStubModel();
         this.model.buildModel(p);
+        List<Resource> resourceList = model.getResources();
+        
+        includeJs = "    "+RDJ+".includeJS('../"+RJS+"/"+getProjectName().toLowerCase()+"/"+getProjectName() + "." + JS+"');\n";
+        libsJs = "                   '../"+RJS+"/"+getProjectName().toLowerCase()+"/"+getProjectName() + "." + JS+"',\n";;
+        resourcesDojo = "";
+        requireDojo = "";
+        //Prepare include list
+        for (Resource r : resourceList) {
+            includeJs += "    "+RDJ+".includeJS('../"+RJS+"/"+getProjectName().toLowerCase()+"/"+r.getName() + "." + JS+"');\n";
+            libsJs += "                   '../"+RJS+"/"+getProjectName().toLowerCase()+"/"+r.getName() + "." + JS+"',\n";
+            if(r.isContainer()) {
+                resourcesDojo += "                   '../"+RDJ+"/"+DATA+"/"+r.getName()+STORE+"."+JS+"',\n";
+                requireDojo += DJD43+".require(\""+RDJ+"."+DATA+"."+r.getName()+STORE+"\");\n";
+            }
+        }
+        
         if (createJmaki()) {
             resourcesDir = getRootDir();
             dojoDir = createFolder(resourcesDir, DOJO);
             restDir = createFolder(dojoDir, REST);
             rjsDir = createFolder(restDir, RJS);
             rdjDir = createFolder(restDir, RDJ);
-            rtableDir = createFolder(restDir, RTABLE);
+            templatesDir = createFolder(getRootDir().getParent(), TEMPLATES);
             initJs(p);
-            initDojo(p);
-            initJmaki(p);
+            initDojo(p, resourceList);
+            initJmaki(p, resourceList);
         } else {
             rjsDir = createFolder(getRootDir().getParent(), REST);
             initJs(p);
         }
         
-        String prjName = ProjectUtils.getInformation(getProject()).getName();
-        FileObject prjStubDir = createFolder(rjsDir, prjName.toLowerCase());
-        createDataObjectFromTemplate(JS_PROJECTSTUB_TEMPLATE, prjStubDir, prjName, JS, canOverwrite());
-        updateProjectStub(prjStubDir.getFileObject(prjName, JS), prjName, "");
-        
-        Set<FileObject> files = new HashSet<FileObject>();
-        List<Resource> resourceList = model.getResources();
-        
+        FileObject prjStubDir = createFolder(rjsDir, getProjectName().toLowerCase());
+        createDataObjectFromTemplate(JS_PROJECTSTUB_TEMPLATE, prjStubDir, getProjectName(), JS, canOverwrite());
+        updateProjectStub(prjStubDir.getFileObject(getProjectName(), JS), getProjectName(), "");
+            
         for (Resource r : resourceList) {
             reportProgress(NbBundle.getMessage(ClientStubsGenerator.class,
                     "MSG_GeneratingClass", r.getName(), JS));            
             FileObject fo = new ResourceJavaScript(r, prjStubDir).generate();
             
-            //Generate the resource dojo script
-            if (createJmaki())
-                new ResourceDojoStore(r, dataDir).generate();
+            //Generate the resource dojo and jmaki script
+            if (createJmaki()) {
+                new ResourceDojoComponents(r, rdjDir).generate();
+                new ResourceJmakiComponent(r, restDir).generate();
+                File dir = new File(FileUtil.toFile(templatesDir), DOJO+File.separator+REST);
+                dir.mkdirs();
+                new ResourceJmakiTemplate(r, FileUtil.toFileObject(dir)).generate();
+            }
         }
         updateRestStub(rjsDir.getFileObject(JS_TESTSTUBS, HTML), resourceList, "");
- 
+  
+        Set<FileObject> files = new HashSet<FileObject>();
         if (createJmaki()) {  
             //copy dojo libs
             reportProgress(NbBundle.getMessage(ClientStubsGenerator.class,
-                    "MSG_CopyLibs", "djd43", JS));//NoI18n
+                    "MSG_CopyLibs", DJD43, JS));//NoI18n
             copyDojoLibs();
 
             // Create the ZIP file
             reportProgress(NbBundle.getMessage(ClientStubsGenerator.class,
-                    "MSG_GeneratingZip", prjName, "zip"));            
+                    "MSG_GeneratingZip", getProjectName(), "zip"));            
             File projectDir = FileUtil.toFile(resourcesDir.getParent().getParent());
-            File zipFile = new File(projectDir, prjName + ".zip");
+            File zipFile = new File(projectDir, getProjectName() + ".zip");
             String[] sources = {
                 FileUtil.toFile(restDir).getAbsolutePath(),
                 FileUtil.toFile(templatesDir).getAbsolutePath(),
@@ -262,6 +287,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
                 ""
             };
             zip(zipFile, sources, paths);
+
             FileObject testFile = restDir.getFileObject(JMAKI_TESTRESOURCESTABLE, JSP);
             if (testFile != null) {
                 files.add(testFile);
@@ -316,12 +342,12 @@ public class ClientStubsGenerator extends AbstractGenerator {
             throw new RuntimeException("NetBeans user folder (" + userDir.getPath() + ") does not exist.");
         }
         
-        File jmakiCompDir = new File(userDir, "jmakicomplib");
+        File jmakiCompDir = new File(userDir, JMAKI_COMP_LIB);
         if(!jmakiCompDir.exists() && !jmakiCompDir.mkdir()) {
             throw new RuntimeException("Cannot create jMaki component folder (" + jmakiCompDir + ").");
         }
         
-        File dojoLib = new File(jmakiCompDir, "jmaki-dojo-1.0.zip");
+        File dojoLib = new File(jmakiCompDir, JMAKI_DOJO_10_ZIP);
         unzip(new FileInputStream(dojoLib), resourcesDir.getParent(), canOverwrite());
     }
     
@@ -330,42 +356,39 @@ public class ClientStubsGenerator extends AbstractGenerator {
         createDataObjectFromTemplate(JS_STUBSUPPORT_TEMPLATE, rjsDir, JS_SUPPORT, JS, canOverwrite());  
     }
 
-    private void initDojo(Project p) throws IOException {
+    private void initDojo(Project p, List<Resource> resourceList) throws IOException {
         dataDir = createFolder(rdjDir, DATA);//NoI18n
         FileObject widgetDir = createFolder(rdjDir, WIDGET);//NoI18n
-        createDataObjectFromTemplate(DOJO_RESTSTORE_TEMPLATE, dataDir, DOJO_RESTSTORE, JS, canOverwrite());
+        Resource c = null;
+        for (Resource r : resourceList) {
+            if(r.isContainer()) {
+                c = r;
+            }
+        }
         createDataObjectFromTemplate(DOJO_RESOURCESTABLE_TEMPLATE, widgetDir, DOJO_RESOURCESTABLE, JS, canOverwrite());
-        createDataObjectFromTemplate(DOJO_SUPPORT_TEMPLATE, rdjDir, DOJO_SUPPORT, JS, canOverwrite());
-        createDataObjectFromTemplate(DOJO_TESTRESOURCESTABLE_TEMPLATE, rdjDir, DOJO_TESTRESOURCESTABLE, HTML, canOverwrite());
+        FileObject fo = createDataObjectFromTemplate(DOJO_SUPPORT_TEMPLATE, rdjDir, DOJO_SUPPORT, JS, canOverwrite());
+        if(c != null)
+            new ResourceDojoComponents(c, rdjDir).replaceTokens(fo);
+        
+        fo = createDataObjectFromTemplate(DOJO_TESTRESOURCESTABLE_TEMPLATE, rdjDir, DOJO_TESTRESOURCESTABLE, HTML, canOverwrite());
+        if(c != null)
+            new ResourceDojoComponents(c, rdjDir).replaceTokens(fo);
     }
     
-    private void initJmaki(Project p) throws IOException {
+    private void initJmaki(Project p, List<Resource> resourceList) throws IOException {
         createDataObjectFromTemplate(JMAKI_README_TEMPLATE, restDir, JMAKI_README, HTML, canOverwrite());
-        createDataObjectFromTemplate(JMAKI_TESTRESOURCESTABLE_TEMPLATE, restDir, JMAKI_TESTRESOURCESTABLE, JSP, canOverwrite());
-        
         createDataObjectFromTemplate(JMAKI_RESTBUNDLE_TEMPLATE, getRootDir().getParent(), BUNDLE, PROPERTIES, canOverwrite());
-        createDataObjectFromTemplate(JMAKI_COMPONENTCSS_TEMPLATE, rtableDir, JMAKI_COMPONENT, CSS, canOverwrite());
-        createDataObjectFromTemplate(JMAKI_COMPONENTHTM_TEMPLATE, rtableDir, JMAKI_COMPONENT, HTM, canOverwrite());
-        createDataObjectFromTemplate(JMAKI_COMPONENTJS_TEMPLATE, rtableDir, JMAKI_COMPONENT, JS, canOverwrite());
-        createDataObjectFromTemplate(JMAKI_WIDGETJSON_TEMPLATE, rtableDir, WIDGET, JSON, canOverwrite());
-        
-        FileObject imagesDir = createFolder(rtableDir, IMAGES);//NoI18n
-        File imgDir = FileUtil.toFile(imagesDir);
-        copyFile(JMAKI_RESOURCESTABLE_SRC + "." + GIF, new File(imgDir, JMAKI_RESOURCESTABLE_DEST + "." + GIF));
-        copyFile(JMAKI_RESOURCESTABLEUP_SRC + "." + GIF, new File(imgDir, JMAKI_RESOURCESTABLEUP_DEST + "." + GIF));
-        copyFile(JMAKI_RESOURCESTABLEDOWN_SRC + "." + GIF, new File(imgDir, JMAKI_RESOURCESTABLEDOWN_DEST + "." + GIF));
-        
-        //Jmaki templates dir
-        templatesDir = createFolder(getRootDir().getParent(), TEMPLATES);
-        File t_rtableDir1 = new File(FileUtil.toFile(templatesDir), DOJO+File.separator+REST+File.separator+RTABLE);
-        t_rtableDir1.mkdirs();
-        FileObject t_rtableDir = FileUtil.toFileObject(t_rtableDir1);
-        createDataObjectFromTemplate(JMAKI_TEMPLATESBUNDLE_TEMPLATE, t_rtableDir, BUNDLE, PROPERTIES, canOverwrite());
-        replaceBundleTokens(t_rtableDir.getFileObject(BUNDLE, PROPERTIES), getProjectName());
-        createDataObjectFromTemplate(JMAKI_TEMPLATESJSP_TEMPLATE, t_rtableDir, RTABLE, JSP, canOverwrite());
-        createDataObjectFromTemplate(JMAKI_TEMPLATESPHP_TEMPLATE, t_rtableDir, RTABLE, PHP, canOverwrite());
-        createDataObjectFromTemplate(JMAKI_TEMPLATESEJS_TEMPLATE, t_rtableDir, RTABLE, EJS, canOverwrite());
-        createDataObjectFromTemplate(JMAKI_TEMPLATESRHTML_TEMPLATE, t_rtableDir, RTABLE, RHTML, canOverwrite());
+                
+        //find first container 
+        Resource c = null;
+        for (Resource r : resourceList) {
+            if(r.isContainer()) {
+                c = r;
+            }
+        }
+        FileObject fo = createDataObjectFromTemplate(JMAKI_TESTRESOURCESTABLE_TEMPLATE, restDir, JMAKI_TESTRESOURCESTABLE, JSP, canOverwrite());
+        if(c != null)
+            new ResourceDojoComponents(c, restDir).replaceTokens(fo);
     }
     
     /*
@@ -391,28 +414,6 @@ public class ClientStubsGenerator extends AbstractGenerator {
                 if(is != null)
                     is.close();            
             }
-        }
-    }
-    
-    private void replaceBundleTokens(FileObject fo, String containerName) throws IOException {
-        FileLock lock = fo.lock();
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(FileUtil.toFile(fo)));
-            String line;
-            StringBuffer sb = new StringBuffer();
-            while ((line = reader.readLine()) != null) {
-                line = line.replaceAll("__CONTAINER_NAME__", containerName);
-                sb.append(line);
-                sb.append("\n");
-            }
-            OutputStreamWriter writer = new OutputStreamWriter(fo.getOutputStream(lock), "UTF-8");
-            try {
-                writer.write(sb.toString());
-            } finally {
-                writer.close();
-            }
-        } finally {
-            lock.releaseLock();
         }
     }
             
@@ -637,6 +638,10 @@ public class ClientStubsGenerator extends AbstractGenerator {
             this.jsFolder = jsFolder;
         }
         
+        public FileObject getFolder() {
+            return jsFolder;
+        }
+        
         public FileObject generate() throws IOException {
             String fileName = r.getName();
             String fileNameExt = r.getName() + "." + JS;
@@ -659,14 +664,14 @@ public class ClientStubsGenerator extends AbstractGenerator {
             return fo;
         }
         
-        private void replaceTokens(FileObject fo) throws IOException {
+        protected void replaceTokens(FileObject fo) throws IOException {
             FileLock lock = fo.lock();
             try {
                 BufferedReader reader = new BufferedReader(new FileReader(FileUtil.toFile(fo)));
                 String line;
                 StringBuffer sb = new StringBuffer();
                 while ((line = reader.readLine()) != null) {
-                    line = replaceTokens(r, line, "", "");
+                    line = replaceTokens(line, "", "");
                     sb.append(line);
                     sb.append("\n");
                 }
@@ -681,7 +686,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
             }
         }
         
-        protected String replaceTokens(Resource r, String line, String object, String pkg) {
+        protected String replaceTokens(String line, String object, String pkg) {
             RepresentationNode root = r.getRepresentation().getRoot();
             String replacedLine = line;
             String[] containerStubTokens = {
@@ -689,7 +694,8 @@ public class ClientStubsGenerator extends AbstractGenerator {
                 "__CONTAINER_PATH_NAME__",
                 "__CONTAINER_ITEM_NAME__",
                 "__CONTAINER_ITEM_PATH_NAME__",
-                "__STUB_METHODS__"
+                "__STUB_METHODS__",
+                "__PROJECT_NAME__"
             };
             String[] genericStubTokens = {
                 "__GENERIC_NAME__",
@@ -700,6 +706,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
                 "__SUB_RESOURCE_NAME__",
                 "__SUB_RESOURCE_PATH_NAME__",
                 "__FIELDS_TOSTRING__",
+                "__FIELD_NAMES_TOSTRING__",
                 "__STUB_METHODS__"
             };
             String[] stubOnlyTokens = {
@@ -725,6 +732,8 @@ public class ClientStubsGenerator extends AbstractGenerator {
                         replacedLine = replacedLine.replaceAll("__CONTAINER_ITEM_PATH_NAME__", containerItemRepName);
                     else if("__STUB_METHODS__".equals(token))
                         replacedLine = replacedLine.replace("__STUB_METHODS__", createStubJSMethods(r, object, pkg));
+                    else if("__PROJECT_NAME__".equals(token))
+                        replacedLine = replacedLine.replaceAll("__PROJECT_NAME__", getProjectName());
                 }
             } else if(root != null){
                 String resourceName = r.getName();
@@ -749,6 +758,9 @@ public class ClientStubsGenerator extends AbstractGenerator {
                         if(fieldsToString.endsWith(",'+\n"))
                             fieldsToString = fieldsToString.substring(0, fieldsToString.length()-4)+"'+\n";
                         replacedLine = replacedLine.replace("__FIELDS_TOSTRING__", fieldsToString);
+                    } else if("__FIELD_NAMES_TOSTRING__".equals(token)) {
+                        String fieldsToString = createFieldNamesBody(root, true);
+                        replacedLine = replacedLine.replace("__FIELD_NAMES_TOSTRING__", fieldsToString);
                     } else if("__STUB_METHODS__".equals(token)) {
                         replacedLine = replacedLine.replace("__STUB_METHODS__", createStubJSMethods(r, object, pkg));
                     }
@@ -855,6 +867,22 @@ public class ClientStubsGenerator extends AbstractGenerator {
                     sb.append("         this."+childName+".toString()+\n");
                 }else
                     sb.append("         '\""+childName+"\":{\"$\":\"'+this."+childName+"+'\"},'+\n");
+            }
+            return sb.toString();
+        }
+        
+        private String createFieldNamesBody(RepresentationNode root, boolean skipUri) {
+            StringBuffer sb = new StringBuffer();
+            for(RepresentationNode child:root.getAttributes()) {
+                String childName = child.getName();
+                if(!(skipUri && childName.equals("uri")))
+                    sb.append("         fields.push('"+childName+"');\n");//      fields.push('customerId');
+            }
+            for(RepresentationNode child:root.getChildren()) {
+                String childName = child.getName();
+                if(!(child.isReference() || child.isRoot())) {
+                    sb.append("         fields.push('"+childName+"');\n");//      fields.push('customerId');
+                }
             }
             return sb.toString();
         }
@@ -992,28 +1020,88 @@ public class ClientStubsGenerator extends AbstractGenerator {
         
     }
     
-    public class ResourceDojoStore extends ResourceJavaScript {
+    public class ResourceDojoComponents extends ResourceJavaScript {
         
-        public ResourceDojoStore(Resource r, FileObject jsFolder) {
-            super(r, jsFolder);
+        public ResourceDojoComponents(Resource r, FileObject rdjDir) {
+            super(r, rdjDir);
         }
         
         public FileObject generate() throws IOException {  
-            String fileName = r.getName()+"Store";
-            String fileNameExt = fileName + "." + JS;
-            FileObject fo = jsFolder.getFileObject(fileNameExt);
-            if (fo != null) {
-                if(canOverwrite())
-                    fo.delete();
-                else
-                    throw new IOException("File: "+jsFolder.getPath()+File.separator+fileNameExt+" already exists.");
-            }
-            
-            if(r.isContainer())
-                createDataObjectFromTemplate(DOJO_COLLECTIONSTORE_TEMPLATE, jsFolder, fileName, JS, canOverwrite());
-            else
+            String name = r.getName();
+            if (r.isContainer()) {
+                FileObject dataDir = getFolder().getFileObject(DATA);
+                FileObject fo = createDataObjectFromTemplate(DOJO_COLLECTIONSTORE_TEMPLATE, dataDir, name+STORE, JS, canOverwrite());
+                replaceTokens(fo);
+            } else {
                 return null;
-            return fo;
-        }        
+            }
+            return rdjDir;
+        }
+        
+        protected String replaceTokens(String line, String object, String pkg) {
+            String replacedLine = line;
+            replacedLine = replacedLine.replaceAll("__INCLUDE_JS_SCRIPTS__", includeJs);
+            replacedLine = replacedLine.replaceAll("__LIBS_JS_SCRIPTS__", libsJs);
+            replacedLine = replacedLine.replaceAll("__RESOURCES_DOJO_SCRIPTS__", resourcesDojo);
+            replacedLine = replacedLine.replaceAll("__REQUIRE_DOJO_SCRIPTS__", requireDojo);
+            return super.replaceTokens(replacedLine, object, pkg);
+        }
+    }
+    
+    public class ResourceJmakiComponent extends ResourceDojoComponents {
+        
+        public ResourceJmakiComponent(Resource r, FileObject restDir) {
+            super(r, restDir);
+        }
+        
+        public FileObject generate() throws IOException {  
+            String name = r.getRepresentation().getRoot().getName();
+            if (r.isContainer()) {
+                FileObject compDir = createFolder(getFolder(), name+TABLE);
+                createDataObjectFromTemplate(JMAKI_COMPONENTCSS_TEMPLATE, compDir, JMAKI_COMPONENT, CSS, canOverwrite());
+                createDataObjectFromTemplate(JMAKI_COMPONENTHTM_TEMPLATE, compDir, JMAKI_COMPONENT, HTM, canOverwrite());
+                FileObject fo = createDataObjectFromTemplate(JMAKI_COMPONENTJS_TEMPLATE, compDir, JMAKI_COMPONENT, JS, canOverwrite());
+                replaceTokens(fo);
+                fo = createDataObjectFromTemplate(JMAKI_WIDGETJSON_TEMPLATE, compDir, WIDGET, JSON, canOverwrite());
+                replaceTokens(fo);
+
+                FileObject imagesDir = createFolder(compDir, IMAGES);//NoI18n
+                File imgDir = FileUtil.toFile(imagesDir);
+                copyFile(JMAKI_RESOURCESTABLE_SRC + "." + GIF, new File(imgDir, JMAKI_RESOURCESTABLE_DEST + "." + GIF));
+                copyFile(JMAKI_RESOURCESTABLEUP_SRC + "." + GIF, new File(imgDir, JMAKI_RESOURCESTABLEUP_DEST + "." + GIF));
+                copyFile(JMAKI_RESOURCESTABLEDOWN_SRC + "." + GIF, new File(imgDir, JMAKI_RESOURCESTABLEDOWN_DEST + "." + GIF));
+            } else {
+                return null;
+            }
+            return getFolder();
+        }
+    }
+    
+    public class ResourceJmakiTemplate extends ResourceJavaScript {
+        
+        public ResourceJmakiTemplate(Resource r, FileObject tRestDir) {
+            super(r, tRestDir);
+        }
+        
+        public FileObject generate() throws IOException {  
+            String name = r.getRepresentation().getRoot().getName();
+            String templateName = name+TABLE;
+            if (r.isContainer()) {
+                FileObject tDir = createFolder(getFolder(), templateName);
+                FileObject fo = createDataObjectFromTemplate(JMAKI_TEMPLATESBUNDLE_TEMPLATE, tDir, BUNDLE, PROPERTIES, canOverwrite());
+                replaceTokens(fo);
+                fo = createDataObjectFromTemplate(JMAKI_TEMPLATESJSP_TEMPLATE, tDir, templateName, JSP, canOverwrite());
+                replaceTokens(fo);
+                fo = createDataObjectFromTemplate(JMAKI_TEMPLATESPHP_TEMPLATE, tDir, templateName, PHP, canOverwrite());
+                replaceTokens(fo);
+                fo = createDataObjectFromTemplate(JMAKI_TEMPLATESEJS_TEMPLATE, tDir, templateName, EJS, canOverwrite());
+                replaceTokens(fo);
+                fo = createDataObjectFromTemplate(JMAKI_TEMPLATESRHTML_TEMPLATE, tDir, templateName, RHTML, canOverwrite());
+                replaceTokens(fo);
+            } else {
+                return null;
+            }
+            return getFolder();
+        }
     }
 }

@@ -1,19 +1,35 @@
-Steps to run Generated Stubs
-========================
-1. Navigate to "Web Pages/reststubs/reststub.html", right click and "Run". This prints the json strings returned by
-RESTful Web Service resources.
+I. Steps to run JMaki Rest Components
+=====================================
+1. Download Jmaki 1.0 Netbeans plugin from JMaki website 
+(https://ajax.dev.java.net/files/documents/3115/69449/org-netbeans-modules-sun-jmaki.nbm)
+2. Open Netbeans 6.0 IDE, then install the plugin by selecting "Downloaded" tab after invoking Tools->Plugins.
+3. Create a web project, add "JMaki Ajax Frameworks" to this project on the wizard.
+4. Right click on the web project, then select "New->Restful Web Service Client Stubs". In the wizard select the 
+web project that contain the RESTful Web Services. Click "Finish".
+5. Run "/Web Pages/resources/dojo/rest/TestResourcesTable.jsp" to test a JMaki REST component. This displays a table of resources.
 
-Steps to run Jersey Dojo Components
-===============================
-1. Download dojo 0.4.3 from Dojo website (http://download.dojotoolkit.org/release-0.4.3/dojo-0.4.3-ajax.tar.gz)
-2. Unzip dojo library to "Web Pages" folder of your client project.
-3. Right click on "DojoSample.html" and click "Run". This displays a table of resources. You can Get, Add, Update, and Delete.
+Note: 
 
-Steps to run Jersey JMaki Components
-===============================
-1. Download Jmaki 1.0 Netbeans plugin from JMaki website (https://ajax.dev.java.net/files/documents/3115/69449/org-netbeans-modules-sun-jmaki.nbm)
-2. Install the plugin.
-3. Right click on the project, click "Properties, then add "Ajax Frameworks" after selecing "Frameworks". This adds the 
-necessary JMaki libraries to this your web project.
-4. Right click on "JmakiSample.html" and click "Run". This displays a table of resources. You can Get, Add, Update, and Delete.
+- After successful execution of Step 4 above, a <RESTful Web Service Project Name>.zip is created in
+the project root directory (Select "Files" tab to see this file in the IDE). This file is a zipped 
+up (JMaki component(s)) version of the files that are generated during creation of client stubs. This file could be
+published to other developers who wants to use your RESTful Web Service. They just need to 
+invoke "Tools->Pallete->Add JMaki Library" action in the Netbeans IDE to register RESTful Web Service
+JMaki components. After successful install of these components, users could see them on the palette for
+jsp, php, rhtml, ejs files. Drag-n-Drop them onto jsp, php, rhtml, ejs files to invoke RESTful Web Services from
+these pages.
 
+II.  Steps to run Dojo Rest Components
+=====================================
+1. After running Step I, you could also test dojo REST component directly 
+by invoking "/Web Pages/resources/dojo/rest/rdj/TestResourcesTable.html"
+
+III. Steps to run Rest Javascripts stubs
+============================================
+1. After running Step I, you could also test REST Javascripts directly 
+by invoking "/Web Pages/resources/dojo/rest/rjs/TestStubs.html".
+
+Note:
+
+- If you have unchecked JMaki during stub generation, you could see only
+/web/rest directory. Test file is in /Web Pages/rest/TestStubs.html.
