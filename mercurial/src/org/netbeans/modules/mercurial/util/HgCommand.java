@@ -84,7 +84,7 @@ public class HgCommand {
     private static final String HG_STATUS_FLAG_INCLUDE_CMD = "-I"; // NOI18N
     private static final String HG_STATUS_FLAG_INCLUDE_GLOB_CMD = "glob:"; // NOI18N
     private static final String HG_STATUS_FLAG_INCLUDE_END_CMD = "*"; // NOI18N
-    private static final String HG_STATUS_FLAG_INTERESTING_CMD = "-marduiC"; // NOI18N
+    private static final String HG_STATUS_FLAG_INTERESTING_CMD = "-mardui"; // NOI18N
     private static final String HG_STATUS_FLAG_UNKNOWN_CMD = "-u"; // NOI18N
     
     private static final String HG_COMMIT_CMD = "commit"; // NOI18N
@@ -174,12 +174,14 @@ public class HgCommand {
             
     private final static String HG_HEADS_CMD = "heads"; // NOI18N
     
-    private static final String HG_NO_REPOSITORY_ERR = "abort: There is no Mercurial repository here"; // NOI18N
+    private static final String HG_NO_REPOSITORY_ERR = "There is no Mercurial repository here"; // NOI18N
+    private static final String HG_NOT_REPOSITORY_ERR = "does not appear to be an hg repository"; // NOI18N
+    private static final String HG_REPOSITORY = "repository"; // NOI18N
+    private static final String HG_NOT_FOUND_ERR = "not found!"; // NOI18N
     private static final String HG_UPDATE_SPAN_BRANCHES_ERR = "abort: update spans branches"; // NOI18N
     private static final String HG_OUTSTANDING_UNCOMMITTED_MERGES_ERR = "abort: outstanding uncommitted merges"; // NOI18N
     private static final String HG_ALREADY_TRACKED_ERR = " already tracked!"; // NOI18N
     private static final String HG_NOT_TRACKED_ERR = " no tracked!"; // NOI18N
-    private static final String HG_NOT_FOUND_ERR = "not found!"; // NOI18N
     private static final String HG_CANNOT_READ_COMMIT_MESSAGE_ERR = "abort: can't read commit message"; // NOI18N
     private static final String HG_UNABLE_EXECUTE_COMMAND_ERR = "unable to execute hg command"; // NOI18N
     private static final String HG_ABORT_ERR = "abort: "; // NOI18N
@@ -829,9 +831,11 @@ public class HgCommand {
         command.add(target);
 
         List<String> list = exec(command);
-        if (!list.isEmpty() && 
-             isErrorAbort(list.get(0)))
+        if (!list.isEmpty() && isErrorNoRepository(list.get(0))){
+            handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"));
+        }else if (!list.isEmpty() && isErrorAbort(list.get(0))){
             handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"));
+        }
         return list;
     }
     
@@ -1877,7 +1881,9 @@ public class HgCommand {
     }
     
     private static boolean isErrorNoRepository(String msg) {
-        return msg.indexOf(HG_NO_REPOSITORY_ERR) > -1; // NOI18N
+        return msg.indexOf(HG_NO_REPOSITORY_ERR) > -1 ||
+                 msg.indexOf(HG_NOT_REPOSITORY_ERR) > -1 ||
+                 (msg.indexOf(HG_REPOSITORY) > -1 && msg.indexOf(HG_NOT_FOUND_ERR) > -1); // NOI18N
     }
     
     private static boolean isErrorNoHg(String msg) {
