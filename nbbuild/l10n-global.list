@@ -15,3 +15,4 @@ ${l10n-module}/javahelp/**/*.toc
 ${l10n-module}/javahelp/**/*.xml
 ${l10n-module}/**/*.url
 exclude ${l10n-module}/**/package.html
+exclude ${l10n-module}/build
