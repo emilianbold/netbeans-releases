@@ -70,6 +70,7 @@ import org.openide.util.Utilities;
  * @author Alexander Simon
  */
 public class DwarfSource implements SourceFileProperties{
+    private static final boolean FULL_TRACE = false;
     private static boolean ourGatherMacros = true;
     private static boolean ourGatherIncludes = true;
     private static final String CYG_DRIVE_UNIX = "/cygdrive/"; // NOI18N
@@ -101,14 +102,22 @@ public class DwarfSource implements SourceFileProperties{
         List<String> list = compilerSettings.getSystemIncludePaths(isCPP);
        if (list != null){
            systemIncludes = new ArrayList<String>(list);
+           if (FULL_TRACE) {
+               System.out.println("System Include Paths:"); // NOI18N
+               for (String s : list) {
+                   System.out.println("\t"+s); // NOI18N
+               }
+           }
            if (Utilities.isWindows()) {
+               if (FULL_TRACE) System.out.println("CompileFlavor:"+compilerSettings.getCompileFlavor()); // NOI18N
                if ("Cygwin".equals(compilerSettings.getCompileFlavor())) { // NOI18N
                    //cygwinPath = compilerSettings.getCompileDirectory();
                    for(String path:list){
-                       int i = path.indexOf(CYGWIN_PATH);
+                       int i = path.toLowerCase().indexOf(CYGWIN_PATH);
                        if (i > 0) {
                            if (cygwinPath == null) {
                                cygwinPath = "" + Character.toUpperCase(path.charAt(0)) + CYGWIN_PATH; // NOI18N
+                               if (FULL_TRACE) System.out.println("Detect cygwinPath:"+cygwinPath); // NOI18N
                                break;
                            }
                        }
@@ -234,12 +243,14 @@ public class DwarfSource implements SourceFileProperties{
         }
         if (Utilities.isWindows()) {
             //replace /cygdrive/<something> prefix with <something>:/ prefix:
+            if (FULL_TRACE) System.out.println("Try to fix win name:"+fileName); // NOI18N
             if (fileName.startsWith(CYG_DRIVE_UNIX)) {
                 fileName = fileName.substring(CYG_DRIVE_UNIX.length()); // NOI18N
                 fileName = "" + Character.toUpperCase(fileName.charAt(0)) + ':' + fileName.substring(1); // NOI18N
                 fileName = fileName.replace('\\', '/');
                 if (cygwinPath == null) {
                     cygwinPath = "" + Character.toUpperCase(fileName.charAt(0)) + CYGWIN_PATH;
+                    if (FULL_TRACE) System.out.println("Set cygwinPath:"+cygwinPath); // NOI18N
                 }
             } else {
                 int i = fileName.indexOf(CYG_DRIVE_WIN);
@@ -247,12 +258,14 @@ public class DwarfSource implements SourceFileProperties{
                     //replace D:\cygdrive\c\<something> prefix with <something>:\ prefix:
                     if (cygwinPath == null) {
                         cygwinPath = "" + Character.toUpperCase(fileName.charAt(0)) + CYGWIN_PATH; // NOI18N
+                        if (FULL_TRACE) System.out.println("Set cygwinPath:"+cygwinPath); // NOI18N
                     }
                     fileName = fileName.substring(i+CYG_DRIVE_UNIX.length());
                     fileName = "" + Character.toUpperCase(fileName.charAt(0)) + ':' + fileName.substring(1); // NOI18N
                     fileName = fileName.replace('\\', '/');
                 }
             }
+            if (FULL_TRACE) System.out.println("\t"+fileName); // NOI18N
         } else if (Utilities.isUnix()) {
             if (fileName.startsWith("/net/")){ // NOI18N
                 try {
@@ -326,8 +339,8 @@ public class DwarfSource implements SourceFileProperties{
         userMacros = new HashMap<String,String>();
         includedFiles = new HashSet<String>();
         File file = new File(cu.getSourceFileAbsolutePath());
-        fullName = FileUtil.normalizeFile(file).getAbsolutePath();
         fullName = PathCache.getString(fixFileName(fullName));
+        fullName = FileUtil.normalizeFile(file).getAbsolutePath();
         fullName = linkSupport(fullName);
         if (fullName != null && Utilities.isWindows()) {
             fullName = fullName.replace('/', '\\');
@@ -438,19 +451,23 @@ public class DwarfSource implements SourceFileProperties{
     }
     
     private void addpath(String path){
+        if (FULL_TRACE) System.out.println("Try to add path:"+path); // NOI18N
         if (haveSystemIncludes) {
             if (!isSystemPath(path)){
                 addUserIncludePath(PathCache.getString(path));
+                if (FULL_TRACE) System.out.println("\tuser:"+path); // NOI18N
             }
         } else {
             if (path.startsWith("/usr")) { // NOI18N
                 path = fixCygwinPath(path);
                 path = normalizePath(path);
                 systemIncludes.add(PathCache.getString(path));
+                if (FULL_TRACE) System.out.println("\tsystem:"+path); // NOI18N
             } else {
                 path = fixCygwinPath(path);
                 path = normalizePath(path);
                 addUserIncludePath(PathCache.getString(path));
+                if (FULL_TRACE) System.out.println("\tuser:"+path); // NOI18N
             }
         }
     }
@@ -504,12 +521,15 @@ public class DwarfSource implements SourceFileProperties{
         }
     }
 
-    private void cutFolderPrefix(final String path, final DwarfStatementList dwarfTable) {
-        if (path.indexOf(File.separatorChar)>0){
-            int n = path.lastIndexOf(File.separatorChar);
+    private void cutFolderPrefix(String path, final DwarfStatementList dwarfTable) {
+        if (Utilities.isWindows()) {
+            path = path.replace('\\', '/'); // NOI18N
+        }
+        if (path.indexOf('/')>0){ // NOI18N
+            int n = path.lastIndexOf('/'); // NOI18N
             String name = path.substring(n+1);
             String relativeDir = path.substring(0,n);
-            String dir = File.separator+relativeDir;
+            String dir = "/"+relativeDir; // NOI18N
             ArrayList<String> paths = dwarfTable.getPathsForFile(name);
             for(String dwarfPath : paths){
                 if (dwarfPath.endsWith(dir)){
