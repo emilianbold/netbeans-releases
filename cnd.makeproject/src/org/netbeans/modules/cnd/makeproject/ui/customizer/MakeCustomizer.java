@@ -480,7 +480,9 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
                     
                     IpeUtils.requestFocus(btv);
                     
-                    dialogDescriptor.setHelpCtx(HelpCtx.findHelp(currentConfigurationNode));
+                    if (dialogDescriptor != null && currentConfigurationNode != null) {
+                        dialogDescriptor.setHelpCtx(HelpCtx.findHelp(currentConfigurationNode));
+                    }
                     return;
                 }
             }
