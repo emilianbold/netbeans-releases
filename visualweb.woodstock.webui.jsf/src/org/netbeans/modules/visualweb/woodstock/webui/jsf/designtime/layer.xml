@@ -259,7 +259,17 @@ made subject to such option by the copyright holder.
             </file>
 	    <file name="WoodstockEditableField.comp_palette_item" url="resources/WoodstockEditableField.comp_palette_item">
                 <attr name="position" intvalue="2300"/>
-            </file> -->
+		</file>
+		<file name="WoodstockBubble.comp_palette_item" url="resources/WoodstockBubble.comp_palette_item">
+                <attr name="position" intvalue="2400"/>
+            </file> 
+		<file name="WoodstockAccordian.comp_palette_item" url="resources/WoodstockAccordian.comp_palette_item">
+                <attr name="position" intvalue="2500"/>
+            </file> 
+		<file name="WoodstockAccordianTab.comp_palette_item" url="resources/WoodstockAccordianTab.comp_palette_item">
+                <attr name="position" intvalue="2600"/>
+            </file> -->            
+            
             <!-- End fo Woodstock components not included in VWP -->
         </folder>
         <folder name="Advanced">
