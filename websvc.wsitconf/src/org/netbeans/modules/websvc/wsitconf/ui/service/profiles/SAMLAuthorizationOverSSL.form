@@ -28,14 +28,14 @@
                       </Group>
                       <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="1" attributes="0">
-                          <Component id="samlVersionCombo" pref="126" max="32767" attributes="2"/>
-                          <Component id="wssVersionCombo" alignment="1" pref="126" max="32767" attributes="2"/>
-                          <Component id="algoSuiteCombo" alignment="0" pref="126" max="32767" attributes="0"/>
-                          <Component id="layoutCombo" alignment="0" pref="126" max="32767" attributes="0"/>
+                          <Component id="samlVersionCombo" linkSize="3" alignment="0" min="-2" max="-2" attributes="2"/>
+                          <Component id="wssVersionCombo" linkSize="3" alignment="0" min="-2" max="-2" attributes="2"/>
+                          <Component id="algoSuiteCombo" linkSize="3" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="layoutCombo" linkSize="3" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
               </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -50,7 +50,7 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="wssVersionLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="wssVersionCombo" linkSize="2" alignment="3" min="-2" pref="22" max="-2" attributes="0"/>
+                  <Component id="wssVersionCombo" linkSize="2" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">

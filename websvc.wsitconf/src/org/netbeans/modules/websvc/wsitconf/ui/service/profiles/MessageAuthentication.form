@@ -29,14 +29,14 @@
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="algoSuiteCombo" alignment="0" pref="145" max="32767" attributes="2"/>
-                          <Component id="layoutCombo" alignment="0" pref="145" max="32767" attributes="2"/>
-                          <Component id="wssVersionCombo" alignment="0" pref="145" max="32767" attributes="2"/>
-                          <Component id="supportTokenCombo" alignment="0" pref="145" max="32767" attributes="2"/>
+                          <Component id="supportTokenCombo" linkSize="4" alignment="1" min="-2" max="-2" attributes="2"/>
+                          <Component id="wssVersionCombo" linkSize="4" alignment="1" min="-2" max="-2" attributes="2"/>
+                          <Component id="algoSuiteCombo" linkSize="4" alignment="1" min="-2" max="-2" attributes="2"/>
+                          <Component id="layoutCombo" linkSize="4" alignment="1" min="-2" max="-2" attributes="2"/>
                       </Group>
                   </Group>
               </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="33" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -56,7 +56,7 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="algoSuiteLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="algoSuiteCombo" linkSize="2" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="algoSuiteCombo" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">

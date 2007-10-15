@@ -29,13 +29,13 @@
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="samlVersionCombo" alignment="0" pref="145" max="32767" attributes="0"/>
-                          <Component id="algoSuiteCombo" alignment="0" pref="145" max="32767" attributes="0"/>
-                          <Component id="layoutCombo" alignment="0" pref="145" max="32767" attributes="0"/>
+                          <Component id="samlVersionCombo" linkSize="3" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="algoSuiteCombo" linkSize="3" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="layoutCombo" linkSize="3" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
               </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>

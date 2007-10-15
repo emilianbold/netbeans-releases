@@ -16,11 +16,6 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
-                      <Component id="issuerAddressLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="issuerAddressField" pref="199" max="32767" attributes="0"/>
-                  </Group>
                   <Component id="reqDerivedKeys" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="reqSigConfChBox" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="secConvChBox" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -35,20 +30,17 @@
                           <Component id="tokenTypeLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="keyTypeLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="keySizeLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="issuerAddressLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="issuerMetadataField" alignment="0" pref="152" max="32767" attributes="0"/>
-                          <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="keySizeCombo" alignment="0" pref="152" max="32767" attributes="0"/>
-                                  <Component id="keyTypeCombo" alignment="0" pref="152" max="32767" attributes="0"/>
-                                  <Component id="tokenTypeCombo" alignment="0" pref="152" max="32767" attributes="0"/>
-                                  <Component id="algoSuiteCombo" alignment="0" pref="152" max="32767" attributes="0"/>
-                                  <Component id="layoutCombo" alignment="0" pref="152" max="32767" attributes="0"/>
-                              </Group>
-                          </Group>
+                          <Component id="tokenTypeCombo" linkSize="3" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="keyTypeCombo" linkSize="3" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="keySizeCombo" linkSize="3" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="algoSuiteCombo" linkSize="3" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="layoutCombo" linkSize="3" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="issuerMetadataField" alignment="0" pref="168" max="32767" attributes="0"/>
+                          <Component id="issuerAddressField" alignment="0" pref="168" max="32767" attributes="0"/>
                       </Group>
                   </Group>
               </Group>
