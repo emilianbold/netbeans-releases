@@ -96,8 +96,8 @@ FUNCTION DEFINITION operator <  [29:1/493-31:2/561] FunctionDDImpl SCOPE: $Globa
         x [29:43/535-29:46/538]  TYPE: $unresolved$::T TEXT=T  [29:43/535-29:44/536]  INIT: null  SCOPE: operator < 
         y [29:48/540-29:51/543]  TYPE: $unresolved$::P TEXT=P  [29:48/540-29:49/541]  INIT: null  SCOPE: operator < 
     RETURNS bool TEXT=bool  [29:28/520-29:32/524]
-    STATEMENT Compound  [29:53/545-31:2/561] SCOPE: operator < 
-        STATEMENT Return  [30:9/548-30:20/559] SCOPE: Stmt  [29:53/545-31:2/561] text: 'return x<y;'
+    STATEMENT COMPOUND  [29:53/545-31:2/561] SCOPE: operator < 
+        STATEMENT RETURN  [30:9/548-30:20/559] SCOPE: Stmt  [29:53/545-31:2/561] text: 'return x<y;'
 
 ========== Dumping model of PROJECT DummyProject
 CLASS C<> (C ) [1:1/0-3:3/68] lcurly=37 SCOPE: $Global$ 
@@ -185,6 +185,6 @@ FUNCTION DEFINITION operator <  [29:1/493-31:2/561] FunctionDDImpl SCOPE: $Globa
         x [29:43/535-29:46/538]  TYPE: $unresolved$::T TEXT=T  [29:43/535-29:44/536]  INIT: null  SCOPE: operator < 
         y [29:48/540-29:51/543]  TYPE: $unresolved$::P TEXT=P  [29:48/540-29:49/541]  INIT: null  SCOPE: operator < 
     RETURNS bool TEXT=bool  [29:28/520-29:32/524]
-    STATEMENT Compound  [29:53/545-31:2/561] SCOPE: operator < 
-        STATEMENT Return  [30:9/548-30:20/559] SCOPE: Stmt  [29:53/545-31:2/561] text: 'return x<y;'
+    STATEMENT COMPOUND  [29:53/545-31:2/561] SCOPE: operator < 
+        STATEMENT RETURN  [30:9/548-30:20/559] SCOPE: Stmt  [29:53/545-31:2/561] text: 'return x<y;'
 

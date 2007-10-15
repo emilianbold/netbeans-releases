@@ -22,14 +22,14 @@ NAMESPACE DEFINITOIN boost [1:1/0-18:2/380] SCOPE: infinite3.cc
                     DECLARATION: noncopyable  [8:7/123-8:23/139]
                     PARAMETERS:
                     RETURNS <*no_classifier*> TEXT=  [null-null]
-                    STATEMENT Compound  [8:21/137-8:23/139] SCOPE: noncopyable 
+                    STATEMENT COMPOUND  [8:21/137-8:23/139] SCOPE: noncopyable 
                 FUNCTION DEFINITION ~noncopyable  [9:7/146-9:24/163] DestructorDDImpl SCOPE: noncopyable 
                     SIGNATURE ~noncopyable()
                     UNIQUE NAME f:boost::noncopyable_::noncopyable::~noncopyable()
                     DECLARATION: ~noncopyable  [9:7/146-9:24/163]
                     PARAMETERS:
                     RETURNS <*no_classifier*> TEXT=  [null-null]
-                    STATEMENT Compound  [9:22/161-9:24/163] SCOPE: ~noncopyable 
+                    STATEMENT COMPOUND  [9:22/161-9:24/163] SCOPE: ~noncopyable 
                 FUNCTION noncopyable [11:7/230-11:41/264] ConstructorImpl SCOPE: noncopyable 
                     DEFINITION: null
                     SIGNATURE noncopyable(const noncopyable&)
@@ -63,14 +63,14 @@ NAMESPACE boost (boost)
                     DECLARATION: noncopyable  [8:7/123-8:23/139]
                     PARAMETERS:
                     RETURNS <*no_classifier*> TEXT=  [null-null]
-                    STATEMENT Compound  [8:21/137-8:23/139] SCOPE: noncopyable 
+                    STATEMENT COMPOUND  [8:21/137-8:23/139] SCOPE: noncopyable 
                 FUNCTION DEFINITION ~noncopyable  [9:7/146-9:24/163] DestructorDDImpl SCOPE: noncopyable 
                     SIGNATURE ~noncopyable()
                     UNIQUE NAME f:boost::noncopyable_::noncopyable::~noncopyable()
                     DECLARATION: ~noncopyable  [9:7/146-9:24/163]
                     PARAMETERS:
                     RETURNS <*no_classifier*> TEXT=  [null-null]
-                    STATEMENT Compound  [9:22/161-9:24/163] SCOPE: ~noncopyable 
+                    STATEMENT COMPOUND  [9:22/161-9:24/163] SCOPE: ~noncopyable 
                 FUNCTION noncopyable [11:7/230-11:41/264] ConstructorImpl SCOPE: noncopyable 
                     DEFINITION: null
                     SIGNATURE noncopyable(const noncopyable&)

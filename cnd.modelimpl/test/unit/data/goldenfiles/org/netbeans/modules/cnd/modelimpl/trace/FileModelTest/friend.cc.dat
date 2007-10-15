@@ -25,8 +25,8 @@ FUNCTION DEFINITION moo  [2:1/15-2:24/38] FunctionDDImpl SCOPE: $Global$
     PARAMETERS:
          [2:9/23-2:12/26]  TYPE: int TEXT=int  [2:9/23-2:12/26]  INIT: null  SCOPE: moo 
     RETURNS int TEXT=int  [2:1/15-2:4/18]
-    STATEMENT Compound  [2:13/27-2:24/38] SCOPE: moo 
-        STATEMENT Return  [2:14/28-2:23/37] SCOPE: Stmt  [2:13/27-2:24/38] text: 'return 0;'
+    STATEMENT COMPOUND  [2:13/27-2:24/38] SCOPE: moo 
+        STATEMENT RETURN  [2:14/28-2:23/37] SCOPE: Stmt  [2:13/27-2:24/38] text: 'return 0;'
 STRUCT S2 (S2 ) [3:1/39-5:29/95] lcurly=49 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
@@ -42,8 +42,8 @@ STRUCT S2 (S2 ) [3:1/39-5:29/95] lcurly=49 SCOPE: $Global$
             DECLARATION: soo2  [5:5/71-5:26/92]
             PARAMETERS:
             RETURNS int TEXT=int  [5:5/71-5:8/74]
-            STATEMENT Compound  [5:15/81-5:26/92] SCOPE: soo2 
-                STATEMENT Return  [5:16/82-5:25/91] SCOPE: Stmt  [5:15/81-5:26/92] text: 'return 0;'
+            STATEMENT COMPOUND  [5:15/81-5:26/92] SCOPE: soo2 
+                STATEMENT RETURN  [5:16/82-5:25/91] SCOPE: Stmt  [5:15/81-5:26/92] text: 'return 0;'
 CLASS A2 (A2 ) [6:1/96-7:18/123] lcurly=104 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
@@ -59,12 +59,12 @@ FUNCTION DEFINITION foo  [8:1/124-8:27/150] FunctionDefinitionImpl SCOPE: friend
     DECLARATION: foo  [7:5/110-7:15/120]
     PARAMETERS:
     RETURNS int TEXT=int  [8:1/124-8:4/127]
-    STATEMENT Compound  [8:14/137-8:27/150] SCOPE: foo 
-        STATEMENT Return  [8:16/139-8:25/148] SCOPE: Stmt  [8:14/137-8:27/150] text: 'return 0;'
+    STATEMENT COMPOUND  [8:14/137-8:27/150] SCOPE: foo 
+        STATEMENT RETURN  [8:16/139-8:25/148] SCOPE: Stmt  [8:14/137-8:27/150] text: 'return 0;'
 CLASS B (B ) [9:1/151-16:29/348] lcurly=158 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
-        TYPEDEF private xxx [10:5/164-10:21/180] ClassImpl$MemberTypedef
+        TYPEDEF PRIVATE xxx [10:5/164-10:21/180] ClassImpl$MemberTypedef
         FUNCTION boo [12:5/206-12:15/216] MethodImpl SCOPE: B 
             DEFINITION: null
             SIGNATURE boo()
@@ -81,8 +81,8 @@ CLASS B (B ) [9:1/151-16:29/348] lcurly=158 SCOPE: $Global$
             PARAMETERS:
                  [13:21/237-13:24/240]  TYPE: int TEXT=int  [13:21/237-13:24/240]  INIT: null  SCOPE: moo2 
             RETURNS int TEXT=int  [13:12/228-13:15/231]
-            STATEMENT Compound  [13:26/242-13:39/255] SCOPE: moo2 
-                STATEMENT Return  [13:28/244-13:37/253] SCOPE: Stmt  [13:26/242-13:39/255] text: 'return 0;'
+            STATEMENT COMPOUND  [13:26/242-13:39/255] SCOPE: moo2 
+                STATEMENT RETURN  [13:28/244-13:37/253] SCOPE: Stmt  [13:26/242-13:39/255] text: 'return 0;'
         FUNCTION moo [14:5/261-14:25/281] FriendFunctionImpl SCOPE: $Global$ 
             DEFINITION: moo  [2:1/15-2:24/38]
             SIGNATURE moo(int)
@@ -97,8 +97,8 @@ CLASS B (B ) [9:1/151-16:29/348] lcurly=158 SCOPE: $Global$
             DECLARATION: soo  [4:5/56-4:15/66]
             PARAMETERS:
             RETURNS int TEXT=int  [15:12/293-15:15/296]
-            STATEMENT Compound  [15:25/306-15:38/319] SCOPE: soo 
-                STATEMENT Return  [15:27/308-15:36/317] SCOPE: Stmt  [15:25/306-15:38/319] text: 'return 0;'
+            STATEMENT COMPOUND  [15:25/306-15:38/319] SCOPE: soo 
+                STATEMENT RETURN  [15:27/308-15:36/317] SCOPE: Stmt  [15:25/306-15:38/319] text: 'return 0;'
         FUNCTION soo2 [16:5/324-16:27/346] FriendFunctionImplEx SCOPE: $Global$ 
             DEFINITION: soo2  [5:5/71-5:26/92]
             SIGNATURE soo2()
@@ -122,8 +122,8 @@ FUNCTION DEFINITION moo  [2:1/15-2:24/38] FunctionDDImpl SCOPE: $Global$
     PARAMETERS:
          [2:9/23-2:12/26]  TYPE: int TEXT=int  [2:9/23-2:12/26]  INIT: null  SCOPE: moo 
     RETURNS int TEXT=int  [2:1/15-2:4/18]
-    STATEMENT Compound  [2:13/27-2:24/38] SCOPE: moo 
-        STATEMENT Return  [2:14/28-2:23/37] SCOPE: Stmt  [2:13/27-2:24/38] text: 'return 0;'
+    STATEMENT COMPOUND  [2:13/27-2:24/38] SCOPE: moo 
+        STATEMENT RETURN  [2:14/28-2:23/37] SCOPE: Stmt  [2:13/27-2:24/38] text: 'return 0;'
 STRUCT S2 (S2 ) [3:1/39-5:29/95] lcurly=49 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
@@ -139,8 +139,8 @@ STRUCT S2 (S2 ) [3:1/39-5:29/95] lcurly=49 SCOPE: $Global$
             DECLARATION: soo2  [5:5/71-5:26/92]
             PARAMETERS:
             RETURNS int TEXT=int  [5:5/71-5:8/74]
-            STATEMENT Compound  [5:15/81-5:26/92] SCOPE: soo2 
-                STATEMENT Return  [5:16/82-5:25/91] SCOPE: Stmt  [5:15/81-5:26/92] text: 'return 0;'
+            STATEMENT COMPOUND  [5:15/81-5:26/92] SCOPE: soo2 
+                STATEMENT RETURN  [5:16/82-5:25/91] SCOPE: Stmt  [5:15/81-5:26/92] text: 'return 0;'
 CLASS A2 (A2 ) [6:1/96-7:18/123] lcurly=104 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
@@ -153,7 +153,7 @@ CLASS A2 (A2 ) [6:1/96-7:18/123] lcurly=104 SCOPE: $Global$
 CLASS B (B ) [9:1/151-16:29/348] lcurly=158 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
-        TYPEDEF private xxx [10:5/164-10:21/180] ClassImpl$MemberTypedef
+        TYPEDEF PRIVATE xxx [10:5/164-10:21/180] ClassImpl$MemberTypedef
         FUNCTION boo [12:5/206-12:15/216] MethodImpl SCOPE: B 
             DEFINITION: null
             SIGNATURE boo()
@@ -170,8 +170,8 @@ CLASS B (B ) [9:1/151-16:29/348] lcurly=158 SCOPE: $Global$
             PARAMETERS:
                  [13:21/237-13:24/240]  TYPE: int TEXT=int  [13:21/237-13:24/240]  INIT: null  SCOPE: moo2 
             RETURNS int TEXT=int  [13:12/228-13:15/231]
-            STATEMENT Compound  [13:26/242-13:39/255] SCOPE: moo2 
-                STATEMENT Return  [13:28/244-13:37/253] SCOPE: Stmt  [13:26/242-13:39/255] text: 'return 0;'
+            STATEMENT COMPOUND  [13:26/242-13:39/255] SCOPE: moo2 
+                STATEMENT RETURN  [13:28/244-13:37/253] SCOPE: Stmt  [13:26/242-13:39/255] text: 'return 0;'
         FUNCTION moo [14:5/261-14:25/281] FriendFunctionImpl SCOPE: $Global$ 
             DEFINITION: moo  [2:1/15-2:24/38]
             SIGNATURE moo(int)
@@ -186,8 +186,8 @@ CLASS B (B ) [9:1/151-16:29/348] lcurly=158 SCOPE: $Global$
             DECLARATION: soo  [4:5/56-4:15/66]
             PARAMETERS:
             RETURNS int TEXT=int  [15:12/293-15:15/296]
-            STATEMENT Compound  [15:25/306-15:38/319] SCOPE: soo 
-                STATEMENT Return  [15:27/308-15:36/317] SCOPE: Stmt  [15:25/306-15:38/319] text: 'return 0;'
+            STATEMENT COMPOUND  [15:25/306-15:38/319] SCOPE: soo 
+                STATEMENT RETURN  [15:27/308-15:36/317] SCOPE: Stmt  [15:25/306-15:38/319] text: 'return 0;'
         FUNCTION soo2 [16:5/324-16:27/346] FriendFunctionImplEx SCOPE: $Global$ 
             DEFINITION: soo2  [5:5/71-5:26/92]
             SIGNATURE soo2()
@@ -202,8 +202,8 @@ FUNCTION DEFINITION moo2  [13:5/221-13:39/255] FriendFunctionDDImpl SCOPE: $Glob
     PARAMETERS:
          [13:21/237-13:24/240]  TYPE: int TEXT=int  [13:21/237-13:24/240]  INIT: null  SCOPE: moo2 
     RETURNS int TEXT=int  [13:12/228-13:15/231]
-    STATEMENT Compound  [13:26/242-13:39/255] SCOPE: moo2 
-        STATEMENT Return  [13:28/244-13:37/253] SCOPE: Stmt  [13:26/242-13:39/255] text: 'return 0;'
+    STATEMENT COMPOUND  [13:26/242-13:39/255] SCOPE: moo2 
+        STATEMENT RETURN  [13:28/244-13:37/253] SCOPE: Stmt  [13:26/242-13:39/255] text: 'return 0;'
 FUNCTION moo [14:5/261-14:25/281] FriendFunctionImpl SCOPE: $Global$ 
     DEFINITION: moo  [2:1/15-2:24/38]
     SIGNATURE moo(int)

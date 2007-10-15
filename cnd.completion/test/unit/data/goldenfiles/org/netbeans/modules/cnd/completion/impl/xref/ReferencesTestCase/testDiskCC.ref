@@ -60,7 +60,7 @@
 ==============================================================
 'ComputeSupportMetric', tokenID=identifier, offset=2309 [48:9/2309-48:29/2329]
 --OWNER:
-    STMT Expression text='ComputeSupportMetric()'
+    STMT EXPRESSION text='ComputeSupportMetric()'
 --RESOLVED TO:
     FUNCTION ComputeSupportMetric()  [56:5/2504-56:33/2532] ReferencesTestCase/disk.h
 ==============================================================
@@ -102,19 +102,19 @@
 ==============================================================
 'metric', tokenID=identifier, offset=2622 [60:9/2622-60:15/2628]
 --OWNER:
-    STMT Expression text='metric += 500'
+    STMT EXPRESSION text='metric += 500'
 --RESOLVED TO:
     VARIABLE metric [57:5/2546-57:35/2576] ReferencesTestCase/disk.cc  TYPE: int TEXT=int  [57:5/2546-57:8/2549]  INIT: text='200'  SCOPE: Stmt  [56:35/2539-64:2/2683]
 ==============================================================
 'SetSupportMetric', tokenID=identifier, offset=2656 [63:5/2656-63:21/2672]
 --OWNER:
-    STMT Expression text='SetSupportMetric(metric)'
+    STMT EXPRESSION text='SetSupportMetric(metric)'
 --RESOLVED TO:
     FUNCTION SetSupportMetric(int)  [77:5/3002-77:34/3031] ReferencesTestCase/module.h
 ==============================================================
 'metric', tokenID=identifier, offset=2673 [63:22/2673-63:28/2679]
 --OWNER:
-    STMT Expression text='SetSupportMetric(metric)'
+    STMT EXPRESSION text='SetSupportMetric(metric)'
 --RESOLVED TO:
     VARIABLE metric [57:5/2546-57:35/2576] ReferencesTestCase/disk.cc  TYPE: int TEXT=int  [57:5/2546-57:8/2549]  INIT: text='200'  SCOPE: Stmt  [56:35/2539-64:2/2683]
 ==============================================================
@@ -138,13 +138,13 @@
 ==============================================================
 'SINGLE', tokenID=identifier, offset=2765 [68:14/2765-68:20/2771]
 --OWNER:
-    STMT Case text='SINGLE'
+    STMT CASE text='SINGLE'
 --RESOLVED TO:
     ENUMERATOR Disk::DiskType::SINGLE [48:21/2213-48:27/2219] ReferencesTestCase/disk.h
 ==============================================================
 'RAID', tokenID=identifier, offset=2830 [71:14/2830-71:18/2834]
 --OWNER:
-    STMT Case text='RAID'
+    STMT CASE text='RAID'
 --RESOLVED TO:
     ENUMERATOR Disk::DiskType::RAID [48:30/2222-48:34/2226] ReferencesTestCase/disk.h
 ==============================================================
@@ -168,19 +168,19 @@
 ==============================================================
 'T100', tokenID=identifier, offset=3021 [81:14/3021-81:18/3025]
 --OWNER:
-    STMT Case text='T100'
+    STMT CASE text='T100'
 --RESOLVED TO:
     ENUMERATOR Disk::DiskCapacity::T100 [49:25/2254-49:29/2258] ReferencesTestCase/disk.h
 ==============================================================
 'T200', tokenID=identifier, offset=3084 [84:14/3084-84:18/3088]
 --OWNER:
-    STMT Case text='T200'
+    STMT CASE text='T200'
 --RESOLVED TO:
     ENUMERATOR Disk::DiskCapacity::T200 [49:32/2261-49:36/2265] ReferencesTestCase/disk.h
 ==============================================================
 'T500', tokenID=identifier, offset=3147 [87:14/3147-87:18/3151]
 --OWNER:
-    STMT Case text='T500'
+    STMT CASE text='T500'
 --RESOLVED TO:
     ENUMERATOR Disk::DiskCapacity::T500 [49:38/2267-49:42/2271] ReferencesTestCase/disk.h
 ==============================================================

@@ -20,7 +20,7 @@ FUNCTION DEFINITION f  [1:1/0-2:2/49] FunctionDDImpl SCOPE: $Global$
         pf [1:14/13-1:38/37]  TYPE: void TEXT=void(*)(int x,int pf)  [1:14/13-1:21/20]  INIT: null  SCOPE: f 
         x [1:39/38-1:45/44]  TYPE: char TEXT=char  [1:39/38-1:43/42]  INIT: null  SCOPE: f 
     RETURNS void TEXT=void  [1:1/0-1:5/4]
-    STATEMENT Compound  [1:47/46-2:2/49] SCOPE: f 
+    STATEMENT COMPOUND  [1:47/46-2:2/49] SCOPE: f 
 
 ========== Dumping model of PROJECT DummyProject
 FUNCTION DEFINITION f  [1:1/0-2:2/49] FunctionDDImpl SCOPE: $Global$ 
@@ -32,5 +32,5 @@ FUNCTION DEFINITION f  [1:1/0-2:2/49] FunctionDDImpl SCOPE: $Global$
         pf [1:14/13-1:38/37]  TYPE: void TEXT=void(*)(int x,int pf)  [1:14/13-1:21/20]  INIT: null  SCOPE: f 
         x [1:39/38-1:45/44]  TYPE: char TEXT=char  [1:39/38-1:43/42]  INIT: null  SCOPE: f 
     RETURNS void TEXT=void  [1:1/0-1:5/4]
-    STATEMENT Compound  [1:47/46-2:2/49] SCOPE: f 
+    STATEMENT COMPOUND  [1:47/46-2:2/49] SCOPE: f 
 

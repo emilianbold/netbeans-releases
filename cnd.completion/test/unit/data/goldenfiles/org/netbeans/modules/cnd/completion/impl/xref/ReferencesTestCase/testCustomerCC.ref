@@ -72,7 +72,7 @@
 ==============================================================
 'discount', tokenID=identifier, offset=2289 [50:12/2289-50:20/2297]
 --OWNER:
-    STMT Return text='return discount;'
+    STMT RETURN text='return discount;'
 --RESOLVED TO:
     VARIABLE discount [57:9/2395-57:22/2408] ReferencesTestCase/customer.h  TYPE: int TEXT=int  [57:9/2395-57:12/2398]  INIT: null  SCOPE: Customer 
 ==============================================================
@@ -96,7 +96,7 @@
 ==============================================================
 'name', tokenID=identifier, offset=2348 [54:12/2348-54:16/2352]
 --OWNER:
-    STMT Return text='return name;'
+    STMT RETURN text='return name;'
 --RESOLVED TO:
     VARIABLE name [56:9/2374-56:21/2386] ReferencesTestCase/customer.h  TYPE: $unresolved$::string TEXT=string  [56:9/2374-56:15/2380]  INIT: null  SCOPE: Customer 
 ==============================================================
@@ -132,37 +132,37 @@
 ==============================================================
 'output', tokenID=identifier, offset=2427 [58:5/2427-58:11/2433]
 --OWNER:
-    STMT Expression text='output << customer.name << " has discount " << customer.discount << '%''
+    STMT EXPRESSION text='output << customer.name << " has discount " << customer.discount << '%''
 --RESOLVED TO:
     VARIABLE output [57:22/2378-57:37/2393] ReferencesTestCase/customer.cc  TYPE: &$unresolved$::ostream TEXT=ostream&  [57:22/2378-57:30/2386]  INIT: null  SCOPE: operator << 
 ==============================================================
 'customer', tokenID=identifier, offset=2437 [58:15/2437-58:23/2445]
 --OWNER:
-    STMT Expression text='output << customer.name << " has discount " << customer.discount << '%''
+    STMT EXPRESSION text='output << customer.name << " has discount " << customer.discount << '%''
 --RESOLVED TO:
     VARIABLE customer [57:39/2395-57:63/2419] ReferencesTestCase/customer.cc  TYPE: const &Customer TEXT=const Customer&  [57:39/2395-57:54/2410]  INIT: null  SCOPE: operator << 
 ==============================================================
 'name', tokenID=identifier, offset=2446 [58:24/2446-58:28/2450]
 --OWNER:
-    STMT Expression text='output << customer.name << " has discount " << customer.discount << '%''
+    STMT EXPRESSION text='output << customer.name << " has discount " << customer.discount << '%''
 --RESOLVED TO:
     VARIABLE name [56:9/2374-56:21/2386] ReferencesTestCase/customer.h  TYPE: $unresolved$::string TEXT=string  [56:9/2374-56:15/2380]  INIT: null  SCOPE: Customer 
 ==============================================================
 'customer', tokenID=identifier, offset=2474 [58:52/2474-58:60/2482]
 --OWNER:
-    STMT Expression text='output << customer.name << " has discount " << customer.discount << '%''
+    STMT EXPRESSION text='output << customer.name << " has discount " << customer.discount << '%''
 --RESOLVED TO:
     VARIABLE customer [57:39/2395-57:63/2419] ReferencesTestCase/customer.cc  TYPE: const &Customer TEXT=const Customer&  [57:39/2395-57:54/2410]  INIT: null  SCOPE: operator << 
 ==============================================================
 'discount', tokenID=identifier, offset=2483 [58:61/2483-58:69/2491]
 --OWNER:
-    STMT Expression text='output << customer.name << " has discount " << customer.discount << '%''
+    STMT EXPRESSION text='output << customer.name << " has discount " << customer.discount << '%''
 --RESOLVED TO:
     VARIABLE discount [57:9/2395-57:22/2408] ReferencesTestCase/customer.h  TYPE: int TEXT=int  [57:9/2395-57:12/2398]  INIT: null  SCOPE: Customer 
 ==============================================================
 'output', tokenID=identifier, offset=2511 [59:12/2511-59:18/2517]
 --OWNER:
-    STMT Return text='return output;'
+    STMT RETURN text='return output;'
 --RESOLVED TO:
     VARIABLE output [57:22/2378-57:37/2393] ReferencesTestCase/customer.cc  TYPE: &$unresolved$::ostream TEXT=ostream&  [57:22/2378-57:30/2386]  INIT: null  SCOPE: operator << 
 ==============================================================

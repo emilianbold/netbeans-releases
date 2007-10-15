@@ -13,7 +13,7 @@ Macros:
     <no macros>
 CLASS A (A ) [1:1/0-4:3/37] lcurly=12 SCOPE: $Global$ 
     BASE CLASSES:
-        CLASS=A VISIBILITY==private virtual==false text='A'
+        CLASS=A VISIBILITY==PRIVATE virtual==false text='A'
     MEMBERS:
         FUNCTION foo [2:5/18-2:16/29] MethodImpl SCOPE: A 
             DEFINITION: foo  [6:1/42-9:2/74]
@@ -27,14 +27,14 @@ FUNCTION DEFINITION foo  [6:1/42-9:2/74] FunctionDefinitionImpl SCOPE: infinite2
     DECLARATION: foo  [2:5/18-2:16/29]
     PARAMETERS:
     RETURNS void TEXT=void  [6:1/42-6:5/46]
-    STATEMENT Compound  [6:15/56-9:2/74] SCOPE: foo 
-        STATEMENT Declaration  [7:5/62-7:9/66] SCOPE: Stmt  [6:15/56-9:2/74]
+    STATEMENT COMPOUND  [6:15/56-9:2/74] SCOPE: foo 
+        STATEMENT DECLARATION  [7:5/62-7:9/66] SCOPE: Stmt  [6:15/56-9:2/74]
             VARIABLE a [7:5/62-7:9/66]  TYPE: $unresolved$::C TEXT=C  [7:5/62-7:6/63]  INIT: null  SCOPE: Stmt  [6:15/56-9:2/74]
 
 ========== Dumping model of PROJECT DummyProject
 CLASS A (A ) [1:1/0-4:3/37] lcurly=12 SCOPE: $Global$ 
     BASE CLASSES:
-        CLASS=A VISIBILITY==private virtual==false text='A'
+        CLASS=A VISIBILITY==PRIVATE virtual==false text='A'
     MEMBERS:
         FUNCTION foo [2:5/18-2:16/29] MethodImpl SCOPE: A 
             DEFINITION: foo  [6:1/42-9:2/74]

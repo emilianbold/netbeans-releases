@@ -19,8 +19,8 @@ FUNCTION DEFINITION plus  [3:1/46-3:42/87] FunctionDDImpl SCOPE: $Global$
         x [3:10/55-3:15/60]  TYPE: int TEXT=int  [3:10/55-3:13/58]  INIT: null  SCOPE: plus 
         y [3:17/62-3:22/67]  TYPE: int TEXT=int  [3:17/62-3:20/65]  INIT: null  SCOPE: plus 
     RETURNS int TEXT=int  [3:1/46-3:4/49]
-    STATEMENT Compound  [3:25/70-3:42/87] SCOPE: plus 
-        STATEMENT Return  [3:27/72-3:40/85] SCOPE: Stmt  [3:25/70-3:42/87] text: 'return x + y;'
+    STATEMENT COMPOUND  [3:25/70-3:42/87] SCOPE: plus 
+        STATEMENT RETURN  [3:27/72-3:40/85] SCOPE: Stmt  [3:25/70-3:42/87] text: 'return x + y;'
 FUNCTION DEFINITION minus  [4:1/88-4:42/129] FunctionDDImpl SCOPE: $Global$ 
     SIGNATURE minus(int,int)
     UNIQUE NAME f:minus(int,int)
@@ -29,8 +29,8 @@ FUNCTION DEFINITION minus  [4:1/88-4:42/129] FunctionDDImpl SCOPE: $Global$
         x [4:11/98-4:16/103]  TYPE: int TEXT=int  [4:11/98-4:14/101]  INIT: null  SCOPE: minus 
         y [4:18/105-4:23/110]  TYPE: int TEXT=int  [4:18/105-4:21/108]  INIT: null  SCOPE: minus 
     RETURNS int TEXT=int  [4:1/88-4:4/91]
-    STATEMENT Compound  [4:25/112-4:42/129] SCOPE: minus 
-        STATEMENT Return  [4:27/114-4:40/127] SCOPE: Stmt  [4:25/112-4:42/129] text: 'return x - y;'
+    STATEMENT COMPOUND  [4:25/112-4:42/129] SCOPE: minus 
+        STATEMENT RETURN  [4:27/114-4:40/127] SCOPE: Stmt  [4:25/112-4:42/129] text: 'return x - y;'
 
 ========== Dumping model of PROJECT DummyProject
 FUNCTION DEFINITION plus  [3:1/46-3:42/87] FunctionDDImpl SCOPE: $Global$ 
@@ -41,8 +41,8 @@ FUNCTION DEFINITION plus  [3:1/46-3:42/87] FunctionDDImpl SCOPE: $Global$
         x [3:10/55-3:15/60]  TYPE: int TEXT=int  [3:10/55-3:13/58]  INIT: null  SCOPE: plus 
         y [3:17/62-3:22/67]  TYPE: int TEXT=int  [3:17/62-3:20/65]  INIT: null  SCOPE: plus 
     RETURNS int TEXT=int  [3:1/46-3:4/49]
-    STATEMENT Compound  [3:25/70-3:42/87] SCOPE: plus 
-        STATEMENT Return  [3:27/72-3:40/85] SCOPE: Stmt  [3:25/70-3:42/87] text: 'return x + y;'
+    STATEMENT COMPOUND  [3:25/70-3:42/87] SCOPE: plus 
+        STATEMENT RETURN  [3:27/72-3:40/85] SCOPE: Stmt  [3:25/70-3:42/87] text: 'return x + y;'
 FUNCTION DEFINITION minus  [4:1/88-4:42/129] FunctionDDImpl SCOPE: $Global$ 
     SIGNATURE minus(int,int)
     UNIQUE NAME f:minus(int,int)
@@ -51,6 +51,6 @@ FUNCTION DEFINITION minus  [4:1/88-4:42/129] FunctionDDImpl SCOPE: $Global$
         x [4:11/98-4:16/103]  TYPE: int TEXT=int  [4:11/98-4:14/101]  INIT: null  SCOPE: minus 
         y [4:18/105-4:23/110]  TYPE: int TEXT=int  [4:18/105-4:21/108]  INIT: null  SCOPE: minus 
     RETURNS int TEXT=int  [4:1/88-4:4/91]
-    STATEMENT Compound  [4:25/112-4:42/129] SCOPE: minus 
-        STATEMENT Return  [4:27/114-4:40/127] SCOPE: Stmt  [4:25/112-4:42/129] text: 'return x - y;'
+    STATEMENT COMPOUND  [4:25/112-4:42/129] SCOPE: minus 
+        STATEMENT RETURN  [4:27/114-4:40/127] SCOPE: Stmt  [4:25/112-4:42/129] text: 'return x - y;'
 

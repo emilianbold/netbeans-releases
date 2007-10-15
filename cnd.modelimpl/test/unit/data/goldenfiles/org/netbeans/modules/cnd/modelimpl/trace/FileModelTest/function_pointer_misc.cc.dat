@@ -24,8 +24,8 @@ FUNCTION DEFINITION add  [3:1/38-3:40/77] FunctionDDImpl SCOPE: $Global$
         a [3:9/46-3:14/51]  TYPE: int TEXT=int  [3:9/46-3:12/49]  INIT: null  SCOPE: add 
         b [3:16/53-3:21/58]  TYPE: int TEXT=int  [3:16/53-3:19/56]  INIT: null  SCOPE: add 
     RETURNS int TEXT=int  [3:1/38-3:4/41]
-    STATEMENT Compound  [3:23/60-3:40/77] SCOPE: add 
-        STATEMENT Return  [3:25/62-3:38/75] SCOPE: Stmt  [3:23/60-3:40/77] text: 'return a + b;'
+    STATEMENT COMPOUND  [3:23/60-3:40/77] SCOPE: add 
+        STATEMENT RETURN  [3:25/62-3:38/75] SCOPE: Stmt  [3:23/60-3:40/77] text: 'return a + b;'
 FUNCTION DEFINITION sub  [4:1/78-4:40/117] FunctionDDImpl SCOPE: $Global$ 
     SIGNATURE sub(int,int)
     UNIQUE NAME f:sub(int,int)
@@ -34,8 +34,8 @@ FUNCTION DEFINITION sub  [4:1/78-4:40/117] FunctionDDImpl SCOPE: $Global$
         a [4:9/86-4:14/91]  TYPE: int TEXT=int  [4:9/86-4:12/89]  INIT: null  SCOPE: sub 
         b [4:16/93-4:21/98]  TYPE: int TEXT=int  [4:16/93-4:19/96]  INIT: null  SCOPE: sub 
     RETURNS int TEXT=int  [4:1/78-4:4/81]
-    STATEMENT Compound  [4:23/100-4:40/117] SCOPE: sub 
-        STATEMENT Return  [4:25/102-4:38/115] SCOPE: Stmt  [4:23/100-4:40/117] text: 'return a - b;'
+    STATEMENT COMPOUND  [4:23/100-4:40/117] SCOPE: sub 
+        STATEMENT RETURN  [4:25/102-4:38/115] SCOPE: Stmt  [4:23/100-4:40/117] text: 'return a - b;'
 FUNCTION DEFINITION mul  [5:1/118-5:40/157] FunctionDDImpl SCOPE: $Global$ 
     SIGNATURE mul(int,int)
     UNIQUE NAME f:mul(int,int)
@@ -44,8 +44,8 @@ FUNCTION DEFINITION mul  [5:1/118-5:40/157] FunctionDDImpl SCOPE: $Global$
         a [5:9/126-5:14/131]  TYPE: int TEXT=int  [5:9/126-5:12/129]  INIT: null  SCOPE: mul 
         b [5:16/133-5:21/138]  TYPE: int TEXT=int  [5:16/133-5:19/136]  INIT: null  SCOPE: mul 
     RETURNS int TEXT=int  [5:1/118-5:4/121]
-    STATEMENT Compound  [5:23/140-5:40/157] SCOPE: mul 
-        STATEMENT Return  [5:25/142-5:38/155] SCOPE: Stmt  [5:23/140-5:40/157] text: 'return a * b;'
+    STATEMENT COMPOUND  [5:23/140-5:40/157] SCOPE: mul 
+        STATEMENT RETURN  [5:25/142-5:38/155] SCOPE: Stmt  [5:23/140-5:40/157] text: 'return a * b;'
 FUNCTION DEFINITION div  [6:1/158-6:40/197] FunctionDDImpl SCOPE: $Global$ 
     SIGNATURE div(int,int)
     UNIQUE NAME f:div(int,int)
@@ -54,8 +54,8 @@ FUNCTION DEFINITION div  [6:1/158-6:40/197] FunctionDDImpl SCOPE: $Global$
         a [6:9/166-6:14/171]  TYPE: int TEXT=int  [6:9/166-6:12/169]  INIT: null  SCOPE: div 
         b [6:16/173-6:21/178]  TYPE: int TEXT=int  [6:16/173-6:19/176]  INIT: null  SCOPE: div 
     RETURNS int TEXT=int  [6:1/158-6:4/161]
-    STATEMENT Compound  [6:23/180-6:40/197] SCOPE: div 
-        STATEMENT Return  [6:25/182-6:38/195] SCOPE: Stmt  [6:23/180-6:40/197] text: 'return a + b;'
+    STATEMENT COMPOUND  [6:23/180-6:40/197] SCOPE: div 
+        STATEMENT RETURN  [6:25/182-6:38/195] SCOPE: Stmt  [6:23/180-6:40/197] text: 'return a + b;'
 TYPEDEF OP  [8:1/199-8:29/227] TYPE: *int TEXT=int*(*)(int,int)  [8:9/207-8:15/213] SCOPE: $Global$ 
 VARIABLE curr_op [10:1/229-10:31/259]  TYPE: int TEXT=int(*)(int,int)  [10:1/229-10:7/235]  INIT: text='add'  SCOPE: $Global$ 
 FUNCTION call_op [12:1/261-12:48/308] FunctionImpl SCOPE: $Global$ 
@@ -131,8 +131,8 @@ FUNCTION DEFINITION add  [3:1/38-3:40/77] FunctionDDImpl SCOPE: $Global$
         a [3:9/46-3:14/51]  TYPE: int TEXT=int  [3:9/46-3:12/49]  INIT: null  SCOPE: add 
         b [3:16/53-3:21/58]  TYPE: int TEXT=int  [3:16/53-3:19/56]  INIT: null  SCOPE: add 
     RETURNS int TEXT=int  [3:1/38-3:4/41]
-    STATEMENT Compound  [3:23/60-3:40/77] SCOPE: add 
-        STATEMENT Return  [3:25/62-3:38/75] SCOPE: Stmt  [3:23/60-3:40/77] text: 'return a + b;'
+    STATEMENT COMPOUND  [3:23/60-3:40/77] SCOPE: add 
+        STATEMENT RETURN  [3:25/62-3:38/75] SCOPE: Stmt  [3:23/60-3:40/77] text: 'return a + b;'
 FUNCTION DEFINITION sub  [4:1/78-4:40/117] FunctionDDImpl SCOPE: $Global$ 
     SIGNATURE sub(int,int)
     UNIQUE NAME f:sub(int,int)
@@ -141,8 +141,8 @@ FUNCTION DEFINITION sub  [4:1/78-4:40/117] FunctionDDImpl SCOPE: $Global$
         a [4:9/86-4:14/91]  TYPE: int TEXT=int  [4:9/86-4:12/89]  INIT: null  SCOPE: sub 
         b [4:16/93-4:21/98]  TYPE: int TEXT=int  [4:16/93-4:19/96]  INIT: null  SCOPE: sub 
     RETURNS int TEXT=int  [4:1/78-4:4/81]
-    STATEMENT Compound  [4:23/100-4:40/117] SCOPE: sub 
-        STATEMENT Return  [4:25/102-4:38/115] SCOPE: Stmt  [4:23/100-4:40/117] text: 'return a - b;'
+    STATEMENT COMPOUND  [4:23/100-4:40/117] SCOPE: sub 
+        STATEMENT RETURN  [4:25/102-4:38/115] SCOPE: Stmt  [4:23/100-4:40/117] text: 'return a - b;'
 FUNCTION DEFINITION mul  [5:1/118-5:40/157] FunctionDDImpl SCOPE: $Global$ 
     SIGNATURE mul(int,int)
     UNIQUE NAME f:mul(int,int)
@@ -151,8 +151,8 @@ FUNCTION DEFINITION mul  [5:1/118-5:40/157] FunctionDDImpl SCOPE: $Global$
         a [5:9/126-5:14/131]  TYPE: int TEXT=int  [5:9/126-5:12/129]  INIT: null  SCOPE: mul 
         b [5:16/133-5:21/138]  TYPE: int TEXT=int  [5:16/133-5:19/136]  INIT: null  SCOPE: mul 
     RETURNS int TEXT=int  [5:1/118-5:4/121]
-    STATEMENT Compound  [5:23/140-5:40/157] SCOPE: mul 
-        STATEMENT Return  [5:25/142-5:38/155] SCOPE: Stmt  [5:23/140-5:40/157] text: 'return a * b;'
+    STATEMENT COMPOUND  [5:23/140-5:40/157] SCOPE: mul 
+        STATEMENT RETURN  [5:25/142-5:38/155] SCOPE: Stmt  [5:23/140-5:40/157] text: 'return a * b;'
 FUNCTION DEFINITION div  [6:1/158-6:40/197] FunctionDDImpl SCOPE: $Global$ 
     SIGNATURE div(int,int)
     UNIQUE NAME f:div(int,int)
@@ -161,8 +161,8 @@ FUNCTION DEFINITION div  [6:1/158-6:40/197] FunctionDDImpl SCOPE: $Global$
         a [6:9/166-6:14/171]  TYPE: int TEXT=int  [6:9/166-6:12/169]  INIT: null  SCOPE: div 
         b [6:16/173-6:21/178]  TYPE: int TEXT=int  [6:16/173-6:19/176]  INIT: null  SCOPE: div 
     RETURNS int TEXT=int  [6:1/158-6:4/161]
-    STATEMENT Compound  [6:23/180-6:40/197] SCOPE: div 
-        STATEMENT Return  [6:25/182-6:38/195] SCOPE: Stmt  [6:23/180-6:40/197] text: 'return a + b;'
+    STATEMENT COMPOUND  [6:23/180-6:40/197] SCOPE: div 
+        STATEMENT RETURN  [6:25/182-6:38/195] SCOPE: Stmt  [6:23/180-6:40/197] text: 'return a + b;'
 TYPEDEF OP  [8:1/199-8:29/227] TYPE: *int TEXT=int*(*)(int,int)  [8:9/207-8:15/213] SCOPE: $Global$ 
 VARIABLE curr_op [10:1/229-10:31/259]  TYPE: int TEXT=int(*)(int,int)  [10:1/229-10:7/235]  INIT: text='add'  SCOPE: $Global$ 
 FUNCTION call_op [12:1/261-12:48/308] FunctionImpl SCOPE: $Global$ 

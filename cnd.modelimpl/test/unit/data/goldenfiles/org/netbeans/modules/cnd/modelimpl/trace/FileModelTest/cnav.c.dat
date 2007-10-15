@@ -24,8 +24,8 @@ FUNCTION DEFINITION cStyle  [4:1/16-4:29/44] FunctionDDImpl SCOPE: $Global$
     PARAMETERS:
          [4:12/27-4:15/30]  TYPE: int TEXT=int  [4:12/27-4:15/30]  INIT: null  SCOPE: cStyle 
     RETURNS int TEXT=int  [4:1/16-4:4/19]
-    STATEMENT Compound  [4:16/31-4:29/44] SCOPE: cStyle 
-        STATEMENT Return  [4:18/33-4:27/42] SCOPE: Stmt  [4:16/31-4:29/44] text: 'return 0;'
+    STATEMENT COMPOUND  [4:16/31-4:29/44] SCOPE: cStyle 
+        STATEMENT RETURN  [4:18/33-4:27/42] SCOPE: Stmt  [4:16/31-4:29/44] text: 'return 0;'
 
 ========== Dumping model of PROJECT DummyProject
 FUNCTION cStyle [2:1/1-2:14/14] FunctionImpl SCOPE: $Global$ 
@@ -41,6 +41,6 @@ FUNCTION DEFINITION cStyle  [4:1/16-4:29/44] FunctionDDImpl SCOPE: $Global$
     PARAMETERS:
          [4:12/27-4:15/30]  TYPE: int TEXT=int  [4:12/27-4:15/30]  INIT: null  SCOPE: cStyle 
     RETURNS int TEXT=int  [4:1/16-4:4/19]
-    STATEMENT Compound  [4:16/31-4:29/44] SCOPE: cStyle 
-        STATEMENT Return  [4:18/33-4:27/42] SCOPE: Stmt  [4:16/31-4:29/44] text: 'return 0;'
+    STATEMENT COMPOUND  [4:16/31-4:29/44] SCOPE: cStyle 
+        STATEMENT RETURN  [4:18/33-4:27/42] SCOPE: Stmt  [4:16/31-4:29/44] text: 'return 0;'
 

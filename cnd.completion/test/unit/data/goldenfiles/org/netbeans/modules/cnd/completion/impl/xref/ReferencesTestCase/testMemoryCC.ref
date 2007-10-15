@@ -60,7 +60,7 @@
 ==============================================================
 'ComputeSupportMetric', tokenID=identifier, offset=2274 [46:9/2274-46:29/2294]
 --OWNER:
-    STMT Expression text='ComputeSupportMetric()'
+    STMT EXPRESSION text='ComputeSupportMetric()'
 --RESOLVED TO:
     FUNCTION ComputeSupportMetric()  [56:5/2482-56:33/2510] ReferencesTestCase/memory.h
 ==============================================================
@@ -96,37 +96,37 @@
 ==============================================================
 'FAST', tokenID=identifier, offset=2611 [61:14/2611-61:18/2615]
 --OWNER:
-    STMT Case text='FAST'
+    STMT CASE text='FAST'
 --RESOLVED TO:
     ENUMERATOR Memory::MemoryType::FAST [48:34/2232-48:38/2236] ReferencesTestCase/memory.h
 ==============================================================
 'metric', tokenID=identifier, offset=2630 [62:13/2630-62:19/2636]
 --OWNER:
-    STMT Expression text='metric += 100'
+    STMT EXPRESSION text='metric += 100'
 --RESOLVED TO:
     VARIABLE metric [58:5/2531-58:35/2561] ReferencesTestCase/memory.cc  TYPE: int TEXT=int  [58:5/2531-58:8/2534]  INIT: text='200'  SCOPE: Stmt  [56:37/2519-71:2/2803]
 ==============================================================
 'ULTRA', tokenID=identifier, offset=2691 [65:14/2691-65:19/2696]
 --OWNER:
-    STMT Case text='ULTRA'
+    STMT CASE text='ULTRA'
 --RESOLVED TO:
     ENUMERATOR Memory::MemoryType::ULTRA [48:41/2239-48:46/2244] ReferencesTestCase/memory.h
 ==============================================================
 'metric', tokenID=identifier, offset=2711 [66:13/2711-66:19/2717]
 --OWNER:
-    STMT Expression text='metric += 200'
+    STMT EXPRESSION text='metric += 200'
 --RESOLVED TO:
     VARIABLE metric [58:5/2531-58:35/2561] ReferencesTestCase/memory.cc  TYPE: int TEXT=int  [58:5/2531-58:8/2534]  INIT: text='200'  SCOPE: Stmt  [56:37/2519-71:2/2803]
 ==============================================================
 'SetSupportMetric', tokenID=identifier, offset=2764 [70:5/2764-70:21/2780]
 --OWNER:
-    STMT Expression text='SetSupportMetric(metric)'
+    STMT EXPRESSION text='SetSupportMetric(metric)'
 --RESOLVED TO:
     FUNCTION SetSupportMetric(int)  [77:5/3002-77:34/3031] ReferencesTestCase/module.h
 ==============================================================
 'metric', tokenID=identifier, offset=2781 [70:22/2781-70:28/2787]
 --OWNER:
-    STMT Expression text='SetSupportMetric(metric)'
+    STMT EXPRESSION text='SetSupportMetric(metric)'
 --RESOLVED TO:
     VARIABLE metric [58:5/2531-58:35/2561] ReferencesTestCase/memory.cc  TYPE: int TEXT=int  [58:5/2531-58:8/2534]  INIT: text='200'  SCOPE: Stmt  [56:37/2519-71:2/2803]
 ==============================================================
@@ -150,19 +150,19 @@
 ==============================================================
 'STANDARD', tokenID=identifier, offset=2887 [75:14/2887-75:22/2895]
 --OWNER:
-    STMT Case text='STANDARD'
+    STMT CASE text='STANDARD'
 --RESOLVED TO:
     ENUMERATOR Memory::MemoryType::STANDARD [48:23/2221-48:31/2229] ReferencesTestCase/memory.h
 ==============================================================
 'FAST', tokenID=identifier, offset=2962 [78:14/2962-78:18/2966]
 --OWNER:
-    STMT Case text='FAST'
+    STMT CASE text='FAST'
 --RESOLVED TO:
     ENUMERATOR Memory::MemoryType::FAST [48:34/2232-48:38/2236] ReferencesTestCase/memory.h
 ==============================================================
 'ULTRA', tokenID=identifier, offset=3029 [81:14/3029-81:19/3034]
 --OWNER:
-    STMT Case text='ULTRA'
+    STMT CASE text='ULTRA'
 --RESOLVED TO:
     ENUMERATOR Memory::MemoryType::ULTRA [48:41/2239-48:46/2244] ReferencesTestCase/memory.h
 ==============================================================
@@ -186,19 +186,19 @@
 ==============================================================
 'SMALL', tokenID=identifier, offset=3234 [91:14/3234-91:19/3239]
 --OWNER:
-    STMT Case text='SMALL'
+    STMT CASE text='SMALL'
 --RESOLVED TO:
     ENUMERATOR Memory::MemoryCategory::SMALL [49:27/2274-49:32/2279] ReferencesTestCase/memory.h
 ==============================================================
 'MEDIUM', tokenID=identifier, offset=3301 [94:14/3301-94:20/3307]
 --OWNER:
-    STMT Case text='MEDIUM'
+    STMT CASE text='MEDIUM'
 --RESOLVED TO:
     ENUMERATOR Memory::MemoryCategory::MEDIUM [49:35/2282-49:41/2288] ReferencesTestCase/memory.h
 ==============================================================
 'BIG', tokenID=identifier, offset=3371 [97:14/3371-97:17/3374]
 --OWNER:
-    STMT Case text='BIG'
+    STMT CASE text='BIG'
 --RESOLVED TO:
     ENUMERATOR Memory::MemoryCategory::BIG [49:44/2291-49:47/2294] ReferencesTestCase/memory.h
 ==============================================================
