@@ -278,7 +278,9 @@ private void removeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
     EntityListModel destModel = (EntityListModel) listAvailable.getModel();
     for (Object entity : listSelected.getSelectedValues()) {
         sourceModel.removeElement((Entity) entity);
-        destModel.addElement((Entity) entity);
+        if (! destModel.contains(entity)) {
+            destModel.addElement(entity);
+        }
     }
     refreshModel();
     updateButtons();
@@ -296,7 +298,9 @@ private void removeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
         }
         for (EntityClassInfo e : closure) {
             sourceModel.removeElement(e.getEntity());
-            destModel.addElement(e.getEntity());
+            if (! destModel.contains(e.getEntity())) {
+                destModel.addElement(e.getEntity());
+            }
         }
         refreshModel();
         updateButtons();

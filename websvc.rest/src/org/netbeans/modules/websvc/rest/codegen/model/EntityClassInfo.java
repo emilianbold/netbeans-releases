@@ -185,6 +185,32 @@ public class EntityClassInfo {
         return fieldInfos;
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final EntityClassInfo other = (EntityClassInfo) obj;
+        if (this.name != other.name && (this.name == null || !this.name.equals(other.name))) {
+            return false;
+        }
+        if (this.packageName != other.packageName && (this.packageName == null || !this.packageName.equals(other.packageName))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 47 * hash + (this.name != null ? this.name.hashCode() : 0);
+        hash = 47 * hash + (this.packageName != null ? this.packageName.hashCode() : 0);
+        return hash;
+    }
+
     public Set<EntityClassInfo> getEntityClosure(Set<EntityClassInfo> result) {
         if (result.contains(this)) {
             return result;
