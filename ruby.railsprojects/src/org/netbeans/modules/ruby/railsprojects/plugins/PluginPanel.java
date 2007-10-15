@@ -43,6 +43,7 @@ package org.netbeans.modules.ruby.railsprojects.plugins;
 
 import java.awt.Dialog;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -848,6 +849,7 @@ private void installedPanelComponentShown(java.awt.event.ComponentEvent evt) {//
                             // Don't treat the filter as a regexp
                         }
                     }
+                    Collections.sort(repositories);
                     for (String repository : repositories) {
                         if (filter == null || filter.length() == 0) {
                             model.addElement(repository);
