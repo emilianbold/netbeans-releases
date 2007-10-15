@@ -40,6 +40,9 @@
  */
 package org.netbeans.modules.refactoring.spi.impl;
 
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.refactoring.api.impl.ActionsImplementationFactory;
 import org.netbeans.modules.refactoring.api.ui.ExplorerContext;
@@ -48,6 +51,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.explorer.ExtendedDelete;
+import org.openide.util.Exceptions;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
@@ -55,6 +59,8 @@ import org.openide.util.lookup.ProxyLookup;
  * @author Jan Becicka
  */
 public class SafeDeleteAction extends RefactoringGlobalAction implements ExtendedDelete {
+    
+    private static final Logger LOGGER = Logger.getLogger(SafeDeleteAction.class.getName());
 
     /**
      * Creates a new instance of SafeDeleteAction
@@ -66,6 +72,9 @@ public class SafeDeleteAction extends RefactoringGlobalAction implements Extende
     
     public final void performAction(Lookup context) {
         ActionsImplementationFactory.doDelete(context);
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.log(Level.FINEST, "SafeDeleteAction.performAction", new Exception());
+        }
     }
     
     public org.openide.util.HelpCtx getHelpCtx() {
