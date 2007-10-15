@@ -1049,6 +1049,9 @@ public class AstUtilities {
      * Get the range of a YieldNode. This is a workaround for offset problems
      * in the JRuby AST.
      * 
+     * This is tracked by JRuby bug 1435:
+     *   http://jira.codehaus.org/browse/JRUBY-1435
+     * 
      * @param node The YieldNode whose offset range we want
      * @param doc The BaseDocument for the code containing the yield node
      * @return The offset range of the yield node
