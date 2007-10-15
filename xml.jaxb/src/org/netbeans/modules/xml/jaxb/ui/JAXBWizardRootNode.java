@@ -63,7 +63,6 @@ import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
 /**
- * @author $Author $
  * @author lgao
  */
 public class JAXBWizardRootNode extends AbstractNode {
