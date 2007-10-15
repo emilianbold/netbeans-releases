@@ -342,20 +342,20 @@ public class FileEncodingQuery {
                         if (!remainder.hasRemaining()) {
                             remainder = null;
                         }
-                        return result;
                     }
-                    else {
-                        return currentEncoder.encode(in, out, false);
-                    }
+                    CoderResult result = currentEncoder.encode(in, out, false);
+                    return result;
                 }
                 if (buffer.remaining() == 0) {
-                    return encodeHead(in, out, false);
+                    CoderResult result = encodeHead(in, out, false);
+                    return result;
                 } else if (buffer.remaining() < in.remaining()) {
                     int limit = in.limit();
                     in.limit(in.position()+buffer.remaining());
                     buffer.put(in);
                     in.limit(limit);
-                    return encodeHead(in, out, false);
+                    CoderResult result = encodeHead(in, out, false);
+                    return result;
                 } else {
                     buffer.put(in);
                     return CoderResult.UNDERFLOW;
