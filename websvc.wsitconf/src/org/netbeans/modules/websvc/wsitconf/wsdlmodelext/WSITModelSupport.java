@@ -67,6 +67,7 @@ import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.modules.websvc.jaxwsruntimemodel.JavaWsdlMapper;
 import org.netbeans.modules.websvc.wsitconf.util.UndoManagerHolder;
 import org.netbeans.modules.websvc.wsitconf.WSITEditor;
+import org.netbeans.modules.websvc.wsitconf.api.DesignerListenerProvider;
 import org.netbeans.modules.websvc.wsitconf.util.AbstractTask;
 import org.netbeans.modules.websvc.wsitconf.util.SourceUtils;
 import org.netbeans.modules.websvc.wsitconf.util.Util;
@@ -408,6 +409,8 @@ public class WSITModelSupport {
             // and fill it with values
             model = createModelFromFO(wsdlFO, jc);
             wsdlFO.refresh(true);
+            
+            DesignerListenerProvider.configCreated();
         }
         
         return model;
@@ -656,6 +659,7 @@ public class WSITModelSupport {
         WSDLModel model = WSITModelSupport.getModelForService(service, implClass, project, create, createdFiles);
         if (model == null) return null;
         Definitions definitions = model.getDefinitions();
+        if (definitions == null) return null;
         Collection<Binding> bindings = definitions.getBindings();
         if ((bindings == null) || (bindings.isEmpty())) return null;
         if (bindings.size() == 1) return bindings.iterator().next();

@@ -46,6 +46,8 @@ import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedList;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
@@ -53,6 +55,7 @@ import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.design.configuration.WSConfiguration;
 import org.netbeans.modules.websvc.design.javamodel.ServiceChangeListener;
 import org.netbeans.modules.websvc.design.javamodel.ServiceModel;
+import org.netbeans.modules.websvc.wsitconf.api.DesignerListenerProvider;
 import org.netbeans.modules.websvc.wsitconf.spi.SecurityCheckerRegistry;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 import org.netbeans.modules.websvc.wsitconf.util.Util;
@@ -87,16 +90,21 @@ public class SecurityConfiguration implements WSConfiguration {
     private Binding binding;
     
     private ComponentListener cl;
+    private boolean clAdded = false;
+    
+    private PropertyChangeListener configCreationListener = null;
+    
+    private Collection<FileObject> createdFiles = new LinkedList<FileObject>();
     
     /** Creates a new instance of WSITWsConfiguration */
 
-    public SecurityConfiguration(Service service, FileObject implementationFile) {
+    public SecurityConfiguration(final Service service, final FileObject implementationFile) {
         try {
             this.service = service;
             this.implementationFile = DataObject.find(implementationFile);
             this.project = FileOwnerQuery.getOwner(implementationFile);
             this.serviceModel = ServiceModel.getServiceModel(implementationFile);
-            setListener();
+            addServiceChangeListener();
             this.cl = new ComponentListener() {
 
                 private void update() {
@@ -119,11 +127,20 @@ public class SecurityConfiguration implements WSConfiguration {
                     update();
                 }
             };
-            this.binding = WSITModelSupport.getBinding(service, implementationFile, project, false, null);
+            this.binding = WSITModelSupport.getBinding(service, implementationFile, project, false, createdFiles);
             if (binding != null) {
-                binding.getModel().addComponentListener(cl);
+                addCListener(binding);
+            } else {
+                configCreationListener = new PropertyChangeListener() {
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        binding = WSITModelSupport.getBinding(service, implementationFile, project, false, createdFiles);
+                        addCListener(binding);
+                        cl.valueChanged(null);
+                    }
+                };
+                DesignerListenerProvider.registerListener(configCreationListener);
             }
-        } catch (DataObjectNotFoundException ex) {
+         } catch (DataObjectNotFoundException ex) {
             Exceptions.printStackTrace(ex);
         }
     }
@@ -144,7 +161,7 @@ public class SecurityConfiguration implements WSConfiguration {
         return NbBundle.getMessage(SecurityConfiguration.class, "DesignConfigPanel.Security");
     }
   
-    private void setListener() {
+    private void addServiceChangeListener() {        
         if (scl == null) {
             scl = new  WsitServiceChangeListener(service, implementationFile.getPrimaryFile(), project);
         }
@@ -153,9 +170,17 @@ public class SecurityConfiguration implements WSConfiguration {
         }
     }
     
+    private synchronized void addCListener(Binding binding) {
+        if ((!clAdded) && (binding != null)) {
+            binding.getModel().addComponentListener(cl);
+            clAdded = true;
+        }
+    }
+    
     public boolean isSet() {
         boolean set = false;
         this.binding = WSITModelSupport.getBinding(service, implementationFile.getPrimaryFile(), project, false, null);
+        addCListener(binding);
         if (binding != null) {
             set = SecurityPolicyModelHelper.isSecurityEnabled(binding);
         }
@@ -166,6 +191,8 @@ public class SecurityConfiguration implements WSConfiguration {
         binding = WSITModelSupport.getBinding(service, implementationFile.getPrimaryFile(), project, true, null);
         if (binding == null) return;
 
+        addCListener(binding);
+        
         if (!(SecurityPolicyModelHelper.isSecurityEnabled(binding))) {
             
             // default profile with the easiest setup
@@ -184,6 +211,7 @@ public class SecurityConfiguration implements WSConfiguration {
     public void unset() {
         if (binding == null) return;
         if (SecurityPolicyModelHelper.isSecurityEnabled(binding)) {
+            addCListener(binding);
             SecurityPolicyModelHelper.disableSecurity(binding, true);
             WSITModelSupport.save(binding);
         }
@@ -202,7 +230,7 @@ public class SecurityConfiguration implements WSConfiguration {
         if ((scl != null) && (serviceModel != null)) {
             serviceModel.removeServiceChangeListener(scl);
         }
-        if (binding != null) {
+        if ((binding != null) && (clAdded)) {
             binding.getModel().removeComponentListener(cl);
         }
     }

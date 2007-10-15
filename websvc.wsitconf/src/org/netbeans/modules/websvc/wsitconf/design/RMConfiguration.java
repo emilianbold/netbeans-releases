@@ -52,6 +52,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.design.configuration.WSConfiguration;
+import org.netbeans.modules.websvc.wsitconf.api.DesignerListenerProvider;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.RMModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.WSITModelSupport;
 import org.netbeans.modules.xml.wsdl.model.Binding;
@@ -81,9 +82,13 @@ public class RMConfiguration implements WSConfiguration {
     
     private ComponentListener cl;
     
+    private boolean clAdded = false;
+    
+    private PropertyChangeListener configCreationListener = null;
+
     /** Creates a new instance of WSITWsConfiguration */
 
-    public RMConfiguration(Service service, FileObject implementationFile) {
+    public RMConfiguration(final Service service, final FileObject implementationFile) {
         try {
             this.service = service;
             this.implementationFile = DataObject.find(implementationFile);
@@ -112,12 +117,28 @@ public class RMConfiguration implements WSConfiguration {
                 }
             };
             if (binding != null) {
-                binding.getModel().addComponentListener(cl);
+                addCListener(binding);
+            } else {
+                configCreationListener = new PropertyChangeListener() {
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        binding = WSITModelSupport.getBinding(service, implementationFile, project, false, createdFiles);
+                        addCListener(binding);
+                        cl.valueChanged(null);
+                    }
+                };
+                DesignerListenerProvider.registerListener(configCreationListener);
             }
         } catch (DataObjectNotFoundException ex) {
             Exceptions.printStackTrace(ex);
         }
     }
+    
+    private synchronized void addCListener(Binding binding) {
+        if ((!clAdded) && (binding != null)) {
+            binding.getModel().addComponentListener(cl);
+            clAdded = true;
+        }
+    }    
     
     public Component getComponent() {
         return null;
