@@ -85,7 +85,9 @@ public class WebServiceMetadataReader extends CommonBeanReader {
                     Object moduleType = module.getModuleType();
                     if(J2eeModule.WAR.equals(moduleType) || J2eeModule.EJB.equals(moduleType)) {
                         result = readWebservicesMetadata(module.getMetadataModel(WebservicesMetadata.class));
-                        filterInvalidServices(result, moduleType);
+                        if(result != null && result.size() > 0) {
+                            filterInvalidServices(result, moduleType);
+                        }
                     }
                 }
             }
