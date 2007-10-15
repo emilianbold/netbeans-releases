@@ -73,6 +73,7 @@ public class TokenBasedTokenStream implements TokenStream {
         return ret;
     }
 
+    @Override
     public String toString() {
         String retValue;
         

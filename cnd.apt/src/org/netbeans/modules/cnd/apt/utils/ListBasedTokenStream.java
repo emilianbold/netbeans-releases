@@ -71,6 +71,7 @@ public class ListBasedTokenStream implements TokenStream {
         }
     }   
 
+    @Override
     public String toString() {
         return APTUtils.toString(new ListBasedTokenStream(tokens));
     }

@@ -69,6 +69,7 @@ public class APTTraceFilter implements TokenStream {
         return token;
     }
     
+    @Override
     public String toString() {
         String retValue;
         

@@ -464,46 +464,57 @@ public class APTUtils {
         public APTEOFToken() {
         }
         
+        @Override
         public int getOffset() {
             throw new UnsupportedOperationException("getOffset must not be used"); // NOI18N
         }
         
+        @Override
         public void setOffset(int o) {
             throw new UnsupportedOperationException("setOffset must not be used"); // NOI18N
         }
         
+        @Override
         public int getEndOffset() {
             throw new UnsupportedOperationException("getEndOffset must not be used"); // NOI18N
         }
         
+        @Override
         public void setEndOffset(int o) {
             throw new UnsupportedOperationException("setEndOffset must not be used"); // NOI18N
         }
         
+        @Override
         public int getTextID() {
             throw new UnsupportedOperationException("getTextID must not be used"); // NOI18N
         }
         
+        @Override
         public void setTextID(int id) {
             throw new UnsupportedOperationException("setTextID must not be used"); // NOI18N
         }
         
+        @Override
         public int getEndColumn() {
             throw new UnsupportedOperationException("getEndColumn must not be used"); // NOI18N
         }
         
+        @Override
         public void setEndColumn(int c) {
             throw new UnsupportedOperationException("setEndColumn must not be used"); // NOI18N
         }
         
+        @Override
         public int getEndLine() {
             throw new UnsupportedOperationException("getEndLine must not be used"); // NOI18N
         }
         
+        @Override
         public void setEndLine(int l) {
             throw new UnsupportedOperationException("setEndLine must not be used"); // NOI18N
         }
         
+        @Override
         public int getType() {
             return APTTokenTypes.EOF;
         }

@@ -65,6 +65,7 @@ public class APTCommentsFilter implements TokenStream {
         return next;
     }    
 
+    @Override
     public String toString() {
         String retValue;
         
