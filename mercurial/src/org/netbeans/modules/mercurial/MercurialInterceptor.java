@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.mercurial;
 
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.mercurial.HgException;
@@ -131,13 +132,61 @@ public class MercurialInterceptor extends VCSInterceptor {
     public boolean beforeMove(File from, File to) {
         if (from == null || to == null || to.exists()) return true;
         
+        Mercurial hg = Mercurial.getInstance();
+        if (hg.isManaged(from)) {
+            return hg.isManaged(to);
+        }
         return super.beforeMove(from, to);
     }
 
-    public void doMove(File from, File to) throws IOException {
+    public void doMove(final File from, final File to) throws IOException {
         if (from == null || to == null || to.exists()) return;
         
-        super.doMove(from, to);
+        if (SwingUtilities.isEventDispatchThread()) {
+
+            Mercurial.LOG.log(Level.INFO, "Warning: launching external process in AWT", new Exception().fillInStackTrace()); // NOI18N
+            final Throwable innerT[] = new Throwable[1];
+            Runnable outOfAwt = new Runnable() {
+                public void run() {
+                    try {
+                        hgMoveImplementation(from, to);
+                    } catch (Throwable t) {
+                        innerT[0] = t;
+                    }
+                }
+            };
+
+            Mercurial.getInstance().getRequestProcessor().post(outOfAwt).waitFinished();
+            if (innerT[0] != null) {
+                if (innerT[0] instanceof IOException) {
+                    throw (IOException) innerT[0];
+                } else if (innerT[0] instanceof RuntimeException) {
+                    throw (RuntimeException) innerT[0];
+                } else if (innerT[0] instanceof Error) {
+                    throw (Error) innerT[0];
+                } else {
+                    throw new IllegalStateException("Unexpected exception class: " + innerT[0]);  // NOI18N
+                }
+            }
+
+            // end of hack
+
+        } else {
+            hgMoveImplementation(from, to);
+        }
+    }
+
+    private void hgMoveImplementation(final File srcFile, final File dstFile) throws IOException {
+        Mercurial hg = Mercurial.getInstance();
+        final File root = hg.getTopmostManagedParent(srcFile);
+
+        try {
+            HgCommand.doRename(root, srcFile, dstFile);
+        } catch (HgException e) {
+            IOException ex = new IOException("Mercurial failed to rename " + srcFile.getAbsolutePath() + " to: " + dstFile.getAbsolutePath()); // NOI18N
+            ex.initCause(e);
+            throw ex;
+        }
     }
 
     public void afterMove(final File from, final File to) {
@@ -158,18 +207,8 @@ public class MercurialInterceptor extends VCSInterceptor {
 
         HgProgressSupport supportCreate = new HgProgressSupport() {
             public void perform() {
-                
-                try {
-                    if (HgUtils.isLocallyAdded(from)){
-                        HgCommand.doRemove(root, from);
-                    } else {
-                        HgCommand.doRenameAfter(root, from, to);
-                    }
-                    cache.refresh(from, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-                    cache.refresh(to, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-                } catch (HgException ex) {
-                    Mercurial.LOG.log(Level.FINE, "fileMovedImpl(): From: {0} To: {1} {2}", new Object[] {from.getAbsolutePath(), to.getAbsolutePath(), ex.toString()}); // NOI18N
-                }             
+                cache.refresh(from, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+                cache.refresh(to, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
             }
         };
 

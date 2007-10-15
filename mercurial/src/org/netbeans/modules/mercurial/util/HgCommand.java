@@ -84,7 +84,7 @@ public class HgCommand {
     private static final String HG_STATUS_FLAG_INCLUDE_CMD = "-I"; // NOI18N
     private static final String HG_STATUS_FLAG_INCLUDE_GLOB_CMD = "glob:"; // NOI18N
     private static final String HG_STATUS_FLAG_INCLUDE_END_CMD = "*"; // NOI18N
-    private static final String HG_STATUS_FLAG_INTERESTING_CMD = "-mardui"; // NOI18N
+    private static final String HG_STATUS_FLAG_INTERESTING_CMD = "-marduiC"; // NOI18N
     private static final String HG_STATUS_FLAG_UNKNOWN_CMD = "-u"; // NOI18N
     
     private static final String HG_COMMIT_CMD = "commit"; // NOI18N
@@ -889,8 +889,8 @@ public class HgCommand {
     
     
     /**
-     * Mark a source file as having been renamed to a destination file.
-     * mercurial hg rename -A.
+     * Rename a source file to a destination file.
+     * mercurial hg rename 
      *
      * @param File repository of the mercurial repository's root directory
      * @param File of sourceFile which was renamed
@@ -898,14 +898,18 @@ public class HgCommand {
      * @return void
      * @throws org.netbeans.modules.mercurial.HgException
      */
-    public static void doRenameAfter(File repository, File sourceFile, File destFile)  throws HgException {
+    public static void doRename(File repository, File sourceFile, File destFile)  throws HgException {
+        doRename(repository, sourceFile, destFile, false);
+    }
+
+    private static void doRename(File repository, File sourceFile, File destFile, boolean force)  throws HgException {
         if (repository == null) return;
         
         List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
         command.add(HG_RENAME_CMD);
-        command.add(HG_RENAME_AFTER_CMD);
+        if (force) command.add(HG_RENAME_AFTER_CMD);
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
         command.add(HG_OPT_CWD_CMD);
@@ -917,6 +921,20 @@ public class HgCommand {
         List<String> list = exec(command);
         if (!list.isEmpty())
             handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_RENAME_FAILED"));
+    }
+    
+    /**
+     * Mark a source file as having been renamed to a destination file.
+     * mercurial hg rename -A.
+     *
+     * @param File repository of the mercurial repository's root directory
+     * @param File of sourceFile which was renamed
+     * @param File of destFile to which sourceFile has been renaned
+     * @return void
+     * @throws org.netbeans.modules.mercurial.HgException
+     */
+    public static void doRenameAfter(File repository, File sourceFile, File destFile)  throws HgException {
+       doRename(repository, sourceFile, destFile, true);
     }
     
     /**
@@ -1558,20 +1576,39 @@ public class HgCommand {
         if (repository == null) return null;
         
         List<FileStatus> statusList = new ArrayList<FileStatus>();
-        FileInformation info = null;
+        FileInformation prev_info = null;
         List<String> list = doRepositoryDirStatusCmd(repository, dir, statusFlags);
         
         Map<File, FileInformation> repositoryFiles = new HashMap<File, FileInformation>(list.size());
         
+        StringBuffer filePath = null;
         for(String statusLine: list){
-            info =  getFileInformationFromStatusLine(statusLine);
+            FileInformation info = getFileInformationFromStatusLine(statusLine);
+            Mercurial.LOG.log(Level.FINE, "getDirStatusWithFlags(): status line {0}  info {1}", new Object[]{statusLine, info}); // NOI18N
+            if (statusLine.length() > 0) {
+                if (statusLine.charAt(0) == ' ') {
+                    // Locally Added but Copied
+                    if (filePath != null) {
+                        prev_info =  new FileInformation(FileInformation.STATUS_VERSIONED_ADDEDLOCALLY,
+                                new FileStatus(new File(filePath.toString()), true), false);
+                        Mercurial.LOG.log(Level.FINE, "getDirStatusWithFlags(): prev_info {0}  filePath {1}", new Object[]{prev_info, filePath.toString()}); // NOI18N
+                    } else {
+                        Mercurial.LOG.log(Level.FINE, "getDirStatusWithFlags(): repository path: {0} status flags: {1} status line {2} filepath == nullfor prev_info ", new Object[]{repository.getAbsolutePath(), statusFlags, statusLine}); // NOI18N
+                    }
+                    break;
+                } else {
+                    if (filePath != null) {
+                        repositoryFiles.put(new File(filePath.toString()), prev_info);
+                    }
+                }
+            }
             if(bIgnoreUnversioned){
                 if(info.getStatus() == FileInformation.STATUS_NOTVERSIONED_NOTMANAGED ||
                         info.getStatus() == FileInformation.STATUS_UNKNOWN) continue;
             }else{
                 if(info.getStatus() == FileInformation.STATUS_UNKNOWN) continue;
             }
-            StringBuffer filePath = new StringBuffer(repository.getAbsolutePath()).append(File.separatorChar);
+            filePath = new StringBuffer(repository.getAbsolutePath()).append(File.separatorChar);
             StringBuffer sb = new StringBuffer(statusLine);
             sb.delete(0,2); // Strip status char and following 2 spaces: [MARC\?\!I][ ][ ]
             filePath.append(sb.toString());
@@ -1582,7 +1619,10 @@ public class HgCommand {
                 info = new FileInformation(FileInformation.STATUS_VERSIONED_CONFLICT, null, false);
                 Mercurial.LOG.log(Level.FINE, "getDirStatusWithFlags(): CONFLICT repository path: {0} status flags: {1} status line {2} CONFLICT {3}", new Object[]{repository.getAbsolutePath(), statusFlags, statusLine, filePath.toString() + HgCommand.HG_STR_CONFLICT_EXT}); // NOI18N
             }
-            repositoryFiles.put(new File(filePath.toString()), info);
+            prev_info = info;
+        }
+        if (prev_info != null) {
+            repositoryFiles.put(new File(filePath.toString()), prev_info);
         }
         
         if (list.size() < 10) {
