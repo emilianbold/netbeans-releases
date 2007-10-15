@@ -42,6 +42,8 @@
 package org.netbeans.modules.java;
 
 import java.awt.Image;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
@@ -94,6 +96,21 @@ public final class JavaNode extends DataNode implements ChangeListener {
         if (isJavaSource) {            
             this.isCompiled = new AtomicBoolean(true);                                        
             WORKER.post(new BuildStatusTask(this));
+            
+            jdo.addPropertyChangeListener(new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (DataObject.PROP_PRIMARY_FILE.equals(evt.getPropertyName())) {
+                        WORKER.post(new Runnable() {
+                            public void run() {
+                                synchronized (JavaNode.this) {
+                                    status = null;
+                                    WORKER.post(new BuildStatusTask(JavaNode.this));
+                                }
+                            }
+                        });
+                    }
+                }
+            });
         } else {
             this.isCompiled = null;
         }
