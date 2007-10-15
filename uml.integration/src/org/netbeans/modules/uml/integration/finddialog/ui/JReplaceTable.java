@@ -85,11 +85,11 @@ public class JReplaceTable extends JTable
 		
 		m_UI = ui;
 		
-		ReplaceTableCellEditor cellEditor = new ReplaceTableCellEditor(ui);
+		ReplaceTableCellEditor editor = new ReplaceTableCellEditor(ui);
 		ReplaceTableCellRenderer renderer = new ReplaceTableCellRenderer();
 		for (int x = 0; x < getColumnModel().getColumnCount(); x++)
 		{
-			getColumnModel().getColumn(x).setCellEditor(cellEditor);
+			getColumnModel().getColumn(x).setCellEditor(editor);
 			getColumnModel().getColumn(x).setCellRenderer(renderer);
 		}
 		

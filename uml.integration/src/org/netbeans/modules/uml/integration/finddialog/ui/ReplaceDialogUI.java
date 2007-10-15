@@ -56,8 +56,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.prefs.Preferences;
 
-import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -72,6 +70,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.UIManager;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.EtchedBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.border.SoftBevelBorder;
 import javax.swing.border.TitledBorder;
@@ -98,7 +97,7 @@ import org.openide.util.NbPreferences;
 
 public class ReplaceDialogUI extends JCenterDialog
 {
-    private JScrollPane jScrollPane2;
+    private JScrollPane jScrollResultTable;
     
     /** Creates new form finddialog */
     public ReplaceDialogUI(Frame parent, boolean modal, FindController controller)
@@ -109,9 +108,10 @@ public class ReplaceDialogUI extends JCenterDialog
         initComponents();
         initTextFieldListeners();
         selectionListener = new SelectionListener();
-        m_ResultsTable.getSelectionModel().addListSelectionListener(selectionListener);
+        searchResultsTable.getSelectionModel().addListSelectionListener(selectionListener);
         initDialog();
         center(parent);
+        // pack();
     }
     
     /** This method is called from within the constructor to
@@ -128,37 +128,38 @@ public class ReplaceDialogUI extends JCenterDialog
         findWhatFieldsPanel = new JPanel();
         statusFieldsPanel = new JPanel();
         replaceFielsPanel = new JPanel();
-        textLabel = new JLabel();
+        findWhatLabel = new JLabel();
         textLabel2 = new JLabel();
-        m_FindCombo = new JComboBox();
+        findWhatCombo = new JComboBox();
         searchOptionsPanel = new JPanel();
-        m_LoadExternalCheck = new JCheckBox();
-        m_MatchCaseCheck = new JCheckBox();
-        m_XpathCheck = new JCheckBox();
-        m_WholeWordCheck = new JCheckBox();
-        m_SearchAlias = new JRadioButton();
+        matchCaseCheck = new JCheckBox();
+        xpathCheck = new JCheckBox();
+        wholeWordCheck = new JCheckBox();
+        searchAliasRadio = new JRadioButton();
         projectFieldsPanel = new JPanel();
         projectListPanel = new JPanel();
-        m_SearchElementsRadio = new JRadioButton();
-        m_SearchDescriptionsRadio = new JRadioButton();
-        m_ProjectList = new JList();
+        searchElementsRadio = new JRadioButton();
+        searchDescrRadio = new JRadioButton();
+        projectList = new JList();
         searchInFieldsPanel = new JPanel();
-        m_ProjectLabel = new JLabel();
+        projectsLabel = new JLabel();
         resultsFieldsPanel = new JPanel();
-        m_ResultsLabel = new JLabel();
+        searchResultsLabel = new JLabel();
         FindTableModel model = new FindTableModel(this, null);
-        m_ResultsTable = new JReplaceTable(model, this);
+        searchResultsTable = new JReplaceTable(model, this);
         navigateFieldsPanel = new JPanel();
-        m_NavigateCheck = new JCheckBox();
-        m_Status = new JLabel();
+        navigateCheck = new JCheckBox();
+        statusLabel = new JLabel();
         replaceButtonsPanel = new JPanel();
-        m_FindButton = new JButton();
-        m_CloseButton = new JButton();
-        m_ReplaceCombo = new JComboBox();
-        m_ReplaceButton = new JButton();
-        m_ReplaceAllButton = new JButton();
+        findButton = new JButton();
+        closeButton = new JButton();
+        replaceWithCombo = new JComboBox();
+        replaceButton = new JButton();
+        replaceAllButton = new JButton();
         replaceButtonsPositionPanel = new JPanel();
         
+        initButtons();
+        configureFont();
         
         setTitle(DefaultFindDialogResource.getString("IDS_REPLACETITLE"));
         
@@ -171,74 +172,59 @@ public class ReplaceDialogUI extends JCenterDialog
             }
         });
         
-        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+        GridBagConstraints mainGBC = new GridBagConstraints();
+        mainGBC.anchor = GridBagConstraints.FIRST_LINE_START;
+        mainGBC.fill = GridBagConstraints.BOTH;
+
+        mainPanel.setLayout(new GridBagLayout());
         mainPanel.setBorder(new EmptyBorder(new Insets(5, 5, 5, 5)));
-        mainPanel.add(Box.createVerticalStrut(10));
+        
         findWhatFieldsPanel.setLayout(new GridBagLayout());
-        
-        
-        
-        //CBeckham -  added to dynamicaly adjust panel size for larger fonts
-        // Note...getFoint.getSize will not return the ide parm -fontsize
-        //in most cases of localized version, the user will use the -fontsize to start the ide
-        //regaqrdless of what the os font size setting is, however in some remote cases the user
-        //may actaully have the OS fontsize setting high
-        int fontsize;
-        Font f = UIManager.getFont("controlFont"); //NOI18N
-        if (f != null)
-            fontsize = f.getSize();
 
-        else
-            fontsize = 12;
-
-        int width  = 450;
-        int height = 400;
-        int multiplyer = 2;
-        
-        if (fontsize > 17)
-            multiplyer =3;
-        
-        width  = width  + Math.round(width*(multiplyer*fontsize/100f));
-        height = height + Math.round(height*(multiplyer*fontsize/100f));
-        setSize(width,height);
-        // CBeckham - end of add
-        
-        
         // text label
-        textLabel.setText(DefaultFindDialogResource.determineText(
+        findWhatLabel.setText(DefaultFindDialogResource.determineText(
             DefaultFindDialogResource.getString("IDS_FINDWHAT")));
         
-        textLabel.setLabelFor(m_FindCombo);
+        findWhatLabel.setLabelFor(findWhatCombo);
         
-        DefaultFindDialogResource.setMnemonic(textLabel, 
+        DefaultFindDialogResource.setMnemonic(findWhatLabel, 
             DefaultFindDialogResource.getString("IDS_FINDWHAT"));
         
-        DefaultFindDialogResource.setFocusAccelerator(m_FindCombo, 
+        DefaultFindDialogResource.setFocusAccelerator(findWhatCombo, 
             DefaultFindDialogResource.getString("IDS_FINDWHAT"));
         
-        textLabel.setName("findLabel");
+        findWhatLabel.setName("findLabel");
+        gridBagConstraints.anchor=GridBagConstraints.LINE_START;
+        gridBagConstraints.fill=GridBagConstraints.HORIZONTAL;
         gridBagConstraints.gridx=0;
         gridBagConstraints.gridy=0;
-        gridBagConstraints.weightx=0;
-        gridBagConstraints.insets=new Insets(0,0,0,0);
-        findWhatFieldsPanel.add(textLabel,gridBagConstraints);
+        gridBagConstraints.weightx=0.0;
+        gridBagConstraints.weighty=0.1;
+        gridBagConstraints.insets=new Insets(0,5,0,0);
+        findWhatFieldsPanel.add(findWhatLabel,gridBagConstraints);
         
         // combo box
         gridBagConstraints.gridx=1;
         gridBagConstraints.gridy=0;
-        gridBagConstraints.weightx=0.9;
-        gridBagConstraints.fill=GridBagConstraints.BOTH;
+        gridBagConstraints.weightx=1.0;
         gridBagConstraints.insets=new Insets(0,5,0,0);
-        findWhatFieldsPanel.add(m_FindCombo,gridBagConstraints);
-        m_FindCombo.setEditable(true);
-        m_FindCombo.setMaximumRowCount(10);
+        findWhatFieldsPanel.add(findWhatCombo, gridBagConstraints);
 
-        gridBagConstraints.gridx=0;
+        findWhatCombo.setEditable(true);
+        findWhatCombo.setMaximumRowCount(10);
+        
+        gridBagConstraints.gridx=2;
         gridBagConstraints.gridy=0;
-        gridBagConstraints.insets=new Insets(5,0,5,0);
-        gridBagConstraints.anchor=GridBagConstraints.PAGE_START;
-        mainPanel.add(findWhatFieldsPanel,gridBagConstraints);
-        mainPanel.add(findWhatFieldsPanel);
+        gridBagConstraints.weightx=0.0;
+        gridBagConstraints.insets=new Insets(0,5,0,5);
+        findWhatFieldsPanel.add(findButton, gridBagConstraints);
+
+        mainGBC.gridx=0;
+        mainGBC.gridy=0;
+        mainGBC.weightx = 2.0;
+        mainGBC.weighty = 10.0;
+        mainPanel.add(findWhatFieldsPanel, mainGBC);
+        // mainPanel.add(findWhatFieldsPanel);
         
 
         searchPanelsPanel.setLayout(new GridBagLayout());
@@ -254,37 +240,24 @@ public class ReplaceDialogUI extends JCenterDialog
         searchOptionsPanel.setBorder(bord);
 
         gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        gridBagConstraints.anchor = GridBagConstraints.FIRST_LINE_START;
 
-//        m_LoadExternalCheck.setText(DefaultFindDialogResource.determineText(
-//            DefaultFindDialogResource.getString("IDS_LOADEXTERNAL")));
-//        
-//        DefaultFindDialogResource.setMnemonic(m_LoadExternalCheck, 
-//            DefaultFindDialogResource.getString("IDS_LOADEXTERNAL"));
-//        
-//        m_LoadExternalCheck.addActionListener(new ActionListener()
-//        {
-//            public void actionPerformed(ActionEvent evt)
-//            {
-//                onLoadExternalCheck(evt);
-//            }
-//        });
         
         // Match Case checkbox
         // default to checked to try and make the query faster
-        m_MatchCaseCheck.setSelected(isMatchCase());
-        m_Controller.setCaseSensitive(m_MatchCaseCheck.isSelected());
+        matchCaseCheck.setSelected(isMatchCase());
+        findController.setCaseSensitive(matchCaseCheck.isSelected());
         
-        m_MatchCaseCheck.setText(DefaultFindDialogResource.determineText(
+        matchCaseCheck.setText(DefaultFindDialogResource.determineText(
             DefaultFindDialogResource.getString("IDS_MATCHCASE")));
         
-        DefaultFindDialogResource.setMnemonic(m_MatchCaseCheck, 
+        DefaultFindDialogResource.setMnemonic(matchCaseCheck, 
             DefaultFindDialogResource.getString("IDS_MATCHCASE"));
         
-        m_MatchCaseCheck.getAccessibleContext().setAccessibleDescription(
+        matchCaseCheck.getAccessibleContext().setAccessibleDescription(
             DefaultFindDialogResource.getString("ACSD_MatchCaseCheck"));
         
-        m_MatchCaseCheck.addActionListener(new ActionListener()
+        matchCaseCheck.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent evt)
             {
@@ -294,20 +267,22 @@ public class ReplaceDialogUI extends JCenterDialog
 
         gridBagConstraints.gridx=0;
         gridBagConstraints.gridy=0;
-        searchOptionsPanel.add(m_MatchCaseCheck, gridBagConstraints);
+        gridBagConstraints.weightx=1.0;
+        gridBagConstraints.weighty = 1.0;
+        searchOptionsPanel.add(matchCaseCheck, gridBagConstraints);
      
         
         // Match Whole Word checkbox
-        m_WholeWordCheck.setText(DefaultFindDialogResource.determineText(
+        wholeWordCheck.setText(DefaultFindDialogResource.determineText(
             DefaultFindDialogResource.getString("IDS_MATCHWHOLE")));
         
-        DefaultFindDialogResource.setMnemonic(m_WholeWordCheck, 
+        DefaultFindDialogResource.setMnemonic(wholeWordCheck, 
             DefaultFindDialogResource.getString("IDS_MATCHWHOLE"));
         
-        m_WholeWordCheck.getAccessibleContext().setAccessibleDescription(
+        wholeWordCheck.getAccessibleContext().setAccessibleDescription(
             DefaultFindDialogResource.getString("ACSD_WholeWordCheck"));
         
-        m_WholeWordCheck.addActionListener(new ActionListener()
+        wholeWordCheck.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent evt)
             {
@@ -317,20 +292,20 @@ public class ReplaceDialogUI extends JCenterDialog
         
         gridBagConstraints.gridx=0;
         gridBagConstraints.gridy=1;
-        searchOptionsPanel.add(m_WholeWordCheck, gridBagConstraints);
+        searchOptionsPanel.add(wholeWordCheck, gridBagConstraints);
 
         
         // This is an XPath Expression checkbox
-        m_XpathCheck.setText(DefaultFindDialogResource.determineText(
+        xpathCheck.setText(DefaultFindDialogResource.determineText(
             DefaultFindDialogResource.getString("IDS_XPATHEXPRESSION")));
         
-        DefaultFindDialogResource.setMnemonic(m_XpathCheck,
+        DefaultFindDialogResource.setMnemonic(xpathCheck,
             DefaultFindDialogResource.getString("IDS_XPATHEXPRESSION"));
 
-        m_XpathCheck.getAccessibleContext().setAccessibleDescription(
+        xpathCheck.getAccessibleContext().setAccessibleDescription(
             DefaultFindDialogResource.getString("ACSD_XpathCheck"));
 
-        m_XpathCheck.addActionListener(new ActionListener()
+        xpathCheck.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent evt)
             {
@@ -340,7 +315,7 @@ public class ReplaceDialogUI extends JCenterDialog
 
         gridBagConstraints.gridx=0;
         gridBagConstraints.gridy=2;
-        searchOptionsPanel.add(m_XpathCheck, gridBagConstraints);
+        searchOptionsPanel.add(xpathCheck, gridBagConstraints);
         
         
         // add "search options" panel to search panels panel
@@ -348,7 +323,7 @@ public class ReplaceDialogUI extends JCenterDialog
         gridBagConstraints.gridx=0;
         gridBagConstraints.gridy=0;
         gridBagConstraints.fill = GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
+        gridBagConstraints.anchor = GridBagConstraints.FIRST_LINE_START;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets=new Insets(5,0,5,5);
@@ -369,22 +344,22 @@ public class ReplaceDialogUI extends JCenterDialog
         searchInFieldsPanel.setBorder(bord);
         
         gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        gridBagConstraints.anchor = GridBagConstraints.FIRST_LINE_START;
         
         // Elements radio button
         // default the dialog to have the element radio button checked
-        m_SearchElementsRadio.setSelected(true);
+        searchElementsRadio.setSelected(true);
         
-        m_SearchElementsRadio.setText(DefaultFindDialogResource.determineText(
+        searchElementsRadio.setText(DefaultFindDialogResource.determineText(
             DefaultFindDialogResource.getString("IDS_ELEMENTS")));
         
-        DefaultFindDialogResource.setMnemonic(m_SearchElementsRadio,
+        DefaultFindDialogResource.setMnemonic(searchElementsRadio,
             DefaultFindDialogResource.getString("IDS_ELEMENTS"));
         
-        m_SearchElementsRadio.getAccessibleContext().setAccessibleDescription(
+        searchElementsRadio.getAccessibleContext().setAccessibleDescription(
             DefaultFindDialogResource.getString("ACSD_Search_Element"));
         
-        m_SearchElementsRadio.addActionListener(new ActionListener()
+        searchElementsRadio.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent evt)
             {
@@ -394,20 +369,21 @@ public class ReplaceDialogUI extends JCenterDialog
         
         gridBagConstraints.gridx=0;
         gridBagConstraints.gridy=0;
-        searchInFieldsPanel.add(m_SearchElementsRadio,gridBagConstraints);
+        gridBagConstraints.weightx=1.0;
+        searchInFieldsPanel.add(searchElementsRadio,gridBagConstraints);
 
         
         // Descriptions radio button
-        m_SearchDescriptionsRadio.setText(DefaultFindDialogResource.determineText(
+        searchDescrRadio.setText(DefaultFindDialogResource.determineText(
             DefaultFindDialogResource.getString("IDS_DESCRIPTIONS")));
         
-        DefaultFindDialogResource.setMnemonic(m_SearchDescriptionsRadio, 
+        DefaultFindDialogResource.setMnemonic(searchDescrRadio, 
             DefaultFindDialogResource.getString("IDS_DESCRIPTIONS"));
         
-        m_SearchDescriptionsRadio.getAccessibleContext().setAccessibleDescription(
+        searchDescrRadio.getAccessibleContext().setAccessibleDescription(
             DefaultFindDialogResource.getString("ACSD_Search_Description"));
         
-        m_SearchDescriptionsRadio.addActionListener(new ActionListener()
+        searchDescrRadio.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent evt)
             {
@@ -417,19 +393,20 @@ public class ReplaceDialogUI extends JCenterDialog
         
         gridBagConstraints.gridx=0;
         gridBagConstraints.gridy=1;
-        searchInFieldsPanel.add(m_SearchDescriptionsRadio,gridBagConstraints);
+        gridBagConstraints.weightx=1.0;
+        searchInFieldsPanel.add(searchDescrRadio,gridBagConstraints);
         
         // Alias radio button
-        m_SearchAlias.setText(DefaultFindDialogResource.determineText(
+        searchAliasRadio.setText(DefaultFindDialogResource.determineText(
             DefaultFindDialogResource.getString("IDS_ALIASTEXT")));
         
-        DefaultFindDialogResource.setMnemonic(m_SearchAlias, 
+        DefaultFindDialogResource.setMnemonic(searchAliasRadio, 
             DefaultFindDialogResource.getString("IDS_ALIASTEXT"));
         
-        m_SearchAlias.getAccessibleContext().setAccessibleDescription(
+        searchAliasRadio.getAccessibleContext().setAccessibleDescription(
             DefaultFindDialogResource.getString("ACSD_SearchAliasCheck"));
         
-        m_SearchAlias.addActionListener(new ActionListener()
+        searchAliasRadio.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent evt)
             {
@@ -439,7 +416,8 @@ public class ReplaceDialogUI extends JCenterDialog
 
         gridBagConstraints.gridx=0;
         gridBagConstraints.gridy=2;
-        searchInFieldsPanel.add(m_SearchAlias,gridBagConstraints);
+        gridBagConstraints.weightx=1.0;
+        searchInFieldsPanel.add(searchAliasRadio,gridBagConstraints);
 
         
         // add "search in" panel to search panels panel
@@ -447,7 +425,7 @@ public class ReplaceDialogUI extends JCenterDialog
         gridBagConstraints.gridx=1;
         gridBagConstraints.gridy=0;
         gridBagConstraints.fill = GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
+        gridBagConstraints.anchor = GridBagConstraints.FIRST_LINE_START;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets=new Insets(5,0,5,5);
@@ -456,32 +434,33 @@ public class ReplaceDialogUI extends JCenterDialog
         // Elements/Eescriptions/Alias radio buttons
         ///////////////////////////////////////////////////////////////////////
 
-        mainPanel.add(searchPanelsPanel);
+        mainGBC.gridy = 1;
+        mainPanel.add(searchPanelsPanel, mainGBC);
 
         
         projectFieldsPanel.setLayout(new GridBagLayout());
         projectListPanel.setLayout(new GridBagLayout());
         
-        Mnemonics.setLocalizedText(m_ProjectLabel,
+        Mnemonics.setLocalizedText(projectsLabel,
             DefaultFindDialogResource.getString("IDS_PROJECTS"));
         
-        m_ProjectLabel.setLabelFor(m_ProjectList);
+        projectsLabel.setLabelFor(projectList);
         
-        m_ProjectLabel.getAccessibleContext().setAccessibleDescription(
+        projectsLabel.getAccessibleContext().setAccessibleDescription(
             DefaultFindDialogResource.getString("ACSD_ProjectLabel"));
         
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.insets=new Insets(0,0,5,0);
-        gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
-        projectListPanel.add(m_ProjectLabel, gridBagConstraints);
+        gridBagConstraints.anchor = GridBagConstraints.FIRST_LINE_START;
+        projectListPanel.add(projectsLabel, gridBagConstraints);
         
-        m_ProjectList.setBorder(new LineBorder(new Color(0, 0, 0)));
-        m_ProjectList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        jScrollPrjList = new JScrollPane(m_ProjectList);
-        jScrollPrjList.setMinimumSize(new Dimension(30,80));
-        jScrollPrjList.setPreferredSize(new Dimension(50,80));
+        projectList.setBorder(new LineBorder(new Color(0, 0, 0)));
+        projectList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        jScrollPrjList = new JScrollPane(projectList);
+        jScrollPrjList.setMinimumSize(new Dimension(200,50));
+        jScrollPrjList.setPreferredSize(new Dimension(200,50));
         
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -490,69 +469,72 @@ public class ReplaceDialogUI extends JCenterDialog
         gridBagConstraints.insets = new Insets(0, 0, 0, 5);
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.weightx =9;
         projectListPanel.add(jScrollPrjList, gridBagConstraints);
-        
         
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.fill = GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
+        gridBagConstraints.anchor = GridBagConstraints.FIRST_LINE_START;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets=new Insets(0,0,5,0);
         projectFieldsPanel.add(projectListPanel, gridBagConstraints);
         
-        mainPanel.add(projectFieldsPanel);
+        mainGBC.gridy = 2;
+        mainPanel.add(projectFieldsPanel, mainGBC);
         
         // results grid
-        Mnemonics.setLocalizedText(m_ResultsLabel,
+        Mnemonics.setLocalizedText(searchResultsLabel,
             DefaultFindDialogResource.getString("LBL_SearchResult"));
         
-        m_ResultsLabel.setLabelFor(m_ResultsTable);
+        searchResultsLabel.setLabelFor(searchResultsTable);
         
-        m_ResultsLabel.getAccessibleContext().setAccessibleDescription(
+        searchResultsLabel.getAccessibleContext().setAccessibleDescription(
             DefaultFindDialogResource.getString("LBL_SearchResult"));
         
-        jScrollPane2 = new JScrollPane(m_ResultsTable);
+        jScrollResultTable = new JScrollPane(searchResultsTable);
         resultsFieldsPanel.setLayout(new GridBagLayout());
         GridBagConstraints gridBagConstraints2 = new GridBagConstraints();
-        gridBagConstraints2.gridx=0;
-        gridBagConstraints2.gridy=0;
-        gridBagConstraints2.insets=new Insets(5,0,5,0);
+        gridBagConstraints2.gridx = 0;
+        gridBagConstraints2.gridy = 0;
+        gridBagConstraints2.insets = new Insets(5,0,5,5);
         gridBagConstraints2.fill = GridBagConstraints.BOTH;
-        resultsFieldsPanel.add(m_ResultsLabel, gridBagConstraints2);
+        resultsFieldsPanel.add(searchResultsLabel, gridBagConstraints2);
         
-        m_ResultsTable.setBorder(new SoftBevelBorder(BevelBorder.LOWERED));
-        gridBagConstraints2.gridx=0;
-        gridBagConstraints2.gridy=1;
+        searchResultsTable.setBorder(new SoftBevelBorder(BevelBorder.LOWERED));
+        gridBagConstraints2.gridx = 0;
+        gridBagConstraints2.gridy = 1;
         gridBagConstraints2.fill = GridBagConstraints.BOTH;
         gridBagConstraints2.weightx = 1.0;
         gridBagConstraints2.weighty = 1.0;
-        resultsFieldsPanel.add(jScrollPane2, gridBagConstraints2);
-        mainPanel.add(resultsFieldsPanel);
+        jScrollResultTable.setMinimumSize(new Dimension(150,80));
+        jScrollResultTable.setPreferredSize(new Dimension(150,80));
+        resultsFieldsPanel.add(jScrollResultTable, gridBagConstraints2);
+        
+        mainGBC.gridy = 3;
+        mainPanel.add(resultsFieldsPanel, mainGBC);
         
         // navigate check
         navigateFieldsPanel.setLayout(new GridBagLayout());
         // default the navigate button to true
-        m_NavigateCheck.setSelected(true);
+        navigateCheck.setSelected(true);
         
-        m_NavigateCheck.setText(DefaultFindDialogResource.determineText(
+        navigateCheck.setText(DefaultFindDialogResource.determineText(
             DefaultFindDialogResource.getString("IDS_NAVIGATE")));
         
-        DefaultFindDialogResource.setMnemonic(m_NavigateCheck, 
+        DefaultFindDialogResource.setMnemonic(navigateCheck, 
             DefaultFindDialogResource.getString("IDS_NAVIGATE"));
         
-        m_NavigateCheck.getAccessibleContext().setAccessibleDescription(
+        navigateCheck.getAccessibleContext().setAccessibleDescription(
             DefaultFindDialogResource.getString("IDS_NAVIGATE"));
         
-        gridBagConstraints.gridx=0;
-        gridBagConstraints.gridy=0;
-        gridBagConstraints.weightx=1;
-        gridBagConstraints.anchor=GridBagConstraints.LINE_START;
-        gridBagConstraints.fill=GridBagConstraints.HORIZONTAL;
-        navigateFieldsPanel.add(m_NavigateCheck,gridBagConstraints);
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.anchor = GridBagConstraints.LINE_START;
+        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+        navigateFieldsPanel.add(navigateCheck,gridBagConstraints);
         
-        m_NavigateCheck.addActionListener(new ActionListener()
+        navigateCheck.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent evt)
             {
@@ -560,7 +542,8 @@ public class ReplaceDialogUI extends JCenterDialog
             }
         });
         
-        mainPanel.add(navigateFieldsPanel);
+        mainGBC.gridy = 4;
+        mainPanel.add(navigateFieldsPanel, mainGBC);
         
         // replace combo
         replaceFielsPanel.setLayout(new GridBagLayout());
@@ -568,65 +551,128 @@ public class ReplaceDialogUI extends JCenterDialog
         textLabel2.setText(DefaultFindDialogResource.determineText(
             DefaultFindDialogResource.getString("IDS_REPLACEWITH")));
         
-        textLabel2.setLabelFor(m_ReplaceCombo);
+        textLabel2.setLabelFor(replaceWithCombo);
         
         DefaultFindDialogResource.setMnemonic(textLabel2, 
             DefaultFindDialogResource.getString("IDS_REPLACEWITH"));
         
-        DefaultFindDialogResource.setFocusAccelerator(m_ReplaceCombo, 
+        DefaultFindDialogResource.setFocusAccelerator(replaceWithCombo, 
             DefaultFindDialogResource.getString("IDS_REPLACEWITH"));
         
         textLabel2.setName("replaceLabel");
-        gridBagConstraints.gridx=0;
-        gridBagConstraints.gridy=0;
-        gridBagConstraints.insets=new Insets(0,5,0,5);
-        gridBagConstraints.weightx=0;
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.insets = new Insets(0,5,0,5);
+        gridBagConstraints.weightx = 0.0;
+        gridBagConstraints.weighty = 0.0;
         replaceFielsPanel.add(textLabel2, gridBagConstraints);
         
         // combo box
-        m_ReplaceCombo.setEditable(true);
-        m_ReplaceCombo.setMaximumRowCount(10);
-        gridBagConstraints.gridx=1;
-        gridBagConstraints.gridy=0;
-        gridBagConstraints.weightx=0.9;
-        gridBagConstraints.fill=GridBagConstraints.BOTH;
-        gridBagConstraints.insets=new Insets(0,5,0,0);
-        replaceFielsPanel.add(m_ReplaceCombo,gridBagConstraints);
+        replaceWithCombo.setEditable(true);
+        replaceWithCombo.setMaximumRowCount(10);
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new Insets(0,5,0,0);
+        replaceFielsPanel.add(replaceWithCombo, gridBagConstraints);
 
-        mainPanel.add(replaceFielsPanel);
-        
-        // status
-        statusFieldsPanel.setLayout(new GridBagLayout());
-        m_Status.setMaximumSize(new Dimension(2147483647, 20));
-        gridBagConstraints.gridx=0;
-        gridBagConstraints.gridy=0;
-        gridBagConstraints.fill=GridBagConstraints.BOTH;
-        statusFieldsPanel.add(m_Status,gridBagConstraints);
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.weightx = 0.0;
+        gridBagConstraints.fill = GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new Insets(0,5,5,5);
+        replaceFielsPanel.add(replaceButton, gridBagConstraints);
 
-        mainPanel.add(statusFieldsPanel);
-        mainPanel.add(Box.createVerticalStrut(10));
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.weightx = 0.0;
+        gridBagConstraints.fill = GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new Insets(0,5,0,5);
+        replaceFielsPanel.add(replaceAllButton, gridBagConstraints);
+
+        mainGBC.gridy = 5;
+        mainPanel.add(replaceFielsPanel, mainGBC);
         
-        getContentPane().add(mainPanel, BorderLayout.CENTER);
+        // getContentPane().add(mainPanel, BorderLayout.CENTER);
+        getContentPane().add(mainPanel, BorderLayout.NORTH);
+
+        JPanel bottomPanel = new JPanel();
+        bottomPanel.setLayout(new GridBagLayout());
+        GridBagConstraints bottomGBC = new GridBagConstraints();
+
+        bottomGBC.gridx = 0;
+        bottomGBC.gridy = 0;
+        bottomGBC.anchor = GridBagConstraints.LINE_START;
+        bottomGBC.fill = GridBagConstraints.BOTH;
+        bottomGBC.weightx = 1.0;
+        bottomGBC.weighty = 1.0;
+        bottomGBC.insets = new Insets(0, 5, 0, 5);
+        bottomPanel.add(statusLabel, bottomGBC);
+
+        bottomGBC.gridx = 1;
+        bottomGBC.gridy = 0;
+        bottomGBC.anchor = GridBagConstraints.LINE_END;
+        bottomGBC.fill = GridBagConstraints.NONE;
+        bottomGBC.insets = new Insets(0,0,5,5);
+        bottomGBC.weightx = 0.0;
+        bottomPanel.add(closeButton, bottomGBC);
+
         
-        // find/close buttons
-        replaceButtonsPanel.setLayout(
-            new BoxLayout(replaceButtonsPanel, BoxLayout.Y_AXIS));
+        getContentPane().add(bottomPanel, BorderLayout.SOUTH);
         
-        replaceButtonsPanel.setBorder(
-            new EmptyBorder(new Insets(5, 5, 5, 5)));
+        getAccessibleContext().setAccessibleDescription(
+            DefaultFindDialogResource.getString(
+            "Action.ReplaceSymbol.Description"));
+    }
+    
+    
+    private void configureFont()
+    {
+        // CBeckham -  added to dynamicaly adjust panel size for larger fonts
+        // Note...getFoint.getSize will not return the ide parm -fontsize
+        // in most cases of localized version, the user will use the -fontsize 
+        // to start the ide regaqrdless of what the os font size setting is, 
+        // however in some remote cases the user may actaully have the 
+        // OS fontsize setting high
         
-        m_FindButton.setEnabled(false);
+        int fontsize;
+        Font f = UIManager.getFont("controlFont"); //NOI18N
+        if (f != null)
+            fontsize = f.getSize();
+
+        else
+            fontsize = 12;
+
+        int width  = 450;
+        int height = 400;
+        int multiplyer = 2;
         
-        m_FindButton.setText(DefaultFindDialogResource.determineText(
+        if (fontsize > 17)
+            multiplyer =3;
+        
+        width  = width  + Math.round(width*(multiplyer*fontsize/100f));
+        height = height + Math.round(height*(multiplyer*fontsize/100f));
+        setSize(width,height);
+    }
+
+    
+    private void initButtons()
+    {
+        // find button
+        findButton.setEnabled(false);
+        getRootPane().setDefaultButton(findButton);
+        
+        findButton.setText(DefaultFindDialogResource.determineText(
             DefaultFindDialogResource.getString("IDS_FIND")));
         
-        DefaultFindDialogResource.setMnemonic(m_FindButton, 
+        DefaultFindDialogResource.setMnemonic(findButton, 
             DefaultFindDialogResource.getString("IDS_FIND"));
         
-        m_FindButton.getAccessibleContext().setAccessibleDescription(
+        findButton.getAccessibleContext().setAccessibleDescription(
             DefaultFindDialogResource.getString("IDS_FIND"));
         
-        m_FindButton.addActionListener(new ActionListener()
+        findButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent evt)
             {
@@ -634,20 +680,50 @@ public class ReplaceDialogUI extends JCenterDialog
             }
         });
         
-        getRootPane().setDefaultButton(m_FindButton);
-        replaceButtonsPanel.add(Box.createVerticalStrut(9));
-        replaceButtonsPanel.add(m_FindButton);
         
-        m_CloseButton.setText(DefaultFindDialogResource.determineText(
+        // replace button
+        replaceButton.setText(DefaultFindDialogResource.determineText(
+            DefaultFindDialogResource.getString("IDS_REPLACE")));
+        
+        DefaultFindDialogResource.setMnemonic(replaceButton, 
+            DefaultFindDialogResource.getString("IDS_REPLACE"));
+        
+        replaceButton.addActionListener(new ActionListener()
+        {
+            public void actionPerformed(ActionEvent evt)
+            {
+                onReplaceButton(evt);
+            }
+        });
+
+
+        // replace all button
+        replaceAllButton.setText(DefaultFindDialogResource.determineText(
+            DefaultFindDialogResource.getString("IDS_REPLACEALL")));
+        
+        DefaultFindDialogResource.setMnemonic(replaceAllButton, 
+            DefaultFindDialogResource.getString("IDS_REPLACEALL"));
+        
+        replaceAllButton.addActionListener(new ActionListener()
+        {
+            public void actionPerformed(ActionEvent evt)
+            {
+                onReplaceAllButton(evt);
+            }
+        });
+        
+        
+        // close button
+        closeButton.setText(DefaultFindDialogResource.determineText(
             DefaultFindDialogResource.getString("IDS_CLOSE")));
         
-        DefaultFindDialogResource.setMnemonic(m_CloseButton, 
+        DefaultFindDialogResource.setMnemonic( closeButton, 
             DefaultFindDialogResource.getString("IDS_CLOSE"));
         
-        m_CloseButton.getAccessibleContext().setAccessibleDescription(
+        closeButton.getAccessibleContext().setAccessibleDescription(
             DefaultFindDialogResource.getString("IDS_CLOSE"));
         
-        m_CloseButton.addActionListener(new ActionListener()
+        closeButton.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent evt)
             {
@@ -656,80 +732,38 @@ public class ReplaceDialogUI extends JCenterDialog
             }
         });
         
-        replaceButtonsPanel.add(Box.createVerticalStrut(3));
-        replaceButtonsPanel.add(m_CloseButton);
-        replaceButtonsPanel.add(replaceButtonsPositionPanel);
-        
-        m_ReplaceButton.setText(DefaultFindDialogResource.determineText(
-            DefaultFindDialogResource.getString("IDS_REPLACE")));
-        
-        DefaultFindDialogResource.setMnemonic(m_ReplaceButton, 
-            DefaultFindDialogResource.getString("IDS_REPLACE"));
-        
-        m_ReplaceButton.addActionListener(new ActionListener()
-        {
-            public void actionPerformed(ActionEvent evt)
-            {
-                onReplaceButton(evt);
-            }
-        });
-        
-        replaceButtonsPanel.add(m_ReplaceButton);
-        
-        m_ReplaceAllButton.setText(DefaultFindDialogResource.determineText(
-            DefaultFindDialogResource.getString("IDS_REPLACEALL")));
-        
-        DefaultFindDialogResource.setMnemonic(m_ReplaceAllButton, 
-            DefaultFindDialogResource.getString("IDS_REPLACEALL"));
-        
-        m_ReplaceAllButton.addActionListener(new ActionListener()
-        {
-            public void actionPerformed(ActionEvent evt)
-            {
-                onReplaceAllButton(evt);
-            }
-        });
-        
-        replaceButtonsPanel.add(Box.createVerticalStrut(3));
-        replaceButtonsPanel.add(m_ReplaceAllButton);
-        replaceButtonsPanel.add(Box.createVerticalStrut(10));
-        getContentPane().add(replaceButtonsPanel, BorderLayout.EAST);
         
         // now figure out the button sizes
         Dimension buttonSize = getMaxButtonWidth();
-        m_FindButton.setMaximumSize(buttonSize);
-        m_FindButton.setPreferredSize(buttonSize);
-        m_CloseButton.setPreferredSize(buttonSize);
-        m_CloseButton.setMaximumSize(buttonSize);
-        m_ReplaceButton.setPreferredSize(buttonSize);
-        m_ReplaceButton.setMaximumSize(buttonSize);
-        m_ReplaceAllButton.setPreferredSize(buttonSize);
-        m_ReplaceAllButton.setMaximumSize(buttonSize);
-        
-        getAccessibleContext().setAccessibleDescription(
-            DefaultFindDialogResource.getString(
-            "Action.ReplaceSymbol.Description"));
+        findButton.setMaximumSize(buttonSize);
+        findButton.setPreferredSize(buttonSize);
+        closeButton.setPreferredSize(buttonSize);
+        closeButton.setMaximumSize(buttonSize);
+        replaceButton.setPreferredSize(buttonSize);
+        replaceButton.setMaximumSize(buttonSize);
+        replaceAllButton.setPreferredSize(buttonSize);
+        replaceAllButton.setMaximumSize(buttonSize);
     }
     
     private Dimension getMaxButtonWidth()
     {
         Dimension ret = null;
-        Dimension d = m_FindButton.getPreferredSize();
+        Dimension d = findButton.getPreferredSize();
         double max  = d.width;
         
-        d = m_CloseButton.getPreferredSize();
+        d =  closeButton.getPreferredSize();
         if(d.width > max)
         {
             max = d.width;
             ret = d;
         }
-        d = m_ReplaceButton.getPreferredSize();
+        d = replaceButton.getPreferredSize();
         if(d.width > max)
         {
             max = d.width;
             ret = d;
         }
-        d = m_ReplaceAllButton.getPreferredSize();
+        d = replaceAllButton.getPreferredSize();
         if(d.width > max)
         {
             max = d.width;
@@ -767,11 +801,11 @@ public class ReplaceDialogUI extends JCenterDialog
             }
         }
         
-        ((JTextField)m_FindCombo.getEditor().getEditorComponent()).getDocument().addDocumentListener(
-            new TextChangeListener((JTextField)m_FindCombo.getEditor().getEditorComponent()));
+        ((JTextField)findWhatCombo.getEditor().getEditorComponent()).getDocument().addDocumentListener(
+            new TextChangeListener((JTextField)findWhatCombo.getEditor().getEditorComponent()));
         
-        ((JTextField)m_ReplaceCombo.getEditor().getEditorComponent()).getDocument().addDocumentListener(
-            new TextChangeListener((JTextField)m_ReplaceCombo.getEditor().getEditorComponent()));
+        ((JTextField)replaceWithCombo.getEditor().getEditorComponent()).getDocument().addDocumentListener(
+            new TextChangeListener((JTextField)replaceWithCombo.getEditor().getEditorComponent()));
     }
     
     private void updateState(JTextField textField)
@@ -781,35 +815,18 @@ public class ReplaceDialogUI extends JCenterDialog
         
         String text = textField.getText().trim();
         
-        if (textField==(JTextField)m_FindCombo.getEditor().getEditorComponent())
+        if (textField==(JTextField)findWhatCombo.getEditor().getEditorComponent())
         {
-            m_FindButton.setEnabled(!"".equals(text));
+            findButton.setEnabled(!"".equals(text));
         }
         
-        else if (textField==(JTextField)m_ReplaceCombo.getEditor().getEditorComponent())
+        else if (textField==(JTextField)replaceWithCombo.getEditor().getEditorComponent())
         {
-            m_ReplaceButton.setEnabled(!"".equals(text) && m_ResultsTable.getSelectedRowCount()>0);
-            m_ReplaceAllButton.setEnabled(!"".equals(text));
+            replaceButton.setEnabled(!"".equals(text) && searchResultsTable.getSelectedRowCount()>0);
+            replaceAllButton.setEnabled(!"".equals(text));
         }
     }
-    
-    
-//    private void onLoadExternalCheck(ActionEvent evt)
-//    {
-//        Object obj = evt.getSource();
-//
-//        if (obj instanceof JCheckBox)
-//        {
-//            JCheckBox box = (JCheckBox)obj;
-//            boolean checkboxState = box.isSelected();
-//
-//            if (checkboxState)
-//                m_Controller.setExternalLoad(true);
-//            
-//            else
-//                m_Controller.setExternalLoad(false);
-//        }
-//    }
+
     
     private void onXPathCheck(ActionEvent evt)
     {
@@ -822,24 +839,24 @@ public class ReplaceDialogUI extends JCenterDialog
             
             if (checkboxState)
             {
-                m_Controller.setKind(1);
-                m_Controller.setCaseSensitive(true);
-                m_MatchCaseCheck.setEnabled(false);
-                m_SearchDescriptionsRadio.setEnabled(false);
-                m_SearchElementsRadio.setEnabled(false);
-                m_SearchAlias.setEnabled(false);
-                m_WholeWordCheck.setEnabled(false);
+                findController.setKind(1);
+                findController.setCaseSensitive(true);
+                matchCaseCheck.setEnabled(false);
+                searchDescrRadio.setEnabled(false);
+                searchElementsRadio.setEnabled(false);
+                searchAliasRadio.setEnabled(false);
+                wholeWordCheck.setEnabled(false);
             }
             
             else
             {
-                m_Controller.setKind(0);
-                m_Controller.setCaseSensitive(m_MatchCaseCheck.isSelected());
-                m_MatchCaseCheck.setEnabled(true);
-                m_SearchDescriptionsRadio.setEnabled(true);
-                m_SearchElementsRadio.setEnabled(true);
-                m_SearchAlias.setEnabled(true);
-                m_WholeWordCheck.setEnabled(true);
+                findController.setKind(0);
+                findController.setCaseSensitive(matchCaseCheck.isSelected());
+                matchCaseCheck.setEnabled(true);
+                searchDescrRadio.setEnabled(true);
+                searchElementsRadio.setEnabled(true);
+                searchAliasRadio.setEnabled(true);
+                wholeWordCheck.setEnabled(true);
             }
         }
     }
@@ -850,11 +867,11 @@ public class ReplaceDialogUI extends JCenterDialog
         
         if (obj instanceof JRadioButton)
         {
-            m_Controller.setResultType(-1);
-            m_Controller.setSearchAlias(true);
-            m_SearchElementsRadio.setSelected(false);
-            m_SearchDescriptionsRadio.setSelected(false);
-            m_SearchAlias.setSelected(true);
+            findController.setResultType(-1);
+            findController.setSearchAlias(true);
+            searchElementsRadio.setSelected(false);
+            searchDescrRadio.setSelected(false);
+            searchAliasRadio.setSelected(true);
         }
     }
     
@@ -868,10 +885,10 @@ public class ReplaceDialogUI extends JCenterDialog
             boolean checkboxState = box.isSelected();
             
             if (checkboxState)
-                m_Controller.setWholeWordSearch(true);
+                findController.setWholeWordSearch(true);
 
             else
-                m_Controller.setWholeWordSearch(false);
+                findController.setWholeWordSearch(false);
         }
     }
     
@@ -892,7 +909,7 @@ public class ReplaceDialogUI extends JCenterDialog
 
             else
             {
-                m_Controller.setCaseSensitive(false);
+                findController.setCaseSensitive(false);
                 String find = prefs.get ("UML_ShowMe_Allow_Lengthy_Searches", "PSK_ASK");
                 
                 if (find.equals("PSK_NEVER"))
@@ -906,11 +923,11 @@ public class ReplaceDialogUI extends JCenterDialog
         Object obj = evt.getSource();
         if (obj instanceof JRadioButton)
         {
-            m_Controller.setResultType(0);
-            m_SearchElementsRadio.setSelected(true);
-            m_SearchDescriptionsRadio.setSelected(false);
-            m_SearchAlias.setSelected(false);
-            m_Controller.setSearchAlias(false);
+            findController.setResultType(0);
+            searchElementsRadio.setSelected(true);
+            searchDescrRadio.setSelected(false);
+            searchAliasRadio.setSelected(false);
+            findController.setSearchAlias(false);
         }
     }
     
@@ -919,11 +936,11 @@ public class ReplaceDialogUI extends JCenterDialog
         Object obj = evt.getSource();
         if (obj instanceof JRadioButton)
         {
-            m_Controller.setResultType(1);
-            m_SearchDescriptionsRadio.setSelected(true);
-            m_SearchElementsRadio.setSelected(false);
-            m_SearchAlias.setSelected(false);
-            m_Controller.setSearchAlias(false);
+            findController.setResultType(1);
+            searchDescrRadio.setSelected(true);
+            searchElementsRadio.setSelected(false);
+            searchAliasRadio.setSelected(false);
+            findController.setSearchAlias(false);
         }
     }
     
@@ -936,10 +953,10 @@ public class ReplaceDialogUI extends JCenterDialog
             JCheckBox box = (JCheckBox)obj;
             boolean checkboxState = box.isSelected();
             if (checkboxState)
-                m_Controller.setDiagramNavigate(true);
+                findController.setDiagramNavigate(true);
 
             else
-                m_Controller.setDiagramNavigate(false);
+                findController.setDiagramNavigate(false);
         }
     }
     
@@ -956,13 +973,13 @@ public class ReplaceDialogUI extends JCenterDialog
         {
             String msg;
             
-            if (m_XpathCheck.isSelected())
+            if (xpathCheck.isSelected())
                 msg = FindUtilities.translateString("IDS_ERROR1");
 
             else
                 msg = FindUtilities.translateString("IDS_NONEFOUND");
             
-            m_Status.setText(msg);
+            statusLabel.setText(msg);
         }
 
         finally
@@ -973,19 +990,19 @@ public class ReplaceDialogUI extends JCenterDialog
     
     private void onFindButton() throws Exception
     {
-        m_Status.setText("");
+        statusLabel.setText("");
         update = false;
-        String searchStr = (String)(m_FindCombo.getSelectedItem());
+        String searchStr = (String)(findWhatCombo.getSelectedItem());
         
         boolean continueFlag = true;
         // Save the values of the search combo
-        FindUtilities.saveSearchString("LastSearchStrings", m_FindCombo);
+        FindUtilities.saveSearchString("LastSearchStrings", findWhatCombo);
         // reset what is in the search combo
         
-        FindUtilities.populateComboBoxes("LastSearchStrings", m_FindCombo);
+        FindUtilities.populateComboBoxes("LastSearchStrings", findWhatCombo);
         // if they have project selected, make sure there is a project selected
         
-        int count = m_ProjectList.getSelectedIndex();
+        int count = projectList.getSelectedIndex();
         if (count == -1)
         {
             continueFlag = false;
@@ -1000,11 +1017,11 @@ public class ReplaceDialogUI extends JCenterDialog
         
         if (continueFlag)
         {
-            m_Controller.setSearchString(searchStr);
-            FindUtilities.loadProjectListOfController(m_ProjectList, m_Controller);
+            findController.setSearchString(searchStr);
+            FindUtilities.loadProjectListOfController(projectList, findController);
             // do the search
             FindResults pResults = new FindResults();
-            m_Controller.search(pResults);
+            findController.search(pResults);
             if (pResults != null)
             {
                 ETList<IElement> pElements = pResults.getElements();
@@ -1017,13 +1034,13 @@ public class ReplaceDialogUI extends JCenterDialog
                         // show the results
                         ETList< Object > findResults = FindUtilities.loadResultsIntoArray(pResults);
                         FindTableModel model = new FindTableModel(this, findResults);
-                        m_ResultsTable.setModel(model);
-                        m_ReplaceCombo.setEnabled(true);
+                        searchResultsTable.setModel(model);
+                        replaceWithCombo.setEnabled(true);
                         
                         long totalC = pElements.size() + countD;
                         String strMsg = totalC + " ";
                         strMsg += FindUtilities.translateString("IDS_NUMFOUND");
-                        m_Status.setText(strMsg);
+                        statusLabel.setText(strMsg);
                         //
                         // This is special code to aid in the automating testing.  We had no way to access
                         // the information in the grid from the automated scripts and/or VisualTest, so
@@ -1045,28 +1062,28 @@ public class ReplaceDialogUI extends JCenterDialog
                     {
                         clearGrid();
                         String noneStr = FindUtilities.translateString("IDS_NONEFOUND");
-                        m_Status.setText(noneStr);
+                        statusLabel.setText(noneStr);
                     }
                 }
                 else
                 {
                     String canStr = FindUtilities.translateString("IDS_CANCELLED");
-                    m_Status.setText(canStr);
+                    statusLabel.setText(canStr);
                 }
             }
             else
             {
                 String str2 = FindUtilities.translateString("IDS_NONEFOUND2");
-                m_Status.setText(str2);
+                statusLabel.setText(str2);
             }
             
         }
-        m_FindCombo.setSelectedItem(searchStr);
+        findWhatCombo.setSelectedItem(searchStr);
 
         update = true;
-        if (m_ReplaceCombo.isEnabled())
-            updateState((JTextField)m_ReplaceCombo.getEditor().getEditorComponent());
-        m_FindCombo.getEditor().selectAll();
+        if (replaceWithCombo.isEnabled())
+            updateState((JTextField)replaceWithCombo.getEditor().getEditorComponent());
+        findWhatCombo.getEditor().selectAll();
     }
     
     
@@ -1075,19 +1092,19 @@ public class ReplaceDialogUI extends JCenterDialog
         Object obj = evt.getSource();
         if (obj instanceof JButton)
         {
-            m_Status.setText("");
+            statusLabel.setText("");
             String str;
-            str = (String)(m_ReplaceCombo.getSelectedItem());
+            str = (String)(replaceWithCombo.getSelectedItem());
             if (str != null && str.length() > 0)
             {
                 FindUtilities.startWaitCursor(getContentPane());
                 // Save the values of the search combo
-                FindUtilities.saveSearchString("LastReplaceStrings", m_ReplaceCombo);
+                FindUtilities.saveSearchString("LastReplaceStrings", replaceWithCombo);
                 // reset what is in the search combo
-                FindUtilities.populateComboBoxes("LastReplaceStrings", m_ReplaceCombo);
-                if (m_Controller != null)
+                FindUtilities.populateComboBoxes("LastReplaceStrings", replaceWithCombo);
+                if (findController != null)
                 {
-                    m_Controller.setReplaceString(str);
+                    findController.setReplaceString(str);
                     FindResults pResults = new FindResults();
                     if (pResults != null)
                     {
@@ -1101,10 +1118,10 @@ public class ReplaceDialogUI extends JCenterDialog
                             if (count > 0 || countD > 0)
                             {
                                 // clear the grid
-                                m_Controller.replace(pResults);
+                                findController.replace(pResults);
                                 ETList< Object > findResults = FindUtilities.loadResultsIntoArray(pResults);
                                 FindTableModel model = new FindTableModel(this, findResults);
-                                m_ResultsTable.setModel(model);
+                                searchResultsTable.setModel(model);
                                 
                                 //
                                 // This is special code to aid in the automating testing.  We had no way to access
@@ -1136,7 +1153,7 @@ public class ReplaceDialogUI extends JCenterDialog
                         }
                     }
                 }
-                m_ReplaceCombo.setSelectedItem(str);
+                replaceWithCombo.setSelectedItem(str);
                 FindUtilities.endWaitCursor(getContentPane());
                 disableReplaceSection();
             }
@@ -1155,12 +1172,12 @@ public class ReplaceDialogUI extends JCenterDialog
     
     public void onDblClickFindResults(int row, FindTableModel model, boolean isShift)
     {
-        m_Status.setText("");
-        boolean hr = FindUtilities.onDblClickFindResults(row, model, m_Controller, isShift);
+        statusLabel.setText("");
+        boolean hr = FindUtilities.onDblClickFindResults(row, model, findController, isShift);
         if (!hr)
         {
             String msg =  FindUtilities.translateString("IDS_NOPRESELEMENTS");
-            m_Status.setText(msg);
+            statusLabel.setText(msg);
         }
     }
     
@@ -1169,28 +1186,28 @@ public class ReplaceDialogUI extends JCenterDialog
         Object obj = evt.getSource();
         if (obj instanceof JButton)
         {
-            m_Status.setText("");
+            statusLabel.setText("");
             String str;
-            str = (String)(m_ReplaceCombo.getSelectedItem());
+            str = (String)(replaceWithCombo.getSelectedItem());
             if (str != null && str.length() > 0)
             {
                 FindUtilities.startWaitCursor(getContentPane());
                 // Save the values of the search combo
-                FindUtilities.saveSearchString("LastReplaceStrings", m_ReplaceCombo);
+                FindUtilities.saveSearchString("LastReplaceStrings", replaceWithCombo);
                 // reset what is in the search combo
-                FindUtilities.populateComboBoxes("LastReplaceStrings", m_ReplaceCombo);
-                if (m_Controller != null)
+                FindUtilities.populateComboBoxes("LastReplaceStrings", replaceWithCombo);
+                if (findController != null)
                 {
-                    m_Controller.setReplaceString(str);
+                    findController.setReplaceString(str);
                     FindResults pResults = new FindResults();
                     if (pResults != null)
                     {
                         loadResultsFromGrid(pResults, false);
                         // clear the grid
-                        m_Controller.replace(pResults);
+                        findController.replace(pResults);
                         ETList< Object > findResults = FindUtilities.loadResultsIntoArray(pResults);
                         FindTableModel model = new FindTableModel(this, findResults);
-                        m_ResultsTable.setModel(model);
+                        searchResultsTable.setModel(model);
                         //
                         // This is special code to aid in the automating testing.  We had no way to access
                         // the information in the grid from the automated scripts and/or VisualTest, so
@@ -1237,11 +1254,11 @@ public class ReplaceDialogUI extends JCenterDialog
                 if (bSelect)
                 {
                     // loop through the information in the table
-                    int[] selRows = m_ResultsTable.getSelectedRows();
+                    int[] selRows = searchResultsTable.getSelectedRows();
                     for (int x = 0; x < selRows.length; x++)
                     {
                         int selRow = selRows[x];
-                        FindTableModel model = (FindTableModel)m_ResultsTable.getModel();
+                        FindTableModel model = (FindTableModel)searchResultsTable.getModel();
                         
                         if (model != null)
                         {
@@ -1263,10 +1280,10 @@ public class ReplaceDialogUI extends JCenterDialog
                 }
                 else
                 {
-                    int rows = m_ResultsTable.getRowCount();
+                    int rows = searchResultsTable.getRowCount();
                     for (int x = 0; x < rows; x++)
                     {
-                        FindTableModel model = (FindTableModel)m_ResultsTable.getModel();
+                        FindTableModel model = (FindTableModel)searchResultsTable.getModel();
                         if (model != null)
                         {
                             IElement pElement = model.getElementAtRow(x);
@@ -1294,33 +1311,33 @@ public class ReplaceDialogUI extends JCenterDialog
     {
         // clear the results
         FindTableModel model = new FindTableModel(this, null);
-        m_ResultsTable.setModel(model);
+        searchResultsTable.setModel(model);
         disableReplaceSection();
     }
     
     private void disableReplaceSection()
     {
-        m_ReplaceCombo.setEnabled(false);
-        m_ReplaceButton.setEnabled(false);
-        m_ReplaceAllButton.setEnabled(false);
+        replaceWithCombo.setEnabled(false);
+        replaceButton.setEnabled(false);
+        replaceAllButton.setEnabled(false);
     }
     
     
     private void initDialog()
     {
-        m_Status.setText("");
-        FindUtilities.populateProjectList(m_ProjectList);
-        FindUtilities.selectProjectInList( m_ProjectList );
-        FindUtilities.populateComboBoxes("LastSearchStrings", m_FindCombo);
-        FindUtilities.populateComboBoxes("LastReplaceStrings", m_ReplaceCombo);
+        statusLabel.setText("");
+        FindUtilities.populateProjectList(projectList);
+        FindUtilities.selectProjectInList( projectList );
+        FindUtilities.populateComboBoxes("LastSearchStrings", findWhatCombo);
+        FindUtilities.populateComboBoxes("LastReplaceStrings", replaceWithCombo);
         disableReplaceSection();
-        m_FindCombo.getEditor().selectAll();
+        findWhatCombo.getEditor().selectAll();
     }
     
     public void setController(FindController controller)
     {
-        m_Controller = controller;
-        m_Controller.setDialog(this);
+        findController = controller;
+        findController.setDialog(this);
     }
     
     
@@ -1340,30 +1357,28 @@ public class ReplaceDialogUI extends JCenterDialog
     {
         public void valueChanged(ListSelectionEvent e)
         {
-            updateState((JTextField)m_ReplaceCombo.getEditor().getEditorComponent());
+            updateState((JTextField)replaceWithCombo.getEditor().getEditorComponent());
         }
     }
     
     // Variables declaration - do not modify
-    private JButton m_FindButton;
-    private JButton m_CloseButton;
-    private JLabel textLabel;
+    private JButton findButton;
+    private JButton  closeButton;
+    private JLabel findWhatLabel;
     private JLabel textLabel2;
-    private JComboBox m_FindCombo;
-    private JCheckBox m_LoadExternalCheck;
-    private JCheckBox m_MatchCaseCheck;
-    private JCheckBox m_NavigateCheck;
-    private JList m_ProjectList;
-    private JRadioButton m_ProjectRadio;
-    private JLabel m_ProjectLabel;
-    private JLabel m_ResultsLabel;
-    private JTable m_ResultsTable;
-    private JRadioButton m_SearchAlias;
-    private JRadioButton m_SearchDescriptionsRadio;
-    private JRadioButton m_SearchElementsRadio;
-    private JLabel m_Status;
-    private JCheckBox m_WholeWordCheck;
-    private JCheckBox m_XpathCheck;
+    private JComboBox findWhatCombo;
+    private JCheckBox matchCaseCheck;
+    private JCheckBox navigateCheck;
+    private JList projectList;
+    private JLabel projectsLabel;
+    private JLabel searchResultsLabel;
+    private JTable searchResultsTable;
+    private JRadioButton searchAliasRadio;
+    private JRadioButton searchDescrRadio;
+    private JRadioButton searchElementsRadio;
+    private JLabel statusLabel;
+    private JCheckBox wholeWordCheck;
+    private JCheckBox xpathCheck;
     private JPanel mainPanel;
     private JPanel resultsFieldsPanel;
     private JPanel navigateFieldsPanel;
@@ -1377,16 +1392,14 @@ public class ReplaceDialogUI extends JCenterDialog
     private JPanel statusFieldsPanel;
     private JPanel projectListPanel;
     private JPanel projectFieldsPanel;
-    private JButton m_ReplaceButton;
-    private JButton m_ReplaceAllButton;
-    private JComboBox m_ReplaceCombo;
+    private JButton replaceButton;
+    private JButton replaceAllButton;
+    private JComboBox replaceWithCombo;
     private JScrollPane jScrollPrjList;
     private SelectionListener selectionListener;
     private boolean update = true;
     
     
     // End of variables declaration
-    private org.netbeans.modules.uml.integration.finddialog.FindController m_Controller = null;
-    private boolean m_Done = false;
-    
+    private org.netbeans.modules.uml.integration.finddialog.FindController findController = null;
 }
