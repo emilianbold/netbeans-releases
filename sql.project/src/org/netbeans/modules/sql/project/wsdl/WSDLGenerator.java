@@ -126,6 +126,7 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
+import org.openide.util.NbBundle;
 
 
 public class WSDLGenerator {
@@ -528,7 +529,7 @@ public class WSDLGenerator {
         } catch (Exception e) {
             logger.log(Level.SEVERE, e.getLocalizedMessage(), e);
             JOptionPane.showMessageDialog(frame,
-                    "Problem in generating the message types for WSDL.Update the generated WSDL if needed.Please see the log for more details.",
+                    NbBundle.getMessage(WSDLGenerator.class,"LBL_MSG"),
                     "Warning",
                     JOptionPane.WARNING_MESSAGE);
             throw e;
