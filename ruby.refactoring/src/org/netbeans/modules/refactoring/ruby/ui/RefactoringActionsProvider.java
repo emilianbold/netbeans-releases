@@ -86,6 +86,7 @@ import org.openide.windows.TopComponent;
  * @author Jan Becicka
  */
 public class RefactoringActionsProvider extends ActionsImplementationProvider{
+    private static boolean isFindUsages;
     
     /** Creates a new instance of RefactoringActionsProvider */
     public RefactoringActionsProvider() {
@@ -251,7 +252,12 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                 }
             };
         }
-        task.run();
+        try {
+            isFindUsages = true;
+            task.run();
+        } finally {
+            isFindUsages = false;
+        }
     }
 
     /**
@@ -512,7 +518,11 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
             if (ui!=null) {
                 UI.openRefactoringUI(ui, activetc);
             } else {
-                JOptionPane.showMessageDialog(null,NbBundle.getMessage(RefactoringActionsProvider.class, "ERR_CannotRenameLoc"));
+                String key = "ERR_CannotRenameLoc"; // NOI18N
+                if (isFindUsages) {
+                    key = "ERR_CannotFindUsages"; // NOI18N
+                }
+                JOptionPane.showMessageDialog(null,NbBundle.getMessage(RefactoringActionsProvider.class, key));
             }
         }
         
