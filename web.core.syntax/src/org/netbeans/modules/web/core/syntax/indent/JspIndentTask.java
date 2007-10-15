@@ -28,8 +28,6 @@
 package org.netbeans.modules.web.core.syntax.indent;
 
 import javax.swing.text.BadLocationException;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.web.core.syntax.JSPKit;
 import org.netbeans.modules.web.core.syntax.formatting.JSPLexerFormatter;
 import org.netbeans.spi.editor.indent.Context;
 import org.netbeans.spi.editor.indent.ExtraLock;
@@ -45,31 +43,16 @@ import org.netbeans.spi.editor.indent.IndentTask;
 public class JspIndentTask implements IndentTask {
 
     private Context context;
-    private JSPLexerFormatter formatter = null;
     
     JspIndentTask(Context context) {
         this.context = context;
     }
 
     public void reindent() throws BadLocationException {
-        BaseDocument doc = (BaseDocument) context.document();
-        
-        if (context.isIndent()){
-            getFormatter().enterPressed(doc, context.startOffset());
-        } else {
-            getFormatter().reformat(doc, context.startOffset(), context.endOffset(), false);
-        }
+        new JSPLexerFormatter().process(context);
     }
     
     public ExtraLock indentLock() {
         return null;
-    }
-
-    private synchronized JSPLexerFormatter getFormatter() {
-        if(formatter == null) {
-            formatter = new JSPLexerFormatter(JSPKit.class);
-        }
-        return formatter;
-    }
-        
+    }  
 }

@@ -44,10 +44,8 @@ package org.netbeans.modules.html.editor.indent;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.ext.html.HTMLLexerFormatter;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.editor.html.HTMLKit;
 import org.netbeans.spi.editor.indent.Context;
 import org.netbeans.spi.editor.indent.ExtraLock;
 import org.netbeans.spi.editor.indent.IndentTask;
@@ -66,13 +64,7 @@ public class HtmlIndentTask implements IndentTask {
     }
 
     public void reindent() throws BadLocationException {
-        BaseDocument doc = (BaseDocument) context.document();
-        
-        if (context.isIndent()){
-            getFormatter().enterPressed(doc, context.startOffset());
-        } else {
-            getFormatter().reformat(doc, context.startOffset(), context.endOffset(), false);
-        }
+        getFormatter().process(context);
     }
 
     public ExtraLock indentLock() {
@@ -88,6 +80,6 @@ public class HtmlIndentTask implements IndentTask {
             languagePath = LanguagePath.get(languagePath, Language.find("text/html")); //NOI18N
         }
 
-        return new HTMLLexerFormatter(HTMLKit.class, languagePath);
+        return new HTMLLexerFormatter(languagePath);
     }
 }

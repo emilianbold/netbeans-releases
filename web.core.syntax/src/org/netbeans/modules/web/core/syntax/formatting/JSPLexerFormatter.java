@@ -46,10 +46,8 @@ import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Syntax;
 import org.netbeans.modules.editor.structure.formatting.TagBasedLexerFormatter;
 import static org.netbeans.modules.editor.structure.formatting.TagBasedLexerFormatter.JoinedTokenSequence;
-import org.netbeans.modules.web.core.syntax.deprecated.JspMultiSyntax;
 
 /**
  * A lexer-based formatter for html files.
@@ -57,17 +55,6 @@ import org.netbeans.modules.web.core.syntax.deprecated.JspMultiSyntax;
  */
 
 public class JSPLexerFormatter extends TagBasedLexerFormatter {
-
-    /** Creates a new instance of HTMLFormater */
-    public JSPLexerFormatter(Class kitClass) {
-        super(kitClass);
-    }
-
-    @Override
-    protected boolean acceptSyntax(Syntax syntax) {
-        return syntax instanceof JspMultiSyntax;
-    }
-
     @Override
     protected int getTagEndingAtPosition(JoinedTokenSequence tokenSequence, int position) throws BadLocationException {
         if (position >= 0) {

@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.editor.structure.formatting;
 
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -50,7 +49,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -58,7 +56,7 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.editor.ext.ExtFormatter;
+import org.netbeans.spi.editor.indent.Context;
 
 /**
  * Handling embedded languages:
@@ -101,14 +99,9 @@ import org.netbeans.editor.ext.ExtFormatter;
  *
  * @author Tomasz.Slota@Sun.COM
  */
-public abstract class TagBasedLexerFormatter extends ExtFormatter {
+public abstract class TagBasedLexerFormatter {
 
     private static final Logger logger = Logger.getLogger(TagBasedLexerFormatter.class.getName());
-
-    /** Creates a new instance of TagBases */
-    public TagBasedLexerFormatter(Class kitClass) {
-        super(kitClass);
-    }
 
     protected abstract boolean isClosingTag(JoinedTokenSequence tokenSequence, int tagOffset);
 
@@ -132,109 +125,24 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter {
 
     protected abstract LanguagePath supportedLanguagePath();
 
-    protected boolean isWSToken(Token token) {
-        return isOnlyWhiteSpaces(token.text());
-    }
-
-    protected int getIndentForTagParameter(BaseDocument doc, JoinedTokenSequence tokenSequence, int tagOffset) throws BadLocationException {
-        int originalOffset = tokenSequence.offset();
-        int tagStartLine = Utilities.getLineOffset(doc, tagOffset);
-        tokenSequence.move(tagOffset);
-        Token<? extends TokenId> token;
-        int tokenOffset;
-        boolean thereWasWS = false;
-        int shift = doc.getShiftWidth(); // default;
-
-        /*
-         * Find the offset of the first attribute if it is specified on the same line as the opening of the tag
-         * e.g. <tag   |attr=
-         *
-         */
-        while (tokenSequence.moveNext()) {
-            token = tokenSequence.token();
-            tokenOffset = tokenSequence.offset();
-            boolean isWSToken = isWSToken(token);
-            
-            if (thereWasWS && (!isWSToken || tagStartLine != Utilities.getLineOffset(doc, tokenOffset))) {
-                if (!isWSToken && tagStartLine == Utilities.getLineOffset(doc, tokenOffset)) {
-                    
-                    shift = tokenOffset - Utilities.getRowIndent(doc, tokenOffset)
-                            - Utilities.getRowStart(doc, tokenOffset);
-                }
-                break;
-            } else if (isWSToken){
-                thereWasWS = true;
-            }
+    public void process(Context context) throws BadLocationException{
+        if (context.isIndent()){
+            enterPressed(context);
+        } else {
+            reformat(context);
         }
-
-        tokenSequence.move(originalOffset);
-        tokenSequence.moveNext();
-
-        return shift;
     }
 
-    private boolean calcIndents_processOpeningTag(final BaseDocument doc, final JoinedTokenSequence tokenSequence, final String tagName, final Collection<TagIndentationData> unprocessedOpeningTags, final int[] indentsWithinTags) throws BadLocationException {
-
-        boolean thereAreMoreTokens = true;
-        // format content of a tag that spans across multiple lines
-        int firstTagLine = Utilities.getLineOffset(doc, tokenSequence.offset());
-        int tagEndOffset = getTagEndOffset(tokenSequence, tokenSequence.offset());
-        int lastTagLine = Utilities.getLineOffset(doc, tagEndOffset);
-
-        TagIndentationData tagData = new TagIndentationData(tagName, lastTagLine);
-        unprocessedOpeningTags.add(tagData);
-
-        if (firstTagLine < lastTagLine) {
-            // performance!
-            int indentWithinTag = getIndentForTagParameter(doc, tokenSequence, tokenSequence.offset());
-
-            for (int i = firstTagLine + 1; i <= lastTagLine; i++) {
-                indentsWithinTags[i] = indentWithinTag;
-            }
-        }
-
-        return thereAreMoreTokens;
-    }
-
-    private void calcIndents_processClosingTag(final String tagName, final int tagClosedOnLine, final TransferData transferData, final LinkedList<TagIndentationData> unprocessedOpeningTags, final Collection<TagIndentationData> matchedOpeningTags) throws BadLocationException {
-        LinkedList<TagIndentationData> tagsToBeRemoved = new LinkedList<TagIndentationData>();
-
-        while (!unprocessedOpeningTags.isEmpty()) {
-            TagIndentationData processedTD = unprocessedOpeningTags.removeLast();
-
-            if (areTagNamesEqual(tagName, processedTD.getTagName())) {
-                processedTD.setClosedOnLine(tagClosedOnLine);
-                matchedOpeningTags.add(processedTD);
-
-                // mark all the stuff between unformattable tag as unformattable
-                if (isUnformattableTag(tagName)) {
-                    for (int i = tagClosedOnLine - 1; i > processedTD.getLine(); i--) {
-                        transferData.setNonFormattable(i);
-                    }
-                }
-
-                // forgetting preceding tags permanently
-                tagsToBeRemoved.clear();
-                break;
-            } else {
-                tagsToBeRemoved.add(processedTD);
-            }
-        }
-
-        // if matching opening tag was not found on the stack put all the tags back
-        unprocessedOpeningTags.addAll(tagsToBeRemoved);
-    }
-
-    @Override
-    public Writer reformat(BaseDocument doc, int startOffset, int endOffset, boolean indentOnly) throws BadLocationException {
+    public void reformat(Context context) throws BadLocationException {
         LinkedList<TagIndentationData> unprocessedOpeningTags = new LinkedList<TagIndentationData>();
         List<TagIndentationData> matchedOpeningTags = new ArrayList<TagIndentationData>();
+        BaseDocument doc = (BaseDocument) context.document();
         doc.atomicLock();
         TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
 
         if (tokenHierarchy == null) {
             logger.severe("Could not retrieve TokenHierarchy for document " + doc);
-            return null;
+            return;
         }
 
         try {
@@ -248,8 +156,8 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter {
                 assert transferData != null;
             }
             
-            int firstRefBlockLine = Utilities.getLineOffset(doc, startOffset);
-            int lastRefBlockLine = Utilities.getLineOffset(doc, endOffset);
+            int firstRefBlockLine = Utilities.getLineOffset(doc, context.startOffset());
+            int lastRefBlockLine = Utilities.getLineOffset(doc, context.endOffset());
             int firstUnformattableLine = -1;
 
             boolean currentLanguage[] = new boolean[transferData.getNumberOfLines()];
@@ -384,7 +292,7 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter {
                         
             for (int line = firstRefBlockLine; line <= lastRefBlockLine; line++) {
                 int lineStart = Utilities.getRowStartFromLineOffset(doc, line);
-                changeRowIndent(doc, lineStart, newIndents[line] + lineBeforeSelectionBias);
+                context.modifyIndent(lineStart, newIndents[line] + lineBeforeSelectionBias);
             }
             
             transferData.setTransformedOffsets(newIndents);
@@ -418,8 +326,6 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter {
         } finally {
             doc.atomicUnlock();
         }
-
-        return null;
     }
     
     private static int getTxtLengthWithoutWhitespaceSuffix(CharSequence txt){
@@ -460,6 +366,98 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter {
         tokenSequence.move(originalOffset);
         tokenSequence.moveNext();
         return -1;
+    }
+        protected boolean isWSToken(Token token) {
+        return isOnlyWhiteSpaces(token.text());
+    }
+
+    protected int getIndentForTagParameter(BaseDocument doc, JoinedTokenSequence tokenSequence, int tagOffset) throws BadLocationException {
+        int originalOffset = tokenSequence.offset();
+        int tagStartLine = Utilities.getLineOffset(doc, tagOffset);
+        tokenSequence.move(tagOffset);
+        Token<? extends TokenId> token;
+        int tokenOffset;
+        boolean thereWasWS = false;
+        int shift = doc.getShiftWidth(); // default;
+
+        /*
+         * Find the offset of the first attribute if it is specified on the same line as the opening of the tag
+         * e.g. <tag   |attr=
+         *
+         */
+        while (tokenSequence.moveNext()) {
+            token = tokenSequence.token();
+            tokenOffset = tokenSequence.offset();
+            boolean isWSToken = isWSToken(token);
+            
+            if (thereWasWS && (!isWSToken || tagStartLine != Utilities.getLineOffset(doc, tokenOffset))) {
+                if (!isWSToken && tagStartLine == Utilities.getLineOffset(doc, tokenOffset)) {
+                    
+                    shift = tokenOffset - Utilities.getRowIndent(doc, tokenOffset)
+                            - Utilities.getRowStart(doc, tokenOffset);
+                }
+                break;
+            } else if (isWSToken){
+                thereWasWS = true;
+            }
+        }
+
+        tokenSequence.move(originalOffset);
+        tokenSequence.moveNext();
+
+        return shift;
+    }
+
+    private boolean calcIndents_processOpeningTag(final BaseDocument doc, final JoinedTokenSequence tokenSequence, final String tagName, final Collection<TagIndentationData> unprocessedOpeningTags, final int[] indentsWithinTags) throws BadLocationException {
+
+        boolean thereAreMoreTokens = true;
+        // format content of a tag that spans across multiple lines
+        int firstTagLine = Utilities.getLineOffset(doc, tokenSequence.offset());
+        int tagEndOffset = getTagEndOffset(tokenSequence, tokenSequence.offset());
+        int lastTagLine = Utilities.getLineOffset(doc, tagEndOffset);
+
+        TagIndentationData tagData = new TagIndentationData(tagName, lastTagLine);
+        unprocessedOpeningTags.add(tagData);
+
+        if (firstTagLine < lastTagLine) {
+            // performance!
+            int indentWithinTag = getIndentForTagParameter(doc, tokenSequence, tokenSequence.offset());
+
+            for (int i = firstTagLine + 1; i <= lastTagLine; i++) {
+                indentsWithinTags[i] = indentWithinTag;
+            }
+        }
+
+        return thereAreMoreTokens;
+    }
+
+    private void calcIndents_processClosingTag(final String tagName, final int tagClosedOnLine, final TransferData transferData, final LinkedList<TagIndentationData> unprocessedOpeningTags, final Collection<TagIndentationData> matchedOpeningTags) throws BadLocationException {
+        LinkedList<TagIndentationData> tagsToBeRemoved = new LinkedList<TagIndentationData>();
+
+        while (!unprocessedOpeningTags.isEmpty()) {
+            TagIndentationData processedTD = unprocessedOpeningTags.removeLast();
+
+            if (areTagNamesEqual(tagName, processedTD.getTagName())) {
+                processedTD.setClosedOnLine(tagClosedOnLine);
+                matchedOpeningTags.add(processedTD);
+
+                // mark all the stuff between unformattable tag as unformattable
+                if (isUnformattableTag(tagName)) {
+                    for (int i = tagClosedOnLine - 1; i > processedTD.getLine(); i--) {
+                        transferData.setNonFormattable(i);
+                    }
+                }
+
+                // forgetting preceding tags permanently
+                tagsToBeRemoved.clear();
+                break;
+            } else {
+                tagsToBeRemoved.add(processedTD);
+            }
+        }
+
+        // if matching opening tag was not found on the stack put all the tags back
+        unprocessedOpeningTags.addAll(tagsToBeRemoved);
     }
 
     protected int getInitialIndentFromPreviousLine(final BaseDocument doc, final int line) throws BadLocationException {
@@ -666,8 +664,11 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter {
         }
     }
     
-    public void enterPressed(BaseDocument doc, int dotPos) {
+    public void enterPressed(Context context) {
+        BaseDocument doc = (BaseDocument)context.document();
+        int dotPos = context.startOffset();
         doc.atomicLock();
+        
         try {
 //            if (isSmartEnter(doc, dotPos)) {
 //                handleSmartEnter(doc, dotPos);
@@ -679,7 +680,7 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter {
 
             int formattingStart = isOnlyWhiteSpaces(previousLineText) ? previousLineStart : dotPos;
 
-            reformat(doc, formattingStart, dotPos, true);
+            reformat(context);
 //            }
         } catch (BadLocationException e) {
             logger.log(Level.SEVERE, e.getMessage(), e);
@@ -695,7 +696,7 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter {
 
         if (wasSmartEnter) {
             doc.insertString(dotPos - 1, "\n", null); //NOI18N
-            reformat(doc, dotPos, dotPos, true);
+       //     reformat(doc, dotPos, dotPos, true);
 
 //            DataObject dataObj = NbEditorUtilities.getDataObject(doc);
 //            EditorCookie editor = dataObj.getCookie(EditorCookie.class);

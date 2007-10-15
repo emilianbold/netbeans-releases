@@ -46,7 +46,6 @@ import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Syntax;
 import org.netbeans.editor.ext.html.dtd.DTD;
 import org.netbeans.editor.ext.html.dtd.DTD.Element;
 import org.netbeans.modules.editor.structure.formatting.TagBasedLexerFormatter;
@@ -69,13 +68,8 @@ public class HTMLLexerFormatter extends TagBasedLexerFormatter {
     private final LanguagePath languagePath;
     
     /** Creates a new instance of HTMLFormater */
-    public HTMLLexerFormatter(Class kitClass, LanguagePath languagePath) {
-	super(kitClass);
+    public HTMLLexerFormatter(LanguagePath languagePath) {
         this.languagePath = languagePath;
-    }
-    
-    @Override protected boolean acceptSyntax(Syntax syntax) {
-	return (syntax instanceof HTMLSyntax);
     }
     
     @Override protected int getTagEndingAtPosition(JoinedTokenSequence JoinedTokenSequence, int position) throws BadLocationException{
