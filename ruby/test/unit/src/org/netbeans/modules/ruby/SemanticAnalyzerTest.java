@@ -77,4 +77,8 @@ public class SemanticAnalyzerTest extends RubyTestBase {
     public void testUnused() throws Exception {
         checkSemantic("testfiles/unused.rb");
     }
+    
+    public void testUnused2() throws Exception {
+        checkSemantic("testfiles/unused2.rb");
+    }
 }

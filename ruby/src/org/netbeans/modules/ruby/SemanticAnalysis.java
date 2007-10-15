@@ -122,7 +122,7 @@ public class SemanticAnalysis implements SemanticAnalyzer {
 
         AstPath path = new AstPath();
         path.descend(root);
-        annotate(root, highlights, path, null);
+        annotate(root, highlights, path, null, false);
         path.ascend();
 
         if (isCancelled()) {
@@ -151,13 +151,17 @@ public class SemanticAnalysis implements SemanticAnalyzer {
     /** Find unused local and dynamic variables */
     @SuppressWarnings("unchecked")
     private void annotate(Node node, Map<OffsetRange, ColoringAttributes> highlights, AstPath path,
-        List<String> parameters) {
+        List<String> parameters, boolean isParameter) {
         switch (node.nodeId) {
+        case NodeTypes.ARGSNODE: {
+            isParameter = true;
+            break;
+        }
         case NodeTypes.LOCALASGNNODE: {
             LocalAsgnNode lasgn = (LocalAsgnNode)node;
             Node method = AstUtilities.findLocalScope(node, path);
 
-            boolean isUsed = isUsedInMethod(method, lasgn.getName());
+            boolean isUsed = isUsedInMethod(method, lasgn.getName(), isParameter);
 
             if (!isUsed) {
                 OffsetRange range = AstUtilities.getLValueRange(lasgn);
@@ -179,7 +183,7 @@ public class SemanticAnalysis implements SemanticAnalyzer {
 
             Node method = AstUtilities.findLocalScope(node, path);
 
-            boolean isUsed = isUsedInMethod(method, dasgn.getName());
+            boolean isUsed = isUsedInMethod(method, dasgn.getName(), false);
 
             if (!isUsed) {
                 OffsetRange range = AstUtilities.getLValueRange(dasgn);
@@ -198,7 +202,7 @@ public class SemanticAnalysis implements SemanticAnalyzer {
                 List<String> unused = new ArrayList();
 
                 for (String parameter : parameters) {
-                    boolean isUsed = isUsedInMethod(node, parameter);
+                    boolean isUsed = isUsedInMethod(node, parameter, true);
 
                     if (!isUsed) {
                         unused.add(parameter);
@@ -247,7 +251,7 @@ public class SemanticAnalysis implements SemanticAnalyzer {
 
         for (Node child : list) {
             path.descend(child);
-            annotate(child, highlights, path, parameters);
+            annotate(child, highlights, path, parameters, isParameter);
             path.ascend();
         }
     }
@@ -374,14 +378,19 @@ public class SemanticAnalysis implements SemanticAnalyzer {
     }
 
     @SuppressWarnings("unchecked")
-    private boolean isUsedInMethod(Node node, String targetName) {
-        if (node.nodeId == NodeTypes.LOCALVARNODE) {
-            String name = ((LocalVarNode)node).getName();
+    private boolean isUsedInMethod(Node node, String targetName, boolean isParameter) {
+        switch (node.nodeId) {
+        case NodeTypes.LOCALVARNODE: {
+            if (node.nodeId == NodeTypes.LOCALVARNODE) {
+                String name = ((LocalVarNode)node).getName();
 
-            if (targetName.equals(name)) {
-                return true;
+                if (targetName.equals(name)) {
+                    return true;
+                }
             }
-        } else if (node.nodeId == NodeTypes.FORNODE) {
+            break;
+        }
+        case NodeTypes.FORNODE: {
             // XXX This is no longer necessary, right?
             // Workaround for the fact that ForNode's childNodes implementation
             // is wrong - Tom is committing a fix; this is until we pick that
@@ -392,16 +401,28 @@ public class SemanticAnalysis implements SemanticAnalyzer {
                     return true;
                 }
             }
-        } else if (node.nodeId == NodeTypes.DVARNODE) {
+            break;
+        }
+        case NodeTypes.DVARNODE:
             if (targetName.equals(((DVarNode)node).getName())) {
                 return true;
             }
-        } else if (node.nodeId == NodeTypes.ALIASNODE) {
+            break;
+        case NodeTypes.ALIASNODE: {
             AliasNode an = (AliasNode)node;
 
             if (an.getOldName().equals(targetName)) {
                 return true;
             }
+            break;
+        }
+        case NodeTypes.ZSUPERNODE:
+            // Super with no arguments passes arguments to parent so consider
+            // the parameters used
+            if (isParameter) {
+                return true;
+            }
+            break;
         }
 
         List<Node> list = node.childNodes();
@@ -414,7 +435,7 @@ public class SemanticAnalysis implements SemanticAnalyzer {
                 continue;
             }
 
-            boolean used = isUsedInMethod(child, targetName);
+            boolean used = isUsedInMethod(child, targetName, isParameter);
 
             if (used) {
                 return true;

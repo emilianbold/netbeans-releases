@@ -1,0 +1,27 @@
+class Foo1
+  def |>METHOD:mymethod<| |>PARAMETER:arg1<|, |>PARAMETER:arg2<|, |>PARAMETER:arg3<|
+    |>METHOD:puts<| |>PARAMETER:arg1<|, |>PARAMETER:arg2<|, |>PARAMETER:arg3<|
+  end
+end
+
+class Foo2 < Foo1
+  # Can't mark args thought to be unused as unused
+  # if we have a super call without args (which will
+  # actually pass them)
+  def |>METHOD:mymethod<| |>PARAMETER:args1<|, |>PARAMETER:args2<|, |>PARAMETER:args3<| = {}<|
+    super
+    |>METHOD:puts<| "Hello"
+    |>METHOD:puts<| |>PARAMETER:args2<|
+  end
+end
+
+class Foo3 < Foo1
+  def |>METHOD:mymethod<| |>UNUSED:args1<|, |>PARAMETER:args2<|, |>UNUSED:args3<| = {}<|
+    super 1, 2, 3
+    |>METHOD:puts<| "Hello"
+    |>METHOD:puts<| |>PARAMETER:args2<|
+  end
+end
+
+Foo2.new.mymethod("TestArg1", "TestArg2", "TestArg3")
+
