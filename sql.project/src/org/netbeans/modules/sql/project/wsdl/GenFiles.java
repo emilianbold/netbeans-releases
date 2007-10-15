@@ -80,6 +80,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+import org.openide.util.NbBundle;
 
 public class GenFiles extends CallableSystemAction {
 	
@@ -127,7 +128,8 @@ public class GenFiles extends CallableSystemAction {
 	
 	public String getName(){
 		//return NbBundle.getMessage(ActionImpl.class, "CTL_Connect");
-		return "Generate WSDL...";
+		//return "Generate WSDL...";
+		return NbBundle.getMessage(GenFiles.class, "LBL_Generate_WSDL");
 	}
 
 	/*public void removePropertyChangeListener(PropertyChangeListener listener) {
@@ -294,7 +296,7 @@ public class GenFiles extends CallableSystemAction {
             fw.writeJBI();
             project.getProjectDirectory().refresh();
             JOptionPane.showMessageDialog(frame,
-                    "WSDL Generated.",
+                     NbBundle.getMessage(GenFiles.class,"LBL_WSDL_Generated"),
                     "Information",
                     JOptionPane.INFORMATION_MESSAGE);
         } catch (Exception e) {
