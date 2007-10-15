@@ -74,7 +74,7 @@ fi
 
 if [ ! -z $BUILD_ID ]; then
     mkdir -p $DIST_SERVER2/${BUILD_ID}
-    cp -r $DIST/*  $DIST_SERVER2/${BUILD_ID}
+    cp -rp $DIST/*  $DIST_SERVER2/${BUILD_ID}
 fi
 
 cd $TRUNK_NIGHTLY_DIRNAME
@@ -88,7 +88,7 @@ fi
 
 if [ ! -z $BUILD_ID ]; then
     mkdir -p $DIST_SERVER2/${BUILD_ID}
-    cp -r $DIST/*  $DIST_SERVER2/${BUILD_ID}
+    cp -rp $DIST/*  $DIST_SERVER2/${BUILD_ID}
     mv $DIST_SERVER2/latest $DIST_SERVER2/latest.old
     ln -s $DIST_SERVER2/${BUILD_ID} $DIST_SERVER2/latest
 fi

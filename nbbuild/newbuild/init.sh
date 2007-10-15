@@ -3,6 +3,14 @@ set -x
 
 #Initialize all the environment
 
+#ML BUILD yes/no 1/0
+if [ -z "${ML_BUILD}" ]; then
+    export ML_BUILD=1
+fi
+if [ -z "${LOCALES}" ]; then
+    export LOCALES=ja,zh_CN,pt_BR
+fi
+
 export ANT_OPTS="-Xmx512m"
 export JAVA_HOME=$JDK_HOME
 

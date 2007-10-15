@@ -21,71 +21,85 @@ pack_component()
 #
 ###################################################################
 
-cd $NB_ALL/nbbuild
+pack_all_components()
+{
+    DIST_DIR=${1}
+    NAME=${2}
+    cd $NB_ALL/nbbuild
 
-#Pack the distrubutions
-find netbeans | egrep -v "netbeans/(extra|testtools)" | zip -q $DIST/zip/$BASENAME.zip -@ || exit 1
+    #Pack the distrubutions
+    find netbeans | egrep -v "netbeans/(extra|testtools)" | zip -q $DIST_DIR/zip/$NAME.zip -@ || exit 1
 
-#find netbeans | egrep "netbeans/(platform|harness)" | zip -q $DIST/zip/$BASENAME-platform.zip -@ || exit 1
-find netbeans | egrep -v "netbeans/(extra|testtools|xml|mobility|enterprise|visualweb|uml|ruby|soa|cnd|identity)" | zip -q $DIST/zip/$BASENAME-javase.zip -@ || exit 1
-find netbeans | egrep -v "netbeans/(extra|testtools|xml|enterprise|visualweb|uml|ruby|soa|cnd|identity)" | egrep -v "(org-netbeans-modules-mobility-end2end|org-netbeans-modules-mobility-jsr172)" | zip -q $DIST/zip/$BASENAME-mobility.zip -@ || exit 1
-find netbeans | egrep -v "netbeans/(extra|testtools|mobility|uml|ruby|soa|cnd|identity)" | zip -q $DIST/zip/$BASENAME-javaee.zip -@ || exit 1
-find netbeans | egrep -v "netbeans/(extra|testtools|xml|java|apisupport|harness|profiler|mobility|enterprise|visualweb|uml|soa|identity|cnd)" | zip -q $DIST/zip/$BASENAME-ruby.zip -@ || exit 1
-find netbeans | egrep -v "netbeans/(extra|testtools|xml|java|apisupport|harness|profiler|mobility|enterprise|visualweb|uml|ruby|soa|identity)" | zip -q $DIST/zip/$BASENAME-cpp.zip -@ || exit 1
+    #find netbeans | egrep "netbeans/(platform|harness)" | zip -q $DIST_DIR/zip/$NAME-platform.zip -@ || exit 1
+    find netbeans | egrep -v "netbeans/(extra|testtools|xml|mobility|enterprise|visualweb|uml|ruby|soa|cnd|identity)" | zip -q $DIST_DIR/zip/$NAME-javase.zip -@ || exit 1
+    find netbeans | egrep -v "netbeans/(extra|testtools|xml|enterprise|visualweb|uml|ruby|soa|cnd|identity)" | egrep -v "(org-netbeans-modules-mobility-end2end|org-netbeans-modules-mobility-jsr172)" | zip -q $DIST_DIR/zip/$NAME-mobility.zip -@ || exit 1
+    find netbeans | egrep -v "netbeans/(extra|testtools|mobility|uml|ruby|soa|cnd|identity)" | zip -q $DIST_DIR/zip/$NAME-javaee.zip -@ || exit 1
+    find netbeans | egrep -v "netbeans/(extra|testtools|xml|java|apisupport|harness|profiler|mobility|enterprise|visualweb|uml|soa|identity|cnd)" | zip -q $DIST_DIR/zip/$NAME-ruby.zip -@ || exit 1
+    find netbeans | egrep -v "netbeans/(extra|testtools|xml|java|apisupport|harness|profiler|mobility|enterprise|visualweb|uml|ruby|soa|identity)" | zip -q $DIST_DIR/zip/$NAME-cpp.zip -@ || exit 1
 
-mkdir $DIST/zip/moduleclusters
+    mkdir $DIST_DIR/zip/moduleclusters
 
-rm -rf $NB_ALL/nbbuild/netbeans/extra
+    rm -rf $NB_ALL/nbbuild/netbeans/extra
 
-#Pack all the NetBeans
-pack_component $DIST/zip/moduleclusters $BASENAME all-in-one netbeans
+    #Pack all the NetBeans
+    pack_component $DIST_DIR/zip/moduleclusters $NAME all-in-one netbeans
 
-cd $NB_ALL/nbbuild/netbeans
+    cd $NB_ALL/nbbuild/netbeans
 
-#Continue with individual component
-pack_component $DIST/zip/moduleclusters $BASENAME uml "uml*"
-rm -rf uml*
+    #Continue with individual component
+    pack_component $DIST_DIR/zip/moduleclusters $NAME uml "uml*"
+    rm -rf uml*
 
-pack_component $DIST/zip/moduleclusters $BASENAME visualweb "visualweb*"
-rm -rf visualweb*
+    pack_component $DIST_DIR/zip/moduleclusters $NAME visualweb "visualweb*"
+    rm -rf visualweb*
 
-pack_component $DIST/zip/moduleclusters $BASENAME ruby "ruby*"
-rm -rf ruby*
+    pack_component $DIST_DIR/zip/moduleclusters $NAME ruby "ruby*"
+    rm -rf ruby*
 
-pack_component $DIST/zip/moduleclusters $BASENAME profiler "profiler*"
-rm -rf profiler*
+    pack_component $DIST_DIR/zip/moduleclusters $NAME profiler "profiler*"
+    rm -rf profiler*
 
-pack_component $DIST/zip/moduleclusters $BASENAME platform "platform*"
-rm -rf platform*
+    pack_component $DIST_DIR/zip/moduleclusters $NAME platform "platform*"
+    rm -rf platform*
 
-pack_component $DIST/zip/moduleclusters $BASENAME mobility "mobility*"
-rm -rf mobility*
+    pack_component $DIST_DIR/zip/moduleclusters $NAME mobility "mobility*"
+    rm -rf mobility*
 
-pack_component $DIST/zip/moduleclusters $BASENAME identity "identity*"
-rm -rf identity*
+    pack_component $DIST_DIR/zip/moduleclusters $NAME identity "identity*"
+    rm -rf identity*
 
-pack_component $DIST/zip/moduleclusters $BASENAME ide "ide*"
-rm -rf ide*
+    pack_component $DIST_DIR/zip/moduleclusters $NAME ide "ide*"
+    rm -rf ide*
 
-pack_component $DIST/zip/moduleclusters $BASENAME xml "xml*"
-rm -rf xml*
+    pack_component $DIST_DIR/zip/moduleclusters $NAME xml "xml*"
+    rm -rf xml*
 
-pack_component $DIST/zip/moduleclusters $BASENAME harness "harness*"
-rm -rf harness*
+    pack_component $DIST_DIR/zip/moduleclusters $NAME harness "harness*"
+    rm -rf harness*
 
-pack_component $DIST/zip/moduleclusters $BASENAME enterprise "enterprise*"
-rm -rf enterprise*
+    pack_component $DIST_DIR/zip/moduleclusters $NAME enterprise "enterprise*"
+    rm -rf enterprise*
 
-pack_component $DIST/zip/moduleclusters $BASENAME soa "soa*"
-rm -rf soa*
+    pack_component $DIST_DIR/zip/moduleclusters $NAME soa "soa*"
+    rm -rf soa*
 
-pack_component $DIST/zip/moduleclusters $BASENAME apisupport "apisupport*"
-rm -rf apisupport*
+    pack_component $DIST_DIR/zip/moduleclusters $NAME apisupport "apisupport*"
+    rm -rf apisupport*
 
-pack_component $DIST/zip/moduleclusters $BASENAME java "java*"
-rm -rf java*
+    pack_component $DIST_DIR/zip/moduleclusters $NAME java "java*"
+    rm -rf java*
 
-pack_component $DIST/zip/moduleclusters $BASENAME cnd "cnd*"
-rm -rf cnd*
+    pack_component $DIST_DIR/zip/moduleclusters $NAME cnd "cnd*"
+    rm -rf cnd*
 
-pack_component $DIST/zip/moduleclusters $BASENAME nb6.0-etc "*"
+    pack_component $DIST_DIR/zip/moduleclusters $NAME nb6.0-etc "*"
+}
+
+pack_all_components $DIST $BASENAME
+
+if [ $BUILD_ML == 1]; then
+    rm -rf $NB_ALL/nbbuild/netbeans
+    mv $NB_ALL/nbbuild/netbeans-ml $NB_ALL/nbbuild/netbeans
+
+    pack_all_components $DIST/ml $BASENAME-ml
+fi
