@@ -74,8 +74,7 @@ public class ConditionBuilderTextViewFactory extends AbstractSQLViewFactory {
         // Operator Model has to be created only once
         this.operatorModel = OperatorXmlInfoModel.getInstance(this.gViewContainer.getOperatorFolder());
         this.toolbarType = toolBarType;
-        super.setUp();
-        super.setSQLToolBar();
+        super.setUp(true);        
     }
 
     /**

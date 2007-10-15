@@ -119,7 +119,7 @@ public abstract class AbstractSQLViewFactory implements IOperatorManager {
      * call this to setup relation between graph view, graph view container, toolbar,
      * controller and model
      */
-    public void setUp() {
+    public void setUp(boolean isTrue) {
         IGraphController controller = createGraphController();
         SQLUIModel model = getSQLModel();
 
@@ -140,9 +140,14 @@ public abstract class AbstractSQLViewFactory implements IOperatorManager {
             toolBar.setActions(getToolBarActions());
             toolBar.initializeToolBar();
 
+            SQLToolBar sqlToolBar=(SQLToolBar)toolBar;
+            sqlToolBar.initializeSQLToolBar();
             //set toolbar on graph
             if (graphView != null) {
                 graphView.setToolBar(toolBar);
+                if(isTrue){
+                     graphView.setToolBar(sqlToolBar);
+                }
             }
         }
         //set up controller
@@ -152,16 +157,17 @@ public abstract class AbstractSQLViewFactory implements IOperatorManager {
         }
     }
 
-    public void setSQLToolBar() {
+    /*public void setSQLToolBar() {
         IGraphView graphView = createGraphView();
         SQLToolBar toolBar = (SQLToolBar) createToolBar();
-        if (toolBar != null) {
+        if (toolBar != null) {          
+            toolBar.setActions(getToolBarActions());
             toolBar.initializeSQLToolBar();
             if (graphView != null) {
                 graphView.setToolBar(toolBar);
             }
         }
-    }
+    }*/
 
     /**
      * Show the operator palette dialog, initially displaying the category panel
