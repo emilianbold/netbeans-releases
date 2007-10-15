@@ -234,11 +234,16 @@ public class ImportUITest extends JellyTestCase {
             cnfo = rbo.createNewFolder();
             cnfo.setFolderName("release_01");
             cnfo.ok();
+            rbo.ok();
+            assertEquals("Wrong folder selection!!!", "branches/release_01", ftiso.getRepositoryFolder());
+            
+            rbo = ftiso.browseRepository();
             rbo.selectFolder("branches|release_01");
             cnfo = rbo.createNewFolder();
             cnfo.setFolderName(PROJECT_NAME);
             cnfo.ok();
             rbo.selectFolder("branches|release_01|" + PROJECT_NAME);
+            
             rbo.ok();
             assertEquals("Wrong folder selection!!!", "branches/release_01/" + PROJECT_NAME, ftiso.getRepositoryFolder());
 
