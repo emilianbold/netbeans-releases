@@ -77,13 +77,14 @@ public class NewGrailsProjectWizardIterator implements WizardDescriptor.Instanti
     
     public Set instantiate() throws IOException {
         Set<FileObject> resultSet = new HashSet<FileObject> ();
+
         File dirF = new File((String)wiz.getProperty("projectFolder"));
+
         if (dirF != null) {
             dirF = FileUtil.normalizeFile(dirF);
-        }
-        
-        FileObject dir = FileUtil.toFileObject(dirF);
-        resultSet.add (dir);
+            FileObject dir = FileUtil.toFileObject(dirF);
+            resultSet.add (dir);
+            }
         
         return resultSet;
     }

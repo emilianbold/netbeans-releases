@@ -71,8 +71,16 @@ import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import javax.swing.Action;
-import org.netbeans.modules.groovy.grailsproject.actions.NewControllerAction;
+import org.netbeans.modules.groovy.grailsproject.actions.*;
+import org.netbeans.modules.groovy.grailsproject.SourceCategory;
 import java.io.File;
+import org.openide.actions.NewAction;
+import org.openide.util.actions.SystemAction;
+import org.openide.util.datatransfer.NewType;
+import org.openide.util.HelpCtx;
+
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 /**
  * 
@@ -83,9 +91,26 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
     private static Image PACKAGE_BADGE = Utilities.loadImage( "org/netbeans/modules/groovy/grailsproject/resources/packageBadge.gif" ); // NOI18N
 
     private final SourceGroup g;
+    private SourceCategory category = SourceCategory.NONE;
+    
+    private  final Logger LOG = Logger.getLogger(TreeRootNode.class.getName());
+    
     
     public TreeRootNode(SourceGroup g) {
         this(DataFolder.findFolder(g.getRootFolder()), g);
+        
+        int lastSlash = g.getName().lastIndexOf(File.separator);
+        String dirName = g.getName().substring(lastSlash + 1);
+        
+   
+             if(dirName.startsWith("conf"))         { category = SourceCategory.CONFIGURATION; }
+        else if(dirName.startsWith("controllers"))  { category = SourceCategory.CONTROLLERS; }
+        else if(dirName.startsWith("domain"))       { category = SourceCategory.DOMAIN; }
+        else if(dirName.startsWith("i18n"))         { category = SourceCategory.MESSAGES; }
+        else if(dirName.startsWith("services"))     { category = SourceCategory.SERVICES; }
+        else if(dirName.startsWith("taglib"))       { category = SourceCategory.TAGLIB; }
+        else if(dirName.startsWith("util"))         { category = SourceCategory.UTIL; }
+        else if(dirName.startsWith("views"))        { category = SourceCategory.VIEWS; }
     }
     
     private TreeRootNode(DataFolder folder, SourceGroup g) {
@@ -110,15 +135,44 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
     
     public Action[] getActions(boolean context) {
         List<Action> result = new ArrayList<Action>();
-
         
-        if(g.getDisplayName().startsWith("Controllers")){
-            result.add(new NewControllerAction());
-            return result.toArray(new Action[result.size()]);
-                }
-    
-        return new Action[0];
+        switch(category) {
+            case CONFIGURATION: result.add(new NewConfigurationAction());
+                                break;
+            case CONTROLLERS:   result.add(new NewControllerAction());
+                                break;
+            case DOMAIN:        result.add(new NewDomainAction());
+                                break;                                
+            case MESSAGES:      result.add(new NewMessageAction());
+                                break;                                
+            case SERVICES:      result.add(new NewServiceAction());
+                                break;                                
+            case TAGLIB:        result.add(new NewTaglibAction());
+                                break;                                
+            case UTIL:          // result.add(new NewU());
+                                break;                                
+            case VIEWS:         result.add(new NewViewAction());
+                                break;                                
         }
+        
+        return result.toArray(new Action[result.size()]);
+        }
+    
+//        public NewType[] getNewTypes() {
+//        return new NewType[] { new NewType() {
+//            public String getName() {
+//                return "create somethin new...";
+//            }
+//            public HelpCtx getHelpCtx() {
+//                return new HelpCtx("help me");
+//            }
+//            public void create() {
+//                return;
+//            }
+//            } };
+//        }
+    
+    
     
     
     /** Copied from PackageRootNode with modifications. */
