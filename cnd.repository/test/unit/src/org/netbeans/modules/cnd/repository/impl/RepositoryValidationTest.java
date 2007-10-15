@@ -39,55 +39,28 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.modelimpl.trace;
+package org.netbeans.modules.cnd.repository.impl;
 
-import java.io.File;
-import java.util.List;
-import org.netbeans.modules.cnd.api.model.CsmModel;
-import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
+import junit.framework.Test;
+import junit.framework.TestSuite;
+import org.netbeans.modules.cnd.test.BaseTestSuite;
 
 /**
  *
- * @author Vladimir Voskresensky
+* @author Sergey Grinev
  */
-public final class TestModelHelper {
-    private TraceModel traceModel;
+public class RepositoryValidationTest extends BaseTestSuite {
     
-    /**
-     * Creates a new instance of TestModelHelper
-     */
-    public TestModelHelper() {
-        traceModel = new TraceModel();
-    }
-    
-    /*package-local*/ TraceModel getTraceModel() {
-        return traceModel;
-    }
-    
-    public void initParsedProject(String projectRoot, 
-            List<String> sysIncludes, List<String> usrIncludes) throws Exception {
-        traceModel.setIncludePaths(sysIncludes, usrIncludes);
-        traceModel.test(new String[]{projectRoot}, System.out, System.err);
-    } 
-    
-    public void initParsedProject(String projectRoot) throws Exception {
-        traceModel.test(new String[]{projectRoot}, System.out, System.err);
-        //traceModel.test(new File(projectRoot), System.out, System.err);
-    }     
-    
-    public ProjectBase getProject(){
-        return traceModel.getProject();
-    }
-    
-    public void resetProject() {
-	traceModel.resetProject();
+    public RepositoryValidationTest() {
+        super("Repository"); // NOI18N
+        
+        addTestSuite(RepositoryValidationGoldens.class);
+        addTestSuite(RepositoryValidation.class);
     }
 
-    public CsmModel getModel(){
-        return traceModel.getModel();
+    public static Test suite() {
+        TestSuite suite = new RepositoryValidationTest();
+        return suite;
     }
     
-    public void shutdown() {
-        traceModel.shutdown();
-    }
 }

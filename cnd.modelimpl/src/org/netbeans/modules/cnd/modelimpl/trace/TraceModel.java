@@ -1113,10 +1113,10 @@ public class TraceModel extends TraceModelBase {
     }
 
     /*package*/
-    void test(File file, PrintStream out, PrintStream err) throws Exception {
-	tracer.setPrintStream(out);
-	processArguments(new String[] { file.getAbsolutePath() });
-	doTest();
+    void test(String[] args, PrintStream out, PrintStream err) throws Exception {
+        tracer.setPrintStream(out);
+        processArguments(args);
+        doTest();
     }
     
     private TestResult test(NativeFileItem item)

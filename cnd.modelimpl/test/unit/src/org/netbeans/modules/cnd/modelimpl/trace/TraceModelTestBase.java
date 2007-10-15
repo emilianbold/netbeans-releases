@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.test.CndCoreTestUtils;
  * @author Vladimir Voskresensky
  */
 public class TraceModelTestBase extends ModelImplBaseTestCase {
+
     private TestModelHelper helper;
 
     public TraceModelTestBase(String testName) {
@@ -66,57 +67,56 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
         assert helper != null;
         return helper.getTraceModel();
     }
-    
+
     protected void performTest(String source) throws Exception {
-        performTest(source, source+".dat", source+".err"); // NOI18N
+        performTest(source, source + ".dat", source + ".err"); // NOI18N
     }
 
-    protected final ProjectBase getProject(){
+    protected final ProjectBase getProject() {
         return helper.getProject();
     }
 
-    protected final CsmProject getCsmProject(){
+    protected final CsmProject getCsmProject() {
         return helper.getProject();
     }
-    
+
     protected final void resetProject() {
-	helper.resetProject();
+        helper.resetProject();
     }
 
-    protected final CsmModel getModel(){
+    protected final CsmModel getModel() {
         return helper.getModel();
     }
-    
-    protected void preSetUp()  throws Exception {
+
+    protected void preSetUp() throws Exception {
         // init flags needed for file model tests before creating TraceModel
     }
-    
-    protected void postSetUp()  throws Exception {
+
+    protected void postSetUp() throws Exception {
         // init flags needed for file model tests
     }
-    
-    protected final void initParsedProject()  throws Exception {
+
+    protected final void initParsedProject() throws Exception {
         File projectDir = getTestCaseDataDir();
         helper.initParsedProject(projectDir.getAbsolutePath());
     }
-    
+
     protected final FileImpl getFileImpl(File file) {
         return helper.getProject().getFile(file);
     }
 
     protected final void reparseFile(CsmFile file) {
         if (file instanceof FileImpl) {
-            ((FileImpl)file).stateChanged(true);
+            ((FileImpl) file).stateChanged(true);
             try {
-                ((FileImpl)file).scheduleParsing(true);
-            } catch (InterruptedException ex){
+                ((FileImpl) file).scheduleParsing(true);
+            } catch (InterruptedException ex) {
                 ex.printStackTrace();
             }
         }
     }
 
-    
-    @Override 
+    @Override
     protected void setUp() throws Exception {
         preSetUp();
         super.setUp();
@@ -126,24 +126,29 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
         postSetUp();
     }
 
-    @Override 
+    @Override
     protected void tearDown() throws Exception {
         super.tearDown();
         helper.shutdown();
     }
-    
+
     protected final void performModelTest(File testFile, PrintStream streamOut, PrintStream streamErr) throws Exception {
-        getTraceModel().test(testFile, streamOut, streamErr);
+        performModelTest(new String[]{testFile.getAbsolutePath()}, streamOut, streamErr);
     }
-    
-    protected void doTest(File testFile, PrintStream streamOut, PrintStream streamErr, Object ... params) throws Exception {
+
+    protected final void performModelTest(String[] args, PrintStream streamOut, PrintStream streamErr) throws Exception {
+        getTraceModel().test(args, streamOut, streamErr);
+    }
+
+    protected void doTest(String[] args, PrintStream streamOut, PrintStream streamErr, Object... params) throws Exception {
         PrintStream oldOut = System.out;
         PrintStream oldErr = System.err;
         try {
             // redirect output and err
             System.setOut(streamOut);
             System.setErr(streamErr);
-            performModelTest(testFile, streamOut, streamErr);
+            performModelTest(args, streamOut, streamErr);
+            postTest(args);
         } finally {
             // restore err and out
             System.setOut(oldOut);
@@ -151,16 +156,25 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
         }
     }
     
-    protected void performTest(String source, String goldenDataFileName, String goldenErrFileName, Object ... params) throws Exception {
-        File workDir = getWorkDir();
-        File testFile = getDataFile(source);
+    protected void postTest(String[] args) {
         
+    }
+            
+
+    protected void performTest(String source, String goldenDataFileName, String goldenErrFileName, Object... params) throws Exception {
+        File testFile = getDataFile(source);
+        performTest(new String[]{testFile.getAbsolutePath()}, goldenDataFileName, goldenErrFileName, params);
+    }
+
+    protected void performTest(String[] args, String goldenDataFileName, String goldenErrFileName, Object... params) throws Exception {
+        File workDir = getWorkDir();
+
         File output = new File(workDir, goldenDataFileName);
         PrintStream streamOut = new PrintStream(output);
         File error = goldenErrFileName == null ? null : new File(workDir, goldenErrFileName);
         PrintStream streamErr = goldenErrFileName == null ? null : new PrintStream(error);
         try {
-            doTest(testFile, streamOut, streamErr, params);
+            doTest(args, streamOut, streamErr, params);
         } finally {
             // restore err and out
             streamOut.close();
@@ -168,8 +182,7 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
                 streamErr.close();
             }
         }
-        //System.out.println("finished testing " + testFile);    
-        
+        //System.out.println("finished testing " + testFile);
         boolean errTheSame = true;
         File goldenErrFile = null;
         File goldenErrFileCopy = null;
@@ -183,7 +196,7 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
                 CndCoreTestUtils.copyToWorkDir(goldenErrFile, goldenErrFileCopy); // NOI18N
             }
         }
-        
+
         boolean outTheSame = true;
         File goldenDataFile = getGoldenFile(goldenDataFileName);
         File goldenDataFileCopy = null;
@@ -200,5 +213,5 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
         } else {
             assertTrue("OUTPUT and ERR are different, see content of folder " + workDir, false); // NOI18N
         }
-    }    
+    }
 }

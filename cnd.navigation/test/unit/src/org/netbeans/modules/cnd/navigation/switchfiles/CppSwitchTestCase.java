@@ -63,7 +63,7 @@ public class CppSwitchTestCase extends TraceModelTestBase {
         performTest("", source + ".dat", source + ".err"); // NOI18N
     }
 
-    protected void performTest() throws Exception {
+    protected void performTest() {
         CsmProject project = getCsmProject();
         Collection<CsmFile> files = project.getAllFiles();
         for (CsmFile csmFile : files) {
@@ -78,19 +78,8 @@ public class CppSwitchTestCase extends TraceModelTestBase {
         }
     }
 
-    protected @Override void doTest(File testFile, PrintStream streamOut, PrintStream streamErr, Object... params) throws Exception {
-        PrintStream oldOut = System.out;
-        PrintStream oldErr = System.err;
-        try {
-            // redirect output and err
-            System.setOut(streamOut);
-            System.setErr(streamErr);
-            performModelTest(testFile, streamOut, streamErr);
-            performTest();
-        } finally {
-            // restore err and out
-            System.setOut(oldOut);
-            System.setErr(oldErr);
-        }
+    protected @Override void postTest(String[] args) {
+        performTest();
     }
+    
 }

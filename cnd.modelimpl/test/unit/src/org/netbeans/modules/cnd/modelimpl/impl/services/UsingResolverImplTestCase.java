@@ -96,6 +96,7 @@ public class UsingResolverImplTestCase extends TraceModelTestBase {
     ////////////////////////////////////////////////////////////////////////////
     // general staff
     
+    @Override
     protected void postSetUp() throws Exception {
         super.postSetUp();
         log("postSetUp preparing project.");
@@ -104,9 +105,12 @@ public class UsingResolverImplTestCase extends TraceModelTestBase {
         log("Test "+getName()+  "started");         
     }    
     
-    protected void doTest(File testFile, PrintStream streamOut, PrintStream streamErr, Object ... params) throws Exception {
-        FileImpl fileImpl = getFileImpl(testFile);
-        assertNotNull("csm file not found for " + testFile.getAbsolutePath(), fileImpl);
+    @Override
+    protected void doTest(String[] args, PrintStream streamOut, PrintStream streamErr, Object ... params) throws Exception {
+        assert args.length == 1;
+        String path = args[0];
+        FileImpl fileImpl = getFileImpl(new File(path));
+        assertNotNull("csm file not found for " + path, fileImpl);
         int line = (Integer) params[0];
         int column = (Integer) params[1];
         boolean onlyInProject = (Boolean) params[2];
