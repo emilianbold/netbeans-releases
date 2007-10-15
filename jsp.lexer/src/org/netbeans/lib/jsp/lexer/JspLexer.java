@@ -330,6 +330,7 @@ public class JspLexer implements Lexer<JspTokenId> {
                                 lexerState = ISI_EL;
                                 break;
                             default:
+                                input.backup(1); //put the read char back
                                 lexerState = lexerStateBeforeEL;
                                 lexerStateBeforeEL = INIT;
                         }
