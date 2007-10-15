@@ -189,4 +189,9 @@ public class OccurrencesFinderTest extends RubyTestBase {
         String caretLine = "x.each { |unusedblockvar1, usedbl^ockvar2|";
         checkOccurrences("testfiles/unused.rb", caretLine);
     }
+
+    public void testYieldNode() throws Exception {
+        String caretLine = "def exit_t^est";
+        checkOccurrences("testfiles/yieldnode.rb", caretLine);
+    }
 }
