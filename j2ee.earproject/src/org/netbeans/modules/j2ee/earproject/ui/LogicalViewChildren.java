@@ -46,6 +46,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ant.AntArtifact;
@@ -57,7 +58,6 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.util.RequestProcessor;
 
 /**
  * List of children of a containing node.
@@ -69,22 +69,24 @@ import org.openide.util.RequestProcessor;
 public class LogicalViewChildren extends Children.Keys<String>  implements AntProjectListener {
     
     private final AntProjectHelper model;
-    private java.util.Map<String, VisualClassPathItem> vcpItems;
+    private final java.util.Map<String, VisualClassPathItem> vcpItems;
     
     public LogicalViewChildren(AntProjectHelper model) {
         if (null == model) {
             throw new IllegalArgumentException("model cannot be null"); // NOI18N
         }
         this.model = model;
+        vcpItems = new HashMap<String, VisualClassPathItem>();
     }
     
     @Override
     protected void addNotify() {
         super.addNotify();
+        // there has been race condition here - incorrect order of listener & update
+        // listen to changes in the model:
+        model.addAntProjectListener(this);
         // set the children to use:
         updateKeys();
-        // and listen to changes in the model too:
-        model.addAntProjectListener(this);
     }
     
     private void updateKeys() {
@@ -100,20 +102,22 @@ public class LogicalViewChildren extends Children.Keys<String>  implements AntPr
         
         EarProject earProject = p.getLookup().lookup(EarProject.class);
         List<VisualClassPathItem> vcpis = earProject.getProjectProperties().getJarContentAdditional();
-        vcpItems = new HashMap<String, VisualClassPathItem>();
-        for (VisualClassPathItem vcpi : vcpis) {
-            Object obj = vcpi.getObject();
-            if (!(obj instanceof AntArtifact)) {
-                continue;
+        synchronized (vcpItems) {
+            vcpItems.clear();
+            for (VisualClassPathItem vcpi : vcpis) {
+                Object obj = vcpi.getObject();
+                if (!(obj instanceof AntArtifact)) {
+                    continue;
+                }
+                AntArtifact aa = (AntArtifact) obj;
+                Project vcpiProject = aa.getProject();
+                J2eeModuleProvider jmp = vcpiProject.getLookup().lookup(J2eeModuleProvider.class);
+                if (null != jmp) {
+                    vcpItems.put(vcpi.getRaw(), vcpi);
+                }
             }
-            AntArtifact aa = (AntArtifact) obj;
-            Project vcpiProject = aa.getProject();
-            J2eeModuleProvider jmp = vcpiProject.getLookup().lookup(J2eeModuleProvider.class);
-            if (null != jmp) {
-                vcpItems.put(vcpi.getRaw(), vcpi);
-            }
+            setKeys(vcpItems.keySet());
         }
-        setKeys(vcpItems.keySet());
     }
     
     @Override
@@ -124,8 +128,10 @@ public class LogicalViewChildren extends Children.Keys<String>  implements AntPr
     }
     
     protected Node[] createNodes(String key) {
-        VisualClassPathItem vcpItem = vcpItems.get(key);
-        return new Node[] { new ModuleNode(vcpItem, model.getProjectDirectory() ) };
+        synchronized (vcpItems) {
+            VisualClassPathItem vcpItem = vcpItems.get(key);
+            return new Node[] { new ModuleNode(vcpItem, model.getProjectDirectory() ) };
+        }
     }
     
     public void modelChanged(Object ev) {
@@ -136,7 +142,7 @@ public class LogicalViewChildren extends Children.Keys<String>  implements AntPr
     public void configurationXmlChanged(AntProjectEvent ape) {
         // unsafe to call Children.setKeys() while holding a mutext
         // here the caller holds ProjectManager.mutex() read access
-        RequestProcessor.getDefault().post(new Runnable() {
+        SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 updateKeys();
             }
@@ -146,7 +152,7 @@ public class LogicalViewChildren extends Children.Keys<String>  implements AntPr
     public void propertiesChanged(final AntProjectEvent ape) {
         // unsafe to call Children.setKeys() while holding a mutext
         // here the caller holds ProjectManager.mutex() read access
-        RequestProcessor.getDefault().post(new Runnable() {
+        SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 updateKeys();
             }
