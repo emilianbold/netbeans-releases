@@ -294,11 +294,7 @@ public class Util {
     }
     
     public static String pluralize(String name) {
-        if (name.endsWith("s") && ! name.endsWith("ss")) {
-            name = Inflector.getInstance().singularize(name);
-        }
-        
-        return Inflector.getInstance().pluralize(name);
+        return Inflector.getInstance().pluralize(singularize(name));
     }
     
     public static String getPluralName(EntityResourceBean bean) {
