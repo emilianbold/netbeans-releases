@@ -159,7 +159,7 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
 //            }
             if (isOuterRef) {
                 fireProgressListenerStop();
-                return new Problem(false, getString("ERR_ReferencesFound"), ProblemDetailsFactory.createProblemDetails(new ProblemDetailsImplemen(new WhereUsedQueryUI(elem!=null?elem.getHandle():null, "!!!TODO!!!", refactoring), inner)));
+                return new Problem(false, getString("ERR_ReferencesFound"), ProblemDetailsFactory.createProblemDetails(new ProblemDetailsImplemen(new WhereUsedQueryUI(elem!=null?elem.getHandle():null, elem!=null?elem.toString():"", refactoring), inner)));
             }
         }
         
