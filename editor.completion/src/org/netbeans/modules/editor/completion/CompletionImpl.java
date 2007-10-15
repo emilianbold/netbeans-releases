@@ -837,6 +837,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
                 }
                 
                 int selectedIndex = getCompletionPreSelectionIndex(sortedResultItems);
+                getActiveComponent().putClientProperty("completion-visible", Boolean.TRUE);
                 layout.showCompletion(noSuggestions ? Collections.singletonList(NO_SUGGESTIONS) : sortedResultItems, displayTitle, displayAnchorOffset, CompletionImpl.this, displayAdditionalItems ? completionShortcut : null, selectedIndex);
                 pleaseWaitDisplayed = false;
 
@@ -909,6 +910,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         if (!completionOnly && hidePerformed && CompletionSettings.INSTANCE.documentationAutoPopup()) {
             hideDocumentation(true);
         }
+        getActiveComponent().putClientProperty("completion-visible", Boolean.FALSE);
         getActiveComponent().putClientProperty("completion-active", Boolean.FALSE);
         return hidePerformed;
     }

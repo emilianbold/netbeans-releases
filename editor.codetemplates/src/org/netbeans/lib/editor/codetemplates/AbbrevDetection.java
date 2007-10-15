@@ -99,7 +99,7 @@ PropertyChangeListener, KeyListener, CaretListener {
     private static final String ABBREV_IGNORE_MODIFICATION_DOC_PROPERTY
             = "abbrev-ignore-modification"; // NOI18N
 
-    private static final String COMPLETION_ACTIVE = "completion-active"; // NOI18N
+    private static final String COMPLETION_VISIBLE = "completion-visible"; // NOI18N
 
     private static final String SURROUND_WITH = NbBundle.getMessage(SurroundWithFix.class, "TXT_SurroundWithHint_Label"); //NOI18N
     private static final int SURROUND_WITH_DELAY = 250;
@@ -243,12 +243,13 @@ PropertyChangeListener, KeyListener, CaretListener {
     }
     
     private boolean isAbbrevDisabled() {
-        return org.netbeans.editor.Abbrev.isAbbrevDisabled(component) || Boolean.TRUE.equals(component.getClientProperty(COMPLETION_ACTIVE));
+        return org.netbeans.editor.Abbrev.isAbbrevDisabled(component) || Boolean.TRUE.equals(component.getClientProperty(COMPLETION_VISIBLE));
     }
     
     private void checkExpansionKeystroke(KeyEvent evt) {
         if (abbrevEndPosition != null && component != null
-                && component.getCaretPosition() == abbrevEndPosition.getOffset()
+            && component.getCaretPosition() == abbrevEndPosition.getOffset()
+            && !isAbbrevDisabled()
         ) {
             Document doc = component.getDocument();
             CodeTemplateManagerOperation operation = CodeTemplateManagerOperation.get(doc);
