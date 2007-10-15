@@ -198,14 +198,14 @@ public class PaletteCategoryNode
     }
     
     public Node[] getItemNodes() {
-    	DataObject[] items = mFolder.getChildren();
-    	ArrayList list = new ArrayList();
-    	
+        DataObject[] items = mFolder.getChildren();
+        ArrayList list = new ArrayList();
+        
         for (int i = 0; i < items.length; i++) {
-        	DataObject dObj = items[i];
+            DataObject dObj = items[i];
 
             if (dObj != null) {
-            	PaletteItemNode itemNode = new PaletteItemNode(dObj.getNodeDelegate());
+                PaletteItemNode itemNode = new PaletteItemNode(dObj.getNodeDelegate());
                 list.add(itemNode);
             }
 
@@ -604,7 +604,6 @@ public class PaletteCategoryNode
      *
      *
      * @author
-     * @version $Reversion$
      */
     private class BeanPaste extends org.openide.util.datatransfer.PasteType {
 
