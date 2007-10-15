@@ -102,18 +102,28 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             String [] commands = null;
             ExecutionResults results = null;
             progress.setDetail(PROGRESS_DETAIL_RUNNING_JDK_INSTALLER);
+            boolean jreInstallation = false;
             
             if(SystemUtils.isWindows()) {
                 results = runJDKInstallerWindows(location, installer, logFile, progress);
+                if(results.getErrorCode()==0) {
+                    jreInstallation = true;
+                    progress.addPercentage(30);
+                    progress.setDetail(PROGRESS_DETAIL_RUNNING_JRE_INSTALLER);
+                    final File jreInstaller = findJREWindowsInstaller();
+                    if(jreInstaller!=null) {
+                        results = runJREInstallerWindows(jreInstaller);
+                    }
+                }
             } else {
                 results = runJDKInstallerUnix(location, installer, logFile, progress);
             }
             
-            
             if(results.getErrorCode()!=0) {
                 throw new InstallationException(
                         ResourceUtils.getString(ConfigurationLogic.class,
-                        ERROR_INSTALL_SCRIPT_RETURN_NONZERO_KEY,
+                        (jreInstallation) ? ERROR_JRE_INSTALL_SCRIPT_RETURN_NONZERO_KEY
+                        : ERROR_JDK_INSTALL_SCRIPT_RETURN_NONZERO_KEY,
                         StringUtils.EMPTY_STRING + results.getErrorCode()));
             }
         }  finally {
@@ -153,11 +163,11 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         } catch (NativeException e) {
             throw new InstallationException(
                     ResourceUtils.getString(ConfigurationLogic.class,
-                    ERROR_INSTALL_ERROR_KEY),e);
+                    ERROR_INSTALL_JDK_ERROR_KEY),e);
         } catch (IOException e) {
             throw new InstallationException(
                     ResourceUtils.getString(ConfigurationLogic.class,
-                    ERROR_INSTALL_ERROR_KEY),e);
+                    ERROR_INSTALL_JDK_ERROR_KEY),e);
         }
     }
     
@@ -191,7 +201,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             try {
                 for(File dir : jdkDirs) {
                     for(File f : dir.listFiles()) {
-                        SystemUtils.executeCommand("mv", "-f","-v", f.getPath(), location.getAbsolutePath());                        
+                        SystemUtils.executeCommand("mv", "-f","-v", f.getPath(), location.getAbsolutePath());
                     }
                     FileUtils.deleteFile(dir);
                 }
@@ -203,7 +213,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         } catch (IOException e) {
             throw new InstallationException(
                     ResourceUtils.getString(ConfigurationLogic.class,
-                    ERROR_INSTALL_ERROR_KEY),e);
+                    ERROR_INSTALL_JDK_ERROR_KEY),e);
         } finally {
             if(yesFile!=null) {
                 try {
@@ -215,6 +225,99 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         }
         return results;
     }
+    
+    private ExecutionResults runJREInstallerWindows(File jreInstaller) throws InstallationException {
+        final String [] command = new String [] {
+            "msiexec.exe",
+            "/qn",
+            "/i",
+            jreInstaller.getPath(),
+            "IEXPLORER=1",
+            "MOZILLA=1"
+        };
+        try {
+            SystemUtils.setEnvironmentVariable("TEMP",
+                    SystemUtils.getTempDirectory().getAbsolutePath(),
+                    EnvironmentScope.PROCESS,
+                    false);
+            SystemUtils.setEnvironmentVariable("TMP",
+                    SystemUtils.getTempDirectory().getAbsolutePath(),
+                    EnvironmentScope.PROCESS,
+                    false);
+            
+            return SystemUtils.executeCommand(command);
+        } catch (IOException e) {
+            throw new InstallationException(
+                    ResourceUtils.getString(ConfigurationLogic.class,
+                    ERROR_INSTALL_JRE_ERROR_KEY),e);
+        }  catch (NativeException e) {
+            throw new InstallationException(
+                    ResourceUtils.getString(ConfigurationLogic.class,
+                    ERROR_INSTALL_JRE_ERROR_KEY),e);
+        }
+    }
+    
+    /** Find path to public JRE installer ie. jre.msi file WITHOUT file itself.
+     * @return null if jre.msi file for given JRE version is not found
+     */
+    private File findJREWindowsInstaller() {
+        String installerName = null;
+        
+        File baseImagesDir  = new File(parseString("$E{CommonProgramFiles}"),
+                "Java\\Update\\Base Images");
+        if (!baseImagesDir.exists()) {
+            LogManager.log("... cannot find images dir : " + baseImagesDir);
+            return null;
+        }
+        
+        File [] files = baseImagesDir.listFiles();
+        File jdkDirFile = null;
+        for (int i = 0; i < files.length; i++) {
+            if (files[i].getName().startsWith(JDK_PATCH_DIRECTORY)) {
+                LogManager.log("... using JDK dir : " + files[i]);
+                jdkDirFile = files[i];
+                break;
+            }
+        }
+        if (jdkDirFile==null) {
+            LogManager.log("... cannot find default JDK dir");
+            return null;
+        }
+        if (!jdkDirFile.exists()) {
+            LogManager.log("... default JDK directory does not exist : " + jdkDirFile);
+            return null;
+        }
+        
+        files = jdkDirFile.listFiles();
+        File patchDirFile = null;
+        
+        for (int i = 0; i < files.length; i++) {
+            LogManager.log("... investigating : " + files [i]);
+            if (files[i].getName().startsWith("patch-" + JDK_DEFAULT_INSTALL_DIR)) {
+                patchDirFile = files[i];
+                LogManager.log("... using JDK patch dir : " + patchDirFile);
+                break;
+            }
+        }
+        if (patchDirFile==null) {
+            LogManager.log("... cannot find default JDK patch dir");
+            return null;
+        }
+        if (!patchDirFile.exists()) {
+            LogManager.log("... default JDK patch directory does not exist : " + patchDirFile);
+            return null;
+        }
+        File jreInstallerFile = new File(patchDirFile,
+                JRE_MSI_NAME);
+        if (!jreInstallerFile.exists()) {
+            LogManager.log("... JRE installer doesn`t exist : " + jreInstallerFile);
+            return null;
+        }
+        LogManager.log("... found JRE windows installer at " + jreInstallerFile.getPath());
+        return jreInstallerFile;
+    }
+    
+    
     @Override
     public boolean registerInSystem() {
         return false;
@@ -262,13 +365,29 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     public static final String JDK_INSTALLER_FILE_NAME =
             ResourceUtils.getString(ConfigurationLogic.class,
             "CL.jdk.installer.file");
-    public static final String ERROR_INSTALL_SCRIPT_RETURN_NONZERO_KEY =
-            "CL.error.installation.return.nonzero";//NOI18N
-    public static final String ERROR_INSTALL_ERROR_KEY =
-            "CL.error.install.exception";//NOI18N
+    public static final String ERROR_JDK_INSTALL_SCRIPT_RETURN_NONZERO_KEY =
+            "CL.error.jdk.installation.return.nonzero";//NOI18N
+    public static final String ERROR_JRE_INSTALL_SCRIPT_RETURN_NONZERO_KEY =
+            "CL.error.jre.installation.return.nonzero";//NOI18N
+    public static final String ERROR_INSTALL_JDK_ERROR_KEY =
+            "CL.error.install.jdk.exception";//NOI18N
+    public static final String ERROR_INSTALL_JRE_ERROR_KEY =
+            "CL.error.install.jre.exception";//NOI18N
     public static final String ERROR_INSTALL_CANNOT_MOVE_DATA_KEY =
             "CL.error.install.cannot.move.data";//NOI18N
     public static final String PROGRESS_DETAIL_RUNNING_JDK_INSTALLER =
             ResourceUtils.getString(ConfigurationLogic.class,
             "CL.progress.detail.install.jdk");
+    public static final String PROGRESS_DETAIL_RUNNING_JRE_INSTALLER =
+            ResourceUtils.getString(ConfigurationLogic.class,
+            "CL.progress.detail.install.jre");
+    
+    public static final String JDK_PATCH_DIRECTORY =
+            ResourceUtils.getString(ConfigurationLogic.class,
+            "CL.jdk.patch.directory");//NOI18N
+    public static final String JDK_DEFAULT_INSTALL_DIR =
+            ResourceUtils.getString(ConfigurationLogic.class,
+            "CL.jdk.install.dir");//NOI18N
+    public static final String JRE_MSI_NAME =
+            "jre.msi";//NOI18N
 }
