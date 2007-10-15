@@ -34,6 +34,7 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.Scope;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
@@ -68,6 +69,7 @@ import javax.swing.text.Document;
 import javax.swing.text.Position;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.ElementUtilities.ElementAcceptor;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtils;
@@ -278,6 +280,44 @@ public class ConvertAnonymousToInner extends AbstractHint {
         return tp1.getLeaf() == tp2.getLeaf();
     }
     
+    private static String generateName(CompilationInfo info, TreePath newClassToConvert, String prototype) {
+        Scope s = info.getTrees().getScope(newClassToConvert);
+        Integer extension = null;
+        
+        if (s == null) return prototype + "Impl"; //NOI18N
+        
+        while (true) {
+            String currentProposal = prototype + "Impl" + (extension == null ? "" : extension.toString()); //NOI18N
+            Scope currentScope = s;
+            boolean found = false;
+            
+            OUTER : while (currentScope != null) {
+                for (Element e : info.getElementUtilities().getLocalMembersAndVars(s, new ElementAcceptor() {
+                    public boolean accept(Element e, TypeMirror type) {
+                        return true;
+                    }
+                })) {
+                    if (e.getKind().isClass() || e.getKind().isInterface()) {
+                        String sn = e.getSimpleName().toString();
+                        
+                        if (currentProposal.equals(sn)) {
+                            found = true;
+                            break OUTER;
+                        }
+                    }
+                }
+                
+                currentScope = currentScope.getEnclosingScope();
+            }
+            
+            if (!found) {
+                return currentProposal;
+            }
+            
+            extension = extension != null ? extension + 1 : 1;
+        }
+    }
+    
     static void convertAnonymousToInner(WorkingCopy copy, TreePath newClassToConvert) {
         TreeMaker make = copy.getTreeMaker();
         NewClassTree nct = (NewClassTree) newClassToConvert.getLeaf();
@@ -380,7 +420,7 @@ public class ConvertAnonymousToInner extends AbstractHint {
         members.add(constr);
         members.addAll(oldMembers);
         
-        String newClassName = superTypeElement.getSimpleName().toString() + "Impl"; //NOI18N
+        String newClassName = generateName(copy, newClassToConvert, superTypeElement.getSimpleName().toString());
         
         ClassTree clazz = make.Class(classModifiers, newClassName, Collections.<TypeParameterTree>emptyList(), superTypeElement.getKind().isClass() ? superTypeTree : null, superTypeElement.getKind().isClass() ? Collections.<Tree>emptyList() : Collections.<Tree>singletonList(superTypeTree), members);
         

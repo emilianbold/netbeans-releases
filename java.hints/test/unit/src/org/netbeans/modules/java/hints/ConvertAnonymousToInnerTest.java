@@ -451,6 +451,72 @@ public class ConvertAnonymousToInnerTest extends NbTestCase {
         "}\n");
     }
     
+    public void test106801a() throws Exception {
+        performTest(
+        "package hierbas.del.litoral;\n\n" +
+        "public class TestClass {\n" +
+        "    public void test() {\n" +
+        "        new Runnable() {\n" +
+        "            public void run() {\n" +
+        "            }\n" +
+        "        };\n" +
+        "    }\n" +
+        "    private class RunnableImpl implements Runnable {\n" +
+        "    }\n" +
+        "}\n",
+        "package hierbas.del.litoral;\n\n" +
+        "public class TestClass {\n" +
+        "    public void test() {\n" +
+        "    new RunnableImpl1();\n" +
+        "    }\n" +
+        "    private class RunnableImpl implements Runnable {\n" +
+        "    }\n" +
+        "    private static class RunnableImpl1 implements Runnable {\n" +
+        "        public RunnableImpl1() {\n" + 
+        "        }\n" + 
+        "        public void run() {\n" +
+        "        }\n" +
+        "    }\n" +
+        "}\n");
+    }
+    
+    public void test106801b() throws Exception {
+        performTest(
+        "package hierbas.del.litoral;\n\n" +
+        "public class TestClass {\n" +
+        "    public void test() {\n" +
+        "        new Runnable() {\n" +
+        "            public void run() {\n" +
+        "            }\n" +
+        "        };\n" +
+        "    }\n" +
+        "    private class RunnableImpl implements Runnable {\n" +
+        "    }\n" +
+        "    private class RunnableImpl1 implements Runnable {\n" +
+        "    }\n" +
+        "    private class RunnableImpl2 implements Runnable {\n" +
+        "    }\n" +
+        "}\n",
+        "package hierbas.del.litoral;\n\n" +
+        "public class TestClass {\n" +
+        "    public void test() {\n" +
+        "    new RunnableImpl3();\n" +
+        "    }\n" +
+        "    private class RunnableImpl implements Runnable {\n" +
+        "    }\n" +
+        "    private class RunnableImpl1 implements Runnable {\n" +
+        "    }\n" +
+        "    private class RunnableImpl2 implements Runnable {\n" +
+        "    }\n" +
+        "    private static class RunnableImpl3 implements Runnable {\n" +
+        "        public RunnableImpl3() {\n" + 
+        "        }\n" + 
+        "        public void run() {\n" +
+        "        }\n" +
+        "    }\n" +
+        "}\n");
+    }
+    
     private void performTest(String test, String golden) throws Exception {
         File testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, test);
