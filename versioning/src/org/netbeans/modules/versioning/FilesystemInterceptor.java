@@ -354,7 +354,7 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
 
         // TODO: special hotfix for #95243        
         public DelegatingInterceptor(Collection<VCSInterceptor> interceptors, VCSInterceptor lhInterceptor, File file, File to, boolean isDirectory) {
-            this.interceptors = interceptors != null ? interceptors : Collections.singleton(nullVCSInterceptor);
+            this.interceptors = interceptors != null && interceptors.size() > 0 ? interceptors : Collections.singleton(nullVCSInterceptor);
             this.interceptor = this.interceptors.iterator().next(); 
             this.lhInterceptor = lhInterceptor != null ? lhInterceptor : nullVCSInterceptor;
             this.file = file;
