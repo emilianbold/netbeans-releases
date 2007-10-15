@@ -76,6 +76,7 @@ import org.jruby.ast.MethodDefNode;
 import org.jruby.ast.ModuleNode;
 import org.jruby.ast.NewlineNode;
 import org.jruby.ast.Node;
+import org.jruby.ast.NodeTypes;
 import org.jruby.ast.ReturnNode;
 import org.jruby.ast.SClassNode;
 import org.jruby.ast.SymbolNode;
@@ -532,7 +533,7 @@ public class OccurrencesFinder implements org.netbeans.api.gsf.OccurrencesFinder
     @SuppressWarnings("unchecked")
     private void highlightExitPoints(Node node, Map<OffsetRange, ColoringAttributes> highlights,
         CompilationInfo info) {
-        if (node instanceof ReturnNode) {
+        if (node.nodeId == NodeTypes.RETURNNODE) {
             OffsetRange range = AstUtilities.getRange(node);
             try {
                 BaseDocument doc = (BaseDocument)info.getDocument();
@@ -547,7 +548,8 @@ public class OccurrencesFinder implements org.netbeans.api.gsf.OccurrencesFinder
                 Exceptions.printStackTrace(ioe);
             }
             highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
-        } else if (node instanceof YieldNode) {
+        } else if (node.nodeId == NodeTypes.YIELDNODE) {
+            // Workaround JRuby AST position error
             /* Yield in the following code has the wrong offsets in JRuby
               if component.size == 1
                 yield component.first
@@ -556,27 +558,11 @@ public class OccurrencesFinder implements org.netbeans.api.gsf.OccurrencesFinder
               end
              */
             try {
-                BaseDocument doc = (BaseDocument)info.getDocument();
-                ISourcePosition pos = node.getPosition();
-
-                int offset = pos.getStartOffset();
-                int lineStart = Utilities.getRowStart(doc, offset);
-                int lineLength = Utilities.getRowEnd(doc, offset) - lineStart;
-                String text = doc.getText(lineStart, lineLength);
-                int index = text.indexOf("yield"); // NOI18N
-
-                if ((index == -1) || (text.charAt(offset - lineStart) == 'y')) {
-                    // The positions might be correct
-                    OffsetRange range = AstUtilities.getRange(node);
-                    highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
-                } else {
-                    // Correct position
-                    OffsetRange range =
-                        new OffsetRange(lineStart + index, lineStart + index + "yield".length()); // NOI18N
+                OffsetRange range = AstUtilities.getYieldNodeRange((YieldNode)node, 
+                        (BaseDocument)info.getDocument());
+                if (range != OffsetRange.NONE) {
                     highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
                 }
-            } catch (BadLocationException ble) {
-                Exceptions.printStackTrace(ble);
             } catch (IOException ioe) {
                 Exceptions.printStackTrace(ioe);
             }

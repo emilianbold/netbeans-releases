@@ -1,0 +1,3 @@
+              |>MARK_OCCURRENCES:if component.size == 1<|
+                |>MARK_OCCURRENCES:yield<| component.first
+                |>MARK_OCCURRENCES:raise<| Cyclic.new("topological sort failed: #{component.inspect}")

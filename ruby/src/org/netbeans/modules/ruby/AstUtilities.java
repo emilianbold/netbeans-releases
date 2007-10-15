@@ -79,6 +79,7 @@ import org.jruby.ast.SClassNode;
 import org.jruby.ast.StrNode;
 import org.jruby.ast.SymbolNode;
 import org.jruby.ast.VCallNode;
+import org.jruby.ast.YieldNode;
 import org.jruby.ast.types.INameNode;
 import org.jruby.lexer.yacc.ISourcePosition;
 import org.jruby.util.ByteList;
@@ -1042,6 +1043,47 @@ public class AstUtilities {
         OffsetRange range = new OffsetRange(pos.getStartOffset(), pos.getEndOffset());
 
         return range;
+    }
+    
+    /**
+     * Get the range of a YieldNode. This is a workaround for offset problems
+     * in the JRuby AST.
+     * 
+     * @param node The YieldNode whose offset range we want
+     * @param doc The BaseDocument for the code containing the yield node
+     * @return The offset range of the yield node
+     */
+    public static OffsetRange getYieldNodeRange(YieldNode node, BaseDocument doc) {
+        /* Yield in the following code has the wrong offsets in JRuby
+          if component.size == 1
+            yield component.first
+          else
+            raise Cyclic.new("topological sort failed: #{component.inspect}")
+          end
+         */
+        try {
+            ISourcePosition pos = node.getPosition();
+
+            int offset = pos.getStartOffset();
+            int lineStart = Utilities.getRowStart(doc, offset);
+            int lineLength = Utilities.getRowEnd(doc, offset) - lineStart;
+            String text = doc.getText(lineStart, lineLength);
+            int index = text.indexOf("yield"); // NOI18N
+
+            if ((index == -1) || (text.charAt(offset - lineStart) == 'y')) {
+                // The positions might be correct
+                return AstUtilities.getRange(node);
+            } else {
+                // Correct position
+                OffsetRange range =
+                    new OffsetRange(lineStart + index, lineStart + index + "yield".length()); // NOI18N
+                return range;
+            }
+        } catch (BadLocationException ble) {
+            Exceptions.printStackTrace(ble);
+        }
+
+        return OffsetRange.NONE;
     }
 
     /**
