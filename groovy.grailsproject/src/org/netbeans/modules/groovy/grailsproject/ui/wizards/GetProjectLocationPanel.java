@@ -22,9 +22,15 @@ import javax.swing.text.Document;
  * @author  schmidtm
  */
 public class GetProjectLocationPanel extends WizardSettingsPanel implements DocumentListener {
+    GetProjectLocationStep parentStep;
     
     boolean valid(WizardDescriptor settings) {
-        return true;
+        
+        if(projectNameTextField.getText().length() > 0 && (new File(projectLocationTextField.getText()).isDirectory())) {
+            return true;
+            }
+        
+            return false;
         }
     
     void read (WizardDescriptor d) {
@@ -43,7 +49,8 @@ public class GetProjectLocationPanel extends WizardSettingsPanel implements Docu
     
     
     /** Creates new form NewGrailsProjectPanel */
-    public GetProjectLocationPanel() {
+    public GetProjectLocationPanel(GetProjectLocationStep parentStep) {
+        this.parentStep = parentStep;
         initComponents();
         
         // set the default project directory 
@@ -201,6 +208,8 @@ public class GetProjectLocationPanel extends WizardSettingsPanel implements Docu
             String projectFolder = projectLocationTextField.getText(); 
              
             getProjectFolderTextField().setText( projectFolder + File.separatorChar + projectName );
+            
+            parentStep.fireChangeEvent();
             
         }                
   

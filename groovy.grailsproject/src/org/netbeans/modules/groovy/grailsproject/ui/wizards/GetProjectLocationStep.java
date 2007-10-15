@@ -52,7 +52,7 @@ public class GetProjectLocationStep implements  WizardDescriptor.Panel,
     
     public Component getComponent() {
         if (component == null) {
-            component = new GetProjectLocationPanel();
+            component = new GetProjectLocationPanel(this);
         }
         return component;
     }
