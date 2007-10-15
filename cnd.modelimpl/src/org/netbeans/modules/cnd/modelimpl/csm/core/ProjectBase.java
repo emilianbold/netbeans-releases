@@ -709,9 +709,13 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             projectFiles = new HashSet<String>();
             for( NativeFileItem item : nativeProject.getAllHeaderFiles() ) {
                 projectFiles.add(item.getFile().getAbsolutePath());
+		//this would be a workaround for #116706 Code assistance do not recognize changes in file
+		//projectFiles.add(item.getFile().getCanonicalPath());
             }
             for( NativeFileItem item : nativeProject.getAllSourceFiles() ) {
                 projectFiles.add(item.getFile().getAbsolutePath());
+		//this would be a workaround for #116706 Code assistance do not recognize changes in file
+		//projectFiles.add(item.getFile().getCanonicalPath());
             }
         }
         
