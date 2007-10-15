@@ -122,8 +122,8 @@ public class FormDesignerOperator extends TopComponentOperator {
     public JToggleButtonOperator tbSource() {
         if(_tbSource == null) {
             _tbSource = new JToggleButtonOperator(findParentTopComponent(),
-                                    Bundle.getString("org.netbeans.modules.form.Bundle", 
-                                                     "CTL_SourceTabCaption"));
+                                    Bundle.getStringTrimmed("org.netbeans.modules.form.Bundle", 
+                                                            "CTL_SourceTabCaption"));
         }
         return _tbSource;
     }
@@ -134,8 +134,8 @@ public class FormDesignerOperator extends TopComponentOperator {
     public JToggleButtonOperator tbDesign() {
         if(_tbDesign == null) {
             _tbDesign = new JToggleButtonOperator(findParentTopComponent(),
-                                    Bundle.getString("org.netbeans.modules.form.Bundle", 
-                                                     "CTL_DesignTabCaption"));
+                                    Bundle.getStringTrimmed("org.netbeans.modules.form.Bundle", 
+                                                            "CTL_DesignTabCaption"));
         }
         return _tbDesign;
     }
