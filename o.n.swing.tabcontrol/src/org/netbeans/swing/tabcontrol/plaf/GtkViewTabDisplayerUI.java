@@ -84,7 +84,7 @@ public final class GtkViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
     private static final int BUMP_X_PAD = 0;
     private static final int BUMP_WIDTH = 0;
     private static final int TXT_X_PAD = 3;
-    private static final int TXT_Y_PAD = 6;
+    private static final int TXT_Y_PAD = 5;
 
     private static final int ICON_X_PAD = 2;
     
@@ -160,7 +160,6 @@ public final class GtkViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
                                    int y, int width, int height) {
         // substract lower border
         height--;
-        y -= 2; //align to center
         FontMetrics fm = getTxtFontMetrics();
         // setting font already here to compute string width correctly
         g.setFont(getTxtFont());
