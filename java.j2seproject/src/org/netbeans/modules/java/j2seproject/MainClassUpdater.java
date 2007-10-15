@@ -48,7 +48,7 @@ import java.util.Collection;
 import javax.lang.model.element.TypeElement;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationController;
@@ -73,6 +73,8 @@ import org.openide.util.RequestProcessor;
  * @author Tomas Zezula
  */
 public class MainClassUpdater extends FileChangeAdapter implements PropertyChangeListener {
+    
+    private static final RequestProcessor RP = new RequestProcessor ("main-class-updater",1);       //NOI18N
     
     private final Project project;
     private final PropertyEvaluator eval;
@@ -106,7 +108,12 @@ public class MainClassUpdater extends FileChangeAdapter implements PropertyChang
     
     public void propertyChange(PropertyChangeEvent evt) {
         if (this.mainClassPropName.equals(evt.getPropertyName())) {
-            this.addFileChangeListener ();
+            //Go out of the ProjectManager.MUTEX, see #118722
+            RP.post(new Runnable () {
+                public void run() {
+                    MainClassUpdater.this.addFileChangeListener ();
+                }
+            });            
         }
     }
     
@@ -179,10 +186,7 @@ public class MainClassUpdater extends FileChangeAdapter implements PropertyChang
                     ClassPath compileCp = ClassPath.getClassPath(roots[0], ClassPath.COMPILE);
                     final ClasspathInfo cpInfo = ClasspathInfo.create(bootCp, compileCp, sourcePath);
                     JavaSource js = JavaSource.create(cpInfo);
-                    js.runWhenScanFinished(new CancellableTask<CompilationController>() {
-
-                        public void cancel() {
-                        }
+                    js.runWhenScanFinished(new Task<CompilationController>() {
 
                         public void run(CompilationController c) throws Exception {
                             TypeElement te = c.getElements().getTypeElement(mainClassName);
