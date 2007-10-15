@@ -135,7 +135,7 @@ public class Namespace extends NamedElement implements INamespace{
 					{
 						curSpace.setDirty(true);
 					}
-					getProject().setDirty(true);
+                                        this.getName();
 					addElement(elem);
 					helper.dispatchElementAddedToNamespace(this, elem);
 				}
