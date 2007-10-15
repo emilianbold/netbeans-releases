@@ -1,10 +1,3 @@
-Name: FreeMarker
-Version: 2.3.8
-License: freemarker
-Origin: http://mesh.dl.sourceforge.net/sourceforge/freemarker/freemarker-2.3.8.tar.gz
-OSR: 5726
-Description: Template engine
-Comment: contents trimmed with pattern: freemarker/ext/* freemarker/ext/dom/* freemarker/ext/jdom/* freemarker/ext/jsp/* freemarker/ext/rhino/* freemarker/ext/servlet/* freemarker/ext/xml/* freemarker/log/**/Log4J* freemarker/log/**/Avalon* freemarker/**/*Jython* freemarker/cache/WebappTemplateLoader*
 
 FreeMarker 1.x was released under the LGPL license. Later, by community
 consensus, we have switched over to a BSD-style license. As of FreeMarker
