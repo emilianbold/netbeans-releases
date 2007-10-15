@@ -123,7 +123,8 @@ public final class SystemUtils {
         try {
             parsed = parsed.replaceAll("(?<!\\\\)\\$N\\{install\\}", StringUtils.escapeRegExp(getDefaultApplicationsLocation().getAbsolutePath()));
         } catch (NativeException e) {
-            ErrorManager.notifyError("Cannot obtain default applications location", e);
+            ErrorManager.notifyError(ResourceUtils.getString(SystemUtils.class, 
+                    ERROR_CANNOT_GET_DEFAULT_APPS_LOCATION_KEY), e);
         }
         
         parsed = parsed.replaceAll("(?<!\\\\)\\$N\\{home\\}", StringUtils.escapeRegExp(getUserHomeDirectory().getAbsolutePath()));
@@ -162,15 +163,25 @@ public final class SystemUtils {
                     parsed = parsed.replace(matcher.group(), value);
                 }
             } catch (IllegalArgumentException e) {
-                ErrorManager.notifyDebug("Cannot parse pattern: " + matcher.group(), e);
+                ErrorManager.notifyDebug(
+                        ResourceUtils.getString(SystemUtils.class,
+                        ERROR_CANNOT_PARSE_PATTERN_KEY, matcher.group()), e);
             } catch (SecurityException e) {
-                ErrorManager.notifyDebug("Cannot parse pattern: " + matcher.group(), e);
+                ErrorManager.notifyDebug(
+                        ResourceUtils.getString(SystemUtils.class,
+                        ERROR_CANNOT_PARSE_PATTERN_KEY, matcher.group()), e);
             } catch (ClassNotFoundException e) {
-                ErrorManager.notifyDebug("Cannot parse pattern: " + matcher.group(), e);
+                ErrorManager.notifyDebug(
+                        ResourceUtils.getString(SystemUtils.class,
+                        ERROR_CANNOT_PARSE_PATTERN_KEY, matcher.group()), e);
             } catch (IllegalAccessException e) {
-                ErrorManager.notifyDebug("Cannot parse pattern: " + matcher.group(), e);
+                ErrorManager.notifyDebug(
+                        ResourceUtils.getString(SystemUtils.class,
+                        ERROR_CANNOT_PARSE_PATTERN_KEY, matcher.group()), e);
             } catch (NoSuchFieldException e) {
-                ErrorManager.notifyDebug("Cannot parse pattern: " + matcher.group(), e);
+                ErrorManager.notifyDebug(
+                        ResourceUtils.getString(SystemUtils.class,
+                        ERROR_CANNOT_PARSE_PATTERN_KEY, matcher.group()), e);
             }
         }
         
@@ -192,17 +203,23 @@ public final class SystemUtils {
                     }
                 }
             } catch (IllegalArgumentException e) {
-                ErrorManager.notifyDebug("Cannot parse pattern: " + matcher.group(), e);
+                ErrorManager.notifyDebug(ResourceUtils.getString(SystemUtils.class,
+                        ERROR_CANNOT_PARSE_PATTERN_KEY, matcher.group()), e);
             } catch (SecurityException e) {
-                ErrorManager.notifyDebug("Cannot parse pattern: " + matcher.group(), e);
+                ErrorManager.notifyDebug(ResourceUtils.getString(SystemUtils.class,
+                        ERROR_CANNOT_PARSE_PATTERN_KEY, matcher.group()), e);
             } catch (ClassNotFoundException e) {
-                ErrorManager.notifyDebug("Cannot parse pattern: " + matcher.group(), e);
+                ErrorManager.notifyDebug(ResourceUtils.getString(SystemUtils.class,
+                        ERROR_CANNOT_PARSE_PATTERN_KEY, matcher.group()), e);
             } catch (IllegalAccessException e) {
-                ErrorManager.notifyDebug("Cannot parse pattern: " + matcher.group(), e);
+                ErrorManager.notifyDebug(ResourceUtils.getString(SystemUtils.class,
+                        ERROR_CANNOT_PARSE_PATTERN_KEY, matcher.group()), e);
             } catch (NoSuchMethodException e) {
-                ErrorManager.notifyDebug("Cannot parse pattern: " + matcher.group(), e);
+                ErrorManager.notifyDebug(ResourceUtils.getString(SystemUtils.class,
+                        ERROR_CANNOT_PARSE_PATTERN_KEY, matcher.group()), e);
             } catch (InvocationTargetException e) {
-                ErrorManager.notifyDebug("Cannot parse pattern: " + matcher.group(), e);
+                ErrorManager.notifyDebug(ResourceUtils.getString(SystemUtils.class,
+                        ERROR_CANNOT_PARSE_PATTERN_KEY, matcher.group()), e);
             }
         }
         
@@ -216,7 +233,8 @@ public final class SystemUtils {
                 inputStream  = ResourceUtils.getResource(path, loader);
                 parsed = parsed.replace(matcher.group(), StringUtils.readStream(inputStream));
             } catch (IOException e) {
-                ErrorManager.notifyDebug("Cannot parse pattern: " + matcher.group(), e);
+                ErrorManager.notifyDebug(ResourceUtils.getString(SystemUtils.class,
+                        ERROR_CANNOT_PARSE_PATTERN_KEY, matcher.group()), e);
             } finally {
                 if (inputStream != null) {
                     try {
@@ -246,7 +264,8 @@ public final class SystemUtils {
                 
                 parsed = parsed.replace(matcher.group(), value);
             } catch (NativeException e) {
-                ErrorManager.notifyDebug("Cannot parse pattern: " + matcher.group(), e);
+                ErrorManager.notifyDebug(ResourceUtils.getString(SystemUtils.class,
+                        ERROR_CANNOT_PARSE_PATTERN_KEY, matcher.group()), e);
             }
         }
         
@@ -1060,4 +1079,9 @@ public final class SystemUtils {
     public static final int BUFFER_SIZE = 4096;
     
     public static final int DELAY = 50;
+    
+    public static final String ERROR_CANNOT_PARSE_PATTERN_KEY = 
+         "SU.error.cannot.parse.pattern";//NOI18N
+    public static final String ERROR_CANNOT_GET_DEFAULT_APPS_LOCATION_KEY =
+         "SU.error.cannot.get.default.apps.location";//NOI18N
 }

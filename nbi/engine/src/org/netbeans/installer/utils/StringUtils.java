@@ -590,7 +590,8 @@ public abstract class StringUtils {
             }
         }
         
-        throw new ParseException("Platform \"" + string + "\" is not recognized.");
+        throw new ParseException(ResourceUtils.getString(
+                StringUtils.ERROR_UNKNOWN_PLATFORM, string));
     }
     
     public static List<Platform> parsePlatforms(
@@ -616,7 +617,8 @@ public abstract class StringUtils {
             }
         }
         
-        throw new ParseException("Cannot parse status: " + string);
+        throw new ParseException(ResourceUtils.getString(
+                StringUtils.ERROR_CANNOT_PARSE_STATUS, string));
     }
     
     /////////////////////////////////////////////////////////////////////////////////
@@ -684,4 +686,9 @@ public abstract class StringUtils {
     private static final int BIN_00110000 = 0x30;
     private static final int BIN_00111100 = 0x3c;
     private static final int BIN_00111111 = 0x3f;
+    
+    public static final String ERROR_CANNOT_PARSE_STATUS = 
+            "StrU.error.cannot.parse.status";//NOI18N
+    public static final String ERROR_UNKNOWN_PLATFORM = 
+            "StrU.error.unknown.platform";//NOI18N
 }

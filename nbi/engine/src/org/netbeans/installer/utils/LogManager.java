@@ -142,7 +142,9 @@ public final class LogManager {
                 }
             } catch (IOException e) {
                 logWriter = null;
-                ErrorManager.notifyWarning("Error writing to the log file. Logging disabled.");
+                ErrorManager.notifyWarning(
+                        ResourceUtils.getString(LogManager.class, 
+                        ERROR_CANNOT_WRITE_KEY));
             }
         }
     }
@@ -243,5 +245,6 @@ public final class LogManager {
     
     public static final String INDENT =
             "    "; // NOI18N
-    
+    public static final String ERROR_CANNOT_WRITE_KEY = 
+            "LM.error.cannot.write";//NOI18N
 }

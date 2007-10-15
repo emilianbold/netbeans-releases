@@ -102,24 +102,26 @@ public final class ErrorManager {
         // parameters validation
         assert (message != null) || (exception != null);
         
-        String dialogText = "An unknown error occured.";
+        String dialogText = StringUtils.EMPTY_STRING;
         
         if (message != null) {
             LogManager.log(level, message);
             dialogText = message;
+        } else {
+            dialogText = ResourceUtils.getString(ErrorManager.class, 
+                ERROR_UNEXPECTED_ERROR_KEY);
         }
         if (exception != null) {
             LogManager.log(level, exception);
-            dialogText +=
-                    "\n\nException:\n  " +
-                    exception.getClass().getName() + ":\n  " +
-                    exception.getMessage();
+            dialogText += ResourceUtils.getString(ErrorManager.class, 
+                    ERROR_EXCEPTION_MESSAGE_KEY,
+                    exception.getClass().getName(),
+                    exception.getMessage());
         }
         if(LogManager.getLogFile()!=null) {
-            dialogText +=
-                    "\n\nYou can get more details about the " +
-                    "issue in the installer log file:\n" +
-                    LogManager.getLogFile().getAbsolutePath();
+            dialogText += ResourceUtils.getString(ErrorManager.class,
+                    ERROR_LOGFILE_INFO_KEY,
+                    LogManager.getLogFile().getAbsolutePath());
         }
         switch (level) {
             case ErrorLevel.MESSAGE:
@@ -199,5 +201,10 @@ public final class ErrorManager {
             "EM.errortype.error";//NOI18N
     private static final String ERROR_MESSAGE_KEY =
             "EM.errortype.message";//NOI18N
-    
+    private static final String ERROR_UNEXPECTED_ERROR_KEY = 
+            "EM.unexpected.error";//NOI18N
+    private static final String ERROR_EXCEPTION_MESSAGE_KEY =
+            "EM.exception.message";//NOI18N
+    private static final String ERROR_LOGFILE_INFO_KEY =
+            "EM.exception.logfile.info";//NOI18N
 }
