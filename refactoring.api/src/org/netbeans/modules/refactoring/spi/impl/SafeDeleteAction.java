@@ -101,6 +101,7 @@ public class SafeDeleteAction extends RefactoringGlobalAction implements Extende
             if (java.awt.EventQueue.isDispatchThread()) {
                 regularDelete = true;
                 performAction(nodes);
+                regularDelete = false;
             } else {
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
