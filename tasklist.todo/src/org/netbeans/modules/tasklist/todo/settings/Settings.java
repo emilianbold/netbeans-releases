@@ -66,6 +66,7 @@ final public class Settings {
 
     private ArrayList<String> patterns = new ArrayList<String>( 10 );
     private Map<String, CommentTags> ext2comments = new HashMap<String, CommentTags>( 10 );
+    private Map<String, CommentTags> mime2comments = new HashMap<String, CommentTags>( 10 );
     private boolean scanCommentsOnly = true;
     
     private PropertyChangeSupport propertySupport;
@@ -88,6 +89,11 @@ final public class Settings {
         ext2comments.put( "PROPERTIES", new CommentTags("#") ); //NOI18N //NOI18N
         ext2comments.put( "SH", new CommentTags("#") ); //NOI18N //NOI18N
         ext2comments.put( "RB", new CommentTags("#") ); //NOI18N //NOI18N
+        
+        mime2comments.put( "text/x-java", new CommentTags( "//", "/*", "*/") ); //NOI18N //NOI18N //NOI18N //NOI18N
+        mime2comments.put( "text/html", new CommentTags( "<!--", "-->") ); //NOI18N //NOI18N //NOI18N
+        mime2comments.put( "application/x-httpd-eruby", new CommentTags( "<!--", "-->") ); //NOI18N //NOI18N //NOI18N
+        mime2comments.put( "text/x-ruby", new CommentTags("#") ); //NOI18N //NOI18N
     }
     
     public static final Settings getDefault() {
@@ -113,18 +119,28 @@ final public class Settings {
         return null != ext2comments.get( fileExtension.toUpperCase() );
     }
     
-    public String getLineComment( String fileExtension ) {
+    public boolean isMimeTypeSupported( String mimeType ) {
+        return null != mime2comments.get( mimeType );
+    }
+    
+    public String getLineComment( String fileExtension, String mime ) {
         CommentTags ct = ext2comments.get( fileExtension.toUpperCase() );
+        if( null == ct )
+            ct = mime2comments.get( mime );
         return null == ct ? null : ct.lineComment;
     }
     
-    public String getBlockCommentStart( String fileExtension ) {
+    public String getBlockCommentStart( String fileExtension, String mime ) {
         CommentTags ct = ext2comments.get( fileExtension.toUpperCase() );
+        if( null == ct )
+            ct = mime2comments.get( mime );
         return null == ct ? null : ct.blockCommentStart;
     }
     
-    public String getBlockCommentEnd( String fileExtension ) {
+    public String getBlockCommentEnd( String fileExtension, String mime ) {
         CommentTags ct = ext2comments.get( fileExtension.toUpperCase() );
+        if( null == ct )
+            ct = mime2comments.get( mime );
         return null == ct ? null : ct.blockCommentEnd;
     }
     

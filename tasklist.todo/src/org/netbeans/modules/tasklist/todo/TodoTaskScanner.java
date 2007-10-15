@@ -62,6 +62,7 @@ import org.netbeans.modules.tasklist.todo.settings.Settings;
 import org.netbeans.spi.tasklist.FileTaskScanner;
 import org.netbeans.spi.tasklist.Task;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -170,10 +171,11 @@ public class TodoTaskScanner extends FileTaskScanner implements PropertyChangeLi
      
     private List<? extends Task> scanComments( FileObject resource ) {
         String ext = resource.getExt().toLowerCase();
+        String mime = FileUtil.getMIMEType( resource );
             
-        String lineComment = Settings.getDefault().getLineComment( ext );
-        String blockCommentStart = Settings.getDefault().getBlockCommentStart( ext );
-        String blockCommentEnd = Settings.getDefault().getBlockCommentEnd( ext );
+        String lineComment = Settings.getDefault().getLineComment( ext, mime );
+        String blockCommentStart = Settings.getDefault().getBlockCommentStart( ext, mime );
+        String blockCommentEnd = Settings.getDefault().getBlockCommentEnd( ext, mime );
         
         SourceCodeCommentParser sccp = new SourceCodeCommentParser( lineComment, blockCommentStart, blockCommentEnd );
 
@@ -278,7 +280,8 @@ public class TodoTaskScanner extends FileTaskScanner implements PropertyChangeLi
     private boolean isSupported( FileObject file ) {
         if( null == file || file.isFolder() )
             return false;
-        return Settings.getDefault().isExtensionSupported( file.getExt() );
+        return Settings.getDefault().isExtensionSupported( file.getExt() )
+                || Settings.getDefault().isMimeTypeSupported( FileUtil.getMIMEType(file) );
     }
 
     Pattern getScanRegexp() {
