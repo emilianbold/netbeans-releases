@@ -126,7 +126,6 @@ public abstract class JavadocTestSupport extends NbTestCase {
         doc = ec.openDocument();
         
         doc.putProperty(Language.class, JavaTokenId.language());
-        initIndentation();
         
         JavaSource js = JavaSource.forFileObject(data);
         
@@ -183,13 +182,6 @@ public abstract class JavadocTestSupport extends NbTestCase {
         TreePath tpath = new TreePath(new TreePath(new TreePath(info.getCompilationUnit()), ct), mt);
         
         doFixTest(code, expectation, tpath);
-    }
-
-    private void initIndentation() throws Exception{
-        IndentImpl iimpl = IndentImpl.get(doc);
-        Method m = IndentImpl.class.getDeclaredMethod("setDefaultFormatter", Formatter.class);
-        m.setAccessible(true);
-        m.invoke(iimpl, new JavaFormatter(JavaKit.class));
     }
     
     static class Pool extends DataLoaderPool {
