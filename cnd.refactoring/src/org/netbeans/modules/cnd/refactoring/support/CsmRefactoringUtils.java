@@ -224,7 +224,7 @@ public class CsmRefactoringUtils {
             private char[] buffer;
 
             public boolean token(TokenID tokenID, TokenContextPath tokenContextPath, int tokenBufferOffset, int tokenLength) {
-                String text = new String(buffer, tokenBufferOffset-bufferStartPos, tokenLength);
+                String text = new String(buffer, tokenBufferOffset, tokenLength);
                 String category = tokenID.getCategory() == null ? tokenID.getName() : tokenID.getCategory().getName();
                 if (category == null) {
                     category = "whitespace"; //NOI18N
