@@ -505,7 +505,9 @@ public class ETEditableCompartment extends ETCompartment implements IADEditableC
          }
          m_EditDialog.getRootPane().setBorder(null);
          m_EditDialog.getRootPane().setOpaque(false);
-         m_EditDialog.setModal(true);
+         // Fixed 118886
+         // Should not make the diaglog modal which cause issue 118886.
+         //m_EditDialog.setModal(true);
          m_EditControl.requestFocus();
          m_EditDialog.setVisible(true);
       }
