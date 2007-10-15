@@ -47,9 +47,6 @@ import java.text.Collator;
 import java.util.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.html.HTML;
-
 
 import javax.swing.text.html.parser.*;
 
@@ -255,7 +252,7 @@ public class IndexBuilder implements Runnable, ChangeListener {
                         continue;
                     title = st.getOverviewTitleBase(title);
                 }
-                if ("".equals(title)) { // NOI18N
+                if (title == null || "".equals(title)) { // NOI18N
                     String filename = FileUtil.getFileDisplayName(index);
                     if (filename.length() > 54) {
                         // trim to display 54 chars
@@ -284,7 +281,7 @@ public class IndexBuilder implements Runnable, ChangeListener {
      * May return null if there is no title tag, or "" if it is empty.
      */
     private String parseTitle(FileObject html) {
-        String title = ""; // NOI18N
+        String title = null;
         try {
             // #71979: html parser used again to fix encoding issues.
             // I have measured no difference if the parser or plain file reading
@@ -302,7 +299,7 @@ public class IndexBuilder implements Runnable, ChangeListener {
         } catch (IOException ioe) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
         }
-        return title.trim();
+        return title != null? title.trim(): title;
     }
 
     private synchronized static void scheduleTask() {

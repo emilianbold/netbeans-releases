@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -42,6 +42,7 @@
 package org.netbeans.modules.javadoc.search;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.io.Reader;
@@ -97,6 +98,32 @@ public class IndexBuilderTest extends NbTestCase {
             tp.parse();
             String titlestr = tp.getTitle();
             assertEquals("wrong title", "D-Index (Java 2 Platform SE 5.0)", titlestr);
+        } finally {
+            is.close();
+        }
+    }
+
+    public void testEmptyTitle() throws Exception {
+        String content = "<HTML><HEAD><TITLE></TITLE></HEAD></HTML>";
+        InputStream is = new ByteArrayInputStream(content.getBytes());
+        SimpleTitleParser tp = new SimpleTitleParser(is);
+        try {
+            tp.parse();
+            String titlestr = tp.getTitle();
+            assertEquals("wrong title", "", titlestr);
+        } finally {
+            is.close();
+        }
+    }
+
+    public void testMissingTitle() throws Exception {
+        String content = "<HTML><HEAD></HEAD></HTML>";
+        InputStream is = new ByteArrayInputStream(content.getBytes());
+        SimpleTitleParser tp = new SimpleTitleParser(is);
+        try {
+            tp.parse();
+            String titlestr = tp.getTitle();
+            assertNull("wrong title", titlestr);
         } finally {
             is.close();
         }
