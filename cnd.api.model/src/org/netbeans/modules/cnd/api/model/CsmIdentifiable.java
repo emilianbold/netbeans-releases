@@ -48,7 +48,7 @@ package org.netbeans.modules.cnd.api.model;
  * @see CsmUID
  * @author Vladimir Voskresensky
  */
-public interface CsmIdentifiable<T> {
+public interface CsmIdentifiable<T> extends CsmObject {
     
     /**
      * gets unique identifier associated with object to store reference

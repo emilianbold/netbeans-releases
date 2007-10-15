@@ -41,9 +41,6 @@
 
 package org.netbeans.modules.cnd.api.model;
 
-import org.netbeans.modules.cnd.api.model.CsmNamespace;
-import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
-
 /**
  * Represents a using declaration, such as
  *  using std::vector

@@ -41,8 +41,6 @@
 
 package org.netbeans.modules.cnd.api.model;
 
-import org.netbeans.modules.cnd.api.model.util.TypeSafeEnum;
-
 /**
  * Represents the state of the code model.
  * @author Vladimir Kvashin

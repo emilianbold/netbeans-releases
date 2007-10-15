@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.api.model.deep;
 import java.util.List;
 
 import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.api.model.util.TypeSafeEnum;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 
 /**
@@ -54,133 +53,127 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 public interface CsmExpression extends CsmOffsetable, CsmObject {
 
     //TODO: check in accordance to C++ standard
-    public class Kind extends TypeSafeEnum {
-
-        private Kind(String id) {
-            super(id);
-        }
-        
-        // TODO: fill all constructor parameters
+    public enum Kind {
         
         //
         // Primary expressions
         //
         
         // TODO: perhaps it isn't worth making separate kinds for different literals
-        public static final Kind INTEGER_LITERAL                = new Kind( "INTEGER_LITERAL" ); // NOI18N
-        public static final Kind CHAR_LITERAL                   = new Kind( "CHAR_LITERAL" ); // NOI18N
-        public static final Kind FLOAT_LITERAL                  = new Kind( "FLOAT_LITERAL" ); // NOI18N
-        public static final Kind STRING_LITERAL                 = new Kind( "STRING_LITERAL" ); // NOI18N
-        public static final Kind BOOLEAN_LITERAL                = new Kind( "BOOLEAN_LITERAL" ); // NOI18N
+        INTEGER_LITERAL,
+        CHAR_LITERAL,
+        FLOAT_LITERAL,
+        STRING_LITERAL,
+        BOOLEAN_LITERAL,
         
-        public static final Kind THIS                           = new Kind( "THIS" ); // NOI18N
-        public static final Kind PRIMARY_BRACKETED              = new Kind( "PRIMARY_BRACKETED" ); // NOI18N
+        THIS,
+        PRIMARY_BRACKETED,
         
-        public static final Kind REFERENCE                      = new Kind( "REFERENCE" ); // AKA id-expression // NOI18N
+        REFERENCE,
         
         
         //
         // Postfix expressions
         //
-        public static final Kind SUBSCRIPT              = new Kind( "SUBSCRIPT" ); // a[] // NOI18N
-        public static final Kind FUNCTIONCALL           = new Kind( "FUNCTIONCALL" ); // NOI18N
+        SUBSCRIPT,
+        FUNCTIONCALL,
         // TODO: what is " postfix-expression ( expression-list ) " ?
         // TODO: add 
-        public static final Kind SIMPLETYPE_INT		= new Kind( "" );
-        public static final Kind SIMPLETYPE_SHORT	= new Kind( "" );
-        public static final Kind SIMPLETYPE_DOUBLE	= new Kind( "" );
-        public static final Kind SIMPLETYPE_FLOAT       = new Kind( "" );
-        public static final Kind SIMPLETYPE_CHAR        = new Kind( "" );
-        public static final Kind SIMPLETYPE_WCHART      = new Kind( "" );
-        public static final Kind SIMPLETYPE_SIGNED      = new Kind( "" );
-        public static final Kind SIMPLETYPE_UNSIGNED    = new Kind( "" );
-        public static final Kind SIMPLETYPE_BOOL        = new Kind( "" );
-        public static final Kind SIMPLETYPE_LONG        = new Kind( "" );
+        SIMPLETYPE_INT,
+        SIMPLETYPE_SHORT,
+        SIMPLETYPE_DOUBLE,
+        SIMPLETYPE_FLOAT,
+        SIMPLETYPE_CHAR,
+        SIMPLETYPE_WCHART,
+        SIMPLETYPE_SIGNED,
+        SIMPLETYPE_UNSIGNED,
+        SIMPLETYPE_BOOL,
+        SIMPLETYPE_LONG,
         
-        public static final Kind TYPENAME_IDENTIFIER    = new Kind( "" );
-        public static final Kind TYPENAME_TEMPLATEID    = new Kind( "" );
+        TYPENAME_IDENTIFIER,
+        TYPENAME_TEMPLATEID,
         
-        public static final Kind DOT_IDEXPRESSION       = new Kind( "" );
-        public static final Kind ARROW_IDEXPRESSION     = new Kind( "" );
-        public static final Kind DOT_TEMPL_IDEXPRESS    = new Kind( "" );
-        public static final Kind ARROW_TEMPL_IDEXP      = new Kind( "" );
+        DOT_IDEXPRESSION,
+        ARROW_IDEXPRESSION,
+        DOT_TEMPL_IDEXPRESS,
+        ARROW_TEMPL_IDEXP,
 
-        public static final Kind DOT_DESTRUCTOR         = new Kind( "" );
-        public static final Kind ARROW_DESTRUCTOR       = new Kind( "" );
+        DOT_DESTRUCTOR,
+        ARROW_DESTRUCTOR,
 
-        public static final Kind POST_INCREMENT         = new Kind( "" );
-        public static final Kind POST_DECREMENT         = new Kind( "" );
+        POST_INCREMENT,
+        POST_DECREMENT,
         
-        public static final Kind DYNAMIC_CAST           = new Kind( "" );
-        public static final Kind REINTERPRET_CAST       = new Kind( "" );
-        public static final Kind STATIC_CAST            = new Kind( "" );
-        public static final Kind CONST_CAST             = new Kind( "" );
-        public static final Kind TYPEID_EXPRESSION      = new Kind( "" );
-        public static final Kind TYPEID_TYPEID          = new Kind( "" );
+        DYNAMIC_CAST,
+        REINTERPRET_CAST,
+        STATIC_CAST,
+        CONST_CAST,
+        TYPEID_EXPRESSION,
+        TYPEID_TYPEID,
         
         //
         // Unary expressions
         //
-        public static final Kind PRE_INCREMENT                = new Kind( "" );
-        public static final Kind PRE_DECREMENT                = new Kind( "" );
-        public static final Kind STAR_CASTEXPRESSION      = new Kind( "" );
-        public static final Kind AMPSND_CASTEXPRESSION    = new Kind( "" );
-        public static final Kind PLUS_CASTEXPRESSION      = new Kind( "" );
-        public static final Kind MINUS_CASTEXPRESSION     = new Kind( "" );
-        public static final Kind NOT_CASTEXPRESSION       = new Kind( "" );
-        public static final Kind TILDE_CASTEXPRESSION     = new Kind( "" );
-        public static final Kind SIZEOF_UNARYEXPRESSION   = new Kind( "" );
-        public static final Kind SIZEOF_TYPEID            = new Kind( "" );
+        PRE_INCREMENT,
+        PRE_DECREMENT,
+        STAR_CASTEXPRESSION,
+        AMPSND_CASTEXPRESSION,
+        PLUS_CASTEXPRESSION,
+        MINUS_CASTEXPRESSION,
+        NOT_CASTEXPRESSION,
+        TILDE_CASTEXPRESSION,
+        SIZEOF_UNARYEXPRESSION,
+        SIZEOF_TYPEID,
         
-        public static final Kind NEW_NEWTYPEID                  = new Kind( "" );
-        public static final Kind NEW_TYPEID                     = new Kind( "" );
-        public static final Kind DELETE_CASTEXPRESSION          = new Kind( "" );
-        public static final Kind DELETE_VECTORCASTEXPRESSION    = new Kind( "" );
+        NEW_NEWTYPEID,
+        NEW_TYPEID,
+        DELETE_CASTEXPRESSION,
+        DELETE_VECTORCASTEXPRESSION,
         
-        public static final Kind CASTEXPRESSION                 = new Kind( "" );
-        public static final Kind PM_DOTSTAR                     = new Kind( "" );
-        public static final Kind PM_ARROWSTAR                   = new Kind( "" );
-        public static final Kind MULTIPLICATIVE_MULTIPLY        = new Kind( "" );
-        public static final Kind MULTIPLICATIVE_DIVIDE          = new Kind( "" );
-        public static final Kind MULTIPLICATIVE_MODULUS         = new Kind( "" );
-        public static final Kind ADDITIVE_PLUS                  = new Kind( "" );
-        public static final Kind ADDITIVE_MINUS                 = new Kind( "" );
-        public static final Kind SHIFT_LEFT                     = new Kind( "" );
-        public static final Kind SHIFT_RIGHT                    = new Kind( "" );
+        CASTEXPRESSION,
+        PM_DOTSTAR,
+        PM_ARROWSTAR,
+        MULTIPLICATIVE_MULTIPLY,
+        MULTIPLICATIVE_DIVIDE,
+        MULTIPLICATIVE_MODULUS,
+        ADDITIVE_PLUS,
+        ADDITIVE_MINUS,
+        SHIFT_LEFT,
+        SHIFT_RIGHT,
         
         //
         // Relational
         //
-        public static final Kind LESSTHAN            = new Kind( "" );
-        public static final Kind GREATERTHAN         = new Kind( "" );
-        public static final Kind LESSTHANEQUALTO     = new Kind( "" );
-        public static final Kind GREATERTHANEQUALTO  = new Kind( "" );
+        LESSTHAN,
+        GREATERTHAN,
+        LESSTHANEQUALTO,
+        GREATERTHANEQUALTO,
         
         //
         // Equality
         //
-        public static final Kind EQUALS                = new Kind( "" );
-        public static final Kind NOTEQUALS             = new Kind( "" );
+        EQUALS,
+        NOTEQUALS,
         
-        public static final Kind BITAND                  = new Kind( "" );
-        public static final Kind EXCLUSIVEOR          = new Kind( "" );
-        public static final Kind INCLUSIVEOR          = new Kind( "" );
-        public static final Kind LOGICAL_AND           = new Kind( "" );
-        public static final Kind LOGICAL_OR            = new Kind( "" );
-        public static final Kind CONDITIONAL          = new Kind( "" );
-        public static final Kind THROW= new Kind( "" );
-        public static final Kind ASSIGNMENT_NORMAL    = new Kind( "" );
-        public static final Kind ASSIGNMENT_PLUS      = new Kind( "" );
-        public static final Kind ASSIGNMENT_MINUS     = new Kind( "" );
-        public static final Kind ASSIGNMENT_MULT      = new Kind( "" );
-        public static final Kind ASSIGNMENT_DIV       = new Kind( "" );
-        public static final Kind ASSIGNMENT_MOD       = new Kind( "" );
-        public static final Kind ASSIGNMENT_LSHIFT    = new Kind( "" );
-        public static final Kind ASSIGNMENT_RSHIFT    = new Kind( "" );
-        public static final Kind ASSIGNMENT_AND       = new Kind( "" );
-        public static final Kind ASSIGNMENT_OR        = new Kind( "" );
-        public static final Kind ASSIGNMENT_XOR       = new Kind( "" );
-        public static final Kind LIST                 = new Kind( "List" ); // NOI18N
+        BITAND,
+        EXCLUSIVEOR,
+        INCLUSIVEOR,
+        LOGICAL_AND,
+        LOGICAL_OR,
+        CONDITIONAL,
+        THROW,
+        ASSIGNMENT_NORMAL,
+        ASSIGNMENT_PLUS,
+        ASSIGNMENT_MINUS,
+        ASSIGNMENT_MULT,
+        ASSIGNMENT_DIV,
+        ASSIGNMENT_MOD,
+        ASSIGNMENT_LSHIFT,
+        ASSIGNMENT_RSHIFT,
+        ASSIGNMENT_AND,
+        ASSIGNMENT_OR,
+        ASSIGNMENT_XOR,
+        LIST
         
     }
     

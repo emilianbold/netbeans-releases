@@ -42,7 +42,6 @@
 package org.netbeans.modules.cnd.api.model;
 
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
-import java.util.List;
 
 /**
  * Represents function definition

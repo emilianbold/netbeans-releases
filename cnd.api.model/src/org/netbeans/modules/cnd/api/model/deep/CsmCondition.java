@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.api.model.deep;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
-import org.netbeans.modules.cnd.api.model.util.TypeSafeEnum;
 
 /**
  * Represents condition.
@@ -60,15 +59,9 @@ import org.netbeans.modules.cnd.api.model.util.TypeSafeEnum;
  */
 public interface CsmCondition extends CsmOffsetable, CsmObject {
   
-        class Kind extends TypeSafeEnum {
-            
-            private Kind(String id) {
-                super(id);
-            }
-            
-            public static final Kind EXPRESSION = new Kind("Expression"); // NOI18N
-            
-            public static final Kind DECLARATION = new Kind("Declaration"); // NOI18N
+        public enum Kind {            
+            EXPRESSION,
+            DECLARATION
         }
         
         Kind getKind();

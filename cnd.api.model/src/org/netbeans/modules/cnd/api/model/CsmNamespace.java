@@ -42,7 +42,6 @@
 package org.netbeans.modules.cnd.api.model;
 
 import java.util.Collection;
-import java.util.List;
 
 /**
  * Represents a "logical" namespace - not a particular namespace declaration,

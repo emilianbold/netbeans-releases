@@ -40,25 +40,15 @@
  */
 
 package org.netbeans.modules.cnd.api.model;
-import org.netbeans.modules.cnd.api.model.util.TypeSafeEnum;
 
 /**
  * Typesafe enumeration - represents member / inheritance visibility
  * some utilities methods are in org.netbeans.modules.cnd.api.model.util.CsmInheritanceUtilities
  * @author Vladimir Kvashin
  */
-public class CsmVisibility extends TypeSafeEnum  {
-
-    protected CsmVisibility(String value) {
-        super(value);
-    }
-
-    public static final CsmVisibility PUBLIC    = new CsmVisibility("public"); // NOI18N
-
-    public static final CsmVisibility PROTECTED = new CsmVisibility("protected"); // NOI18N
-    
-    public static final CsmVisibility PRIVATE   = new CsmVisibility("private"); // NOI18N
-
-    public static final CsmVisibility NONE      = new CsmVisibility("none"); // NOI18N
-    
+public enum CsmVisibility  {
+    PUBLIC,
+    PROTECTED,
+    PRIVATE,
+    NONE
 }

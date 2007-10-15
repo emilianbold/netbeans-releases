@@ -41,8 +41,6 @@
 
 package org.netbeans.modules.cnd.api.model;
 
-import org.netbeans.modules.cnd.api.model.util.TypeSafeEnum;
-
 /**
  * Common ancestor for all declarations
  * @author Vladimir Kvashin

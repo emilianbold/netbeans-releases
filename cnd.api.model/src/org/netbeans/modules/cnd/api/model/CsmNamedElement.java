@@ -45,7 +45,7 @@ package org.netbeans.modules.cnd.api.model;
  * An element, which has a name: class, method, namespace, etc
  * @author Vladimir Kvashin
  */
-public interface CsmNamedElement {
+public interface CsmNamedElement extends CsmObject {
 
     /** Gets this element name */
     String getName();

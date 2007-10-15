@@ -51,7 +51,7 @@ import org.openide.util.Lookup;
  * utility class to access Csm model
  * @author Vladimir Voskresensky
  */
-public class CsmModelAccessor {
+public final class CsmModelAccessor {
 
     public interface CsmModelEx extends CsmModel {
 	public Iterator<CsmModelStateListener> getModelStateListeners();

@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.api.model.deep;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
-import org.netbeans.modules.cnd.api.model.util.TypeSafeEnum;
 
 /**
  * Represents some statement -
@@ -56,25 +55,21 @@ public interface CsmStatement extends CsmOffsetable, CsmObject, CsmScopeElement 
 
         // TODO: does throws statement include trailing ";" or not?
     
-        class Kind extends TypeSafeEnum {
-            
-            private Kind(String id) {
-                super(id);
-            }
+        public enum Kind {
             
             /** 
              * Label pseudo statement. 
              * Does NOT include the statement following after label, just the label itself
              * An instance is guaranteed to implement CsmLabel 
              */
-            public static final Kind LABEL = new Kind("Label"); // NOI18N
+            LABEL,
 
             /**
              * "case" pseudo statement. 
              * Does NOT include the statement after "case ...:" clause, just "case ...:" itself
              * An instance is guaranteed to implement CsmCaseStatement
              */
-            public static final Kind CASE = new Kind("Case"); // NOI18N
+            CASE,
 
             /** 
              * "default" psewdo statement. 
@@ -83,52 +78,52 @@ public interface CsmStatement extends CsmOffsetable, CsmObject, CsmScopeElement 
              * TODO: rethink
              * No special derived interface. 
              */
-            public static final Kind DEFAULT = new Kind("Default"); // NOI18N
+            DEFAULT,
 
             /** Expression statement. An instance is guaranteed to implement CsmExpressionStatement */
-            public static final Kind EXPRESSION = new Kind("Expression"); // NOI18N
+            EXPRESSION,
 
             /** Compound statement. An instance is guaranteed to implement CsmCompoundStatement */
-            public static final Kind COMPOUND = new Kind("Compound"); // NOI18N
+            COMPOUND,
 
             /** if statement. An instance is guaranteed to implement CsmIfStatement */
-            public static final Kind IF = new Kind("If"); // NOI18N
+            IF,
 
             /** switch statement. An instance is guaranteed to implement CsmSwitchStatement */
-            public static final Kind SWITCH = new Kind("Switch"); // NOI18N
+            SWITCH,
 
             /** while statement. An instance is guaranteed to implement CsmLoopStatement */
-            public static final Kind WHILE = new Kind("While"); // NOI18N
+            WHILE,
 
             /** do ... while statement. An instance is guaranteed to implement CsmLoopStatement */
-            public static final Kind DO_WHILE = new Kind("DoWhile"); // NOI18N
+            DO_WHILE,
 
             /** For statement. An instance is guaranteed to implement CsmForStatement */
-            public static final Kind FOR = new Kind("For"); // NOI18N
+            FOR,
 
             /** Break statement. No special derived interface. */
-            public static final Kind BREAK = new Kind("Break"); // NOI18N
+            BREAK,
 
             /** Continue statement. No special derived interface. */
-            public static final Kind CONTINUE = new Kind("Continue"); // NOI18N
+            CONTINUE,
 
             /** Return statement. An instance is guaranteed to implement CsmReturnStatement */
-            public static final Kind RETURN = new Kind("Return"); // NOI18N
+            RETURN,
 
             /** Goto statement. An instance is guaranteed to implement CsmGotoStatement */
-            public static final Kind GOTO = new Kind("Goto"); // NOI18N
+            GOTO,
 
             /** Declaration statement. An instance is guaranteed to implement CsmDeclarationStatement */
-            public static final Kind DECLARATION = new Kind("Declaration"); // NOI18N
+            DECLARATION,
 
             /** Try... catch statement. An instance is guaranteed to implement CsmTryCatchStatement */
-            public static final Kind TRY_CATCH = new Kind("TryCatch"); // NOI18N
+            TRY_CATCH,
 
             /** Exception handler (catch) An instance is guaranteed to implement CsmExceptionHandler */
-            public static final Kind CATCH = new Kind("Catch"); // NOI18N
+            CATCH,
             
             /** Exception handler (catch) An instance is guaranteed to implement CsmExceptionHandler */
-            public static final Kind THROW = new Kind("Throw"); // NOI18N
+            THROW
             
         }
         

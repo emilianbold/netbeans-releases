@@ -42,7 +42,6 @@
 package org.netbeans.modules.cnd.api.model.util;
 
 import java.lang.ref.WeakReference;
-import java.lang.reflect.Array;
 import java.util.*;
 
 /**

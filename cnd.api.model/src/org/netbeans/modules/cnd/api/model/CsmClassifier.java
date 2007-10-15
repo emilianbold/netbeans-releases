@@ -41,8 +41,6 @@
 
 package org.netbeans.modules.cnd.api.model;
 
-import org.netbeans.modules.cnd.api.model.util.TypeSafeEnum;
-
 /**
  * Common ancestor for both fundamental (built-in) and compound types
  * @author Vladimir Kvashin

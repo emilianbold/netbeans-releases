@@ -47,7 +47,7 @@ import java.util.List;
  * Represents C/C++ macros
  * @author vk155633
  */
-public interface CsmMacro extends CsmNamedElement, CsmOffsetable, CsmObject, CsmIdentifiable<CsmMacro> {
+public interface CsmMacro extends CsmNamedElement, CsmOffsetable, CsmIdentifiable<CsmMacro> {
 
     List<String> getParameters();
     

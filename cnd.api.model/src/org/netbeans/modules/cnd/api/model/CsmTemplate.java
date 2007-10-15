@@ -54,7 +54,7 @@ import java.util.List;
  *
  * @author Vladimir Kvashin
  */
-public interface CsmTemplate {
+public interface CsmTemplate extends CsmObject {
 
     List<CsmTemplateParameter> getTemplateParameters();
 
