@@ -57,9 +57,9 @@ public class HelloWorldResource {
      * @return an instance of java.lang.String
      */
     @HttpMethod("GET")
-    @ProduceMime("application/xml")
+    @ProduceMime("text/html")
     public String getXml() {
-        return "Hello World!";
+        return "<html><body><h1>Hello World!</body></h1></html>";
     }
 
     /**
