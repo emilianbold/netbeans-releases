@@ -232,7 +232,6 @@ public final class JavaMembersModel extends DefaultTreeModel {
             setLabel(Utils.format(element));
             setFQNLabel(Utils.format(element, false, true));
             setToolTip(Utils.format(element, true, JavaMembersAndHierarchyOptions.isShowFQN()));
-            setJavaDoc(ElementJavadoc.create(compilationInfo, element) );
             loadChildren(element, compilationInfo);
         }
 
@@ -290,6 +289,25 @@ public final class JavaMembersModel extends DefaultTreeModel {
         }
 
         public ElementJavadoc getJavaDoc() {
+            if (javaDoc == null) {
+                JavaSource javaSource = JavaSource.forFileObject(fileObject);
+
+                if (javaSource != null) {
+                    try {
+                        javaSource.runUserActionTask(new Task<CompilationController>() {
+                                public void run(
+                                    CompilationController compilationController)
+                                    throws Exception {
+                                    compilationController.toPhase(Phase.ELEMENTS_RESOLVED);
+                                    Element element = elementHandle.resolve(compilationController);
+                                    setJavaDoc(ElementJavadoc.create(compilationController, element));
+                                }
+                            }, true);
+                    } catch (IOException ioe) {
+                        ErrorManager.getDefault().notify(ioe);
+                    }
+                }
+            }
             return javaDoc;
         }
 

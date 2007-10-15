@@ -260,8 +260,7 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
             setIcon(ElementIcons.getElementIcon(element.getKind(), element.getModifiers()));
             setLabel(Utils.format(element));
             setFQNLabel(Utils.format(element, false, true));
-            setToolTip(Utils.format(element, true, JavaMembersAndHierarchyOptions.isShowFQN()));
-            javaDoc = ElementJavadoc.create( compilationInfo, element );
+            setToolTip(Utils.format(element, true, JavaMembersAndHierarchyOptions.isShowFQN()));            
 
             if (!lazyLoadChildren) {
                 try {
@@ -342,10 +341,29 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
         }
 
         public ElementJavadoc getJavaDoc() {
+            if (javaDoc == null) {
+                JavaSource javaSource = JavaSource.forFileObject(fileObject);
+
+                if (javaSource != null) {
+                    try {
+                        javaSource.runUserActionTask(new Task<CompilationController>() {
+                                public void run(
+                                    CompilationController compilationController)
+                                    throws Exception {
+                                    compilationController.toPhase(Phase.ELEMENTS_RESOLVED);
+                                    Element element = elementHandle.resolve(compilationController);
+                                    setJavaDoc(ElementJavadoc.create(compilationController, element));
+                                }
+                            }, true);
+                    } catch (IOException ioe) {
+                        ErrorManager.getDefault().notify(ioe);
+                    }
+                }
+            }
             return javaDoc;
         }
 
-        public void setJavaDoc(ElementJavadoc javaDoc) {
+        protected void setJavaDoc(ElementJavadoc javaDoc) {
             this.javaDoc = javaDoc;
         }
 
@@ -362,7 +380,6 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
             if (javaSource != null) {
                 try {
                     javaSource.runUserActionTask(new Task<CompilationController>() {
-
                             public void run(CompilationController compilationController)
                                 throws Exception {
                                 compilationController.toPhase(Phase.ELEMENTS_RESOLVED);
