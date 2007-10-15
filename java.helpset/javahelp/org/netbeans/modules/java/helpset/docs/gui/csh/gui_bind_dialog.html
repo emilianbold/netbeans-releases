@@ -53,10 +53,18 @@ be possible with the base set of properties for some components.
     class.</p>
     </li>
     <li><b>Import Data to Form </b>(only for <tt>elements</tt> property of 
-    JTable, JList, and JComboBox components). Enables you to select a database 
-    table for which to generate an entity class to which you can bind 
-from the form. Once you have done so, list and query objects for that 
-database table become available in the Binding Source drop-down list.<!--TODO link to topic about creating entity class by wizard--></li>
+    JTable, JList, and JComboBox components). Enables you to select columns from a database 
+    table to bind to the form. If there is no entity class in your project that represents the 
+    database table to which you are binding, the IDE will create such an entity class. 
+    <ul class="note">
+        <li>If the table to which you are binding has any foreign keys, those keys will not be 
+    taken into account in the generation of the entity classes. In such a 
+case, it is better to use the 
+<a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/persistence/csh/persist_new_entityclass.html">New Entity Class Wizard</a> 
+to create the entity classes before importing the data to the 
+        form.</li>
+    </ul>
+<!--TODO link to topic about creating entity class by wizard--></li>
 <li><b>Available</b> and <b>Selected</b> columns (only for <tt>elements</tt> property of 
     JTable components). After you have used the 
     Import Data to Form button to select a database table, you can use the 
