@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<palette_item version="1.0">
+  <component classname="com.sun.webui.jsf.faces.ValueExpressionFilterCriteria" type="visual" />
+  <description localizing-bundle="org.netbeans.modules.visualweb.woodstock.webui.jsf.designtime.resources.Bundle"
+               display-name-key="NAME_com-sun-webui-jsf-faces-ValueExpressionFilterCriteria" />
+</palette_item>
