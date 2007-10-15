@@ -423,6 +423,7 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
             mappings = scope.getEntityMappingsModel(unit.getName());
  
             String[] tables;
+            String[] relatedTables = null;
             if (J2EEUtils.TABLE_CLOSURE) {
                 tables = new String[1];
                 if (detailTable == null) {
@@ -433,6 +434,11 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
                     if (entityInfo != null) {
                         // Detail table exists, make sure to create master table
                         tables[0] = tableName;
+                    } else {
+                        entityInfo = J2EEUtils.findEntity(mappings, tableName);
+                        if (entityInfo == null) {
+                            relatedTables = new String[] {tableName};
+                        }
                     }
                 }
             } else {
@@ -450,8 +456,7 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
                 // Create a new entity (if there isn't one that corresponds to the table)
                 if (entityInfo == null) {
                     // Generates a Java class for the entity
-                    J2EEUtils.createEntity(folder, scope, unit, connection, table,
-                        (J2EEUtils.TABLE_CLOSURE && (detailTable != null)) ? new String[] {tableName} : null);
+                    J2EEUtils.createEntity(folder, scope, unit, connection, table, relatedTables);
 
                     entityInfo = J2EEUtils.findEntity(mappings, table);
                 } else {
