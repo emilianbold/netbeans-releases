@@ -107,7 +107,14 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     }
     
     private MakeConfiguration getMakeConfiguration() {
-        return (MakeConfiguration)getMakeConfigurationDescriptor().getConfs().getActive();
+	MakeConfigurationDescriptor descriptor = getMakeConfigurationDescriptor();
+	if (descriptor != null) {
+	    Configurations confs = descriptor.getConfs();
+	    if (confs != null) {
+                return (MakeConfiguration)confs.getActive();
+	    }
+	}
+	return null;
     }
 
     public Object getProject() {
@@ -155,8 +162,9 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     
     public List<NativeProject> getDependences(){
         List<NativeProject> list = new ArrayList<NativeProject>();
-        if (getMakeConfiguration() != null) {
-            for (Object lib : getMakeConfiguration().getSubProjects()){
+	MakeConfiguration makeConfiguration = getMakeConfiguration();
+        if (makeConfiguration != null) {
+            for (Object lib : makeConfiguration.getSubProjects()){
                 Project prj = (Project)lib;
                 NativeProject nativeProject = (NativeProject)prj.getLookup().lookup(NativeProject.class);
                 if (nativeProject != null){
