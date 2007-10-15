@@ -110,6 +110,46 @@ public class SettingsTest extends NbTestCase {
         assertEquals("Wrong code-text", "Hello World!", (String) v);
     }
     
+    public void testNoEventsWhenInitializing() {
+        Settings.addInitializer(new MyInitializer());
+        try {
+            MyListener listener = new MyListener();
+            Settings.addSettingsChangeListener(listener);
+            try {
+                Object value = Settings.getValue(BaseKit.class, MyInitializer.TEST_SETTING_NAME);
+                assertEquals("Wrong test setting value", Boolean.TRUE, value);
+                assertEquals("There should be no events", 0, listener.eventsCnt);
+            } finally {
+                Settings.removeSettingsChangeListener(listener);
+            }
+        } finally {
+            Settings.removeInitializer(MyInitializer.NAME);
+        }
+    }
+    
+    public void testEventsWhenNotInitializing() {
+        Settings.addInitializer(new MyInitializer());
+        try {
+            MyListener listener = new MyListener();
+            Settings.addSettingsChangeListener(listener);
+            try {
+                Object value = Settings.getValue(BaseKit.class, MyInitializer.TEST_SETTING_NAME);
+                assertEquals("Wrong test setting value", Boolean.TRUE, value);
+                assertEquals("There should be no events", 0, listener.eventsCnt);
+                
+                Settings.setValue(BaseKit.class, MyInitializer.TEST_SETTING_NAME, "New Value");
+                assertEquals("Wrong number of events fired", 1, listener.eventsCnt);
+                
+                value = Settings.getValue(BaseKit.class, MyInitializer.TEST_SETTING_NAME);
+                assertEquals("Wrong test setting value", "New Value", value);
+            } finally {
+                Settings.removeSettingsChangeListener(listener);
+            }
+        } finally {
+            Settings.removeInitializer(MyInitializer.NAME);
+        }
+    }
+    
     public static final class MyKit extends BaseKit {
         public MyKit() {
             super();
@@ -120,4 +160,27 @@ public class SettingsTest extends NbTestCase {
             return "text/x-type-A";
         }
     } // End of MyKit class
+    
+    private static final class MyInitializer extends Settings.AbstractInitializer {
+
+        public static final String NAME = "TestInitializer";
+        public static final String TEST_SETTING_NAME = "TestSetting";
+        
+        public MyInitializer() {
+            super(NAME);
+        }
+        
+        public void updateSettingsMap(Class kitClass, Map settingsMap) {
+            Settings.setValue(BaseKit.class, TEST_SETTING_NAME, Boolean.TRUE);
+        }
+    } // End of MyInitializer class
+    
+    private static final class MyListener implements SettingsChangeListener {
+
+        public int eventsCnt = 0;
+        
+        public void settingsChange(SettingsChangeEvent evt) {
+            eventsCnt++;
+        }
+    } // End of MyListener class
 }
