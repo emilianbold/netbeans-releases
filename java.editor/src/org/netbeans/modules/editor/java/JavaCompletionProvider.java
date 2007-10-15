@@ -2431,7 +2431,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case CLASS:
                     case ENUM:
                     case INTERFACE:
-                        results.add(JavaCompletionItem.createTypeItem((TypeElement)e, (DeclaredType)e.asType(), anchorOffset, false, elements.isDeprecated(e), false));
+                        DeclaredType dt = (DeclaredType)(type.getKind() == TypeKind.DECLARED ? types.asMemberOf((DeclaredType)type, e) : e.asType());
+                        results.add(JavaCompletionItem.createTypeItem((TypeElement)e, dt, anchorOffset, false, elements.isDeprecated(e), false));
                         break;
                 }
             }
@@ -2514,7 +2515,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case ENUM:
                     case INTERFACE:
                     case ANNOTATION_TYPE:
-                        results.add(JavaCompletionItem.createTypeItem((TypeElement)e, (DeclaredType)e.asType(), anchorOffset, false, elements.isDeprecated(e), false));
+                        DeclaredType dt = (DeclaredType)(type.getKind() == TypeKind.DECLARED ? types.asMemberOf((DeclaredType)type, e) : e.asType());
+                        results.add(JavaCompletionItem.createTypeItem((TypeElement)e, dt, anchorOffset, false, elements.isDeprecated(e), false));
                         break;
                 }
             }

@@ -48,6 +48,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.ArrayType;
@@ -140,7 +141,7 @@ public final class TypeMirrorHandle<T extends TypeMirror> {
                 TypeElement te = (TypeElement)dt.asElement();
                 element = ElementHandle.create(te);
                 Element encl = te.getEnclosingElement();
-                boolean genericOuter = (encl.getKind().isClass() || encl.getKind().isInterface()) && !((TypeElement)encl).getTypeParameters().isEmpty();
+                boolean genericOuter = (encl.getKind().isClass() || encl.getKind().isInterface()) && !((TypeElement)encl).getTypeParameters().isEmpty() && !te.getModifiers().contains(Modifier.STATIC);
                 if (te.getTypeParameters().isEmpty() && !genericOuter)
                     break;
                 List<? extends TypeMirror> targs = dt.getTypeArguments();
@@ -218,7 +219,7 @@ public final class TypeMirrorHandle<T extends TypeMirror> {
                     return (T)te.asType();
                 Iterator<TypeMirrorHandle<? extends TypeMirror>> it = typeMirrors.iterator();
                 Element encl = te.getEnclosingElement();
-                boolean genericOuter = (encl.getKind().isClass() || encl.getKind().isInterface()) && !((TypeElement)encl).getTypeParameters().isEmpty();
+                boolean genericOuter = (encl.getKind().isClass() || encl.getKind().isInterface()) && !((TypeElement)encl).getTypeParameters().isEmpty() && !te.getModifiers().contains(Modifier.STATIC);
                 TypeMirror outer = null;
                 if (genericOuter) {
                     outer = it.hasNext() ? it.next().resolve(info) : null;
