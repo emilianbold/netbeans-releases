@@ -346,6 +346,10 @@ public class DesignerMultiViewElement extends TopComponent
     public void componentShowing() {
         super.componentShowing();
         Node[] curNodes = getActivatedNodes();
+        if (curNodes != null) {
+            curNodes = curNodes.clone();
+        }
+        
         //
         // memory conservation?
         //
@@ -373,6 +377,8 @@ public class DesignerMultiViewElement extends TopComponent
                 }
                 
                 if (curNodes != null && curNodes.length > 0) {
+                    thisTc.setActivatedNodes(new Node[0]);
+
                     thisTc.setActivatedNodes(curNodes);
                     setActivatedNodes(curNodes);
                 }
