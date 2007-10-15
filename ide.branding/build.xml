@@ -64,6 +64,7 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
       <include name="shortcuts.pdf" />
       <include name="CREDITS.html"/>
       <include name="LICENSE.txt"/>
+      <include name="LEGALNOTICE.txt"/>
       <include name="DISTRIBUTION.txt"/>
       <include name="THIRDPARTYLICENSE.txt"/>
     </patternset>
@@ -123,6 +124,7 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
         <exclude name="shortcuts.pdf"/>
 <!-- Issue 67806
         <exclude name="LICENSE.txt"/>
+        <exclude name="LEGALNOTICE.txt"/>
         <exclude name="DISTRIBUTION.txt"/>
         <exclude name="THIRDPARTYLICENSE.txt"/>
 -->
@@ -133,6 +135,7 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
     <copy todir="${cluster}" file="release/shortcuts.pdf"/>
 <!-- Issue 67806
     <copy todir="${cluster}" file="release/LICENSE.txt"/>
+    <copy todir="${cluster}" file="release/LEGALNOTICE.txt"/>
     <copy todir="${cluster}" file="release/DISTRIBUTION.txt"/>
     <copy todir="${cluster}" file="release/THIRDPARTYLICENSE.txt"/>
 -->
