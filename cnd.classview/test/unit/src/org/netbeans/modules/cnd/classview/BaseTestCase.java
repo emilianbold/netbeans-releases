@@ -80,14 +80,14 @@ public class BaseTestCase extends TraceModelTestBase implements CsmModelListener
     }
     
     @Override
-    protected void doTest(File testFile, PrintStream streamOut, PrintStream streamErr, Object ... params) throws Exception {
+    protected void doTest(String[] args, PrintStream streamOut, PrintStream streamErr, Object ... params) throws Exception {
         PrintStream oldOut = System.out;
         PrintStream oldErr = System.err;
         try {
             // redirect output and err
             System.setOut(streamOut);
             System.setErr(streamErr);
-            performModelTest(testFile, streamOut, streamErr);
+            performModelTest(args, streamOut, streamErr);
             performTest("");
         } finally {
             // restore err and out
