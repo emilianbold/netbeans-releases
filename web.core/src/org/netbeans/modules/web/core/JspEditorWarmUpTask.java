@@ -67,6 +67,7 @@ import org.netbeans.editor.view.spi.EstimatedSpanView;
 import org.netbeans.editor.view.spi.LockView;
 import org.netbeans.modules.web.core.palette.JSPPaletteFactory;
 import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
@@ -162,7 +163,7 @@ public class JspEditorWarmUpTask implements Runnable{
                 assert SwingUtilities.isEventDispatchThread(); // This part must run in AWT
                 
                 // Init of JSPKit and JSPOptions
-                jspKit = JEditorPane.createEditorKitForContentType("text/x-jsp"); //NOI18N
+                jspKit = CloneableEditorSupport.getEditorKit("text/x-jsp");
         
                 //creating actions instances
                 jspKit.getActions();
