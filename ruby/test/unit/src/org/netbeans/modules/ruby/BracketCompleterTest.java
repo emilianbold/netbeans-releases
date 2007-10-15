@@ -795,6 +795,39 @@ public class BracketCompleterTest extends RubyTestBase {
         insertBreak("   # foo^bar", "   # foo\n   # ^bar");
     }
 
+    
+    public void testContComment9() throws Exception {
+        insertBreak("^# foobar", "\n^# foobar");
+    }
+
+    public void testContComment10() throws Exception {
+        insertBreak("#foo\n^# foobar", "#foo\n# ^\n# foobar");
+    }
+
+    public void testContComment11() throws Exception {
+        insertBreak("code #foo\n^# foobar", "code #foo\n\n^# foobar");
+    }
+
+    public void testContComment12() throws Exception {
+        insertBreak("  code\n^# foobar", "  code\n\n  ^# foobar");
+    }
+    
+    public void testContComment14() throws Exception {
+        insertBreak("def foo\n  code\n^# foobar\nend\n", "def foo\n  code\n\n  ^# foobar\nend\n");
+    }
+
+    public void testContComment15() throws Exception {
+        insertBreak("\n\n^# foobar", "\n\n\n^# foobar");
+    }
+
+    public void testContComment16() throws Exception {
+        insertBreak("\n  \n^# foobar", "\n  \n\n^# foobar");
+    }
+
+    public void testContComment17() throws Exception {
+        insertBreak("def foo\n  # cmnt1\n^  # cmnt2\nend\n", "def foo\n  # cmnt1\n  # ^\n  # cmnt2\nend\n");
+    }
+    
     public void testNoContComment() throws Exception {
         // No auto-# on new lines
         insertBreak("foo # ^", "foo # \n^");

@@ -341,40 +341,72 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
             caret.setDot(insertOffset);
         }
         
+        if (id == RubyTokenId.WHITESPACE) {
+            // Pressing newline in the whitespace before a comment
+            // should be identical to pressing newline with the caret
+            // at the beginning of the comment
+            int begin = Utilities.getRowFirstNonWhite(doc, offset);
+            if (begin != -1 && offset < begin) {
+                ts.move(begin);
+                if (ts.moveNext()) {
+                    id = ts.token().id();
+                    if (id == RubyTokenId.LINE_COMMENT) {
+                        offset = begin;
+                    }
+                }
+            }
+        }
+        
         if (id == RubyTokenId.LINE_COMMENT) {
             // Only do this if the line only contains comments OR if there is content to the right on this line,
             // or if the next line is a comment!
 
             boolean continueComment = false;
             int begin = Utilities.getRowFirstNonWhite(doc, offset);
+
+            // We should only continue comments if the previous line had a comment
+            // (and a comment from the beginning, not a trailing comment)
+            boolean previousLineWasComment = false;
+            int rowStart = Utilities.getRowStart(doc, offset);
+            if (rowStart > 0) {                
+                int prevBegin = Utilities.getRowFirstNonWhite(doc, rowStart-1);
+                if (prevBegin != -1) {
+                    Token<? extends GsfTokenId> firstToken = LexUtilities.getToken(doc, prevBegin);
+                    if (firstToken.id() == RubyTokenId.LINE_COMMENT) {
+                        previousLineWasComment = true;
+                    }                
+                }
+            }
             
             // See if we have more input on this comment line (to the right
             // of the inserted newline); if so it's a "split" operation on
             // the comment
-            if (ts.offset()+token.length() > offset+1) {
-                // See if the remaining text is just whitespace
-                String trailing = doc.getText(offset,Utilities.getRowEnd(doc, offset)-offset);
-                if (trailing.trim().length() != 0) {
-                    continueComment = true;
+            if (previousLineWasComment || offset > begin) {
+                if (ts.offset()+token.length() > offset+1) {
+                    // See if the remaining text is just whitespace
+                    String trailing = doc.getText(offset,Utilities.getRowEnd(doc, offset)-offset);
+                    if (trailing.trim().length() != 0) {
+                        continueComment = true;
+                    }
+                } else if (CONTINUE_COMMENTS) {
+                    // See if the "continue comments" options is turned on, and this is a line that
+                    // contains only a comment (after leading whitespace)
+                    Token<? extends GsfTokenId> firstToken = LexUtilities.getToken(doc, begin);
+                    if (firstToken.id() == RubyTokenId.LINE_COMMENT) {
+                        continueComment = true;
+                    }
                 }
-            } else if (CONTINUE_COMMENTS) {
-                // See if the "continue comments" options is turned on, and this is a line that
-                // contains only a comment (after leading whitespace)
-                Token<? extends GsfTokenId> firstToken = LexUtilities.getToken(doc, begin);
-                if (firstToken.id() == RubyTokenId.LINE_COMMENT) {
-                    continueComment = true;
-                }
-            }
-            if (!continueComment) {
-                // See if the next line is a comment; if so we want to continue
-                // comments editing the middle of the comment
-                int nextLine = Utilities.getRowEnd(doc, offset)+1;
-                if (nextLine < doc.getLength()) {
-                    int nextLineFirst = Utilities.getRowFirstNonWhite(doc, nextLine);
-                    if (nextLineFirst != -1) {
-                        Token<? extends GsfTokenId> firstToken = LexUtilities.getToken(doc, nextLineFirst);
-                        if (firstToken != null && firstToken.id() == RubyTokenId.LINE_COMMENT) {
-                            continueComment = true;
+                if (!continueComment) {
+                    // See if the next line is a comment; if so we want to continue
+                    // comments editing the middle of the comment
+                    int nextLine = Utilities.getRowEnd(doc, offset)+1;
+                    if (nextLine < doc.getLength()) {
+                        int nextLineFirst = Utilities.getRowFirstNonWhite(doc, nextLine);
+                        if (nextLineFirst != -1) {
+                            Token<? extends GsfTokenId> firstToken = LexUtilities.getToken(doc, nextLineFirst);
+                            if (firstToken != null && firstToken.id() == RubyTokenId.LINE_COMMENT) {
+                                continueComment = true;
+                            }
                         }
                     }
                 }
@@ -399,6 +431,13 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
                 }
 
                 int insertOffset = offset; // offset < length ? offset+1 : offset;
+                if (offset == begin && insertOffset > 0) {
+                    insertOffset = Utilities.getRowStart(doc, offset);                    
+                    int sp = Utilities.getRowStart(doc, offset)+sb.length();
+                    doc.insertString(insertOffset, sb.toString(), null);
+                    caret.setDot(sp);
+                    return sp;
+                }
                 doc.insertString(insertOffset, sb.toString(), null);
                 caret.setDot(insertOffset);
                 return insertOffset+sb.length()+1;
