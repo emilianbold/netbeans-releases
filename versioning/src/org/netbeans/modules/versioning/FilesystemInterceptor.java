@@ -433,6 +433,8 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
         public void handle() throws IOException {
             lhInterceptor.doMove(file, to);
             interceptor.doMove(file, to);            
+            lhInterceptor.afterMove(file, to);
+            interceptor.afterMove(file, to);            
         }
 
         /**
