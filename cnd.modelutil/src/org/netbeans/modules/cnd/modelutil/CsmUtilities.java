@@ -543,17 +543,9 @@ public class CsmUtilities {
      * start offset position
      */
     public static boolean openSource(CsmObject element) {
-        return _openSource(element);
-    }
-    
-    public static boolean openSource(CsmOffsetable element) {
-        return _openSource(element);
-    }
-    
-    private static boolean _openSource(Object element) {
         if (CsmKindUtilities.isOffsetable(element)) {
             return openAtElement((CsmOffsetable)element, false);
-        } else if (CsmKindUtilities.isCsmObject(element) && CsmKindUtilities.isFile((CsmObject)element)) {
+        } else if (CsmKindUtilities.isFile(element)) {
             final CsmFile file = (CsmFile)element;
             CsmOffsetable fileTarget = new FileTarget(file);
             return openAtElement(fileTarget, false);
@@ -698,21 +690,12 @@ public class CsmUtilities {
     } 
     
     public static String getElementJumpName(CsmObject element) {
-        return _getElementJumpName(element);
-    }
-    public static String getElementJumpName(CsmOffsetable element) {
-        return _getElementJumpName(element);
-    }
-    
-    private static String _getElementJumpName(Object element) {
         String text = "";
         if (element != null) {
             if (CsmKindUtilities.isNamedElement(element)) {
                 text = ((CsmNamedElement) element).getName();
-            } else if (CsmKindUtilities.isCsmObject(element)) {
-                if (CsmKindUtilities.isStatement((CsmObject)element)) {
-                    text = ((CsmStatement)element).getText();
-                }
+            } else if (CsmKindUtilities.isStatement((CsmObject)element)) {
+                text = ((CsmStatement)element).getText();
             } else if (CsmKindUtilities.isOffsetable(element) ) {
                 text = ((CsmOffsetable)element).getText();
             }

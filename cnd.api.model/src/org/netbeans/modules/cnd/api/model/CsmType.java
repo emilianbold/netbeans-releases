@@ -54,7 +54,7 @@ package org.netbeans.modules.cnd.api.model;
  * for variable b getText() returns "int"
  * @author Vladimir Kvashin
  */
-public interface CsmType extends CsmObject, CsmOffsetable {
+public interface CsmType extends CsmOffsetable {
 
 //    /**
 //     * Returns true if this type is a template instantiation

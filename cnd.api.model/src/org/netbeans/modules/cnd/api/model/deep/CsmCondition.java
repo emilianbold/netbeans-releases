@@ -57,7 +57,7 @@ import org.netbeans.modules.cnd.api.model.CsmVariable;
  * 
  * @author Vladimir Kvashin
  */
-public interface CsmCondition extends CsmOffsetable, CsmObject {
+public interface CsmCondition extends CsmOffsetable {
   
         public enum Kind {            
             EXPRESSION,

@@ -50,7 +50,7 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable;
  * Represents expression
  * @author Vladimir Kvashin
  */
-public interface CsmExpression extends CsmOffsetable, CsmObject {
+public interface CsmExpression extends CsmOffsetable {
 
     //TODO: check in accordance to C++ standard
     public enum Kind {

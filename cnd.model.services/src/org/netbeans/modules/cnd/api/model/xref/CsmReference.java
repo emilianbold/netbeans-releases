@@ -68,7 +68,7 @@ import org.netbeans.modules.cnd.api.model.*;
  *
  * @author Vladimir Voskresensky
  */
-public interface CsmReference extends CsmOffsetable, CsmObject {
+public interface CsmReference extends CsmOffsetable {
     
     /**
      * returns referenced object
