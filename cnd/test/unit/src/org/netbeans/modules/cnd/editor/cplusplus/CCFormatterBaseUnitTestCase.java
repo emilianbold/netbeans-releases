@@ -64,8 +64,13 @@ public class CCFormatterBaseUnitTestCase extends BaseDocumentUnitTestCase {
      */
     protected void indentNewLine() {
         Formatter f = getDocument().getFormatter();
-        int offset = f.indentNewLine(getDocument(), getCaretOffset());
-        getCaret().setDot(offset);
+	try {
+	    f.indentLock();
+	    int offset = f.indentNewLine(getDocument(), getCaretOffset());
+	    getCaret().setDot(offset);
+	} finally {
+	    f.indentUnlock();
+	}
     }
     
     /**
@@ -74,10 +79,13 @@ public class CCFormatterBaseUnitTestCase extends BaseDocumentUnitTestCase {
     protected void reformat() {
         Formatter f = getDocument().getFormatter();
         try {
+	    f.reformatLock();
             f.reformat(getDocument(), 0, getDocument().getLength());
         } catch (BadLocationException e) {
             e.printStackTrace(getLog());
             fail(e.getMessage());
-        }
+        } finally {
+	    f.reformatUnlock();
+	}
     }
 }
