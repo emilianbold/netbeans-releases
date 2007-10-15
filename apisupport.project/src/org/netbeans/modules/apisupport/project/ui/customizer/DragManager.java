@@ -398,7 +398,7 @@ final class DragManager implements DragGestureListener, DragSourceListener,
             //private static final int MOVE_MODE = 4;
             
             private int resizeMode = -1;
-            private Rectangle rec;
+            private Rectangle rec = new Rectangle();
             
             ScaleMode(int resizeMode) {
                 this.resizeMode = resizeMode;
@@ -488,7 +488,7 @@ final class DragManager implements DragGestureListener, DragSourceListener,
             static final int W_RESIZE_MODE = 8;
             
             private int resizeMode = -1;
-            private Rectangle rec;
+            private Rectangle rec = new Rectangle();
             
             OneSideScaleMode(int resizeMode) {
                 this.resizeMode = resizeMode;
