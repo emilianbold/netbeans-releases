@@ -3820,7 +3820,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                 ret.add(new Pair(e, eType));
                                 break;
                             }
-                            if (!types.isAssignable(argTypes[i], param))
+                            if (argTypes[i] == null || !types.isAssignable(argTypes[i], param))
                                 break;
                         }
                     }
@@ -3897,7 +3897,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                             ret.add(param);
                             break;
                         }
-                        if (!types.isAssignable(argTypes[i++], param))
+                        if (argTypes[i] == null || !types.isAssignable(argTypes[i++], param))
                             break;
                     }
                 }
