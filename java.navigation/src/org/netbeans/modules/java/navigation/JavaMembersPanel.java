@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.java.navigation;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Point;
@@ -53,6 +54,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.net.URL;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
@@ -61,6 +63,7 @@ import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
+import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.HyperlinkEvent;
@@ -68,6 +71,9 @@ import javax.swing.event.HyperlinkListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.text.html.HTMLEditorKit;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -81,6 +87,7 @@ import org.openide.filesystems.FileObject;
 public class JavaMembersPanel extends javax.swing.JPanel {
     private FileObject fileObject;
     private JavaMembersModel javaMembersModel;
+    private JavaMembersModel.FilterModel javaMembersFilterModel;
 
     /**
      *
@@ -118,7 +125,8 @@ public class JavaMembersPanel extends javax.swing.JPanel {
         javaMembersTree.setCellRenderer(new JavaTreeCellRenderer());
 
         javaMembersModel = new JavaMembersModel(fileObject, elements, compilationInfo);
-        javaMembersTree.setModel(javaMembersModel);
+        javaMembersFilterModel = javaMembersModel.getFilterModel();
+        javaMembersTree.setModel(javaMembersFilterModel);
 
         registerKeyboardAction(
                 new ActionListener() {
@@ -350,8 +358,6 @@ public class JavaMembersPanel extends javax.swing.JPanel {
                             Object node = treePath.getLastPathComponent();
                             if (node instanceof JavaElement) {
                                 filterTextField.setText("");
-        //                        JavaMembersPanel.this.JavaMembersModel = new JavaMembersModel(((JavaElement)node).getElementHandle());
-        //                        javaMembersTree.setModel(JavaMembersPanel.this.JavaMembersModel);
                                 applyFilter();
                             }
                         }
@@ -362,7 +368,7 @@ public class JavaMembersPanel extends javax.swing.JPanel {
 
         showInheritedToggleButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
-                applyFilter();
+                applyFilter(true);
             }
         });
 
@@ -374,7 +380,7 @@ public class JavaMembersPanel extends javax.swing.JPanel {
 
         showInnerToggleButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
-                applyFilter();
+                applyFilter(true);
             }
         });
 
@@ -433,13 +439,11 @@ public class JavaMembersPanel extends javax.swing.JPanel {
                 });
     }
 
-    private boolean showingSubDialog = false;
-
     public void addNotify() {
         super.addNotify();
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                applyFilter();                
+                applyFilter(true);                
             }           
         });
     }
@@ -463,9 +467,13 @@ public class JavaMembersPanel extends javax.swing.JPanel {
     }
     
     private void applyFilter() {
+        applyFilter(false);
+    }
+    
+    private void applyFilter(final boolean structural) {
         // show wait cursor
         SwingUtilities.invokeLater(
-                new Runnable() {
+            new Runnable() {
             public void run() {
                 JRootPane rootPane = SwingUtilities.getRootPane(JavaMembersPanel.this);
                 if (rootPane != null) {
@@ -479,7 +487,8 @@ public class JavaMembersPanel extends javax.swing.JPanel {
             new Runnable() {
             public void run() {
                 try {
-                    javaMembersModel.setPattern(filterTextField.getText());
+                    javaMembersTree.setModel(javaMembersFilterModel);                    
+                    javaMembersFilterModel.setPattern(filterTextField.getText());
 
                     JavaMembersAndHierarchyOptions.setCaseSensitive(caseSensitiveFilterCheckBox.isSelected());
                     JavaMembersAndHierarchyOptions.setShowInherited(showInheritedToggleButton.isSelected());
@@ -494,23 +503,42 @@ public class JavaMembersPanel extends javax.swing.JPanel {
                     JavaMembersAndHierarchyOptions.setShowPrivate(showPrivateToggleButton.isSelected());
                     JavaMembersAndHierarchyOptions.setShowStatic(showStaticToggleButton.isSelected());
 
-                    javaMembersModel.update();
+                    if (structural) {
+                        javaMembersModel.update();
+                    }
+                    
+                    javaMembersFilterModel.update();
 
                     // expand the tree
                     for (int row = 0; row < javaMembersTree.getRowCount(); row++) {                        
                         javaMembersTree.expandRow(row);
                     }
-
-                    if (filterTextField.getText().trim().length() > 0) {
+                    
+                    filterTextField.setForeground(UIManager.getColor("TextField.foreground"));
+                    String filterText = filterTextField.getText();
+                    if (filterText.trim().length() > 0) {
                         // select first matching
                         for (int row = 0; row < javaMembersTree.getRowCount(); row++) {
                             Object o = javaMembersTree.getPathForRow(row).getLastPathComponent();
                             if (o instanceof JavaElement) {
-                                if (javaMembersModel.patternMatch((JavaElement)o)) {
+                                JavaElement javaElement = (JavaElement) o;
+                                ElementKind elementKind = javaElement.getElementKind();
+                                if (
+//                                    elementKind == ElementKind.CLASS ||
+//                                    elementKind == ElementKind.INTERFACE||
+//                                    elementKind == ElementKind.ENUM ||
+//                                    elementKind == ElementKind.ANNOTATION_TYPE ||
+                                    elementKind == ElementKind.PACKAGE) {
+                                        continue;
+                                }
+                                if (JavaMembersModel.patternMatch((JavaElement)o, filterText)) {
                                     javaMembersTree.setSelectionRow(row);
                                     break;
                                 }
                             }
+                        }
+                        if (javaMembersTree.getSelectionCount() == 0) {
+                            filterTextField.setForeground(Color.red);
                         }
                     } else {
                         // Try to select non-package node
@@ -518,10 +546,15 @@ public class JavaMembersPanel extends javax.swing.JPanel {
                             TreePath treePath = javaMembersTree.getPathForRow(0);
                             if (treePath != null) {
                                 Object node = treePath.getLastPathComponent();
-                                if (node instanceof JavaMembersModel.PackageTreeNode) {
-                                    javaMembersTree.setSelectionRow(1);
-                                } else {
-                                    javaMembersTree.setSelectionRow(0);
+                                if (node instanceof JavaElement) {
+                                    JavaElement javaELement = (JavaElement) node;
+                                    if (javaELement.getElementKind() == ElementKind.PACKAGE) {
+                                        // Select the next row
+                                        javaMembersTree.setSelectionRow(1);
+                                    } else {
+                                        // Select the first row
+                                        javaMembersTree.setSelectionRow(0);
+                                    }
                                 }
                             }
                         }
@@ -535,7 +568,7 @@ public class JavaMembersPanel extends javax.swing.JPanel {
             }
         });
     }
-
+    
     private void gotoElement(JavaElement javaElement) {
         try {
             javaElement.gotoElement();

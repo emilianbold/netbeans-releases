@@ -185,7 +185,7 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
                 Utils.firstRow(javaHierarchyTree);
             }
         },
-                KeyStroke.getKeyStroke(KeyEvent.VK_HOME, 0, true),
+                KeyStroke.getKeyStroke(KeyEvent.VK_HOME, 0, false),
                 JComponent.WHEN_FOCUSED);
 
         signatureEditorPane.registerKeyboardAction(
@@ -194,7 +194,7 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
                 Utils.previousRow(javaHierarchyTree);
             }
         },
-                KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0, true),
+                KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0, false),
                 JComponent.WHEN_FOCUSED);
 
         signatureEditorPane.registerKeyboardAction(
@@ -203,7 +203,7 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
                 Utils.nextRow(javaHierarchyTree);
             }
         },
-                KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0, true),
+                KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0, false),
                 JComponent.WHEN_FOCUSED);
 
         signatureEditorPane.registerKeyboardAction(
@@ -212,7 +212,7 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
                 Utils.lastRow(javaHierarchyTree);
             }
         },
-                KeyStroke.getKeyStroke(KeyEvent.VK_END, 0, true),
+                KeyStroke.getKeyStroke(KeyEvent.VK_END, 0, false),
                 JComponent.WHEN_FOCUSED);
 
         filterTextField.registerKeyboardAction(
@@ -357,7 +357,7 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
             public void actionPerformed(ActionEvent actionEvent) {
                 // Prevent reloading of super type hierarchy
                 if (!JavaMembersAndHierarchyOptions.isShowSuperTypeHierarchy()) {
-                    applyFilter();
+                    applyFilter(true);
                 }
             }
         });
@@ -366,20 +366,21 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
             public void actionPerformed(ActionEvent actionEvent) {
                 // Prevent reloading of sub type hierarchy
                 if (!JavaMembersAndHierarchyOptions.isShowSubTypeHierarchy()) {
-                    applyFilter();
+                    applyFilter(true);
                 }
             }
         });
 
         showFQNToggleButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
-                applyFilter();
+                JavaMembersAndHierarchyOptions.setShowFQN(showFQNToggleButton.isSelected());
+                javaHierarchyTree.repaint();
             }
         });
 
         showInnerToggleButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
-                applyFilter();
+                applyFilter(true);
             }
         });
 
@@ -402,7 +403,7 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
         super.addNotify();
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                applyFilter();                
+                applyFilter(true);                
             }           
         });
     }
@@ -426,50 +427,55 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
     }
 
     private void applyFilter() {
+        applyFilter(true);
+    }
+    
+    private void applyFilter(final boolean structural) {
         SwingUtilities.invokeLater(
-                new Runnable() {
-            public void run() {
-                JRootPane rootPane = SwingUtilities.getRootPane(JavaHierarchyPanel.this);
-                if (rootPane != null) {
-                    rootPane.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                }
-            }
-        }
-        );
-
-        SwingUtilities.invokeLater(
-                new Runnable() {
-            public void run() {
-                try {
-                    JavaMembersAndHierarchyOptions.setCaseSensitive(caseSensitiveFilterCheckBox.isSelected());
-                    JavaMembersAndHierarchyOptions.setShowSuperTypeHierarchy(showSuperTypeHierarchyToggleButton.isSelected());
-                    JavaMembersAndHierarchyOptions.setShowSubTypeHierarchy(showSubTypeHierarchyToggleButton.isSelected());
-                    JavaMembersAndHierarchyOptions.setShowFQN(showFQNToggleButton.isSelected());
-                    JavaMembersAndHierarchyOptions.setShowInner(showInnerToggleButton.isSelected());
-
-                    javaHierarchyModel.update();
-
-                    // expand the tree
-                    for (int row = 0; row < javaHierarchyTree.getRowCount(); row++) {
-                        TreePath treePath = javaHierarchyTree.getPathForRow(row);
-                        if (JavaMembersAndHierarchyOptions.isShowSubTypeHierarchy()) {
-                            if (treePath.getPathCount() < JavaMembersAndHierarchyOptions.getSubTypeHierarchyDepth()) {
-                                javaHierarchyTree.expandRow(row);
-                            }
-                        } else {
-                            javaHierarchyTree.expandRow(row);
-                        }
-                    }
-                } finally {
+            new Runnable() {
+                public void run() {
                     JRootPane rootPane = SwingUtilities.getRootPane(JavaHierarchyPanel.this);
                     if (rootPane != null) {
-                        rootPane.setCursor(Cursor.getDefaultCursor());
+                        rootPane.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                     }
                 }
-            }
-        }
-        );
+            });
+
+        SwingUtilities.invokeLater(
+            new Runnable() {
+                public void run() {
+                    try {
+                        JavaMembersAndHierarchyOptions.setCaseSensitive(caseSensitiveFilterCheckBox.isSelected());
+                        JavaMembersAndHierarchyOptions.setShowSuperTypeHierarchy(showSuperTypeHierarchyToggleButton.isSelected());
+                        JavaMembersAndHierarchyOptions.setShowSubTypeHierarchy(showSubTypeHierarchyToggleButton.isSelected());
+                        JavaMembersAndHierarchyOptions.setShowFQN(showFQNToggleButton.isSelected());
+                        JavaMembersAndHierarchyOptions.setShowInner(showInnerToggleButton.isSelected());
+    
+                        if (structural) {
+                            javaHierarchyModel.update();
+                        }
+                            
+                        // expand the tree
+                        for (int row = 0; row < javaHierarchyTree.getRowCount(); row++) {
+                            TreePath treePath = javaHierarchyTree.getPathForRow(row);
+                            if (JavaMembersAndHierarchyOptions.isShowSubTypeHierarchy()) {
+                                if (treePath.getPathCount() < JavaMembersAndHierarchyOptions.getSubTypeHierarchyDepth()) {
+                                    javaHierarchyTree.expandRow(row);
+                                }
+                            } else {
+                                javaHierarchyTree.expandRow(row);
+                            }
+                        }
+                    } finally {
+                        JRootPane rootPane = SwingUtilities.getRootPane(JavaHierarchyPanel.this);
+                        if (rootPane != null) {
+                            rootPane.setCursor(Cursor.getDefaultCursor());
+                        }
+                    }
+                }
+            });
     }
+
     private void expandAll() {
         SwingUtilities.invokeLater(
                 new Runnable() {

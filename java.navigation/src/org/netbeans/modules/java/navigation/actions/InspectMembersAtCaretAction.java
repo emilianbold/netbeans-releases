@@ -45,6 +45,7 @@ import com.sun.source.util.TreePath;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -152,8 +153,9 @@ public final class InspectMembersAtCaretAction extends BaseAction {
                                                                    .getElement(tp);
                             
                             if (element instanceof TypeElement) {
-                                FileObject elementFileObject = SourceUtils.getFile(element,
-                                        compilationController.getClasspathInfo());
+                                FileObject elementFileObject = SourceUtils.getFile(
+                                    ElementHandle.create(element),
+                                    compilationController.getClasspathInfo());
 
                                 if (elementFileObject != null) {
                                     JavaMembers.show(elementFileObject, new Element[] {element}, compilationController);
@@ -167,7 +169,8 @@ public final class InspectMembersAtCaretAction extends BaseAction {
 
                                     if (element != null) {
                                         FileObject elementFileObject =
-                                            SourceUtils.getFile(element,
+                                            SourceUtils.getFile(
+                                                ElementHandle.create(element),
                                                 compilationController.getClasspathInfo());
 
                                         if (elementFileObject != null) {
@@ -185,7 +188,8 @@ public final class InspectMembersAtCaretAction extends BaseAction {
 
                                         if (element != null) {
                                             FileObject elementFileObject =
-                                                SourceUtils.getFile(element,
+                                                SourceUtils.getFile(
+                                                    ElementHandle.create(element),
                                                     compilationController.getClasspathInfo());
 
                                             if (elementFileObject != null) {
@@ -198,7 +202,8 @@ public final class InspectMembersAtCaretAction extends BaseAction {
 
                                     if (element != null) {
                                         FileObject elementFileObject =
-                                            SourceUtils.getFile(element,
+                                            SourceUtils.getFile(
+                                                ElementHandle.create(element),
                                                 compilationController.getClasspathInfo());
 
                                         if (elementFileObject != null) {

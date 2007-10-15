@@ -41,8 +41,13 @@
 
 package org.netbeans.modules.java.navigation;
 
+import java.util.Set;
+
 import org.netbeans.api.java.source.ElementHandle;
 import org.openide.filesystems.FileObject;
+
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Modifier;
 import javax.swing.Icon;
 import org.netbeans.api.java.source.ui.ElementJavadoc;
 
@@ -52,8 +57,11 @@ import org.netbeans.api.java.source.ui.ElementJavadoc;
  * @author Sandip Chitale (Sandip.Chitale@Sun.Com)
  */
 public interface JavaElement {
-    String getName();
+    String getName();    
+    Set<Modifier> getModifiers();
+    ElementKind getElementKind();
     String getLabel();
+    String getFQNLabel();
     String getTooltip();
     Icon getIcon();
     ElementJavadoc getJavaDoc();

@@ -157,7 +157,6 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
         if (javaSource != null) {
             try {
                 javaSource.runUserActionTask(new Task<CompilationController>() {
-
                         public void run(
                             CompilationController compilationController)
                             throws Exception {
@@ -236,6 +235,7 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
         private Set<Modifier> modifiers;
         private String name = "";
         private String label = "";
+        private String FQNlabel = "";
         private String tooltip = null;
         private Icon icon = null;
         private ElementJavadoc javaDoc = null;
@@ -259,7 +259,8 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
             setName(element.getSimpleName().toString());
             setIcon(ElementIcons.getElementIcon(element.getKind(), element.getModifiers()));
             setLabel(Utils.format(element));
-            setToolTip(Utils.format(element, true));
+            setFQNLabel(Utils.format(element, false, true));
+            setToolTip(Utils.format(element, true, JavaMembersAndHierarchyOptions.isShowFQN()));
             javaDoc = ElementJavadoc.create( compilationInfo, element );
 
             if (!lazyLoadChildren) {
@@ -291,6 +292,14 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
             return name;
         }
 
+        public Set<Modifier> getModifiers() {
+            return modifiers;
+        }
+        
+        public ElementKind getElementKind() {
+            return elementKind;
+        }
+        
         protected void setName(String name) {
             this.name = name;
         }
@@ -301,6 +310,14 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
 
         protected void setLabel(String label) {
             this.label = label;
+        }
+        
+        public String getFQNLabel() {
+            return FQNlabel;
+        }
+
+        protected void setFQNLabel(String FQNlabel) {
+            this.FQNlabel = FQNlabel;
         }
 
         public String getTooltip() {
@@ -330,10 +347,6 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
 
         public void setJavaDoc(ElementJavadoc javaDoc) {
             this.javaDoc = javaDoc;
-        }
-
-        public Set<Modifier> getModifiers() {
-            return modifiers;
         }
 
         public ElementHandle getElementHandle() {
@@ -373,7 +386,7 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
             CompilationInfo compilationInfo);
 
         public String toString() {
-            return getLabel();
+            return (JavaMembersAndHierarchyOptions.isShowFQN()? getFQNLabel() : getLabel());
         }
 
         protected void openElementHandle() {
@@ -510,7 +523,6 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
                     
                     // Walk through source groups
                     for (SourceGroup sourceGroup : sourceGroups) {
-                        
                         // Get root file object
                         FileObject rootFileObject = sourceGroup.getRootFolder();
                         if (rootFileObject == null) {

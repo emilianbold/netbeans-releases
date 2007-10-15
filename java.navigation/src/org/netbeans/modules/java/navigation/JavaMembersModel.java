@@ -57,6 +57,7 @@ import org.openide.util.NbBundle;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Element;
@@ -72,6 +73,8 @@ import javax.lang.model.type.TypeMirror;
 import javax.swing.Icon;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeNode;
+
 import org.netbeans.api.java.source.ui.ElementJavadoc;
 
 /**
@@ -87,6 +90,8 @@ public final class JavaMembersModel extends DefaultTreeModel {
     private String patternLowerCase = ""; // NOI18N
     private FileObject fileObject;
     private ElementHandle[] elementHandles;
+    
+    private FilterModel filterModel;
 
     /**
      * 
@@ -111,28 +116,12 @@ public final class JavaMembersModel extends DefaultTreeModel {
         }
 
         update(elements, compilationInfo);
+        
+        filterModel = new FilterModel(this);
     }
-
-    /**
-     * Getter for property pattern.
-     * @return Value of property pattern.
-     */
-    public String getPattern() {
-        return this.pattern;
-    }
-
-    /**
-     * Setter for property pattern.
-     * @param pattern New value of property pattern.
-     */
-    public void setPattern(String pattern) {
-        this.pattern = pattern;
-
-        if (pattern == null) {
-            patternLowerCase = null;
-        } else {
-            patternLowerCase = pattern.toLowerCase();
-        }
+    
+    FilterModel getFilterModel() {
+        return filterModel;
     }
 
     /**
@@ -213,10 +202,6 @@ public final class JavaMembersModel extends DefaultTreeModel {
         setRoot(root);
     }
 
-    boolean patternMatch(JavaElement javaToolsJavaElement) {
-        return Utils.patternMatch(javaToolsJavaElement, pattern, patternLowerCase);
-    }
-
     abstract class AbstractMembersTreeNode
         extends DefaultMutableTreeNode implements JavaElement {
         private FileObject fileObject;
@@ -225,6 +210,7 @@ public final class JavaMembersModel extends DefaultTreeModel {
         private Set<Modifier> modifiers;
         private String name = "";
         private String label = "";
+        private String FQNlabel = "";
         private String tooltip = null;
         private Icon icon = null;
         private ElementJavadoc javaDoc;
@@ -244,8 +230,9 @@ public final class JavaMembersModel extends DefaultTreeModel {
             setIcon(ElementIcons.getElementIcon(element.getKind(),
                     element.getModifiers()));
             setLabel(Utils.format(element));
-            setToolTip(Utils.format(element, true));
-            setJavaDoc( ElementJavadoc.create(compilationInfo, element) );
+            setFQNLabel(Utils.format(element, false, true));
+            setToolTip(Utils.format(element, true, JavaMembersAndHierarchyOptions.isShowFQN()));
+            setJavaDoc(ElementJavadoc.create(compilationInfo, element) );
             loadChildren(element, compilationInfo);
         }
 
@@ -255,6 +242,10 @@ public final class JavaMembersModel extends DefaultTreeModel {
 
         public String getName() {
             return name;
+        }
+        
+        public Set<Modifier> getModifiers() {
+            return modifiers;
         }
 
         protected void setName(String name) {
@@ -267,6 +258,14 @@ public final class JavaMembersModel extends DefaultTreeModel {
 
         protected void setLabel(String label) {
             this.label = label;
+        }
+        
+        public String getFQNLabel() {
+            return FQNlabel;
+        }
+
+        protected void setFQNLabel(String FQNlabel) {
+            this.FQNlabel = FQNlabel;
         }
 
         public String getTooltip() {
@@ -298,12 +297,12 @@ public final class JavaMembersModel extends DefaultTreeModel {
             this.javaDoc = javaDoc;
         }
 
-        public Set<Modifier> getModifiers() {
-            return modifiers;
-        }
-
         public ElementHandle getElementHandle() {
             return elementHandle;
+        }
+        
+        public ElementKind getElementKind() {
+            return elementKind;
         }
 
         public void gotoElement() {
@@ -314,7 +313,7 @@ public final class JavaMembersModel extends DefaultTreeModel {
             CompilationInfo compilationInfo);
 
         public String toString() {
-            return getLabel();
+            return (JavaMembersAndHierarchyOptions.isShowFQN()? getFQNLabel() : getLabel());
         }
 
         protected void openElementHandle() {
@@ -401,19 +400,6 @@ public final class JavaMembersModel extends DefaultTreeModel {
 
                         ExecutableElement constructor = (ExecutableElement) enclosedElement;
 
-                        if ((!modifiers.contains(Modifier.PUBLIC) &&
-                                !modifiers.contains(Modifier.PROTECTED) &&
-                                !modifiers.contains(Modifier.PRIVATE)) &&
-                                !JavaMembersAndHierarchyOptions.isShowPackage()) {
-                            continue;
-                        } else if (modifiers.contains(Modifier.PROTECTED) &&
-                                !JavaMembersAndHierarchyOptions.isShowProtected()) {
-                            continue;
-                        } else if (modifiers.contains(Modifier.PRIVATE) &&
-                                !JavaMembersAndHierarchyOptions.isShowPrivate()) {
-                            continue;
-                        }
-
                         node = new ConstructorTreeNode(getFileObject(),
                                 constructor, compilationInfo);
                     } else if (enclosedElement.getKind() == ElementKind.METHOD) {
@@ -422,24 +408,6 @@ public final class JavaMembersModel extends DefaultTreeModel {
                         }
 
                         ExecutableElement method = (ExecutableElement) enclosedElement;
-
-                        if ((!modifiers.contains(Modifier.PUBLIC) &&
-                                !modifiers.contains(Modifier.PROTECTED) &&
-                                !modifiers.contains(Modifier.PRIVATE)) &&
-                                !JavaMembersAndHierarchyOptions.isShowPackage()) {
-                            continue;
-                        } else if (modifiers.contains(Modifier.PROTECTED) &&
-                                !JavaMembersAndHierarchyOptions.isShowProtected()) {
-                            continue;
-                        } else if (modifiers.contains(Modifier.PRIVATE) &&
-                                !JavaMembersAndHierarchyOptions.isShowPrivate()) {
-                            continue;
-                        }
-
-                        if (modifiers.contains(Modifier.STATIC) &&
-                                !JavaMembersAndHierarchyOptions.isShowStatic()) {
-                            continue;
-                        }
 
                         node = new MethodTreeNode(getFileObject(), method,
                                 compilationInfo);
@@ -450,24 +418,6 @@ public final class JavaMembersModel extends DefaultTreeModel {
 
                         VariableElement field = (VariableElement) enclosedElement;
 
-                        if ((!modifiers.contains(Modifier.PUBLIC) &&
-                                !modifiers.contains(Modifier.PROTECTED) &&
-                                !modifiers.contains(Modifier.PRIVATE)) &&
-                                !JavaMembersAndHierarchyOptions.isShowPackage()) {
-                            continue;
-                        } else if (modifiers.contains(Modifier.PROTECTED) &&
-                                !JavaMembersAndHierarchyOptions.isShowProtected()) {
-                            continue;
-                        } else if (modifiers.contains(Modifier.PRIVATE) &&
-                                !JavaMembersAndHierarchyOptions.isShowPrivate()) {
-                            continue;
-                        }
-
-                        if (modifiers.contains(Modifier.STATIC) &&
-                                !JavaMembersAndHierarchyOptions.isShowStatic()) {
-                            continue;
-                        }
-
                         node = new FieldTreeNode(getFileObject(), field,
                                 compilationInfo);
                     } else if (enclosedElement.getKind() == ElementKind.ENUM_CONSTANT) {
@@ -477,30 +427,8 @@ public final class JavaMembersModel extends DefaultTreeModel {
 
                         VariableElement enumConstant = (VariableElement) enclosedElement;
 
-                        if ((!modifiers.contains(Modifier.PUBLIC) &&
-                                !modifiers.contains(Modifier.PROTECTED) &&
-                                !modifiers.contains(Modifier.PRIVATE)) &&
-                                !JavaMembersAndHierarchyOptions.isShowPackage()) {
-                            continue;
-                        } else if (modifiers.contains(Modifier.PROTECTED) &&
-                                !JavaMembersAndHierarchyOptions.isShowProtected()) {
-                            continue;
-                        } else if (modifiers.contains(Modifier.PRIVATE) &&
-                                !JavaMembersAndHierarchyOptions.isShowPrivate()) {
-                            continue;
-                        }
-
-                        if (modifiers.contains(Modifier.STATIC) &&
-                                !JavaMembersAndHierarchyOptions.isShowStatic()) {
-                            continue;
-                        }
-
                         node = new EnumConstantTreeNode(getFileObject(),
                                 enumConstant, compilationInfo);
-                    }
-
-                    if ((node == null) || !patternMatch(node)) {
-                        continue;
                     }
                 }
 
@@ -587,8 +515,7 @@ public final class JavaMembersModel extends DefaultTreeModel {
         }
 
         protected void loadChildren(Element element,
-            CompilationInfo compilationInfo) {
-        }
+            CompilationInfo compilationInfo) {}
     }
 
     class FieldTreeNode extends AbstractMembersTreeNode {
@@ -602,8 +529,7 @@ public final class JavaMembersModel extends DefaultTreeModel {
         }
 
         protected void loadChildren(Element element,
-            CompilationInfo compilationInfo) {
-        }
+            CompilationInfo compilationInfo) {}
     }
 
     class EnumConstantTreeNode extends AbstractMembersTreeNode {
@@ -617,7 +543,230 @@ public final class JavaMembersModel extends DefaultTreeModel {
         }
 
         protected void loadChildren(Element element,
-            CompilationInfo compilationInfo) {
+            CompilationInfo compilationInfo) {}
+    }   
+    
+    static class FilterModel extends DefaultTreeModel {
+        private JavaMembersModel javaMembersModel;
+        private String pattern = ""; // NOI18N
+        private String patternLowerCase = ""; // NOI18N
+        
+        FilterModel(JavaMembersModel javaMembersModel) {
+            super(null);
+            this.javaMembersModel = javaMembersModel;
         }
+        
+        void update() {
+            DefaultMutableTreeNode root = new DefaultMutableTreeNode();
+            
+            TreeNode javaMembersModelRoot = (TreeNode) javaMembersModel.getRoot();
+            int childCount = javaMembersModelRoot.getChildCount();
+            for (int i = 0; i < childCount; i++) {
+                AbstractMembersTreeNode delegateNode = (AbstractMembersTreeNode) javaMembersModelRoot.getChildAt(i);
+                if (include(delegateNode, pattern, patternLowerCase)) {
+                    FilterNode filterNode = new FilterNode(delegateNode);
+                    filterNode.loadChildren();
+                    root.add(filterNode);
+                }
+            }
+            
+            setRoot(root);
+        }
+        
+        /**
+         * Getter for property pattern.
+         * @return Value of property pattern.
+         */
+        String getPattern() {
+            return this.pattern;
+        }
+
+        /**
+         * Setter for property pattern.
+         * @param pattern New value of property pattern.
+         */
+        void setPattern(String pattern) {
+            this.pattern = pattern;
+
+            if (pattern == null) {
+                patternLowerCase = null;
+            } else {
+                patternLowerCase = pattern.toLowerCase();
+            }
+        }
+        
+        private class FilterNode extends DefaultMutableTreeNode implements JavaElement {
+            private AbstractMembersTreeNode abstractMembersTreeNode;
+            
+            FilterNode(AbstractMembersTreeNode abstractMembersTreeNode) {
+                this.abstractMembersTreeNode = abstractMembersTreeNode;
+            }
+
+            private void loadChildren() {
+                int childCount = abstractMembersTreeNode.getChildCount();
+                for (int i = 0; i < childCount; i++) {
+                    AbstractMembersTreeNode delegateNode = (AbstractMembersTreeNode) abstractMembersTreeNode.getChildAt(i);
+                    if (include(delegateNode, pattern, patternLowerCase)) {
+                        FilterNode filterNode = new FilterNode(delegateNode);
+                        filterNode.loadChildren();
+                        add(filterNode);
+                    }
+                }                
+            }
+            
+            public String getName() {
+                return abstractMembersTreeNode.getName();
+            }
+
+            public Set<Modifier> getModifiers() {
+                return abstractMembersTreeNode.getModifiers();
+            }
+            
+            public ElementKind getElementKind() {
+                return abstractMembersTreeNode.getElementKind();
+            }
+            
+            public String getLabel() {
+                return abstractMembersTreeNode.getLabel();
+            }
+            
+            public String getFQNLabel() {
+                return abstractMembersTreeNode.getLabel();
+            }
+            
+            public Icon getIcon() {
+                return abstractMembersTreeNode.getIcon();
+            }
+            
+            public String getTooltip() {
+                return abstractMembersTreeNode.getTooltip();
+            }
+            
+            public ElementHandle getElementHandle() {
+                return abstractMembersTreeNode.getElementHandle();
+            }
+
+            public FileObject getFileObject() {
+                return abstractMembersTreeNode.getFileObject();
+            }
+
+            public ElementJavadoc getJavaDoc() {
+                return abstractMembersTreeNode.getJavaDoc();
+            }
+
+            public void gotoElement() {
+                abstractMembersTreeNode.gotoElement();
+            }
+            
+            @Override
+            public String toString() {
+                return abstractMembersTreeNode.toString();
+            }
+        }        
+    }
+    
+    private static boolean include(AbstractMembersTreeNode delegateNode, String pattern, String patternLowerCase) {
+        ElementKind elementKind = delegateNode.getElementKind();
+        if (elementKind == ElementKind.CLASS ||
+            elementKind == ElementKind.INTERFACE||
+            elementKind == ElementKind.ENUM ||
+            elementKind == ElementKind.ANNOTATION_TYPE ||
+            elementKind == ElementKind.PACKAGE) {
+            return true;
+        } else {
+            Set<Modifier> modifiers = delegateNode.getModifiers();
+            if (elementKind == ElementKind.CONSTRUCTOR) {
+                if (!JavaMembersAndHierarchyOptions.isShowConstructors()) {
+                    return false;
+                }
+                if ((!modifiers.contains(Modifier.PUBLIC) &&
+                        !modifiers.contains(Modifier.PROTECTED) &&
+                        !modifiers.contains(Modifier.PRIVATE)) &&
+                        !JavaMembersAndHierarchyOptions.isShowPackage()) {
+                    return false;
+                } else if (modifiers.contains(Modifier.PROTECTED) &&
+                        !JavaMembersAndHierarchyOptions.isShowProtected()) {
+                    return false;
+                } else if (modifiers.contains(Modifier.PRIVATE) &&
+                        !JavaMembersAndHierarchyOptions.isShowPrivate()) {
+                    return false;
+                }
+            } else if (elementKind == ElementKind.METHOD) {
+                if (!JavaMembersAndHierarchyOptions.isShowMethods()) {
+                    return false;
+                }
+                if ((!modifiers.contains(Modifier.PUBLIC) &&
+                        !modifiers.contains(Modifier.PROTECTED) &&
+                        !modifiers.contains(Modifier.PRIVATE)) &&
+                        !JavaMembersAndHierarchyOptions.isShowPackage()) {
+                    return false;
+                } else if (modifiers.contains(Modifier.PROTECTED) &&
+                        !JavaMembersAndHierarchyOptions.isShowProtected()) {
+                    return false;
+                } else if (modifiers.contains(Modifier.PRIVATE) &&
+                        !JavaMembersAndHierarchyOptions.isShowPrivate()) {
+                    return false;
+                }
+                if (modifiers.contains(Modifier.STATIC) &&
+                        !JavaMembersAndHierarchyOptions.isShowStatic()) {
+                    return false;
+                }
+            } else if (elementKind == ElementKind.FIELD) {
+                if (!JavaMembersAndHierarchyOptions.isShowFields()) {
+                    return false;
+                }
+                if ((!modifiers.contains(Modifier.PUBLIC) &&
+                        !modifiers.contains(Modifier.PROTECTED) &&
+                        !modifiers.contains(Modifier.PRIVATE)) &&
+                        !JavaMembersAndHierarchyOptions.isShowPackage()) {
+                    return false;
+                } else if (modifiers.contains(Modifier.PROTECTED) &&
+                        !JavaMembersAndHierarchyOptions.isShowProtected()) {
+                    return false;
+                } else if (modifiers.contains(Modifier.PRIVATE) &&
+                        !JavaMembersAndHierarchyOptions.isShowPrivate()) {
+                    return false;
+                }
+
+                if (modifiers.contains(Modifier.STATIC) &&
+                        !JavaMembersAndHierarchyOptions.isShowStatic()) {
+                    return false;
+                }
+            } else if (elementKind == ElementKind.ENUM_CONSTANT) {
+                if (!JavaMembersAndHierarchyOptions.isShowEnumConstants()) {
+                    return false;
+                }
+                if ((!modifiers.contains(Modifier.PUBLIC) &&
+                        !modifiers.contains(Modifier.PROTECTED) &&
+                        !modifiers.contains(Modifier.PRIVATE)) &&
+                        !JavaMembersAndHierarchyOptions.isShowPackage()) {
+                    return false;
+                } else if (modifiers.contains(Modifier.PROTECTED) &&
+                        !JavaMembersAndHierarchyOptions.isShowProtected()) {
+                    return false;
+                } else if (modifiers.contains(Modifier.PRIVATE) &&
+                        !JavaMembersAndHierarchyOptions.isShowPrivate()) {
+                    return false;
+                }
+
+                if (modifiers.contains(Modifier.STATIC) &&
+                        !JavaMembersAndHierarchyOptions.isShowStatic()) {
+                    return false;
+                }
+            }
+
+            if (!patternMatch((JavaElement)delegateNode, pattern, patternLowerCase)) {
+                return false;
+            }
+        }
+        return true;
+    }   
+
+    static boolean patternMatch(JavaElement javaToolsJavaElement, String pattern) {
+        return patternMatch(javaToolsJavaElement, pattern, pattern.toLowerCase());
+    }
+
+    static boolean patternMatch(JavaElement javaToolsJavaElement, String pattern, String patternLowerCase) {
+        return Utils.patternMatch(javaToolsJavaElement, pattern, patternLowerCase);
     }
 }

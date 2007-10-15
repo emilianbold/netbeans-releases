@@ -46,6 +46,7 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import org.netbeans.api.editor.EditorRegistry;
 
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -152,7 +153,8 @@ public final class InspectHierarchyAtCaretAction extends BaseAction {
                                                                    .getElement(tp);
 
                             if (element instanceof TypeElement) {
-                                FileObject elementFileObject = SourceUtils.getFile(element,
+                                FileObject elementFileObject = SourceUtils.getFile(
+                                        ElementHandle.create(element),
                                         compilationController.getClasspathInfo());
 
                                 if (elementFileObject != null) {
@@ -167,7 +169,8 @@ public final class InspectHierarchyAtCaretAction extends BaseAction {
 
                                     if (element != null) {
                                         FileObject elementFileObject =
-                                            SourceUtils.getFile(element,
+                                            SourceUtils.getFile(
+                                                ElementHandle.create(element),
                                                 compilationController.getClasspathInfo());
 
                                         if (elementFileObject != null) {
@@ -185,7 +188,8 @@ public final class InspectHierarchyAtCaretAction extends BaseAction {
 
                                         if (element != null) {
                                             FileObject elementFileObject =
-                                                SourceUtils.getFile(element,
+                                                SourceUtils.getFile(
+                                                    ElementHandle.create(element),
                                                     compilationController.getClasspathInfo());
 
                                             if (elementFileObject != null) {
@@ -198,7 +202,8 @@ public final class InspectHierarchyAtCaretAction extends BaseAction {
 
                                     if (element != null) {
                                         FileObject elementFileObject =
-                                            SourceUtils.getFile(element,
+                                            SourceUtils.getFile(
+                                                ElementHandle.create(element),
                                                 compilationController.getClasspathInfo());
 
                                         if (elementFileObject != null) {
