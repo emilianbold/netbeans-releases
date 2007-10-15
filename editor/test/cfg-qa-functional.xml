@@ -63,6 +63,9 @@ made subject to such option by the copyright holder.
                 <include name="general/*Test.class"/>
                 <include name="popup_menus/MainMenuTest.class"/>                
                 <include name="search_replace/SearchAndReplaceTestSuite.class"/>
+                <exclude name="search_replace/SearchAndReplaceTestSuite.class/testCloseButton"/>
+                <exclude name="search_replace/SearchAndReplaceTestSuite.class/testReplaceDialogComboBox"/>
+                <exclude name="search_replace/SearchAndReplaceTestSuite.class/testReplaceSelectionRepeated"/>
                 <include name="org/netbeans/test/editor/formatting/*.class"/>            
                 <exclude name="org/netbeans/test/editor/formatting/BasicTest.class/testReformat"/>
                 <exclude name="org/netbeans/test/editor/formatting/BasicTest.class/testReformat2"/>
