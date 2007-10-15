@@ -189,7 +189,7 @@ public class ETLEditorTopView extends BasicTopView {
           
         actions.add(GraphAction.getAction(ZoomInAction.class));
         actions.add(GraphAction.getAction(ZoomOutAction.class));
-        actions.add(GraphAction.getAction(ZoomAction.class));
+        //actions.add(GraphAction.getAction(ZoomAction.class));
         // null is used for seperator
         actions.add(null);
     
