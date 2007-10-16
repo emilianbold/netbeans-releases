@@ -247,7 +247,8 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
         @Override
         public Tree visitMemberSelect(MemberSelectTree memSelTree, Element elemToFind) {
             Element elem = asElement(memSelTree);
-            if (isStatic(elem)) {
+            
+            if ((elem != null) && isStatic(elem)) {
                 Element expreElem = asElement(memSelTree.getExpression());
                 //If a static member was referenced using the object instead 
                 //of the class, don't handle it here.
@@ -295,7 +296,9 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
             Elements elements = workingCopy.getElements();
             List<? extends Element> containedElements = elements.getAllMembers(superTypeElement);
             for (Element elem : containedElements) {
-                if (isStatic(elem) && elements.hides(methElement, elem)) {
+                boolean isPresentInSuperType = methElement.equals(elem) || 
+                        elements.hides(methElement, elem);
+                if ((elem != null) && isStatic(elem) && isPresentInSuperType) {
                     return true;
                 }
             }

@@ -137,7 +137,7 @@ class VarUsageVisitor extends RefactoringVisitor {
                 if(isStatic(execElem) && elements.hides(execElem, elem)){
                     return true;
                 }else{
-                    if(elements.overrides(execElem, (ExecutableElement)elem, 
+                    if(execElem.equals(elem) || elements.overrides(execElem, (ExecutableElement)elem, 
                             subTypeElement)){
                         return true;
                     }
@@ -154,7 +154,7 @@ class VarUsageVisitor extends RefactoringVisitor {
         Elements elements = workingCopy.getElements();
         List<? extends Element> memberElements = elements.getAllMembers(superTypeElement);
         for (Element elem : memberElements) {
-            if(elements.hides(variableElement, elem)){
+            if(variableElement.equals(elem) || elements.hides(variableElement, elem)){
                 return true;
             }
         }
