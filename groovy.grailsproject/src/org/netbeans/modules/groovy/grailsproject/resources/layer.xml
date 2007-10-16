@@ -3,7 +3,7 @@
 <filesystem>
     <folder name="Templates">
         <folder name="Project">
-            <folder name="Scripting">
+            <folder name="Groovy">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.grailsproject.ui.wizards.Bundle"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/groovy/grailsproject/resources/desktop.html"/>
 
