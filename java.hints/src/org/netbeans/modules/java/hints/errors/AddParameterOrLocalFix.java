@@ -113,58 +113,53 @@ public class AddParameterOrLocalFix implements Fix {
             NbBundle.getMessage(AddParameterOrLocalFix.class, "LBL_FIX_Create_Local_Variable", name); // NOI18N
     }
 
-    public ChangeInfo implement() {
-        try {
-            //use the original cp-info so it is "sure" that the proposedType can be resolved:
-            JavaSource js = JavaSource.forFileObject(file);
-            
-            js.runModificationTask(new Task<WorkingCopy>() {
-                
-                public void run(final WorkingCopy working) throws IOException {
-                    working.toPhase(Phase.RESOLVED);
-                    
-                    TypeMirror proposedType = type.resolve(working);
-                    
-                    if (proposedType == null) {
-                        ErrorHintsProvider.LOG.log(Level.INFO, "Cannot resolve proposed type."); // NOI18N
-                        return;
-                    }
-                    
-                    TreeMaker make = working.getTreeMaker();
-                    TreePath tp = working.getTreeUtilities().pathFor(unresolvedVariable  + 1);
-                    
-                    assert tp.getLeaf().getKind() == Kind.IDENTIFIER;
-                    
-                    TreePath targetPath = findMethod(tp);
-                    MethodTree targetTree = (MethodTree) targetPath.getLeaf();
-                    
-                    if (parameter) {
-                        if (targetTree == null) {
-                            Logger.getLogger("global").log(Level.WARNING, "Add parameter - cannot find the method."); // NOI18N
-                        }
-                        
-                        Element el = working.getTrees().getElement(targetPath);
-                        int index = targetTree.getParameters().size();
-                        
-                        if (el != null && (el.getKind() == ElementKind.METHOD || el.getKind() == ElementKind.CONSTRUCTOR)) {
-                            ExecutableElement ee = (ExecutableElement) el;
-                            
-                            if (ee.isVarArgs()) {
-                                index = ee.getParameters().size() - 1;
-                            }
-                        }
-                        
-                        MethodTree result = make.insertMethodParameter(targetTree, index, make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), name, make.Type(proposedType), null));
-                        
-                        working.rewrite(targetTree, result);
-                    } else {
-                        resolveLocalVariable(working, tp, make, proposedType);
-                    }
+    public ChangeInfo implement() throws IOException {
+        //use the original cp-info so it is "sure" that the proposedType can be resolved:
+        JavaSource js = JavaSource.forFileObject(file);
+
+        js.runModificationTask(new Task<WorkingCopy>() {
+            public void run(final WorkingCopy working) throws IOException {
+                working.toPhase(Phase.RESOLVED);
+
+                TypeMirror proposedType = type.resolve(working);
+
+                if (proposedType == null) {
+                    ErrorHintsProvider.LOG.log(Level.INFO, "Cannot resolve proposed type."); // NOI18N
+                    return;
                 }
-            }).commit();
-        } catch (IOException e) {
-            throw (IllegalStateException) new IllegalStateException().initCause(e);
-        }
+
+                TreeMaker make = working.getTreeMaker();
+                TreePath tp = working.getTreeUtilities().pathFor(unresolvedVariable + 1);
+
+                assert tp.getLeaf().getKind() == Kind.IDENTIFIER;
+
+                TreePath targetPath = findMethod(tp);
+                MethodTree targetTree = (MethodTree) targetPath.getLeaf();
+
+                if (parameter) {
+                    if (targetTree == null) {
+                        Logger.getLogger("global").log(Level.WARNING, "Add parameter - cannot find the method."); // NOI18N
+                    }
+
+                    Element el = working.getTrees().getElement(targetPath);
+                    int index = targetTree.getParameters().size();
+
+                    if (el != null && (el.getKind() == ElementKind.METHOD || el.getKind() == ElementKind.CONSTRUCTOR)) {
+                        ExecutableElement ee = (ExecutableElement) el;
+
+                        if (ee.isVarArgs()) {
+                            index = ee.getParameters().size() - 1;
+                        }
+                    }
+
+                    MethodTree result = make.insertMethodParameter(targetTree, index, make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), name, make.Type(proposedType), null));
+
+                    working.rewrite(targetTree, result);
+                } else {
+                    resolveLocalVariable(working, tp, make, proposedType);
+                }
+            }
+        }).commit();
         
         return null;
     }
