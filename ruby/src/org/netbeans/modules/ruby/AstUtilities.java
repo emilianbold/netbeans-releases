@@ -512,6 +512,19 @@ public class AstUtilities {
         Node method = findMethod(path);
 
         if (method == null) {
+            Iterator<Node> it = path.leafToRoot();
+            while (it.hasNext()) {
+                Node n = it.next();
+                switch (n.nodeId) {
+                case NodeTypes.DEFNNODE:
+                case NodeTypes.DEFSNODE:
+                case NodeTypes.CLASSNODE:
+                case NodeTypes.SCLASSNODE:
+                case NodeTypes.MODULENODE:
+                    return n;
+                }
+            }
+            
             if (path.root() != null) {
                 return path.root();
             }
@@ -522,7 +535,7 @@ public class AstUtilities {
         if (method == null) {
             method = path.leafParent();
 
-            if (method instanceof NewlineNode) {
+            if (method.nodeId == NodeTypes.NEWLINENODE) {
                 method = path.leafGrandParent();
             }
 
@@ -550,14 +563,25 @@ public class AstUtilities {
     }
 
     public static Node findBlock(AstPath path) {
-        // Find the closest block node enclosing the given node
+        // Find the most distant block node enclosing the given node (within
+        // the current method/class/module
+        Node candidate = null;
         for (Node curr : path) {
-            if (curr.nodeId == NodeTypes.BLOCKNODE || curr.nodeId == NodeTypes.ITERNODE) {
-                return curr;
+            switch (curr.nodeId) {
+            case NodeTypes.BLOCKNODE:
+            case NodeTypes.ITERNODE:
+                candidate = curr;
+                break;
+            case NodeTypes.DEFNNODE:
+            case NodeTypes.DEFSNODE:
+            case NodeTypes.CLASSNODE:
+            case NodeTypes.SCLASSNODE:
+            case NodeTypes.MODULENODE:
+                return candidate;
             }
         }
 
-        return null;
+        return candidate;
     }
 
     public static MethodDefNode findMethod(AstPath path) {

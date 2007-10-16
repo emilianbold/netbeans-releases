@@ -130,4 +130,8 @@ public class RenameHandlerTest extends RubyTestBase {
     public void testRename6() throws Exception {
         checkRenameSections("testfiles/resolv.rb", "              add^r, hostname, *aliases = line.split(/\\s+/)");
     }
+
+    public void testRename7() throws Exception {
+        checkRenameSections("testfiles/nestedblocks.rb", "[4,5,6].each { |ou^ter|");
+    }
 }

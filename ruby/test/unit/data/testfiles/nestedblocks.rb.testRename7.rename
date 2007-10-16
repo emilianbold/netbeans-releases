@@ -1,0 +1,4 @@
+1: [1,2,3].each { ||>outer<||
+2:   puts |>outer<|
+3:   [4,5,6].each { ||>outer<||
+4:      puts |>outer<|

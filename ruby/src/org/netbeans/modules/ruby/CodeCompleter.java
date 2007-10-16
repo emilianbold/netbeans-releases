@@ -178,7 +178,8 @@ import org.openide.util.NbBundle;
  * @todo http://www.innovationontherun.com/scraping-dynamic-websites-using-jruby-and-htmlunit/
  *    Idea: Use a quicktip to require all the jars in the project?
  * @todo The "h" method in <%= %> doesn't show up in RHTML files... where is it?
- *
+ * @todo Completion AFTER a method which takes a block (optional or required) should offer
+ *    { } and do/end !!
  * @author Tor Norbye
  */
 public class CodeCompleter implements Completable {
@@ -920,7 +921,7 @@ public class CodeCompleter implements Completable {
                 if (method != null) {
                     // TODO - if the lhs is "foo.bar." I need to split this
                     // up and do it a bit more cleverly
-                    TypeAnalyzer analyzer = new TypeAnalyzer(index, method, node, astOffset, lexOffset, doc, fileObject);
+                    TypeAnalyzer analyzer = new TypeAnalyzer(/*request.info.getParserResult(),*/ index, method, node, astOffset, lexOffset, doc, fileObject);
                     type = analyzer.getType(lhs);
                 }
             }
@@ -2586,13 +2587,16 @@ public class CodeCompleter implements Completable {
 
     @SuppressWarnings("unchecked")
     private void addLocals(Node node, Map<String, Node> variables) {
-        if (node instanceof LocalAsgnNode) {
+        switch (node.nodeId) {
+        case NodeTypes.LOCALASGNNODE: {
             String name = ((INameNode)node).getName();
 
             if (!variables.containsKey(name)) {
                 variables.put(name, node);
             }
-        } else if (node instanceof ArgsNode) {
+            break;
+        }
+        case NodeTypes.ARGSNODE: {
             // TODO - use AstUtilities.getDefArgs here - but avoid hitting them twice!
             //List<String> parameters = AstUtilities.getDefArgs(def, true);
             // However, I've gotta find the parameter nodes themselves too!
@@ -2627,28 +2631,36 @@ public class CodeCompleter implements Completable {
                 String name = an.getBlockArgNode().getName();
                 variables.put(name, an.getBlockArgNode());
             }
+            
+            break;
+        }
 
-            //        } else if (node instanceof AliasNode) {
-            //            AliasNode an = (AliasNode)node;
-            // Tricky -- which NODE do we add here? Completion creator needs to be aware of new name etc. Do later.
-            // Besides, do we show it as a field or a method or what?
+        //        } else if (node instanceof AliasNode) {
+        //            AliasNode an = (AliasNode)node;
+        // Tricky -- which NODE do we add here? Completion creator needs to be aware of new name etc. Do later.
+        // Besides, do we show it as a field or a method or what?
 
-            //            variab
-            //            if (an.getNewName().equals(name)) {
-            //                OffsetRange range = AstUtilities.getAliasNewRange(an);
-            //                highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
-            //            } else if (an.getOldName().equals(name)) {
-            //                OffsetRange range = AstUtilities.getAliasOldRange(an);
-            //                highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
-            //            }
+        //            variab
+        //            if (an.getNewName().equals(name)) {
+        //                OffsetRange range = AstUtilities.getAliasNewRange(an);
+        //                highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
+        //            } else if (an.getOldName().equals(name)) {
+        //                OffsetRange range = AstUtilities.getAliasOldRange(an);
+        //                highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
+        //            }
+        //          break;
         }
 
         List<Node> list = node.childNodes();
 
         for (Node child : list) {
-            // Don't look in nested context for local vars
-            if (child instanceof MethodDefNode || child instanceof ClassNode ||
-                    child instanceof ModuleNode || child instanceof SClassNode) {
+            switch (child.nodeId) {
+            case NodeTypes.DEFNNODE:
+            case NodeTypes.DEFSNODE:
+            case NodeTypes.CLASSNODE:
+            case NodeTypes.SCLASSNODE:
+            case NodeTypes.MODULENODE:
+                // Don't look in nested context for local vars
                 continue;
             }
 
@@ -2657,7 +2669,7 @@ public class CodeCompleter implements Completable {
     }
 
     private void addDynamic(Node node, Map<String, Node> variables) {
-        if (node instanceof DAsgnNode) {
+        if (node.nodeId == NodeTypes.DASGNNODE) {
             String name = ((INameNode)node).getName();
 
             if (!variables.containsKey(name)) {
@@ -2704,9 +2716,13 @@ public class CodeCompleter implements Completable {
         List<Node> list = node.childNodes();
 
         for (Node child : list) {
-            // Don't look in nested context for local vars
-            if (child instanceof MethodDefNode || child instanceof ClassNode ||
-                    child instanceof ModuleNode || child instanceof SClassNode) {
+            switch (child.nodeId) {
+            case NodeTypes.DEFNNODE:
+            case NodeTypes.DEFSNODE:
+            case NodeTypes.CLASSNODE:
+            case NodeTypes.SCLASSNODE:
+            case NodeTypes.MODULENODE:
+                // Don't look in nested context for local vars
                 continue;
             }
 
@@ -2715,7 +2731,7 @@ public class CodeCompleter implements Completable {
     }
 
     private void addGlobals(Node node, Map<String, Node> globals) {
-        if (node instanceof GlobalAsgnNode) {
+        if (node.nodeId == NodeTypes.GLOBALASGNNODE) {
             String name = ((INameNode)node).getName();
 
             if (!globals.containsKey(name)) {
@@ -2732,7 +2748,7 @@ public class CodeCompleter implements Completable {
     }
 
     private void addConstants(Node node, Map<String, Node> constants) {
-        if (node instanceof ConstDeclNode) {
+        if (node.nodeId == NodeTypes.CONSTDECLNODE) {
             constants.put(((INameNode)node).getName(), node);
         }
 
@@ -3140,6 +3156,9 @@ public class CodeCompleter implements Completable {
                 Map<String, Node> variables = new HashMap<String, Node>();
                 addLocals(method, variables);
 
+                Node block = AstUtilities.findDynamicScope(closest, path);
+                addDynamic(block, variables);
+                
                 // See if we have any name suggestions
                 String suggestions = (String)params.get(ATTR_DEFAULTS);
 
