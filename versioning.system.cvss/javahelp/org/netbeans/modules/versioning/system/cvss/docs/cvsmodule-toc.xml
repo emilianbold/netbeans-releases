@@ -10,7 +10,7 @@
     
   <tocitem text="IDE Basics">
     <tocitem text="Version Control and File History"> 
-      <tocitem text="Working with CVS">
+      <tocitem text="CVS">
         <tocitem text="About CVS" target="cvs-lite_about" />
         <tocitem text="Working with CVS" target="cvs-lite_overview" /> 
         <tocitem text="CVS Tasks: Quick Reference" target="cvs-lite_quickref" /> 
