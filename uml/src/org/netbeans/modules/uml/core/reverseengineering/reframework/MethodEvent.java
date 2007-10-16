@@ -63,24 +63,16 @@ public class MethodEvent extends MethodDetailParserData implements IMethodEvent
 
     public String getFullQNameOfOwner()
     {
-        String retVal = "";
         
-        if((retVal == null) || (retVal.length() <= 0))
-        {
-            IREClass rec = getREClass();
-            if(rec != null)
-            {
-                retVal = rec.getPackage();
-                retVal += "::";
-                retVal += rec.getName();
-            }
-                
-        }
-        else
-        {
-            retVal = getTokenDescriptorValue("DeclaringType");
-        }
+        String retVal = null ;
+        IREClass rec = getREClass() ;
         
+        if(rec != null) {
+            retVal = rec.getPackage();
+            retVal += "::";
+            retVal += rec.getName();    
+        }
+             
         return retVal;
     }
     
