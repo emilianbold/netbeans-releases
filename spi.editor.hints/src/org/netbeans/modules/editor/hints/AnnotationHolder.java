@@ -491,6 +491,8 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
                         
                         while (index < knownPositions.size()) {
                             Reference<Position> r = knownPositions.get(index++);
+                            if (r==null)
+                                continue;
                             Position lineToken = r.get();
                             
                             if (lineToken == null)
