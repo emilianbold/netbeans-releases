@@ -334,6 +334,5 @@
             </test-dependencies>
             <public-packages/>
         </data>
-        <junit-version xmlns="http://www.netbeans.org/ns/junit/1" value="junit4"/>
     </configuration>
 </project>

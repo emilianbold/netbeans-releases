@@ -215,6 +215,5 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.modules.search</package>
             </friend-packages>
         </data>
-        <junit-version xmlns="http://www.netbeans.org/ns/junit/1" value="junit4"/>
     </configuration>
 </project>

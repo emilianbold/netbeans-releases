@@ -307,6 +307,5 @@
                 <package>org.netbeans.modules.ruby.hints.spi</package>
             </friend-packages>
         </data>
-        <junit-version xmlns="http://www.netbeans.org/ns/junit/1" value="junit3"/>
     </configuration>
 </project>

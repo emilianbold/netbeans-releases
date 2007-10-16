@@ -451,6 +451,5 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.spi.java.loaders</package>
             </public-packages>
         </data>
-        <junit-version xmlns="http://www.netbeans.org/ns/junit/1" value="junit3"/>
     </configuration>
 </project>

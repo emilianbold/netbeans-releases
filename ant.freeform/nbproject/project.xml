@@ -254,6 +254,5 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.modules.ant.freeform.spi.support</package>
             </friend-packages>
         </data>
-        <junit-version xmlns="http://www.netbeans.org/ns/junit/1" value="junit3"/>
     </configuration>
 </project>

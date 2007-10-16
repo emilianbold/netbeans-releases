@@ -223,6 +223,5 @@ made subject to such option by the copyright holder.
                 <built-to>${cluster}/modules/ext/ddl.jar</built-to>
             </extra-compilation-unit>
         </data>
-        <junit-version xmlns="http://www.netbeans.org/ns/junit/1" value="junit3"/>
     </configuration>
 </project>
