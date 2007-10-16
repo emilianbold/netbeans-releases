@@ -161,6 +161,23 @@ public final class ObjectTranslation {
     }
     
     /**
+     * Gen an existing wrapper object translation of a debuggee Mirror.
+     *
+     * @param o the Mirror object in the debuggee
+     * @return translated object or <code>null</code> when there is no existing
+     *         translation.
+     */
+    public Object translateExisting(Mirror o) {
+        Object r = null;
+        synchronized (cache) {
+            WeakReference wr = cache.get (o);
+            if (wr != null)
+                r = wr.get ();
+        }
+        return r;
+    }
+    
+    /**
      * Get all live objects that were translated.
      */
     public Collection getTranslated() {

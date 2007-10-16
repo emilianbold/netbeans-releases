@@ -288,7 +288,13 @@ public class Operator {
                          synchronized (resumeLock) {
                              List<ThreadReference> threads = eventSet.virtualMachine().allThreads();
                              for (ThreadReference t : threads) {
-                                 while (t.suspendCount() > 1) t.resume();
+                                 JPDAThreadImpl jt = (JPDAThreadImpl) debugger.getExistingThread(t);
+                                 while (t.suspendCount() > 1) {
+                                     if (jt != null) {
+                                         jt.notifyToBeResumed();
+                                     }
+                                     t.resume();
+                                 }
                              }
                          }
                      }

@@ -462,6 +462,7 @@ public final class JPDAThreadImpl implements JPDAThread {
                     suspendedToFire = Boolean.TRUE;
                     suspendCount++;
                 }
+                //System.err.println("suspend("+getName()+") suspended = true");
                 suspended = true;
             } catch (IllegalThreadStateException ex) {
                 // Thrown when thread has exited
@@ -501,6 +502,7 @@ public final class JPDAThreadImpl implements JPDAThread {
                     suspendedToFire = Boolean.FALSE;
                 }
                 suspendCount = 0;
+                //System.err.println("resume("+getName()+") suspended = false");
                 suspended = false;
                 methodInvokingDisabledUntilResumed = false;
             } catch (IllegalThreadStateException ex) {
@@ -518,6 +520,7 @@ public final class JPDAThreadImpl implements JPDAThread {
     }
     
     public void notifyToBeResumed() {
+        //System.err.println("notifyToBeResumed("+getName()+")");
         notifyToBeRunning(true, true);
     }
     
@@ -527,7 +530,9 @@ public final class JPDAThreadImpl implements JPDAThread {
             if (resumed) {
                 waitUntilMethodInvokeDone();
             }
+            //System.err.println("notifyToBeRunning("+getName()+"), resumed = "+resumed+", suspendCount = "+suspendCount+", thread's suspendCount = "+threadReference.suspendCount());
             if (resumed && (--suspendCount > 0)) return ;
+            //System.err.println("  suspendCount = 0, var suspended = "+suspended);
             suspendCount = 0;
             if (clearVars) {
                 setCurrentOperation(null);
@@ -537,6 +542,7 @@ public final class JPDAThreadImpl implements JPDAThread {
                 }
             }
             if (suspended) {
+                //System.err.println("notifyToBeRunning("+getName()+") suspended = false");
                 suspended = false;
                 suspendedToFire = Boolean.FALSE;
                 methodInvokingDisabledUntilResumed = false;
@@ -560,7 +566,9 @@ public final class JPDAThreadImpl implements JPDAThread {
             } catch (ObjectCollectedException ocex) {
                 return ; // The thread is gone
             }
+            //System.err.println("notifySuspended("+getName()+") suspendCount = "+suspendCount+", var suspended = "+suspended);
             if (!suspended && isThreadSuspended()) {
+                //System.err.println("  setting suspended = true");
                 suspended = true;
                 suspendedToFire = Boolean.TRUE;
             }

@@ -1225,6 +1225,10 @@ public class JPDADebuggerImpl extends JPDADebugger {
         return (JPDAThread) threadsTranslation.translate (tr);
     }
 
+    public JPDAThread getExistingThread (ThreadReference tr) {
+        return (JPDAThread) threadsTranslation.translateExisting(tr);
+    }
+
     public JPDAThreadGroup getThreadGroup (ThreadGroupReference tgr) {
         return (JPDAThreadGroup) threadsTranslation.translate (tgr);
     }
