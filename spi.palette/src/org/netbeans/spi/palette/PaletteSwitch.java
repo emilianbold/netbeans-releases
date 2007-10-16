@@ -44,6 +44,7 @@ package org.netbeans.spi.palette;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Set;
@@ -249,11 +250,30 @@ final class PaletteSwitch implements Runnable, LookupListener {
             isGroupOpen = true;
         } else if( ((null != prevPalette && null == newPalette) 
             || (null == prevPalette && null == newPalette))
-            && isGroupOpen ) {
+            && (isGroupOpen || isGroupOpenHack( group )) ) {
             PalettePanel.getDefault().setContent( null, null, null );
             group.close();
             isGroupOpen = false;
         }
+    }
+    
+    //the group might be already opened at startup time which we won't know about
+    //so let's make a 'real' check
+    private boolean isGroupOpenHack( TopComponentGroup group ) {
+        try {
+            for( Method m : group.getClass().getDeclaredMethods() ) {
+                if( m.getName().equals( "isOpened" ) ) {
+                    m.setAccessible( true );
+                    Object res = m.invoke( group, new Object[0] );
+                    if( res instanceof Boolean ) {
+                        return ((Boolean)res).booleanValue();
+                    }
+                }
+            }
+        } catch( Exception e ) {
+            //ignore
+        }
+        return false;
     }
     
     /**
