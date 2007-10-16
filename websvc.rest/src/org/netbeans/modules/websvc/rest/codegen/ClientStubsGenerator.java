@@ -862,7 +862,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
                 String childName = child.getName();
                 if(child.isReference()) {
                     String childRepName = findRepresentationName(childName);
-                    sb.append("         '\""+childName+"\":{\"@uri\":\"'+this."+childName+".getUri()+'\", \""+childRepName+"\":{\"$\":\"'+this."+childName+".get"+findResourceName(childRepName)+"()+'\"}},'+\n");
+                    sb.append("         '\""+childName+"\":{\"@uri\":\"'+this."+childName+".getUri()+'\", \""+childRepName+"\":{\"$\":\"'+findIdFromUrl(this."+childName+".getUri())+'\"}},'+\n");
                 }else if(child.isRoot()) {
                     sb.append("         this."+childName+".toString()+\n");
                 }else

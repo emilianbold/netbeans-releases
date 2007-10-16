@@ -19,12 +19,14 @@ djd43.declare("rdj.data.__CONTAINER_NAME__Store", djd43.data.core.RemoteStore, {
 },
     _setupQueryRequest:function (result, requestKw) {
 	var start = 1;
-	var count = 1;
+	var max = -1;
 	if (result) {
 		start = result.start || start;
-		count = result.count || count;
+		max = result.max || max;
 	}
 	requestKw.url = this._serverQueryUrl;
+        if(max != -1)
+            requestKw.url += "?start=" + start + "&max=" + max;
         var method = "GET";
         if(method == 'GET') {
             requestKw.headers = {"Accept" : "application/json"};

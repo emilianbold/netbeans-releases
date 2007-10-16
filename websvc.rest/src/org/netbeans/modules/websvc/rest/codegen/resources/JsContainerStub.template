@@ -37,14 +37,16 @@ __CONTAINER_NAME__.prototype = {
       if(c != -1) {
          var myObj = eval('('+c+')');
          var __CONTAINER_PATH_NAME__ = myObj.__CONTAINER_PATH_NAME__;
-         var refs = __CONTAINER_PATH_NAME__.__CONTAINER_ITEM_PATH_NAME__Ref;         
-         if(refs.length == undefined) {
-             this.initChild(refs, 0);
-         } else {
-             var j = 0;
-             for(j=0;j<refs.length;j++) {
-                var ref = refs[j];
-                this.initChild(ref, j);
+         var refs = __CONTAINER_PATH_NAME__.__CONTAINER_ITEM_PATH_NAME__Ref;
+         if(refs != undefined) {
+             if(refs.length == undefined) {
+                 this.initChild(refs, 0);
+             } else {
+                 var j = 0;
+                 for(j=0;j<refs.length;j++) {
+                    var ref = refs[j];
+                    this.initChild(ref, j);
+                 }
              }
          }
          this.initialized = true;

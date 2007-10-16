@@ -340,7 +340,7 @@ public class ClientStubModel {
                              *  @XmlAttribute
                              *  public URI getUri() {}
                              */
-                            String attrName = RestUtils.getNameFromMethod(tree); // "uri"
+                            String attrName = RestUtils.findElementName(tree, r); // "uri"
                             RepresentationNode attr = new RepresentationNode(attrName);
                             attr.setLink(tree);
                             rElem.addAttribute(attr);
