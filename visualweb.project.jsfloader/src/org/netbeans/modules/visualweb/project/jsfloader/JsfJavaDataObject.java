@@ -56,10 +56,13 @@ import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.Node;
+import org.openide.nodes.Node.Cookie;
 import org.openide.util.HelpCtx;
 
 import org.netbeans.modules.visualweb.api.insync.JsfJavaDataObjectMarker;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfDataObjectException;
+import org.openide.cookies.EditorCookie;
+import org.openide.nodes.CookieSet;
 import org.openide.util.Lookup;
 
 
@@ -68,14 +71,19 @@ import org.openide.util.Lookup;
  *
  * @author Peter Zavadsky
  */
-public class JsfJavaDataObject extends MultiDataObject implements JsfJavaDataObjectMarker {
+public class JsfJavaDataObject extends MultiDataObject implements JsfJavaDataObjectMarker, CookieSet.Factory {
 
 
     static final long serialVersionUID =8354927561693097159L;
     static final String JSF_ATTRIBUTE = "jsfjava"; // NOI18N
-
+    
     public JsfJavaDataObject(FileObject pf, JsfJavaDataLoader loader) throws DataObjectExistsException {
         super(pf, loader);
+        
+        CookieSet set = getCookieSet();
+        set.add(OpenCookie.class, this);
+        set.add(EditCookie.class, this);
+        set.add(EditorCookie.class, this);
     }
 
     /** Gets the superclass cookie, without hacking save cookie. */
@@ -87,6 +95,7 @@ public class JsfJavaDataObject extends MultiDataObject implements JsfJavaDataObj
     
     /** Overrides behaviour to provide compound save cookie. */
     @Override
+    @SuppressWarnings(value ="unchecked")
     public Node.Cookie getCookie(Class clazz) {
         if(clazz == SaveCookie.class){
             FileObject primaryJsfFileObject = Utils.findJspForJava(getPrimaryFile());
@@ -106,18 +115,27 @@ public class JsfJavaDataObject extends MultiDataObject implements JsfJavaDataObj
                     return new CompoundSaveCookie(javaSaveCookie, jspSaveCookie);
                 }
             }
-        }else if (OpenCookie.class.equals(clazz) || EditCookie.class.equals(clazz)) {
-            if (openEdit == null)
-                openEdit = new OpenEdit();
-
-            return openEdit;
         }else if (clazz.isAssignableFrom(JsfJavaEditorSupport.class)) {
             return getJsfJavaEditorSupport();
-         }
+        }
 
         return super.getCookie(clazz);
     }
 
+    public <T extends Cookie> T createCookie(Class<T> klass) {
+        if (OpenCookie.class.equals(klass) || EditCookie.class.equals(klass)) {
+            if (openEdit == null) {
+                openEdit = new OpenEdit();
+            }
+            return klass.cast(openEdit);
+        }else if (EditorCookie.class.equals(klass)) {
+            return klass.cast(getJsfJavaEditorSupport());
+        }else {
+            return null;
+        }
+    }
+    
+    
     /** Hacking access to be able to add the save cookie, see the JsfJavaEditorSupport. */
     void addSaveCookie(SaveCookie save) {
         getCookieSet().add(save);
@@ -242,7 +260,6 @@ public class JsfJavaDataObject extends MultiDataObject implements JsfJavaDataObj
             getJsfJavaEditorSupport().open();
         }
     }
-    
 // </rave>
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
