@@ -44,6 +44,7 @@ package org.netbeans.api.java.source;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
@@ -55,6 +56,8 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
+import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import java.io.IOException;
 
 import java.util.ArrayList;
@@ -76,10 +79,14 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.swing.text.Document;
 
+import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.queries.SourceLevelQuery;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.GuardedDocument;
+import org.netbeans.modules.java.source.parsing.SourceFileObject;
 import org.openide.filesystems.FileObject;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -389,7 +396,19 @@ public final class GeneratorUtilities {
         TranslateIdentifier translator = new TranslateIdentifier(copy, false, true, null);
         return (T) translator.translate(original);
     }
-
+    
+    public <T extends Tree> T importComments(T original, CompilationUnitTree cut) {
+        try {
+            JCTree.JCCompilationUnit unit = (JCCompilationUnit) cut;
+            TokenSequence<JavaTokenId> seq = ((SourceFileObject) unit.getSourceFile()).getTokenHierarchy().tokenSequence(JavaTokenId.language());
+            TranslateIdentifier translator = new TranslateIdentifier(copy, true, false, seq);
+            return (T) translator.translate(original);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return original;
+    }
+    
     // private implementation --------------------------------------------------
     
     private MethodTree createMethod(ExecutableElement element, DeclaredType type) {
