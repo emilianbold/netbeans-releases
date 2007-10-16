@@ -146,32 +146,36 @@ public class ModelSupport implements PropertyChangeListener {
         if (TopComponent.getRegistry().getOpened().size() > 0){
             if (TRACE_STARTUP) System.out.println("Model support: Open projects in Init"); // NOI18N
             postponeParse = false;
+            OpenProjects.getDefault().addPropertyChangeListener(this);
             openProjects();
         } else {
             if (TRACE_STARTUP) System.out.println("Model support: Postpone open projects"); // NOI18N
             postponeParse = true;
+            TopComponent.getRegistry().addPropertyChangeListener(this);
         }
-        
-        TopComponent.getRegistry().addPropertyChangeListener(this);
-        OpenProjects.getDefault().addPropertyChangeListener(this);
     }
     
     public void propertyChange(PropertyChangeEvent evt) {
 	try { //FIXUP #109105 OpenProjectList does not get notification about adding a project if the project is stored in the repository
 	    if (TRACE_STARTUP) System.out.println("Model support event:"+evt.getPropertyName());
-	    if(!postponeParse  && evt.getPropertyName().equals(OpenProjects.PROPERTY_OPEN_PROJECTS) ) {
-		if (TRACE_STARTUP) System.out.println("Model support: Open projects on OpenProjects.PROPERTY_OPEN_PROJECTS"); // NOI18N
-		openProjects();
-	    } else if (postponeParse && evt.getPropertyName().equals(TopComponent.Registry.PROP_ACTIVATED)){
-		if (TRACE_STARTUP) System.out.println("Model support: Open projects on TopComponent.Registry.PROP_ACTIVATED"); // NOI18N
-		postponeParse = false;
-		TopComponent.getRegistry().removePropertyChangeListener(this);
-		RequestProcessor.getDefault().post(new Runnable(){
-		    public void run() {
-			openProjects();
-		    }
-		});
-	    }
+            if (evt.getPropertyName().equals(OpenProjects.PROPERTY_OPEN_PROJECTS)) {
+                if(!postponeParse) {
+                    if (TRACE_STARTUP) System.out.println("Model support: Open projects on OpenProjects.PROPERTY_OPEN_PROJECTS"); // NOI18N
+                    openProjects();
+                }
+            } else if (evt.getPropertyName().equals(TopComponent.Registry.PROP_ACTIVATED)){
+                if (postponeParse){
+                    if (TRACE_STARTUP) System.out.println("Model support: Open projects on TopComponent.Registry.PROP_ACTIVATED"); // NOI18N
+                    postponeParse = false;
+                    TopComponent.getRegistry().removePropertyChangeListener(this);
+                    RequestProcessor.getDefault().post(new Runnable(){
+                        public void run() {
+                            OpenProjects.getDefault().addPropertyChangeListener(ModelSupport.this);
+                            openProjects();
+                        }
+                    });
+                }
+            }
 	}
 	catch( Exception e) {
 	    e.printStackTrace(System.err); 
