@@ -44,6 +44,7 @@ package org.netbeans.modules.ruby.rubyproject;
 import java.io.File;
 import org.netbeans.api.gsf.DeclarationFinder.DeclarationLocation;
 import org.netbeans.spi.gototest.TestLocator;
+import org.netbeans.spi.gototest.TestLocator.LocationResult;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -317,5 +318,22 @@ public class GotoTestTest extends RubyProjectTestBase {
         
         DeclarationLocation loc = gotoTest.findTested(getProjFile("test/unit/lonesometest.rb"), -1);
         assertSame(DeclarationLocation.NONE, loc);
+    }
+    
+    public void testGoto119106a() {
+        assertNotNull(project);
+        
+        DeclarationLocation loc = gotoTest.findTest(getProjFile("app/models/rest_phone/phone_call.rb"), -1);
+        assertNotSame(DeclarationLocation.NONE, loc);
+        assertIsProjFile("test/unit/rest_phone/phone_call_test.rb", loc.getFileObject());
+        assertEquals(-1, loc.getOffset());
+    }
+
+    public void testGoto119106b() {
+        assertNotNull(project);
+        LocationResult loc = gotoTest.findOpposite(getProjFile("test/unit/rest_phone/phone_call_test.rb"), -1);
+        assertNotSame(DeclarationLocation.NONE, loc);
+        assertIsProjFile("app/models/rest_phone/phone_call.rb", loc.getFileObject());
+        assertEquals(-1, loc.getOffset());
     }
 }
