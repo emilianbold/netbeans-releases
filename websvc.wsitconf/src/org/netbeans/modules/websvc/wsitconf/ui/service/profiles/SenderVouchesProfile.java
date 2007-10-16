@@ -149,7 +149,7 @@ public class SenderVouchesProfile extends SecurityProfile {
     
     @Override
     public boolean isProfileSupported(Project p, WSDLComponent component, boolean sts) {
-        return !sts;
+        return true;
     }
 
     @Override

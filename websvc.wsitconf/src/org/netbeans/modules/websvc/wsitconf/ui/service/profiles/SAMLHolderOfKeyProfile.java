@@ -148,7 +148,7 @@ public class SAMLHolderOfKeyProfile extends SecurityProfile {
 
     @Override
     public boolean isProfileSupported(Project p, WSDLComponent component, boolean sts) {
-        return !sts;
+        return true;
     }
 
     @Override
