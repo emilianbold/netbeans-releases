@@ -50,16 +50,14 @@ import java.text.MessageFormat;
  *
  * @author gjmurphy
  */
-public class DoublePropertyEditor extends NumberPropertyEditor 
+public class DoublePropertyEditor extends NumberPropertyEditor
         implements com.sun.rave.propertyeditors.DoublePropertyEditor {
 
-   // public static final Double DEFAULT_MIN_VALUE = new Double(1 - Double.MAX_VALUE);
-     public static final Double DEFAULT_MIN_VALUE = new Double(Double.MIN_VALUE);
-
+    public static final Double DEFAULT_MIN_VALUE = new Double(1 - Double.MAX_VALUE);
     public static final Double DEFAULT_MAX_VALUE = new Double(Double.MAX_VALUE);
 
-    public DoublePropertyEditor() {        
-        super(DEFAULT_MIN_VALUE, DEFAULT_MAX_VALUE);      
+    public DoublePropertyEditor() {
+        super(DEFAULT_MIN_VALUE, DEFAULT_MAX_VALUE);
     }
 
     protected Number parseString(String str) throws NumberFormatException {
