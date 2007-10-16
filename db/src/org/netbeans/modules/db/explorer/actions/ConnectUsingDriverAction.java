@@ -84,6 +84,7 @@ import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 import org.netbeans.modules.db.explorer.infos.DriverNodeInfo;
 import org.netbeans.modules.db.explorer.infos.RootNodeInfo;
 import org.netbeans.modules.db.explorer.nodes.RootNode;
+import org.openide.util.HelpCtx;
 
 public class ConnectUsingDriverAction extends DatabaseAction {
     static final long serialVersionUID =8245005834483564671L;
@@ -316,7 +317,7 @@ public class ConnectUsingDriverAction extends DatabaseAction {
                 }
             };
 
-            dlg = new ConnectionDialog(this, basePanel, schemaPanel, basePanel.getTitle(), actionListener, changeTabListener);
+            dlg = new ConnectionDialog(this, basePanel, schemaPanel, basePanel.getTitle(), new HelpCtx("new_db_save_password"), actionListener, changeTabListener);  // NOI18N
             dlg.setVisible(true);
             
             return ConnectionList.getDefault().getConnection(cinfo);

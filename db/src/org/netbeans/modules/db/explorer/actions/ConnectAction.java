@@ -68,6 +68,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
 
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.lib.ddl.DDLException;
@@ -303,7 +304,7 @@ public class ConnectAction extends DatabaseAction {
                     }
                 };
 
-                dlg = new ConnectionDialog(this, basePanel, schemaPanel, basePanel.getTitle(), actionListener, changeTabListener);
+                dlg = new ConnectionDialog(this, basePanel, schemaPanel, basePanel.getTitle(), new HelpCtx("db_save_password"), actionListener, changeTabListener);  // NOI18N
                 dlg.setVisible(true);
             } else // without dialog with connection data (username, password), just with progress dlg
                 try {

@@ -63,20 +63,18 @@ public class ConnectionDialog {
     private transient ConnectionDialogMediator mediator;
     private transient JTabbedPane tabs;
     private transient Exception storedExp;
-    private transient String dlgTitle;
     
     ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
         
     final DialogDescriptor descriptor;
     final Dialog dialog;
     
-    public ConnectionDialog(ConnectionDialogMediator mediator, FocusablePanel basePane, JPanel extendPane,  String dlgTitle, ActionListener actionListener, ChangeListener tabListener) {
+    public ConnectionDialog(ConnectionDialogMediator mediator, FocusablePanel basePane, JPanel extendPane,  String dlgTitle, HelpCtx helpCtx, ActionListener actionListener, ChangeListener tabListener) {
         if(basePane.equals(extendPane)) {
             throw new IllegalArgumentException("The basePane and extendPane must not equal!"); // NOI18N
         }
         
         this.mediator = mediator;
-        this.dlgTitle = dlgTitle;
         ConnectionProgressListener progressListener = new ConnectionProgressListener() {
             public void connectionStarted() {
                 descriptor.setValid(false);
@@ -124,7 +122,7 @@ public class ConnectionDialog {
         tabs.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_ConnectDialogA11yDesc"));
 
         descriptor = new DialogDescriptor(tabs, dlgTitle, true, DialogDescriptor.OK_CANCEL_OPTION, 
-                     DialogDescriptor.CANCEL_OPTION, DialogDescriptor.DEFAULT_ALIGN, getHelpCtx(), actionListener);
+                     DialogDescriptor.CANCEL_OPTION, DialogDescriptor.DEFAULT_ALIGN, helpCtx, actionListener);
         // inbuilt close of the dialog is only after CANCEL button click
         // after OK button is dialog closed by hand
         Object [] closingOptions = {DialogDescriptor.CANCEL_OPTION};
@@ -157,18 +155,7 @@ public class ConnectionDialog {
     
     public boolean isException() {
         return (storedExp != null);
-    }
-    
-    public HelpCtx getHelpCtx() {
-        HelpCtx helpCtx = HelpCtx.DEFAULT_HELP; 
-        if (dlgTitle.equals(bundle.getString("NewConnectionDialogTitle"))) { // NOI18N
-            helpCtx = new HelpCtx("new_db_save_password"); // NOI18N
-        } else {
-            helpCtx = new HelpCtx("db_save_password"); // NOI18N
-        }
-        
-        return helpCtx;
-    }
+    }        
     
     private void updateValid() {
         boolean valid = ConnectionDialog.this.mediator.getValid();
