@@ -149,6 +149,13 @@ public class CreateMethodTest extends ErrorHintsTestBase {
                        "package test; public class Test<T> {public void test() {this.fff();} private void fff() { throw new UnsupportedOperationException(\"Not yet implemented\"); } }");
     }
     
+    public void testCreateMethod119037() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test; public class Test {static {f|ff();}}",
+                       "CreateMethodFix:fff()void:test.Test",
+                       "package test; public class Test {static {fff();} private static void fff() { throw new UnsupportedOperationException(\"Not yet implemented\"); } }");
+    }
+    
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws IOException {
         List<Fix> fixes = new CreateElement().analyze(info, pos);
         List<Fix> result=  new LinkedList<Fix>();

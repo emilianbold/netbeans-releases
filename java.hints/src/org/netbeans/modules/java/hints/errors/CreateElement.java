@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.java.hints.errors;
 
+import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -246,7 +247,13 @@ public final class CreateElement implements ErrorRule<Void> {
                         modifiers.add(Modifier.STATIC);
                     }
                 } else {
-                    //TODO: outside of any method...
+                    if (firstInitializer != null) {
+                        if (((BlockTree) firstInitializer.getLeaf()).isStatic()) {
+                            modifiers.add(Modifier.STATIC);
+                        }
+                    } else {
+                        //TODO: otherwise.
+                    }
                 }
             }
         }
