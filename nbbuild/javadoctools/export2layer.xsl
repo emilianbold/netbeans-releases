@@ -165,8 +165,15 @@ made subject to such option by the copyright holder.
                     <xsl:apply-templates />
                 </a>
             </xsl:when>
+            <xsl:when test="starts-with($url, 'org-netbeans-')" >
+                <xsl:comment>Probably reference relative to root</xsl:comment>
+                <a href="{$url}" >
+                    <xsl:apply-templates />
+                </a>
+            </xsl:when>
             <xsl:otherwise>
-                <xsl:comment>This must be a reference releative to the arch page, if not see nbbuild/javadoctools/export2usecases.xsl</xsl:comment>
+                <xsl:comment>This must be a reference releative to the arch page, if not see nbbuild/javadoctools/export2usecases.xsl
+            </xsl:comment>
                 <a>
                     <xsl:attribute name="href">
                         <xsl:value-of select="$base" />
