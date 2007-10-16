@@ -71,13 +71,14 @@ public final class PersistenceXmlRename extends PersistenceXmlRefactoring {
     }
 
     protected RefactoringElementImplementation getRefactoringElement(PersistenceUnit persistenceUnit,
-                                                                     String clazz,
+                                                                     FileObject clazz,
                                                                      PUDataObject pUDataObject,
                                                                      FileObject persistenceXml) {
 
-                                                                    
-        String newName = RefactoringUtil.renameClass(clazz, renameRefactoring.getNewName());
-        return new PersistenceXmlClassRenameRefactoringElement(persistenceUnit, clazz, newName, pUDataObject, persistenceXml);
+                                                                     
+        String clazzFqn = RefactoringUtil.getQualifiedName(clazz);
+        String newName = RefactoringUtil.renameClass(clazzFqn, renameRefactoring.getNewName());
+        return new PersistenceXmlClassRenameRefactoringElement(persistenceUnit, clazzFqn, newName, pUDataObject, persistenceXml);
     }
 
     

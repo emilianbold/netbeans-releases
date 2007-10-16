@@ -46,7 +46,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
@@ -106,8 +108,16 @@ public abstract class PersistenceXmlRefactoring implements JPARefactoring{
     
     private Collection<? extends FileObject> lookupRefactoringSources() {
         // move class and safe delete refactorings may be invoked on multiple files
-        Collection<? extends FileObject> result = getRefactoring().getRefactoringSource().lookupAll(FileObject.class);
-        if (!result.isEmpty()){
+        Collection<? extends FileObject> fosFromLookup = getRefactoring().getRefactoringSource().lookupAll(FileObject.class);
+        if (!fosFromLookup.isEmpty()){
+            List<FileObject> result = new ArrayList<FileObject>();
+            for (FileObject each : fosFromLookup){
+                if (each.isFolder()){
+                    collectChildren(each, result);
+                } else {
+                    result.add(each);
+                }
+            }
             return result;
         }
         NonRecursiveFolder folder = getRefactoring().getRefactoringSource().lookup(NonRecursiveFolder.class);
@@ -123,6 +133,20 @@ public abstract class PersistenceXmlRefactoring implements JPARefactoring{
         return Collections.<FileObject>emptySet();
     }
     
+    /**
+     * Recursively collects the java files from the given folder into the
+     * given <code>result</code>.
+     */
+    public static void collectChildren(FileObject folder, List<FileObject> result) {
+        for (FileObject child : folder.getChildren()) {
+            if (RefactoringUtil.isJavaFile(child)) {
+                result.add(child);
+            } else if (child.isFolder()) {
+                collectChildren(child, result);
+            }
+        }
+    }
+
     /**
      * Checks whether any of the objects being refactored should be handled by
      * this refactoring. Override in subclasses as needed, the
@@ -232,7 +256,7 @@ public abstract class PersistenceXmlRefactoring implements JPARefactoring{
                     PUDataObject pUDataObject = ProviderUtil.getPUDataObject(each);
                     List<PersistenceUnit> punits = getAffectedPersistenceUnits(pUDataObject, classNameFQN);
                     for (PersistenceUnit persistenceUnit : punits) {
-                        refactoringElementsBag.add(getRefactoring(), getRefactoringElement(persistenceUnit, classNameFQN, pUDataObject, each));
+                        refactoringElementsBag.add(getRefactoring(), getRefactoringElement(persistenceUnit, refactoringSource, pUDataObject, each));
                     }
                 } catch (InvalidPersistenceXmlException ex) {
                     Problem newProblem =
@@ -255,7 +279,7 @@ public abstract class PersistenceXmlRefactoring implements JPARefactoring{
      *@return the refactoring element for the given parameters.
      */
     protected abstract RefactoringElementImplementation getRefactoringElement(PersistenceUnit persistenceUnit,
-            String clazz, PUDataObject pUDataObject, FileObject persistenceXml);
+            FileObject clazz, PUDataObject pUDataObject, FileObject persistenceXml);
     
     /**
      * Gets the persistence unit from the given <code>PUDataObject</code> that contain

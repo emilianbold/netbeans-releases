@@ -176,7 +176,7 @@ public class PersistenceXmlPackageRename extends PersistenceXmlRefactoring{
     
     
     protected RefactoringElementImplementation getRefactoringElement(PersistenceUnit persistenceUnit,
-            String clazz,
+            FileObject clazz,
             PUDataObject pUDataObject,
             FileObject persistenceXml) {
         

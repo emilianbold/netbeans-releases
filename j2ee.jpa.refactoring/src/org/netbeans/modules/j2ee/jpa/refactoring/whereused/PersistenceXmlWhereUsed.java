@@ -89,7 +89,7 @@ public final class PersistenceXmlWhereUsed extends PersistenceXmlRefactoring {
             try{
                 PUDataObject pUDataObject = ProviderUtil.getPUDataObject(each);
                 for (PersistenceUnit persistenceUnit : getAffectedPersistenceUnits(pUDataObject, clazz)){
-                    refactoringElementsBag.add(getRefactoring(), getRefactoringElement(persistenceUnit, clazz, pUDataObject, each));
+                    refactoringElementsBag.add(getRefactoring(), getRefactoringElement(persistenceUnit, handle.getFileObject(), pUDataObject, each));
                     
                 }
             } catch (InvalidPersistenceXmlException ex) {
@@ -109,11 +109,11 @@ public final class PersistenceXmlWhereUsed extends PersistenceXmlRefactoring {
     }
     
     protected RefactoringElementImplementation getRefactoringElement(PersistenceUnit persistenceUnit,
-            String clazz,
+            FileObject clazz,
             PUDataObject pUDataObject,
             FileObject persistenceXml) {
         
-        return new PersistenceXmlWhereUsedRefactoringElement(persistenceUnit, clazz, pUDataObject, persistenceXml);
+        return new PersistenceXmlWhereUsedRefactoringElement(persistenceUnit, RefactoringUtil.getQualifiedName(clazz), pUDataObject, persistenceXml);
     } 
 
     protected class PersistenceXmlWhereUsedRefactoringElement extends PersistenceXmlRefactoringElement {

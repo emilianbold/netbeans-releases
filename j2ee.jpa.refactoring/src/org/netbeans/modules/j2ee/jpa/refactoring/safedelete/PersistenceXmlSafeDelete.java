@@ -50,6 +50,7 @@ import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.j2ee.jpa.refactoring.PersistenceXmlRefactoring;
+import org.netbeans.modules.j2ee.jpa.refactoring.RefactoringUtil;
 import org.netbeans.modules.refactoring.api.SafeDeleteRefactoring;
 
 /**
@@ -70,11 +71,11 @@ public final class PersistenceXmlSafeDelete extends PersistenceXmlRefactoring {
     }
 
     protected RefactoringElementImplementation getRefactoringElement(PersistenceUnit persistenceUnit,
-                                                                     String clazz,
+                                                                     FileObject clazz,
                                                                      PUDataObject pUDataObject,
                                                                      FileObject persistenceXml) {
 
-        return new PersistenceXmlSafeDeleteRefactoringElement(persistenceUnit, clazz, pUDataObject, persistenceXml);
+        return new PersistenceXmlSafeDeleteRefactoringElement(persistenceUnit, RefactoringUtil.getQualifiedName(clazz), pUDataObject, persistenceXml);
     }
 
     
