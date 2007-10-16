@@ -59,6 +59,7 @@ import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -70,6 +71,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
+import org.apache.tools.ant.types.selectors.SelectorUtils;
 import org.netbeans.nbbuild.JUnitReportWriter;
 
 /**
@@ -105,7 +107,8 @@ public class CreateLicenseSummary extends Task {
             Map<Long,Map<String,String>> crc2License = findCrc2LicenseHeaderMapping();
             Map<String,Map<String,String>> binaries2LicenseHeaders = new TreeMap<String,Map<String,String>>();
             StringBuilder testBinariesAreUnique = new StringBuilder();
-            findBinaries(build, binaries2LicenseHeaders, crc2License, new HashMap<Long,String>(), "", testBinariesAreUnique);
+            List<String> ignoredPatterns = VerifyLibsAndLicenses.loadPatterns("ignored-binary-overlaps");
+            findBinaries(build, binaries2LicenseHeaders, crc2License, new HashMap<Long,String>(), "", testBinariesAreUnique, ignoredPatterns);
             pseudoTests.put("testBinariesAreUnique", testBinariesAreUnique.length() > 0 ? "Some binaries are duplicated" + testBinariesAreUnique : null);
             OutputStream os = new FileOutputStream(summary);
             try {
@@ -288,11 +291,11 @@ public class CreateLicenseSummary extends Task {
     }
 
     private void findBinaries(File d, Map<String,Map<String,String>> binaries2LicenseHeaders, Map<Long,Map<String,String>> crc2LicenseHeaders,
-            Map<Long,String> crc2Binary, String prefix, StringBuilder testBinariesAreUnique) throws IOException {
+            Map<Long,String> crc2Binary, String prefix, StringBuilder testBinariesAreUnique, List<String> ignoredPatterns) throws IOException {
         for (String n : d.list()) {
             File f = new File(d, n);
             if (f.isDirectory()) {
-                findBinaries(f, binaries2LicenseHeaders, crc2LicenseHeaders, crc2Binary, prefix + n + "/", testBinariesAreUnique);
+                findBinaries(f, binaries2LicenseHeaders, crc2LicenseHeaders, crc2Binary, prefix + n + "/", testBinariesAreUnique, ignoredPatterns);
             } else if (n.endsWith(".jar") || n.endsWith(".zip")) {
                 InputStream is = new FileInputStream(f);
                 try {
@@ -303,7 +306,18 @@ public class CreateLicenseSummary extends Task {
                         binaries2LicenseHeaders.put(path, headers);
                         String otherPath = crc2Binary.put(crc, path);
                         if (otherPath != null) {
-                            testBinariesAreUnique.append("\n" + otherPath + " and " + path + " are identical");
+                            boolean ignored = false;
+                            for (String pattern : ignoredPatterns) {
+                                String[] parts = pattern.split(" ");
+                                assert parts.length == 2 : pattern;
+                                if (SelectorUtils.matchPath(parts[0], otherPath) && SelectorUtils.matchPath(parts[1], path)) {
+                                    ignored = true;
+                                    break;
+                                }
+                            }
+                            if (!ignored) {
+                                testBinariesAreUnique.append("\n" + otherPath + " and " + path + " are identical");
+                            }
                         }
                     }
                 } finally {
