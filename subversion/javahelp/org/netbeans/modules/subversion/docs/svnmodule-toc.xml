@@ -10,7 +10,7 @@
     
   <tocitem text="IDE Basics">
     <tocitem text="Version Control and File History"> 
-      <tocitem text="Working with Subversion">
+      <tocitem text="Subversion">
         <tocitem text="About Subversion" target="svn_about" />
         <tocitem text="Working with Subversion" target="svn_overview" /> 
         <tocitem text="Subversion Tasks: Quick Reference" target="svn_quickref" /> 
