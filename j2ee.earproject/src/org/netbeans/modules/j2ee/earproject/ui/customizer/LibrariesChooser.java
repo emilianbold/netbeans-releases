@@ -302,7 +302,10 @@ public class LibrariesChooser extends javax.swing.JPanel implements HelpCtx.Prov
             final String toolTipText;
             if (value instanceof Library) {
                 final String libraryString = VisualClasspathSupport.getLibraryString((Library) value);
-                if (alreadySelectedLibs.contains(value)) {
+                if (libraryString == null) {
+                    // #115897
+                    toolTipText = null;
+                } else if (alreadySelectedLibs.contains(value)) {
                     toolTipText = NbBundle.getMessage(LibrariesChooser.class, "LBL_LibraryAlreadyInProject_ToolTip") +
                             " !!!     (" + libraryString + ")";
                 } else if (incompatibleLibs.contains(value)) {

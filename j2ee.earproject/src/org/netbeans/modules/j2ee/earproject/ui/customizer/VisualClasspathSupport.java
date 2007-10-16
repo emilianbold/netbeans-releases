@@ -358,7 +358,17 @@ public final class VisualClasspathSupport {
         return baseLibrarySet.contains(item.getObject());
     }
 
+    /**
+     * Get classpath of the given library as a <code>String</code> separated by semicolon.
+     * @param lib the library.
+     * @return classpath as a <code>String</code> or <code>null</code>
+     *         if the given library does not exist (is <code>null</code>).
+     */
     public static String getLibraryString(Library lib) {
+        // #115897
+        if (lib == null) {
+            return null;
+        }
         final List content = lib.getContent("classpath"); // NOI18N
         StringBuilder sb = new StringBuilder();
         for (Iterator it = content.iterator(); it.hasNext();) {
