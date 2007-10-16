@@ -27,37 +27,17 @@
  */
 package org.netbeans.modules.visualweb.insync.models;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.Arrays;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 import junit.framework.*;
 import junit.framework.TestSuite;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
-import org.openide.filesystems.FileLock;
+import org.netbeans.modules.visualweb.insync.InsyncTestBase;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.test.MockLookup;
 
 /**
  *
  * @author sc32560
  */
-public class FacesModelSetTest extends NbTestCase {
-    
-    private static final String SYS_PROP_SAX_PARSER_FACTORY = "javax.xml.parsers.SAXParserFactory"; // NOI18N
-    private static final String SYS_PROP_DOM_PARSER_FACTORY = "javax.xml.parsers.DocumentBuilderFactory"; // NO18N
-    private String origSaxProperty;
-    private String origDomProperty;
-
+public class FacesModelSetTest extends InsyncTestBase {
     public FacesModelSetTest(String testName) {
         super(testName);
     }
@@ -71,61 +51,16 @@ public class FacesModelSetTest extends NbTestCase {
         return suite;
     }
 
-    private Project project;
-    
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        this.clearWorkDir();
-
-        /**MockLookup.setLookup(
-                Lookups.fixed(l, new DummyXMLEncodingImpl()),
-                Lookups.metaInfServices(l)); */
-        //FileUtil.setMIMEType("xml", "text/x-jsf+xml");
-        ClassLoader l = this.getClass().getClassLoader();
-        MockLookup.setLookup(Lookups.fixed(l), Lookups.metaInfServices(l));
-
-        //MockServices.setServices(MockOpenProjectsTrampoline.class);
-        project = openProject();
-        
-        // Needed for
-        origSaxProperty = System.getProperty(SYS_PROP_SAX_PARSER_FACTORY);
-        origDomProperty = System.getProperty(SYS_PROP_DOM_PARSER_FACTORY);        
-        System.setProperty(SYS_PROP_SAX_PARSER_FACTORY, "org.netbeans.core.startup.SAXFactoryImpl");
-        System.setProperty(SYS_PROP_DOM_PARSER_FACTORY, "org.netbeans.core.startup.DOMFactoryImpl");
     }
-
-    public Project openProject() throws IOException {
-        String zipResource = "VWJavaEE5.zip";
-        String zipPath = FacesModelSetTest.class.getResource(zipResource).getPath();
-        assertNotNull(zipPath);
-        File archiveFile = new File(zipPath);
-
-        // FileObject destFileObj = TestUtil.makeScratchDir(this);
-        FileObject destFileObj = FileUtil.toFileObject(getWorkDir());
-        unZipFile(archiveFile, destFileObj);
-        assertTrue(destFileObj.isValid());
-        FileObject testApp = destFileObj.getFileObject("VWJavaEE5");
-        System.out.println("Children of VWJavaEE5:" + Arrays.toString(testApp.getChildren()));
-        //        assertTrue( ProjectManager.getDefault().isProject(testApp));
-        project = ProjectManager.getDefault().findProject(testApp);
-        assertNotNull(project);
-        OpenProjects.getDefault().open(new Project[]{project}, false);
-        return project;
-    }
-
     
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
-        destroyProject();
     }   
     
-    public void destroyProject() throws IOException {
-        OpenProjects.getDefault().close(new Project[]{project});
-        project.getProjectDirectory().delete();
-    }
-
     //    /**
 //     * Test of startModeling method, of class FacesModelSet.
 //     */
@@ -145,7 +80,7 @@ public class FacesModelSetTest extends NbTestCase {
 
     public void testGetInstance() {
         System.out.println("getInstance");
-        FileObject file = project.getProjectDirectory();
+        FileObject file = getProject().getProjectDirectory();
         FacesModelSet expResult = null;
         FacesModelSet result = FacesModelSet.getInstance(file);
         assertNotNull(result);
@@ -865,31 +800,4 @@ public class FacesModelSetTest extends NbTestCase {
 //        fail("The test case is a prototype.");
 //    }
 
-    private static void unZipFile(File archiveFile, FileObject destDir) throws IOException {
-        FileInputStream fis = new FileInputStream(archiveFile);
-        try {
-            ZipInputStream str = new ZipInputStream(fis);
-            ZipEntry entry;
-            while ((entry = str.getNextEntry()) != null) {
-                if (entry.isDirectory()) {
-                    FileUtil.createFolder(destDir, entry.getName());
-                } else {
-                    FileObject fo = FileUtil.createData(destDir, entry.getName());
-                    FileLock lock = fo.lock();
-                    try {
-                        OutputStream out = fo.getOutputStream(lock);
-                        try {
-                            FileUtil.copy(str, out);
-                        } finally {
-                            out.close();
-                        }
-                    } finally {
-                        lock.releaseLock();
-                    }
-                }
-            }
-        } finally {
-            fis.close();
-        }
-    }
 }
