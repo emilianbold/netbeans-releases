@@ -1,11 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<Form version="1.3" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+<Form version="1.3" maxVersion="1.3" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <Properties>
     <Property name="name" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
       <ResourceString bundle="org/netbeans/modules/web/jsf/wizards/Bundle.properties" key="LBL_JSFPagesAndClasses" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
     </Property>
   </Properties>
+  <AccessibilityProperties>
+    <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+      <ResourceString bundle="org/netbeans/modules/websvc/rest/wizard/Bundle.properties" key="LBL_Specify_Resource_Class" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+    </Property>
+    <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+      <ResourceString bundle="org/netbeans/modules/websvc/rest/wizard/Bundle.properties" key="LBL_Specify_Resource_Class" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+    </Property>
+  </AccessibilityProperties>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
@@ -21,15 +29,15 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <Component id="uriLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="391" max="32767" attributes="0"/>
+              <EmptySpace pref="408" max="32767" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
               <Component id="containerUriLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="332" max="32767" attributes="0"/>
+              <EmptySpace pref="359" max="32767" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
               <Component id="mediaTypeLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="403" max="32767" attributes="0"/>
+              <EmptySpace pref="419" max="32767" attributes="0"/>
           </Group>
           <Component id="jSeparator1" alignment="0" pref="473" max="32767" attributes="1"/>
           <Group type="102" alignment="1" attributes="0">
@@ -39,11 +47,11 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" attributes="0">
-                  <Component id="containerUriTextField" alignment="0" pref="207" max="32767" attributes="1"/>
-                  <Component id="contentClassTextField1" alignment="0" pref="207" max="32767" attributes="1"/>
-                  <Component id="medaTypeComboBox" alignment="0" pref="207" max="32767" attributes="1"/>
-                  <Component id="uriTextField" alignment="0" pref="207" max="32767" attributes="1"/>
-                  <Component id="contentClassTextField" alignment="0" pref="207" max="32767" attributes="0"/>
+                  <Component id="containerUriTextField" alignment="0" pref="227" max="32767" attributes="1"/>
+                  <Component id="contentClassTextField1" alignment="0" pref="227" max="32767" attributes="1"/>
+                  <Component id="medaTypeComboBox" alignment="0" pref="227" max="32767" attributes="1"/>
+                  <Component id="uriTextField" alignment="0" pref="227" max="32767" attributes="1"/>
+                  <Component id="contentClassTextField" alignment="0" pref="227" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" max="-2" attributes="0">
@@ -62,14 +70,14 @@
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="packageComboBox" alignment="0" pref="327" max="32767" attributes="1"/>
-                  <Component id="resourceNameTextField" alignment="0" pref="327" max="32767" attributes="1"/>
-                  <Component id="classTextField" alignment="0" pref="327" max="32767" attributes="1"/>
-                  <Component id="projectTextField" alignment="0" pref="327" max="32767" attributes="1"/>
-                  <Component id="locationComboBox" alignment="0" pref="327" max="32767" attributes="1"/>
+                  <Component id="packageComboBox" alignment="0" pref="352" max="32767" attributes="1"/>
+                  <Component id="resourceNameTextField" alignment="0" pref="352" max="32767" attributes="1"/>
+                  <Component id="classTextField" alignment="0" pref="352" max="32767" attributes="1"/>
+                  <Component id="projectTextField" alignment="0" pref="352" max="32767" attributes="1"/>
+                  <Component id="locationComboBox" alignment="0" pref="352" max="32767" attributes="1"/>
                   <Group type="102" alignment="1" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="containerTextField" pref="327" max="32767" attributes="1"/>
+                      <Component id="containerTextField" pref="352" max="32767" attributes="1"/>
                   </Group>
               </Group>
           </Group>
@@ -344,8 +352,8 @@
         </Property>
       </AccessibilityProperties>
       <Events>
-        <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="mouseClickHandler"/>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="selectClassButtonActionPerformed"/>
+        <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="mouseClickHandler"/>
       </Events>
     </Component>
     <Component class="javax.swing.JTextField" name="contentClassTextField">
@@ -400,6 +408,9 @@
           <ResourceString bundle="org/netbeans/modules/websvc/rest/wizard/Bundle.properties" key="DESC_ClassName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
+      <Events>
+        <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="classTextFieldKeyReleased"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="containerLabel">
       <Properties>
@@ -495,8 +506,8 @@
         </Property>
       </AccessibilityProperties>
       <Events>
-        <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="selectClassButtonMouseClickHandler"/>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="selectClassButton1ActionPerformed"/>
+        <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="selectClassButtonMouseClickHandler"/>
       </Events>
     </Component>
   </SubComponents>

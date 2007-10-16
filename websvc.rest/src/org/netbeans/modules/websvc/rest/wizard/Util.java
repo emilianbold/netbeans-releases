@@ -184,8 +184,8 @@ public class Util {
         return null;
     }
     
-    private static final String WIZARD_PANEL_CONTENT_DATA = "WizardPanel_contentData"; // NOI18N
-    private static final String WIZARD_PANEL_CONTENT_SELECTED_INDEX = "WizardPanel_contentSelectedIndex"; //NOI18N;
+    static final String WIZARD_PANEL_CONTENT_DATA = "WizardPanel_contentData"; // NOI18N
+    static final String WIZARD_PANEL_CONTENT_SELECTED_INDEX = "WizardPanel_contentSelectedIndex"; //NOI18N;
     
     public static void mergeSteps(WizardDescriptor wizard, WizardDescriptor.Panel[] panels, String[] steps) {
         Object prop = wizard.getProperty(WIZARD_PANEL_CONTENT_DATA);

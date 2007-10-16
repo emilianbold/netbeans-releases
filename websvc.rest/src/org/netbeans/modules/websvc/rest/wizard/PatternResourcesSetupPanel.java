@@ -42,6 +42,7 @@
 package org.netbeans.modules.websvc.rest.wizard;
 
 import java.awt.Component;
+import javax.swing.JComponent;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
@@ -49,7 +50,7 @@ import org.openide.util.HelpCtx;
  * @author nam
  */
 final class PatternResourcesSetupPanel extends AbstractPanel {
-    private Component component;
+    private JComponent component;
     private Pattern currentPattern = PatternResourcesSetupPanel.Pattern.CONTAINER;
     
     /** Create the wizard panel descriptor. */
@@ -66,12 +67,12 @@ final class PatternResourcesSetupPanel extends AbstractPanel {
         STANDALONE(SingletonSetupPanelVisual.class),
         CLIENTCONTROLLED(ContainerItemSetupPanelVisual.class);
         
-        private Class<? extends Component> componentClass;
-        Pattern(Class<? extends Component> componentClass) {
+        private Class<? extends JComponent> componentClass;
+        Pattern(Class<? extends JComponent> componentClass) {
             this.componentClass = componentClass;
         }
         
-        public Component createUI(String name) {
+        public JComponent createUI(String name) {
             try {
                 return componentClass.getConstructor(String.class).newInstance(name);
             } catch(Exception ex) {
@@ -87,12 +88,27 @@ final class PatternResourcesSetupPanel extends AbstractPanel {
         }
     }
     
-    public Component getComponent() {
+    public JComponent getComponent() {
         if (component == null) {
             component = currentPattern.createUI(panelName);
+            if (allWizardSteps != null) {
+                component.putClientProperty(Util.WIZARD_PANEL_CONTENT_DATA, allWizardSteps);
+                component.putClientProperty(Util.WIZARD_PANEL_CONTENT_SELECTED_INDEX, Integer.valueOf(indexInAllSteps));
+            }
+            component.setName(panelName);
             ((Settings)component).addChangeListener(this);
         }
         return component;
+    }
+    
+    private String[] allWizardSteps;
+    private int indexInAllSteps = 2;
+    
+    void saveStepsAndIndex() {
+        if (component != null) {
+            allWizardSteps = (String[]) component.getClientProperty(Util.WIZARD_PANEL_CONTENT_DATA);
+            indexInAllSteps = (Integer) component.getClientProperty(Util.WIZARD_PANEL_CONTENT_SELECTED_INDEX);
+        }        
     }
     
     public HelpCtx getHelp() {

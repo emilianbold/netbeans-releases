@@ -163,12 +163,13 @@ public class PatternResourcesIterator implements WizardDescriptor.InstantiatingI
         
         String step2Name =
                 NbBundle.getMessage(PatternResourcesIterator.class, "LBL_Specify_Resource_Class");
-        AbstractPanel containerPanel = new PatternResourcesSetupPanel(step2Name, wizard); // NOI18N
+        PatternResourcesSetupPanel containerPanel = new PatternResourcesSetupPanel(step2Name, wizard); // NOI18N
         
         panels = new AbstractPanel[] { patternPanel, containerPanel};
         current = 0;
         String names[] = new String[] { step1Name, step2Name };
         Util.mergeSteps(wizard, panels, names);
+        containerPanel.saveStepsAndIndex();
     }
 
     public void uninitialize(WizardDescriptor wiz) {
