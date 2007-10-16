@@ -5,8 +5,6 @@ Origin: https://javacc.dev.java.net/files/documents/17/686/javacc-3.2.zip
 OSR: 3106
 License: BSD
 
-Use of JavaCC version 3.2. is governed by the terms of the license below:
-
 Copyright (c) 2003 Sun Microsystems, Inc. All  Rights Reserved.
 
 Redistribution and use in source and binary forms, with or without
