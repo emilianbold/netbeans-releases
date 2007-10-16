@@ -1233,8 +1233,14 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
      * the current function is exited.
      */
     public void stepOut() {
-        setState(STATE_RUNNING);
-        gdb.exec_finish();
+        int idx = getCurrentCallStackIndex();
+        if (isValidStackFrame(callstack.get(idx + 1))) {
+            setState(STATE_RUNNING);
+            gdb.exec_finish();
+        } else {
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
+                           "ERR_InvalidCallStackFrame"))); // NOI18N
+        }
     }
     
     /**
@@ -1697,6 +1703,17 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         return csf.getFileName() != null && csf.getFullname() != null && csf.getFunctionName() != null;
     }
     
+    private int getCurrentCallStackIndex() {
+        int idx = 0;
+        for (CallStackFrame f : callstack) {
+            if (f == currentCallStackFrame) {
+                return idx;
+            }
+            idx++;
+        }
+        return idx;
+    }
+    
     private CallStackFrame setCurrentCallStackFrameNoFire(CallStackFrame callStackFrame) {
         CallStackFrame old;
         
@@ -1711,8 +1728,13 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     }
     
     public void popTopmostCall() {
-        gdb.stack_select_frame(0);
-        gdb.exec_finish();
+        if (callstack.size() > 0 && isValidStackFrame(callstack.get(1))) {
+            gdb.stack_select_frame(0);
+            gdb.exec_finish();
+        } else {
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
+                           "ERR_InvalidCallStackFrame"))); // NOI18N
+        }
     }
     
     public Map<String, BreakpointImpl> getBreakpointList() {
