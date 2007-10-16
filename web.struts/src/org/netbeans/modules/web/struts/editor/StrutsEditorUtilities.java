@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import javax.swing.text.BadLocationException;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Formatter;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.netbeans.modules.schema2beans.BaseBean;
@@ -215,15 +216,21 @@ public class StrutsEditorUtilities {
                     text.append(addNewLines(bean));
                     text.append(END_LINE);
                     text.append("</"); text.append(father); text.append(">");           //NOI18N
-                    try{
-                        doc.atomicLock();
-                        doc.remove(offset, 2);
-                        doc.insertString(offset, text.toString(), null);
-                        offset += doc.getFormatter().reformat(doc, offset, offset + text.length()-1);
-                        possition = offset;
-                    }
-                    finally{
-                        doc.atomicUnlock();
+                    Formatter fmt = doc.getFormatter();
+                    fmt.reformatLock();
+                    try {
+                        try{
+                            doc.atomicLock();
+                            doc.remove(offset, 2);
+                            doc.insertString(offset, text.toString(), null);
+                            offset += doc.getFormatter().reformat(doc, offset, offset + text.length()-1);
+                            possition = offset;
+                        }
+                        finally{
+                            doc.atomicUnlock();
+                        }
+                    } finally {
+                        fmt.reformatUnlock();
                     }
                 }
                 if (token != null && token.getImage().equals(">")){                     //NOI18N
@@ -362,14 +369,25 @@ public class StrutsEditorUtilities {
     
     private static int writeString(BaseDocument doc, String text, int offset) throws BadLocationException {
         int formatLength = 0;      
-        try{
-            doc.atomicLock();
-            offset = doc.getFormatter().indentNewLine(doc, offset+1);
-            doc.insertString(Math.min(offset, doc.getLength()), text, null );
-            formatLength = doc.getFormatter().reformat(doc, offset, offset + text.length()-1);
-        }
-        finally{
-            doc.atomicUnlock();
+        Formatter fmt = doc.getFormatter();
+        fmt.indentLock();
+        try {
+            fmt.reformatLock();
+            try {
+                try{
+                    doc.atomicLock();
+                    offset = doc.getFormatter().indentNewLine(doc, offset+1);
+                    doc.insertString(Math.min(offset, doc.getLength()), text, null );
+                    formatLength = doc.getFormatter().reformat(doc, offset, offset + text.length()-1);
+                }
+                finally{
+                    doc.atomicUnlock();
+                }
+            } finally {
+                fmt.reformatUnlock();
+            }
+        } finally {
+            fmt.indentUnlock();
         }
         return Math.min(offset + formatLength + 1, doc.getLength());
     }
