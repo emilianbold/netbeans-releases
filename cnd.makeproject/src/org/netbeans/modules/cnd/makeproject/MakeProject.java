@@ -459,6 +459,7 @@ public final class MakeProject implements Project, AntProjectListener {
                 openedTasks = null;
             }
 
+            /* Don't do this for two reasons: semantically it is wrong (IZ 115314) and it is dangerous (IZ 118575)
             ConfigurationDescriptor projectDescriptor = null;
             int count = 15;
 
@@ -492,6 +493,7 @@ public final class MakeProject implements Project, AntProjectListener {
                     }
                 }
             }
+             */
         }
 
         protected void projectClosed() {
