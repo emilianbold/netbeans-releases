@@ -341,10 +341,9 @@ public abstract class ModuleProperties {
         if (home == null) {
             return JavaPlatform.getDefault();
         }
-        JavaPlatform[] platforms = JavaPlatformManager.getDefault().getInstalledPlatforms();
-        for (int i = 0; i < platforms.length; i++) {
-            if (new File(home).equals(getPlatformLocation(platforms[i]))) {
-                return platforms[i];
+        for (JavaPlatform platform : JavaPlatformManager.getDefault().getInstalledPlatforms()) {
+            if (new File(home).equals(getPlatformLocation(platform))) {
+                return platform;
             }
         }
         return null;
