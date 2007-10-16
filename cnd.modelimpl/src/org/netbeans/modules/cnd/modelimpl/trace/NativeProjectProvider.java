@@ -45,21 +45,23 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
+import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
 import org.netbeans.modules.cnd.loaders.CCDataLoader;
 import org.netbeans.modules.cnd.loaders.CCDataObject;
 import org.netbeans.modules.cnd.loaders.CDataLoader;
 import org.netbeans.modules.cnd.loaders.CDataObject;
+import org.netbeans.modules.cnd.loaders.CndDataObject;
 import org.netbeans.modules.cnd.loaders.HDataLoader;
 import org.netbeans.modules.cnd.loaders.HDataObject;
-import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 
 /**
  * 
@@ -197,40 +199,16 @@ public final class NativeProjectProvider {
         }
         
 	private void addFile(File file) {
-	    NativeFileItem.Language lang = getLanguage(file);
+            DataObject dobj = getDataObject(file);
+	    NativeFileItem.Language lang = getLanguage(file, dobj);
 	    NativeFileItem item = new NativeFileItemImpl(file, this, lang);
-	    List<NativeFileItem> data = item.getLanguage() == NativeFileItem.Language.C_HEADER ? this.headers : this.sources;
+	    //TODO: put item in loockup of DataObject
+            // registerItemInDataObject(dobj, item);
+            List<NativeFileItem> data = (item.getLanguage() == NativeFileItem.Language.C_HEADER) ? this.headers : this.sources;
 	    data.add(item);
 	}
 	
-//	NativeFileItem.Language getLanguage(String file) {
-//	    int pos = file.lastIndexOf('.');
-//	    String ext = (pos < 0) ? "" : file.substring(pos + 1);
-//	    if( "".equals(ext)) {
-//		return NativeFileItem.Language.C_HEADER;
-//	    }
-//	    else if( ext.startsWith("h")) {
-//		return NativeFileItem.Language.C_HEADER;
-//	    }
-//	    else if( "c".equals(ext)) {
-//		return NativeFileItem.Language.C;
-//	    }
-//	    else {
-//		return NativeFileItem.Language.CPP;
-//	    }
-//	}
-	
-	NativeFileItem.Language getLanguage(File file) {
-	    
-	    DataObject dobj = null;
-	    try {
-		FileObject fo = FileUtil.toFileObject(file.getCanonicalFile());
-		if (fo!=null) {
-		    dobj = DataObject.find(fo);
-		}
-	    }
-	    catch (IOException ioe) {}
-
+	NativeFileItem.Language getLanguage(File file, DataObject dobj) {
 	    if (dobj == null) {
 		String path = file.getAbsolutePath();
 		if (CCDataLoader.getInstance().getExtensions().isRegistered(path)) {
@@ -272,6 +250,42 @@ public final class NativeProjectProvider {
             return Collections.<NativeProject>emptyList();
         }
     }    
+
+
+    private static DataObject getDataObject(File file) {
+
+        DataObject dobj = null;
+        try {
+            FileObject fo = FileUtil.toFileObject(file.getCanonicalFile());
+            if (fo != null) {
+                try {
+                    dobj = DataObject.find(fo);
+                } catch (DataObjectNotFoundException ex) {
+                    // skip;
+                }
+            }
+        } catch (IOException ioe) {
+            // skip;
+        }
+
+        return dobj;
+    }
+        
+    private static void registerItemInDataObject(DataObject obj, NativeFileItem item) {
+        if (obj != null) {
+            NativeFileItemSet set = obj.getLookup().lookup(NativeFileItemSet.class);
+            if (set == null) {
+                set = new NativeFileItemSetImpl();
+                if (obj instanceof CndDataObject) {
+                    ((CndDataObject)obj).addCookie(set);
+                }
+            }
+            set.add(item);
+        }
+    }
+    
+    private static class NativeFileItemSetImpl extends HashSet<NativeFileItem> implements NativeFileItemSet {
+    }
     
     private static final class NativeFileItemImpl implements NativeFileItem {
 	
@@ -308,13 +322,13 @@ public final class NativeProjectProvider {
 	    File base = file.getParentFile();
 	    List<String> result = new ArrayList<String>(orig.size());
 	    for( String path : orig ) {
-		File file = new File(path);
-		if( file.isAbsolute() ) {
+		File pathFile = new File(path);
+		if( pathFile.isAbsolute() ) {
 		    result.add(path);
 		}
 		else {
-		    file = new File(base, path);
-		    result.add(file.getAbsolutePath());
+		    pathFile = new File(base, path);
+		    result.add(pathFile.getAbsolutePath());
 		}
 	    }
 	    return result;
