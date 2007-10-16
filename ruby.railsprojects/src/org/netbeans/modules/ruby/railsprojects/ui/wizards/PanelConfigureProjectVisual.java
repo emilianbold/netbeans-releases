@@ -41,21 +41,14 @@
 
 package org.netbeans.modules.ruby.railsprojects.ui.wizards;
 
-import java.io.File;
 import javax.swing.JPanel;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.text.Document;
-import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
-/** First panel in the NewProject wizard. Used for filling in
+/**
+ * First panel in the NewProject wizard. Used for filling in
  * name, and directory of the project.
- *
- * @author Petr Hrebejk
  */
 public class PanelConfigureProjectVisual extends JPanel {
 
@@ -73,32 +66,23 @@ public class PanelConfigureProjectVisual extends JPanel {
     
     private int type;
     
-    /** Creates new form PanelInitProject */
     public PanelConfigureProjectVisual( PanelConfigureProject panel, int type ) {
         this.panel = panel;
         initComponents();                
         this.type = type;
         setName(NbBundle.getMessage(PanelConfigureProjectVisual.class,"TXT_NameAndLoc")); // NOI18N
         if (type == NewRailsProjectWizardIterator.TYPE_APP) {
-            projectLocationPanel = new PanelProjectLocationVisual( panel, type );
-            putClientProperty ("NewProjectWizard_Title", NbBundle.getMessage(PanelConfigureProjectVisual.class,"TXT_NewJavaApp")); // NOI18N
+            projectLocationPanel = new PanelProjectLocationVisual(panel, type);
+            putClientProperty("NewProjectWizard_Title", NbBundle.getMessage(PanelConfigureProjectVisual.class, "TXT_NewRoRApp")); // NOI18N
             jSeparator1.setVisible(true);
-            getAccessibleContext ().setAccessibleName (NbBundle.getMessage(PanelConfigureProjectVisual.class,"TXT_NewJavaApp")); // NOI18N
-            getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage(PanelConfigureProjectVisual.class,"ACSD_NewJavaApp")); // NOI18N
-        }                       
-//        else if (type == NewRailsProjectWizardIterator.TYPE_LIB) {
-//            projectLocationPanel = new PanelProjectLocationVisual( panel, type );
-//            jSeparator1.setVisible (false);
-//            putClientProperty ("NewProjectWizard_Title", NbBundle.getMessage(PanelConfigureProjectVisual.class,"TXT_NewJavaLib")); // NOI18N
-//            getAccessibleContext ().setAccessibleName (NbBundle.getMessage(PanelConfigureProjectVisual.class,"TXT_NewJavaLib")); // NOI18N
-//            getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage(PanelConfigureProjectVisual.class,"ACSD_NewJavaLib")); // NOI18N
-//        }
-        else {
-            projectLocationPanel = new PanelProjectLocationExtSrc ( panel );
+            getAccessibleContext().setAccessibleName(NbBundle.getMessage(PanelConfigureProjectVisual.class, "TXT_NewRoRApp")); // NOI18N
+            getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PanelConfigureProjectVisual.class, "ACSD_NewRoRApp")); // NOI18N
+        } else {
+            projectLocationPanel = new PanelProjectLocationExtSrc(panel);
             jSeparator1.setVisible(true);
-            putClientProperty ("NewProjectWizard_Title", NbBundle.getMessage(PanelConfigureProjectVisual.class,"TXT_JavaExtSourcesProjectLocation")); // NOI18N
-            getAccessibleContext ().setAccessibleName (NbBundle.getMessage(PanelConfigureProjectVisual.class,"TXT_JavaExtSourcesProjectLocation")); // NOI18N
-            getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage(PanelConfigureProjectVisual.class,"ACSD_JavaExtSourcesProjectLocation")); // NOI18N
+            putClientProperty("NewProjectWizard_Title", NbBundle.getMessage(PanelConfigureProjectVisual.class, "TXT_RoRExtSourcesProjectLocation")); // NOI18N
+            getAccessibleContext().setAccessibleName(NbBundle.getMessage(PanelConfigureProjectVisual.class, "TXT_RoRExtSourcesProjectLocation")); // NOI18N
+            getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PanelConfigureProjectVisual.class, "ACSD_RoRExtSourcesProjectLocation")); // NOI18N
         }
         locationContainer.add( projectLocationPanel, java.awt.BorderLayout.CENTER );
         optionsPanel = new PanelOptionsVisual( panel, type );

@@ -45,24 +45,17 @@ import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import javax.swing.JFileChooser;
-import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.railsprojects.ui.FoldersListSettings;
-import org.netbeans.modules.ruby.spi.project.support.rake.PropertyUtils;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
-
-/**
- *
- * @author  Petr Hrebejk
- */
 
 public class PanelProjectLocationVisual extends SettingsPanel implements DocumentListener {
     
@@ -199,8 +192,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         }
     }//GEN-LAST:event_browseLocationAction
     
-    
-    public void addNotify() {
+    public @Override void addNotify() {
         super.addNotify();
         //same problem as in 31086, initial focus on Cancel button
         projectNameTextField.requestFocus();

@@ -63,18 +63,17 @@ import org.openide.util.NbBundle;
  * @author  Tor Norbye
  */
 public class RailsInstallationPanel extends javax.swing.JPanel {
+
     private Panel firer;
     private WizardDescriptor wizardDescriptor;
     
-    /** Creates new form RailsInstallationPanel */
-    public RailsInstallationPanel(Panel panel) {
+    RailsInstallationPanel(Panel panel) {
         initComponents();
         this.firer = panel;
         initComponents();
         this.setName(NbBundle.getMessage(RailsInstallationPanel.class,"LAB_InstallRails"));
-        this.putClientProperty ("NewProjectWizard_Title", NbBundle.getMessage(RailsInstallationPanel.class,"TXT_RailsInstallation")); // NOI18N
+        this.putClientProperty ("NewProjectWizard_Title", NbBundle.getMessage(RailsInstallationPanel.class,"TXT_NewRoRApp")); // NOI18N
         updateLabel();
-
         updateGemProblem();
     }
     
@@ -322,6 +321,12 @@ private void railsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
             // Nothing to store/restore here
             this.settings = (WizardDescriptor) settings;
             this.component.read(this.settings);
+            // XXX hack, TemplateWizard in final setTemplateImpl() forces new wizard's title
+            // this name is used in NewProjectWizard to modify the title
+            Object substitute = component.getClientProperty ("NewProjectWizard_Title"); // NOI18N
+            if (substitute != null) {
+                this.settings.putProperty ("NewProjectWizard_Title", substitute); // NOI18N
+            }
         }
 
         public void storeSettings(Object settings) {
