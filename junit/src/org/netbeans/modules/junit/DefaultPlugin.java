@@ -972,7 +972,7 @@ public final class DefaultPlugin extends JUnitPlugin {
         
         FileObject[] createdFiles;
         if (created.isEmpty()) {
-            createdFiles = null;
+            createdFiles = new FileObject[0];
         } else {
             createdFiles = new FileObject[created.size()];
             int i = 0;
