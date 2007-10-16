@@ -140,12 +140,6 @@ public class CompletionTestPerformer {
         return array;
     }
     
-    private String getStringFromCharSequence(CharSequence chs) {
-        int length = chs.length();
-        String text = chs.subSequence(0, length).toString();
-        return text;
-    }
-    
     /**Currently, this method is supposed to be runned inside the AWT thread.
      * If this condition is not fullfilled, an IllegalStateException is
      * thrown. Do NOT modify this behaviour, or deadlock (or even Swing

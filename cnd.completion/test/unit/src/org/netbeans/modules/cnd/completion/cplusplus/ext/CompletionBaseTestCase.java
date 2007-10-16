@@ -44,7 +44,7 @@ package org.netbeans.modules.cnd.completion.cplusplus.ext;
 import java.io.File;
 import java.io.PrintStream;
 import java.util.Arrays;
-import org.netbeans.modules.cnd.completion.test.ProjectBasedTestCase;
+import org.netbeans.modules.cnd.modelimpl.test.ProjectBasedTestCase;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 import org.netbeans.modules.editor.completion.CompletionItemComparator;
 import org.netbeans.spi.editor.completion.CompletionItem;

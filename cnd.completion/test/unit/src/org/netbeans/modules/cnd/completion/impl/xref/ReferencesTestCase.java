@@ -51,7 +51,7 @@ import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.util.CsmTracer;
-import org.netbeans.modules.cnd.completion.test.ProjectBasedTestCase;
+import org.netbeans.modules.cnd.modelimpl.test.ProjectBasedTestCase;
 import org.netbeans.modules.cnd.editor.cplusplus.CCTokenContext;
 
 /**

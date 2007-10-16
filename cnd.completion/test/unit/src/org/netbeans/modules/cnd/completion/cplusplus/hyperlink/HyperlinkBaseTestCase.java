@@ -46,7 +46,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
 import org.netbeans.modules.cnd.completion.cplusplus.utils.Token;
-import org.netbeans.modules.cnd.completion.test.ProjectBasedTestCase;
+import org.netbeans.modules.cnd.modelimpl.test.ProjectBasedTestCase;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 
 /**
@@ -73,6 +73,7 @@ public abstract class HyperlinkBaseTestCase extends ProjectBasedTestCase {
         super(testName);
     }
 
+    @Override
     protected void setUp() throws Exception {
         super.setUp();    
         log("CndHyperlinkBaseTestCase.setUp started.");
@@ -84,6 +85,7 @@ public abstract class HyperlinkBaseTestCase extends ProjectBasedTestCase {
         log("Test "+getName()+  " started");
     }
 
+    @Override
     protected void tearDown() throws Exception {
         super.tearDown();
     }
