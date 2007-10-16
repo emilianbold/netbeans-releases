@@ -42,6 +42,7 @@ package org.netbeans.modules.vmd.game.dialog;
 
 import org.netbeans.modules.vmd.game.model.Sequence;
 import org.netbeans.modules.vmd.game.model.SequenceContainer;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 public class NewSequenceDialog extends AbstractNameValidationDialog  {
@@ -59,6 +60,7 @@ public class NewSequenceDialog extends AbstractNameValidationDialog  {
 	
 	public NewSequenceDialog(SequenceContainer sequenceContainer, Sequence toCopy) {
 		super(toCopy == null ? "" : toCopy.getName());
+		HelpCtx.setHelpIDString(this, "org.netbeans.modules.vmd.game.dialog.NewSequenceDialog");
 		this.sequenceContainer = sequenceContainer;
 		this.sequence = toCopy;
 	}

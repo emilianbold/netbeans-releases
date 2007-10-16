@@ -41,6 +41,7 @@
 package org.netbeans.modules.vmd.game.dialog;
 
 import org.netbeans.modules.vmd.game.model.AnimatedTile;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 public class RenameAnimatedTileDialog extends AbstractNameValidationDialog {
@@ -49,6 +50,7 @@ public class RenameAnimatedTileDialog extends AbstractNameValidationDialog {
 	
 	public RenameAnimatedTileDialog(AnimatedTile tile) {
 		super(tile.getName());
+		HelpCtx.setHelpIDString(this, "org.netbeans.modules.vmd.game.dialog.RenameAnimatedTileDialog");
 		this.tile = tile;
 	}
 	

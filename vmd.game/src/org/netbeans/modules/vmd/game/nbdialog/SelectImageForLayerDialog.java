@@ -59,6 +59,7 @@ import org.netbeans.modules.vmd.game.dialog.PartialImageGridPreview;
 import org.openide.DialogDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -236,6 +237,7 @@ public class SelectImageForLayerDialog extends javax.swing.JPanel {
 	}
 	
 	private void init() {
+		HelpCtx.setHelpIDString(this, "org.netbeans.modules.vmd.game.nbdialog.SelectImageForLayerDialog");
 		this.labelError.setText(NbBundle.getMessage(SelectImageForLayerDialog.class, "SelectImageForLayerDialog.labelSelectImgDesc.txt"));
 		
 		this.textAreaReason.setBackground(this.getBackground());

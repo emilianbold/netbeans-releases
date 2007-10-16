@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<Form version="1.3" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+<Form version="1.3" maxVersion="1.3" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <NonVisualComponents>
     <Component class="javax.swing.ButtonGroup" name="buttonGroupLayers">
     </Component>
@@ -79,7 +79,7 @@
               <Group type="102" attributes="0">
                   <Component id="labelImageFile" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="jScrollPane1" pref="243" max="32767" attributes="0"/>
+                  <Component id="jScrollPane1" pref="245" max="32767" attributes="0"/>
                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
                   <Component id="buttonImportImages" min="-2" max="-2" attributes="0"/>
               </Group>
@@ -129,13 +129,13 @@
                           <Component id="labelTileWidth" min="-2" max="-2" attributes="0"/>
                           <EmptySpace min="-2" pref="40" max="-2" attributes="0"/>
                           <Component id="labelTileHeight" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="149" max="32767" attributes="0"/>
+                          <EmptySpace pref="180" max="32767" attributes="0"/>
                       </Group>
                       <Group type="102" alignment="1" attributes="0">
                           <Group type="103" groupAlignment="1" attributes="0">
                               <Group type="102" alignment="0" attributes="0">
                                   <Component id="labelImagePreview" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace pref="174" max="32767" attributes="0"/>
+                                  <EmptySpace pref="204" max="32767" attributes="0"/>
                                   <Component id="checkBoxZoom" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <Component id="panelImage" pref="381" max="32767" attributes="2"/>
@@ -157,8 +157,8 @@
                   </Group>
                   <EmptySpace min="-2" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="sliderHeight" pref="242" max="32767" attributes="1"/>
-                      <Component id="panelImage" pref="242" max="32767" attributes="2"/>
+                      <Component id="sliderHeight" pref="243" max="32767" attributes="1"/>
+                      <Component id="panelImage" pref="243" max="32767" attributes="2"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="sliderWidth" min="-2" max="-2" attributes="0"/>

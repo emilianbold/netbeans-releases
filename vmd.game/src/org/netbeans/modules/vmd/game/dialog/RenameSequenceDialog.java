@@ -42,6 +42,7 @@ package org.netbeans.modules.vmd.game.dialog;
 
 
 import org.netbeans.modules.vmd.game.model.Sequence;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 public class RenameSequenceDialog extends AbstractNameValidationDialog {
@@ -50,6 +51,7 @@ public class RenameSequenceDialog extends AbstractNameValidationDialog {
 	
 	public RenameSequenceDialog(Sequence sequence) {
 		super(sequence.getName());
+		HelpCtx.setHelpIDString(this, "org.netbeans.modules.vmd.game.dialog.RenameSequenceDialog");
 		this.sequence = sequence;
 	}
 	

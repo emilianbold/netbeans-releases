@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<Form version="1.3" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+<Form version="1.3" maxVersion="1.3" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <NonVisualComponents>
     <Component class="javax.swing.ButtonGroup" name="buttonGroupLayers">
     </Component>
@@ -60,7 +60,7 @@
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" attributes="0">
                   <Component id="labelImageFile" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace pref="224" max="32767" attributes="0"/>
+                  <EmptySpace pref="236" max="32767" attributes="0"/>
               </Group>
               <Component id="jScrollPane1" alignment="0" pref="305" max="32767" attributes="0"/>
           </Group>
@@ -110,7 +110,7 @@
                       <Component id="panelImage" alignment="0" pref="301" max="32767" attributes="2"/>
                       <Group type="102" alignment="0" attributes="0">
                           <Component id="labelImagePreview" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="207" max="32767" attributes="0"/>
+                          <EmptySpace pref="222" max="32767" attributes="0"/>
                       </Group>
                   </Group>
               </Group>

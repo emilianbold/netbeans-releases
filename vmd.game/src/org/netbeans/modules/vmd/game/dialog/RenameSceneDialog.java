@@ -41,6 +41,7 @@
 package org.netbeans.modules.vmd.game.dialog;
 
 import org.netbeans.modules.vmd.game.model.Scene;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 public class RenameSceneDialog extends AbstractNameValidationDialog {
@@ -49,6 +50,7 @@ public class RenameSceneDialog extends AbstractNameValidationDialog {
 	
 	public RenameSceneDialog(Scene scene) {
 		super(scene.getName());
+		HelpCtx.setHelpIDString(this, "org.netbeans.modules.vmd.game.dialog.RenameSceneDialog");
 		this.scene = scene;
 	}
 	

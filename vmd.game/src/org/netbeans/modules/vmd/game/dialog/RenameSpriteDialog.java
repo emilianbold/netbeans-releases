@@ -41,6 +41,7 @@
 package org.netbeans.modules.vmd.game.dialog;
 
 import org.netbeans.modules.vmd.game.model.Sprite;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 public class RenameSpriteDialog extends AbstractNameValidationDialog {
@@ -49,6 +50,7 @@ public class RenameSpriteDialog extends AbstractNameValidationDialog {
 	
 	public RenameSpriteDialog(Sprite sprite) {
 		super(sprite.getName());
+		HelpCtx.setHelpIDString(this, "org.netbeans.modules.vmd.game.dialog.RenameSpriteDialog");
 		this.sprite = sprite;
 	}
 	

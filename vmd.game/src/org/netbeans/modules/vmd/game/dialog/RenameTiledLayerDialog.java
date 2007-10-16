@@ -41,6 +41,7 @@
 package org.netbeans.modules.vmd.game.dialog;
 
 import org.netbeans.modules.vmd.game.model.TiledLayer;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 public class RenameTiledLayerDialog extends AbstractNameValidationDialog {
@@ -49,6 +50,7 @@ public class RenameTiledLayerDialog extends AbstractNameValidationDialog {
 	
 	public RenameTiledLayerDialog(TiledLayer tiledLayer) {
 		super(tiledLayer.getName());
+		HelpCtx.setHelpIDString(this, "org.netbeans.modules.vmd.game.dialog.RenameTiledLayerDialog");
 		this.tiledLayer = tiledLayer;
 	}
 	

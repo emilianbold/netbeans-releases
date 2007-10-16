@@ -42,6 +42,7 @@ package org.netbeans.modules.vmd.game.dialog;
 
 import org.netbeans.modules.vmd.game.model.GlobalRepository;
 import org.netbeans.modules.vmd.game.model.Scene;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 public class NewSceneDialog extends AbstractNameValidationDialog {
@@ -51,12 +52,12 @@ public class NewSceneDialog extends AbstractNameValidationDialog {
 
 	public NewSceneDialog(GlobalRepository gameDesign) {
 		super("");
+		HelpCtx.setHelpIDString(this, "org.netbeans.modules.vmd.game.dialog.NewSceneDialog");
 		this.gameDesign = gameDesign;
 	}
 	
 	public NewSceneDialog(Scene scene) {
-		super("");
-		this.gameDesign = scene.getGameDesign();
+		this(scene.getGameDesign());
 		this.scene = scene;
 	}
 		

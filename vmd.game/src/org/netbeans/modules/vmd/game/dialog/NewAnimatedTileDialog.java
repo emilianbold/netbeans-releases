@@ -44,6 +44,7 @@ package org.netbeans.modules.vmd.game.dialog;
 import org.netbeans.modules.vmd.game.model.AnimatedTile;
 import org.netbeans.modules.vmd.game.model.ImageResource;
 import org.netbeans.modules.vmd.game.model.Tile;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
@@ -59,6 +60,7 @@ public class NewAnimatedTileDialog extends AbstractNameValidationDialog {
 	/** Creates a new instance of NewAnimatedTileDialog */
 	public NewAnimatedTileDialog(ImageResource imgRes, int tileWidth, int tileHeight) {
 		super("");
+		HelpCtx.setHelpIDString(this, "org.netbeans.modules.vmd.game.dialog.NewAnimatedTileDialog");
 		this.imageResource = imgRes;
 		this.tileWidth = tileWidth;
 		this.tileHeight = tileHeight;

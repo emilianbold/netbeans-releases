@@ -42,6 +42,7 @@
 package org.netbeans.modules.vmd.game.dialog;
 
 import org.netbeans.modules.vmd.game.model.TiledLayer;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
@@ -55,6 +56,7 @@ public class DuplicateTiledLayerDialog extends AbstractNameValidationDialog {
 	/** Creates a new instance of DuplicateTiledLayerDialog */
 	public DuplicateTiledLayerDialog(TiledLayer tiledLayer) {
 		super(tiledLayer.getName());
+		HelpCtx.setHelpIDString(this, "org.netbeans.modules.vmd.game.dialog.DuplicateTiledLayerDialog");
 		this.tiledLayer = tiledLayer;
 	}
 

@@ -42,6 +42,7 @@
 package org.netbeans.modules.vmd.game.dialog;
 
 import org.netbeans.modules.vmd.game.model.ImageResource;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
@@ -58,6 +59,7 @@ public class NewSimpleTiledLayerDialog extends AbstractNameValidationDialog {
 	/** Creates a new instance of DuplicateTiledLayerDialog */
 	public NewSimpleTiledLayerDialog(ImageResource imgRes, int[][] grid, int tileWidth, int tileHeight) {
 		super("");
+		HelpCtx.setHelpIDString(this, "org.netbeans.modules.vmd.game.dialog.NewSimpleTiledLayerDialog");
 		this.imgRes = imgRes;
 		this.grid = grid;
 		this.tileWidth = tileWidth;

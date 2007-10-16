@@ -85,6 +85,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -354,6 +355,7 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
 	}
 	
 	private void manualInit() {
+		HelpCtx.setHelpIDString(this, "org.netbeans.modules.vmd.game.nbdialog.TiledLayerDialog");
 		this.labelError.setIcon(ICON_ERROR);
 		
 		this.fieldLayerName.getDocument().addDocumentListener(new LayerFieldListener());
