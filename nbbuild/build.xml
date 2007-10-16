@@ -606,9 +606,10 @@ Tag:
     <zip destfile="NetBeans-${buildnum}.zip" update="true" duplicate="preserve">
       <zipfileset file="${netbeans.dest.dir}/bin/netbeans" filemode="755" prefix="${netbeans.dest}/bin"/>
       <zipfileset file="${netbeans.dest.dir}/${nb.cluster.platform.dir}/lib/nbexec" filemode="755" prefix="${netbeans.dest}/${nb.cluster.platform.dir}/lib"/>
-      <zipfileset dir="${netbeans.dest.dir}/${nb.cluster.java.dir}/ant/bin" filemode="755" prefix="${netbeans.dest}/${nb.cluster.java.dir}/ant/bin">
-        <exclude name="*.bat"/>
-        <exclude name="*.cmd"/>
+      <zipfileset dir="${netbeans.dest.dir}" filemode="755" prefix="${netbeans.dest}">
+        <include name="${nb.cluster.java.dir}/ant/bin/"/>
+        <exclude name="**/*.bat"/>
+        <exclude name="**/*.cmd"/>
       </zipfileset>
       <zipfileset dir="${netbeans.dest.dir}" filemode="755" prefix="${netbeans.dest}">
         <include name="**/*.sh"/>
