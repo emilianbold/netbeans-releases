@@ -163,6 +163,14 @@ public final class LibraryManager {
     }
     
     private ProjectBase searchInProjectFiles(ProjectBase baseProject, File searchFor){
+        return searchInProjectFiles(baseProject, searchFor, new HashSet<ProjectBase>());
+    }
+    
+    private ProjectBase searchInProjectFiles(ProjectBase baseProject, File searchFor, HashSet<ProjectBase> set){
+        if (set.contains(baseProject)){
+            return null;
+        }
+        set.add(baseProject);
         baseProject.ensureFilesCreated();
         FileImpl file = baseProject.getFile(searchFor);
         if (file != null) {
@@ -173,7 +181,7 @@ public final class LibraryManager {
                 break;
             }
             ((ProjectBase)prj).ensureFilesCreated();
-            ProjectBase res = searchInProjectFiles((ProjectBase)prj, searchFor);
+            ProjectBase res = searchInProjectFiles((ProjectBase)prj, searchFor, set);
             if (res != null) {
                 return res;
             }
@@ -195,6 +203,14 @@ public final class LibraryManager {
     }
     
     private ProjectBase searchInProjectRoots(ProjectBase baseProject, List<String> folders){
+        return searchInProjectRoots(baseProject, folders, new HashSet<ProjectBase>());
+    }
+    
+    private ProjectBase searchInProjectRoots(ProjectBase baseProject, List<String> folders, HashSet<ProjectBase> set){
+        if (set.contains(baseProject)){
+            return null;
+        }
+        set.add(baseProject);
         for(String folder : folders) {
             if (baseProject.isMySource(folder)) {
                 return baseProject;
@@ -204,7 +220,7 @@ public final class LibraryManager {
             if (prj.isArtificial()) {
                 break;
             }
-            ProjectBase res = searchInProjectRoots((ProjectBase)prj, folders);
+            ProjectBase res = searchInProjectRoots((ProjectBase)prj, folders, set);
             if (res != null) {
                 return res;
             }
