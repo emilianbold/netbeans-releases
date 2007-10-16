@@ -45,11 +45,19 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ItemEvent;
 import java.util.Iterator;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.openide.util.NbBundle;
 import javax.swing.JPanel;
+import javax.swing.ListCellRenderer;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
@@ -70,6 +78,8 @@ import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
+import org.netbeans.modules.cnd.refactoring.support.RefactoringModule;
 import org.openide.awt.Mnemonics;
 
 
@@ -91,6 +101,17 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         this.parent = parent;
         this.name = name;
         initComponents();
+    }
+    
+    public enum Scope {
+        ALL,
+        CURRENT
+    }
+    
+    public Scope getScope() {
+        if (scope.getSelectedIndex()==1)
+            return Scope.CURRENT;
+        return Scope.ALL;
     }
     
     private boolean initialized = false;
@@ -120,12 +141,25 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         }
         initFields();
 
+        Project p = CsmRefactoringUtils.getContextProject(this.origObject);
+        final JLabel currentProject;
+        final JLabel allProjects;
+        if (p!=null) {
+            ProjectInformation pi = ProjectUtils.getInformation(p);
+            currentProject = new JLabel(pi.getDisplayName(), pi.getIcon(), SwingConstants.LEFT);
+            allProjects = new JLabel(NbBundle.getMessage(WhereUsedPanel.class,"LBL_AllProjects"), pi.getIcon(), SwingConstants.LEFT); // NOI18N
+        } else {
+            currentProject = null;
+            allProjects = null;
+        }
+        
+        
         final String labelText;
         String _isBaseClassText = null;
         boolean _needVirtualMethodPanel = false;
         boolean _needClassPanel = false;
         if (CsmKindUtilities.isMethod(refObject)) {
-            CsmVisibility vis = ((CsmMember)refObject).getVisibility();
+//            CsmVisibility vis = ((CsmMember)refObject).getVisibility();
             String functionDisplayName = ((CsmMethod)refObject).getSignature();
             methodDeclaringClass = ((CsmMember)refObject).getContainingClass();
             String displayClassName = methodDeclaringClass.getName();
@@ -134,7 +168,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
                 baseVirtualMethod = getOriginalVirtualMethod((CsmMethod)refObject);
                 methodDeclaringSuperClass = baseVirtualMethod.getContainingClass();
                 if (!refObject.equals(baseVirtualMethod)) {
-                    _isBaseClassText = getString("LBL_UsagesOfBaseClass", methodDeclaringSuperClass.getName());
+                    _isBaseClassText = getString("LBL_UsagesOfBaseClass", methodDeclaringSuperClass.getName()); // NOI18N
                 }
                 _needVirtualMethodPanel = true;
             }
@@ -212,7 +246,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
                 remove(methodsPanel);
                 // WARNING for now since this feature is not ready yet
                 //label.setText(labelText);
-                String combinedLabelText = "<html><b><font style=\"color: red\">WARNING: This feature is in development and inaccurate!</font></b><br><br>" + labelText + "</html>"; // NOI18N
+                String combinedLabelText = "<html><font style=\"color: red\">WARNING: This feature is in development and inaccurate!</font><br><br>" + labelText + "</html>"; // NOI18N
                 label.setText(combinedLabelText);
                 if (showMethodPanel) {
                     add(methodsPanel, BorderLayout.CENTER);
@@ -264,6 +298,14 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
 //                    c_usages.setVisible(false);
 //                    c_directOnly.setVisible(false);
                 }
+                if (currentProject!=null) {
+                    scope.setModel(new DefaultComboBoxModel(new Object[]{allProjects, currentProject }));
+                    int defaultItem = (Integer) RefactoringModule.getOption("whereUsed.scope", 0); // NOI18N
+                    scope.setSelectedIndex(defaultItem);
+                    scope.setRenderer(new JLabelRenderer());
+                } else {
+                    scopePanel.setVisible(false);
+                }                
                 validate();
             }
         });
@@ -303,9 +345,12 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         c_subclasses = new javax.swing.JRadioButton();
         c_usages = new javax.swing.JRadioButton();
         c_directOnly = new javax.swing.JRadioButton();
-        jPanel3 = new javax.swing.JPanel();
+        commentsPanel = new javax.swing.JPanel();
         label = new javax.swing.JLabel();
         searchInComments = new javax.swing.JCheckBox();
+        scopePanel = new javax.swing.JPanel();
+        scopeLabel = new javax.swing.JLabel();
+        scope = new javax.swing.JComboBox();
 
         setLayout(new java.awt.BorderLayout());
 
@@ -323,7 +368,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         methodsPanel.add(m_isBaseClass, gridBagConstraints);
-        m_isBaseClass.getAccessibleContext().setAccessibleDescription("null"); // NOI18N
+        m_isBaseClass.getAccessibleContext().setAccessibleDescription("null");
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -346,7 +391,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         methodsPanel.add(m_overriders, gridBagConstraints);
         m_overriders.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "LBL_FindOverridingMethods")); // NOI18N
-        m_overriders.getAccessibleContext().setAccessibleDescription("null"); // NOI18N
+        m_overriders.getAccessibleContext().setAccessibleDescription("null");
 
         m_usages.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(m_usages, org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "LBL_FindUsages")); // NOI18N
@@ -363,7 +408,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         methodsPanel.add(m_usages, gridBagConstraints);
         m_usages.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "LBL_FindUsages")); // NOI18N
-        m_usages.getAccessibleContext().setAccessibleDescription("null"); // NOI18N
+        m_usages.getAccessibleContext().setAccessibleDescription("null");
 
         add(methodsPanel, java.awt.BorderLayout.CENTER);
 
@@ -385,7 +430,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         classesPanel.add(c_subclasses, gridBagConstraints);
-        c_subclasses.getAccessibleContext().setAccessibleDescription("null"); // NOI18N
+        c_subclasses.getAccessibleContext().setAccessibleDescription("null");
 
         buttonGroup.add(c_usages);
         c_usages.setSelected(true);
@@ -397,7 +442,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         classesPanel.add(c_usages, gridBagConstraints);
-        c_usages.getAccessibleContext().setAccessibleDescription("null"); // NOI18N
+        c_usages.getAccessibleContext().setAccessibleDescription("null");
 
         buttonGroup.add(c_directOnly);
         org.openide.awt.Mnemonics.setLocalizedText(c_directOnly, org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "LBL_FindDirectSubtypesOnly")); // NOI18N
@@ -407,14 +452,14 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         classesPanel.add(c_directOnly, gridBagConstraints);
-        c_directOnly.getAccessibleContext().setAccessibleDescription("null"); // NOI18N
+        c_directOnly.getAccessibleContext().setAccessibleDescription("null");
 
         add(classesPanel, java.awt.BorderLayout.CENTER);
 
-        jPanel3.setLayout(new java.awt.BorderLayout());
-        jPanel3.add(label, java.awt.BorderLayout.NORTH);
+        commentsPanel.setLayout(new java.awt.BorderLayout());
+        commentsPanel.add(label, java.awt.BorderLayout.NORTH);
 
-        searchInComments.setSelected(false/*((Boolean) RefactoringModule.getOption("searchInComments.whereUsed", Boolean.FALSE)).booleanValue()*/); // NOI18N
+        searchInComments.setSelected(((Boolean) RefactoringModule.getOption("searchInComments.whereUsed", Boolean.FALSE)).booleanValue());
         org.openide.awt.Mnemonics.setLocalizedText(searchInComments, org.openide.util.NbBundle.getBundle(WhereUsedPanel.class).getString("LBL_SearchInComents")); // NOI18N
         searchInComments.setEnabled(false);
         searchInComments.setMargin(new java.awt.Insets(10, 14, 2, 2));
@@ -423,17 +468,44 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
                 searchInCommentsItemStateChanged(evt);
             }
         });
-        jPanel3.add(searchInComments, java.awt.BorderLayout.CENTER);
+        commentsPanel.add(searchInComments, java.awt.BorderLayout.CENTER);
         searchInComments.getAccessibleContext().setAccessibleDescription(searchInComments.getText());
 
-        add(jPanel3, java.awt.BorderLayout.NORTH);
+        add(commentsPanel, java.awt.BorderLayout.NORTH);
+
+        scopeLabel.setText(org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "LBL_Scope")); // NOI18N
+
+        scope.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                scopeActionPerformed(evt);
+            }
+        });
+
+        org.jdesktop.layout.GroupLayout scopePanelLayout = new org.jdesktop.layout.GroupLayout(scopePanel);
+        scopePanel.setLayout(scopePanelLayout);
+        scopePanelLayout.setHorizontalGroup(
+            scopePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(scopePanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .add(scopeLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(scope, 0, 287, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        scopePanelLayout.setVerticalGroup(
+            scopePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(scopeLabel)
+            .add(scope, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, Short.MAX_VALUE)
+        );
+
+        add(scopePanel, java.awt.BorderLayout.PAGE_END);
     }// </editor-fold>//GEN-END:initComponents
 
     private void searchInCommentsItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_searchInCommentsItemStateChanged
         // used for change default value for searchInComments check-box.
         // The value is persisted and then used as default in next IDE run.
         Boolean b = evt.getStateChange() == ItemEvent.SELECTED ? Boolean.TRUE : Boolean.FALSE;
-//        RefactoringModule.setOption("searchInComments.whereUsed", b);
+        RefactoringModule.setOption("searchInComments.whereUsed", b); // NOI18N
     }//GEN-LAST:event_searchInCommentsItemStateChanged
 
     private void m_isBaseClassActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_m_isBaseClassActionPerformed
@@ -447,20 +519,28 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
     private void m_usagesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_m_usagesActionPerformed
         parent.stateChanged(null);
     }//GEN-LAST:event_m_usagesActionPerformed
+
+    private void scopeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scopeActionPerformed
+        RefactoringModule.setOption("whereUsed.scope", scope.getSelectedIndex()); // NOI18N
+    }//GEN-LAST:event_scopeActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroup;
     private javax.swing.JRadioButton c_directOnly;
     private javax.swing.JRadioButton c_subclasses;
     private javax.swing.JRadioButton c_usages;
     private javax.swing.JPanel classesPanel;
+    private javax.swing.JPanel commentsPanel;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
-    private javax.swing.JPanel jPanel3;
     private javax.swing.JLabel label;
     private javax.swing.JCheckBox m_isBaseClass;
     private javax.swing.JCheckBox m_overriders;
     private javax.swing.JCheckBox m_usages;
     private javax.swing.JPanel methodsPanel;
+    private javax.swing.JComboBox scope;
+    private javax.swing.JLabel scopeLabel;
+    private javax.swing.JPanel scopePanel;
     private javax.swing.JCheckBox searchInComments;
     // End of variables declaration//GEN-END:variables
 
@@ -551,4 +631,34 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         return NbBundle.getMessage(WhereUsedPanel.class, key, value1, value2);
     }    
     
+    private static class JLabelRenderer extends JLabel implements ListCellRenderer {
+        public JLabelRenderer () {
+            setOpaque(true);
+        }
+        public Component getListCellRendererComponent(
+                JList list,
+                Object value,
+                int index,
+                boolean isSelected,
+                boolean cellHasFocus) {
+            
+            // #89393: GTK needs name to render cell renderer "natively"
+            setName("ComboBox.listRenderer"); // NOI18N
+            
+            if ( value != null ) {
+                setText(((JLabel)value).getText());
+                setIcon(((JLabel)value).getIcon());
+            }
+            
+            if ( isSelected ) {
+                setBackground(list.getSelectionBackground());
+                setForeground(list.getSelectionForeground());
+            } else {
+                setBackground(list.getBackground());
+                setForeground(list.getForeground());
+            }
+            
+            return this;
+        }
+    }    
 }

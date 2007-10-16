@@ -35,6 +35,7 @@ import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorSettings;
+import org.netbeans.api.project.Project;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.editor.TokenContextPath;
@@ -50,12 +51,14 @@ import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
+import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
@@ -70,6 +73,33 @@ import org.openide.util.Lookup;
 public class CsmRefactoringUtils {
 
     private CsmRefactoringUtils() {}
+    
+    public static Project getContextProject(CsmObject contextObject) {
+        CsmFile contextFile = null;
+        if (CsmKindUtilities.isOffsetable(contextObject)) {
+            contextFile = ((CsmOffsetable)contextObject).getContainingFile();
+        } else if (CsmKindUtilities.isFile(contextObject)) {
+            contextFile = (CsmFile)contextObject;
+        }
+        Project out = null;
+        CsmProject csmProject = null;
+        if (contextFile != null) {
+            csmProject = contextFile.getProject();
+        } else if (CsmKindUtilities.isNamespace(contextObject)) {
+            csmProject = ((CsmNamespace)contextObject).getProject();
+        }
+        if (csmProject != null) {
+            Object o = csmProject.getPlatformProject();
+            if (o instanceof NativeProject) {
+                o = ((NativeProject)o).getProject();
+            }                
+            if (o instanceof Project) {
+                out = (Project)o;
+            }
+        }
+        
+        return out;
+    }
     
     static FileObject getFileObject(CsmObject object) {
         CsmFile container = null;
@@ -199,22 +229,10 @@ public class CsmRefactoringUtils {
     
     public static String getHtml(int startLine, int endLine, final int stToken, final int endToken, BaseDocument doc) {
         final StringBuffer buf = new StringBuffer();
-//        TokenHierarchy tokenH = TokenHierarchy.create(text, JavaTokenId.language());
         String mime = (String) doc.getProperty("mimeType"); // NOI18N
         Lookup lookup = MimeLookup.getLookup(MimePath.get(mime));
         SyntaxSupport sup = doc.getSyntaxSupport();
         final FontColorSettings settings = lookup.lookup(FontColorSettings.class);
-//        TokenSequence tok = tokenH.tokenSequence();
-//        while (tok.moveNext()) {
-//            Token<JavaTokenId> token = (Token) tok.token();
-//            String category = token.id().primaryCategory();
-//            if (category == null) {
-//                category = "whitespace"; //NOI18N
-//            }
-//            AttributeSet set = settings.getTokenFontColors(category);
-//            String text = token.text().toString();
-//            buf.append(color(htmlize(text)), set));
-//        }
         boolean cont = true;
  
         

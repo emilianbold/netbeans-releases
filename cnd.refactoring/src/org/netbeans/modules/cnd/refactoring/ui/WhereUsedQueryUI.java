@@ -91,6 +91,12 @@ public class WhereUsedQueryUI implements RefactoringUI {
         // handle parameters defined in panel
         assert panel != null;
         query.putValue(WhereUsedQuery.SEARCH_IN_COMMENTS,panel.isSearchInComments());
+        // TODO: handle selected scope
+        if (panel.getScope()==WhereUsedPanel.Scope.ALL) {
+            // query.getContext().add();
+        } else {
+            // query.getContext().add();
+        }
         if (panel.getReferencedObject() == null) {
             query.setRefactoringSource(Lookup.EMPTY);
         } else {

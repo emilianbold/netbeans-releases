@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.refactoring.ui;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import javax.swing.Action;
 import javax.swing.JOptionPane;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
@@ -101,6 +102,88 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
         task.run();
     }
     
+    @Override
+    public void doRename(final Lookup lookup) {
+        Runnable task;
+        EditorCookie ec = lookup.lookup(EditorCookie.class);
+        if (isFromEditor(ec)) {
+            task = new TextComponentTask(ec, lookup) {
+                @Override
+                protected RefactoringUI createRefactoringUI(CsmObject selectedElement,int startOffset,int endOffset) {
+                    return null;
+//                    Element selected = selectedElement.resolveElement(info);
+//                    if (selected==null)
+//                        return null;
+//                    if (selected.getKind() == ElementKind.CONSTRUCTOR) {
+//                        selected = selected.getEnclosingElement();
+//                        selectedElement = TreePathHandle.create(info.getTrees().getPath(selected), info);
+//                    } 
+//                    if (selected.getKind() == ElementKind.PACKAGE) {
+//                        NonRecursiveFolder folder = new NonRecursiveFolder() {
+//                            public FileObject getFolder() {
+//                                return info.getFileObject().getParent();
+//                            }
+//                        };
+//                        return new RenameRefactoringUI(folder);
+//                    } else if (selected instanceof TypeElement && !((TypeElement)selected).getNestingKind().isNested()) {
+//                        FileObject f = SourceUtils.getFile(selected, info.getClasspathInfo());
+//                        if (f!=null && selected.getSimpleName().toString().equals(f.getName())) {
+//                            return new RenameRefactoringUI(f==null?info.getFileObject():f, selectedElement, info);
+//                        } else {
+//                            return new RenameRefactoringUI(selectedElement, info);
+//                        }
+//                    } else {
+//                        return new RenameRefactoringUI(selectedElement, info);
+//                    }
+                }
+            };
+        } else {
+            task = new NodeToElementTask(lookup.lookupAll(Node.class)) {
+                @Override
+                protected RefactoringUI createRefactoringUI(CsmObject selectedElement) {
+                    return null;
+//                    String newName = getName(lookup);
+//                    if (newName!=null) {
+//                        if (pkg[0]!= null)
+//                            return new RenameRefactoringUI(pkg[0], newName);
+//                        else
+//                            return new RenameRefactoringUI(selectedElements[0], newName, handles==null||handles.isEmpty()?null:handles.iterator().next(), cinfo==null?null:cinfo.get());
+//                    }
+//                    else 
+//                        if (pkg[0]!= null)
+//                            return new RenameRefactoringUI(pkg[0]);
+//                        else
+//                            return new RenameRefactoringUI(selectedElements[0], handles==null||handles.isEmpty()?null:handles.iterator().next(), cinfo==null?null:cinfo.get());
+                }
+            };
+        }
+        task.run();
+//        RetoucheUtils.invokeAfterScanFinished(task, getActionName(RefactoringActionsFactory.renameAction()));
+    }
+    
+    private static String getActionName(Action action) {
+        String arg = (String) action.getValue(Action.NAME);
+        arg = org.openide.util.Utilities.replaceString(arg, "&", ""); // NOI18N
+        return org.openide.util.Utilities.replaceString(arg, "...", ""); // NOI18N
+    }
+
+
+    /**
+     * returns true if refactorable element is selected
+     */
+    @Override
+    public boolean canRename(Lookup lookup) {
+        Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
+        if (nodes.size() > 1) {
+            return false;
+        }        
+        CsmReference ctx = CsmRefactoringUtils.findReference(lookup);
+        if (CsmRefactoringUtils.isSupportedReference(ctx)) {
+            return true;
+        }        
+        return false;
+    }
+    
     public static abstract class TextComponentTask implements Runnable {
         private JTextComponent textC;
         private int caret;
@@ -119,22 +202,6 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
             assert start != -1;
             assert end != -1;
         }
-               
-//        public void run(CompilationController cc) throws Exception {
-//            cc.toPhase(Phase.RESOLVED);
-//            org.jruby.ast.Node root = AstUtilities.getRoot(cc);
-//            if (root == null) {
-//                // TODO How do I add some kind of error message?
-//                System.out.println("FAILURE - can't refactor uncompileable sources");
-//                return;
-//            }
-//
-//            RubyElementCtx ctx = new RubyElementCtx(cc, caret);
-//            if (ctx.getSimpleName() == null) {
-//                return;
-//            }
-//            ui = createRefactoringUI(ctx, start, end, cc);
-//        }
         
         public final void run() {
             CsmReference ctx = CsmRefactoringUtils.findReference(lookup);
@@ -142,13 +209,6 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
                 return;
             }
             ui = createRefactoringUI(ctx, start, end);
-//            try {
-//                Source source = RetoucheUtils.getSource(textC.getDocument());
-//                source.runUserActionTask(this, false);
-//            } catch (IOException ioe) {
-//                ErrorManager.getDefault().notify(ioe);
-//                return ;
-//            }
             TopComponent activetc = TopComponent.getRegistry().getActivated();
             
             if (ui!=null) {
@@ -173,27 +233,8 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
         public void cancel() {
         }
         
-//        public void run(CompilationController info) throws Exception {
-//            info.toPhase(Phase.ELEMENTS_RESOLVED);
-//            org.jruby.ast.Node root = AstUtilities.getRoot(info);
-//            if (root != null) {
-//                Element element = AstElement.create(root);
-//                RubyElementCtx fileCtx = new RubyElementCtx(root, root, element, info.getFileObject(), info);
-//                ui = createRefactoringUI(fileCtx, info);
-//            }
-//        }
-        
         public final void run() {
             DataObject o = node.getCookie(DataObject.class);
-//            Source source = RetoucheUtils.getSource(o.getPrimaryFile());
-//            assert source != null;
-//            try {
-//                source.runUserActionTask(this, false);
-//            } catch (IllegalArgumentException ex) {
-//                ex.printStackTrace();
-//            } catch (IOException ex) {
-//                ex.printStackTrace();
-//            }
             UI.openRefactoringUI(ui);
         }
         protected abstract RefactoringUI createRefactoringUI(CsmObject selectedElement/*RubyElementCtx selectedElement, CompilationInfo info*/);
