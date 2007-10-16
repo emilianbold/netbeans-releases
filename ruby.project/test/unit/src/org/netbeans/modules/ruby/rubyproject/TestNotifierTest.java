@@ -151,24 +151,6 @@ public class TestNotifierTest extends RubyTestBase {
         assertTrue(!notifier.isError() && !notifier.isWarning());
     }
 
-    public void testRSpec4AnsiColors() {
-        TestNotifier notifier = new TestNotifier(true, false);
-
-        notifier.processLine("\033[1;35m2 examples, 0 failures, 5 not implemented\033[0m");
-        notifier.processLine("\033[32m1 example, 1 failure\033[0m\r");
-        assertEquals("3 examples, 1 failure, 5 pending", notifier.getSummary());
-        assertTrue(notifier.isError());
-    }
-
-    public void testRSpec4AnsiColors2() {
-        TestNotifier notifier = new TestNotifier(true, false);
-
-        notifier.processLine("\033[1;35m2 examples, 0 failures, 5 pending\033[0m");
-        notifier.processLine("\033[32m1 example, 1 failure\033[0m\r");
-        assertEquals("3 examples, 1 failure, 5 pending", notifier.getSummary());
-        assertTrue(notifier.isError());
-    }
-
     public void testRSpec5() {  
         TestNotifier notifier = new TestNotifier(true, false);
 

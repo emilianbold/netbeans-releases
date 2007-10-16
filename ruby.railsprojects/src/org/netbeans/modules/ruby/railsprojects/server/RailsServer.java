@@ -54,7 +54,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
 import javax.swing.AbstractAction;
-import org.netbeans.modules.ruby.rubyproject.Util;
 import org.netbeans.modules.ruby.rubyproject.api.RubyExecution;
 import org.netbeans.modules.ruby.rubyproject.execution.DirectoryFileLocator;
 import org.netbeans.api.ruby.platform.RubyInstallation;
@@ -396,10 +395,6 @@ public final class RailsServer {
         public ActionText processLine(String outputLine) {
             String line = outputLine;
             
-            if (Util.containsAnsiColors(outputLine)) {
-                line = Util.stripAnsiColors(outputLine);
-            }
-
             // This is ugly, but my attempts to use URLConnection on the URL repeatedly
             // and check for connection.getResponseCode()==HttpURLConnection.HTTP_OK didn't
             // work - try that again later

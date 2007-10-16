@@ -143,9 +143,6 @@ public class TestNotifier extends OutputRecognizer implements Runnable {
         }
 
         String line = outputLine;
-        if (Util.containsAnsiColors(outputLine)) {
-            line = Util.stripAnsiColors(outputLine);
-        }
 
         for (Pattern pattern : PATTERNS) {
             Matcher match = pattern.matcher(line);
