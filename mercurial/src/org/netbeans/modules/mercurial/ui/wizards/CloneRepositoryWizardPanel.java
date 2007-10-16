@@ -52,6 +52,12 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.logging.Level;
+import java.net.URI;
+import java.net.URL;
+import java.net.HttpURLConnection;
+import java.net.URISyntaxException;
+import java.io.File;
+import java.io.IOException;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
@@ -262,18 +268,41 @@ public class CloneRepositoryWizardPanel implements WizardDescriptor.Asynchronous
 
                 // This command validates the url
                 rc.getHgUrl();
-                String url = rc.getUrl();
-                // We try to connect to the repository to check whether it is valid
-                // I have not been able to find a command other than clone
-                // which access the repository.
-                //try {
-                    //HgCommand.hasHistory(url);
-                //} catch (HgException ex) {
-                //    invalidMsg = NbBundle.getMessage(CloneRepositoryWizardPanel.class, "CTL_Repository_Invalid", url);
-                //    return;
-                //}
-            } catch (MalformedURLException ex) {
-                Mercurial.LOG.log(Level.CONFIG, "msg", ex); // should not happen
+                String urlStr = rc.getUrl();
+                URI uri = new URI(urlStr);
+                String uriSch = uri.getScheme();
+                if(uriSch.equals("file")){
+                    File f = new File(urlStr.substring("file://".length()));
+                    if(!f.exists() || !f.canRead()){
+                        invalidMsg = NbBundle.getMessage(CloneRepositoryWizardPanel.class,
+                               "MSG_Progress_Clone_CannotAccess_Err");
+                        return;
+                    }
+                }else if(uriSch.equals("http") || uriSch.equals("https")) {
+                    URL url = new URL(urlStr);
+                    HttpURLConnection con = (HttpURLConnection) url.openConnection();
+                    // Note: valid repository returns con.getContentLength() = -1
+                    // so no way to reliably test if this url exists, without using hg
+                    if (con.getResponseCode() != HttpURLConnection.HTTP_OK) {
+                        invalidMsg = NbBundle.getMessage(CloneRepositoryWizardPanel.class,
+                               "MSG_Progress_Clone_CannotAccess_Err");
+                        con.disconnect();
+                        return;
+                     }
+                     con.disconnect();
+                 }
+            } catch (java.lang.IllegalArgumentException ex) {
+                 invalidMsg = NbBundle.getMessage(CloneRepositoryWizardPanel.class,
+                                  "MSG_Progress_Clone_InvalidURL_Err");
+                 return;
+            } catch (IOException ex) {
+                 invalidMsg = NbBundle.getMessage(CloneRepositoryWizardPanel.class,
+                                  "MSG_Progress_Clone_CannotAccess_Err");
+                return;
+            } catch (URISyntaxException ex) {
+                 invalidMsg = NbBundle.getMessage(CloneRepositoryWizardPanel.class,
+                                  "MSG_Progress_Clone_InvalidURL_Err");
+                return;
             } finally {
                 if(isCanceled()) {
                     valid(org.openide.util.NbBundle.getMessage(CloneRepositoryWizardPanel.class, "CTL_Repository_Canceled")); // NOI18N
@@ -281,7 +310,7 @@ public class CloneRepositoryWizardPanel implements WizardDescriptor.Asynchronous
                   valid();
                   storeHistory();
                 } else {
-                  valid(invalidMsg);
+                  invalid(invalidMsg);
                 }
             }
         }
