@@ -571,7 +571,11 @@ public final class FileUtil extends Object {
         if (!Utilities.isWindows() || canBeCanonicalizedOnWindows(file)) {
             retVal = file.toURI().toURL();
         } else {
-            retVal = new URL("file:/" + file.getAbsolutePath()); //NOI18N
+            if (Utilities.isWindows() && file.getParentFile() == null) {
+                retVal = new URL("file:/" + file.getAbsolutePath().toUpperCase()); //NOI18N
+            } else {
+                retVal = new URL("file:/" + file.getAbsolutePath()); //NOI18N
+            }
         }
 
         return retVal;
