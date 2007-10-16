@@ -293,6 +293,7 @@ public final class TokenListList extends GapList<EmbeddedTokenList<?>> {
                             return low;
                         }
                         // Check whether this was appropriate attempt for match
+                        etl.embeddingContainer().updateStatusImpl();
                         startOffset = etl.startOffset();
                         if (startOffset > modOffset && etl.embeddingContainer().isRemoved()) {
                             startOffset = Math.max(startOffset - removedLength, modOffset);
@@ -310,6 +311,7 @@ public final class TokenListList extends GapList<EmbeddedTokenList<?>> {
                             return low;
                         }
                         // Check whether this was appropriate attempt for match
+                        etl.embeddingContainer().updateStatusImpl();
                         startOffset = etl.startOffset();
                         if (startOffset > modOffset && etl.embeddingContainer().isRemoved()) {
                             startOffset = Math.max(startOffset - removedLength, modOffset);
@@ -331,12 +333,22 @@ public final class TokenListList extends GapList<EmbeddedTokenList<?>> {
         for (int i = 0; i < size(); i++) {
             EmbeddedTokenList<?> etl = get(i);
             if (etl.startOffset() < lastEndOffset) {
-                return "etl[" + i + "].startOffset()=" + etl.startOffset() +
-                        " < lastEndOffset=" + lastEndOffset;
+                return "TOKEN-LIST-LIST Invalid start offset at index=" + i +
+                        ": etl[" + i + "].startOffset()=" + etl.startOffset() +
+                        " < lastEndOffset=" + lastEndOffset +
+                        "\n" + this;
             }
             if (etl.startOffset() > etl.endOffset()) {
-                return "etl[" + i + "].startOffset()=" + etl.startOffset() +
-                        " > etl[" + i + "].endOffset()="+ etl.endOffset();
+                return "TOKEN-LIST-LIST Invalid end offset at index=" + i +
+                        ": etl[" + i + "].startOffset()=" + etl.startOffset() +
+                        " > etl[" + i + "].endOffset()="+ etl.endOffset() +
+                        "\n" + this;
+            }
+            if (etl.embeddingContainer() == null) {
+                return "TOKEN-LIST-LIST Null ec at index=" + i + "\n" + this;
+            }
+            if (etl.embeddingContainer().isRemoved()) {
+                return "TOKEN-LIST-LIST Removed ec fat index=" + i + "\n" + this;
             }
             lastEndOffset = etl.endOffset();
         }
@@ -356,14 +368,18 @@ public final class TokenListList extends GapList<EmbeddedTokenList<?>> {
         sb.append('\n');
         int digitCount = ArrayUtilities.digitCount(size());
         for (int i = 0; i < size(); i++) {
-            EmbeddedTokenList<?> tokenList = get(i);
+            EmbeddedTokenList<?> etl = get(i);
             ArrayUtilities.appendBracketedIndex(sb, i, digitCount);
             // Should updateStatus() be called? - better mark that the range is possibly not up-to-date
-            sb.append("range:[").append(tokenList.startOffset()).append(",").
-                    append(tokenList.endOffset()).append(']');
-            sb.append(", IHC=").append(System.identityHashCode(tokenList));
+            sb.append("range:[").append(etl.startOffset()).append(",").
+                    append(etl.endOffset()).append(']');
+            EmbeddingContainer ec = etl.embeddingContainer();
+            sb.append(", IHC=").append(System.identityHashCode(etl));
+            if (ec != null && ec.isRemoved()) {
+                sb.append(", <--REMOVED-->");
+            }
             sb.append('\n');
-            LexerUtilsConstants.appendTokenListIndented(sb, tokenList, 4);
+            LexerUtilsConstants.appendTokenListIndented(sb, etl, 4);
         }
         return sb.toString();
     }

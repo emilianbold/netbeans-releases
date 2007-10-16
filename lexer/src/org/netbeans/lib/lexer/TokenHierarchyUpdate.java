@@ -229,7 +229,7 @@ public final class TokenHierarchyUpdate {
     void processNonBoundsChange(TokenListChange<?> change) {
         TLLInfo info;
         boolean hasChildren;
-        if (change.languagePath().size() > 1) {
+        if (change.languagePath().size() >= 2) {
             info = info(change.languagePath());
             hasChildren = (info != NO_INFO && info.tokenListList().hasChildren());
         } else { // root change
@@ -304,6 +304,18 @@ public final class TokenHierarchyUpdate {
                 }
             }
         }
+        
+        // Assert that update was called on all infos
+        if (LOG.isLoggable(Level.FINER) && levelInfos != null) {
+            for (List<TLLInfo> infos : levelInfos) {
+                for (TLLInfo info : infos) {
+                    if (!info.updateCalled) {
+                        throw new IllegalStateException("Update not called on tokenListList\n" + // NOI18N
+                                info.tokenListList);
+                    }
+                }
+            }
+        }
     }
     
     private <T extends TokenId> TokenListChange<T> updateTokenListByModification(
@@ -373,7 +385,7 @@ public final class TokenHierarchyUpdate {
         
         TokenListChange<?> change;
         
-        Boolean lexedBeyondModPoint;
+        boolean updateCalled;
         
         public TLLInfo(TokenHierarchyUpdate update, TokenListList tokenListList) {
             this.update = update;
@@ -395,17 +407,27 @@ public final class TokenHierarchyUpdate {
          * on the corresponding embedding container.
          */
         public void markRemoved(EmbeddedTokenList<?> removedTokenList) {
+            boolean indexWasMinusOne; // Used for possible exception cause debugging
             if (index == -1) {
+                checkUpdateNotCalledYet();
+                indexWasMinusOne = true;
                 index = tokenListList.findIndexDuringUpdate(removedTokenList,
                         update.eventInfo.modificationOffset(), update.eventInfo.removedLength());
                 assert (index >= 0) : "index=" + index + " < 0"; // NOI18N
+            } else { // Index already initialized
+                indexWasMinusOne = false;
             }
             TokenList<?> markedForRemoveTokenList = tokenListList.getOrNull(index + removeCount);
             if (markedForRemoveTokenList != removedTokenList) {
+                int realIndex = tokenListList.indexOf(removedTokenList);
                 throw new IllegalStateException("Removing at index=" + index + // NOI18N
-                        ". Wishing to remove tokenList\n" + removedTokenList + // NOI18N
+                        " but real index is " + realIndex + // NOI18N
+                        " (indexWasMinusOne=" + indexWasMinusOne + ").\n" + // NOI18N
+                        "Wishing to remove tokenList\n" + removedTokenList + // NOI18N
                         "\nbut marked-for-remove tokenList is \n" + markedForRemoveTokenList + // NOI18N
-                        "\nfrom tokenListList\n" + tokenListList);
+                        "\nfrom tokenListList\n" + tokenListList + // NOI18N
+                        "\nevent-info:" + update.eventInfo // NOI18N
+                );
             }
             removeCount++;
         }
@@ -420,6 +442,7 @@ public final class TokenHierarchyUpdate {
          */
         public void markAdded(TokenList<?> addedTokenList) {
             if (added.size() == 0) {
+                checkUpdateNotCalledYet();
                 if (index == -1) {
                     index = tokenListList.findIndex(addedTokenList.startOffset());
                     assert (index >= 0) : "index=" + index + " < 0"; // NOI18N
@@ -438,10 +461,13 @@ public final class TokenHierarchyUpdate {
          */
         public void markBoundsChange(TokenList<?> tokenList) {
             assert (index == -1) : "index=" + index + " != -1"; // Should be the first one
+            checkUpdateNotCalledYet();
             index = tokenListList.findIndex(tokenList.startOffset());
         }
         
         public void update() {
+            checkUpdateNotCalledYet();
+            updateCalled = true;
             // Update this level (and language path).
             // All the removed and added sections resulting from parent change(s)
             // are already marked.
@@ -456,7 +482,7 @@ public final class TokenHierarchyUpdate {
                     );
                 }
 
-                EmbeddedTokenList<?> etl = (EmbeddedTokenList<?>)tokenListList.get(index);
+                EmbeddedTokenList<?> etl = tokenListList.get(index);
                 // Should certainly be non-empty
                 assert (etl.tokenCountCurrent() > 0);
                 etl.embeddingContainer().updateStatusImpl();
@@ -533,6 +559,15 @@ public final class TokenHierarchyUpdate {
                     relexAfterLastModifiedSection(index, relexState, matchState);
                 }
             }
+            
+            // Set index to -1 to simplify correctness checking
+            index = -1;
+        }
+        
+        void checkUpdateNotCalledYet() {
+            if (updateCalled) {
+                throw new IllegalStateException("Update already called on \n" + tokenListList);
+            }
         }
         
         private void relexAfterLastModifiedSection(int index, Object relexState, Object matchState) {
@@ -540,7 +575,7 @@ public final class TokenHierarchyUpdate {
             // until the relexing will stop before the last token of the given section.
             EmbeddedTokenList<?> etl;
             while (!LexerUtilsConstants.statesEqual(relexState, matchState)
-                && (etl = (EmbeddedTokenList<?>)tokenListList.getOrNull(index)) != null
+                && (etl = tokenListList.getOrNull(index)) != null
             ) {
                 etl.embeddingContainer().updateStatusImpl();
                 if (etl.tokenCount() > 0) {

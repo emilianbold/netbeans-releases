@@ -354,10 +354,16 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
                 if (TokenHierarchyUpdate.LOG.isLoggable(Level.FINER)) {
                     // Check consistency of the whole token hierarchy
                     String error = checkConsistency();
-                    if (error != null)
-                        TokenHierarchyUpdate.LOG.finer("!!!CONSISTENCY-ERROR!!!: " + error + "\n");
-                    else
+                    if (error != null) {
+                        String msg = "!!!CONSISTENCY-ERROR!!!: " + error + "\n";
+                        if (TokenHierarchyUpdate.LOG.isLoggable(Level.FINEST)) {
+                            throw new IllegalStateException(msg);
+                        } else {
+                            TokenHierarchyUpdate.LOG.finer(msg);
+                        }
+                    } else {
                         extraMsg = "(TokenHierarchy Check OK) ";
+                    }
                 }
                 TokenHierarchyUpdate.LOG.fine(">>>>>>>>>>>>>>>>>> LEXER CHANGE END " + extraMsg + "------------------\n"); // NOI18N
             }
@@ -557,7 +563,9 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
         if (error == null && path2tokenListList != null) {
             for (TokenListList tll : path2tokenListList.values()) {
                 // Check token-list list consistency
-                tll.checkConsistency();
+                error = tll.checkConsistency();
+                if (error != null)
+                    return error;
                 // Check each individual token list in token-list list
                 for (TokenList<?> tl : tll) {
                     error = checkConsistencyTokenList(tl, ArrayUtilities.emptyIntArray(), tl.startOffset());
