@@ -266,9 +266,17 @@ class Ordering {
             } else if (after == null) {
                 toBeMoved.setAttribute(ATTR_POSITION, Math.round(findPosition(before) + 100));
             } else {
-                toBeMoved.setAttribute(ATTR_POSITION, Math.round(findPosition(before) + findPosition(after)) / 2);
+                Float beforePos = findPosition(before);
+                Float afterPos = findPosition(after);
+                int proposed = Math.round(beforePos + afterPos) / 2;
+                if (beforePos < proposed && proposed < afterPos) {
+                    toBeMoved.setAttribute(ATTR_POSITION, proposed);
+                } else {
+                    toBeMoved = null; // #115343
+                }
             }
-        } else {
+        }
+        if (toBeMoved == null) {
             // More complex rearrangement. Fall back to a crude but correct behavior.
             int pos = 100;
             for (FileObject f : children) {

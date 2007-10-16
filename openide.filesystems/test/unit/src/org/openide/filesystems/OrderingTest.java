@@ -245,6 +245,15 @@ public class OrderingTest extends NbTestCase {
         // XXX test sO when newly added item (e.g. at end, or elsewhere) has no initial position
     }
 
+    public void testSetOrderInitiallyZero() throws Exception { // #115343
+        apex.setAttribute("position", 0);
+        ball.setAttribute("position", 0);
+        cone.setAttribute("position", 0);
+        dent.setAttribute("position", 0);
+        Ordering.setOrder(Arrays.asList(apex, cone, ball, dent));
+        assertOrder(true, apex, cone, ball, dent);
+    }
+
     // XXX test IAE, ...
 
 }
