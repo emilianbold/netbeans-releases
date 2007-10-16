@@ -44,6 +44,7 @@ package org.netbeans.nbbuild;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.Arrays;
 import junit.framework.AssertionFailedError;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
@@ -263,7 +264,7 @@ public class SortSuiteModulesTest extends NbTestCase {
     }
 
     private void assertEdge(String[] names, String a, String b) {
-         assertTrue( a + " ->" + b, getIndex(names,a) > getIndex(names,b));
+         assertTrue(a + " after " + b + " in " + Arrays.toString(names), getIndex(names,a) > getIndex(names,b));
     }
 
     private int getIndex(String[] names, String a) {
