@@ -105,7 +105,7 @@ public abstract class ErrorHintsTestBase extends NbTestCase {
         
         TestUtilities.copyStringToFile(dataFile, code);
         
-        SourceUtilsTestUtil.prepareTest(sourceRoot, buildRoot, cache);
+        SourceUtilsTestUtil.prepareTest(sourceRoot, buildRoot, cache, getExtraClassPathElements());
         
         DataObject od = DataObject.find(data);
         EditorCookie ec = od.getCookie(EditorCookie.class);
@@ -138,6 +138,10 @@ public abstract class ErrorHintsTestBase extends NbTestCase {
         return new String[0];
     }
             
+    protected FileObject[] getExtraClassPathElements() {
+        return new FileObject[0];
+    }
+    
     protected void performAnalysisTest(String fileName, String code, String... golden) throws Exception {
         int[] caretPosition = new int[1];
         
