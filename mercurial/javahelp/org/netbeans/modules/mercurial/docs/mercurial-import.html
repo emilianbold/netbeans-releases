@@ -1,0 +1,56 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+            "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+*     Copyright � 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+    <head>
+        <title>Placing Projects Under Version Control</title>
+        <link href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css"
+            rel="StyleSheet" type="text/css">
+    </head>
+    
+    <body>
+        <h2>Placing Projects Under Version Control</h2>
+
+        <p><small><a href="#seealso">See Also</a></small></p>
+        
+        <p>The IDE enables you to place any project you are working on under version
+            control. You effectively <em>import</em> your sources into a local Mercurial 
+            repository. The repository files are placed under a .hg directory under the project directory.</p>
+        
+        <h4>To place an IDE project under version control:</h4>
+        
+        <ol>
+            <li>In the Projects window, select an unversioned project and choose either:
+            
+                <ul>
+                    <li>Versioning &gt; Initialize Mercurial Repository from the node's 
+                        right-click menu.</li>
+                    <li>Versioning &gt; Mercurial &gt; Initialize Repository from the 
+                        IDE's main menu.</li>
+                </ul></li>
+                
+            <li>Putting the project under Mercurial revision control...<br>
+            The IDE initiates the Mercurial initialize action and the IDE's status bar indicates the progress 
+            of the repository creation under your local working directory. You can also view files being added to the 
+            repository from the Output window (Ctrl-4).</li>
+            <ul>
+            <li>All the project files are now registered in the repository as <em>Locally New</em>. </li>
+            <li>The new files and their status can be viewed by clicking on Mercurial &gt; Status from the right-click menu. The
+                            <a href="mercurial-statuswindow.html">Status Window</a> opens to display versioning information on the selected item(s).</li> 
+            <li>Make sure to Commit these project files to the repository.</li>
+            </ul>
+        </ol>
+        
+        
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/proj_about.html">About Projects</a></dd>            
+            <dd><a href="mercurial-about.html">Working with Mercurial</a></dd>
+        </dl>
+        <hr><small><a href="credits.html">Legal Notices</a></small>
+        <br><br><br>
+    </body>
+</html>

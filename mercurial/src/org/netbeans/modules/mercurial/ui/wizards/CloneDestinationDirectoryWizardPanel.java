@@ -78,10 +78,7 @@ public class CloneDestinationDirectoryWizardPanel implements WizardDescriptor.Pa
     }
     
     public HelpCtx getHelp() {
-        // Show no Help button for this panel:
-        return HelpCtx.DEFAULT_HELP;
-        // If you have context help:
-        // return new HelpCtx(SampleWizardPanel1.class);
+        return new HelpCtx(CloneDestinationDirectoryWizardPanel.class);
     }
     
     //public boolean isValid() {

@@ -1,0 +1,95 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+            "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+*     Copyright � 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+    <head>
+        <title>Committing Changes to the Repository</title>
+        <link href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css"
+            rel="StyleSheet" type="text/css">
+    </head>
+    
+    <body>
+        <h2>Committing Changes to the Repository</h2>
+        
+        <p><small><a href="#seealso">See Also</a></small></p>
+        
+        <p>Once your working copies of version-controlled files have been edited, 
+            you can then place changes into the repository using the Mercurial 
+            Commit action.</p>
+
+        <ul class="note">
+            <li>Mercurial versioned files and folders must be recognized by the IDE
+                as such in order to call Mercurial actions on them. To do so, you 
+                must first <a href="mercurial-cloneother.html">clone</a> sources from an 
+                external repository or <a href="mercurial-import.html">place the project</a> under Mercurial control.</li>
+        </ul>
+        
+        <h4>To commit changes in local files to the repository:</h4>
+        
+        <ol>
+            <li>Select a version-controlled file or folder (e.g. from the Projects,
+                Files, or Favorites window) and choose Mercurial &gt; Commit from 
+                the right-click menu. The Commit Dialog opens, listing all files that 
+                contain local changes. If the files you want to commit do not already 
+                exist in the repository, the commit action will add them.</li>
+            <li>Enter a commit message in the Commit Message text area, indicating the 
+                purpose of the commit.
+            
+                <ul>
+                    <li>Click the Recent Messages icon (<img src="images/recent_msgs.png" 
+                        alt="recent messages icon">) in the upper right corner of the 
+                        dialog to view recent commit messages.</li>
+                </ul></li>
+                
+            <li>Click Commit. The IDE executes the commit and sends your local changes to 
+                the repository. You can also view files being commited to the 
+            repository from the Output window (Ctrl-4).</li>
+        </ol>
+        
+        <ul class="note">
+            <li>When working in the Commit dialog, you can exclude individual files from a 
+                commit. To do so, click on the Commit Action column for the specific file 
+                and choose Exclude from Commit. The file name responds by displaying in 
+                strike-through text.</li>
+        </ul>
+        
+        <h3>Ignoring Files</h3>
+        
+        <p>If your local working directory includes files or directories that you do not 
+            want to place under version control, you can set the IDE to ignore them 
+            permanantly using the Ignore command.</p>
+            
+        <ul class="note">
+            <li>You cannot employ the Ignore command on files that already exist in the 
+                repository.</li>
+        </ul>
+        
+        <h4>To ignore local files in your working directory:</h4>
+        
+        <ol>
+            <li>Select the file or directory you wish to ignore from the
+                Projects, Files, Favorites, or 
+                <a href="mercurial-statuswindow.html">Status</a> window.</li>
+            <li>Choose Ignore (or Mercurial &gt; Ignore) from the right-click 
+                menu of selected file or directory. The IDE ignores the file 
+                or directory whenever Mercurial commands are called on it or 
+                on the directory within which it is stored.</li>
+        </ol>
+        
+        <ul class="note">
+            <li>To change the status of ignored files so that they can be acted upon in 
+                Mercurial, select the specific file and choose Mercurial &gt; Unignore.</li>
+        </ul>
+             
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="mercurial-cloneother.html">Cloning an External Mercurial Repository</a></dd>
+            <dd><a href="mercurial-diffviewer.html">Comparing File Revisions</a></dd>
+        </dl>
+        <hr> <small><a href="credits.html">Legal Notices</a></small>
+        <br><br><br>
+    </body>
+</html>

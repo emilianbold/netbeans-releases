@@ -133,7 +133,7 @@ public final class CloneWizardAction extends CallableSystemAction implements Cha
     }
     
     public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
+        return new HelpCtx(CloneWizardAction.class);
     }
     
     protected boolean asynchronous() {

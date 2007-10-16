@@ -2,12 +2,16 @@
 <!DOCTYPE map PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Map Version 2.0//EN" "http://java.sun.com/products/javahelp/map_2_0.dtd">
 <map version="2.0">
     <mapID target="org.netbeans.modules.mercurial.about" url="mercurial-about.html"/>
-    <!-- Quick Tasks -->
     <mapID target="org.netbeans.modules.mercurial.quickref" url="mercurial-quickref.html" />
-    <!-- Viewing File Status Information -->
     <mapID target="org.netbeans.modules.mercurial.status" url="mercurial-status.html" />
-    <!-- Viewing Status Window -->
     <mapID target="org.netbeans.modules.mercurial.statuswindow" url="mercurial-statuswindow.html" />
-    <!-- Diff Viewer -->
+    <mapID target="org.netbeans.modules.mercurial.setup" url="mercurial-setup.html" />
+    <mapID target="org.netbeans.modules.mercurial.import" url="mercurial-import.html" />
     <mapID target="org.netbeans.modules.mercurial.diffviewer" url="mercurial-diffviewer.html" />
+    
+    <mapID target="org.netbeans.modules.mercurial.cloneother" url="mercurial-cloneother.html" />
+    <mapID target="org.netbeans.modules.mercurial.ui.wizards.CloneWizardAction" url="mercurial-cloneother.html" />
+    <mapID target="org.netbeans.modules.mercurial.ui.wizards.CloneRepositoryWizardPanel" url="mercurial-cloneother.html" />
+    <mapID target="org.netbeans.modules.mercurial.ui.wizards.CloneDestinationDirectoryWizardPanel" url="mercurial-cloneother.html" />
+    <mapID target="org.netbeans.modules.mercurial.ui.clone.CloneCompletedPanel" url="mercurial-cloneother.html" />
 </map>

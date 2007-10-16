@@ -7,6 +7,9 @@
         <tocitem text="About Mercurial" target="org.netbeans.modules.mercurial.about" />
         <tocitem text="Mercurial Tasks: Quick Reference" target="org.netbeans.modules.mercurial.quickref" /> 
         <tocitem text="Viewing File Status Information" target="org.netbeans.modules.mercurial.status" />
+        <tocitem text="Setting Up Mercurial" target="org.netbeans.modules.mercurial.setup" />
+        <tocitem text="Cloning an External Repository" target="org.netbeans.modules.mercurial.cloneother" />
+        <tocitem text="Placing Projects Under Version Control" target="org.netbeans.modules.mercurial.import" />                
         <tocitem text="Comparing File Revisions" target="org.netbeans.modules.mercurial.diffviewer" />
         <tocitem text="Status Window" target="org.netbeans.modules.mercurial.statuswindow" />
       </tocitem>
