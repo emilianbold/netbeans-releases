@@ -89,7 +89,7 @@ public final class DefaultSeparateContainer extends AbstractModeContainer {
         // JFrame or JDialog according to the mode kind
         if (kind == Constants.MODE_KIND_EDITOR) {
             modeFrame = new ModeFrame(this, modeView);
-            modeFrame.setIconImage(MainWindow.createIDEImage());
+            MainWindow.initFrameIcons(modeFrame);
             modeDialog = null;
         } else {
             modeDialog = new ModeDialog(WindowManager.getDefault().getMainWindow(), this, modeView);

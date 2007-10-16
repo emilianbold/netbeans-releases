@@ -48,6 +48,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
+import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsDevice;
@@ -56,8 +57,12 @@ import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.text.*;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.*;
@@ -69,8 +74,6 @@ import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.*;
 import org.openide.loaders.DataObject;
 import org.openide.util.*;
-import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
 
 /** The MainWindow of IDE. Holds toolbars, main menu and also entire desktop
  * if in MDI user interface. Singleton.
@@ -136,7 +139,7 @@ public final class MainWindow extends JFrame {
         inited = true;
         
         // initialize frame
-        setIconImage(createIDEImage());
+        initFrameIcons(this);
         
         initListeners();
 
@@ -273,10 +276,52 @@ public final class MainWindow extends JFrame {
         }
     }
     
-    private static final String ICON_SMALL = "org/netbeans/core/startup/frame.gif"; // NOI18N
-    private static final String ICON_BIG = "org/netbeans/core/startup/frame32.gif"; // NOI18N
-    static Image createIDEImage() {
-        return Utilities.loadImage(Utilities.isLargeFrameIcons() ? ICON_BIG : ICON_SMALL, true);
+    private static final String ICON_16 = "org/netbeans/core/startup/frame.gif"; // NOI18N
+    private static final String ICON_32 = "org/netbeans/core/startup/frame32.gif"; // NOI18N
+    private static final String ICON_48 = "org/netbeans/core/startup/frame48.gif"; // NOI18N
+    
+    private static Image createIDEImage() {
+        return Utilities.loadImage(ICON_16, true);
+    }
+    
+    private static List<Image> createIDEImages() {
+        List<Image> l = new ArrayList<Image>();
+        l.add(Utilities.loadImage(ICON_16, true));
+        l.add(Utilities.loadImage(ICON_32, true));
+        l.add(Utilities.loadImage(ICON_48, true));
+        return l;
+    }
+    
+    static void initFrameIcons (Frame f) {
+        Class clazz = null;
+        try {
+            clazz = Class.forName("java.awt.Window");
+        } catch (ClassNotFoundException ex) {
+            //This cannot happen because without AWT classes we would not get here.
+        }
+        Method m = null;
+        try {
+            m = clazz.getMethod("setIconImages", new Class [] {List.class});
+        } catch (NoSuchMethodException ex) {
+            //Method not available so we are on JDK 5. Use setIconImage.
+        }
+        if (m != null) {
+            List<Image> l;
+            l = createIDEImages();
+            try {
+                m.invoke(f, new Object [] {l});
+            } catch (IllegalAccessException ex) {
+                Logger.getLogger(MainWindow.class.getName()).log
+                (Level.INFO, "Cannot invoke setIconImages", ex); //NOI18N
+                f.setIconImage(createIDEImage());
+            } catch (InvocationTargetException ex) {
+                Logger.getLogger(MainWindow.class.getName()).log
+                (Level.INFO, "Cannot invoke setIconImages", ex); //NOI18N
+                f.setIconImage(createIDEImage());
+            }
+        } else {
+            f.setIconImage(createIDEImage());
+        }
     }
     
     private void initListeners() {

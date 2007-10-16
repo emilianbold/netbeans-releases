@@ -68,8 +68,7 @@ public class EditorAreaFrame extends JFrame {
     public EditorAreaFrame() {
         super(NbBundle.getMessage(EditorAreaFrame.class, "LBL_EditorAreaFrameTitle"));
         
-        setIconImage(MainWindow.createIDEImage());
-        
+        MainWindow.initFrameIcons(this);
     }
     
     public void setWindowActivationListener(Controller control) {
