@@ -93,12 +93,15 @@ import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.Comment;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TreeUtilities;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -695,6 +698,20 @@ public class RetoucheUtils {
             selectedTree = path.getLeaf();
         }
         return path;
+    }
+
+    /**
+     * Copies javadoc from <code>elm</code> to newly created <code>tree</code>. 
+     * @param elm element containing some javadoc
+     * @param tree newly created tree where the javadoc should be copied to
+     * @param wc working copy where the tree belongs to
+     */
+    public static void copyJavadoc(Element elm, Tree tree, WorkingCopy wc) {
+        TreeMaker make = wc.getTreeMaker();
+        String jdtxt = wc.getElements().getDocComment(elm);
+        if (jdtxt != null) {
+            make.addComment(tree, Comment.create(Comment.Style.JAVADOC, -1, -1, -1, jdtxt), true);
+        }
     }
     
     private static class CompilerTask implements CancellableTask<CompilationController> {

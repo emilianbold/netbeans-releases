@@ -50,6 +50,7 @@ import javax.lang.model.element.*;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.api.MemberInfo;
 import org.netbeans.modules.refactoring.java.api.PullUpRefactoring;
 import org.netbeans.modules.refactoring.java.spi.ToPhaseException;
@@ -98,8 +99,8 @@ public class PullUpTransformer extends RefactoringVisitor {
                             rewrite(njuClass.getModifiers(), modifiers);
                         }
                         
-                        
-                        MethodTree method = (MethodTree) workingCopy.getTrees().getTree(members[i].getElementHandle().resolve(workingCopy));
+                        Element methodElm = members[i].getElementHandle().resolve(workingCopy);
+                        MethodTree method = (MethodTree) workingCopy.getTrees().getTree(methodElm);
                         Set<Modifier> mod = new HashSet<Modifier>(method.getModifiers().getFlags());
                         mod.add(Modifier.ABSTRACT);
                         mod.remove(Modifier.FINAL);
@@ -118,11 +119,13 @@ public class PullUpTransformer extends RefactoringVisitor {
                                 method.getThrows(),
                                 (BlockTree) null,
                                 (ExpressionTree)method.getDefaultValue());
-                        njuClass = genUtils.insertClassMember(njuClass, (MethodTree) genUtils.importFQNs(nju));
+                        nju = genUtils.importFQNs(nju);
+                        RetoucheUtils.copyJavadoc(methodElm, nju, workingCopy);
+                        njuClass = genUtils.insertClassMember(njuClass, nju);
                         rewrite(tree, njuClass);
                     } else {                        
                         Tree newMethodTree = genUtils.importFQNs(workingCopy.getTrees().getTree(members[i].getElementHandle().resolve(workingCopy)));
-                        njuClass = GeneratorUtilities.get(workingCopy).insertClassMember(njuClass, newMethodTree);
+                        njuClass = genUtils.insertClassMember(njuClass, newMethodTree);
                         rewrite(tree, njuClass);
                     }
                 }

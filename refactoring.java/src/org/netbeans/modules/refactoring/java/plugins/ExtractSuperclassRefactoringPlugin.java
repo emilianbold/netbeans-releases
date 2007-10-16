@@ -464,16 +464,7 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
                     ElementHandle<VariableElement> handle = (ElementHandle<VariableElement>) member.getElementHandle();
                     VariableElement elm = handle.resolve(wc);
                     VariableTree tree = (VariableTree) wc.getTrees().getTree(elm);
-                    // TODO: copying the tree is workaround for the issue #101395
-                    // When issue will be correctly claused, copy can be removed
-                    // and original tree added to members.
-                    VariableTree copy = make.Variable(
-                            make.Modifiers(tree.getModifiers().getFlags(), tree.getModifiers().getAnnotations()),
-                            tree.getName(),
-                            tree.getType(),
-                            tree.getInitializer()
-                    );
-                    copy = genUtils.importFQNs(copy);
+                    VariableTree copy = genUtils.importFQNs(tree);
                     members.add(copy);
                 } else if (member.getGroup() == MemberInfo.Group.METHOD) {
                     @SuppressWarnings("unchecked")
@@ -490,8 +481,11 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
                                 methodTree.getThrows(),
                                 (BlockTree) null,
                                 null);
+                        methodTree = genUtils.importFQNs(methodTree);
+                        RetoucheUtils.copyJavadoc(elm, methodTree, wc);
+                    } else {
+                        methodTree = genUtils.importFQNs(methodTree);
                     }
-                    methodTree = genUtils.importFQNs(methodTree);
                     makeAbstract |= methodTree.getModifiers().getFlags().contains(Modifier.ABSTRACT);
                     members.add(methodTree);
                 } else if (member.getGroup() == MemberInfo.Group.IMPLEMENTS) {
