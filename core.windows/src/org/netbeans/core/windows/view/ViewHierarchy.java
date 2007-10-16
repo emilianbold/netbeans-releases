@@ -53,6 +53,7 @@ import org.netbeans.core.windows.view.ui.slides.SlideOperation;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.List;
 
@@ -90,7 +91,7 @@ final class ViewHierarchy {
     private ViewElement currentSplitRoot;
     
     /** Last non sliding mode view that were active in the past, or null if no such exists */
-    private ModeView lastNonSlidingActive;
+    private WeakReference<ModeView> lastNonSlidingActive;
     
     /** */
     private final Map<ElementAccessor,ViewElement> accessor2view = 
@@ -394,7 +395,7 @@ final class ViewHierarchy {
             modeView.focusSelectedTopComponent();
             // remember last non sliding active view
             if (!(modeView instanceof SlidingView)) {
-                lastNonSlidingActive = modeView;
+                lastNonSlidingActive = new WeakReference<ModeView>(modeView);
             }
         }
     }
@@ -425,7 +426,7 @@ final class ViewHierarchy {
      * if no such exists
      */
     ModeView getLastNonSlidingActiveModeView() {
-        return lastNonSlidingActive;
+        return lastNonSlidingActive == null ? null : lastNonSlidingActive.get();
     }
     
     public void setMaximizedModeView(ModeView modeView) {
