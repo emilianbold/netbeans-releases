@@ -112,8 +112,8 @@ public class InstancesView extends TopComponent {
     private void showTheContent(int state) {
         if (state == JPDADebugger.STATE_STOPPED) {
             ClassesCountsView cc = (ClassesCountsView) WindowManager.getDefault().findTopComponent("classes");
-            HeapFragmentWalker hfw = cc.getCurrentFragmentWalker();
-            if (hfw != null) {
+            HeapFragmentWalker hfw;
+            if (cc != null && (hfw = cc.getCurrentFragmentWalker()) != null) {
                 setHeapFragmentWalker(hfw);
                 provider = null;
             } else if (provider != null) {
@@ -226,6 +226,10 @@ public class InstancesView extends TopComponent {
         }
         
         private int getThreadsState(JPDADebugger d) {
+            if (d.getState() != JPDADebugger.STATE_STOPPED) {
+                return d.getState();
+            }
+            // Verify whether really all threads are stopped
             try {
                 java.lang.reflect.Method allThreadsMethod =
                         d.getClass().getMethod("getAllThreads", new Class[] {});
