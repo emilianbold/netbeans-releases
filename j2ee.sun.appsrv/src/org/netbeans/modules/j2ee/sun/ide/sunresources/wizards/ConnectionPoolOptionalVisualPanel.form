@@ -38,12 +38,12 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="poolSettingsPanel" pref="153" max="32767" attributes="0"/>
+              <Component id="poolSettingsPanel" min="-2" pref="153" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="transactionPanel" max="32767" attributes="0"/>
+              <Component id="transactionPanel" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="validationPanel" max="32767" attributes="0"/>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <Component id="validationPanel" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="32767" attributes="1"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -74,19 +74,19 @@
               <Group type="102" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                      <Component id="steadyLabel" alignment="0" min="-2" pref="106" max="-2" attributes="0"/>
-                      <Component id="maxLabel" alignment="0" min="-2" pref="106" max="-2" attributes="0"/>
-                      <Component id="waitLabel" alignment="0" min="-2" pref="106" max="-2" attributes="0"/>
-                      <Component id="resizeLabel" alignment="0" min="-2" pref="106" max="-2" attributes="0"/>
-                      <Component id="idleLabel" alignment="0" min="-2" pref="106" max="-2" attributes="0"/>
+                      <Component id="steadyLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="maxLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="waitLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="resizeLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="idleLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="maxField" alignment="1" pref="279" max="32767" attributes="2"/>
-                      <Component id="resizeField" alignment="1" pref="279" max="32767" attributes="2"/>
-                      <Component id="idleField" alignment="1" pref="279" max="32767" attributes="2"/>
-                      <Component id="waitField" alignment="1" pref="279" max="32767" attributes="2"/>
-                      <Component id="steadyField" pref="279" max="32767" attributes="2"/>
+                      <Component id="maxField" alignment="1" pref="134" max="32767" attributes="2"/>
+                      <Component id="resizeField" alignment="1" pref="134" max="32767" attributes="2"/>
+                      <Component id="idleField" alignment="1" pref="134" max="32767" attributes="2"/>
+                      <Component id="waitField" alignment="1" pref="134" max="32767" attributes="2"/>
+                      <Component id="steadyField" pref="134" max="32767" attributes="2"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
@@ -291,14 +291,14 @@
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
-                  <Group type="103" groupAlignment="1" attributes="0">
-                      <Component id="isolationLabel" min="-2" pref="133" max="-2" attributes="0"/>
-                      <Component id="transactionLabel" alignment="1" min="-2" pref="133" max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Component id="isolationLabel" min="-2" max="-2" attributes="0"/>
+                      <Component id="transactionLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="1" attributes="0">
-                      <Component id="isolationCombo" alignment="0" pref="252" max="32767" attributes="2"/>
-                      <Component id="transactionCombo" alignment="0" pref="252" max="32767" attributes="2"/>
+                      <Component id="isolationCombo" alignment="0" pref="258" max="32767" attributes="2"/>
+                      <Component id="transactionCombo" alignment="0" pref="258" max="32767" attributes="2"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
@@ -400,40 +400,40 @@
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="0" attributes="0">
-                  <Group type="103" groupAlignment="1" max="-2" attributes="0">
+                  <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="allowCallersLabel" min="-2" pref="176" max="-2" attributes="0"/>
-                      </Group>
-                      <Group type="102" alignment="1" attributes="0">
-                          <EmptySpace max="32767" attributes="1"/>
-                          <Component id="validationLabel" min="-2" pref="176" max="-2" attributes="0"/>
+                          <Component id="allowCallersLabel" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="methodLabel" min="-2" pref="176" max="-2" attributes="0"/>
+                          <Component id="methodLabel" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="tableNameLabel" min="-2" pref="176" max="-2" attributes="0"/>
+                          <Component id="tableNameLabel" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="failLabel" min="-2" pref="176" max="-2" attributes="0"/>
+                          <Component id="failLabel" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="nonTransactionalLabel" min="-2" pref="176" max="-2" attributes="0"/>
+                          <Component id="nonTransactionalLabel" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <Group type="102" alignment="0" attributes="0">
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="validationLabel" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="failCombo" pref="209" max="32767" attributes="0"/>
-                      <Component id="methodCombo" pref="209" max="32767" attributes="0"/>
-                      <Component id="tableNameField" alignment="0" pref="209" max="32767" attributes="0"/>
-                      <Component id="validationCombo" pref="209" max="32767" attributes="0"/>
-                      <Component id="nonTransactionalCombo" alignment="0" pref="209" max="32767" attributes="0"/>
-                      <Component id="allowCallersCombo" alignment="0" pref="209" max="32767" attributes="0"/>
+                      <Component id="failCombo" pref="232" max="32767" attributes="0"/>
+                      <Component id="methodCombo" pref="232" max="32767" attributes="0"/>
+                      <Component id="tableNameField" alignment="0" pref="232" max="32767" attributes="0"/>
+                      <Component id="validationCombo" pref="232" max="32767" attributes="0"/>
+                      <Component id="nonTransactionalCombo" alignment="0" pref="232" max="32767" attributes="0"/>
+                      <Component id="allowCallersCombo" alignment="0" pref="232" max="32767" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
