@@ -80,6 +80,8 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener, VMDMin
     private Anchor nodeAnchor;
     private VMDColorScheme scheme;
 
+    private WeakHashMap<Anchor,Anchor> proxyAnchorCache = new WeakHashMap<Anchor, Anchor> ();
+
     /**
      * Creates a node widget.
      * @param scene the scene
@@ -293,10 +295,15 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener, VMDMin
     /**
      * Creates an extended pin anchor with an ability of reconnecting to the node anchor when the node is minimized.
      * @param anchor the original pin anchor from which the extended anchor is created
-     * @return the extended pin anchor
+     * @return the extended pin anchor, the returned anchor is cached and returns a single extended pin anchor instance of each original pin anchor
      */
     public Anchor createAnchorPin (Anchor anchor) {
-        return AnchorFactory.createProxyAnchor (stateModel, anchor, nodeAnchor);
+        Anchor proxyAnchor = proxyAnchorCache.get (anchor);
+        if (proxyAnchor == null) {
+            proxyAnchor = AnchorFactory.createProxyAnchor (stateModel, anchor, nodeAnchor);
+            proxyAnchorCache.put (anchor, proxyAnchor);
+        }
+        return proxyAnchor;
     }
 
     /**
