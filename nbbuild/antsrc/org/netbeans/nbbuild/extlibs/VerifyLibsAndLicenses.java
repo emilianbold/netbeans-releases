@@ -336,8 +336,9 @@ public class VerifyLibsAndLicenses extends Task {
                         }
                         String master = masterBody.toString().replaceAll("[ \n\t]+", " ").trim();
                         String actual = body.toString().replaceAll("[ \n\t]+", " ").trim();
-                        if (!templateMatch(actual, master)) {
-                            msg.append("\n" + path + " contains a license body which does not match that in nbbuild/licenses/" + license);
+                        String problem = templateMatch(actual, master, false);
+                        if (problem != null) {
+                            msg.append("\n" + path + " contains a license body which does not match that in nbbuild/licenses/" + license + ": " + problem);
                         }
                     } else {
                         msg.append("\n" + path + " refers to nonexistent nbbuild/licenses/" + license);
@@ -386,8 +387,46 @@ public class VerifyLibsAndLicenses extends Task {
         }
         pseudoTests.put("testLicenses", msg.length() > 0 ? "Some license files have incorrect headers" + msg : null);
     }
-    private static boolean templateMatch(String actual, String expected) {
-        return actual.matches(expected.replaceAll("([\\\\\\[\\].^$?*+{}()|])", "\\\\$1").replaceAll(" *__[A-Z_]+__ *", ".*"));
+    private static String templateMatch(final String actual, final String expected, boolean left) {
+        if (actual.matches(expected.replaceAll("([\\\\\\[\\].^$?*+{}()|])", "\\\\$1").replaceAll(" *__[A-Z_]+__ *", ".*"))) {
+            return null;
+        } else if (expected.length() == 0) {
+            return "unexpected extra content";
+        } else if (actual.length() == 0) {
+            return "missing content";
+        } else if (!expected.startsWith("__")) {
+            if (expected.charAt(0) != actual.charAt(0)) {
+                return mismatch(actual, expected, true);
+            } else {
+                String reason = templateMatch(actual.substring(1), expected.substring(1), left);
+                assert reason != null : mismatch(actual, expected, true);
+                return reason;
+            }
+        } else if (!expected.endsWith("__")) {
+            if (expected.charAt(expected.length() - 1) != actual.charAt(actual.length() - 1)) {
+                return mismatch(actual, expected, false);
+            } else {
+                String reason = templateMatch(actual.substring(0, actual.length() - 1), expected.substring(0, expected.length() - 1), left);
+                assert reason != null : mismatch(actual, expected, false);
+                return reason;
+            }
+        } else {
+            String absorbed = expected.replaceFirst(left ? "^(__[A-Z_]+__)." : ".(__[A-Z_]+__)$", "$1");
+            assert !expected.equals(absorbed) : expected;
+            String reason = templateMatch(actual, absorbed, !left);
+            if (reason != null) {
+                return reason;
+            } else {
+                return mismatch(actual, expected, left);
+            }
+        }
+    }
+    private static String mismatch(String actual, String expected, boolean useHead) {
+        return "mismatch around: '" + headOrTail(actual, useHead) + "' vs. '" + headOrTail(expected, useHead) + "'";
+    }
+    private static String headOrTail(String text, boolean useHead) {
+        int context = 20;
+        return text.length() > context ? (useHead ? text.substring(0, context) : text.substring(text.length() - context, text.length())) : text;
     }
 
     static List<String> loadPatterns(String resource) throws IOException {
