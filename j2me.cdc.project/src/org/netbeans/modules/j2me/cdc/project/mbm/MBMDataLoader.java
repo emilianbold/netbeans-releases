@@ -54,7 +54,7 @@ import org.openide.util.NbBundle;
  * @author Petr Hamernik, Jaroslav Tulach
  * @author Marian Petras
  */
-public class MBMDataLoader extends UniFileLoader {
+public class MBMDataLoader extends UniFileLoader { 
 
     /** Generated serial version UID. */
     static final long serialVersionUID =-8188309025795898449L;
@@ -65,7 +65,7 @@ public class MBMDataLoader extends UniFileLoader {
     /** Creates new image loader. */
     public MBMDataLoader() {
         // Set the representation class.
-        super("org.netbeans.modules.image.MBMDataObject"); // NOI18N
+        super("org.netbeans.modules.j2me.cdc.project.mbm.MBMDataObject"); // NOI18N
         
         ExtensionList ext = new ExtensionList();
         ext.addMimeType("image/x-epoc-mbm");                                   //NOI18N

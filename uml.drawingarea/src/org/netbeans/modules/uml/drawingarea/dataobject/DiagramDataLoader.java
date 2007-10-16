@@ -64,7 +64,7 @@ public class DiagramDataLoader extends MultiFileLoader
     /** Constructs a new DiagramDataLoader */
     public DiagramDataLoader()
     {
-        super("org.netbeans.modules.uml.drawingarea.dataobject.DiagramDataLoader"); // NOI18N
+        super("org.netbeans.modules.uml.drawingarea.dataobject.DiagramDataObject"); // NOI18N
     }
     
     

@@ -55,7 +55,7 @@ import org.openide.util.NbBundle;
 public class StrutsConfigLoader extends UniFileLoader {
     private static final String REQUIRED_MIME = "text/x-struts+xml"; // NOI18N
     public StrutsConfigLoader() {
-        this("org.netbeans.modules.web.struts.StrutsConfigLoader");
+        this("org.netbeans.modules.web.struts.StrutsConfigDataObject");
     }
     
     // Can be useful for subclasses:

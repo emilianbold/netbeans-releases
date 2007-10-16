@@ -56,7 +56,7 @@ public class JSFConfigLoader extends UniFileLoader {
     private static final String REQUIRED_MIME = "text/x-jsf+xml"; // NOI18N
    
     public JSFConfigLoader() {
-        this("org.netbeans.modules.web.jsf.JSFConfigLoader");
+        this("org.netbeans.modules.web.jsf.JSFConfigDataObject");
     }
     
     // Can be useful for subclasses:

@@ -69,7 +69,7 @@ public final class JaxWsDataLoader extends MultiFileLoader {
     * Should <em>not</em> be used by subclasses.
     */
     public JaxWsDataLoader() {
-        super("org.netbeans.modules.websvc.design.JaxWsDataObject"); // NOI18N
+        super("org.netbeans.modules.websvc.design.loader.JaxWsDataObject"); // NOI18N
     }
 
     protected String actionsContext () {

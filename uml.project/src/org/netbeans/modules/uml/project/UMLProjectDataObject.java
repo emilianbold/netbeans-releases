@@ -264,7 +264,7 @@ public class UMLProjectDataObject extends MultiDataObject
         /** Creates a new XMLDataLoader */
         public Loader()
         {
-            super("org.openide.loaders.UMLProjectDataObject"); // NOI18N
+            super("org.netbeans.modules.uml.project.UMLProjectDataObject"); // NOI18N
         }
         
         protected String actionsContext()
