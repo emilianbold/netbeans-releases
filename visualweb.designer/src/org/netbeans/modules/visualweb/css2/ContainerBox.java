@@ -1888,21 +1888,21 @@ public class ContainerBox extends CssBox {
         }
     }
 
-    /** Returns true if this box represents an inline span.  This is true for
-      * inline boxes that are not block tags, or are not inline tags that are
-      * absolutely positioned, or are replaced.
-     */
-    private boolean isSpan() {
-        return inline && !boxType.isAbsolutelyPositioned() && !replaced;
-    }
-    
-    private static boolean isTextualBox(CssBox box) {
-        if (box == null) {
-            return false;
-        }
-        BoxType boxType = box.getBoxType();
-        return boxType == BoxType.TEXT || boxType == BoxType.SPACE || boxType == BoxType.LINEBREAK;
-    }
+//    /** Returns true if this box represents an inline span.  This is true for
+//      * inline boxes that are not block tags, or are not inline tags that are
+//      * absolutely positioned, or are replaced.
+//     */
+//    private boolean isSpan() {
+//        return inline && !boxType.isAbsolutelyPositioned() && !replaced;
+//    }
+//    
+//    private static boolean isTextualBox(CssBox box) {
+//        if (box == null) {
+//            return false;
+//        }
+//        BoxType boxType = box.getBoxType();
+//        return boxType == BoxType.TEXT || boxType == BoxType.SPACE || boxType == BoxType.LINEBREAK;
+//    }
     
     /**
      * NOTE: prevBox and nextBox refer to the siblings for
@@ -2373,9 +2373,9 @@ public class ContainerBox extends CssBox {
         // XXX what about floats?
         if (!inline || boxType.isAbsolutelyPositioned()) {
             return this;
-        } if (isSpan() && !isTextualBox(this)) {
-            // XXX #117840 Improving the tree layout.
-            return this;
+//        } if (isSpan() && !isTextualBox(this)) {
+//            // XXX #117840 Improving the tree layout.
+//            return this;
         } else {
             ContainerBox blockBox = this;
 
