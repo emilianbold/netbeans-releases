@@ -73,6 +73,10 @@ public final class CloneWizardAction extends CallableSystemAction implements Cha
     private static CloneWizardAction instance;
     private WizardDescriptor wizardDescriptor;
     private CloneRepositoryWizardPanel cloneRepositoryWizardPanel;
+    private CloneDestinationDirectoryWizardPanel cloneDestinationDirectoryWizardPanel;
+    private PanelsIterator wizardIterator;
+    private String errorMessage;
+
 
     public static synchronized CloneWizardAction getInstance() {
         if (instance == null) {
@@ -81,8 +85,10 @@ public final class CloneWizardAction extends CallableSystemAction implements Cha
         return instance;
     }
 
+    @SuppressWarnings("unchecked")
     public void performAction() {
-        wizardDescriptor = new WizardDescriptor(getPanels());
+        wizardIterator = new PanelsIterator();
+        wizardDescriptor = new WizardDescriptor(wizardIterator);
 
         // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
         wizardDescriptor.setTitleFormat(new MessageFormat("{0}")); // NOI18N
@@ -101,27 +107,59 @@ public final class CloneWizardAction extends CallableSystemAction implements Cha
     }
     
     public void stateChanged(ChangeEvent e) {
-        if(cloneRepositoryWizardPanel==null) {
+        if(wizardIterator==null) {
             return;
         }
+        WizardDescriptor.Panel step = wizardIterator.current();
+        if(step == null) {
+            return;
+        }
+        if (step == cloneRepositoryWizardPanel) {
+            errorMessage = cloneRepositoryWizardPanel.getErrorMessage();
+        } else if (step == cloneDestinationDirectoryWizardPanel) {
+            errorMessage = cloneDestinationDirectoryWizardPanel.getErrorMessage();
+        }
         if (wizardDescriptor != null) {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", cloneRepositoryWizardPanel.getErrorMessage()); // NOI18N
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", errorMessage); // NOI18N
         }
     }
 
+    public String getName() {
+        return "Start Sample Wizard"; // NOI18N
+    }
+    
+    public String iconResource() {
+        return null;
+    }
+    
+    public HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
+    }
+    
+    protected boolean asynchronous() {
+        return false;
+    }
+    
 
     /**
      * Initialize panels representing individual wizard's steps and sets
      * various properties for them influencing wizard appearance.
      */
     @SuppressWarnings("unchecked")
-    private WizardDescriptor.Panel<WizardDescriptor>[] getPanels() {
-        if (panels == null) {
+    private class PanelsIterator extends WizardDescriptor.ArrayIterator {
+
+        PanelsIterator() {
+        }
+
+        protected WizardDescriptor.Panel[] initializePanels() {
+            WizardDescriptor.Panel[] panels = new WizardDescriptor.Panel[2];
             cloneRepositoryWizardPanel = new CloneRepositoryWizardPanel();
+            cloneDestinationDirectoryWizardPanel = new CloneDestinationDirectoryWizardPanel();
             panels = new WizardDescriptor.Panel[] {                
-                cloneRepositoryWizardPanel, new CloneDestinationDirectoryWizardPanel()
+                cloneRepositoryWizardPanel, cloneDestinationDirectoryWizardPanel
             };
-            panels[0].addChangeListener(this);
+            panels[0].addChangeListener(CloneWizardAction.this);
+            panels[1].addChangeListener(CloneWizardAction.this);
             String[] steps = new String[panels.length];
             for (int i = 0; i < panels.length; i++) {
                 Component c = panels[i].getComponent();
@@ -143,25 +181,8 @@ public final class CloneWizardAction extends CallableSystemAction implements Cha
                     jc.putClientProperty("WizardPanel_contentNumbered", Boolean.TRUE); // NOI18N
                 }
             }
+            return panels;
         }
-        return panels;
     }
-    
-    public String getName() {
-        return "Start Sample Wizard"; // NOI18N
-    }
-    
-    public String iconResource() {
-        return null;
-    }
-    
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-    
-    protected boolean asynchronous() {
-        return false;
-    }
-    
 }
 

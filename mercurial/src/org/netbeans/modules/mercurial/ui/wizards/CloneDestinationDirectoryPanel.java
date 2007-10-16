@@ -53,6 +53,7 @@ import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.util.NbBundle;
 
 public final class CloneDestinationDirectoryPanel extends JPanel implements ActionListener {
+    private String message;
     
     /** Creates new form CloneVisualPanel2 */
     public CloneDestinationDirectoryPanel() {
@@ -78,6 +79,23 @@ public final class CloneDestinationDirectoryPanel extends JPanel implements Acti
         return nameField.getText();
     }
 
+    public String getMessage() {
+        return message;
+    }
+
+    public boolean isValid() {
+        String dir = directoryField.getText();
+        String name = nameField.getText();
+        File file = new File (dir, name);
+        if (file.exists()) {
+            message = NbBundle.getMessage(CloneRepositoryPanel.class, "MSG_TARGET_EXISTS"); // NOI18N
+            return false;
+        } else {
+            message = "";
+            return true;
+        }
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -88,7 +106,6 @@ public final class CloneDestinationDirectoryPanel extends JPanel implements Acti
 
         destinationDirectoryPanel = new javax.swing.JPanel();
         directoryLabel = new javax.swing.JLabel();
-        directoryField = new javax.swing.JTextField();
         directoryBrowseButton = new javax.swing.JButton();
         nameLabel = new javax.swing.JLabel();
 
@@ -234,7 +251,7 @@ public final class CloneDestinationDirectoryPanel extends JPanel implements Acti
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel destinationDirectoryPanel;
     private javax.swing.JButton directoryBrowseButton;
-    private javax.swing.JTextField directoryField;
+    final javax.swing.JTextField directoryField = new javax.swing.JTextField();
     private javax.swing.JLabel directoryLabel;
     final javax.swing.JTextField nameField = new javax.swing.JTextField();
     private javax.swing.JLabel nameLabel;

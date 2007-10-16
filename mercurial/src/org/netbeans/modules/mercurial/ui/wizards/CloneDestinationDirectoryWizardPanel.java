@@ -41,18 +41,27 @@
 package org.netbeans.modules.mercurial.ui.wizards;
 
 import java.io.File;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.awt.Component;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.SwingUtilities;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
-public class CloneDestinationDirectoryWizardPanel implements WizardDescriptor.Panel {
+public class CloneDestinationDirectoryWizardPanel implements WizardDescriptor.Panel, DocumentListener {
     
     /**
      * The visual component that displays this panel. If you need to access the
      * component from this class, just use getComponent().
      */
     private CloneDestinationDirectoryPanel component;
+    private boolean valid;
+    private String errorMessage;
     
     // Get the visual component for the panel. In this template, the component
     // is kept separate. This can be more efficient: if the wizard is created
@@ -61,6 +70,9 @@ public class CloneDestinationDirectoryWizardPanel implements WizardDescriptor.Pa
     public Component getComponent() {
         if (component == null) {
             component = new CloneDestinationDirectoryPanel();
+            component.directoryField.getDocument().addDocumentListener(this);
+            component.nameField.getDocument().addDocumentListener(this);
+            valid();
         }
         return component;
     }
@@ -72,19 +84,46 @@ public class CloneDestinationDirectoryWizardPanel implements WizardDescriptor.Pa
         // return new HelpCtx(SampleWizardPanel1.class);
     }
     
-    public boolean isValid() {
+    //public boolean isValid() {
         // If it is always OK to press Next or Finish, then:
-        return true;
+        //return true;
         // If it depends on some condition (form filled out...), then:
         // return someCondition();
         // and when this condition changes (last form field filled in...) then:
         // fireChangeEvent();
         // and uncomment the complicated stuff below.
-    }
+    //}
     
-    public final void addChangeListener(ChangeListener l) {}
-    public final void removeChangeListener(ChangeListener l) {}
-    /*
+    public void insertUpdate(DocumentEvent e) {
+        textChanged(e);
+    }
+
+    public void removeUpdate(DocumentEvent e) {
+        textChanged(e);
+    }
+
+    public void changedUpdate(DocumentEvent e) {
+        textChanged(e);
+    }
+
+    private void textChanged(final DocumentEvent e) {
+        // repost later to AWT otherwise it can deadlock because
+        // the document is locked while firing event and we try
+        // synchronously access its content
+        Runnable awt = new Runnable() {
+            public void run() {
+                if (e.getDocument() == component.nameField.getDocument () || e.getDocument() == component.directoryField.getDocument()) {
+                    if (component.isValid()) {
+                        valid(component.getMessage());
+                    } else {
+                        invalid(component.getMessage());
+                    }
+                }
+            }
+        };
+        SwingUtilities.invokeLater(awt);
+    }
+
     private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1); // or can use ChangeSupport in NB 6.0
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
@@ -106,8 +145,37 @@ public class CloneDestinationDirectoryWizardPanel implements WizardDescriptor.Pa
             it.next().stateChanged(ev);
         }
     }
-     */
     
+    protected final void valid() {
+        setValid(true, null);
+    }
+
+    protected final void valid(String extErrorMessage) {
+        setValid(true, extErrorMessage);
+    }
+
+    protected final void invalid(String message) {
+        setValid(false, message);
+    }
+
+    public final boolean isValid() {
+        return valid;
+    }
+
+    public final String getErrorMessage() {
+        return errorMessage;
+    }
+
+    private void setValid(boolean valid, String errorMessage) {
+        boolean fire = this.valid != valid;
+        fire |= errorMessage != null && (errorMessage.equals(this.errorMessage) == false);
+        this.valid = valid;
+        this.errorMessage = errorMessage;
+        if (fire) {
+            fireChangeEvent();
+        }
+    }
+
     // You can use a settings object to keep track of state. Normally the
     // settings object will be the WizardDescriptor, so you can use
     // WizardDescriptor.getProperty & putProperty to store information entered
