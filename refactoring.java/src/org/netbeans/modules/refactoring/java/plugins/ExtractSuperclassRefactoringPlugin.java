@@ -464,7 +464,8 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
                     ElementHandle<VariableElement> handle = (ElementHandle<VariableElement>) member.getElementHandle();
                     VariableElement elm = handle.resolve(wc);
                     VariableTree tree = (VariableTree) wc.getTrees().getTree(elm);
-                    VariableTree copy = genUtils.importFQNs(tree);
+                    VariableTree copy = genUtils.importComments(tree, wc.getTrees().getPath(elm).getCompilationUnit());
+                    copy = genUtils.importFQNs(copy);
                     members.add(copy);
                 } else if (member.getGroup() == MemberInfo.Group.METHOD) {
                     @SuppressWarnings("unchecked")
@@ -484,6 +485,7 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
                         methodTree = genUtils.importFQNs(methodTree);
                         RetoucheUtils.copyJavadoc(elm, methodTree, wc);
                     } else {
+                        methodTree = genUtils.importComments(methodTree, wc.getTrees().getPath(elm).getCompilationUnit());
                         methodTree = genUtils.importFQNs(methodTree);
                     }
                     makeAbstract |= methodTree.getModifiers().getFlags().contains(Modifier.ABSTRACT);

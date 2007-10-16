@@ -124,7 +124,9 @@ public class PullUpTransformer extends RefactoringVisitor {
                         njuClass = genUtils.insertClassMember(njuClass, nju);
                         rewrite(tree, njuClass);
                     } else {                        
-                        Tree newMethodTree = genUtils.importFQNs(workingCopy.getTrees().getTree(members[i].getElementHandle().resolve(workingCopy)));
+                        TreePath mpath = workingCopy.getTrees().getPath(members[i].getElementHandle().resolve(workingCopy));
+                        Tree newMethodTree = genUtils.importComments(mpath.getLeaf(), mpath.getCompilationUnit());
+                        newMethodTree = genUtils.importFQNs(newMethodTree);
                         njuClass = genUtils.insertClassMember(njuClass, newMethodTree);
                         rewrite(tree, njuClass);
                     }

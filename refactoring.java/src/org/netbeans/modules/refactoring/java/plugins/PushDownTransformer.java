@@ -142,7 +142,9 @@ public class PushDownTransformer extends RefactoringVisitor {
                         if (RetoucheUtils.elementExistsIn((TypeElement) el, member, workingCopy)) {
                             problem = MoveTransformer.createProblem(problem, false, org.openide.util.NbBundle.getMessage(PushDownTransformer.class, "ERR_PushDown_AlreadyExists", member.getSimpleName(), el.getSimpleName()));
                         }
-                        Tree memberTree = genUtils.importFQNs(workingCopy.getTrees().getTree(member));
+                        TreePath path = workingCopy.getTrees().getPath(member);
+                        Tree memberTree = genUtils.importComments(path.getLeaf(), path.getCompilationUnit());
+                        memberTree = genUtils.importFQNs(path.getLeaf());
                         njuClass = genUtils.insertClassMember(njuClass, memberTree);
                     }
                 }
