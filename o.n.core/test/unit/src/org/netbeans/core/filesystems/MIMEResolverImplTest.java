@@ -158,6 +158,10 @@ public class MIMEResolverImplTest extends NbTestCase {
             fo = root.getFileObject("test","txt2");
             s = resolve(fo);
             if ("mime.xml".equals(s) == false) fail = "mime rule failure: " + fo + " => " + s;            
+
+            fo = root.getFileObject("test","txt3");
+            s = resolve(fo);
+            if (s != null) fail = "and-mime rule failure: " + fo + " => " + s;            
                         
             fo = root.getFileObject("test","elf");
             s = resolve(fo);

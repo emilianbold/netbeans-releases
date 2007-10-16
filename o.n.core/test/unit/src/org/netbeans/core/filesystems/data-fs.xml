@@ -16,6 +16,7 @@
         <file name="test.exe"><![CDATA[aaa]]></file>
         <file name="test.elf"><![CDATA[CCC]]></file>
         <file name="test.txt2"/>        
+        <file name="test.txt3"/>        
 	<file name="build1.xml"><![CDATA[<?xml version="1.0"?>
 <project default="all">
     <target name="all"/>

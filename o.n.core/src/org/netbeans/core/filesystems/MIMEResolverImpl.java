@@ -531,31 +531,37 @@ public final class MIMEResolverImpl extends XMLEnvironmentProvider implements En
         }
         
         private boolean accept(FileObject fo) throws IOException {
-            
             // check for resource extension
-
-            if (exts != null && fo.getExt() != null) {
-                if (Util.contains(exts, fo.getExt(), CASE_INSENSITIVE)) return true;
+            if (exts != null) {
+                if (fo.getExt() == null) return false;
+                if (!Util.contains(exts, fo.getExt(), CASE_INSENSITIVE)) return false;
             }
             
             // check for resource mime type
 
             if (mimes != null) {
+                boolean match = false;
+                String s = FileUtil.getMIMEType(fo.getExt());  //!!! how to obtain resource MIME type as classified by lower layers?
+                if (s == null) return false;
+
+                // RFC2045; remove content type paramaters and ignore case
+                int l = s.indexOf(';');
+                if (l>=0) s = s.substring(0, l);
+                s = s.toLowerCase();
+
                 for (int i = mimes.length -1 ; i>=0; i--) {
-                    String s = FileUtil.getMIMEType(fo.getExt());  //!!! how to obtain resource MIME type as classified by lower layers?
-                    if (s == null) continue;
-
-                    // RFC2045; remove content type paramaters and ignore case
-
-                    int l = s.indexOf(';');
-                    if (l>=0) s = s.substring(0, l-1);
-                    s = s.toLowerCase();
-                    if (s.equals(mimes[i])) return true;
+                    if (s.equals(mimes[i])) {
+                        match = true;
+                        break;
+                    }
 
                     // RFC3023; allows "+xml" suffix
-
-                    if (mimes[i].length() > 0 && mimes[i].charAt(0) == '+' && s.endsWith(mimes[i])) return true; // NOI18N
+                    if (mimes[i].length() > 0 && mimes[i].charAt(0) == '+' && s.endsWith(mimes[i])) {
+                        match = true;
+                        break;
+                    }
                 }
+                if (!match) return false;
             }
             
             // check for magic
@@ -612,17 +618,15 @@ public final class MIMEResolverImpl extends XMLEnvironmentProvider implements En
                 
                 // compare it
                 
-                if ( unexpectedEnd == false ) {
-                    boolean diff = false;
+                if ( unexpectedEnd ) {
+                    return false;
+                } else {
                     for (int i=0  ; i<magic.length; i++) {
                         if (mask != null) header[i] &= mask[i];
                         if (magic[i] != header[i]) {
-                            diff = true;
-                            break;
+                            return false;
                         }
                     }
-
-                    if (diff == false) return true;
                 }
             }
             
@@ -632,15 +636,13 @@ public final class MIMEResolverImpl extends XMLEnvironmentProvider implements En
                 for (int i = fatts.length -1 ; i>=0; i--) {
                     Object attr = fo.getAttribute(fatts[i]);
                     if (attr != null) {
-                        if (vals[i] == null) return true;                    
-                        if (vals[i].equals(attr.toString())) return true;
+                        if (!attr.toString().equals(vals[i]) && vals[i] != null) return false;
                     }
                 }
             }
             
-            // no one template matched
-            
-            return false;
+            // all templates matched
+            return true;
         }
         
     }

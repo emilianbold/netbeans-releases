@@ -63,6 +63,7 @@
             <MIME-resolver>
                 <file>
                     <ext name="txt2"/>
+                    <ext name="txt3"/>
                     <mime name="text/plain"/>
                     <resolver mime="mime.xml"/>
                 </file>
