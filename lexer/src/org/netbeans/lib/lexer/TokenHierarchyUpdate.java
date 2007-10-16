@@ -216,10 +216,8 @@ public final class TokenHierarchyUpdate {
                             // updateStatusImpl() already done in rewrapECToken()
                             childInfo.markRemoved(etl);
                         }
-                        etl = etl.nextEmbeddedTokenList();
-                        if (prevEtl != null) {
-                            prevEtl.setNextEmbeddedTokenList(etl);
-                        }
+                        // Remove embedding and get the next embedded token list (prevEtl stays the same)
+                        etl = ec.removeEmbeddedTokenList(prevEtl, etl);
                     }
                 } while (etl != null && etl != EmbeddedTokenList.NO_DEFAULT_EMBEDDING);
             }
@@ -483,8 +481,6 @@ public final class TokenHierarchyUpdate {
                 }
 
                 EmbeddedTokenList<?> etl = tokenListList.get(index);
-                // Should certainly be non-empty
-                assert (etl.tokenCountCurrent() > 0);
                 etl.embeddingContainer().updateStatusImpl();
                 Object matchState = LexerUtilsConstants.endState(etl);
                 Object relexState = tokenListList.relexState(index);

@@ -151,7 +151,7 @@ public final class EmbeddingContainer<T extends TokenId> {
                 }
                 // Check whether the token contains enough text to satisfy embedding's start and end skip lengths
                 CharSequence text = token.text(); // Should not be null here but rather check
-                if (token.text() == null || embedding.startSkipLength() + embedding.endSkipLength() > text.length()) {
+                if (text == null || embedding.startSkipLength() + embedding.endSkipLength() > text.length()) {
                     return null;
                 }
                 if (ec == null) {
@@ -162,12 +162,9 @@ public final class EmbeddingContainer<T extends TokenId> {
                         embedding.language());
                 EmbeddedTokenList<ET> etl = new EmbeddedTokenList<ET>(ec,
                         embeddedLanguagePath, embedding, null);
-                if (prevEtl != null) {
-                    prevEtl.setNextEmbeddedTokenList(etl);
-                } else {
-                    ec.setFirstEmbeddedTokenList(etl);
-                }
-                ec.setDefaultEmbeddedTokenList(etl);
+                // Preceding code should ensure that (prevEtl.nextEmbeddedTokenList == null)
+                // so no need to call etl.setNextEmbeddedTokenList(prevEtl.nextEmbeddedTokenList())
+                ec.addEmbeddedTokenList(prevEtl, etl, true);
                 return (embeddedLanguage == null || embeddedLanguage == embedding.language()) ? etl : null;
             }
             // Update embedding presence to NONE
@@ -250,9 +247,7 @@ public final class EmbeddingContainer<T extends TokenId> {
             // Make the embedded token list to be the first in the list
             etl = new EmbeddedTokenList<ET>(
                     ec, embeddedLanguagePath, embedding, ec.firstEmbeddedTokenList());
-            ec.setFirstEmbeddedTokenList(etl);
-            // Increase version of the hierarchy
-            // TBD
+            ec.addEmbeddedTokenList(null, etl, false);
         }
 
         // Fire the embedding creation to the clients
@@ -328,18 +323,14 @@ public final class EmbeddingContainer<T extends TokenId> {
                     if (embeddedLanguage == etl.languagePath().innerLanguage()) {
                         // The embedding with the given language exists
                         // Remove it from the chain
-                        if (prevEtl != null) {
-                            prevEtl = etl.nextEmbeddedTokenList();
-                        } else { // etl was first
-                            ec.setFirstEmbeddedTokenList(etl.nextEmbeddedTokenList());
-                        }
-                        etl.setNextEmbeddedTokenList(null);
+                        ec.removeEmbeddedTokenList(prevEtl, etl);
                         // Do not increase the version of the hierarchy since
                         // all the existing token sequences would be invalidated.
                         // Instead invalidate only TSes for the etl only and all its children.
                         // Construct special EC just for the removed token list.
                         ec = new EmbeddingContainer<T>(ec);
-                        ec.setFirstEmbeddedTokenList(etl);
+                        // State that the removed embedding was not default - should not matter anyway
+                        ec.addEmbeddedTokenList(null, etl, false);
                         etl.setEmbeddingContainer(ec);
                         ec.invalidateChildren();
 
@@ -524,16 +515,52 @@ public final class EmbeddingContainer<T extends TokenId> {
         return firstEmbeddedTokenList;
     }
     
-    void setFirstEmbeddedTokenList(EmbeddedTokenList<? extends TokenId> firstEmbeddedTokenList) {
-        this.firstEmbeddedTokenList = firstEmbeddedTokenList;
+    /**
+     * Add a new embedded token list to this container.
+     * 
+     * @param prevEtl token list preceding the place of addition.
+     *  Null means that the added one will be first in the chain.
+     * @param etl non-null token list to be added.
+     * @param defaultEmbedding whether the added etl is default embedding or not.
+     */
+    public void addEmbeddedTokenList(EmbeddedTokenList<?> prevEtl, EmbeddedTokenList<?> etl, boolean defaultEmbedding) {
+        if (prevEtl != null) {
+            etl.setNextEmbeddedTokenList(prevEtl.nextEmbeddedTokenList());
+            prevEtl.setNextEmbeddedTokenList(etl);
+        } else { // prevEtl is null
+            etl.setNextEmbeddedTokenList(firstEmbeddedTokenList);
+            firstEmbeddedTokenList = etl;
+        }
+        if (defaultEmbedding) {
+            defaultEmbeddedTokenList = etl;
+        }
+    }
+    
+    /**
+     * Remove embedded token list from this container.
+     * Clear reference to next item in the removed token list.
+     * 
+     * @param prevEtl token list preceding the place of removal.
+     *  Null means that the removed one is first in the chain.
+     * @param etl non-null token list to be removed.
+     * @return next token list linked originally to etl.
+     */
+    public EmbeddedTokenList<?> removeEmbeddedTokenList(EmbeddedTokenList<?> prevEtl, EmbeddedTokenList<?> etl) {
+        EmbeddedTokenList<?> next = etl.nextEmbeddedTokenList();
+        if (prevEtl != null) {
+            prevEtl.setNextEmbeddedTokenList(next);
+        } else {
+            firstEmbeddedTokenList = next;
+        }
+        etl.setNextEmbeddedTokenList(null);
+        if (defaultEmbeddedTokenList == etl) {
+            defaultEmbeddedTokenList = null;
+        }
+        return next;
     }
     
     public EmbeddedTokenList<? extends TokenId> defaultEmbeddedTokenList() {
         return defaultEmbeddedTokenList;
-    }
-    
-    void setDefaultEmbeddedTokenList(EmbeddedTokenList<? extends TokenId> defaultEmbeddedTokenList) {
-        this.defaultEmbeddedTokenList = defaultEmbeddedTokenList;
     }
     
     public boolean updateStatus() {
