@@ -263,7 +263,7 @@ public class PhysicalView {
         /**
          * DOCUMENT ME!
          */
-        static final String GROUP_NAME_PATTERN = NbBundle.getMessage(PhysicalView.class, "FMT_PhysicalView_GroupName"); // NOI18N
+        static final String GROUP_NAME_PATTERN = NbBundle.getMessage(PhysicalView.class, "FMT_PhysicalView_GroupName"); 
 
         private Project project;
 

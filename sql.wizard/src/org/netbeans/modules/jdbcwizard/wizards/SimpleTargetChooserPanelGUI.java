@@ -106,7 +106,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
     private static final java.awt.Dimension PREF_DIM = new java.awt.Dimension(500, 340);
 
     private static final String NEW_FILE_PREFIX = NbBundle.getMessage(SimpleTargetChooserPanelGUI.class,
-            "LBL_SimpleTargetChooserPanelGUI_NewFilePrefix"); // NOI18N
+            "LBL_SimpleTargetChooserPanelGUI_NewFilePrefix"); 
 
     private final ListCellRenderer CELL_RENDERER = new GroupCellRenderer();
 
