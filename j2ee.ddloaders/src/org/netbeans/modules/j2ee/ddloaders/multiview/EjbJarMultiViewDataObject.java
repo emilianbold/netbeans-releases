@@ -114,6 +114,7 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
     
     private static final long serialVersionUID = 8857563089355069362L;
     
+    private static final Logger LOGGER = Logger.getLogger(EjbJarMultiViewDataObject.class.getName());
     /**
      * Property name for documentDTD property
      */
@@ -413,7 +414,12 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
         DDProvider ddProvider = DDProvider.getDefault();
         if (ejbJar == null || ejbJar.getOriginal() == null) {
             try {
-                setEjbJar((EjbJarProxy) ddProvider.getDDRoot(getPrimaryFile()));
+                EjbJarProxy newEjbJar = (EjbJarProxy) ddProvider.getDDRoot(getPrimaryFile());
+                if (newEjbJar == null){
+                    LOGGER.log(Level.INFO, "Could not resolve EjbJar for " + getPrimaryFile().getPath() + ""); //NO18N
+                    newEjbJar = new EjbJarProxy(null, null);
+                }
+                setEjbJar(newEjbJar);
             } catch (IOException e) {
                 if (ejbJar == null) {
                     setEjbJar(new EjbJarProxy(null, null));
@@ -445,11 +451,11 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
             ejbJar.removePropertyChangeListener(ejbJarChangeListener);
         }
         ejbJar = newEjbJar;
-        if (ejbJarChangeListener == null) {
-            ejbJarChangeListener = new EjbJarPropertyChangeListener();
+            if (ejbJarChangeListener == null) {
+                ejbJarChangeListener = new EjbJarPropertyChangeListener();
+            }
+            ejbJar.addPropertyChangeListener(ejbJarChangeListener);
         }
-        ejbJar.addPropertyChangeListener(ejbJarChangeListener);
-    }
     
     protected RootInterface getDDModel() {
         if (ejbJar == null) {
