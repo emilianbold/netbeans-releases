@@ -41,7 +41,10 @@
 
 package org.openide.actions;
 
+import java.awt.Component;
+import java.awt.EventQueue;
 import java.awt.MenuShortcut;
+import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.StringSelection;
@@ -50,26 +53,37 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
-import javax.swing.event.EventListenerList;
+import javax.swing.JMenuItem;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.text.DefaultEditorKit;
 import org.openide.awt.Actions;
 import org.openide.explorer.ExplorerManager;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeEvent;
 import org.openide.nodes.NodeListener;
 import org.openide.nodes.NodeMemberEvent;
 import org.openide.nodes.NodeReorderEvent;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.UserCancelException;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.CallbackSystemAction;
@@ -107,7 +121,7 @@ public final class PasteAction extends CallbackSystemAction {
         return globalModel;
     }
 
-    protected void initialize() {
+    protected @Override void initialize() {
         super.initialize();
 
         setEnabled(false);
@@ -121,27 +135,27 @@ public final class PasteAction extends CallbackSystemAction {
         return new HelpCtx(PasteAction.class);
     }
 
-    protected String iconResource() {
+    protected @Override String iconResource() {
         return "org/openide/resources/actions/paste.gif"; // NOI18N
     }
 
-    public javax.swing.JMenuItem getMenuPresenter() {
+    public @Override JMenuItem getMenuPresenter() {
         return new Actions.SubMenu(this, model(), false);
     }
 
-    public javax.swing.JMenuItem getPopupPresenter() {
+    public @Override JMenuItem getPopupPresenter() {
         return new Actions.SubMenu(this, model(), true);
     }
 
-    public Action createContextAwareInstance(Lookup actionContext) {
+    public @Override Action createContextAwareInstance(Lookup actionContext) {
         return new DelegateAction(this, actionContext);
     }
 
-    public Object getActionMapKey() {
-        return javax.swing.text.DefaultEditorKit.pasteAction;
+    public @Override Object getActionMapKey() {
+        return DefaultEditorKit.pasteAction;
     }
 
-    public void actionPerformed(java.awt.event.ActionEvent ev) {
+    public @Override void actionPerformed(ActionEvent ev) {
         PasteType t;
 
         if (ev.getSource() instanceof PasteType) {
@@ -194,7 +208,7 @@ public final class PasteAction extends CallbackSystemAction {
         }
     }
 
-    protected boolean asynchronous() {
+    protected @Override boolean asynchronous() {
         return false;
     }
 
@@ -208,7 +222,7 @@ public final class PasteAction extends CallbackSystemAction {
     */
     @Deprecated
     public void setPasteTypes(PasteType[] types) {
-        this.types = types;
+        PasteAction.types = types;
 
         if ((types == null) || (types.length == 0)) {
             setEnabled(false);
@@ -239,9 +253,9 @@ public final class PasteAction extends CallbackSystemAction {
     }
 
     /** Finds paste action from provided map. */
-    private static javax.swing.Action findActionFromMap(ActionMap map) {
+    private static Action findActionFromMap(ActionMap map) {
         if (map != null) {
-            return map.get(javax.swing.text.DefaultEditorKit.pasteAction);
+            return map.get(DefaultEditorKit.pasteAction);
         }
 
         return null;
@@ -249,18 +263,16 @@ public final class PasteAction extends CallbackSystemAction {
 
     /** If our clipboard is not found return the default system clipboard. */
     private static Clipboard getClipboard() {
-        Clipboard c = (java.awt.datatransfer.Clipboard) org.openide.util.Lookup.getDefault().lookup(
-                java.awt.datatransfer.Clipboard.class
-            );
+        Clipboard c = Lookup.getDefault().lookup(Clipboard.class);
 
         if (c == null) {
-            c = java.awt.Toolkit.getDefaultToolkit().getSystemClipboard();
+            c = Toolkit.getDefaultToolkit().getSystemClipboard();
         }
 
         return c;
     }
 
-    /** Utilitity method for finding the currently selected explorer manager.
+    /** Utility method for finding the currently selected explorer manager.
      * it uses reflection because it should work without
      * the rest of the IDE classes.
      *
@@ -273,18 +285,14 @@ public final class PasteAction extends CallbackSystemAction {
             Class c = Class.forName("org.openide.windows.TopComponent"); // NOI18N
 
             // use reflection now
-            java.lang.reflect.Method m = c.getMethod("getRegistry", // NOI18N
-                    new Class[0]
-                );
-            Object o = m.invoke(null, new Object[0]);
+            Method m = c.getMethod("getRegistry"); // NOI18N
+            Object o = m.invoke(null);
 
             c = Class.forName("org.openide.windows.TopComponent$Registry"); // NOI18N
 
             // use reflection now
-            m = c.getMethod("getActivated", // NOI18N
-                    new Class[0]
-                );
-            o = m.invoke(o, new Object[0]);
+            m = c.getMethod("getActivated"); // NOI18N
+            o = m.invoke(o);
 
             if (o instanceof ExplorerManager.Provider) {
                 return ((ExplorerManager.Provider) o).getExplorerManager();
@@ -306,7 +314,7 @@ public final class PasteAction extends CallbackSystemAction {
             t = x;
         } catch (IllegalArgumentException x) {
             t = x;
-        } catch (java.lang.reflect.InvocationTargetException x) {
+        } catch (InvocationTargetException x) {
             t = x;
         }
 
@@ -323,10 +331,12 @@ public final class PasteAction extends CallbackSystemAction {
      * it. Without it listens on TopComponent.getActivated() and
      * works with it.
      */
-    private static class ActSubMenuModel extends EventListenerList implements Actions.SubMenuModel, LookupListener,
-        PropertyChangeListener {
+    private static class ActSubMenuModel implements Actions.SubMenuModel, LookupListener, PropertyChangeListener {
+
+        private final ChangeSupport cs = new ChangeSupport(this);
+
         /** lookup we are attached to or null we we should work globally */
-        private Lookup.Result result;
+        private Lookup.Result<ActionMap> result;
 
         /** previous enabled state */
         private boolean enabled;
@@ -350,20 +360,14 @@ public final class PasteAction extends CallbackSystemAction {
          */
         private ActionMap map() {
             if (result == null) {
-                org.openide.windows.TopComponent tc = org.openide.windows.TopComponent.getRegistry().getActivated();
+                TopComponent tc = TopComponent.getRegistry().getActivated();
 
                 if (tc != null) {
                     return tc.getActionMap();
                 }
             } else {
-                java.util.Iterator it = result.allItems().iterator();
-
-                while (it.hasNext()) {
-                    Object o = ((Lookup.Item) it.next()).getInstance();
-
-                    if (o instanceof ActionMap) {
-                        return (ActionMap) o;
-                    }
+                for (ActionMap am : result.allInstances()) {
+                    return am;
                 }
             }
 
@@ -378,12 +382,10 @@ public final class PasteAction extends CallbackSystemAction {
          */
         private void attachListenerToChangesInMap(Lookup lookup) {
             if (lookup == null) {
-                org.openide.windows.TopComponent.getRegistry().addPropertyChangeListener(
-                    org.openide.util.WeakListeners.propertyChange(this, org.openide.windows.TopComponent.getRegistry())
-                );
+                TopComponent.getRegistry().addPropertyChangeListener(WeakListeners.propertyChange(this, TopComponent.getRegistry()));
             } else {
                 result = lookup.lookupResult(ActionMap.class);
-                weakLookup = (LookupListener) WeakListeners.create(LookupListener.class, this, result);
+                weakLookup = WeakListeners.create(LookupListener.class, this, result);
                 result.addLookupListener(weakLookup);
             }
 
@@ -406,7 +408,7 @@ public final class PasteAction extends CallbackSystemAction {
 
             if (x == null) {
                 // No context action use the global one.
-                PasteAction a = (PasteAction) findObject(PasteAction.class);
+                PasteAction a = findObject(PasteAction.class);
 
                 if (actionToWorkWith != null) {
                     actionToWorkWith[0] = a;
@@ -520,15 +522,15 @@ public final class PasteAction extends CallbackSystemAction {
         /** Registers .ChangeListener to receive events.
          *@param listener The listener to register.
          */
-        public synchronized void addChangeListener(javax.swing.event.ChangeListener listener) {
-            add(javax.swing.event.ChangeListener.class, listener);
+        public synchronized void addChangeListener(ChangeListener listener) {
+            cs.addChangeListener(listener);
         }
 
         /** Removes .ChangeListener from the list of listeners.
          *@param listener The listener to remove.
          */
-        public synchronized void removeChangeListener(javax.swing.event.ChangeListener listener) {
-            remove(javax.swing.event.ChangeListener.class, listener);
+        public synchronized void removeChangeListener(ChangeListener listener) {
+            cs.removeChangeListener(listener);
         }
 
         /** Notifies all registered listeners about the event.
@@ -568,24 +570,14 @@ public final class PasteAction extends CallbackSystemAction {
                 return;
             }
 
-            Object[] listeners = getListenerList();
-
-            if (listeners.length == 0) {
-                return;
-            }
-
-            javax.swing.event.ChangeEvent e = new javax.swing.event.ChangeEvent(this);
-
-            for (int i = listeners.length - 1; i >= 0; i -= 2) {
-                ((javax.swing.event.ChangeListener) listeners[i]).stateChanged(e);
-            }
+            cs.fireChange();
         }
 
-        public void propertyChange(java.beans.PropertyChangeEvent evt) {
+        public void propertyChange(PropertyChangeEvent evt) {
             checkStateChanged(true);
         }
 
-        public void resultChanged(org.openide.util.LookupEvent ev) {
+        public void resultChanged(LookupEvent ev) {
             checkStateChanged(true);
         }
     }
@@ -593,7 +585,7 @@ public final class PasteAction extends CallbackSystemAction {
     /** Class that listens on a given node and when invoked listen on changes
      * and after that tries to select the desired node.
      */
-    static final class NodeSelector extends Object implements NodeListener, Runnable {
+    static final class NodeSelector implements NodeListener, Runnable {
         /** All added children */
         private List<Node> added;
 
@@ -639,39 +631,34 @@ public final class PasteAction extends CallbackSystemAction {
                 node.getChildren().getNodes(true);
 
                 // and select the right nodes
-                org.openide.nodes.Children.MUTEX.readAccess(this);
+                Children.MUTEX.readAccess(this);
             }
         }
 
         public void run() {
-            this.node.removeNodeListener(this);
+            node.removeNodeListener(this);
 
             if (added.isEmpty()) {
                 return;
             }
 
-            Node[] arr = added.toArray(new Node[added.size()]);
-
-
 // bugfix #22698, don't select the added nodes
 // when the nodes not under managed explorer's root node
-bigloop: 
-            for (int i = 0; i < arr.length; i++) {
-                Node node = arr[i];
-
-                while (node != null) {
-                    if (node.equals(em.getRootContext())) {
+bigloop:
+            for (Node n : added) {
+                while (n != null) {
+                    if (n.equals(em.getRootContext())) {
                         continue bigloop;
                     }
 
-                    node = node.getParentNode();
+                    n = n.getParentNode();
                 }
 
                 return;
             }
 
             try {
-                em.setSelectedNodes(arr);
+                em.setSelectedNodes(added.toArray(new Node[added.size()]));
             } catch (PropertyVetoException ex) {
                 Logger.getLogger(PasteAction.class.getName()).log(Level.WARNING, null, ex);
             } catch (IllegalStateException ex) {
@@ -717,8 +704,8 @@ bigloop:
      * extract the nodes it operates on from it. Otherwise it delegates to the
      * regular NodeAction.
      */
-    private static final class DelegateAction extends javax.swing.AbstractAction implements Presenter.Menu,
-        Presenter.Popup, Presenter.Toolbar, javax.swing.event.ChangeListener {
+    private static final class DelegateAction extends AbstractAction implements Presenter.Menu,
+            Presenter.Popup, Presenter.Toolbar, ChangeListener {
         /** action to delegate too */
         private PasteAction delegate;
 
@@ -732,53 +719,53 @@ bigloop:
         }
 
         /** Overrides superclass method, adds delegate description. */
-        public String toString() {
+        public @Override String toString() {
             return super.toString() + "[delegate=" + delegate + "]"; // NOI18N
         }
 
-        public void putValue(String key, Object value) {
+        public @Override void putValue(String key, Object value) {
         }
 
         /** Invoked when an action occurs.
          */
-        public void actionPerformed(java.awt.event.ActionEvent e) {
+        public void actionPerformed(ActionEvent e) {
             if (model != null) {
                 model.performActionAt(0, e);
             }
         }
 
-        public boolean isEnabled() {
+        public @Override boolean isEnabled() {
             return (model != null) && model.isEnabled();
         }
 
-        public Object getValue(String key) {
+        public @Override Object getValue(String key) {
             return delegate.getValue(key);
         }
 
-        public void setEnabled(boolean b) {
+        public @Override void setEnabled(boolean b) {
         }
 
-        public javax.swing.JMenuItem getMenuPresenter() {
-            return new org.openide.awt.Actions.SubMenu(this, model, false);
+        public JMenuItem getMenuPresenter() {
+            return new Actions.SubMenu(this, model, false);
         }
 
-        public javax.swing.JMenuItem getPopupPresenter() {
-            return new org.openide.awt.Actions.SubMenu(this, model, true);
+        public JMenuItem getPopupPresenter() {
+            return new Actions.SubMenu(this, model, true);
         }
 
-        public java.awt.Component getToolbarPresenter() {
+        public Component getToolbarPresenter() {
             return new Actions.ToolbarButton(this);
         }
 
-        public void stateChanged(javax.swing.event.ChangeEvent evt) {
-            super.firePropertyChange("enabled", null, null);
+        public void stateChanged(ChangeEvent evt) {
+            firePropertyChange("enabled", null, null);
         }
     }
      // end of DelegateAction    
 
     /** Action that wraps paste type.
      */
-    private static final class ActionPT extends javax.swing.AbstractAction implements Runnable {
+    private static final class ActionPT extends AbstractAction implements Runnable {
         private PasteType t;
         private NodeSelector sel;
         private boolean secondInvocation;
@@ -795,11 +782,11 @@ bigloop:
             if ("waitFinished".equals(command)) { // NOI18N
                 run();
             } else {
-                org.openide.util.RequestProcessor.getDefault().post(this);
+                RequestProcessor.getDefault().post(this);
             }
         }
 
-        public void actionPerformed(java.awt.event.ActionEvent ev) {
+        public void actionPerformed(ActionEvent ev) {
             try {
                 Transferable trans = t.paste();
                 Clipboard clipboard = getClipboard();
@@ -811,10 +798,10 @@ bigloop:
                 }
             } catch (UserCancelException exc) {
                 // ignore - user just pressed cancel in some dialog....
-            } catch (java.io.IOException e) {
+            } catch (IOException e) {
                 Exceptions.printStackTrace(e);
             } finally {
-                javax.swing.SwingUtilities.invokeLater(this);
+                EventQueue.invokeLater(this);
             }
         }
 
@@ -826,16 +813,16 @@ bigloop:
             } else {
                 secondInvocation = true;
                 ActionManager.getDefault().invokeAction(
-                    this, new ActionEvent(t, ActionEvent.ACTION_PERFORMED, javax.swing.Action.NAME)
+                    this, new ActionEvent(t, ActionEvent.ACTION_PERFORMED, Action.NAME)
                 );
             }
         }
 
-        public boolean isEnabled() {
+        public @Override boolean isEnabled() {
             return SystemAction.get(PasteAction.class).isEnabled();
         }
 
-        public Object getValue(String key) {
+        public @Override Object getValue(String key) {
             return SystemAction.get(PasteAction.class).getValue(key);
         }
     }
