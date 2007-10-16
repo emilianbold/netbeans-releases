@@ -47,8 +47,8 @@ made subject to such option by the copyright holder.
     <property name="launch.jnlp.file" value="launch.jnlp"/>
     <property name="jnlp.dest.dir" location="dist"/>
     
-    <!-- helper file to create list of arguments -->
-    <property name="args.file" location="args.txt"/>
+    <!-- helper file to create list of arguments, etc. -->
+    <property name="helper.file" location="helper.txt"/>
     
     <target name="default">
         <echo message="Default target is not set."/>
@@ -192,7 +192,14 @@ made subject to such option by the copyright holder.
         </condition>
     </target>
     <target name="-jnlp-init-keystore" depends="-jnlp-init-keystore-props,-check-keystore-exists" unless="jnlp.signjar.keystore.exists">
-        <property name="jnlp.signjar.vendor" value="CN=${application.vendor}"/>
+        <echo message="${application.vendor}" file="${helper.file}"/>
+        <loadfile property="application.vendor.filtered" srcfile="${helper.file}">
+            <filterchain>
+                <deletecharacters chars=","/>
+            </filterchain>
+        </loadfile>
+        <delete file="${helper.file}"/>
+        <property name="jnlp.signjar.vendor" value="CN=${application.vendor.filtered}"/>
         <echo message="Going to create default keystore in ${jnlp.signjar.keystore}"/>
         <genkey dname="${jnlp.signjar.vendor}" alias="${jnlp.signjar.alias}" keystore="${jnlp.signjar.keystore}"
             storepass="${jnlp.signjar.storepass}" keypass="${jnlp.signjar.keypass}"/>
@@ -385,8 +392,8 @@ made subject to such option by the copyright holder.
     <!-- Application arguments -->
     
     <target name="-init-application-args" if="application.args">
-        <echo message="${application.args}" file="${args.file}"/>
-        <loadfile srcfile="${args.file}" property="jnlp.application.args.value">
+        <echo message="${application.args}" file="${helper.file}"/>
+        <loadfile srcfile="${helper.file}" property="jnlp.application.args.value">
             <filterchain>
                 <tokenfilter delimoutput="\n">
                     <stringtokenizer/>
@@ -394,7 +401,7 @@ made subject to such option by the copyright holder.
                 </tokenfilter>
             </filterchain>
         </loadfile>
-        <delete file="${args.file}"/>
+        <delete file="${helper.file}"/>
     </target>
     
     <!-- Running/Debugging -->
