@@ -233,12 +233,17 @@ public class CCKit extends NbEditorKit {
 		    }
 
 		    int pos = startPos;
-
-		    while (pos < endPosition.getOffset()) {
-			int stopPos = endPosition.getOffset();
-                        int reformattedLen = doc.getFormatter().reformat(doc, pos, stopPos);
-                        pos = pos + reformattedLen;
-		    }
+                    Formatter formatter = doc.getFormatter();
+                    formatter.reformatLock();
+                    try {
+                        while (pos < endPosition.getOffset()) {
+                            int stopPos = endPosition.getOffset();
+                            int reformattedLen = formatter.reformat(doc, pos, stopPos);
+                            pos = pos + reformattedLen;
+                        }
+                    } finally {
+                        formatter.reformatUnlock();
+                    }
 
 		    // Restore the line
 		    pos = Utilities.getRowStartFromLineOffset(doc, caretLine);
@@ -346,7 +351,13 @@ public class CCKit extends NbEditorKit {
 //                            }
                         }
                         doc.insertString(end, insString, null); // NOI18N
-                        doc.getFormatter().indentNewLine(doc, end);                        
+                        Formatter formatter = doc.getFormatter();
+                        formatter.indentLock();
+                        try {
+                            doc.getFormatter().indentNewLine(doc, end);                        
+                        } finally {
+                            formatter.indentUnlock();
+                        }
                         caret.setDot(dotPos);
                         return Boolean.TRUE;
                     }
