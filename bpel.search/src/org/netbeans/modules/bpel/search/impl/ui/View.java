@@ -137,11 +137,6 @@ public final class View extends TopComponent {
     setSize(button);
     toolBar.add(button);
 
-    // vlv: print
-    button = createButton(PrintManager.getPrintPreviewAction());
-    setSize(button);
-    toolBar.add(button);
-
     // export
     button = createButton(
       new ButtonAction(
@@ -152,6 +147,11 @@ public final class View extends TopComponent {
         }
       }
     );
+    setSize(button);
+    toolBar.add(button);
+
+    // vlv: print
+    button = createButton(PrintManager.getPrintAction());
     setSize(button);
     toolBar.add(button);
 

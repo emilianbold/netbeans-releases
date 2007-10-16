@@ -193,7 +193,7 @@ public class CasaDesignView {
                                   (Icon)   mBuildAction.getValue(Action.SMALL_ICON))); // NOI18N
         // vlv: print
         mToolBar.addSeparator();
-        mToolBar.add(PrintManager.getPrintPreviewAction());
+        mToolBar.add(PrintManager.getPrintAction());
     }
 
     private JButton createButton(Action action, String tooltip, Icon icon) {

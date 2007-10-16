@@ -279,20 +279,6 @@ final class Tree extends JTree implements SearchListener {
 
     popup.addSeparator(); // -----------------------------------------------------
 
-    // vlv: print
-    item = createItem("LBL_Print_Preview"); // NOI18N
-    item.setEnabled(true);
-    item.setIcon(getPrintPreviewIcon());
-    item.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent event) {
-        PrintManager.getPrintPreviewAction().actionPerformed(event);
-      }
-    });
-    item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P,
-      KeyEvent.CTRL_MASK | KeyEvent.ALT_MASK | KeyEvent.SHIFT_MASK
-    ));
-    popup.add(item);
-
     // export
     item = createItem("LBL_Export"); // NOI18N
     item.setIcon(icon(Util.class, "export")); // NOI18N
@@ -301,6 +287,20 @@ final class Tree extends JTree implements SearchListener {
         export(node);
       }
     });
+    popup.add(item);
+
+    // vlv: print
+    item = createItem("LBL_Print_Preview"); // NOI18N
+    item.setEnabled(true);
+    item.setIcon(getPrintIcon());
+    item.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent event) {
+        PrintManager.getPrintAction().actionPerformed(event);
+      }
+    });
+    item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P,
+      KeyEvent.CTRL_MASK | KeyEvent.ALT_MASK | KeyEvent.SHIFT_MASK
+    ));
     popup.add(item);
 
     // show
@@ -355,8 +355,8 @@ final class Tree extends JTree implements SearchListener {
     popup.add(item);
   }
 
-  private Icon getPrintPreviewIcon() {
-    Object object = PrintManager.getPrintPreviewAction().getValue(Action.SMALL_ICON);
+  private Icon getPrintIcon() {
+    Object object = PrintManager.getPrintAction().getValue(Action.SMALL_ICON);
 
     if (object instanceof Icon) {
       return (Icon) object;

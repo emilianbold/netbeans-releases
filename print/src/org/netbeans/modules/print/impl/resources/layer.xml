@@ -47,7 +47,6 @@
             
             <file name="org-netbeans-modules-print-impl-action-PageSetupAction.instance"/>
             <file name="org-netbeans-modules-print-impl-action-PrintAction.instance"/>
-            <file name="org-netbeans-modules-print-impl-action-PrintPreviewAction.instance"/>
         </folder>
     </folder>
     
@@ -63,11 +62,6 @@
                 <attr name="position" intvalue="2200"/>
             </file>
 
-            <file name="org-netbeans-modules-print-impl-action-PrintPreviewAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/File/org-netbeans-modules-print-impl-action-PrintPreviewAction.instance"/>
-                <attr name="position" intvalue="2300"/>
-            </file>
-
             <!-- hide -->
             <file name="org-openide-actions-PageSetupAction.instance_hidden"/>
             <file name="org-openide-actions-PrintAction.instance_hidden"/>
@@ -76,16 +70,18 @@
 
     <folder name="Keymaps">
         <folder name="NetBeans">
-            <file name="D-P.shadow_hidden"/>
+            <file name="D-P.shadow"> <!-- Ctrl+P -->
+                <attr name="originalFile" stringvalue="Actions/File/org-netbeans-modules-print-impl-action-PrintAction.instance"/>
+            </file>
+            <file name="DOS-P.shadow"> <!-- Ctrl+Alt+Shift+P -->
+                <attr name="originalFile" stringvalue="Actions/File/org-netbeans-modules-print-impl-action-PrintAction.instance"/>
+            </file>
         </folder>
     </folder>
-    
+
     <folder name="Shortcuts">
         <file name="D-P.shadow"> <!-- Ctrl+P -->
             <attr name="originalFile" stringvalue="Actions/File/org-netbeans-modules-print-impl-action-PrintAction.instance"/>
-        </file>
-        <file name="DOS-P.shadow"> <!-- Ctrl+Alt+Shift+P -->
-            <attr name="originalFile" stringvalue="Actions/File/org-netbeans-modules-print-impl-action-PrintPreviewAction.instance"/>
         </file>
     </folder>
 </filesystem>

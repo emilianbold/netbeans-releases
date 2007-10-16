@@ -423,7 +423,7 @@ public class DesignerMultiViewElement extends TopComponent
             }
             // vlv: print
             toolbar.addSeparator();
-            toolbar.add(PrintManager.getPrintPreviewAction());
+            toolbar.add(PrintManager.getPrintAction());
 
             // vlv: search
             SearchManager manager = SearchManagerAccess.getManager();

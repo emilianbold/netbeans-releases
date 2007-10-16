@@ -56,13 +56,5 @@ public final class PrintManager {
     return org.netbeans.modules.print.impl.action.PrintAction.INSTANCE;
   }
 
-  /**
-   * Returns Print Preview action.
-   * @return Print Preview action
-   */
-  public static Action getPrintPreviewAction() {
-    return org.netbeans.modules.print.impl.action.PrintPreviewAction.INSTANCE;
-  }
-
   private PrintManager() {}
 }
