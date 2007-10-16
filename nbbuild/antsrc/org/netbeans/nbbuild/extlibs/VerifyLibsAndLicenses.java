@@ -174,10 +174,11 @@ public class VerifyLibsAndLicenses extends Task {
             return;
         }
         for (String pattern : ignoredPatterns) {
-            for (String path : new String[] {path1, path2}) {
-                if (SelectorUtils.matchPath(pattern, path.replaceFirst("^.+ in ", ""))) {
-                    return;
-                }
+            String[] parts = pattern.split(" ");
+            assert parts.length == 2 : pattern;
+            if (SelectorUtils.matchPath(parts[0], path1.replaceFirst("^.+ in ", "")) &&
+                    SelectorUtils.matchPath(parts[1], path2.replaceFirst("^.+ in ", ""))) {
+                return;
             }
         }
         msg.append("\n" + path1 + " and " + path2 + " are identical");
@@ -389,7 +390,7 @@ public class VerifyLibsAndLicenses extends Task {
         return actual.matches(expected.replaceAll("([\\\\\\[\\].^$?*+{}()|])", "\\\\$1").replaceAll(" *__[A-Z_]+__ *", ".*"));
     }
 
-    private static List<String> loadPatterns(String resource) throws IOException {
+    static List<String> loadPatterns(String resource) throws IOException {
         List<String> patterns = new ArrayList<String>();
         InputStream is = VerifyLibsAndLicenses.class.getResourceAsStream(resource);
         try {
@@ -398,10 +399,7 @@ public class VerifyLibsAndLicenses extends Task {
             while ((line = r.readLine()) != null) {
                 line = line.trim();
                 if (!line.startsWith("#") && line.length() > 0) {
-                    if (line.endsWith("/")) {
-                        line += "**";
-                    }
-                    patterns.add(line);
+                    patterns.add(line.replaceAll("/(?=( |$))", "/**"));
                 }
             }
         } finally {
