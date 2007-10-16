@@ -43,7 +43,7 @@ public class LibrariesContentTestCase extends CompletionBaseTestCase {
     }
 
     @Override
-    protected File beforeParsingProjectInDir(File projectDir) {
+    protected File changeDefProjectDirBeforeParsingProjectIfNeeded(File projectDir) {
         // we have following structure for this test
         // test-folder
         //  --src\
