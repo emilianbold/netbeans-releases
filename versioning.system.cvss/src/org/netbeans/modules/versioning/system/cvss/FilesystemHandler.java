@@ -85,16 +85,20 @@ class FilesystemHandler extends VCSInterceptor {
             if (!file.delete()) {
                 throw new IOException("Failed to delete file: " + file.getAbsolutePath());
             }
-            fileDeletedImpl(file);
+            fileDeletedImpl(file, false);
         }
     }
 
     public void afterDelete(File file) {
-        refreshDeleted(file);
+        refreshDeleted(file, false);
     }
     
-    private void refreshDeleted(File file) {
-        cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN, false);
+    private void refreshDeleted(File file, boolean refreshNow) {
+        if (refreshNow) {
+            cache.refreshNow(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN, false);
+        } else {
+            cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN, false);
+        }
         if (file.getName().equals(CvsVersioningSystem.FILENAME_CVSIGNORE)) cache.directoryContentChanged(file.getParentFile());
     }
 
@@ -172,7 +176,7 @@ class FilesystemHandler extends VCSInterceptor {
         if (ignoringEvents()) return;
         Utils.post(new Runnable() {
             public void run() {
-                fileDeletedImpl(from);
+                fileDeletedImpl(from, true);
                 fileCreatedImpl(to);
             }
         });
@@ -242,7 +246,7 @@ class FilesystemHandler extends VCSInterceptor {
      * 
      * @param file deleted file
      */ 
-    private void fileDeletedImpl(File file) {
+    private void fileDeletedImpl(File file, boolean refreshNow) {
         if (file == null) return;
         
         StandardAdminHandler sah = new StandardAdminHandler();
@@ -256,7 +260,7 @@ class FilesystemHandler extends VCSInterceptor {
             cvsRemoveLocally(sah, file, entry);    
         }
 
-        refreshDeleted(file);
+        refreshDeleted(file, refreshNow);
     }
     
     /**
