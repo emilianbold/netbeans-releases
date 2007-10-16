@@ -159,7 +159,7 @@ public final class PaletteMap implements ActiveDocumentSupport.Listener, FileCha
         if (isProjectIDChanged) {
             scheduleUpdateAfteCPScanned(document, kit);
         } else {
-            kit.update();
+            kit.init();
         }
     }
 
@@ -238,7 +238,7 @@ public final class PaletteMap implements ActiveDocumentSupport.Listener, FileCha
                 try {
                     JavaSource.create(info).runWhenScanFinished(new Task<CompilationController>() {
                         public void run(CompilationController controller) throws Exception {
-                            kit.update();
+                            kit.init();
                         }
                     }, true);
                 } catch (IOException ex) {
@@ -350,7 +350,7 @@ public final class PaletteMap implements ActiveDocumentSupport.Listener, FileCha
                         }
                         kit.clearNodesStateCache();
                         // HINT refresh only visible palette
-                        kit.refreshPalette();
+                        kit.refreshPaletteController();
                     }
                 }
             }

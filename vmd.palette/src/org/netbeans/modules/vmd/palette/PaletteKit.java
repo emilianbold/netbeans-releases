@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.vmd.palette;
 
+import java.beans.PropertyVetoException;
 import org.netbeans.modules.vmd.api.model.ComponentProducer;
 import org.netbeans.modules.vmd.api.model.ComponentSerializationSupport;
 import org.netbeans.modules.vmd.api.model.Debug;
@@ -61,12 +62,15 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.ref.WeakReference;
 import java.util.*;
+import org.openide.loaders.DataObject;
 
 /**
  * @author David Kaspar, Anton Chechel
  */
 public class PaletteKit implements Runnable {
 
+    static final String CUSTOM_CATEGORY_NAME = "custom"; // NOI18N
+    private static final String PALETTE_FOLDER_NAME = "palette"; // NOI18N
     private WeakReference<DesignDocument> activeDocument;
     private PaletteController paletteController;
     private DNDHandler dndHandler;
@@ -82,7 +86,7 @@ public class PaletteKit implements Runnable {
 
         validationQueue = new LinkedList<Lookup>();
 
-        String rootFolderPath = projectType + "/palette"; // NOI18N
+        String rootFolderPath = projectType + '/' + PALETTE_FOLDER_NAME; // NOI18N
         nodesMap = new HashMap<String, PaletteItemDataNode>();
         try {
             FileObject rootFolderFO = fs.findResource(rootFolderPath);
@@ -91,9 +95,9 @@ public class PaletteKit implements Runnable {
                 if (projectTypeFO == null) {
                     projectTypeFO = fs.getRoot().createFolder(projectType);
                 }
-                rootFolderFO = FileUtil.createFolder(projectTypeFO, "palette"); // NOI18N
+                rootFolderFO = FileUtil.createFolder(projectTypeFO, PALETTE_FOLDER_NAME);
             }
-            
+
             rootFolder = DataFolder.findFolder(rootFolderFO);
             rootFolder.getPrimaryFile().setAttribute("itemWidth", "120"); // NOI18N
             dndHandler = new DNDHandler();
@@ -107,7 +111,7 @@ public class PaletteKit implements Runnable {
         if (activeDocument == null || activeDocument.get() == null) {
             return;
         }
-        
+
         String projectID = activeDocument.get().getDocumentInterface().getProjectID();
         String projectType = activeDocument.get().getDocumentInterface().getProjectType();
 
@@ -129,7 +133,7 @@ public class PaletteKit implements Runnable {
         try {
             for (FileObject catFolder : rootFolder.getPrimaryFile().getChildren()) {
                 for (FileObject item : catFolder.getChildren()) {
-                    if ("custom".equalsIgnoreCase(catFolder.getName())) { // NOI18N
+                    if (CUSTOM_CATEGORY_NAME.equalsIgnoreCase(catFolder.getName())) {
                         item.delete();
                     } else {
                         String producerName = item.getName();
@@ -153,12 +157,27 @@ public class PaletteKit implements Runnable {
         if (activeDocument == null || activeDocument.get() == null) {
             return;
         }
-        
+
         String projectType = activeDocument.get().getDocumentInterface().getProjectType();
         ComponentSerializationSupport.refreshDescriptorRegistry(projectType);
     }
-    
-    synchronized void update() {
+
+    public PaletteController getPaletteController() {
+        return paletteController;
+    }
+
+    public DragAndDropHandler getDndHandler() {
+        return dndHandler;
+    }
+
+    void refreshPaletteController() {
+        if (paletteController == null) {
+            return;
+        }
+        paletteController.refresh();
+    }
+
+    synchronized void init() {
         if (activeDocument == null || activeDocument.get() == null) {
             return;
         }
@@ -170,37 +189,18 @@ public class PaletteKit implements Runnable {
         registry.readAccess(new Runnable() {
 
             public void run() {
-                updateCore(registry.getComponentProducers(), projectType);
+                Collection<? extends PaletteProvider> providers = Lookup.getDefault().lookupAll(PaletteProvider.class);
+                for (PaletteProvider provider : providers) {
+                    if (provider != null) {
+                        provider.initPaletteCategories(projectType);
+                        initCore(registry.getComponentProducers());
+                    }
+                }
             }
         });
     }
 
-    private void updateCore(List<ComponentProducer> producers, String projectType) {
-        Collection<? extends PaletteProvider> providers = Lookup.getDefault().lookupAll(PaletteProvider.class);
-        for (PaletteProvider provider : providers) {
-            if (provider != null) {
-                provider.initPaletteCategories(projectType);
-                initPalette(producers);
-            }
-        }
-    }
-
-    public PaletteController getPaletteController() {
-        return paletteController;
-    }
-
-    public DragAndDropHandler getDndHandler() {
-        return dndHandler;
-    }
-
-    void refreshPalette() {
-        if (paletteController == null) {
-            return;
-        }
-        paletteController.refresh();
-    }
-
-    private void initPalette(final List<ComponentProducer> producers) {
+    private void initCore(final List<ComponentProducer> producers) {
         FileObject[] children = rootFolder.getPrimaryFile().getChildren();
         Map<String, FileObject> categoryFolders = new HashMap<String, FileObject>(children.length);
         for (FileObject fo : children) {
@@ -219,7 +219,7 @@ public class PaletteKit implements Runnable {
             if (catID != null) {
                 catFO = categoryFolders.get(catID);
             } else {
-                catFO = categoryFolders.get("custom"); // NOI18N
+                catFO = categoryFolders.get(CUSTOM_CATEGORY_NAME);
                 if (catFO == null) {
                     continue;
                 }
@@ -241,8 +241,7 @@ public class PaletteKit implements Runnable {
             path.append('/'); // NOI18N
             path.append(producerID);
             path.append('.'); // NOI18N
-            path.append(PaletteItemDataLoader.EXTENSION); // NOI18N
-            
+            path.append(PaletteItemDataLoader.EXTENSION);
             if (fs.findResource(path.toString()) == null) {
                 try {
                     FileObject itemFO = catFO.createData(producerID, PaletteItemDataLoader.EXTENSION);
@@ -257,7 +256,6 @@ public class PaletteKit implements Runnable {
                     props.setProperty("icon", icon != null ? icon : ""); // NOI18N
                     String largeIcon = producer.getPaletteDescriptor().getLargeIcon();
                     props.setProperty("bigIcon", largeIcon != null ? largeIcon : ""); // NOI18N
-                    
                     FileLock lock = itemFO.lock();
                     OutputStream os = null;
                     try {
@@ -265,18 +263,12 @@ public class PaletteKit implements Runnable {
                         props.store(os, "VMD Palette Item"); // NOI18N
                     } finally {
                         if (os != null) {
-                            try {
-                                os.close();
-                            } catch (IOException e) {
-                                Debug.warning(e.toString());
-                            }
+                            os.close();
                         }
                         lock.releaseLock();
                     }
                 } catch (IOException e) {
-                    Debug.warning("Can't create file for palette item: " + // NOI18N
-                            path + ", " + producerID + ", " + producerID + // NOI18N
-                            "." + PaletteItemDataLoader.EXTENSION + ": " + e); // NOI18N
+                    Debug.warning("Can't create file for palette item: " + path + ", " + producerID + ", " + producerID + "." + PaletteItemDataLoader.EXTENSION + ": " + e); // NOI18N
                 }
             }
         }
@@ -322,10 +314,11 @@ public class PaletteKit implements Runnable {
             }
             checkValidityCore(validationQueue.remove());
         }
-        
+
         SwingUtilities.invokeLater(new Runnable() {
+
             public void run() {
-                refreshPalette();
+                refreshPaletteController();
             }
         });
     }
@@ -339,7 +332,7 @@ public class PaletteKit implements Runnable {
         if (node == null) {
             return;
         }
-        
+
         final String producerID = node.getProducerID();
         String projectID = activeDocument.get().getDocumentInterface().getProjectID();
         String projectType = activeDocument.get().getDocumentInterface().getProjectType();
@@ -420,26 +413,6 @@ public class PaletteKit implements Runnable {
         }
 
         @Override
-        public Action getRefreshAction() {
-            return new AbstractAction() {
-
-                public void actionPerformed(ActionEvent evt) {
-                    refreshDescriptorRegistry();
-                    try {
-                        fs.runAtomicAction(new AtomicAction() {
-
-                            public void run() {
-                                update();
-                            }
-                        });
-                    } catch (IOException e) {
-                        Debug.warning(e);
-                    }
-                }
-            };
-        }
-
-        @Override
         public Action getResetAction() {
             return new AbstractAction() {
 
@@ -450,7 +423,7 @@ public class PaletteKit implements Runnable {
 
                             public void run() {
                                 clean();
-                                update();
+                                init();
                             }
                         });
                     } catch (IOException e) {
@@ -479,12 +452,12 @@ public class PaletteKit implements Runnable {
             if (activeDocument == null || activeDocument.get() == null) {
                 return;
             }
-            
+
             PaletteItemDataObject itemDataObject = item.lookup(PaletteItemDataObject.class);
             if (itemDataObject == null) {
                 return;
             }
-            
+
             final String producerID = itemDataObject.getProducerID();
             String projectID = activeDocument.get().getDocumentInterface().getProjectID();
             String projectType = activeDocument.get().getDocumentInterface().getProjectType();
@@ -511,10 +484,8 @@ public class PaletteKit implements Runnable {
                             }
                         });
                     }
-                    
                 }
             });
         }
     }
-    
 }

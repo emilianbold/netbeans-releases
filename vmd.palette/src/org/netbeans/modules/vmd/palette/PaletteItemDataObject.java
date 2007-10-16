@@ -45,7 +45,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 import org.netbeans.modules.vmd.api.model.Debug;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.Node;
@@ -54,7 +58,7 @@ import org.openide.nodes.Node;
  *
  * @author Anton Chechel
  */
-public class PaletteItemDataObject extends MultiDataObject {
+public class PaletteItemDataObject extends MultiDataObject implements FileChangeListener {
     private String producerID;
     private String displayName;
     private String toolTip;
@@ -63,6 +67,7 @@ public class PaletteItemDataObject extends MultiDataObject {
     
     public PaletteItemDataObject(FileObject pf, PaletteItemDataLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);
+        pf.addFileChangeListener(this);
         readProperties(pf);
     }
     
@@ -122,5 +127,28 @@ public class PaletteItemDataObject extends MultiDataObject {
     String getProjectType() {
         String path = getPrimaryFile().getPath();
         return path.substring(0, path.indexOf('/')); // NOI18N
+    }
+
+    public void fileFolderCreated(FileEvent fe) {
+    }
+
+    public void fileDataCreated(FileEvent fe) {
+    }
+
+    public void fileChanged(FileEvent fe) {
+        try {
+            readProperties(fe.getFile());
+        } catch (IOException ex) {
+            Debug.warning(ex);
+        }
+    }
+
+    public void fileDeleted(FileEvent fe) {
+    }
+
+    public void fileRenamed(FileRenameEvent fe) {
+    }
+
+    public void fileAttributeChanged(FileAttributeEvent fe) {
     }
 }
