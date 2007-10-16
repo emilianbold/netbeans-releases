@@ -188,7 +188,7 @@ public class SortSuiteModules extends Task {
         Map<String,Boolean> finished = new HashMap<String,Boolean>();
         for (String s: cRev) {
             if (!visit(s, buildDeps, finished, cnbs)) {
-                throw new BuildException("Cycles detected in dependency graph, cannot sort", getLocation());
+                throw new BuildException("Cycles detected in dependency graph, cannot sort: s=" + s + " buildDeps=" + buildDeps + " finished=" + finished + " cnbs=" + cnbs, getLocation());
             }
         }
         StringBuffer path = new StringBuffer();
