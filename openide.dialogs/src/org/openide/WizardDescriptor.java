@@ -132,6 +132,7 @@ public class WizardDescriptor extends DialogDescriptor {
             public void actionPerformed(ActionEvent evt) {
             }
 
+            @Override
             public String toString() {
                 return "CLOSE_PREVENTER"; // NOI18N
             }
@@ -420,6 +421,7 @@ public class WizardDescriptor extends DialogDescriptor {
 
     /** Initializes settings.
      */
+    @Override
     protected void initialize() {
         super.initialize();
 
@@ -499,6 +501,7 @@ public class WizardDescriptor extends DialogDescriptor {
     *
     * @param options the options to set
     */
+    @Override
     public void setOptions(Object[] options) {
         super.setOptions(convertOptions(options));
     }
@@ -506,6 +509,7 @@ public class WizardDescriptor extends DialogDescriptor {
     /**
     * @param options the options to set
     */
+    @Override
     public void setAdditionalOptions(Object[] options) {
         super.setAdditionalOptions(convertOptions(options));
     }
@@ -513,6 +517,7 @@ public class WizardDescriptor extends DialogDescriptor {
     /**
     * @param options the options to set
     */
+    @Override
     public void setClosingOptions(Object[] options) {
         super.setClosingOptions(convertOptions(options));
     }
@@ -546,6 +551,7 @@ public class WizardDescriptor extends DialogDescriptor {
     /** Overriden to ensure that returned value is one of
      * the XXX_OPTION constants.
      */
+    @Override
     public Object getValue() {
         return backConvertOption(super.getValue());
     }
@@ -671,6 +677,7 @@ public class WizardDescriptor extends DialogDescriptor {
         return properties == null ? Collections.<String,Object>emptyMap() : new HashMap<String,Object>(properties);
     }
 
+    @Override
     public void setHelpCtx(final HelpCtx helpCtx) {
         if ((wizardPanel != null) && (helpCtx != null)) {
             HelpCtx.setHelpIDString(wizardPanel, helpCtx.getHelpID());
@@ -1170,6 +1177,7 @@ public class WizardDescriptor extends DialogDescriptor {
 
     /** Overrides superclass method. Adds reseting of wizard
      * for <code>CLOSED_OPTION</code>. */
+    @Override
     public void setValue(Object value) {
         setValueOpen(value, data);
     }
@@ -2046,6 +2054,7 @@ public class WizardDescriptor extends DialogDescriptor {
         }
 
         /** Overriden to paint backround image */
+        @Override
         protected void paintComponent(Graphics graphics) {
             graphics.setColor(getBackground());
             graphics.fillRect(0, 0, getWidth(), getHeight());
@@ -2184,6 +2193,7 @@ public class WizardDescriptor extends DialogDescriptor {
             taWidth = wrappingWidth - 12 - 12;
 
             numberLabel = new JLabel() {
+                        @Override
                         protected void paintComponent(Graphics g) {
                             super.paintComponent(g);
 
@@ -2619,6 +2629,7 @@ public class WizardDescriptor extends DialogDescriptor {
             cachedDimension = new Dimension(600, 365);
         }
 
+        @Override
         public Dimension getPreferredSize() {
             Dimension dim = super.getPreferredSize();
 
@@ -2635,6 +2646,7 @@ public class WizardDescriptor extends DialogDescriptor {
 
         /** Overriden to delegate call to user component.
          */
+        @Override
         public void requestFocus() {
             if ((rightComponent != null) && rightComponent.isDisplayable()) {
                 JComponent comp = (JComponent) rightComponent;
@@ -2655,6 +2667,7 @@ public class WizardDescriptor extends DialogDescriptor {
         /** Overriden to delegate call to user component.
          */
         @Deprecated
+        @Override
         public boolean requestDefaultFocus() {
             if (rightComponent instanceof JComponent) {
                 return ((JComponent) rightComponent).requestDefaultFocus();
@@ -2663,6 +2676,7 @@ public class WizardDescriptor extends DialogDescriptor {
             return super.requestDefaultFocus();
         }
 
+        @Override
         public javax.accessibility.AccessibleContext getAccessibleContext() {
             if (accessibleContext == null) {
                 accessibleContext = new AccessibleWizardPanel();
@@ -2675,6 +2689,7 @@ public class WizardDescriptor extends DialogDescriptor {
             AccessibleWizardPanel() {
             }
 
+            @Override
             public String getAccessibleDescription() {
                 if (accessibleDescription != null) {
                     return accessibleDescription;
@@ -2705,6 +2720,7 @@ public class WizardDescriptor extends DialogDescriptor {
             dim = d;
         }
 
+        @Override
         public Dimension getPreferredSize() {
             return dim;
         }
@@ -2737,6 +2753,7 @@ public class WizardDescriptor extends DialogDescriptor {
             super ();
         }
         
+        @Override
         public Dimension getPreferredSize() {
             Dimension preferredSize = super.getPreferredSize();
             assert ESTIMATED_HEIGHT == Utilities.loadImage ("org/netbeans/modules/dialogs/warning.gif").getHeight (null) : "Use only 16px icon.";
