@@ -267,6 +267,10 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
             Exception e = new IllegalStateException("The data object " + getPrimaryFile() + " is invalid; you may not call getNodeDelegate on it any more; see #17020 and please fix your code"); // NOI18N
             Logger.getLogger(DataObject.class.getName()).log(Level.WARNING, null, e);
         }
+        return getNodeDelegateImpl();
+    }
+    
+    private final Node getNodeDelegateImpl() {
         if (nodeDelegate == null) {
             // synchronize on something private, so only one delegate can be created
             // do not synchronize on this, because we could deadlock with
@@ -991,7 +995,7 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
             LOG.warning("Should override getLookup() in " + c + ", e.g.: [MultiDataObject.this.]getCookieSet().getLookup()");
         }
         if (isValid()) {
-            return getNodeDelegate().getLookup();
+            return getNodeDelegateImpl().getLookup();
         } else {
             // Fallback for invalid DO; at least provide something reasonable.
             return createNodeDelegate().getLookup();
