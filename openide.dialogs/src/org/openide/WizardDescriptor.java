@@ -2206,6 +2206,7 @@ public class WizardDescriptor extends DialogDescriptor {
                     };
             numberLabel.setLabelFor(ta); // a11y
             numberLabel.setHorizontalAlignment(SwingConstants.LEFT);
+            numberLabel.setVerticalAlignment(SwingConstants.TOP);
             numberLabel.setFont(ta.getFont());
             numberLabel.setOpaque(false);
             numberLabel.setPreferredSize(new Dimension(25, 0));
