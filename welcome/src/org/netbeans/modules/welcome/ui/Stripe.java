@@ -75,7 +75,6 @@ class Stripe extends JPanel implements Constants {
         int height = getHeight();
         g.setColor( Utils.getColor(COLOR_TAB_SEL_BACKGROUND) );
         g.fillRect(0, 0, width, height);
-        g.setClip( 5, isUpperStripe ? 5 : 0, width-10, height-5);
         int patternWidth = pattern.getWidth(this);
         int patternHeight = pattern.getHeight(this);
         for( int i=0; i<=width; i+=patternWidth ) {
@@ -83,8 +82,13 @@ class Stripe extends JPanel implements Constants {
                 g.drawImage(pattern, i, j, this);
             }
         }
+        g.fillRect( 0,0,5,height );
+        g.fillRect( width-5,0,5,height );
+        if( isUpperStripe )
+            g.fillRect(0, 0, width, 5 );
+        else
+            g.fillRect(0, height-5, width, 5 );
         
-        g.setClip( 0, 0, width, height );
         int borderWidth = border.getWidth(this);
         int borderHeight = border.getHeight(this);
         for( int i=0; i<=width; i+=borderWidth ) {
