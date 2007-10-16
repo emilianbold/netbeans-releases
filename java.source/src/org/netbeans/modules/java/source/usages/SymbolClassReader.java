@@ -41,9 +41,7 @@
 package org.netbeans.modules.java.source.usages;
 
 import com.sun.tools.javac.code.Attribute;
-import com.sun.tools.javac.code.Attribute.Compound;
 import com.sun.tools.javac.code.BoundKind;
-import com.sun.tools.javac.code.Flags;
 import static com.sun.tools.javac.code.Flags.*;
 import static com.sun.tools.javac.code.Kinds.*;
 import com.sun.tools.javac.code.Scope;
@@ -56,7 +54,6 @@ import com.sun.tools.javac.code.Symbol.PackageSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
-import com.sun.tools.javac.code.Type.ArrayType;
 import com.sun.tools.javac.code.Type.ClassType;
 import com.sun.tools.javac.code.Type.ErrorType;
 import com.sun.tools.javac.code.Type.ForAll;
@@ -81,10 +78,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
-import java.util.ArrayList;
 
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.JavaFileObject;
 
@@ -231,7 +225,7 @@ public class SymbolClassReader extends JavadocClassReader {
         if (ct.getEnclosingType().tag == CLASS) enterTypevars(ct.getEnclosingType());
 
         // read flags, or skip if this is an inner class
-        long flags = readFlags(r) | Flags.FROMCLASS;
+        long flags = readFlags(r) & ~(UNATTRIBUTED|ACYCLIC) | FROMCLASS;
         c.flags_field = flags;
 
         int read = r.read();
@@ -414,7 +408,7 @@ public class SymbolClassReader extends JavadocClassReader {
     
     private void markInnerClassOwner(ClassSymbol owner, ClassSymbol innerClass, long flags) {
         innerClass.complete();
-        innerClass.flags_field = flags | FROMCLASS;
+        innerClass.flags_field = flags & ~(UNATTRIBUTED|ACYCLIC) | FROMCLASS;
         if ((innerClass.flags_field & STATIC) == 0) {
             ((ClassType)innerClass.type).setEnclosingType(owner.type);
             if (innerClass.erasure_field != null)

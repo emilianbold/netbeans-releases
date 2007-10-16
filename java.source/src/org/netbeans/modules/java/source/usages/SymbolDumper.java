@@ -288,7 +288,7 @@ public class SymbolDumper extends SimpleTypeVisitor6<Void, Boolean> {
         SymbolDumper d = new SymbolDumper(output, types);
         
         output.append('G');
-        dumpFlags(output, ((Symbol) type).flags_field & ~ (Flags.FROMCLASS|Flags.UNATTRIBUTED));
+        dumpFlags(output, ((Symbol) type).flags_field & ~ (Flags.FROMCLASS|Flags.UNATTRIBUTED|Flags.ACYCLIC));
         List<? extends TypeParameterElement>  params = type.getTypeParameters();
         
         if (!params.isEmpty()) {
@@ -344,7 +344,7 @@ public class SymbolDumper extends SimpleTypeVisitor6<Void, Boolean> {
     private static void dumpInnerclasses(PrintWriter output, List<TypeElement> innerClasses) {
         for (TypeElement innerClass : innerClasses) {
             dumpName(output, innerClass.getSimpleName());
-            dumpFlags(output, ((Symbol)innerClass).flags_field & ~ (Flags.FROMCLASS|Flags.UNATTRIBUTED));
+            dumpFlags(output, ((Symbol)innerClass).flags_field & ~ (Flags.FROMCLASS|Flags.UNATTRIBUTED|Flags.ACYCLIC));
         }
         output.append(';');
     }
