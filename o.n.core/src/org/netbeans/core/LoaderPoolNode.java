@@ -346,6 +346,10 @@ public final class LoaderPoolNode extends AbstractNode {
     static void installationFinished () {
         installationFinished = true;
         
+        if (!modifiedLoaders.isEmpty()) {
+            getNbLoaderPool().superFireChangeEvent();
+        }
+        
         if (myChildren != null) {
             myChildren.update ();
         }
