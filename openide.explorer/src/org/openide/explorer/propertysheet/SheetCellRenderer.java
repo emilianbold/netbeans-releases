@@ -99,7 +99,9 @@ final class SheetCellRenderer implements TableCellRenderer {
         selected |= (hasFocus && (table.getSelectedRow() == row));
 
         if (fd instanceof PropertySet) {
-            return null;
+            //#118372 - don't return null, SynthLaF asks for some properties from 
+            //the renderer component under JDK1.6_05
+            return new JLabel();
         } else {
             if (column == 0) {
                 String txt = ((Property) fd).getHtmlDisplayName();
