@@ -151,9 +151,9 @@ public final class FlowScene extends GraphPinScene<FlowNodeDescriptor, FlowEdgeD
         sceneSelectAction = new FlowSceneSelectAction ();
         sceneKeyAction = new FlowSceneKeyAction (); // HINT - FlowDescriptor.KeyActionBehaviour is used for FlowScene/rootComponent only
 
-        edgeRouter = RouterFactory.createOrthogonalSearchRouter (mainLayer, connectionLayer);
+        edgeRouter = RouterFactory.createOrthogonalSearchRouter (new OrthogonalCollisionsCollector (mainLayer, connectionLayer));
 
-        getActions ().addAction (ActionFactory.createZoomAction ());
+        getActions ().addAction (ActionFactory.createMouseCenteredZoomAction (1.2));
         getActions ().addAction (ActionFactory.createPanAction ());
         getActions ().addAction (sceneSelectAction);
         getActions ().addAction (createSelectAction ());
