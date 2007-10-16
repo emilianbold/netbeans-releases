@@ -124,6 +124,15 @@ public abstract class AbstractPanel implements ChangeListener, FinishablePanel, 
         }
         wizard.putProperty("WizardPanel_errorMessage", message);
     }
+    
+    static void setErrorMessage(WizardDescriptor wizard, String key, String... params) {
+        String message = "";
+        if (key != null) {
+            message = (NbBundle.getMessage(EntitySelectionPanel.class, key, params));
+        }
+        wizard.putProperty("WizardPanel_errorMessage", message);
+    }
+    
     static void setErrorMessage(WizardDescriptor wizard, String key) {
         String message = "";
         if (key != null) {

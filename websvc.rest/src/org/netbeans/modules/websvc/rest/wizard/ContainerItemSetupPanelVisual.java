@@ -49,12 +49,11 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.websvc.rest.codegen.Constants;
 import org.netbeans.modules.websvc.rest.codegen.Constants.MimeType;
-import org.netbeans.modules.websvc.rest.codegen.EntityResourcesGenerator;
 import org.netbeans.modules.websvc.rest.codegen.model.GenericResourceBean;
 import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
 import org.netbeans.modules.websvc.rest.wizard.PatternResourcesSetupPanel.Pattern;
@@ -528,6 +527,12 @@ private void uriChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_uriChang
         } else if (containerUriTextField.getText().trim().length() == 0) {
             AbstractPanel.setErrorMessage(wizard, "MSG_EmptyContainerUriTemplate");
             return false;
+        } else if (getResourceClassFile() != null) {
+            AbstractPanel.setErrorMessage(wizard, "MSG_ExistingClass", getResourceClassName());
+            return false;
+        } else if (getContainerClassFile() != null) {
+            AbstractPanel.setErrorMessage(wizard, "MSG_ExistingClass", getContainerClassName());
+            return false;
         }
         return true;
     }
@@ -547,6 +552,40 @@ private void uriChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_uriChang
     
     private String getResourceName() {
         return resourceNameTextField.getText();
+    }
+    
+    private String getResourceClassName() {
+        return classTextField.getText();
+    }
+    
+    private FileObject getResourceClassFile() {
+        FileObject folder = null;
+        try {
+            folder = SourceGroupSupport.getFolderForPackage(getLocationValue(), getPackage());
+            if (folder != null) {
+                return folder.getFileObject(getResourceClassName(), Constants.JAVA_EXT);
+            }
+        } catch(IOException ex) {
+            //OK just return null
+        }
+        return null;
+    }
+    
+    private String getContainerClassName() {
+        return containerTextField.getText();
+    }
+    
+    private FileObject getContainerClassFile() {
+        FileObject folder = null;
+        try {
+            folder = SourceGroupSupport.getFolderForPackage(getLocationValue(), getPackage());
+            if (folder != null) {
+                return folder.getFileObject(getContainerClassName(), Constants.JAVA_EXT);
+            }
+        } catch(IOException ex) {
+            //OK just return null
+        }
+        return null;
     }
     
     public static final String DEFAULT_RESOURCE_NAME = "Item";

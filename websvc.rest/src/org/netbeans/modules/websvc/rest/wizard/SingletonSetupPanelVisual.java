@@ -52,8 +52,8 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.websvc.rest.codegen.Constants;
 import org.netbeans.modules.websvc.rest.codegen.Constants.MimeType;
-import org.netbeans.modules.websvc.rest.codegen.EntityResourcesGenerator;
 import org.netbeans.modules.websvc.rest.codegen.model.GenericResourceBean;
 import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
 import org.netbeans.spi.java.project.support.ui.PackageView;
@@ -415,6 +415,9 @@ private void resourceNameChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event
         } else if (uriTextField.getText().trim().length() == 0) {
             AbstractPanel.setErrorMessage(wizard, "MSG_EmptyUriTemplate");
             return false;
+        } else if (getResourceClassFile() != null) {
+            AbstractPanel.setErrorMessage(wizard, "MSG_ExistingClass", getResourceClassName());
+            return false;
         }
         return true;
     }
@@ -434,6 +437,23 @@ private void resourceNameChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event
     
     private String getResourceName() {
         return resourceNameTextField.getText();
+    }
+    
+    private String getResourceClassName() {
+        return classTextField.getText();
+    }
+    
+    private FileObject getResourceClassFile() {
+        FileObject folder = null;
+        try {
+            folder = SourceGroupSupport.getFolderForPackage(getLocationValue(), getPackage());
+            if (folder != null) {
+                return folder.getFileObject(getResourceClassName(), Constants.JAVA_EXT);
+            }
+        } catch(IOException ex) {
+            //OK just return null
+        }
+        return null;
     }
     
     public static final String DEFAULT_RESOURCE_NAME = "Generic";
