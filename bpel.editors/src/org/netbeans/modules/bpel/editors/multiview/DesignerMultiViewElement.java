@@ -378,7 +378,9 @@ public class DesignerMultiViewElement extends TopComponent
                 
                 if (curNodes != null && curNodes.length > 0) {
                     thisTc.setActivatedNodes(new Node[0]);
+                    setActivatedNodes(new Node[0]);
 
+                    
                     thisTc.setActivatedNodes(curNodes);
                     setActivatedNodes(curNodes);
                 }
