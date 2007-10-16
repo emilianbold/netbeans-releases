@@ -43,7 +43,10 @@ package org.netbeans.modules.cnd.refactoring.ui;
 import java.io.IOException;
 import java.text.MessageFormat;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.fileinfo.NonRecursiveFolder;
+import org.netbeans.modules.cnd.api.model.CsmNamedElement;
+import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
@@ -68,10 +71,31 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
     private RenamePanel panel;
     private boolean fromListener = false;
 //    private TreePathHandle handle;
+    private final CsmObject origObject;
     private FileObject byPassFolder;
     private boolean byPassPakageRename;
     private boolean pkgRename = true;
     
+    public RenameRefactoringUI(CsmObject csmObject) {
+        this.origObject = csmObject;
+        this.oldName = getSearchElementName(this.origObject);  
+        this.refactoring = new RenameRefactoring(Lookups.singleton(csmObject));
+    }
+    
+    private String getSearchElementName(CsmObject csmObj) {
+        assert csmObj != null;
+        String objName;
+        if (csmObj instanceof CsmReference) {
+            objName = ((CsmReference)csmObj).getText();
+        } else if (CsmKindUtilities.isNamedElement(csmObj)) {
+            objName = ((CsmNamedElement)csmObj).getName();
+        } else if (csmObj != null) {
+            objName = "<UNNAMED ELEMENT>"; // NOI18N
+        } else {
+            objName = "<UNRESOLVED ELEMENT>"; // NOI18N
+        }
+        return objName;
+    }    
 //    public RenameRefactoringUI(TreePathHandle handle, CompilationInfo info) {
 //        this.handle = handle;
 //        this.refactoring = new RenameRefactoring(Lookups.singleton(handle));
@@ -99,13 +123,13 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
 //        refactoring.getContext().add(cpInfo);
 //    }
 
-    public RenameRefactoringUI(NonRecursiveFolder file) {
-        this.refactoring = new RenameRefactoring(Lookups.singleton(file));
+//    public RenameRefactoringUI(NonRecursiveFolder file) {
+//        this.refactoring = new RenameRefactoring(Lookups.singleton(file));
 //        oldName = RetoucheUtils.getPackageName(file.getFolder());
 //        refactoring.getContext().add(RetoucheUtils.getClasspathInfoFor(file.getFolder()));
-        dispOldName = oldName;
-        pkgRename = true;
-    }
+//        dispOldName = oldName;
+//        pkgRename = true;
+//    }
 
 //    RenameRefactoringUI(FileObject jmiObject, String newName, TreePathHandle handle, CompilationInfo info) {
 //        if (handle!=null) {

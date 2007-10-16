@@ -110,7 +110,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
             task = new TextComponentTask(ec, lookup) {
                 @Override
                 protected RefactoringUI createRefactoringUI(CsmObject selectedElement,int startOffset,int endOffset) {
-                    return null;
+                    return new RenameRefactoringUI(selectedElement);
 //                    Element selected = selectedElement.resolveElement(info);
 //                    if (selected==null)
 //                        return null;
@@ -141,7 +141,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
             task = new NodeToElementTask(lookup.lookupAll(Node.class)) {
                 @Override
                 protected RefactoringUI createRefactoringUI(CsmObject selectedElement) {
-                    return null;
+                    return new RenameRefactoringUI(selectedElement);
 //                    String newName = getName(lookup);
 //                    if (newName!=null) {
 //                        if (pkg[0]!= null)
