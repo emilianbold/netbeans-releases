@@ -1097,7 +1097,7 @@ public final class RubyIndex {
                             String name = col.substring(0, typeIndex);
                             if (typeIndex < col.length()-1 && col.charAt(typeIndex+1) == '-') {
                                 // Removing column
-                                currentCols.remove(col);
+                                currentCols.remove(name);
                             } else {
                                 currentCols.add(name);
                                 fileUrls.put(col, def.getFileUrl());
@@ -1128,8 +1128,12 @@ public final class RubyIndex {
                         (kind == NameKind.CASE_INSENSITIVE_PREFIX);
                     }
                     
-                    String type = columnDefs.get(column);
-                    type = type.substring(type.indexOf(';') + 1);
+                    String c = columnDefs.get(column);
+                    String type = tableName;
+                    int semicolonIndex = c.indexOf(';');
+                    if (semicolonIndex != -1) {
+                        type = c.substring(semicolonIndex + 1);
+                    }
                     String fileUrl = fileUrls.get(column);
 
                     String signature = column;
