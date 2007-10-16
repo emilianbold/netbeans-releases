@@ -60,6 +60,11 @@ public class CsmRefactoringsFactory implements RefactoringPluginFactory {
             if (CsmRefactoringUtils.isSupportedReference(ref)) {
                 return new CsmWhereUsedQueryPlugin((WhereUsedQuery) refactoring);
             }
+        } else if (refactoring instanceof RenameRefactoring) {
+            CsmReference ref = CsmRefactoringUtils.findReference(look);
+            if (CsmRefactoringUtils.isSupportedReference(ref)) {
+                return new CsmRenameRefactoringPlugin((RenameRefactoring)refactoring);
+            }            
         }
         return null;
     }

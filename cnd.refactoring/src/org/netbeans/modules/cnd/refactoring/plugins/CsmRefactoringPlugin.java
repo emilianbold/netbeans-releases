@@ -49,7 +49,6 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.refactoring.spi.*;
@@ -67,33 +66,9 @@ public abstract class CsmRefactoringPlugin extends ProgressProviderAdapter imple
     private Phase whatRun = Phase.DEFAULT;
     private Problem problem;
     protected volatile boolean cancelRequest = false;
-//    private volatile CancellableTask currentTask;
     
-
-//    protected abstract Problem preCheck(CompilationController javac) throws IOException;
-//    protected abstract Problem checkParameters(CompilationController javac) throws IOException;
-//    protected abstract Problem fastCheckParameters(CompilationController javac) throws IOException;
-
-//    protected abstract Source getRubySource(Phase p);
-
     public void cancel() {
     }
-
-//    public final void run(CompilationController javac) throws Exception {
-//        switch(whatRun) {
-//        case PRECHECK:
-//            this.problem = preCheck(javac);
-//            break;
-//        case CHECKPARAMETERS:
-//            this.problem = checkParameters(javac);
-//            break;
-//        case FASTCHECKPARAMETERS:
-//            this.problem = fastCheckParameters(javac);
-//            break;
-//        default:
-//            throw new IllegalStateException();
-//        }
-//    }
     
     public Problem preCheck() {
         return run(Phase.PRECHECK);
@@ -128,16 +103,6 @@ public abstract class CsmRefactoringPlugin extends ProgressProviderAdapter imple
 //            currentTask.cancel();
 //        }
     }
-
-//    protected ClasspathInfo getClasspathInfo(AbstractRefactoring refactoring) {
-//        ClasspathInfo cpInfo = refactoring.getContext().lookup(ClasspathInfo.class);
-//        if (cpInfo==null) {
-//            Logger.getLogger(getClass().getName()).log(Level.INFO, "Missing scope (ClasspathInfo), using default scope (all open projects)");
-//            cpInfo = RetoucheUtils.getClasspathInfoFor((FileObject)null);
-//            refactoring.getContext().add(cpInfo);
-//        }
-//        return cpInfo;
-//    }
     
     protected static final Problem createProblem(Problem result, boolean isFatal, String message) {
         Problem problem = new Problem(isFatal, message);
@@ -202,66 +167,4 @@ public abstract class CsmRefactoringPlugin extends ProgressProviderAdapter imple
             return prj.getAllFiles();
         }
     }
-    
-//    protected final Collection<ModificationResult> processFiles(Set<FileObject> files, CancellableTask<WorkingCopy> task) {
-//        currentTask = task;
-//        Collection<ModificationResult> results = new LinkedList<ModificationResult>();
-//        try {
-//            // Process Ruby files and RHTML files separately - and OTHER files separately
-//            Set<FileObject> rubyFiles = new HashSet<FileObject>(2*files.size());
-//            Set<FileObject> rhtmlFiles = new HashSet<FileObject>(2*files.size());
-//            for (FileObject file : files) {
-//                if (RubyUtils.isRubyFile(file)) {
-//                    rubyFiles.add(file);
-//                } else if (RubyUtils.isRhtmlFile(file)) {
-//                    rhtmlFiles.add(file);
-//                }
-//            }
-//
-//            Iterable<? extends List<FileObject>> work = groupByRoot(rubyFiles);
-//            for (List<FileObject> fos : work) {
-//                final Source source = Source.create(ClasspathInfo.create(fos.get(0)), fos);
-//                try {
-//                    results.add(source.runModificationTask(task));
-//                } catch (IOException ex) {
-//                    throw (RuntimeException) new RuntimeException().initCause(ex);
-//                }
-//            }
-//            work = groupByRoot(rhtmlFiles);
-//            for (List<FileObject> fos : work) {
-//                final Source source = Source.createFromModel(ClasspathInfo.create(fos.get(0)), fos, new RhtmlEmbeddingModel());
-//                try {// todo - make sure I have a source in case I add rhtml files here!
-//                    results.add(source.runModificationTask(task));
-//                } catch (IOException ex) {
-//                    throw (RuntimeException) new RuntimeException().initCause(ex);
-//                }
-//            }
-//        } finally {
-//            currentTask = null;
-//        }
-//        return results;
-//    }
-
-//    protected class TransformTask implements CancellableTask<WorkingCopy> {
-//        private SearchVisitor visitor;
-//        private RubyElementCtx treePathHandle;
-//        public TransformTask(SearchVisitor visitor, RubyElementCtx searchedItem) {
-//            this.visitor = visitor;
-//            this.treePathHandle = searchedItem;
-//        }
-//        
-//        public void cancel() {
-//        }
-//        
-//        public void run(WorkingCopy compiler) throws IOException {
-//            visitor.setWorkingCopy(compiler);
-//            visitor.scan();
-//            
-//            //for (RubyElementCtx tree : visitor.getUsages()) {
-//            //    ElementGripFactory.getDefault().put(compiler.getFileObject(), tree, compiler);
-//            //}
-//
-//            fireProgressListenerStep();
-//        }
-//    }
 }

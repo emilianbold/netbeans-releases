@@ -21,6 +21,10 @@
                     <file name="org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.whereUsedAction"/>
                         <attr name="position" intvalue="1200"/>
+                    </file>  
+                    <file name="org-netbeans-modules-refactoring-api-ui-RSMEditorAction.instance">
+                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.editorSubmenuAction"/>
+                        <attr name="position" intvalue="1250"/>
                     </file>                    
                 </folder>
             </folder>
@@ -37,7 +41,11 @@
                     <file name="org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.whereUsedAction"/>
                         <attr name="position" intvalue="1200"/>
-                    </file>                  
+                    </file>    
+                    <file name="org-netbeans-modules-refactoring-api-ui-RSMEditorAction.instance">
+                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.editorSubmenuAction"/>
+                        <attr name="position" intvalue="1250"/>
+                    </file>                     
                 </folder>
             </folder>            
         </folder>
