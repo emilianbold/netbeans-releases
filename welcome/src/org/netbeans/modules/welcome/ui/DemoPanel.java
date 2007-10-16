@@ -237,7 +237,7 @@ class DemoPanel extends RSSFeedReaderPanel {
         private boolean visited = false;
         
         public ImageLabel( String url, ImageIcon img, String description ) {
-            super( new MaxSizeImageIcon(img) );
+            super( new MaxSizeImageIcon(img.getImage()) );
             this.url = url;
             if( null != description )
                 setToolTipText( "<html>" + description ); //NOI18N
@@ -292,30 +292,34 @@ class DemoPanel extends RSSFeedReaderPanel {
     private static class MaxSizeImageIcon implements Icon, Constants {
         private static final int MAX_IMAGE_WIDTH = 202;
         private static final int MAX_IMAGE_HEIGHT = 142;
+        private Image content;
         private Image frame;
         
-        ImageIcon orig;
-        public MaxSizeImageIcon( ImageIcon orig ) {
-            this.orig = orig;
+        public MaxSizeImageIcon( Image content ) {
+            this.content = content;
             frame = Utilities.loadImage( IMAGE_PICTURE_FRAME );
         }
 
         public void paintIcon(Component c, Graphics g, int x, int y) {
-            if( orig.getIconWidth() > MAX_IMAGE_WIDTH )
-                x -= (orig.getIconWidth() - MAX_IMAGE_WIDTH) / 2;
-            if( orig.getIconHeight() > MAX_IMAGE_HEIGHT )
-                y -= (orig.getIconHeight() - MAX_IMAGE_HEIGHT) / 2;
-            g.setClip(0,0,MAX_IMAGE_WIDTH,MAX_IMAGE_HEIGHT);
-            orig.paintIcon(c, g, x, y);
-            g.drawImage(frame, 0, 0, c);
+            int imgX = x;
+            int imgY = y;
+            if( content.getWidth(null) > MAX_IMAGE_WIDTH )
+                imgX += (content.getWidth(null) - MAX_IMAGE_WIDTH) / 2;
+            if( content.getHeight(null) > MAX_IMAGE_HEIGHT )
+                imgY += (content.getHeight(null) - MAX_IMAGE_HEIGHT) / 2;
+            g.drawImage(content, x, y, x+Math.min(MAX_IMAGE_WIDTH, content.getWidth(null)), 
+                                       y+Math.min(MAX_IMAGE_HEIGHT, content.getHeight(null)),
+                    imgX, imgY, imgX+Math.min(MAX_IMAGE_WIDTH, content.getWidth(null)), 
+                                imgY+Math.min(MAX_IMAGE_HEIGHT, content.getHeight(null)), null);
+            g.drawImage(frame, x, y, c);
         }
 
         public int getIconWidth() {
-            return Math.min( orig.getIconWidth(), MAX_IMAGE_WIDTH );
+            return MAX_IMAGE_WIDTH;
         }
 
         public int getIconHeight() {
-            return Math.min( orig.getIconHeight(), MAX_IMAGE_HEIGHT );
+            return MAX_IMAGE_HEIGHT;
         }
     }
 }
