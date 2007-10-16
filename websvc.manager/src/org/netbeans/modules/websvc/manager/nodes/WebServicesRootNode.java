@@ -72,7 +72,7 @@ public class WebServicesRootNode extends AbstractNode implements Node.Cookie {
         super(new WebServicesRootNodeChildren());
         setName("default");
         setDisplayName(NbBundle.getMessage(WebServicesRootNode.class, "Web_Services"));
-        setShortDescription(NbBundle.getMessage(WebServicesRootNode.class, "Web_Services"));
+        setShortDescription(NbBundle.getMessage(WebServicesRootNode.class, "Web_Services_Desc"));
     }
     
     @Override
@@ -88,7 +88,7 @@ public class WebServicesRootNode extends AbstractNode implements Node.Cookie {
     public WebServiceGroup getWebServiceGroup(){
         return WebServiceListModel.getInstance().getWebServiceGroup("default");
     }
-    
+
     @Override
     public Action[] getActions(boolean context) {
         List<Action> actions = new ArrayList<Action>();
