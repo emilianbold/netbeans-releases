@@ -42,7 +42,6 @@
 package org.netbeans.modules.cnd.navigation.switchfiles;
 
 import java.io.File;
-import java.io.PrintStream;
 import java.util.Collection;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmProject;
@@ -63,23 +62,21 @@ public class CppSwitchTestCase extends TraceModelTestBase {
         performTest("", source + ".dat", source + ".err"); // NOI18N
     }
 
-    protected void performTest() {
+    protected @Override void postTest(String[] args) {
         CsmProject project = getCsmProject();
         Collection<CsmFile> files = project.getAllFiles();
+        assert files.size() > 0;
         for (CsmFile csmFile : files) {
             if (csmFile.getAbsolutePath().indexOf("welcome.cc")!=-1) { //NOI18N
                 CsmFile f = CppSwitchAction.findHeader(csmFile);
                 assert f!=null && f.getAbsolutePath().indexOf("dir1" + File.separator +"welcome.h")!=-1; //NOI18N
-            }
-            if (csmFile.getAbsolutePath().indexOf("welcome.h")!=-1) { //NOI18N
+            } else if (csmFile.getAbsolutePath().indexOf("welcome.h")!=-1) { //NOI18N
                 CsmFile f = CppSwitchAction.findSource(csmFile);
                 assert f!=null && f.getAbsolutePath().indexOf("welcome.cc")!=-1; //NOI18N
+            } else {
+                assert(false);
             }
         }
-    }
-
-    protected @Override void postTest(String[] args) {
-        performTest();
     }
     
 }
