@@ -602,6 +602,24 @@ public class ReflowParagraphAction extends AbstractAction implements EditorActio
         }
 
         private void appendFlowed(String text) {
+            int ltIndex = text.indexOf('<');
+            if (ltIndex != -1) {
+                int brIndex = text.indexOf("<br>", ltIndex); // NOI18N
+                if (brIndex == -1) {
+                    brIndex = text.indexOf("<br/>", ltIndex); // NOI18N
+                }
+                if (brIndex != -1) {
+                    // Need to split the text up via linebreaks
+                    int brEnd = text.indexOf('>', brIndex)+1;
+                    buffer.append(text.substring(0, brEnd));
+                    flush();
+                    if (brEnd < text.length()) {
+                        appendFlowed(text.substring(brEnd));
+                    }
+
+                    return;
+                }
+            }
             buffer.append(text);
         }
         

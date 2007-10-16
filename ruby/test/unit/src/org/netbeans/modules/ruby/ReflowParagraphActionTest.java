@@ -129,4 +129,8 @@ public class ReflowParagraphActionTest extends RubyTestBase {
     public void testSeparator() throws Exception {
         formatParagraphFile("testfiles/separator.comment", "This is s^ome text");
     }
+
+    public void testLineBreak() throws Exception {
+        formatParagraphFile("testfiles/linebreak.comment", "next available num^ber");
+    }
 }

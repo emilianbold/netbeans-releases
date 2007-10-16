@@ -1,0 +1,12 @@
+    # [<tt>:on_key</tt>]
+    #   :use_next_key => Use the next available number.  This is the
+    #   default.<br/>
+    #   :any => Respond to any key.  Normally used as the last
+    #   option to play an error message ("Sorry, 3 is not an option") 1 => Any
+    #   integer.  Use these if you want to specify that a particular key
+    #   corresponds to<br><br><br/>
+    #   :any => Respond to any key.  Normally used as the last
+    #   option to play an error message ("Sorry, 3 is not an option") 1 => Any
+    #   integer.  Use these if you want<br>to specify that a particular key
+    #   corresponds to
+
