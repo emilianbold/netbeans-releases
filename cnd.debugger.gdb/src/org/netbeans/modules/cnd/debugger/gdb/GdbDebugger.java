@@ -560,6 +560,10 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 // ignore - probably a breakpoint from another project
             } else if (msg.contains("Undefined mi command: ") && msg.contains("(missing implementation")) { // NOI18N
                 // ignore - gdb/mi defines commands which haven't been implemented yet
+            } else if (pendingBreakpointMap.remove(Integer.valueOf(token)) != null) {
+                if (pendingBreakpointMap.isEmpty() && state.equals(STATE_LOADING)) {
+                    setReady();
+                }
             } else if (!state.equals(STATE_NONE)) {
                 // ignore errors after we've terminated (they could have been in the input queue)
                 log.warning("Unexpected gdb error: " + msg);

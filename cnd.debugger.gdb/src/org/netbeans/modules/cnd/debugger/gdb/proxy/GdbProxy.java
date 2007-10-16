@@ -334,6 +334,8 @@ public class GdbProxy implements GdbMiDefinitions {
         if (Utilities.isWindows() && name.indexOf('/') == 0 && name.indexOf(':') == 2) {
             // Remove first slash
             name = name.substring(1);
+        } else if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+            cmd.append("-l 1 "); // NOI18N - Always use 1st choice
         }
         cmd.append(name);
         return engine.sendCommand(cmd.toString());
