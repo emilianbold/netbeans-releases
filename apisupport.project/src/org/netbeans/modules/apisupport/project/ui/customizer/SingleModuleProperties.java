@@ -165,6 +165,7 @@ public final class SingleModuleProperties extends ModuleProperties {
     private NbPlatform activePlatform;
     private NbPlatform originalPlatform;
     private JavaPlatform activeJavaPlatform;
+    private boolean javaPlatformChanged; // #115989
     
     /** package name / selected */
     private SortedSet<String> availablePublicPackages;
@@ -243,6 +244,7 @@ public final class SingleModuleProperties extends ModuleProperties {
             String activeJdkHome = getEvaluator().getProperty("nbjdk.home"); // NOI18N
             activeJavaPlatform = ModuleProperties.findJavaPlatformByLocation(activeJdkHome);
         }
+        javaPlatformChanged = false;
         getPublicPackagesModel().reloadData(loadPublicPackages());
         requiredTokens = Collections.unmodifiableSortedSet(
                 new TreeSet<String>(Arrays.asList(manifestManager.getRequiredTokens())));
@@ -345,6 +347,7 @@ public final class SingleModuleProperties extends ModuleProperties {
         if (nue != old) {
             activeJavaPlatform = nue;
             firePropertyChange(JAVA_PLATFORM_PROPERTY, old, nue);
+            javaPlatformChanged = true;
         }
     }
     
@@ -723,8 +726,10 @@ public final class SingleModuleProperties extends ModuleProperties {
         
         if (isStandalone()) {
             ModuleProperties.storePlatform(getHelper(), getActivePlatform());
-            ModuleProperties.storeJavaPlatform(getHelper(), getEvaluator(), getActiveJavaPlatform(), false);
-        } else if (isNetBeansOrg()) {
+            if (javaPlatformChanged) {
+                ModuleProperties.storeJavaPlatform(getHelper(), getEvaluator(), getActiveJavaPlatform(), false);
+            }
+        } else if (isNetBeansOrg() && javaPlatformChanged) {
             ModuleProperties.storeJavaPlatform(getHelper(), getEvaluator(), getActiveJavaPlatform(), true);
         }
     }
