@@ -42,7 +42,6 @@
 package org.netbeans.modules.cnd.classview;
 
 import java.io.File;
-import java.io.PrintStream;
 import org.netbeans.modules.cnd.api.model.CsmChangeEvent;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmModelListener;
@@ -79,26 +78,7 @@ public class BaseTestCase extends TraceModelTestBase implements CsmModelListener
         super.tearDown();
     }
     
-    @Override
-    protected void doTest(String[] args, PrintStream streamOut, PrintStream streamErr, Object ... params) throws Exception {
-        PrintStream oldOut = System.out;
-        PrintStream oldErr = System.err;
-        try {
-            // redirect output and err
-            System.setOut(streamOut);
-            System.setErr(streamErr);
-            performModelTest(args, streamOut, streamErr);
-            performTest("");
-        } finally {
-            // restore err and out
-            System.setOut(oldOut);
-            System.setErr(oldErr);
-        }
-    }
-    
-    
-    @Override
-    protected void performTest(String source) throws Exception {
+    protected @Override void postTest(String[] args) {
         CsmProject project = getCsmProject();
         assertNotNull("Project not found",project); // NOI18N
         childrenUpdater = new ChildrenUpdater();
@@ -110,8 +90,8 @@ public class BaseTestCase extends TraceModelTestBase implements CsmModelListener
             reparseFile(file);
         }
         dump(global,"", isReparsed);
-    }
-    
+    }    
+
     private void dump(final HostKeyArray children, String ident, boolean trace){
         final Node[][] nodes = new Node[][] { null };
         try {
