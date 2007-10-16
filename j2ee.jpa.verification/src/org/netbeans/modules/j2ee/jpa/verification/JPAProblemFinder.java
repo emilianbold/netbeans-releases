@@ -334,7 +334,8 @@ public abstract class JPAProblemFinder {
                 try{
                     javaSrc.runUserActionTask(new ProblemFinderCompControl(file), true);
                 } catch (IOException e){
-                    LOG.log(Level.WARNING, e.getMessage(), e);
+                    // IOE can happen legitimatelly, see #103453
+                    LOG.log(Level.FINE, e.getMessage(), e);
                 }
             }
         }
