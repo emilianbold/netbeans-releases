@@ -101,5 +101,6 @@ if [ $ML_BUILD == 1 ]; then
     rm -rf $NB_ALL/nbbuild/netbeans
     mv $NB_ALL/nbbuild/netbeans-ml $NB_ALL/nbbuild/netbeans
 
+    mkdir -p $DIST/ml
     pack_all_components $DIST/ml $BASENAME-ml
 fi
