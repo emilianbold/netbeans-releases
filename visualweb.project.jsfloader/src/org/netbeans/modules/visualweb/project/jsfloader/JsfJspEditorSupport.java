@@ -227,7 +227,9 @@ public final class JsfJspEditorSupport extends DataEditorSupport
             else {
                 try {
                     java.nio.charset.CharsetEncoder coder = java.nio.charset.Charset.forName(encoding).newEncoder();
-                    if (!coder.canEncode(getDocument().getText(0, getDocument().getLength()))){
+                    Document doc = getDocument();
+                    
+                    if (coder != null && doc != null && !coder.canEncode(doc.getText(0, doc.getLength()))){
                         NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
                         NbBundle.getMessage (JsfJspEditorSupport.class, "MSG_BadCharConversion", //NOI18N
                         new Object [] { getDataObject().getPrimaryFile().getNameExt(),
