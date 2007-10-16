@@ -75,6 +75,8 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.junit.TestabilityResult.SkippedClass;
@@ -106,6 +108,7 @@ import static javax.lang.model.util.ElementFilter.typesIn;
 import static org.netbeans.api.java.classpath.ClassPath.SOURCE;
 import static org.netbeans.api.java.classpath.ClassPath.COMPILE;
 import static org.netbeans.api.java.classpath.ClassPath.BOOT;
+import static org.netbeans.api.java.project.JavaProjectConstants.SOURCES_TYPE_JAVA;
 import static org.netbeans.modules.junit.JUnitSettings.JUNIT_GENERATOR_ASK_USER;
 import static org.openide.ErrorManager.ERROR;
 import static org.openide.ErrorManager.WARNING;
@@ -161,6 +164,74 @@ public final class DefaultPlugin extends JUnitPlugin {
     /** */
     private static java.util.ResourceBundle bundle = org.openide.util.NbBundle.getBundle(
             DefaultPlugin.class);
+
+    /**
+     * 
+     */
+    @Override
+    protected boolean canCreateTests(FileObject... fileObjects) {
+        if (fileObjects.length == 0) {
+            return false;
+        }
+
+        final FileObject firstFile = fileObjects[0];
+        final SourceGroup sourceGroup = findSourceGroup(firstFile);
+        if (sourceGroup == null) {
+            return false;
+        }
+        final FileObject rootFolder = sourceGroup.getRootFolder();
+        if (UnitTestForSourceQuery.findUnitTests(rootFolder).length == 0) {
+            return false;
+        }
+
+        /*
+         * Now we know that source folder of the first file has a corresponding
+         * test folder (possible non-existent).
+         */
+        if (fileObjects.length == 1) {
+            /* ... if there is just one file selected, it is all we need: */
+            return true;
+        }
+
+        /*
+         * ...for multiple files, we just check that all the selected files
+         * have the same root folder:
+         */
+        for (int i = 1; i < fileObjects.length; i++) {
+            FileObject fileObj = fileObjects[i];
+            if (!FileUtil.isParentOf(rootFolder, fileObj)
+                    || !sourceGroup.contains(fileObj)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Finds a Java source group the given file belongs to.
+     * 
+     * @param  file  {@code FileObject} to find a {@code SourceGroup} for
+     * @return  the found {@code SourceGroup}, or {@code null} if the given
+     *          file does not belong to any Java source group
+     */
+    private static SourceGroup findSourceGroup(FileObject file) {
+        final Project project = FileOwnerQuery.getOwner(file);
+        if (project == null) {
+            return null;
+        }
+
+        Sources src = ProjectUtils.getSources(project);
+        SourceGroup[] srcGrps = src.getSourceGroups(SOURCES_TYPE_JAVA);
+        for (SourceGroup srcGrp : srcGrps) {
+            FileObject rootFolder = srcGrp.getRootFolder();
+            if (((file == rootFolder) || FileUtil.isParentOf(rootFolder, file)) 
+                    && srcGrp.contains(file)) {
+                return srcGrp;
+            }
+        }
+        return null;
+    }
+
     /**
      *
      */
