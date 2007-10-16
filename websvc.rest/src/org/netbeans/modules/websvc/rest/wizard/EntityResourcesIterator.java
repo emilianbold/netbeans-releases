@@ -84,7 +84,8 @@ public class EntityResourcesIterator implements TemplateWizard.Iterator {
         
         // Add the entity classes to persistence.xml,
         // Note: this is a work-around for TopLink PM implementation not compliant to persistence.xml schema.
-        PersistenceHelper.addEntityClasses(project, model.getBuilder().getAllEntityNames());
+        //PersistenceHelper.addEntityClasses(project, model.getBuilder().getAllEntityNames());
+        PersistenceHelper.unsetExcludeEnlistedClasses(project);
         
         final EntityResourcesGenerator generator = new EntityResourcesGenerator(
                 model, targetFolder, targetPackage, resourcePackage, converterPackage, puName);

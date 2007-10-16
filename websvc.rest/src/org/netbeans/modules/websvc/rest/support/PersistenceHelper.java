@@ -54,6 +54,7 @@ public class PersistenceHelper {
     private static final String CLASS_TAG = "class";                //NOI18N
     private static final String PROPERTIES_TAG = "properties";      //NOI18N
     private static final String NAME_ATTR = "name";                 //NOI18N
+    private static final String EXCLUDE_UNLISTED_CLASSES_TAG = "exclude-unlisted-classes";      //NOI18N
     
     private static int TIME_TO_WAIT = 300;
     
@@ -94,6 +95,23 @@ public class PersistenceHelper {
         writeDocument(fobj, document);
     }
     
+    
+    public static void unsetExcludeEnlistedClasses(Project project) throws IOException {
+        FileObject fobj = getPersistenceXML(project);
+        Document document = getDocument(fobj);
+        Element puElement = getPersistenceUnitElement(document);
+        NodeList nodes = puElement.getElementsByTagName(EXCLUDE_UNLISTED_CLASSES_TAG);
+    
+        if (nodes.getLength() > 0) {
+            setValue((Element) nodes.item(0), "false");  //NOI18N
+        } else {
+            puElement.insertBefore(createElement(document, EXCLUDE_UNLISTED_CLASSES_TAG, "false"),  //NOI18N
+                    getPropertiesElement(document));
+        }
+        
+        writeDocument(fobj, document);
+    }
+     
     private static String getValue(Element element) {
         Node child = element.getFirstChild();
         
@@ -102,6 +120,14 @@ public class PersistenceHelper {
         }
         
         return "";      //NOI18N
+    }
+    
+    private static void setValue(Element element, String value) {
+        Node child = element.getFirstChild();
+        
+        if (child instanceof Text) {
+            ((Text) child).setData(value);
+        }
     }
     
     private static Element createElement(Document document,
