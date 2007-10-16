@@ -22,7 +22,7 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <Component id="destinationDirectoryPanel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="58" max="32767" attributes="0"/>
+              <EmptySpace pref="62" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -40,21 +40,22 @@
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" attributes="0">
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="directoryLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                      <Component id="nameLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Group type="102" attributes="0">
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="directoryLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="nameLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="nameField" pref="384" max="32767" attributes="0"/>
+                              <Component id="directoryField" alignment="0" pref="384" max="32767" attributes="0"/>
+                          </Group>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="directoryBrowseButton" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <Component id="scanForProjectsCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="nameField" pref="273" max="32767" attributes="0"/>
-                      <Component id="directoryField" pref="273" max="32767" attributes="0"/>
-                  </Group>
-                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                  <Component id="directoryBrowseButton" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
-              </Group>
-              <Group type="102" alignment="0" attributes="0">
-                  <Component id="scanForProjectsCheckBox" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace pref="268" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -64,13 +65,13 @@
                   <EmptySpace min="-2" pref="36" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="directoryLabel" alignment="3" max="32767" attributes="0"/>
-                      <Component id="directoryField" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="directoryBrowseButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="directoryField" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace min="-2" pref="28" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="nameLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="nameField" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="nameField" alignment="3" min="-2" pref="23" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace type="separate" max="-2" attributes="0"/>
                   <Component id="scanForProjectsCheckBox" min="-2" pref="32" max="-2" attributes="0"/>

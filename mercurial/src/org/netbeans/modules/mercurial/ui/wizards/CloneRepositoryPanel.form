@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<Form version="1.3" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+<Form version="1.3" maxVersion="1.3" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
@@ -14,7 +14,7 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="repositoryPanel" alignment="0" max="32767" attributes="0"/>
+          <Component id="repositoryPanel" alignment="0" min="-2" max="-2" attributes="0"/>
           <Component id="progressPanel" alignment="0" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
