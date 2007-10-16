@@ -1,314 +1,203 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
- * 
- *     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
- *     Use is subject to license terms.
- * 
+*     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
 -->
 <html>
     <head>
-    <title>Node Icons in the IDE</title>
-    <link rel="stylesheet" href="../ide.css" type="text/css"></head>
+        <title>Project Node Icons in the IDE</title>
+        <link href="../ide.css" rel="stylesheet" type="text/css">
+    </head>
+    
     <body>
+        <h2>Project Node Icons in the IDE</h2>
+        
+        <p><small><a href="#seealso">See Also</a></small></p>
+        
+        <p>Project node icons displayed in the Projects window indicate what type of
+            project a node represents. You can create a new project by opening the 
+            New Project wizard (Ctrl-Shift-N). This page lists some of the icons used 
+            to represent projects.</p>
+            
+        <ul class="note">
+            <li>Various icons displayed in the table below may be installed by IDE 
+                extension modules.</li>
+        </ul>
 
-    <h2>Node Icons in the IDE</h2>
-    <p><small><a href="#seealso">See Also</a></small></p>
-
-    <p>In general, you can find out what an icon in the Projects window represents 
-    by holding your cursor over the icon to display the node's tool tip.</p>
-    <p>The following tables show some of the icons used in the Projects window to 
-    indicate what type of item a node represents. Other icons might be installed 
-    by IDE extension modules.</p>
-    <!--<p>This page shows icons for: 
-    <ul>
-    <li><a href="#highlevel">High-level nodes</a></li>
-    <li><a href="#badges">Badges</a> that provide additional information about files</li>
-    <li><a href="#elements">Java elements and bean patterns</a></li>
-    <li><a href="#properties"><tt>.properties</tt> files</a></li>
-    </ul>-->
-    <a name="highlevel"></a> 
-    <h3>High-Level Nodes</h3>
-    <p>The following table lists some of the icons used to represent projects and 
-    objects.</p>
-    <table border="1" cellpadding="5" cellspacing="0">
-        <tr> 
-            <th scope="col"><b>Icon</b></th>
-            <th scope="col"><b>Description</b></th>
-        </tr>
-        <tr> 
-            <td><img src="../images/j2seProject.gif" width="16" height="16"></td>
-            <td>Standard Java project</td>
-        </tr>
-        <tr> 
-            <td><img src="../images/webProjectIcon.gif" width="16" height="16"></td>
-            <td>Standard web project</td>
-        </tr>
-        <tr> 
-            <td><img src="../images/freeform-project.png" width="16" height="16"></td>
-            <td>Free-form project</td>
-        </tr>
-        <tr> 
-            <td><img src="../images/webPages.gif" width="20" height="16"></td>
-            <td>Web pages node. This node appears in web projects.</td>
-        </tr>
-        <tr> 
-            <td><img src="../images/packagesNode.gif" width="20" height="18"></td>
-            <td>Java packages root. In <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
-                <param name="content" value="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/glossary_freeform.html">
-                <param name="viewerActivator" value="javax.help.LinkLabel">
-                <param name="viewerStyle" value="javax.help.Popup">
-                <param name="viewerSize" value="400,160">
-                <param name="text" value="free-form projects">
-                <param name="textFontSize" value="medium">
-                <param name="textFontFamily" value="SansSerif">
-                <param name="textFontStyle" value="italic">
-                <param name="textFontWeight" value="bold">
-                <param name="textColor" value="blue">
-            </object>, there is one Java package root node for each of your source folders.</td>
-        </tr>
-        <tr> 
-            <td><img src="../images/package.gif" width="16" height="16"></td>
-            <td>Java package</td>
-        </tr>
-        <tr> 
-            <td><img src="../images/packageEmpty.gif" width="16" height="16"></td>
-            <td>Empty Java package</td>
-        </tr>
-        <tr> 
-            <td><img src="../images/packagePrivate.gif" width="16" height="16"></td>
-            <td>Private Java package</td>
-        </tr>
-        <tr> 
-            <td><img src="../images/packagePublic.gif" width="16" height="16"></td>
-            <td>Public Java package</td>
-        </tr>
-        <tr> 
-            <td><img src="images/class_source.gif" alt=" "></td>
-            <td>Java source file.</td>
-        </tr>
-        <tr> 
-            <td><img src="images/form.gif" alt=" "></td>
-            <td>Java form object.</td>
-        </tr>
-        <tr> 
-            <td><img src="../ant/images/AntIcon.gif" width="16" height="16" alt="ant script node"></td>
-            <td>Ant script node.</td>
-        </tr>
-        <tr> 
-            <td><img src="images/jar.gif" width="16" height="16" alt="JAR or WAR file"></td>
-            <td>JAR file or WAR file.</td>
-        </tr>
-        <tr> 
-            <td><img src="images/class.gif" alt=" "></td>
-            <td>Java class or inner class.</td>
-        </tr>
-        <tr> 
-            <td><img src="images/interface.gif" alt=" "></td>
-            <td>Java interface or inner interface.</td>
-        </tr>
-        <tr> 
-            <td><img src="images/formDesigner.gif" alt=" "></td>
-            <td>Root Form node. This node appears a the top of a form's hierarchy 
-            in the Inspector window whenever it is open in the GUI Builder. </td>
-        </tr>
-        <tr> 
-            <td><img src="images/formobje.gif" alt=" "></td>
-            <td>Top Form Component node. A subnode of the Root Form node, this
-            node appears in the Inspector window and contains the form's main hierarchy, 
-            such as Swing and AWT visual components.</td>
-        </tr>
-        <tr> 
-            <td><img src="images/formNonVisual.gif" alt=" "></td>
-            <td>Other Components node. 
-            A subnode of the Root Form node, this node appears in the Inspector window and 
-            contains the components that are not in the form's main hierarchy, such as 
-            non-visual components.</td>
-        </tr>
-        <tr> 
-            <td><img src="images/jsp16.gif" alt=" "></td>
-            <td>Page created with the JavaServer Pages technology.</td>
-        </tr>
-        <tr> 
-            <td><img src="../xml/images/xmlObject.gif" alt=" "></td>
-            <td>XML file.</td>
-        </tr>
-        <tr> 
-            <td><img src="images/htmlObject.png" alt=" "></td>
-            <td>HTML file.</td>
-        </tr>
-        <tr> 
-            <td><img src="images/imageObject.png" alt=" "></td>
-            <td>Image file.</td>
-        </tr>
-    </table>
-    <a name="badges"> 
-        <h3>Badges</h3>
-    </a> 
-    <p>Badge icons can be affixed to other icons to indicate a particular state of 
-    the object. The following table lists some of the badges used in the IDE.</p>
-    <table border="1" cellpadding="5" cellspacing="0">
-        <tr> 
-            <th scope="col"><b>Icon</b></th>
-            <th scope="col"><b>Description</b></th>
-        </tr>
-        <tr> 
-            <td><img src="images/needs-compile.gif" alt=" "></td>
-            <td>The file needs to be compiled. Either the file has not been compiled or 
-            the source has changed since the last compilation.</td>
-        </tr>
-        <tr> 
-            <td><img src="images/executable-badge.gif" alt=" "></td>
-            <td>The file is a runnable object.</td>
-        </tr>
-        <tr> 
-            <td><img src="images/error-badge.gif" alt=" "></td>
-            <td>The file cannot be parsed. The file might contain an unrecoverable syntactic 
-            error, or there might have been a problem reading the file.</td>
-        </tr>
-    </table>
-    <a name="elements"> 
-        <h3>Java Elements</h3>
-    </a> 
-    <p>The icons in the following table represent elements within the Java hierarchy.</p>
-    <table border="1" cellpadding="5" cellspacing="0">
-        <tr> 
-            <th scope="col"><b>Icon</b></th>
-            <th scope="col"><b>Description</b></th>
-        </tr>
-        <tr> 
-            <td><img src="images/constructors.gif" alt=" "></td>
-            <td>Category node for constructors.</td>
-        </tr>
-        <tr> 
-            <td><img src="images/constructorPackage.gif" alt=" "></td>
-            <td>Constructor with default access.</td>
-        </tr>
-        <tr> 
-            <td><img src="images/constructorPrivate.gif" alt=" "></td>
-            <td>Private constructor.</td>
-        </tr>
-        <tr> 
-            <td><img src="images/constructorPublic.gif" alt=" "></td>
-            <td>Public constructor or nonstatic initializer.</td>
-        </tr>
-        <tr> 
-            <td><img src="images/constructorProtected.gif" alt=" "></td>
-            <td>Constructor with protected access.</td>
-        </tr>
-        <tr> 
-            <td><img src="images/initializerSt.gif" alt=" "></td>
-            <td>Static initializer.</td>
-        </tr>
-        <tr> 
-            <td><img src="images/method.gif" alt=" "></td>
-            <td>Category node for methods.</td>
-        </tr>
-        <tr> 
-            <td><img src="images/methodPackage.gif" alt=" "></td>
-            <td>Method with default access (nonstatic).</td>
-        </tr>
-        <tr> 
-            <td><img src="images/methodPrivate.gif" alt=" "></td>
-            <td>Private method (nonstatic).</td>
-        </tr>
-        <tr> 
-            <td><img src="images/methodPublic.gif" alt=" "></td>
-            <td>Public method (nonstatic).</td>
-        </tr>
-        <tr> 
-            <td><img src="images/methodProtected.gif" alt=" "></td>
-            <td>Method with protected access (nonstatic).</td>
-        </tr>
-        <tr> 
-            <td><img src="images/methodStPackage.gif" alt=" "></td>
-            <td>Method with default access (static).</td>
-        </tr>
-        <tr> 
-            <td><img src="images/methodStPrivate.gif" alt=" "></td>
-            <td>Private method (static).</td>
-        </tr>
-        <tr> 
-            <td><img src="images/methodStPublic.gif" alt=" "></td>
-            <td>Public method (static).</td>
-        </tr>
-        <tr> 
-            <td><img src="images/methodStProtected.gif" alt=" "></td>
-            <td>Method with protected access (static).</td>
-        </tr>
-        <tr> 
-            <td><img src="images/variables.gif" alt=" "></td>
-            <td>Category node for fields.</td>
-        </tr>
-        <tr> 
-            <td><img src="images/variablePackage.gif" alt=" "></td>
-            <td>Field with default access (nonstatic).</td>
-        </tr>
-        <tr> 
-            <td><img src="images/variablePrivate.gif" alt=" "></td>
-            <td>Private field (nonstatic).</td>
-        </tr>
-        <tr> 
-            <td><img src="images/variablePublic.gif" alt=" "></td>
-            <td>Public field (nonstatic).</td>
-        </tr>
-        <tr> 
-            <td><img src="images/variableProtected.gif" alt=" "></td>
-            <td>Field with protected access (nonstatic).</td>
-        </tr>
-        <tr> 
-            <td><img src="images/variableStPackage.gif" alt=" "></td>
-            <td>Field with default access (static).</td>
-        </tr>
-        <tr> 
-            <td><img src="images/variableStPrivate.gif" alt=" "></td>
-            <td>Private field (static).</td>
-        </tr>
-        <tr> 
-            <td><img src="images/variableStPublic.gif" alt=" "></td>
-            <td>Public field (static).</td>
-        </tr>
-        <tr> 
-            <td><img src="images/variableStProtected.gif" alt=" "></td>
-            <td>Field with protected access (static).</td>
-        </tr>
-
-    </table>
-    <a name="properties"> 
-        <h3>Properties Files</h3>
-    </a> 
-    <p>The following table lists icons used to represent Java <tt>.properties</tt> 
-    files in the IDE:</p>
-    <table border="1" cellpadding="5" cellspacing="0">
-        <tr> 
-            <th scope="col"><b>Icon</b></th>
-            <th scope="col"><b>Description</b></th>
-        </tr>
-        <tr> 
-            <td><img src="images/propertiesObject.gif" alt=" "></td>
-            <td>Properties object</td>
-        </tr>
-        <tr> 
-            <td><img src="images/propertiesLocale.gif" alt=" "></td>
-            <td>Properties locale</td>
-        </tr>
-        <tr> 
-            <td><img src="images/propertiesKey.gif" alt=" "></td>
-            <td>Properties key</td>
-        </tr>
-    </table>
-
-<dl>
-    <dt><a name="seealso">See Also</a></dt>
-    <dd><a href="../project/csh/proj_project_window.html">Projects Window</a></dd>
-    <dd><a href="../project/csh/proj_files_window.html">Files Window</a></dd>
-    <dd><a href="../project/csh/proj_fav_window.html">Favorites Window</a></dd>
-</dl>
-
-    <hr>
-    <small><a href="../credits.html">Legal Notices</a></small>
-    <table border="0" cellpadding="20">
-        <tr><td>&nbsp;</td></tr>
-        <tr><td>&nbsp;</td></tr>
-        <tr><td>&nbsp;</td></tr>
-    </table></body>
+        <br>
+        <h3>Project Node Icons</h3>
+        
+        <table border="1" cellpadding="5">
+            <tr> 
+                <th><strong>Icon</strong></th>
+                <th><strong>Description</strong></th>
+            </tr>
+            <tr> 
+                <td style="text-align:center"><img src="../images/j2seproject.png"></td>
+                <td>
+                    <ul>
+                        <li>Standard Java Application</li>
+                        <li>Java Desktop Application</li>
+                        <li>Java Class Library</li>
+                        <li>Java Project with Existing Sources</li>                        
+                    </ul></td>
+            </tr>
+            <tr> 
+                <td style="text-align:center"><img src="../images/web-proj-icon.png"></td>
+                <td>
+                    <ul>
+                        <li>Web Application</li>
+                        <li>Web Application with Existing Sources</li>                        
+                    </ul></td>
+            </tr>
+            <tr> 
+                <td style="text-align:center"><img src="../images/ant-icon.png"></td>
+                <td>
+                    <ul>Free-Form Projects</ul>
+                    <ul>
+                        <li>Java Project with Existing Ant Script</li>
+                        <li>Web Application with Existing Ant Script</li>                        
+                    </ul></td>
+            </tr>
+            <tr> 
+                <td style="text-align:center"><img src="../images/enterprise.png"></td>
+                <td>
+                    <ul>
+                        <li>Enterprise Application</li>
+                        <li>Enterprise Application with Existing Sources</li>                        
+                    </ul></td>
+            </tr>            
+            <tr> 
+                <td style="text-align:center"><img src="../images/ejb.png"></td>
+                <td>
+                    <ul>
+                        <li>EJB Module</li>
+                        <li>EJB Module with Existing Sources</li>                        
+                    </ul></td>
+            </tr>
+            <tr> 
+                <td style="text-align:center"><img src="../images/enterprise-app-client.png"></td>
+                <td>
+                    <ul>
+                        <li>Enterprise Application Client</li>
+                        <li>Enterprise Application Client with Existing Sources</li>                        
+                    </ul></td>
+            </tr>
+             <tr> 
+                <td style="text-align:center"><img src="../images/packaged-archive.png"></td>
+                <td>
+                    <ul>
+                        <li>Packaged Archive</li>
+                    </ul></td>
+            </tr>
+            <tr> 
+                <td style="text-align:center"><img src="../images/mobile.png"></td>
+                <td>
+                    <ul>
+                        <li>MIDP Application</li>
+                        <li>Mobile Class Library</li>
+                        <li>Mobile Project from Existing MIDP Sources</li>
+                        <li>Import Wireless Toolkit Project</li>                        
+                        <li>CDC Application</li>                        
+                        <li>CDC Class Library</li>                                                
+                        <li>Import CDC Pack 5.5 Project</li> 
+                        <li>Import CDC Toolkit Project</li>                                                
+                    </ul></td>
+            </tr>
+            <tr> 
+                <td style="text-align:center"><img src="../images/uml.png"></td>
+                <td>
+                    <ul>
+                        <li>Platform-Independent Model</li>
+                        <li>Java-Platform Model</li>     
+                        <li>Reverse Engineered Java-Platform Model</li>                          
+                    </ul></td>
+            </tr>
+            <tr> 
+                <td style="text-align:center"><img src="../images/comp-app.png"></td>
+                <td>
+                    <ul>
+                        <li>SOA Composite Application</li>
+                    </ul></td>
+            </tr>     
+            <tr> 
+                <td style="text-align:center"><img src="../images/bpel-module.png"></td>
+                <td>
+                    <ul>
+                        <li>BPEL Module</li>
+                    </ul></td>
+            </tr>            
+            <tr> 
+                <td style="text-align:center"><img src="../images/sql-module.png"></td>
+                <td>
+                    <ul>
+                        <li>SQL Module</li>
+                    </ul></td>
+            </tr>           
+            <tr> 
+                <td style="text-align:center"><img src="../images/xslt-module.png"></td>
+                <td>
+                    <ul>
+                        <li>XSLT Module</li>
+                    </ul></td>
+            </tr>               
+            <tr> 
+                <td style="text-align:center"><img src="../images/ruby-app.png"></td>
+                <td>
+                    <ul>
+                        <li>Ruby Application</li>
+                        <li>Ruby Application with Existing Sources</li>                        
+                    </ul></td>
+            </tr>  
+            <tr> 
+                <td style="text-align:center"><img src="../images/ruby-on-rails.png"></td>
+                <td>
+                    <ul>
+                        <li>Ruby on Rails Application</li>
+                        <li>Ruby on Rails Application with Existing Sources</li>                        
+                    </ul></td>
+            </tr>        
+            <tr> 
+                <td style="text-align:center"><img src="../images/c.png"></td>
+                <td>
+                    <ul>
+                        <li>C/C++ Project</li>
+                        <li>C/C++ Project from Existing Code</li>
+                        <li>C/C++ Application</li>
+                        <li>C/C++ Dynamic Library</li>
+                        <li>C/C++ Static Library</li>                        
+                    </ul></td>
+            </tr>
+           <tr> 
+                <td style="text-align:center"><img src="../images/nb-module.png"></td>
+                <td>
+                    <ul>
+                        <li>NetBeans Module</li>
+                        <li>NetBeans Library Wrapper Module</li>                        
+                    </ul></td>
+            </tr>
+           <tr> 
+                <td style="text-align:center"><img src="../images/nb-module-suite.png"></td>
+                <td>
+                    <ul>
+                        <li>NetBeans Module Suite</li>
+                    </ul></td>
+            </tr>                        
+        </table>
+        
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="../project/csh/proj_project_window.html">Projects Window</a></dd>
+            <dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/proj_file_icons.html">Java 
+                File and Object Node Icons</a></dd>
+        </dl>
+        
+        <hr>
+        <small><a href="../credits.html">Legal Notices</a></small>
+        <table border="0" cellpadding="20">
+            <tr><td>&nbsp;</td></tr>
+            <tr><td>&nbsp;</td></tr>
+            <tr><td>&nbsp;</td></tr>
+        </table>
+    </body>
 </html>
