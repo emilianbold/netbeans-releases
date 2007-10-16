@@ -20,14 +20,18 @@ public class JavonGateways {
     <#assign serviceClassName = service.getClassName()/>
     <#assign servicePackageName = service.getPackageName()/>
     <#assign serviceType = service.getType()/>
-    <#if servicePackageName == "">
-        <#assign serviceFQN = serviceClassName/>
+    <#if mapping.getProperty( "serviceType" ) == "WSDL">
+        <#assign instanceTypeName = mapping.getProperty( "instance" )/>
     <#else>
-        <#assign serviceFQN = servicePackageName + "." + serviceClassName/>
+        <#if servicePackageName == "">
+            <#assign instanceTypeName = serviceClassName/>
+        <#else>
+            <#assign instanceTypeName = servicePackageName + "." + serviceClassName/>
+        </#if>
     </#if>
     /**
      *  This class implements the application server connectivity specific to the needs.
-     *  ${serviceFQN}
+     *  ${instanceTypeName}
      */
     public static class ${packageName?replace( ".", "_" )}_${serviceClassName}${method.getName()}${method.getRequestID()}Gateway implements InvocationAbstraction {
 
@@ -45,10 +49,10 @@ public class JavonGateways {
             ${paramType.getSerializer().instanceOf( mapping, paramType )} ${parameter.getName()} = ${paramType.getSerializer().fromObject( mapping, paramType, "Utility.readObject( input )" ) };
             </#list>
              
-            ${serviceFQN} instance = (${serviceFQN})session .getAttribute("${serviceFQN}");
+            ${instanceTypeName} instance = (${instanceTypeName})session .getAttribute("${instanceTypeName}");
             if (instance == null) {
-                instance = (${serviceFQN}) Class.forName("${serviceFQN}").newInstance();
-                session.setAttribute("${serviceFQN}", instance);
+                instance = (${instanceTypeName}) Class.forName("${instanceTypeName}").newInstance();
+                session.setAttribute("${instanceTypeName}", instance);
             }
             <#if method.getReturnType().getName() == "void">
             instance.${method.getName()}(<@paramList method/>);

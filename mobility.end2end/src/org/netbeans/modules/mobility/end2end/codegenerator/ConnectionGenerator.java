@@ -157,6 +157,11 @@ public class ConnectionGenerator {
             ph.progress( NbBundle.getMessage( ConnectionGenerator.class, "MSG_ScanningDataStructures" )); // NOI18N
             
             final JavonMappingImpl mapping = dataObject.getMapping();
+            if( Configuration.WSDLCLASS_TYPE.equals( config.getServiceType())) {
+                mapping.setProperty( "serviceType", "WSDL" );
+            } else {
+                mapping.setProperty( "serviceType", "CLASS" );
+            }
 //            //ph.progress(70);
             ph.progress( NbBundle.getMessage( ConnectionGenerator.class, "MSG_CreatingJavaFiles" )); // NOI18N
 //            
