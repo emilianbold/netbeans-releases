@@ -809,7 +809,6 @@ public final class DefaultPlugin extends JUnitPlugin {
         progress.displayStatusText(msg);
 
         final TestCreator testCreator = new TestCreator(params, junitVer);
-        final boolean isJUnit4 = (junitVer == JUnitVersion.JUNIT4);
         
         CreationResults results;
         try {
