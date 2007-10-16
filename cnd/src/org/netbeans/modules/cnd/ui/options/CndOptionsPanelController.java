@@ -102,7 +102,7 @@ public final class CndOptionsPanelController extends OptionsPanelController impl
     }
     
     public HelpCtx getHelpCtx() {
-        return new HelpCtx("cnd.optionsDialog.NEED_TOPIC!"); // NOI18N
+        return new HelpCtx("cnd.optionsDialog"); // NOI18N
     }
     
     public JComponent getComponent(Lookup lookup) {
