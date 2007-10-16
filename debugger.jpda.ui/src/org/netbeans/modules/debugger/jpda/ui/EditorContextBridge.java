@@ -169,7 +169,7 @@ public class EditorContextBridge {
                 }
             }
         } catch (java.awt.IllegalComponentStateException icsex) {}
-        return CLASS;
+        return null;
     }
 
     public static Object annotate (
