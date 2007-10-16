@@ -107,6 +107,7 @@ public class NodeTest extends JellyTestCase {
     private static Node sampleClass1Node;
     
     /** method called before each testcase */
+    @Override
     protected void setUp() {
         System.out.println("### "+getName()+" ###");
         if(projectRootNode == null) {
@@ -124,6 +125,7 @@ public class NodeTest extends JellyTestCase {
     }
     
     /** method called after each testcase */
+    @Override
     protected void tearDown() {
     }
     
@@ -279,7 +281,7 @@ public class NodeTest extends JellyTestCase {
         new NbDialogOperator(safeDeleteTitle).ok();
         try {
             Thread.sleep(1000);
-        } catch (Exception e){};
+        } catch (Exception e){}
         assertTrue(!node.isPresent());
     }
     
@@ -299,8 +301,7 @@ public class NodeTest extends JellyTestCase {
         final Node duplNode = new Node(sample1Node, "SampleClass11"); // NOI18N
         new Thread(new Runnable() {
             public void run() {
-                new DeleteAction().performAPI(duplNode);
-                new NbDialogOperator(safeDeleteTitle).ok();
+                performSafeDelete(duplNode);
             }
         }, "thread performing action through API").start(); // NOI18N
         duplNode.waitNotPresent();
@@ -313,8 +314,7 @@ public class NodeTest extends JellyTestCase {
         final Node duplNode = new Node(sample1Node, "SampleClass11");// NOI18N
         new Thread(new Runnable() {
             public void run() {
-                new DeleteAction().performAPI(duplNode);
-                new NbDialogOperator(safeDeleteTitle).ok();
+                performSafeDelete(duplNode);
             }
         }, "thread performing action through API").start(); // NOI18N
         sample1Node.waitChildNotPresent("SampleClass11");// NOI18N
@@ -361,6 +361,23 @@ public class NodeTest extends JellyTestCase {
         copyClassOper.waitClosed();
     }
     
+    /** Perform delete action and confirm refactoring dialog. */
+    private static void performSafeDelete(Node node) {
+        new DeleteAction().performAPI(node);
+        // wait for Safe Delete dialog
+        NbDialogOperator safeDeleteOper = new NbDialogOperator(safeDeleteTitle);
+        // "Cancel Safe Delete"
+        String cancelSafeDeleteLabel = Bundle.getString("org.netbeans.modules.refactoring.java.Bundle", "LBL_CancelAction", new String[] {safeDeleteTitle});
+        if(safeDeleteOper.btCancel().getText().equals(cancelSafeDeleteLabel)) {
+            // If it is "classpath scanning in progress" dialog, wait until it dismiss,
+            // and then wait for regular Safe Delete dialog
+            safeDeleteOper.waitClosed();
+            safeDeleteOper = new NbDialogOperator(safeDeleteTitle);
+        }
+        safeDeleteOper.ok();
+        safeDeleteOper.waitClosed();
+    }
+    
     /** Simulates wrong behaviour for action performing. */
     private static class ImmutableNode extends Node {
         
@@ -378,6 +395,7 @@ public class NodeTest extends JellyTestCase {
          * in Action.callPopup(). Then it is called second time and this time
          * it is delegated to super class which should retturn correct TreePath.
          */
+        @Override
         public TreePath getTreePath() {
             count++;
             if(count > 1) {
