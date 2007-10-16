@@ -165,7 +165,9 @@ final class FolderOrder extends Object implements Comparator<DataObject> {
     public void write () throws IOException {
         // Let it throw the IOException:
         //if (folder.getFileSystem ().isReadOnly ()) return; // cannot write to read-only FS
-        folder.setAttribute(DataFolder.EA_ORDER, null);
+        if (folder.getAttribute(DataFolder.EA_ORDER) != null) {
+            folder.setAttribute(DataFolder.EA_ORDER, null);
+        }
         if (order != null) {
             FileObject[] children = new FileObject[order.size()];
             for (Map.Entry<String,Integer> entry : order.entrySet()) {
