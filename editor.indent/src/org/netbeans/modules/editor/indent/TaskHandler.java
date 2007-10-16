@@ -339,15 +339,16 @@ public final class TaskHandler {
                     int endOffset = handler.endPos().getOffset();
                     if (endOffset >= doc.getLength())
                         endOffset = Integer.MAX_VALUE;
+                    int startOffset = handler.startPos().getOffset();
                     List<TokenSequence<?>> tsl = TokenHierarchy.get(doc).tokenSequenceList(languagePath,
-                            handler.startPos().getOffset(), endOffset);
+                            startOffset, endOffset);
                     for (TokenSequence<?> ts : tsl) {
                         ts.moveStart();
                         if (ts.moveNext()) { // At least one token
-                            int regionStartOffset = ts.offset();
+                            int regionStartOffset = Math.max(ts.offset(), startOffset);
                             ts.moveEnd(); // At least one token exists
                             ts.movePrevious();
-                            int regionEndOffset = ts.offset() + ts.token().length();
+                            int regionEndOffset = Math.min(ts.offset() + ts.token().length(), endOffset);
                             MutablePositionRegion region = new MutablePositionRegion(
                                     doc.createPosition(regionStartOffset),
                                     doc.createPosition(regionEndOffset)
