@@ -123,7 +123,7 @@ public class TopSecurityManager extends SecurityManager {
         allPermission = new AllPermission();
     }
 
-    public void checkExit(int status) throws SecurityException {
+    public @Override void checkExit(int status) throws SecurityException {
         if (! check) {
             return;
         }
@@ -158,11 +158,10 @@ public class TopSecurityManager extends SecurityManager {
         super.checkExit(status);
     }
 
-    public boolean checkTopLevelWindow(Object window) {
+    public @Override boolean checkTopLevelWindow(Object window) {
         synchronized (delegates) {
-            Iterator it = delegates.iterator();
-            while (it.hasNext()) {
-                ((SecurityManager)it.next()).checkTopLevelWindow(window);
+            for (SecurityManager sm : delegates) {
+                sm.checkTopLevelWindow(window);
             }
         }
         
@@ -193,7 +192,7 @@ public class TopSecurityManager extends SecurityManager {
      */
 
     /** Performance - all props accessible */
-    public final void checkPropertyAccess(String x) {
+    public @Override final void checkPropertyAccess(String x) {
         if ("netbeans.debug.exceptions".equals(x)) { // NOI18N
             // Get rid of this old system property.
             Class[] ctxt = getClassContext();
@@ -251,6 +250,7 @@ public class TopSecurityManager extends SecurityManager {
         warnedClassesNH.add ("org.netbeans.core.LookupCache"); // NOI18N
         warnedClassesNH.add ("org.netbeans.updater.UpdateTracking"); // NOI18N
         warnedClassesNH.add("org.netbeans.core.ui.ProductInformationPanel"); // #47429; NOI18N
+        warnedClassesNH.add("org.netbeans.lib.uihandler.LogFormatter");
     }
 
     /* ----------------- private methods ------------- */
@@ -259,18 +259,18 @@ public class TopSecurityManager extends SecurityManager {
      * The method is empty. This is not "secure", but on the other hand,
      * it reduces performance penalty of startup about 10%
      */
-    public void checkRead(String file) {
+    public @Override void checkRead(String file) {
         // XXX reconsider!
     }
     
-    public void checkRead(FileDescriptor fd) {
+    public @Override void checkRead(FileDescriptor fd) {
     }
 
-    public void checkWrite(FileDescriptor fd) {
+    public @Override void checkWrite(FileDescriptor fd) {
     }
 
     /** The method has awful performance in super class */
-    public void checkDelete(String file) {
+    public @Override void checkDelete(String file) {
         try {
             checkPermission(allPermission);
             return;
@@ -279,7 +279,7 @@ public class TopSecurityManager extends SecurityManager {
         }
     }
     /** The method has awful performance in super class */
-    public void checkWrite(String file) {
+    public @Override void checkWrite(String file) {
         try {
             checkPermission(allPermission);
             return;
@@ -289,7 +289,7 @@ public class TopSecurityManager extends SecurityManager {
     }
     
     /** Checks connect */
-    public void checkConnect(String host, int port) {
+    public @Override void checkConnect(String host, int port) {
         if (! check) {
             return;
         }
@@ -329,11 +329,11 @@ public class TopSecurityManager extends SecurityManager {
         }
     }
 
-    public void checkConnect(String s, int port, Object context) {
+    public @Override void checkConnect(String s, int port, Object context) {
         checkConnect(s, port);
     }
 
-    public void checkPermission(Permission perm) {
+    public @Override void checkPermission(Permission perm) {
         checkSetSecurityManager(perm);
         
         //
@@ -361,7 +361,7 @@ public class TopSecurityManager extends SecurityManager {
         return;
     }
     
-    public void checkPermission(Permission perm, Object context) {
+    public @Override void checkPermission(Permission perm, Object context) {
         checkSetSecurityManager(perm);
         return;
     }
