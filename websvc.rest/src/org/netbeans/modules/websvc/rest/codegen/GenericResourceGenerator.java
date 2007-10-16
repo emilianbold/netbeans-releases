@@ -74,7 +74,7 @@ import org.openide.util.NbBundle;
  */
 public class GenericResourceGenerator extends AbstractGenerator {
     public static final String RESOURCE_TEMPLATE = "Templates/WebServices/GenericResource.java"; //NOI18N
-    public static final String COMMENT_END_OF_GET = "TODO return proper representatin object";
+    public static final String COMMENT_END_OF_GET = "TODO return proper representation object";
     
     private FileObject destDir;
     private GenericResourceBean bean;
