@@ -73,7 +73,7 @@ public class SortSuiteModules extends Task {
     public void setUnsortedModules(Path unsortedModules) {
         this.unsortedModules = unsortedModules;
     }
-    
+
     private String sortedModulesProperty;
     /**
      * Set a property name in which to store a sorted path of module base directories.
@@ -81,7 +81,7 @@ public class SortSuiteModules extends Task {
     public void setSortedModulesProperty(String sortedModulesProperty) {
         this.sortedModulesProperty = sortedModulesProperty;
     }
-    
+
     /** Is enabled sorting test dependencies?
      */
     public boolean isSortTests() {
@@ -93,10 +93,10 @@ public class SortSuiteModules extends Task {
     public void setSortTests(boolean sortTests) {
         this.sortTests = sortTests;
     }
-    
+
     public SortSuiteModules() {}
-    
-    public void execute() throws BuildException {
+
+    public @Override void execute() throws BuildException {
         if (unsortedModules == null) {
             throw new BuildException("Must set unsortedModules");
         }
@@ -154,7 +154,7 @@ public class SortSuiteModules extends Task {
                 deps.add(cnb2);
             }
             buildDeps.put(cnb, deps);
-            
+
             // create test dependencies
             if (isSortTests()) {
                 Element testDepsEl = ParseProjectXml.findNBMElement(data,"test-dependencies");
@@ -201,24 +201,24 @@ public class SortSuiteModules extends Task {
         }
         getProject().setNewProperty(sortedModulesProperty, path.toString());
     }
-    
-    private static <String> boolean visit(String node, Map<String,List<String>> edges, Map<String,Boolean> finished, List<String> r) {
+
+    private static boolean visit(String node, Map<String,List<String>> edges, Map<String,Boolean> finished, List<String> r) {
         Boolean b = finished.get(node);
         if (b != null) {
             return b.booleanValue();
         }
         List<String> e = edges.get(node);
         if (e != null) {
-            finished.put(node, Boolean.FALSE);
+            finished.put(node, false);
             for (String s: e) {
                 if (!visit(s, edges, finished, r)) {
                     return false;
                 }
             }
         }
-        finished.put(node, Boolean.TRUE);
+        finished.put(node, true);
         r.add(node);
         return true;
     }
-    
+
 }
