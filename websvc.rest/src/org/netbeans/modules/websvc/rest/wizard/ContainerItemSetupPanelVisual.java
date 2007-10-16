@@ -402,7 +402,7 @@ private void containerRepresentationClassChanged(java.awt.event.KeyEvent evt) {/
     private void resourceNameChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_resourceNameChanged
     String newName = resourceNameTextField.getText();
     if (! resourceClassNameOveridden) {
-        classTextField.setText(newName + EntityResourcesGenerator.RESOURCE_SUFFIX);
+        classTextField.setText(Util.deriveResourceClassName(newName));
     }
 //    if (! uriOveridden) {
 //        String currentUri = uriTextField.getText();

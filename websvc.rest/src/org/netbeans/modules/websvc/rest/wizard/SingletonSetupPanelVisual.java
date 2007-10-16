@@ -194,9 +194,6 @@ public class SingletonSetupPanelVisual extends javax.swing.JPanel implements Abs
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 resourceNameChanged(evt);
             }
-            public void keyTyped(java.awt.event.KeyEvent evt) {
-                resourceNameChanged(evt);
-            }
         });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
@@ -341,7 +338,7 @@ private void uriChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_uriChang
 private void resourceNameChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_resourceNameChanged
     String newName = resourceNameTextField.getText();
     if (! resourceClassNameOveridden) {
-        classTextField.setText(Util.upperFirstChar(newName) + EntityResourcesGenerator.RESOURCE_SUFFIX);
+        classTextField.setText(Util.deriveResourceClassName(newName));
     }
     if (! uriOveridden) {
         uriTextField.setText(Util.lowerFirstChar(newName));

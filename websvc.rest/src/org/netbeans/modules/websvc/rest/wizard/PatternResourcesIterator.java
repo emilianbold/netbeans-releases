@@ -119,10 +119,9 @@ public class PatternResourcesIterator implements WizardDescriptor.InstantiatingI
     }
     
     private GenericResourceBean[] getPlainResourceBeans(WizardDescriptor wizard) {
-        String className = (String) wizard.getProperty(WizardProperties.RESOURCE_NAME);
+        String className = (String) wizard.getProperty(WizardProperties.RESOURCE_CLASS);
         String packageName = (String) wizard.getProperty(WizardProperties.RESOURCE_PACKAGE);
         String uriTemplate = (String) wizard.getProperty(WizardProperties.RESOURCE_URI);
-        String subResourceUriTemplate = (String) wizard.getProperty(WizardProperties.ITEM_RESOURCE_URI);
         MimeType[] mimeTypes = (MimeType[]) wizard.getProperty(WizardProperties.MIME_TYPES);
         String[] types = Util.ensureTypes((String[]) wizard.getProperty(WizardProperties.REPRESENTATION_TYPES));
         
@@ -133,7 +132,7 @@ public class PatternResourcesIterator implements WizardDescriptor.InstantiatingI
     }
     
     private GenericResourceBean[] getContainerItemBeans(WizardDescriptor wizard, HttpMethodType[] containerMethods) {
-        String className = (String) wizard.getProperty(WizardProperties.ITEM_RESOURCE_NAME);
+        String className = (String) wizard.getProperty(WizardProperties.ITEM_RESOURCE_CLASS);
         String packageName = (String) wizard.getProperty(WizardProperties.RESOURCE_PACKAGE);
         String uriTemplate = (String) wizard.getProperty(WizardProperties.ITEM_RESOURCE_URI);
         MimeType[] mimeTypes = (MimeType[]) wizard.getProperty(WizardProperties.ITEM_MIME_TYPES);

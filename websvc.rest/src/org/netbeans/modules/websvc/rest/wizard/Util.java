@@ -244,7 +244,7 @@ public class Util {
     }
     
     public static String deriveResourceClassName(String resourceName) {
-        return resourceName + EntityResourcesGenerator.RESOURCE_SUFFIX;
+        return upperFirstChar(resourceName) + EntityResourcesGenerator.RESOURCE_SUFFIX;
     }
 
     public static String deriveUri(String resourceName, String currentUri) {

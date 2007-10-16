@@ -422,7 +422,6 @@
       </AccessibilityProperties>
       <Events>
         <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="resourceNameChanged"/>
-        <EventHandler event="keyTyped" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="resourceNameChanged"/>
       </Events>
     </Component>
     <Component class="javax.swing.JSeparator" name="jSeparator2">
