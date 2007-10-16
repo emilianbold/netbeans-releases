@@ -172,7 +172,7 @@ made subject to such option by the copyright holder.
                 </a>
             </xsl:when>
             <xsl:otherwise>
-                <xsl:comment>This must be a reference releative to the arch page, if not see nbbuild/javadoctools/export2usecases.xsl
+                <xsl:comment>This must be a reference relative to the arch page, if not see nbbuild/javadoctools/export2usecases.xsl
             </xsl:comment>
                 <a>
                     <xsl:attribute name="href">
