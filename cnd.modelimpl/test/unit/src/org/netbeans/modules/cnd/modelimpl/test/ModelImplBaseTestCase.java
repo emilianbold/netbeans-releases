@@ -42,7 +42,6 @@
 package org.netbeans.modules.cnd.modelimpl.test;
 
 import java.io.File;
-import java.io.IOException;
 import org.netbeans.junit.Manager;
 import org.netbeans.modules.cnd.test.BaseTestCase;
 
