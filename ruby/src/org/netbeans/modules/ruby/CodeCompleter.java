@@ -66,17 +66,12 @@ import org.jruby.ast.ArgsNode;
 import org.jruby.ast.ArgumentNode;
 import org.jruby.ast.CallNode;
 import org.jruby.ast.ClassNode;
-import org.jruby.ast.ConstDeclNode;
-import org.jruby.ast.DAsgnNode;
 import org.jruby.ast.FCallNode;
-import org.jruby.ast.GlobalAsgnNode;
 import org.jruby.ast.ListNode;
 import org.jruby.ast.LocalAsgnNode;
 import org.jruby.ast.MethodDefNode;
-import org.jruby.ast.ModuleNode;
 import org.jruby.ast.Node;
 import org.jruby.ast.NodeTypes;
-import org.jruby.ast.SClassNode;
 import org.jruby.ast.types.INameNode;
 import org.jruby.lexer.yacc.ISourcePosition;
 import org.netbeans.api.gsf.CompilationInfo;
@@ -191,7 +186,7 @@ public class CodeCompleter implements Completable {
     private static final String KEY_INSTANCEOF = "instanceof"; // NOI18N
 
     /** Live code template parameter: compute an unused local variable name */
-    private static final String KEY_UNUSEDLOCAL = "unusedlocal"; // NOI18N
+    private static final String ATTR_UNUSEDLOCAL = "unusedlocal"; // NOI18N
 
     /** Live code template parameter: pipe variable, since | is a bit mishandled in the UI for editing abbrevs */
     private static final String KEY_PIPE = "pipe"; // NOI18N
@@ -217,7 +212,7 @@ public class CodeCompleter implements Completable {
     /** Live code template parameter: compute the full path of the source directory */
     private static final String KEY_PATH = "path"; // NOI18N
 
-    /** Default name values for KEY_UNUSEDLOCAL and friends */
+    /** Default name values for ATTR_UNUSEDLOCAL and friends */
     private static final String ATTR_DEFAULTS = "defaults"; // NOI18N
     private static final String[] RUBY_BUILTIN_VARS =
         new String[] {
@@ -3213,7 +3208,14 @@ public class CodeCompleter implements Completable {
         String name, Map params) {
         if (variable.equals(KEY_PIPE)) {
             return "||";
-        } else if (variable.equals(KEY_UNUSEDLOCAL)) {
+        }
+
+        // Old-style format - support temporarily
+        if (variable.equals(ATTR_UNUSEDLOCAL)) { // TODO REMOVEME
+            return suggestName(info, caretOffset, name, params);            
+        }
+
+        if (params != null && params.containsKey(ATTR_UNUSEDLOCAL)) {
             return suggestName(info, caretOffset, name, params);
         }
 

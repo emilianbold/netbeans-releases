@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE codetemplates PUBLIC "-//NetBeans//DTD Editor Code Templates settings 1.0//EN" "http://www.netbeans.org/dtds/EditorCodeTemplates-1_0.dtd">
 <codetemplates>
-    <!-- TODO Add unusedlocal and other logical parameters to some of the TM snippets -->
     <codetemplate abbreviation="l" descriptionId="ct_l" contexts="ruby">
 <code><![CDATA[=> ]]></code>
     </codetemplate>
@@ -10,7 +9,7 @@
 include_class '${0 default="package.class"}']]></code>
     </codetemplate>
     <codetemplate abbreviation="do" descriptionId="ct_do" contexts="ruby" uuid="4B72C5C3-6CA7-41AC-B2F9-51DEA25D469E">
-<code><![CDATA[do |${unusedlocal defaults="i,j,k"}|
+<code><![CDATA[do |${1 unusedlocal defaults="i,j,k"}|
   ${selection line}${cursor}
 end]]></code>
     </codetemplate>
@@ -34,7 +33,7 @@ end]]></code>
     <codetemplate abbreviation="begin" descriptionId="ct_begin" contexts="ruby">
 <code><![CDATA[begin
   ${selection line}${cursor}
-rescue ${Exception} => ${unusedlocal defaults="ex,boom,bang,var"}
+rescue ${Exception} => ${1 unusedlocal defaults="ex,boom,bang,var"}
   ${code}
 end]]></code>
   </codetemplate>
@@ -71,7 +70,7 @@ end]]>
   </codetemplate>
   <codetemplate abbreviation="Dir" descriptionId="ct_Dir" uuid="332AA973-AA71-48CB-AEE9-1D71E11019AC">
     <code>
-<![CDATA[Dir.glob() { |${3 default="file"}| ${cursor} }]]>
+<![CDATA[Dir.glob() { |${3 unusedlocal defaults="file,f,fl"}| ${cursor} }]]>
     </code>
   </codetemplate>
   <codetemplate abbreviation="Enum" descriptionId="ct_Enum" uuid="AAD5D511-6BE7-41DA-8F2B-1593A48FBB08">
@@ -85,7 +84,7 @@ end]]>
   </codetemplate>
   <codetemplate abbreviation="File" descriptionId="ct_File" uuid="8F594E5E-6F46-4E98-B5FB-1C8F3BA9828F">
     <code>
-<![CDATA[File.foreach("${1 default="path/to/file"}") { |${3 default="line"}| ${cursor} }]]>
+<![CDATA[File.foreach("${1 default="path/to/file"}") { |${3 unusedlocal defaults="line,l,ln"}| ${cursor} }]]>
     </code>
   </codetemplate>
   <codetemplate abbreviation="Forw-" descriptionId="ct_Forw-" uuid="7F46C90A-595B-4B83-A4F7-058F63CE4218">
@@ -95,17 +94,17 @@ end]]>
   </codetemplate>
   <codetemplate abbreviation="Hash" descriptionId="ct_Hash" uuid="E16EE658-1CA0-4950-954B-B962E50B754F">
     <code>
-<![CDATA[Hash.new { |${1 default="hash"}, ${2 default="key"}| ${1 editable="false"}[${2 editable="false"}] = ${cursor} }]]>
+<![CDATA[Hash.new { |${1 unusedlocal defaults="hash,h,hsh"}, ${2 unusedlocal defaults="key,k"}| ${1 editable="false"}[${2 editable="false"}] = ${cursor} }]]>
     </code>
   </codetemplate>
   <codetemplate abbreviation="Md" descriptionId="ct_Md" uuid="0CB48BCA-3F6E-4AE0-85BC-08A1D2508216">
     <code>
-<![CDATA[File.open("${1 default="path/to/file"}.dump", "w") { |${3 default="file"}| Marshal.dump(${4 default="obj"}, ${3 editable="false"}) }]]>
+<![CDATA[File.open("${1 default="path/to/file"}.dump", "w") { |${3 unusedlocal defaults="file,f,fl"}| Marshal.dump(${4 default="obj"}, ${3 editable="false"}) }]]>
     </code>
   </codetemplate>
   <codetemplate abbreviation="Ml" descriptionId="ct_Ml" uuid="20AAD0BC-075D-4EC0-9057-E3E5E62C4125">
     <code>
-<![CDATA[File.open("${1 default="path/to/file"}.dump") { |${3 default="file"}| Marshal.load(${3 editable="false"}) }]]>
+<![CDATA[File.open("${1 default="path/to/file"}.dump") { |${3 unusedlocal defaults="file,f,fl"}| Marshal.load(${3 editable="false"}) }]]>
     </code>
   </codetemplate>
   <codetemplate abbreviation="Pn-" descriptionId="ct_Pn-" uuid="5B46ECFD-23A4-4F0C-9951-F64C19C72C2B">
@@ -115,17 +114,17 @@ end]]>
   </codetemplate>
   <codetemplate abbreviation="Yd-" descriptionId="ct_Yd-" uuid="3BA6762A-BB6B-489E-8006-F30F386AEF48">
     <code>
-<![CDATA[File.open("${1 default="path/to/file"}.yaml", "w") { |${3 default="file"}| YAML.dump(${4 default="obj"}, ${3 editable="false"}) }]]>
+<![CDATA[File.open("${1 default="path/to/file"}.yaml", "w") { |${3 unusedlocal defaults="file,f,fl"}| YAML.dump(${4 default="obj"}, ${3 editable="false"}) }]]>
     </code>
   </codetemplate>
   <codetemplate abbreviation="Yl-" descriptionId="ct_Yl-" uuid="8343ACF4-EEB7-44B5-B835-94826466D4D5">
     <code>
-<![CDATA[File.open("${1 default="path/to/file"}.yaml") { |${3 default="file"}| YAML.load(${3 editable="false"}) }]]>
+<![CDATA[File.open("${1 default="path/to/file"}.yaml") { |${3 unusedlocal defaults="file,f,fl"}| YAML.load(${3 editable="false"}) }]]>
     </code>
   </codetemplate>
   <codetemplate abbreviation="all" descriptionId="ct_all" uuid="07D1F987-7CDB-4EAD-B64A-27A93051700E">
     <code>
-<![CDATA[all? { |${1 default="e"}| ${cursor} }]]>
+<![CDATA[all? { |${1 unusedlocal defaults="e,el,elmt,element"}| ${cursor} }]]>
     </code>
   </codetemplate>
   <codetemplate abbreviation="am" descriptionId="ct_am" uuid="988C8AEF-FC71-4455-9C4F-9338C05685A4">
@@ -135,7 +134,7 @@ end]]>
   </codetemplate>
   <codetemplate abbreviation="any" descriptionId="ct_any" uuid="A3B9B76B-2BC5-425C-AB24-9FAAFC375798">
     <code>
-<![CDATA[any? { |${1 default="e"}| ${cursor} }]]>
+<![CDATA[any? { |${1 unusedlocal defaults="e,el,elmt,element"}| ${cursor} }]]>
     </code>
   </codetemplate>
   <codetemplate abbreviation="app" descriptionId="ct_app" uuid="E16D24D2-CC7E-4786-BE0B-1725FC865D78">
@@ -253,7 +252,7 @@ end]]>
   </codetemplate>
   <codetemplate abbreviation="cl" descriptionId="ct_cl" uuid="5DA9E1E8-2C54-420A-9B84-B040A1AF2B9E">
     <code>
-<![CDATA[classify { |${1 default="e"}| ${cursor} }]]>
+<![CDATA[classify { |${1 unusedlocal defaults="e,el,elmt,element"}| ${cursor} }]]>
     </code>
   </codetemplate>
   <codetemplate abbreviation="cla" descriptionId="ct_cla" uuid="05DFF82C-5A29-4EBD-93FE-C165FFFB5EA8">
@@ -274,7 +273,7 @@ end]]>
   </codetemplate>
   <codetemplate abbreviation="col" descriptionId="ct_col" uuid="669A86AD-936F-4EDA-8E4E-6863804072DA">
     <code>
-<![CDATA[collect { |${1 default="e"}| ${cursor} }]]>
+<![CDATA[collect { |${1 unusedlocal defaults="e,el,elmt,element"}| ${cursor} }]]>
     </code>
   </codetemplate>
   <codetemplate abbreviation="dop" descriptionId="ct_dop">
@@ -329,62 +328,62 @@ end]]>
   </codetemplate>
   <codetemplate abbreviation="deli" descriptionId="ct_deli" uuid="263C94DC-63CF-4BA3-9692-C5582CA8F1AB">
     <code>
-<![CDATA[delete_if { |${1 default="e"}| ${cursor} }]]>
+<![CDATA[delete_if { |${1 unusedlocal defaults="e,el,elmt,element"}| ${cursor} }]]>
     </code>
   </codetemplate>
   <codetemplate abbreviation="det" descriptionId="ct_det" uuid="6C6B9849-9631-49FF-A9F9-F0E94A1512C5">
     <code>
-<![CDATA[detect { |${1 default="e"}| ${cursor} }]]>
+<![CDATA[detect { |${1 unusedlocal defaults="e,el,elmt,element"}| ${cursor} }]]>
     </code>
   </codetemplate>
   <codetemplate abbreviation="ea" descriptionId="ct_ea" uuid="ECBA4CA0-275F-460E-85BE-E82FEA2E2B26">
     <code>
-<![CDATA[each { |${1 default="e"}| ${cursor} }]]>
+<![CDATA[each { |${1 unusedlocal defaults="e,el,elmt,element"}| ${cursor} }]]>
     </code>
   </codetemplate>
   <codetemplate abbreviation="eab" descriptionId="ct_eab" uuid="338EC03D-3FF4-4435-94E8-1CEF20CEC75D">
     <code>
-<![CDATA[each_byte { |${1 default="byte"}| ${cursor} }]]>
+<![CDATA[each_byte { |${1 unusedlocal defaults="byte,b,bt"}| ${cursor} }]]>
     </code>
   </codetemplate>
   <codetemplate abbreviation="eac-" descriptionId="ct_eac-" uuid="FDD73070-6D32-4301-A86A-C55B77C3D8ED">
     <code>
-<![CDATA[each_char { |${1 default="chr"}| ${cursor} }]]>
+<![CDATA[each_char { |${1 unusedlocal defaults="chr,ch,c"}| ${cursor} }]]>
     </code>
   </codetemplate>
   <codetemplate abbreviation="eai" descriptionId="ct_eai" uuid="689120C9-AB40-4081-8268-9362E00FA4A0">
     <code>
-<![CDATA[each_index { |${1 default="i"}| ${cursor} }]]>
+<![CDATA[each_index { |${1 unusedlocal defaults="i,idx,index"}| ${cursor} }]]>
     </code>
   </codetemplate>
   <codetemplate abbreviation="eak" descriptionId="ct_eak" uuid="E54F7077-3C33-4B53-A4F7-21E16132D3AD">
     <code>
-<![CDATA[each_key { |${1 default="key"}| ${cursor} }]]>
+<![CDATA[each_key { |${1 unusedlocal defaults="key,k"}| ${cursor} }]]>
     </code>
   </codetemplate>
   <codetemplate abbreviation="eal" descriptionId="ct_eal" uuid="02913388-EE8E-4C55-AC94-94F3D751F47E">
     <code>
-<![CDATA[each_line${tabStop1 default=""} { |${2 default="line"}| ${cursor} }]]>
+<![CDATA[each_line${tabStop1 default=""} { |${2 unusedlocal defaults="line,l"}| ${cursor} }]]>
     </code>
   </codetemplate>
   <codetemplate abbreviation="eap" descriptionId="ct_eap" uuid="7A3CECED-452B-438E-A5C6-95B6BDC43243">
     <code>
-<![CDATA[each_pair { |${1 default="name"}, ${2 default="val"}| ${cursor} }]]>
+<![CDATA[each_pair { |${1 unusedlocal defaults="name,n"}, ${2 unusedlocal defaults="val,v,value"}| ${cursor} }]]>
     </code>
   </codetemplate>
   <codetemplate abbreviation="eas-" descriptionId="ct_eas-" uuid="CD748479-D2A4-4AB5-95BD-4C89512BA210">
     <code>
-<![CDATA[each_slice(${1 default="2"}) { |${2 default="group"}| ${cursor} }]]>
+<![CDATA[each_slice(${1 default="2"}) { |${2 unusedlocal defaults="group,grp,g"}| ${cursor} }]]>
     </code>
   </codetemplate>
   <codetemplate abbreviation="eav" descriptionId="ct_eav" uuid="844DBD70-BC23-4FBF-9C18-F4A610239DF2">
     <code>
-<![CDATA[each_value { |${1 default="val"}| ${cursor} }]]>
+<![CDATA[each_value { |${1 unusedlocal defaults="val,v,value"}| ${cursor} }]]>
     </code>
   </codetemplate>
   <codetemplate abbreviation="eawi" descriptionId="ct_eawi" uuid="1DD13CF5-39C0-4F10-B655-56DACEBC7F94">
     <code>
-<![CDATA[each_with_index { |${1 default="e"}, ${2 default="i"}| ${cursor} }]]>
+<![CDATA[each_with_index { |${1 unusedlocal defaults="e,el,elmt,element"}, ${2 unusedlocal defaults="i,idx,index"}| ${cursor} }]]>
     </code>
   </codetemplate>
   <codetemplate abbreviation="elsif" descriptionId="ct_elsif" uuid="CD1609FA-47DA-4EE4-9C5B-5C56D953F5B1">
@@ -401,12 +400,12 @@ end]]>
   </codetemplate>
   <codetemplate abbreviation="fin" descriptionId="ct_fin" uuid="E23FE534-8061-4828-98A5-46270B6910B0">
     <code>
-<![CDATA[find { |${1 default="e"}| ${cursor} }]]>
+<![CDATA[find { |${1 unusedlocal defaults="e,el,elmt,element"}| ${cursor} }]]>
     </code>
   </codetemplate>
   <codetemplate abbreviation="fina" descriptionId="ct_fina" uuid="197709C5-8382-4A59-B6D7-31A0CC0F23B7">
     <code>
-<![CDATA[find_all { |${1 default="e"}| ${cursor} }]]>
+<![CDATA[find_all { |${1 unusedlocal defaults="e,el,elmt,element"}| ${cursor} }]]>
     </code>
   </codetemplate>
   <codetemplate abbreviation="fl" descriptionId="ct_fl" uuid="DB457094-1AC9-4856-AEFC-43A9576B6775">
@@ -416,12 +415,12 @@ end]]>
   </codetemplate>
   <codetemplate abbreviation="flao" descriptionId="ct_flao" uuid="3DDB99C4-486D-4C11-A217-5680FDD8EC19">
     <code>
-<![CDATA[inject(Array.new) { |${1 default="arr"}, ${2 default="a"}| ${1 editable="false"}.push(*${2 editable="false"}) }]]>
+<![CDATA[inject(Array.new) { |${1 unusedlocal defaults="arr,array"}, ${2 default="a"}| ${1 editable="false"}.push(*${2 editable="false"}) }]]>
     </code>
   </codetemplate>
   <codetemplate abbreviation="gre" descriptionId="ct_gre" uuid="9D9E7BA3-8C5D-4532-83EA-326358C2F5BB">
     <code>
-<![CDATA[grep() { |${3 default="match"}| ${cursor} }]]>
+<![CDATA[grep() { |${3 unusedlocal defaults="match,m"}| ${cursor} }]]>
     </code>
   </codetemplate>
   <codetemplate abbreviation="loo" descriptionId="ct_loo" uuid="567E3D18-BF2B-4379-8927-2777EC9F495E">
@@ -431,12 +430,12 @@ end]]>
   </codetemplate>
   <codetemplate abbreviation="map" descriptionId="ct_map" uuid="5A3754FC-43A3-462B-AB42-E3E951872E6F">
     <code>
-<![CDATA[map { |${1 default="e"}| ${cursor} }]]>
+<![CDATA[map { |${1 unusedlocal defaults="e,el,elmt,element"}| ${cursor} }]]>
     </code>
   </codetemplate>
   <codetemplate abbreviation="mapwi-" descriptionId="ct_mapwi-" uuid="BD4CFD7B-1AC0-4569-9BDA-FD491F41F4E6">
     <code>
-<![CDATA[enum_with_index.map { |${1 default="e"}, ${2 default="i"}| ${cursor} }]]>
+<![CDATA[enum_with_index.map { |${1 unusedlocal defaults="e"}, ${2 unusedlocal default="i,idx,index"}| ${cursor} }]]>
     </code>
   </codetemplate>
   <codetemplate abbreviation="max" descriptionId="ct_max" uuid="98182B9E-7C61-4824-BE4C-9CD69C816037">
@@ -469,7 +468,7 @@ end]]>
   </codetemplate>
   <codetemplate abbreviation="par" descriptionId="ct_par" uuid="52B8BF63-F09E-4789-8407-06168A8AE666">
     <code>
-<![CDATA[partition { |${1 default="e"}| ${cursor} }]]>
+<![CDATA[partition { |${1 unusedlocal defaults="e,el,elmt,element"}| ${cursor} }]]>
     </code>
   </codetemplate>
   <codetemplate abbreviation="patfh" descriptionId="ct_patfh" uuid="A4E89D97-D5ED-48BB-B5FF-1BFB79211FCD">
@@ -495,7 +494,7 @@ end]]>
   </codetemplate>
   <codetemplate abbreviation="rej" descriptionId="ct_rej" uuid="B79B9DAB-ABEF-44F6-BF7E-635E7BA11DFD">
     <code>
-<![CDATA[reject { |${1 default="e"}| ${cursor} }]]>
+<![CDATA[reject { |${1 unusedlocal defaults="e,el,elmt,element"}| ${cursor} }]]>
     </code>
   </codetemplate>
   <codetemplate abbreviation="rep" descriptionId="ct_rep" uuid="1C60D589-DD46-4109-90CA-6B34AEA2F298">
@@ -510,7 +509,7 @@ end]]>
   </codetemplate>
   <codetemplate abbreviation="reve" descriptionId="ct_reve" uuid="F3C5F719-EF03-4FF7-A777-4A8402FE3B6B">
     <code>
-<![CDATA[reverse_each { |${1 default="e"}| ${cursor} }]]>
+<![CDATA[reverse_each { |${1 unusedlocal defaults="e,el,elmt,element"}| ${cursor} }]]>
     </code>
   </codetemplate>
   <codetemplate abbreviation="rw" descriptionId="ct_rw" uuid="D7A7D3C9-1714-4C50-8CC0-D83A03883E8F">
@@ -520,12 +519,12 @@ end]]>
   </codetemplate>
   <codetemplate abbreviation="sca" descriptionId="ct_sca" uuid="66802933-B49F-479B-9DF9-1D898FF1FA90">
     <code>
-<![CDATA[scan(/${1 default="pattern"}/) { |${2 default="match"}| ${cursor} }]]>
+<![CDATA[scan(/${1 default="pattern"}/) { |${2 unusedlocal defaults="match,m"}| ${cursor} }]]>
     </code>
   </codetemplate>
   <codetemplate abbreviation="sel" descriptionId="ct_sel" uuid="4E409AA4-E7D4-46B7-A4E9-E32F992B33E9">
     <code>
-<![CDATA[select { |${1 default="e"}| ${cursor} }]]>
+<![CDATA[select { |${1 unusedlocal defaults="e,el,elmt,element"}| ${cursor} }]]>
     </code>
   </codetemplate>
   <codetemplate abbreviation="sin" descriptionId="ct_sin" uuid="B46D35B8-5DEB-4C10-A110-BA1965A2EB9C">
@@ -540,7 +539,7 @@ end]]>
   </codetemplate>
   <codetemplate abbreviation="sorb" descriptionId="ct_sorb" uuid="BA9440C9-36C3-4031-BB61-67B581D5B179">
     <code>
-<![CDATA[sort_by { |${1 default="e"}| ${cursor} }]]>
+<![CDATA[sort_by { |${1 unusedlocal defaults="e,el,elmt,element"}| ${cursor} }]]>
     </code>
   </codetemplate>
   <codetemplate abbreviation="tc" descriptionId="ct_tc" uuid="31D1F145-33AB-4441-BA11-4D1C46928C4C">
@@ -567,7 +566,7 @@ require "tc_${2 default="test_case_file"}"
   </codetemplate>
   <codetemplate abbreviation="uni" descriptionId="ct_uni" uuid="8CEF9711-88D5-4202-AFB9-29EF4EFD25C1">
     <code>
-<![CDATA[ARGF.each_line${tabStop1 default=""} do |${2 default="line"}|
+<![CDATA[ARGF.each_line${tabStop1 default=""} do |${2 unusedlocal defaults="line,l"}|
 	${cursor}
 end]]>
     </code>
@@ -625,7 +624,7 @@ end]]>
   </codetemplate>
   <codetemplate abbreviation="zip" descriptionId="ct_zip" uuid="FD010022-E0E7-44DB-827F-33F7D9310DA2">
     <code>
-<![CDATA[zip(${1 default="enums"}) { |${2 default="row"}| ${cursor} }]]>
+<![CDATA[zip(${1 default="enums"}) { |${2 unusedlocal defaults="row,r"}| ${cursor} }]]>
     </code>
   </codetemplate>
   
