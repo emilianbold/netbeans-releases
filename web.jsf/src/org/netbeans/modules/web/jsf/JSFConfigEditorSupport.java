@@ -367,7 +367,10 @@ public class JSFConfigEditorSupport extends DataEditorSupport
         try {
             // synchronize the model with the document. See issue #116315
             JSFConfigModel configModel = ConfigurationUtils.getConfigModel(dataObject.getPrimaryFile(), true);
-            configModel.sync();
+            if (configModel != null) {
+                // the model can be null, if the file wasn't opened.
+                configModel.sync();
+            }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
