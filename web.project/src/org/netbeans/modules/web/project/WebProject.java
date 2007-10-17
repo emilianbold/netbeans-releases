@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.web.project;
 
-import com.sun.org.apache.xerces.internal.impl.xs.SubstitutionGroupHandler;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -58,12 +57,10 @@ import javax.swing.JButton;
 import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.web.api.webmodule.WebFrameworks;
 import org.netbeans.modules.web.project.api.WebPropertyEvaluator;
 import org.netbeans.modules.web.project.jaxws.WebProjectJAXWSClientSupport;
 import org.netbeans.modules.web.project.jaxws.WebProjectJAXWSSupport;
 import org.netbeans.modules.web.project.spi.BrokenLibraryRefFilterProvider;
-import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.modules.websvc.jaxws.spi.JAXWSSupportFactory;
@@ -138,7 +135,6 @@ import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesSupportFactory;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -147,7 +143,7 @@ import org.openide.util.RequestProcessor;
  * Represents one plain Web project.
  * @author Jesse Glick, et al., Pavel Buzek
  */
-public final class WebProject implements Project, AntProjectListener, FileChangeListener, PropertyChangeListener {
+public final class WebProject implements Project, AntProjectListener, PropertyChangeListener {
     
     private static final Logger LOGGER = Logger.getLogger(WebProject.class.getName());
     
@@ -161,7 +157,6 @@ public final class WebProject implements Project, AntProjectListener, FileChange
     private final GeneratedFilesHelper genFilesHelper;
     private final Lookup lookup;
     private final ProjectWebModule webModule;
-    private FileObject libFolder = null;
     private CopyOnSaveSupport css;
     private WebModule apiWebModule;
     private WebServicesSupport apiWebServicesSupport;
@@ -486,44 +481,8 @@ public final class WebProject implements Project, AntProjectListener, FileChange
             return apiJAXWSClientSupport;
     }
     
-    public void fileAttributeChanged (org.openide.filesystems.FileAttributeEvent fe) {
-    }    
-    
-    public void fileChanged (org.openide.filesystems.FileEvent fe) {
-    }
-    
-    public void fileDataCreated (org.openide.filesystems.FileEvent fe) {
-        FileObject fo = fe.getFile ();
-        checkLibraryFolder (fo);
-    }
-    
-    public void fileDeleted (org.openide.filesystems.FileEvent fe) {
-    }
-    
-    public void fileFolderCreated (org.openide.filesystems.FileEvent fe) {
-    }
-    
-    public void fileRenamed (org.openide.filesystems.FileRenameEvent fe) {
-        FileObject fo = fe.getFile ();
-        checkLibraryFolder (fo);
-    }
-    
     public WebProjectProperties getWebProjectProperties() {
         return new WebProjectProperties (this, updateHelper, eval, refHelper);
-    }
-
-    private void checkLibraryFolder (FileObject fo) {
-        if (!FileUtil.isArchiveFile(fo))
-            return;
-        
-        if (fo.getParent ().equals (libFolder)) {
-            try {
-                classPathExtender.addArchiveFile(fo);
-            }
-            catch (IOException e) {
-                Exceptions.printStackTrace(e);
-            }
-        }
     }
 
     /** Return configured project name. */
