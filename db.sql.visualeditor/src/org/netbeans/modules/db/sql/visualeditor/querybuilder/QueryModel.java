@@ -494,6 +494,7 @@ class QueryModel {
             expr = this.removeConditionFromExpression(removePred, expr);
             if ( expr == null ) {
                 where.resetExpression();
+                _query.setWhere(null);
             }
             else {
                 where.replaceExpression(expr);
@@ -592,8 +593,10 @@ class QueryModel {
                 return;
 
             expr = removeCriteriaFromExpression(tableSpec, columnName, expr, recurseLevel);
-            if ( expr == null )
+            if (expr == null) {
                 where.resetExpression();
+                _query.setWhere(null);
+            }
             else 
                 where.replaceExpression(expr);
         }
