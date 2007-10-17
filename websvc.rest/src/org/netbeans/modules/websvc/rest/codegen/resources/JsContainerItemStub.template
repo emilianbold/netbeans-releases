@@ -34,7 +34,7 @@ __FIELDS_INIT__
 
    flush : function() {
       var remote = new __GENERIC_NAME__Remote(this.uri);
-      return remote.putJson(this.toString());
+      return remote.putJson('{'+this.toString()+'}');
    },
 
    delete_ : function() {
@@ -46,12 +46,11 @@ __FIELDS_INIT__
       if(!this.initialized)
          this.init();
       var myObj = 
-         '{"__GENERIC_PATH_NAME__":'+
+         '"__GENERIC_PATH_NAME__":'+
          '{'+
          '"@uri":"'+this.uri+'",'+
          __FIELDS_TOSTRING__
-         '}'+
-      '}';
+         '}';
       return myObj;
    },
 

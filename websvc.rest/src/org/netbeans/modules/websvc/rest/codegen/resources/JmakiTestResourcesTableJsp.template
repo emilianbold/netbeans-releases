@@ -8,14 +8,28 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <title>__CONTAINER_NAME__ table JMaki widget showing RestStore Dojo Component</title>
+        <title>Resource table JMaki widget</title>
     </head>
     <body>
-    <h1>__CONTAINER_NAME__ table JMaki widget showing RestStore Dojo Component</h1>
-    
-    
-    <a:widget name="dojo.rest.__CONTAINER_PATH_NAME__table" service="http://localhost:8080/__PROJECT_NAME__/resources/__CONTAINER_PATH_NAME__/" />
-
-    
+        <% 
+            String p = request.getParameter("r"); 
+            if(p == null) 
+                p = "__CONTAINER_NAME__";
+        %>
+        <h2><%=p%> table JMaki widget</h2>
+        <script language="JavaScript">
+            function submitForm()
+            {
+              document.resourceForm.submit();
+            }
+        </script>
+        <form name="resourceForm" action="./TestResourcesTable.jsp" method="post">
+            Select Resource:
+            <select name=r  onchange='javascript:submitForm();'>
+__JMAKI_RESOURCE_SELECT_LIST__
+            </select>
+        </form>
+        <br/><br/>
+__JMAKI_RESOURCE_TAG_LIST__
     </body>
 </html>

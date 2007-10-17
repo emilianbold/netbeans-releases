@@ -19,7 +19,7 @@ djd43.declare("rdj.data.__CONTAINER_NAME__Store", djd43.data.core.RemoteStore, {
 },
     _setupQueryRequest:function (result, requestKw) {
 	var start = 1;
-	var max = -1;
+	var max = 100;
 	if (result) {
 		start = result.start || start;
 		max = result.max || max;
@@ -108,7 +108,7 @@ djd43.declare("rdj.data.__CONTAINER_NAME__Store", djd43.data.core.RemoteStore, {
                     var f = fields[j];
                     ci[f] = _refData[f];
                  }
-                 jsonStr += ci.toString();
+                 jsonStr = '{' + ci.toString() + '}';
             }            
             requestKw.url = this._serverSaveUrl;
             requestKw.headers = {

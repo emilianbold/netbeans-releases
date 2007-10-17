@@ -518,6 +518,10 @@ public class ClientStubModel {
             return getName() != null && getName().endsWith("Ref");
         }
         
+        public boolean isEntity() {
+            return this.src != null;
+        }
+        
         protected JavaSource getSource() {
             return this.src;
         }

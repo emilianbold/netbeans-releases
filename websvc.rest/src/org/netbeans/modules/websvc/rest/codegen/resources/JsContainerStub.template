@@ -60,12 +60,12 @@ __CONTAINER_NAME__.prototype = {
 
    flush : function() {
       var remote = new __CONTAINER_NAME__Remote(this.uri);
-      remote.postJson(this.toString());
+      remote.postJson('{'+this.toString()+'}');
    },
 
    flush : function(__CONTAINER_ITEM_PATH_NAME__) {
       var remote = new __CONTAINER_NAME__Remote(this.uri);
-      return remote.postJson(__CONTAINER_ITEM_PATH_NAME__.toString());
+      return remote.postJson('{'+__CONTAINER_ITEM_PATH_NAME__.toString()+'}');
    },
 
    toString : function() {
@@ -73,6 +73,8 @@ __CONTAINER_NAME__.prototype = {
          this.init();
       var s = '';
       var j = 0;
+      if(this.items.length > 1)
+          s = s + '[';
       for(j=0;j<this.items.length;j++) {
          var c = this.items[j];
          if(j<this.items.length-1)
@@ -80,12 +82,13 @@ __CONTAINER_NAME__.prototype = {
          else
             s = s + '{"@uri":"'+c.getUri()+'", "__CONTAINER_ITEM_PATH_NAME__Id":{"$":"'+findIdFromUrl(c.getUri())+'"}}';
       }
+      if(this.items.length > 1)
+          s = s + ']';
       var myObj = 
-         '{"__CONTAINER_PATH_NAME__":{'+
+         '"__CONTAINER_PATH_NAME__":{'+
             '"@uri":"'+this.getUri()+'",'+
-            '"__CONTAINER_ITEM_PATH_NAME__Ref":['+s+']'+
-          '}'+
-         '}';
+            '"__CONTAINER_ITEM_PATH_NAME__Ref":'+s+''+
+          '}';
       return myObj;
    }
 

@@ -1,6 +1,6 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-	<title>__CONTAINER_NAME__ table widget showing RestStore Dojo Component</title>
+	<title>Resource table widget</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"></meta>
 	<!--<script type="text/javascript">
 		var djConfig = {
@@ -11,19 +11,42 @@
 	<script type="text/javascript" src="../../resources/libs/dojo/v0.4.3/djd43.js"></script>
         <script type="text/javascript" src="./Support.js"></script>
 	<script type="text/javascript">
+                var store = "__CONTAINER_NAME__";
+                var baseUrl2 = "http://localhost:8080/__PROJECT_NAME__/resources/";
+                var storeUrl = baseUrl2 + "__CONTAINER_PATH_NAME__/";
 		function loadResourcesTable() {
-			var restStore = new rdj.data.__CONTAINER_NAME__Store({serviceUrl:"http://localhost:8080/__PROJECT_NAME__/resources/__CONTAINER_PATH_NAME__/"});
-			var tableElement = djd43.byId("content");
-			var query = null;
-			rdj.displayResourcesTable(restStore, query, tableElement);
+                    var restStore = eval('new rdj.data.'+store+'Store({serviceUrl:"'+storeUrl+'"})');
+                    var tableElement = djd43.byId("content");
+                    var query = null;
+                    rdj.displayResourcesTable(restStore, query, tableElement);
 		}		
 		djd43.addOnLoad(loadResourcesTable);
+
+                function changeResource() {
+                    var sel = djd43.byId("resourceSel");
+                    store = sel.value;
+                    storeUrl = baseUrl2 + store.substring(0,1).toLowerCase()+store.substring(1) + "/";
+                    var actions = djd43.byId("actions");
+                    if(actions != null)
+                        actions.innerHTML = '';
+                    var content = djd43.byId("content");
+                    if(content != null)
+                        content.innerHTML = '';
+                    loadResourcesTable();
+		}
 	</script>
 </head>
 <body>
-	<h1>__CONTAINER_NAME__ table widget showing RestStore Dojo Component</h1>
+	<h2>Resources table widget</h2>
+        Select Resource: 
+        <select id='resourceSel' name='resourceSel' onchange='javascript:changeResource();'>
+__DOJO_RESOURCE_SELECT_LIST__
+        </select>
+        <br/>
+        <br/>
         <table id="content" style="width: 500px; height: 100px;" class="resourcesTable"></table>
 	<p>&nbsp;</p>
 	<!--<h2>djd43.debug output</h2>-->
 </body>
 </html>
+
