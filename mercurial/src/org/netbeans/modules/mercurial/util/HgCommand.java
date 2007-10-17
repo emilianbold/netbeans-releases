@@ -62,6 +62,7 @@ import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.mercurial.HgModuleConfig;
+import org.netbeans.modules.mercurial.ui.pull.PullAction;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 
@@ -1857,6 +1858,9 @@ public class HgCommand {
     private static void handleError(List<String> command, List<String> list, String message) throws HgException{
         Mercurial.LOG.log(Level.WARNING, "command: " + command); // NOI18N
         Mercurial.LOG.log(Level.WARNING, "output: " + list); // NOI18N
+        
+        HgUtils.outputMercurialTabInRed(NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ERR")); // NOI18N
+        HgUtils.outputMercurialTab(NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_INFO_ERR", command, list)); // NOI18N
 
         throw new HgException(message);
     }
