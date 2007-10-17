@@ -42,7 +42,6 @@
 package org.netbeans.lib.java.lexer;
 
 import org.netbeans.api.java.lexer.JavaStringTokenId;
-import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
@@ -83,41 +82,62 @@ public class JavaStringLexer implements Lexer<JavaStringTokenId> {
                         return token(JavaStringTokenId.TEXT);
                     else
                         return null;
-                case '\\':
+                case '\\': //NOI18N
                     if (input.readLength() > 1) {// already read some text
                         input.backup(1);
                         return tokenFactory.createToken(JavaStringTokenId.TEXT, input.readLength());
                     }
                     switch (ch = input.read()) {
-                        case 'b':
+                        case 'b': //NOI18N
                             return token(JavaStringTokenId.BACKSPACE);
-                        case 'f':
+                        case 'f': //NOI18N
                             return token(JavaStringTokenId.FORM_FEED);
-                        case 'n':
+                        case 'n': //NOI18N
                             return token(JavaStringTokenId.NEWLINE);
-                        case 'r':
+                        case 'r': //NOI18N
                             return token(JavaStringTokenId.CR);
-                        case 't':
+                        case 't': //NOI18N
                             return token(JavaStringTokenId.TAB);
-                        case '\'':
+                        case '\'': //NOI18N
                             return token(JavaStringTokenId.SINGLE_QUOTE);
-                        case '"':
+                        case '"': //NOI18N
                             return token(JavaStringTokenId.DOUBLE_QUOTE);
-                        case '\\':
+                        case '\\': //NOI18N
                             return token(JavaStringTokenId.BACKSLASH);
-                        case '0': case '1': case '2': case '3':
+                        case 'u': //NOI18N
+                            while ('u' == (ch = input.read())) {}; //NOI18N
+                            
+                            for(int i = 0; ; i++) {
+                                ch = Character.toLowerCase(ch);
+                                
+                                if ((ch < '0' || ch > '9') && (ch < 'a' || ch > 'f')) { //NOI18N
+                                    input.backup(1);
+                                    return token(JavaStringTokenId.UNICODE_ESCAPE_INVALID);
+                                }
+                             
+                                if (i == 3) { // four digits checked, valid sequence
+                                    return token(JavaStringTokenId.UNICODE_ESCAPE);
+                                }
+                                
+                                ch = input.read();
+                            }
+                            
+                        case '0': case '1': case '2': case '3': //NOI18N
                             switch (input.read()) {
-                                case '0': case '1': case '2': case '3':
-                                case '4': case '5': case '6': case '7':
+                                case '0': case '1': case '2': case '3': //NOI18N
+                                case '4': case '5': case '6': case '7': //NOI18N
                                     switch (input.read()) {
-                                        case '0': case '1': case '2': case '3':
-                                        case '4': case '5': case '6': case '7':
+                                        case '0': case '1': case '2': case '3': //NOI18N
+                                        case '4': case '5': case '6': case '7': //NOI18N
                                             return token(JavaStringTokenId.OCTAL_ESCAPE);
                                     }
+                                    input.backup(1);
                                     return token(JavaStringTokenId.OCTAL_ESCAPE_INVALID);
                             }
+                            input.backup(1);
                             return token(JavaStringTokenId.OCTAL_ESCAPE_INVALID);
                     }
+                    input.backup(1);
                     return token(JavaStringTokenId.ESCAPE_SEQUENCE_INVALID);
             } // end of switch (ch)
         } // end of while(true)

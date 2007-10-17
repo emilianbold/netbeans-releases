@@ -60,18 +60,20 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
  */
 public enum JavaStringTokenId implements TokenId {
 
-    TEXT("string"),
-    BACKSPACE("string-escape"),
-    FORM_FEED("string-escape"),
-    NEWLINE("string-escape"),
-    CR("string-escape"),
-    TAB("string-escape"),
-    SINGLE_QUOTE("string-escape"),
-    DOUBLE_QUOTE("string-escape"),
-    BACKSLASH("string-escape"),
-    OCTAL_ESCAPE("string-escape"),
-    OCTAL_ESCAPE_INVALID("string-escape-invalid"),
-    ESCAPE_SEQUENCE_INVALID("string-escape-invalid");
+    TEXT("string"), //NOI18N
+    BACKSPACE("string-escape"), //NOI18N
+    FORM_FEED("string-escape"), //NOI18N
+    NEWLINE("string-escape"), //NOI18N
+    CR("string-escape"), //NOI18N
+    TAB("string-escape"), //NOI18N
+    SINGLE_QUOTE("string-escape"), //NOI18N
+    DOUBLE_QUOTE("string-escape"), //NOI18N
+    BACKSLASH("string-escape"), //NOI18N
+    OCTAL_ESCAPE("string-escape"), //NOI18N
+    OCTAL_ESCAPE_INVALID("string-escape-invalid"), //NOI18N
+    UNICODE_ESCAPE("string-escape"), //NOI18N
+    UNICODE_ESCAPE_INVALID("string-escape-invalid"), //NOI18N
+    ESCAPE_SEQUENCE_INVALID("string-escape-invalid"); //NOI18N
 
     private final String primaryCategory;
 
@@ -105,7 +107,7 @@ public enum JavaStringTokenId implements TokenId {
 
         @Override
         protected String mimeType() {
-            return "text/x-java-string";
+            return "text/x-java-string"; //NOI18N
         }
     }.language();
 
