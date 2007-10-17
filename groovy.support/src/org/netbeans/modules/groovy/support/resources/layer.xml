@@ -12,6 +12,7 @@
             <file name="org-netbeans-modules-groovy-support-resources-mime-resolver.xml" url="mime-resolver.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.support.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/groovy/support/resources/script.gif"/>
+                <attr name="position" intvalue="281"/>
             </file>
         </folder>
     </folder>
