@@ -61,6 +61,9 @@ made subject to such option by the copyright holder.
                            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/visualweb/samples/bundled/ui/resources/webProjectIcon.gif"/>
                            <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.visualweb.samples.bundled.wizard.SamplesWebWizardIterator.createIterator"/>
                         </file>
+                        <!--
+                        #119117: Remove bundled samples that are not working
+                        disable non-working samples for Beta2
                         <file name="SinglePageCrudTable" url="SinglePageCrudTable.zip">
                            <attr name="template" boolvalue="true"/>
                            <attr name="templateCategory" stringvalue="web-types"/>
@@ -79,6 +82,7 @@ made subject to such option by the copyright holder.
                            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/visualweb/samples/bundled/ui/resources/webProjectIcon.gif"/>
                            <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.visualweb.samples.bundled.wizard.SamplesWebWizardIterator.createIterator"/>
                         </file>
+                        -->
                         <file name="TwoPageCrudTable" url="TwoPageCrudTable.zip">
                            <attr name="template" boolvalue="true"/>
                            <attr name="templateCategory" stringvalue="web-types"/>
