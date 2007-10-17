@@ -1657,6 +1657,7 @@ public class Reformatter implements ReformatTask {
                         if (idx >= 0)
                             tokenText = tokenText.substring(idx + 1);
                         col += getCol(tokenText);
+                        indentComment();
                         after = 2; //javadoc comment
                         break;
                     case BLOCK_COMMENT:
@@ -1689,6 +1690,7 @@ public class Reformatter implements ReformatTask {
                         if (idx >= 0)
                             tokenText = tokenText.substring(idx + 1);
                         col += getCol(tokenText);
+                        indentComment();
                         after = 0;
                         break;
                     default:
@@ -1782,6 +1784,7 @@ public class Reformatter implements ReformatTask {
                         if (idx >= 0)
                             tokenText = tokenText.substring(idx + 1);
                         col += getCol(tokenText);
+                        indentComment();
                         after = 2; //javadoc comment
                         break;
                     case BLOCK_COMMENT:
@@ -1822,6 +1825,7 @@ public class Reformatter implements ReformatTask {
                         if (idx >= 0)
                             tokenText = tokenText.substring(idx + 1);
                         col += getCol(tokenText);
+                        indentComment();
                         after = 0;
                         break;
                     default:
@@ -1914,6 +1918,7 @@ public class Reformatter implements ReformatTask {
                             }
                             lastToken = null;
                         }
+                        indentComment();
                         after = 3;
                         break;
                     case JAVADOC_COMMENT:
@@ -1950,6 +1955,7 @@ public class Reformatter implements ReformatTask {
                             if (text.length() > 0)
                                 diffs.addFirst(new Diff(tokens.offset(), tokens.offset(), text));
                         }
+                        indentComment();
                         count = 0;
                         after = 2;
                         break;
@@ -2152,6 +2158,23 @@ public class Reformatter implements ReformatTask {
                 }
             }
             indent = old;
+        }
+        
+        private void indentComment() {
+            if (tokens.token().id() != BLOCK_COMMENT && tokens.token().id() != JAVADOC_COMMENT)
+                return;
+            String indent = getIndent();
+            String text = tokens.token().text().toString();
+            int idx = 0;
+            while ((idx = text.indexOf('\n', idx)) >= 0) { //NOI18N
+                int i = idx + 1;
+                while(text.charAt(i) <= ' ') //NOI18N
+                    i++;
+                String s = text.charAt(i) == '*' ? indent + SPACE : indent;
+                if (!s.equals(text.substring(idx + 1, i)))
+                    diffs.addFirst(new Diff(tokens.offset() + idx + 1, tokens.offset() + i, s)); //NOI18N
+                idx = i;
+            }
         }
 
         private String getSpaces(int count) {
