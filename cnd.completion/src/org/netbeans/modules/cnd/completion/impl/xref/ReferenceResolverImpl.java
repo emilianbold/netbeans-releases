@@ -83,6 +83,7 @@ public class ReferenceResolverImpl extends CsmReferenceResolver {
         return ref;
     }
     
+    @Override
     public CsmReference findReference(Node activatedNode) {
         assert activatedNode != null : "activatedNode must be not null";
         EditorCookie cookie = activatedNode.getCookie(EditorCookie.class);
@@ -103,6 +104,12 @@ public class ReferenceResolverImpl extends CsmReferenceResolver {
             }
         }
         return null;
+    }
+    
+
+    @Override
+    public Scope fastCheckScope(CsmReference ref) {
+        return Scope.UNKNOWN;
     }
     
     private BaseDocument getDocument(CsmFile file) {
