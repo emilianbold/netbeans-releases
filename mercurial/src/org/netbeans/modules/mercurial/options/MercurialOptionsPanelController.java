@@ -120,7 +120,7 @@ final class MercurialOptionsPanelController extends OptionsPanelController imple
     }
     
     public HelpCtx getHelpCtx() {
-        return null; // new HelpCtx("...ID") if you have a help set  // NOI18N
+        return new HelpCtx(MercurialOptionsPanelController.class);
     }
     
     public JComponent getComponent(Lookup masterLookup) {

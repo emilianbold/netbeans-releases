@@ -9,9 +9,30 @@
     <mapID target="org.netbeans.modules.mercurial.import" url="mercurial-import.html" />
     <mapID target="org.netbeans.modules.mercurial.diffviewer" url="mercurial-diffviewer.html" />
     
+    <mapID target="org.netbeans.modules.mercurial.ui.diff.DiffTopComponent" url="mercurial-diffviewer.html" />
+    <mapID target="org.netbeans.modules.mercurial.ui.commit.CommitAction" url="mercurial-commit.html" />
+    
+    <mapID target="org.netbeans.modules.mercurial.ui.status.HgVersioningTopComponent" url="mercurial-statuswindow.html" />
+    <mapID target="org.netbeans.modules.mercurial.ui.status.OpenVersioningAction" url="mercurial-statuswindow.html" />
+    <mapID target="org.netbeans.modules.mercurial.ui.status.ShowAllChangesAction" url="mercurial-statuswindow.html" />
+
     <mapID target="org.netbeans.modules.mercurial.cloneother" url="mercurial-cloneother.html" />
     <mapID target="org.netbeans.modules.mercurial.ui.wizards.CloneWizardAction" url="mercurial-cloneother.html" />
     <mapID target="org.netbeans.modules.mercurial.ui.wizards.CloneRepositoryWizardPanel" url="mercurial-cloneother.html" />
     <mapID target="org.netbeans.modules.mercurial.ui.wizards.CloneDestinationDirectoryWizardPanel" url="mercurial-cloneother.html" />
     <mapID target="org.netbeans.modules.mercurial.ui.clone.CloneCompletedPanel" url="mercurial-cloneother.html" />
+    
+    <!-- TBD - need specific java help pages for following -->
+    <mapID target="org.netbeans.modules.mercurial.ui.clone.Clone" url="mercurial-about.html" />   
+    <mapID target="org.netbeans.modules.mercurial.options.MercurialOptionsPanelController" url="mercurial-about.html" />
+    <mapID target="org.netbeans.modules.mercurial.ui.properties.PropertiesAction" url="mercurial-about.html" />
+    
+    <mapID target="org.netbeans.modules.mercurial.ui.diff.ExportDiff" url="mercurial-about.html" />
+    <mapID target="org.netbeans.modules.mercurial.ui.pull.PullOtherAction" url="mercurial-about.html" />
+    <mapID target="org.netbeans.modules.mercurial.ui.push.PushOtherAction" url="mercurial-about.html" />
+    
+    <mapID target="org.netbeans.modules.mercurial.ui.merge.MergeRevisions" url="mercurial-about.html" />
+    <mapID target="org.netbeans.modules.mercurial.ui.update.RevertModifications" url="mercurial-about.html" />
 </map>
+
+
