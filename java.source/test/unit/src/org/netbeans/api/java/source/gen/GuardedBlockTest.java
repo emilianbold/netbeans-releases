@@ -60,6 +60,7 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.java.guards.JavaGuardedSectionsFactory;
+import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.spi.editor.guards.GuardedEditorSupport;
 import org.netbeans.spi.editor.guards.GuardedSectionsFactory;
@@ -138,8 +139,9 @@ public class GuardedBlockTest extends GeneratorTestMDRCompat {
 //        MockServices.setServices(GuardedDataLoader.class);
         GuardedDataLoader loader = GuardedDataLoader.findObject(GuardedDataLoader.class, true);
         SourceUtilsTestUtil.prepareTest(new String[0], new Object[] {repository, loader, cpp, new MimeDataProvider() {
+            
             public Lookup getLookup(MimePath mimePath) {
-                return Lookups.singleton(new JavaGuardedSectionsFactory());
+                return Lookups.fixed(new JavaGuardedSectionsFactory(), new JavaKit());
             }
         }});
         JEditorPane.registerEditorKitForContentType("text/x-java", "org.netbeans.modules.editor.java.JavaKit");
@@ -151,7 +153,7 @@ public class GuardedBlockTest extends GeneratorTestMDRCompat {
     /**
      * #90424: Guarded Exception
      */
-    public void XtestAddMethodAfterVariables() throws Exception {
+    public void testAddMethodAfterVariables() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, 
             "package javaapplication5;\n" +
@@ -166,7 +168,7 @@ public class GuardedBlockTest extends GeneratorTestMDRCompat {
             "    \n" +
             "    // Variables declaration - do not modify//GEN-BEGIN:variables\n" +
             "    private javax.swing.JButton jButton1;\n" +
-            "    // End of variables declaration//GEN-END:variables\n" +
+            "    // End of variablesdeclaration//GEN-END:variables\n" +
             "}\n"
         );
         DataObject dataObject = DataObject.find(FileUtil.toFileObject(testFile));
