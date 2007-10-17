@@ -59,6 +59,7 @@ import org.openide.util.UserQuestionException;
 import org.openide.windows.*;
 
 import java.awt.Font;
+import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.print.PageFormat;
 import java.awt.print.Pageable;
@@ -2253,6 +2254,14 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                 }
 
                 caret.setDot(offset);
+
+                try { // scroll to show reasonable part of the document
+                    Rectangle r = ePane.modelToView(offset);
+                    r.height *= 5; 
+                    ePane.scrollRectToVisible(r);
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         }
         t.addTaskListener(new Selector());
