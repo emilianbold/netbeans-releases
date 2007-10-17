@@ -56,6 +56,7 @@ import org.netbeans.jellytools.RuntimeTabOperator;
 import org.netbeans.jellytools.actions.CopyAction;
 import org.netbeans.jellytools.actions.DeleteAction;
 import org.netbeans.jellytools.actions.PasteActionNoBlock;
+import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
@@ -366,15 +367,15 @@ public class NodeTest extends JellyTestCase {
         new DeleteAction().performAPI(node);
         // wait for Safe Delete dialog
         NbDialogOperator safeDeleteOper = new NbDialogOperator(safeDeleteTitle);
-        // "Cancel Safe Delete"
-        String cancelSafeDeleteLabel = Bundle.getString("org.netbeans.modules.refactoring.java.Bundle", "LBL_CancelAction", new String[] {safeDeleteTitle});
-        if(safeDeleteOper.btCancel().getText().equals(cancelSafeDeleteLabel)) {
-            // If it is "classpath scanning in progress" dialog, wait until it dismiss,
+        try {
+            safeDeleteOper.ok();
+        } catch (TimeoutExpiredException e) {
+            // It is "classpath scanning in progress" dialog, wait until it dismiss,
             // and then wait for regular Safe Delete dialog
             safeDeleteOper.waitClosed();
             safeDeleteOper = new NbDialogOperator(safeDeleteTitle);
+            safeDeleteOper.ok();
         }
-        safeDeleteOper.ok();
         safeDeleteOper.waitClosed();
     }
     
