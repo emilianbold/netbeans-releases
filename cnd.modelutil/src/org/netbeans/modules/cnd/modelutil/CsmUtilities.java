@@ -241,9 +241,7 @@ public class CsmUtilities {
             JEditorPane[] panes = getOpenedPanesInEQ(ec);
             if (panes != null && panes.length>0) {
                 Document doc = panes[0].getDocument();
-                if (doc instanceof BaseDocument){
-                    return getCsmFile((BaseDocument)doc, waitParsing);
-                }
+                return getCsmFile(doc, waitParsing);
             }
         }
         return null;
@@ -270,7 +268,7 @@ public class CsmUtilities {
         return panes[0];
     }
     
-    public static File getFile(BaseDocument bDoc) {
+    public static File getFile(Document bDoc) {
         DataObject dobj = NbEditorUtilities.getDataObject(bDoc);
         if (dobj != null && dobj.isValid()) {
             FileObject fo = dobj.getPrimaryFile();
@@ -282,7 +280,7 @@ public class CsmUtilities {
         return null;
     }
     
-    public static CsmFile getCsmFile(BaseDocument bDoc, boolean waitParsing) {
+    public static CsmFile getCsmFile(Document bDoc, boolean waitParsing) {
 	CsmFile csmFile = null;
 	try {
 	    csmFile = getCsmFile(NbEditorUtilities.getDataObject(bDoc), waitParsing);
@@ -292,7 +290,7 @@ public class CsmUtilities {
 	return csmFile;
     }
     
-    public static CsmProject getCsmProject(BaseDocument bDoc) {
+    public static CsmProject getCsmProject(Document bDoc) {
 	CsmProject csmProject = null;
 	try {
 	    csmProject = getCsmFile(bDoc, false).getProject();
@@ -793,126 +791,7 @@ public class CsmUtilities {
 	return sb.toString();
     }
     
-    //-------------------------------------------------------------------------
-    
-    
-//    public static List/*<CsmDeclaration*/ findFunctionLocalVariables(BaseDocument doc, int offset) {
-//        CsmFile file = CsmUtilities.getCsmFile(doc);
-//        CsmContext context = CsmOffsetResolver.findContext(file, offset);
-//        return CsmContextUtilities.findFunctionLocalVariables(context);
-//    }
-//    
-//    public static List/*<CsmDeclaration*/ findClassFields(BaseDocument doc, int offset) {
-//        CsmClass clazz = findClassOnPosition(doc, offset);
-//        List res = null;
-//        if (clazz != null) {
-//            res = new CsmProjectContentResolver().getFields(clazz, false);
-//        }
-//        return res;
-//    }
-//    
-//    public static List/*<CsmDeclaration*/ findFileVariables(BaseDocument doc, int offset) {
-//        CsmFile file = CsmUtilities.getCsmFile(doc);
-//        CsmContext context = CsmOffsetResolver.findContext(file, offset);
-//        return CsmContextUtilities.findFileLocalVariables(context);
-//    }
-//    
-//    public static List/*<CsmDeclaration*/ findGlobalVariables(BaseDocument doc, int offset) {
-//        CsmProject prj = CsmUtilities.getCsmProject(doc);
-//        if (prj == null) {
-//            return null;
-//        }
-//        return CsmContextUtilities.findGlobalVariables(prj);
-//    }
-//
-//    public static CsmClass findClassOnPosition(BaseDocument doc, int offset) {
-//        CsmFile file = CsmUtilities.getCsmFile(doc);
-//        CsmContext context = CsmOffsetResolver.findContext(file, offset);
-//        CsmClass clazz = CsmContextUtilities.getClass(context);
-//        return clazz;
-//    }
-//
-//    public static CsmObject findItemAtCaretPos(JTextComponent target, int dotPos){
-//        Completion completion = ExtUtilities.getCompletion(target);
-//        if (completion != null) {
-//            if (completion.isPaneVisible()) { // completion pane visible
-//                CsmObject item = getAssociatedObject(completion.getSelectedValue());
-//                if (item != null) {
-//                    return item;
-//                }
-//            } else { // pane not visible
-//                try {
-//                    SyntaxSupport sup = Utilities.getSyntaxSupport(target);
-//                    NbCsmCompletionQuery query = (NbCsmCompletionQuery)completion.getQuery();
-//
-////                    int dotPos = target.getCaret().getDot();
-//                    BaseDocument doc = (BaseDocument)target.getDocument();
-//                    int[] idFunBlk = NbEditorUtilities.getIdentifierAndMethodBlock(doc, dotPos);
-//
-//                    if (idFunBlk == null) {
-//                        idFunBlk = new int[] { dotPos, dotPos };
-//                    }
-//
-//                    for (int ind = idFunBlk.length - 1; ind >= 1; ind--) {
-//                        CompletionQuery.Result result = query.query(target, idFunBlk[ind], sup, true);
-//                        if (result != null && result.getData().size() > 0) {
-//                            CsmObject itm = getAssociatedObject(result.getData().get(0));
-//                            if (result.getData().size() > 1 && (CsmKindUtilities.isFunction(itm))) {
-//                                // It is overloaded method, lets check for the right one
-//                                int endOfMethod = findEndOfMethod(target, idFunBlk[ind]);
-//                                if (endOfMethod > -1){
-//                                    CompletionQuery.Result resultx = query.query(target, endOfMethod, sup, true);
-//                                    if (resultx != null && resultx.getData().size() > 0) {
-//                                        return getAssociatedObject(resultx.getData().get(0));
-//                                    }
-//                                }
-//                            }
-//                            return itm;
-//                        }
-//                    }
-//                } catch (BadLocationException e) {
-//                }
-//            }
-//        }
-//        // Complete the messages
-//        return null;
-//
-//    }
-//
-//    private static CsmObject getAssociatedObject(Object item) {
-//        if (item instanceof CsmResultItem){
-//            CsmObject ret = (CsmObject) ((CsmResultItem)item).getAssociatedObject();
-//            // for constructors return class
-//            if (CsmKindUtilities.isConstructor(ret)) {
-//                ret = ((CsmConstructor)ret).getContainingClass();
-//            }
-//            if (ret != null) {
-//                return ret;
-//            }
-//        }
-//        return null;
-//    }
-//
-//    static int findEndOfMethod(JTextComponent textComp, int startPos){
-//        try{
-//            int level = 0;
-//            BaseDocument doc = (BaseDocument)textComp.getDocument();
-//            for(int i = startPos;  i<textComp.getDocument().getLength(); i++){
-//                char ch = doc.getChars(i, 1)[0];
-//                if (ch == ';') return -1;
-//                if (ch == '(') level++;
-//                if (ch == ')'){
-//                    level--;
-//                    if (level == 0){
-//                        return i+1;
-//                    }
-//                }
-//            }
-//            return -1;
-//        } catch (BadLocationException e) {
-//            return -1;
-//        }
-//    }    
+    //-----------------------------------------------------------------
 
     private static final class FileTarget implements CsmOffsetable {
         private CsmFile file;
