@@ -469,50 +469,8 @@ jarsigner.storepass=${jarsigner.storepass}
             </fileset>
         </delete>
     </target>
-    
-    <target name="-build">
-        <delete dir="${output.dir}"/>
-        
-        <mkdir dir="${output.dir}"/>
-        <mkdir dir="${output.dir}/bundles"/>
-        <mkdir dir="${output.dir}/components"/>
-        <mkdir dir="${output.dir}/img"/>
-        <mkdir dir="${output.dir}/js"/>
-        <mkdir dir="${output.dir}/css"/>
-        
-        <property name="engine.dist.file.name" value="nbi-engine.jar"/>
-        
-        <echo message="BUILDING CORE ENGINE ======================================"/>
-        <ant dir="${nbi.core.dir}/infra/build/engine" target="build-all">
-            <property 
-                name="basedir" 
-                value="${nbi.core.dir}/infra/build/engine"/>
-            <property 
-                name="environment.properties" 
-                value="${environment.properties}"/>
-            
-            <property
-                name="build.native"
-                value="false"/>
-            <property 
-                name="cvs.module" 
-                value="${core.module.name}"/>
-        </ant>
-        
-        <echo message="BUILDING NETBEANS ENGINE =================================="/>
-        <ant dir="${nbi.netbeans.dir}/infra/build/engine" target="release-all">
-            <property 
-                name="basedir" 
-                value="${nbi.netbeans.dir}/infra/build/engine"/>
-            <property 
-                name="environment.properties" 
-                value="${environment.properties}"/>
-            
-            <property 
-                name="core.engine.dist.file" 
-                value="${nbi.core.dir}/infra/build/engine/dist/${engine.dist.file.name}"/>
-        </ant>
-        
+
+    <target name="build-netbeans">
         <echo message="BUILDING NB-IDE-GROUP ====================================="/>
         <!--
         <ant dir="${nbi.netbeans.dir}/infra/build/groups/nb-ide-group" target="release-all">
@@ -748,7 +706,9 @@ jarsigner.storepass=${jarsigner.storepass}
                 name="release.parent.platforms"
                 value=""/>
         </ant>
+     </target>
 
+     <target name="build-runtimes">
         <echo message="BUILDING RUNTIMES-GROUP ==================================="/>
         <ant dir="${nbi.netbeans.dir}/infra/build/groups/runtimes-group" target="release-all">
             <property 
@@ -867,9 +827,9 @@ jarsigner.storepass=${jarsigner.storepass}
                 name="release.parent.platforms"
                 value=""/>
         </ant>
-        
-        
-        <!--
+    </target>
+
+    <target name="build-javaeesdk">        
 	<echo message="BUILDING SJSAM ============================================"/>
         <ant dir="${nbi.netbeans.dir}/infra/build/products/sjsam" target="release-all">
             <property 
@@ -893,8 +853,6 @@ jarsigner.storepass=${jarsigner.storepass}
                 name="release.parent.platforms"
                 value=""/>
         </ant>
-        -->
-        
         
         <!--
 	<echo message="BUILDING SWDP ============================================="/>
@@ -921,7 +879,7 @@ jarsigner.storepass=${jarsigner.storepass}
                 value=""/>
         </ant>
         -->
-        <!--
+
         <echo message="BUILDING JAVAEESDK: FIRSTCUP =============================="/>        
         <ant dir="${nbi.netbeans.dir}/infra/build/products/javaeesdk-firstcup" target="release-all">
             <property 
@@ -1089,8 +1047,9 @@ jarsigner.storepass=${jarsigner.storepass}
                 name="release.parent.platforms"
                 value=""/>
         </ant>
-	-->
-	<!--
+     </target>
+
+     <target name="build-wtk">
 	<echo message="BUILDING WTK ======================================="/>
         <ant dir="${nbi.netbeans.dir}/infra/build/products/wtk" target="release-all">
             <property 
@@ -1114,9 +1073,9 @@ jarsigner.storepass=${jarsigner.storepass}
                 name="release.parent.platforms"
                 value=""/>
         </ant>
-        -->
+     </target>
 
-        <!--
+     <target name="build-jdk">
         <echo message="BUILDING JDK5 ========================================"/>
         <ant dir="${nbi.netbeans.dir}/infra/build/products/jdk" antfile="build_jdk5.xml" target="release-all">
             <property 
@@ -1163,17 +1122,11 @@ jarsigner.storepass=${jarsigner.storepass}
                 name="release.parent.platforms"
                 value=""/>
         </ant>
-	-->
+    </target>    
 
 
-
-        <export-registry 
-            root="${output.dir}/registry-temp" 
-            destination="${output.dir}/registry" 
-            codebase="http://bits.netbeans.org/download/6.0/nightly/${build.number}/registry"/>
-
-        <property name="welcome.type" value="NWP.welcome.page.type"/>
-
+  
+    <target name="generate-netbeans-javase-bundles">
         <!-- JavaSE bundles -->        
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="windows" 
@@ -1217,8 +1170,22 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
 	    <bundleProperty name="${welcome.type}" value="javase"/>
         </create-bundle>
-
-
+        <antcall target="zip-to-tgz">
+            <param name="input.file"  value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-javase-macosx-x86.zip"/>
+            <param name="output.file" value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-javase-macosx-x86.tgz"/>
+        </antcall>
+        <antcall target="zip-to-tgz">
+            <param name="input.file"  value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-javase-macosx-ppc.zip"/>
+            <param name="output.file" value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-javase-macosx-ppc.tgz"/>
+        </antcall>
+	<delete>
+            <fileset dir="${output.dir}/bundles">
+		<include name="${nb.files.prefix}-${build.number}-javase-macosx-*zip"/>
+            </fileset>
+        </delete>
+    </target>
+    
+    <target name="generate-netbeans-javaee-bundles">
         <!-- JavaEE bundles -->
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="windows" 
@@ -1280,7 +1247,22 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="tomcat" version="6.0.14.0.0"/>
 	    <bundleProperty name="${welcome.type}" value="javaee"/>
         </create-bundle>
-
+	<antcall target="zip-to-tgz">
+            <param name="input.file"  value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-javaee-macosx-x86.zip"/>
+            <param name="output.file" value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-javaee-macosx-x86.tgz"/>
+        </antcall>
+        <antcall target="zip-to-tgz">
+            <param name="input.file"  value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-javaee-macosx-ppc.zip"/>
+            <param name="output.file" value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-javaee-macosx-ppc.tgz"/>
+        </antcall>
+        <delete>
+            <fileset dir="${output.dir}/bundles">
+		<include name="${nb.files.prefix}-${build.number}-javaee-macosx-*zip"/>
+            </fileset>
+        </delete>
+    </target>
+    
+    <target name="generate-netbeans-javame-bundles">
         <!-- JavaME bundles (only for windows and linux) -->
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="windows" 
@@ -1298,7 +1280,9 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-javame" version="6.0.0.0.${build.number}"/>
 	    <bundleProperty name="${welcome.type}" value="javame"/>
         </create-bundle>
-
+    </target>
+    
+    <target name="generate-netbeans-ruby-bundles">
         <!-- Ruby bundles -->
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="windows" 
@@ -1342,8 +1326,22 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-ruby" version="6.0.0.0.${build.number}"/>
 	    <bundleProperty name="${welcome.type}" value="ruby"/>
         </create-bundle>
-
-
+        <antcall target="zip-to-tgz">
+            <param name="input.file"  value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-ruby-macosx-x86.zip"/>
+            <param name="output.file" value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-ruby-macosx-x86.tgz"/>
+        </antcall>
+        <antcall target="zip-to-tgz">
+            <param name="input.file"  value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-ruby-macosx-ppc.zip"/>
+            <param name="output.file" value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-ruby-macosx-ppc.tgz"/>
+        </antcall>
+        <delete>
+            <fileset dir="${output.dir}/bundles">
+		<include name="${nb.files.prefix}-${build.number}-ruby-macosx-*zip"/>
+            </fileset>
+        </delete>
+    </target>
+    
+    <target name="generate-netbeans-cpp-bundles">
         <!-- C/C++ bundles -->
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="windows" 
@@ -1387,7 +1385,22 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-cnd" version="6.0.0.0.${build.number}"/>
 	    <bundleProperty name="${welcome.type}" value="cnd"/>
         </create-bundle>
-
+        <antcall target="zip-to-tgz">
+            <param name="input.file"  value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-cpp-macosx-x86.zip"/>
+            <param name="output.file" value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-cpp-macosx-x86.tgz"/>
+        </antcall>
+        <antcall target="zip-to-tgz">
+            <param name="input.file"  value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-cpp-macosx-ppc.zip"/>
+            <param name="output.file" value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-cpp-macosx-ppc.tgz"/>
+        </antcall>
+	<delete>
+            <fileset dir="${output.dir}/bundles">
+		<include name="${nb.files.prefix}-${build.number}-cpp-macosx-*zip"/>
+            </fileset>
+        </delete>
+    </target>
+    
+    <target name="generate-netbeans-full-bundles">
         <!-- Full bundles -->
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="windows" 
@@ -1493,79 +1506,23 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="sjsam" version="5.0.3.${glassfish.milestone.number}.${sjsam.build.number}"/>
             -->
         </create-bundle>
-        
-	<!-- JavaSE + JDK5 bundles --> 
-	<!--       
-        <create-bundle root="${output.dir}/registry-temp" 
-                       platform="windows" 
-                       target="${output.dir}/bundles/jdk-1_5_0_13-${nb.files.prefix}-${build.number}-javase-windows.exe">
-            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
-	    <component uid="jdk" version="1.5.0.13.5"/>
-	    <bundleProperty name="${welcome.type}" value="javase"/>
-        </create-bundle>
-        <create-bundle root="${output.dir}/registry-temp" 
-                       platform="linux" 
-                       target="${output.dir}/bundles/jdk-1_5_0_13-${nb.files.prefix}-${build.number}-javase-linux.sh">
-            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
-	    <component uid="jdk" version="1.5.0.13.5"/>
-	    <bundleProperty name="${welcome.type}" value="javase"/>
-        </create-bundle>
-        <create-bundle root="${output.dir}/registry-temp" 
-                       platform="solaris-x86" 
-                       target="${output.dir}/bundles/jdk-1_5_0_13-${nb.files.prefix}-${build.number}-javase-solaris-x86.sh">
-            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
-	    <component uid="jdk" version="1.5.0.13.5"/>
-	    <bundleProperty name="${welcome.type}" value="javase"/>
-        </create-bundle>
-        <create-bundle root="${output.dir}/registry-temp" 
-                       platform="solaris-sparc" 
-                       target="${output.dir}/bundles/jdk-1_5_0_13-${nb.files.prefix}-${build.number}-javase-solaris-sparc.sh">
-            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
-	    <component uid="jdk" version="1.5.0.13.5"/>
-	    <bundleProperty name="${welcome.type}" value="javase"/>
-        </create-bundle>
-        -->
-        <!-- JavaSE + JDK6 bundles -->
-	<!--        
-        <create-bundle root="${output.dir}/registry-temp" 
-                       platform="windows" 
-                       target="${output.dir}/bundles/jdk6-u3-${nb.files.prefix}-${build.number}-javase-windows.exe">
-            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
-	    <component uid="jdk" version="1.6.0.3.5"/>
-	    <bundleProperty name="${welcome.type}" value="javase"/>
-        </create-bundle>
-        <create-bundle root="${output.dir}/registry-temp" 
-                       platform="linux" 
-                       target="${output.dir}/bundles/jdk6-u3-${nb.files.prefix}-${build.number}-javase-linux.sh">
-            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
-	    <component uid="jdk" version="1.6.0.3.5"/>
-	    <bundleProperty name="${welcome.type}" value="javase"/>
-        </create-bundle>
-        <create-bundle root="${output.dir}/registry-temp" 
-                       platform="solaris-x86" 
-                       target="${output.dir}/bundles/jdk6-u3-${nb.files.prefix}-${build.number}-javase-solaris-x86.sh">
-            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
-	    <component uid="jdk" version="1.6.0.3.5"/>
-	    <bundleProperty name="${welcome.type}" value="javase"/>
-        </create-bundle>
-        <create-bundle root="${output.dir}/registry-temp" 
-                       platform="solaris-sparc" 
-                       target="${output.dir}/bundles/jdk6-u3-${nb.files.prefix}-${build.number}-javase-solaris-sparc.sh">
-            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
-	    <component uid="jdk" version="1.6.0.3.5"/>
-	    <bundleProperty name="${welcome.type}" value="javase"/>
-        </create-bundle>
-        -->
-        <!-- Java Tools Bundle installer -->
-	<!--
+        <antcall target="zip-to-tgz">
+            <param name="input.file"  value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-macosx-x86.zip"/>
+            <param name="output.file" value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-macosx-x86.tgz"/>
+        </antcall>
+        <antcall target="zip-to-tgz">
+            <param name="input.file"  value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-macosx-ppc.zip"/>
+            <param name="output.file" value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-macosx-ppc.tgz"/>
+        </antcall>
+        <delete>
+            <fileset dir="${output.dir}/bundles">
+		<include name="${nb.files.prefix}-${build.number}-macosx-*zip"/>
+            </fileset>
+        </delete>
+    </target>
+
+    <target name="generate-javatoolsbundle-bundles">
+	<!-- Java Tools Bundle installer -->
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="windows" 
                        target="${output.dir}/bundles/java-tools-bundle-preview3-nightly-${build.number}-windows.exe">
@@ -1674,51 +1631,6 @@ jarsigner.storepass=${jarsigner.storepass}
 	    <component uid="portletcontainer" version="${portletcontainer.macro.number}.${portletcontainer.micro.number}.0.${portletcontainer.milestone.number}.${portletcontainer.build.number}"/>
 	    <component uid="wsrp" version="1.0.0.${wsrp.milestone.number}.${wsrp.build.number}"/>
         </create-bundle>
-	-->
-
-        <antcall target="zip-to-tgz">
-            <param name="input.file"  value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-javase-macosx-x86.zip"/>
-            <param name="output.file" value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-javase-macosx-x86.tgz"/>
-        </antcall>
-        <antcall target="zip-to-tgz">
-            <param name="input.file"  value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-javase-macosx-ppc.zip"/>
-            <param name="output.file" value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-javase-macosx-ppc.tgz"/>
-        </antcall>
-	<antcall target="zip-to-tgz">
-            <param name="input.file"  value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-javaee-macosx-x86.zip"/>
-            <param name="output.file" value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-javaee-macosx-x86.tgz"/>
-        </antcall>
-        <antcall target="zip-to-tgz">
-            <param name="input.file"  value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-javaee-macosx-ppc.zip"/>
-            <param name="output.file" value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-javaee-macosx-ppc.tgz"/>
-        </antcall>
-        <antcall target="zip-to-tgz">
-            <param name="input.file"  value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-ruby-macosx-x86.zip"/>
-            <param name="output.file" value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-ruby-macosx-x86.tgz"/>
-        </antcall>
-        <antcall target="zip-to-tgz">
-            <param name="input.file"  value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-ruby-macosx-ppc.zip"/>
-            <param name="output.file" value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-ruby-macosx-ppc.tgz"/>
-        </antcall>
-        <antcall target="zip-to-tgz">
-            <param name="input.file"  value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-cpp-macosx-x86.zip"/>
-            <param name="output.file" value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-cpp-macosx-x86.tgz"/>
-        </antcall>
-        <antcall target="zip-to-tgz">
-            <param name="input.file"  value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-cpp-macosx-ppc.zip"/>
-            <param name="output.file" value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-cpp-macosx-ppc.tgz"/>
-        </antcall>
-        <antcall target="zip-to-tgz">
-            <param name="input.file"  value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-macosx-x86.zip"/>
-            <param name="output.file" value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-macosx-x86.tgz"/>
-        </antcall>
-        <antcall target="zip-to-tgz">
-            <param name="input.file"  value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-macosx-ppc.zip"/>
-            <param name="output.file" value="${output.dir}/bundles/${nb.files.prefix}-${build.number}-macosx-ppc.tgz"/>
-        </antcall>
-
-	<!-- Java Tools Bundle installers processing -->
-	<!--
         <antcall target="zip-to-tgz">
             <param name="input.file"  value="${output.dir}/bundles/java-tools-bundle-preview3-nightly-${build.number}-macosx-x86.zip"/>
             <param name="output.file" value="${output.dir}/bundles/java-tools-bundle-preview3-nightly-${build.number}-macosx-x86.tgz"/>
@@ -1727,7 +1639,140 @@ jarsigner.storepass=${jarsigner.storepass}
             <param name="input.file"  value="${output.dir}/bundles/java-tools-bundle-preview3-nightly-${build.number}-macosx-ppc.zip"/>
             <param name="output.file" value="${output.dir}/bundles/java-tools-bundle-preview3-nightly-${build.number}-macosx-ppc.tgz"/>
         </antcall>
-        -->
+
+        <delete>
+            <fileset dir="${output.dir}/bundles">
+		<include name="java-tools-bundle-preview3-nightly-${build.number}-macosx*zip"/>
+            </fileset>
+        </delete>
+    </target>
+
+    <target name="generate-jdk-bundles">
+	<!-- JavaSE + JDK5 bundles --> 
+        <mkdir dir="${output.dir}/bundles/jdk"/>
+        <create-bundle root="${output.dir}/registry-temp" 
+                       platform="windows" 
+                       target="${output.dir}/bundles/jdk/jdk-1_5_0_13-${nb.files.prefix}-${build.number}-javase-windows.exe">
+            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
+            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
+	    <component uid="jdk" version="1.5.0.13.5"/>
+	    <bundleProperty name="${welcome.type}" value="javase"/>
+        </create-bundle>
+        <create-bundle root="${output.dir}/registry-temp" 
+                       platform="linux" 
+                       target="${output.dir}/bundles/jdk/jdk-1_5_0_13-${nb.files.prefix}-${build.number}-javase-linux.sh">
+            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
+            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
+	    <component uid="jdk" version="1.5.0.13.5"/>
+	    <bundleProperty name="${welcome.type}" value="javase"/>
+        </create-bundle>
+        <create-bundle root="${output.dir}/registry-temp" 
+                       platform="solaris-x86" 
+                       target="${output.dir}/bundles/jdk/jdk-1_5_0_13-${nb.files.prefix}-${build.number}-javase-solaris-x86.sh">
+            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
+            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
+	    <component uid="jdk" version="1.5.0.13.5"/>
+	    <bundleProperty name="${welcome.type}" value="javase"/>
+        </create-bundle>
+        <create-bundle root="${output.dir}/registry-temp" 
+                       platform="solaris-sparc" 
+                       target="${output.dir}/bundles/jdk/jdk-1_5_0_13-${nb.files.prefix}-${build.number}-javase-solaris-sparc.sh">
+            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
+            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
+	    <component uid="jdk" version="1.5.0.13.5"/>
+	    <bundleProperty name="${welcome.type}" value="javase"/>
+        </create-bundle>
+
+        <!-- JavaSE + JDK6 bundles -->
+        <create-bundle root="${output.dir}/registry-temp" 
+                       platform="windows" 
+                       target="${output.dir}/bundles/jdk/jdk6-u3-${nb.files.prefix}-${build.number}-javase-windows.exe">
+            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
+            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
+	    <component uid="jdk" version="1.6.0.3.5"/>
+	    <bundleProperty name="${welcome.type}" value="javase"/>
+        </create-bundle>
+        <create-bundle root="${output.dir}/registry-temp" 
+                       platform="linux" 
+                       target="${output.dir}/bundles/jdk/jdk6-u3-${nb.files.prefix}-${build.number}-javase-linux.sh">
+            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
+            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
+	    <component uid="jdk" version="1.6.0.3.5"/>
+	    <bundleProperty name="${welcome.type}" value="javase"/>
+        </create-bundle>
+        <create-bundle root="${output.dir}/registry-temp" 
+                       platform="solaris-x86" 
+                       target="${output.dir}/bundles/jdk/jdk6-u3-${nb.files.prefix}-${build.number}-javase-solaris-x86.sh">
+            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
+            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
+	    <component uid="jdk" version="1.6.0.3.5"/>
+	    <bundleProperty name="${welcome.type}" value="javase"/>
+        </create-bundle>
+        <create-bundle root="${output.dir}/registry-temp" 
+                       platform="solaris-sparc" 
+                       target="${output.dir}/bundles/jdk/jdk6-u3-${nb.files.prefix}-${build.number}-javase-solaris-sparc.sh">
+            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
+            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
+	    <component uid="jdk" version="1.6.0.3.5"/>
+	    <bundleProperty name="${welcome.type}" value="javase"/>
+        </create-bundle>
+    </target>
+
+
+    <target name="build-engine">
+	<property name="engine.dist.file.name" value="nbi-engine.jar"/>
+        
+        <echo message="BUILDING CORE ENGINE ======================================"/>
+        <ant dir="${nbi.core.dir}/infra/build/engine" target="build-all">
+            <property 
+                name="basedir" 
+                value="${nbi.core.dir}/infra/build/engine"/>
+            <property 
+                name="environment.properties" 
+                value="${environment.properties}"/>
+            
+            <property
+                name="build.native"
+                value="false"/>
+            <property 
+                name="cvs.module" 
+                value="${core.module.name}"/>
+        </ant>
+        
+        <echo message="BUILDING NETBEANS ENGINE =================================="/>
+        <ant dir="${nbi.netbeans.dir}/infra/build/engine" target="release-all">
+            <property 
+                name="basedir" 
+                value="${nbi.netbeans.dir}/infra/build/engine"/>
+            <property 
+                name="environment.properties" 
+                value="${environment.properties}"/>
+            
+            <property 
+                name="core.engine.dist.file" 
+                value="${nbi.core.dir}/infra/build/engine/dist/${engine.dist.file.name}"/>
+        </ant>
+    </target>
+
+    <target name="prepare-output-dir">
+	<delete dir="${output.dir}"/>
+        
+        <mkdir dir="${output.dir}"/>
+        <mkdir dir="${output.dir}/bundles"/>
+        <mkdir dir="${output.dir}/components"/>        
+    </target>
+
+    <target name="export-temp-registry">
+	<export-registry 
+            root="${output.dir}/registry-temp" 
+            destination="${output.dir}/registry" 
+            codebase="http://bits.netbeans.org/download/6.0/nightly/${build.number}/registry"/>
+    </target>
+
+    <target name="prepare-web-page">
+        <mkdir dir="${output.dir}/img"/>
+        <mkdir dir="${output.dir}/js"/>
+        <mkdir dir="${output.dir}/css"/>
 
         <replace 
             dir="${nbi.netbeans.dir}/infra/build/web">
@@ -1745,16 +1790,43 @@ jarsigner.storepass=${jarsigner.storepass}
         <generate-components-js 
             root="${output.dir}/registry-temp" 
             file="${output.dir}/js/components.js"/>        
+    </target>
 
+    <target name="generate-netbeans-bundles">
+	<antcall target="generate-netbeans-javase-bundles"/>
+        <antcall target="generate-netbeans-javaee-bundles"/>
+        <antcall target="generate-netbeans-javame-bundles"/>
+        <antcall target="generate-netbeans-ruby-bundles"/>
+        <antcall target="generate-netbeans-cpp-bundles"/>
+        <antcall target="generate-netbeans-full-bundles"/>
+    </target>
+
+    <target name="generate-bundles">
+	<property name="welcome.type" value="NWP.welcome.page.type"/>
+        <antcall target="generate-netbeans-bundles"/>
+        <!--<antcall target="generate-jdk-bundles"/>-->
+        <!--<antcall target="generate-javatoolsbundle-bundles"/>-->
+    </target>
+
+
+    <target name="-build">     
+        <antcall target="prepare-output-dir"/>
+        <antcall target="build-engine"/>
+
+        <antcall target="build-netbeans"/>
+        <antcall target="build-runtimes"/>
+	<!--<antcall target="build-wtk"/>-->
+        <!--<antcall target="build-javaeesdk"/>-->
+        <!--<antcall target="build-jdk"/>-->
+
+        <antcall target="export-temp-registry"/>
         
-        <delete dir="${output.dir}/registry-temp"/>
+	<antcall target="generate-bundles"/>
+
+	<antcall target="prepare-web-page"/>
         
-        <delete>
-            <fileset dir="${output.dir}/bundles">
-                <include name="*.command"/>
-		<include name="*macos*zip"/>
-            </fileset>
-        </delete>
+        <delete dir="${output.dir}/registry-temp"/>        
+        
     </target>
 
     <target name="zip-to-tgz">
