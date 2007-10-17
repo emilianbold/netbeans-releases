@@ -67,6 +67,7 @@ import java.util.StringTokenizer;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JSeparator;
 import org.netbeans.modules.sql.project.SQLproProject;
 
 import org.openide.nodes.*;
@@ -94,6 +95,7 @@ import org.netbeans.modules.compapp.projects.base.IcanproConstants;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.Lookup;
 
 /**
  * Support for creating logical views.
@@ -155,8 +157,9 @@ public class SQLproLogicalViewProvider implements LogicalViewProvider {
     };
 
     public static boolean hasBrokenLinks(AntProjectHelper helper, ReferenceHelper resolver) {
-        return BrokenReferencesSupport.isBroken(helper, resolver, BREAKABLE_PROPERTIES,
-            new String[] {IcanproProjectProperties.JAVA_PLATFORM});
+       // return BrokenReferencesSupport.isBroken(helper, resolver, BREAKABLE_PROPERTIES,
+           // new String[] {IcanproProjectProperties.JAVA_PLATFORM});
+		   return false;
     }
 
     /** Filter node containin additional features for the J2SE physical
@@ -194,7 +197,38 @@ public class SQLproLogicalViewProvider implements LogicalViewProvider {
 
             ResourceBundle bundle = NbBundle.getBundle(SQLproLogicalViewProvider.class);
 
-            return new Action[] {
+			List<Action> actions = new ArrayList<Action>();
+
+            actions.add(CommonProjectActions.newFileAction());
+            actions.add(null);
+                actions.add(ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_BUILD, bundle.getString( "LBL_BuildAction_Name" ), null )); // NOI18N
+                actions.add(ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_REBUILD, bundle.getString( "LBL_RebuildAction_Name" ), null )); // NOI18N
+                actions.add(ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_CLEAN, bundle.getString( "LBL_CleanAction_Name" ), null )); // NOI18N
+//                null,
+//                ProjectSensitiveActions.projectCommandAction( IcanproConstants.COMMAND_REDEPLOY, bundle.getString( "LBL_RedeployAction_Name" ), null ), // NOI18N
+//                ProjectSensitiveActions.projectCommandAction( IcanproConstants.COMMAND_DEPLOY, bundle.getString( "LBL_DeployAction_Name" ), null ), // NOI18N
+               // actions.add(ProjectSensitiveActions.projectCommandAction( IcanproConstants.POPULATE_CATALOG, bundle.getString( "LBL_Populate_Catalog" ), null )); // NOI18N
+                actions.add(null);
+                actions.add(CommonProjectActions.setAsMainProjectAction());
+                actions.add(CommonProjectActions.openSubprojectsAction());
+                actions.add(CommonProjectActions.closeProjectAction());
+                actions.add(null);
+                actions.add(CommonProjectActions.renameProjectAction());
+                actions.add(CommonProjectActions.moveProjectAction());
+                actions.add(CommonProjectActions.copyProjectAction());
+                actions.add(CommonProjectActions.deleteProjectAction());
+                actions.add(null);
+				generateWSDL(actions);
+				actions.add(null);
+                actions.add(SystemAction.get( org.openide.actions.FindAction.class ));
+				addFromLayers(actions, "Projects/Actions");
+                actions.add(null);
+                actions.add(brokenLinksAction);
+                actions.add(CommonProjectActions.customizeProjectAction());
+            
+            return actions.toArray(new Action[actions.size()]);
+
+         /*   return new Action[] {
                 // disable new action at the top...
                  CommonProjectActions.newFileAction(),
                  null,
@@ -213,16 +247,27 @@ public class SQLproLogicalViewProvider implements LogicalViewProvider {
                 null,
                 generateWSDL(),
                 null,
-                SystemAction.get( org.openide.actions.FindAction.class ),
-                null,
-                SystemAction.get(org.openide.actions.OpenLocalExplorerAction.class),
-                null,
-                brokenLinksAction,
-                CommonProjectActions.customizeProjectAction(),
-            };
+                actions.add(SystemAction.get(org.openide.actions.FindAction.class),
+                // add versioning support
+                addFromLayers(actions, "Projects/Actions"),
+                actions.add(null),
+                actions.add(brokenLinksAction),
+                actions.add(CommonProjectActions.customizeProjectAction())
+            )};*/
         }
+
+        private void addFromLayers(List<Action> actions, String path) {
+            Lookup look = Lookups.forPath(path);
+            for (Object next : look.lookupAll(Object.class)) {
+                if (next instanceof Action) {
+                    actions.add((Action) next);
+                } else if (next instanceof JSeparator) {
+                    actions.add(null);
+                }
+            }
+        }  
         
-        private Action generateWSDL() {
+        private void generateWSDL(List<Action> actions) {
         	Object genFiles = SystemAction.findObject(GenFiles.class, true);
         	try {
 	        	Object[] params =  new Object[1];
@@ -236,9 +281,9 @@ public class SQLproLogicalViewProvider implements LogicalViewProvider {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} 
-        	
+        	actions.add((Action)genFiles);
         	//genFiles.setProject(project);
-            return (Action)genFiles;
+           // return (Action)genFiles;
         }
         
         /** This action is created only when project has broken references.
@@ -252,10 +297,10 @@ public class SQLproLogicalViewProvider implements LogicalViewProvider {
             }
 
             public void actionPerformed(ActionEvent e) {
-                BrokenReferencesSupport.showCustomizer(helper, resolver, BREAKABLE_PROPERTIES, new String[]{IcanproProjectProperties.JAVA_PLATFORM});
+            /*    BrokenReferencesSupport.showCustomizer(helper, resolver, BREAKABLE_PROPERTIES, new String[]{IcanproProjectProperties.JAVA_PLATFORM});
                 if (!hasBrokenLinks(helper, resolver)) {
                     disable();
-                }
+                }*/
             }
 
             public void propertyChange(PropertyChangeEvent evt) {
