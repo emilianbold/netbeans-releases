@@ -1249,6 +1249,20 @@ public class UMLParsingIntegrator
         }
     }
     
+    public void handleSpecializationAttribute(
+            Node childInDestinationNamespace, Node elementBeingInjected)
+    {
+        if ((childInDestinationNamespace != null) &&
+                (elementBeingInjected != null))
+        {
+            String specs = XMLManip.getAttributeValue(childInDestinationNamespace, "specialization");
+            if (specs != null && ! specs.trim().equals("")) 
+            {
+                XMLManip.setAttributeValue(elementBeingInjected, "specialization", specs);
+            }
+        }
+    }
+
     public boolean handleVersionedElement(
             Element docElement,
             Node childInDestinationNamespace,
@@ -1340,7 +1354,8 @@ public class UMLParsingIntegrator
                             removeClientDependencies(nodeInNamespace);
                             removeNonNavigableAssoc(nodeInNamespace);
                             removeGeneralizations(nodeInNamespace);
-                            
+                            markSpecializationsForRedefinitionAnalysis(nodeInNamespace);  
+                        
                             String destName = UMLXMLManip.getAttributeValue(destinationNestedClass, "name"); // NOI18N
                             Node injectNestedClass = injectOwnedElement
                                     .selectSingleNode(nodeType+"[@name='"+destName+"']"); // NOI18N
@@ -1413,6 +1428,9 @@ public class UMLParsingIntegrator
                 handleMiscMetaData(
                         childInDestinationNamespace, elementBeingInjected);
                 
+                handleSpecializationAttribute(
+                        childInDestinationNamespace, elementBeingInjected);
+                
                 // Now make sure that if we have a type on our m_Types list by this name, we change
                 // its ID as well
                 String typeName = UMLXMLManip.getAttributeValue(
@@ -1450,8 +1468,8 @@ public class UMLParsingIntegrator
                     }
                     
                     resolved = true;
-                    m_ReplacedNodes.put(finalXMIID, childInDestinationNamespace);
                 }
+                m_ReplacedNodes.put(finalXMIID, childInDestinationNamespace);
             }
         }
         return finalXMIID;
@@ -1569,6 +1587,8 @@ public class UMLParsingIntegrator
                 removeClientDependencies(nodeInNamespace);
                 removeNonNavigableAssoc(nodeInNamespace);
                 removeGeneralizations(nodeInNamespace);
+                markSpecializationsForRedefinitionAnalysis(nodeInNamespace); 
+ 
                 finalXMIID = replaceReferences(childInDestinationNamespace, elementBeingInjected, finalXMIID);
                 
                 // Now replace the destination element with the element to inject. HOwever,
@@ -5068,6 +5088,7 @@ public class UMLParsingIntegrator
                     }
                 }
             }
+            clearRedefinitionOfRemovedOperations();
             // 78782, 87773, 87836 process redefinition, it has to be done after
             // all symbols are processed in the last pass.
             analyzeOperationRedefinition();
@@ -6134,6 +6155,84 @@ public class UMLParsingIntegrator
         }
     }
     
+    protected void markSpecializationsForRedefinitionAnalysis(IElement pElement)
+    {
+        try
+        {
+            IClassifier pNamedElement = (pElement instanceof IClassifier) ? (IClassifier) pElement : null;
+            if (pNamedElement != null)
+            {
+                ETList < IGeneralization > pDependencies = pNamedElement.getSpecializations();
+                if (pDependencies != null)
+                {
+                    int max = pDependencies.size();
+                    for (int index = 0; index < max; index++)
+                    {
+                        IGeneralization pDep = pDependencies.get(index);
+                        if(pDep!=null)
+                        {
+                            redef.add(pDep);
+                        }                        
+                    }
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            // I just want to forward the error to the listener.
+            sendExceptionMessage(e);
+        }
+    }
+
+    public void clearRedefinitionOfRemovedOperations()
+    {
+        Document doc = m_Project.getDocument();
+        if (doc == null) 
+        {
+            return;
+        }
+
+        List redefiningNodes = doc.selectNodes("//UML:Operation[@redefinedElement]");
+        if (redefiningNodes == null || redefiningNodes.size() == 0) 
+        {
+            return;
+        }
+
+        HashMap<String, Node> rNodes = new HashMap<String, Node>();
+        for(Object o : redefiningNodes) 
+        {            
+            String rid = XMLManip.getAttributeValue((Node)o, "redefinedElement");
+            if (rid != null && ! rid.trim().equals(""))
+            {
+                rNodes.put(rid, (Node)o);
+            }
+        }
+            
+        for(Node n : m_ReplacedNodes.values())
+        {
+            if (n != null) 
+            {
+                List opers = n.selectNodes("./UML:Element.ownedElement/UML:Operation");
+                if (opers != null)
+                {
+                    for(Object o : opers) 
+                    {
+                        String id = XMLManip.getAttributeValue((Node)o, "xmi.id");                    
+                        Node rNode =  rNodes.get(id);
+                        if (rNode != null) 
+                        {
+                            Attribute redefAttr = ((Element)rNode).attribute("redefinedElement");
+                            if (redefAttr != null)
+                            {
+                                ((Element)rNode).remove(redefAttr);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     protected Node getElementOfType(List nodeList, String wantedNodeName)
     {
         Node pVal = null;
