@@ -70,7 +70,7 @@ public abstract class APTProjectFileBasedWalker extends APTAbstractWalker {
         this.mode = ProjectBase.GATHERING_MACROS;
         this.file = file;
         this.startProject = startProject;
-        assert startProject != null;
+        assert startProject != null : "null start project for " + file.getAbsolutePath();
     }
     
     ////////////////////////////////////////////////////////////////////////////
