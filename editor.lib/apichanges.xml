@@ -105,6 +105,20 @@ is the proper place.
 
     <changes>
 
+        <change id="LineSeparatorConversion.deprecated">
+            <summary>Deprecating LineSeparatorConversion</summary>
+            <version major="1" minor="20"/>
+            <date day="17" month="10" year="2007"/>
+            <author login="vstejskal"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="no" deprecation="yes"/>
+            <description>
+                <p>
+                    Deprecating LineSeparatorConversion in favor of
+                    <code>org.netbeans.lib.editor.util.CharacterConversions</code>.
+                </p>
+            </description>
+        </change>
+        
         <change id="BaseDocument.getLegacyFormatter">
             <summary>Added BaseDocument.getLegacyFormatter()</summary>
             <version major="1" minor="19"/>
