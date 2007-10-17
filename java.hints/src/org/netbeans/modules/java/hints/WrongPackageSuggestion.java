@@ -252,31 +252,26 @@ public class WrongPackageSuggestion extends AbstractHint {
             return NbBundle.getMessage(WrongPackageSuggestion.class, "FIX_WrongPackageFix", packageName.length() == 0 ? 0 : 1, packageName);
         }
         
-        public ChangeInfo implement() {
+        public ChangeInfo implement() throws IOException {
             JavaSource js = JavaSource.forFileObject(file);
             
-            try {
-                js.runModificationTask(new Task<WorkingCopy>() {
-                    
-                    public void run(WorkingCopy copy) throws Exception {
-                        copy.toPhase(Phase.PARSED);
-                        
-                        CompilationUnitTree cut = copy.getCompilationUnit();
-                        
-                        if (packageName.length() == 0) {
-                            copy.rewrite(cut, copy.getTreeMaker().CompilationUnit(null, cut.getImports(), cut.getTypeDecls(), cut.getSourceFile()));
+            js.runModificationTask(new Task<WorkingCopy>() {
+                public void run(WorkingCopy copy) throws Exception {
+                    copy.toPhase(Phase.PARSED);
+
+                    CompilationUnitTree cut = copy.getCompilationUnit();
+
+                    if (packageName.length() == 0) {
+                        copy.rewrite(cut, copy.getTreeMaker().CompilationUnit(null, cut.getImports(), cut.getTypeDecls(), cut.getSourceFile()));
+                    } else {
+                        if (cut.getPackageName() == null) {
+                            copy.rewrite(cut, copy.getTreeMaker().CompilationUnit(createForFQN(copy, packageName), cut.getImports(), cut.getTypeDecls(), cut.getSourceFile()));
                         } else {
-                            if (cut.getPackageName() == null) {
-                                copy.rewrite(cut, copy.getTreeMaker().CompilationUnit(createForFQN(copy, packageName), cut.getImports(), cut.getTypeDecls(), cut.getSourceFile()));
-                            } else {
-                                copy.rewrite(cut.getPackageName(), createForFQN(copy, packageName));
-                            }
+                            copy.rewrite(cut.getPackageName(), createForFQN(copy, packageName));
                         }
                     }
-                }).commit();
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+                }
+            }).commit();
             
             return null;
         }

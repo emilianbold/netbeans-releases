@@ -216,117 +216,112 @@ public class SuppressWarningsFixer implements ErrorRule<Void> {
         
         private static final Set<Kind> DECLARATION = EnumSet.of(Kind.CLASS, Kind.METHOD, Kind.VARIABLE);
         
-        public ChangeInfo implement() {
-            try {
-                JavaSource js = JavaSource.forFileObject(file);
-                
-                js.runModificationTask(new Task<WorkingCopy>() {
+        public ChangeInfo implement() throws IOException {
+            JavaSource js = JavaSource.forFileObject(file);
 
-                    public void run(WorkingCopy copy) throws IOException {
-                        copy.toPhase(Phase.RESOLVED); //XXX: performance
-                        TreePath path = handle.resolve(copy);
-                        
-                        while (path.getLeaf().getKind() != Kind.COMPILATION_UNIT && !DECLARATION.contains(path.getLeaf().getKind())) {
-                            path = path.getParentPath();
-                        }
-                        
-                        if (path.getLeaf().getKind() == Kind.COMPILATION_UNIT) {
-                            return ;
-                        }
-                        
-                        Tree top = path.getLeaf();
-                        ModifiersTree modifiers = null;
-                        
-                        switch (top.getKind()) {
-                            case CLASS:
-                                modifiers = ((ClassTree) top).getModifiers();
-                                break;
-                            case METHOD:
-                                modifiers = ((MethodTree) top).getModifiers();
-                                break;
-                            case VARIABLE:
-                                modifiers = ((VariableTree) top).getModifiers();
-                                break;
-                            default: assert false : "Unhandled Tree.Kind";  // NOI18N
-                        }
-                        
-                        if (modifiers == null) {
-                            return ;
-                        }
-                        
-                        TypeElement el = copy.getElements().getTypeElement("java.lang.SuppressWarnings");  // NOI18N
-                        
-                        if (el == null) {
-                            return ;
-                        }
-                        
-                        //check for already existing SuppressWarnings annotation:
-                        for (AnnotationTree at : modifiers.getAnnotations()) {
-                            TreePath tp = new TreePath(new TreePath(path, at), at.getAnnotationType());
-                            Element  e  = copy.getTrees().getElement(tp);
-                            
-                            if (el.equals(e)) {
-                                //found SuppressWarnings:
-                                List<? extends ExpressionTree> arguments = at.getArguments();
-                                
-                                if (arguments.isEmpty() || arguments.size() > 1) {
-                                    Logger.getLogger(SuppressWarningsFixer.class.getName()).log(Level.INFO, "SupressWarnings annotation has incorrect number of arguments - {0}.", arguments.size());  // NOI18N
-                                    return ;
-                                }
-                                
-                                ExpressionTree et = at.getArguments().get(0);
-                                
-                                if (et.getKind() != Kind.ASSIGNMENT) {
-                                    Logger.getLogger(SuppressWarningsFixer.class.getName()).log(Level.INFO, "SupressWarnings annotation's argument is not an assignment - {0}.", et.getKind());  // NOI18N
-                                    return ;
-                                }
-                                
-                                AssignmentTree assignment = (AssignmentTree) et;
-                                List<? extends ExpressionTree> currentValues = null;
-                                
-                                if (assignment.getExpression().getKind() == Kind.NEW_ARRAY) {
-                                    currentValues = ((NewArrayTree) assignment.getExpression()).getInitializers();
-                                } else {
-                                    currentValues = Collections.singletonList(assignment.getExpression());
-                                }
-                                
-                                assert currentValues != null;
-                                
-                                List<ExpressionTree> values = new ArrayList<ExpressionTree>(currentValues);
-                                
-                                for (String key : keys) {
-                                    values.add(copy.getTreeMaker().Literal(key));
-                                }
+            js.runModificationTask(new Task<WorkingCopy>() {
+                public void run(WorkingCopy copy) throws IOException {
+                    copy.toPhase(Phase.RESOLVED); //XXX: performance
+                    TreePath path = handle.resolve(copy);
 
-                                
-                                copy.rewrite(assignment.getExpression(), copy.getTreeMaker().NewArray(null, Collections.<ExpressionTree>emptyList(), values));
+                    while (path.getLeaf().getKind() != Kind.COMPILATION_UNIT && !DECLARATION.contains(path.getLeaf().getKind())) {
+                        path = path.getParentPath();
+                    }
+
+                    if (path.getLeaf().getKind() == Kind.COMPILATION_UNIT) {
+                        return ;
+                    }
+
+                    Tree top = path.getLeaf();
+                    ModifiersTree modifiers = null;
+
+                    switch (top.getKind()) {
+                        case CLASS:
+                            modifiers = ((ClassTree) top).getModifiers();
+                            break;
+                        case METHOD:
+                            modifiers = ((MethodTree) top).getModifiers();
+                            break;
+                        case VARIABLE:
+                            modifiers = ((VariableTree) top).getModifiers();
+                            break;
+                        default: assert false : "Unhandled Tree.Kind";  // NOI18N
+                    }
+
+                    if (modifiers == null) {
+                        return ;
+                    }
+
+                    TypeElement el = copy.getElements().getTypeElement("java.lang.SuppressWarnings");  // NOI18N
+
+                    if (el == null) {
+                        return ;
+                    }
+
+                    //check for already existing SuppressWarnings annotation:
+                    for (AnnotationTree at : modifiers.getAnnotations()) {
+                        TreePath tp = new TreePath(new TreePath(path, at), at.getAnnotationType());
+                        Element  e  = copy.getTrees().getElement(tp);
+
+                        if (el.equals(e)) {
+                            //found SuppressWarnings:
+                            List<? extends ExpressionTree> arguments = at.getArguments();
+
+                            if (arguments.isEmpty() || arguments.size() > 1) {
+                                Logger.getLogger(SuppressWarningsFixer.class.getName()).log(Level.INFO, "SupressWarnings annotation has incorrect number of arguments - {0}.", arguments.size());  // NOI18N
                                 return ;
                             }
-                        }
-                        
-                        List<AnnotationTree> annotations = new ArrayList<AnnotationTree>(modifiers.getAnnotations());
-                        
-                        
-                        if ( keys.length > 1 ) {
-                            List<LiteralTree> keyLiterals = new ArrayList<LiteralTree>(keys.length);
-                            for (String key : keys) {
-                                keyLiterals.add(copy.getTreeMaker().Literal(key));
+
+                            ExpressionTree et = at.getArguments().get(0);
+
+                            if (et.getKind() != Kind.ASSIGNMENT) {
+                                Logger.getLogger(SuppressWarningsFixer.class.getName()).log(Level.INFO, "SupressWarnings annotation's argument is not an assignment - {0}.", et.getKind());  // NOI18N
+                                return ;
                             }
-                            annotations.add(copy.getTreeMaker().Annotation(copy.getTreeMaker().QualIdent(el), 
-                                    Collections.singletonList( 
-                                        copy.getTreeMaker().NewArray(null, Collections.<ExpressionTree>emptyList(), keyLiterals))));
+
+                            AssignmentTree assignment = (AssignmentTree) et;
+                            List<? extends ExpressionTree> currentValues = null;
+
+                            if (assignment.getExpression().getKind() == Kind.NEW_ARRAY) {
+                                currentValues = ((NewArrayTree) assignment.getExpression()).getInitializers();
+                            } else {
+                                currentValues = Collections.singletonList(assignment.getExpression());
+                            }
+
+                            assert currentValues != null;
+
+                            List<ExpressionTree> values = new ArrayList<ExpressionTree>(currentValues);
+
+                            for (String key : keys) {
+                                values.add(copy.getTreeMaker().Literal(key));
+                            }
+
+
+                            copy.rewrite(assignment.getExpression(), copy.getTreeMaker().NewArray(null, Collections.<ExpressionTree>emptyList(), values));
+                            return ;
                         }
-                        else {
-                            annotations.add(copy.getTreeMaker().Annotation(copy.getTreeMaker().QualIdent(el), Collections.singletonList(copy.getTreeMaker().Literal(keys[0]))));
-                        }
-                        ModifiersTree nueMods = copy.getTreeMaker().Modifiers(modifiers, annotations);
-                        
-                        copy.rewrite(modifiers, nueMods);
                     }
-                }).commit();
-            } catch (IOException e) {
-                Exceptions.printStackTrace(e);
-            }
+
+                    List<AnnotationTree> annotations = new ArrayList<AnnotationTree>(modifiers.getAnnotations());
+
+
+                    if ( keys.length > 1 ) {
+                        List<LiteralTree> keyLiterals = new ArrayList<LiteralTree>(keys.length);
+                        for (String key : keys) {
+                            keyLiterals.add(copy.getTreeMaker().Literal(key));
+                        }
+                        annotations.add(copy.getTreeMaker().Annotation(copy.getTreeMaker().QualIdent(el), 
+                                Collections.singletonList( 
+                                    copy.getTreeMaker().NewArray(null, Collections.<ExpressionTree>emptyList(), keyLiterals))));
+                    }
+                    else {
+                        annotations.add(copy.getTreeMaker().Annotation(copy.getTreeMaker().QualIdent(el), Collections.singletonList(copy.getTreeMaker().Literal(keys[0]))));
+                    }
+                    ModifiersTree nueMods = copy.getTreeMaker().Modifiers(modifiers, annotations);
+
+                    copy.rewrite(modifiers, nueMods);
+                }
+            }).commit();
             
             return null;
         }

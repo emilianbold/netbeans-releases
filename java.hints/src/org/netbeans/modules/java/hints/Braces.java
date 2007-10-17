@@ -298,14 +298,9 @@ public class Braces extends AbstractHint {
             return NbBundle.getMessage(Braces.class, "LBL_Braces_Fix"); // NOI18N
         }
 
-        public ChangeInfo implement() {
+        public ChangeInfo implement() throws IOException {
             JavaSource js = JavaSource.forFileObject(file);
-            try {
-                js.runModificationTask(this).commit();
-            }
-            catch( IOException e ) {
-                Exceptions.printStackTrace(e);
-            }
+            js.runModificationTask(this).commit();
             return null;
         }
 

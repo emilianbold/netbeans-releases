@@ -313,11 +313,10 @@ public final class ImportClass implements ErrorRule<ImportCandidatesHolder> {
                 return "<html><font color='#808080'><s>" + NbBundle.getMessage(ImportClass.class, "Add_import_for_X", new Object[] {fqn});
         }
 
-        public ChangeInfo implement() {
+        public ChangeInfo implement() throws IOException {
             JavaSource js = JavaSource.forFileObject(file);            
             
             Task task = new Task<WorkingCopy>() {
-                
                     public void run(WorkingCopy copy) throws Exception {
                         if (copy.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0)
                            return;
@@ -338,12 +337,8 @@ public final class ImportClass implements ErrorRule<ImportCandidatesHolder> {
                     }
                     
             };
-            try {
-                js.runModificationTask(task).commit();
-                return null;
-            } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ex);
-            }
+            
+            js.runModificationTask(task).commit();
             return null;
         }
         

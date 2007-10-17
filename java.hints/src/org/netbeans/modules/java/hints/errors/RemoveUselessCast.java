@@ -114,24 +114,20 @@ public final class RemoveUselessCast implements ErrorRule<Void> {
             return NbBundle.getMessage(RemoveUselessCast.class, "LBL_FIX_Remove_redundant_cast");
         }
         
-        public ChangeInfo implement() {
-            try {
-                js.runModificationTask(new Task<WorkingCopy>() {
-                    public void run(WorkingCopy copy) throws IOException {
-                        copy.toPhase(Phase.RESOLVED);
-                        TreePath path = handle.resolve(copy);
-                        
-                        if (path != null) {
-                            TypeCastTree tct = (TypeCastTree) path.getLeaf();
-                            
-                            copy.rewrite(tct, tct.getExpression());
-                        }
-                    }
+        public ChangeInfo implement() throws IOException {
+            js.runModificationTask(new Task<WorkingCopy>() {
+                public void run(WorkingCopy copy) throws IOException {
+                    copy.toPhase(Phase.RESOLVED);
+                    TreePath path = handle.resolve(copy);
 
-                }).commit();
-            } catch (IOException e) {
-                Exceptions.printStackTrace(e);
-            }
+                    if (path != null) {
+                        TypeCastTree tct = (TypeCastTree) path.getLeaf();
+
+                        copy.rewrite(tct, tct.getExpression());
+                    }
+                }
+
+            }).commit();
             
             return null;
         }

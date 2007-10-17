@@ -207,65 +207,61 @@ public class AddOverrideAnnotation extends AbstractHint {
         
         private static final Set<Kind> DECLARATION = EnumSet.of(Kind.CLASS, Kind.METHOD, Kind.VARIABLE);
         
-        public ChangeInfo implement() {
-            try {
-                JavaSource js = JavaSource.forFileObject(file);
-                
-                js.runModificationTask(new Task<WorkingCopy>() {
-                    public void run(WorkingCopy copy) throws IOException {
-                        copy.toPhase(Phase.RESOLVED); //XXX: performance
-                        TreePath path = handle.resolve(copy);
-                        
-                        while (path.getLeaf().getKind() != Kind.COMPILATION_UNIT && !DECLARATION.contains(path.getLeaf().getKind())) {
-                            path = path.getParentPath();
-                        }
-                        
-                        if (path.getLeaf().getKind() == Kind.COMPILATION_UNIT) {
-                            return ;
-                        }
-                        
-                        Tree top = path.getLeaf();
-                        ModifiersTree modifiers = null;
-                        
-                        switch (top.getKind()) {
-                        case METHOD:
-                            modifiers = ((MethodTree) top).getModifiers();
-                            break;
-                        default: assert false : "Unhandled Tree.Kind"; //NOI18N
-                        }
-                        
-                        if (modifiers == null) {
-                            return ;
-                        }
-                        
-                        TypeElement el = copy.getElements().getTypeElement("java.lang.Override"); //NOI18N
-                        
-                        if (el == null) {
-                            return ;
-                        }
-                        
-                        //verify @Override annotation still does not exist:
-                        for (AnnotationTree at : modifiers.getAnnotations()) {
-                            TreePath tp = new TreePath(new TreePath(path, at), at.getAnnotationType());
-                            Element  e  = copy.getTrees().getElement(tp);
-                            
-                            if (el.equals(e)) {
-                                //found existing :
-                                return ;
-                            }
-                        }
-                        
-                        List<AnnotationTree> annotations = new ArrayList<AnnotationTree>(modifiers.getAnnotations());
-                        annotations.add(copy.getTreeMaker().Annotation(copy.getTreeMaker().QualIdent(el), Collections.<ExpressionTree>emptyList()));
-                        
-                        ModifiersTree nueMods = copy.getTreeMaker().Modifiers(modifiers, annotations);
-                        
-                        copy.rewrite(modifiers, nueMods);
+        public ChangeInfo implement() throws IOException {
+            JavaSource js = JavaSource.forFileObject(file);
+
+            js.runModificationTask(new Task<WorkingCopy>() {
+                public void run(WorkingCopy copy) throws IOException {
+                    copy.toPhase(Phase.RESOLVED); //XXX: performance
+                    TreePath path = handle.resolve(copy);
+
+                    while (path.getLeaf().getKind() != Kind.COMPILATION_UNIT && !DECLARATION.contains(path.getLeaf().getKind())) {
+                        path = path.getParentPath();
                     }
-                }).commit();
-            } catch (IOException e) {
-                Exceptions.printStackTrace(e);
-            }
+
+                    if (path.getLeaf().getKind() == Kind.COMPILATION_UNIT) {
+                        return ;
+                    }
+
+                    Tree top = path.getLeaf();
+                    ModifiersTree modifiers = null;
+
+                    switch (top.getKind()) {
+                    case METHOD:
+                        modifiers = ((MethodTree) top).getModifiers();
+                        break;
+                    default: assert false : "Unhandled Tree.Kind"; //NOI18N
+                    }
+
+                    if (modifiers == null) {
+                        return ;
+                    }
+
+                    TypeElement el = copy.getElements().getTypeElement("java.lang.Override"); //NOI18N
+
+                    if (el == null) {
+                        return ;
+                    }
+
+                    //verify @Override annotation still does not exist:
+                    for (AnnotationTree at : modifiers.getAnnotations()) {
+                        TreePath tp = new TreePath(new TreePath(path, at), at.getAnnotationType());
+                        Element  e  = copy.getTrees().getElement(tp);
+
+                        if (el.equals(e)) {
+                            //found existing :
+                            return ;
+                        }
+                    }
+
+                    List<AnnotationTree> annotations = new ArrayList<AnnotationTree>(modifiers.getAnnotations());
+                    annotations.add(copy.getTreeMaker().Annotation(copy.getTreeMaker().QualIdent(el), Collections.<ExpressionTree>emptyList()));
+
+                    ModifiersTree nueMods = copy.getTreeMaker().Modifiers(modifiers, annotations);
+
+                    copy.rewrite(modifiers, nueMods);
+                }
+            }).commit();
             
             return null;
         }

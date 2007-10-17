@@ -129,35 +129,31 @@ public class MakeVariableFinal implements ErrorRule<Void> {
             return "Make " + variableName + " final";
         }
 
-        public ChangeInfo implement() {
+        public ChangeInfo implement() throws IOException {
             JavaSource js = JavaSource.forFileObject(file);
             
-            try {
-                js.runModificationTask(new Task<WorkingCopy>() {
-                    public void run(WorkingCopy wc) throws IOException {
-                        wc.toPhase(Phase.RESOLVED);
-                        TreePath tp = variable.resolve(wc);
-                        
-                        if (tp == null)
-                            return ;
-                        
-                        VariableTree vt = (VariableTree) tp.getLeaf();
-                        ModifiersTree mt = vt.getModifiers();
-                        Set<Modifier> modifiers = EnumSet.noneOf(Modifier.class);
-                        
-                        modifiers.addAll(mt.getFlags());
-                        modifiers.add(Modifier.FINAL);
-                        
-                        ModifiersTree newMod = wc.getTreeMaker().Modifiers(modifiers, mt.getAnnotations());
-                        
-                        wc.rewrite(mt, newMod);
-                    }
-                }).commit();
-            } catch (IOException e) {
-                Exceptions.printStackTrace(e);
-            }
+            js.runModificationTask(new Task<WorkingCopy>() {
+                public void run(WorkingCopy wc) throws IOException {
+                    wc.toPhase(Phase.RESOLVED);
+                    TreePath tp = variable.resolve(wc);
+
+                    if (tp == null)
+                        return ;
+
+                    VariableTree vt = (VariableTree) tp.getLeaf();
+                    ModifiersTree mt = vt.getModifiers();
+                    Set<Modifier> modifiers = EnumSet.noneOf(Modifier.class);
+
+                    modifiers.addAll(mt.getFlags());
+                    modifiers.add(Modifier.FINAL);
+
+                    ModifiersTree newMod = wc.getTreeMaker().Modifiers(modifiers, mt.getAnnotations());
+
+                    wc.rewrite(mt, newMod);
+                }
+            }).commit();
             
             return null;
         }
-}
+    }
 }

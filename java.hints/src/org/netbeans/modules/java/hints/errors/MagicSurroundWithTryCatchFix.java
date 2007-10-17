@@ -124,74 +124,70 @@ final class MagicSurroundWithTryCatchFix implements Fix {
         return false;
     }
 
-    public ChangeInfo implement() {
-        try {
-            js.runModificationTask(new Task<WorkingCopy>() {
+    public ChangeInfo implement() throws IOException {
+        js.runModificationTask(new Task<WorkingCopy>() {
+            public void run(WorkingCopy wc) throws Exception {
+                wc.toPhase(Phase.RESOLVED);
+                TreePath currentPath = wc.getTreeUtilities().pathFor(offset + 1);
 
-                public void run(WorkingCopy wc) throws Exception {
-                    wc.toPhase(Phase.RESOLVED);
-                    TreePath currentPath = wc.getTreeUtilities().pathFor(offset + 1);
-                    
-                    //find statement:
-                    while (currentPath != null && !UncaughtException.STATEMENT_KINDS.contains(currentPath.getLeaf().getKind()))
-                        currentPath = currentPath.getParentPath();
-                    
-                    //TODO: test for final??
-                    TreePath statement = currentPath;
-                    boolean streamAlike = false;
-                    
-                    if (statement.getLeaf().getKind() == Kind.VARIABLE) {
-                        //special case variable declarations which intializers create streams or readers/writers:
-                        Element curType = wc.getTrees().getElement(statement);
-                        
-                        streamAlike = isStreamAlike(wc, curType.asType());
-                    }
-                    
-                    //find try block containing this statement, if exists:
-                    TreePath catchTree = currentPath;
-                    
-                    while (catchTree != null
-                            && catchTree.getLeaf().getKind() != Kind.TRY
-                            && catchTree.getLeaf().getKind() != Kind.CLASS
-                            && catchTree.getLeaf().getKind() != Kind.CATCH)
-                        catchTree = catchTree.getParentPath();
-                    
-                    boolean createNewTryCatch = false;
-                    
-                    if (catchTree.getLeaf().getKind() == Kind.TRY) {
-                        TryTree tt = (TryTree) catchTree.getLeaf();
-                        //#104085: if the statement to be wrapped is inside a finally block of the try-catch,
-                        //do not attempt to extend existing catches...:
-                        for (Tree t : currentPath) {
-                            if (tt.getFinallyBlock() == t) {
-                                createNewTryCatch = true;
-                                break;
-                            }
-                        }
-                        
-                        if (!createNewTryCatch) {
-                        //only add catches for uncatched exceptions:
-                        new TransformerImpl(wc, thandles, streamAlike, statement).scan(catchTree, null);
-                        }
-                    } else {
-                        createNewTryCatch = true;
-                    }
-                    
-                    if (createNewTryCatch) {
-                        //find block containing this statement, if exists:
-                        TreePath blockTree = currentPath;
-                        
-                        while (blockTree != null
-                                && blockTree.getLeaf().getKind() != Kind.BLOCK)
-                            blockTree = blockTree.getParentPath();
-                        
-                        new TransformerImpl(wc, thandles, streamAlike, statement).scan(blockTree, null);
-                    }
+                //find statement:
+                while (currentPath != null && !UncaughtException.STATEMENT_KINDS.contains(currentPath.getLeaf().getKind()))
+                    currentPath = currentPath.getParentPath();
+
+                //TODO: test for final??
+                TreePath statement = currentPath;
+                boolean streamAlike = false;
+
+                if (statement.getLeaf().getKind() == Kind.VARIABLE) {
+                    //special case variable declarations which intializers create streams or readers/writers:
+                    Element curType = wc.getTrees().getElement(statement);
+
+                    streamAlike = isStreamAlike(wc, curType.asType());
                 }
-                }).commit();
-        }  catch (IOException e) {
-            ErrorManager.getDefault().notify(e);
-        }
+
+                //find try block containing this statement, if exists:
+                TreePath catchTree = currentPath;
+
+                while (catchTree != null
+                        && catchTree.getLeaf().getKind() != Kind.TRY
+                        && catchTree.getLeaf().getKind() != Kind.CLASS
+                        && catchTree.getLeaf().getKind() != Kind.CATCH)
+                    catchTree = catchTree.getParentPath();
+
+                boolean createNewTryCatch = false;
+
+                if (catchTree.getLeaf().getKind() == Kind.TRY) {
+                    TryTree tt = (TryTree) catchTree.getLeaf();
+                    //#104085: if the statement to be wrapped is inside a finally block of the try-catch,
+                    //do not attempt to extend existing catches...:
+                    for (Tree t : currentPath) {
+                        if (tt.getFinallyBlock() == t) {
+                            createNewTryCatch = true;
+                            break;
+                        }
+                    }
+
+                    if (!createNewTryCatch) {
+                    //only add catches for uncatched exceptions:
+                    new TransformerImpl(wc, thandles, streamAlike, statement).scan(catchTree, null);
+                    }
+                } else {
+                    createNewTryCatch = true;
+                }
+
+                if (createNewTryCatch) {
+                    //find block containing this statement, if exists:
+                    TreePath blockTree = currentPath;
+
+                    while (blockTree != null
+                            && blockTree.getLeaf().getKind() != Kind.BLOCK)
+                        blockTree = blockTree.getParentPath();
+
+                    new TransformerImpl(wc, thandles, streamAlike, statement).scan(blockTree, null);
+                }
+            }
+        }).commit();
+        
         return null;
     }
     

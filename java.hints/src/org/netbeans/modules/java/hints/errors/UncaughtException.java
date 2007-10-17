@@ -301,25 +301,20 @@ public final class UncaughtException implements ErrorRule<Void> {
             return "Add throws clause for " + fqn;
         }
         
-        public ChangeInfo implement() {
-            try {
-                js.runModificationTask(new Task<WorkingCopy>() {
+        public ChangeInfo implement() throws IOException {
+            js.runModificationTask(new Task<WorkingCopy>() {
+                public void run(WorkingCopy wc) throws Exception {
+                    wc.toPhase(Phase.RESOLVED);
+                    Tree tree = wc.getTrees().getTree(method.resolve(wc));
 
-                    public void run(WorkingCopy wc) throws Exception {
-                        wc.toPhase(Phase.RESOLVED);
-                        Tree tree = wc.getTrees().getTree(method.resolve(wc));
-                        
-                        assert tree != null;
-                        assert tree.getKind() == Kind.METHOD;
-                        
-                        MethodTree nue = wc.getTreeMaker().addMethodThrows((MethodTree) tree, (ExpressionTree) wc.getTreeMaker().Type(thandle.resolve(wc)));
-                        
-                        wc.rewrite(tree, nue);
-                    }
-                }).commit();
-            } catch (IOException e) {
-                ErrorManager.getDefault().notify(e);
-            }
+                    assert tree != null;
+                    assert tree.getKind() == Kind.METHOD;
+
+                    MethodTree nue = wc.getTreeMaker().addMethodThrows((MethodTree) tree, (ExpressionTree) wc.getTreeMaker().Type(thandle.resolve(wc)));
+
+                    wc.rewrite(tree, nue);
+                }
+            }).commit();
             return null;
         }
         
@@ -370,32 +365,27 @@ public final class UncaughtException implements ErrorRule<Void> {
             return "Surround with try-catch";
         }
         
-        public ChangeInfo implement() {
-            try {
-                js.runModificationTask(new Task<WorkingCopy>() {
+        public ChangeInfo implement() throws IOException {
+            js.runModificationTask(new Task<WorkingCopy>() {
+                public void run(WorkingCopy wc) throws Exception {
+                    wc.toPhase(Phase.RESOLVED);
+                    TreePath currentPath = wc.getTreeUtilities().pathFor(offset + 1);
 
-                    public void run(WorkingCopy wc) throws Exception {
-                        wc.toPhase(Phase.RESOLVED);
-                        TreePath currentPath = wc.getTreeUtilities().pathFor(offset + 1);
-                        
-                        //find statement:
-                        while (currentPath != null && !STATEMENT_KINDS.contains(currentPath.getLeaf().getKind()))
-                            currentPath = currentPath.getParentPath();
-                        
-                        TreeMaker make = wc.getTreeMaker();
-                        Tree t = currentPath.getLeaf();
-                        BlockTree bt = make.Block(Collections.singletonList((StatementTree) t), false);
-                        List<CatchTree> catches = new ArrayList<CatchTree>();
-                        
-                        for (TypeMirrorHandle th : thandles) {
-                            catches.add(make.Catch(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "ex", make.Type(th.resolve(wc)), null), make.Block(Collections.<StatementTree>emptyList(), false)));
-                        }
-                        wc.rewrite(t, make.Try(bt, catches, null));
+                    //find statement:
+                    while (currentPath != null && !STATEMENT_KINDS.contains(currentPath.getLeaf().getKind()))
+                        currentPath = currentPath.getParentPath();
+
+                    TreeMaker make = wc.getTreeMaker();
+                    Tree t = currentPath.getLeaf();
+                    BlockTree bt = make.Block(Collections.singletonList((StatementTree) t), false);
+                    List<CatchTree> catches = new ArrayList<CatchTree>();
+
+                    for (TypeMirrorHandle th : thandles) {
+                        catches.add(make.Catch(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "ex", make.Type(th.resolve(wc)), null), make.Block(Collections.<StatementTree>emptyList(), false)));
                     }
-                }).commit();
-            } catch (IOException e) {
-                ErrorManager.getDefault().notify(e);
-            }
+                    wc.rewrite(t, make.Try(bt, catches, null));
+                }
+            }).commit();
             return null;
         }
         

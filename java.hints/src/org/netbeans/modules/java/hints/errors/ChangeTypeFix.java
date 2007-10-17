@@ -78,35 +78,31 @@ final class ChangeTypeFix implements Fix {
         this.position = position;
     }
     
-    public ChangeInfo implement() {
-        try {
-            js.runModificationTask(new Task<WorkingCopy>() {
-                public void run(final WorkingCopy working) throws IOException {
-                    working.toPhase(Phase.RESOLVED);
-                    TypeMirror[] tm = new TypeMirror[1];
-                    ExpressionTree[] expression = new ExpressionTree[1];
-                    TypeMirror[] expressionType = new TypeMirror[1];
-                    Tree[] leaf = new Tree[1];
-                    
-                    ChangeType.computeType(working, position, tm, expression, expressionType, leaf);
-                    
-                    if (leaf[0] instanceof VariableTree) {
-                        VariableTree oldVariableTree = ((VariableTree)leaf[0]);
-                        TreeMaker make = working.getTreeMaker();
-    
-                        VariableTree newVariableTree = make.Variable(
-                                oldVariableTree.getModifiers(), 
-                                oldVariableTree.getName(),
-                                make.Type(expressionType[0]),
-                                oldVariableTree.getInitializer()); 
-                        
-                        working.rewrite(leaf[0], newVariableTree);
-                    }
+    public ChangeInfo implement() throws IOException {
+        js.runModificationTask(new Task<WorkingCopy>() {
+            public void run(final WorkingCopy working) throws IOException {
+                working.toPhase(Phase.RESOLVED);
+                TypeMirror[] tm = new TypeMirror[1];
+                ExpressionTree[] expression = new ExpressionTree[1];
+                TypeMirror[] expressionType = new TypeMirror[1];
+                Tree[] leaf = new Tree[1];
+
+                ChangeType.computeType(working, position, tm, expression, expressionType, leaf);
+
+                if (leaf[0] instanceof VariableTree) {
+                    VariableTree oldVariableTree = ((VariableTree)leaf[0]);
+                    TreeMaker make = working.getTreeMaker();
+
+                    VariableTree newVariableTree = make.Variable(
+                            oldVariableTree.getModifiers(), 
+                            oldVariableTree.getName(),
+                            make.Type(expressionType[0]),
+                            oldVariableTree.getInitializer()); 
+
+                    working.rewrite(leaf[0], newVariableTree);
                 }
-            }).commit();
-        } catch (IOException e) {
-            ErrorManager.getDefault().notify(e);
-        }
+            }
+        }).commit();
         
         return null;
     }

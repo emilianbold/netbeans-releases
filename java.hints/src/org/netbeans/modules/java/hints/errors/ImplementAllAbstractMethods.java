@@ -181,53 +181,49 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Void> {
                 NbBundle.getMessage(ImplementAllAbstractMethods.class, "LBL_FIX_Make_Class_Abstract", makeClassAbstractName); // MOI18N 
         }
 
-        public ChangeInfo implement() {
-            try {
-                final boolean[] repeat = new boolean[] {true};
-                
-                while (repeat[0]) {
-                    repeat[0] = false;
-                    js.runModificationTask(new Task<WorkingCopy>() {
+        public ChangeInfo implement() throws IOException {
+            final boolean[] repeat = new boolean[] {true};
 
-                        public void run(final WorkingCopy copy) throws IOException {
-                            copy.toPhase(Phase.RESOLVED);
-                            analyze(js, offset, copy, new Performer() {
-                                public void fixAllAbstractMethods(TreePath pathToModify, Tree toModify) {
-                                    if (toModify.getKind() == Kind.NEW_CLASS) {
-                                        int insertOffset = (int) copy.getTrees().getSourcePositions().getEndPosition(copy.getCompilationUnit(), toModify);
-                                        if (insertOffset != (-1)) {
-                                            try {
-                                                copy.getDocument().insertString(insertOffset, " {}", null);
-                                                offset = insertOffset + 1;
-                                                repeat[0] = true;
-                                            } catch (BadLocationException e) {
-                                                Exceptions.printStackTrace(e);
-                                            } catch (IOException e) {
-                                                Exceptions.printStackTrace(e);
-                                            }
+            while (repeat[0]) {
+                repeat[0] = false;
+                js.runModificationTask(new Task<WorkingCopy>() {
+
+                    public void run(final WorkingCopy copy) throws IOException {
+                        copy.toPhase(Phase.RESOLVED);
+                        analyze(js, offset, copy, new Performer() {
+                            public void fixAllAbstractMethods(TreePath pathToModify, Tree toModify) {
+                                if (toModify.getKind() == Kind.NEW_CLASS) {
+                                    int insertOffset = (int) copy.getTrees().getSourcePositions().getEndPosition(copy.getCompilationUnit(), toModify);
+                                    if (insertOffset != (-1)) {
+                                        try {
+                                            copy.getDocument().insertString(insertOffset, " {}", null);
+                                            offset = insertOffset + 1;
+                                            repeat[0] = true;
+                                        } catch (BadLocationException e) {
+                                            Exceptions.printStackTrace(e);
+                                        } catch (IOException e) {
+                                            Exceptions.printStackTrace(e);
                                         }
-                                    } else {
-                                        GeneratorUtils.generateAllAbstractMethodImplementations(copy, pathToModify);
                                     }
+                                } else {
+                                    GeneratorUtils.generateAllAbstractMethodImplementations(copy, pathToModify);
                                 }
-                                public void makeClassAbstract(Tree toModify, String className) {
-                                    //the toModify has to be a class tree:
-                                    if (toModify.getKind() == Kind.CLASS) {
-                                        ClassTree clazz = (ClassTree) toModify;
-                                        ModifiersTree modifiers = clazz.getModifiers();
-                                        Set<Modifier> newModifiersSet = new HashSet<Modifier>(modifiers.getFlags());
-                                        
-                                        newModifiersSet.add(Modifier.ABSTRACT);
-                                        
-                                        copy.rewrite(modifiers, copy.getTreeMaker().Modifiers(newModifiersSet, modifiers.getAnnotations()));
-                                    }
+                            }
+                            public void makeClassAbstract(Tree toModify, String className) {
+                                //the toModify has to be a class tree:
+                                if (toModify.getKind() == Kind.CLASS) {
+                                    ClassTree clazz = (ClassTree) toModify;
+                                    ModifiersTree modifiers = clazz.getModifiers();
+                                    Set<Modifier> newModifiersSet = new HashSet<Modifier>(modifiers.getFlags());
+
+                                    newModifiersSet.add(Modifier.ABSTRACT);
+
+                                    copy.rewrite(modifiers, copy.getTreeMaker().Modifiers(newModifiersSet, modifiers.getAnnotations()));
                                 }
-                            });
-                        }
-                    }).commit();
-                }
-            } catch (IOException e) {
-                Exceptions.printStackTrace(e);
+                            }
+                        });
+                    }
+                }).commit();
             }
             return null;
         }
