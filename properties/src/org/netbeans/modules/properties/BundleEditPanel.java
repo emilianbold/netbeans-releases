@@ -54,8 +54,6 @@ import java.text.MessageFormat;
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 import javax.swing.event.*;
-import javax.swing.plaf.BorderUIResource;
-import javax.swing.plaf.BorderUIResource.BevelBorderUIResource;
 import javax.swing.plaf.basic.BasicHTML;
 import javax.swing.table.*;
 
@@ -99,6 +97,11 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
         
         // Sets table column model.
         table.setColumnModel(new TableViewColumnModel());
+
+        // Sets custom table header renderer (with sorting indicators).
+        JTableHeader header = table.getTableHeader();
+        header.setDefaultRenderer(
+                new TableViewHeaderRenderer(obj, header.getDefaultRenderer()));
         
         // Sets table model.
         table.setModel(propTableModel);
@@ -634,112 +637,70 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
     
     /** Header renderer used in table view. */
     @SuppressWarnings("serial")
-    private class TableViewHeaderRenderer extends DefaultTableCellRenderer {
-        /** Sorted column. */
-        private int column;
+    private static final class TableViewHeaderRenderer implements TableCellRenderer {
+
+        /*
+         * The source code of this class is a slightly modified copy
+         * of source code of class
+         * org.netbeans.modules.tasklist.ui.TaskListTable.SortingHeaderRenderer.
+         */
         
-        /** Overrides superclass method. */
-        @Override
-        public Component getTableCellRendererComponent(JTable table, Object value,
-        boolean isSelected, boolean hasFocus, int row, int column) {
-            
-            this.column = column;
-            
-            if (table != null) {
-                JTableHeader header = table.getTableHeader();
-                if (header != null) {
-                    this.setForeground(header.getForeground());
-                    this.setBackground(header.getBackground());
-                    this.setFont(header.getFont());
+        private static final String ICON_PKG = "org/netbeans/modules/properties/";      //NOI18N
+        private static final String SORT_ASC_ICON = ICON_PKG + "columnSortedAsc.gif";   //NOI18N
+        private static final String SORT_DESC_ICON = ICON_PKG + "columnSortedDesc.gif"; //NOI18N
+
+        private final PropertiesDataObject propDataObj;
+        private final TableCellRenderer origRenderer;
+        private ImageIcon iconSortAsc, iconSortDesc;
+        
+        TableViewHeaderRenderer(PropertiesDataObject propDataObj,
+                                TableCellRenderer origRenderer) {
+            this.propDataObj = propDataObj;
+            this.origRenderer = origRenderer;
+        }
+
+        public Component getTableCellRendererComponent(JTable table,
+                                                       Object value,
+                                                       boolean isSelected,
+                                                       boolean hasFocus,
+                                                       int row,
+                                                       int column) {
+            Component comp = origRenderer.getTableCellRendererComponent(
+                               table, value, isSelected, hasFocus, row, column);
+
+            if (comp instanceof JLabel) {
+                JLabel label = (JLabel) comp;
+                BundleStructure bundleStruct = propDataObj.getBundleStructure();
+                int sortIndex = table.convertColumnIndexToView(
+                                        bundleStruct.getSortIndex());
+                if (column == sortIndex) {
+                    boolean ascending = bundleStruct.getSortOrder();
+                    label.setIcon(getSortIcon(ascending));
+                    label.setHorizontalTextPosition(SwingConstants.LEFT);
+                } else {
+                    label.setIcon(null);
                 }
             }
-            
-            setText((value == null) ? "" : value.toString()); // NOI18N
-            this.setBorder(UIManager.getBorder("TableHeader.cellBorder")); // NOI18N
-            return this;
+
+            return comp;
         }
-        
-        /** Overrides superclass method. Adds painting ascending/descending marks for sorted column header. */
-        @Override
-        protected void paintComponent(Graphics g) {
-            super.paintComponent(g);
-            
-            int sortIndex = table.convertColumnIndexToView(obj.getBundleStructure().getSortIndex());
-            
-            // If the column is the sorted one draw mark on its header.
-            if(column == sortIndex ) {
-                
-                Color oldColor = g.getColor();
-                
-                FontMetrics fm = g.getFontMetrics();
-                Rectangle space = fm.getStringBounds(" ", g).getBounds(); // NOI18N
-                Rectangle mark = fm.getStringBounds("\u25B2", g).getBounds(); // NOI18N
-                Rectangle bounds = this.getBounds();
-                
-                Insets insets = this.getInsets();
-                
-                BevelBorderUIResource bevelUI = (BevelBorderUIResource)BorderUIResource.getLoweredBevelBorderUIResource();
-                
-                boolean ascending = obj.getBundleStructure().getSortOrder();
-                
-                int x1, x2, x3, y1, y2, y3;
-                
-                if(ascending) {
-                    // Ascending order.
-                    x1 = space.width + mark.width/2;
-                    x2 = space.width;
-                    x3 = space.width + mark.width;
-                    
-                    y1 = bounds.y + insets.top+2;
-                    y2 = bounds.y + bounds.height - insets.bottom-2;
-                    y3 = y2;
-                } else {
-                    // Descending order.
-                    x1 = space.width;
-                    x2 = space.width + mark.width;
-                    x3 = space.width + mark.width/2;
-                    
-                    y1 = bounds.y + insets.top + 2;
-                    y2 = y1;
-                    y3 = bounds.y + bounds.height - insets.bottom - 2;
+
+        private ImageIcon getSortIcon(boolean ascending) {
+            if (ascending) {
+                if (iconSortAsc == null) {
+                    iconSortAsc = new ImageIcon(
+                            org.openide.util.Utilities.loadImage(SORT_ASC_ICON));
                 }
-                
-                // Draw bevel border.
-                // Draw shadow outer color.
-                g.setColor(bevelUI.getShadowOuterColor(this));
-                if (ascending) {
-                    g.drawLine(x1, y1, x2, y2);
-                } else {
-                    g.drawPolyline(new int[] {x2, x1, x3}, new int[] {y2, y1, y3}, 3);
+                return iconSortAsc;
+            } else {
+                if (iconSortDesc == null) {
+                    iconSortDesc = new ImageIcon(
+                            org.openide.util.Utilities.loadImage(SORT_DESC_ICON));
                 }
-                
-                // Draw shadow inner color.
-                g.setColor(bevelUI.getShadowInnerColor(this));
-                if (ascending) {
-                    g.drawLine(x1, y1+1, x2+1, y2-1);
-                } else {
-                    g.drawPolyline(new int[] {x2-1, x1+1, x3}, new int[] {y2+1, y1+1, y3-1}, 3);
-                }
-                
-                // Draw highlihght outer color.
-                g.setColor(bevelUI.getHighlightOuterColor(this));
-                if (ascending) {
-                    g.drawPolyline(new int[] {x1, x3, x2}, new int[] {y1, y3, y2}, 3);
-                } else {
-                    g.drawLine(x2, y2, x3, y3);
-                }
-                
-                // Draw highlight inner color.
-                g.setColor(bevelUI.getHighlightInnerColor(this));
-                if (ascending) {
-                    g.drawPolyline(new int[] {x1, x3-1, x2+1}, new int[] {y1+1, y3-1, y2-1}, 3);
-                } else {
-                    g.drawLine(x2-1, y2+1, x3, y3-1);
-                }
-                
-                g.setColor(oldColor);
+                return iconSortDesc;
             }
         }
+
     } // End of inner class TableViewHeaderRenderer.
     
     
@@ -751,9 +712,6 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
     private class TableViewColumnModel extends DefaultTableColumnModel {
         /** Helper listener. */
         private AncestorListener ancestorListener;
-        
-        /** Table header rendrer. */
-        private final TableCellRenderer headerRenderer = new TableViewHeaderRenderer();
         
         /** Overrides superclass method. */
         @Override
@@ -767,11 +725,6 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
             
             // this method call is only difference with overriden superclass method
             adjustColumnWidths();
-            
-            // set header renderer this 'ugly' way (for each column),
-            // in jdk1.2 is not possible to set default renderer
-            // for JTableHeader like in jdk1.3
-            aColumn.setHeaderRenderer(headerRenderer);
             
             // Post columnAdded event notification
             fireColumnAdded(new TableColumnModelEvent(this, 0,
