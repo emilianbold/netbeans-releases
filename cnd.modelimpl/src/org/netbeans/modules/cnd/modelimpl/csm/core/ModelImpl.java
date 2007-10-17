@@ -262,24 +262,28 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
     }
     
     public void closeProject (Object platformProject) {
-        _closeProject(null, platformProject);
+        _closeProject(null, platformProject, !TraceFlags.PERSISTENT_REPOSITORY);
+    }
+    
+    public void closeProject (Object platformProject, boolean cleanRepository) {
+        _closeProject(null, platformProject, cleanRepository);
     }
     
     public void closeProjectBase(ProjectBase prj) {
-        _closeProject(prj, prj.getPlatformProject());
+        _closeProject(prj, prj.getPlatformProject(), !TraceFlags.PERSISTENT_REPOSITORY);
     }
     
-    private void _closeProject(final ProjectBase csmProject, final Object platformProjectKey) {
+    private void _closeProject(final ProjectBase csmProject, final Object platformProjectKey, final boolean cleanRepository) {
         if (SwingUtilities.isEventDispatchThread()) {
             _closeProject2_pre(csmProject, platformProjectKey);
             Runnable task = new Runnable() {
                                 public void run() {
-                                    _closeProject2(csmProject, platformProjectKey, !TraceFlags.PERSISTENT_REPOSITORY);
+                                    _closeProject2(csmProject, platformProjectKey, cleanRepository);
                                 }
                             };
             this.enqueueModelTask(task, "Closing Project "); // NOI18N
         } else {
-            _closeProject2(csmProject, platformProjectKey, !TraceFlags.PERSISTENT_REPOSITORY);
+            _closeProject2(csmProject, platformProjectKey, cleanRepository);
         }           
     }
     
