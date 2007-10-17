@@ -61,10 +61,7 @@ public class Reformatter implements ReformatTask {
     private Context context;
     private CompilationController controller;
     private Document doc;
-    private int startOffset;
-    private int endOffset;
     private int shift;
-    private PositionConverter converter;
 
     public Reformatter(JavaSource javaSource, Context context) {
         this.javaSource = javaSource;
@@ -87,39 +84,57 @@ public class Reformatter implements ReformatTask {
             if (controller == null)
                 return;
         }
-        startOffset = context.startOffset() - shift;
-        endOffset = context.endOffset() - shift;
-        converter = controller.getPositionConverter();
+        for (Context.Region region : context.indentRegions())
+            reformatImpl(region);
+    }
+    
+    private void reformatImpl(Context.Region region) throws BadLocationException {
+        int startOffset = region.getStartOffset() - shift;
+        int endOffset = region.getEndOffset() - shift;
+        int originalEndOffset = endOffset;
+        PositionConverter converter = controller.getPositionConverter();
         if (converter != null) {
             startOffset = converter.getJavaSourcePosition(startOffset);
             endOffset = converter.getJavaSourcePosition(endOffset);
         }
+        if (!"text/x-java".equals(context.mimePath())) { //NOI18N
+            TokenSequence<JavaTokenId> ts = controller.getTokenHierarchy().tokenSequence(JavaTokenId.language());
+            if (ts != null) {
+                ts.move(endOffset);
+                if (ts.moveNext() && ts.token().id() == WHITESPACE) {
+                    String t = ts.token().text().toString();
+                    int i = t.lastIndexOf('\n'); //NOI18N
+                    if (i >= 0)
+                        endOffset -= (t.length() - i);
+                }
+            }
+        }
         if (startOffset >= endOffset)
             return;
-        TreePath path = getCommonPath();
+        TreePath path = getCommonPath(startOffset, endOffset);
         if (path == null)
             return;
         for (Diff diff : Pretty.reformat(controller, path, CodeStyle.getDefault(null))) {
-            int startOffset = diff.getStartOffset();
-            int endOffset = diff.getEndOffset();
-            if (this.startOffset >= endOffset || this.endOffset <= startOffset)
+            int start = diff.getStartOffset();
+            int end = diff.getEndOffset();
+            if (startOffset >= end || endOffset <= start)
                 continue;
-            if (this.startOffset > startOffset)
-                startOffset = this.startOffset;
-            if (this.endOffset < endOffset)
-                endOffset = this.endOffset;
-            startOffset += shift;
-            endOffset += shift;
+            if (startOffset > start)
+                start = startOffset;
+            if (endOffset < end)
+                end = endOffset;
             if (converter != null) {
-                startOffset = converter.getOriginalPosition(startOffset);
-                endOffset = converter.getOriginalPosition(endOffset);
+                start = converter.getOriginalPosition(start);
+                end = converter.getOriginalPosition(end);
             }
-            doc.remove(startOffset, endOffset - startOffset);
+            start += shift;
+            end += shift;
+            doc.remove(start, end - start);
             String text = diff.getText();
             if (text != null && text.length() > 0)
-                doc.insertString(startOffset, text, null);
+                doc.insertString(start, text, null);
         }
-        shift = context.endOffset() - endOffset;
+        shift = region.getEndOffset() - originalEndOffset;
         return;
     }
     
@@ -127,7 +142,7 @@ public class Reformatter implements ReformatTask {
         return new Lock();
     }
     
-    private TreePath getCommonPath() {
+    private TreePath getCommonPath(int startOffset, int endOffset) {
         TreeUtilities tu = controller.getTreeUtilities();
         TreePath startPath = tu.pathFor(startOffset);
         com.sun.tools.javac.util.List<Tree> reverseStartPath = com.sun.tools.javac.util.List.<Tree>nil();
