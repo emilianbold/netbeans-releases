@@ -63,7 +63,7 @@ import java.util.logging.Level;
 
 /**
  * The node that is rendered in the SyncTable view. It gets values to display from the
- * CvsFileNode which serves as the 'data' node for this 'visual' node.
+ * HgFileNode which serves as the 'data' node for this 'visual' node.
  * 
  * @author Maros Sandor
  */
@@ -204,11 +204,12 @@ public class SyncFileNode extends AbstractNode {
 
         public PathProperty() {
             super(COLUMN_NAME_PATH, String.class, NbBundle.getMessage(SyncFileNode.class, "BK2003"), NbBundle.getMessage(SyncFileNode.class, "BK2004")); // NOI18N
-            setValue("sortkey", "\u65000\t" + SyncFileNode.this.getName()); // NOI18N
+            shortPath = HgUtils.getRelativePath(node.getFile());
+            setValue("sortkey", shortPath + "\t" + SyncFileNode.this.getName()); // NOI18N
         }
 
         public Object getValue() throws IllegalAccessException, InvocationTargetException {
-            return shortPath = HgUtils.getRelativePath(node.getFile());
+            return shortPath;
         }
     }
 
