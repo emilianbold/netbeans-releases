@@ -292,7 +292,9 @@ public class CreateLicenseSummary extends Task {
 
     private void findBinaries(File d, Map<String,Map<String,String>> binaries2LicenseHeaders, Map<Long,Map<String,String>> crc2LicenseHeaders,
             Map<Long,String> crc2Binary, String prefix, StringBuilder testBinariesAreUnique, List<String> ignoredPatterns) throws IOException {
-        for (String n : d.list()) {
+        String[] kids = d.list();
+        Arrays.sort(kids);
+        for (String n : kids) {
             File f = new File(d, n);
             if (f.isDirectory()) {
                 findBinaries(f, binaries2LicenseHeaders, crc2LicenseHeaders, crc2Binary, prefix + n + "/", testBinariesAreUnique, ignoredPatterns);
