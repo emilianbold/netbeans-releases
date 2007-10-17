@@ -83,6 +83,7 @@ public class PushOtherAction extends AbstractAction implements PropertyChangeLis
     private final VCSContext context;
     private Repository repository = null;
     private JButton pushButton = null;
+    private JButton cancelButton = null;
 
     public PushOtherAction(String name, VCSContext context) {
         this.context = context;
@@ -102,9 +103,17 @@ public class PushOtherAction extends AbstractAction implements PropertyChangeLis
 
         DialogDescriptor dd = new DialogDescriptor(repository.getPanel(), org.openide.util.NbBundle.getMessage(PushOtherAction.class, "CTL_PushDialog_Title")); //NOI18N
         dd.setModal(true);
-        pushButton = new JButton(org.openide.util.NbBundle.getMessage(PushOtherAction.class, "CTL_Push_Action_Push")); // NOI18N
+        pushButton = new JButton();
+        org.openide.awt.Mnemonics.setLocalizedText(pushButton, org.openide.util.NbBundle.getMessage(PushOtherAction.class, "CTL_Push_Action_Push")); // NOI18N
+        pushButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PushOtherAction.class, "ACSD_Push_Action_Push")); // NOI18N
+        pushButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PushOtherAction.class, "ACSN_Push_Action_Push")); // NOI18N
+        cancelButton = new JButton();
+        org.openide.awt.Mnemonics.setLocalizedText(cancelButton, org.openide.util.NbBundle.getMessage(PushOtherAction.class, "CTL_Push_Action_Cancel")); // NOI18N
+        cancelButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PushOtherAction.class, "ACSD_Push_Action_Cancel")); //NOI18N
+        cancelButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PushOtherAction.class, "ACSN_Push_Action_Cancel")); // NOI18N
+
         pushButton.setEnabled(false);
-        dd.setOptions(new Object[] {pushButton, org.openide.util.NbBundle.getMessage(PushOtherAction.class, "CTL_Push_Action_Cancel")}); // NOI18N
+        dd.setOptions(new Object[] {pushButton, cancelButton}); // NOI18N
         dd.setHelpCtx(new HelpCtx(PushOtherAction.class));
 
         repository.getPanel().putClientProperty("DialogDescriptor", dd); // NOI18N
