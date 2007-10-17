@@ -43,6 +43,7 @@ package org.netbeans.modules.uml.codegen.dataaccess;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 import org.netbeans.modules.uml.codegen.dataaccess.xmlbeans.DomainObject;
 import org.netbeans.modules.uml.codegen.dataaccess.xmlbeans.Family;
@@ -64,7 +65,7 @@ public class DomainTemplatesRetriever
 {
     public final static String TEMPLATES_BASE_FOLDER = "Templates/UML/Code Generation"; // NOI18N
     
-    private static HashMap<String,List<DomainTemplate>> codeGenTemplates = null;
+    private static HashMap<String, List<DomainTemplate>> codeGenTemplates = null;
     
     public static void clear()
     {
@@ -220,6 +221,30 @@ public class DomainTemplatesRetriever
             cgt.setElementName(elementName);
         
         return templates;
+    }
+    
+
+    public static List<String> retrieveProjectEnabledModelElements()
+    {
+        Set<String> keys = codeGenTemplates.keySet();
+        List<String> elementTypes = new ArrayList<String>(keys.size());
+        
+        for (String key: keys)
+        {
+            int index = key.indexOf(':') + 1;
+            String eleType = "";
+            
+            if (index > 0)
+                eleType = key.substring(index);
+            
+            else
+                eleType = key;
+            
+            if (!elementTypes.contains(eleType))
+                elementTypes.add(eleType);
+        }
+        
+        return elementTypes;
     }
     
 }

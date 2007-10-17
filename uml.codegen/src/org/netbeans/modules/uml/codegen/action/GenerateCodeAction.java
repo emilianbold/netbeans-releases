@@ -44,11 +44,13 @@ package org.netbeans.modules.uml.codegen.action;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import javax.swing.JButton;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.uml.codegen.CodeGenUtil;
 import org.netbeans.modules.uml.codegen.action.ui.GenerateCodePanel;
+import org.netbeans.modules.uml.codegen.dataaccess.DomainTemplatesRetriever;
 
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IClass;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IEnumeration;
@@ -85,8 +87,44 @@ import org.openide.util.actions.CookieAction;
  */
 public class GenerateCodeAction extends CookieAction
 {
-    public enum CodeGenType {Class, Interface, Enumeration};
-
+    public enum CodeGenType 
+    {
+        Class, 
+        Interface, 
+        Enumeration, 
+        UseCase, 
+        Actor,
+        Component,
+        Datatype,
+        Invocation,
+        Lifeline,
+        Node,
+        SimpleState,
+        AbortedFinalState,
+        ActivityFinalNode,
+        ChoicePseudoState,
+        CombinedFragment,
+        Comment,
+        CompositeState,
+        DataStore,
+        Decision,
+        DeepHistoryState,
+        DeploymentSpecification,
+        DerivationClassifier,
+        EntryPointState,
+        FinalState,
+        FlowFinal,
+        InitialNode,
+        JunctionState,
+        Package,
+        ParameterUsage,
+        ShallowHistoryState,
+        Signal,
+        SubmachineState,
+        TemplateClass
+    };
+    
+    
     private final static int GC_NODE_PROJECT = 1;
     private final static int GC_NODE_NAMESPACES = 2;
     private final static int GC_NODE_CODEGENS = 4;
@@ -106,10 +144,10 @@ public class GenerateCodeAction extends CookieAction
         int genCodeNodeType = 0;
         
         final ETArrayList<IElement> elements = new ETArrayList<IElement>();
-        ArrayList<IPackage> pkgList = new ArrayList();
+        ArrayList<IPackage> pkgList = new ArrayList<IPackage>();
         
         // get the parent UML IProject
-        IElement element = (IElement)nodes[0].getCookie(IElement.class);
+        IElement element = nodes[0].getCookie(IElement.class);
  
         if (element == null)
         {
@@ -143,19 +181,14 @@ public class GenerateCodeAction extends CookieAction
 
         else
         {
-            boolean isPackageNodeSelected = false;
-            boolean isCodeGenCapableNodeSelected = false;
-            
             for (Node curNode : nodes)
             {
-                IElement curElement = 
-                    (IElement)curNode.getCookie(IElement.class);
+                IElement curElement = curNode.getCookie(IElement.class);
 
                 if (curElement != null)
                 {
                     if (curElement instanceof IPackage)
                     {
-                        isPackageNodeSelected = true;
                         genCodeNodeType |= GC_NODE_NAMESPACES;
 
                         // need to save these to reteive children and possibly
@@ -229,12 +262,12 @@ public class GenerateCodeAction extends CookieAction
 //            // parentProject.save(parentProject.getFileName(), true);
 //        }
         
-        ETList<IElement> selElements = new ETArrayList();
+        ETList<IElement> selElements = new ETArrayList<IElement>();
         
         // action invoked from Project node
         if ((genCodeNodeType & GC_NODE_PROJECT) == GC_NODE_PROJECT)
             selElements = retrieveNamespaceElements(parentProject, true);
-        
+    
         // action not invoked from Project node
         else
         {
@@ -277,13 +310,14 @@ public class GenerateCodeAction extends CookieAction
         RequestProcessor processor = 
             new RequestProcessor("uml/ExportCode"); // NOI18N
         
-        HashMap settings = new HashMap();
+        HashMap<String, Object> settings = new HashMap<String, Object>();
         
-        settings.put(AbstractNBTask.SETTING_KEY_TASK_NAME,NbBundle.getMessage(
-            GenerateCodeAction.class, 
-            "CTL_ExportCodeActionName")); // NOI18N
+        settings.put(AbstractNBTask.SETTING_KEY_TASK_NAME, 
+            NbBundle.getMessage(GenerateCodeAction.class, 
+                "CTL_ExportCodeActionName")); // NOI18N
 
-        settings.put(AbstractNBTask.SETTING_KEY_TOTAL_ITEMS, selElements.size());
+        settings.put(AbstractNBTask.SETTING_KEY_TOTAL_ITEMS, 
+            new Integer(selElements.size()));
         
         final String destFolderName = prjProps.getCodeGenFolderLocation();
         final boolean backupSources = prjProps.isCodeGenBackupSources();
@@ -403,37 +437,38 @@ public class GenerateCodeAction extends CookieAction
     }
     
     
+    @Override
     protected boolean enable(Node[] nodes)
     {
         if (nodes == null || nodes.length == 0)
             return false;
         
-        IElement element = (IElement)nodes[0].getCookie(IElement.class);
+        IElement element = nodes[0].getCookie(IElement.class);
         
-        IProject parentProject = null;
+        IProject parentPrj = null;
         if (element == null)
         {
-            parentProject = lookupProject(nodes[0]);
-            element = parentProject;
+            parentPrj = lookupProject(nodes[0]);
+            element = parentPrj;
         }
         
         // we may have a UML project node and it doesn't hold IElement 
         // as a cookie so it won't pass the automated IElement mode test
         // so we need to verify that it is indeed a UML project (IProject)
         // and if it is, then it is 'enabled'
-        boolean checkSuperEnable = nodes.length > 1 || parentProject == null;
+        boolean checkSuperEnable = nodes.length > 1 || parentPrj == null;
         
         if (checkSuperEnable && !super.enable(nodes))
             return false;
         
         // get the parent UML IProject
-        if (parentProject == null)
-            parentProject = getParentProject(nodes[0]);
+        if (parentPrj == null)
+            parentPrj = getParentProject(nodes[0]);
         
-        Project assocProject = ProjectUtil.findNetBeansProjectForModel(parentProject);
-        if(assocProject instanceof UMLProject)
+        Project assocProject = ProjectUtil.findNetBeansProjectForModel(parentPrj);
+        if (assocProject instanceof UMLProject)
         {
-            UMLProject umlProject = (UMLProject) assocProject;
+            UMLProject umlProject = (UMLProject)assocProject;
         
             if (umlProject.getUMLProjectProperties().getProjectMode()
                 .equals(UMLProject.PROJECT_MODE_ANALYSIS_STR))
@@ -441,6 +476,7 @@ public class GenerateCodeAction extends CookieAction
                 return false;
             }
         }
+        
         else
         {
             return false;
@@ -451,7 +487,7 @@ public class GenerateCodeAction extends CookieAction
         if (nodes.length == 1)
         {
             // node has to be Project, Package, 
-            // or Code Gen type (Class, Interface or Enum
+            // or CodeGenType (see enum defined at top of this class)
             if (element instanceof IProject ||
                 element instanceof IPackage)
             {
@@ -460,6 +496,7 @@ public class GenerateCodeAction extends CookieAction
             
             else if (isCodeGenElement(element))
                 return true;
+            
 			else 
 				return false;
         }
@@ -469,14 +506,14 @@ public class GenerateCodeAction extends CookieAction
         
         for (Node curNode: nodes)
         {
-            IElement curEle = (IElement)curNode.getCookie(IElement.class);
+            IElement curEle = curNode.getCookie(IElement.class);
             
             // UML project node can't be part of a multi-node selection
             if (curEle instanceof IProject)
                 return false;
             
             // all selected elements must be from same UML project
-            if (curEle == null || getParentProject(curEle) != parentProject)
+            if (curEle == null || getParentProject(curEle) != parentPrj)
                 return false;
 				
             // all selected nodes must be of type package or code gen capable
@@ -494,8 +531,10 @@ public class GenerateCodeAction extends CookieAction
     {
         try
         {
-            CodeGenType.valueOf(element.getElementType());
-			
+            CodeGenType cgType = CodeGenType.valueOf(element.getElementType());
+			if (cgType == null)
+                return false;
+                
             if (element.toString().equalsIgnoreCase(
                 getUnnamedElementPreference()))
             {
@@ -506,10 +545,11 @@ public class GenerateCodeAction extends CookieAction
             // do not enable this action
             IElement owner = element.getOwner();
             if (owner instanceof IClass ||
-                owner instanceof IEnumeration || owner instanceof IInterface)
+                owner instanceof IEnumeration || 
+                owner instanceof IInterface)
             {
                 return false;
-            };
+            }
 			
             return true;
         }
@@ -520,6 +560,7 @@ public class GenerateCodeAction extends CookieAction
         }
     }
     
+    @Override
     protected boolean asynchronous()
     {
         return false;
@@ -541,7 +582,7 @@ public class GenerateCodeAction extends CookieAction
 
     private IProject getParentProject(Node node)
     {
-        IElement element = (IElement)node.getCookie(IElement.class);
+        IElement element = node.getCookie(IElement.class);
         if (element == null)
             return null;
         
@@ -556,12 +597,12 @@ public class GenerateCodeAction extends CookieAction
     private IProject lookupProject(Node node)
     {
         UMLProject umlProject = 
-            (UMLProject)node.getLookup().lookup(UMLProject.class);
+            node.getLookup().lookup(UMLProject.class);
         
         if (umlProject != null)
         {
-            UMLProjectHelper helper = (UMLProjectHelper)umlProject.getLookup()
-                .lookup(UMLProjectHelper.class);
+            UMLProjectHelper helper = 
+                umlProject.getLookup().lookup(UMLProjectHelper.class);
             
             return helper.getProject();
         }
@@ -575,6 +616,40 @@ public class GenerateCodeAction extends CookieAction
     }
     
 
+//    private final static String BASE_QUERY = 
+//        "//*[name() = \'UML:Class\'" + // NOI18N
+//        " or name() = \'UML:Interface\'" + // NOI18N
+//        " or name() = \'UML:Enumeration\'" + // NOI18N
+//        " or name() = \'UML:Actor\'" + // NOI18N
+//        " or name() = \'UML:UseCase\'" + // NOI18N
+//        " or name() = \'UML:Component\'" + // NOI18N
+//        " or name() = \'UML:Invocation\'" + // NOI18N
+//        " or name() = \'UML:Lifeline\'" + // NOI18N
+//        " or name() = \'UML:Node\'" + // NOI18N
+//        " or name() = \'UML:SimpleState\'" + // NOI18N
+//        " or name() = \'UML:AbortedFinalState\'" + // NOI18N
+//        " or name() = \'UML:ActivityFinalNode\'" + // NOI18N
+//        " or name() = \'UML:ChoicePseudoState\'" + // NOI18N
+//        " or name() = \'UML:CombinedFragment\'" + // NOI18N
+//        " or name() = \'UML:Comment\'" + // NOI18N
+//        " or name() = \'UML:CompositeState\'" + // NOI18N
+//        " or name() = \'UML:DataStore\'" + // NOI18N
+//        " or name() = \'UML:Decision\'" + // NOI18N
+//        " or name() = \'UML:DeepHistoryState\'" + // NOI18N
+//        " or name() = \'UML:DeploymentSpecification\'" + // NOI18N
+//        " or name() = \'UML:DerivationClassifier\'" + // NOI18N
+//        " or name() = \'UML:EntryPointState\'" + // NOI18N
+//        " or name() = \'UML:FinalState\'" + // NOI18N
+//        " or name() = \'UML:FlowFinal\'" + // NOI18N
+//        " or name() = \'UML:InitialNode\'" + // NOI18N
+//        " or name() = \'UML:JunctionState\'" + // NOI18N
+//        " or name() = \'UML:Package\'" + // NOI18N
+//        " or name() = \'UML:ParameterUsage\'" + // NOI18N
+//        " or name() = \'UML:ShallowHistoryState\'" + // NOI18N
+//        " or name() = \'UML:Signal\'" + // NOI18N
+//        " or name() = \'UML:SubmachineState\'" + // NOI18N
+//        " or name() = \'UML:TemplateClass\']"; // NOI18N
+    
     public ETList<IElement> retrieveNamespaceElements(
         INamespace nsElement, boolean recursiveSearch)
     {
@@ -583,49 +658,53 @@ public class GenerateCodeAction extends CookieAction
 
         if (nsElement instanceof IProject)
         {
-            query =
-                "//*[name() = \'UML:Class\'" + // NOI18N
-                " or name() = \'UML:Interface\'" + // NOI18N
-                " or name() = \'UML:Enumeration\']"; // NOI18N
-                // " and name() != \'UML:Package.elementImport\']"; // NOI18N
-            
-            return elementLocator.findElementsByDeepQuery(nsElement, query);
+            return elementLocator.findElementsByDeepQuery(nsElement, 
+                getQuery((UMLProject)ProjectUtil.findElementOwner(nsElement)));
         }
         
         else // package scoped
         {
             org.dom4j.Node node = ((IVersionableElement)nsElement).getNode();
-            query = node.getUniquePath();
+            
+            query = node.getUniquePath() +
+                getQuery((UMLProject)ProjectUtil.findElementOwner(nsElement));
             
             if (recursiveSearch)
-            {
-                query += 
-                    "//*[name() = \'UML:Class\'" + // NOI18N
-                    " or name() = \'UML:Interface\'" + // NOI18N
-                    " or name() = \'UML:Enumeration\']"; // NOI18N
-                    // " and name() != \'UML:Package.elementImport\']"; // NOI18N
-
                 return elementLocator.findElementsByDeepQuery(nsElement, query);
-            }
             
             else 
-            {
-                query +=
-                    "/.[name() = \'UML:Class\'" + // NOI18N
-                    " or name() = \'UML:Interface\'" + // NOI18N
-                    " or name() = \'UML:Enumeration\']"; // NOI18
-                    // " and name() != \'UML:Package.elementImport\']"; // NOI18N
-
                 return elementLocator.findElementsByQuery(nsElement, query);
-            }            
         }
-
     }
 
+    private String getQuery(UMLProject umlProject)
+    {
+        DomainTemplatesRetriever.clear();
+        DomainTemplatesRetriever.load(umlProject);
+        
+        List<String> elementTypes = 
+            DomainTemplatesRetriever.retrieveProjectEnabledModelElements();
+        
+        StringBuffer query = new StringBuffer("//*["); // NOI18N
+        
+        for (String eleType: elementTypes)
+        {
+            query.append("name()=" + "\'UML:" + eleType + "\' or "); // NOI18N
+        }
+        
+        int lastindex = query.length() - 1;
+        query.delete(lastindex-3, lastindex);
+        query.append("]"); // NOI18N
+        
+//        System.out.println();
+//        System.out.println("Gen Code query: " + query.toString());
+//        System.out.println();
+        return query.toString();
+    }
     
     private String getUnnamedElementPreference()
     {
         //Kris Richards - returning the default value.
-        return "Unnamed" ;
+        return "Unnamed" ; // NOI18N    
     }
 }

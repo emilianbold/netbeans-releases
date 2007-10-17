@@ -77,15 +77,15 @@ public class GenerateCodeTask extends AbstractNBTask
         String destFolderName,
         boolean backupFiles,
         boolean generateMarkers,
-	boolean addMarkers)
+        boolean addMarkers)
     {
         super(settings);
         elements = selElements;
         projectName = umlProjectName;
         sourceFolderName = destFolderName;
         backup = backupFiles;
-	this.generateMarkers = generateMarkers;
-	this.addMarkers = addMarkers;
+        this.generateMarkers = generateMarkers;
+        this.addMarkers = addMarkers;
     }
     
     
@@ -122,18 +122,18 @@ public class GenerateCodeTask extends AbstractNBTask
     private void exportCode()
     {
         if (elements == null || elements.size() == 0)
+        {
             return;
-
-	ICodeGeneratorFactory factory = 
-	    (ICodeGeneratorFactory)Lookup.getDefault()
+        }
+        ICodeGeneratorFactory factory = (ICodeGeneratorFactory) Lookup.getDefault()
             .lookup(ICodeGeneratorFactory.class);
-        
-	ICodeGenerator cg = factory.getCodeGenerator("Java"); // NOI18N
-	Properties genProps = new Properties();
-	genProps.setProperty("generateMarkers", new Boolean(generateMarkers).toString()); // NOI18N
-	genProps.setProperty("addMarkers", new Boolean(addMarkers).toString()); // NOI18N
-	genProps.setProperty("backup", new Boolean(backup).toString()); // NOI18N
-	cg.generate(this, elements, sourceFolderName, genProps);
+
+        ICodeGenerator cg = factory.getCodeGenerator("Java"); // NOI18N
+        Properties genProps = new Properties();
+        genProps.setProperty("generateMarkers", new Boolean(generateMarkers).toString()); // NOI18N
+        genProps.setProperty("addMarkers", new Boolean(addMarkers).toString()); // NOI18N
+        genProps.setProperty("backup", new Boolean(backup).toString()); // NOI18N
+        cg.generate(this, elements, sourceFolderName, genProps);
     }
          
 

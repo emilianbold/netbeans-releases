@@ -126,7 +126,6 @@ public class ReplaceDialogUI extends JCenterDialog
         mainPanel = new JPanel();
         searchPanelsPanel = new JPanel();
         findWhatFieldsPanel = new JPanel();
-        statusFieldsPanel = new JPanel();
         replaceFielsPanel = new JPanel();
         findWhatLabel = new JLabel();
         textLabel2 = new JLabel();
@@ -150,13 +149,11 @@ public class ReplaceDialogUI extends JCenterDialog
         navigateFieldsPanel = new JPanel();
         navigateCheck = new JCheckBox();
         statusLabel = new JLabel();
-        replaceButtonsPanel = new JPanel();
         findButton = new JButton();
         closeButton = new JButton();
         replaceWithCombo = new JComboBox();
         replaceButton = new JButton();
         replaceAllButton = new JButton();
-        replaceButtonsPositionPanel = new JPanel();
         
         initButtons();
         configureFont();
@@ -1382,14 +1379,11 @@ public class ReplaceDialogUI extends JCenterDialog
     private JPanel mainPanel;
     private JPanel resultsFieldsPanel;
     private JPanel navigateFieldsPanel;
-    private JPanel replaceButtonsPositionPanel;
-    private JPanel replaceButtonsPanel;
     private JPanel searchPanelsPanel;
     private JPanel searchOptionsPanel;
     private JPanel searchInFieldsPanel;
     private JPanel findWhatFieldsPanel;
     private JPanel replaceFielsPanel;
-    private JPanel statusFieldsPanel;
     private JPanel projectListPanel;
     private JPanel projectFieldsPanel;
     private JButton replaceButton;

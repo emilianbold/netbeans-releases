@@ -54,8 +54,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.uml.core.coreapplication.ICodeGenerator;
@@ -65,12 +63,12 @@ import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure
 import org.netbeans.modules.uml.core.support.umlsupport.StringUtilities;
 import org.netbeans.modules.uml.integration.ide.events.ClassInfo;
 import org.netbeans.modules.uml.util.ITaskSupervisor;
-
 import org.netbeans.modules.uml.codegen.dataaccess.DomainTemplate;
 import org.netbeans.modules.uml.codegen.dataaccess.DomainTemplatesRetriever;
 import org.netbeans.modules.uml.codegen.java.merging.FileBuilder;
 import org.netbeans.modules.uml.codegen.java.merging.Merger;
 import org.netbeans.modules.uml.codegen.java.merging.Merger.ParsedInfo;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.util.StringTokenizer2;
 
 public class JavaCodegen implements ICodeGenerator 
@@ -79,9 +77,9 @@ public class JavaCodegen implements ICodeGenerator
     public final static String JAVA = "java"; // NOI18N
     public final static String JAVA_EXT = ".java"; // NOI18N
     public final static String DOT = "."; // NOI18N
-    public final static String LOG_INDENT = "  ";
-    public final static String SEP = "/"; //System.getProperty("file.separator"); // NOI18N
-    public final static String TILDE = "~";
+    public final static String LOG_INDENT = "  "; // NOI18N
+    public final static String SEP = "/"; // NOI18N
+    public final static String TILDE = "~"; // NOI18N
 
     public JavaCodegen()
     {
@@ -89,42 +87,35 @@ public class JavaCodegen implements ICodeGenerator
     }
        
     public void generate(ITaskSupervisor task,
-			 List<IElement> elements, 
-			 String targetFolderName, 
-			 Properties props) 
+         List<IElement> elements, String targetFolderName, Properties props) 
     {
-
-	boolean backup = Boolean.valueOf(
+        boolean backup = Boolean.valueOf(
             props.getProperty("backup", "true")).booleanValue(); // NOI18N
         
-	boolean genMarkers = Boolean.valueOf(
+        boolean genMarkers = Boolean.valueOf(
             props.getProperty("generateMarkers", "true")).booleanValue(); // NOI18N
-
-        int errorsCount = 0;
-
-        int total = elements.size();
         
+        int errorsCount = 0;
+        int total = elements.size();
+
         task.start(total);
-
         task.log(task.SUMMARY, getBundleMessage("MSG_CodeGenSelectedOptions")); // NOI18N
-        task.log(task.SUMMARY, LOG_INDENT + getBundleMessage
-		 ("MSG_SourceFolderLocation") + " -  " + targetFolderName); // NOI18N
-        task.log(task.SUMMARY, LOG_INDENT + getBundleMessage
-		 ("MSG_BackupSources") + " - " + backup); // NOI18N
-        task.log(task.SUMMARY, LOG_INDENT + getBundleMessage
-		 ("MSG_GenerateMarkers") + " - " + genMarkers); // NOI18N
+        
+        task.log(task.SUMMARY, LOG_INDENT +
+            getBundleMessage("MSG_SourceFolderLocation") + " -  " + targetFolderName); // NOI18N
+        
+        task.log(task.SUMMARY, LOG_INDENT +
+            getBundleMessage("MSG_BackupSources") + " - " + backup); // NOI18N
+        
+        task.log(task.SUMMARY, LOG_INDENT +
+            getBundleMessage("MSG_GenerateMarkers") + " - " + genMarkers); // NOI18N
 
-	task.log(task.SUMMARY, ""); // NOI18N
+        task.log(task.SUMMARY, ""); // NOI18N
 
         int counter = 0;
-
-	String tempTemplatesDirName = null;
-	FileObject tempTemplatesDirFO = null;
-	
         ScriptEngineManager mgr = new ScriptEngineManager();
         ScriptEngine engine = mgr.getEngineByName("freemarker");
-
-	ClassInfo.eraseRefClasses();
+        ClassInfo.eraseRefClasses();
 	
         for (IElement pElement: elements)
         {
@@ -135,32 +126,38 @@ public class JavaCodegen implements ICodeGenerator
             counter++;
 
             task.log(task.TERSE, NbBundle.getMessage(JavaCodegen.class, 
-		"MSG_ProcessingElementCounterTotal", // NOI18N
+                "MSG_ProcessingElementCounterTotal", // NOI18N
                 counter, total) + ": ", false); // NOI18N
 
-            if (pElement == null) {
-                task.log(task.TERSE, getBundleMessage("MSG_SkipNullElement")); // NOI18N
-		continue;
-	    }
-	    if ( ! (pElement instanceof IClassifier) ) 
-	    {
-		task.log(task.TERSE, getBundleMessage("MSG_SkipNotClassifierElement")); // NOI18N
-		continue;
-	    }
-
-	    IClassifier classifier = (IClassifier)pElement;
-	    if (classifier.getName()
-                .equalsIgnoreCase(getUnnamedElementPreference()))
+            if (pElement == null) 
             {
-                task.log(task.TERSE, getBundleMessage("MSG_SkipUnnamedElement") // NOI18N
-                    + getUnnamedElementPreference());
-		continue;		
+                task.log(task.TERSE, getBundleMessage("MSG_SkipNullElement")); // NOI18N
+                continue;
             }
+            
+            if (!(pElement instanceof IClassifier))
+            {
+                task.log(task.TERSE, getBundleMessage(
+                    "MSG_SkipNotClassifierElement", 
+                    ((INamedElement) pElement).getName())); // NOI18N
+                
+                continue;
+            }
+
+            IClassifier classifier = (IClassifier) pElement;
+            if (classifier.getName().equalsIgnoreCase(getUnnamedElementPreference()))
+            {
+                task.log(task.TERSE, getBundleMessage(
+                    "MSG_SkipUnnamedElement") + getUnnamedElementPreference());
+                continue;
+            }
+            
             if (classifier.getName().length() == 0)
             {
-                task.log(task.TERSE, getBundleMessage("MSG_SkipUnnamedElement") // NOI18N
-                    + getUnnamedElementPreference());
-		continue;		
+                task.log(task.TERSE, getBundleMessage(
+                    "MSG_SkipUnnamedElement") + getUnnamedElementPreference());
+                
+                continue;
             }
 
 	    task.log(task.TERSE, classifier.getElementType() + " " // NOI18N
@@ -387,14 +384,14 @@ public class JavaCodegen implements ICodeGenerator
 				FileUtil.toFileObject(new File(fmap.existingSourcePath)).delete(); 
 			    }
 
-			    HashMap parameters = new HashMap();
+			    HashMap<String, Object> parameters = new HashMap<String, Object>();
 			    parameters.put("classInfo", clinfo); // NOI18N
 			    parameters.put("modelElement", classifier); // NOI18N
-			    Hashtable codegenOptions = new Hashtable();
+                
+			    Hashtable<String, Object> codegenOptions = new Hashtable<String, Object>();
 			    codegenOptions.put("GENERATE_MARKER_ID", genMarkers); // NOI18N
 			    parameters.put("codegenOptions", codegenOptions); // NOI18N
 			    
-
 			    FileObject templFO = fmap.templateFileObject;		    
 			    engine.getContext().getBindings(ScriptContext.ENGINE_SCOPE).clear();
 			    engine.getContext().setAttribute(FileObject.class.getName(), templFO, ScriptContext.ENGINE_SCOPE);
@@ -768,6 +765,12 @@ public class JavaCodegen implements ICodeGenerator
         return NbBundle.getMessage(JavaCodegen.class, key);
     }
 
+    private static String getBundleMessage(String key, String eleName)
+    {
+        return NbBundle.getMessage(JavaCodegen.class, key, eleName);
+    }
+        
+    
     private String getUnnamedElementPreference()
     {
         return "Unnamed"; // NOI18N
