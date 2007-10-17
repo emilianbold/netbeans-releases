@@ -44,6 +44,7 @@ package org.netbeans.modules.websvc.core.jaxws.projects;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.StringTokenizer;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
@@ -91,7 +92,10 @@ public class J2SEProjectJAXWSClientSupport extends ProjectJAXWSClientSupport /*i
     private static final String HTTPS_PROXY_HOST_OPTION="-Dhttps.proxyHost"; //NOI18N
     private static final String HTTPS_PROXY_PORT_OPTION="-Dhttps.proxyPort"; //NOI18N
     private static final String HTTPS_NON_PROXY_HOSTS_OPTION="-Dhttps.nonProxyHosts"; //NOI18N
-    private static final String RUN_JVM_ARGS = "run.jvmargs"; // NOI18N   
+    private static final String RUN_JVM_ARGS = "run.jvmargs"; // NOI18N
+    private static final String JAXWS_ENDORSED = "jaxws.endorsed.dir"; // NOI18N
+    private static final String ENDORSED_OPTION = "-Djava.endorsed.dirs=\"${jaxws.endorsed.dir}\""; //NOI18N
+    
     /** Creates a new instance of J2SEProjectJAXWSClientSupport */
     public J2SEProjectJAXWSClientSupport(Project project) {
         super(project);
@@ -117,7 +121,7 @@ public class J2SEProjectJAXWSClientSupport extends ProjectJAXWSClientSupport /*i
         String serviceIdeName = super.addServiceClient(clientName, wsdlUrl, packageName, false);
         
         // add JVM Proxy Options to project's JVM
-        if (serviceIdeName!=null) addJVMProxyOptions(clientName);
+        if (serviceIdeName!=null) addJVMOptions(clientName);
         
         return serviceIdeName;
     }
@@ -159,80 +163,139 @@ public class J2SEProjectJAXWSClientSupport extends ProjectJAXWSClientSupport /*i
             }
         }
     }
-
-    private void addJVMProxyOptions(final String clientName) {
-        final String proxyHost = System.getProperty(KEY_PROXY_HOST);
-        if (proxyHost!=null && proxyHost.length()>0) {
-            ProjectManager.mutex().writeAccess ( new Runnable () {
-                public void run() {
-                    boolean modif=false;
-                    String proxyPort = System.getProperty(KEY_PROXY_PORT);
-                    if (proxyPort==null || proxyPort.length()==0) proxyPort="8080"; //NOI18N
-                    String localHosts ="";
-                    localHosts = getDefaultNonProxyHosts();
-                    
-                    //EditableProperties ep = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                    EditableProperties ep = null;
-                    try {
-                        ep = WSUtils.getEditableProperties(project, AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                    } catch (IOException ex) {
-                        ErrorManager.getDefault().notify(ex);
-                    }
-                    assert ep!=null;
-                    String jvmOptions = ep.getProperty(RUN_JVM_ARGS);
-                    if (jvmOptions==null || jvmOptions.length()==0) {
-                        jvmOptions = HTTP_PROXY_HOST_OPTION+"="+proxyHost+ //NOI18N
-                                " "+HTTP_PROXY_PORT_OPTION+"="+proxyPort+ //NOI18N
-                                " "+HTTP_NON_PROXY_HOSTS_OPTION+"="+localHosts+ //NOI18N
-                                " "+HTTPS_PROXY_HOST_OPTION+"="+proxyHost+ //NOI18N
-                                " "+HTTPS_PROXY_PORT_OPTION+"="+proxyPort+ //NOI18N
-                                " "+HTTPS_NON_PROXY_HOSTS_OPTION+"="+localHosts; //NOI18N
-                        modif=true;
-                    } else {
-                        if (jvmOptions.indexOf(HTTP_PROXY_HOST_OPTION)<0) {
-                            jvmOptions+=" "+HTTP_PROXY_HOST_OPTION+"="+proxyHost; //NOI18N
-                            modif=true;
-                        }
-                        if (jvmOptions.indexOf(HTTP_PROXY_PORT_OPTION)<0) {
-                            jvmOptions+=" "+HTTP_PROXY_PORT_OPTION+"="+proxyPort; //NOI18N
-                            modif=true;
-                        }
-                        if (jvmOptions.indexOf(HTTP_NON_PROXY_HOSTS_OPTION)<0) {
-                            jvmOptions+=" "+HTTP_NON_PROXY_HOSTS_OPTION+"="+localHosts; //NOI18N
-                            modif=true;
-                        }
-                        if (jvmOptions.indexOf(HTTPS_PROXY_HOST_OPTION)<0) {
-                            jvmOptions+=" "+HTTPS_PROXY_HOST_OPTION+"="+proxyHost; //NOI18N
-                            modif=true;
-                        }
-                        if (jvmOptions.indexOf(HTTPS_PROXY_PORT_OPTION)<0) {
-                            jvmOptions+=" "+HTTPS_PROXY_PORT_OPTION+"="+proxyPort; //NOI18N
-                            modif=true;
-                        }
-                        if (jvmOptions.indexOf(HTTPS_NON_PROXY_HOSTS_OPTION)<0) {
-                            jvmOptions+=" "+HTTPS_NON_PROXY_HOSTS_OPTION+"="+localHosts; //NOI18N
-                            modif=true;
-                        }
-                    }
-                    if (modif) {
-                        ep.setProperty(RUN_JVM_ARGS,jvmOptions);                        
-                        //updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH,ep);
-                        try {
-                            WSUtils.storeEditableProperties(project, AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
-                            ProjectManager.getDefault().saveProject(project);
-                        } catch(IOException ex) {
-                            NotifyDescriptor desc = new NotifyDescriptor.Message(
-                            NbBundle.getMessage(J2SEProjectJAXWSClientSupport.class,"MSG_ErrorSavingOnWSClientAdd", clientName, ex.getLocalizedMessage()), // NOI18N
-                            NotifyDescriptor.ERROR_MESSAGE);
-                            DialogDisplayer.getDefault().notify(desc);
-                        }
-                    }
+    
+    private void addJVMOptions (final String clientName) {
+        ProjectManager.mutex().writeAccess ( new Runnable () {
+            public void run() {
+                EditableProperties ep = null;
+                EditableProperties ep1 = null;
+                try {
+                    ep = WSUtils.getEditableProperties(project, AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                    ep1 = WSUtils.getEditableProperties(project, AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+                    assert ep != null;
+                    assert ep1 != null;
+                } catch (IOException ex) {
+                    ErrorManager.getDefault().notify(ex);
                 }
-            });
-
-        }
+                
+                boolean endorsedModif = modifyEndorsedOption(ep,ep1);
+                boolean proxyModif = addJVMProxyOptions(ep);
+                
+                if (endorsedModif || proxyModif)
+                try {
+                    WSUtils.storeEditableProperties(project, AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);                
+                    ProjectManager.getDefault().saveProject(project);
+                } catch(IOException ex) {
+                    NotifyDescriptor desc = new NotifyDescriptor.Message(
+                    NbBundle.getMessage(J2SEProjectJAXWSClientSupport.class,"MSG_ErrorSavingOnWSClientAdd", clientName, ex.getLocalizedMessage()), // NOI18N
+                    NotifyDescriptor.ERROR_MESSAGE);
+                    DialogDisplayer.getDefault().notify(desc);                  
+                }
+            }
+        });
     }
     
+    private boolean addJVMProxyOptions(EditableProperties ep) {
+        assert ep != null;
+        boolean modif=false;
+        final String proxyHost = System.getProperty(KEY_PROXY_HOST);
+        if (proxyHost!=null && proxyHost.length()>0) {
+            String proxyPort = System.getProperty(KEY_PROXY_PORT);
+            if (proxyPort==null || proxyPort.length()==0) proxyPort="8080"; //NOI18N
+            String localHosts ="";
+            localHosts = getDefaultNonProxyHosts();            
+            String jvmOptions = ep.getProperty(RUN_JVM_ARGS);
+            if (jvmOptions==null || jvmOptions.length()==0) {
+                jvmOptions = HTTP_PROXY_HOST_OPTION+"="+proxyHost+ //NOI18N
+                        " "+HTTP_PROXY_PORT_OPTION+"="+proxyPort+ //NOI18N
+                        " "+HTTP_NON_PROXY_HOSTS_OPTION+"="+localHosts+ //NOI18N
+                        " "+HTTPS_PROXY_HOST_OPTION+"="+proxyHost+ //NOI18N
+                        " "+HTTPS_PROXY_PORT_OPTION+"="+proxyPort+ //NOI18N
+                        " "+HTTPS_NON_PROXY_HOSTS_OPTION+"="+localHosts; //NOI18N
+                modif=true;
+            } else {
+                if (jvmOptions.indexOf(HTTP_PROXY_HOST_OPTION)<0) {
+                    jvmOptions+=" "+HTTP_PROXY_HOST_OPTION+"="+proxyHost; //NOI18N
+                    modif=true;
+                }
+                if (jvmOptions.indexOf(HTTP_PROXY_PORT_OPTION)<0) {
+                    jvmOptions+=" "+HTTP_PROXY_PORT_OPTION+"="+proxyPort; //NOI18N
+                    modif=true;
+                }
+                if (jvmOptions.indexOf(HTTP_NON_PROXY_HOSTS_OPTION)<0) {
+                    jvmOptions+=" "+HTTP_NON_PROXY_HOSTS_OPTION+"="+localHosts; //NOI18N
+                    modif=true;
+                }
+                if (jvmOptions.indexOf(HTTPS_PROXY_HOST_OPTION)<0) {
+                    jvmOptions+=" "+HTTPS_PROXY_HOST_OPTION+"="+proxyHost; //NOI18N
+                    modif=true;
+                }
+                if (jvmOptions.indexOf(HTTPS_PROXY_PORT_OPTION)<0) {
+                    jvmOptions+=" "+HTTPS_PROXY_PORT_OPTION+"="+proxyPort; //NOI18N
+                    modif=true;
+                }
+                if (jvmOptions.indexOf(HTTPS_NON_PROXY_HOSTS_OPTION)<0) {
+                    jvmOptions+=" "+HTTPS_NON_PROXY_HOSTS_OPTION+"="+localHosts; //NOI18N
+                    modif=true;
+                }
+            }
+            if (modif) {
+                ep.setProperty(RUN_JVM_ARGS,jvmOptions);
+            }
+        }
+        return modif;
+    }
+    
+    // add/remove java.endorsed.dirs JVM Options
+    private boolean modifyEndorsedOption(EditableProperties projectProp, EditableProperties privateProp) {
+        assert projectProp != null;
+        assert privateProp != null;
+        String java_version = System.getProperty("java.version"); //NOI18N
+        if (java_version == null) return false;
+        String endorsed = privateProp.getProperty(JAXWS_ENDORSED);
+        boolean modif = false;
+        if (java_version.startsWith("1.6") && endorsed != null) { //NOI18N
+            // create or modify JVM options
+            String jvmOptions = projectProp.getProperty(RUN_JVM_ARGS);
+            if (jvmOptions == null) {                   
+                modif = true;
+                jvmOptions = ENDORSED_OPTION;
+            } else if (jvmOptions.indexOf("-Djava.endorsed.dirs") == -1) { //NOI18N
+                // specify the endorsed property only if not already specified
+                jvmOptions = ENDORSED_OPTION + " "+ jvmOptions;
+                modif = true;
+
+            }
+            if (modif) {
+                projectProp.setProperty(RUN_JVM_ARGS,jvmOptions); 
+            }
+        } else {
+            // remove endorsed option from JVM Options  
+            String jvmOptions = projectProp.getProperty(RUN_JVM_ARGS);
+            if (jvmOptions != null) {
+                if (jvmOptions.indexOf(ENDORSED_OPTION) >=0) {
+                    // remove JVMOption
+                    StringTokenizer options = new StringTokenizer(jvmOptions);
+                    StringBuffer newJvmOptions = new StringBuffer();
+                    boolean first = true;
+                    while (options.hasMoreTokens()) {
+                        String token = options.nextToken();
+                        if (!ENDORSED_OPTION.equals(token)) {
+                            if (!first) {
+                                newJvmOptions.append(" "); // options must be separated by space
+                            }
+                            newJvmOptions.append(token);
+                            first = false;
+                        }
+                    }
+                    projectProp.setProperty(RUN_JVM_ARGS,newJvmOptions.toString());
+                    modif = true;
+                }
+            }
+        }
+        return modif;
+    }
+      
      /** Returns the default value for the http.nonProxyHosts system property. <br>
      *  PENDING: should be a user settable property
      * @return sensible default for non-proxy hosts, including 'localhost'
