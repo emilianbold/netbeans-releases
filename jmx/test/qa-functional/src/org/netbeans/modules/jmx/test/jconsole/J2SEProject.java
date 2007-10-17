@@ -45,73 +45,53 @@ import java.awt.Component;
 import java.awt.Container;
 import java.io.File;
 import javax.swing.JButton;
-import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.nodes.ProjectRootNode;
-import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
-import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.MainWindowOperator;
-import org.netbeans.jellytools.OutputTabOperator;
-import org.netbeans.jellytools.RuntimeTabOperator;
-import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.DialogOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
+import static org.netbeans.modules.jmx.test.helpers.JellyConstants.*;
 
 /**
- *
- * @author jfdenise
+ * Select created Anagram Game managed with JMX project.
+ * Then, run/debug project with monitoring and management.
  */
-public class J2SEProject extends JellyTestCase {
-    private static String PROJECT_NAME="JMXTESTSampleProjectToTestJ2SEProjectIntegration";
+public class J2SEProject extends JConsoleTestCase {
+
     private static String ORIGINAL_TMP_FILE;
-    
     static {
         //We need it to help tools.jar API to findout the local connector
         //This is an horrible hack! But no way to make it work without /var/tmp/ tmp file
         //Flushing env
         java.util.Enumeration e = System.getProperties().keys();
         java.util.Enumeration e2 = System.getProperties().elements();
-        while(e.hasMoreElements())
+        while (e.hasMoreElements()) {
             System.out.println(e.nextElement() + "=" + e2.nextElement());
-            
+        }
         //java.io.tmpdir.default is defined on 4.2 ...
         String tmpFile = System.getProperty("java.io.tmpdir.default");
-       
-        if(tmpFile == null) {
+
+        if (tmpFile == null) {
             //This is for Windows platform, hoping it is set.
             tmpFile = System.getProperty("Env-TMP");
         }
-           
-        if(tmpFile == null) {
-            if(!System.getProperty("os.name").startsWith("Win"))
+
+        if (tmpFile == null) {
+            if (!System.getProperty("os.name").startsWith("Win")) {
                 tmpFile = "/var/tmp";
-            //else
-            //We can't find the tmp dir. The test must fail
+                //else
+                //We can't find the tmp dir. The test must fail
+            }
+
+            ORIGINAL_TMP_FILE = tmpFile == null ? null : tmpFile + File.separator;
+
+            System.out.println("TMP FILE : " + ORIGINAL_TMP_FILE);
         }
-        
-        ORIGINAL_TMP_FILE =  tmpFile == null ? null :  tmpFile + File.separator;
-        
-        System.out.println("TMP FILE : " + ORIGINAL_TMP_FILE);
     }
-    
+
     /** Creates a new instance of BundleKeys */
     public J2SEProject(String name) {
         super(name);
-    }
-
-    public static NbTestSuite suite() {
-
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new J2SEProject("createSampleProject"));
-        suite.addTest(new J2SEProject("runWithJConsole"));
-        suite.addTest(new J2SEProject("debugWithJConsole"));
-        suite.addTest(new J2SEProject("runWithRemoteManagement"));
-        suite.addTest(new J2SEProject("debugWithRemoteManagement"));
-       
-        return suite;
     }
 
     /** Use for execution inside IDE */
@@ -120,215 +100,154 @@ public class J2SEProject extends JellyTestCase {
         junit.textui.TestRunner.run(suite());
     }
 
-    public void setUp() {
+    public static NbTestSuite suite() {
+
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(new J2SEProject("runWithJConsole"));
+        suite.addTest(new J2SEProject("debugWithJConsole"));
+        suite.addTest(new J2SEProject("runWithRemoteManagement"));
+        suite.addTest(new J2SEProject("debugWithRemoteManagement"));
+
+        return suite;
     }
 
-    public void tearDown() {
-    }
-    
-    public void createSampleProject() {
-        NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
-        npwo.selectCategory("Samples|Management");
-        npwo.selectProject("Anagram Game Managed with JMX");
-        npwo.next();
-        NewProjectNameLocationStepOperator npnlso = new NewProjectNameLocationStepOperator();
-        
-        npnlso.txtProjectName().setText(PROJECT_NAME);
-        npwo.finish();
-        
-    }
-    
     public void runWithJConsole() {
+        
+        System.out.println("============  runWithJConsole  ============");
+        
         assertTmpDir();
         String ctxt = preLocalConnection();
-        doItLocal("Run Main Project With Local Management", "run-management");
+        selectNode(PROJECT_NAME_J2SE_PROJECT_INTEGRATION);
+        doItLocal("Run Main Project With Monitoring and Management", "run-management");
         postLocalConnection(ctxt);
     }
-    
+
     public void debugWithJConsole() {
+        
+        System.out.println("============  debugWithJConsole  ============");
+        
         assertTmpDir();
         String ctxt = preLocalConnection();
-        doItLocal("Debug Main Project With Local Management", "debug-management");
+        selectNode(PROJECT_NAME_J2SE_PROJECT_INTEGRATION);
+        doItLocal("Debug Main Project With Monitoring and Management", "debug-management");
         postLocalConnection(ctxt);
     }
-    
+
     public void runWithRemoteManagement() {
-       doItRemote("Run Main Project with Remote Management...", "run-management");      
+        
+        System.out.println("============  runWithRemoteManagement  ============");
+        
+        selectNode(PROJECT_NAME_J2SE_PROJECT_INTEGRATION);
+        doItRemote("Run Main Project with Remote Management...", "run-management");
     }
-   
+
     public void debugWithRemoteManagement() {
-       doItRemote("Debug Main Project with Remote Management...", "debug-management");      
+        
+        System.out.println("============  debugWithRemoteManagement  ============");
+        
+        selectNode(PROJECT_NAME_J2SE_PROJECT_INTEGRATION);
+        doItRemote("Debug Main Project with Remote Management...", "debug-management");
     }
-    
+
+
+    private void doItLocal(String action, String target) {
+        
+        MainWindowOperator mainWindow = MainWindowOperator.getDefault();
+        // push "Open" toolbar button in "System" toolbar
+        System.out.println("Starting " + action + "...");        
+        mainWindow.getToolbarButton(mainWindow.getToolbar("Management"), 
+                action).push();
+        sleep(2000);
+        
+        checkOutputTabOperator(target, "Found manageable process, connecting JConsole to process...");
+        checkOutputTabOperator("-connect-jconsole", "jconsole  -interval=4");
+        terminateProcess("Processes|anagrams (-connect-jconsole)");
+    }
+
+    private void doItRemote(final String action, String target) {
+        
+        //We must thread the call in order not to be locked by dialog
+        Runnable r = new Runnable() {
+            public void run() {
+                JMenuBarOperator op = MainWindowOperator.getDefault().menuBar();
+                op.pushMenu("Run|Remote Management|" + action);
+            }
+        };
+        new Thread(r).start();
+
+        //Control dialog
+        DialogOperator dop = new DialogOperator();
+        String title = "Remote Management Configuration";
+        int maxToWait = 10;
+        while (maxToWait > 0) {
+            try {
+                System.out.println("Waiting for DialogOperator " + title);
+                dop.waitTitle(title);
+                System.out.println("(OK) Displayed DialogOperator " + title);
+                break;
+            } catch (Exception e) {
+                System.out.println("Remote DialogOperator " + title + " not yet displayed");
+                System.out.println(e.toString());
+                maxToWait--;
+            }
+        }
+
+        Component[] comp = dop.getComponents();
+        JButton b = findOkButton(comp[0]);
+        JButtonOperator op = new JButtonOperator(b);
+        op.clickMouse();
+        //for(int i = 0; i < comp.length; i++) {
+        //  System.out.println("Component name " + comp[i].getName());
+        //}
+        sleep(2000);
+        
+        checkOutputTabOperator(target, "Found manageable process, connecting JConsole to process...");
+        checkOutputTabOperator("-connect-jconsole", "jconsole  -interval=4");
+        terminateProcess("Processes|anagrams (-connect-jconsole)");
+    }
+
+    private static JButton findOkButton(Component root) {
+        if (root instanceof Container) {
+            Component[] components = ((Container) root).getComponents();
+            for (int i = 0; i < components.length; i++) {
+                JButton b = findOkButton(components[i]);
+                if (b != null) {
+                    return b;
+                }
+            }
+        }
+        if (root instanceof JButton) {
+            JButton b = (JButton) root;
+            String label = b.getText();
+            System.out.println("Found button label : [" + b.getText() + "]");
+            if (label.equals("OK")) {
+                return b;
+            }
+        }
+
+        return null;
+    }
+
     private void assertTmpDir() {
-        if(ORIGINAL_TMP_FILE == null)
+        if (ORIGINAL_TMP_FILE == null) {
             throw new IllegalArgumentException("TMP DIR is not set, check env");
+        }
     }
-    
+
     private String preLocalConnection() {
         //Just in case we are not testing using XTest harness
-        if(ORIGINAL_TMP_FILE == null) return null;
-        String current = System.getProperty("java.io.tmpdir");
-        System.setProperty("java.io.tmpdir", ORIGINAL_TMP_FILE);
+        if (ORIGINAL_TMP_FILE == null) {
+            return null;
+        }
+        String current = System.getProperty("createSampleProject");
+        System.setProperty("runWithJConsole", ORIGINAL_TMP_FILE);
         return current;
     }
-    
+
     private void postLocalConnection(String ctxt) {
-        if(ctxt == null) return;
+        if (ctxt == null) {
+            return;
+        }
         System.setProperty("java.io.tmpdir", ctxt);
-    }
-    
-    private void doItLocal(String action, String target) {
-       syncOnProject();
-       activateLocalAction(action);
-       try {
-           Thread.sleep(2000);
-       }catch(Exception e){}
-       trackAndKillJConsole(target);
-    }
-    
-    private void doItRemote(String action, String target) {
-       syncOnProject();
-       activateRemoteAction(action); 
-       try {
-           Thread.sleep(2000);
-       }catch(Exception e){}
-       trackAndKillJConsole(target);
-    }
-    
-    private void syncOnProject() {
-       //Sync on Project node
-       ProjectsTabOperator pto = new ProjectsTabOperator();
-       JTreeOperator tree = pto.tree();
-       ProjectRootNode prn = pto.getProjectRootNode(PROJECT_NAME);
-       System.out.println("FOUND NODE, WAITING 5 sec");
-       try {
-           Thread.sleep(5000);
-       }catch(Exception e){}
-    }
-    
-    private static JButton findOkButton(Component root) {
-          if (root instanceof Container) {
-                Component[] components = ((Container) root).getComponents();
-                for (int i = 0; i < components.length; i++) {
-                    JButton b = findOkButton(components[i]);
-                    if(b != null) return b;
-                }
-          }
-          if( root instanceof JButton) {
-           JButton b = (JButton) root;
-           String label = b.getText();
-           System.out.println("Found button label : [" + b.getText() + "]");
-           if(label.equals("OK")) return b;
-          }
-          
-          return null;
-    }
-    
-    private void activateRemoteAction(final String action) {
-       //We must thread the call in order not to be locked by dialog
-       Runnable r = new Runnable() {
-           public void run() {
-                JMenuBarOperator op = MainWindowOperator.getDefault().menuBar();
-                op.pushMenu("Run|Remote Management|"+action);
-           }
-       };
-       new Thread(r).start();
-       
-       //Control dialog
-       DialogOperator dop = new DialogOperator();
-       int maxToWait = 10;
-       while(maxToWait > 0) {
-        try {
-            dop.waitTitle("Remote Management Configuration");
-            break;
-        }catch(Exception e) {
-            System.out.println("Remote dialog not yet displayed " + e.toString());
-            maxToWait--;
-        }
-       }
-       System.out.println("FOUND DIALOG : " + dop.getTitle());
-       Component[] comp = dop.getComponents();
-       JButton b = findOkButton(comp[0]);
-       JButtonOperator op = new JButtonOperator(b);
-       op.clickMouse();
-       //for(int i = 0; i < comp.length; i++) {
-         //  System.out.println("Component name " + comp[i].getName());
-       //}
-    }
-    
-    private void activateLocalAction(String action) {
-       MainWindowOperator mainWindow = MainWindowOperator.getDefault();
-      // push "Open" toolbar button in "System" toolbar
-      mainWindow.getToolbarButton(mainWindow.getToolbar("Management"), action).push();
-      System.out.println("Pushed Action");
-    }
-    
-    private void trackAndKillJConsole(String target) {
-        //Access output and synchronize on it
-        OutputTabOperator oto = null;
-        int maxToWait = 10;
-        while(maxToWait > 0) {
-            try {
-                oto = new OutputTabOperator(target);
-                break;
-            }catch(Exception e) {
-                System.out.println("Output tab not yet displayed " + e.toString());
-                maxToWait--;
-            }
-        }
-        System.out.println("*********************** WAITING FOR TEXT Found manageable process ... ************");
-        maxToWait = 10;
-      while(maxToWait > 0) {
-          try {
-              System.out.println("Waiting for JConsole to start");
-              oto.waitText("Found manageable process, connecting JConsole to process...");   
-              break;
-          }catch(Exception e){
-              System.out.println("JConsole not started, will wait again");
-              maxToWait--;
-          }
-      }
-      System.out.println("*********************** TEXT FOUND ************");
-      
-      OutputTabOperator oto2 = null;
-      maxToWait = 10;
-      while(maxToWait > 0) {
-            try {
-                oto2 = new OutputTabOperator("-connect-jconsole");
-                break;
-            }catch(Exception e) {
-                System.out.println("Output tab not yet displayed " + e.toString());
-                maxToWait--;
-            }
-        }
-      
-      maxToWait = 10;
-      while(maxToWait > 0) {
-          try {
-              System.out.println("Waiting for jconsole  -interval=4");
-              oto2.waitText("jconsole  -interval=4");
-              break;
-          }catch(Exception e){
-              System.out.println("JConsole not started, will wait again");
-              maxToWait--;
-          }
-      }
-      
-      //Now we can kill
-      //RuntimeTabOperator rto = RuntimeTabOperator.invoke();
-      // or when Runtime pane is already opened
-      RuntimeTabOperator rto = new RuntimeTabOperator();
-      
-      Node node = new Node(rto.getRootNode(), "Processes|anagrams (-connect-jconsole)");
-      String[] child = node.getChildren();
-      for(int i = 0; i < child.length; i++) {
-        System.out.println(child[i]);
-      }
-      //Little tempo to kill once stabilized state
-      try {
-          Thread.sleep(2000);
-      }catch(Exception e) {}
-      node.callPopup().pushMenu("Terminate Process");
     }
 }

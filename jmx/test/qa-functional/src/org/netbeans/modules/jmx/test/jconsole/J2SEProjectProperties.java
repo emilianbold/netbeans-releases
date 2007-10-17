@@ -41,16 +41,27 @@
 
 package org.netbeans.modules.jmx.test.jconsole;
 
+import java.awt.Component;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.KeyStroke;
+import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.operators.JMenuItemOperator;
+import org.netbeans.jemmy.operators.JTreeOperator;
+import org.netbeans.jemmy.util.NameComponentChooser;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.jellytools.MainWindowOperator;
+import static org.netbeans.modules.jmx.test.helpers.JellyConstants.*;
 
 /**
- * Start a JConsole process and check it appears in the Runtime processes.
+ * Select created Anagram Game managed with JMX project.
+ * Then, run/debug project with monitoring and management.
  */
-public class JConsole extends JConsoleTestCase {
+public class J2SEProjectProperties extends JConsoleTestCase {
 
     /** Creates a new instance of BundleKeys */
-    public JConsole(String name) {
+    public J2SEProjectProperties(String name) {
         super(name);
     }
 
@@ -61,22 +72,34 @@ public class JConsole extends JConsoleTestCase {
     }
 
     public static NbTestSuite suite() {
+
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new JConsole("startJConsole"));
+        suite.addTest(new J2SEProjectProperties("runWithJConsole"));
+        //        suite.addTest(new J2SEProjectProperties("debugWithJConsole"));
+        //        suite.addTest(new J2SEProjectProperties("runWithRemoteManagement"));
+        //        suite.addTest(new J2SEProjectProperties("debugWithRemoteManagement"));
         return suite;
     }
 
+    public void runWithJConsole() {
 
-    public void startJConsole() {
-        
-        MainWindowOperator mainWindow = MainWindowOperator.getDefault();
-        // push "Open" toolbar button in "System" toolbar
-        System.out.println("Starting JConsole...");
-        mainWindow.getToolbarButton(mainWindow.getToolbar("Management"), 
-                "Start JConsole Management Console").push();
-        sleep(2000);
-        
-        checkOutputTabOperator("JConsole", "JConsole started");
-        terminateProcess("Processes|JConsole");
+        System.out.println("============  runWithJConsole  ============");
+
+        System.out.println("Invoke Project -> Properties");
+        new ProjectsTabOperator().getProjectRootNode(
+                PROJECT_NAME_J2SE_PROJECT_INTEGRATION).properties();
+        NbDialogOperator ndo = new NbDialogOperator(
+                PROPERTIES_DIALOG_TITLE + " - " + PROJECT_NAME_J2SE_PROJECT_INTEGRATION);
+
+        System.out.println("Select " + MONITORING_AND_MANAGEMENT + " category");
+        new Node(new JTreeOperator(ndo), MONITORING_AND_MANAGEMENT).select();
+
+        sleep(5000);
+    }
+
+
+    public void debugWithJConsole() {
+
+        System.out.println("============  debugWithJConsole  ============");
     }
 }

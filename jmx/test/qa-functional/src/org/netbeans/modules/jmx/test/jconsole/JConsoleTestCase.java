@@ -41,42 +41,70 @@
 
 package org.netbeans.modules.jmx.test.jconsole;
 
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.jellytools.MainWindowOperator;
+import org.netbeans.jellytools.OutputTabOperator;
+import org.netbeans.jellytools.RuntimeTabOperator;
+import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.modules.jmx.test.helpers.JMXTestCase;
+import static org.netbeans.modules.jmx.test.helpers.JellyConstants.*;
 
 /**
- * Start a JConsole process and check it appears in the Runtime processes.
+ * Starting class for jconsole tests.
  */
-public class JConsole extends JConsoleTestCase {
+public class JConsoleTestCase extends JMXTestCase {
 
-    /** Creates a new instance of BundleKeys */
-    public JConsole(String name) {
+    /** Need to be defined because of JUnit */
+    public JConsoleTestCase(String name) {
         super(name);
     }
 
-    /** Use for execution inside IDE */
-    public static void main(java.lang.String[] args) {
-        // run whole suite
-        junit.textui.TestRunner.run(suite());
+    protected void checkOutputTabOperator(String title, String text) {
+
+        OutputTabOperator oto = null;
+
+        int maxToWait = 10;
+        while (maxToWait > 0) {
+            try {
+                System.out.println("Waiting for OutputTabOperator " + title);
+                oto = new OutputTabOperator(title);
+                System.out.println("(OK) Displayed OutputTabOperator " + title);
+                break;
+            } catch (Exception e) {
+                System.out.println("OutputTabOperator " + title + " not yet displayed");
+                System.out.println(e.toString());
+                maxToWait--;
+            }
+        }
+
+        maxToWait = 10;
+        while (maxToWait > 0) {
+            try {
+                System.out.println("Waiting for text " + text);
+                oto.waitText(text);
+                System.out.println("(OK) Displayed text " + text);
+                break;
+            } catch (Exception e) {
+                System.out.println("Text " + text + " not yet displayed");
+                System.out.println(e.toString());
+                maxToWait--;
+            }
+        }
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new JConsole("startJConsole"));
-        return suite;
-    }
+    protected void terminateProcess(String nodeName) {
 
-
-    public void startJConsole() {
+        RuntimeTabOperator rto = RuntimeTabOperator.invoke();
+        // or when Runtime pane is already opened
+        //RuntimeTabOperator rto = new RuntimeTabOperator();
         
-        MainWindowOperator mainWindow = MainWindowOperator.getDefault();
-        // push "Open" toolbar button in "System" toolbar
-        System.out.println("Starting JConsole...");
-        mainWindow.getToolbarButton(mainWindow.getToolbar("Management"), 
-                "Start JConsole Management Console").push();
+        Node node = new Node(rto.getRootNode(), nodeName);
+        String[] child = node.getChildren();
+        for (int i = 0; i < child.length; i++) {
+            System.out.println(child[i]);
+        }
+        //Little tempo to kill once stabilized state
         sleep(2000);
-        
-        checkOutputTabOperator("JConsole", "JConsole started");
-        terminateProcess("Processes|JConsole");
+
+        System.out.println("Call Terminate Process on " + nodeName);
+        node.callPopup().pushMenu("Terminate Process");
     }
 }

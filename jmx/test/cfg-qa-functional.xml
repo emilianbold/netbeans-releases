@@ -71,6 +71,7 @@ made subject to such option by the copyright holder.
                 <include name="org/netbeans/modules/jmx/test/actions/GenerateMBeanRegistrationActions.class"/>
                 <include name="org/netbeans/modules/jmx/test/helpers/CloseAllDocuments.class"/>
                 <include name="org/netbeans/modules/jmx/test/jconsole/JConsole.class"/>
+                <include name="org/netbeans/modules/jmx/test/jconsole/CreateAnagramProject.class"/>
                 <include name="org/netbeans/modules/jmx/test/jconsole/J2SEProject.class"/>
 
             </patternset>

@@ -42,15 +42,18 @@
 package org.netbeans.modules.jmx.test.jconsole;
 
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.jellytools.MainWindowOperator;
+import static org.netbeans.modules.jmx.test.helpers.JellyConstants.*;
 
 /**
- * Start a JConsole process and check it appears in the Runtime processes.
+ * Creates Anagram Game managed with JMX project.
+ * This project will be used by J2SEProject, J2SEProjectOptions and 
+ * J2SEProjectProperties tests.
  */
-public class JConsole extends JConsoleTestCase {
+public class CreateAnagramProject extends JConsoleTestCase {
+
 
     /** Creates a new instance of BundleKeys */
-    public JConsole(String name) {
+    public CreateAnagramProject(String name) {
         super(name);
     }
 
@@ -61,22 +64,19 @@ public class JConsole extends JConsoleTestCase {
     }
 
     public static NbTestSuite suite() {
+
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new JConsole("startJConsole"));
+        suite.addTest(new CreateAnagramProject("createSampleProject"));
         return suite;
     }
 
+    public void createSampleProject() {
 
-    public void startJConsole() {
+        System.out.println("============  createSampleProject  ============");
         
-        MainWindowOperator mainWindow = MainWindowOperator.getDefault();
-        // push "Open" toolbar button in "System" toolbar
-        System.out.println("Starting JConsole...");
-        mainWindow.getToolbarButton(mainWindow.getToolbar("Management"), 
-                "Start JConsole Management Console").push();
-        sleep(2000);
-        
-        checkOutputTabOperator("JConsole", "JConsole started");
-        terminateProcess("Processes|JConsole");
+        System.out.println("Create project for J2SEProject tests");
+        newProject(PROJECT_CATEGORY_SAMPLES_JMX, 
+                PROJECT_TYPE_ANAGRAM_GAME, 
+                PROJECT_NAME_J2SE_PROJECT_INTEGRATION);
     }
 }

@@ -41,16 +41,19 @@
 
 package org.netbeans.modules.jmx.test.jconsole;
 
+import org.netbeans.jellytools.OptionsOperator;
+import org.netbeans.jemmy.operators.JTabbedPaneOperator;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.jellytools.MainWindowOperator;
+import static org.netbeans.modules.jmx.test.helpers.JellyConstants.*;
 
 /**
- * Start a JConsole process and check it appears in the Runtime processes.
+ * Select created Anagram Game managed with JMX project.
+ * Then, run/debug project with monitoring and management.
  */
-public class JConsole extends JConsoleTestCase {
+public class J2SEProjectOptions extends JConsoleTestCase {
 
     /** Creates a new instance of BundleKeys */
-    public JConsole(String name) {
+    public J2SEProjectOptions(String name) {
         super(name);
     }
 
@@ -61,22 +64,34 @@ public class JConsole extends JConsoleTestCase {
     }
 
     public static NbTestSuite suite() {
+
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new JConsole("startJConsole"));
+        suite.addTest(new J2SEProjectOptions("runWithJConsole"));
+        //        suite.addTest(new J2SEProjectOptions("debugWithJConsole"));
+        //        suite.addTest(new J2SEProjectOptions("runWithRemoteManagement"));
+        //        suite.addTest(new J2SEProjectOptions("debugWithRemoteManagement"));
         return suite;
     }
 
+    public void runWithJConsole() {
 
-    public void startJConsole() {
+        System.out.println("============  runWithJConsole  ============");
+
+        System.out.println("Invoke Tools -> Options");
+        OptionsOperator oo = OptionsOperator.invoke();
+        sleep(5000);
+        System.out.println("Select Miscellaneous options category");
+        oo.selectCategory("Miscellaneous");
+        sleep(5000);
+        System.out.println("Select JConsole options tab");
+        new JTabbedPaneOperator(oo).selectPage("JConsole");
         
-        MainWindowOperator mainWindow = MainWindowOperator.getDefault();
-        // push "Open" toolbar button in "System" toolbar
-        System.out.println("Starting JConsole...");
-        mainWindow.getToolbarButton(mainWindow.getToolbar("Management"), 
-                "Start JConsole Management Console").push();
-        sleep(2000);
-        
-        checkOutputTabOperator("JConsole", "JConsole started");
-        terminateProcess("Processes|JConsole");
+        sleep(5000);
+    }
+
+
+    public void debugWithJConsole() {
+
+        System.out.println("============  debugWithJConsole  ============");
     }
 }
