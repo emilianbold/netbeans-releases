@@ -256,9 +256,9 @@ public class OutputWindowWriter extends Writer {
                 
                 if (lc != null) {
                     try {
-                        // TODO:
-                        // Preprocessor supports 
-                        // #line directive => line number can be out of scope
+                        // TODO: IZ#119211
+                        // Preprocessor supports #line directive => 
+                        // line number can be out of scope
                         Line l = lc.getLineSet().getOriginal(line);
 
                         if (!l.isDeleted()) {
