@@ -258,6 +258,7 @@ private void standAlonePatternSelected(java.awt.event.ActionEvent evt) {//GEN-FI
         }
         String text = NbBundle.getMessage(this.getClass(), bundleKey);
         descriptionEditorPane.setText(text);
+        descriptionEditorPane.setCaretPosition(0);
     }
     
     public void addChangeListener(ChangeListener listener) {
