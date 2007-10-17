@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.junit.Manager;
+import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.test.BaseTestCase;
 
@@ -122,4 +123,11 @@ public class RepositoryAccessTestBase  extends BaseTestCase {
 	int pos = name.lastIndexOf('.');
 	return (pos < 0) ? name : name.substring(pos+1);
     }
+    
+    protected void waitLibsParsed(CsmProject project) {
+	for( CsmProject lib : project.getLibraries() ) {
+	    lib.waitParse();
+	}
+    }
+    
 }

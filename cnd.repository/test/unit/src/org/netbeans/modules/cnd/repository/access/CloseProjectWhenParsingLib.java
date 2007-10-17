@@ -93,18 +93,12 @@ public class CloseProjectWhenParsingLib extends RepositoryAccessTestBase  {
 	    // the assertion won't appear;
 	    // if we close project without persistence cleanup, 
 	    // the assertion won't appear either
-	    // waitLibs(project);
+	    // waitLibsParsed(project);
 	    traceModel.resetProject(true);
 	    waitCloseAndClear(libs, traceModel);
 	    assertNoExceptions();
 	}
 	assertNoExceptions();
-    }
-    
-    private void waitLibs(CsmProject project) {
-	for( CsmProject lib : project.getLibraries() ) {
-	    lib.waitParse();
-	}
     }
     
     private void waitCloseAndClear(Collection<CsmProject> libs, TraceModelBase traceModel) {
