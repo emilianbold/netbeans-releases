@@ -281,6 +281,9 @@ public final class UiUtils {
                                 // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6210674
                                 // NBI Issue :
                                 // http://www.netbeans.org/issues/show_bug.cgi?id=105065
+                                // it also a workaround for two more bugs
+                                // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6449933
+                                // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6489447
                                 LogManager.log("... creating JFileChooser object to check possible issues with UI");
                                 new JFileChooser();
                                 
