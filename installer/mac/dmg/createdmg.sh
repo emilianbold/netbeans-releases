@@ -39,7 +39,7 @@ hdiutil mount -verbose -mountpoint $tmpdir/mountpoint $tmpdir/template.sparseima
 rm -rf $tmpdir/mountpoint/*
 rsync -a $srcdirs --exclude .DS_Store $tmpdir/mountpoint/
 diskutil rename $tmpdir/mountpoint "$volname"
-hdiutil unmount -verbose $tmpdir/mountpoint
+hdiutil detach -verbose $tmpdir/mountpoint
 rm -f "$dmg"
 hdiutil create -verbose -srcdevice $tmpdir/template.sparseimage "$dmg"
 rm -f $tmpdir/template.sparseimage
