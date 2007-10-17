@@ -158,7 +158,7 @@ public class Dwarf {
         }
     }
     
-    public CompilationUnit getCompilationUnit(String srcFileFullName) {
+    public CompilationUnit getCompilationUnit(String srcFileFullName) throws IOException {
         for (CompilationUnit unit : getCompilationUnits()) {
             // TODO: remove hack
             
@@ -183,7 +183,7 @@ public class Dwarf {
 	return fileName;
     }
     
-    public List<CompilationUnit> getCompilationUnits() {
+    public List<CompilationUnit> getCompilationUnits() throws IOException {
         if (isArchive) {
             return getArchiveCompilationUnits(magic.getReader());
         } else {
@@ -191,44 +191,33 @@ public class Dwarf {
         }
     }
     
-    private List<CompilationUnit> getFileCompilationUnits() {
+    private List<CompilationUnit> getFileCompilationUnits() throws IOException {
         DwarfDebugInfoSection debugInfo = (DwarfDebugInfoSection)dwarfReader.getSection(SECTIONS.DEBUG_INFO);
         List<CompilationUnit> result = null;
-        try {
-            if (debugInfo != null) {
-                result = debugInfo.getCompilationUnits();
-            } else {
-                result = new LinkedList<CompilationUnit>();
-            }
-        } catch (IOException ex) {
-            System.err.println("Exception in file: " + dwarfReader.getFileName());
-            ex.printStackTrace();
+        if (debugInfo != null) {
+            result = debugInfo.getCompilationUnits();
+        } else {
+            result = new LinkedList<CompilationUnit>();
         }
-        
         return result;
     }
     
-    private List<CompilationUnit> getArchiveCompilationUnits(RandomAccessFile reader) {
+    private List<CompilationUnit> getArchiveCompilationUnits(RandomAccessFile reader) throws IOException {
         List<CompilationUnit> result = new LinkedList<CompilationUnit>();
-        for(MemberHeader member : offsets){
-            try {
-                long shiftIvArchive = member.getOffset();
-                int length = member.getLength();
-                reader.seek(shiftIvArchive);
-                byte[] bytes = new byte[8];
-                reader.readFully(bytes);
-                if (FileMagic.isElfMagic(bytes)) {
-                    dwarfReader = new DwarfReader(fileName, reader, Magic.Elf, shiftIvArchive, length);
-                } else if (FileMagic.isCoffMagic(bytes)) {
-                    dwarfReader = new DwarfReader(fileName, reader, Magic.Coff, shiftIvArchive, length);
-                } else if (FileMagic.isMachoMagic(bytes)) {
-                    dwarfReader = new DwarfReader(fileName, reader, Magic.Macho, shiftIvArchive, length);
-                }
-                result.addAll(getFileCompilationUnits());
-            } catch (IOException ex) {
-                System.err.println("Exception in file: " + dwarfReader.getFileName());
-                ex.printStackTrace();
+        for (MemberHeader member : offsets) {
+            long shiftIvArchive = member.getOffset();
+            int length = member.getLength();
+            reader.seek(shiftIvArchive);
+            byte[] bytes = new byte[8];
+            reader.readFully(bytes);
+            if (FileMagic.isElfMagic(bytes)) {
+                dwarfReader = new DwarfReader(fileName, reader, Magic.Elf, shiftIvArchive, length);
+            } else if (FileMagic.isCoffMagic(bytes)) {
+                dwarfReader = new DwarfReader(fileName, reader, Magic.Coff, shiftIvArchive, length);
+            } else if (FileMagic.isMachoMagic(bytes)) {
+                dwarfReader = new DwarfReader(fileName, reader, Magic.Macho, shiftIvArchive, length);
             }
+            result.addAll(getFileCompilationUnits());
         }
         return result;
     }

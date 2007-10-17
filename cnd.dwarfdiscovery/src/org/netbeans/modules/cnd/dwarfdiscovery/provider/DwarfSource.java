@@ -70,7 +70,7 @@ import org.openide.util.Utilities;
  * @author Alexander Simon
  */
 public class DwarfSource implements SourceFileProperties{
-    private static final boolean FULL_TRACE = false;
+    private static final boolean FULL_TRACE = Boolean.getBoolean("cnd.dwarfdiscovery.trace.read.source"); // NOI18N
     private static boolean ourGatherMacros = true;
     private static boolean ourGatherIncludes = true;
     private static final String CYG_DRIVE_UNIX = "/cygdrive/"; // NOI18N
@@ -98,16 +98,29 @@ public class DwarfSource implements SourceFileProperties{
         initSourceSettings(cu, isCPP);
     }
 
+    private void countFileName(CompilationUnit cu) {
+        fullName = cu.getSourceFileAbsolutePath();
+        fullName = fixFileName(fullName);
+        File file = new File(fullName);
+        fullName = FileUtil.normalizeFile(file).getAbsolutePath();
+        fullName = linkSupport(fullName);
+        if (fullName != null && Utilities.isWindows()) {
+            fullName = fullName.replace('/', '\\');
+        }
+        fullName = PathCache.getString(fullName);
+        if (FULL_TRACE) System.out.println("Compilation unit full name:"+fullName); // NOI18N
+    }
+
     private void initCompilerSettings(CompilerSettings compilerSettings, boolean isCPP){
         List<String> list = compilerSettings.getSystemIncludePaths(isCPP);
        if (list != null){
            systemIncludes = new ArrayList<String>(list);
-           if (FULL_TRACE) {
-               System.out.println("System Include Paths:"); // NOI18N
-               for (String s : list) {
-                   System.out.println("\t"+s); // NOI18N
-               }
-           }
+           //if (FULL_TRACE) {
+           //    System.out.println("System Include Paths:"); // NOI18N
+           //    for (String s : list) {
+           //        System.out.println("\t"+s); // NOI18N
+           //    }
+           //}
            if (Utilities.isWindows()) {
                if (FULL_TRACE) System.out.println("CompileFlavor:"+compilerSettings.getCompileFlavor()); // NOI18N
                if ("Cygwin".equals(compilerSettings.getCompileFlavor())) { // NOI18N
@@ -338,13 +351,7 @@ public class DwarfSource implements SourceFileProperties{
         userIncludes = new ArrayList<String>();
         userMacros = new HashMap<String,String>();
         includedFiles = new HashSet<String>();
-        File file = new File(cu.getSourceFileAbsolutePath());
-        fullName = PathCache.getString(fixFileName(fullName));
-        fullName = FileUtil.normalizeFile(file).getAbsolutePath();
-        fullName = linkSupport(fullName);
-        if (fullName != null && Utilities.isWindows()) {
-            fullName = fullName.replace('/', '\\');
-        }
+        countFileName(cu);
         compilePath = PathCache.getString(fixFileName(cu.getCompilationDir()));
         sourceName = PathCache.getString(cu.getSourceFileName());
         
@@ -381,6 +388,7 @@ public class DwarfSource implements SourceFileProperties{
     
     private void gatherLine(String line) {
         // /set/c++/bin/5.9/intel-S2/prod/bin/CC -c -g -DHELLO=75 -Idist  main.cc -Qoption ccfe -prefix -Qoption ccfe .XAKABILBpivFlIc.
+        if (FULL_TRACE) System.out.println("Process command line "+line); // NOI18N
         StringTokenizer st = new StringTokenizer(line);
         while(st.hasMoreTokens()){
             String option = st.nextToken();
@@ -451,7 +459,6 @@ public class DwarfSource implements SourceFileProperties{
     }
     
     private void addpath(String path){
-        if (FULL_TRACE) System.out.println("Try to add path:"+path); // NOI18N
         if (haveSystemIncludes) {
             if (!isSystemPath(path)){
                 addUserIncludePath(PathCache.getString(path));
@@ -486,6 +493,7 @@ public class DwarfSource implements SourceFileProperties{
         }
         DwarfStatementList dwarfTable = cu.getStatementList();
         if (dwarfTable == null) {
+            if (FULL_TRACE) System.out.println("Include paths not found"); // NOI18N
             return;
         }
         for (Iterator<String> it = dwarfTable.getIncludeDirectories().iterator(); it.hasNext();) {
@@ -519,6 +527,7 @@ public class DwarfSource implements SourceFileProperties{
             }
             includedFiles.add(PathCache.getString(includeFullName));
         }
+        if (FULL_TRACE) System.out.println("Include paths:"+userIncludes); // NOI18N
     }
 
     private void cutFolderPrefix(String path, final DwarfStatementList dwarfTable) {
@@ -590,6 +599,7 @@ public class DwarfSource implements SourceFileProperties{
         }
         DwarfMacinfoTable dwarfTable = cu.getMacrosTable();
         if (dwarfTable == null) {
+            if (FULL_TRACE) System.out.println("Macros not found"); // NOI18N
             return;
         }
         ArrayList<DwarfMacinfoEntry> table = dwarfTable.getCommandLineMarcos();
@@ -613,6 +623,7 @@ public class DwarfSource implements SourceFileProperties{
             }
             userMacros.put(macro,value);
         }
+        if (FULL_TRACE) System.out.println("Macros:"+userMacros); // NOI18N
     }
 
     private boolean equalValues(String sysValue, String value) {

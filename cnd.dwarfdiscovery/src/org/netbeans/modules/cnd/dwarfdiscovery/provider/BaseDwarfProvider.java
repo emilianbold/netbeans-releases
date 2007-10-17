@@ -68,6 +68,7 @@ import org.openide.util.Utilities;
 public abstract class BaseDwarfProvider implements DiscoveryProvider {
     
     private static final boolean TRACE_READ_EXCEPTIONS = Boolean.getBoolean("cnd.dwarfdiscovery.trace.read.errors"); // NOI18N
+    private static final boolean FULL_TRACE = Boolean.getBoolean("cnd.dwarfdiscovery.trace.read.source"); // NOI18N
     protected boolean isStoped = false;
     
     public BaseDwarfProvider() {
@@ -191,6 +192,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         List<SourceFileProperties> list = new ArrayList<SourceFileProperties>();
         Dwarf dump = null;
         try{
+            if (FULL_TRACE) System.out.println("Process file "+objFileName);  // NOI18N
             dump = new Dwarf(objFileName);
             List <CompilationUnit> units = dump.getCompilationUnits();
             if (units != null && units.size() > 0) {
@@ -199,16 +201,12 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                         break;
                     }
                     if (cu.getRoot() == null || cu.getSourceFileName() == null) {
-                        if (TRACE_READ_EXCEPTIONS) {
-                            System.err.println("Compilation unit has broken name in file "+objFileName);
-                        }
+                        if (TRACE_READ_EXCEPTIONS) System.out.println("Compilation unit has broken name in file "+objFileName);  // NOI18N
                         continue;
                     }
                     String lang = PathCache.getString(cu.getSourceLanguage());
                     if (lang == null) {
-                        if (TRACE_READ_EXCEPTIONS){
-                            System.err.println("Compilation unit has unresolved language in file "+objFileName);
-                        }
+                        if (TRACE_READ_EXCEPTIONS) System.out.println("Compilation unit has unresolved language in file "+objFileName);  // NOI18N
                         continue;
                     }
                     DwarfSource source = null;
@@ -219,12 +217,14 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                     } else if (LANG.DW_LANG_C_plus_plus.toString().equals(lang)) {
                         source = new DwarfSource(cu,true,getCommpilerSettings(), grepBase);
                     } else {
+                        if (FULL_TRACE) System.out.println("Unknown language: "+lang);  // NOI18N
                         // Ignore other languages
                     }
                     if (source != null) {
                         String name = PathCache.getString(source.getItemPath());
                         SourceFileProperties old = map.get(name);
                         if (old != null && old.getUserInludePaths().size() > 0) {
+                            if (FULL_TRACE) System.out.println("Compilation unit already exist. Skip "+name);  // NOI18N
                             // do not process processed item
                             continue;
                         }
@@ -233,24 +233,21 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                     }
                 }
             } else {
-                if (TRACE_READ_EXCEPTIONS){
-                    System.err.println("There are no compilation units in file "+objFileName);
-                }
+                if (TRACE_READ_EXCEPTIONS) System.out.println("There are no compilation units in file "+objFileName);  // NOI18N
             }
         } catch (FileNotFoundException ex) {
             // Skip Exception
+            if (TRACE_READ_EXCEPTIONS) System.out.println("File not found "+objFileName+": "+ex.getMessage());  // NOI18N
         } catch (WrongFileFormatException ex) {
-            if (TRACE_READ_EXCEPTIONS){
-                System.err.println("Unsuported format of file "+objFileName);
-            }
+            if (TRACE_READ_EXCEPTIONS) System.out.println("Unsuported format of file "+objFileName+": "+ex.getMessage());  // NOI18N
         } catch (IOException ex) {
             if (TRACE_READ_EXCEPTIONS){
-                System.err.println("Exception in file "+objFileName);
+                System.err.println("Exception in file "+objFileName);  // NOI18N
                 ex.printStackTrace();
             }
         } catch (Exception ex) {
             if (TRACE_READ_EXCEPTIONS){
-                System.err.println("Exception in file "+objFileName);
+                System.err.println("Exception in file "+objFileName);  // NOI18N
                 ex.printStackTrace();
             }
         } finally {
