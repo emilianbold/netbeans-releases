@@ -114,41 +114,24 @@ public abstract class AbstractSQLViewFactory implements IOperatorManager {
      * @return toolbar actions
      */
     public abstract List getToolBarActions();
-
     /**
      * call this to setup relation between graph view, graph view container, toolbar,
      * controller and model
      */
-    public void setUp(boolean isTrue) {
+    IGraphView graphView = null;
+
+    public void setUp() {
         IGraphController controller = createGraphController();
         SQLUIModel model = getSQLModel();
 
         //set up graph view
-        IGraphView graphView = createGraphView();
+        graphView = createGraphView();
         if (graphView != null) {
             graphView.setGraphController(controller);
             graphView.setGraphModel(getSQLModel());
 
             graphView.setGraphViewContainer(getGraphViewContainer());
             graphView.setGraphActions(getGraphActions());
-        }
-
-        //set up toolbar
-        IToolBar toolBar = createToolBar();
-        if (toolBar != null) {
-            toolBar.setGraphView(graphView);
-            toolBar.setActions(getToolBarActions());
-            toolBar.initializeToolBar();
-
-            SQLToolBar sqlToolBar=(SQLToolBar)toolBar;
-            sqlToolBar.initializeSQLToolBar();
-            //set toolbar on graph
-            if (graphView != null) {
-                graphView.setToolBar(toolBar);
-                if(isTrue){
-                     graphView.setToolBar(sqlToolBar);
-                }
-            }
         }
         //set up controller
         if (controller != null) {
@@ -157,17 +140,38 @@ public abstract class AbstractSQLViewFactory implements IOperatorManager {
         }
     }
 
-    /*public void setSQLToolBar() {
-        IGraphView graphView = createGraphView();
-        SQLToolBar toolBar = (SQLToolBar) createToolBar();
-        if (toolBar != null) {          
+    public void setToolBar() {
+        setUp();
+        //set up toolbar
+        IToolBar toolBar = createToolBar();
+        if (toolBar != null) {
+            toolBar.setGraphView(graphView);
             toolBar.setActions(getToolBarActions());
-            toolBar.initializeSQLToolBar();
+            toolBar.initializeToolBar();
+            //set toolbar on graph
             if (graphView != null) {
                 graphView.setToolBar(toolBar);
             }
         }
-    }*/
+    }
+
+    public void setSQLToolBar() {
+        setUp();
+        //set up toolbar
+        IToolBar toolBar = createToolBar();
+        if (toolBar != null) {
+            toolBar.setGraphView(graphView);
+            toolBar.setActions(getToolBarActions());
+            toolBar.initializeToolBar();
+            SQLToolBar sqlToolBar = (SQLToolBar) toolBar;
+            sqlToolBar.initializeSQLToolBar();
+            //set toolbar on graph
+            if (graphView != null) {
+                graphView.setToolBar(toolBar);
+                graphView.setToolBar(sqlToolBar);
+            }
+        }
+    }
 
     /**
      * Show the operator palette dialog, initially displaying the category panel

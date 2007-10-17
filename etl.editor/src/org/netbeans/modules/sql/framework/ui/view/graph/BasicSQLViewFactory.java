@@ -47,7 +47,7 @@ public final class BasicSQLViewFactory extends AbstractSQLViewFactory {
         // This has to be created only once
         operatorModel = OperatorXmlInfoModel.getInstance(this.gViewContainer.getOperatorFolder());
         this.toolbarType = IOperatorXmlInfoModel.CATEGORY_TRANSFORM;
-        super.setUp(false);
+        super.setToolBar();
     }
 
     /**

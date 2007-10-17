@@ -36,7 +36,7 @@ public class JoinPreviewViewFactory extends AbstractSQLViewFactory {
         this.sqlModel = model;
         this.gViewContainer = gContainer;
         this.mainSQLGraphView = mainSQLGraphView;
-        super.setUp(false);
+        super.setToolBar();
     }
 
     /**
