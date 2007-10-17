@@ -765,8 +765,6 @@ private void viewSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//
         
         // reconfigure the column widths and positions
         initColumnSizes(actionTable);
-        actionTable.getColumnModel().getColumn(ActionTableModel.ICON_COLUMN).setPreferredWidth(30);
-        actionTable.getColumnModel().getColumn(ActionTableModel.TASK_COLUMN).setPreferredWidth(30);
         // move around
         actionTable.getColumnModel().moveColumn(ActionTableModel.ICON_COLUMN,3);
         actionTable.getColumnModel().moveColumn(ActionTableModel.TASK_COLUMN,4);
@@ -1037,20 +1035,22 @@ private void viewSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//
                     }
                 }
             }
-            // skip this column if nothing found for longest
-            if(longest == null) continue;
             
             comp = headerRenderer.getTableCellRendererComponent(
                                  table, column.getHeaderValue(),
                                  false, false, 0, 0);
             headerWidth = comp.getPreferredSize().width;
 
-            comp = table.getDefaultRenderer(model.getColumnClass(i)).
-                             getTableCellRendererComponent(
-                                 table, longest,
-                                 false, false, 0, i);
-            cellWidth = comp.getPreferredSize().width;
-            cellWidth+=5; // a little extra space to make it look better
+            if (longest == null) {
+                cellWidth = 0;
+            } else {
+                comp = table.getDefaultRenderer(model.getColumnClass(i)).
+                                 getTableCellRendererComponent(
+                                     table, longest,
+                                     false, false, 0, i);
+                cellWidth = comp.getPreferredSize().width;
+                cellWidth+=5; // a little extra space to make it look better
+            }
 
             if (DEBUG) {
                 System.out.println("Initializing width of column " //log
