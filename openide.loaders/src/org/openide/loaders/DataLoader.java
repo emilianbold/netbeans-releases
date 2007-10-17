@@ -138,16 +138,9 @@ public abstract class DataLoader extends SharedClassObject {
         Class<? extends DataObject> cls;
         String clsName = (String)getProperty (PROP_REPRESENTATION_CLASS_NAME);
         try {
-            ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);
-            if (l == null) {
-                l = Thread.currentThread().getContextClassLoader();
-            }
-            if (l == null) {
-                l = getClass().getClassLoader();
-            }
-            cls = Class.forName(clsName, false, l).asSubclass(DataObject.class);
+            cls = Class.forName(clsName, false, getClass().getClassLoader()).asSubclass(DataObject.class);
         } catch (ClassNotFoundException cnfe) {
-            throw new IllegalStateException (cnfe.toString ());
+            throw (IllegalStateException) new IllegalStateException("Failed to load " + clsName + " from " + getClass().getClassLoader()).initCause(cnfe);
         }
 	
         putProperty (PROP_REPRESENTATION_CLASS, cls);
