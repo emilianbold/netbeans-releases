@@ -98,6 +98,9 @@ public class NewEjbJarProjectWizardIterator implements WizardDescriptor.Progress
         
         Set resultSet = new HashSet();
         File dirF = (File) wiz.getProperty(WizardProperties.PROJECT_DIR);
+        if (dirF != null) {
+            dirF = FileUtil.normalizeFile(dirF);
+        }
         String name = (String) wiz.getProperty(WizardProperties.NAME);
         String serverInstanceID = (String) wiz.getProperty(WizardProperties.SERVER_INSTANCE_ID);
         String j2eeLevel = (String) wiz.getProperty(WizardProperties.J2EE_LEVEL);

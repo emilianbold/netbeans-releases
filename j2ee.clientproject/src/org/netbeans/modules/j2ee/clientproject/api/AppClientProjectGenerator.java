@@ -83,6 +83,7 @@ import org.openide.loaders.DataObject;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
@@ -121,13 +122,27 @@ public class AppClientProjectGenerator {
      * @return the helper object permitting it to be further customized
      * @throws IOException in case something went wrong
      */
-    public static AntProjectHelper createProject(File dir, String name, String mainClass, String j2eeLevel, String serverInstanceID) throws IOException {
-        FileObject fo = FileUtil.createFolder(dir);
+    public static AntProjectHelper createProject(File dir, final String name, 
+            final String mainClass, final String j2eeLevel, 
+            final String serverInstanceID) throws IOException {
+        final AntProjectHelper[] h = new AntProjectHelper[1];
+        final FileObject projectDir = FileUtil.createFolder(dir);
         
-        FileObject srcRoot = fo.createFolder(DEFAULT_SRC_FOLDER);
+        // create project in one FS atomic action:
+        FileSystem fs = projectDir.getFileSystem();
+        fs.runAtomicAction(new FileSystem.AtomicAction() {
+            public void run() throws IOException {
+                AntProjectHelper helper = createProjectImpl(projectDir, name, mainClass, j2eeLevel, serverInstanceID);
+                h[0] = helper;
+            }});
+        return h[0];
+    }
+    
+    private static AntProjectHelper createProjectImpl(FileObject projectDir, String name, String mainClass, String j2eeLevel, String serverInstanceID) throws IOException {
+        FileObject srcRoot = projectDir.createFolder(DEFAULT_SRC_FOLDER);
         FileObject javaRoot = srcRoot.createFolder(DEFAULT_JAVA_FOLDER);
         FileObject confRoot = srcRoot.createFolder(DEFAULT_CONF_FOLDER);
-        fo.createFolder(DEFAULT_TEST_FOLDER);
+        projectDir.createFolder(DEFAULT_TEST_FOLDER);
         
         // create application-client.xml
         String resource = (J2eeModule.JAVA_EE_5.equals(j2eeLevel)
@@ -138,7 +153,7 @@ public class AppClientProjectGenerator {
         appClient.setDisplayName(name);
         appClient.write(ddFile);
         
-        AntProjectHelper h = createProject(fo, name, DEFAULT_SRC_FOLDER, DEFAULT_TEST_FOLDER,
+        AntProjectHelper h = createProject(projectDir, name, DEFAULT_SRC_FOLDER, DEFAULT_TEST_FOLDER,
                 null, null, null,mainClass, j2eeLevel, serverInstanceID);
         
         EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
@@ -148,7 +163,7 @@ public class AppClientProjectGenerator {
         
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         
-        Project p = ProjectManager.getDefault().findProject(fo);
+        Project p = ProjectManager.getDefault().findProject(projectDir);
         ProjectManager.getDefault().saveProject(p);
         
         if ( mainClass != null ) {
@@ -176,77 +191,90 @@ public class AppClientProjectGenerator {
      * @throws IOException in case something went wrong
      */
     public static AntProjectHelper importProject(final File dir, final String name,
+            final File[] sourceFolders, final File[] testFolders, final File confFolder, 
+            final File libFolder, final String j2eeLevel, final String serverInstanceID) throws IOException {
+        final AntProjectHelper[] h = new AntProjectHelper[1];
+        final FileObject projectDir = FileUtil.createFolder(dir);
+        
+        // create project in one FS atomic action:
+        FileSystem fs = projectDir.getFileSystem();
+        fs.runAtomicAction(new FileSystem.AtomicAction() {
+            public void run() throws IOException {
+                AntProjectHelper helper = importProjectImpl(projectDir, name, sourceFolders, 
+                        testFolders, confFolder, libFolder, j2eeLevel, serverInstanceID);
+                h[0] = helper;
+            }});
+        return h[0];
+    }
+    
+    private static AntProjectHelper importProjectImpl(final FileObject projectDir, final String name,
             final File[] sourceFolders, final File[] testFolders, final File confFolder, final File libFolder, String j2eeLevel, String serverInstanceID) throws IOException {
         assert sourceFolders != null && testFolders != null: "Package roots can't be null";   //NOI18N
-        final FileObject dirFO = FileUtil.createFolder(dir);
-        final AntProjectHelper h = createProject(dirFO, name, null, null,
+        final AntProjectHelper h = createProject(projectDir, name, null, null,
                 confFolder.getAbsolutePath(), (libFolder == null ? null : libFolder.getAbsolutePath()),
                 null, null, j2eeLevel, serverInstanceID);
-        final AppClientProject p = (AppClientProject) ProjectManager.getDefault().findProject(dirFO);
+        final AppClientProject p = (AppClientProject) ProjectManager.getDefault().findProject(projectDir);
         final ReferenceHelper refHelper = p.getReferenceHelper();
-        // issue 89278: do not fire file change events under ProjectManager.MUTEX,
-        // it is deadlock-prone
-        dirFO.getFileSystem().runAtomicAction(new AtomicAction() {
-            public void run() throws IOException {
-                try {
-                    ProjectManager.mutex().writeAccess( new Mutex.ExceptionAction<Void>() {
-                        public Void run() throws Exception {
-                            Element data = h.getPrimaryConfigurationData(true);
-                            Document doc = data.getOwnerDocument();
-                            NodeList nl = data.getElementsByTagNameNS(AppClientProjectType.PROJECT_CONFIGURATION_NAMESPACE,"source-roots"); // NOI18N
-                            assert nl.getLength() == 1;
-                            Element sourceRoots = (Element) nl.item(0);
-                            nl = data.getElementsByTagNameNS(AppClientProjectType.PROJECT_CONFIGURATION_NAMESPACE,"test-roots");  //NOI18N
-                            assert nl.getLength() == 1;
-                            Element testRoots = (Element) nl.item(0);
-                            for (int i=0; i<sourceFolders.length; i++) {
-                                String propName = "src.dir" + (i == 0 ? "" : Integer.toString(i+1)); //NOI18N
-                                String srcReference = refHelper.createForeignFileReference(sourceFolders[i], JavaProjectConstants.SOURCES_TYPE_JAVA);
-                                Element root = doc.createElementNS(AppClientProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
-                                root.setAttribute("id",propName);   //NOI18N
-                                sourceRoots.appendChild(root);
-                                EditableProperties props = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                                props.put(propName,srcReference);
-                                h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props); // #47609
-                            }
+        
+        try {
+            ProjectManager.mutex().writeAccess( new Mutex.ExceptionAction<Void>() {
+                public Void run() throws Exception {
+                    Element data = h.getPrimaryConfigurationData(true);
+                    Document doc = data.getOwnerDocument();
+                    NodeList nl = data.getElementsByTagNameNS(AppClientProjectType.PROJECT_CONFIGURATION_NAMESPACE,"source-roots"); // NOI18N
+                    assert nl.getLength() == 1;
+                    Element sourceRoots = (Element) nl.item(0);
+                    nl = data.getElementsByTagNameNS(AppClientProjectType.PROJECT_CONFIGURATION_NAMESPACE,"test-roots");  //NOI18N
+                    assert nl.getLength() == 1;
+                    Element testRoots = (Element) nl.item(0);
+                    for (int i=0; i<sourceFolders.length; i++) {
+                        String propName = "src.dir" + (i == 0 ? "" : Integer.toString(i+1)); //NOI18N
+                        String srcReference = refHelper.createForeignFileReference(sourceFolders[i], JavaProjectConstants.SOURCES_TYPE_JAVA);
+                        Element root = doc.createElementNS(AppClientProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
+                        root.setAttribute("id",propName);   //NOI18N
+                        sourceRoots.appendChild(root);
+                        EditableProperties props = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                        props.put(propName,srcReference);
+                        h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props); // #47609
+                    }
 
-                            if (testFolders.length == 0) {
-                                String testLoc = NbBundle.getMessage(AppClientProjectGenerator.class,"TXT_DefaultTestFolderName");
-                                File f = new File(dir,testLoc);
-                                f.mkdirs();
-                                String propName = "test.src.dir"; // NOI18N
-                                Element root = doc.createElementNS(AppClientProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
-                                root.setAttribute("id",propName);   //NOI18N
-                                root.setAttribute("name",NbBundle.getMessage(AppClientProjectGenerator.class, "NAME_test.src.dir"));
-                                testRoots.appendChild(root);
-                                EditableProperties props = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                                props.put(propName,testLoc);
-                                h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props); // #47609
-                            } else {
-                                for (int i=0; i<testFolders.length; i++) {
-                                    if (!testFolders[i].exists()) {
-                                        testFolders[i].mkdirs();
-                                    }
-                                    String propName = "test.src.dir" + (i == 0 ? "" : Integer.toString(i+1)); //NOI18N
-                                    String testReference = refHelper.createForeignFileReference(testFolders[i], JavaProjectConstants.SOURCES_TYPE_JAVA);
-                                    Element root = doc.createElementNS(AppClientProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
-                                    root.setAttribute("id",propName);   //NOI18N
-                                    testRoots.appendChild(root);
-                                    EditableProperties props = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH); // #47609
-                                    props.put(propName,testReference);
-                                    h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
-                                }
+                    if (testFolders.length == 0) {
+                        String testLoc = NbBundle.getMessage(AppClientProjectGenerator.class,"TXT_DefaultTestFolderName");
+                        projectDir.createFolder(testLoc);
+                        String propName = "test.src.dir"; // NOI18N
+                        Element root = doc.createElementNS(AppClientProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
+                        root.setAttribute("id",propName);   //NOI18N
+                        root.setAttribute("name",NbBundle.getMessage(AppClientProjectGenerator.class, "NAME_test.src.dir"));
+                        testRoots.appendChild(root);
+                        EditableProperties props = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                        props.put(propName,testLoc);
+                        h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props); // #47609
+                    } else {
+                        for (int i=0; i<testFolders.length; i++) {
+                            if (!testFolders[i].exists()) {
+                                testFolders[i].mkdirs();
                             }
-                            h.putPrimaryConfigurationData(data,true);
-                            ProjectManager.getDefault().saveProject(p);
-                            return null;
+                            String propName = "test.src.dir" + (i == 0 ? "" : Integer.toString(i+1)); //NOI18N
+                            String testReference = refHelper.createForeignFileReference(testFolders[i], JavaProjectConstants.SOURCES_TYPE_JAVA);
+                            Element root = doc.createElementNS(AppClientProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
+                            root.setAttribute("id",propName);   //NOI18N
+                            testRoots.appendChild(root);
+                            EditableProperties props = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH); // #47609
+                            props.put(propName,testReference);
+                            h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
                         }
-                    });
-                } catch (MutexException me ) {
-                    Exceptions.printStackTrace(me);
+                    }
+                    h.putPrimaryConfigurationData(data,true);
+                    ProjectManager.getDefault().saveProject(p);
+                    return null;
                 }
-            }   
-        });
+            });
+        } catch (MutexException me ) {
+            IOException ex = new IOException("project creation failed");
+            ex.initCause(me);
+            throw ex;
+        }
+        
         // AB: fix for #53170: if j2eeLevel is 1.4 and application-client.xml is version 1.3, we upgrade it to version 1.4
         FileObject confFolderFO = FileUtil.toFileObject(confFolder);
         FileObject appClientXML = confFolderFO == null ? null

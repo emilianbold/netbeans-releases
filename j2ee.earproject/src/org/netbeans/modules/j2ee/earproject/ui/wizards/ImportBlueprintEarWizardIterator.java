@@ -101,7 +101,13 @@ public class ImportBlueprintEarWizardIterator implements WizardDescriptor.Progre
         handle.progress(NbBundle.getMessage(ImportBlueprintEarWizardIterator.class, "LBL_NewEarProjectWizardIterator_WizardProgress_CreatingProject"), 1);
         
         File dirF = (File) wiz.getProperty(WizardProperties.PROJECT_DIR);
+        if (dirF != null) {
+            dirF = FileUtil.normalizeFile(dirF);
+        }
         File srcF = (File) wiz.getProperty(WizardProperties.SOURCE_ROOT);
+        if (srcF != null) {
+            srcF = FileUtil.normalizeFile(srcF);
+        }
         String name = (String) wiz.getProperty(WizardProperties.NAME);
         String j2eeLevel = (String) wiz.getProperty(WizardProperties.J2EE_LEVEL);
         //        String contextPath = (String) wiz.getProperty(WizardProperties.CONTEXT_PATH);
@@ -127,7 +133,7 @@ public class ImportBlueprintEarWizardIterator implements WizardDescriptor.Progre
             handle.progress(2);
         }
 
-        FileObject dir = FileUtil.toFileObject(FileUtil.normalizeFile(dirF));
+        FileObject dir = FileUtil.toFileObject(dirF);
         
         // remember last used server
         FoldersListSettings.getDefault().setLastUsedServer(serverInstanceID);

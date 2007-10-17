@@ -81,6 +81,7 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
@@ -109,11 +110,12 @@ public final class EarProjectGenerator {
     private final String j2eeLevel;
     private final String serverInstanceID;
     private final String sourceLevel;
-    private FileObject prjDirFO;
+    private final FileObject prjDirFO;
     
-    private EarProjectGenerator(File prjDir, String name, String j2eeLevel,
+    private EarProjectGenerator(File prjDir, FileObject prjDirFO, String name, String j2eeLevel,
             String serverInstanceID, String sourceLevel) {
         this.prjDir = prjDir;
+        this.prjDirFO = prjDirFO;
         this.name = name;
         this.j2eeLevel = j2eeLevel;
         this.serverInstanceID = serverInstanceID;
@@ -133,23 +135,41 @@ public final class EarProjectGenerator {
      */
     public static AntProjectHelper createProject(File prjDir, String name, String j2eeLevel,
             String serverInstanceId, String sourceLevel) throws IOException {
-        EarProjectGenerator earGen = new EarProjectGenerator(prjDir, name, j2eeLevel,
+        FileObject projectDir = FileUtil.createFolder(prjDir);
+        final EarProjectGenerator earGen = new EarProjectGenerator(prjDir, projectDir, name, j2eeLevel,
                 serverInstanceId, sourceLevel);
-        return earGen.doCreateProject();
+        final AntProjectHelper[] h = new AntProjectHelper[1];
+        
+        // create project in one FS atomic action:
+        FileSystem fs = projectDir.getFileSystem();
+        fs.runAtomicAction(new FileSystem.AtomicAction() {
+            public void run() throws IOException {
+                AntProjectHelper helper = earGen.doCreateProject();
+                h[0] = helper;
+            }});
+        return h[0];
     }
     
-    public static AntProjectHelper importProject(File pDir, File sDir, String name,
-            String j2eeLevel, String serverInstanceID, String platformName,
+    public static AntProjectHelper importProject(File pDir, final File sDir, String name,
+            String j2eeLevel, String serverInstanceID, final String platformName,
             String sourceLevel, final Map<FileObject, ModuleType> userModules)
             throws IOException {
-        EarProjectGenerator earGen = new EarProjectGenerator(pDir, name,
+        FileObject projectDir = FileUtil.createFolder(pDir);
+        final EarProjectGenerator earGen = new EarProjectGenerator(pDir, projectDir, name,
                 j2eeLevel, serverInstanceID, sourceLevel);
-        return earGen.doImportProject(sDir, userModules, platformName);
+        final AntProjectHelper[] h = new AntProjectHelper[1];
+        
+        // create project in one FS atomic action:
+        FileSystem fs = projectDir.getFileSystem();
+        fs.runAtomicAction(new FileSystem.AtomicAction() {
+            public void run() throws IOException {
+                AntProjectHelper helper = earGen.doImportProject(sDir, userModules, platformName);
+                h[0] = helper;
+            }});
+        return h[0];
     }
     
     private AntProjectHelper doCreateProject() throws IOException {
-        prjDirFO = FileUtil.createFolder(prjDir);
-        
         AntProjectHelper h = setupProject();
         FileObject docBase = FileUtil.createFolder(prjDirFO, DEFAULT_DOC_BASE_FOLDER);
         
@@ -175,9 +195,6 @@ public final class EarProjectGenerator {
     private AntProjectHelper doImportProject(final File srcPrjDir,
             Map<FileObject, ModuleType> userModules,
             String platformName) throws IOException {
-        
-        prjDirFO = FileUtil.createFolder(prjDir);
-        
         FileObject srcPrjDirFO = FileUtil.toFileObject(FileUtil.normalizeFile(srcPrjDir));
         FileObject docBase = FileUtil.createFolder(srcPrjDirFO, DEFAULT_DOC_BASE_FOLDER);
         

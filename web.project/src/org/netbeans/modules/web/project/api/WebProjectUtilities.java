@@ -159,7 +159,23 @@ public class WebProjectUtilities {
      * @throws IOException in case something went wrong
      */
     public static AntProjectHelper createProject(final WebProjectCreateData createData) throws IOException {
+        final AntProjectHelper[] h = new AntProjectHelper[1];
         File dir = createData.getProjectDir();
+        assert dir != null: "Project folder can't be null"; //NOI18N
+        final FileObject projectDir = FileUtil.createFolder(dir);
+        
+        // create project in one FS atomic action:
+        FileSystem fs = projectDir.getFileSystem();
+        fs.runAtomicAction(new FileSystem.AtomicAction() {
+            public void run() throws IOException {
+                AntProjectHelper helper = createProjectImpl(createData, projectDir);
+                h[0] = helper;
+            }});
+        return h[0];
+    }
+    
+    private static AntProjectHelper createProjectImpl(final WebProjectCreateData createData, 
+            FileObject projectDir) throws IOException {
         String name = createData.getName();
         String serverInstanceID = createData.getServerInstanceID();
         String sourceStructure = createData.getSourceStructure();
@@ -168,7 +184,6 @@ public class WebProjectUtilities {
         String javaPlatformName = createData.getJavaPlatformName();
         String sourceLevel = createData.getSourceLevel();
         
-        assert dir != null: "Project folder can't be null"; //NOI18N
         assert name != null: "Project name can't be null"; //NOI18N
         assert serverInstanceID != null: "Server instance ID can't be null"; //NOI18N
         assert sourceStructure != null: "Source structure can't be null"; //NOI18N
@@ -177,10 +192,9 @@ public class WebProjectUtilities {
         final boolean createBluePrintsStruct = SRC_STRUCT_BLUEPRINTS.equals(sourceStructure);
         final boolean createJakartaStructure = SRC_STRUCT_JAKARTA.equals(sourceStructure);
         
-        final FileObject fo = FileUtil.createFolder(dir);
-        AntProjectHelper h = setupProject(fo, name, serverInstanceID, j2eeLevel);
+        AntProjectHelper h = setupProject(projectDir, name, serverInstanceID, j2eeLevel);
         
-        FileObject srcFO = fo.createFolder(DEFAULT_SRC_FOLDER);
+        FileObject srcFO = projectDir.createFolder(DEFAULT_SRC_FOLDER);
         FileObject confFolderFO = null;
         
         if (createBluePrintsStruct) {
@@ -189,7 +203,7 @@ public class WebProjectUtilities {
         }
         
         if(createJakartaStructure) {
-            confFolderFO = fo.createFolder(DEFAULT_CONF_FOLDER);
+            confFolderFO = projectDir.createFolder(DEFAULT_CONF_FOLDER);
         }
         
         //create default manifest
@@ -198,9 +212,9 @@ public class WebProjectUtilities {
         }
         
         //test folder
-        FileUtil.createFolder(fo, DEFAULT_TEST_FOLDER);
+        FileUtil.createFolder(projectDir, DEFAULT_TEST_FOLDER);
         
-        FileObject webFO = fo.createFolder(DEFAULT_DOC_BASE_FOLDER);
+        FileObject webFO = projectDir.createFolder(DEFAULT_DOC_BASE_FOLDER);
         final FileObject webInfFO = webFO.createFolder(WEB_INF);
         // create web.xml
         // PENDING : should be easier to define in layer and copy related FileObject (doesn't require systemClassLoader)
@@ -213,20 +227,15 @@ public class WebProjectUtilities {
             webXMLContent = readResource(Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-project/web-2.3.xml").getInputStream()); //NOI18N
         assert webXMLContent != null : "Cannot find web.xml template for J2EE specification level:" + j2eeLevel;
         final String webXmlText = webXMLContent;
-        FileSystem fs = webInfFO.getFileSystem();
-        fs.runAtomicAction(new FileSystem.AtomicAction() {
-            public void run() throws IOException {
-                FileObject webXML = FileUtil.createData(webInfFO, "web.xml");//NOI18N
-                FileLock lock = webXML.lock();
-                BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(webXML.getOutputStream(lock)));
-                try {
-                    bw.write(webXmlText);
-                } finally {
-                    bw.close();
-                    lock.releaseLock();
-                }
-            }
-        });
+        FileObject webXML = FileUtil.createData(webInfFO, "web.xml");//NOI18N
+        FileLock lock = webXML.lock();
+        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(webXML.getOutputStream(lock)));
+        try {
+            bw.write(webXmlText);
+        } finally {
+            bw.close();
+            lock.releaseLock();
+        }
         
         EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         Element data = h.getPrimaryConfigurationData(true);
@@ -385,7 +394,23 @@ public class WebProjectUtilities {
      * @throws IOException in case something went wrong
      */
     public static AntProjectHelper importProject(final WebProjectCreateData createData) throws IOException {
-        final File dir = createData.getProjectDir();
+        final AntProjectHelper[] h = new AntProjectHelper[1];
+        File dir = createData.getProjectDir();
+        assert dir != null: "Project folder can't be null"; //NOI18N
+        final FileObject projectDir = FileUtil.createFolder(dir);
+        
+        // create project in one FS atomic action:
+        FileSystem fs = projectDir.getFileSystem();
+        fs.runAtomicAction(new FileSystem.AtomicAction() {
+            public void run() throws IOException {
+                AntProjectHelper helper = importProjectImpl(createData, projectDir);
+                h[0] = helper;
+            }});
+        return h[0];
+    }
+    
+    private static AntProjectHelper importProjectImpl(final WebProjectCreateData createData, 
+            final FileObject projectDir) throws IOException {
         String name = createData.getName();
         FileObject wmFO = createData.getWebModuleFO();
         final File[] sourceFolders = createData.getSourceFolders();
@@ -400,7 +425,6 @@ public class WebProjectUtilities {
         boolean javaSourceBased = createData.getJavaSourceBased();
         FileObject webInfFolder = createData.getWebInfFolder();
         
-        assert dir != null: "Project folder can't be null"; //NOI18N
         assert name != null: "Project name can't be null"; //NOI18N
         assert wmFO != null: "File object representation of the imported web project location can't be null";   //NOI18N
         assert sourceFolders != null: "Source package root can't be null";   //NOI18N
@@ -408,96 +432,90 @@ public class WebProjectUtilities {
         assert serverInstanceID != null: "Server instance ID can't be null"; //NOI18N
         assert j2eeLevel != null: "Java EE version can't be null"; //NOI18N
         
-        FileObject fo = FileUtil.createFolder(dir);
-        
-        final AntProjectHelper antProjectHelper = setupProject(fo, name, serverInstanceID, j2eeLevel);
+        final AntProjectHelper antProjectHelper = setupProject(projectDir, name, serverInstanceID, j2eeLevel);
         final WebProject p = (WebProject) ProjectManager.getDefault().findProject(antProjectHelper.getProjectDirectory());
         final ReferenceHelper referenceHelper = p.getReferenceHelper();
         EditableProperties ep = new EditableProperties(true);
         
-        if (FileUtil.isParentOf(fo, wmFO) || fo.equals(wmFO)) {
+        if (FileUtil.isParentOf(projectDir, wmFO) || projectDir.equals(wmFO)) {
             ep.setProperty(WebProjectProperties.SOURCE_ROOT, "."); //NOI18N
         } else {
             ep.setProperty(WebProjectProperties.SOURCE_ROOT,
                     referenceHelper.createForeignFileReference(FileUtil.toFile(wmFO), null));
         }
-        ep.setProperty(WebProjectProperties.WEB_DOCBASE_DIR, createFileReference(referenceHelper, fo, wmFO, docBase));
+        ep.setProperty(WebProjectProperties.WEB_DOCBASE_DIR, createFileReference(referenceHelper, projectDir, wmFO, docBase));
         
         final File[] testFolders = tstFolders;
-        // issue 89278: do not fire file change events under ProjectManager.MUTEX,
-        // it is deadlock-prone
-        fo.getFileSystem().runAtomicAction(new AtomicAction() {
-            public void run() {
-                try {
-                    ProjectManager.mutex().writeAccess( new Mutex.ExceptionAction() {
-                        public Object run() throws Exception {
-                            Element data = antProjectHelper.getPrimaryConfigurationData(true);
-                            Document doc = data.getOwnerDocument();
+        try {
+            ProjectManager.mutex().writeAccess( new Mutex.ExceptionAction() {
+                public Object run() throws Exception {
+                    Element data = antProjectHelper.getPrimaryConfigurationData(true);
+                    Document doc = data.getOwnerDocument();
 
-                            Element sourceRoots = doc.createElementNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE,"source-roots");  //NOI18N
-                            data.appendChild(sourceRoots);
-                            Element testRoots = doc.createElementNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE,"test-roots");  //NOI18N
-                            data.appendChild(testRoots);
+                    Element sourceRoots = doc.createElementNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE,"source-roots");  //NOI18N
+                    data.appendChild(sourceRoots);
+                    Element testRoots = doc.createElementNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE,"test-roots");  //NOI18N
+                    data.appendChild(testRoots);
 
-                            NodeList nl = data.getElementsByTagNameNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE,"source-roots");
-                            assert nl.getLength() == 1;
-                            sourceRoots = (Element) nl.item(0);
-                            nl = data.getElementsByTagNameNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE,"test-roots");  //NOI18N
-                            assert nl.getLength() == 1;
-                            testRoots = (Element) nl.item(0);
-                            for (int i=0; i<sourceFolders.length; i++) {
-                                String propName = "src.dir" + (i == 0 ? "" : Integer.toString(i+1)); //NOI18N
-                                String srcReference = referenceHelper.createForeignFileReference(sourceFolders[i], JavaProjectConstants.SOURCES_TYPE_JAVA);
-                                Element root = doc.createElementNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
-                                root.setAttribute("id",propName);   //NOI18N
-                                root.setAttribute("name",NbBundle.getMessage(WebProjectUtilities.class, "NAME_src.dir")); //NOI18N
-                                sourceRoots.appendChild(root);
-                                EditableProperties props = antProjectHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                                props.put(propName,srcReference);
-                                antProjectHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props); // #47609
+                    NodeList nl = data.getElementsByTagNameNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE,"source-roots");
+                    assert nl.getLength() == 1;
+                    sourceRoots = (Element) nl.item(0);
+                    nl = data.getElementsByTagNameNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE,"test-roots");  //NOI18N
+                    assert nl.getLength() == 1;
+                    testRoots = (Element) nl.item(0);
+                    for (int i=0; i<sourceFolders.length; i++) {
+                        String propName = "src.dir" + (i == 0 ? "" : Integer.toString(i+1)); //NOI18N
+                        String srcReference = referenceHelper.createForeignFileReference(sourceFolders[i], JavaProjectConstants.SOURCES_TYPE_JAVA);
+                        Element root = doc.createElementNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
+                        root.setAttribute("id",propName);   //NOI18N
+                        root.setAttribute("name",NbBundle.getMessage(WebProjectUtilities.class, "NAME_src.dir")); //NOI18N
+                        sourceRoots.appendChild(root);
+                        EditableProperties props = antProjectHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                        props.put(propName,srcReference);
+                        antProjectHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props); // #47609
+                    }
+
+                    if (testFolders == null || testFolders.length == 0) {
+                        EditableProperties props = antProjectHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                        props.put("test.src.dir", "");
+                        antProjectHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props); // #47609
+                    } else {
+                        for (int i=0; i<testFolders.length; i++) {
+                            if (!testFolders[i].exists()) {
+                                testFolders[i].mkdirs();
                             }
 
-                            if (testFolders == null || testFolders.length == 0) {
-                                EditableProperties props = antProjectHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                                props.put("test.src.dir", "");
-                                antProjectHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props); // #47609
-                            } else {
-                                for (int i=0; i<testFolders.length; i++) {
-                                    if (!testFolders[i].exists()) {
-                                        testFolders[i].mkdirs();
-                                    }
-
-                                    String name = testFolders[i].getName();
-                                    String propName = "test." + name + ".dir";    //NOI18N
-                                    int rootIndex = 1;
-                                    EditableProperties props = antProjectHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                                    while (props.containsKey(propName)) {
-                                        rootIndex++;
-                                        propName = "test." + name + rootIndex + ".dir";   //NOI18N
-                                    }
-                                    String testReference = referenceHelper.createForeignFileReference(testFolders[i], JavaProjectConstants.SOURCES_TYPE_JAVA);
-                                    Element root = doc.createElementNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
-                                    root.setAttribute("id",propName);   //NOI18N
-                                    root.setAttribute("name",NbBundle.getMessage(WebProjectUtilities.class, "NAME_test.src.dir")); //NOI18N
-                                    testRoots.appendChild(root);
-                                    props = antProjectHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH); // #47609
-                                    props.put(propName,testReference);
-                                    antProjectHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
-                                }
+                            String name = testFolders[i].getName();
+                            String propName = "test." + name + ".dir";    //NOI18N
+                            int rootIndex = 1;
+                            EditableProperties props = antProjectHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                            while (props.containsKey(propName)) {
+                                rootIndex++;
+                                propName = "test." + name + rootIndex + ".dir";   //NOI18N
                             }
-                            antProjectHelper.putPrimaryConfigurationData(data,true);
-                            ProjectManager.getDefault().saveProject(p);
-                            return null;
+                            String testReference = referenceHelper.createForeignFileReference(testFolders[i], JavaProjectConstants.SOURCES_TYPE_JAVA);
+                            Element root = doc.createElementNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
+                            root.setAttribute("id",propName);   //NOI18N
+                            root.setAttribute("name",NbBundle.getMessage(WebProjectUtilities.class, "NAME_test.src.dir")); //NOI18N
+                            testRoots.appendChild(root);
+                            props = antProjectHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH); // #47609
+                            props.put(propName,testReference);
+                            antProjectHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
                         }
-                    });
-                } catch (MutexException me ) {
-                    Exceptions.printStackTrace(me);
+                    }
+                    antProjectHelper.putPrimaryConfigurationData(data,true);
+                    ProjectManager.getDefault().saveProject(p);
+                    return null;
                 }
-            }
-        });
+            });
+        } catch (MutexException me ) {
+            IOException ex = new IOException("project creation failed");
+            ex.initCause(me);
+            throw ex;
+        }
         
         if (libFolder != null) {
-            ep.setProperty(WebProjectProperties.LIBRARIES_DIR, createFileReference(referenceHelper, fo, wmFO, libFolder));
+            ep.setProperty(WebProjectProperties.LIBRARIES_DIR, createFileReference(referenceHelper, projectDir, wmFO, libFolder));
             
             //add libraries from the specified folder in the import wizard
             if (libFolder.isFolder()) {
@@ -522,18 +540,18 @@ public class WebProjectUtilities {
         
         //creates conf.dir property and tries to simply guess it
         //(it would be nice to have a possibily to set this property in the wizard)
-        Enumeration ch = FileSearchUtility.getChildrenToDepth(fo, 4, true);
+        Enumeration ch = FileSearchUtility.getChildrenToDepth(projectDir, 4, true);
         String confDir = ""; //NOI18N
         while (ch.hasMoreElements()) {
             FileObject f = (FileObject) ch.nextElement();
             if (f.isFolder() && f.getName().equalsIgnoreCase("conf")) { //NOI18N
-                confDir = FileUtil.getRelativePath(fo, f);
+                confDir = FileUtil.getRelativePath(projectDir, f);
                 break;
             }
         }
         if (confDir.equals("")) { //NOI18N
             // if no conf directory was found, create default directory (#82147)
-            fo.createFolder(DEFAULT_CONF_FOLDER);
+            projectDir.createFolder(DEFAULT_CONF_FOLDER);
             ep.setProperty(WebProjectProperties.CONF_DIR, DEFAULT_CONF_FOLDER);
         } else
             ep.setProperty(WebProjectProperties.CONF_DIR, confDir); //NOI18N
@@ -542,7 +560,7 @@ public class WebProjectUtilities {
         //(it would be nice to have a possibily to set this property in the wizard)
         ep.setProperty(WebProjectProperties.RESOURCE_DIR, DEFAULT_RESOURCE_FOLDER);
         
-        String webInfDir = createFileReference(referenceHelper, fo, wmFO, webInfFolder);
+        String webInfDir = createFileReference(referenceHelper, projectDir, wmFO, webInfFolder);
         ep.setProperty(WebProjectProperties.WEBINF_DIR, webInfDir);
         
         ep.setProperty(WebProjectProperties.JAVA_SOURCE_BASED,javaSourceBased+"");

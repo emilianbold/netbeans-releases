@@ -126,6 +126,10 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
         Set resultSet = new HashSet();
 
         File dirF = (File) wiz.getProperty(WizardProperties.PROJECT_DIR);
+        if (dirF != null) {
+            dirF = FileUtil.normalizeFile(dirF);
+        }
+
         String servInstID = (String) wiz.getProperty(WizardProperties.SERVER_INSTANCE_ID);
         
         WebProjectCreateData createData = new WebProjectCreateData();

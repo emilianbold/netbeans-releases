@@ -266,8 +266,8 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         String name = projectNameTextField.getText().trim();
         String folder = createdFolderTextField.getText().trim();
         
-        d.putProperty( /*XXX Define somewhere */ "projdir", new File( folder )); // NOI18N
-        d.putProperty( /*XXX Define somewhere */ "name", name ); // NOI18N
+        d.putProperty( WizardProperties.PROJECT_DIR, new File( folder ));
+        d.putProperty( WizardProperties.NAME, name );
         
         final Integer nameIndex = projectNameTextField.getText().equals(generatedProjectName) ? Integer.valueOf(generatedProjectNameIndex) : null;
         d.putProperty(NewWebProjectWizardIterator.PROP_NAME_INDEX, nameIndex);

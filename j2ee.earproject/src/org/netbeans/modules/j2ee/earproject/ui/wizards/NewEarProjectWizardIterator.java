@@ -116,6 +116,9 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.ProgressIns
         handle.progress(NbBundle.getMessage(NewEarProjectWizardIterator.class, "LBL_NewEarProjectWizardIterator_WizardProgress_CreatingProject"), 1);
         
         File dirF = (File) wiz.getProperty(WizardProperties.PROJECT_DIR);
+        if (dirF != null) {
+            dirF = FileUtil.normalizeFile(dirF);
+        }
         String name = (String) wiz.getProperty(WizardProperties.NAME);
         String serverInstanceID = (String) wiz.getProperty(WizardProperties.SERVER_INSTANCE_ID);
         String j2eeLevel = (String) wiz.getProperty(WizardProperties.J2EE_LEVEL);
@@ -153,7 +156,7 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.ProgressIns
         AntProjectHelper h = EarProjectGenerator.createProject(dirF, name, j2eeLevel, serverInstanceID, sourceLevel);
         if (handle != null)
             handle.progress(2);
-        FileObject dir = FileUtil.toFileObject(FileUtil.normalizeFile(dirF));
+        FileObject dir = FileUtil.toFileObject(dirF);
         Project p = ProjectManager.getDefault().findProject(dir);
         EarProject earProject =  p.getLookup().lookup(EarProject.class);
         if (null != earProject) {
@@ -176,10 +179,10 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.ProgressIns
         EarProjectProperties epp = new EarProjectProperties((EarProject) p, refHelper, new EarProjectType());
         Project webProject = null;
         if (null != warName) {
-            File webAppDir = new File(dirF, warName);
+            File webAppDir = FileUtil.normalizeFile(new File(dirF, warName));
             
             WebProjectCreateData createData = new WebProjectCreateData();
-            createData.setProjectDir(FileUtil.normalizeFile(webAppDir));
+            createData.setProjectDir(webAppDir);
             createData.setName(warName);
             createData.setServerInstanceID(serverInstanceID);
             createData.setSourceStructure(WebProjectUtilities.SRC_STRUCT_BLUEPRINTS);
@@ -193,7 +196,7 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.ProgressIns
             if (handle != null)
                 handle.progress(4);
 
-            FileObject webAppDirFO = FileUtil.toFileObject(FileUtil.normalizeFile(webAppDir));
+            FileObject webAppDirFO = FileUtil.toFileObject(webAppDir);
             webProject = ProjectManager.getDefault().findProject(webAppDirFO);
             WebModule wm = WebModule.getWebModule(webAppDirFO);
             WebProjectUtilities.ensureWelcomePage(wm.getDocumentBase(), wm.getDeploymentDescriptor());
@@ -203,11 +206,11 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.ProgressIns
         }
         Project appClient = null;
         if (null != carName) {
-            File carDir = new File(dirF,carName);
+            File carDir = FileUtil.normalizeFile(new File(dirF,carName));
             if (handle != null)
                 handle.progress(NbBundle.getMessage(NewEarProjectWizardIterator.class, "LBL_NewEarProjectWizardIterator_WizardProgress_AppClient"), 5);
             AntProjectHelper clientHelper = AppClientProjectGenerator.createProject(
-                    FileUtil.normalizeFile(carDir), carName, mainClass,
+                    carDir, carName, mainClass,
                     EarProjectGenerator.checkJ2eeVersion(j2eeLevel, serverInstanceID,
                     J2eeModule.CLIENT), serverInstanceID);
             if (handle != null)
@@ -216,17 +219,17 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.ProgressIns
             if (platformName != null || sourceLevel != null) {
                 AppClientProjectGenerator.setPlatform(clientHelper, platformName, sourceLevel);
             }
-            FileObject carDirFO = FileUtil.toFileObject(FileUtil.normalizeFile(carDir));
+            FileObject carDirFO = FileUtil.toFileObject(carDir);
             appClient = ProjectManager.getDefault().findProject(carDirFO);
             
             epp.addJ2eeSubprojects(new Project[] { appClient });
             resultSet.add(carDirFO);
         }
         if (null != ejbJarName) {
-            File ejbJarDir = new File(dirF,ejbJarName);
+            File ejbJarDir = FileUtil.normalizeFile(new File(dirF,ejbJarName));
             if (handle != null)
                 handle.progress(NbBundle.getMessage(NewEarProjectWizardIterator.class, "LBL_NewEarProjectWizardIterator_WizardProgress_EJB"), 7);
-            AntProjectHelper ejbHelper = EjbJarProjectGenerator.createProject(FileUtil.normalizeFile(ejbJarDir),ejbJarName,
+            AntProjectHelper ejbHelper = EjbJarProjectGenerator.createProject(ejbJarDir,ejbJarName,
                     EarProjectGenerator.checkJ2eeVersion(j2eeLevel, serverInstanceID, J2eeModule.EJB), serverInstanceID);
             if (handle != null)
                 handle.progress(8);
@@ -234,7 +237,7 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.ProgressIns
             if (platformName != null || sourceLevel != null) {
                 EjbJarProjectGenerator.setPlatform(ejbHelper, platformName, sourceLevel);
             }
-            FileObject ejbJarDirFO = FileUtil.toFileObject(FileUtil.normalizeFile(ejbJarDir));
+            FileObject ejbJarDirFO = FileUtil.toFileObject(ejbJarDir);
             Project ejbJarProject = ProjectManager.getDefault().findProject(ejbJarDirFO);
             epp.addJ2eeSubprojects(new Project[] { ejbJarProject });
             resultSet.add(ejbJarDirFO);
