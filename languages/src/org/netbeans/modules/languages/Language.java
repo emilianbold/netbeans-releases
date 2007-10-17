@@ -353,7 +353,7 @@ public class Language extends org.netbeans.api.languages.Language {
     }
 
     public List<Feature> getFeatures (String featureName) {
-        return featureList.getFeatures (featureName);
+        return featureList.getFeaturesRec (featureName);
     }
 
     public Feature getFeature (String featureName) {

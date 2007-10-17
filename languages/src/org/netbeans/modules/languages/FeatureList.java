@@ -47,6 +47,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import org.netbeans.api.languages.ASTEvaluator;
 import org.netbeans.api.languages.ASTItem;
@@ -99,6 +100,23 @@ class FeatureList {
         if (features == null) return Collections.<Feature>emptyList ();
         List<Feature> result = features.get (featureName);
         if (result != null) return result;
+        return Collections.<Feature>emptyList ();
+    }
+    
+    List<Feature> getFeaturesRec (String featureName) {
+        if (features != null) {
+            List<Feature> result = features.get (featureName);
+            if (result != null) return result;
+        }
+        if (lists != null) {
+            for (Entry<String, FeatureList> entry : lists.entrySet()) {
+                FeatureList fList = entry.getValue();
+                if (fList != null) {
+                    List<Feature> result = fList.features.get(featureName);
+                    if (result != null) return result;
+                }
+            }
+        }
         return Collections.<Feature>emptyList ();
     }
     
