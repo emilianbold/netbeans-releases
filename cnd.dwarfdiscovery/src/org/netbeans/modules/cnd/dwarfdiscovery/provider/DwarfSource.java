@@ -506,6 +506,7 @@ public class DwarfSource implements SourceFileProperties{
         ArrayList<String> dwarfIncludedFiles = dwarfTable.getFilePaths();
         for(String path : dwarfIncludedFiles){
             String includeFullName = path;
+            if (FULL_TRACE) System.out.println("Included file original:"+path); // NOI18N
             if (path.startsWith("./")) { // NOI18N
                 includeFullName = compilePath+path.substring(1);
             } else if (path.startsWith("../")) { // NOI18N
@@ -526,6 +527,7 @@ public class DwarfSource implements SourceFileProperties{
                 }
             }
             includedFiles.add(PathCache.getString(includeFullName));
+            if (FULL_TRACE) System.out.println("Included file:"+includeFullName); // NOI18N
         }
         if (FULL_TRACE) System.out.println("Include paths:"+userIncludes); // NOI18N
     }
@@ -540,7 +542,9 @@ public class DwarfSource implements SourceFileProperties{
             String relativeDir = path.substring(0,n);
             String dir = "/"+relativeDir; // NOI18N
             ArrayList<String> paths = dwarfTable.getPathsForFile(name);
+            if (FULL_TRACE) System.out.println("Try to find new include paths for:"+name+" in folder "+dir); // NOI18N
             for(String dwarfPath : paths){
+                if (FULL_TRACE) System.out.println("    candidate:"+dwarfPath); // NOI18N
                 if (dwarfPath.endsWith(dir)){
                     String found = dwarfPath.substring(0,dwarfPath.length()-dir.length());
                     found = fixCygwinPath(found);
@@ -553,10 +557,12 @@ public class DwarfSource implements SourceFileProperties{
                                 system = systemIncludes.contains(found);
                             }
                             if (!system){
+                               if (FULL_TRACE) System.out.println("    Find new include path:"+found); // NOI18N
                                 addUserIncludePath(PathCache.getString(found));
                             }
                         } else {
                             if (!dwarfPath.startsWith("/usr")){ // NOI18N
+                                if (FULL_TRACE) System.out.println("    Find new include path:"+found); // NOI18N
                                 addUserIncludePath(PathCache.getString(found));
                             }
                         }
@@ -565,6 +571,7 @@ public class DwarfSource implements SourceFileProperties{
                 } else if (dwarfPath.equals(relativeDir)){
                     String found = "."; // NOI18N
                     if (!userIncludes.contains(found)) {
+                        if (FULL_TRACE) System.out.println("    Find new include path:"+found); // NOI18N
                         addUserIncludePath(PathCache.getString(found));
                     }
                     break;
@@ -663,10 +670,12 @@ public class DwarfSource implements SourceFileProperties{
                             if (c == '"') {
                                 if (line.indexOf('"',1)>0){
                                     res.add(line.substring(1,line.indexOf('"',1)));
+                                    if (FULL_TRACE) System.out.println("find in source:"+line.substring(1,line.indexOf('"',1))); // NOI18N
                                 }
                             } else if (c == '<'){
                                 if (line.indexOf('>')>0){
                                     res.add(line.substring(1,line.indexOf('>')));
+                                    if (FULL_TRACE) System.out.println("find in source:"+line.substring(1,line.indexOf('>'))); // NOI18N
                                 }
                             }
                         }
@@ -676,6 +685,8 @@ public class DwarfSource implements SourceFileProperties{
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
+        } else {
+            if (FULL_TRACE) System.out.println("Cannot grep file:"+fileName); // NOI18N
         }
         grepBase.put(fileName,res);
         return res;

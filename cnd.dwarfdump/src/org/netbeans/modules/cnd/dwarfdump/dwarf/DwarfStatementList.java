@@ -186,8 +186,12 @@ public class DwarfStatementList {
         ArrayList<String> result = new ArrayList<String>();
         
         for (FileEntry fileEntry : fileEntries) {
-            if (fileEntry.fileName.equals(fname)) {
+            if (fileEntry.fileName.equals(fname)){
                 String dir = (fileEntry.dirIndex == 0) ? "." : includeDirs.get(fileEntry.dirIndex - 1); // NOI18N
+                result.add(dir);
+            } else if(fileEntry.fileName.endsWith(File.separator +fname)) {
+                String dir = (fileEntry.dirIndex == 0) ? "." : includeDirs.get(fileEntry.dirIndex - 1); // NOI18N
+                dir += File.separator + fileEntry.fileName.substring(0,fileEntry.fileName.length()-fname.length()-1);
                 result.add(dir);
             }
         }
