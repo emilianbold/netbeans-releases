@@ -72,7 +72,7 @@ public class LibrariesAccess extends RepositoryAccessTestBase {
 	
 	File projectRoot = getDataFile("quote_syshdr");
 	
-	int count = Integer.getInteger("test.library.access.laps", 10);
+	int count = Integer.getInteger("test.library.access.laps", 1000);
 	
 	final TraceModelBase traceModel = new  TraceModelBase();
 	traceModel.setUseSysPredefined(true);
@@ -97,6 +97,7 @@ public class LibrariesAccess extends RepositoryAccessTestBase {
 		assertNoExceptions();
 	    }
 	    System.err.printf("\tafter parsing, libraries were accessed %d times\n", cnt);
+	    waitLibsParsed(project);
 	    traceModel.resetProject(i < count/2);
 	    assertNoExceptions();
 	}
