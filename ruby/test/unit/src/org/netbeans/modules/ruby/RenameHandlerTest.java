@@ -134,4 +134,8 @@ public class RenameHandlerTest extends RubyTestBase {
     public void testRename7() throws Exception {
         checkRenameSections("testfiles/nestedblocks.rb", "[4,5,6].each { |ou^ter|");
     }
+
+    public void testRename8() throws Exception {
+        checkRenameSections("testfiles/parallelblocks.rb", "foo.each { |i^| puts i } #1");
+    }
 }
