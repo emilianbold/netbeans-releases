@@ -99,24 +99,27 @@ public class RepositoryAccessTestBase  extends BaseTestCase {
     }
     
     private void assertEmpty(Collection<Throwable> errors) throws Exception {
-	if( ! errors.isEmpty() ) {
-            Exception curr = null;
-	    for( Throwable thr : errors ) {
-                if( curr != null ) {
-                    thr.initCause(curr);
-                }
-                else {
-                    if( thr instanceof Exception ) {
-                        curr = (Exception) thr;
-                    }
-                    else {
-                        curr = new Exception(thr.getMessage());
-                        curr.setStackTrace(thr.getStackTrace());
-                    }
-                }
+	// the idea here was to somehow make JUnit infrastructure
+	// display all caught exceptions;
+	// but I don't yet know how to;
+	// so for the time being we just throw 1-st one
+	if (!errors.isEmpty()) {
+	    for (Throwable thr : errors) {
+		if (thr instanceof Exception) {
+		    throw (Exception) thr;
+		} 
+		else if( thr instanceof Error ) {
+		    throw (Error) thr;
+		} else {
+		    throw new Exception(thr);
+		}
 	    }
-            throw curr;
 	}
     }
     
+    protected String getBriefClassName() {
+	String name = getClass().getName();
+	int pos = name.lastIndexOf('.');
+	return (pos < 0) ? name : name.substring(pos+1);
+    }
 }
