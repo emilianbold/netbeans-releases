@@ -40,10 +40,17 @@
  */
 
 package org.netbeans.modules.j2ee.persistence.wizard.entity;
+import java.util.Set;
+import javax.lang.model.element.TypeElement;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.java.source.ClassIndex.NameKind;
+import org.netbeans.api.java.source.ClassIndex.SearchScope;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.ui.TypeElementFinder;
 import org.netbeans.api.project.Project;
 //import org.netbeans.modules.j2ee.common.FQNSearch;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
@@ -165,8 +172,23 @@ public class EntityWizardPanel extends javax.swing.JPanel {
     private void searchButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchButtonActionPerformed
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                // TODO: RETOUCHE
-//                FQNSearch.showFastOpen(primaryKeyTextField);
+                final ElementHandle<TypeElement> handle = TypeElementFinder.find(null, new TypeElementFinder.Customizer() {
+
+                            public Set<ElementHandle<TypeElement>> query(ClasspathInfo classpathInfo, String textForQuery, NameKind nameKind, Set<SearchScope> searchScopes) {//GEN-LAST:event_browseButtonActionPerformed
+                                return classpathInfo.getClassIndex().getDeclaredTypes(textForQuery, nameKind, searchScopes);
+                            }
+
+                            public boolean accept(ElementHandle<TypeElement> typeHandle) {
+                                //XXX not all types are supported as identifiers by the jpa spec, but 
+                                // leaving unrestricted for now since different persistence providers 
+                                // might support more types
+                                return true;
+                            }
+                        });
+
+                if (handle != null) {
+                    primaryKeyTextField.setText(handle.getQualifiedName());
+                }
             }
         });
     }//GEN-LAST:event_searchButtonActionPerformed
