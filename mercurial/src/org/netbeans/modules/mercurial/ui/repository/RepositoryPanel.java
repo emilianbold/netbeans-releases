@@ -131,7 +131,7 @@ public class RepositoryPanel extends javax.swing.JPanel {
                         .addContainerGap())
                     .add(layout.createSequentialGroup()
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(urlComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 382, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(urlComboBox, 0, 382, Short.MAX_VALUE)
                         .add(18, 18, 18)
                         .add(removeButton)
                         .addContainerGap())))
