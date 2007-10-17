@@ -65,13 +65,12 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import junit.framework.Test;
 import org.netbeans.core.startup.layers.BinaryCacheManager;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MultiFileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.filesystems.XMLFileSystem;
@@ -95,11 +94,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         super (name);
     }
     
-    public static Test suite() {
-        return new NbTestSuite(ValidateLayerConsistencyTest.class);
-    }
-
-    public void setUp() throws Exception {
+    public @Override void setUp() throws Exception {
         clearWorkDir();
         Mutex.EVENT.readAccess(new Mutex.Action<Void>() {
             public Void run() {
@@ -110,7 +105,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         });
     }
     
-    public void tearDown() {
+    public @Override void tearDown() {
         Mutex.EVENT.readAccess(new Mutex.Action<Void>() {
             public Void run() {
                 Thread.currentThread().setContextClassLoader(contextClassLoader);
@@ -119,7 +114,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         });
     }
     
-    protected boolean runInEQ() {
+    protected @Override boolean runInEQ() {
         return true;
     }
     
@@ -522,7 +517,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         while (files.hasMoreElements()) {
             FileObject fo = files.nextElement();
             if (fo.isFolder()) {
-                DataFolder.findFolder(fo).getChildren();
+                loadChildren(fo);
                 assertNull("OpenIDE-Folder-Order attr should not be used on " + fo, fo.getAttribute("OpenIDE-Folder-Order"));
                 assertNull("OpenIDE-Folder-SortMode attr should not be used on " + fo, fo.getAttribute("OpenIDE-Folder-SortMode"));
                 String path = fo.getPath();
@@ -552,9 +547,16 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                     });
                 }
             }
-            DataFolder.findFolder(new MultiFileSystem(layers.toArray(new FileSystem[layers.size()])).getRoot()).getChildren();
+            loadChildren(new MultiFileSystem(layers.toArray(new FileSystem[layers.size()])).getRoot());
             assertEquals("No warnings relating to folder ordering in " + multiPath, Collections.emptySet(), new TreeSet<String>(h.errors()));
         }
+    }
+    private static void loadChildren(FileObject folder) {
+        List<FileObject> kids = new ArrayList<FileObject>();
+        for (DataObject kid : DataFolder.findFolder(folder).getChildren()) {
+            kids.add(kid.getPrimaryFile());
+        }
+        FileUtil.getOrder(kids, true);
     }
 
     private static byte[] getFileContent(FileObject fo) throws IOException {
