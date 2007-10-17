@@ -677,6 +677,49 @@ public class GoToSupportTest extends NbTestCase {
         wasCalled[0] = false;
     }
     
+    public void testGoToImport() throws Exception {
+        final boolean[] wasCalled = new boolean[1];
+        String code = "package test; import java.awt.Color; public class Test {}";
+        
+        performTest(code, code.indexOf("Color") + 1, new UiUtilsCaller() {
+            public void open(FileObject fo, int pos) {
+                fail("Should not be called.");
+            }
+            public void beep() {
+                fail("Should not be called.");
+            }
+            public void open(ClasspathInfo info, Element el) {
+                assertEquals(ElementKind.CLASS, el.getKind());
+                assertEquals("java.awt.Color", ((TypeElement) el).getQualifiedName().toString());
+                wasCalled[0] = true;
+            }
+        }, false);
+        
+        assertTrue(wasCalled[0]);
+    }
+    
+    public void testGoToStaticImport() throws Exception {
+        final boolean[] wasCalled = new boolean[1];
+        String code = "package test; import static java.awt.Color.BLACK; public class Test {}";
+        
+        performTest(code, code.indexOf("BLACK") + 1, new UiUtilsCaller() {
+            public void open(FileObject fo, int pos) {
+                fail("Should not be called.");
+            }
+            public void beep() {
+                fail("Should not be called.");
+            }
+            public void open(ClasspathInfo info, Element el) {
+                assertEquals(ElementKind.FIELD, el.getKind());
+                assertEquals("java.awt.Color.BLACK",
+                        ((TypeElement) el.getEnclosingElement()).getQualifiedName().toString() + '.' + el);
+                wasCalled[0] = true;
+            }
+        }, false);
+        
+        assertTrue(wasCalled[0]);
+    }
+    
     private void writeIntoFile(FileObject file, String what) throws Exception {
         FileLock lock = file.lock();
         OutputStream out = file.getOutputStream(lock);

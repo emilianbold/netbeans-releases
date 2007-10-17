@@ -43,14 +43,18 @@ package org.netbeans.modules.editor.java;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.ImportTree;
+import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
+import com.sun.source.tree.Scope;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
+import com.sun.source.util.Trees;
 import java.awt.Toolkit;
 import java.io.IOException;
 import java.net.URL;
@@ -62,6 +66,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
@@ -139,6 +144,8 @@ public class GoToSupport {
                     
                     TreePath path = controller.getTreeUtilities().pathFor(exactOffset);
                     TreePath parent = path.getParentPath();
+                    Element el = null;
+                    boolean insideImportStmt = false;
                     
                     if (parent != null) {
                         Tree parentLeaf = parent.getLeaf();
@@ -147,6 +154,9 @@ public class GoToSupport {
                             if (!isError(controller.getTrees().getElement(path.getParentPath()))) {
                                 path = path.getParentPath();
                             }
+                        } else if (parentLeaf.getKind() == Kind.IMPORT && ((ImportTree) parentLeaf).isStatic()) {
+                            el = handleStaticImport(controller, (ImportTree) parentLeaf);
+                            insideImportStmt = true;
                         } else {
                             if (   parentLeaf.getKind() == Kind.PARAMETERIZED_TYPE
                                 && parent.getParentPath().getLeaf().getKind() == Kind.NEW_CLASS
@@ -164,7 +174,9 @@ public class GoToSupport {
                         return;
                     }
                     
-                    Element el = controller.getTrees().getElement(path);
+                    if (el == null) {
+                        el = controller.getTrees().getElement(path);
+                    }
                     
                     if (isError(el)) {
                         if (!tooltip)
@@ -174,7 +186,7 @@ public class GoToSupport {
                         return;
                     }
                     
-                    if (goToSource) {
+                    if (goToSource && !insideImportStmt) {
                         TypeMirror type = null;
                         
                         if (el instanceof VariableElement)
@@ -360,6 +372,59 @@ public class GoToSupport {
             else
                 return el;
         }
+    }
+    
+    /**
+     * Tries to guess element referenced by static import. It may not be deterministic
+     * as in <code>import static java.awt.Color.getColor</code>.
+     */
+    private static Element handleStaticImport(CompilationInfo javac, ImportTree impt) {
+        Tree impIdent = impt.getQualifiedIdentifier();
+        if (!impt.isStatic() || impIdent == null || impIdent.getKind() != Kind.MEMBER_SELECT) {
+            return null;
+        }
+        
+        // resolve type element containing imported element
+        Trees trees = javac.getTrees();
+        MemberSelectTree select = (MemberSelectTree) impIdent;
+        Name mName = select.getIdentifier();
+        TreePath cutPath = new TreePath(javac.getCompilationUnit());
+        TreePath selectPath = new TreePath(new TreePath(cutPath, impt), select.getExpression());
+        Element selectElm = trees.getElement(selectPath);
+        if (isError(selectElm)) {
+            return null;
+        }
+        
+        // resolve class to determine scope
+        TypeMirror clazzMir = null;
+        TreePath clazzPath = null;
+        List<? extends Tree> decls = javac.getCompilationUnit().getTypeDecls();
+        if (!decls.isEmpty()) {
+            Tree clazz = decls.get(0);
+            if (clazz.getKind() == Kind.CLASS) {
+                clazzPath = new TreePath(cutPath, clazz);
+                Element clazzElm = trees.getElement(clazzPath);
+                if (isError(clazzElm)) {
+                    return null;
+                }
+                clazzMir = clazzElm.asType();
+            }
+        }
+        if (clazzMir == null) {
+            return null;
+        }
+        
+        Scope clazzScope = trees.getScope(clazzPath);
+        
+        // choose the first acceptable member
+        for (Element member : selectElm.getEnclosedElements()) {
+            if (member.getModifiers().contains(Modifier.STATIC)
+                    && mName.contentEquals(member.getSimpleName())
+                    && javac.getTreeUtilities().isAccessible(clazzScope, member, clazzMir)) {
+                return member;
+            }
+        }
+        return null;
     }
     
     private static final class FindVariableDeclarationVisitor extends TreePathScanner<Void, Element> {
