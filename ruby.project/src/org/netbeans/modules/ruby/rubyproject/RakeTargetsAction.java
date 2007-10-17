@@ -740,14 +740,15 @@ public class RakeTargetsAction extends SystemAction implements ContextAwareActio
     }
 
     private static class RakeTarget {
-        private String target;
-        private String description;
-        private String displayName;
+        
+        private final String target;
+        private final String description;
+        private final String displayName;
         private List<RakeTarget> children;
 
         /** Create a folder */
         public RakeTarget(String displayName) {
-            this.displayName = displayName;
+            this(null, displayName, null);
         }
 
         /** Create an actual target */
@@ -784,5 +785,26 @@ public class RakeTargetsAction extends SystemAction implements ContextAwareActio
 
             children.add(child);
         }
+
+        public @Override boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final RakeTarget other = (RakeTarget) obj;
+            if (this.target != other.target && (this.target == null || !this.target.equals(other.target))) {
+                return false;
+            }
+            return true;
+        }
+
+        public @Override int hashCode() {
+            int hash = 7;
+            hash = 59 * hash + (this.target != null ? this.target.hashCode() : 0);
+            return hash;
+        }
+        
     }
 }
