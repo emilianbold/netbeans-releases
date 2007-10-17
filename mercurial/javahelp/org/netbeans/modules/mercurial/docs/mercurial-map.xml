@@ -21,11 +21,12 @@
     <mapID target="org.netbeans.modules.mercurial.ui.wizards.CloneRepositoryWizardPanel" url="mercurial-cloneother.html" />
     <mapID target="org.netbeans.modules.mercurial.ui.wizards.CloneDestinationDirectoryWizardPanel" url="mercurial-cloneother.html" />
     <mapID target="org.netbeans.modules.mercurial.ui.clone.CloneCompletedPanel" url="mercurial-cloneother.html" />
-    
+
+    <mapID target="org.netbeans.modules.mercurial.ui.properties.PropertiesAction" url="mercurial-properties.html" />
+    <mapID target="org.netbeans.modules.mercurial.options.MercurialOptionsPanelController" url="mercurial-options.html" />
+
     <!-- TBD - need specific java help pages for following -->
     <mapID target="org.netbeans.modules.mercurial.ui.clone.Clone" url="mercurial-about.html" />   
-    <mapID target="org.netbeans.modules.mercurial.options.MercurialOptionsPanelController" url="mercurial-about.html" />
-    <mapID target="org.netbeans.modules.mercurial.ui.properties.PropertiesAction" url="mercurial-about.html" />
     
     <mapID target="org.netbeans.modules.mercurial.ui.diff.ExportDiff" url="mercurial-about.html" />
     <mapID target="org.netbeans.modules.mercurial.ui.pull.PullOtherAction" url="mercurial-about.html" />

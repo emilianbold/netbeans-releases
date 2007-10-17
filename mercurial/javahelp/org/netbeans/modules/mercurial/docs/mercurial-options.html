@@ -1,0 +1,91 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+            "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+*     Copyright � 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+    <head>
+        <title>Mercurial Global Options</title>
+        <link href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css"
+              rel="StyleSheet" type="text/css">
+    </head>
+    <body>
+        
+        <h2>Mercurial Global Options</h2>
+        
+        <p><small><a href="#seealso">See Also</a></small></p>
+
+        <h4>Setting Mercurial Global Options</h4>
+        Bring up the Mercurial Options Dialog:
+                
+                <ul>
+                    <li>Tools &gt; Options &gt; Miscellaneous &gt; Mercurial Tab from the 
+                        IDE's main menu.</li>
+                </ul>
+        
+        <p>The following table describes the Mercurial global Options property that can be set.</p>
+        
+        <table border="1" cellpadding="5">
+            <tr>
+                <th>Property</th>
+                <th>Comment</th>
+            </tr>
+            <tr>
+                <td><strong>Mercurial User Name</strong></td>
+                <td>
+                    Set the username to record when commiting changes to the repository. 
+                    May be overridden for a given project using the <a href="mercurial-properties.html">Mercurial Project Properties</a> username setting.
+                </td>
+            </tr>                
+            <tr>
+                <td><strong>Mercurial Executable Path</strong></td>
+                <td>
+                 Set the executable path to the installed Mercurial Hg executable. 
+                 You only need to use this if Mercurial has been placed somewhere other than your standard PATH.
+                </td>
+            </tr>
+            <tr>
+                <td><strong>Default Export Filename</strong></td>
+                <td>
+                 Set the export filename which is used when using Versioning &gt; Export Diff Patch... from the
+                 IDE's main menu when a Mercurial controlled project is selected. The following identifiers can used in the filename:
+                 <ul>
+                    <li>%b: Project Directory name</li>
+                    <li>%r: Current revision number being exported.</li>
+                    <li>%h: Changeset ID that is being exported.</li>
+                </ul>
+                </td>
+            </tr>
+            <tr>
+                <td><strong>Mercurial Status Labels</strong></td>
+                <td>
+                 Set the Status labels for be displayed in the Project view for a Mercurial controlled project.
+                 To enable select View &gt; Show Versioning Lables from the
+                 IDE's main menu. The following labels can used:
+                 <ul>
+                    <li>{status}: <a href="mercurial-status.html">Status</a> of the file.</li>
+                    <li>{revision}: Revision of the file.</li>
+                    <li>{folder}: Branch or Tag Name.</li>
+                </ul>
+                </td>
+            </tr>                
+            <tr>
+                <td><strong>Mercurial Extensions</strong></td>
+                <td>
+                 Brings up a dialog to allow you to add Mercurial extensions. 
+                 Currently we add the hgk extension to support the Mercurial &gt; View from the
+                 a Mercurial project's right click context menu. It's location can be changed from this dialog if necessary.
+                </td>
+            </tr>                
+        </table>
+ 
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="mercurial-properties.html">Mercurial Project Properties</a></dd>
+            <dd><a href="mercurial-about.html">About Mercurial</a></dd>
+        </dl>
+        <hr><small><a href="credits.html">Legal Notices</a></small>
+        <br><br><br>
+    </body>
+</html>
