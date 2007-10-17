@@ -47,7 +47,6 @@ import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JProgressBarOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.junit.NbTestCase;
-import sun.management.FileSystem;
 
 /**
  *
@@ -121,6 +120,7 @@ public class Utils {
         return OK;
     }
 
+    @SuppressWarnings("empty-statement")
     public static String extractBundle(TestData data) {
         int errorLevel = 0;
 
@@ -190,6 +190,7 @@ public class Utils {
         }
     }
 
+    @SuppressWarnings("empty-statement")
     public static String extractUninstallerJar(TestData data) {
 
         data.setUninstallerFile(new File(data.getTestWorkDir() + File.separator + NB_DIR_NAME + File.separator + "uninstall." + data.getPlatformExt()));
@@ -393,7 +394,7 @@ public class Utils {
 
         NbTestCase.assertEquals("Installer Finshed", 0, ((Integer) System.getProperties().get("nbi.exit.code")).intValue());
         
-        NbTestCase.assertEquals("NetBeans dir created", OK, Utils.DirExist(NB_DIR_NAME, data));
+        NbTestCase.assertEquals("NetBeans dir created", OK, Utils.dirExist(NB_DIR_NAME, data));
 
         NbTestCase.assertEquals("Extract uninstaller jar", OK, Utils.extractUninstallerJar(data));
         NbTestCase.assertEquals("Load engine classes", OK, Utils.loadEngineClasses(data));
@@ -407,7 +408,9 @@ public class Utils {
 
         NbTestCase.assertEquals("Uninstaller Finshed", 0, ((Integer) System.getProperties().get("nbi.exit.code")).intValue());
         
-        NbTestCase.assertFalse("NetBeans dir deleted", Utils.DirExist(NB_DIR_NAME, data).equals(OK));
+        NbTestCase.assertFalse("NetBeans dir deleted", Utils.dirExist(NB_DIR_NAME, data).equals(OK));
+        NbTestCase.assertFalse("Tomcat dir deleted", Utils.dirExist(TOMACAT_DIR_NAME, data).equals(OK));
+        NbTestCase.assertFalse("GlassFish dir deleted", Utils.dirExist(GF_DIR_NAME, data).equals(OK));
     }
 
     public static void phaseTwo(TestData data) {
@@ -426,7 +429,7 @@ public class Utils {
         stepSetDir(data, "Install GlassFish", GF_DIR_NAME);
 
         //Choose Tomcat dir
-        stepSetDir(data, "Installation location", TOMACAT_DIR_NAME);
+        stepSetDir(data, "Install Apache Tomcat", TOMACAT_DIR_NAME);
     }
 
     public static void waitSecond(TestData data, int sec) {
@@ -484,7 +487,7 @@ public class Utils {
     }
     
     
-    public static String DirExist(String dirName, TestData data) {
+    public static String dirExist(String dirName, TestData data) {
         File dir = new File(data.getTestWorkDir() + File.separator + dirName);
         if(dir.exists() && dir.isDirectory())
             return OK;
