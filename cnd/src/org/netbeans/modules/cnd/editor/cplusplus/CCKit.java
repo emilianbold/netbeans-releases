@@ -348,7 +348,7 @@ public class CCKit extends NbEditorKit {
                         Formatter formatter = doc.getFormatter();
                         formatter.indentLock();
                         try {
-                            doc.getFormatter().indentNewLine(doc, end);                        
+                            formatter.indentNewLine(doc, end);                        
                         } finally {
                             formatter.indentUnlock();
                         }
