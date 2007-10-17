@@ -99,7 +99,9 @@ public final class JavadocForBinaryImpl implements JavadocForBinaryQueryImplemen
             } else {
                 dir = new File(project.getProjectDirectoryFile(), EXT_INFIX + cnbdashes);
             }
-            candidates.add(Util.urlForDir(dir));
+            if (dir != null) { // #118491
+                candidates.add(Util.urlForDir(dir));
+            }
             if (ignoreNonexistentRoots) {
                 Iterator<URL> it = candidates.iterator();
                 while (it.hasNext()) {
