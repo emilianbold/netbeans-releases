@@ -60,6 +60,7 @@ import javax.swing.JList;
 import javax.swing.JTable;
 import javax.swing.JComboBox;
 import javax.swing.JSlider;
+import javax.swing.JSpinner;
 import javax.swing.text.JTextComponent;
 import org.jdesktop.beansbinding.*;
 import org.jdesktop.beansbinding.ext.BeanAdapterFactory;
@@ -216,13 +217,16 @@ public class BindingDesignSupport {
 
     private List<PropertyDescriptor> getSpecialBindingDescriptors(Class clazz) {
         List<PropertyDescriptor> descs = BeanAdapterFactory.getAdapterPropertyDescriptors(clazz);
-        if (JComboBox.class.isAssignableFrom(clazz)) {
-            try {
+        try {
+            if (JComboBox.class.isAssignableFrom(clazz)) {
                 PropertyDescriptor desc = new PropertyDescriptor("selectedItem", JComboBox.class); // NOI18N
                 descs.add(desc);
-            } catch (Exception ex) {
-                Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
+            } else if (JSpinner.class.isAssignableFrom(clazz)) {
+                PropertyDescriptor desc = new PropertyDescriptor("value", JSpinner.class); // NOI18N
+                descs.add(desc);                
             }
+        } catch (Exception ex) {
+            Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
         }
         return descs;
     }
