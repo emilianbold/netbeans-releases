@@ -277,17 +277,20 @@ public class ClientStubsGenerator extends AbstractGenerator {
             reportProgress(NbBundle.getMessage(ClientStubsGenerator.class,
                     "MSG_GeneratingZip", getProjectName(), "zip"));            
             File projectDir = FileUtil.toFile(resourcesDir.getParent().getParent());
+            File dojoLibs = FileUtil.toFile(dojoDir.getFileObject(RESOURCES));
             File zipFile = new File(projectDir, getProjectName() + ".zip");
             String[] sources = {
                 FileUtil.toFile(restDir).getAbsolutePath(),
                 FileUtil.toFile(templatesDir).getAbsolutePath(),
                 FileUtil.toFile(resourcesDir.getParent()).getAbsolutePath() + 
-                         File.separator + BUNDLE + "." + PROPERTIES
+                         File.separator + BUNDLE + "." + PROPERTIES,
+                dojoLibs.getAbsolutePath()
             };
             String[] paths = {
                 File.separator+RESOURCES+File.separator+DOJO,
                 "",
-                ""
+                "",
+                File.separator+RESOURCES+File.separator+DOJO
             };
             zip(zipFile, sources, paths);
 
