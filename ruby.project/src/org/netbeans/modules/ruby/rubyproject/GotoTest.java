@@ -197,15 +197,19 @@ public class GotoTest implements TestLocator {
             }
             
             // Try looking for arbitrary extensions
-            int fileIndex = pattern2.indexOf(FILE);
-            String newPattern = pattern2.substring(0, fileIndex) + name + pattern2.substring(fileIndex+FILE.length());
-            Pattern p2 = Pattern.compile("(.*)" + newPattern); // NOI18N
-            File parent = otherFile.getParentFile();
-            File[] children = parent.listFiles();
-            if (children != null) {
-                for (File f : children) {
-                    if (p2.matcher(f.getPath()).matches()) {
-                        return f;
+            // (but only for patterns with matches in different
+            // directories - see #119106)
+            if (pattern2.indexOf('/') != -1) {
+                int fileIndex = pattern2.indexOf(FILE);
+                String newPattern = pattern2.substring(0, fileIndex) + name + pattern2.substring(fileIndex+FILE.length());
+                Pattern p2 = Pattern.compile("(.*)" + newPattern); // NOI18N
+                File parent = otherFile.getParentFile();
+                File[] children = parent.listFiles();
+                if (children != null) {
+                    for (File f : children) {
+                        if (p2.matcher(f.getPath()).matches()) {
+                            return f;
+                        }
                     }
                 }
             }
