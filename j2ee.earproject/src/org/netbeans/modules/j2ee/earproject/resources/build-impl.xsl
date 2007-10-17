@@ -466,7 +466,7 @@ is divided into following sections:
     DEBUGGING SECTION
     </xsl:comment>
     <target name="debug">
-        <xsl:attribute name="depends">run-debug,run-display-browser,run-debug-appclient</xsl:attribute>
+        <xsl:attribute name="depends">run-debug,run-debug-appclient</xsl:attribute>
         <xsl:attribute name="description">Deploy to server.</xsl:attribute>
     </target>
     <target name="run-debug">
@@ -476,6 +476,7 @@ is divided into following sections:
         <xsl:attribute name="unless">app.client</xsl:attribute>
         <nbdeploy debugmode="true" clientUrlPart="${{client.urlPart}}" clientModuleUri="${{client.module.uri}}"/>
         <antcall target="connect-debugger"/>
+        <antcall target="debug-display-browser"/>
     </target>
 
     <target name="connect-debugger" unless="is.debugged">
@@ -492,6 +493,10 @@ is divided into following sections:
             </bootclasspath>
             </xsl:if>
         </nbjpdaconnect>
+    </target>
+    <!-- fix for issue 119066 -->
+    <target name="debug-display-browser" if="do.display.browser">
+        <nbbrowse url="${{client.url}}"/>
     </target>
 
     <!-- application client debugging -->
