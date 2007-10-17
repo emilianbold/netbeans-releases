@@ -200,11 +200,10 @@ public class CloneAction extends AbstractAction {
                 } catch (HgException ex) {
                     NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
                     DialogDisplayer.getDefault().notifyLater(e);
+                }finally {
+                    HgUtils.outputMercurialTabInRed(NbBundle.getMessage(CloneAction.class, "MSG_CLONE_DONE")); // NOI18N
+                    HgUtils.outputMercurialTab(""); // NOI18N
                 }
-                HgUtils.outputMercurialTabInRed(
-                        NbBundle.getMessage(CloneAction.class,
-                        "MSG_CLONE_DONE")); // NOI18N
-                HgUtils.outputMercurialTab(""); // NOI18N
             }
         };
         support.start(rp, source, org.openide.util.NbBundle.getMessage(CloneAction.class, "LBL_Clone_Progress")); // NOI18N

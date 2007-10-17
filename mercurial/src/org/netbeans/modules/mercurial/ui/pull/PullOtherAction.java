@@ -100,6 +100,9 @@ public class PullOtherAction extends AbstractAction implements PropertyChangeLis
             repository = new Repository(repositoryModeMask, title);
             repository.addPropertyChangeListener(this);
         }
+        // Workaround for lack of border, should get tip working as well
+        repository.getPanel().setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        repository.setTipVisible(false);
 
         DialogDescriptor dd = new DialogDescriptor(repository.getPanel(), org.openide.util.NbBundle.getMessage(PullOtherAction.class, "CTL_PullDialog_Title")); //NOI18N
         dd.setModal(true);

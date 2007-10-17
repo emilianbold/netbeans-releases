@@ -62,6 +62,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.Vector;
+import javax.swing.BorderFactory;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JPanel;
@@ -127,6 +128,8 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         repositoryPanel.tunnelHelpLabel.setVisible(isSet(FLAG_SHOW_HINTS));
         repositoryPanel.tipLabel.setVisible(isSet(FLAG_SHOW_HINTS));
         repositoryPanel.removeButton.setVisible(isSet(FLAG_SHOW_REMOVE));        
+        
+        //repositoryPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 0, 0));
         
         // retrieve the dialog size for the largest configuration
         updateVisibility("svn+");                                                                       // NOI18N
@@ -604,6 +607,10 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         repositoryPanel.userTextField.setText(rc.getUsername());
         repositoryPanel.userPasswordField.setText(rc.getPassword());        
         repositoryPanel.tunnelCommandTextField.setText(rc.getExternalCommand());           
+    } 
+
+    public void setTipVisible(Boolean flag) {        
+        repositoryPanel.tipLabel.setVisible(flag);
     } 
 
     public boolean show(String title, HelpCtx helpCtx, boolean setMaxNeddedSize) {

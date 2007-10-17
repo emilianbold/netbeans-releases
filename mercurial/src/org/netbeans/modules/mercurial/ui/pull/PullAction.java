@@ -191,6 +191,9 @@ public class PullAction extends AbstractAction {
         File bundleFile = null; 
         
         try {
+            HgUtils.outputMercurialTabInRed(NbBundle.getMessage(PullAction.class, "MSG_PULL_TITLE")); // NOI18N
+            HgUtils.outputMercurialTabInRed(NbBundle.getMessage(PullAction.class, "MSG_PULL_TITLE_SEP")); // NOI18N
+            
             List<String> listIncoming;
             if(type == PullType.LOCAL){
                 listIncoming = HgCommand.doIncoming(root);
@@ -207,9 +210,6 @@ public class PullAction extends AbstractAction {
             
             boolean bNoChanges = HgCommand.isNoChanges(listIncoming.get(listIncoming.size() - 1));
 
-            HgUtils.outputMercurialTabInRed(NbBundle.getMessage(PullAction.class, "MSG_PULL_TITLE")); // NOI18N
-            HgUtils.outputMercurialTabInRed(NbBundle.getMessage(PullAction.class, "MSG_PULL_TITLE_SEP")); // NOI18N
-            
             // Warn User when there are Local Changes present that Pull will overwrite
             if (!bNoChanges && !confirmWithLocalChanges(root, PullAction.class, "MSG_PULL_LOCALMODS_CONFIRM_TITLE", "MSG_PULL_LOCALMODS_CONFIRM_QUERY", listIncoming)) { // NOI18N
                 HgUtils.outputMercurialTabInRed(NbBundle.getMessage(PullAction.class, "MSG_PULL_LOCALMODS_CANCEL")); // NOI18N
@@ -280,10 +280,6 @@ public class PullAction extends AbstractAction {
                 } catch (java.lang.Exception ex) {
                 }
             }
-            HgUtils.outputMercurialTabInRed(
-                    NbBundle.getMessage(PullAction.class,
-                    "MSG_PULL_DONE")); // NOI18N
-            HgUtils.outputMercurialTab(""); // NOI18N
             
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
@@ -292,6 +288,8 @@ public class PullAction extends AbstractAction {
             if (bundleFile != null) {
                 bundleFile.delete();
             }
+            HgUtils.outputMercurialTabInRed(NbBundle.getMessage(PullAction.class, "MSG_PULL_DONE")); // NOI18N
+            HgUtils.outputMercurialTab(""); // NOI18N
         }
     }
 }

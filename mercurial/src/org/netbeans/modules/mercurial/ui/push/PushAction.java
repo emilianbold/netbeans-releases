@@ -108,15 +108,15 @@ public class PushAction extends AbstractAction {
                 
     static void performPush(File root, String pushPath, String fromPrjName, String toPrjName) {
         try {
+            HgUtils.outputMercurialTabInRed(NbBundle.getMessage(PushAction.class, "MSG_PUSH_TITLE")); // NOI18N
+            HgUtils.outputMercurialTabInRed(NbBundle.getMessage(PushAction.class, "MSG_PUSH_TITLE_SEP")); // NOI18N
+
             List<String> listOutgoing = HgCommand.doOutgoing(root, pushPath);
             if ((listOutgoing == null) || listOutgoing.isEmpty()) return;
 
             File pushFile = new File (pushPath);
             boolean bLocalPush = (FileUtil.toFileObject(FileUtil.normalizeFile(pushFile)) != null);
             boolean bNoChanges = HgCommand.isNoChanges(listOutgoing.get(listOutgoing.size()-1));
-
-            HgUtils.outputMercurialTabInRed(NbBundle.getMessage(PushAction.class, "MSG_PUSH_TITLE")); // NOI18N
-            HgUtils.outputMercurialTabInRed(NbBundle.getMessage(PushAction.class, "MSG_PUSH_TITLE_SEP")); // NOI18N
 
             if (bLocalPush) {
                 // Warn user if there are local changes which Push will overwrite
@@ -229,13 +229,12 @@ public class PushAction extends AbstractAction {
                 } catch (java.lang.Exception ex) {
                 }
             }
-            HgUtils.outputMercurialTabInRed(
-                    NbBundle.getMessage(PushAction.class,
-                    "MSG_PUSH_DONE")); // NOI18N
-            HgUtils.outputMercurialTab(""); // NOI18N
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
             DialogDisplayer.getDefault().notifyLater(e);
+        } finally{
+            HgUtils.outputMercurialTabInRed(NbBundle.getMessage(PushAction.class, "MSG_PUSH_DONE")); // NOI18N
+            HgUtils.outputMercurialTab(""); // NOI18N
         }
     }
     
