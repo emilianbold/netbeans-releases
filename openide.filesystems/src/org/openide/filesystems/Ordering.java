@@ -52,7 +52,7 @@ import org.openide.util.Utilities;
 class Ordering {
 
     private Ordering() {}
-    
+
     private static final Logger LOG = Logger.getLogger(Ordering.class.getName());
     private static final String ATTR_POSITION = "position"; // NOI18N
 
@@ -257,6 +257,26 @@ class Ordering {
                 }
             } else {
                 assert rangeLength == 0 : oldOrder + " => " + children;
+            }
+        } else {
+            // #110981: check to see if just one is new.
+            FileObject nue = null;
+            for (FileObject f : children) {
+                if (findPosition(f) == null) {
+                    if (nue == null) {
+                        nue = f;
+                    } else {
+                        // More than one, skip.
+                        nue = null;
+                        break;
+                    }
+                }
+            }
+            if (nue != null) {
+                toBeMoved = nue;
+                int idx = children.indexOf(nue);
+                before = (idx == 0) ? null : children.get(idx - 1);
+                after = (idx == children.size() - 1) ? null : children.get(idx + 1);
             }
         }
         if (toBeMoved != null) {

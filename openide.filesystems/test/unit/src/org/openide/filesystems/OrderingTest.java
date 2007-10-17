@@ -254,6 +254,38 @@ public class OrderingTest extends NbTestCase {
         assertOrder(true, apex, cone, ball, dent);
     }
 
+    public void testSetOrderNewChild() throws Exception { // #110981
+        apex.setAttribute("position", 200);
+        ball.setAttribute("position", 250);
+        cone.setAttribute("position", 300);
+        Ordering.setOrder(Arrays.asList(apex, ball, cone, dent));
+        assertOrder(true, apex, ball, cone, dent);
+        assertEquals(200, apex.getAttribute("position"));
+        assertEquals(250, ball.getAttribute("position"));
+        assertEquals(300, cone.getAttribute("position"));
+        assertEquals(400, dent.getAttribute("position"));
+        apex.setAttribute("position", 200);
+        ball.setAttribute("position", 250);
+        cone.setAttribute("position", 300);
+        dent.setAttribute("position", null);
+        Ordering.setOrder(Arrays.asList(apex, dent, ball, cone));
+        assertOrder(true, apex, dent, ball, cone);
+        assertEquals(200, apex.getAttribute("position"));
+        assertEquals(250, ball.getAttribute("position"));
+        assertEquals(300, cone.getAttribute("position"));
+        assertEquals(225, dent.getAttribute("position"));
+        apex.setAttribute("position", 200);
+        ball.setAttribute("position", 250);
+        cone.setAttribute("position", 300);
+        dent.setAttribute("position", null);
+        Ordering.setOrder(Arrays.asList(dent, apex, ball, cone));
+        assertOrder(true, dent, apex, ball, cone);
+        assertEquals(200, apex.getAttribute("position"));
+        assertEquals(250, ball.getAttribute("position"));
+        assertEquals(300, cone.getAttribute("position"));
+        assertEquals(100, dent.getAttribute("position"));
+    }
+
     // XXX test IAE, ...
 
 }
