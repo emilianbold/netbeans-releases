@@ -123,6 +123,7 @@ made subject to such option by the copyright holder.
                 <project>../../db/core</project>
                 <project>../../db/dbapi</project>
                 <project>../../db/derby</project>
+                <project>../../db/drivers</project>
                 <project>../../db/kit</project>
                 <project>../../db/model</project>
                 <project>../../db/sqleditor</project>
@@ -287,6 +288,7 @@ made subject to such option by the copyright holder.
                 <project>../../languages/manifest</project>
                 <project>../../languages/yaml</project>
                 <project>../../lexer</project>
+                <project>../../lexer/editorbridge</project>
                 <project>../../lexer/nbbridge</project>
                 <project>../../libs/commons_logging</project>
                 <project>../../libs/freemarker</project>
@@ -384,7 +386,18 @@ made subject to such option by the copyright holder.
                 <project>../../openidex</project>
                 <project>../../performance/insanelibmodule</project>
                 <project>../../print</project>
-                <project>../../profiler</project>
+                <project>../../profiler/libs/common</project>
+                <project>../../profiler/libs/jfluid</project>
+                <project>../../profiler/libs/jfluid-ui</project>
+                <project>../../profiler/modules/freeform</project>
+                <project>../../profiler/modules/j2ee</project>
+                <project>../../profiler/modules/j2ee-jboss</project>
+                <project>../../profiler/modules/j2ee-sunas</project>
+                <project>../../profiler/modules/j2ee-tomcat</project>
+                <project>../../profiler/modules/j2ee-weblogic</project>
+                <project>../../profiler/modules/j2se</project>
+                <project>../../profiler/modules/main</project>
+                <project>../../profiler/modules/nbmodule</project>
                 <project>../../projects/libraries</project>
                 <project>../../projects/projectapi</project>
                 <project>../../projects/projectui</project>
@@ -451,6 +464,7 @@ made subject to such option by the copyright holder.
                 <project>../../usersguide</project>
                 <project>../../usersguide/j2seexamples</project>
                 <project>../../utilities</project>
+                <project>../../utilities/gototest</project>
                 <project>../../utilities/jumpto</project>
                 <project>../../utilities/project</project>
                 <project>../../versioncontrol</project>
@@ -502,7 +516,6 @@ made subject to such option by the copyright holder.
                 <project>../../visualweb/propertyeditors/resolver</project>
                 <project>../../visualweb/ravehelp/rave_nbpack</project>
                 <project>../../visualweb/ravelibs/batik</project>
-                <project>../../visualweb/ravelibs/commons-fileupload</project>
                 <project>../../visualweb/ravelibs/jtidy</project>
                 <project>../../visualweb/rowset</project>
                 <project>../../visualweb/samples/bundled</project>
@@ -526,6 +539,7 @@ made subject to such option by the copyright holder.
                 <project>../../web/jspsyntax</project>
                 <project>../../web/jspsyntax/lexer</project>
                 <project>../../web/kit</project>
+                <project>../../web/libs/commons_fileupload</project>
                 <project>../../web/libs/flyingsaucer</project>
                 <project>../../web/libs/glassfish_logging</project>
                 <project>../../web/libs/jsf-1_2</project>
@@ -537,6 +551,7 @@ made subject to such option by the copyright holder.
                 <project>../../web/struts</project>
                 <project>../../web/webapi</project>
                 <project>../../websvc/clientapi</project>
+                <project>../../websvc/components/strikeiron</project>
                 <project>../../websvc/core</project>
                 <project>../../websvc/customization</project>
                 <project>../../websvc/design</project>
@@ -548,7 +563,6 @@ made subject to such option by the copyright holder.
                 <project>../../websvc/jaxwsmodel</project>
                 <project>../../websvc/kit</project>
                 <project>../../websvc/manager</project>
-                <project>../../websvc/rest/partnersvc</project>
                 <project>../../websvc/restapi</project>
                 <project>../../websvc/serviceapi</project>
                 <project>../../websvc/websvcapi</project>
