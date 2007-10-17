@@ -110,6 +110,7 @@ public class SetCluster extends Task {
                     // We found the list referring to this module
                     log( "Property: " + name + " will be set to " + clusterDir, Project.MSG_VERBOSE);
                     this.getProject().setProperty( name, clusterDir ); // XXX setNewProperty?
+                    return;
                 }
                 String otherCluster = clusterByModule.put(module, clusterDir);
                 if (otherCluster != null && !otherCluster.equals(clusterDir)) {
