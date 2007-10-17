@@ -349,6 +349,7 @@ public final class  UiUtils {
     }
     
     private static int getOffset(FileObject fo, final ElementHandle<? extends Element> handle) throws IOException {
+        assert handle != null;
         final int[]  result = new int[] {-1};
         
         
