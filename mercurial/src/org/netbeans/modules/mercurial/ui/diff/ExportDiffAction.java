@@ -112,9 +112,9 @@ public class ExportDiffAction extends AbstractAction {
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
             DialogDisplayer.getDefault().notifyLater(e);
+        } finally {
+            HgUtils.outputMercurialTabInRed(NbBundle.getMessage(ExportDiffAction.class, "MSG_EXPORT_DONE")); // NOI18N
+            HgUtils.outputMercurialTab(""); // NOI18N
         }
-        HgUtils.outputMercurialTabInRed(NbBundle.getMessage(ExportDiffAction.class, "MSG_EXPORT_DONE")); // NOI18N
-        HgUtils.outputMercurialTab(""); // NOI18N
-
     }
 }

@@ -125,8 +125,9 @@ public class ImportDiffAction extends AbstractAction {
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
             DialogDisplayer.getDefault().notifyLater(e);
+        } finally {
+            HgUtils.outputMercurialTabInRed(NbBundle.getMessage(ImportDiffAction.class, "MSG_IMPORT_DONE")); // NOI18N
+            HgUtils.outputMercurialTab(""); // NOI18N
         }
-        HgUtils.outputMercurialTabInRed(NbBundle.getMessage(ImportDiffAction.class, "MSG_IMPORT_DONE")); // NOI18N
-        HgUtils.outputMercurialTab(""); // NOI18N
     }
 }

@@ -212,13 +212,14 @@ public class CreateAction extends AbstractAction {
                     }
                     HgUtils.createIgnored(rootToManage);
                     HgUtils.outputMercurialTab(""); // NOI18N
+                    HgUtils.outputMercurialTabInRed(NbBundle.getMessage(CreateAction.class, "MSG_CREATE_DONE_WARNING")); // NOI18N
                 } catch (HgException ex) {
                     NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
                     DialogDisplayer.getDefault().notifyLater(e);
+                } finally {
+                    HgUtils.outputMercurialTabInRed(NbBundle.getMessage(CreateAction.class, "MSG_CREATE_DONE")); // NOI18N
+                    HgUtils.outputMercurialTab(""); // NOI18N
                 }
-                HgUtils.outputMercurialTabInRed(NbBundle.getMessage(CreateAction.class, "MSG_CREATE_DONE_WARNING")); // NOI18N
-                HgUtils.outputMercurialTabInRed(NbBundle.getMessage(CreateAction.class, "MSG_CREATE_DONE")); // NOI18N
-                HgUtils.outputMercurialTab(""); // NOI18N
             }
         };
         supportAdd.start(rp, rootToManage.getAbsolutePath(), 

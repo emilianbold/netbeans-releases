@@ -352,10 +352,11 @@ public class CommitAction extends AbstractAction {
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
             DialogDisplayer.getDefault().notifyLater(e);
+        } finally {
+            cache.refreshCached(ctx);
+            HgUtils.outputMercurialTabInRed(NbBundle.getMessage(CommitAction.class, "MSG_COMMIT_DONE")); // NOI18N
+            HgUtils.outputMercurialTab(""); // NOI18N
         }
-        cache.refreshCached(ctx);
-        HgUtils.outputMercurialTabInRed(NbBundle.getMessage(CommitAction.class, "MSG_COMMIT_DONE")); // NOI18N
-        HgUtils.outputMercurialTab(""); // NOI18N
-   }
+    }
 }
 
