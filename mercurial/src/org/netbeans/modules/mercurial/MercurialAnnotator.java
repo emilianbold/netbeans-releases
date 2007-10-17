@@ -150,7 +150,7 @@ public class MercurialAnnotator extends VCSAnnotator {
     public void refresh() {
         String string = HgModuleConfig.getDefault().getAnnotationFormat(); //System.getProperty("netbeans.experimental.svn.ui.statusLabelFormat");  // NOI18N
         if (string != null && !string.trim().equals("")) { // NOI18N
-            if (string.indexOf("\\{revision\\}") != -1 ) { // NOI18N
+            if (string.indexOf("{revision}") != -1 ) { // NOI18N
                 needRevisionForFormat = true;
             } else {
                 needRevisionForFormat = false;
