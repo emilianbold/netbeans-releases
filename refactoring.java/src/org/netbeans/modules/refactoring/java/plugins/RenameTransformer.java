@@ -45,6 +45,7 @@ import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
 import java.util.Set;
+import java.util.logging.Logger;
 import javax.lang.model.element.*;
 import javax.lang.model.util.Elements;
 import org.netbeans.api.java.lexer.JavaTokenId;
@@ -188,6 +189,10 @@ public class RenameTransformer extends RefactoringVisitor {
         if (method.getKind() == ElementKind.METHOD && allMethods !=null) {
             for (ElementHandle<ExecutableElement> mh: allMethods) {
                 ExecutableElement baseMethod =  mh.resolve(workingCopy);
+                if (baseMethod==null) {
+                    Logger.getLogger(RenameTransformer.class.getName()).severe("RenameTransformer cannot resolve " + mh);
+                    continue;
+                }
                 if (baseMethod.equals(method) || workingCopy.getElements().overrides((ExecutableElement)method, baseMethod, SourceUtils.getEnclosingTypeElement(baseMethod))) {
                     return true;
                 }
