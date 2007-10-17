@@ -53,12 +53,9 @@ import org.openide.util.Lookup;
  * @author Vladimir Voskresensky
  */
 public abstract class CsmReferenceResolver {
-    /** A dummy resolver that never returns any results.
+    /** A default resolver that combines all results.
      */
-    private static final CsmReferenceResolver EMPTY = new Empty();
-    
-    /** default instance */
-    private static CsmReferenceResolver defaultResolver;
+    private static final CsmReferenceResolver DEFAULT = new Default();
     
     protected CsmReferenceResolver() {
     }
@@ -66,12 +63,8 @@ public abstract class CsmReferenceResolver {
     /** Static method to obtain the resolver.
      * @return the resolver
      */
-    public static synchronized CsmReferenceResolver getDefault() {
-        if (defaultResolver != null) {
-            return defaultResolver;
-        }
-        defaultResolver = Lookup.getDefault().lookup(CsmReferenceResolver.class);
-        return defaultResolver == null ? EMPTY : defaultResolver;
+    public static CsmReferenceResolver getDefault() {
+        return DEFAULT;
     }
     
     /**
@@ -109,19 +102,58 @@ public abstract class CsmReferenceResolver {
         }
         return null;
     }
+    
+    /**
+     * fast checks reference scope if possible
+     * @param ref
+     * @return scope kind if detected or UNKNOWN
+     */
+    public abstract Scope fastCheckScope(CsmReference ref);
+    
+    public static enum Scope {
+        LOCAL,
+        GLOBAL,
+        UNKNOWN
+    }
     //
     // Implementation of the default resolver
     //
-    private static final class Empty extends CsmReferenceResolver {
-        Empty() {
+    private static final class Default extends CsmReferenceResolver {
+        private final Lookup.Result<CsmReferenceResolver> res;
+        Default() {
+            res = Lookup.getDefault().lookupResult(CsmReferenceResolver.class);
         }
 
         public CsmReference findReference(CsmFile file, int offset) {
+            for (CsmReferenceResolver resolver : res.allInstances()) {
+                CsmReference out = resolver.findReference(file, offset);
+                if (out != null) {
+                    return out;
+                }
+            }
             return null;
         }
 
-        public CsmReference findReference(CsmFile file, int line, int column) {
+        @Override
+        public CsmReference findReference(Node activatedNode) {
+            for (CsmReferenceResolver resolver : res.allInstances()) {
+                CsmReference out = resolver.findReference(activatedNode);
+                if (out != null) {
+                    return out;
+                }
+            }
             return null;
         }
+        
+        @Override
+        public Scope fastCheckScope(CsmReference ref) {
+            for (CsmReferenceResolver resolver : res.allInstances()) {
+                Scope scope = resolver.fastCheckScope(ref);
+                if (scope != Scope.UNKNOWN) {
+                    return scope;
+                }
+            }
+            return Scope.UNKNOWN;
+        }        
     }    
 }
