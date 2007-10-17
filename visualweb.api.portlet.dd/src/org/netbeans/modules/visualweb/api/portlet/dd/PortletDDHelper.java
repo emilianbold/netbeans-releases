@@ -124,8 +124,7 @@ public class PortletDDHelper {
                  * we will only deal with the first portlet.
                  */
                 PortletType [] portletType = portletApp.getPortlet();
-                if(null != portletType) {
-                    
+                if(portletType != null && portletType.length > 0) {
                     InitParamType [] initParams = portletType[0].getInitParam();
                     
                     
@@ -242,8 +241,7 @@ public class PortletDDHelper {
                  * we will only deal with the first portlet.
                  */
                 PortletType [] portletType = portletApp.getPortlet();
-                if(null != portletType) {
-                    
+                if(portletType != null && portletType.length > 0) {
                     InitParamType [] initParams = portletType[0].getInitParam();
                     
                     boolean foundMode = false;
@@ -296,7 +294,7 @@ public class PortletDDHelper {
              * we will only deal with the first portlet.
              */
             PortletType [] portletType = portletApp.getPortlet();
-            if(null != portletType) {
+            if(portletType != null && portletType.length > 0) {
                 InitParamType [] initParams = portletType[0].getInitParam();
                 for(int ii=0; null != initParams && ii < initParams.length;ii++) {
                     if(inMode.equals(PortletModeType.VIEW)) {
@@ -351,7 +349,7 @@ public class PortletDDHelper {
              * we will only deal with the first portlet.
              */
             PortletType [] portletType = portletApp.getPortlet();
-            if(null != portletType) {
+            if(portletType != null && portletType.length > 0) {
                 InitParamType [] initParams = portletType[0].getInitParam();
                 for(int ii=0; null != initParams && ii < initParams.length;ii++) {
                     String pageValue = initParams[ii].getValue();
@@ -385,7 +383,7 @@ public class PortletDDHelper {
              * we will only deal with the first portlet.
              */
             PortletType [] portletType = portletApp.getPortlet();
-            if(null != portletType) {
+            if(portletType != null && portletType.length > 0) {
                 InitParamType [] initParams = portletType[0].getInitParam();
                 for(int ii=0; null != initParams && ii < initParams.length;ii++) {
                     if(inMode.equals(PortletModeType.VIEW)) {
