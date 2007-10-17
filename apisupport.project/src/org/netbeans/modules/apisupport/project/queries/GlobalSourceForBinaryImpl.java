@@ -334,7 +334,7 @@ public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImpl
         private void doScanZippedNetBeansOrgSources() throws IOException {
             cnbToPrjDir = new HashMap<String,String>();
             for (Enumeration<? extends ZipEntry> en = nbSrcZip.entries(); en.hasMoreElements(); ) {
-                ZipEntry entry = (ZipEntry) en.nextElement();
+                ZipEntry entry = en.nextElement();
                 if (!entry.isDirectory()) {
                     continue;
                 }
