@@ -52,7 +52,6 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.ui.TypeElementFinder;
 import org.netbeans.api.project.Project;
-//import org.netbeans.modules.j2ee.common.FQNSearch;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardPanel.TableGeneration;
@@ -174,7 +173,7 @@ public class EntityWizardPanel extends javax.swing.JPanel {
             public void run() {
                 final ElementHandle<TypeElement> handle = TypeElementFinder.find(null, new TypeElementFinder.Customizer() {
 
-                            public Set<ElementHandle<TypeElement>> query(ClasspathInfo classpathInfo, String textForQuery, NameKind nameKind, Set<SearchScope> searchScopes) {//GEN-LAST:event_browseButtonActionPerformed
+                            public Set<ElementHandle<TypeElement>> query(ClasspathInfo classpathInfo, String textForQuery, NameKind nameKind, Set<SearchScope> searchScopes) {
                                 return classpathInfo.getClassIndex().getDeclaredTypes(textForQuery, nameKind, searchScopes);
                             }
 
