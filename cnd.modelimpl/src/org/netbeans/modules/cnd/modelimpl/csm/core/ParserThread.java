@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
+import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
 /**
@@ -88,6 +89,7 @@ public class ParserThread implements Runnable {
                             file.ensureParsed(preprocHandler);
                     }
                     catch( Throwable thr ) {
+			DiagnosticExceptoins.register(thr);
                         thr.printStackTrace(System.err);
                     }
                     finally {
