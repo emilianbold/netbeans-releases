@@ -276,10 +276,11 @@ public class WebProjectUtilities {
         Project p = ProjectManager.getDefault().findProject(h.getProjectDirectory());
         UpdateHelper updateHelper = ((WebProject) p).getUpdateHelper();
         
-        // #89131: these levels are not actually distinct from 1.5.
-        if (sourceLevel != null && (sourceLevel.equals("1.6") || sourceLevel.equals("1.7")))
-            sourceLevel = "1.5";
-        PlatformUiSupport.storePlatform(ep, updateHelper, javaPlatformName, sourceLevel != null ? new SpecificationVersion(sourceLevel) : null);
+        // #119052
+        if (sourceLevel == null) {
+            sourceLevel = "1.5"; // NOI18N
+        }
+        PlatformUiSupport.storePlatform(ep, updateHelper, javaPlatformName, new SpecificationVersion(sourceLevel));
         
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         

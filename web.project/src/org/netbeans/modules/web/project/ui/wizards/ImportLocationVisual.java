@@ -229,6 +229,8 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
         settings.putProperty(WizardProperties.J2EE_LEVEL, getSelectedJ2eeSpec());
         settings.putProperty(WizardProperties.EAR_APPLICATION, getSelectedEarApplication());
         
+        // #119052
+        String sourceLevel = "1.5"; // NOI18N
         if (warningPanel != null && warningPanel.getDowngradeAllowed()) {
             settings.putProperty(WizardProperties.JAVA_PLATFORM, warningPanel.getSuggestedJavaPlatformName());
             
@@ -236,16 +238,12 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
             if (j2ee != null) {
                 String warningType = J2eeVersionWarningPanel.findWarningType(j2ee);
                 FoldersListSettings fls = FoldersListSettings.getDefault();
-                String srcLevel = "1.6"; //NOI18N
-                if (warningType.equals(J2eeVersionWarningPanel.WARN_SET_SOURCE_LEVEL_14) && fls.isAgreedSetSourceLevel14())
-                    srcLevel = "1.4"; //NOI18N
-                else if (warningType.equals(J2eeVersionWarningPanel.WARN_SET_SOURCE_LEVEL_15) && fls.isAgreedSetSourceLevel15())
-                    srcLevel = "1.5"; //NOI18N
-                
-                settings.putProperty(WizardProperties.SOURCE_LEVEL, srcLevel);
-            }            
-        } else
-            settings.putProperty(WizardProperties.SOURCE_LEVEL, null);
+                if (warningType.equals(J2eeVersionWarningPanel.WARN_SET_SOURCE_LEVEL_14) && fls.isAgreedSetSourceLevel14()) {
+                    sourceLevel = "1.4"; //NOI18N
+                }
+            }
+        }
+        settings.putProperty(WizardProperties.SOURCE_LEVEL, sourceLevel);
     }
 
     boolean valid (WizardDescriptor settings) {
