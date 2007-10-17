@@ -28,16 +28,27 @@
 package org.netbeans.modules.cnd.navigation.switchfiles;
 
 import javax.swing.Action;
-import org.netbeans.modules.cnd.editor.spi.cplusplus.CppSwitchActionProvider;
+import org.netbeans.modules.cnd.MIMENames;
+import org.netbeans.modules.cnd.editor.spi.cplusplus.CndEditorActionsProvider;
 
 /**
  *
  * @author Sergey Grinev
  */
-public class CppSwitchActionProviderImpl implements CppSwitchActionProvider{
+public class CppSwitchActionProviderImpl extends CndEditorActionsProvider {
 
     public Action getCppSwitchAction() {
         return CppSwitchAction.getInstance();
+    }
+ 
+    @Override
+    public Action[] getActions(String mime) {
+        if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mime) ||
+                MIMENames.C_MIME_TYPE.equals(mime)) {
+            return new Action[] { getCppSwitchAction() };
+        } else {
+            return new Action[0];
+        }        
     }
 
 }

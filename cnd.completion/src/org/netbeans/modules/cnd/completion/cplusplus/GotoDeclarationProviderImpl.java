@@ -41,17 +41,28 @@
 
 package org.netbeans.modules.cnd.completion.cplusplus;
 
+import javax.swing.Action;
 import org.netbeans.editor.ext.ExtKit;
-import org.netbeans.modules.cnd.editor.spi.cplusplus.GotoDeclarationProvider;
+import org.netbeans.modules.cnd.MIMENames;
+import org.netbeans.modules.cnd.editor.spi.cplusplus.CndEditorActionsProvider;
 
 /**
  *
  * @author Alexander Simon
  */
-public class GotoDeclarationProviderImpl implements GotoDeclarationProvider {
+public class GotoDeclarationProviderImpl extends CndEditorActionsProvider {
     
-
     public ExtKit.GotoDeclarationAction getGotoDeclarationAction() {
         return CCGoToDeclarationAction.getInstance();
     }
+     
+    @Override
+    public Action[] getActions(String mime) {
+        if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mime) ||
+                MIMENames.C_MIME_TYPE.equals(mime)) {
+            return new Action[] { getGotoDeclarationAction() };
+        } else {
+            return new Action[0];
+        }
+    }    
 }

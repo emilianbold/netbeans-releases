@@ -71,9 +71,8 @@ import org.netbeans.modules.editor.NbEditorKit;
 
 import org.netbeans.modules.cnd.MIMENames;
 import org.netbeans.modules.cnd.editor.spi.cplusplus.CCSyntaxSupport;
-import org.netbeans.modules.cnd.editor.spi.cplusplus.CppSwitchActionProvider;
+import org.netbeans.modules.cnd.editor.spi.cplusplus.CndEditorActionsProvider;
 import org.netbeans.modules.cnd.editor.spi.cplusplus.SyntaxSupportProvider;
-import org.netbeans.modules.cnd.editor.spi.cplusplus.GotoDeclarationProvider;
 
 
 /** C++ editor kit with appropriate document */
@@ -146,21 +145,16 @@ public class CCKit extends NbEditorKit {
 //	    new CppFoldTestAction(),
             new CCInsertBreakAction(),
             new CCDeleteCharAction(deletePrevCharAction, false),
-//            new CCGenerateGoToPopupAction(),
             getToggleCommentAction(),
             getCommentAction(),
             getUncommentAction()
 	};
         ccActions = TextAction.augmentList(super.createActions(), ccActions);
-        GotoDeclarationProvider gotoDeclaration = Lookup.getDefault().lookup(GotoDeclarationProvider.class);
-        if (gotoDeclaration != null)  {
-            ccActions = TextAction.augmentList(ccActions, new Action[]{gotoDeclaration.getGotoDeclarationAction()});
+        Action[] extra = CndEditorActionsProvider.getDefault().getActions(getContentType());
+        if (extra.length > 0) {
+            ccActions = TextAction.augmentList(ccActions,extra);
         }
-
-        CppSwitchActionProvider cppSwitchActionProvider = Lookup.getDefault().lookup(CppSwitchActionProvider.class);
-        if (cppSwitchActionProvider != null)  {
-            ccActions = TextAction.augmentList(ccActions, new Action[]{cppSwitchActionProvider.getCppSwitchAction()});
-        }
+        
         return ccActions;
     }
     
