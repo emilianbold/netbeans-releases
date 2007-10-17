@@ -23,7 +23,7 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="MIMEResolver">
             <file name="Manifest.xml" url="Manifest.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.manifest.Bundle"/>
-                <attr name="position" intvalue="130"/>
+                <attr name="position" intvalue="315"/>
             </file>
         </folder>
     </folder>

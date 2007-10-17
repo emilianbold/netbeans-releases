@@ -60,6 +60,7 @@
     <folder name="MIMEResolver">
       <file name="JMXTypeResolver.xml" url="JMXTypeResolver.xml">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.jmeter.module.Bundle"/>
+        <attr name="position" intvalue="375"/>
       </file>
     </folder>
   </folder>
