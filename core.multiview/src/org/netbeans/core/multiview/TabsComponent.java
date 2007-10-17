@@ -238,7 +238,7 @@ class TabsComponent extends JPanel {
         String key1 = stroke == null ? "" : KeyEvent.getKeyModifiersText(stroke.getModifiers()) + "+" + KeyEvent.getKeyText(stroke.getKeyCode());//NOI18N
         String key2 = stroke2 == null ? "" : KeyEvent.getKeyModifiersText(stroke2.getModifiers()) + "+" + KeyEvent.getKeyText(stroke2.getKeyCode());//NOI18N
         button.setToolTipText(NbBundle.getMessage(TabsComponent.class, "TabButton.tooltip",//NOI18N
-                              description.getDisplayName(), 
+                              button.getText(), 
                               key1,
                               key2));
         button.setFocusable(true);
