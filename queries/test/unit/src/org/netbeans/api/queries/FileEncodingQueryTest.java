@@ -219,6 +219,22 @@ public class FileEncodingQueryTest extends NbTestCase {
         assertEquals (from, to);        
     }
     
+    public void testLongUnicode2 () throws IOException {
+        URL url = FileEncodingQueryTest.class.getResource("data");        
+        File dataFolder = new File(URI.create(url.toExternalForm()));
+        assertTrue(dataFolder.isDirectory());
+        File dataFile = new File (dataFolder, "longUnicode2.txt");
+        assertTrue (dataFile.exists());
+        File test = new File(getWorkDir(), "longUnicode2.orig");
+        copyToWorkDir(dataFile, test);
+        FileObject from = FileUtil.toFileObject(test);
+        assertNotNull(from);
+        FileObject to = from.getParent().createData("longUnicode2","res");
+        assertNotNull(to);
+        copyFile (from, to);
+        assertEquals (from, to);        
+    }
+    
     public void testDefaultEncodingOnSFSIsUTF8() throws IOException {
         FileObject fo = FileUtil.createData(Repository.getDefault().getDefaultFileSystem().getRoot(), "some.file");
         Charset enc = FileEncodingQuery.getEncoding(fo);
@@ -363,7 +379,7 @@ public class FileEncodingQueryTest extends NbTestCase {
                 if (cont) {
                     return flushHead (in,out);
                 }
-                if (buffer.remaining() == 0) {
+                if (buffer.remaining() == 0 || (buffer.position() > 0 && in.limit() == 0)) {
                    return handleHead (in,out);
                }
                else if (buffer.remaining() < in.remaining()) {

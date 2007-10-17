@@ -233,7 +233,7 @@ public class FileEncodingQuery {
                             //Should never happen for files stored by NB, but may be some
                             //broken file ending with a non complete mbyte char.
                             if (flush) {
-                                result = currentDecoder.flush(out);
+                                currentDecoder.flush(out);
                             }
                             LOG.log (Level.FINEST,DECODER_SELECTED,currentDecoder);
                             remainder = view;                            
@@ -346,7 +346,7 @@ public class FileEncodingQuery {
                     CoderResult result = currentEncoder.encode(in, out, false);
                     return result;
                 }
-                if (buffer.remaining() == 0) {
+                if (buffer.remaining() == 0 || (buffer.position()>0 && in.limit() == 0)) {  //Either buffer is full or no more chars will come
                     CoderResult result = encodeHead(in, out, false);
                     return result;
                 } else if (buffer.remaining() < in.remaining()) {
@@ -380,18 +380,27 @@ public class FileEncodingQuery {
                     try {
                         CharBuffer view = buffer.asReadOnlyBuffer();
                         result = currentEncoder.encode(view, out, in==null);
-                        if (in != null) {
-                            result = currentEncoder.encode(in, out, false);
+                        if (result.isOverflow()) {
+                            //Should never happen
+                            if (flush) {
+                                currentEncoder.flush(out);
+                            }
+                            LOG.log(Level.FINEST, ENCODER_SELECTED, currentEncoder);
+                            remainder = view;                            
+                            buffer = null;
+                            return result;
                         }
-                        if (flush) {
-                            result = currentEncoder.flush(out);
+                        else {
+                            if (in != null) {
+                                result = currentEncoder.encode(in, out, false);
+                            }
+                            if (flush) {
+                                result = currentEncoder.flush(out);
+                            }
+                            LOG.log(Level.FINEST, ENCODER_SELECTED, currentEncoder);                           
+                            buffer = null;
+                            return result;
                         }
-                        LOG.log(Level.FINEST, ENCODER_SELECTED, currentEncoder);   
-                        if (view.hasRemaining()) {
-                            remainder = view;
-                        }
-                        buffer = null;
-                        return result;
                     } catch (UnknownEncoding e) {
                         //continue when there was no already an output
                         if (outPos != out.position()) {
@@ -412,7 +421,7 @@ public class FileEncodingQuery {
                     return encodeHead(null, out, true);
                 }
                 else {
-                    currentEncoder.encode(EMPTY_CHAR_BUFFER, out, true);
+                    currentEncoder.encode(EMPTY_CHAR_BUFFER, out, true);                    
                     return currentEncoder.flush(out);
                 }
             }

@@ -93,8 +93,8 @@ public final class XmlFileEncodingQueryImpl extends FileEncodingQueryImplementat
     private static class XMLEncoder extends CharsetEncoder {
             
         private CharBuffer buffer = CharBuffer.allocate(4*1024);
+        private CharBuffer remainder;
         private CharsetEncoder encoder;
-        private boolean cont;
 
         public XMLEncoder (Charset cs) {
             super (cs, 1,2);
@@ -104,12 +104,16 @@ public final class XmlFileEncodingQueryImpl extends FileEncodingQueryImplementat
         protected CoderResult encodeLoop(CharBuffer in, ByteBuffer out) {
             if (buffer == null) {
                 assert encoder != null;
-                return encoder.encode(in, out, false);
+                if (remainder!=null) {
+                    CoderResult result = encoder.encode(remainder,out,false);
+                    if (!remainder.hasRemaining()) {
+                        remainder = null;
+                    }
+                }
+                CoderResult result = encoder.encode(in, out, false);
+                return result;
             }
-            if (cont) {
-                return flushHead (in,out);
-            }
-            if (buffer.remaining() == 0) {
+           if (buffer.remaining() == 0 || (buffer.position() > 0 && in.limit() == 0)) {
                return handleHead (in,out);
            }
            else if (buffer.remaining() < in.remaining()) {
@@ -149,14 +153,17 @@ public final class XmlFileEncodingQueryImpl extends FileEncodingQueryImplementat
             buffer.flip();
             CoderResult r = encoder.encode(buffer,out, in==null);
             if (r.isOverflow()) {
-                cont = true;
+                remainder = buffer;
+                buffer = null;
                 return r;
             }
-            buffer = null;
-            if (in == null) {
-                return r;
+            else {
+                buffer = null;
+                if (in == null) {
+                    return r;
+                }
+                return encoder.encode(in, out, false);
             }
-            return encoder.encode(in, out, false);
         }
 
         private String getEncoding () throws IOException {
@@ -173,14 +180,11 @@ public final class XmlFileEncodingQueryImpl extends FileEncodingQueryImplementat
         protected CoderResult implFlush(ByteBuffer out) {
             CoderResult res;
             if (buffer != null) {
-                if (cont) {
-                    res = flushHead(null, out);
-                    return res;
-                }
-                else {
-                    res = handleHead(null, out);
-                    return res;
-                }
+                res = handleHead(null, out);
+                return res;
+            }
+            else if (remainder != null) {
+                encoder.encode(remainder, out, true);
             }
             else {
                 CharBuffer empty = (CharBuffer) CharBuffer.allocate(0).flip();
@@ -201,22 +205,35 @@ public final class XmlFileEncodingQueryImpl extends FileEncodingQueryImplementat
     private static class XMLDecoder extends CharsetDecoder {
 
         private ByteBuffer buffer = ByteBuffer.allocate(4*1024);
+        private ByteBuffer remainder;
         private CharsetDecoder decoder;
-        private boolean cont;
 
         public XMLDecoder (Charset cs) {
             super (cs,1,2);
         }
 
         protected CoderResult decodeLoop(ByteBuffer in, CharBuffer out) {
-            if (buffer == null) {
+            if (buffer == null) {                
                 assert decoder != null;
-                return decoder.decode(in, out, false);
-            }
-            if (cont) {
-                return flushHead (in,out);
-            }
-            if (buffer.remaining() == 0) {
+                if (remainder!=null) {
+                    ByteBuffer tmp = ByteBuffer.allocate(remainder.remaining() + in.remaining());
+                    tmp.put(remainder);
+                    tmp.put(in);
+                    tmp.flip();
+                    CoderResult result = decoder.decode(tmp,out,false);
+                    if (tmp.hasRemaining()) {
+                        remainder = tmp;
+                    }
+                    else {
+                        remainder = null;
+                    }
+                    return result;
+                }
+                else {
+                    return decoder.decode(in, out, false);
+                }
+           }
+           if (buffer.remaining() == 0) {
                return handleHead (in,out);
            }
            else if (buffer.remaining() < in.remaining()) {
@@ -255,15 +272,18 @@ public final class XmlFileEncodingQueryImpl extends FileEncodingQueryImplementat
         private CoderResult flushHead (ByteBuffer in , CharBuffer out) {
             buffer.flip();
             CoderResult r = decoder.decode(buffer,out, in==null);
-            if (r.isOverflow()) {
-                cont = true;
+            if (r.isOverflow()) {                
+                remainder = buffer;
+                buffer = null;
                 return r;
             }
-            buffer = null;
-            if (in == null) {
-                return r;
+            else {
+                buffer = null;
+                if (in == null) {
+                    return r;
+                }
+                return decoder.decode(in, out, false);
             }
-            return decoder.decode(in, out, false);
         }
 
         private String getEncoding () throws IOException {
@@ -281,14 +301,11 @@ public final class XmlFileEncodingQueryImpl extends FileEncodingQueryImplementat
         protected CoderResult implFlush(CharBuffer out) {
             CoderResult res;
             if (buffer != null) {
-                if (cont) {
-                    res = flushHead(null, out);
-                    return res;
-                }
-                else {
-                    res = handleHead(null, out);
-                    return res;
-                }
+                res = handleHead(null, out);
+                return res;
+            }
+            else if (remainder != null) {
+                decoder.decode(remainder, out, true);
             }
             else {
                 ByteBuffer empty = (ByteBuffer) ByteBuffer.allocate(0).flip();
