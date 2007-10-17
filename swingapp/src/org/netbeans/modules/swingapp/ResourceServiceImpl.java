@@ -209,7 +209,8 @@ public class ResourceServiceImpl implements ResourceService {
         ResourceValueImpl oldRes = (ResourceValueImpl) oldValue;
         ResourceValueImpl newRes = (ResourceValueImpl) newValue;
 
-        if (oldRes != null && (newRes == null || !oldRes.getKey().equals(newRes.getKey()))) {
+        if (oldRes != null && (newRes == null || !oldRes.getKey().equals(newRes.getKey())
+                || oldRes.getStorageLevel() != newRes.getStorageLevel())) {
             ResourceUtils.getDesignResourceMap(oldRes.getSourceFile(), true).removeResourceValue(oldRes);
         }
 
