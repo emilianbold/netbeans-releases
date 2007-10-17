@@ -48,6 +48,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.util.zip.CRC32;
+import java.util.zip.Checksum;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
@@ -75,6 +77,9 @@ public class TransformerUtils {
     /** jaxws-build.xml: build script containing wsimport/wsgen tasks, that is included to build-impl.xml
      */    
     public static final String JAXWS_BUILD_XML_PATH = "nbproject/jaxws-build.xml"; // NOI18N
+    
+    static final String GENFILES_PROPERTIES_PATH = "nbproject/genfiles.properties"; // NOI18N
+    static final String KEY_SUFFIX_JAXWS_BUILD_CRC = ".stylesheet.CRC32"; // NOI18N
 
     static final String JAXWS_20_LIB = "jaxws20lib";
     static final String JAXWS_VERSION = "jaxwsversion";
@@ -97,16 +102,11 @@ public class TransformerUtils {
         try {
             projectXmlData = ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<byte[]>() {
                 public byte[] run() throws IOException {
-                    FileLock lock1 = jaxWsBuildScriptXml.lock();
+                    InputStream is = jaxws_xml.getInputStream();
                     try {
-                        InputStream is = jaxws_xml.getInputStream();
-                        try {
-                            return load(is);
-                        } finally {
-                            is.close();
-                        }
+                        return load(is);
                     } finally {
-                        lock1.releaseLock();
+                        is.close();
                     }
                 }
             });
@@ -169,7 +169,7 @@ public class TransformerUtils {
     /**
      * Load data from a stream into a buffer.
      */
-    private static byte[] load(InputStream is) throws IOException {
+    static byte[] load(InputStream is) throws IOException {
         int size = Math.max(1024, is.available()); // #46235
         ByteArrayOutputStream baos = new ByteArrayOutputStream(size);
         byte[] buf = new byte[size];
@@ -192,4 +192,38 @@ public class TransformerUtils {
         // Defaultly return true
         return true;
     }
+    
+    /** Find (maybe cached) CRC for a URL, using a preexisting input stream (not closed by this method). */
+    static String getCrc32(InputStream is) throws IOException {
+        return  computeCrc32(is);
+    }
+    
+    /**
+     * Compute the CRC-32 of the contents of a stream.
+     * \r\n and \r are both normalized to \n for purposes of the calculation.
+     */
+    private static String computeCrc32(InputStream is) throws IOException {
+        Checksum crc = new CRC32();
+        int last = -1;
+        int curr;
+        while ((curr = is.read()) != -1) {
+            if (curr != '\n' && last == '\r') {
+                crc.update('\n');
+            }
+            if (curr != '\r') {
+                crc.update(curr);
+            }
+            last = curr;
+        }
+        if (last == '\r') {
+            crc.update('\n');
+        }
+        int val = (int)crc.getValue();
+        String hex = Integer.toHexString(val);
+        while (hex.length() < 8) {
+            hex = "0" + hex; // NOI18N
+        }
+        return hex;
+    }
+
 }

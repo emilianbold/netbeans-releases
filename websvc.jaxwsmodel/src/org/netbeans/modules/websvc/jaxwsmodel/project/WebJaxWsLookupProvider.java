@@ -42,6 +42,10 @@
 package org.netbeans.modules.websvc.jaxwsmodel.project;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntBuildExtender;
@@ -51,6 +55,7 @@ import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModelProvider;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.spi.project.LookupProvider;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileChangeAdapter;
@@ -103,6 +108,8 @@ public class WebJaxWsLookupProvider implements LookupProvider {
                     jaxWsModel.addServiceListener(serviceListener);
                     AntBuildExtender ext = prj.getLookup().lookup(AntBuildExtender.class);
                     if (ext != null) {
+                        boolean buildScriptGenerated = false;
+                        
                         FileObject jaxws_build = prj.getProjectDirectory().getFileObject(TransformerUtils.JAXWS_BUILD_XML_PATH);
                         int clientsLength = jaxWsModel.getClients().length;
                         int servicesLength = jaxWsModel.getServices().length;
@@ -119,13 +126,15 @@ public class WebJaxWsLookupProvider implements LookupProvider {
                                 // add jaxws extension
                                 if (servicesLength+clientsLength > 0) {
                                     addJaxWsExtension(prj, JAX_WS_STYLESHEET_RESOURCE, ext, servicesLength, fromWsdlServicesLength, clientsLength, isJsr109);
-                                    ProjectManager.getDefault().saveProject(prj);                                    
+                                    ProjectManager.getDefault().saveProject(prj);
+                                    buildScriptGenerated = true;
                                 }
                             } else if (servicesLength+clientsLength == 0) {
                                 // remove nbproject/jaxws-build.xml
                                 // remove the jaxws extension
                                 removeJaxWsExtension(jaxws_build, ext);
                                 ProjectManager.getDefault().saveProject(prj);
+                                buildScriptGenerated = true;
                             }
                         } catch (IOException ex) {
                             ex.printStackTrace();
@@ -159,9 +168,43 @@ public class WebJaxWsLookupProvider implements LookupProvider {
                                 nbprojectDir.addFileChangeListener(jaxWsCreationListener);
                             }
                         }
+
+                        if (jaxws_fo != null && !buildScriptGenerated) {
+                            URL stylesheet = WebJaxWsLookupProvider.class.getResource(JAX_WS_STYLESHEET_RESOURCE);
+                            assert stylesheet != null;
+                            try {
+                                byte[] stylesheetData;
+                                boolean needToCallTransformer = false;
+                                InputStream is = stylesheet.openStream();
+                                String crc32 = null;
+                                try {
+                                    crc32 = TransformerUtils.getCrc32(is);
+                                } finally {
+                                    is.close();
+                                }  
+
+                                if (crc32 != null) {
+                                    EditableProperties ep = WSUtils.getEditableProperties(prj, TransformerUtils.GENFILES_PROPERTIES_PATH);
+                                    if (ep != null) {
+                                        String oldCrc32 = ep.getProperty(TransformerUtils.JAXWS_BUILD_XML_PATH + TransformerUtils.KEY_SUFFIX_JAXWS_BUILD_CRC);
+                                        if (!crc32.equals(oldCrc32)) {
+                                            ep.setProperty(TransformerUtils.JAXWS_BUILD_XML_PATH + TransformerUtils.KEY_SUFFIX_JAXWS_BUILD_CRC,crc32);
+                                            WSUtils.storeEditableProperties(prj, TransformerUtils.GENFILES_PROPERTIES_PATH, ep);
+                                            needToCallTransformer = true;
+                                        }
+                                    }
+                                }
+                                if (needToCallTransformer) {
+                                    TransformerUtils.transformClients(prj.getProjectDirectory(), JAX_WS_STYLESHEET_RESOURCE, true);
+                                }
+                            } catch (IOException ex) {
+                                Logger.getLogger(this.getClass().getName()).log(Level.FINE, "failed to generate jaxws-build.xml from stylesheet", ex); //NOI18N
+                            }
+                        }
                     }
                 }
             }
+            
             protected void projectClosed() {
                 FileObject nbprojectDir = prj.getProjectDirectory().getFileObject("nbproject"); //NOI18N
                 if (nbprojectDir!=null) {
