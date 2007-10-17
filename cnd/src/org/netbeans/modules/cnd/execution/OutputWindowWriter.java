@@ -237,46 +237,42 @@ public class OutputWindowWriter extends Writer {
         
         public void outputLineSelected(OutputEvent ev) {
             //next action:
-            try {
-                DataObject od = DataObject.find(file);
-                LineCookie lc = od.getCookie(LineCookie.class);
-                
-                if (lc != null) {
-                    Line l = lc.getLineSet().getOriginal(line);
-                    
-                    if (!l.isDeleted()) {
-                        l.show(Line.SHOW_GOTO);
-                        ErrorAnnotation.getInstance().attach(l);
-                    }
-                }
-            }  catch (DataObjectNotFoundException ex) {
-                // project/file can be deleted 
-                //ErrorManager.getDefault().notify(ex);
-            }
+            showLine();
         }
         
         public void outputLineAction(OutputEvent ev) {
             //goto:
+            showLine();
+        }
+        
+        public void outputLineCleared(OutputEvent ev) {
+            ErrorAnnotation.getInstance().detach(null);
+        }
+        
+        private void showLine() {
             try {
                 DataObject od = DataObject.find(file);
                 LineCookie lc = od.getCookie(LineCookie.class);
                 
                 if (lc != null) {
-                    Line l = lc.getLineSet().getOriginal(line);
-                    
-                    if (!l.isDeleted()) {
-                        l.show(Line.SHOW_GOTO);
-                        ErrorAnnotation.getInstance().attach(l);
+                    try {
+                        // TODO:
+                        // Preprocessor supports 
+                        // #line directive => line number can be out of scope
+                        Line l = lc.getLineSet().getOriginal(line);
+
+                        if (!l.isDeleted()) {
+                            l.show(Line.SHOW_GOTO);
+                            ErrorAnnotation.getInstance().attach(l);
+                        }
+                    } catch (IndexOutOfBoundsException ex) {
+                       // something wrong with line number see IZ#118667
                     }
                 }
             }  catch (DataObjectNotFoundException ex) {
                 // project/file can be deleted 
                 //ErrorManager.getDefault().notify(ex);
-            }
-        }
-        
-        public void outputLineCleared(OutputEvent ev) {
-            ErrorAnnotation.getInstance().detach(null);
+            }          
         }
     }
     
