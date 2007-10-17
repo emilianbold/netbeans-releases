@@ -122,7 +122,8 @@ public abstract class CloneableTopComponent extends TopComponent implements Exte
     }
 
     /** Called from {@link #clone} to actually create a new component from this one.
-    * The default implementation only clones the object by calling {@link Object#clone}.
+    * The default implementation serializes and deserializes the original and
+    * returns the result.
     * Subclasses may leave this as is, assuming they have no special needs for the cloned
     * data besides copying it from one object to the other. If they do, the superclass
     * method should be called, and the returned object modified appropriately.
