@@ -299,11 +299,7 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
 				</module-dependencies>
-				<class-path-extension>
-					<runtime-relative-path>ext/sql/jaxp-ri/jaxp-ri-1.4.jar</runtime-relative-path>
-					<binary-origin>../external/jaxp-ri-1.4.jar</binary-origin>
-				</class-path-extension>
-            <public-packages/>
+			<public-packages/>
 		</data> 
 	</configuration>
 </project>

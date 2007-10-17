@@ -73,15 +73,7 @@ made subject to such option by the copyright holder.
         <!-- <fileset dir="antsrc" includes="**/antlib.xml"/> -->
         <fileset dir="antsrc" includes="**/sqlpro.wsdl.template"/>
       </jar>
-
-	  <!-- copy the jaxp-ri for encrypting the password-->
-	  <mkdir dir="${cluster}/modules/ext/sql/jaxp-ri/"/>
-        <copy todir="${cluster}/modules/ext/sql/jaxp-ri">
-            <fileset dir="../external">
-                <include name="jaxp-ri-1.4.jar"/>
-            </fileset>
-        </copy>
-
+ 
     </target>
 
     <target name="netbeans-extra" depends="ant-extra"/>
