@@ -166,7 +166,7 @@ public class LocaleNodeCustomizer extends JPanel {
     private void initAccessibility() {
         this.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(LocaleNodeCustomizer.class).getString("ACS_LocaleNodeCustomizer"));
                 
-        nameText.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(LocaleNodeCustomizer.class).getString("ACS_CTL_NameText"));
+        nameText.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(LocaleNodeCustomizer.class).getString("ACS_CTL_LocaleName"));
         addKeyButton.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(LocaleNodeCustomizer.class).getString("ACS_CTL_AddKey"));
         changeNameButton.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(LocaleNodeCustomizer.class).getString("ACS_CTL_ChangeNameButton"));
         removeKeyButton.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(LocaleNodeCustomizer.class).getString("ACS_CTL_RemoveKey"));

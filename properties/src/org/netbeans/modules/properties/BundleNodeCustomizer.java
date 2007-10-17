@@ -113,7 +113,7 @@ public class BundleNodeCustomizer extends JPanel {
     private void initAccessibility() {
         this.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(LocaleNodeCustomizer.class).getString("ACS_BundleNodeCustomizer"));
                  
-        nameText.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(LocaleNodeCustomizer.class).getString("ACS_CTL_NameText"));
+        nameText.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(LocaleNodeCustomizer.class).getString("ACS_CTL_BundleName"));
         localesList.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(LocaleNodeCustomizer.class).getString("ACS_CTL_LocalesList"));
         addLocale.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(LocaleNodeCustomizer.class).getString("ACS_CTL_AddLocale"));
         removeLocales.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(LocaleNodeCustomizer.class).getString("ACS_CTL_RemoveLocale"));
