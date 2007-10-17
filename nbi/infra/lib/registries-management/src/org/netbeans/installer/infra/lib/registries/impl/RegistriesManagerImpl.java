@@ -686,7 +686,8 @@ public class RegistriesManagerImpl implements RegistriesManager {
                 "nb-platform",
                 //"nb-base",
                 "openesb",
-                "sjsam");
+                "sjsam",
+                "jdk");
         final Map<String, String> notes = new HashMap<String, String>();
         //notes.put("nb-javase", "for Java SE, includes GUI Builder, Profiler");
         
