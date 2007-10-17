@@ -150,10 +150,7 @@ public class XMLRefactoringTransaction implements Transaction {
         //System.out.println("COMMIT called");
         try {
             if(commited){
-                //check if we did undo using the Refactoring BackupFacility, if yes then use it
-                //to do redo. If not, use the UndoManagers for redo
-                if(useBackupFacility) {
-                   
+                                 
                     //even if we used BackupFacility, use the genericChangeUndoManager for redo since
                     //move/file rename refactoring involve more than just target rename/move
                     if (genericChangeUndoManager != null && genericChangeUndoManager.canRedo()) {
@@ -168,16 +165,14 @@ public class XMLRefactoringTransaction implements Transaction {
                             throw (RuntimeException) new RuntimeException().initCause(ex);
                         }
                     }
-                } else {
-                  redo();
-                }
+               
             }  else{
                commited=true;
                //backup the files before doing refactoring
                this.backup();
                process();
              } 
-        }catch (IOException ioe) {
+              }catch (IOException ioe) {
             String msg = ioe.getMessage();
             NotifyDescriptor nd = new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(nd);
@@ -192,11 +187,8 @@ public class XMLRefactoringTransaction implements Transaction {
         
         UndoRedoProgress progress = new UndoRedoProgress();
 	progress.start();
-        
-        if(useBackupFacility){
-            //we have used the backup to do undo the first time; so now use it again
-            
-            //for target use the genericChangeUndoManager
+        try {
+           //for target use the genericChangeUndoManager
             if (genericChangeUndoManager != null && genericChangeUndoManager.canUndo()) {
                 genericChangeUndoManager.undo();                
             }            
@@ -208,62 +200,8 @@ public class XMLRefactoringTransaction implements Transaction {
                     throw (RuntimeException) new RuntimeException().initCause(ex);
                 }
             } 
-            progress.stop();
-            return;
-        }
+                  
         
-        List<UndoManager> temp = new ArrayList<UndoManager>();
-	try {
-	  if(modelsInRefactoring == null)
-              modelsInRefactoring = getModels();
-            Set<Model> models = modelsInRefactoring.keySet();
-                   
-            Set<Model> excludedFromSave = RefactoringUtil.getDirtyModels(models, targetModel);                      
-            if (genericChangeUndoManager != null && genericChangeUndoManager.canUndo()) {
-                genericChangeUndoManager.undo();                
-            }
-            
-            if(undoManagers != null ) {
-                for (UndoManager um : undoManagers.values()) {
-                    while (um.canUndo()) {
-                        um.undo();
-                        //this is really bad. The UndoManager doest throw excetpion in canUndo but in undo
-                        //so there is a possibility some undoManagers may do undo. 
-                        temp.add(um);
-                    }
-               }
-            }
-                                
-            //fix for issue 108512
-           if(undoManagers != null ){
-               Set<Model> mods = undoManagers.keySet();
-               for(Model m:mods){
-                   if(m instanceof AbstractDocumentModel)
-                       ((AbstractDocumentModel)m).getAccess().flush();
-               }
-           }
-            
-            if(! isLocal)
-                RefactoringUtil.save(models, targetModel, excludedFromSave);
-         
-      } catch(CannotUndoException e){
-          //When we get the CannotUndoException, use the BackupFacility to undo
-         useBackupFacility = true;
-         //if some undoManagers have already did undo, we have to redo before
-         //doing a file copy. this part is really bad
-         if(temp.size() > 0){
-             for(UndoManager un:temp){
-                 un.redo();
-             }
-         }
-         for (BackupFacility.Handle id:ids) {
-            try {
-                id.restore();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-                throw (RuntimeException) new RuntimeException().initCause(ex);
-            }
-        } 
       }finally {
       	   progress.stop();
       }
@@ -310,8 +248,7 @@ public class XMLRefactoringTransaction implements Transaction {
                     plugin.doRefactoring(elements);
                 }
             
-                RefactoringUtil.save(models, targetModel, excludedFromSave);
-             
+                           
             } else { // isLocal
                 //Model model = request.getTargetModel();
                 if (targetModel != null) {
@@ -848,7 +785,7 @@ public class XMLRefactoringTransaction implements Transaction {
                                  try {
                                      source = cat.getModelSource(uri);
                                      fobj = source.getLookup().lookup(FileObject.class);
-                                 } catch (CatalogModelException e){
+                                 } catch (Exception e){
                                      //this means the model source could be in the same project 
                                      fobj = SharedUtils.getFileObject(model, uri);
                                      //if we have a fobj, we can now have two cases
@@ -910,13 +847,21 @@ public class XMLRefactoringTransaction implements Transaction {
     }
     
     private void backup() throws IOException {
+        boolean addedTarget = false;
         if(modelsInRefactoring == null)
               modelsInRefactoring = getModels();
             Set<Model> models = modelsInRefactoring.keySet();
             for(Model mod:models){
+                FileObject fo = mod.getModelSource().getLookup().lookup(FileObject.class);
                 ids.add(BackupFacility.getDefault().backup(mod.getModelSource().getLookup().lookup(FileObject.class)));
+                //backup facility doesnt keep track of unique file objects. need to do it ourselves
+                if(mod.equals(targetModel))
+                    addedTarget = true;
             }
-                        
+            GeneralChangeExecutor ce = new GeneralChangeExecutor();
+            if(!ce.canChange(request.getClass(), target)  && !addedTarget) { 
+                ids.add(BackupFacility.getDefault().backup(targetModel.getModelSource().getLookup().lookup(FileObject.class)));
+            }           
     }
     
         
