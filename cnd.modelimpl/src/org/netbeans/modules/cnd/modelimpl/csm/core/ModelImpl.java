@@ -347,8 +347,8 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
         }   
       
         if (cleanModel) {
-            // time to clean everything
-            cleanModel();
+            // time to clean caches
+            cleanCaches();
         }
     }
 
@@ -592,7 +592,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
             disposeProject((ProjectBase) projIter.next());
         }
         
-        cleanModel();      
+        cleanCaches();      
 	
         setState(CsmModelState.OFF);
 	
@@ -710,9 +710,10 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
             synchronized( lock ) {
                 cleanModel = TraceFlags.USE_REPOSITORY ? platf2csm.isEmpty() : platf2csmOLD.isEmpty();
             }
-            
+            // repository memory cache isn't cleared here,
+	    // so it's safe to do this outside of the lock
             if( cleanModel ) {
-                cleanModel();
+                cleanCaches();
             }
         }
         finally {
@@ -771,10 +772,6 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
     public boolean isProjectEnabled(NativeProject nativeProject) {
         ProjectBase project = (ProjectBase) findProject(nativeProject);
         return (project != null) && (!project.isDisposing());
-    }
-
-    private void cleanModel() {
-        cleanCaches();
     }
 
     private void cleanCaches() {
