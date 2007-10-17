@@ -43,8 +43,10 @@ package org.netbeans.modules.cnd.refactoring.actions;
 import java.awt.Color;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import javax.swing.Action;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.DocumentEvent;
@@ -53,6 +55,8 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.Position;
+import javax.swing.text.Position.Bias;
 import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.editor.BaseDocument;
@@ -60,125 +64,168 @@ import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.util.swing.MutablePositionRegion;
 //import org.netbeans.modules.java.editor.semantic.FindLocalUsagesQuery;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.CsmScopeElement;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.netbeans.spi.editor.highlighting.support.PositionsBag;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
 /**
- *
+ * perform instant rename action
+ * 
  * @author Jan Lahoda
+ * @author Vladimir Voskresensky
  */
 public class InstantRenamePerformer implements DocumentListener, KeyListener {
-    
+
     private SyncDocumentRegion region;
     private Document doc;
     private JTextComponent target;
     
     /** Creates a new instance of InstantRenamePerformer */
-//    private InstantRenamePerformer(JTextComponent target, Set<Token<JavaTokenId>> highlights, int caretOffset) throws BadLocationException {
-//	this.target = target;
-//	doc = target.getDocument();
+    private InstantRenamePerformer(JTextComponent target,  Collection<CsmReference> highlights, int caretOffset) throws BadLocationException {
+	this.target = target;
+	this.doc = target.getDocument();
+	
+	MutablePositionRegion mainRegion = null;
+	List<MutablePositionRegion> regions = new ArrayList<MutablePositionRegion>();
+        PositionsBag bag = new PositionsBag(doc);
+        
+	for (CsmReference h : highlights) {
+	    Position start = NbDocument.createPosition(doc, h.getStartOffset(), Bias.Backward);
+	    Position end = NbDocument.createPosition(doc, h.getEndOffset(), Bias.Forward);
+	    MutablePositionRegion current = new MutablePositionRegion(start, end);
+	    
+	    if (isIn(current, caretOffset)) {
+		mainRegion = current;
+	    } else {
+		regions.add(current);
+	    }
+	    
+            bag.addHighlight(start, end, COLORING);
+	}
+	
+	if (mainRegion == null) {
+	    throw new IllegalArgumentException("No highlight contains the caret.");
+	}
+	
+	regions.add(0, mainRegion);
+	
+	this.region = new SyncDocumentRegion(doc, regions);
+	
+        if (doc instanceof BaseDocument) {
+            ((BaseDocument) doc).setPostModificationDocumentListener(this);
+        }
+        
+	target.addKeyListener(this);
+	
+	target.putClientProperty(InstantRenamePerformer.class, this);
+	
+        getHighlightsBag(doc).setHighlights(bag);
+        
+        target.select(mainRegion.getStartOffset(), mainRegion.getEndOffset());
+    }
+    
+//    private FileObject getFileObject() {
+//	DataObject od = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
 //	
-//	MutablePositionRegion mainRegion = null;
-//	List<MutablePositionRegion> regions = new ArrayList<MutablePositionRegion>();
-//        PositionsBag bag = new PositionsBag(doc);
-//        
-//	for (Token<JavaTokenId> h : highlights) {
-//	    Position start = NbDocument.createPosition(doc, h.offset(null), Bias.Backward);
-//	    Position end = NbDocument.createPosition(doc, h.offset(null) + h.length(), Bias.Forward);
-//	    MutablePositionRegion current = new MutablePositionRegion(start, end);
-//	    
-//	    if (isIn(current, caretOffset)) {
-//		mainRegion = current;
-//	    } else {
-//		regions.add(current);
-//	    }
-//	    
-//            bag.addHighlight(start, end, COLORING);
-//	}
+//	if (od == null)
+//	    return null;
 //	
-//	if (mainRegion == null) {
-//	    throw new IllegalArgumentException("No highlight contains the caret.");
-//	}
-//	
-//	regions.add(0, mainRegion);
-//	
-//	region = new SyncDocumentRegion(doc, regions);
-//	
-//        if (doc instanceof BaseDocument) {
-//            ((BaseDocument) doc).setPostModificationDocumentListener(this);
-//        }
-//        
-//	target.addKeyListener(this);
-//	
-//	target.putClientProperty(InstantRenamePerformer.class, this);
-//	
-//        getHighlightsBag(doc).setHighlights(bag);
-//        
-//        target.select(mainRegion.getStartOffset(), mainRegion.getEndOffset());
+//	return od.getPrimaryFile();
 //    }
     
-    private FileObject getFileObject() {
-	DataObject od = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
-	
-	if (od == null)
-	    return null;
-	
-	return od.getPrimaryFile();
+    private static String getString(String key) {
+        return NbBundle.getMessage(InstantRenamePerformer.class, key);
     }
     
     public static void invokeInstantRename(JTextComponent target) {
         try {
-            final int caret = target.getCaretPosition();
-            String ident = Utilities.getIdentifier(Utilities.getDocument(target), caret);
-            
-            if (ident == null) {
-                Utilities.setStatusBoldText(target, "Cannot perform instant rename here.");
+            final int caret = target.getCaretPosition();   
+            Document doc = target.getDocument();
+            DataObject dobj = NbEditorUtilities.getDataObject(doc);
+            CsmFile file = CsmUtilities.getCsmFile(dobj, false);
+            if (file == null) {
+                Utilities.setStatusBoldText(target, getString("no-instant-rename")); // NOI18N
+                return;
+            }
+            CsmReference ref = CsmReferenceResolver.getDefault().findReference(file, caret);
+            if (ref == null) {
+                Utilities.setStatusBoldText(target, getString("no-instant-rename")); // NOI18N
                 return;
             }
             
-            DataObject od = (DataObject) target.getDocument().getProperty(Document.StreamDescriptionProperty);
-//            JavaSource js = JavaSource.forFileObject(od.getPrimaryFile());
-//            final boolean[] wasResolved = new boolean[1];
-//            @SuppressWarnings("unchecked")
-//            final Set<Token<JavaTokenId>>[] changePoints = new Set[1];
-//            
-//            js.runUserActionTask(new Task<CompilationController>() {
-//
-//                public void run(CompilationController controller) throws Exception {
-//                    if (controller.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0)
-//                        return;
-//                    
-//                    changePoints[0] = computeChangePoints(controller, caret, wasResolved);
-//                }
-//            }, true);
-//            
-//            if (wasResolved[0]) {
-//                if (changePoints[0] != null) {
-//                    doInstantRename(changePoints[0], target, caret, ident);
-//                } else {
-                    doFullRename(od.getCookie(EditorCookie.class), od.getNodeDelegate());
-//                }
-//            } else {
-//                Utilities.setStatusBoldText(target, "Cannot perform instant rename here.");
-//            }
+            if (allowInstantRename(ref)) {
+                Collection<CsmReference> changePoints = computeChangePoints(ref);
+                //String ident = ref.getText();
+                doInstantRename(changePoints, target, caret);
+            } else {
+                doFullRename(dobj, target);
+            }
         } catch (BadLocationException e) {
             Exceptions.printStackTrace(e);
-//        } catch (IOException ioe) {
-//            Exceptions.printStackTrace(ioe);
         }
     }
-    private static void doFullRename(EditorCookie ec, Node n) {
-        
+    
+    private static boolean allowInstantRename(CsmReference ref) {
+        CsmReferenceResolver.Scope scope = CsmReferenceResolver.getDefault().fastCheckScope(ref);
+        if (scope == CsmReferenceResolver.Scope.LOCAL) {
+            return true;
+        } else {
+            CsmObject obj = ref.getReferencedObject();
+            if (obj != null && isLocalElement(obj)) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+    
+    private static boolean isLocalElement(CsmObject decl) {
+        assert decl != null;
+        CsmObject scopeElem = decl;
+        while (CsmKindUtilities.isScopeElement(scopeElem)) {
+            CsmScope scope = ((CsmScopeElement)scopeElem).getScope();
+            if (CsmKindUtilities.isFunction(scope)) {
+                return true;
+            } else if (CsmKindUtilities.isScopeElement(scope)) {
+                scopeElem = ((CsmScopeElement)scope);
+            } else {
+                break;
+            }
+        }
+        return false;
+    }
+    
+    private static void doFullRename(DataObject dobj, JTextComponent target) {
+        EditorCookie ec = dobj.getCookie(EditorCookie.class);
+        Node n = dobj.getNodeDelegate();
+        if (n == null) {
+             Utilities.setStatusBoldText(target, getString("no-instant-rename")); // NOI18N
+             return;
+        }
         InstanceContent ic = new InstanceContent();
-        ic.add(ec);
+        if (ec != null) {
+            ic.add(ec);
+        }
         ic.add(n);
         Lookup actionContext = new AbstractLookup(ic);
         
@@ -186,93 +233,19 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
         a.actionPerformed(RefactoringActionsFactory.DEFAULT_EVENT);
     }
     
-//    private static void doInstantRename(Set<Token<JavaTokenId>> changePoints, JTextComponent target, int caret, String ident) throws BadLocationException {
-//        InstantRenamePerformer.performInstantRename(target, changePoints, caret);
-//    }
-//    
-//    static Set<Token<JavaTokenId>> computeChangePoints(final CompilationInfo info, final int caret, final boolean[] wasResolved) throws IOException {
-//        final Document doc = info.getDocument();
-//        
-//        if (doc == null)
-//            return null;
-//        
-//        final int[] adjustedCaret = new int[] {caret};
-//        
-//        doc.render(new Runnable() {
-//            public void run() {
-//                TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(info.getTokenHierarchy(), caret);
-//                
-//                ts.move(caret);
-//                
-//                if (ts.moveNext() && ts.token()!=null && ts.token().id() == JavaTokenId.IDENTIFIER) {
-//                    adjustedCaret[0] = ts.offset() + ts.token().length() / 2 + 1;
-//                }
-//            }
-//        });
-//        
-//        TreePath path = info.getTreeUtilities().pathFor(adjustedCaret[0]);
-//        Element el = info.getTrees().getElement(path);
-//        
-//        if (el == null) {
-//            wasResolved[0] = false;
-//            return null;
-//        }
-//        
-//        //#89736: if the caret is not in the resolved element's name, no rename:
-//        final Token<JavaTokenId> name = org.netbeans.modules.java.editor.semantic.Utilities.getToken(info, doc, path);
-//        
-//        if (name == null)
-//            return null;
-//        
-//        doc.render(new Runnable() {
-//            public void run() {
-//                wasResolved[0] = name.offset(null) <= caret && caret <= (name.offset(null) + name.length());
-//            }
-//        });
-//        
-//        if (!wasResolved[0])
-//            return null;
-//        
-//        if (el.getKind() == ElementKind.CONSTRUCTOR) {
-//            //for constructor, work over the enclosing class:
-//            el = el.getEnclosingElement();
-//        }
-//        
-//        if (allowInstantRename(el)) {
-//            final Set<Token<JavaTokenId>> points = new HashSet<Token<JavaTokenId>>(new FindLocalUsagesQuery().findUsages(el, info, doc));
-//            
-//            if (el.getKind().isClass()) {
-//                //rename also the constructors:
-//                for (ExecutableElement c : ElementFilter.constructorsIn(el.getEnclosedElements())) {
-//                    TreePath t = info.getTrees().getPath(c);
-//                    
-//                    if (t != null) {
-//                        Token<JavaTokenId> token = org.netbeans.modules.java.editor.semantic.Utilities.getToken(info, doc, t);
-//                        
-//                        if (token != null) {
-//                            points.add(token);
-//                        }
-//                    }
-//                }
-//            }
-//            
-//            final boolean[] overlapsWithGuardedBlocks = new boolean[1];
-//            
-//            doc.render(new Runnable() {
-//                public void run() {
-//                    overlapsWithGuardedBlocks[0] = overlapsWithGuardedBlocks(doc, points);
-//                }
-//            });
-//            
-//            if (overlapsWithGuardedBlocks[0]) {
-//                return null;
-//            }
-//            
-//            return points;
-//        }
-//        
-//        return null;
-//    }
+    private static void doInstantRename(Collection<CsmReference> changePoints, JTextComponent target, int caret) throws BadLocationException {
+        performInstantRename(target, changePoints, caret);
+    }
+    
+    static Collection<CsmReference> computeChangePoints(CsmReference ref) {
+        CsmObject resolved = ref.getReferencedObject();
+        if (resolved == null) {
+            return Collections.<CsmReference>emptyList();
+        }
+        CsmFile file = ref.getContainingFile();
+        Collection<CsmReference> out = CsmReferenceRepository.getDefault().getReferences(resolved, file, true);
+        return out;
+    }
     
 //    private static boolean allowInstantRename(Element e) {
 //        if (org.netbeans.modules.java.editor.semantic.Utilities.isPrivateElement(e)) {
@@ -312,9 +285,9 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
 //    private static final Set<ElementKind> LOCAL_CLASS_PARENTS = EnumSet.of(ElementKind.CONSTRUCTOR, ElementKind.INSTANCE_INIT, ElementKind.METHOD, ElementKind.STATIC_INIT);
 //    
 //    
-//    public static void performInstantRename(JTextComponent target, Set<Token<JavaTokenId>> highlights, int caretOffset) throws BadLocationException {
-//	new InstantRenamePerformer(target, highlights, caretOffset);
-//    }
+    public static void performInstantRename(JTextComponent target, Collection<CsmReference> highlights, int caretOffset) throws BadLocationException {
+	new InstantRenamePerformer(target, highlights, caretOffset);
+    }
 
     private boolean isIn(MutablePositionRegion region, int caretOffset) {
 	return region.getStartOffset() <= caretOffset && caretOffset <= region.getEndOffset();
@@ -323,9 +296,10 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
     private boolean inSync;
     
     public synchronized void insertUpdate(DocumentEvent e) {
+        System.err.println("insert update" + inSync);
 	if (inSync)
 	    return ;
-	
+	System.err.println("insert update");
 	inSync = true;
 	region.sync(0);
 	inSync = false;
@@ -333,9 +307,10 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
     }
 
     public synchronized void removeUpdate(DocumentEvent e) {
+        System.err.println("remove update" + inSync);
 	if (inSync)
 	    return ;
-	
+	System.err.println("remove update");
         //#89997: do not sync the regions for the "remove" part of replace selection,
         //as the consequent insert may use incorrect offset, and the regions will be synced
         //after the insert anyway.
@@ -370,6 +345,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
     }
 
     private void release() {
+        System.err.println("release was called");
 	target.putClientProperty(InstantRenamePerformer.class, null);
         if (doc instanceof BaseDocument) {
             ((BaseDocument) doc).setPostModificationDocumentListener(null);
@@ -386,17 +362,18 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
     
     public static PositionsBag getHighlightsBag(Document doc) {
         PositionsBag bag = (PositionsBag) doc.getProperty(InstantRenamePerformer.class);
-        
+        Object stream = doc.getProperty(Document.StreamDescriptionProperty);
+        FileObject file = null;
+        if (stream instanceof DataObject) {
+            file = ((DataObject) stream).getPrimaryFile();
+        }        
         if (bag == null) {
             doc.putProperty(InstantRenamePerformer.class, bag = new PositionsBag(doc));
             
-            Object stream = doc.getProperty(Document.StreamDescriptionProperty);
-            
-            if (stream instanceof DataObject) {
-                Logger.getLogger("TIMER").log(Level.FINE, "Instant Rename Highlights Bag", new Object[] {((DataObject) stream).getPrimaryFile(), bag}); //NOI18N
-            }
+                System.err.println("New Highlights Bag for " + file);
+//                Logger.getLogger("TIMER").log(Level.FINE, "Instant Rename Highlights Bag", new Object[] {((DataObject) stream).getPrimaryFile(), bag}); //NOI18N
         }
-        
+        System.err.println("Highlights Bag for " + file);
         return bag;
     }
     
