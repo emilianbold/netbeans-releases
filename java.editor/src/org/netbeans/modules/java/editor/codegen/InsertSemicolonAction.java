@@ -33,10 +33,10 @@ import javax.swing.text.Caret;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Formatter;
 import org.netbeans.editor.Utilities;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  * Action which inserts an appropriate character at line-end without moving
@@ -52,15 +52,15 @@ public final class InsertSemicolonAction extends BaseAction {
         super(name);
         this.withNewline = withNewline;
         this.what = what;
+        putValue(SHORT_DESCRIPTION, NbBundle.getMessage(InsertSemicolonAction.class, name));
     }
 
     public InsertSemicolonAction(String name, boolean withNewline) {
-        this (name, ';', withNewline);
+        this (name, ';', withNewline); //NOI18N
     }
     
     public InsertSemicolonAction(boolean withNewLine) {
-        this (withNewLine ? "complete-line-newline" : "complete-line", ';', 
-                withNewLine);
+        this (withNewLine ? "complete-line-newline" : "complete-line", ';', withNewLine); //NOI18N
     }
 
     @Override
@@ -78,7 +78,7 @@ public final class InsertSemicolonAction extends BaseAction {
                 formatter.indentLock();
                 try {
                     int eoloffset = Utilities.getRowEnd(target, dotpos);
-                    doc.insertString(eoloffset, "" + what, null);
+                    doc.insertString(eoloffset, "" + what, null); //NOI18N
                     if (withNewline) {
                         //This is code from the editor module, but it is
                         //a pretty strange way to do this:
@@ -94,7 +94,7 @@ public final class InsertSemicolonAction extends BaseAction {
                     formatter.indentUnlock();
                 }
             }
-        };
+        }
         doc.runAtomicAsUser(new R());
     }
 }
