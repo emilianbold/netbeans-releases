@@ -66,7 +66,6 @@ import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
 import org.netbeans.modules.ruby.spi.project.support.rake.ReferenceHelper;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.VisibilityQuery;
-import org.netbeans.modules.ruby.rubyproject.RSpecSupport;
 
 /**
  * This class represents a project source roots. It is used to obtain roots as Ant properties, FileObject's
@@ -74,6 +73,7 @@ import org.netbeans.modules.ruby.rubyproject.RSpecSupport;
  * @author Tomas Zezula
  */
 public final class SourceRoots {
+    
     public static final String PROP_ROOT_PROPERTIES = "rootProperties";    //NOI18N
     public static final String PROP_ROOTS = "roots";   //NOI18N
 
@@ -296,7 +296,7 @@ public final class SourceRoots {
         for (FileObject child : folder.getChildren()) {
             if (child.isFolder()) {
                 String name = child.getNameExt();
-                if (!known.contains(name) && SourceRoots.isVisible(name)) { // && VisibilityQuery.getDefault().isVisible(child)) {
+                if (!known.contains(name) && VisibilityQuery.getDefault().isVisible(child)) {
                     if (result == null) {
                         result = new ArrayList<String>();
                     }
@@ -312,13 +312,7 @@ public final class SourceRoots {
         
         return result;
     }
-    
-    private static boolean isVisible(final String name) {
-        // FIXME: workaround for #114690. Fix better using VisibilityQuery (as commented). See the issue comments.
-        String ignoredFiles = "^(CVS|SCCS|vssver\\.scc|#.*#|%.*%|\\.(cvsignore|svn|DS_Store)|_svn)$|~$|^\\..*$"; // NOI18N
-        return !name.matches(ignoredFiles);
-    }
-    
+
     /** Initialize source roots to just match the Rails view.
      * Note that my load path will be way wrong for unit test execution and such - and
      * possibly for require-indexing (for require completion)
@@ -340,7 +334,7 @@ public final class SourceRoots {
 
         FileObject[] children = fo.getChildren();
         for (FileObject f : children) {
-            if (!SourceRoots.isVisible(f.getNameExt())) {
+            if (!VisibilityQuery.getDefault().isVisible(f)) {
                 continue;
             }
             if (FileUtil.isArchiveFile(f)) {
