@@ -86,8 +86,7 @@ public class SubResourceLocatorNode extends AbstractNode{
     }
     
     public static String getKey(SubResourceLocator method) {
-        return method.getUriTemplate() + " : " + 
-                Utils.stripPackageName(method.getReturnType());    //NOI18N
+        return method.getUriTemplate() + " : " + method.getReturnType();    //NOI18N
     }
     
     private static final java.awt.Image METHOD_BADGE =

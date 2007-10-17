@@ -98,14 +98,7 @@ public class RestServiceNode extends AbstractNode{
     }
     
     public static String getKey(RestServiceDescription desc) {
-        String uriTemplate = desc.getUriTemplate();
-        String serviceName = desc.getName();
-        
-        if (uriTemplate.length() > 0) {
-            return serviceName + " [" + uriTemplate + "]";      //NOI18N
-        } else {
-            return serviceName;
-        }
+        return desc.getName() + ":" + desc.getUriTemplate();        //NOI18N
     }
     
     private static final java.awt.Image SERVICE_BADGE =
