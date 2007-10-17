@@ -70,14 +70,16 @@ final class FormClassLoader extends ClassLoader {
 
     @Override
     protected Class findClass(String name) throws ClassNotFoundException {
-        int type = ClassPathUtils.getClassLoadingType(name);
-        if (type == ClassPathUtils.UNSPECIFIED_CLASS) {
-            if (projectClassLoader == null)
+        ClassPathUtils.ClassLoadingType type = ClassPathUtils.getClassLoadingType(name);
+        if (type == null) {
+            if (projectClassLoader == null) {
                 throw new ClassNotFoundException(ClassPathUtils.getBundleString("MSG_NullClassPath")); // NOI18N
+            }
             return projectClassLoader.loadClass(name);
         }
-        if (type == ClassPathUtils.SYSTEM_CLASS)
+        if (type == ClassPathUtils.SYSTEM_CLASS) {
             return systemClassLoader.loadClass(name);
+        }
         // otherwise type == ClassPathUtils.SYSTEM_CLASS_WITH_PROJECT
 
         Class c = null;
