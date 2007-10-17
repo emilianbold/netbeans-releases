@@ -40,12 +40,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
-import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.Collections;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
-import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
@@ -65,7 +63,8 @@ import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.spi.editor.guards.GuardedEditorSupport;
 import org.netbeans.spi.editor.guards.GuardedSectionsFactory;
 import org.netbeans.spi.editor.guards.GuardedSectionsProvider;
-import org.netbeans.spi.editor.mimelookup.MimeDataProvider;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.cookies.EditCookie;
@@ -76,8 +75,6 @@ import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
-import org.openide.filesystems.XMLFileSystem;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.FileEntry;
@@ -88,8 +85,6 @@ import org.openide.loaders.SaveAsCapable;
 import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.DataEditorSupport;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
 import org.openide.windows.CloneableOpenSupport;
 import static org.netbeans.api.java.source.JavaSource.Phase.*;
 
@@ -117,14 +112,12 @@ public class GuardedBlockTest extends GeneratorTestMDRCompat {
      */
     @Override
     protected void setUp() throws Exception {
-        XMLFileSystem system = new XMLFileSystem();
-        assert GeneratorTestMDRCompat.class.getResource("/org/netbeans/modules/java/guards/layer.xml") != null;
-        system.setXmlUrls(new URL[] {
-            GeneratorTestMDRCompat.class.getResource("/org/netbeans/modules/java/source/resources/layer.xml"),
-            GeneratorTestMDRCompat.class.getResource("/org/netbeans/modules/java/guards/layer.xml"),
-            GeneratorTestMDRCompat.class.getResource("/org/netbeans/modules/java/editor/resources/layer.xml")
-        });
-        Repository repository = new Repository(system);
+        FileUtil.setMIMEType("java", "text/x-java");
+        MockMimeLookup.setInstances(
+                MimePath.parse("text/x-java"),
+                new JavaGuardedSectionsFactory(),
+                new org.netbeans.modules.editor.NbEditorKit());
+        MockMimeLookup mml = new MockMimeLookup();
         ClassPathProvider cpp = new ClassPathProvider() {
             public ClassPath findClassPath(FileObject file, String type) {
                 if (type.equals(ClassPath.SOURCE))
@@ -136,15 +129,7 @@ public class GuardedBlockTest extends GeneratorTestMDRCompat {
                     return null;
             }
         };
-//        MockServices.setServices(GuardedDataLoader.class);
-        GuardedDataLoader loader = GuardedDataLoader.findObject(GuardedDataLoader.class, true);
-        SourceUtilsTestUtil.prepareTest(new String[0], new Object[] {repository, loader, cpp, new MimeDataProvider() {
-            
-            public Lookup getLookup(MimePath mimePath) {
-                return Lookups.fixed(new JavaGuardedSectionsFactory(), new JavaKit());
-            }
-        }});
-        JEditorPane.registerEditorKitForContentType("text/x-java", "org.netbeans.modules.editor.java.JavaKit");
+        SourceUtilsTestUtil.prepareTest(new String[0], new Object[] {mml, new GuardedDataLoader(), cpp});
         File cacheFolder = new File(getWorkDir(), "var/cache/index");
         cacheFolder.mkdirs();
         IndexUtil.setCacheFolder(cacheFolder);
