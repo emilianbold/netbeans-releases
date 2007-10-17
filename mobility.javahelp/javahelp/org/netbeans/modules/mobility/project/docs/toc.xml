@@ -147,7 +147,6 @@
 			</tocitem>
 			<tocitem text="Designing MIDP Games">
 				<tocitem text="About the Game Builder" target="cldc.games_about" />
-				<tocitem text="Working with the Game Builder" target="cldc.games_working" />
 				<tocitem text="Game Builder Task Quick Reference" target="cldc.games_quickref" />
 			</tocitem>
 		</tocitem>
