@@ -151,7 +151,7 @@ public class PUDataObject extends XmlMultiViewDataObject {
                 java.io.InputStream is = getEditorSupport().getInputStream();
                 Persistence newPersistence = null;
                 try {
-                    newPersistence = Persistence.createGraph(is, true);
+                    newPersistence = Persistence.createGraph(is);
                 } catch (RuntimeException ex) { // must catch RTE (thrown by schema2beans when document is not valid)
                     Logger.getLogger("global").log(Level.INFO, null, ex);
                     return false;
