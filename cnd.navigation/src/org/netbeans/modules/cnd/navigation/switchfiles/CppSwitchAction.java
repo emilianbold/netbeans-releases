@@ -64,7 +64,6 @@ import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.ExtensionList;
@@ -90,6 +89,7 @@ public final class CppSwitchAction extends BaseAction {
         super(actionName);
         putValue("noIconInMenu", Boolean.TRUE); //NOI18N
         putValue(BaseAction.ICON_RESOURCE_PROPERTY, ICON);
+        putValue(SHORT_DESCRIPTION, getDefaultShortDescription());
     }
 
     public void actionPerformed(ActionEvent evt, JTextComponent txt) {

@@ -3,9 +3,6 @@
 <filesystem>
     <folder name="Actions">
         <folder name="Edit">
-            <file name="org-netbeans-modules-cnd-navigation-switchfiles-CppSwitchAction.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.navigation.switchfiles.Bundle"/>
-            </file>
             <file name="org-netbeans-modules-cnd-navigation-hierarchy-ShowClassHierarchyAction.instance">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.navigation.hierarchy.Bundle"/>
             </file>
