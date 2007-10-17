@@ -128,7 +128,7 @@ public class SubResourceLocatorsChildren extends Children.Keys {
                     if (desc != null) {
                         for (RestMethodDescription method : desc.getMethods()) {
                             if (method instanceof SubResourceLocator) {
-                                keys.add(method.getName());
+                                keys.add(SubResourceLocatorNode.getKey((SubResourceLocator) method));
                             }
                         }
                     }
@@ -153,7 +153,7 @@ public class SubResourceLocatorsChildren extends Children.Keys {
                     if (desc != null) {
                         for (RestMethodDescription method : desc.getMethods()) {
                             if (method instanceof SubResourceLocator) {
-                                if (method.getName().equals(key)) {
+                                if (SubResourceLocatorNode.getKey((SubResourceLocator) method).equals(key)) {
                                     return new Node[] { new SubResourceLocatorNode(
                                             project, desc.getClassName(), (SubResourceLocator) method) };
                                 }
@@ -174,7 +174,7 @@ public class SubResourceLocatorsChildren extends Children.Keys {
    
     class RestServicesListener implements PropertyChangeListener {
         public void propertyChange(PropertyChangeEvent evt) {
-            updateNodeTask.schedule(2000);
+            updateNodeTask.schedule(0);
         }
     }
 }

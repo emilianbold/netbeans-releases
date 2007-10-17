@@ -121,7 +121,7 @@ public class RestServicesChildren extends Children.Keys {
                     RestServices root = metadata.getRoot();
                     
                     for (RestServiceDescription desc : root.getRestServiceDescription()) {
-                        keys.add(desc.getName());
+                        keys.add(RestServiceNode.getKey(desc));
                     }
                     
                     return null;
@@ -139,10 +139,11 @@ public class RestServicesChildren extends Children.Keys {
             Node[] nodes = model.runReadAction(new MetadataModelAction<RestServicesMetadata, Node[]>() {
                 public Node[] run(RestServicesMetadata metadata) throws IOException {
                     RestServices root = metadata.getRoot();
-                    RestServiceDescription desc = root.getRestServiceDescription((String) key);
                     
-                    if (desc != null) {
-                        return new Node[] {new RestServiceNode(project, model, desc)};
+                    for (RestServiceDescription desc : root.getRestServiceDescription()) {
+                        if (RestServiceNode.getKey(desc).equals(key)) {
+                            return new Node[] {new RestServiceNode(project, model, desc)};
+                        }
                     }
                     
                     return new Node[0];
@@ -159,7 +160,7 @@ public class RestServicesChildren extends Children.Keys {
     
     class RestServicesListener implements PropertyChangeListener {
         public void propertyChange(PropertyChangeEvent evt) {
-            updateNodeTask.schedule(2000);
+            updateNodeTask.schedule(0);
         }
     }
 }

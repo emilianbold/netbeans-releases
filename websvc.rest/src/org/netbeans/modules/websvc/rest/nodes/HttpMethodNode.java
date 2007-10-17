@@ -98,6 +98,11 @@ public class HttpMethodNode extends AbstractNode{
         return desc;
     }
     
+    public static String getKey(HttpMethod method) {
+        return method.getName() + "() : " + 
+                Utils.stripPackageName(method.getReturnType());     //NOI18N
+    }
+    
     private static final java.awt.Image METHOD_BADGE =
             org.openide.util.Utilities.loadImage( "org/netbeans/modules/websvc/rest/nodes/resources/method.png" ); //NOI18N
     

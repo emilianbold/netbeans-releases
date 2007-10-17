@@ -85,6 +85,11 @@ public class SubResourceLocatorNode extends AbstractNode{
         return methodName + "() : " + Utils.stripPackageName(returnType);       //NOI18N
     }
     
+    public static String getKey(SubResourceLocator method) {
+        return method.getUriTemplate() + " : " + 
+                Utils.stripPackageName(method.getReturnType());    //NOI18N
+    }
+    
     private static final java.awt.Image METHOD_BADGE =
             org.openide.util.Utilities.loadImage( "org/netbeans/modules/websvc/rest/nodes/resources/method.png" ); //NOI18N
     

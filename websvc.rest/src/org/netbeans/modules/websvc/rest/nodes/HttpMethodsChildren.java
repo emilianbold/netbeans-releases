@@ -126,7 +126,7 @@ public class HttpMethodsChildren extends Children.Keys {
                     if (desc != null) {
                         for (RestMethodDescription method : desc.getMethods()) {
                             if (method instanceof HttpMethod) {
-                                keys.add(method.getName());
+                                keys.add(HttpMethodNode.getKey((HttpMethod) method));
                             }
                         }
                     }
@@ -151,7 +151,7 @@ public class HttpMethodsChildren extends Children.Keys {
                     if (desc != null) {
                         for (RestMethodDescription method : desc.getMethods()) {
                             if (method instanceof HttpMethod) {
-                                if (method.getName().equals(key)) {
+                                if (HttpMethodNode.getKey((HttpMethod) method).equals(key)) {
                                     return new Node[] { new HttpMethodNode(project, 
                                             desc.getClassName(), (HttpMethod) method) };
                                 }
@@ -172,7 +172,7 @@ public class HttpMethodsChildren extends Children.Keys {
   
     class RestServicesListener implements PropertyChangeListener {
         public void propertyChange(PropertyChangeEvent evt) {
-            updateNodeTask.schedule(2000);
+            updateNodeTask.schedule(0);
         }
     }
 }
