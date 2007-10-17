@@ -494,14 +494,12 @@ public class Reformatter implements ReformatTask {
                     }
                 }
             } else {
+                if (indent == old && !insideFor)
+                    indent += continuationIndentSize;
                 if (scan(node.getType(), p)) {
-                    if (indent == old && !insideFor)
-                        indent += continuationIndentSize;
-                    space();
+                    spaces(1, fieldGroup);
                     if (!ERROR.contentEquals(node.getName()))
                         accept(IDENTIFIER);
-                } else if (indent == old && !insideFor) {
-                    indent += continuationIndentSize;
                 }
                 ExpressionTree init = node.getInitializer();
                 if (init != null) {
@@ -803,7 +801,8 @@ public class Reformatter implements ReformatTask {
                         blankLines();
                         indent = o;
                     }
-                    blankLines();
+                    if (!fieldGroup || stat.getKind() != Tree.Kind.VARIABLE)
+                        blankLines();
                     scan(stat, p);
                 }
             }
@@ -1342,7 +1341,7 @@ public class Reformatter implements ReformatTask {
                 return ret;
             }
             rollback(index, col);
-            space();
+            spaces(1, fieldGroup);
             accept(IDENTIFIER);
             accept(LBRACKET);
             accept(RBRACKET);
