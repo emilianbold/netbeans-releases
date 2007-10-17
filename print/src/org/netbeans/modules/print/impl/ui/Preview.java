@@ -359,13 +359,13 @@ public final class Preview extends Dialog implements Percent.Listener {
 
     // scroll
     c.fill = GridBagConstraints.BOTH;
-    myScrollPanel = new MyScrollPane(panel);
-    myScrollPanel.setFocusable(true);
+    myScrollPane = new MyScrollPane(panel);
+    myScrollPane.setFocusable(true);
 
-    myScrollPanel.addWheelListener(new MouseWheelListener() {
+    myScrollPane.addWheelListener(new MouseWheelListener() {
       public void mouseWheelMoved(MouseWheelEvent event) {
         if (SwingUtilities.isRightMouseButton(event) || event.isControlDown()) {
-          myScrollPanel.setWheelScrollingEnabled(false);
+          myScrollPane.setWheelScrollingEnabled(false);
 
           if (event.getWheelRotation() > 0) {
             myScale.increaseValue();
@@ -375,11 +375,11 @@ public final class Preview extends Dialog implements Percent.Listener {
           }
         }
         else {
-          myScrollPanel.setWheelScrollingEnabled(true);
+          myScrollPane.setWheelScrollingEnabled(true);
         }
       }
     });
-    myScrollPanel.addMouseListener(new MouseAdapter() {
+    myScrollPane.addMouseListener(new MouseAdapter() {
       public void mouseClicked(MouseEvent event) {
         if (event.getClickCount() == 2) {
           if (SwingUtilities.isRightMouseButton(event)) {
@@ -392,9 +392,9 @@ public final class Preview extends Dialog implements Percent.Listener {
         }
       }
     });
-    myScrollPanel.addKeyListener(myKeyListener);
+    myScrollPane.addKeyListener(myKeyListener);
 
-    return myScrollPanel;
+    return myScrollPane;
   }
 
   private void showCustom(boolean doNext) {
@@ -432,7 +432,7 @@ public final class Preview extends Dialog implements Percent.Listener {
     int y = paper.getY() - gap;
     int w = paper.getWidth();
     int h = paper.getHeight();
-    JViewport view = myScrollPanel.getViewport();
+    JViewport view = myScrollPane.getViewport();
 
     if ( !view.getViewRect().contains(x, y, w, h)) {
       view.setViewPosition(new Point(x,y));
@@ -462,8 +462,8 @@ public final class Preview extends Dialog implements Percent.Listener {
   private double getWidthScale(int width) {
     final int JAVA_INSET = 5;
     
-    double scrollWidth = (double) (myScrollPanel.getWidth() -
-      myScrollPanel.getVerticalScrollBar().getWidth() - JAVA_INSET);
+    double scrollWidth = (double) (myScrollPane.getWidth() -
+      myScrollPane.getVerticalScrollBar().getWidth() - JAVA_INSET);
 
     return scrollWidth / width;
   }
@@ -471,8 +471,8 @@ public final class Preview extends Dialog implements Percent.Listener {
   private double getHeightScale(int height) {
     final int JAVA_INSET = 5;
     
-    double scrollHeight = (double) (myScrollPanel.getHeight() -
-      myScrollPanel.getHorizontalScrollBar().getHeight() - JAVA_INSET);
+    double scrollHeight = (double) (myScrollPane.getHeight() -
+      myScrollPane.getHorizontalScrollBar().getHeight() - JAVA_INSET);
 
     return scrollHeight / height;
   }
@@ -706,7 +706,7 @@ public final class Preview extends Dialog implements Percent.Listener {
   protected void opened()
   {
 //out("Opened");
-    myScrollPanel.requestFocus();
+    myScrollPane.requestFocus();
   }
 
   @Override
@@ -874,7 +874,7 @@ public final class Preview extends Dialog implements Percent.Listener {
   private int myPaperNumber;
   private int myCustomIndex;
   private JToggleButton myToggle;
-  private MyScrollPane myScrollPanel;
+  private MyScrollPane myScrollPane;
   private KeyListener myKeyListener;
 
   private Printer myPrinter;
