@@ -87,17 +87,17 @@ public class UpdateAction extends AbstractAction {
             public void perform() {
                 boolean bNoUpdates = true;
                 try {
+                    HgUtils.outputMercurialTabInRed(
+                            NbBundle.getMessage(UpdateAction.class,
+                            "MSG_UPDATE_TITLE")); // NOI18N
+                    HgUtils.outputMercurialTabInRed(
+                            NbBundle.getMessage(UpdateAction.class,
+                            "MSG_UPDATE_TITLE_SEP")); // NOI18N
                     List<String> list = HgCommand.doUpdateAll(root, false, revision);
                     
                     if (list != null && !list.isEmpty()){
                         bNoUpdates = HgCommand.isNoUpdates(list.get(0));
                         //HgUtils.clearOutputMercurialTab();
-                        HgUtils.outputMercurialTabInRed(
-                                NbBundle.getMessage(UpdateAction.class,
-                                "MSG_UPDATE_TITLE")); // NOI18N
-                        HgUtils.outputMercurialTabInRed(
-                                NbBundle.getMessage(UpdateAction.class,
-                                "MSG_UPDATE_TITLE_SEP")); // NOI18N
                         HgUtils.outputMercurialTab(list);
                         HgUtils.outputMercurialTab(""); // NOI18N
                     }  

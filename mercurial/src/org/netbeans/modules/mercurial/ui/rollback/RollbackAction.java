@@ -90,16 +90,16 @@ public class RollbackAction extends AbstractAction {
             public void perform() {
                 
                 try {
+                    HgUtils.outputMercurialTabInRed(
+                                NbBundle.getMessage(RollbackAction.class,
+                                "MSG_ROLLBACK_TITLE")); // NOI18N
+                    HgUtils.outputMercurialTabInRed(
+                                NbBundle.getMessage(RollbackAction.class,
+                                "MSG_ROLLBACK_TITLE_SEP")); // NOI18N
                     List<String> list = HgCommand.doRollback(root);
                     
                     if(list != null && !list.isEmpty()){                      
                         //HgUtils.clearOutputMercurialTab();
-                        HgUtils.outputMercurialTabInRed(
-                                    NbBundle.getMessage(RollbackAction.class,
-                                    "MSG_ROLLBACK_TITLE")); // NOI18N
-                        HgUtils.outputMercurialTabInRed(
-                                    NbBundle.getMessage(RollbackAction.class,
-                                    "MSG_ROLLBACK_TITLE_SEP")); // NOI18N
                         
                         if(HgCommand.isNoRollbackPossible(list.get(0))){
                             HgUtils.outputMercurialTab(
@@ -141,15 +141,15 @@ public class RollbackAction extends AbstractAction {
                                     NbBundle.getMessage(RollbackAction.class,
                                     "MSG_ROLLBACK_INFO")); // NOI18N
                     }
+                } catch (HgException ex) {
+                    NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
+                    DialogDisplayer.getDefault().notifyLater(e);
+                } finally {
                     HgUtils.outputMercurialTabInRed(
                                 NbBundle.getMessage(RollbackAction.class,
                                 "MSG_ROLLBACK_DONE")); // NOI18N
                     HgUtils.outputMercurialTab(""); // NOI18N
-                } catch (HgException ex) {
-                    NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
-                    DialogDisplayer.getDefault().notifyLater(e);
                 }
-                
             }
         };
         support.start(rp, repository,org.openide.util.NbBundle.getMessage(RollbackAction.class, "MSG_ROLLBACK_PROGRESS")); // NOI18N
