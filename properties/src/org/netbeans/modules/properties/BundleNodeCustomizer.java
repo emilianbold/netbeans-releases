@@ -251,11 +251,12 @@ public class BundleNodeCustomizer extends JPanel {
 
     private void localesListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_localesListValueChanged
         if(localesList.isSelectionEmpty() 
-            || new Locale("", "").equals(localesList.getSelectedValue()))
-            
+                || new Locale("", "").equals(localesList.getSelectedValue())) {
+
             removeLocales.setEnabled(false);
-        else
+        } else {
             removeLocales.setEnabled(true);
+        }
     }//GEN-LAST:event_localesListValueChanged
 
     private void removeLocalesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeLocalesActionPerformed
@@ -307,9 +308,9 @@ public class BundleNodeCustomizer extends JPanel {
     private void nameTextHandler() {
         String newName = nameText.getText();
         
-        if(newName == null || "".equals(newName)) // NOI18N
+        if (newName == null || "".equals(newName)) {                    //NOI18N
             return;
-        
+        }
         propDataObject.getNodeDelegate().setName(newName);
     }
 
