@@ -118,7 +118,6 @@ public abstract class Util {
         if (! f.isFile()) {
             return Collections.emptyList();
         }
-        File dir = new File(f.getParentFile(), "locale"); // NOI18N
         String logicalDir = null;
         {
             // #34069: we have to consider that e.g. modules/locale/foo_branding.jar might be
@@ -145,12 +144,9 @@ public abstract class Util {
             name = nameExt;
             ext = ""; // NOI18N
         }
-        String[] suffixes = getLocalizingSuffixesFast();
-        for (int i = 0; i < suffixes.length; i++) {
-            String suffix = suffixes[i];
-            File v;
+        for (String suffix : getLocalizingSuffixesFast()) {
             String path = logicalDir + name + suffix + ext;
-            v = InstalledFileLocator.getDefault().locate(path, null, false);
+            File v = InstalledFileLocator.getDefault().locate(path, null, false);
             if (v != null) {
                 l.add(new FileWithSuffix(v, suffix));
             }
@@ -164,7 +160,7 @@ public abstract class Util {
     public static synchronized String[] getLocalizingSuffixesFast() {
         if (suffixes == null ||
                 Locale.getDefault() != lastLocale ||
-                NbBundle.getBranding() != lastBranding) {
+                !Utilities.compareObjects(NbBundle.getBranding(), lastBranding)) {
             List<String> _suffixes = new ArrayList<String>();
             Iterator<String> it = NbBundle.getLocalizingSuffixes();
             while (it.hasNext()) {
@@ -382,10 +378,7 @@ public abstract class Util {
         Map<Module,List<Module>> m = new HashMap<Module,List<Module>>();
 	for (Module m1: modules) {
             List<Module> l = null;
-            Dependency[] dependencies = m1.getDependenciesArray();
-            for (int i = 0; i < dependencies.length; i++) {
-                Dependency dep = dependencies[i];
-
+            for (Dependency dep : m1.getDependenciesArray()) {
                 if (dep.getType() == Dependency.TYPE_REQUIRES) {
                     List<Module> providers = providersOf.get(dep.getName());
 
@@ -437,9 +430,7 @@ public abstract class Util {
             return s;
         } else {
             Set<Module> s = new HashSet<Module>();
-            Dependency[] dependencies = m.getDependenciesArray();
-            for (int i = 0; i < dependencies.length; i++) {
-                Dependency dep = dependencies[i];
+            for (Dependency dep : m.getDependenciesArray()) {
                 if (dep.getType() == Dependency.TYPE_REQUIRES) {
                     Set<Module> providers = providersOf.get(dep.getName());
                     if (providers != null) {
@@ -468,20 +459,6 @@ public abstract class Util {
                 } while (!toAdd.isEmpty());
             }
             return s;
-        }
-    }
-    
-    /** Get a comparator for modules by display name (alphabetical).
-     */
-    static Comparator displayNameComparator() {
-        return new DisplayNameComparator();
-    }
-    private static final class DisplayNameComparator implements Comparator {
-        DisplayNameComparator() {}
-        public int compare(Object o1, Object o2) {
-            Module m1 = (Module)o1;
-            Module m2 = (Module)o2;
-            return m1.getDisplayName().compareTo(m2.getDisplayName());
         }
     }
     
@@ -600,7 +577,7 @@ public abstract class Util {
                 return Lookup.EMPTY.lookup(t);
             }
         }
-        public String toString() {
+        public @Override String toString() {
             synchronized (modules) {
                 return "ModuleLookup" + modules; // NOI18N
             }
@@ -660,10 +637,10 @@ public abstract class Util {
                     }
                 }
             }
-            public Set<Class<? extends Module>> allClasses() {
+            public @Override Set<Class<? extends Module>> allClasses() {
                 return Collections.<Class<? extends Module>>singleton(Module.class);
             }
-            public Collection<? extends Lookup.Item<Module>> allItems() {
+            public @Override Collection<? extends Lookup.Item<Module>> allItems() {
                 Collection<Module> insts = allInstances();
                 ArrayList<ModuleItem> list = new ArrayList<ModuleItem>(Math.max(1, insts.size()));
                 for (Module m: insts) {
@@ -671,7 +648,7 @@ public abstract class Util {
                 }
                 return list;
             }
-            public String toString() {
+            public @Override String toString() {
                 return "ModuleResult:" + t; // NOI18N
             }
         }
@@ -736,10 +713,8 @@ public abstract class Util {
      * @return a fake spec version (0.x.y if x.y w/ no major release, else r.x.y); or null if no dep
      * @since JST-PENDING: used from NbInstaller
      */
-    public static SpecificationVersion getModuleDep(Set dependencies, String cnb) {
-        Iterator it = dependencies.iterator();
-        while (it.hasNext()) {
-            Dependency d = (Dependency)it.next();
+    public static SpecificationVersion getModuleDep(Set<Dependency> dependencies, String cnb) {
+        for (Dependency d : dependencies) {
             if (d.getType() == Dependency.TYPE_MODULE &&
                     d.getComparison() == Dependency.COMPARE_SPEC) {
                 try {
@@ -772,12 +747,11 @@ public abstract class Util {
         while (nue == null || !nue.isEmpty()) {
             nue = new HashSet<Module>();
             for (Module m: modules) {
-                Dependency[] deps = m.getDependenciesArray();
-                for (int i = 0; i < deps.length; i++) {
-                    if (deps[i].getType() != Dependency.TYPE_MODULE) {
+                for (Dependency dep : m.getDependenciesArray()) {
+                    if (dep.getType() != Dependency.TYPE_MODULE) {
                         continue;
                     }
-                    Module other = mgr.get((String)parseCodeName(deps[i].getName())[0]);
+                    Module other = mgr.get((String)parseCodeName(dep.getName())[0]);
                     if (other != null && !modules.contains(other)) {
                         nue.add(other);
                     }

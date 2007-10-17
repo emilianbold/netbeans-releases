@@ -214,7 +214,7 @@ public class JarClassLoader extends ProxyClassLoader {
         return v.elements();
     }
     
-    public void destroy() {
+    public @Override void destroy() {
         super.destroy ();
         
         try {
@@ -545,11 +545,15 @@ public class JarClassLoader extends ProxyClassLoader {
             int len = (int)clsFile.length();
             byte[] data = new byte[len];
             InputStream is = new FileInputStream(clsFile);
-            int count = 0;
-            while (count < len) {
-                count += is.read(data, count, len-count);
+            try {
+                int count = 0;
+                while (count < len) {
+                    count += is.read(data, count, len - count);
+                }
+                return data;
+            } finally {
+                is.close();
             }
-            return data;
         }
         
         protected void listCoveredPackages(Set<String> known, StringBuffer save) {

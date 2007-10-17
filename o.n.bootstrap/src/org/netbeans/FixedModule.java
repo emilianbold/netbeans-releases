@@ -185,7 +185,6 @@ final class FixedModule extends Module {
                     suffixes.add(it.next());
                 }
                 Collections.reverse(suffixes);
-                it = suffixes.iterator();
                 for (String suffix: suffixes) {
                     String resource = name + suffix + ext;
                     InputStream is = classloader.getResourceAsStream(resource);
@@ -264,7 +263,7 @@ final class FixedModule extends Module {
     }
     
     /** String representation for debugging. */
-    public String toString() {
+    public @Override String toString() {
         String s = "FixedModule:" + getCodeNameBase(); // NOI18N
         if (!isValid()) s += "[invalid]"; // NOI18N
         return s;
