@@ -63,7 +63,6 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 
@@ -90,8 +89,9 @@ public class LocaleNodeCustomizer extends JPanel {
         if(new Locale("", "").equals(locale)) { // NOI18N
             changeNameButton.setEnabled(false);
             nameText.setText(NbBundle.getBundle(LocaleNodeCustomizer.class).getString("LAB_defaultLanguage"));//NOI18N
-        } else
+        } else {
             nameText.setText(locale.toString());
+        }
         
         removeKeyButton.setEnabled(false);
         
@@ -101,8 +101,9 @@ public class LocaleNodeCustomizer extends JPanel {
     /** Updates name of the <code>entry</code>. */
     private void updateName(Locale locale) {
         // Don't rename to "Default" locale node or to the same one.
-        if(locale.equals(new Locale("", "")) || locale.equals(getLocale(entry)) )
+        if (locale.equals(new Locale("", "")) || locale.equals(getLocale(entry)) ) {
             return;
+        }
 
         String newName = Util.assembleName(
             entry.getDataObject().getPrimaryFile().getName(),
@@ -125,18 +126,21 @@ public class LocaleNodeCustomizer extends JPanel {
         String localeSuffix = Util.getLocaleSuffix(entry);
         String languageCode = Util.getLanguage(localeSuffix);
         
-        if(languageCode == null)
+        if (languageCode == null) {
             return new Locale("", ""); // NOI18N
+        }
         
         String countryCode = Util.getCountry(localeSuffix);
         
-        if(countryCode == null)
+        if (countryCode == null) {
             return new Locale(languageCode, ""); // NOI18N
+        }
         
         String variant = Util.getVariant(localeSuffix);
         
-        if(variant == null)
+        if (variant == null) {
             return new Locale(languageCode, countryCode);
+        }
         
         return new Locale(languageCode, countryCode, variant);
     }
@@ -348,10 +352,11 @@ public class LocaleNodeCustomizer extends JPanel {
     }//GEN-LAST:event_changeNameButtonActionPerformed
 
     private void keyListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_keyListValueChanged
-        if(keyList.isSelectionEmpty())
+        if (keyList.isSelectionEmpty()) {
             removeKeyButton.setEnabled(false);
-        else
+        } else {
             removeKeyButton.setEnabled(true);
+        }
     }//GEN-LAST:event_keyListValueChanged
 
     private void removeKeyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeKeyButtonActionPerformed
