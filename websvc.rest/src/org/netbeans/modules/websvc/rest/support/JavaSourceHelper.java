@@ -736,9 +736,11 @@ public class JavaSourceHelper {
     }
 
     public static boolean annotationHasAttributeValue(AnnotationMirror am, String value) {
-        for (AnnotationValue av : am.getElementValues().values()) {
-            if (value.equals(av.getValue())) {
-                return true;
+        if (am != null) {
+            for (AnnotationValue av : am.getElementValues().values()) {
+                if (value.equals(av.getValue())) {
+                    return true;
+                }
             }
         }
         return false;
