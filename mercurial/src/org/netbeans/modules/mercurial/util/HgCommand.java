@@ -164,6 +164,8 @@ public class HgCommand {
     
     private static final String HG_MERGE_NEEDED_ERR = "(run 'hg heads' to see heads, 'hg merge' to merge)"; // NOI18N
     public static final String HG_MERGE_CONFLICT_ERR = "conflicts detected in "; // NOI18N
+    public static final String HG_MERGE_CONFLICT_WIN1_ERR = "merging"; // NOI18N
+    public static final String HG_MERGE_CONFLICT_WIN2_ERR = "failed!"; // NOI18N
     private static final String HG_MERGE_MULTIPLE_HEADS_ERR = "abort: repo has "; // NOI18N
     private static final String HG_MERGE_UNCOMMITTED_ERR = "abort: outstanding uncommitted merges"; // NOI18N
 
@@ -1866,11 +1868,17 @@ public class HgCommand {
     }
 
     public static boolean isMergeNeededMsg(String msg) {
-        return msg.indexOf(HG_MERGE_NEEDED_ERR) > -1;                                   // NOI18N
+        return msg.indexOf(HG_MERGE_NEEDED_ERR) > -1;                       // NOI18N
     }
     
     public static boolean isMergeConflictMsg(String msg) {
-        return msg.indexOf(HG_MERGE_CONFLICT_ERR) > -1;                                   // NOI18N
+        String system = System.getProperty("os.name");                      // NOI18N)
+        if(msg.indexOf("Windows") > -1 || msg.indexOf("windows") > -1 ) {   // NOI18N)
+            return (msg.indexOf(HG_MERGE_CONFLICT_WIN1_ERR) > -1) &&        // NOI18N
+                    (msg.indexOf(HG_MERGE_CONFLICT_WIN2_ERR) > -1);         // NOI18N
+        }else{
+            return msg.indexOf(HG_MERGE_CONFLICT_ERR) > -1;                 // NOI18N
+        }       
     }
 
     public static boolean isMergeAbortMultipleHeadsMsg(String msg) {
