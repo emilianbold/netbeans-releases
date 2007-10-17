@@ -1880,7 +1880,7 @@ public class Reformatter implements ReformatTask {
                 }
             }        
             Token<JavaTokenId> lastToken = null;
-            boolean afterBlockComment = false;
+            int after = 0;
             do {
                 if (tokens.offset() >= endPos)
                     return;
@@ -1889,7 +1889,7 @@ public class Reformatter implements ReformatTask {
                         lastToken = tokens.token();
                         break;
                     case BLOCK_COMMENT:
-                        if (count >= 0 && tokens.index() > 1)
+                        if (count >= 0 && tokens.index() > 1 && after != 1)
                             count++;
                         if (lastToken != null) {
                             int offset = tokens.offset() - lastToken.length();
@@ -1914,10 +1914,10 @@ public class Reformatter implements ReformatTask {
                             }
                             lastToken = null;
                         }
-                        afterBlockComment = true;
+                        after = 3;
                         break;
                     case JAVADOC_COMMENT:
-                        if (count >= 0 && tokens.index() > 1)
+                        if (count >= 0 && tokens.index() > 1 && after != 1)
                             count++;
                         if (lastToken != null) {
                             int offset = tokens.offset() - lastToken.length();
@@ -1931,22 +1931,31 @@ public class Reformatter implements ReformatTask {
                                 count--;
                             }
                             if ((idx = text.lastIndexOf('\n')) >= 0) { //NOI18N
-                                if (idx > lastIdx)
+                                after = 0;
+                                if (idx >= lastIdx)
                                     diffs.addFirst(new Diff(offset + lastIdx, offset + idx + 1, null));
                                 lastIdx = idx + 1;
                             }
-                            if (lastIdx > 0) {
-                                String indent = getIndent();
-                                if (!indent.contentEquals(text.substring(lastIdx)))
-                                    diffs.addFirst(new Diff(offset + lastIdx, tokens.offset(), indent));
+                            if (lastIdx == 0 && count < 0) {
+                                count = count == ANY_COUNT ? 1 : 0;
                             }
+                            String indent = after == 3 ? SPACE : getNewlines(count) + getIndent();
+                            if (!indent.contentEquals(text.substring(lastIdx)))
+                                diffs.addFirst(new Diff(offset + lastIdx, tokens.offset(), indent));
                             lastToken = null;
+                        } else {
+                            if (lastBlankLines < 0 && count == ANY_COUNT)
+                                count = lastBlankLines = 1;
+                            String text = getNewlines(count) + getIndent();
+                            if (text.length() > 0)
+                                diffs.addFirst(new Diff(tokens.offset(), tokens.offset(), text));
                         }
-                        afterBlockComment = false;
+                        count = 0;
+                        after = 2;
                         break;
                     case LINE_COMMENT:
                         if (lastToken != null) {
-                            if (count >= 0 && tokens.index() > 1)
+                            if (count >= 0 && tokens.index() > 1 && after != 1)
                                 count++;
                             int offset = tokens.offset() - lastToken.length();
                             String text = lastToken.text().toString();
@@ -1972,10 +1981,10 @@ public class Reformatter implements ReformatTask {
                         }
                         if (count != 0)
                             count--;
-                        afterBlockComment = false;
+                        after = 1;
                         break;
                     default:
-                        if (count >= 0 && tokens.index() > 1)
+                        if (count >= 0 && tokens.index() > 1 && after != 1)
                             count++;
                         if (lastToken != null) {
                             int offset = tokens.offset() - lastToken.length();
@@ -1989,7 +1998,7 @@ public class Reformatter implements ReformatTask {
                                 count--;
                             }
                             if ((idx = text.lastIndexOf('\n')) >= 0) { //NOI18N
-                                afterBlockComment = false;
+                                after = 0;
                                 if (idx >= lastIdx)
                                     diffs.addFirst(new Diff(offset + lastIdx, offset + idx + 1, null));
                                 lastIdx = idx + 1;
@@ -1997,7 +2006,7 @@ public class Reformatter implements ReformatTask {
                             if (lastIdx == 0 && count < 0) {
                                 count = count == ANY_COUNT ? 1 : 0;
                             }
-                            String indent = afterBlockComment ? SPACE : getNewlines(count) + getIndent();
+                            String indent = after == 3 ? SPACE : getNewlines(count) + getIndent();
                             if (!indent.contentEquals(text.substring(lastIdx)))
                                 diffs.addFirst(new Diff(offset + lastIdx, tokens.offset(), indent));
                         } else {
