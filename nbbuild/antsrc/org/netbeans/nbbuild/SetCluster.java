@@ -79,7 +79,7 @@ public class SetCluster extends Task {
         this.defaultLocation = defaultLocation;
     }
     
-    public void execute() throws BuildException {
+    public @Override void execute() throws BuildException {
         if (name == null) {
             throw new BuildException("Name of property to set have to be specified",this.getLocation());
         }
@@ -93,6 +93,7 @@ public class SetCluster extends Task {
             throw new BuildException("The name of current module have to be set", getLocation());
         }
 
+        Map<String,String> clusterByModule = new HashMap<String,String>(); // e.g. "serverplugins/jboss4" => "j2ee"
         for (Object key : getProject().getProperties().keySet()) {
             String property = (String) key;
             String clusterDir = getProject().getProperty(property + ".dir");
@@ -101,14 +102,21 @@ public class SetCluster extends Task {
             }
             String list = this.getProject().getProperty( property );
             assert list != null : property;
+            Set<String> modules = new HashSet<String>();
             StringTokenizer modTokens = new StringTokenizer(list," \t\n\f\r,");
             while (modTokens.hasMoreTokens()) {
                 String module = modTokens.nextToken();
                 if (module.equals(thisModuleName)) {
-                    // We found the list reffering to this module
+                    // We found the list referring to this module
                     log( "Property: " + name + " will be set to " + clusterDir, Project.MSG_VERBOSE);
-                    this.getProject().setProperty( name, clusterDir );
-                    return;
+                    this.getProject().setProperty( name, clusterDir ); // XXX setNewProperty?
+                }
+                String otherCluster = clusterByModule.put(module, clusterDir);
+                if (otherCluster != null && !otherCluster.equals(clusterDir)) {
+                    throw new BuildException("Module " + module + " found in two clusters: " + otherCluster + " and " + clusterDir, getLocation());
+                }
+                if (!modules.add(module)) {
+                    throw  new BuildException("Module " + module + " repeated in cluster definition " + property, getLocation());
                 }
             }
         }
