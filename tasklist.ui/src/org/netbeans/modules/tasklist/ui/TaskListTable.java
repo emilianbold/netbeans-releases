@@ -69,6 +69,7 @@ import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
+import javax.swing.plaf.TableHeaderUI;
 import javax.swing.plaf.TableUI;
 import javax.swing.plaf.UIResource;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -263,6 +264,7 @@ class TaskListTable extends JTable {
     @Override
     public void setUI( TableUI ui ) {
         super.setUI( new TaskListTableUI() );
+        setTableHeader( createDefaultTableHeader() );
     }
     
     @Override
@@ -441,7 +443,6 @@ class TaskListTable extends JTable {
     
     
     private class MyTableHeader extends JTableHeader {
-        private SortingHeaderRenderer sortingRenderer;
         
         public MyTableHeader( TableColumnModel model ) {
             super( model );
@@ -472,6 +473,12 @@ class TaskListTable extends JTable {
                 defaultRenderer = new SortingHeaderRenderer( defaultRenderer );
             super.setDefaultRenderer( defaultRenderer );
         }
+
+        @Override
+        public void setUI(TableHeaderUI ui) {
+            super.setUI(ui);
+            setDefaultRenderer( createDefaultRenderer() );
+        }
     
         @Override
         public void setResizingColumn( TableColumn col ) {
@@ -480,7 +487,7 @@ class TaskListTable extends JTable {
             }
             super.setResizingColumn( col );
         }
-}
+    }
     
     
     private class DefaultAction extends AbstractAction {
