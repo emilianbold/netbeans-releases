@@ -60,7 +60,7 @@ public class HighlightsLayerFactoryImpl implements HighlightsLayerFactory {
             //the mark occurrences layer should be "above" current row and "below" the search layers:
 //            HighlightsLayer.create(MarkOccurrencesHighlighter.class.getName(), ZOrder.CARET_RACK.forPosition(50), false, MarkOccurrencesHighlighter.getHighlightsBag(context.getDocument())),
             //"above" mark occurrences, "below" search layers:
-            HighlightsLayer.create(InstantRenamePerformer.class.getName(), ZOrder.CARET_RACK.forPosition(500), false, InstantRenamePerformer.getHighlightsBag(context.getDocument())),
+            HighlightsLayer.create(InstantRenamePerformer.class.getName(), ZOrder.CARET_RACK.forPosition(75), false, InstantRenamePerformer.getHighlightsBag(context.getDocument())),
         };
     }
 }
