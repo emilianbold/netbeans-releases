@@ -58,7 +58,6 @@ import org.openide.util.WeakListeners;
 import javax.swing.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.*;
@@ -68,7 +67,7 @@ import org.openide.util.RequestProcessor;
 /**
  * @author David Kaspar, Anton Chechel
  */
-public final class PaletteMap implements ActiveDocumentSupport.Listener, FileChangeListener, DescriptorRegistryListener, PropertyChangeListener {
+public final class PaletteMap implements ActiveDocumentSupport.Listener, DescriptorRegistryListener, PropertyChangeListener {
 
     private static final PaletteMap instance = new PaletteMap();
 
@@ -77,7 +76,6 @@ public final class PaletteMap implements ActiveDocumentSupport.Listener, FileCha
 
     private DescriptorRegistry registeredRegistry;
     private final AtomicBoolean requiresPaletteUpdate = new AtomicBoolean(false);
-    private boolean isFileListenerRegistered;
 
     private final Set<String> registeredProjects = new HashSet<String>();
 
@@ -93,13 +91,6 @@ public final class PaletteMap implements ActiveDocumentSupport.Listener, FileCha
     public void activeDocumentChanged(DesignDocument deactivatedDocument, DesignDocument activatedDocument) {
         if (activatedDocument == null) {
             return;
-        }
-
-        synchronized (this) {
-            if (!isFileListenerRegistered) {
-                registerFileSystemListener();
-                isFileListenerRegistered = true;
-            }
         }
 
         DescriptorRegistry currentRegistry = activatedDocument.getDescriptorRegistry();
@@ -199,29 +190,6 @@ public final class PaletteMap implements ActiveDocumentSupport.Listener, FileCha
         schedulePaletteUpdate();
     }
 
-    public void fileFolderCreated(FileEvent fe) {
-        checkNeedUpdate(fe);
-    }
-
-    public void fileDataCreated(FileEvent fe) {
-        checkNeedUpdate(fe);
-    }
-
-    public void fileChanged(FileEvent fe) {
-        checkNeedUpdate(fe);
-    }
-
-    public void fileDeleted(FileEvent fe) {
-        checkNeedUpdate(fe);
-    }
-
-    public void fileRenamed(FileRenameEvent fe) {
-        checkNeedUpdate(fe);
-    }
-
-    public void fileAttributeChanged(FileAttributeEvent fe) {
-    }
-
     public void propertyChange(PropertyChangeEvent evt) {
         checkNeedUpdate(evt);
     }
@@ -285,31 +253,6 @@ public final class PaletteMap implements ActiveDocumentSupport.Listener, FileCha
             return null;
         }
         return sourceGroups[0];
-    }
-
-    /**
-     * Inspired by RepositoryUpdater.registerFileSystemListener
-     */
-    private void registerFileSystemListener() {
-        final File[] roots = File.listRoots();
-        final Set<FileSystem> fsSet = new HashSet<FileSystem>();
-        for (File root : roots) {
-            final FileObject fo = FileUtil.toFileObject(root);
-            if (fo == null) {
-                Debug.warning("No MasterFS for file system root: " + root.getAbsolutePath()); // NOI18N
-            } else {
-                try {
-                    final FileSystem fileSystem = fo.getFileSystem();
-                    if (!fsSet.contains(fileSystem)) {
-                        FileChangeListener fileChangeListener = WeakListeners.create(FileChangeListener.class, this, fileSystem);
-                        fileSystem.addFileChangeListener(fileChangeListener);
-                        fsSet.add(fileSystem);
-                    }
-                } catch (FileStateInvalidException e) {
-                    Debug.warning(e);
-                }
-            }
-        }
     }
 
     /**

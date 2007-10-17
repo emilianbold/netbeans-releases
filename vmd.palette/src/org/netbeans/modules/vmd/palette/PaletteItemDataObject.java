@@ -53,6 +53,7 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.Node;
+import org.openide.util.WeakListeners;
 
 /**
  *
@@ -65,10 +66,13 @@ public class PaletteItemDataObject extends MultiDataObject implements FileChange
     private String icon;
     private String bigIcon;
     
-    public PaletteItemDataObject(FileObject pf, PaletteItemDataLoader loader) throws DataObjectExistsException, IOException {
-        super(pf, loader);
-        pf.addFileChangeListener(this);
-        readProperties(pf);
+    public PaletteItemDataObject(FileObject fileObject, PaletteItemDataLoader loader) throws DataObjectExistsException, IOException {
+        super(fileObject, loader);
+        
+        FileChangeListener fileChangeListener = WeakListeners.create(FileChangeListener.class, this, fileObject);
+        fileObject.addFileChangeListener(fileChangeListener);
+        
+        readProperties(fileObject);
     }
     
     @Override

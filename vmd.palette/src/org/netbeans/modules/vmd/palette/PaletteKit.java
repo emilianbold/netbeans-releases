@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.vmd.palette;
 
-import java.beans.PropertyVetoException;
 import org.netbeans.modules.vmd.api.model.ComponentProducer;
 import org.netbeans.modules.vmd.api.model.ComponentSerializationSupport;
 import org.netbeans.modules.vmd.api.model.Debug;
@@ -62,7 +61,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.ref.WeakReference;
 import java.util.*;
-import org.openide.loaders.DataObject;
 
 /**
  * @author David Kaspar, Anton Chechel
