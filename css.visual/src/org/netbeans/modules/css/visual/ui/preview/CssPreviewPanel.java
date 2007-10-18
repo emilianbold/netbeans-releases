@@ -41,15 +41,26 @@
 package org.netbeans.modules.css.visual.ui.preview;
 
 import java.awt.Graphics;
+import java.util.logging.Handler;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import org.openide.awt.StatusDisplayer;
 import org.xhtmlrenderer.simple.XHTMLPanel;
 
 /**
+ * JPanel wrapping XHTMLPanel, the Flying Saucer's rendering area.
+ * The class also suppresses exceptions falling from the renderer
+ * so they are just logged, not displayed to user as execeptions.
  *
- * @author  marek
+ * @author  Marek Fukala
  */
 public class CssPreviewPanel extends javax.swing.JPanel {
+
+    private static final Logger LOGGER = Logger.getLogger(CssPreviewPanel.class.getName());
+    private static final boolean LOG = LOGGER.isLoggable(Level.INFO);
+    
+    private Handler FS_HANDLER = new FlyingSaucerLoggersHandler();
     
     private XHTMLPanel xhtmlPanel = new XHTMLPanel() {
         //workaround for FlyingSaucer bug (reported as netbeans issue #117499 (NullPointerException for unreachable url))
@@ -57,8 +68,10 @@ public class CssPreviewPanel extends javax.swing.JPanel {
         public void paintComponent(Graphics g) {
             try {
                 super.paintComponent(g);
-            } catch (Exception e) {
-                Logger.getLogger(CssPreviewPanel.class.getName()).log(Level.INFO, "It seems there is a bug in FlyinSaucer XHTML renderer.", e);
+            } catch (Throwable e) {
+                if(LOG) {
+                    LOGGER.log(Level.INFO, "It seems there is a bug in FlyinSaucer XHTML renderer.", e);
+                }
                 CssPreviewTopComponent.getDefault().setError();
             }
         }
@@ -68,10 +81,24 @@ public class CssPreviewPanel extends javax.swing.JPanel {
     public CssPreviewPanel() {
         initComponents();
         jScrollPane1.setViewportView(xhtmlPanel);
+        
+        configureFlyingSaucerLoggers();
     }
     
     public XHTMLPanel panel() {
         return xhtmlPanel;
+    }
+    
+    private void configureFlyingSaucerLoggers() {
+        //remove potential flying saucer handlers
+        Logger logger = Logger.getLogger("plumbing.exception");
+        for (Handler h : logger.getHandlers()) {
+            logger.removeHandler(h);
+        }
+        //do not report event to the parent handler ...
+        logger.setUseParentHandlers(false);
+        //...just to me
+        logger.addHandler(FS_HANDLER);
     }
         
     /** This method is called from within the constructor to
@@ -92,5 +119,28 @@ public class CssPreviewPanel extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JScrollPane jScrollPane1;
     // End of variables declaration//GEN-END:variables
+    
+    //delegating flying saucer handler
+    private class FlyingSaucerLoggersHandler extends Handler {
+
+        public void publish(LogRecord record) {
+            if (LOG) {
+                //set log level to INFO to prevent the exceptions
+                //popping up in a netbeans exceptions dialog
+                record.setLevel(Level.INFO);
+                LOGGER.log(record);
+                //log the exception message to output
+                LOGGER.log(Level.WARNING, record.getMessage());
+                //...and to the status bar
+                StatusDisplayer.getDefault().setStatusText(record.getMessage());
+            }
+        }
+
+        public void flush() {
+        }
+
+        public void close() throws SecurityException {
+        }
+    }
     
 }
