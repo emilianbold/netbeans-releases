@@ -368,6 +368,8 @@ public class NodeTest extends JellyTestCase {
         // wait for Safe Delete dialog
         NbDialogOperator safeDeleteOper = new NbDialogOperator(safeDeleteTitle);
         try {
+            // wait only 5 seconds
+            safeDeleteOper.getTimeouts().setTimeout("ComponentOperator.WaitComponentTimeout", 5000);
             safeDeleteOper.ok();
         } catch (TimeoutExpiredException e) {
             // It is "classpath scanning in progress" dialog, wait until it dismiss,
