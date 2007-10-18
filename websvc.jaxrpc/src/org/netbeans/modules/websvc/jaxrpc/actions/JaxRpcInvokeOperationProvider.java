@@ -42,8 +42,11 @@
 package org.netbeans.modules.websvc.jaxrpc.actions;
 
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.websvc.core.InvokeOperationActionProvider;
 import org.netbeans.modules.websvc.core.InvokeOperationCookie;
@@ -67,7 +70,8 @@ public class JaxRpcInvokeOperationProvider implements InvokeOperationActionProvi
     private boolean supportsJaxrpcOnly(Project project, FileObject targetSource){
         ProjectInfo projectInfo = new ProjectInfo(project);
         int projectType = projectInfo.getProjectType();
-        if(projectType == ProjectInfo.JSE_PROJECT_TYPE && isJaxWsLibraryOnClasspath(targetSource)) return false;
+        if(projectType == ProjectInfo.JSE_PROJECT_TYPE && !isJAXWSProject(project) && !isJAXRPCProject(project)) return true;
+        if(projectType == ProjectInfo.JSE_PROJECT_TYPE && isJaxWsLibraryOnClasspath(targetSource) && !isJAXRPCProject(project)) return false;
         if(projectInfo.isJwsdpSupported())return false;
         if(Util.isJavaEE5orHigher(project)) return false;
         if (JaxWsUtils.isEjbJavaEE5orHigher(projectInfo)) return false;
@@ -84,6 +88,32 @@ public class JaxRpcInvokeOperationProvider implements InvokeOperationActionProvi
             }
         }
         return false;
+    }
+    
+    private boolean isJAXWSProject(Project project){
+        SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        ClassPath classPath;
+        FileObject wsimportFO = null;
+        if (sgs.length > 0) {
+            classPath = ClassPath.getClassPath(sgs[0].getRootFolder(),ClassPath.COMPILE);
+            if (classPath != null) {
+                wsimportFO = classPath.findResource("com/sun/tools/ws/ant/WsImport.class"); //NOI18N
+            }
+        }
+        return wsimportFO != null;
+    }
+    
+    private boolean isJAXRPCProject(Project project){
+        SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        ClassPath classPath;
+        FileObject wscompileFO = null;
+        if (sgs.length > 0) {
+            classPath = ClassPath.getClassPath(sgs[0].getRootFolder(),ClassPath.COMPILE);
+            if (classPath != null) {
+                wscompileFO = classPath.findResource("com/sun/xml/rpc/tools/ant/Wscompile.class"); //NOI18N
+            }
+        }
+        return wscompileFO != null;
     }
     
     private boolean isJaxWsLibraryOnClasspath(FileObject targetSource) {

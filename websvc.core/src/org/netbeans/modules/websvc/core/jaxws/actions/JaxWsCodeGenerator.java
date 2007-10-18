@@ -582,6 +582,9 @@ public class JaxWsCodeGenerator {
                     targetSource.runModificationTask(modificationTask).commit();
                     success=true;
                 }
+                else{
+                    success = true;
+                }
             } catch (BadLocationException badLoc) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, badLoc);
             } catch (IOException ioe) {
