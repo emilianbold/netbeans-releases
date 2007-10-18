@@ -106,23 +106,6 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
                         }
                         if (inError)
                             continue;
-                        
-                        Project p = FileOwnerQuery.getOwner(f);
-                        
-                        if (p != null) {
-                            for (SourceGroup sg : ProjectUtils.getSources(p).getSourceGroups("java"/*JavaProjectConstants.SOURCES_TYPE_JAVA*/)) {
-                                FileObject sgRoot = sg.getRootFolder();
-                                
-                                if ((FileUtil.isParentOf(f, sgRoot) || f == sgRoot) && isInError(sgRoot, true, true)) {
-                                    inError = true;
-                                    break;
-                                }
-                            }
-                            
-                            if (inError) {
-                                break;
-                            }
-                        }
                     }else {
                         if (f.isData() && "java".equals(f.getExt())) {
                             if (isInError(f, true, !inError)) {
@@ -281,13 +264,31 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
             }
             
             for (FileObject f : toProcess) {
-                boolean recError;
-                boolean nonRecError;
+                boolean recError = false;
+                boolean nonRecError = false;
                 if (f.isData()) {
                     recError = nonRecError = TaskCache.getDefault().isInError(f, true);
                 } else {
-                    recError = TaskCache.getDefault().isInError(f, true);
-                    nonRecError = TaskCache.getDefault().isInError(f, false);
+                    boolean handled = false;
+                    Project p = FileOwnerQuery.getOwner(f);
+
+                    if (p != null) {
+                        for (SourceGroup sg : ProjectUtils.getSources(p).getSourceGroups("java"/*JavaProjectConstants.SOURCES_TYPE_JAVA*/)) {
+                            FileObject sgRoot = sg.getRootFolder();
+
+                            if ((FileUtil.isParentOf(f, sgRoot) || f == sgRoot) && TaskCache.getDefault().isInError(sgRoot, true)) {
+                                recError = true;
+                                nonRecError = false;
+                                handled = true;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    if (!handled) {
+                        recError = TaskCache.getDefault().isInError(f, true);
+                        nonRecError = TaskCache.getDefault().isInError(f, false);
+                    }
                 }
 
                 Integer value = (recError ? IN_ERROR_REC : 0) | (nonRecError ? IN_ERROR_NONREC : 0);
