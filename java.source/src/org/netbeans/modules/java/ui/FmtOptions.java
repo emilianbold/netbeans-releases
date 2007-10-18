@@ -40,18 +40,12 @@
  */
 package org.netbeans.modules.java.ui;
 
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.tools.javac.api.JavacTaskImpl;
-import com.sun.tools.javac.tree.JCTree;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.IOException;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.prefs.BackingStoreException;
@@ -69,17 +63,11 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.EditorKit;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.editor.Settings;
-import org.netbeans.modules.java.source.JavaSourceAccessor;
-import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.editor.Formatter;
 import org.netbeans.editor.SettingsNames;
-import org.netbeans.modules.java.source.pretty.VeryPretty;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.netbeans.modules.java.source.save.Reformatter;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.Exceptions;
 
@@ -581,26 +569,7 @@ public class FmtOptions {
             }
             
             CodeStyle codeStyle = FmtOptions.createCodeStyle(p);
-            
-            ClassPath empty = ClassPathSupport.createClassPath(new URL[0]);
-            
-            ClasspathInfo cpInfo = ClasspathInfo.create(
-                    JavaPlatform.getDefault().getBootstrapLibraries(), empty, empty);
-            
-            JavacTaskImpl javacTask = JavaSourceAccessor.INSTANCE.createJavacTask(cpInfo, null, null);
-            
-            try {
-                CompilationUnitTree tree = javacTask.parse(FileObjects.memoryFileObject(previewText, "ClassA")).iterator().next();
-                
-                VeryPretty vp = new VeryPretty(javacTask.getContext(), codeStyle);
-                vp.print((JCTree)tree);
-                
-                pane.setText(vp.toString());
-                
-            } catch (IOException ioException) {
-                Exceptions.printStackTrace(ioException);
-            }
-
+            pane.setText(Reformatter.reformat(previewText, codeStyle));
         }
         
         public void cancel() {

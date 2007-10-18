@@ -31,20 +31,30 @@ import com.sun.source.tree.*;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
+import com.sun.tools.javac.api.JavacTaskImpl;
+import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.code.Flags;
+import com.sun.tools.javac.main.JavaCompiler;
+import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
+import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCModifiers;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.*;
 import javax.lang.model.element.Name;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.modules.java.source.parsing.FileObjects;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import static org.netbeans.api.java.lexer.JavaTokenId.*;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.spi.editor.indent.Context;
@@ -86,6 +96,32 @@ public class Reformatter implements ReformatTask {
         }
         for (Context.Region region : context.indentRegions())
             reformatImpl(region);
+    }
+    
+    public static String reformat(String text, CodeStyle style) {
+        StringBuilder sb = new StringBuilder(text);
+        try {
+            ClassPath empty = ClassPathSupport.createClassPath(new URL[0]);
+            ClasspathInfo cpInfo = ClasspathInfo.create(empty, empty, empty);
+            JavacTaskImpl javacTask = JavaSourceAccessor.INSTANCE.createJavacTask(cpInfo, null, null);
+            com.sun.tools.javac.util.Context ctx = javacTask.getContext();
+            JavaCompiler.instance(ctx).genEndPos = true;
+            CompilationUnitTree tree = javacTask.parse(FileObjects.memoryFileObject(text, "")).iterator().next(); //NOI18N
+            SourcePositions sp = JavacTrees.instance(ctx).getSourcePositions();
+            TokenSequence<JavaTokenId> tokens = TokenHierarchy.create(text, JavaTokenId.language()).tokenSequence(JavaTokenId.language());
+            for (Diff diff : Pretty.reformat(text, new TreePath(tree), sp, tokens, style)) {
+                int start = diff.getStartOffset();
+                int end = diff.getEndOffset();
+                sb.delete(start, end);
+                String t = diff.getText();
+                if (t != null && t.length() > 0) {
+                    sb.insert(start, t);
+                }
+            }
+
+        } catch (IOException ioe) {
+        }
+        return sb.toString();
     }
     
     private void reformatImpl(Context.Region region) throws BadLocationException {
@@ -190,7 +226,8 @@ public class Reformatter implements ReformatTask {
         private static final String ERROR = "<error>"; //NOI18N
         private static final int ANY_COUNT = -1;
 
-        private final CompilationInfo info;
+        private final String fText;
+        private final SourcePositions sp;
         private final CodeStyle cs;
 
         private final int rightMargin;
@@ -211,7 +248,16 @@ public class Reformatter implements ReformatTask {
         private LinkedList<Diff> diffs = new LinkedList<Diff>();
 
         private Pretty(CompilationInfo info, TreePath path, CodeStyle cs) {
-            this.info = info;
+            this(info, info.getText(), info.getTrees().getSourcePositions(),
+                    path.getLeaf().getKind() == Tree.Kind.COMPILATION_UNIT
+                    ? info.getTokenHierarchy().tokenSequence(JavaTokenId.language())
+                    : info.getTreeUtilities().tokensFor(path.getLeaf()),
+                    path, cs);
+        }
+        
+        private Pretty(CompilationInfo info, String text, SourcePositions sp, TokenSequence<JavaTokenId> tokens, TreePath path, CodeStyle cs) {
+            this.fText = text;
+            this.sp = sp;
             this.cs = cs;
             this.rightMargin = cs.getRightMargin();
             this.tabSize = cs.getTabSize();
@@ -224,11 +270,9 @@ public class Reformatter implements ReformatTask {
             this.afterAnnotation = false;
             this.fieldGroup = false;
             Tree tree = path.getLeaf();
-            this.indent = getIndentLevel(path);
+            this.indent = info != null ? getIndentLevel(info, path) : 0;
             this.col = this.indent;
-            this.tokens = tree.getKind() == Tree.Kind.COMPILATION_UNIT
-                    ? info.getTokenHierarchy().tokenSequence(JavaTokenId.language())
-                    : info.getTreeUtilities().tokensFor(tree);
+            this.tokens = tokens;
             tokens.moveEnd();
             tokens.movePrevious();
             this.endPos = tokens.offset();
@@ -243,14 +287,20 @@ public class Reformatter implements ReformatTask {
             return pretty.diffs;
         }
 
+        public static LinkedList<Diff> reformat(String text, TreePath path, SourcePositions sp, TokenSequence<JavaTokenId> tokens, CodeStyle cs) {
+            Pretty pretty = new Pretty(null, text, sp, tokens, path, cs);
+            pretty.scan(path, null);
+            return pretty.diffs;
+        }
+
         @Override
         public Boolean scan(Tree tree, Void p) {
             int lastEndPos = endPos;
             if (tree != null && tree.getKind() != Tree.Kind.COMPILATION_UNIT) {
                 if (tree instanceof FakeBlock)
-                    endPos = (int)info.getTrees().getSourcePositions().getEndPosition(getCurrentPath().getCompilationUnit(), ((FakeBlock)tree).stat);
+                    endPos = (int)sp.getEndPosition(getCurrentPath().getCompilationUnit(), ((FakeBlock)tree).stat);
                 else
-                    endPos = (int)info.getTrees().getSourcePositions().getEndPosition(getCurrentPath().getCompilationUnit(), tree);
+                    endPos = (int)sp.getEndPosition(getCurrentPath().getCompilationUnit(), tree);
             }
             try {
                 return endPos < 0 ? false : tokens.offset() <= endPos ? super.scan(tree, p) : true;
@@ -387,7 +437,7 @@ public class Reformatter implements ReformatTask {
             }
             boolean emptyClass = true;
             for (Tree member : node.getMembers()) {
-                if (!info.getTreeUtilities().isSynthetic(new TreePath(getCurrentPath(), member))) {
+                if (!isSynthetic(getCurrentPath().getCompilationUnit(), member)) {
                     emptyClass = false;
                     break;
                 }
@@ -400,7 +450,7 @@ public class Reformatter implements ReformatTask {
                 blankLines(cs.getBlankLinesAfterClassHeader());
                 JavaTokenId id = null;
                 for (Tree member : node.getMembers()) {
-                    if (!info.getTreeUtilities().isSynthetic(new TreePath(getCurrentPath(), member))) {
+                    if (!isSynthetic(getCurrentPath().getCompilationUnit(), member)) {
                         switch(member.getKind()) {
                             case VARIABLE:
                                 if (isEnumerator((VariableTree)member)) {
@@ -449,7 +499,7 @@ public class Reformatter implements ReformatTask {
                     
                 }
                 String spaces = diff.text != null ? diff.text : getIndent();
-                if (spaces.equals(info.getText().substring(diff.start, diff.end)))
+                if (spaces.equals(fText.substring(diff.start, diff.end)))
                     diffs.removeFirst();
             }
             accept(RBRACE);
@@ -792,7 +842,7 @@ public class Reformatter implements ReformatTask {
                     break;
             }
             for (StatementTree stat  : node.getStatements()) {
-                if (!info.getTreeUtilities().isSynthetic(new TreePath(getCurrentPath(), stat))) {
+                if (!isSynthetic(getCurrentPath().getCompilationUnit(), stat)) {
                     if (stat.getKind() == Tree.Kind.LABELED_STATEMENT && cs.absoluteLabelIndent()) {
                         int o = indent;
                         indent = 0;
@@ -822,7 +872,7 @@ public class Reformatter implements ReformatTask {
 
                     }
                     String spaces = diff.text != null ? diff.text : getIndent();
-                    if (spaces.equals(info.getText().substring(diff.start, diff.end)))
+                    if (spaces.equals(fText.substring(diff.start, diff.end)))
                         diffs.removeFirst();
                 }
                 accept(RBRACE);
@@ -1210,7 +1260,7 @@ public class Reformatter implements ReformatTask {
                     
                 }
                 String spaces = diff.text != null ? diff.text : getIndent();
-                if (spaces.equals(info.getText().substring(diff.start, diff.end)))
+                if (spaces.equals(fText.substring(diff.start, diff.end)))
                     diffs.removeFirst();
             }
             accept(RBRACE);
@@ -1545,7 +1595,7 @@ public class Reformatter implements ReformatTask {
         @Override
         public Boolean visitErroneous(ErroneousTree node, Void p) {
             for (Tree tree : node.getErrorTrees()) {
-                int pos = (int)info.getTrees().getSourcePositions().getStartPosition(getCurrentPath().getCompilationUnit(), tree);
+                int pos = (int)sp.getStartPosition(getCurrentPath().getCompilationUnit(), tree);
                 do {
                     col += tokens.token().length();
                 } while (tokens.moveNext() && tokens.offset() < endPos);
@@ -2213,14 +2263,13 @@ public class Reformatter implements ReformatTask {
             return sb.toString();
         }
 
-        private int getIndentLevel(TreePath path) {
+        private int getIndentLevel(CompilationInfo info, TreePath path) {
             if (path.getLeaf().getKind() == Tree.Kind.COMPILATION_UNIT)
                 return 0;
             TokenSequence<JavaTokenId> sourceTS = info.getTokenHierarchy().tokenSequence(JavaTokenId.language());
             if (sourceTS == null)
                 return -1;
             int indent = 0;
-            SourcePositions sp = info.getTrees().getSourcePositions();
             Tree lastTree = null;
             while (path != null) {
                 int offset = (int)sp.getStartPosition(path.getCompilationUnit(), path.getLeaf());
@@ -2287,6 +2336,30 @@ public class Reformatter implements ReformatTask {
             return (((JCModifiers)tree.getModifiers()).flags & Flags.ENUM) != 0;
         }
         
+        private boolean isSynthetic(CompilationUnitTree cut, Tree leaf) {
+            JCTree tree = (JCTree) leaf;
+            if (tree.pos == (-1))
+                return true;
+            if (leaf.getKind() == Tree.Kind.METHOD) {
+                //check for synthetic constructor:
+                return (((JCMethodDecl)leaf).mods.flags & Flags.GENERATEDCONSTR) != 0L;
+            }
+            //check for synthetic superconstructor call:
+            if (leaf.getKind() == Tree.Kind.EXPRESSION_STATEMENT) {
+                ExpressionStatementTree est = (ExpressionStatementTree) leaf;
+                if (est.getExpression().getKind() == Tree.Kind.METHOD_INVOCATION) {
+                    MethodInvocationTree mit = (MethodInvocationTree) est.getExpression();
+                    if (mit.getMethodSelect().getKind() == Tree.Kind.IDENTIFIER) {
+                        IdentifierTree it = (IdentifierTree) mit.getMethodSelect();
+                        if ("super".equals(it.getName().toString())) {
+                            return sp.getEndPosition(cut, leaf) == (-1);
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+    
         private static class FakeBlock extends JCBlock {
             
             private StatementTree stat;
