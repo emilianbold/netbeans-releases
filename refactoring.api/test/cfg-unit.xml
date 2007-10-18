@@ -85,6 +85,15 @@ made subject to such option by the copyright holder.
     </testbag>
     
     
+    <testbag testattribs="usesupertype" executor="unit-executor" name="Use SuperType Refactoring">
+        <testset dir="unit/src">
+            <patternset>
+                <include name="org/netbeans/modules/refactoring/java/UseSupertypeTest.class"/>            
+            </patternset>
+        </testset>
+    </testbag>
+    
+    
     <testbag testattribs="elements" executor="unit-executor" name="Refactoring elements ">
         <testset dir="unit/src">
             <patternset>
