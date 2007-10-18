@@ -41,12 +41,11 @@
 
 package org.netbeans.modules.pdf;
 
-import java.io.*;
-
+import java.io.File;
+import java.io.IOException;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.cookies.OpenCookie;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
