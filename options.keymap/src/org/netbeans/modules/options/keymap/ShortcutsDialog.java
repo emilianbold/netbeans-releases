@@ -223,7 +223,7 @@ public class ShortcutsDialog extends javax.swing.JPanel {
                         loc ("Shortcut_Conflict"), //NOI18N
                         new Object[] {action.getDisplayName ()}
                     ));
-                    setShortcutValid(false);
+                    setShortcutValid(true);
                 } else {
                     lConflict.setText (""); //NOI18N
                     setShortcutValid(text != null && text.length() > 0);

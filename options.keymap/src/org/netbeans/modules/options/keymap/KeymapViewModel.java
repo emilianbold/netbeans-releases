@@ -376,8 +376,9 @@ public class KeymapViewModel implements TreeModel, ShortcutsFinder {
     void addShortcut (TreePath path, String shortcut) {
         // delete old shortcut
         ShortcutAction action = findActionForShortcut (shortcut);
-        if (action != null)
+        if (action != null) {
             removeShortcut (action, shortcut);
+        }
         action = (ShortcutAction) path.getLastPathComponent ();
         Set<String> s = new HashSet<String> ();
         s.add (shortcut);
@@ -404,12 +405,7 @@ public class KeymapViewModel implements TreeModel, ShortcutsFinder {
     private void removeShortcut (ShortcutAction action, String shortcut) {
         Set<String> s = new HashSet<String> (Arrays.asList (getShortcuts (action)));
         s.remove (shortcut);
-        Map<ShortcutAction, Set<String>> actionToShortcuts = modifiedProfiles.get (currentProfile);
-        if (actionToShortcuts == null) {
-            actionToShortcuts = new HashMap<ShortcutAction, Set<String>> ();
-            modifiedProfiles.put (currentProfile, actionToShortcuts);
-        }
-        actionToShortcuts.put (action, s);
+        setShortcuts(action, s);
     }
     
     public void refreshActions () {
