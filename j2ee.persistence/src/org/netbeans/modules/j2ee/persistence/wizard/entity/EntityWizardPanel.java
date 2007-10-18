@@ -40,6 +40,7 @@
  */
 
 package org.netbeans.modules.j2ee.persistence.wizard.entity;
+
 import java.util.Set;
 import javax.lang.model.element.TypeElement;
 import javax.swing.SwingUtilities;
