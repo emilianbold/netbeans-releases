@@ -80,13 +80,23 @@ public final class ProjectOp {
         if ("UI_CLOSED_PROJECTS".equals(rec.getMessage())) {
             String type = getStringParam(rec, 0, "unknown"); // NOI18N
             String name = getStringParam(rec, 1, "unknown"); // NOI18N
-            int cnt = Integer.parseInt(getStringParam(rec, 2, "0"));
+            int cnt;
+            try {
+                cnt = Integer.parseInt(getStringParam(rec, 2, "0"));
+            } catch (NumberFormatException numberFormatException) {
+                return null;
+            }
             return new ProjectOp(name, type, -cnt);
         }
         if ("UI_OPEN_PROJECTS".equals(rec.getMessage())) {
             String type = getStringParam(rec, 0, "unknown"); // NOI18N
             String name = getStringParam(rec, 1, "unknown"); // NOI18N
-            int cnt = Integer.parseInt(getStringParam(rec, 2, "0"));
+            int cnt;
+            try {
+                cnt = Integer.parseInt(getStringParam(rec, 2, "0"));
+            } catch (NumberFormatException numberFormatException) {
+                return null;
+            }
             return new ProjectOp(name, type, cnt);
         }
         return null;

@@ -159,7 +159,18 @@ public class ProjectOpTest extends NbTestCase {
         assertEquals("org.netbeans.modules.ant.freeform.FreeformProject", op.getProjectType());
         assertEquals("FreeformProject", op.getProjectDisplayName());
     }
-      
+
+    public void testProjectOpError() throws Exception {
+        LogRecord rec = new LogRecord(Level.WARNING, "UI_CLOSED_PROJECTS");
+        rec.setParameters(new Object[] {
+            "kuk", "buch", 
+            "org.netbeans.modules.xml.schema.model/1"
+        });
+        
+        ProjectOp op = ProjectOp.valueOf(rec);
+        assertNull("Not recognized log", op);
+    }
 }
+
 
 
