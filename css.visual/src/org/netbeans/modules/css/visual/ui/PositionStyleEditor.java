@@ -575,7 +575,6 @@ public class PositionStyleEditor extends StyleEditor {
         clipRightComboBox.getAccessibleContext().setAccessibleName(null);
         clipRightComboBox.getAccessibleContext().setAccessibleDescription(null);
 
-        jLabel3.setFont(new java.awt.Font("Dialog", 1, 14));
         jLabel3.setText(org.openide.util.NbBundle.getMessage(PositionStyleEditor.class, "CLIP_TITLE")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
@@ -793,7 +792,6 @@ public class PositionStyleEditor extends StyleEditor {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         positionContainerPanel.add(positionModeLabel, gridBagConstraints);
 
-        jLabel1.setFont(new java.awt.Font("Dialog", 1, 14));
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(PositionStyleEditor.class, "POISTION_TITLE")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
@@ -953,7 +951,6 @@ public class PositionStyleEditor extends StyleEditor {
         zindexComboBox.getAccessibleContext().setAccessibleName(null);
         zindexComboBox.getAccessibleContext().setAccessibleDescription(null);
 
-        jLabel2.setFont(new java.awt.Font("Dialog", 1, 14));
         jLabel2.setText(org.openide.util.NbBundle.getMessage(PositionStyleEditor.class, "SIZE_TITLE")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
