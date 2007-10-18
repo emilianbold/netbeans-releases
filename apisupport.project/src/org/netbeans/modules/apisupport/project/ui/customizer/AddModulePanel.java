@@ -117,7 +117,11 @@ public final class AddModulePanel extends JPanel {
         d.setVisible(true);
         lastSize = d.getBounds();
         d.dispose();
-        return addPanel.getSelectedDependencies();
+        if (descriptor.getValue().equals(DialogDescriptor.OK_OPTION)) {
+            return addPanel.getSelectedDependencies();
+        } else {
+            return new ModuleDependency[0]; // #114932
+        }
     }
     
     public AddModulePanel(final SingleModuleProperties props) {
