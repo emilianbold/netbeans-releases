@@ -1,43 +1,50 @@
-I. Steps to run JMaki Rest Components
+I. Steps to run jMaki REST Components
 =====================================
-1. Download Jmaki 1.0 Netbeans plugin from JMaki website 
+1. Download jMaki 1.0 NetBeans plugin from jMaki website 
 (https://ajax.dev.java.net/files/documents/3115/69449/org-netbeans-modules-sun-jmaki.nbm)
-2. Open Netbeans 6.0 IDE, then install the plugin by selecting "Downloaded" tab 
+
+2. Open NetBeans 6.0 IDE, then install the plugin by selecting "Downloaded" tab 
 after invoking Tools->Plugins.
-3. Create a web project, add "JMaki Ajax Frameworks" to this project on the wizard.
-4. Right click on the web project, then select "New->Restful Web Service Client Stubs". 
-In the wizard select the 
-web project that contain the RESTful Web Services. Click "Finish".
-5. Run "/Web Pages/resources/dojo/rest/TestResourcesTable.jsp" to test a JMaki REST 
-component. This displays a table of resources.
+
+3. Create a web project, add "jMaki Ajax Framework" to this project on the wizard.
+
+4. Right click on the web project, then select "New->RESTful Web Service Client 
+Stubs". In the wizard, select the web project that contains the RESTful web 
+services for which you want to generate the client stubs. Click "Finish".
+
+5. Run "/Web Pages/resources/dojo/rest/TestResourcesTable.jsp" to test a jMaki 
+REST component. This displays a table of resources.
 
 Note: 
 
 - After successful execution of Step 4 above, a <ProjectName>.zip is created in
-the project root directory (Select "Files" tab to see this file in the IDE). This file is a zipped 
-up (JMaki component(s)) version of the files that are generated during creation of client stubs. This file could be
-published to other developers who wants to use your RESTful Web Service. They just need to 
-invoke "Tools->Pallete->Add JMaki Library" action in the Netbeans IDE to register RESTful Web Service
-JMaki components. After successful install of these components, users could see them on the palette for
-jsp, php, rhtml, ejs files. Drag-n-Drop them onto jsp, php, rhtml, ejs files to invoke RESTful Web Services from
-these pages.
-- Please also note that <ProjectName>.zip also contain dojo 0.4.3 libraries grabbed from
-your IDE's JMaki library location. There is a /resources/dojo/resources/libs/dojo/LICENSE 
-file inside this zip. Please read this file before you distribute this zip file to
-your consumers of the RESTful Web Service. 
-- If you do not wish to include dojo libs, then re-package the zip file, removing 
-all the zip entries that start with /resources/dojo/resources, then include a readme. 
-This Readme should notify end-user to copy the dojo library /resources/dojo/resources 
-into thier web project "Web Pages" directory after they Drag-n-Drag the web service 
-component from JMaki Component Palette in the IDE. This dojo library is found in their 
+the project root directory (Select "Files" tab to see this file in the IDE). 
+This file is a zipped (jMaki component(s)) version of the files generated during 
+creation of the client stubs. You can this file to other developers who want to 
+invoke your RESTful Web Services. You can also register the RESTful Web Service 
+jMaki components in the jMaki palette by invoking "Tools->Palette->Add jMaki 
+Library" action in the NetBeans IDE. After successful registration of these 
+components, users can see them on the palette for jsp, php, rhtml, ejs files. 
+Drag-n-drop them onto jsp, php, rhtml, ejs files to invoke the RESTful web 
+services from these pages.- Please note that <ProjectName>.zip also contains 
+dojo 0.4.3 libraries copied from your IDE's jMaki library location. There is a 
+/resources/dojo/resources/libs/dojo/LICENSE file inside this zip file. Please 
+read this file before you redistribute this zip file.
+
+- If you do not wish to include dojo libraries, then re-package the zip file by 
+removing all the zip entries that start with /resources/dojo/resources, then 
+include a Readme. This Readme should notify end users to copy the dojo library 
+/resources/dojo/resources into thier web project "Web Pages" directory after 
+they drag-n-drop the web service component from jMaki Component Palette in the 
+IDE. This dojo library is found in their 
 <NB IDE User Directory>/jmakicomplib/jmaki-dojo/resources/dojo/resources directory.
 
-II.  Steps to run Dojo Rest Components
+II.  Steps to run Dojo REST Components
 =====================================
 1. After running Step I, you could also test dojo REST component directly 
 by invoking "/Web Pages/resources/dojo/rest/rdj/TestResourcesTable.html"
 
-III. Steps to run Rest Javascripts stubs
+III. Steps to run REST Javascripts stubs
 ============================================
 1. After running Step I, you could also test REST Javascripts directly 
 by invoking "/Web Pages/resources/dojo/rest/rjs/TestStubs.html".
