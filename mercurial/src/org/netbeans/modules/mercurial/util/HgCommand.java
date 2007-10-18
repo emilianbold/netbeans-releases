@@ -85,7 +85,7 @@ public class HgCommand {
     private static final String HG_STATUS_FLAG_INCLUDE_CMD = "-I"; // NOI18N
     private static final String HG_STATUS_FLAG_INCLUDE_GLOB_CMD = "glob:"; // NOI18N
     private static final String HG_STATUS_FLAG_INCLUDE_END_CMD = "*"; // NOI18N
-    private static final String HG_STATUS_FLAG_INTERESTING_CMD = "-mardui"; // NOI18N
+    private static final String HG_STATUS_FLAG_INTERESTING_CMD = "-marduiC"; // NOI18N
     private static final String HG_STATUS_FLAG_UNKNOWN_CMD = "-u"; // NOI18N
     
     private static final String HG_COMMIT_CMD = "commit"; // NOI18N
@@ -187,6 +187,7 @@ public class HgCommand {
     private static final String HG_NOT_TRACKED_ERR = " no tracked!"; // NOI18N
     private static final String HG_CANNOT_READ_COMMIT_MESSAGE_ERR = "abort: can't read commit message"; // NOI18N
     private static final String HG_UNABLE_EXECUTE_COMMAND_ERR = "unable to execute hg command"; // NOI18N
+    private static final String HG_CANNOT_RUN_ERR = "Cannot run program"; // NOI18N
     private static final String HG_ABORT_ERR = "abort: "; // NOI18N
     private static final String HG_NO_CHANGE_NEEDED_ERR = "no change needed"; // NOI18N
     private static final String HG_NO_ROLLBACK_ERR = "no rollback information available"; // NOI18N
@@ -1819,10 +1820,10 @@ public class HgCommand {
             Mercurial.LOG.log(Level.SEVERE, "execEnv():  execEnv(): IOException " + e); // NOI18N
              
             // Handle low level failure when you cannot find Mercurial: "hg: not found"
-            if (isErrorNoHg(e.getMessage())){
+            if (isErrorNoHg(e.getMessage()) || isErrorCannotRun(e.getMessage())){
                 NotifyDescriptor.Message msg = new NotifyDescriptor.Message(NbBundle.getMessage(HgCommand.class, "MSG_NO_HG_CMD_ERR"));              
                 DialogDisplayer.getDefault().notifyLater(msg);
-                handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_HG_CMD_ERR"));
+                throw new HgException(NbBundle.getMessage(HgCommand.class, "MSG_NO_HG_CMD_ERR"));
             }else{
                 throw new HgException(NbBundle.getMessage(HgCommand.class, "MSG_UNABLE_EXECUTE_COMMAND"));
             }
@@ -1900,6 +1901,10 @@ public class HgCommand {
     
     private static boolean isErrorNoHg(String msg) {
         return msg.indexOf(HG_NO_HG_CMD_FOUND_ERR) > -1; // NOI18N
+    }
+    
+    private static boolean isErrorCannotRun(String msg) {
+        return msg.indexOf(HG_CANNOT_RUN_ERR) > -1; // NOI18N
     }
     
     private static boolean isErrorUpdateSpansBranches(String msg) {
