@@ -53,6 +53,7 @@ import org.openide.filesystems.*;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.loaders.DataFolder;
 import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
 import org.openide.util.RequestProcessor;
 import org.openide.util.datatransfer.ExTransferable;
 import javax.swing.*;
@@ -61,11 +62,13 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.ref.WeakReference;
 import java.util.*;
+import org.openide.util.Lookup.Result;
+import org.openide.util.LookupListener;
 
 /**
  * @author David Kaspar, Anton Chechel
  */
-public class PaletteKit implements Runnable {
+public class PaletteKit implements Runnable, LookupListener {
 
     static final String CUSTOM_CATEGORY_NAME = "custom"; // NOI18N
     private static final String PALETTE_FOLDER_NAME = "palette"; // NOI18N
@@ -78,11 +81,14 @@ public class PaletteKit implements Runnable {
     private DataFolder rootFolder;
     private FileSystem fs;
     private final Object validationSynch = new Object();
+    Result<PaletteProvider> lookupResult;
 
     public PaletteKit(final String projectType) {
         this.fs = Repository.getDefault().getDefaultFileSystem();
 
         validationQueue = new LinkedList<Lookup>();
+        lookupResult = Lookup.getDefault().lookupResult(PaletteProvider.class);
+        lookupResult.addLookupListener(this);
 
         String rootFolderPath = projectType + '/' + PALETTE_FOLDER_NAME; // NOI18N
         nodesMap = new HashMap<String, PaletteItemDataNode>();
@@ -187,13 +193,13 @@ public class PaletteKit implements Runnable {
         registry.readAccess(new Runnable() {
 
             public void run() {
-                Collection<? extends PaletteProvider> providers = Lookup.getDefault().lookupAll(PaletteProvider.class);
+                Collection<? extends PaletteProvider> providers = lookupResult.allInstances();
                 for (PaletteProvider provider : providers) {
                     if (provider != null) {
                         provider.initPaletteCategories(projectType);
-                        initCore(registry.getComponentProducers());
                     }
                 }
+                initCore(registry.getComponentProducers());
             }
         });
     }
@@ -372,6 +378,10 @@ public class PaletteKit implements Runnable {
 
     void setActiveDocument(DesignDocument activeDocument) {
         this.activeDocument = new WeakReference<DesignDocument>(activeDocument);
+    }
+
+    public void resultChanged(LookupEvent ev) {
+        init();
     }
 
     private class Actions extends PaletteActions {
