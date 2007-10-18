@@ -260,24 +260,7 @@ public class PullUpTest extends RefactoringTestCase {
             return null;
         }
     }
-
-    class TopClassSelector implements TreePathResolver.TreePathHandleSelector {
-
-        int classNum;
-
-        public TopClassSelector(int classNum) {
-            this.classNum = classNum;
-        }
-
-        public TreePathHandle select(CompilationController compilationController) {
-            TreePath cuPath = new TreePath(compilationController.getCompilationUnit());
-            List<? extends Tree> typeDecls = compilationController.getCompilationUnit().getTypeDecls();
-            Tree t = typeDecls.get(classNum);
-            TreePathHandle pathHandle = TreePathHandle.create(TreePath.getPath(cuPath, t), compilationController);
-            return pathHandle;
-        }
-    }
-
+    
     class ImplementsSelector implements TreePathResolver.TreePathHandleSelector {
 
         private int classNum;
