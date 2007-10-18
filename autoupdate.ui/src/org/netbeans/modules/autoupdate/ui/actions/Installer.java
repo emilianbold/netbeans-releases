@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.autoupdate.ui.actions;
 
-import org.netbeans.modules.autoupdate.ui.actions.AutoupdateCheckScheduler;
 import org.openide.modules.ModuleInstall;
 
 /**
@@ -50,6 +49,7 @@ import org.openide.modules.ModuleInstall;
  */
 public class Installer extends ModuleInstall {
     
+    @Override
     public void restored () {
         // don't try to invoke at all in these special cases
         if (Boolean.getBoolean("netbeans.full.hack") || Boolean.getBoolean("netbeans.close")) { // NOI18N

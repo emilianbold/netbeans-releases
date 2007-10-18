@@ -149,13 +149,6 @@ public class UpdateUnitFactory {
         //assert !SwingUtilities.isEventDispatchThread();
         resetRunTime ("Measuring UpdateUnitFactory.getUpdateUnits (" + provider.getDisplayName () + ")"); // NOI18N
         
-        try {
-            provider.getUpdateItems ().values();
-            reportRunTime ("Get itemsFromProvider for " + provider.getDisplayName ());
-        } catch (IOException ioe) {
-            log.log (Level.INFO, "Cannot read UpdateItems from UpdateProvider " + provider, ioe);
-        }
-        
         // append units from provider
         Map<String, UpdateUnit> temp = appendUpdateItems (new HashMap<String, UpdateUnit> (), provider);
         reportRunTime ("Get appendUpdateItems for " + provider.getDisplayName ());

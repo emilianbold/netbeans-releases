@@ -63,6 +63,7 @@ public class LocallyDownloadedTableModel extends UnitCategoryTableModel {
     /** Creates a new instance of InstalledTableModel */
     public LocallyDownloadedTableModel (LocalDownloadSupport localDownloadSupport) {        
         this.localDownloadSupport = localDownloadSupport;
+        getLocalDownloadSupport ().removeAll (getLocalDownloadSupport ().getInstalledUpdateUnits ());
     }
     
     public final void setUnits(final List<UpdateUnit> unused) {
