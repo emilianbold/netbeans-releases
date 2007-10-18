@@ -2707,7 +2707,9 @@ public class ADProjectTreeEngine
                dropTargetElement.addElement(namedElement);
             }
 
-            INamespace curNamespace = namedElement.getNamespace();
+//            INamespace curNamespace = namedElement.getNamespace();
+            // create flat structure for imported elements
+            INamespace curNamespace = namedElement.getProject();
             if((dropTargetElement != null) &&
                (curNamespace != null)      &&
                (sameProject == false))

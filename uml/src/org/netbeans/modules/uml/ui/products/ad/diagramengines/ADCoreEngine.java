@@ -4779,6 +4779,8 @@ public class ADCoreEngine extends DiagramEngine implements IADCoreEngine, Action
                 // Only AutonomousElements can be imported across Projects
                 if (pElementBeingDropped instanceof IAutonomousElement)
                 {
+                    // create flat import element structure
+                    owner = owner.getProject();
                     IDirectedRelationship rel = MetaLayerRelationFactory.instance().establishImportIfNeeded(owner, pElementBeingDropped);
                 } else
                 {

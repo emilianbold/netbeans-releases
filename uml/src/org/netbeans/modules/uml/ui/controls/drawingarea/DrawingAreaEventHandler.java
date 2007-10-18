@@ -200,8 +200,8 @@ public class DrawingAreaEventHandler
    {
       if ((element instanceof IElement) && (m_DrawingAreaControl != null))
       {
-          IElement pEle = (IElement)element;
-          IProject ownerProject = pEle.getProject();
+          IElement pEle = (IElement)element;         
+          IProject ownerProject = pEle.getProject();          
           
           ADDrawingAreaControl ctrl = (ADDrawingAreaControl)m_DrawingAreaControl.get();
           if((ctrl != null) && (ownerProject.isSame(ctrl.getProject()) == true))
@@ -212,7 +212,13 @@ public class DrawingAreaEventHandler
                   // cloned element that lives in the importing project, not the
                   // element that is in the original project.
                   IElement clone = ((IElementImport)element).getImportedElement();
-                  IElement origOwner = clone.getOwner();
+                  
+                  // clone.getOwner() could also be an imported element, we need
+                  // to trace all the way up to IProject to determine original owning
+                  // project
+                  // IElement origOwner = clone.getOwner();
+                  
+                  IElement origOwner = getOwningProject(clone);
                   pEle = FactoryRetriever.instance().findElementByID(origOwner,
                           clone.getXMIID());
               }
@@ -2099,6 +2105,14 @@ public class DrawingAreaEventHandler
    {
       m_DrawingAreaControl = new WeakReference(control);
    }
+   
+   
+    private IProject getOwningProject(IElement imported)
+    {
+        IElement owner = imported.getOwner();
+        if (!(owner instanceof IProject))
+            return getOwningProject(owner);
+        return (IProject)owner;
+    }
+   
 }
-
-
