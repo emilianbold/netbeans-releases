@@ -1,0 +1,12 @@
+pulluppkg.PullUp2IfaceSuper.java
+--------------------
+null
+--------------------
+ 2   
+ 3   public interface PullUp2IfaceSuper {
+ 4   
+   +     void method();
+   + 
+ 5   }
+
+

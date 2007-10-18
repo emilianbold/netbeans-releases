@@ -206,8 +206,9 @@ public class LogTestCase extends NbTestCase {
     protected void tearDown() {
         ref.close();
         log.close();
-        if (CREATE_GOLDENFILES && golden != null) {
-            golden.close();
+        if (CREATE_GOLDENFILES) {
+            golden.flush();
+            golden.close();            
             assertTrue("Passive mode", false);
         } else {
             try {
@@ -224,9 +225,7 @@ public class LogTestCase extends NbTestCase {
         FileObject projectsDirFO = FileUtil.toFileObject(projectsDir);
         FileObject projdir = projectsDirFO.getFileObject(projectName);
         Project p = ProjectManager.getDefault().findProject(projdir);
-        OpenProjects.getDefault().open(new Project[]{p}, false);
-        System.out.println(p.getClass().getName());
-        //J2SEProject p2 = (J2SEProject)p;
+        OpenProjects.getDefault().open(new Project[]{p}, false);        
         assertNotNull("Project is not opened",p);
         return projdir;                
     }

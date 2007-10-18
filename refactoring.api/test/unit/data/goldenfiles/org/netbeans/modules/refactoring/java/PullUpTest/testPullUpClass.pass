@@ -1,0 +1,40 @@
+pulluppkg.PullUpInnerClass.java
+--------------------
+null
+--------------------
+  1   package pulluppkg;
+  2   
+  3   public class PullUpInnerClass extends PullUpInnerClassSuper{
+  4 -     
+  5 -     public class Inner {
+  6 - 
+  7 -         public Inner() {
+  8 -         }
+  9 -         
+ 10 -     }
+ 11 - 
+ 12   }
+
+
+pulluppkg.PullUpInnerClassSuper.java
+--------------------
+null
+null
+--------------------
+  1   
+  2   package pulluppkg;
+  3   
+    + import <any>;
+    + 
+  4   public class PullUpInnerClassSuper {
+  5   
+    +     public class Inner {
+    + 
+    +         public Inner() {
+    +             <any>();
+    +         }
+    +     }
+    + 
+  6   }
+
+

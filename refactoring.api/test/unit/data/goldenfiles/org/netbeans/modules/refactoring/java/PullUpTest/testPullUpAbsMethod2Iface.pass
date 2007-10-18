@@ -1,0 +1,31 @@
+Member "getName" is being moved to interface, but is not public.
+Member "getName" is being moved to interface, but is not public.
+pulluppkg.PullUpAbsMethod2Iface.java
+--------------------
+null
+--------------------
+ 1   package pulluppkg;
+ 2   
+ 3   public abstract class PullUpAbsMethod2Iface implements PullUpAbsMethod2IfaceSuper {
+ 4 -     
+ 5 -     abstract String getName();
+ 6 - 
+ 7   }
+
+
+pulluppkg.PullUpAbsMethod2IfaceSuper.java
+--------------------
+null
+null
+--------------------
+ 1   package pulluppkg;
+ 2   
+   + import String;
+   + 
+ 3   public interface PullUpAbsMethod2IfaceSuper {
+ 4   
+   +     abstract String getName();
+   + 
+ 5   }
+
+

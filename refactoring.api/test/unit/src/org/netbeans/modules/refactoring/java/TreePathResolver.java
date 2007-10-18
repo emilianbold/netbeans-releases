@@ -76,34 +76,6 @@ public class TreePathResolver implements CancellableTask<CompilationController>{
     public void run(CompilationController parameter) throws Exception {
         parameter.toPhase(Phase.RESOLVED);
         info = parameter;        
-        tph = selector.select(parameter);
-        
-        
-        
-        /*
-        List<? extends Tree> typeDecls = parameter.getCompilationUnit().getTypeDecls();
-        TreePath cuPath = new TreePath(parameter.getCompilationUnit());
-         
-        for (Tree t : typeDecls) {
-            TreePath p = new TreePath( cuPath, t );
-            Element e = parameter.getTrees().getElement(p);
-            List<? extends Element> elems = e.getEnclosedElements();
-            for (Element element : elems) {
-                System.out.println(element.getSimpleName().toString());
-                System.out.println(element.getKind().toString());
-                if(element.getKind()==ElementKind.METHOD) {
-                    Tree tt = parameter.getTrees().getTree(element);
-                    System.out.println(tt.getKind());
-                    System.out.println(tt.getClass().getName());
-                    MethodTree mt = (MethodTree) tt;
-                    List<? extends VariableTree> vars = mt.getParameters();
-                    System.out.println(vars.size());
-                    System.out.println(vars.get(0).getName().toString());
-                    System.out.println(vars.get(0).getType().toString());
-                    TreePath path = TreePath.getPath(cuPath,vars.get(0));
-                    tph = TreePathHandle.create(path, parameter);
-                }
-            }
-        }*/
+        tph = selector.select(parameter);        
     }
 }

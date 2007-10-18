@@ -187,7 +187,7 @@ public abstract class RefactoringTestCase extends LogTestCase{
         Problem problem = absRefactoring.preCheck();
         boolean fatal = false;
         while(problem!=null) {
-            ref.print(problem.getMessage());
+            ref(problem.getMessage());
             fatal = fatal || problem.isFatal();
             problem = problem.getNext();
         }
@@ -195,14 +195,14 @@ public abstract class RefactoringTestCase extends LogTestCase{
         parameterSetter.setParameters();
         problem = absRefactoring.fastCheckParameters();
         while(problem!=null) {
-            ref.print(problem.getMessage());
+            ref(problem.getMessage());
             fatal = fatal || problem.isFatal();
             problem = problem.getNext();
         }
         if(fatal) return  false;
         problem = absRefactoring.checkParameters();
         while(problem!=null) {
-            ref.print(problem.getMessage());
+            ref(problem.getMessage());
             fatal = fatal || problem.isFatal();
             problem = problem.getNext();
         }
