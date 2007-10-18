@@ -972,7 +972,7 @@ public abstract class TreeView extends JScrollPane {
         return p;
     }
 
-    private static Action takeAction(Action action, Node ... nodes) {
+    static Action takeAction(Action action, Node ... nodes) {
         // bugfix #42843, use ContextAwareAction if possible
         if (action instanceof ContextAwareAction) {
             Lookup contextLookup = getLookupFor(nodes);
