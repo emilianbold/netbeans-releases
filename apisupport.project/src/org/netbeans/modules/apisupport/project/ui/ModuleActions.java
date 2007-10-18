@@ -476,7 +476,7 @@ public final class ModuleActions implements ActionProvider {
     
     private static Action createSimpleAction(final NbModuleProject project, final String[] targetNames, String displayName) {
         return new AbstractAction(displayName) {
-            public boolean isEnabled() {
+            public @Override boolean isEnabled() {
                 return findBuildXml(project) != null;
             }
             public void actionPerformed(ActionEvent ignore) {
@@ -491,7 +491,7 @@ public final class ModuleActions implements ActionProvider {
     
     private static Action createMasterAction(final NbModuleProject project, final String[] targetNames, String displayName) {
         return new AbstractAction(displayName) {
-            public boolean isEnabled() {
+            public @Override boolean isEnabled() {
                 return findMasterBuildXml(project) != null;
             }
             public void actionPerformed(ActionEvent ignore) {
@@ -506,7 +506,7 @@ public final class ModuleActions implements ActionProvider {
     
     private static Action createCheckBundleAction(final NbModuleProject project, String displayName) {
         return new AbstractAction(displayName) {
-            public boolean isEnabled() {
+            public @Override boolean isEnabled() {
                 return findMonitorXml() != null && project.getPathWithinNetBeansOrg() != null;
             }
             public void actionPerformed(ActionEvent ignore) {
@@ -527,7 +527,7 @@ public final class ModuleActions implements ActionProvider {
     
     private static Action createReloadInIDEAction(final NbModuleProject project, final String[] targetNames, String displayName) {
         return new AbstractAction(displayName) {
-            public boolean isEnabled() {
+            public @Override boolean isEnabled() {
                 if (findBuildXml(project) == null) {
                     return false;
                 }
@@ -579,7 +579,7 @@ public final class ModuleActions implements ActionProvider {
     
     private static Action createArchAction(final NbModuleProject project) {
         return new AbstractAction(NbBundle.getMessage(ModuleActions.class, "ACTION_arch")) {
-            public boolean isEnabled() {
+            public @Override boolean isEnabled() {
                 return findBuildXml(project) != null;
             }
             public void actionPerformed(ActionEvent ignore) {
