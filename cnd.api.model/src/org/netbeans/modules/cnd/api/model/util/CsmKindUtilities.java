@@ -69,6 +69,7 @@ import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmUsingDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUsingDirective;
+import org.netbeans.modules.cnd.api.model.CsmValidable;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.deep.CsmDeclarationStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
@@ -100,6 +101,14 @@ public class CsmKindUtilities {
         }
     }
 
+    public static boolean isValidable(CsmObject obj) {
+        if (obj instanceof CsmValidable) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
     public static boolean isQualified(CsmObject obj) {
         if (obj instanceof CsmQualifiedNamedElement) {
             return true;
