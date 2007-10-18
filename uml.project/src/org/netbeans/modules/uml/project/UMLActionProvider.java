@@ -49,21 +49,23 @@ import org.openide.util.Lookup;
 
 public class UMLActionProvider implements ActionProvider
 {
-    // Commands available from J2SE project
+    // Fixed for IZ# 118836
+    // Commented out actions that are not applicable to UML project to prevent
+    // them from being shown on the menu.
     private static final String[] supportedActions =
     {
-        COMMAND_BUILD,
-        COMMAND_CLEAN,
-        COMMAND_REBUILD,
-        COMMAND_COMPILE_SINGLE,
-        COMMAND_RUN,
-        COMMAND_RUN_SINGLE,
-        COMMAND_DEBUG,
-        COMMAND_DEBUG_SINGLE,
-        COMMAND_TEST,
-        COMMAND_TEST_SINGLE,
-        COMMAND_DEBUG_TEST_SINGLE,
-        COMMAND_DEBUG_STEP_INTO,
+        //COMMAND_BUILD,
+        //COMMAND_CLEAN,
+        //COMMAND_REBUILD,
+        //COMMAND_COMPILE_SINGLE,
+        //COMMAND_RUN,
+        //COMMAND_RUN_SINGLE,
+        //COMMAND_DEBUG,
+        //COMMAND_DEBUG_SINGLE,
+        //COMMAND_TEST,
+        //COMMAND_TEST_SINGLE,
+        //COMMAND_DEBUG_TEST_SINGLE,
+        //COMMAND_DEBUG_STEP_INTO,
         COMMAND_DELETE
     };
     
@@ -103,6 +105,7 @@ public class UMLActionProvider implements ActionProvider
     
     public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException
     {
+        //System.out.println("UMLActionProvider: command="+ command);
         return true;
     }
 }
