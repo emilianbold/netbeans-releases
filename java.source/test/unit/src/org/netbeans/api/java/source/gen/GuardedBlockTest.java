@@ -153,7 +153,7 @@ public class GuardedBlockTest extends GeneratorTestMDRCompat {
             "    \n" +
             "    // Variables declaration - do not modify//GEN-BEGIN:variables\n" +
             "    private javax.swing.JButton jButton1;\n" +
-            "    // End of variablesdeclaration//GEN-END:variables\n" +
+            "    // End of variables declaration//GEN-END:variables\n" +
             "}\n"
         );
         DataObject dataObject = DataObject.find(FileUtil.toFileObject(testFile));
