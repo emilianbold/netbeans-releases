@@ -223,8 +223,15 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
                 // the run classpath equals to the debug classpath. If the debug classpath
                 // will be different from the run classpath, then the run classpath should
                 // be returned back. 
-                cp = ClassPathFactory.createClassPath(
-                new ProjectClassPathImplementation(helper, "debug.classpath", evaluator)); // NOI18N
+                ClassPath debugClassPath = ClassPathFactory.createClassPath(
+                        new ProjectClassPathImplementation(
+                                helper, WebProjectProperties.DEBUG_CLASSPATH, evaluator));
+                ClassPath j2eePlatformClassPath = ClassPathFactory.createClassPath(
+                        new ProjectClassPathImplementation(
+                                helper, WebProjectProperties.J2EE_PLATFORM_CLASSPATH, evaluator));
+                
+                cp = ClassPathSupport.createProxyClassPath(debugClassPath, j2eePlatformClassPath);
+                
             }
             cache[6+type] = cp;
         }

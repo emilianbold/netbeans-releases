@@ -408,7 +408,7 @@ introduced by support for multiple source roots. -jglick
                                 XXX: introduce run.classpath and use it for debug.classpath
                              -->
                             <classpath>
-                                <path path="${{debug.classpath}}"/>
+                                <path path="${{debug.classpath}}:${{j2ee.platform.classpath}}"/>
                             </classpath>
                             <syspropertyset>
                                 <propertyref prefix="run-sys-prop."/>
@@ -430,7 +430,7 @@ introduced by support for multiple source roots. -jglick
                     </attribute>
                     <attribute>
                         <xsl:attribute name="name">classpath</xsl:attribute>
-                        <xsl:attribute name="default">${debug.classpath}</xsl:attribute>
+                        <xsl:attribute name="default">${debug.classpath}:${j2ee.platform.classpath}</xsl:attribute>
                     </attribute>
                     <sequential>
                         <nbjpdastart transport="dt_socket" addressproperty="jpda.address" name="@{{name}}">
@@ -495,7 +495,7 @@ introduced by support for multiple source roots. -jglick
                     </attribute>
                     <attribute>
                         <xsl:attribute name="name">classpath</xsl:attribute>
-                        <xsl:attribute name="default">${debug.classpath}</xsl:attribute>
+                        <xsl:attribute name="default">${debug.classpath}:${j2ee.platform.classpath}</xsl:attribute>
                     </attribute>
                     <attribute>
                         <xsl:attribute name="name">args</xsl:attribute>
@@ -1369,7 +1369,7 @@ introduced by support for multiple source roots. -jglick
             <target name="connect-debugger" unless="is.debugged">
                 <nbjpdaconnect name="${{name}}" host="${{jpda.host}}" address="${{jpda.address}}" transport="${{jpda.transport}}">
                     <classpath>
-                        <path path="${{debug.classpath}}:${{ws.debug.classpaths}}"/>
+                        <path path="${{debug.classpath}}:${{j2ee.platform.classpath}}:${{ws.debug.classpaths}}"/>
                     </classpath>
                     <sourcepath>
                         <path path="${{web.docbase.dir}}:${{ws.web.docbase.dirs}}"/>

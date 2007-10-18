@@ -58,12 +58,12 @@ public class UtilsTest extends NbTestCase {
      */
     public void testCorrectDebugClassPath() throws Exception { //#118187
         final String NB_55 = "${javac.classpath}:${build.classes.dir}:${build.ear.classes.dir}";
-        final String NB_55_EXPECTED = "${javac.classpath}:${build.classes.dir}:${j2ee.platform.classpath}";
+        final String NB_55_EXPECTED = "${javac.classpath}:${build.classes.dir}";
         assertEquals(NB_55_EXPECTED, Utils.correctDebugClassPath(NB_55));
         
         // notice semicolon usage
         final String CASE_1 = "${some.directory};${build.classes.dir}:${javac.classpath}:${another.directory}";
-        final String CASE_1_EXPECTED = "${some.directory};${build.classes.dir}:${javac.classpath}:${another.directory}:${j2ee.platform.classpath}";
+        final String CASE_1_EXPECTED = "${some.directory};${build.classes.dir}:${javac.classpath}:${another.directory}";
         assertEquals(CASE_1_EXPECTED, Utils.correctDebugClassPath(CASE_1));
         
         final String CASE_2 = null;
@@ -76,11 +76,11 @@ public class UtilsTest extends NbTestCase {
         
         // incorrect classpath => remains incorrect
         final String CASE_4 = "defect";
-        final String CASE_4_EXPECTED = "defect:${j2ee.platform.classpath}";
+        final String CASE_4_EXPECTED = "defect";
         assertEquals(CASE_4_EXPECTED, Utils.correctDebugClassPath(CASE_4));
         
         final String CASE_5 = "${some.directory}";
-        final String CASE_5_EXPECTED = "${some.directory}:${j2ee.platform.classpath}";
+        final String CASE_5_EXPECTED = "${some.directory}";
         assertEquals(CASE_5_EXPECTED, Utils.correctDebugClassPath(CASE_5));
     }
 }

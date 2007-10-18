@@ -140,7 +140,7 @@ public class Utils {
      * @return the default value of the <tt>debug.classpath</tt> property.
      */
     public static String getDefaultDebugClassPath() {
-        return "${"+WebProjectProperties.BUILD_CLASSES_DIR+"}:${"+WebProjectProperties.JAVAC_CLASSPATH+"}:${"+WebProjectProperties.J2EE_PLATFORM_CLASSPATH+"}"; // NOI18N
+        return "${" + WebProjectProperties.BUILD_CLASSES_DIR + "}:${" + WebProjectProperties.JAVAC_CLASSPATH + "}"; // NOI18N
     }
     
     /**
@@ -151,51 +151,33 @@ public class Utils {
      */
     public static String correctDebugClassPath(String debugClassPath) {
 
-        String correctValue = null;
         if (debugClassPath == null || debugClassPath.length() == 0) {
-            // should not happend
-            correctValue = Utils.getDefaultDebugClassPath();
-        } else {
+            // should not happen
+            return Utils.getDefaultDebugClassPath();
+        }
+        
+        // "invalid" strings
+        final String buildEarWebDir = "${build.ear.web.dir}"; // NOI18N
+        final String buildEarClassesDir = "${build.ear.classes.dir}"; // NOI18N
+        final String buildEarPrefix = "${build.ear."; // NOI18N
 
-            // "invalid" strings
-            final String buildEarWebDir = "${build.ear.web.dir}"; // NOI18N
-            final String buildEarClassesDir = "${build.ear.classes.dir}"; // NOI18N
-            final String buildEarPrefix = "${build.ear."; // NOI18N
-            
-            StringBuilder buffer = null;
-            // do we need to correct classpath?
-            if (debugClassPath.contains(buildEarPrefix)) {  // NOI18N
-                
-                buffer = new StringBuilder(200);
-                for (String token : PropertyUtils.tokenizePath(debugClassPath)) {
-                    if (buildEarWebDir.equals(token)
-                            || buildEarClassesDir.equals(token)) {
-                        // NB 5.5.x - obsolete properties -do nothing
-                    } else {
-                        // leave the current token
-                        buffer.append(token);
-                        buffer.append(":"); // NOI18N
-                    }
+        if (!debugClassPath.contains(buildEarPrefix)) {
+            return debugClassPath;
+        }
+
+        StringBuilder buffer = new StringBuilder(debugClassPath.length());
+        for (String token : PropertyUtils.tokenizePath(debugClassPath)) {
+            // check NB 5.5.x obsolete properties
+            if (!buildEarWebDir.equals(token)
+                    && !buildEarClassesDir.equals(token)) {
+                if (buffer.length() > 0) {
+                    buffer.append(":"); // NOI18N
                 }
-            } else {
-                // classpath is ok
-                buffer = new StringBuilder(debugClassPath);
-                // just to be sure that the classpath ends with colon in every case - see next
-                buffer.append(":");
-            }
-            
-            final String platform = "${" + WebProjectProperties.J2EE_PLATFORM_CLASSPATH + "}"; // NOI18N
-            if (!buffer.toString().contains(platform)) {
-                buffer.append(platform);
-            }
-
-            // check the last character (here could be ';' as well but I take care only of "my" colons, see tokenizing above)
-            correctValue = buffer.toString();
-            if (correctValue.endsWith(":")) { //NOI18N
-                correctValue = correctValue.substring(0, correctValue.length() - 1);
+                buffer.append(token);
             }
         }
-        return correctValue;
+
+        return buffer.toString();
     }
 
     private static JavaPlatform findJavaPlatform(String platformName, String specFilter) {
