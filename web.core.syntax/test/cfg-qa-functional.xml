@@ -77,15 +77,21 @@ made subject to such option by the copyright holder.
         </testset>
     </testbag>
 
-    <testbag testattribs="indentation" executor="ide_as" name="JSP indentation test">
+    <testbag testattribs="reformating" executor="ide_as" name="JSP reformat test">
         <testset dir="qa-functional/src">
             <patternset>
-                <include name="**/IndentationTest.class"/>
                 <include name="**/ReformatingTest.class"/>
             </patternset>
         </testset>
     </testbag>
 
+    <testbag testattribs="indentation, stable" executor="ide_as" name="JSP indentation test cases">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="**/IndentCasesTest.class"/>
+            </patternset>
+        </testset>
+    </testbag>
     <!-- other testcases -->
     <testbag testattribs="j2eecompletion" executor="ide_as" name="JSP Syntax EE5 validation">
         <testset dir="qa-functional/src">
