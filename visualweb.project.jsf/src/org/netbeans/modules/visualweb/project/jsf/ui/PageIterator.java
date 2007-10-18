@@ -232,11 +232,9 @@ public class PageIterator implements TemplateWizard.Iterator {
 
         // Visual Web framework is not initialized
         if (!JsfProjectUtils.isJsfProject(project)) {
-            List frameworks = WebFrameworks.getFrameworks();
-            for (int i = 0; i < frameworks.size(); i++) {
-                WebFrameworkProvider framework = (WebFrameworkProvider) frameworks.get(i);
-                String name = NbBundle.getMessage(JSFFrameworkProvider.class, "JSF_Name");
-                if (framework.getName().equals(name)) {
+            List<WebFrameworkProvider> frameworks = WebFrameworks.getFrameworks();
+            for (WebFrameworkProvider framework : frameworks) {
+                if (framework instanceof JSFFrameworkProvider) {
                     WebModule webModule = JsfProjectUtils.getWebModule(project);
 
                     String beanPackage = (String) wizard.getProperty(JsfProjectConstants.PROP_JSF_PAGEBEAN_PACKAGE);
