@@ -40,15 +40,12 @@
  */
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
+import java.io.IOException;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.ddloaders.multiview.ui.BrowseFolders;
-//import org.netbeans.modules.java.ui.nodes.SourceNodes;
-//import org.netbeans.modules.javacore.api.JavaModel;
-//import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
-//import org.netbeans.spi.java.classpath.ClassPathFactory;
-//import org.netbeans.spi.java.classpath.ClassPathImplementation;
-//import org.netbeans.spi.java.classpath.PathResourceImplementation;
-//import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -57,8 +54,21 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 import javax.swing.*;
-import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
+import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.ui.ElementOpen;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
+import org.netbeans.modules.j2ee.common.source.AbstractTask;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
+import org.openide.util.Exceptions;
 
 /**
  * @author pfiala
@@ -338,31 +348,49 @@ public class Utils {
         return name;
     }
 
-//    /**
-//     * Opens source of given class
-//     * @param ejbJarFile
-//     * @param javaClass
-//     */
-//    public static void openEditorFor(FileObject ejbJarFile, JavaClass javaClass) {
-//        if (javaClass == null) {
-//            return;
-//        }
-//        FileObject sourceFile = getSourceFile(getSourceClassPath(ejbJarFile), javaClass.getName());
-//        if (sourceFile != null) {
-//            DataObject javaDo;
-//            try {
-//                javaDo = DataObject.find(sourceFile);
-//            } catch (DataObjectNotFoundException e) {
-//                DialogDisplayer.getDefault().notify(
-//                        new NotifyDescriptor.Message(getBundleMessage("MSG_sourceNotFound")));
-//                return;
-//            }
-//            OpenCookie cookie = (OpenCookie) javaDo.getCookie(OpenCookie.class);
-//            if (cookie != null) {
-//                cookie.open();
-//            }
-//        }
-//    }
+    /**
+     * Opens the editor for the given <code>ejbClass</code>.
+     * @param ejbJarFile the ejb-jar.xml file where the class is defined.
+     * @param ejbClass the FQN of the Ejb to be opened.
+     */
+     public static void openEditorFor(FileObject ejbJarFile, final String ejbClass) {
+        EjbJar ejbModule = EjbJar.getEjbJar(ejbJarFile);
+        MetadataModel<EjbJarMetadata> ejbModel = ejbModule.getMetadataModel();
+        try {
+            FileObject classFo = ejbModel.runReadAction(new MetadataModelAction<EjbJarMetadata, FileObject>() {
+
+                        public FileObject run(EjbJarMetadata metadata) throws Exception {
+                            return metadata.findResource(ejbClass.replace('.', '/') + ".java"); //NO18N
+                        }
+                    });
+
+            final List<ElementHandle<TypeElement>> handle = new ArrayList<ElementHandle<TypeElement>>(1);
+            if (classFo != null) {
+                JavaSource source = JavaSource.forFileObject(classFo);
+                source.runUserActionTask(new AbstractTask<CompilationController>() {
+
+                            public void run(CompilationController controller) throws Exception {
+                                controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                                TypeElement typeElement = controller.getElements().getTypeElement(ejbClass);
+                                if (typeElement != null) {
+                                    handle.add(ElementHandle.create(typeElement));
+                                }
+                            }
+                        }, false);
+            }
+            if (!handle.isEmpty()) {
+                ElementOpen.open(classFo, handle.get(0));
+            } else {
+                 DialogDisplayer.getDefault().notify(
+                        new NotifyDescriptor.Message(NbBundle.getMessage(Utils.class, "MSG_sourceNotFound")));
+            }
+
+        } catch (MetadataModelException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
 
     /**
      * Make sure that the code will run in AWT dispatch thread

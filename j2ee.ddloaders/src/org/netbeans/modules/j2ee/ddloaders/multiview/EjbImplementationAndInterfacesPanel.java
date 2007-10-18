@@ -52,6 +52,8 @@ import org.openide.NotifyDescriptor;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractButton;
 import javax.swing.JTextField;
 
@@ -60,6 +62,8 @@ import javax.swing.JTextField;
  */
 public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInterfacesForm {
 
+    private static final Logger LOGGER = Logger.getLogger(EjbImplementationAndInterfacesForm.class.getName());
+    
     private EntityAndSessionHelper helper;
     private NonEditableDocument beanClassDocument = new NonEditableDocument() {
         protected String retrieveText() {
@@ -189,23 +193,23 @@ public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInt
     }
 
     public void linkButtonPressed(Object ddBean, String ddProperty) {
-//        JavaClass javaClass;
-//        if(ddProperty == LINK_BEAN) {
-//            javaClass = helper.getBeanClass();
-//        } else if(ddProperty == LINK_LOCAL) {
-//            javaClass = helper.getLocalBusinessInterfaceClass();
-//        } else if(ddProperty == LINK_LOCAL_HOME) {
-//            javaClass = helper.getLocalHomeInterfaceClass();
-//        } else if(ddProperty == LINK_REMOTE) {
-//            javaClass = helper.getRemoteBusinessInterfaceClass();
-//        } else if (ddProperty == LINK_REMOTE_HOME) {
-//            javaClass = helper.getHomeInterfaceClass();
-//        } else {
-//            javaClass = null;
-//        }
-//        if (javaClass != null) {
-//            Utils.openEditorFor(helper.ejbJarFile, javaClass);
-//        }
+        String javaClass = null;
+        if(LINK_BEAN.equals(ddProperty)) {
+            javaClass = helper.getEjbClass();
+        } else if(LINK_LOCAL.equals(ddProperty)) {
+            javaClass = helper.getLocal();
+        } else if(LINK_LOCAL_HOME.equals(ddProperty)) {
+            javaClass = helper.getLocalHome();
+        } else if(LINK_REMOTE.equals(ddProperty)) {
+            javaClass = helper.getRemote();
+        } else if (LINK_REMOTE_HOME.equals(ddProperty)) {
+            javaClass = helper.getHome();
+        } 
+        
+        if (javaClass == null || "".equals(javaClass.trim())) {
+            LOGGER.log(Level.INFO, "Could not resolve class for ddProperty:" + ddProperty ); //NO18N
+            return;
+        }
+        Utils.openEditorFor(helper.ejbJarFile, javaClass);
     }
-
 }

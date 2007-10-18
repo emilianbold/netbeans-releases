@@ -88,11 +88,9 @@ public class MdbImplementationPanel extends MdbImplementationForm {
     }
 
     public void linkButtonPressed(Object ddBean, String ddProperty) {
-        if(ddProperty == LINK_BEAN) {
+        if(LINK_BEAN.equals(ddProperty)) {
             final FileObject ejbJarFile = dataObject.getPrimaryFile();
-//            final ClassPath sourceClassPath = Utils.getSourceClassPath(ejbJarFile);
-//            JavaClass beanClass = (JavaClass) JMIUtils.resolveType(messageDriven.getEjbClass());
-//            Utils.openEditorFor(ejbJarFile, beanClass);
+            Utils.openEditorFor(ejbJarFile, messageDriven.getEjbClass());
         }
     }
 }
