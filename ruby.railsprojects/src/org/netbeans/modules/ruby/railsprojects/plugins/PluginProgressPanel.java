@@ -45,6 +45,7 @@ import java.awt.event.KeyListener;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.AbstractDocument;
@@ -57,10 +58,10 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 
 /**
- *
  * @author  Tor Norbye
  */
-public class PluginProgressPanel extends javax.swing.JPanel {
+public class PluginProgressPanel extends JPanel {
+    
     private InputHandler inputHandler;
             
     /** Creates new form PluginProgressPanel */
@@ -142,6 +143,8 @@ public class PluginProgressPanel extends javax.swing.JPanel {
         outputArea.setLineWrap(true);
         outputArea.setRows(6);
         detailsScrollPane.setViewportView(outputArea);
+        outputArea.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PluginProgressPanel.class, "PluginProgressPanel.outputArea.AccessibleContext.accessibleName")); // NOI18N
+        outputArea.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PluginProgressPanel.class, "PluginProgressPanel.outputArea.AccessibleContext.accessibleDescription")); // NOI18N
 
         detailsPanel.add(detailsScrollPane, java.awt.BorderLayout.CENTER);
 
@@ -160,7 +163,7 @@ public class PluginProgressPanel extends javax.swing.JPanel {
                         .add(22, 22, 22))
                     .add(layout.createSequentialGroup()
                         .add(outputToggle)
-                        .addContainerGap(281, Short.MAX_VALUE))
+                        .addContainerGap(291, Short.MAX_VALUE))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                             .add(org.jdesktop.layout.GroupLayout.LEADING, detailsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 437, Short.MAX_VALUE)
@@ -184,7 +187,7 @@ public class PluginProgressPanel extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
-private void outputToggleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_outputToggleActionPerformed
+    private void outputToggleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_outputToggleActionPerformed
         if (outputToggle.isSelected()) {
             detailsPanel.add(detailsScrollPane, java.awt.BorderLayout.CENTER);
         } else {
@@ -195,7 +198,7 @@ private void outputToggleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
         revalidate();
         validate();
         repaint();
-}//GEN-LAST:event_outputToggleActionPerformed
+    }//GEN-LAST:event_outputToggleActionPerformed
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
