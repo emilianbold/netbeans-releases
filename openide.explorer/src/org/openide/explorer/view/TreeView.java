@@ -87,6 +87,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.accessibility.AccessibleContext;
@@ -970,25 +972,10 @@ public abstract class TreeView extends JScrollPane {
         return p;
     }
 
-    static Action takeAction(Action action, Node node) {
+    private static Action takeAction(Action action, Node ... nodes) {
         // bugfix #42843, use ContextAwareAction if possible
         if (action instanceof ContextAwareAction) {
-            Lookup contextLookup = node.getLookup();
-            Lookup.Result<Node> res = contextLookup.lookup(new Lookup.Template<Node>(Node.class));
-
-            // #55826, don't added the node twice
-            Iterator it = res.allInstances().iterator();
-
-            // temporary workaround #55938
-            boolean add = true;
-
-            while (it.hasNext() && add) {
-                add = !node.equals(it.next());
-            }
-
-            if (add) {
-                contextLookup = new ProxyLookup(new Lookup[] { Lookups.singleton(node), node.getLookup() });
-            }
+            Lookup contextLookup = getLookupFor(nodes);
 
             Action contextInstance = ((ContextAwareAction) action).createContextAwareInstance(contextLookup);
             assert contextInstance != action : "Cannot be same. ContextAwareAction:  " + action +
@@ -997,6 +984,33 @@ public abstract class TreeView extends JScrollPane {
         }
 
         return action;
+    }
+    
+    private static Lookup getLookupFor(Node ... nodes) {
+        if (nodes.length == 1) {
+            Lookup contextLookup = nodes[0].getLookup ();
+            Object o = contextLookup.lookup(nodes[0].getClass());
+             // #55826, don't added the node twice
+            if (!nodes[0].equals (o)) {
+                 contextLookup = new ProxyLookup (new Lookup[] { Lookups.singleton (nodes[0]), contextLookup });
+            }
+            return contextLookup;
+        } else {
+            Lookup[] lkps = new Lookup[nodes.length];
+            for (int i=0; i<nodes.length; i++) {
+                lkps[i] = nodes[i].getLookup();
+            }
+            Lookup contextLookup = new ProxyLookup(lkps);
+            Set<Node> toAdd = new HashSet<Node>(Arrays.asList(nodes));
+            toAdd.removeAll(contextLookup.lookupAll(Node.class));
+
+            if (!toAdd.isEmpty()) {
+                contextLookup = new ProxyLookup(
+                    contextLookup,
+                    Lookups.fixed((Object[])toAdd.toArray(new Node[toAdd.size()])));
+            }
+            return contextLookup;
+        }
     }
 
     /** Returns the tree path nearby to given tree node. Either a sibling if there is or the parent.
@@ -1444,16 +1458,21 @@ public abstract class TreeView extends JScrollPane {
         /* VK_ENTER key processor */
         public void actionPerformed(ActionEvent evt) {
             Node[] nodes = manager.getSelectedNodes();
-
-            if (nodes.length == 1) {
-                Action a = takeAction(nodes[0].getPreferredAction(), nodes[0]);
-
-                if (a != null) {
-                    if (a.isEnabled()) {
-                        a.actionPerformed(new ActionEvent(nodes[0], ActionEvent.ACTION_PERFORMED, "")); // NOI18N
-                    } else {
-                        Toolkit.getDefaultToolkit().beep();
-                    }
+            
+            if (nodes.length > 0) {
+                Action a = nodes[0].getPreferredAction();
+                for (int i=1; i<nodes.length; i++) {
+                    if (! nodes[i].getPreferredAction().equals(a)) return;
+                }
+                
+                // switch to replacement action if there is some
+                a = takeAction(a, nodes);
+                if (a.isEnabled()) {
+                    a.actionPerformed(new ActionEvent(
+                            nodes.length == 1 ? nodes[0] : nodes,
+                            ActionEvent.ACTION_PERFORMED, "")); // NOI18N
+                } else {
+                    Toolkit.getDefaultToolkit().beep();
                 }
             }
         }
