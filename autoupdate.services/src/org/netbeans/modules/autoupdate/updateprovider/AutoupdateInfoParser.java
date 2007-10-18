@@ -119,8 +119,7 @@ public class AutoupdateInfoParser {
     }
     
     // package-private only for unit testing purpose
-    static Document getAutoupdateInfo (File nbmFile) throws IOException, SAXException {
-        
+    static Document getAutoupdateInfo (File nbmFile) throws IOException, SAXException {        
         // find info.xml entry
         JarFile jf = new JarFile (nbmFile);
         String locale = Locale.getDefault ().toString ();
@@ -130,27 +129,10 @@ public class AutoupdateInfoParser {
         }
         if (entry == null) {
             throw new IllegalArgumentException ("info.xml found in file " + nbmFile);
-        }
-        
+        }        
         // get xml document
-        InputSource xmlInputSource = new InputSource (jf.getInputStream (entry));
-        Document retval = XMLUtil.parse (xmlInputSource, false, false, null /* logger */, org.netbeans.updater.XMLUtil.createAUResolver ());
-        if (retval != null) {
-            jf.close();
-            JarFileSystem jfs = new JarFileSystem();
-            try {
-                jfs.setJarFile(nbmFile);
-                FileObject fo = jfs.findResource(entry.getName());
-                URL u = (fo != null) ? URLMapper.findURL(fo, URLMapper.EXTERNAL) : null;
-                if (u != null) {
-                    retval.setDocumentURI(u.toURI().toString());
-                }
-            } catch(Exception iex) {
-                Exceptions.printStackTrace(iex);
-            } 
-        }
-        
-        return retval;
+        InputSource xmlInputSource = new InputSource (jf.getInputStream (entry));        
+        return XMLUtil.parse (xmlInputSource, false, false, null /* logger */, org.netbeans.updater.XMLUtil.createAUResolver ());
     }
     
     private static SimpleItem parseUpdateItem (NodeList children, boolean onlyLicense) {

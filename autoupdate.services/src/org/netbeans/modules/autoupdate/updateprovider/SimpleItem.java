@@ -214,42 +214,35 @@ public abstract class SimpleItem {
             String fileLastModified = Utilities.formatDate(new Date (nbm.lastModified ()));
             return toUpdateItem(licenses, nbm, fileLastModified);
         }
+
+        private URL getDistribution(File nbm/*or null*/) {
+            URL retval = null;            
+            try {
+                if (nbm != null) {
+                    retval = nbm.toURI().toURL();
+                } else {
+                    String distribution = getAttribute(declaratingNode, DISTRIBUTION);
+                    if (distribution != null && distribution.length() > 0) {
+                        URI distributionURI = new URI(distribution);
+                        if (!distributionURI.isAbsolute()) {
+                            distributionURI = new URI(declaratingNode.getBaseURI()).resolve(distributionURI);
+                        } 
+                        retval = distributionURI.toURL();
+                    }
+                }                
+            } catch (MalformedURLException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (URISyntaxException urisy) {
+                Exceptions.printStackTrace(urisy);
+            }            
+            return retval;
+        }
         
         private UpdateItem toUpdateItem(Map<String, String> licenses, File nbm, String catalogDate) {
             assert declaratingNode != null : "declaratingNode must be declared";
-            
+            URL distributionURL = null;                        
             moduleCodeName = getModuleCodeName (declaratingNode);
-            String distribution = getAttribute (declaratingNode, DISTRIBUTION);
-            if (declaratingNode.getBaseURI() != null || distribution == null || distribution.length() == 0) {
-                String baseURI = declaratingNode.getBaseURI();
-                if (baseURI != null && baseURI.length() > 0) {
-                    try {
-                        URL uu = URI.create(baseURI).toURL();
-                        if (uu != null /*&&  FileUtil.isArchiveFile(uu)*/) {
-                            uu = FileUtil.getArchiveFile(uu);
-                            if (uu != null && "file".equals(uu.getProtocol())) {
-                                distribution = uu.toExternalForm();
-                            }
-                        }
-                    } catch(MalformedURLException mex) {
-                        Exceptions.printStackTrace(mex);
-                    }
-                }
-            }             
-            if (distribution != null && distribution.length () > 0) {
-                URI distributionURI = null;
-                URI baseURI = null;
-                try {
-                    distributionURI = new URI (distribution);
-                    baseURI = new URI (declaratingNode.getBaseURI ());
-                } catch (URISyntaxException urisy) {
-                    Exceptions.printStackTrace (urisy);
-                }
-                if (! distributionURI.isAbsolute ()) {
-                    distributionURI = baseURI.resolve (distributionURI);
-                    distribution = distributionURI.toString ();
-                }
-            } 
+            distributionURL = getDistribution(nbm);
             String needsrestart = getAttribute (declaratingNode, NEEDS_RESTART);
             String global = getAttribute (declaratingNode, IS_GLOBAL);
             String targetcluster = getAttribute (declaratingNode, TARGET_CLUSTER);
@@ -263,14 +256,6 @@ public abstract class SimpleItem {
                 publishDate = catalogDate;
             }
             
-            URL distributionURL = null;
-            if (distribution != null && distribution.length() > 0) {
-                try {
-                    distributionURL = new URL (distribution);
-                } catch (MalformedURLException mue) {
-                    assert false : mue;
-                }
-            }
             
             Boolean needsRestart = needsrestart == null || needsrestart.trim ().length () == 0 ? null : Boolean.valueOf (needsrestart);
             Boolean isGlobal = global == null || global.trim ().length () == 0 ? null : Boolean.valueOf (global);
