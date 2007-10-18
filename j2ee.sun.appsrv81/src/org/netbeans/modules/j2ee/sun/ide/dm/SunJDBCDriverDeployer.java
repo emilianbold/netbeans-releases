@@ -46,14 +46,12 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
 import javax.enterprise.deploy.shared.ActionType;
 import javax.enterprise.deploy.shared.CommandType;
 import javax.enterprise.deploy.shared.StateType;
@@ -76,7 +74,9 @@ import org.netbeans.modules.j2ee.sun.ide.j2ee.DeploymentManagerProperties;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.ProgressEventSupport;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.Status;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -124,10 +124,11 @@ public class SunJDBCDriverDeployer implements JDBCDriverDeployer {
             List jdbcDriverURLs = getJdbcDrivers();
             // deploy the driers if needed
             if (jdbcDriverURLs.size() > 0) {
+                boolean success = true;
                 for(int i=0; i<jdbcDriverURLs.size(); i++){
                     URL jarUrl = (URL)jdbcDriverURLs.get(i);
+                    File libsDir = getJDBCDriversLocation();
                     try {
-                        File libsDir = getJDBCDriversLocation();
                         File toJar = new File(libsDir, new File(jarUrl.toURI()).getName());
                         try {
                             BufferedInputStream is = new BufferedInputStream(jarUrl.openStream());
@@ -144,18 +145,24 @@ public class SunJDBCDriverDeployer implements JDBCDriverDeployer {
                                 is.close();
                             }
                         } catch (IOException e) {
-                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                             String msg = NbBundle.getMessage(SunJDBCDriverDeployer.class, "ERR_DeployDriver", toJar.getPath(), libsDir.getPath());
                             eventSupport.fireHandleProgressEvent(null, new Status(ActionType.EXECUTE, CommandType.DISTRIBUTE, msg, StateType.FAILED));
-                            return;
+                            success = false;
+                            continue;
                         }
-                    } catch (URISyntaxException e) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                        return;
+                    } catch (Exception e) {
+                        String msg = NbBundle.getMessage(SunJDBCDriverDeployer.class, "ERR_DeployDriver", jarUrl, libsDir.getPath());
+                        eventSupport.fireHandleProgressEvent(null, new Status(ActionType.EXECUTE, CommandType.DISTRIBUTE, msg, StateType.FAILED));
+                        success = false;
+                        continue;
                     }
                 } //for
-                sunDm.setRestartForDriverDeployment(true);
                 String msg = NbBundle.getMessage(SunJDBCDriverDeployer.class, "MSG_DeployDriverComplete");
+                if (success) {
+                    sunDm.setRestartForDriverDeployment(true);              
+                }else{
+                    msg = NbBundle.getMessage(SunJDBCDriverDeployer.class, "ERR_DeployDriverFailed");
+                }
                 eventSupport.fireHandleProgressEvent(null, new Status(ActionType.EXECUTE, CommandType.DISTRIBUTE, msg, StateType.COMPLETED)); // NOI18N
             }
             eventSupport.fireHandleProgressEvent(null, new Status(ActionType.EXECUTE, CommandType.DISTRIBUTE, "", StateType.COMPLETED)); // NOI18N
@@ -178,10 +185,26 @@ public class SunJDBCDriverDeployer implements JDBCDriverDeployer {
                         String driverClass = databaseConnection.getDriverClass();
                         JDBCDriver[] jdbcDrivers = JDBCDriverManager.getDefault().getDrivers(driverClass);
                         for (JDBCDriver jdbcDriver : jdbcDrivers) {
-                            drivers.addAll(Arrays.asList(jdbcDriver.getURLs()));
-                        }
-                    }
-                }
+                            URL[] allUrls = jdbcDriver.getURLs();
+                            for(int i=0; i<allUrls.length; i++){
+                                URL driverUrl = allUrls[i];
+                                String strUrl = driverUrl.toString();
+                                if (strUrl.contains("nbinst://")) { // NOI18N
+                                    FileObject fo = URLMapper.findFileObject(driverUrl);
+                                    if (fo != null) {
+                                        URL localURL = URLMapper.findURL(fo, 1);
+                                        if (localURL != null) {
+                                            URL fileUrl = FileUtil.getArchiveFile(localURL);
+                                            drivers.add(fileUrl);
+                                        }
+                                    }
+                                }else{
+                                    drivers.add(driverUrl);
+                                }
+                            }
+                        } //JDBCDriver
+                    } 
+                } //If
             }
             return drivers;
         }
