@@ -169,8 +169,10 @@ public class NativeExecutor implements Runnable {
         }
         
         File runDirFile = new File(runDir);
-        
-        out = new PrintWriter(new OutputWindowWriter(io.getOut(), FileUtil.toFileObject(runDirFile), parseOutputForErrors));
+        if (parseOutputForErrors)
+            out = new PrintWriter(new OutputWindowWriter(io.getOut(), FileUtil.toFileObject(runDirFile), parseOutputForErrors));
+        else
+            out = io.getOut();
         executionStarted();
         int rc = 0;
         

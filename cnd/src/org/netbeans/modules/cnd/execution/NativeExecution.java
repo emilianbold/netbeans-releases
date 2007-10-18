@@ -203,7 +203,10 @@ public class NativeExecution extends ExecutionSupport {
                 int read;
                 
                 while ((read = err.read()) != (-1)) {
-                    output.write((char) read);
+                    if (read == 10)
+                        output.write("\n"); // NOI18N
+                    else
+                        output.write((char) read);
                     output.flush();
                 }
                 output.flush();
