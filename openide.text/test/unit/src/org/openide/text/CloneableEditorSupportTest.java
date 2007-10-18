@@ -42,8 +42,14 @@
 package org.openide.text;
 
 
+import java.beans.PropertyChangeListener;
 import java.io.*;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import javax.swing.JEditorPane;
+import javax.swing.SwingUtilities;
 import javax.swing.text.EditorKit;
 import junit.framework.*;
 import org.netbeans.junit.*;
@@ -66,6 +72,89 @@ implements CloneableEditorSupport.Env {
     /** the content of lookup of support */
     private InstanceContent ic;
 
+    public void testDocumentBeGarbageCollectedWhenNotModifiedButOpened () throws Exception {
+        content = "Ahoj\nMyDoc";
+        javax.swing.text.Document doc = support.openDocument ();
+        assertNotNull (doc);
+        
+        WeakReference<Object> ref = new WeakReference<Object>(doc);
+        doc = null;
+        
+        assertGC ("Document can dissapear", ref, Collections.singleton(support));
+
+        assertFalse ("Document is not loaded", support.isDocumentLoaded ());
+        assertTrue ("Can be closed without problems", support.close ());
+    }
+
+    public void testDocumentIsNotGCedIfModified () throws Exception {
+        content = "Ahoj\nMyDoc";
+        javax.swing.text.Document doc = support.openDocument ();
+        assertNotNull (doc);
+        doc.insertString (0, "Zmena", null);
+        
+        assertTrue ("Is modified", support.isModified ());
+        
+        WeakReference<Object> ref = new WeakReference<Object>(doc);
+        doc = null;
+
+        boolean ok;
+        try {
+            assertGC ("Should fail", ref);
+            ok = false;
+        } catch (AssertionFailedError expected) {
+            ok = true;
+        }
+        if (!ok) {
+            fail ("Document should not disappear, as it is modified");
+        }
+        
+        assertTrue ("Document remains loaded", support.isDocumentLoaded ());
+        
+    }
+    
+    public void testDocumentIsNotGCedIfOpenedInEditor () throws Exception {
+        content = "Ahoj\nMyDoc";
+        javax.swing.text.Document doc = support.openDocument ();
+        assertNotNull (doc);
+        
+        support.open();
+        class R implements Runnable {
+            JEditorPane[] arr;
+            public void run() {
+                arr = support.getOpenedPanes();
+            }
+            
+            public JEditorPane[] getArr() throws Exception {
+                SwingUtilities.invokeAndWait(this);
+                return arr;
+            }
+        }
+        R panes = new R();
+        assertNotNull("There is one pane", panes.getArr());
+        
+        assertFalse("Not modified", support.isModified ());
+        
+        WeakReference<Object> ref = new WeakReference<Object>(doc);
+        doc = null;
+
+        boolean ok;
+        try {
+            assertGC ("Should fail", ref);
+            ok = false;
+        } catch (AssertionFailedError expected) {
+            ok = true;
+        }
+        if (!ok) {
+            fail ("Document should not disappear, as it is modified");
+        }
+        
+        assertTrue ("Document remains loaded", support.isDocumentLoaded ());
+        
+        support.close();
+        
+        assertNull("There is no pane", panes.getArr());
+        assertGC ("Should succeed with GC now", ref);
+    }
     
     // Env variables
     private String content = "";
@@ -74,7 +163,7 @@ implements CloneableEditorSupport.Env {
     /** if not null contains message why this document cannot be modified */
     private String cannotBeModified;
     private java.util.Date date = new java.util.Date ();
-    private java.util.List/*<java.beans.PropertyChangeListener>*/ propL = new java.util.ArrayList ();
+    private java.util.List<java.beans.PropertyChangeListener> propL = new ArrayList<PropertyChangeListener>();
     private java.beans.VetoableChangeListener vetoL;
 
     
@@ -93,6 +182,7 @@ implements CloneableEditorSupport.Env {
     }
     
 
+    @Override
     protected void setUp () {
         ic = new InstanceContent ();
         support = new CES (this, new AbstractLookup (ic));
@@ -123,10 +213,10 @@ implements CloneableEditorSupport.Env {
         assertEquals ("Three lines", 3, list.size ());
         
         Line l = (Line)list.get (0);
-        Integer i = (Integer)l.getLookup ().lookup (Integer.class);
+        Integer i = l.getLookup().lookup(Integer.class);
         assertEquals ("The original integer", template, i);
         ic.remove (template);
-        i = (Integer)l.getLookup ().lookup (Integer.class);
+        i = l.getLookup().lookup(Integer.class);
         assertNull ("Lookup is dynamic, so now there is nothing", i);
     }
     
@@ -181,7 +271,7 @@ implements CloneableEditorSupport.Env {
         assertTrue ("Can be closed without problems", support.close ());
         assertFalse ("Document is not loaded", support.isDocumentLoaded ());
         
-        java.lang.ref.WeakReference ref = new java.lang.ref.WeakReference (doc);
+        WeakReference<Object> ref = new WeakReference<Object>(doc);
         doc = null;
         
         assertGC ("Document can dissapear", ref);
@@ -256,7 +346,8 @@ implements CloneableEditorSupport.Env {
     }
     public java.io.OutputStream outputStream() throws java.io.IOException {
         class ContentStream extends java.io.ByteArrayOutputStream {
-            public void close () throws java.io.IOException {
+            @Override
+            public void close() throws java.io.IOException {
                 super.close ();
                 content = new String (toByteArray ());
             }

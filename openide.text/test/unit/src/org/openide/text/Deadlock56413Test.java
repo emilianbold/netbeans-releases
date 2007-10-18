@@ -236,9 +236,9 @@ public class Deadlock56413Test extends NbTestCase implements CloneableEditorSupp
             // have to store the field before unfusing the other thread
             // in normal conditions, the store would happen just on return.
             try {
-                java.lang.reflect.Field f = CloneableEditorSupport.class.getDeclaredField("doc");
+                java.lang.reflect.Method f = CloneableEditorSupport.class.getDeclaredMethod("setDoc", StyledDocument.class, boolean.class);
                 f.setAccessible(true);
-                f.set(this, doc);
+                f.invoke(this, doc, true);
             } catch (Exception e) {
                 exception = e;
             }

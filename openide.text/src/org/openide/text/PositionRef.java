@@ -44,6 +44,7 @@ import org.openide.util.RequestProcessor;
 
 import java.io.*;
 
+import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 
@@ -210,7 +211,7 @@ public final class PositionRef extends Object implements Serializable {
         transient private CloneableEditorSupport support;
 
         /** the document for this manager or null if the manager is not in memory */
-        transient private StyledDocument doc;
+        transient private Reference<StyledDocument> doc;
 
         /** Creates new manager
         * @param supp support to work with
@@ -272,7 +273,7 @@ public final class PositionRef extends Object implements Serializable {
 
         /** Converts all positions into document one.
         */
-        void documentOpened(StyledDocument doc) {
+        void documentOpened(Reference<StyledDocument> doc) {
             this.doc = doc;
 
             processPositions(true);
@@ -300,8 +301,9 @@ public final class PositionRef extends Object implements Serializable {
             if (d == this) {
                 return null;
             }
-
-            return this.doc;
+            Reference<StyledDocument> w = this.doc;
+            StyledDocument x = w == null ? null : w.get();
+            return x;
         }
 
         /** Puts/gets positions to/from memory. It also provides full

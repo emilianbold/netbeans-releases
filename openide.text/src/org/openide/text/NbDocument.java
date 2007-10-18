@@ -640,7 +640,9 @@ public final class NbDocument extends Object {
         }
 
         int renderToInt() {
-            doc.render(this);
+            if (doc != null) {
+                doc.render(this);
+            }
 
             return retInt;
         }

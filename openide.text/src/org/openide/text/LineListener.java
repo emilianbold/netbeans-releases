@@ -40,6 +40,7 @@
  */
 package org.openide.text;
 
+import java.lang.ref.WeakReference;
 import org.openide.util.WeakListeners;
 
 import javax.swing.text.*;
@@ -52,9 +53,6 @@ import javax.swing.text.*;
 final class LineListener extends Object implements javax.swing.event.DocumentListener {
     /** original count of lines */
     private int orig;
-
-    /** document to work with */
-    public final StyledDocument doc;
 
     /** root element of all lines */
     private Element root;
@@ -70,13 +68,12 @@ final class LineListener extends Object implements javax.swing.event.DocumentLis
 
     /** Creates new LineListener */
     public LineListener(StyledDocument doc, CloneableEditorSupport support) {
-        this.doc = doc;
         this.struct = new LineStruct();
         root = NbDocument.findLineRootElement(doc);
         orig = lines = root.getElementCount();
         this.support = support;
 
-        doc.addDocumentListener(org.openide.util.WeakListeners.document(this, doc));
+        doc.addDocumentListener(WeakListeners.document(this, doc));
     }
 
     /** Getter for amount of lines */
@@ -99,6 +96,10 @@ final class LineListener extends Object implements javax.swing.event.DocumentLis
         int delta = lines - elem;
         lines = elem;
 
+        StyledDocument doc = support.getDocument();
+        if (doc == null) {
+            return;
+        }
         int lineNumber = NbDocument.findLineNumber(doc, p0.getOffset());
 
         if (delta > 0) {
@@ -133,6 +134,10 @@ final class LineListener extends Object implements javax.swing.event.DocumentLis
         int delta = elem - lines;
         lines = elem;
 
+        StyledDocument doc = support.getDocument();
+        if (doc == null) {
+            return;
+        }
         int lineNumber = NbDocument.findLineNumber(doc, p0.getOffset());
 
         if (delta > 0) {

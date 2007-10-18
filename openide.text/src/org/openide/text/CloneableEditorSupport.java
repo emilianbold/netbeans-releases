@@ -147,7 +147,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     private EditorKit kit;
 
     /** document we work with */
-    private StyledDocument doc;
+    private StrongRef doc;
 
     /** Non default MIME type used to editing */
     private String mimeType;
@@ -542,27 +542,33 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             // in spite of that the document is not yet fully read in
             kit = createEditorKit();
 
-            if (doc == null) {
-                doc = createStyledDocument(kit);
+            final StyledDocument[] docToLoad = { getDoc() };
+            if (docToLoad[0] == null) {
+                docToLoad[0] = createStyledDocument(kit);
+                setDoc(docToLoad[0], false);
 
                 // here would be the testability hook for issue 56413
                 // (Deadlock56413Test), but I use the reflection in the test
                 // instead, so the test depends on the above assignment
             }
 
-            final StyledDocument docToLoad = doc;
 
             // The thread nume should be: "Loading document " + env; // NOI18N
             prepareTask = RequestProcessor.getDefault().post(new Runnable() {
                                                    private boolean runningInAtomicLock;
 
                                                    public void run() {
+                                                       doRun();
+                                                       docToLoad[0] = null;
+                                                   }
+                                                   
+                                                   private void doRun() {
                                                        // Run the operations under atomic lock primarily due
                                                        // to reload which occurs in a widely published document instance
                                                        // where another threads may operate already
                                                        if (!runningInAtomicLock) {
                                                            runningInAtomicLock = true;
-                                                           NbDocument.runAtomic(docToLoad,
+                                                           NbDocument.runAtomic(docToLoad[0],
                                                                                 this);
                                                            return;
                                                        }
@@ -573,7 +579,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                                                return;
                                                            }
                                                            // Check whether the document to be loaded was not closed
-                                                           if (doc != docToLoad) {
+                                                           if (getDoc() != docToLoad[0]) {
                                                                return;
                                                            }
                                                            prepareDocumentRuntimeException = null;
@@ -584,7 +590,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                                                getListener().run();
                                                                // assign before fireDocumentChange() as listener should be able to access getDocument()
                                                                documentStatus = DOCUMENT_READY;
-                                                               fireDocumentChange(doc,
+                                                               fireDocumentChange(getDoc(),
                                                                                   false);
                                                                // Confirm that whole loading succeeded
                                                                targetStatus = DOCUMENT_READY;
@@ -592,7 +598,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                                                // atomic action has finished
                                                                // definitively sooner than leaving lock section
                                                                // and notifying al waiters, see #47022
-                                                               doc.addUndoableEditListener(getUndoRedo());
+                                                               getDoc().addUndoableEditListener(getUndoRedo());
                                                            }
                                                            catch (DelegateIOExc t) {
                                                                prepareDocumentRuntimeException = t;
@@ -652,18 +658,19 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     /** Clears the <code>doc</code> document. Helper method. */
     private void clearDocument() {
         NbDocument.runAtomic(
-            doc,
+            getDoc(),
             new Runnable() {
                 public void run() {
                     try {
-                        addRemoveDocListener(doc, false);
-                        doc.remove(0, doc.getLength()); // remove all text
-                        addRemoveDocListener(doc, true);
+                        addRemoveDocListener(getDoc(), false);
+                        getDoc().remove(0, getDoc().getLength()); 
+                        addRemoveDocListener(getDoc(), true);
                     } catch (BadLocationException ble) {
                         ERR.log(Level.INFO, null, ble);
                     }
                 }
             }
+        
         );
     }
 
@@ -690,7 +697,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     }
 
     private StyledDocument openDocumentCheckIOE() throws IOException {
-        StyledDocument doc = openDocumentImpl();
+        StyledDocument locDoc = openDocumentImpl();
 
         IOException ioe = getListener().checkLoadException();
 
@@ -698,7 +705,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             throw ioe;
         }
 
-        return doc;
+        return locDoc;
     }
 
     /**
@@ -714,7 +721,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
         case DOCUMENT_RELOADING: // proceed to DOCUMENT_READY
         case DOCUMENT_READY:
-            return doc;
+            return getDoc();
 
         default: // loading
 
@@ -759,7 +766,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                 default: // ready, loading or reloading
 
                     if (LOCAL_LOAD_TASK.get() != null) {
-                        return doc;
+                        return getDoc();
                     }
 
                     try {
@@ -1385,15 +1392,15 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     protected Task reloadDocument() {
         ERR.fine("reloadDocument in " + Thread.currentThread()); // NOI18N
 
-        if (doc != null) {
+        if (getDoc() != null) {
             final JEditorPane[] panes = getOpenedPanes();
             // acquire write access
-            NbDocument.runAtomic(doc,
+            NbDocument.runAtomic(getDoc(),
                                  new Runnable() {
 
                                      public void run() {
                                          // UndoManager must be detached from document here because it will be attached in loadDocument()
-                                         doc.removeUndoableEditListener(getUndoRedo());
+                                         getDoc().removeUndoableEditListener(getUndoRedo());
                                          // Remember caret positions in all opened panes
                                          final int[] carets;
 
@@ -1422,7 +1429,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                                  // to detach annotations).
                                                  getPositionManager().documentClosed();
                                                  updateLineSet(true);
-                                                 fireDocumentChange(doc, true);
+                                                 fireDocumentChange(getDoc(), true);
                                                  ERR.fine("clearDocument");
                                                  clearDocument();
                                                  // uses the listener's run method to initialize whole document
@@ -1432,7 +1439,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                                  prepareTask.run();
                                                  ERR.fine("prepareTask finished");
                                                  documentStatus = DOCUMENT_READY;
-                                                 fireDocumentChange(doc, false);
+                                                 fireDocumentChange(getDoc(), false);
                                                  // Confirm that whole loading succeeded
                                                  targetStatus = DOCUMENT_READY;
                                                  return null;
@@ -1459,7 +1466,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                          }
                                          finally {
                                              synchronized (getLock()) {
-                                                 if (query.targetStatus == DOCUMENT_NO) doc = null;
+                                                 if (query.targetStatus == DOCUMENT_NO) setDoc(null, false);
                                                  documentStatus = query.targetStatus;
                                                  getLock().notifyAll();
                                              }
@@ -1468,7 +1475,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                          Runnable run = new Runnable() {
 
                                              public void run() {
-                                                 if (doc == null) {
+                                                 if (getDoc() == null) {
                                                      return;
                                                  }
                                                  if (panes != null) {
@@ -1501,11 +1508,11 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                                  updateLineSet(true);
                                                  ERR.fine("task-addUndoableEditListener");
                                                  // Add undoable listener after atomic change has finished
-                                                 doc.addUndoableEditListener(getUndoRedo());
+                                                 getDoc().addUndoableEditListener(getUndoRedo());
                                              }
                                          };
 
-                                         if (doc != null) {
+                                         if (getDoc() != null) {
                                              ERR.fine("Posting the AWT runnable: " +
                                                       run);
                                              SwingUtilities.invokeLater(run);
@@ -1769,7 +1776,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     /** Creates <code>Runnable</code> which tries to make one undo. Helper method.
      * @see #revertUpcomingUndo */
     final void undoAll() {
-        StyledDocument sd = doc;
+        StyledDocument sd = getDoc();
 
         if (sd == null) {
             // #20883, doc can be null(!), doCloseDocument was faster.
@@ -1809,7 +1816,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     /** Allows access to the document without any checking.
     */
     final StyledDocument getDocumentHack() {
-        return doc;
+        return getDoc();
     }
 
     /** Getter for context associated with this
@@ -1833,10 +1840,10 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
             Line.Set oldSet = lineSet;
 
-            if ((doc == null) || (documentStatus == DOCUMENT_RELOADING)) {
+            if ((getDoc() == null) || (documentStatus == DOCUMENT_RELOADING)) {
                 lineSet = new EditorSupportLineSet.Closed(CloneableEditorSupport.this);
             } else {
-                lineSet = new EditorSupportLineSet(CloneableEditorSupport.this, doc);
+                lineSet = new EditorSupportLineSet(CloneableEditorSupport.this,getDoc());
             }
 
             return lineSet;
@@ -1938,20 +1945,20 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         cesEnv().removePropertyChangeListener(getListener());
         callNotifyUnmodified();
 
-        if (doc != null) {
-            doc.removeUndoableEditListener(getUndoRedo());
-            addRemoveDocListener(doc, false);
+        if (getDoc() != null) {
+            getDoc().removeUndoableEditListener(getUndoRedo());
+            addRemoveDocListener(getDoc(), false);
         }
 
         if (positionManager != null) {
             positionManager.documentClosed();
 
             documentStatus = DOCUMENT_NO;
-            fireDocumentChange(doc, true);
+            fireDocumentChange(getDoc(), true);
         }
 
         documentStatus = DOCUMENT_NO;
-        doc = null;
+        setDoc(null, false);
         kit = null;
 
         getUndoRedo().discardAllEdits();
@@ -1970,7 +1977,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                 return;
             }
 
-            d = doc; // used with reload dialog - should not be null
+            d = getDoc(); // used with reload dialog - should not be null
         }
 
         if (!doReload && !reloadDialogOpened) {
@@ -2309,12 +2316,58 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         ERR.log(Level.FINE, null, new Exception("Setting to modified: " + alreadyModified));
 
         this.alreadyModified = alreadyModified;
+        this.doc.setStrong(alreadyModified);
     }
 
+    private StyledDocument getDoc() {
+        Object o = doc;
+        if (o instanceof WeakReference) {
+            WeakReference<?> w = (WeakReference<?>)o;
+            return (StyledDocument)w.get();
+        }
+        return null;
+    }
+
+    private void setDoc(StyledDocument doc, boolean strong) {
+        if (doc == null) {
+            this.doc = null;
+            return;
+        }
+        this.doc = new StrongRef(doc, strong);
+    }
     //
     // Interfaces to abstract away from the DataSystem and FileSystem level
     //
 
+
+    
+    private final class StrongRef extends WeakReference<StyledDocument> 
+    implements Runnable {
+        private StyledDocument doc;
+        
+        public StrongRef(StyledDocument doc, boolean strong) {
+            super(doc, org.openide.util.Utilities.activeReferenceQueue());
+            if (strong) {
+                this.doc = doc;
+            }
+        }
+        @Override
+        public StyledDocument get() {
+            return doc != null ? doc : super.get();
+        }
+
+        public void run() {
+            closeDocument();
+        }
+
+        private void setStrong(boolean alreadyModified) {
+            if (alreadyModified) {
+                this.doc = super.get();
+            } else {
+                this.doc = null;
+            }
+        }
+    } // end of StrongRef
     /** Interface for providing data for the support and also
     * locking the source of data.
     */
@@ -2516,7 +2569,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                 if (!inWriteAccess) {
                                     inWriteAccess = true;
 
-                                    StyledDocument sd = doc;
+                                    StyledDocument sd = getDoc();
 
                                     if (sd == null) {
                                         return;
@@ -2533,6 +2586,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                 checkReload((time == null) || !isModified());
                             }
                         }
+                    
                     );
                 }
             }
@@ -2553,12 +2607,12 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             * This should prevent firing of insertUpdate() during load (or reload)
             * which can prevent dedloks that sometimes occured during file reload.
             */
-            addRemoveDocListener(doc, false);
+            addRemoveDocListener(getDoc(), false);
 
             try {
                 loadExc = null;
                 LOCAL_LOAD_TASK.set(true);
-                loadDocument(kit, doc);
+                loadDocument(kit,getDoc());
             } catch (IOException e) {
                 loadExc = e;
                 throw new DelegateIOExc(e);
@@ -2578,7 +2632,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             getUndoRedo().undoableEditHappened(new UndoableEditEvent(this, new BeforeSaveEdit(lastSaveTime)));
 
             // Start listening on changes in document
-            addRemoveDocListener(doc, true);
+            addRemoveDocListener(getDoc(), true);
         }
 
         //        }

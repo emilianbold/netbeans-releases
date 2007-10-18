@@ -924,6 +924,7 @@ public abstract class DocumentLine extends Line {
          * and if the line exist in the list, notify it about being edited. */
         void linesChanged(int startLineNumber, int endLineNumber, DocumentEvent p0) {
             List changedLines = getLinesFromRange(startLineNumber, endLineNumber);
+            StyledDocument doc = listener.support.getDocument();
 
             for (Iterator it = changedLines.iterator(); it.hasNext();) {
                 Line line = (Line) it.next();
@@ -932,8 +933,8 @@ public abstract class DocumentLine extends Line {
 
                 // revalidate all parts attached to this line
                 // that they are still part of the line
-                if (line instanceof DocumentLine) {
-                    ((DocumentLine) line).notifyChange(p0, this, listener.doc);
+                if (doc != null && line instanceof DocumentLine) {
+                    ((DocumentLine) line).notifyChange(p0, this, doc);
                 }
             }
         }
@@ -996,9 +997,7 @@ public abstract class DocumentLine extends Line {
         */
         public Line getOriginal(int line) throws IndexOutOfBoundsException {
             int newLine = listener.getLine(line);
-            int offset = NbDocument.findLineOffset(listener.doc, newLine);
-
-            return safelyRegisterLine(createLine(offset));
+            return safelyRegisterLine(createLine(offset(newLine)));
         }
 
         public int getOriginalLineNumber(Line line) {
@@ -1017,9 +1016,14 @@ public abstract class DocumentLine extends Line {
         * @exception IndexOutOfBoundsException if <code>line</code> is invalid.
         */
         public Line getCurrent(int line) throws IndexOutOfBoundsException {
-            int offset = NbDocument.findLineOffset(listener.doc, line);
 
-            return safelyRegisterLine(createLine(offset));
+            return safelyRegisterLine(createLine(offset(line)));
+        }
+        
+        private int offset(int line) {
+            StyledDocument doc = listener.support.getDocument();
+            int offset = doc == null ? 0 : NbDocument.findLineOffset(doc, line);
+            return offset;
         }
 
         /** Creates a {@link Line} for a given offset.
@@ -1045,9 +1049,13 @@ public abstract class DocumentLine extends Line {
                     result = DocumentLine.Set.super.registerLine(line);
                 }
             }
-
+            StyledDocument doc = listener.support.getDocument();
             DocumentRenderer renderer = new DocumentRenderer();
-            listener.doc.render(renderer);
+            if (doc != null) {
+                doc.render(renderer);
+            } else {
+                renderer.run();
+            }
 
             return renderer.result;
         }
