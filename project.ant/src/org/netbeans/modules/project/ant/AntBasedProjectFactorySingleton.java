@@ -191,7 +191,9 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory {
         AntProjectHelper helper = HELPER_CALLBACK.createHelper(projectDirectory, projectXml, state, provider);
         Project project = provider.createProject(helper);
         project2Helper.put(project, new WeakReference<AntProjectHelper>(helper));
-        helper2Project.put(helper, new WeakReference<Project>(project));
+        synchronized (helper2Project) {
+            helper2Project.put(helper, new WeakReference<Project>(project));
+        }
         List<Reference<AntProjectHelper>> l = type2Projects.get(provider);
         
         if (l == null) {
@@ -220,7 +222,10 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory {
      * @return the corresponding project
      */
     public static Project getProjectFor(AntProjectHelper helper) {
-        Reference<Project> projectRef = helper2Project.get(helper);
+        Reference<Project> projectRef;
+        synchronized (helper2Project) {
+            projectRef = helper2Project.get(helper);
+        }
         assert projectRef != null : "Expecting a Project reference for " + helper;
         Project p = projectRef.get();
         assert p != null : "Expecting a non-null Project for " + helper;
