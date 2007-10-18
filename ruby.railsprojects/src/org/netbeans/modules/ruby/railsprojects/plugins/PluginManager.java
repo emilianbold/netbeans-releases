@@ -207,7 +207,7 @@ public class PluginManager {
         }
         
         String[] args = argList.toArray(new String[argList.size()]);
-        boolean ok = pluginRunner("list", null, false, null, null, null, null, null, lines, args); // NOI18N
+        boolean ok = pluginRunner("list", null, null, lines, args); // NOI18N
         
         if (ok) {
             parsePluginList(lines, list, local);
@@ -279,8 +279,6 @@ public class PluginManager {
         Cursor busy = Utilities.createProgressCursor(parent);
         parent.setCursor(busy);
         
-        final ProgressHandle progressHandle = null;
-        final boolean interactive = true;
         final JButton closeButton = new JButton(NbBundle.getMessage(PluginManager.class, "CTL_Close"));
         final JButton cancelButton =
                 new JButton(NbBundle.getMessage(PluginManager.class, "CTL_Cancel"));
@@ -313,9 +311,7 @@ public class PluginManager {
             public void run() {
                 try {
                     boolean succeeded =
-                            pluginRunner(command, progressHandle, interactive, description,
-                            successMessage, failureMessage, progress, processHolder, lines,
-                            commandArgs);
+                            pluginRunner(command, progress, processHolder, lines, commandArgs);
                     
                     closeButton.setEnabled(true);
                     cancelButton.setEnabled(false);
@@ -350,10 +346,8 @@ public class PluginManager {
         }
     }
     
-    private boolean pluginRunner(String command, ProgressHandle progressHandle, boolean interactive,
-            String description, String successMessage, String failureMessage,
-            PluginProgressPanel progressPanel, Process[] processHolder, List<String> lines,
-            String... commandArgs) {
+    private boolean pluginRunner(String command, PluginProgressPanel progressPanel,
+            Process[] processHolder, List<String> lines, String... commandArgs) {
         // Install the given plugin
         String pluginCmd = "script" + File.separator + "plugin"; // NOI18N
         
@@ -508,7 +502,6 @@ public class PluginManager {
      * @param plugin Plugin description for the plugin to be installed. Only the name is relevant.
      * @param parent For asynchronous tasks, provide a parent JComponent that will have progress dialogs added,
      *   a possible cursor change, etc.
-     * @param progressHandle If the task is not asynchronous, use the given handle for progress notification.
      * @param asynchronous If true, run the plugin task asynchronously - returning immediately and running the plugin task
      *    in a background thread. A progress bar and message will be displayed (along with the option to view the
      *    plugin output). If the exit code is normal, the completion task will be run at the end.
@@ -517,8 +510,8 @@ public class PluginManager {
      * @param ri If true, generate ri data as part of the installation
      * @param version If non null, install the specified version rather than the latest available version
      */
-    public boolean install(Plugin[] plugins, JComponent parent, ProgressHandle progressHandle,
-           String sourceRepository, boolean svnExternals, boolean svnCheckout, String revision, boolean asynchronous,
+    public boolean install(Plugin[] plugins, JComponent parent, String sourceRepository,
+            boolean svnExternals, boolean svnCheckout, String revision, boolean asynchronous,
             Runnable asyncCompletionTask) {
         // Install the given plugin
         List<String> argList = new ArrayList<String>();
@@ -557,10 +550,7 @@ public class PluginManager {
             
             return false;
         } else {
-            boolean ok =
-                    pluginRunner(pluginCmd, progressHandle, true, title, success, failure, null, null, null,
-                    args);
-            
+            boolean ok = pluginRunner(pluginCmd, null, null, null, args);
             return ok;
         }
     }
@@ -571,13 +561,12 @@ public class PluginManager {
      * @param plugin Plugin description for the plugin to be uninstalled. Only the name is relevant.
      * @param parent For asynchronous tasks, provide a parent JComponent that will have progress dialogs added,
      *   a possible cursor change, etc.
-     * @param progressHandle If the task is not asynchronous, use the given handle for progress notification.
      * @param asynchronous If true, run the plugin task asynchronously - returning immediately and running the plugin task
      *    in a background thread. A progress bar and message will be displayed (along with the option to view the
      *    plugin output). If the exit code is normal, the completion task will be run at the end.
      * @param asyncCompletionTask If asynchronous is true and the plugin task completes normally, this task will be run at the end.
      */
-    public boolean uninstall(Plugin[] plugins, String sourceRepository, JComponent parent, ProgressHandle progressHandle,
+    public boolean uninstall(Plugin[] plugins, String sourceRepository, JComponent parent,
             boolean asynchronous, Runnable asyncCompletionTask) {
         // Install the given plugin
         List<String> argList = new ArrayList<String>();
@@ -614,8 +603,7 @@ public class PluginManager {
             for (Plugin plugin : plugins) {
                 args[nameIndex] = plugin.getName();
                 
-                if (!pluginRunner(pluginCmd, progressHandle, true, title, success, failure, null, null,
-                        null, args)) {
+                if (!pluginRunner(pluginCmd, null, null, null, args)) {
                     ok = false;
                 }
             }
@@ -631,13 +619,12 @@ public class PluginManager {
      *    will be updated.
      * @param parent For asynchronous tasks, provide a parent JComponent that will have progress dialogs added,
      *   a possible cursor change, etc.
-     * @param progressHandle If the task is not asynchronous, use the given handle for progress notification.
      * @param asynchronous If true, run the plugin task asynchronously - returning immediately and running the plugin task
      *    in a background thread. A progress bar and message will be displayed (along with the option to view the
      *    plugin output). If the exit code is normal, the completion task will be run at the end.
      * @param asyncCompletionTask If asynchronous is true and the plugin task completes normally, this task will be run at the end.
      */
-    public boolean update(Plugin[] plugins, String revision, String sourceRepository, JComponent parent, ProgressHandle progressHandle,
+    public boolean update(Plugin[] plugins, String revision, String sourceRepository, JComponent parent,
             boolean asynchronous, Runnable asyncCompletionTask) {
         // Install the given plugin
         List<String> argList = new ArrayList<String>();
@@ -676,10 +663,7 @@ public class PluginManager {
             
             return false;
         } else {
-            boolean ok =
-                    pluginRunner(pluginCmd, progressHandle, true, title, success, failure, null, null, null,
-                    args);
-            
+            boolean ok = pluginRunner(pluginCmd, null, null, null, args);
             return ok;
         }
     }
@@ -718,10 +702,7 @@ public class PluginManager {
             
             return false;
         } else {
-            boolean ok =
-                    pluginRunner(pluginCmd, progressHandle, true, title, success, failure, null, null, null,
-                    args);
-            
+            boolean ok = pluginRunner(pluginCmd, null, null, null, args);
             return ok;
         }
     }
@@ -769,7 +750,7 @@ public class PluginManager {
         argList.add("--list"); // NOI18N
         
         String[] args = argList.toArray(new String[argList.size()]);
-        boolean ok = pluginRunner("discover", null, false, null, null, null, null, null, lines, args); // NOI18N
+        boolean ok = pluginRunner("discover", null, null, lines, args); // NOI18N
 
         if (ok) {
             return lines;
@@ -787,7 +768,7 @@ public class PluginManager {
         //argList.add("--check"); // NOI18N
         
         String[] args = argList.toArray(new String[argList.size()]);
-        boolean ok = pluginRunner("sources", null, false, null, null, null, null, null, lines, args); // NOI18N
+        boolean ok = pluginRunner("sources", null, null, lines, args); // NOI18N
 
         if (ok) {
             return lines;

@@ -469,254 +469,254 @@ public class PluginPanel extends javax.swing.JPanel {
         }
     }// </editor-fold>//GEN-END:initComponents
 
-private void reloadNewButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reloadNewButtonActionPerformed
-    refreshNew();
-}//GEN-LAST:event_reloadNewButtonActionPerformed
-
-private void addUrlButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addUrlButtonActionPerformed
-    NewUrlPanel panel = new NewUrlPanel();
-
-    DialogDescriptor descriptor = new DialogDescriptor(panel, NbBundle.getMessage(PluginPanel.class,
-            "AddUrl")); // NOI18N
-    Dialog dlg = null;
-    //descriptor.setModal(true);
-    try {
-        dlg = DialogDisplayer.getDefault().createDialog(descriptor);
-        dlg.setVisible(true);
-    } finally {
-        if (dlg != null)
-            dlg.dispose();
-    }
-
-    if (descriptor.getValue() == DialogDescriptor.OK_OPTION) {
-        String url = panel.getUrl();
-        if (url != null) {
-            pluginManager.addRepositories(new String[] { url }, this, null, true, new RepositoryListRefresher(repositoryList, true));
-            newModified = true;
-            repositoriesModified = true;
-        }
-    }
-}//GEN-LAST:event_addUrlButtonActionPerformed
-
-private void proxyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_proxyButtonActionPerformed
-    OptionsDisplayer.getDefault().open("General"); // NOI18Nd
-}//GEN-LAST:event_proxyButtonActionPerformed
-
-private void discoverButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_discoverButtonActionPerformed
-    // Bring up a selection list
-    String wait = getWaitMsg();
-    RepositorySelectionPanel panel = new RepositorySelectionPanel();
-    final JList list = panel.getList();
-    list.getAccessibleContext().setAccessibleName(
-            NbBundle.getMessage(PluginPanel.class, "SelectRepos.List"));
-    list.getAccessibleContext().setAccessibleDescription(
-            NbBundle.getMessage(PluginPanel.class, "SelectRepos.List.AccessibleContext.accessibleDescription"));
-    list.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-
-    DialogDescriptor descriptor = new DialogDescriptor(panel, NbBundle.getMessage(PluginPanel.class,
-            "SelectRepos")); // NOI18N
-    Dialog dlg = null;
-    //descriptor.setModal(true);
-    try {
-        dlg = DialogDisplayer.getDefault().createDialog(descriptor);
-        dlg.getAccessibleContext().setAccessibleDescription(
-                NbBundle.getMessage(PluginPanel.class, "SelectRepos.AccessibleContext.accessibleDescription"));
-        refreshRepositoryList(null, true, list, false);
-        
-        dlg.setVisible(true);
-    } finally {
-        if (dlg != null)
-            dlg.dispose();
-    }
-
-    if (descriptor.getValue() == DialogDescriptor.OK_OPTION) {
-        Object[] urls = list.getSelectedValues();
-        if (urls != null && urls.length > 0 && !wait.equals(urls[0])) {
-            String[] reps = new String[urls.length];
-            for (int i = 0; i < urls.length; i++) {
-                reps[i] = urls[i].toString();
-            }
-            pluginManager.addRepositories(reps, this, null, true, new RepositoryListRefresher(repositoryList, true));
-            newModified = true;
-            repositoriesModified = true;
-        }
-
-    }
-}//GEN-LAST:event_discoverButtonActionPerformed
-
-private void searchNewTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchNewTextActionPerformed
-    refreshPluginList(getPluginFilter(false), false, newList, false);
-}//GEN-LAST:event_searchNewTextActionPerformed
-
-private void searchReposTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchReposTextActionPerformed
-    refreshRepositoryList(getRepositoryFilter(true), false, repositoryList, true);
-}//GEN-LAST:event_searchReposTextActionPerformed
-
-private void reloadReposButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reloadReposButtonActionPerformed
-    refreshRepositories();
-}//GEN-LAST:event_reloadReposButtonActionPerformed
-
-private void unregisterButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_unregisterButtonActionPerformed
-    int[] indices = repositoryList.getSelectedIndices();
-    List<String> repositories = new ArrayList<String>();
-    if (indices != null) {
-        String wait = getWaitMsg();
-        for (int index : indices) {
-            assert index >= 0;
-            String o = repositoryList.getModel().getElementAt(index).toString();
-            if (!wait.equals(o)) {
-                repositories.add(o);
-            }
-        }
-    }
-
-    if (repositories.size() > 0) {
-        Runnable completionTask = new RepositoryListRefresher(repositoryList, true);
-        pluginManager.removeRepositories(repositories.toArray(new String[repositories.size()]), this, null, true, completionTask);
-
-        repositoriesModified = true;
-        newModified = true;
-    }
-}//GEN-LAST:event_unregisterButtonActionPerformed
-
-private void repositoryPanelComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_repositoryPanelComponentShown
-    // Make sure the list is shown
-    if (!repositoriesInitialized) {
-        repositoriesInitialized = true;
-        repositoryList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        repositoryList.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-            public void valueChanged(ListSelectionEvent ev) {
-                if (ev.getValueIsAdjusting()) {
-                    return;
-                }
-                int index = repositoryList.getSelectedIndex();
-                unregisterButton.setEnabled(index != -1);
-            }
-        });
-        
-        repositoriesModified = true;
-    }
-    
-    if (repositoriesModified) {
-        refreshRepositories();
-    }
-}//GEN-LAST:event_repositoryPanelComponentShown
-
-private void newPanelComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_newPanelComponentShown
-    // Make sure the list is shown
-    if (!newInitialized) {
-        newInitialized = true;
-        newList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        newList.getSelectionModel().addListSelectionListener(new MyListSelectionListener(newList, new JButton[] { installButton }));
-        newModified = true;
-    }
-    
-    if (newModified) {
+    private void reloadNewButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reloadNewButtonActionPerformed
         refreshNew();
-    }
-}//GEN-LAST:event_newPanelComponentShown
+    }//GEN-LAST:event_reloadNewButtonActionPerformed
 
-private void installButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_installButtonActionPerformed
-    int[] indices = newList.getSelectedIndices();
-    List<Plugin> plugins = new ArrayList<Plugin>();
-    for (int index : indices) {
-        Object o = newList.getModel().getElementAt(index);
-        if (o instanceof Plugin) { // Could be "Please Wait..." String
-            Plugin plugin = (Plugin)o;
-            plugins.add(plugin);
+    private void addUrlButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addUrlButtonActionPerformed
+        NewUrlPanel panel = new NewUrlPanel();
+
+        DialogDescriptor descriptor = new DialogDescriptor(panel, NbBundle.getMessage(PluginPanel.class,
+                "AddUrl")); // NOI18N
+        Dialog dlg = null;
+        //descriptor.setModal(true);
+        try {
+            dlg = DialogDisplayer.getDefault().createDialog(descriptor);
+            dlg.setVisible(true);
+        } finally {
+            if (dlg != null)
+                dlg.dispose();
         }
-    }
-    
-    if (plugins.size() > 0) {
-        for (Plugin chosen : plugins) {
-            // Get some information about the chosen plugin
-            InstallationSettingsPanel panel = new InstallationSettingsPanel(chosen);
-            DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(PluginPanel.class, "ChoosePluginSettings"));
-            dd.setOptionType(NotifyDescriptor.OK_CANCEL_OPTION);
-            dd.setModal(true);
-            dd.setHelpCtx(new HelpCtx(InstallationSettingsPanel.class));
-            Object result = DialogDisplayer.getDefault().notify(dd);
-            if (result.equals(NotifyDescriptor.OK_OPTION)) {
-                Plugin plugin = new Plugin(panel.getPluginName(), null);
-                // XXX Do I really need to refresh it right way?
-                PluginListRefresher completionTask = new PluginListRefresher(newList, true);
-                boolean changed = pluginManager.install(new Plugin[] { plugin }, this, null, null, panel.isSvnExternals(), panel.isSvnCheckout(), panel.getRevision(), 
-                        true, completionTask);
-                installedModified = installedModified || changed;
+
+        if (descriptor.getValue() == DialogDescriptor.OK_OPTION) {
+            String url = panel.getUrl();
+            if (url != null) {
+                pluginManager.addRepositories(new String[] { url }, this, null, true, new RepositoryListRefresher(repositoryList, true));
+                newModified = true;
+                repositoriesModified = true;
             }
         }
-    }
+    }//GEN-LAST:event_addUrlButtonActionPerformed
 
-}//GEN-LAST:event_installButtonActionPerformed
+    private void proxyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_proxyButtonActionPerformed
+        OptionsDisplayer.getDefault().open("General"); // NOI18Nd
+    }//GEN-LAST:event_proxyButtonActionPerformed
 
-private void instSearchTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_instSearchTextActionPerformed
-    refreshPluginList(getPluginFilter(true), false, installedList, true);
-}//GEN-LAST:event_instSearchTextActionPerformed
+    private void discoverButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_discoverButtonActionPerformed
+        // Bring up a selection list
+        String wait = getWaitMsg();
+        RepositorySelectionPanel panel = new RepositorySelectionPanel();
+        final JList list = panel.getList();
+        list.getAccessibleContext().setAccessibleName(
+                NbBundle.getMessage(PluginPanel.class, "SelectRepos.List"));
+        list.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(PluginPanel.class, "SelectRepos.List.AccessibleContext.accessibleDescription"));
+        list.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 
-private void updateAllButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateAllButtonActionPerformed
-    Runnable completionTask = new PluginListRefresher(installedList, true);
-    pluginManager.update(null, null, null, this, null, true, completionTask);
-    installedModified = true; 
-}//GEN-LAST:event_updateAllButtonActionPerformed
-
-private void updateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateButtonActionPerformed
-    int[] indices = installedList.getSelectedIndices();
-    List<Plugin> plugins = new ArrayList<Plugin>();
-    if (indices != null) {
-        for (int index : indices) {
-            assert index >= 0;
-            Object o = installedList.getModel().getElementAt(index);
-            if (o instanceof Plugin) { // Could be "Please Wait..." String
-                Plugin plugin = (Plugin)o;
-                plugins.add(plugin);
-            }            
+        DialogDescriptor descriptor = new DialogDescriptor(panel, NbBundle.getMessage(PluginPanel.class,
+                "SelectRepos")); // NOI18N
+        Dialog dlg = null;
+        //descriptor.setModal(true);
+        try {
+            dlg = DialogDisplayer.getDefault().createDialog(descriptor);
+            dlg.getAccessibleContext().setAccessibleDescription(
+                    NbBundle.getMessage(PluginPanel.class, "SelectRepos.AccessibleContext.accessibleDescription"));
+            refreshRepositoryList(null, true, list, false);
+            
+            dlg.setVisible(true);
+        } finally {
+            if (dlg != null)
+                dlg.dispose();
         }
-    }
-    if (plugins.size() > 0) {
-        Runnable completionTask = new PluginListRefresher(installedList, true);
-        pluginManager.update(plugins.toArray(new Plugin[plugins.size()]), null, null, this, null, true, completionTask);
-        installedModified = true;
-    }
-}//GEN-LAST:event_updateButtonActionPerformed
 
-private void uninstallButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_uninstallButtonActionPerformed
-    int[] indices = installedList.getSelectedIndices();
-    List<Plugin> plugins = new ArrayList<Plugin>();
-    if (indices != null) {
-        for (int index : indices) {
-            assert index >= 0;
-            Object o = installedList.getModel().getElementAt(index);
-            if (o instanceof Plugin) { // Could be "Please Wait..." String
-                Plugin plugin = (Plugin)o;
-                plugins.add(plugin);
-            }            
+        if (descriptor.getValue() == DialogDescriptor.OK_OPTION) {
+            Object[] urls = list.getSelectedValues();
+            if (urls != null && urls.length > 0 && !wait.equals(urls[0])) {
+                String[] reps = new String[urls.length];
+                for (int i = 0; i < urls.length; i++) {
+                    reps[i] = urls[i].toString();
+                }
+                pluginManager.addRepositories(reps, this, null, true, new RepositoryListRefresher(repositoryList, true));
+                newModified = true;
+                repositoriesModified = true;
+            }
+
         }
-    }
-    if (plugins.size() > 0) {
-        Runnable completionTask = new PluginListRefresher(installedList, true);
-        pluginManager.uninstall(plugins.toArray(new Plugin[plugins.size()]), null, this, null, true, completionTask);
-        installedModified = true;
-    }
-}//GEN-LAST:event_uninstallButtonActionPerformed
+    }//GEN-LAST:event_discoverButtonActionPerformed
 
-private void reloadInstalledButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reloadInstalledButtonActionPerformed
-    refreshInstalled();
-}//GEN-LAST:event_reloadInstalledButtonActionPerformed
+    private void searchNewTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchNewTextActionPerformed
+        refreshPluginList(getPluginFilter(false), false, newList, false);
+    }//GEN-LAST:event_searchNewTextActionPerformed
 
-private void installedPanelComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_installedPanelComponentShown
-    // Make sure the list is shown
-    if (!installedInitialized) {
-        installedInitialized = true;
-        installedList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        installedList.getSelectionModel().addListSelectionListener(new MyListSelectionListener(installedList, new JButton[] { updateButton, uninstallButton }));
+    private void searchReposTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchReposTextActionPerformed
+        refreshRepositoryList(getRepositoryFilter(true), false, repositoryList, true);
+    }//GEN-LAST:event_searchReposTextActionPerformed
+
+    private void reloadReposButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reloadReposButtonActionPerformed
+        refreshRepositories();
+    }//GEN-LAST:event_reloadReposButtonActionPerformed
+
+    private void unregisterButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_unregisterButtonActionPerformed
+        int[] indices = repositoryList.getSelectedIndices();
+        List<String> repositories = new ArrayList<String>();
+        if (indices != null) {
+            String wait = getWaitMsg();
+            for (int index : indices) {
+                assert index >= 0;
+                String o = repositoryList.getModel().getElementAt(index).toString();
+                if (!wait.equals(o)) {
+                    repositories.add(o);
+                }
+            }
+        }
+
+        if (repositories.size() > 0) {
+            Runnable completionTask = new RepositoryListRefresher(repositoryList, true);
+            pluginManager.removeRepositories(repositories.toArray(new String[repositories.size()]), this, null, true, completionTask);
+
+            repositoriesModified = true;
+            newModified = true;
+        }
+    }//GEN-LAST:event_unregisterButtonActionPerformed
+
+    private void repositoryPanelComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_repositoryPanelComponentShown
+        // Make sure the list is shown
+        if (!repositoriesInitialized) {
+            repositoriesInitialized = true;
+            repositoryList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+            repositoryList.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+                public void valueChanged(ListSelectionEvent ev) {
+                    if (ev.getValueIsAdjusting()) {
+                        return;
+                    }
+                    int index = repositoryList.getSelectedIndex();
+                    unregisterButton.setEnabled(index != -1);
+                }
+            });
+            
+            repositoriesModified = true;
+        }
         
-        installedModified = true;
-    }
-    
-    if (installedModified) {
+        if (repositoriesModified) {
+            refreshRepositories();
+        }
+    }//GEN-LAST:event_repositoryPanelComponentShown
+
+    private void newPanelComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_newPanelComponentShown
+        // Make sure the list is shown
+        if (!newInitialized) {
+            newInitialized = true;
+            newList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+            newList.getSelectionModel().addListSelectionListener(new MyListSelectionListener(newList, new JButton[] { installButton }));
+            newModified = true;
+        }
+        
+        if (newModified) {
+            refreshNew();
+        }
+    }//GEN-LAST:event_newPanelComponentShown
+
+    private void installButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_installButtonActionPerformed
+        int[] indices = newList.getSelectedIndices();
+        List<Plugin> plugins = new ArrayList<Plugin>();
+        for (int index : indices) {
+            Object o = newList.getModel().getElementAt(index);
+            if (o instanceof Plugin) { // Could be "Please Wait..." String
+                Plugin plugin = (Plugin)o;
+                plugins.add(plugin);
+            }
+        }
+        
+        if (plugins.size() > 0) {
+            for (Plugin chosen : plugins) {
+                // Get some information about the chosen plugin
+                InstallationSettingsPanel panel = new InstallationSettingsPanel(chosen);
+                DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(PluginPanel.class, "ChoosePluginSettings"));
+                dd.setOptionType(NotifyDescriptor.OK_CANCEL_OPTION);
+                dd.setModal(true);
+                dd.setHelpCtx(new HelpCtx(InstallationSettingsPanel.class));
+                Object result = DialogDisplayer.getDefault().notify(dd);
+                if (result.equals(NotifyDescriptor.OK_OPTION)) {
+                    Plugin plugin = new Plugin(panel.getPluginName(), null);
+                    // XXX Do I really need to refresh it right way?
+                    PluginListRefresher completionTask = new PluginListRefresher(newList, true);
+                    boolean changed = pluginManager.install(new Plugin[] { plugin }, this, null, panel.isSvnExternals(), panel.isSvnCheckout(), panel.getRevision(), 
+                            true, completionTask);
+                    installedModified = installedModified || changed;
+                }
+            }
+        }
+
+    }//GEN-LAST:event_installButtonActionPerformed
+
+    private void instSearchTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_instSearchTextActionPerformed
+        refreshPluginList(getPluginFilter(true), false, installedList, true);
+    }//GEN-LAST:event_instSearchTextActionPerformed
+
+    private void updateAllButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateAllButtonActionPerformed
+        Runnable completionTask = new PluginListRefresher(installedList, true);
+        pluginManager.update(null, null, null, this, true, completionTask);
+        installedModified = true; 
+    }//GEN-LAST:event_updateAllButtonActionPerformed
+
+    private void updateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateButtonActionPerformed
+        int[] indices = installedList.getSelectedIndices();
+        List<Plugin> plugins = new ArrayList<Plugin>();
+        if (indices != null) {
+            for (int index : indices) {
+                assert index >= 0;
+                Object o = installedList.getModel().getElementAt(index);
+                if (o instanceof Plugin) { // Could be "Please Wait..." String
+                    Plugin plugin = (Plugin)o;
+                    plugins.add(plugin);
+                }            
+            }
+        }
+        if (plugins.size() > 0) {
+            Runnable completionTask = new PluginListRefresher(installedList, true);
+            pluginManager.update(plugins.toArray(new Plugin[plugins.size()]), null, null, this, true, completionTask);
+            installedModified = true;
+        }
+    }//GEN-LAST:event_updateButtonActionPerformed
+
+    private void uninstallButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_uninstallButtonActionPerformed
+        int[] indices = installedList.getSelectedIndices();
+        List<Plugin> plugins = new ArrayList<Plugin>();
+        if (indices != null) {
+            for (int index : indices) {
+                assert index >= 0;
+                Object o = installedList.getModel().getElementAt(index);
+                if (o instanceof Plugin) { // Could be "Please Wait..." String
+                    Plugin plugin = (Plugin)o;
+                    plugins.add(plugin);
+                }            
+            }
+        }
+        if (plugins.size() > 0) {
+            Runnable completionTask = new PluginListRefresher(installedList, true);
+            pluginManager.uninstall(plugins.toArray(new Plugin[plugins.size()]), null, this, true, completionTask);
+            installedModified = true;
+        }
+    }//GEN-LAST:event_uninstallButtonActionPerformed
+
+    private void reloadInstalledButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reloadInstalledButtonActionPerformed
         refreshInstalled();
-    }
-}//GEN-LAST:event_installedPanelComponentShown
+    }//GEN-LAST:event_reloadInstalledButtonActionPerformed
+
+    private void installedPanelComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_installedPanelComponentShown
+        // Make sure the list is shown
+        if (!installedInitialized) {
+            installedInitialized = true;
+            installedList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+            installedList.getSelectionModel().addListSelectionListener(new MyListSelectionListener(installedList, new JButton[] { updateButton, uninstallButton }));
+            
+            installedModified = true;
+        }
+        
+        if (installedModified) {
+            refreshInstalled();
+        }
+    }//GEN-LAST:event_installedPanelComponentShown
 
     private String getWaitMsg() {
         return NbBundle.getMessage(PluginPanel.class, "PleaseWait");
