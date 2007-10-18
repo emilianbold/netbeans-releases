@@ -308,8 +308,8 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
      * @return children
      */
     private Children getParentChildren() {
-        return (this.parent instanceof ChildrenArray) ? ((ChildrenArray) this.parent).getChildren()
-                                                      : (Children) this.parent;
+        Object p = this.parent;
+        return (p instanceof ChildrenArray) ? ((ChildrenArray)p).getChildren() : (Children)p;
     }
 
     /** Method that allows Children to change the parent children of
