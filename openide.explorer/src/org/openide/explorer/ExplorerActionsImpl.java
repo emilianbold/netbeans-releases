@@ -506,15 +506,20 @@ final class ExplorerActionsImpl {
 
         public void actionPerformed(ActionEvent ev) {
             Transferable trans = null;
-            Node[] sel = manager.getSelectedNodes();
+            ExplorerManager em = manager;
+            if (em == null) {
+                return;
+            }
+            Node[] sel = em.getSelectedNodes();
 
             if (sel.length != 1) {
                 Transferable[] arrayTrans = new Transferable[sel.length];
 
-                for (int i = 0; i < sel.length; i++)
+                for (int i = 0; i < sel.length; i++) {
                     if ((arrayTrans[i] = getTransferableOwner(sel[i])) == null) {
                         return;
                     }
+                }
 
                 trans = ExternalDragAndDrop.maybeAddExternalFileDnd( new ExTransferable.Multi(arrayTrans) );
             } else {
