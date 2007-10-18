@@ -90,7 +90,7 @@ public final class RecentProjects {
     }
     
     /**
-     * Gets simple info (@link UnloadedProjectInformation) about recent projects in IDE.
+     * Gets simple info {@link org.netbeans.modules.project.ui.api.UnloadedProjectInformation} about recent projects in IDE.
      * Project in the list might not exist or might not be valid e.g. in case when
      * project was deleted or changed. It's responsibility of the user of the API
      * to make sure the project exists and is valid.
