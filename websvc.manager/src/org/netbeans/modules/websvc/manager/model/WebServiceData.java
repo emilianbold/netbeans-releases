@@ -44,6 +44,7 @@ package org.netbeans.modules.websvc.manager.model;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.websvc.manager.api.WebServiceDescriptor;
@@ -165,17 +166,33 @@ public class WebServiceData {
         return resolved;
     }
     
-    private String derivePackageName(String wsdlURL, String subPackage) {
-        if (wsdlURL.startsWith("file:")) {
-            return DEFAULT_PACKAGE_NAME + ((subPackage != null) ? subPackage : "");
+    static String getDefaultPackageName(String subPackage) {
+        return DEFAULT_PACKAGE_NAME + ((subPackage != null) ? subPackage : "");
+    }
+    
+    static String derivePackageName(String wsdlURL, String subPackage) {
+        URL url = null;
+        try {
+            url = new URL(wsdlURL);
+        } catch(Exception ex) {
+            return getDefaultPackageName(subPackage);
         }
-        int iStart = wsdlURL.indexOf("://") + 3;
-        int iEnd = wsdlURL.indexOf('/', iStart);
-        String pakName = wsdlURL.substring(iStart, iEnd);
+        
+        if (url == null || url.getProtocol().equals("file") ||
+            url.getHost() == null || url.getHost().length() == 0 || 
+            url.getHost().equals("localhost") ||
+            Character.isDigit(url.getHost().charAt(0))) 
+        {
+            return getDefaultPackageName(subPackage);
+        }
+        
+        String pakName = url.getHost();
         String[] segments = pakName.split("\\.");
         StringBuilder sb = new StringBuilder(segments[segments.length - 1]);
-        sb.append('.');
-        sb.append(segments[segments.length - 2]);
+        if (segments.length > 1) {
+            sb.append('.');
+            sb.append(segments[segments.length - 2]);
+        }
         if (subPackage != null) {
             sb.append(".");
             sb.append(subPackage.toLowerCase());
