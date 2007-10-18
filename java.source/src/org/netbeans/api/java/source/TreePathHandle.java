@@ -370,7 +370,12 @@ public final class TreePathHandle {
             case ENUM_CONSTANT: return true;                                                                                                                                                                                   
             default: return false;                                                                                                                                                                                             
         }                                                                                                                                                                                                                      
-    }                                                                                                                                                                                                                          
+    }
+
+    @Override
+    public String toString() {
+        return "TreePathHandle[kind:" + kind + ", enclosingElement:" + enclosingElement + "]";
+    }
                                                                                                                                                                                                                                
     private static PositionRef createPositionRef(FileObject file, int position, Position.Bias bias) {
         try {
