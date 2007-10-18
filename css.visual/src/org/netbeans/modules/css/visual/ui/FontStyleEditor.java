@@ -87,6 +87,14 @@ public class FontStyleEditor extends StyleEditor {
     
     String temporaryFontSet = null;
     
+    private String currentFontFamily = null;
+    private String currentFontSize = null;
+    private String currentFontStyle = null;
+    private String currentFontWeight = null;
+    private String currentFontVariant = null;
+    private String currentFontColor = null;
+    private String currentFontDecoration = null;
+    
     /** Creates new form FontStyleEditor */
     public FontStyleEditor() {
         setName("fontStyleEditor"); //NOI18N
@@ -706,7 +714,9 @@ public class FontStyleEditor extends StyleEditor {
     private void setFontFamily(){
         PropertyData fontFamilyData = new PropertyData();
         fontFamilyData.setValue(fontChosenField.getText());
-        cssPropertyChangeSupport().firePropertyChange(CssProperties.FONT_FAMILY, null, fontFamilyData.toString());
+        String newValue = fontFamilyData.toString();
+        cssPropertyChangeSupport().firePropertyChange(CssProperties.FONT_FAMILY, currentFontFamily, newValue);
+        currentFontFamily = newValue;
     }
     
     private void setFontSize(){
@@ -714,35 +724,47 @@ public class FontStyleEditor extends StyleEditor {
         PropertyWithUnitData fontSizeData = new PropertyWithUnitData();
         fontSizeData.setUnit(fontSizeUnitCombo.getSelectedItem().toString());
         fontSizeData.setValue(fontSizeField.getText());
-        cssPropertyChangeSupport().firePropertyChange(CssProperties.FONT_SIZE, null, fontSizeData.toString());
+        String newValue = fontSizeData.toString();
+        cssPropertyChangeSupport().firePropertyChange(CssProperties.FONT_SIZE, currentFontSize, newValue);
+        currentFontSize = newValue;
     }
     
     private void setFontStyle(){
         PropertyData fontStyleData = new PropertyData();
         fontStyleData.setValue(fontStyleComboBox.getSelectedItem().toString());
-        cssPropertyChangeSupport().firePropertyChange(CssProperties.FONT_STYLE, null, fontStyleData.toString());
+        String newValue = fontStyleData.toString();
+        cssPropertyChangeSupport().firePropertyChange(CssProperties.FONT_STYLE, currentFontStyle, newValue);
+        currentFontStyle = newValue;
     }
     
     private void setFontWeight(){
         PropertyData fontWeightData = new PropertyData();
         fontWeightData.setValue(fontWeightComboBox.getSelectedItem().toString());
-        cssPropertyChangeSupport().firePropertyChange(CssProperties.FONT_WEIGHT, null, fontWeightData.toString());
+        String newValue = fontWeightData.toString();
+        cssPropertyChangeSupport().firePropertyChange(CssProperties.FONT_WEIGHT, currentFontWeight, newValue);
+        currentFontWeight = newValue;
     }
     
     private void setFontVariant(){
         PropertyData fontVariantData = new PropertyData();
         fontVariantData.setValue(fontVariantComboBox.getSelectedItem().toString());
-        cssPropertyChangeSupport().firePropertyChange(CssProperties.FONT_VARIANT, null, fontVariantData.toString());
+        String newValue = fontVariantData.toString();
+        cssPropertyChangeSupport().firePropertyChange(CssProperties.FONT_VARIANT, currentFontVariant, newValue);
+        currentFontVariant = newValue;
     }
     
     private void  setFontColor(){
         PropertyData fontColorData = new PropertyData();
         fontColorData.setValue(colorField.getColorString());
-        cssPropertyChangeSupport().firePropertyChange(CssProperties.COLOR, null, fontColorData.toString());
+        String newValue = fontColorData.toString();
+        cssPropertyChangeSupport().firePropertyChange(CssProperties.COLOR, currentFontColor, newValue);
+        currentFontColor = newValue;
     }
     
     private void  setTextDecoration(){
-        cssPropertyChangeSupport().firePropertyChange(CssProperties.TEXT_DECORATION, null, textDecorationData.toString());
+        String newValue = textDecorationData.toString();
+        cssPropertyChangeSupport().firePropertyChange(CssProperties.TEXT_DECORATION, currentFontDecoration, newValue);
+        currentFontDecoration = newValue;
     }
     
     
