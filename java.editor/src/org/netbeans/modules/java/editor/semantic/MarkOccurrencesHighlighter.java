@@ -87,6 +87,7 @@ import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -188,7 +189,7 @@ public class MarkOccurrencesHighlighter implements CancellableTask<CompilationIn
         }
         
         getHighlightsBag(doc).setHighlights(obag);
-        OccurrencesMarkProvider.get(doc).setOccurrences(OccurrencesMarkProvider.createMarks(doc, bag, ES_COLOR, "Mark Occurrences"));
+        OccurrencesMarkProvider.get(doc).setOccurrences(OccurrencesMarkProvider.createMarks(doc, bag, ES_COLOR, NbBundle.getMessage(MarkOccurrencesHighlighter.class, "LBL_ES_TOOLTIP")));
     }
     
     private boolean isIn(CompilationUnitTree cu, SourcePositions sp, Tree tree, int position) {
