@@ -898,8 +898,7 @@ public class CreateNewActionOperator extends JDialogOperator {
 
         ChooseClassOperator classOp = new ChooseClassOperator();
         JTreeOperator treeOp = classOp.treeTreeView();
-        treeOp.selectRow(0);
-        treeOp.selectPath(treeOp.findPath(path));
+        treeOp.clickOnPath(treeOp.findPath(path));
         classOp.ok();
     }
 }

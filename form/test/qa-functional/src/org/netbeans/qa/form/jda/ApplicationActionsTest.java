@@ -123,7 +123,6 @@ public class ApplicationActionsTest extends ExtJellyTestCase {
         new JButtonOperator(getTopComponent(), "New Action").pushNoBlock();  // NOI18N
         waitAMoment();
         
-        
         CreateNewActionOperator createOp = new CreateNewActionOperator();
         createOp.setMethodName(FOO_SIMPLEMETHOD);
 
@@ -154,7 +153,7 @@ public class ApplicationActionsTest extends ExtJellyTestCase {
         
         createOp.selectNode("Source Packages|" + getTestPackageName()
                 + "|" + getTestProjectName() + "View.java");  // NOI18N
-        
+
         createOp.setSmallIcon();
         NbDialogOperator iconOp = new NbDialogOperator("Select Icon");  // NOI18N
         new JComboBoxOperator(iconOp, 0).selectItem(1);
@@ -173,7 +172,7 @@ public class ApplicationActionsTest extends ExtJellyTestCase {
         
         ArrayList<String> lines = new ArrayList<String>();
         lines.add("public void FooSimpleMethod() {");  // NOI18N        
-        lines.add("@org.jdesktop.application.Action(enabledProperty=\"fooEnabledProp\", selectedProperty=\"fooSelectedProp\")"); // NOI18N
+        lines.add("@Action(enabledProperty = \"fooEnabledProp\", selectedProperty = \"fooSelectedProp\")"); // NOI18N
         lines.add("public void FooMethod() {");  // NOI18N
         lines.add("private boolean fooEnabledProp = false;");  // NOI18N
         lines.add("public boolean isFooEnabledProp() {");  // NOI18N
