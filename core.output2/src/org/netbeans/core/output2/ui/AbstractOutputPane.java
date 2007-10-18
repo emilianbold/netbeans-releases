@@ -81,11 +81,17 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
 
     //#114290
     public void doUpdateCaret() {
-        ((OCaret)textView.getCaret()).setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
+        Caret car = textView.getCaret();
+        if (car instanceof DefaultCaret) {
+            ((DefaultCaret)car).setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
+        }
     }
 
     public void dontUpdateCaret() {
-        ((OCaret)textView.getCaret()).setUpdatePolicy(DefaultCaret.NEVER_UPDATE);
+        Caret car = textView.getCaret();
+        if (car instanceof DefaultCaret) {
+            ((DefaultCaret)car).setUpdatePolicy(DefaultCaret.NEVER_UPDATE);
+        }
     }
 
     @Override
