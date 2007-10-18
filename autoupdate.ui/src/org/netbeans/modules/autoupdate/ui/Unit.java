@@ -291,7 +291,7 @@ public abstract class Unit {
             super (categoryName);
             this.updateUnit = unit;
             if (unit.getInstalled () == null && unit.isPending ()) {
-                this.installEl = unit.getAvailableUpdates ().get (unit.getAvailableUpdates ().size () - 1);
+                this.installEl = unit.getAvailableUpdates ().get (0);
                 assert installEl != null : "Pending UpdateUnit " + unit + " has UpdateElement for update.";
             } else {
                 this.installEl = unit.getInstalled ();
@@ -378,7 +378,7 @@ public abstract class Unit {
             this.updateUnit = unit;
             this.installEl = unit.getInstalled ();
             assert installEl != null : "Updateable UpdateUnit " + unit + " has Installed UpdateElement.";
-            this.updateEl = unit.getAvailableUpdates ().get (unit.getAvailableUpdates ().size () - 1);
+            this.updateEl = unit.getAvailableUpdates ().get (0);
             assert updateEl != null : "Updateable UpdateUnit " + unit + " has UpdateElement for update.";
             initState();
         }
