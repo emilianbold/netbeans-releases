@@ -214,7 +214,7 @@ public class FormSettings {
                     }
                     else if (globalResAutoMode == FormLoaderSettings.AUTO_RESOURCE_DEFAULT) { // detect
                         ResourceSupport resourceSupport = FormEditor.getResourceSupport(formModel);
-                        if (resourceSupport.projectUsesResources())
+                        if (resourceSupport.projectWantsUseResources())
                             resAutoMode = ResourceSupport.AUTO_RESOURCING; // only if app framework already on cp
                         else if (resourceSupport.isDefaultInternationalizableProject())
                             resAutoMode = ResourceSupport.AUTO_I18N; // NBM project

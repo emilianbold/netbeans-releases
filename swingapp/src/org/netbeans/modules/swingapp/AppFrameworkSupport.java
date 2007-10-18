@@ -102,10 +102,9 @@ class AppFrameworkSupport {
                 && getApplicationClassName(fileInProject) != null;
     }
     
-    private static boolean isFrameworkLibAvailable(FileObject fileInProject) {
+    static boolean isFrameworkLibAvailable(FileObject fileInProject) {
         ClassPath cp = ClassPath.getClassPath(fileInProject, ClassPath.EXECUTE);
-        boolean foundSwingAppLib = (cp != null && cp.findResource(APPLICATION_RESOURCE_NAME) != null); // NOI18N
-        return foundSwingAppLib;
+        return (cp != null && cp.findResource(APPLICATION_RESOURCE_NAME) != null); // NOI18N
     }
 
     static boolean isApplicationProject(Project project) {
@@ -114,37 +113,37 @@ class AppFrameworkSupport {
         // [would be better to check for presence of valid application class in ac]
     }
 
-    /**
-     * Returns if the given project can use the app framework. Currently NBM
-     * projects are not allowed to.
-     * @param fileInProject some source file contained in the project
-     * @return true if the project of given file can use app framework
-     */
-    static boolean projectCanUseFramework(FileObject fileInProject) {
-        // not usable for NBM projects (maybe once it is in JDK)
-        // hack: check project impl. class name
-        Project p = FileOwnerQuery.getOwner(fileInProject);
-        if (p != null && p.getClass().getName().startsWith("org.netbeans.modules.apisupport.") // NOI18N
-                && p.getClass().getName().endsWith("Project")){ // NOI18N
-            return false;
-        }
-        return true;
-    }
+//    /**
+//     * Returns if the given project can use the app framework. Currently NBM
+//     * projects are not allowed to.
+//     * @param fileInProject some source file contained in the project
+//     * @return true if the project of given file can use app framework
+//     */
+//    static boolean projectCanUseFramework(FileObject fileInProject) {
+//        // not usable for NBM projects (maybe once it is in JDK)
+//        // hack: check project impl. class name
+//        Project p = FileOwnerQuery.getOwner(fileInProject);
+//        if (p != null && p.getClass().getName().startsWith("org.netbeans.modules.apisupport.") // NOI18N
+//                && p.getClass().getName().endsWith("Project")){ // NOI18N
+//            return false;
+//        }
+//        return true;
+//    }
     
-    /**
-     * Adds the app framework library to project classpath.
-     * @param fileInProject some source file contained in the project
-     */
-    static boolean updateProjectClassPath(FileObject fileInProject) {
-        Library lib = LibraryManager.getDefault().getLibrary("swing-app-framework"); // NOI18N
-        try {
-            ProjectClassPathModifier.addLibraries(new Library[] { lib }, fileInProject, ClassPath.EXECUTE);
-            return true;
-        } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-            return false;
-        }
-    }
+//    /**
+//     * Adds the app framework library to project classpath.
+//     * @param fileInProject some source file contained in the project
+//     */
+//    static boolean updateProjectClassPath(FileObject fileInProject) {
+//        Library lib = LibraryManager.getDefault().getLibrary("swing-app-framework"); // NOI18N
+//        try {
+//            ProjectClassPathModifier.addLibraries(new Library[] { lib }, fileInProject, ClassPath.EXECUTE);
+//            return true;
+//        } catch (IOException ex) {
+//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+//            return false;
+//        }
+//    }
 
     static String getApplicationCode(FileObject srcFile) {
         String appClsName = getApplicationClassName(srcFile);

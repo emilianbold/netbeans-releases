@@ -236,17 +236,25 @@ public class ResourceServiceImpl implements ResourceService {
         AppFrameworkSupport.fileClosed(srcFile);
     }
 
-    public boolean projectCanUseResources(FileObject fileInProject) {
-        return AppFrameworkSupport.projectCanUseFramework(fileInProject);
-    }
-
-    public boolean projectUsesResources(FileObject fileInProject) {
+    /**
+     * @return true if app framework library is on classpath and the project is
+     *         an application (i.e. executable project with Application subclass)
+     */
+    public boolean projectWantsUseResources(FileObject fileInProject) {
         return AppFrameworkSupport.isFrameworkEnabledProject(fileInProject);
     }
 
-    public boolean updateProjectForResources(FileObject fileInProject) {
-        return AppFrameworkSupport.updateProjectClassPath(fileInProject);
+    /**
+     * @return true if app framework library is on classpath of the project
+     *         (the project can also be a library, not only an application)
+     */
+    public boolean projectUsesResources(FileObject fileInProject) {
+        return AppFrameworkSupport.isFrameworkLibAvailable(fileInProject);
     }
+
+//    public boolean updateProjectForResources(FileObject fileInProject) {
+//        return AppFrameworkSupport.updateProjectClassPath(fileInProject);
+//    }
 
     public boolean isExcludedProperty(Class componentType, String propName) {
         return java.awt.Component.class.isAssignableFrom(componentType)

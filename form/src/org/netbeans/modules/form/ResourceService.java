@@ -195,23 +195,21 @@ public interface ResourceService {
     void close(FileObject srcFile);
 
     /**
-     * Returns whether forms in the project represented by given file can use
-     * the resources infrastructure. E.g. NBM projects would not be allowed to
-     * since they use its own framework (NetBeans platform). If this method
-     * returns true, form editor will allow to switch the forms in the project
-     * to use resources.
+     * Returns whether forms in the project represented by given file should
+     * actively be set to use the resources - i.e. not only the resources
+     * are allowed, but they should even be used by default.
      * @param fileInProject a file representing the projevt (whatever source
      *        file from the project)
      * @return true if the given project can use resources, false if the
      *         project is not suitable for resources
      */
-    boolean projectCanUseResources(FileObject fileInProject);
+    boolean projectWantsUseResources(FileObject fileInProject);
 
     /**
-     * Returns whether the project represented by given file already uses the
-     * resources infrastructure (is available on projects classpath). If this
-     * method returns true, form editor will make newly created forms use
-     * resources automatically.
+     * Returns whether the project represented by given file allows to use the
+     * resources infrastructure (corresponding libraries are available on
+     * projects classpath). If this method returns true, form editor will allow
+     * forms in the project to use resources.
      * @param fileInProject a file representing the projevt (whatever source
      *        file from the project)
      * @return true if the given project uses the resources infrastracture
@@ -219,14 +217,14 @@ public interface ResourceService {
      */
     boolean projectUsesResources(FileObject fileInProject);
 
-    /**
-     * 
-     * @param fileInProject a file representing the projevt (whatever source
-     *        file from the project)
-     * @return if the update was successful (might be refused for some types of
-     *         projects)
-     */
-    boolean updateProjectForResources(FileObject fileInProject);
+//    /**
+//     * 
+//     * @param fileInProject a file representing the projevt (whatever source
+//     *        file from the project)
+//     * @return if the update was successful (might be refused for some types of
+//     *         projects)
+//     */
+//    boolean updateProjectForResources(FileObject fileInProject);
 
     boolean isExcludedProperty(Class componentType, String propName);
 

@@ -900,9 +900,9 @@ public class ResourceSupport {
             return false;
     }
 
-    public boolean projectCanUseResources() {
+    public boolean projectWantsUseResources() {
         if (getResourceService() != null)
-            return resourceService.projectCanUseResources(getSourceFile());
+            return resourceService.projectWantsUseResources(getSourceFile());
         else
             return false;
     }
@@ -924,7 +924,7 @@ public class ResourceSupport {
         setDesignLocale(designLocale);
         updateDesignLocale();
         // hack to update designer...
-        formModel.fireEvents(null);
+        formModel.fireEvents((FormModelEvent[])null);
     }
 
     private void setDesignLocale(String locale) {
@@ -976,8 +976,7 @@ public class ResourceSupport {
         if (getResourceService() != null
             && (force
                 || (!isI18nAutoMode()
-                    && (isResourceAutoMode()
-                        || resourceService.projectUsesResources(getSourceFile()))
+                    && (isResourceAutoMode() || projectUsesResources())
                     && !isAutoNamedProperty0(prop))))
         {
             return resourceService.createResourcePanel(prop.getValueType(), getSourceFile());
