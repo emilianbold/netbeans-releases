@@ -66,7 +66,11 @@ default:
 
 <%
     if ((Integer.MAX_VALUE == Integer.MIN_VALUE) && (Boolean.TRUE == Boolean.FALSE)){
-
+for (int i = 0; i < Integer.MAX_VALUE; ++i){
+                                            if ( i > Byte.SIZE ){
+                    out.println("i:" + i);
+                    }
+}
     }
 %>
 </body>
