@@ -709,7 +709,9 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
                 }
             } catch (IOException ex) { // ignore
             }
-            lock.releaseLock();
+            if (lock != null) {
+                lock.releaseLock();
+            }
         }
         formFileRenameDone = true; // we don't need to do processCustomCode
         return true;
