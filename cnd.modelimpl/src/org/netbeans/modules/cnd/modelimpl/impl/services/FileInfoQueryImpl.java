@@ -35,6 +35,7 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
+import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
@@ -78,7 +79,8 @@ public class FileInfoQueryImpl extends CsmFileInfoQuery {
 
             try {
                 APTFile apt = APTDriver.getInstance().findAPTLight(fileImpl.getBuffer());
-                if (apt != null) {
+
+                if (apt != null && hasConditionalsDirectives(apt)) {
                     APTFindUnusedBlocksWalker walker = new APTFindUnusedBlocksWalker(apt, fileImpl, fileImpl.getPreprocHandler());
                     walker.visit();
                     out = walker.getBlocks();
@@ -88,6 +90,18 @@ public class FileInfoQueryImpl extends CsmFileInfoQuery {
             }
         }
         return out;
+    }
+
+    private static boolean hasConditionalsDirectives(APTFile apt) {
+        APT node = apt.getFirstChild();
+        while( node!=null ) {
+            if (node.getType() == APT.Type.CONDITION_CONTAINER) {
+                return true;
+            }
+            assert node.getFirstChild() == null;
+            node = node.getNextSibling();
+        }
+        return false;
     }
 
     public List<CsmOffsetable> getMacroUsages(CsmFile file) {
