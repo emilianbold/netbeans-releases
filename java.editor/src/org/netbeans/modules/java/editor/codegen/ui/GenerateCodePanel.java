@@ -52,6 +52,7 @@ import javax.swing.KeyStroke;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.java.editor.codegen.CodeGenerator;
 import org.netbeans.modules.java.editor.overridden.PopupUtil;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -139,6 +140,10 @@ public class GenerateCodePanel extends javax.swing.JPanel {
     
     private void invokeSelected() {
         PopupUtil.hidePopup();
+        if (Utilities.isMac()) {
+            // see issue #115106
+            component.requestFocus();
+        }
         Object value = jList1.getSelectedValue();
         if (value instanceof CodeGenerator)
             ((CodeGenerator)value).invoke(component);
