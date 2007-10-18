@@ -45,30 +45,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.jruby.ast.AliasNode;
 import org.jruby.ast.ArgsNode;
 import org.jruby.ast.ArgumentNode;
 import org.jruby.ast.BlockArgNode;
-import org.jruby.ast.ClassVarAsgnNode;
-import org.jruby.ast.ClassVarDeclNode;
-import org.jruby.ast.ClassVarNode;
-import org.jruby.ast.Colon2Node;
-import org.jruby.ast.ConstDeclNode;
-import org.jruby.ast.ConstNode;
-import org.jruby.ast.DAsgnNode;
-import org.jruby.ast.DVarNode;
-import org.jruby.ast.GlobalAsgnNode;
-import org.jruby.ast.GlobalVarNode;
-import org.jruby.ast.InstAsgnNode;
-import org.jruby.ast.InstVarNode;
 import org.jruby.ast.ListNode;
 import org.jruby.ast.LocalAsgnNode;
 import org.jruby.ast.LocalVarNode;
 import org.jruby.ast.MethodDefNode;
-import org.jruby.ast.NewlineNode;
 import org.jruby.ast.Node;
 import org.jruby.ast.NodeTypes;
-import org.jruby.ast.SymbolNode;
 import org.jruby.ast.types.INameNode;
 import org.jruby.lexer.yacc.ISourcePosition;
 import org.netbeans.api.gsf.CompilationInfo;
@@ -225,18 +210,10 @@ public class RenameHandler implements InstantRenamer {
         } else if (closest.nodeId == NodeTypes.DVARNODE || closest.nodeId == NodeTypes.DASGNNODE) {
             // A dynamic variable read or assignment
             String name = ((INameNode)closest).getName();
-            Node block = AstUtilities.findBlock(path);
-
-            if (block == null) {
-                // Use parent
-                block = path.leafParent();
-
-                if (block == null) {
-                    block = closest;
-                }
+            List<Node> applicableBlocks = AstUtilities.getApplicableBlocks(path, true);
+            for (Node block : applicableBlocks) {
+                addDynamicVars(info, block, name, regions);
             }
-
-            addDynamicVars(info, block, name, regions);
         } else if (closest.nodeId == NodeTypes.ARGUMENTNODE || closest.nodeId == NodeTypes.BLOCKARGNODE) {
             // A method name (if under a DefnNode or DefsNode) or a parameter (if indirectly under an ArgsNode)
             String name = ((INameNode)closest).getName();
@@ -368,9 +345,21 @@ public class RenameHandler implements InstantRenamer {
         }
     }
 
+    // TODO: Check
+    //  quick tip renaming
+    //  unused detection
+    //  occurrences marking
+    //  code completion
+    //  live code templates
+    // ...anyone else who calls findBlock
+    //
+    // Test both parent blocks, sibling blocks and descendant blocks
+    // Make sure the "isUsed" detection is smarter too.
+    
     @SuppressWarnings("unchecked")
     private void addDynamicVars(CompilationInfo info, Node node, String name, Set<OffsetRange> ranges) {
-        if (node.nodeId == NodeTypes.DVARNODE) {
+        switch (node.nodeId) {
+        case NodeTypes.DVARNODE:
             if (((INameNode)node).getName().equals(name)) {
                 OffsetRange range = AstUtilities.getRange(node);
                 range = LexUtilities.getLexerOffsets(info, range);
@@ -378,7 +367,8 @@ public class RenameHandler implements InstantRenamer {
                     ranges.add(range);
                 }
             }
-        } else if (node.nodeId == NodeTypes.DASGNNODE) {
+            break;
+        case  NodeTypes.DASGNNODE:
             if (((INameNode)node).getName().equals(name)) {
                 OffsetRange range = AstUtilities.getRange(node);
                 // TODO - AstUtility for this
@@ -389,11 +379,23 @@ public class RenameHandler implements InstantRenamer {
                     ranges.add(range);
                 }
             }
+            break;
         }
 
         List<Node> list = node.childNodes();
 
         for (Node child : list) {
+            switch (child.nodeId) {
+            case NodeTypes.ITERNODE:
+            //case NodeTypes.BLOCKNODE:
+            case NodeTypes.DEFNNODE:
+            case NodeTypes.DEFSNODE:
+            case NodeTypes.CLASSNODE:
+            case NodeTypes.SCLASSNODE:
+            case NodeTypes.MODULENODE:
+                continue;
+            }
+
             addDynamicVars(info, child, name, ranges);
         }
     }

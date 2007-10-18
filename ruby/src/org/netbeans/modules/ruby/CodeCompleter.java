@@ -2102,14 +2102,12 @@ public class CodeCompleter implements Completable {
         // Don't try to add local vars, globals etc. as part of calls or class fqns
         if (call.getLhs() == null) {
             if (showLower && (closest != null)) {
-                Node block = AstUtilities.findDynamicScope(closest, path);
-                @SuppressWarnings("unchecked")
-                List<Node> list = block.childNodes();
-
-                for (Node child : list) {
-                    addDynamic(child, variables);
+                
+                List<Node> applicableBlocks = AstUtilities.getApplicableBlocks(path, false);
+                for (Node block : applicableBlocks) {
+                    addDynamic(block, variables);
                 }
-
+                
                 Node method = AstUtilities.findLocalScope(closest, path);
 
                 @SuppressWarnings("unchecked")
@@ -2712,12 +2710,13 @@ public class CodeCompleter implements Completable {
 
         for (Node child : list) {
             switch (child.nodeId) {
+            case NodeTypes.ITERNODE:
+            //case NodeTypes.BLOCKNODE:
             case NodeTypes.DEFNNODE:
             case NodeTypes.DEFSNODE:
             case NodeTypes.CLASSNODE:
             case NodeTypes.SCLASSNODE:
             case NodeTypes.MODULENODE:
-                // Don't look in nested context for local vars
                 continue;
             }
 
@@ -3151,8 +3150,10 @@ public class CodeCompleter implements Completable {
                 Map<String, Node> variables = new HashMap<String, Node>();
                 addLocals(method, variables);
 
-                Node block = AstUtilities.findDynamicScope(closest, path);
-                addDynamic(block, variables);
+                List<Node> applicableBlocks = AstUtilities.getApplicableBlocks(path, false);
+                for (Node block : applicableBlocks) {
+                    addDynamic(block, variables);
+                }
                 
                 // See if we have any name suggestions
                 String suggestions = (String)params.get(ATTR_DEFAULTS);

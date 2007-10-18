@@ -47,7 +47,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.swing.text.BadLocationException;
@@ -58,21 +57,17 @@ import org.jruby.ast.ArgsCatNode;
 import org.jruby.ast.ArgsNode;
 import org.jruby.ast.ArgumentNode;
 import org.jruby.ast.AssignableNode;
-import org.jruby.ast.BlockNode;
 import org.jruby.ast.CallNode;
 import org.jruby.ast.ClassNode;
 import org.jruby.ast.Colon2Node;
 import org.jruby.ast.Colon3Node;
 import org.jruby.ast.ConstNode;
 import org.jruby.ast.FCallNode;
-import org.jruby.ast.ForNode;
 import org.jruby.ast.IScopingNode;
-import org.jruby.ast.IterNode;
 import org.jruby.ast.ListNode;
 import org.jruby.ast.LocalAsgnNode;
 import org.jruby.ast.MethodDefNode;
 import org.jruby.ast.ModuleNode;
-import org.jruby.ast.NewlineNode;
 import org.jruby.ast.Node;
 import org.jruby.ast.NodeTypes;
 import org.jruby.ast.SClassNode;
@@ -568,7 +563,7 @@ public class AstUtilities {
         Node candidate = null;
         for (Node curr : path) {
             switch (curr.nodeId) {
-            case NodeTypes.BLOCKNODE:
+            //case NodeTypes.BLOCKNODE:
             case NodeTypes.ITERNODE:
                 candidate = curr;
                 break;
@@ -1745,5 +1740,57 @@ public class AstUtilities {
         for (Node child : list) {
             addNodesByType(child, nodeIds, result);
         }
+    }
+    
+    /** Return all the blocknodes that apply to the given node. The outermost block
+     * is returned first.
+     */
+    public static List<Node> getApplicableBlocks(AstPath path, boolean includeNested) {
+        Node block = AstUtilities.findBlock(path);
+
+        if (block == null) {
+            // Use parent
+            block = path.leafParent();
+
+            if (block == null) {
+                return Collections.emptyList();
+            }
+        }
+        
+        List<Node> result = new ArrayList<Node>();
+        Iterator<Node> it = path.leafToRoot();
+        
+        // Skip the leaf node, we're going to add it unconditionally afterwards
+        if (includeNested) {
+            if (it.hasNext()) {
+                it.next();
+            }
+        }
+
+        Node leaf = path.root();
+        
+        while (it.hasNext()) {
+            Node n = it.next();
+            switch (n.nodeId) {
+            //case NodeTypes.BLOCKNODE:
+            case NodeTypes.ITERNODE:
+                leaf = n;
+                result.add(n);
+                break;
+            case NodeTypes.DEFNNODE:
+            case NodeTypes.DEFSNODE:
+            case NodeTypes.CLASSNODE:
+            case NodeTypes.SCLASSNODE:
+            case NodeTypes.MODULENODE:
+                leaf = n;
+                break;
+            }
+        }
+
+        if (includeNested) {
+            addNodesByType(leaf, new int[] { /*NodeTypes.BLOCKNODE,*/ NodeTypes.ITERNODE }, result);
+        }
+        
+        return result;
     }
 }

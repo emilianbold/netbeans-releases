@@ -194,4 +194,12 @@ public class OccurrencesFinderTest extends RubyTestBase {
         String caretLine = "def exit_t^est";
         checkOccurrences("testfiles/yieldnode.rb", caretLine);
     }
+
+    public void testNestedBlocks() throws Exception {
+        checkOccurrences("testfiles/nestedblocks.rb", "[4,5,6].each { |ou^ter|");
+    }
+
+    public void testParellelBlocks() throws Exception {
+        checkOccurrences("testfiles/parallelblocks.rb", "foo.each { |i^| puts i } #1");
+    }
 }

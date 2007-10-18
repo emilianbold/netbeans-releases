@@ -1,2 +1,1 @@
 1: foo.each { ||>i<|| puts |>i<| } #1
-2: foo.each { |i| puts i } #2

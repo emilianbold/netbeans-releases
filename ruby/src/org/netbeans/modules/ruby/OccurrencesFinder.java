@@ -247,15 +247,17 @@ public class OccurrencesFinder implements org.netbeans.api.gsf.OccurrencesFinder
             } else if (closest instanceof DAsgnNode) {
                 // A dynamic variable read or assignment
                 String name = ((INameNode)closest).getName();
-                Node block = AstUtilities.findLocalScope(closest, path);
-
-                highlightDynamnic(block, name, highlights);
+                List<Node> applicableBlocks = AstUtilities.getApplicableBlocks(path, true);
+                for (Node block : applicableBlocks) {
+                    highlightDynamnic(block, name, highlights);
+                }
             } else if (closest instanceof DVarNode) {
                 // A dynamic variable read or assignment
                 String name = ((DVarNode)closest).getName(); // Does not implement INameNode
-                Node block = AstUtilities.findLocalScope(closest, path);
-
-                highlightDynamnic(block, name, highlights);
+                List<Node> applicableBlocks = AstUtilities.getApplicableBlocks(path, true);
+                for (Node block : applicableBlocks) {
+                    highlightDynamnic(block, name, highlights);
+                }
             } else if (closest instanceof InstAsgnNode) {
                 // A field assignment
                 String name = ((INameNode)closest).getName();
@@ -390,9 +392,10 @@ public class OccurrencesFinder implements org.netbeans.api.gsf.OccurrencesFinder
 
                         if (highlights.size() == count) {
                             // Didn't find locals... try dynvars
-                            Node block = AstUtilities.findLocalScope(closest, path);
-
-                            highlightDynamnic(block, name, highlights);
+                            List<Node> applicableBlocks = AstUtilities.getApplicableBlocks(path, true);
+                            for (Node block : applicableBlocks) {
+                                highlightDynamnic(block, name, highlights);
+                            }
 
                             if (highlights.size() == count) {
                                 // Didn't find locals... try methods
@@ -672,32 +675,49 @@ public class OccurrencesFinder implements org.netbeans.api.gsf.OccurrencesFinder
     @SuppressWarnings("unchecked")
     private void highlightDynamnic(Node node, String name,
         Map<OffsetRange, ColoringAttributes> highlights) {
-        if (node instanceof DVarNode) {
+        switch (node.nodeId) {
+        case NodeTypes.DVARNODE:
             if (((DVarNode)node).getName().equals(name)) { // Does not implement INameNode
 
                 OffsetRange range = AstUtilities.getRange(node);
                 highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
             }
-        } else if (node instanceof DAsgnNode) {
+            break;
+        case  NodeTypes.DASGNNODE:
             if (((INameNode)node).getName().equals(name)) {
                 OffsetRange range = AstUtilities.getLValueRange((DAsgnNode)node);
                 highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
             }
-        } else if (!ignoreAlias && node instanceof AliasNode) {
-            AliasNode an = (AliasNode)node;
+            break;
+        case NodeTypes.ALIASNODE:
+            if (!ignoreAlias) {
+                AliasNode an = (AliasNode)node;
 
-            if (an.getNewName().equals(name)) {
-                OffsetRange range = AstUtilities.getAliasNewRange(an);
-                highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
-            } else if (an.getOldName().equals(name)) {
-                OffsetRange range = AstUtilities.getAliasOldRange(an);
-                highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
+                if (an.getNewName().equals(name)) {
+                    OffsetRange range = AstUtilities.getAliasNewRange(an);
+                    highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
+                } else if (an.getOldName().equals(name)) {
+                    OffsetRange range = AstUtilities.getAliasOldRange(an);
+                    highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
+                }
             }
+            break;
         }
 
         List<Node> list = node.childNodes();
 
         for (Node child : list) {
+            switch (child.nodeId) {
+            case NodeTypes.ITERNODE:
+            //case NodeTypes.BLOCKNODE:
+            case NodeTypes.DEFNNODE:
+            case NodeTypes.DEFSNODE:
+            case NodeTypes.CLASSNODE:
+            case NodeTypes.SCLASSNODE:
+            case NodeTypes.MODULENODE:
+                continue;
+            }
+
             highlightDynamnic(child, name, highlights);
         }
     }
