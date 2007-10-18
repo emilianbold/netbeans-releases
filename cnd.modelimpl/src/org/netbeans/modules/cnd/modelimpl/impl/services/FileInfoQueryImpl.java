@@ -90,62 +90,7 @@ public class FileInfoQueryImpl extends CsmFileInfoQuery {
         return out;
     }
 
-    /* no walkers impl
-    public List<CsmOffsetable> getMacroes0(CsmFile file) {
-        List<CsmOffsetable> out = new ArrayList<CsmOffsetable>();
-        if (file instanceof FileImpl) {
-            FileImpl fileImpl = (FileImpl) file;
-
-            try {
-                TokenStream ts = fileImpl.getTokenStream();
-                for (Token token = ts.nextToken(); !APTUtils.isEOF(token); token = ts.nextToken()) {
-                    if (token instanceof APTMacroExpandedToken) {
-                        System.err.println("gotcha:" + token);
-                        APTToken macro = (APTToken) token;
-                        out.add(Utils.createOffsetable(file, macro.getOffset(), macro.getEndOffset()));
-                    }
-                }
-            } catch (TokenStreamException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-        return out;
-    }
-     
-    private void visit(APT apt, String shift, APTMacroMap map, List<CsmOffsetable> out) {
-        if (apt instanceof APTStream) {
-            try {
-                System.err.println(shift + "APTStreamNode");
-                APTStream asn = (APTStream) apt;
-                TokenStream ts = asn.getTokenStream();
-                for (Token token = ts.nextToken(); !APTUtils.isEOF(token); token = ts.nextToken()) {
-                    System.err.println(shift + " " + token);
-
-                    APTMacro m = map.getMacro(token);
-                    if (m != null) {
-                        System.err.println("gotcha: " + m);
-                        APTToken apttoken = (APTToken) token;
-                        out.add(Utils.createOffsetable(null, apttoken.getOffset(), apttoken.getEndOffset()));
-                    }
-                }
-            } catch (TokenStreamException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        } else {
-            System.err.println(shift + apt);
-        }
-        APT child = apt.getFirstChild();
-        if (child != null) {
-            visit(child, shift + " ", map, out);
-        }
-        APT bro = apt.getNextSibling();
-        if (bro != null) {
-            visit(bro, shift, map, out);
-        }
-    }
-     */
-
-    public List<CsmOffsetable> getMacroes(CsmFile file) {
+    public List<CsmOffsetable> getMacroUsages(CsmFile file) {
         List<CsmOffsetable> out = new ArrayList<CsmOffsetable>();
         if (file instanceof FileImpl) {
             FileImpl fileImpl = (FileImpl) file;
