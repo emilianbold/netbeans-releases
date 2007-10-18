@@ -76,6 +76,7 @@ public abstract class CsmFileInfoQuery {
      */
     public abstract List<CsmOffsetable> getUnusedCodeBlocks(CsmFile file);
 
+    public abstract List<CsmOffsetable> getMacroes(CsmFile file);
     //
     // Implementation of the default query
     //
@@ -92,6 +93,10 @@ public abstract class CsmFileInfoQuery {
         }
 
         public List<CsmOffsetable> getUnusedCodeBlocks(CsmFile file) {
+            return Collections.<CsmOffsetable>emptyList();
+        }
+
+        public List<CsmOffsetable> getMacroes(CsmFile file) {
             return Collections.<CsmOffsetable>emptyList();
         }
     } 

@@ -28,6 +28,7 @@
 package org.netbeans.modules.cnd.modelimpl.impl.services;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -38,6 +39,7 @@ import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
+import org.netbeans.modules.cnd.modelimpl.parser.apt.APTFindMacrosWalker;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTFindUnusedBlocksWalker;
 
 /**
@@ -53,18 +55,18 @@ public class FileInfoQueryImpl extends CsmFileInfoQuery {
     public List<String> getUserIncludePaths(CsmFile file) {
         return getIncludePaths(file, false);
     }
-    
+
     private List<String> getIncludePaths(CsmFile file, boolean system) {
         List<String> out = Collections.<String>emptyList();
         if (file instanceof FileImpl) {
-            NativeFileItem item = ProjectBase.getCompiledFileItem((FileImpl)file);
+            NativeFileItem item = ProjectBase.getCompiledFileItem((FileImpl) file);
             if (item != null) {
                 if (system) {
                     out = item.getSystemIncludePaths();
                 } else {
                     out = item.getUserIncludePaths();
                 }
-            }   
+            }
         }
         return out;
     }
@@ -72,18 +74,91 @@ public class FileInfoQueryImpl extends CsmFileInfoQuery {
     public List<CsmOffsetable> getUnusedCodeBlocks(CsmFile file) {
         List<CsmOffsetable> out = Collections.<CsmOffsetable>emptyList();
         if (file instanceof FileImpl) {
-            FileImpl fileImpl = (FileImpl)file;
+            FileImpl fileImpl = (FileImpl) file;
+
             try {
-                //APTFile apt = APTDriver.getInstance().findAPT(fileImpl.getBuffer());
                 APTFile apt = APTDriver.getInstance().findAPTLight(fileImpl.getBuffer());
                 if (apt != null) {
-                    APTFindUnusedBlocksWalker walker = 
-                        new APTFindUnusedBlocksWalker(apt, fileImpl, fileImpl.getPreprocHandler());
+                    APTFindUnusedBlocksWalker walker = new APTFindUnusedBlocksWalker(apt, fileImpl, fileImpl.getPreprocHandler());
                     walker.visit();
                     out = walker.getBlocks();
-               }
+                }
             } catch (IOException ex) {
                 System.err.println("skip getting unused blockes\nreason:" + ex.getMessage()); //NOI18N
+            }
+        }
+        return out;
+    }
+
+    /* no walkers impl
+    public List<CsmOffsetable> getMacroes0(CsmFile file) {
+        List<CsmOffsetable> out = new ArrayList<CsmOffsetable>();
+        if (file instanceof FileImpl) {
+            FileImpl fileImpl = (FileImpl) file;
+
+            try {
+                TokenStream ts = fileImpl.getTokenStream();
+                for (Token token = ts.nextToken(); !APTUtils.isEOF(token); token = ts.nextToken()) {
+                    if (token instanceof APTMacroExpandedToken) {
+                        System.err.println("gotcha:" + token);
+                        APTToken macro = (APTToken) token;
+                        out.add(Utils.createOffsetable(file, macro.getOffset(), macro.getEndOffset()));
+                    }
+                }
+            } catch (TokenStreamException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return out;
+    }
+     
+    private void visit(APT apt, String shift, APTMacroMap map, List<CsmOffsetable> out) {
+        if (apt instanceof APTStream) {
+            try {
+                System.err.println(shift + "APTStreamNode");
+                APTStream asn = (APTStream) apt;
+                TokenStream ts = asn.getTokenStream();
+                for (Token token = ts.nextToken(); !APTUtils.isEOF(token); token = ts.nextToken()) {
+                    System.err.println(shift + " " + token);
+
+                    APTMacro m = map.getMacro(token);
+                    if (m != null) {
+                        System.err.println("gotcha: " + m);
+                        APTToken apttoken = (APTToken) token;
+                        out.add(Utils.createOffsetable(null, apttoken.getOffset(), apttoken.getEndOffset()));
+                    }
+                }
+            } catch (TokenStreamException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        } else {
+            System.err.println(shift + apt);
+        }
+        APT child = apt.getFirstChild();
+        if (child != null) {
+            visit(child, shift + " ", map, out);
+        }
+        APT bro = apt.getNextSibling();
+        if (bro != null) {
+            visit(bro, shift, map, out);
+        }
+    }
+     */
+
+    public List<CsmOffsetable> getMacroes(CsmFile file) {
+        List<CsmOffsetable> out = new ArrayList<CsmOffsetable>();
+        if (file instanceof FileImpl) {
+            FileImpl fileImpl = (FileImpl) file;
+
+            try {
+                APTFile apt = APTDriver.getInstance().findAPT(fileImpl.getBuffer());
+                if (apt != null) {
+                    APTFindMacrosWalker walker = new APTFindMacrosWalker(apt, fileImpl, fileImpl.getPreprocHandler());
+                    walker.getTokenStream();
+                    out = walker.getBlocks();
+                }
+            } catch (IOException ex) {
+                System.err.println("skip marking macros\nreason:" + ex.getMessage()); //NOI18N
             }
         }
         return out;

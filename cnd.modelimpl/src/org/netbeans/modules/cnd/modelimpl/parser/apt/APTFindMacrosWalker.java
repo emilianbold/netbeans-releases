@@ -25,63 +25,48 @@
  *
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.cnd.modelimpl.parser.apt;
 
-import java.util.ArrayList;
-import java.util.List;
+import antlr.Token;
+import antlr.TokenStream;
+import antlr.TokenStreamException;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmOffsetable;
-import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
+import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
-import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
+import org.netbeans.modules.cnd.apt.support.APTToken;
+import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.openide.util.Exceptions;
 
 /**
- * This walker gathers information about code blocks being hidden by preprocessor
- * commands
- * 
+ * Basic walker to find macroes for semantic highlighting
+ * TODO: maybe it should be one walker for any semantic HL activity, because
+ * they used altogether.
+ *
  * @author Sergey Grinev
  */
-public class APTFindUnusedBlocksWalker extends APTSelfWalker {
+public class APTFindMacrosWalker extends APTSelfWalker {
 
-    public APTFindUnusedBlocksWalker(APTFile apt, CsmFile csmFile, APTPreprocHandler preprocHandler) {
+    public APTFindMacrosWalker(APTFile apt, CsmFile csmFile, APTPreprocHandler preprocHandler) {
         super(apt, csmFile, preprocHandler);
     }
-    
-    protected @Override boolean onIfdef(APT apt) {
-        boolean val = super.onIfdef(apt);
-        handleIf(apt, val);
-        return val;
-    }
-    
-    protected @Override boolean onIfndef(APT apt) {
-        boolean val = super.onIfndef(apt);
-        handleIf(apt, val);
-        return val;
-    }
 
-    protected @Override boolean onIf(APT apt) {
-        boolean val = super.onIf(apt);
-        handleIf(apt, val);
-        return val;
-    }
-
-    protected @Override boolean onElif(APT apt, boolean wasInPrevBranch) {
-        boolean val = super.onElif(apt, wasInPrevBranch);
-        handleIf(apt, val);
-        return val;
-    }
-
-    protected @Override boolean onElse(APT apt, boolean wasInPrevBranch) {
-        boolean val = super.onElse(apt, wasInPrevBranch);
-        handleIf(apt, val);
-        return val;
-    }
-    
-    private void handleIf(APT opener, boolean value) {
-        APT closer = opener.getNextSibling();
-        if (closer != null && !value) {
-            addBlock(opener.getEndOffset(), closer.getOffset()-1);
-        } 
+    @Override
+    public TokenStream getTokenStream() {
+        TokenStream ts = super.getTokenStream();
+        try {
+            for (Token token = ts.nextToken(); !APTUtils.isEOF(token); token = ts.nextToken()) {
+                APTMacro m = getMacroMap().getMacro(token);
+                if (m != null) {
+                    //System.err.println("gotcha: " + m);
+                    APTToken apttoken = (APTToken) token;
+                    addBlock(apttoken.getOffset(), apttoken.getEndOffset());
+                }
+            }
+        } catch (TokenStreamException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return ts;
     }
 }

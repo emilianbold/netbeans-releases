@@ -30,7 +30,11 @@ package org.netbeans.modules.cnd.modelimpl.parser.apt;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.netbeans.modules.cnd.apt.support.APTAbstractWalker;
@@ -39,25 +43,41 @@ import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileBufferFile;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 
 /**
  * APT Walker which only gathers macromap. Shouldn't be used directly but
  * only overriden by walkers which don't need to gather any info in the includes
- * just want macromap from them
+ * just want macromap from them.
+ * Also this walker holds plumbing code for blocks gathering due to it's being
+ * used only for semantic highlighting walkers. This should be refactored out if
+ * more uses for SelfWalking would appear.
  * 
  * @author Sergey Grinev
  */
 public class APTSelfWalker extends APTAbstractWalker {
 
-    protected APTSelfWalker(APTFile apt, APTPreprocHandler preprocHandler) {
+    protected APTSelfWalker(APTFile apt, CsmFile csmFile, APTPreprocHandler preprocHandler) {
         super(apt, preprocHandler);
+        this.csmFile = csmFile;
     }
+    
+    private final List<CsmOffsetable> blocks = new ArrayList<CsmOffsetable>();
+    private final CsmFile csmFile;
 
+    public List<CsmOffsetable> getBlocks() {
+        return blocks;
+    }
+    
+    protected void addBlock(int startOffset, int endOffset) {
+        blocks.add(Utils.createOffsetable(csmFile, startOffset, endOffset));
+    }
+    
     protected void include(ResolvedPath resolvedPath, APTInclude aptInclude) {
         if (resolvedPath != null && getIncludeHandler().pushInclude(resolvedPath.getPath(), aptInclude.getToken().getLine(), resolvedPath.getIndex())) {
             try {
                 APTFile apt = APTDriver.getInstance().findAPTLight(new FileBufferFile(new File(resolvedPath.getPath())));
-                APTSelfWalker walker = new APTSelfWalker(apt, getPreprocHandler());
+                APTSelfWalker walker = new APTSelfWalker(apt, csmFile, getPreprocHandler());
                 walker.visit();
             } catch (FileNotFoundException ex) {
                 APTUtils.LOG.log(Level.WARNING, "APTSelfWalker: file {0} not found", new Object[] {resolvedPath.getPath()});// NOI18N
