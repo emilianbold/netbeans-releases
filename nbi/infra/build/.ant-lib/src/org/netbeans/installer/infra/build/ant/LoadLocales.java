@@ -71,6 +71,10 @@ public class LoadLocales extends Task {
      */
     public void setBasename(final String basename) {
         this.basename = basename;
+        final File basenameFile = new File(basename);
+        if(! (basenameFile.equals(basenameFile.getAbsoluteFile()))) {
+		this.basename = new File(getProject().getBaseDir(), basename).getPath();
+        }
     }
     
     /**
@@ -97,11 +101,6 @@ public class LoadLocales extends Task {
         try {
             // handle the default locale
             File file  = new File(basename + ".properties"); // NOI18N
-            if (!file.equals(file.getAbsoluteFile())) {
-                file = new File(
-                        getProject().getBaseDir(), 
-                        basename + ".properties"); // NOI18N
-            }
             
             Properties properties = new Properties();
             
