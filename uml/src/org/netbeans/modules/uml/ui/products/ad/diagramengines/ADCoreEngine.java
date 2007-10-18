@@ -168,8 +168,6 @@ import org.netbeans.modules.uml.ui.support.DispatchHelper;
 import org.netbeans.modules.uml.ui.support.ElementDeletePanel;
 import org.netbeans.modules.uml.ui.support.IAutoRoutingActionKind;
 import org.netbeans.modules.uml.ui.support.ProductHelper;
-import org.netbeans.modules.uml.ui.support.QuestionResponse;
-import org.netbeans.modules.uml.ui.support.UIFactory;
 import org.netbeans.modules.uml.ui.support.applicationmanager.DiagramKeyboardAccessProvider;
 import org.netbeans.modules.uml.ui.support.applicationmanager.IAcceleratorListener;
 import org.netbeans.modules.uml.ui.support.applicationmanager.IAcceleratorManager;
@@ -181,10 +179,6 @@ import org.netbeans.modules.uml.ui.support.applicationmanager.IProductGraphPrese
 import org.netbeans.modules.uml.ui.support.applicationmanager.IProxyUserInterface;
 import org.netbeans.modules.uml.ui.support.applicationmanager.PresentationTypeDetails;
 import org.netbeans.modules.uml.ui.support.applicationmanager.TSGraphObjectKind;
-import org.netbeans.modules.uml.ui.support.commondialogs.IQuestionDialog;
-import org.netbeans.modules.uml.ui.support.commondialogs.MessageDialogKindEnum;
-import org.netbeans.modules.uml.ui.support.commondialogs.MessageIconKindEnum;
-import org.netbeans.modules.uml.ui.support.commondialogs.MessageResultKindEnum;
 import org.netbeans.modules.uml.ui.support.contextmenusupport.IProductContextMenuSorter;
 import org.netbeans.modules.uml.ui.support.drawingproperties.FontChooser;
 import org.netbeans.modules.uml.ui.support.drawingproperties.IColorProperty;
@@ -2576,7 +2570,7 @@ public class ADCoreEngine extends DiagramEngine implements IADCoreEngine, Action
         }
         IMenuManager showMenu = manager.createSubMenu(loadString("IDS_POPUP_SHOWING_TITLE"), "org.netbeans.modules.uml.view.drawingarea.edit.popup");
 
-        IMenuManager hideMenu = manager.createSubMenu(loadString("IDS_POPUP_SHOWING_TITLE"), "org.netbeans.modules.uml.view.drawingarea.edit.popup");
+        IMenuManager hideMenu = manager.createSubMenu(loadString("IDS_POPUP_HIDING_TITLE"), "org.netbeans.modules.uml.view.drawingarea.edit.popup");
 
         if (showMenu != null && hideMenu != null)
         {
@@ -3627,11 +3621,20 @@ public class ADCoreEngine extends DiagramEngine implements IADCoreEngine, Action
         {
             bFlag = control.getHasParentGraph();
             retVal = bReadOnly ? false : bFlag;
-        } else if (id.equals("MBK_FIT_TO_WINDOW") || id.equals("MBK_ZOOM_25") || id.equals("MBK_ZOOM_50") || id.equals("MBK_ZOOM_ACTUAL_SIZE") || id.equals("MBK_ZOOM_200") || id.equals("MBK_ZOOM_400") || id.equals("MBK_ZOOM_CUSTOM_ZOOM") || id.equals("MBK_ZOOM_IN") || id.equals("MBK_ZOOM_OUT"))
+        } else if (id.equals("MBK_FIT_TO_WINDOW") || id.equals("MBK_ZOOM_25") ||
+                id.equals("MBK_ZOOM_50") || id.equals("MBK_ZOOM_ACTUAL_SIZE") ||
+                id.equals("MBK_ZOOM_200") || id.equals("MBK_ZOOM_400") || 
+                id.equals("MBK_ZOOM_CUSTOM_ZOOM") || id.equals("MBK_ZOOM_IN") ||
+                id.equals("MBK_ZOOM_OUT"))
         {
             // These guys are always sensitive
             retVal = true;
-        } else if (id.equals("MBK_POPUP_LAYOUT_CIRCULAR") || id.equals("MBK_POPUP_LAYOUT_HIERARCHICAL") || id.equals("MBK_POPUP_LAYOUT_ORTHOGONAL") || id.equals("MBK_POPUP_LAYOUT_SYMMETRIC") || id.equals("MBK_POPUP_LAYOUT_TREE") || id.equals("MBK_POPUP_LAYOUT_INCREMENTAL"))
+        } else if (id.equals("MBK_POPUP_LAYOUT_CIRCULAR") || 
+                id.equals("MBK_POPUP_LAYOUT_HIERARCHICAL") || 
+                id.equals("MBK_POPUP_LAYOUT_ORTHOGONAL") || 
+                id.equals("MBK_POPUP_LAYOUT_SYMMETRIC") || 
+                id.equals("MBK_POPUP_LAYOUT_TREE") || 
+                id.equals("MBK_POPUP_LAYOUT_INCREMENTAL"))
         {
             if (!parentIsDiagramKind(IDiagramKind.DK_SEQUENCE_DIAGRAM))
             {
@@ -3645,7 +3648,8 @@ public class ADCoreEngine extends DiagramEngine implements IADCoreEngine, Action
                 bFlag = true;
             }
             retVal = bReadOnly ? false : bFlag;
-        } else if (id.equals("MBK_POPUP_LAYOUT_RELAYOUT") || id.equals("MBK_POPUP_LAYOUT_PROPERTIES"))
+        } else if (id.equals("MBK_POPUP_LAYOUT_RELAYOUT") || 
+                id.equals("MBK_POPUP_LAYOUT_PROPERTIES"))
         {
             //$NON-NLS-2$
             retVal = bReadOnly ? false : true;
@@ -3721,21 +3725,33 @@ public class ADCoreEngine extends DiagramEngine implements IADCoreEngine, Action
             {
                 //To do
             }
-        } else if (id.equals("MBK_NODE_HIDE_CHILDREN_ONE_LEVEL") || id.equals("MBK_NODE_HIDE_CHILDREN_N_LEVELS") || id.equals("MBK_NODE_HIDE_CHILDREN_ALL_LEVELS") || id.equals("MBK_NODE_FOLD_CHILDREN_ONE_LEVEL") || id.equals("MBK_NODE_FOLD_CHILDREN_N_LEVELS") || id.equals("MBK_NODE_FOLD_CHILDREN_ALL_LEVELS"))
+        } else if (id.equals("MBK_NODE_HIDE_CHILDREN_ONE_LEVEL") || 
+                id.equals("MBK_NODE_HIDE_CHILDREN_N_LEVELS") || 
+                id.equals("MBK_NODE_HIDE_CHILDREN_ALL_LEVELS") || 
+                id.equals("MBK_NODE_FOLD_CHILDREN_ONE_LEVEL") || 
+                id.equals("MBK_NODE_FOLD_CHILDREN_N_LEVELS") || 
+                id.equals("MBK_NODE_FOLD_CHILDREN_ALL_LEVELS"))
         {
             if (pProductNode != null && GetHelper.hasChildren(window, pProductNode))
             {
                 bFlag = true;
             }
             retVal = bReadOnly ? false : bFlag;
-        } else if (id.equals("MBK_NODE_HIDE_PARENTS_ONE_LEVEL") || id.equals("MBK_NODE_HIDE_PARENTS_N_LEVELS") || id.equals("MBK_NODE_HIDE_PARENTS_ALL_LEVELS") || id.equals("MBK_NODE_FOLD_PARENTS_ONE_LEVEL") || id.equals("MBK_NODE_FOLD_PARENTS_N_LEVELS") || id.equals("MBK_NODE_FOLD_PARENTS_ALL_LEVELS"))
+        } else if (id.equals("MBK_NODE_HIDE_PARENTS_ONE_LEVEL") || 
+                id.equals("MBK_NODE_HIDE_PARENTS_N_LEVELS") || 
+                id.equals("MBK_NODE_HIDE_PARENTS_ALL_LEVELS") || 
+                id.equals("MBK_NODE_FOLD_PARENTS_ONE_LEVEL") || 
+                id.equals("MBK_NODE_FOLD_PARENTS_N_LEVELS") || 
+                id.equals("MBK_NODE_FOLD_PARENTS_ALL_LEVELS"))
         {
             if (pProductNode != null && GetHelper.hasParents(window, pProductNode))
             {
                 bFlag = true;
             }
             retVal = bReadOnly ? false : bFlag;
-        } else if (id.equals("MBK_NODE_UNHIDE_CHILDREN_ONE_LEVEL") || id.equals("MBK_NODE_UNHIDE_CHILDREN_N_LEVELS") || id.equals("MBK_NODE_UNHIDE_CHILDREN_ALL_LEVELS"))
+        } else if (id.equals("MBK_NODE_UNHIDE_CHILDREN_ONE_LEVEL") || 
+                id.equals("MBK_NODE_UNHIDE_CHILDREN_N_LEVELS") || 
+                id.equals("MBK_NODE_UNHIDE_CHILDREN_ALL_LEVELS"))
         {
             //$NON-NLS-2$ //$NON-NLS-3$
             if (pProductNode != null && GetHelper.hasHiddenChildren(window, pProductNode))
@@ -3743,7 +3759,9 @@ public class ADCoreEngine extends DiagramEngine implements IADCoreEngine, Action
                 bFlag = true;
             }
             retVal = bReadOnly ? false : bFlag;
-        } else if (id.equals("MBK_NODE_UNHIDE_PARENTS_ONE_LEVEL") || id.equals("MBK_NODE_UNHIDE_PARENTS_N_LEVELS") || id.equals("MBK_NODE_UNHIDE_PARENTS_ALL_LEVELS"))
+        } else if (id.equals("MBK_NODE_UNHIDE_PARENTS_ONE_LEVEL") || 
+                id.equals("MBK_NODE_UNHIDE_PARENTS_N_LEVELS") || 
+                id.equals("MBK_NODE_UNHIDE_PARENTS_ALL_LEVELS"))
         {
             //$NON-NLS-2$ //$NON-NLS-3$
             if (pProductNode != null && GetHelper.hasHiddenParents(window, pProductNode))
