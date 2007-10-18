@@ -779,14 +779,11 @@ public class BeansUnit implements Unit {
         Bean parent = bean.getParent();
         if (parent != null)
             parent.removeChild(bean);  // remove from parent list
-        if(bean.isInserted()) {
-            beansToRemove.add(bean);
-        }else {
+        beansToRemove.add(bean);
+        if (!bean.isInserted() && beansToAdd.contains(bean)) {
             //It may exist in the beansToAdd list if the removal happens before
             //the bean is inserted into java source
-            if (beansToAdd.contains(bean)) {
-                beansToAdd.remove(bean);
-            }
+            beansToAdd.remove(bean);
         }
     }
 
