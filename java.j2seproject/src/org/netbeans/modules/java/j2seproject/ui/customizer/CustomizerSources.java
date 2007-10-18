@@ -55,17 +55,19 @@ import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.IllegalCharsetNameException;
 import java.util.logging.Logger;
+import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import javax.swing.plaf.UIResource;
 import javax.swing.table.TableColumn;
-import org.netbeans.api.queries.FileEncodingQuery;
+import javax.swing.table.TableModel;
 import org.netbeans.spi.java.project.support.ui.IncludeExcludeVisualizer;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -109,7 +111,8 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
             addSourceRoot,
             removeSourceRoot, 
             upSourceRoot, 
-            downSourceRoot);
+            downSourceRoot,
+            new LabelCellEditor(sourceRoots, testRoots));
         
         J2SESourceRootsUi.EditMediator emTSR = J2SESourceRootsUi.registerEditMediator(
             uiProperties.getProject(),
@@ -118,7 +121,8 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
             addTestRoot,
             removeTestRoot, 
             upTestRoot, 
-            downTestRoot);
+            downTestRoot,
+            new LabelCellEditor(sourceRoots, testRoots));
         
         emSR.setRelatedEditMediator( emTSR );
         emTSR.setRelatedEditMediator( emSR );
@@ -320,7 +324,45 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         }
         
     }
+    
+    private static class LabelCellEditor extends DefaultCellEditor {
         
+        private JTable sourceRoots;
+        private JTable testRoots;
+        
+        public LabelCellEditor(JTable sourceRoots, JTable testRoots) {
+            super(new JTextField());
+            this.sourceRoots = sourceRoots;
+            this.testRoots = testRoots;
+        }
+        
+        @Override
+        public boolean stopCellEditing() {
+            JTextField field = (JTextField) getComponent();
+            String text = field.getText();
+            boolean validCell = true;
+            TableModel model = sourceRoots.getModel();
+            int rowCount = model.getRowCount();
+            for (int rowIndex = 0; rowIndex < rowCount; rowIndex++) {
+                String value = (String) model.getValueAt(rowIndex, 1);
+                if (text.equals(value)) {
+                    validCell = false;
+                }
+            }
+            model = testRoots.getModel();
+            rowCount = model.getRowCount();
+            for (int rowIndex = 0; rowIndex < rowCount; rowIndex++) {
+                String value = (String) model.getValueAt(rowIndex, 1);
+                if (text.equals(value)) {
+                    validCell = false;
+                }
+            }
+            
+            return validCell == false ? validCell : super.stopCellEditing();
+        }
+        
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is

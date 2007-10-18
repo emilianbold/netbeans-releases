@@ -105,7 +105,8 @@ public final class J2SESourceRootsUi {
                                              JButton addFolderButton,
                                              JButton removeButton,
                                              JButton upButton,
-                                             JButton downButton) {
+                                             JButton downButton,
+                                             CellEditor rootsListEditor) {
         
         EditMediator em = new EditMediator( master,
                                             sourceRoots,
@@ -123,7 +124,10 @@ public final class J2SESourceRootsUi {
         downButton.addActionListener( em );
         // On list selection
         rootsList.getSelectionModel().addListSelectionListener( em );
-        DefaultCellEditor editor = new DefaultCellEditor(new JTextField());
+        DefaultCellEditor editor = (DefaultCellEditor) rootsListEditor;
+        if (editor == null) {
+            editor = new DefaultCellEditor(new JTextField());
+        }
         editor.addCellEditorListener (em);
         rootsList.setDefaultRenderer( File.class, new FileRenderer (FileUtil.toFile(master.getProjectDirectory())));
         rootsList.setDefaultEditor(String.class, editor);
@@ -138,6 +142,17 @@ public final class J2SESourceRootsUi {
         rootsList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         
         return em;
+    }
+    
+    public static EditMediator registerEditMediator( J2SEProject master,
+                                             SourceRoots sourceRoots,
+                                             JTable rootsList,
+                                             JButton addFolderButton,
+                                             JButton removeButton,
+                                             JButton upButton,
+                                             JButton downButton ) {
+        return registerEditMediator(master, sourceRoots, rootsList, addFolderButton, 
+                removeButton, upButton, downButton, null);
     }
     
     /**
