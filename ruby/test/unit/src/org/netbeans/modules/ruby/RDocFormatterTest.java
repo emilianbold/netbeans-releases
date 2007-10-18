@@ -276,5 +276,9 @@ public class RDocFormatterTest extends RubyTestBase {
                 "%><br>    alert('hello world')<br></pre>\n", html);
     }
 
+    public void testFormatLists() throws Exception {
+        formatFile("testfiles/lists.comment");
+    }
+    
     // TODO test bullets, labels, preformat
 }

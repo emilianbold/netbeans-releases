@@ -485,7 +485,7 @@ public class ReflowParagraphAction extends AbstractAction implements EditorActio
                 return;
             }
 
-            if (text.startsWith("* ") || text.startsWith("- ") || text.matches("^[0-9]+\\.( .*)?")) {
+            if (text.startsWith("* ") || text.startsWith("- ") || text.matches("^[0-9]+\\.\\s*( .*)?")) {
                 // Starting a bulleted list, or a numbered list:
                 // Flush any existing items, then flow this text
                 flush();
@@ -511,7 +511,7 @@ public class ReflowParagraphAction extends AbstractAction implements EditorActio
                 }
 
                 return;
-            } else if (text.matches("^[\\S]+::( .*)?") || text.matches("^\\[[\\S]+\\]( .+)?")) {
+            } else if (text.matches("^[\\S]+::\\s*( .*)?") || text.matches("^\\[[\\S]+\\]\\s*( .+)?")) {
                 // Labeled lists with flowed content after the label
                 flush();
                 if (!inList) {

@@ -198,14 +198,14 @@ class RDocFormatter {
             appendTokenized(text.substring(text.indexOf(' ') + 1));
 
             return;
-        } else if (text.matches("^[0-9]+\\.( .*)?")) {
+        } else if (text.matches("^[0-9]+\\.\\s*( .*)?")) {
             if (!inNumberedList) {
                 sb.append("<ol>\n"); // NOI18N
                 inNumberedList = true;
             }
 
             sb.append("<li value=\"");
-            Matcher m = Pattern.compile("^([0-9]+)\\.( .*)?").matcher(text);
+            Matcher m = Pattern.compile("^([0-9]+)\\.\\s*( .*)?").matcher(text);
             if (m.matches()) {
                 sb.append(m.group(1));
             }
@@ -216,7 +216,7 @@ class RDocFormatter {
             }
 
             return;
-        } else if (text.matches("^\\[[\\S]+\\]( .+)?")) { // NOI18N
+        } else if (text.matches("^\\[[\\S]+\\]\\s*( .+)?")) { // NOI18N
             // Labelled list:  [+foo+] whatever
             if (!inLabelledList) {
                 sb.append("<table>\n"); // NOI18N
@@ -233,7 +233,7 @@ class RDocFormatter {
             appendTokenized(text.substring(index + 1));
 
             return;
-        } else if (text.matches("^[\\S]+::( .*)?")) { // NOI18N
+        } else if (text.matches("^[\\S]+::\\s*( .*)?")) { // NOI18N
             // Labelled list:  foo::
             if (!inLabelledList) {
                 sb.append("<table>\n"); // NOI18N
