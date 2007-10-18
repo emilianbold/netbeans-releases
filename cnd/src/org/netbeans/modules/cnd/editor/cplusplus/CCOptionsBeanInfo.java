@@ -63,21 +63,21 @@ public class CCOptionsBeanInfo extends BaseOptionsBeanInfo {
 	super("/org/netbeans/modules/cnd/editor/cplusplus/CCIcon"); //NOI18N
     }
     
-    protected String[] getPropNames() {
+    protected @Override String[] getPropNames() {
         // already merged on initialization
         return CCOptions.CC_PROP_NAMES;
     }
 
-    protected void updatePropertyDescriptors() {
+    protected @Override void updatePropertyDescriptors() {
         super.updatePropertyDescriptors();
         setExpert(EXPERT_PROP_NAMES);
     }    
     
-    protected Class getBeanClass() {
+    protected @Override Class getBeanClass() {
 	return CCOptions.class;
     }
 
-    protected String getString(String key) {
+    protected @Override String getString(String key) {
         try {
             return NbBundle.getBundle(CCOptionsBeanInfo.class).getString(key);
         } catch (MissingResourceException e) {

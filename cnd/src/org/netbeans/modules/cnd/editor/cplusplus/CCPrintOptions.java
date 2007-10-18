@@ -61,7 +61,7 @@ public class CCPrintOptions extends BasePrintOptions {
     }
 
     /** @return localized string */
-    protected String getString(String s) {
+    protected @Override String getString(String s) {
         try {
             String res = NbBundle.getBundle(CCPrintOptions.class).getString(s);
             return (res == null) ? super.getString(s) : res;
@@ -71,7 +71,7 @@ public class CCPrintOptions extends BasePrintOptions {
         }
     }
     
-    public HelpCtx getHelpCtx () {
+    public @Override HelpCtx getHelpCtx () {
         return new HelpCtx ("Welcome_opt_print_cpp"); // NOI18N
     }
 }

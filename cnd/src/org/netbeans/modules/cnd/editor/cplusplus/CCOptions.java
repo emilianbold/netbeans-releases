@@ -108,7 +108,7 @@ public class CCOptions extends BaseOptions {
     }
   
     /** Return the C++ Indent Engine class */
-    protected Class getDefaultIndentEngineClass() {
+    protected @Override Class getDefaultIndentEngineClass() {
         return CCIndentEngine.class;
     }
 
@@ -221,7 +221,7 @@ public class CCOptions extends BaseOptions {
 		FORMAT_SPACE_BEFORE_PARENTHESIS_PROP);
     }
     
-    public HelpCtx getHelpCtx() {
+    public @Override HelpCtx getHelpCtx() {
         return new HelpCtx(HELP_ID);
     }
 
@@ -229,7 +229,7 @@ public class CCOptions extends BaseOptions {
      * Get the localized string from the argument. This method is called up the stack.
      * So even though its not called inside this class, its definately needed!
      */
-    protected String getString(String s) {
+    protected @Override String getString(String s) {
         try {
             String res = NbBundle.getBundle(CCOptions.class).getString(s);
             return (res == null) ? super.getString(s) : res;

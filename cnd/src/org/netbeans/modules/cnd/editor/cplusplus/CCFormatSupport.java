@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.editor.cplusplus;
 
 import org.netbeans.editor.TokenID;
 import org.netbeans.editor.TokenItem;
-import org.netbeans.editor.TokenCategory;
 import org.netbeans.editor.TokenContextPath;
 import org.netbeans.editor.ext.FormatTokenPosition;
 import org.netbeans.editor.ext.ExtFormatSupport;

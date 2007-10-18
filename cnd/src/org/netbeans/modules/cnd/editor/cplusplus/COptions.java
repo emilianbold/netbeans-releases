@@ -53,7 +53,7 @@ public class COptions extends CCOptions {
     }
   
     /** Return the C Indent Engine class */
-    protected Class getDefaultIndentEngineClass() {
+    protected @Override Class getDefaultIndentEngineClass() {
         return CIndentEngine.class;
     }
 }
