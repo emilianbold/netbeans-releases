@@ -102,10 +102,6 @@ import org.openide.util.NbBundle;
  * @author joshua.marinacci@sun.com
  */
 public class MenuEditLayer extends JPanel {
-    
-    /* === public constants === */
-    
-
     /* === constants for the look of the designer === */
     public static final Border DRAG_MENU_BORDER = BorderFactory.createLineBorder(Color.BLACK,1);
     public static final Border DRAG_SEPARATOR_BORDER = BorderFactory.createLineBorder(Color.RED,1);
@@ -131,7 +127,6 @@ public class MenuEditLayer extends JPanel {
     public enum SelectedPortion { Icon, Text, Accelerator, All, None };
     private SelectedPortion selectedPortion = SelectedPortion.None;
     
-    private JMenu currentMenu;
     private KeyboardMenuNavigator keyboardMenuNavigator;
     private Map<RADVisualContainer,FormModelListener> formModelListeners;
     private DragOperation dragop;
@@ -315,7 +310,6 @@ public class MenuEditLayer extends JPanel {
         configureSelectionListener();
         //reset the layers
         JMenu menu = (JMenu) comp;
-        currentMenu = menu;
         configureMenu(null,menu);
         showMenuPopup(menu);
         if(metacomp instanceof RADVisualContainer) {
@@ -461,7 +455,6 @@ public class MenuEditLayer extends JPanel {
             selectionListener = new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
                     if(!isAlive) return;
-                    Node[] oldNodes = (Node[])evt.getOldValue();
                     Node[] newNodes = (Node[])evt.getNewValue();
                     List<RADComponent> selectedNodes = new ArrayList<RADComponent>();
 
@@ -478,7 +471,7 @@ public class MenuEditLayer extends JPanel {
                 
             };
             formDesigner.addPropertyChangeListener("activatedNodes",selectionListener);
-        };
+        }
     }
     
     private void unconfigureSelectionListener() {
@@ -828,7 +821,7 @@ public class MenuEditLayer extends JPanel {
                 if(isMenuRelatedRADComponent(rad) && !isMenuBarContainer(rad) && !isNonMenuJSeparator(rad)) { // don't mess w/ the menubar's background
                     JComponent c = (JComponent) formDesigner.getComponent(rad);
                     if(c != null) { // could be null if comp was just deleted
-                        c.setBackground(getNormalBackground(c));
+                        c.setBackground(getNormalBackground(rad, c));
                     }
                 }
             }
@@ -882,16 +875,25 @@ public class MenuEditLayer extends JPanel {
         return "MenuItem";
     }
     
-    private Color getNormalBackground(JComponent c) {
-        String prefix = getComponentDefaultsPrefix(c);
-        Color color = UIManager.getDefaults().getColor(prefix+".background");
-        color = backgroundMap.get(c);
-        if(color == null) {
-            //color = Color.RED;
+    private Color getNormalBackground(RADComponent metacomp, JComponent c) {
+        RADProperty prop = metacomp.getBeanProperty("background"); // NOI18N
+        Color color = null;
+        if (prop != null) {
+            try {
+                Object value = prop.getTargetValue();
+                if (value instanceof Color) {
+                    color = (Color)value;
+                }
+            } catch (Exception ex) {}
+        }
+        if (color == null) {
+            // fallback - for example subclass of menu component
+            // that hides background property
+            color = backgroundMap.get(c);
         }
         return color;
     }
-    
+
     private Map<JComponent, Color> backgroundMap = new HashMap<JComponent,Color>();
     private Color getSelectedBackground(JComponent c) {
         //don't put into the map twice
