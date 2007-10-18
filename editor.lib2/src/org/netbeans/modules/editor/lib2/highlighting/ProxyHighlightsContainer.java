@@ -44,7 +44,9 @@ package org.netbeans.modules.editor.lib2.highlighting;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
+import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.AttributeSet;
 import org.netbeans.api.editor.settings.AttributesUtilities;
@@ -63,6 +65,7 @@ public final class ProxyHighlightsContainer extends AbstractHighlightsContainer 
     private static final Logger LOG = Logger.getLogger(ProxyHighlightsContainer.class.getName());
     
     private HighlightsContainer[] layers;
+    private boolean[] blacklisted;
     private long version = 0;
 
     private final String LOCK = new String("ProxyHighlightsContainer.LOCK"); //NOI18N
@@ -105,10 +108,21 @@ public final class ProxyHighlightsContainer extends AbstractHighlightsContainer 
                 return HighlightsSequence.EMPTY;
             }
         
-            HighlightsSequence seq [] = new HighlightsSequence[layers.length];
+            List<HighlightsSequence> seq = new ArrayList<HighlightsSequence>(layers.length);
 
             for(int i = 0; i < layers.length; i++) {
-                seq[i] = layers[layers.length - i - 1].getHighlights(startOffset, endOffset);
+                if (blacklisted[i]) {
+                    continue;
+                }
+                
+                try {
+                    seq.add(layers[layers.length - i - 1].getHighlights(startOffset, endOffset));
+                } catch (ThreadDeath td) {
+                    throw td;
+                } catch (Throwable t) {
+                    blacklisted[i] = true;
+                    LOG.log(Level.WARNING, "The layer failed to supply highlights: " + layers[i], t); //NOI18N
+                }
             }
 
             return new ProxySeq(version, seq, startOffset, endOffset);
@@ -148,6 +162,7 @@ public final class ProxyHighlightsContainer extends AbstractHighlightsContainer 
             }
     
             this.layers = layers;
+            this.blacklisted = layers == null ? null : new boolean [layers.length];
             this.version++;
 
             // Add the listener to the new layers
@@ -201,13 +216,13 @@ public final class ProxyHighlightsContainer extends AbstractHighlightsContainer 
         private AttributeSet compositeAttributes = null;
         private long version;
         
-        public ProxySeq(long version, HighlightsSequence [] seq, int startOffset, int endOffset) {
+        public ProxySeq(long version, List<HighlightsSequence> seq, int startOffset, int endOffset) {
             this.version = version;
             
             // Initialize marks
-            marks = new Sequence2Marks [seq.length];
-            for (int i = 0; i < seq.length; i++) {
-                marks[i] = new Sequence2Marks(seq[i], startOffset, endOffset);
+            marks = new Sequence2Marks [seq.size()];
+            for (int i = 0; i < seq.size(); i++) {
+                marks[i] = new Sequence2Marks(seq.get(i), startOffset, endOffset);
                 marks[i].moveNext();
             }
             

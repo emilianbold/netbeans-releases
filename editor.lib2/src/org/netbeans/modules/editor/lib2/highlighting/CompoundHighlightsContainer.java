@@ -73,6 +73,7 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
     
     private Document doc;
     private HighlightsContainer[] layers;
+    private boolean[] blacklisted;
     private long version = 0;
 
     private final Object LOCK = new String("CompoundHighlightsContainer.LOCK"); //NOI18N
@@ -230,6 +231,7 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
     
             this.doc = doc;
             this.layers = layers;
+            this.blacklisted = layers == null ? null : new boolean [layers.length];
             discardCache();
             increaseVersion();
 
@@ -284,9 +286,20 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
             LOG.fine("Updating cache: <" + startOffset + ", " + endOffset + ">"); //NOI18N
         }
         
-        for (HighlightsContainer layer : layers) {
-            HighlightsSequence seq = layer.getHighlights(startOffset, endOffset);
-            cache.addAllHighlights(seq);
+        for (int i = 0; i < layers.length; i++) {
+            if (blacklisted[i]) {
+                continue;
+            }
+
+            try {
+                HighlightsSequence seq = layers[i].getHighlights(startOffset, endOffset);
+                cache.addAllHighlights(seq);
+            } catch (ThreadDeath td) {
+                throw td;
+            } catch (Throwable t) {
+                blacklisted[i] = true;
+                LOG.log(Level.WARNING, "The layer failed to supply highlights: " + layers[i], t); //NOI18N
+            }
         }
     }
     
