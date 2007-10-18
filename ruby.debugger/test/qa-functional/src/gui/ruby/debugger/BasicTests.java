@@ -91,11 +91,13 @@ public class BasicTests extends JellyTestCase {
     
     // name of sample projects
     private static final String SAMPLE_RUBY_PROJECT_NAME = "SampleRubyApplication";  //NOI18N
+    //line number with puts "helloworld"
+    private static final int breakpointLineNumber = 10;
     
     public void testDebuggerStartStop() throws InterruptedException {
         createRubyProject(SAMPLE_RUBY_PROJECT_NAME);
         EditorOperator debuggeeOp = new EditorOperator("main.rb");
-        Util.putBreakpointToLine(debuggeeOp, 10);
+        Util.putBreakpointToLine(debuggeeOp, breakpointLineNumber);
         Util.invokeDebugMainProject();
         OutputTabOperator outOp = new OutputTabOperator(SAMPLE_RUBY_PROJECT_NAME + " (debug)");
         outOp.waitText("ruby 1.8.5 debugger listens");
@@ -113,7 +115,7 @@ public class BasicTests extends JellyTestCase {
 
     public void testStepInOutOver() throws InterruptedException{
         EditorOperator debuggeeOp = new EditorOperator("main.rb");
-        debuggeeOp.setCaretPositionToLine(11);
+        debuggeeOp.setCaretPositionToLine(breakpointLineNumber+1);
         debuggeeOp.insert("require 'date' \n d = Date.today \n puts d");
         Util.invokeDebugMainProject();
         Util.waitForDebuggingActions();
