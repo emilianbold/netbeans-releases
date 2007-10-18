@@ -47,7 +47,6 @@ import com.sun.source.util.TreePath;
 import java.util.Set;
 import java.util.logging.Logger;
 import javax.lang.model.element.*;
-import javax.lang.model.util.Elements;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
@@ -73,7 +72,7 @@ public class RenameTransformer extends RefactoringVisitor {
     @Override
     public Tree visitCompilationUnit(CompilationUnitTree node, Element p) {
         if (renameInComments) {
-            String originalName = p.getSimpleName().toString();
+            String originalName = getOldSimpleName(p);
             TokenSequence<JavaTokenId> ts = workingCopy.getTokenHierarchy().tokenSequence(JavaTokenId.language());
             
             while (ts.moveNext()) {
@@ -106,6 +105,20 @@ public class RenameTransformer extends RefactoringVisitor {
     public Tree visitMemberSelect(MemberSelectTree node, Element p) {
         renameUsageIfMatch(getCurrentPath(), node,p);
         return super.visitMemberSelect(node, p);
+    }
+    
+    private String getOldSimpleName(Element p) {
+        if (p!=null) {
+            return p.getSimpleName().toString();
+        }
+        for (ElementHandle<ExecutableElement> mh : allMethods) {
+            ExecutableElement baseMethod = mh.resolve(workingCopy);
+            if (baseMethod == null) {
+                continue;
+            }
+            return baseMethod.getSimpleName().toString();
+        }
+        return null;
     }
     
     private void renameUsageIfMatch(TreePath path, Tree tree, Element elementToFind) {
@@ -190,7 +203,7 @@ public class RenameTransformer extends RefactoringVisitor {
             for (ElementHandle<ExecutableElement> mh: allMethods) {
                 ExecutableElement baseMethod =  mh.resolve(workingCopy);
                 if (baseMethod==null) {
-                    Logger.getLogger(RenameTransformer.class.getName()).severe("RenameTransformer cannot resolve " + mh);
+                    Logger.getLogger("org.netbeans.modules.refactoring.java").info("RenameTransformer cannot resolve " + mh);
                     continue;
                 }
                 if (baseMethod.equals(method) || workingCopy.getElements().overrides((ExecutableElement)method, baseMethod, SourceUtils.getEnclosingTypeElement(baseMethod))) {

@@ -50,6 +50,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -322,7 +323,8 @@ public abstract class JavaRefactoringPlugin extends ProgressProviderAdapter impl
             Element el = null;
             if (treePathHandle!=null) {
                 el = treePathHandle.resolveElement(compiler);
-                assert el != null;
+                if (el==null)
+                    Logger.getLogger("org.netbeans.modules.refactoring.java").info("Cannot resolve " + treePathHandle + "in " + compiler.getFileObject().getPath());
             }
             
             visitor.scan(compiler.getCompilationUnit(), el);
