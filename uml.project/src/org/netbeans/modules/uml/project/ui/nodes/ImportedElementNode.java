@@ -42,34 +42,60 @@
 package org.netbeans.modules.uml.project.ui.nodes;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import javax.swing.Action;
+import java.text.Collator;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.UMLXMLManip;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.IElementImport;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.IPackageImport;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.project.ui.cookies.ImportedElementCookie;
 import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeItem;
-import org.netbeans.modules.uml.ui.support.projecttreesupport.ProjectTreeComparable;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 
 
-public class ImportedElementNode extends FilterNode implements Comparable, ImportedElementCookie
+public class ImportedElementNode extends FilterNode implements ImportedElementCookie, Comparable
 {
 
     private IProject referencingProject;
     private IElement elementImport;
-   
+
     public ImportedElementNode(IProject project, Node orig,
-            IElement elementImport)
+            IElementImport elementImport)
     {
-        super(orig);
+        super(orig, new NestedImportElementChildren(orig));
+        this.referencingProject = project;
+        this.elementImport = elementImport;
+        this.disableDelegation(DELEGATE_DESTROY);
+    }
+
+    public ImportedElementNode(IProject project, Node orig,
+            IPackageImport elementImport)
+    {
+//        super(orig, Children.LEAF);
+        super(orig,
+                new NestedImportElementChildren(orig));
         this.referencingProject = project;
         this.elementImport = elementImport;
         this.disableDelegation(DELEGATE_DESTROY);
     }
     
+//   public Action[] getActions(boolean context)
+//    {
+//       if (elementImport instanceof IElementImport)
+//           return super.getActions(context);
+//
+//       ArrayList<Action> list = new ArrayList<Action>();
+//       Action[] actions = getOriginal().getActions(context);
+//       for (Action action: actions)
+//       {
+//           if (action == SystemAction.get(UMLNewAction.class))
+//               continue;
+//           list.add(action);
+//       }
+//
+//       Action[] a = new Action[list.size()];
+//       return list.toArray(a);
+//    }
 
     public <T extends Node.Cookie> T getCookie(Class<T> type)
     {
@@ -79,7 +105,6 @@ public class ImportedElementNode extends FilterNode implements Comparable, Impor
         }
         return super.getCookie(type);
     }
-
 
     public boolean canDestroy()
     {
@@ -117,17 +142,18 @@ public class ImportedElementNode extends FilterNode implements Comparable, Impor
 
     public int compareTo(Object o)
     {
-        if (!(o instanceof ImportedElementNode))
-        {
-            return -1;
-        }
-        IProjectTreeItem item1 = getOriginal().getCookie(IProjectTreeItem.class);
-        IProjectTreeItem item2 = ((ImportedElementNode) o).getOriginal().getCookie(IProjectTreeItem.class);
-        if (item1 != null && item2 != null)
-        {
-            return ProjectTreeComparable.compareTo(item1, item2);
-        }
-        return -1;
+        return Collator.getInstance().compare(this.getName(), o.toString());
+//        if (!(o instanceof ImportedElementNode))
+//        {
+//            return -1;
+//        }
+//        IProjectTreeItem item1 = getOriginal().getCookie(IProjectTreeItem.class);
+//        IProjectTreeItem item2 = ((ImportedElementNode) o).getOriginal().getCookie(IProjectTreeItem.class);
+//        if (item1 != null && item2 != null)
+//        {
+//            return ProjectTreeComparable.compareTo(item1, item2);
+//        }
+//        return -1;
     }
 
     public IProject getReferencingProject()
@@ -141,4 +167,37 @@ public class ImportedElementNode extends FilterNode implements Comparable, Impor
         return (item != null) ? item.getModelElementXMIID() : "";
     }
 
+    /**
+     *  override FilterNode.Children to provide custom logic for sub nodes of
+     *  imported element. Delete action is disabled on those sub nodes to prevent
+     *  user from removing model elements inadvertently from imported projects
+     */
+    public static class NestedImportElementChildren extends FilterNode.Children
+    {
+
+        public NestedImportElementChildren(Node or)
+        {
+            super(or);
+        }
+
+        protected Node[] createNodes(Node key)
+        {
+            NestedImportElementNode node = new NestedImportElementNode(key);
+            return new Node[]{node};
+        }
+    }
+
+    public static class NestedImportElementNode extends FilterNode
+    {
+
+        public NestedImportElementNode(Node orig)
+        {
+            super(orig);
+        }
+
+        public boolean canDestroy()
+        {
+            return false;
+        }
+    }
 }

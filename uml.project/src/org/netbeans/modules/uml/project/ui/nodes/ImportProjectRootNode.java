@@ -137,11 +137,20 @@ public class ImportProjectRootNode extends AbstractNode implements ImportElement
         {
             e = ((IPackageImport) element).getImportedPackage();
         }
-        ownerProject = e.getOwner() == null ? proj : e.getOwner().getProject();
+//        ownerProject = e.getOwner() == null ? proj : e.getOwner().getProject();
+        ownerProject = getOwningProject(e);
         ImportedProjectChildren children = (ImportedProjectChildren) getChildren();
         children.removeImportElement(ownerProject, element);
     }
 
+    private IProject getOwningProject(IElement imported)
+    {
+        IElement owner = imported.getOwner();
+        if (!(owner instanceof IProject))
+            return getOwningProject(owner);
+        return (IProject)owner;
+    }
+    
     public boolean canCopy()
     {
         return false;

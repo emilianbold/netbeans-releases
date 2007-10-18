@@ -58,7 +58,6 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IPackageImport;
 import org.netbeans.modules.uml.core.metamodel.profiles.IProfile;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
-import org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeElement;
 import org.netbeans.modules.uml.project.UMLProjectHelper;
 import java.util.Collections;
 import java.util.HashMap;
@@ -164,8 +163,14 @@ public class ImportedProjectChildren extends Children.Keys //Children.Array
                         element.toString()));
                 return;
             }
-            ImportedElementNode node = new ImportedElementNode(mHelper.getProject(), 
-                    orig, elementImport);
+            ImportedElementNode node = null;
+            if (elementImport instanceof IElementImport)
+                node = new ImportedElementNode(mHelper.getProject(), 
+                    orig, (IElementImport)elementImport);
+            else if (elementImport instanceof IPackageImport)
+                node = new ImportedElementNode(mHelper.getProject(), 
+                    orig, (IPackageImport)elementImport);
+            
             Node[] nodes = { (Node)node };
 
             if(children != null)

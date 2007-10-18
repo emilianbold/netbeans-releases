@@ -43,23 +43,17 @@ package org.netbeans.modules.uml.project.ui.customizer;
 import org.netbeans.modules.uml.project.ProjectUtil;
 import org.netbeans.modules.uml.project.UMLProject;
 import org.netbeans.modules.uml.project.UMLProjectHelper;
-import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.ListSelectionModel;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IImportEventsSink;
@@ -68,23 +62,19 @@ import org.netbeans.modules.uml.core.support.umlsupport.IResultCell;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPackageImport;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPackage;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.IAutonomousElement;
 import org.netbeans.modules.uml.core.metamodel.profiles.IProfile;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.core.eventframework.EventDispatchNameKeeper;
 import org.netbeans.modules.uml.core.eventframework.EventDispatchRetriever;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.FactoryRetriever;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElementChangeEventDispatcher;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElementLifeTimeEventDispatcher;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElementLifeTimeEventsSink;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IVersionableElement;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import java.util.HashMap;
 import java.util.Map;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -325,10 +315,10 @@ public class UMLImportsUiSupport
                                         IElement element,
                                         IElementImport importedElement)
     {
-        if((element != null) && (inSameProject(importingPackage) == true))
-        {
-            Project foundProject = ProjectUtil.findElementOwner(element);
-            Project referencingProject = ProjectUtil.findReferencingProject(element);
+//        if((element != null) && (inSameProject(importingPackage) == true))
+//        {
+            Project foundProject = ProjectUtil.findElementOwner(element.getOwningPackage());
+            Project referencingProject = ProjectUtil.findReferencingProject(importedElement);
             
             // add reference to the project only if it differes from the owner
             if((foundProject instanceof UMLProject) && 
@@ -364,7 +354,7 @@ public class UMLImportsUiSupport
                     }
                 }
             }
-        }
+//        }
     }
     
     protected void modelPackageImported(IPackage importingPackage, 
@@ -484,9 +474,11 @@ public class UMLImportsUiSupport
         
         public void onElementImported(IElementImport elImport, IResultCell cell)
         {
-            modelElementImported(elImport.getImportingPackage(), 
-                                 elImport.getImportedElement(),
-                                 elImport);
+            if (inSameProject(elImport) == true)
+            {
+                modelElementImported(elImport.getImportingPackage(),
+                        elImport.getImportedElement(), elImport);
+            }
         }
 
         public void onPackageImported(IPackageImport packImport, IResultCell cell)
