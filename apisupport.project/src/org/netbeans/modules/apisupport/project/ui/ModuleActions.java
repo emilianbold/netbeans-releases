@@ -351,9 +351,7 @@ public final class ModuleActions implements ActionProvider {
             }
             return;
         }
-        NbPlatform plaf = project.getPlatform(false);
-        if (plaf != null && plaf.getHarnessVersion() != NbPlatform.HARNESS_VERSION_UNKNOWN && plaf.getHarnessVersion() < project.getMinimumHarnessVersion()) {
-            promptForNewerHarness();
+        if (!verifySufficientlyNewHarness(project)) {
             return;
         }
         Properties p;
@@ -455,6 +453,15 @@ public final class ModuleActions implements ActionProvider {
         }
     }
 
+    private static boolean verifySufficientlyNewHarness(NbModuleProject project) {
+        NbPlatform plaf = project.getPlatform(false);
+        if (plaf != null && plaf.getHarnessVersion() != NbPlatform.HARNESS_VERSION_UNKNOWN && plaf.getHarnessVersion() < project.getMinimumHarnessVersion()) {
+            promptForNewerHarness();
+            return false;
+        } else {
+            return true;
+        }
+    }
     static void promptForNewerHarness() {
         // #82388: warn the user that the harness version is too low.
         NotifyDescriptor d = new NotifyDescriptor.Message(NbBundle.getMessage(ModuleActions.class, "ERR_harness_too_old"), NotifyDescriptor.ERROR_MESSAGE);
@@ -480,6 +487,9 @@ public final class ModuleActions implements ActionProvider {
                 return findBuildXml(project) != null;
             }
             public void actionPerformed(ActionEvent ignore) {
+                if (!verifySufficientlyNewHarness(project)) {
+                    return;
+                }
                 try {
                     ActionUtils.runTarget(findBuildXml(project), targetNames, null);
                 } catch (IOException e) {
@@ -558,6 +568,9 @@ public final class ModuleActions implements ActionProvider {
                 }
             }
             public void actionPerformed(ActionEvent ignore) {
+                if (!verifySufficientlyNewHarness(project)) {
+                    return;
+                }
                 if (ModuleUISettings.getDefault().getConfirmReloadInIDE()) {
                     NotifyDescriptor d = new NotifyDescriptor.Confirmation(
                             NbBundle.getMessage(ModuleActions.class, "LBL_reload_in_ide_confirm"),
@@ -583,6 +596,9 @@ public final class ModuleActions implements ActionProvider {
                 return findBuildXml(project) != null;
             }
             public void actionPerformed(ActionEvent ignore) {
+                if (!verifySufficientlyNewHarness(project)) {
+                    return;
+                }
                 ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
                     public Void run() {
                         String prop = "javadoc.arch"; // NOI18N
