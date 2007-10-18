@@ -447,9 +447,14 @@ public final class JavaSource {
         Reference<?> ref = (Reference<?>) doc.getProperty(JavaSource.class);
         JavaSource js = ref != null ? (JavaSource) ref.get() : null;
         if (js == null) {
-            DataObject dObj = (DataObject)doc.getProperty(Document.StreamDescriptionProperty);
-            if (dObj != null)
-                js = forFileObject(dObj.getPrimaryFile());
+            Object source = doc.getProperty(Document.StreamDescriptionProperty);
+            
+            if (source instanceof DataObject) {
+                DataObject dObj = (DataObject) source;
+                if (dObj != null) {
+                    js = forFileObject(dObj.getPrimaryFile());
+                }
+            }
         }
         return js;
     }

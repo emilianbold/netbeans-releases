@@ -157,7 +157,13 @@ class OpenedEditors implements PropertyChangeListener {
     }
 
     static FileObject getFileObject(JTextComponent pane) {
-        DataObject file = (DataObject) pane.getDocument().getProperty(Document.StreamDescriptionProperty);
+        Object source = pane.getDocument().getProperty(Document.StreamDescriptionProperty);
+        
+        if (!(source instanceof DataObject)) {
+            return null;
+        }
+        
+        DataObject file = (DataObject) source;
         
         if (file != null) {
             return file.getPrimaryFile();
