@@ -137,19 +137,7 @@ public class PaletteKit implements Runnable, LookupListener {
         try {
             for (FileObject catFolder : rootFolder.getPrimaryFile().getChildren()) {
                 for (FileObject item : catFolder.getChildren()) {
-                    if (CUSTOM_CATEGORY_NAME.equalsIgnoreCase(catFolder.getName())) {
-                        item.delete();
-                    } else {
-                        String producerName = item.getName();
-                        ComponentProducer producer = producers.get(producerName);
-
-                        if (producer != null) {
-                            String catID = producer.getPaletteDescriptor().getCategoryID();
-                            if (!catID.equals(catFolder.getName())) {
-                                item.delete();
-                            }
-                        }
-                    }
+                    item.delete();
                 }
             }
         } catch (IOException ex) {
@@ -157,6 +145,20 @@ public class PaletteKit implements Runnable, LookupListener {
         }
     }
 
+    synchronized void refresh() {
+        refreshFO(rootFolder.getPrimaryFile());
+    }
+    
+    private void refreshFO(FileObject fo) {
+        if (fo.isFolder()) {
+            for (FileObject fileObject : fo.getChildren()) {
+                refreshFO(fileObject);
+            }
+        } else {
+            fo.refresh();
+        }
+    }
+    
     synchronized void refreshDescriptorRegistry() {
         if (activeDocument == null || activeDocument.get() == null) {
             return;
@@ -420,6 +422,17 @@ public class PaletteKit implements Runnable, LookupListener {
             return null;
         }
 
+        @Override
+        public Action getRefreshAction() {
+            return new AbstractAction() {
+
+                public void actionPerformed(ActionEvent evt) {
+                    refreshDescriptorRegistry();
+                    refresh();
+                }
+            };
+        }
+        
         @Override
         public Action getResetAction() {
             return new AbstractAction() {
