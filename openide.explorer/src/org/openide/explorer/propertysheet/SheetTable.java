@@ -86,6 +86,7 @@ import javax.swing.TransferHandler;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.TableModelEvent;
+import javax.swing.plaf.TableUI;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
@@ -1418,6 +1419,13 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
         // PropertySheet is going to be removed (note that isShowing, isVisible,
         // ... methods return still true when this method is called)
         return getRowCount() <= 0;
+    }
+
+    @Override
+    public void setUI(TableUI ui) {
+        super.setUI(ui);
+        renderer = null;
+        cellEditor = null;
     }
 
     //*************Actions bound to the keyboard ******************
