@@ -1,0 +1,9 @@
+package ustpkg;
+
+public class NewClass {
+    public static void main(String[] args) {
+        A obj = new B();
+        obj.m();
+    }
+
+}
