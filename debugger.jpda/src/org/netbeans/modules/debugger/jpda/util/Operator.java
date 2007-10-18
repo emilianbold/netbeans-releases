@@ -89,6 +89,7 @@ public class Operator {
     private List<EventSet>    staledEvents = new ArrayList<EventSet>();
     private List<EventRequest> staledRequests = new ArrayList<EventRequest>();
     private boolean           stop;
+    private boolean           canInterrupt;
 
     /**
      * Creates an operator for a given virtual machine. The operator will listen
@@ -141,6 +142,10 @@ public class Operator {
                      }
                      if (eventSet == null) {
                         try {
+                            synchronized (Operator.this) {
+                                if (stop) break;
+                                canInterrupt = true;
+                            }
                             eventSet = eventQueue.remove ();
                             if (logger.isLoggable(Level.FINE)) {
                                 logger.fine("HAVE EVENT(s) in the Queue: "+eventSet);
@@ -153,6 +158,9 @@ public class Operator {
                             }
                             processStaledEvents = true;
                             continue;
+                        }
+                        synchronized (Operator.this) {
+                            canInterrupt = false;
                         }
                      }
                      synchronized (Operator.this) {
@@ -382,8 +390,10 @@ public class Operator {
             staledEvents.clear();
             if (stop) return ; // Do not interrupt the thread when we're stopped
             stop = true;
+            if (canInterrupt) {
+                thread.interrupt();
+            }
         }
-        thread.interrupt();
     }
     
     /**
