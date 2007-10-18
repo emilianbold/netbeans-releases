@@ -48,6 +48,7 @@ import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.Scrollable;
 import org.netbeans.modules.welcome.content.Constants;
 import org.openide.util.Utilities;
@@ -106,6 +107,17 @@ abstract class AbstractTab extends JPanel implements Scrollable, Constants {
         Dimension d = super.getPreferredSize();
         if( null != getParent() && getParent().getHeight() > 0 && getParent().getHeight() > d.height )
             d.height = getParent().getHeight();
+        if( null != getParent() && getParent().getWidth() > 0 ) {
+            if( d.width > getParent().getWidth() ) {
+                d.width = Math.max(getParent().getWidth(), START_PAGE_MIN_WIDTH+(int)(((FONT_SIZE-11)/11.0)*START_PAGE_MIN_WIDTH));
+                if( getParent().getParent() instanceof JScrollPane ) {
+                    if( ((JScrollPane)getParent().getParent()).getVerticalScrollBar().isVisible() )
+                        d.width -= ((JScrollPane)getParent().getParent()).getVerticalScrollBar().getWidth();
+                }
+            } else if( d.width < getParent().getWidth() ) {
+                d.width = getParent().getWidth();
+            }
+        }
         return d;
     }
     
@@ -122,7 +134,7 @@ abstract class AbstractTab extends JPanel implements Scrollable, Constants {
     }
 
     public boolean getScrollableTracksViewportWidth() {
-        return true;
+        return false;
     }
 
     public boolean getScrollableTracksViewportHeight() {

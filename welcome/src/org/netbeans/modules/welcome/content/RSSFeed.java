@@ -462,7 +462,7 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
         res = res.replaceAll( "&nbsp;", " " ); // NOI18N // NOI18N
         res = res.trim();
         int maxLen = getMaxDecsriptionLength();
-        if( res.length() > maxLen ) {
+        if( maxLen > 0 && res.length() > maxLen ) {
             res = res.substring( 0, maxLen ) + "..."; // NOI18N
         }
         return res;

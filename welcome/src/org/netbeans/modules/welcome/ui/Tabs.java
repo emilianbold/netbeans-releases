@@ -141,7 +141,6 @@ class Tabs extends JPanel implements Constants {
             compToShow = new JScrollPane( showLeftTab ? leftTab : rightTab );
             compToShow.setOpaque( false );
             compToShow.getViewport().setOpaque( false );
-            compToShow.setHorizontalScrollBarPolicy( JScrollPane.HORIZONTAL_SCROLLBAR_NEVER );
             compToShow.setBorder( BorderFactory.createEmptyBorder() );
 
             if( showLeftTab ) {
