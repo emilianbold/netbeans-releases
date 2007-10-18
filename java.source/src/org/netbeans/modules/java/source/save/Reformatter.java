@@ -423,6 +423,7 @@ public class Reformatter implements ReformatTask {
                                 }
                                 break;
                             case METHOD:
+                            case BLOCK:
                                 blankLines(cs.getBlankLinesBeforeMethods());
                                 scan(member, p);
                                 blankLines(cs.getBlankLinesAfterMethods());
@@ -431,10 +432,6 @@ public class Reformatter implements ReformatTask {
                                 blankLines(cs.getBlankLinesBeforeClass());
                                 scan(member, p);
                                 blankLines(cs.getBlankLinesAfterClass());
-                                break;
-                            case BLOCK:
-                                scan(member, p);
-                                newline();
                                 break;
                         }
                     }
@@ -700,7 +697,8 @@ public class Reformatter implements ReformatTask {
             switch (getCurrentPath().getParentPath().getLeaf().getKind()) {
                 case CLASS:
                     bracePlacement = cs.getOtherBracePlacement();
-                    spaceBeforeLeftBrace = cs.spaceBeforeStaticInitLeftBrace();
+                    if (node.isStatic())
+                        spaceBeforeLeftBrace = cs.spaceBeforeStaticInitLeftBrace();
                     break;
                 case METHOD:
                     bracePlacement = cs.getMethodDeclBracePlacement();
