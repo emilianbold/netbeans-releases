@@ -53,8 +53,8 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.modules.bpel.debuggerbdi.rmi.wp.impl</package>
             </friend-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/bdi/bdi.jar</runtime-relative-path>
-                <binary-origin>external/bdi.jar</binary-origin>
+                <runtime-relative-path>ext/bdi/bdi-1.0.0.jar</runtime-relative-path>
+                <binary-origin>external/bdi-1.0.0.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>
