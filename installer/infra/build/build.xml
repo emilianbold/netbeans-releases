@@ -82,7 +82,7 @@
         </copy>
         -->
     </target>
-    
+
     <target name="-checkout-branch" if="cvs.branch">
         <cvs 
             command="checkout -P"
@@ -101,6 +101,43 @@
             failonerror="true"
         />
     </target>
+
+    <target name="-checkout-translatedfiles-branch" if="cvs.branch">
+	<cvs 
+            command="checkout -P"
+            cvsroot="${cvs.root}" 
+	    tag="${cvs.branch}"
+            package="translatedfiles/src/nbi"
+            dest="${nbi.all.dir}"
+            failonerror="true"
+        />
+        <cvs 
+            command="checkout -P"
+            cvsroot="${cvs.root}" 
+	    tag="${cvs.branch}"
+            package="translatedfiles/src/installer/components translatedfiles/src/installer/engine translatedfiles/src/installer/infra"
+            dest="${nbi.all.dir}"
+            failonerror="true"
+        />
+    </target>
+
+    <target name="-checkout-translatedfiles-trunk" unless="cvs.branch">
+	<cvs 
+            command="checkout -P"
+            cvsroot="${cvs.root}" 
+            package="translatedfiles/src/nbi"
+            dest="${nbi.all.dir}"
+            failonerror="true"
+        />
+        <cvs 
+            command="checkout -P"
+            cvsroot="${cvs.root}" 
+            package="translatedfiles/src/installer/components translatedfiles/src/installer/engine translatedfiles/src/installer/infra"
+            dest="${nbi.all.dir}"
+            failonerror="true"
+        />
+    </target>
+
     
     <target name="-init">
         <delete dir="${custom.tasks.cls}"/>
