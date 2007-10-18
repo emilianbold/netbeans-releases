@@ -54,8 +54,8 @@ made subject to such option by the copyright holder.
     <fontcolor name="inc-search" bgColor="ffff9900"/>
     <fontcolor name="line-number" foreColor="white"/>
     <fontcolor name="selection" bgColor="lightGray"/>
-    <fontcolor name="status-bar" foreColor="black" bgColor="ffece9d8"/>
-    <fontcolor name="status-bar-bold" bgColor="red"/>
+    <fontcolor name="status-bar"/>
+    <fontcolor name="status-bar-bold" foreColor="white" bgColor="red"/>
     <fontcolor name="caret-color-insert-mode" foreColor="white" bgColor="white"/>
     <fontcolor name="text-limit-line-color" foreColor="ffffebeb"/>
 </fontscolors>

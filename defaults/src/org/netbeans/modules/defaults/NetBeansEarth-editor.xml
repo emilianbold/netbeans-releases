@@ -54,12 +54,8 @@ made subject to such option by the copyright holder.
     <fontcolor name="inc-search" foreColor="black" bgColor="ffFFB442"/> <!-- ffff9900 -->
     <fontcolor name="line-number" foreColor="black" bgColor="ffe9e8e2"/>
     <fontcolor name="selection" bgColor="ffb5cce3"/>
-    <fontcolor name="status-bar">
-        <font name="Monospaced" size="12" style="plain"/>
-    </fontcolor>
-    <fontcolor name="status-bar-bold" foreColor="white" bgColor="red">
-        <font name="Monospaced" size="12" style="plain"/>
-    </fontcolor>
+    <fontcolor name="status-bar"/>
+    <fontcolor name="status-bar-bold" foreColor="white" bgColor="red"/>
     <fontcolor name="caret-color-insert-mode" foreColor="black"/>
     <fontcolor name="text-limit-line-color" foreColor="ffffa8a8"/>
 </fontscolors>
