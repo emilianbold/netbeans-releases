@@ -75,6 +75,7 @@ import org.openide.nodes.NodeAcceptor;
 import org.openide.nodes.NodeOperation;
 import org.openide.util.NbBundle;
 import org.openide.util.UserCancelException;
+import org.openide.util.Utilities;
 
 /**
  * Copy of j2ee/utilities Util class
@@ -468,5 +469,16 @@ public class Util {
             Logger.global.log(Level.INFO, "", ex);
             return null;
         }
+    }
+    
+    public static boolean isValidPackageName(String packageName) {
+        if (packageName == null) return false;
+        String[] segments = packageName.split("\\.");
+        for (String s : segments) {
+            if (! Utilities.isJavaIdentifier(s)) {
+                return false;
+            }
+        }
+        return true;
     }
 }

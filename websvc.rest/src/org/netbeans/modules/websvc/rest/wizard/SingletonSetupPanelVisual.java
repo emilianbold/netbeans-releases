@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.websvc.rest.wizard;
 
+import java.awt.event.KeyAdapter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -49,6 +50,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.JTextComponent;
+import org.openide.util.Utilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -79,7 +81,11 @@ public class SingletonSetupPanelVisual extends javax.swing.JPanel implements Abs
         setName(name);
         this.listeners = new ArrayList<ChangeListener>();
         initComponents();
-        
+        packageComboBox.getEditor().getEditorComponent().addKeyListener(new KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                fireChange();
+            }
+        });
         medaTypeComboBox.setModel(new DefaultComboBoxModel(GenericResourceBean.getSupportedMimeTypes()));
     }
     
@@ -397,17 +403,23 @@ private void resourceNameChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event
     
     public boolean valid(WizardDescriptor wizard) {
         AbstractPanel.clearErrorMessage(wizard);
-        if (resourceNameTextField.getText().trim().length() == 0) {
-            AbstractPanel.setErrorMessage(wizard, "MSG_EmptyResourceName");
+        String resourceName = resourceNameTextField.getText().trim();
+        String packageName = getPackage();
+        String className = classTextField.getText().trim();
+        if (resourceName.length() == 0 || ! Utilities.isJavaIdentifier(resourceName)) {
+            AbstractPanel.setErrorMessage(wizard, "MSG_InvalidResourceName");
             return false;
-        } else if (classTextField.getText().trim().length() == 0) {
-            AbstractPanel.setErrorMessage(wizard, "MSG_EmptyResourceClassName");
+        } else if (className.length() == 0 || ! Utilities.isJavaIdentifier(className)) {
+            AbstractPanel.setErrorMessage(wizard, "MSG_InvalidResourceClassName");
             return false;
         } else if (uriTextField.getText().trim().length() == 0) {
             AbstractPanel.setErrorMessage(wizard, "MSG_EmptyUriTemplate");
             return false;
+        } else if (! Util.isValidPackageName(packageName)) {
+            AbstractPanel.setErrorMessage(wizard, "MSG_InvalidPackageName");
+            return false;
         } else if (getResourceClassFile() != null) {
-            AbstractPanel.setErrorMessage(wizard, "MSG_ExistingClass", getResourceClassName());
+            AbstractPanel.setErrorMessage(wizard, "MSG_ExistingClass");
             return false;
         }
         return true;

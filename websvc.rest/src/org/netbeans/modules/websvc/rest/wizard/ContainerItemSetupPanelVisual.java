@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.websvc.rest.wizard;
 
+import java.awt.event.KeyAdapter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -62,6 +63,7 @@ import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -81,7 +83,11 @@ public class ContainerItemSetupPanelVisual extends javax.swing.JPanel implements
         setName(name);
         this.listeners = new ArrayList<ChangeListener>();
         initComponents();
-        
+        packageComboBox.getEditor().getEditorComponent().addKeyListener(new KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                fireChange();
+            }
+        });
         medaTypeComboBox.setModel(new DefaultComboBoxModel(GenericResourceBean.getSupportedMimeTypes()));
     }
     
@@ -158,6 +164,11 @@ public class ContainerItemSetupPanelVisual extends javax.swing.JPanel implements
         packageComboBox.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
             public void propertyChange(java.beans.PropertyChangeEvent evt) {
                 packageChanged(evt);
+            }
+        });
+        packageComboBox.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                packageComboBoxKeyReleased(evt);
             }
         });
 
@@ -468,6 +479,10 @@ private void uriChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_uriChang
         resourceClassNameOveridden = true;
         fireChange();
     }//GEN-LAST:event_classTextFieldKeyReleased
+
+    private void packageComboBoxKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_packageComboBoxKeyReleased
+        fireChange();
+    }//GEN-LAST:event_packageComboBoxKeyReleased
                 
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -512,14 +527,19 @@ private void uriChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_uriChang
     
     public boolean valid(WizardDescriptor wizard) {
         AbstractPanel.clearErrorMessage(wizard);
-        if (resourceNameTextField.getText().trim().length() == 0) {
-            AbstractPanel.setErrorMessage(wizard, "MSG_EmptyResourceName");
+        String resourceName = resourceNameTextField.getText().trim();
+        String packageName = getPackage();
+        String className = classTextField.getText().trim();
+        String containerName = containerTextField.getText().trim();
+        
+        if (resourceName.length() == 0 || ! Utilities.isJavaIdentifier(resourceName)) {
+            AbstractPanel.setErrorMessage(wizard, "MSG_InvalidResourceName");
             return false;
-        } else if (classTextField.getText().trim().length() == 0) {
-            AbstractPanel.setErrorMessage(wizard, "MSG_EmptyResourceClassName");
+        } else if (className.length() == 0 || ! Utilities.isJavaIdentifier(className)) {
+            AbstractPanel.setErrorMessage(wizard, "MSG_InvalidResourceClassName");
             return false;
-        } else if (containerTextField.getText().trim().length() == 0) {
-            AbstractPanel.setErrorMessage(wizard, "MSG_EmptyContainerResourceClassName");
+        } else if (containerName.length() == 0 || ! Utilities.isJavaIdentifier(containerName)) {
+            AbstractPanel.setErrorMessage(wizard, "MSG_InvalidContainerResourceClassName");
             return false;
         } else if (uriTextField.getText().trim().length() == 0) {
             AbstractPanel.setErrorMessage(wizard, "MSG_EmptyUriTemplate");
@@ -527,11 +547,14 @@ private void uriChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_uriChang
         } else if (containerUriTextField.getText().trim().length() == 0) {
             AbstractPanel.setErrorMessage(wizard, "MSG_EmptyContainerUriTemplate");
             return false;
+        } else if (! Util.isValidPackageName(packageName)) {
+            AbstractPanel.setErrorMessage(wizard, "MSG_InvalidPackageName");
+            return false;
         } else if (getResourceClassFile() != null) {
-            AbstractPanel.setErrorMessage(wizard, "MSG_ExistingClass", getResourceClassName());
+            AbstractPanel.setErrorMessage(wizard, "MSG_ExistingClass");
             return false;
         } else if (getContainerClassFile() != null) {
-            AbstractPanel.setErrorMessage(wizard, "MSG_ExistingClass", getContainerClassName());
+            AbstractPanel.setErrorMessage(wizard, "MSG_ExistingClass");
             return false;
         }
         return true;
