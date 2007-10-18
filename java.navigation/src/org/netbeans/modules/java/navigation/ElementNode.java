@@ -42,6 +42,8 @@ package org.netbeans.modules.java.navigation;
 
 
 import java.awt.Image;
+import java.awt.datatransfer.Transferable;
+import java.io.IOException;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -64,6 +66,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.util.datatransfer.PasteType;
 
 /** Node representing an Element
  *
@@ -128,8 +131,42 @@ public class ElementNode extends AbstractNode {
     public Action getPreferredAction() {
         return getOpenAction();
     }
-    
-    
+
+    @Override
+    public boolean canCopy() {
+        return false;
+    }
+
+    @Override
+    public boolean canCut() {
+        return false;
+    }
+
+    @Override
+    public boolean canDestroy() {
+        return false;
+    }
+
+    @Override
+    public boolean canRename() {
+        return false;
+    }
+
+    @Override
+    public PasteType getDropType(Transferable t, int action, int index) {
+        return null;
+    }
+
+    @Override
+    public Transferable drag() throws IOException {
+        return null;
+    }
+
+    @Override
+    protected void createPasteTypes(Transferable t, List<PasteType> s) {
+        // Do nothing
+    }
+        
     private synchronized Action getOpenAction() {
         if ( openAction == null ) {
             FileObject fo = description.getFileObject();
