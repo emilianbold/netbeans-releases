@@ -48,6 +48,7 @@ import java.util.List;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
+import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 import org.openide.filesystems.FileObject;
 
@@ -57,16 +58,25 @@ import org.openide.filesystems.FileObject;
  */
 public class JSFBeanCache {
     
-    public static List /*<ManagedBean>*/ getBeans(WebModule wm){
-        FileObject[] files = ConfigurationUtils.getFacesConfigFiles(wm);
+    public static List /*<ManagedBean>*/ getBeans(WebModule webModule) {
         ArrayList beans = new ArrayList();
+        FileObject[] files = null; 
         
-        for (int i = 0; i < files.length; i++) {
-                FacesConfig facesConfig = ConfigurationUtils.getConfigModel(files[i], false).getRootComponent();
-                Collection<ManagedBean> managedBeans = facesConfig.getManagedBeans();
-                for (Iterator<ManagedBean> it = managedBeans.iterator(); it.hasNext();) {
-                    beans.add(it.next());   
-                }
+        if (webModule != null) {
+            files = ConfigurationUtils.getFacesConfigFiles(webModule);
+        }
+        
+        if (files != null) {
+            for (int i = 0; i < files.length; i++) {
+                    JSFConfigModel model = ConfigurationUtils.getConfigModel(files[i], false);
+                    if (model != null) {
+                        FacesConfig facesConfig = model.getRootComponent();
+                        Collection<ManagedBean> managedBeans = facesConfig.getManagedBeans();
+                        for (Iterator<ManagedBean> it = managedBeans.iterator(); it.hasNext();) {
+                            beans.add(it.next());   
+                        }
+                    }
+            }
         }
         return beans;
     }
