@@ -27,6 +27,7 @@
  */
 package org.netbeans.api.java.source.gen;
 
+import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
@@ -213,6 +214,65 @@ public class GuardedBlockTest extends GeneratorTestMDRCompat {
         assertEquals(golden, res);
     }
 
+    /**
+     * #90424: Guarded Exception
+     */
+    public void test() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package javaapplication5;\n" +
+            "\n" +
+            "public class NewJFrame extends javax.swing.JFrame {\n" +
+            "\n" +
+            "    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed\n" +
+            "        // TODO add your handling code here:\n" +
+            "        a = 3;\n" +
+            "    }//GEN-LAST:event_jButton1ActionPerformed\n" +
+            "\n" +
+            "}"
+        );
+        DataObject dataObject = DataObject.find(FileUtil.toFileObject(testFile));
+        EditorCookie editorCookie = ((GuardedDataObject) dataObject).getCookie(EditorCookie.class);
+        System.err.println(editorCookie.openDocument());
+        String golden = 
+            "package javaapplication5;\n" +
+            "\n" +
+            "public class NewJFrame extends javax.swing.JFrame {\n" +
+            "\n" +
+            "    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed\n" +
+            "        int a;\n" +
+            "        // TODO add your handling code here:\n" +
+            "        a = 3;\n" +
+            "    }//GEN-LAST:event_jButton1ActionPerformed\n" +
+            "\n" +
+            "}";
+        
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                VariableTree var = make.Variable(
+                        make.Modifiers(Collections.<Modifier>singleton(Modifier.PUBLIC)),
+                        "a",
+                        make.PrimitiveType(TypeKind.INT),
+                        null
+                    );
+                BlockTree copy = make.addBlockStatement(method.getBody(), var);
+                workingCopy.rewrite(method.getBody(), copy);
+            }
+        };
+        src.runModificationTask(task).commit();
+        editorCookie.saveDocument();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
     @Override
     String getGoldenPckg() {
         return "";
