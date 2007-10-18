@@ -86,7 +86,11 @@ public class RailsSources implements Sources, PropertyChangeListener, ChangeList
         this.sourceRoots.addPropertyChangeListener(this);
         this.testRoots.addPropertyChangeListener(this);        
         this.evaluator.addPropertyChangeListener(this);
-        initSources(); // have to register external build roots eagerly
+        ProjectManager.mutex().postWriteRequest(new Runnable() {
+            public void run() {
+                initSources(); // have to register external build roots eagerly - XXX Why?
+            }
+        });
     }
 
     /**
