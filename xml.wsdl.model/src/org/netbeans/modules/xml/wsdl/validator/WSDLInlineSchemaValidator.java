@@ -152,7 +152,6 @@ public class WSDLInlineSchemaValidator extends XsdBasedValidator {
                           LSResourceResolver resolver) {
         try {
             SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-            sf.setFeature("http://apache.org/xml/features/allow-java-encodings", true);
             if (resolver != null) {
                 sf.setResourceResolver(resolver);
             }
