@@ -214,7 +214,7 @@ is divided into following sections:
                 <property name="javadoc.encoding.used" value="${{source.encoding}}"/>
                 <property name="includes" value="**"/>
                 <property name="excludes" value=""/>
-                <property name="do.depend" value="true"/>
+                <property name="do.depend" value="false"/>
                 <condition property="do.depend.true">
                     <istrue value="${{do.depend}}"/>
                 </condition>

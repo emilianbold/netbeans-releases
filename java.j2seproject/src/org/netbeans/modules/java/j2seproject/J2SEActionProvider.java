@@ -512,7 +512,7 @@ class J2SEActionProvider implements ActionProvider {
                 // (If you make an edit and press F11, the save event happens *after* Ant is launched.)
                 modification(d.getPrimaryFile());
             }
-            if ("false".equalsIgnoreCase(project.evaluator().getProperty(J2SEProjectProperties.DO_DEPEND)) && !(isExplicitBuildTarget && dirty.isEmpty())) { // NOI18N
+            if (!"true".equalsIgnoreCase(project.evaluator().getProperty(J2SEProjectProperties.DO_DEPEND)) && !(isExplicitBuildTarget && dirty.isEmpty())) { // NOI18N
                 // #104508: if not using <depend>, try to compile just those files known to have been touched since the last build.
                 // (In case there are none such, yet the user invoked build anyway, probably they know what they are doing.)
                 if (dirty.isEmpty()) {

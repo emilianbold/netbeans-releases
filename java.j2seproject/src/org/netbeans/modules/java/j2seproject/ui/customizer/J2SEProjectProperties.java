@@ -99,7 +99,6 @@ public class J2SEProjectProperties {
     private static final Integer BOOLEAN_KIND_YN = new Integer( 1 );
     private static final Integer BOOLEAN_KIND_ED = new Integer( 2 );
     private Integer javacDebugBooleanKind;
-    private Integer doDependBooleanKind;
     private Integer doJarBooleanKind;
     private Integer javadocPreviewBooleanKind;
     
@@ -320,8 +319,7 @@ public class J2SEProjectProperties {
         JAVAC_DEBUG_MODEL = createToggleButtonModel( evaluator, JAVAC_DEBUG, kind);
         javacDebugBooleanKind = kind[0];
 
-        DO_DEPEND_MODEL = createToggleButtonModel(evaluator, DO_DEPEND, kind);
-        doDependBooleanKind = kind[0];
+        DO_DEPEND_MODEL = privateGroup.createToggleButtonModel(evaluator, DO_DEPEND);
 
         NO_DEPENDENCIES_MODEL = projectGroup.createInverseToggleButtonModel( evaluator, NO_DEPENDENCIES );
         JAVAC_COMPILER_ARG_MODEL = projectGroup.createStringDocument( evaluator, JAVAC_COMPILER_ARG );
@@ -460,7 +458,6 @@ public class J2SEProjectProperties {
         //Should use the StoreGroup when the StoreGroup SPI will be extended to allow false default value in ToggleButtonModel
         //Save javac.debug
         privateProperties.setProperty(JAVAC_DEBUG, encodeBoolean (JAVAC_DEBUG_MODEL.isSelected(), javacDebugBooleanKind));
-        privateProperties.setProperty(DO_DEPEND, encodeBoolean(DO_DEPEND_MODEL.isSelected(), doDependBooleanKind));
         privateProperties.setProperty(DO_JAR, encodeBoolean(DO_JAR_MODEL.isSelected(), doJarBooleanKind));
                 
         //Hotfix of the issue #70058
@@ -606,7 +603,7 @@ public class J2SEProjectProperties {
     }
     
     //Hotfix of the issue #70058
-    //Should be removed when the StoreGroup SPI will be extended to allow false default value in ToggleButtonModel
+    //Should be removed when the StoreGroup SPI will be extended to allow true default value in ToggleButtonModel
     private static JToggleButton.ToggleButtonModel createToggleButtonModel (final PropertyEvaluator evaluator, final String propName, Integer[] kind) {
         assert evaluator != null && propName != null && kind != null && kind.length == 1;
         String value = evaluator.getProperty( propName );

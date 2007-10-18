@@ -125,6 +125,9 @@ public class J2SEActionProviderTest extends NbTestCase {
         projdir = scratch.createFolder("proj");
         J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.4"));   //NOI18N
         helper = J2SEProjectGenerator.createProject(FileUtil.toFile(projdir),"proj","foo.Main","manifest.mf"); //NOI18N
+        EditableProperties ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+        ep.put(J2SEProjectProperties.DO_DEPEND, "true"); // to avoid too many changes in tests from issue #118079
+        helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
         J2SEProjectGenerator.setDefaultSourceLevel(null);
         pm = ProjectManager.getDefault();
         pp = pm.findProject(projdir);
@@ -430,7 +433,7 @@ public class J2SEActionProviderTest extends NbTestCase {
         //The project is saved after the main.class property was added into the project's properties,
         //it is no more needed to pass the main.class in the properties.
         //See issue #61244: Main class setting not saved for J2SE Project during IDE session
-        assertEquals("There must be no target parameter", 0, p.keySet().size());
+        assertEquals("There must be no target parameter", Collections.emptyMap(), p);
         
         // test COMMAND_DEBUG
 
