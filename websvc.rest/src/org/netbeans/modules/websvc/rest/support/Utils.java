@@ -40,6 +40,9 @@
  */
 package org.netbeans.modules.websvc.rest.support;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.TreeSet;
@@ -109,5 +112,26 @@ public class Utils {
             ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, de.toString());
         }    
     }
+
+    public static Method getValueOfMethod(Class type) {
+        try {
+            Method method = type.getDeclaredMethod("valueOf", String.class);
+            if (method == null || ! Modifier.isStatic(method.getModifiers())) {
+                return null;
+            }
+            return method;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+    
+    public static Constructor getConstructorWithStringParam(Class type) {
+        try {
+            return type.getConstructor(String.class);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+    
 }
 

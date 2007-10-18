@@ -28,6 +28,8 @@
 package org.netbeans.modules.websvc.rest.codegen.model;
 
 import javax.xml.namespace.QName;
+import org.netbeans.modules.websvc.rest.support.Utils;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -56,9 +58,15 @@ public class ParameterInfo {
         this.type = type;
         this.typeName = typeName;
         this.defaultValue = null;
-        this.isQueryParam = true;
+        this.isQueryParam = isQualifiedParameterType(type);
     }
 
+    private static boolean isQualifiedParameterType(Class type) {
+        return type.isPrimitive() || type.equals(String.class) ||
+               Utils.getValueOfMethod(type) != null || 
+               Utils.getConstructorWithStringParam(type) != null;
+    }
+    
     public String getName() {
         return name;
     }
