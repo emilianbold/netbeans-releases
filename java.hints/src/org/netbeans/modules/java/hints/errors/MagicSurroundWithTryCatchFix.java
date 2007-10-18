@@ -48,6 +48,7 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Scope;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
@@ -61,9 +62,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
@@ -71,6 +75,7 @@ import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.ElementUtilities.ElementAcceptor;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreeMaker;
@@ -191,6 +196,8 @@ final class MagicSurroundWithTryCatchFix implements Fix {
         return null;
     }
     
+    static boolean DISABLE_JAVA_UTIL_LOGGER = false;
+    
     private final class TransformerImpl extends TreePathScanner<Void, Void> {
         
         private WorkingCopy info;
@@ -207,17 +214,20 @@ final class MagicSurroundWithTryCatchFix implements Fix {
             this.make = info.getTreeMaker();
         }
         
-        private StatementTree createExceptionsStatement() {
+        private StatementTree createExceptionsStatement(String name) {
             TypeElement exceptions = info.getElements().getTypeElement("org.openide.util.Exceptions");
             
             if (exceptions == null) {
                 return null;
             }
             
-            return make.ExpressionStatement(make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.MemberSelect(make.QualIdent(exceptions), "printStackTrace"), Arrays.asList(make.Identifier("ex"))));
+            return make.ExpressionStatement(make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.MemberSelect(make.QualIdent(exceptions), "printStackTrace"), Arrays.asList(make.Identifier(name))));
         }
         
-        private StatementTree createLogStatement() {
+        private StatementTree createLogStatement(String name) {
+            if (DISABLE_JAVA_UTIL_LOGGER)
+                return null;
+            
             if (!GeneratorUtils.supportsOverride(info.getFileObject()))
                 return null;
             
@@ -258,39 +268,64 @@ final class MagicSurroundWithTryCatchFix implements Fix {
             );
             ExpressionTree levelExpression = make.MemberSelect(make.QualIdent(level), "SEVERE");
             
-            return make.ExpressionStatement(make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.MemberSelect(etExpression, "log"), Arrays.asList(levelExpression, make.Literal(null), make.Identifier("ex"))));
+            return make.ExpressionStatement(make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.MemberSelect(etExpression, "log"), Arrays.asList(levelExpression, make.Literal(null), make.Identifier(name))));
         }
         
-        private StatementTree createPrintStackTraceStatement() {
-            return make.ExpressionStatement(make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.MemberSelect(make.Identifier("ex"), "printStackTrace"), Collections.<ExpressionTree>emptyList()));
+        private StatementTree createPrintStackTraceStatement(String name) {
+            return make.ExpressionStatement(make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.MemberSelect(make.Identifier(name), "printStackTrace"), Collections.<ExpressionTree>emptyList()));
         }
         
-        private CatchTree createCatch(TypeMirror type) {
-            StatementTree logStatement = createExceptionsStatement();
+        private CatchTree createCatch(String name, TypeMirror type) {
+            StatementTree logStatement = createExceptionsStatement(name);
             
             if (logStatement == null) {
-                logStatement = createLogStatement();
+                logStatement = createLogStatement(name);
             }
             
             if (logStatement == null) {
-                logStatement = createPrintStackTraceStatement();
+                logStatement = createPrintStackTraceStatement(name);
             }
             
-            return make.Catch(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "ex", make.Type(type), null), make.Block(Collections.singletonList(logStatement), false));
+            return make.Catch(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), name, make.Type(type), null), make.Block(Collections.singletonList(logStatement), false));
         }
         
-        private List<CatchTree> createCatches() {
+        private List<CatchTree> createCatches(String name) {
             List<CatchTree> catches = new ArrayList<CatchTree>();
             
             for (TypeMirrorHandle th : thandles) {
-                catches.add(createCatch(th.resolve(info)));
+                catches.add(createCatch(name, th.resolve(info)));
             }
             
             return catches;
         }
         
+        private String inferName() {
+            Scope s = info.getTrees().getScope(getCurrentPath());
+            Set<String> existingVariables = new HashSet<String>();
+            
+            for (Element e : info.getElementUtilities().getLocalVars(s, new ElementAcceptor() {
+                public boolean accept(Element e, TypeMirror type) {
+                    return e != null && (e.getKind() == ElementKind.PARAMETER || e.getKind() == ElementKind.LOCAL_VARIABLE || e.getKind() == ElementKind.EXCEPTION_PARAMETER);
+                }
+            })) {
+                existingVariables.add(e.getSimpleName().toString());
+            }
+            
+            int index = 0;
+            
+            while (true) {
+                String proposal = "ex" + (index == 0 ? "" : ("" + index));
+                
+                if (!existingVariables.contains(proposal)) {
+                    return proposal;
+                }
+                
+                index++;
+            }
+        }
+        
         public @Override Void visitTry(TryTree tt, Void p) {
-            List<CatchTree> catches = createCatches();
+            List<CatchTree> catches = createCatches(inferName());
             
             catches.addAll(tt.getCatches());
             
@@ -337,7 +372,7 @@ final class MagicSurroundWithTryCatchFix implements Fix {
         
         private StatementTree createFinallyCloseBlockStatement(CharSequence name) {
             StatementTree close = make.ExpressionStatement(make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.MemberSelect(make.Identifier(name), "close"), Collections.<ExpressionTree>emptyList()));
-            StatementTree tryStatement = make.Try(make.Block(Collections.singletonList(close), false), Collections.singletonList(createCatch(info.getElements().getTypeElement("java.io.IOException").asType())), null);
+            StatementTree tryStatement = make.Try(make.Block(Collections.singletonList(close), false), Collections.singletonList(createCatch(inferName(), info.getElements().getTypeElement("java.io.IOException").asType())), null);
             
             return tryStatement;
         }
@@ -355,7 +390,7 @@ final class MagicSurroundWithTryCatchFix implements Fix {
         }
         
         public @Override Void visitBlock(BlockTree bt, Void p) {
-            List<CatchTree> catches = createCatches();
+            List<CatchTree> catches = createCatches(inferName());
             
             //#89379: if inside a constructor, do not wrap the "super"/"this" call:
             //please note that the "super" or "this" call is supposed to be always
