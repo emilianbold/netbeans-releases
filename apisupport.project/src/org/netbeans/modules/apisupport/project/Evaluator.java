@@ -218,15 +218,18 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
     private void reset() {
         ProjectManager.mutex().readAccess(new Mutex.Action<Void>() {
             public Void run() {
+                ModuleList moduleList;
+                try {
+                    moduleList = project.getModuleList();
+                } catch (IOException e) {
+                    Util.err.notify(ErrorManager.INFORMATIONAL, e);
+                    // but leave old evaluator in place for now
+                    return null;
+                }
                 synchronized (Evaluator.this) {
                     loadedModuleList = true;
                     delegate.removePropertyChangeListener(Evaluator.this);
-                    try {
-                        delegate = createEvaluator(project.getModuleList());
-                    } catch (IOException e) {
-                        Util.err.notify(ErrorManager.INFORMATIONAL, e);
-                        // but leave old evaluator in place for now
-                    }
+                    delegate = createEvaluator(moduleList);
                     delegate.addPropertyChangeListener(Evaluator.this);
                     // XXX better to compute diff between previous and new values and fire just those
                     pcs.firePropertyChange(null, null, null);
