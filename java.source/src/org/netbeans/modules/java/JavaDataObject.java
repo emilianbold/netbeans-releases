@@ -64,11 +64,13 @@ import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.loaders.SaveAsCapable;
+import org.openide.nodes.CookieSet.Factory;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node.Cookie;
 import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.DataEditorSupport;
+import org.openide.util.Lookup;
 import org.openide.windows.CloneableOpenSupport;
 
 public final class JavaDataObject extends MultiDataObject {
@@ -82,17 +84,20 @@ public final class JavaDataObject extends MultiDataObject {
                 createJavaEditorSupport().saveAs( folder, fileName );
             }
         });
+        getCookieSet().add(JavaEditorSupport.class, new Factory() {
+            public <T extends Cookie> T createCookie(Class<T> klass) {
+                return klass.cast(createJavaEditorSupport ());
+            }
+        });
     }
 
     public @Override Node createNodeDelegate() {
         return JavaDataSupport.createJavaNode(getPrimaryFile());
     }
 
-    public @Override <T extends Cookie> T getCookie(Class<T> type) {
-        if (type.isAssignableFrom(JavaEditorSupport.class)) {
-            return type.cast(createJavaEditorSupport ());
-        }
-        return super.getCookie(type);
+    @Override
+    public Lookup getLookup() {
+        return getCookieSet().getLookup();
     }
     
     protected DataObject handleCopyRename(DataFolder df, String name, String ext) throws IOException {
