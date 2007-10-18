@@ -43,16 +43,12 @@ package org.netbeans.modules.ruby.railsprojects;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectProperties;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.NbBundle;
 import org.openide.util.Mutex;
-import org.openide.util.RequestProcessor;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ProjectManager;
@@ -60,11 +56,6 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.ruby.spi.project.support.rake.SourcesHelper;
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.Text;
-
 
 /**
  * Implementation of {@link Sources} interface for RailsProject.
@@ -78,11 +69,11 @@ public class RailsSources implements Sources, PropertyChangeListener, ChangeList
     private final PropertyEvaluator evaluator;
     private final SourceRoots sourceRoots;
     private final SourceRoots testRoots;
-    private SourcesHelper sourcesHelper;
     private Sources delegate;
+    
     /**
      * Flag to forbid multiple invocation of {@link SourcesHelper#registerExternalRoots} 
-     **/
+     */
     private boolean externalRootsRegistered;    
     private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
 
@@ -128,28 +119,28 @@ public class RailsSources implements Sources, PropertyChangeListener, ChangeList
         evaluator.removePropertyChangeListener(this);
     }
 
-    private Sources initSources() {        
-        this.sourcesHelper = new SourcesHelper(helper, evaluator);   //Safe to pass APH        
+    private Sources initSources() {    
+        final SourcesHelper sourcesHelper = new SourcesHelper(helper, evaluator);   //Safe to pass APH        
         String[] propNames = sourceRoots.getRootProperties();
         String[] rootNames = sourceRoots.getRootNames();
         for (int i = 0; i < propNames.length; i++) {
             String displayName = rootNames[i];
             displayName = sourceRoots.getRootDisplayName(displayName, propNames[i]);
-            String prop = /*"${" +*/ propNames[i]/* + "}"*/;            
-            this.sourcesHelper.addPrincipalSourceRoot(prop, displayName, /*XXX*/null, null);
-            this.sourcesHelper.addTypedSourceRoot(prop,  RailsProject.SOURCES_TYPE_RUBY, displayName, /*XXX*/null, null);
+            String prop = /*"${" +*/ propNames[i]/* + "}"*/; // NOI18N
+            sourcesHelper.addPrincipalSourceRoot(prop, displayName, /*XXX*/null, null);
+            sourcesHelper.addTypedSourceRoot(prop,  RailsProject.SOURCES_TYPE_RUBY, displayName, /*XXX*/null, null);
         }
         propNames = testRoots.getRootProperties();
         rootNames = testRoots.getRootNames();
         for (int i = 0; i < propNames.length; i++) {
             String displayName = rootNames[i];            
             displayName = testRoots.getRootDisplayName(displayName, propNames[i]);
-            String prop = "${" + propNames[i] + "}";
-            this.sourcesHelper.addPrincipalSourceRoot(prop, displayName, /*XXX*/null, null);
-            this.sourcesHelper.addTypedSourceRoot(prop,  RailsProject.SOURCES_TYPE_RUBY, displayName, /*XXX*/null, null);
+            String prop = "${" + propNames[i] + "}"; // NOI18N
+            sourcesHelper.addPrincipalSourceRoot(prop, displayName, /*XXX*/null, null);
+            sourcesHelper.addTypedSourceRoot(prop,  RailsProject.SOURCES_TYPE_RUBY, displayName, /*XXX*/null, null);
         }        
-        this.sourcesHelper.addNonSourceRoot (BUILD_DIR_PROP);
-        this.sourcesHelper.addNonSourceRoot(DIST_DIR_PROP);
+        sourcesHelper.addNonSourceRoot (BUILD_DIR_PROP);
+        sourcesHelper.addNonSourceRoot(DIST_DIR_PROP);
         externalRootsRegistered = false;
         ProjectManager.mutex().postWriteRequest(new Runnable() {
             public void run() {                
@@ -159,7 +150,7 @@ public class RailsSources implements Sources, PropertyChangeListener, ChangeList
                 }
             }
         });
-        return this.sourcesHelper.createSources();
+        return sourcesHelper.createSources();
     }
 
     public void addChangeListener(ChangeListener changeListener) {
