@@ -42,6 +42,7 @@
 package org.netbeans.nbbuild;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.StringTokenizer;
 import java.util.zip.ZipFile;
@@ -172,7 +173,7 @@ public class Sigtest extends Task {
             a = "Setup"; // NOI18N
         }
         if (a == null) {
-            throw new BuildException("Unsupported action " + action);
+            throw new BuildException("Unsupported action " + action + " use: strictcheck or generate");
         }
         java.setClassname("com.sun.tdk.signaturetest." + a);
         Commandline.Argument arg;
@@ -200,6 +201,20 @@ public class Sigtest extends Task {
             dir.mkdirs();
             outputFile = new File(dir, fileName.getName().replace(".sig", "").replace("-", "."));
             log(outputFile.toString());
+            String email = getProject().getProperty("sigtest.mail");
+            if (email != null) {
+                try {
+                    FileWriter w = new FileWriter(outputFile);
+                    w.write("email: ");
+                    w.write(email);
+                    w.write("\n");
+                    w.close();
+                } catch (IOException ex) {
+                    throw new BuildException(ex);
+                }
+            }
+
+            java.setAppend(true);
             java.setOutput(outputFile);
             java.setFork(true);
         }

@@ -777,11 +777,12 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
         </condition>
 
         <typedef name="exportedapi" classname="org.netbeans.nbbuild.ExportedAPICondition" classpath="${nb_all}/nbbuild/nbantext.jar"/>
-        <condition property="exported.api">
+        <condition property="sigtest.mail" value="api-changes@netbeans.org">
             <exportedapi/>
         </condition>
+        <property name="sigtest.mail" value="cvs@${nbm.domain}.netbeans.org"/>
 
-        <echo>Checking module: ${module.name}; exported API? ${exported.api}; nb.org domain: ${nbm.domain}</echo>
+        <echo>sigtest check: ${module.name}; cnb: ${code.name.base.dashes}; email: ${sigtest.mail}</echo>
     </target>
 
     <target name="gen-sigtest" depends="-sigtest-init">
