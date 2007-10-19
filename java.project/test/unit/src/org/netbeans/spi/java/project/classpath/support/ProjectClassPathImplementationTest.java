@@ -41,12 +41,16 @@
 
 package org.netbeans.spi.java.project.classpath.support;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
@@ -140,6 +144,72 @@ public class ProjectClassPathImplementationTest extends NbTestCase {
         assertEquals ("Wrong ClassPath roots",expected, Arrays.asList(fo));   //NOI18N
     }        
     
+    public void testProjectClassPathEvents () throws Exception {
+        prepareProject();
+        final ClassPathImplementation cpImpl = ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
+                FileUtil.toFile(helper.getProjectDirectory()), evaluator, new String[] {PROP_NAME_1, PROP_NAME_2});
+        final CPImplListener listener = new CPImplListener ();
+        cpImpl.addPropertyChangeListener (listener);
+        
+        //Properties changed 4 times, the last state of properties equals to the initial value => 0 events
+        ProjectManager.mutex().writeAccess(new Runnable() {
+            public void run() {
+                setClassPath(new String[] {PROP_NAME_1, PROP_NAME_2}, new FileObject[][] {cpRoots1, cpRoots2});
+                setClassPath(new String[] {PROP_NAME_1, PROP_NAME_2}, new FileObject[][] {cpRoots1, cpRoots2});
+                setClassPath(new String[] {PROP_NAME_1, PROP_NAME_2}, new FileObject[][] {cpRoots1, cpRoots2});
+                setClassPath(new String[] {PROP_NAME_1, PROP_NAME_2}, new FileObject[][] {cpRoots1, cpRoots2});
+            }
+        });        
+        int eventCount = listener.reset();
+        assertEquals(0, eventCount);
+        
+        //Properties changed 4 times, the last state of properties doesn't equal to the initial value => 1 event
+        ProjectManager.mutex().writeAccess(new Runnable() {
+            public void run() {
+                setClassPath(new String[] {PROP_NAME_1, PROP_NAME_2}, new FileObject[][] {cpRoots2, cpRoots1});
+                setClassPath(new String[] {PROP_NAME_1, PROP_NAME_2}, new FileObject[][] {cpRoots2, cpRoots1});
+                setClassPath(new String[] {PROP_NAME_1, PROP_NAME_2}, new FileObject[][] {cpRoots2, cpRoots1});
+                setClassPath(new String[] {PROP_NAME_1, PROP_NAME_2}, new FileObject[][] {cpRoots2, cpRoots1});
+            }
+        });        
+        eventCount = listener.reset();
+        assertEquals(1, eventCount);
+        
+        //Properties changed 4 times, the last state of properties equals to the initial value => 0 event
+        ProjectManager.mutex().writeAccess(new Runnable() {
+            public void run() {
+                setClassPath(new String[] {PROP_NAME_1, PROP_NAME_2}, new FileObject[][] {cpRoots1, cpRoots2});
+                setClassPath(new String[] {PROP_NAME_1, PROP_NAME_2}, new FileObject[][] {cpRoots1, cpRoots2});
+                setClassPath(new String[] {PROP_NAME_1, PROP_NAME_2}, new FileObject[][] {cpRoots2, cpRoots1});
+                setClassPath(new String[] {PROP_NAME_1, PROP_NAME_2}, new FileObject[][] {cpRoots2, cpRoots1});
+            }
+        });        
+        eventCount = listener.reset();
+        assertEquals(0, eventCount);
+        
+        //Properties changed 4 times, the last state of properties doesn't equal to the initial value => 1 event
+        ProjectManager.mutex().writeAccess(new Runnable() {
+            public void run() {
+                setClassPath(new String[] {PROP_NAME_1, PROP_NAME_2}, new FileObject[][] {cpRoots2, cpRoots1});
+                setClassPath(new String[] {PROP_NAME_1, PROP_NAME_2}, new FileObject[][] {cpRoots1, cpRoots1});
+                setClassPath(new String[] {PROP_NAME_1, PROP_NAME_2}, new FileObject[][] {cpRoots1, cpRoots2});
+                setClassPath(new String[] {PROP_NAME_1, PROP_NAME_2}, new FileObject[][] {cpRoots1, cpRoots2});
+            }
+        });        
+        eventCount = listener.reset();
+        assertEquals(1, eventCount);
+        
+        //Properties changed 4 times outside mutex, none of new state of properties equal to the previous value => 4 events
+        setClassPath(new String[] {PROP_NAME_1, PROP_NAME_2}, new FileObject[][] {cpRoots2, cpRoots1});
+        setClassPath(new String[] {PROP_NAME_1, PROP_NAME_2}, new FileObject[][] {cpRoots1, cpRoots2});
+        setClassPath(new String[] {PROP_NAME_1, PROP_NAME_2}, new FileObject[][] {cpRoots2, cpRoots1});
+        setClassPath(new String[] {PROP_NAME_1, PROP_NAME_2}, new FileObject[][] {cpRoots1, cpRoots2});
+        eventCount = listener.reset();
+        assertEquals(4, eventCount);
+        
+        cpImpl.removePropertyChangeListener(listener);
+    }
+    
     // XXX should test that changes are actually fired when appropriate
     
     private void setClassPath (String[] propNames, FileObject[][] cpRoots) {
@@ -161,6 +231,20 @@ public class ProjectClassPathImplementationTest extends NbTestCase {
             result.append (f.getAbsolutePath());
         }
         return result.toString();
+    }
+    
+    private static final class CPImplListener implements PropertyChangeListener {
+        
+        final AtomicInteger eventCounter = new AtomicInteger ();
+        
+        public void propertyChange(PropertyChangeEvent evt) {
+            eventCounter.incrementAndGet();
+        }
+        
+        public int reset () {
+            return this.eventCounter.getAndSet(0);
+        }
+        
     }
     
 }
