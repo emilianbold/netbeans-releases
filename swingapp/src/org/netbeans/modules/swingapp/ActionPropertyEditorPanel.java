@@ -50,7 +50,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Map;
 import javax.swing.Action;
 import javax.swing.DefaultComboBoxModel;
@@ -88,10 +87,8 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
     private Map<ProxyAction.Scope, List<ProxyAction>> parsedActions;
     private boolean newActionCreated = false;
     private boolean actionPropertiesUpdated = false;
-    private boolean returnsTask = false;
-    private ProxyAction.Scope newActionScope = ProxyAction.Scope.Application;
     private boolean viewSource = false;
-    private String newMethodName = "";
+    private String newMethodName = ""; // NOI18N
     private boolean isChanging = false;
     private Map<ProxyAction.Scope, String> scopeClasses = new HashMap<ProxyAction.Scope, String>();
     private FileObject sourceFile;
@@ -161,6 +158,7 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
         scopeCombo.setModel(new DefaultComboBoxModel(new ProxyAction.Scope[] { ProxyAction.Scope.Form, ProxyAction.Scope.Application}));
         
         scopeCombo.setRenderer(new DefaultListCellRenderer() {
+            @Override
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 Component comp = super.getListCellRendererComponent(list,value,index,isSelected,cellHasFocus);
                 ProxyAction.Scope scope = (ProxyAction.Scope)value;
@@ -175,6 +173,7 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
         });
         
         actionsCombo.setRenderer(new DefaultListCellRenderer() {
+            @Override
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 Component comp = super.getListCellRendererComponent(list,value,index,isSelected,cellHasFocus);
                 String text = getLocalizedString("noneAction"); // NOI18N
@@ -185,7 +184,7 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
                     } else {
                         text = act != null ? act.getId() : getLocalizedString("noneAction"); // NOI18N
                         if(act != null && act.isAppWide()) {
-                            text += getLocalizedString("globalActionAppend");//" (global)";
+                            text += getLocalizedString("globalActionAppend"); // NOI18N
                         }
                     }
                 }
@@ -394,16 +393,8 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
         
         setFromActionProperty(blockingDialogText,act,"BlockingDialog.message"); //NOI18N
         setFromActionProperty(blockingDialogTitle,act,"BlockingDialog.title"); //NOI18N
-        if(act.getSelectedName()!=null) {
-            selectedTextfield.setText(act.getSelectedName());
-        } else {
-            selectedTextfield.setText(null);
-        }
-        if(act.getEnabledName()!=null) {
-            enabledTextfield.setText(act.getEnabledName());
-        } else {
-            enabledTextfield.setText(null);
-        }
+        selectedTextfield.setText(act.getSelectedName());
+        enabledTextfield.setText(act.getEnabledName());
     }
     
     private void setFromActionProperty(JTextField textField, ProxyAction act, String key) {
@@ -926,8 +917,8 @@ private void targetClassButtonActionPerformed(java.awt.event.ActionEvent evt) {/
         selectedSourceFile = cp.getSelectedFile();
         String selectedClass = AppFrameworkSupport.getClassNameForFile(cp.getSelectedFile());
         if(AppFrameworkSupport.getFileForClass(sourceFile, selectedClass) == null) {
-            classField.setText("");
-            classLabel.setText("");
+            classField.setText(""); // NOI18N
+            classLabel.setText(""); // NOI18N
         } else {
             classField.setText(selectedClass);
             classLabel.setText(selectedClass);
@@ -995,7 +986,7 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
         if(enabledTextfield.getText() != null) {
             act.setEnabledName(enabledTextfield.getText());
         }
-        act.putValue(Action.SMALL_ICON+".IconName",  smallIconName); // NOTI18N
+        act.putValue(Action.SMALL_ICON+".IconName",  smallIconName); // NOI18N
         act.putValue(LARGE_ICON_KEY+".IconName",  largeIconName); // NOTI18N
         return act;
     }
@@ -1018,16 +1009,12 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
     }
     
     ProxyAction getNewAction() {
-        //ProxyAction act = new ProxyAction(classField.getText(), methodField.getText());
         ProxyAction act = newAction;
-        //act.setClassname(classField.getText());
         act.setClassname(getSelectedClassname());
-        //act.setMethodname(methodField.getText());
         act.setId(methodField.getText());
         act.setMethodName(methodField.getText());
         act.putValue(Action.NAME,textField.getText());
         act.putValue(Action.SHORT_DESCRIPTION,tooltipField.getText());
-        //act.setTaskEnabled(returnsTask);
         act.setTaskEnabled(backgroundTaskCheckbox.isSelected());
         
         act.putValue(Action.SMALL_ICON+".IconName",this.smallIconName); // NOI18N
@@ -1054,11 +1041,6 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
     private ProxyAction.BlockingType getSelectedBlockingType() {
         return (ProxyAction.BlockingType)blockingType.getSelectedItem();
     }
-    
-    /*
-    ProxyAction.Scope getSelectedScope() {
-        return newActionScope;
-    }*/
     
     ProxyAction getSelectedAction() {
         if(this.mode == Mode.NewActionGlobal) {
@@ -1097,8 +1079,6 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
             }
             setNewActionCreated(false);
             actionsCombo.setEnabled(true);
-            //scopeCombo.setEnabled(true);
-            //scopeCombo.setSelectedItem(act.getScope());
             //set the selection action by finding the right match
             for(int i=0; i<actionsCombo.getModel().getSize(); i++) {
                 Object o = actionsCombo.getModel().getElementAt(i);
@@ -1265,7 +1245,6 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
         if(newActionCreated) {
             clearFieldsForNewAction();
         } else {
-            //scopeCombo.setEnabled(true);
             blockingType.setEnabled(true);
             actionsCombo.setEnabled(true);
         }
@@ -1325,38 +1304,14 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
     boolean canCreateNewAction() {
         newMethodName = methodField.getText();
         
-        /*
-        if(newMethodName == null) {
-            return false;
-        }
-        if(newMethodName.trim().equals("")) { //NOI18N
-            return false;
-        }*/
         if(!isMethodNonEmpty()) { 
             return false;
         }
         
-        /*
-        if(newMethodName.contains(" ")) { //NOI18N
-            return false;
-        }
-        if(newMethodName.matches("^\\d.*")) { //NOI18N
-            return false;
-        }*/
         if(doesMethodContainBadChars()) {
             return false;
         }
         
-        /*
-        String classname = getSelectedClassname();
-        if(classname == null) { return false; }
-        if(classname.trim().equals("")) { return false; }
-        
-        
-        ActionManager am = ActionManager.getActionManager(sourceFile);
-        if(am.isExistingMethod(classname, newMethodName)) {
-            return false;
-        }*/
         if(!isValidClassname()) {
             return false;
         }
@@ -1371,19 +1326,6 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
     String getNewMethodName() {
         return methodField.getText();
     }
-    
-    private static String decodeIconPath(String path, ProxyAction action) {
-        if(path == null) return null;
-        if(path.startsWith("/")) { //absolute path
-            path = path.substring(1);
-        } else { // relative path
-            String dir = action.getResourceMap(). getResourcesDir();
-            if(dir != null && !path.startsWith(dir)) {
-                path =  dir + path;
-            }
-        }
-        return path;
-    }            
         
     private class DirtyDocumentListener implements DocumentListener {
         
@@ -1498,11 +1440,6 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
         return selectedSourceFile;
     }
     
-    
-    public static void p(String s) {
-        System.out.println(s);
-    }
-
     private String getLocalizedString(String key) {
         return NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel."+key); // NOI18N
     }
