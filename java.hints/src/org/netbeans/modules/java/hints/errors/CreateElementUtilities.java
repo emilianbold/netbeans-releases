@@ -85,6 +85,7 @@ import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
+import javax.lang.model.util.Types;
 import javax.swing.text.Document;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.editor.semantic.Utilities;
@@ -321,6 +322,19 @@ public final class CreateElementUtilities {
         
         if (at.getVariable() == error) {
             type = info.getTrees().getTypeMirror(new TreePath(parent, at.getExpression()));
+            
+            //anonymous class?
+            Set<ElementKind> fm = EnumSet.of(ElementKind.METHOD, ElementKind.FIELD);
+            if (type instanceof DeclaredType) {
+                Element el = ((DeclaredType) type).asElement();
+                if (el.getSimpleName().length() == 0 || fm.contains(el.getEnclosingElement().getKind())) {
+                    List<? extends TypeMirror> interfaces = ((TypeElement) el).getInterfaces();
+                    if (interfaces.isEmpty())
+                        type = ((TypeElement) el).getSuperclass();
+                    else
+                        type = interfaces.get(0);
+                }
+            }
             
             if (type.getKind() == TypeKind.EXECUTABLE) {
                 //TODO: does not actualy work, attempt to solve situations like:
