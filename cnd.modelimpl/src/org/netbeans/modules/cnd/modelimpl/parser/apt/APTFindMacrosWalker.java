@@ -45,7 +45,12 @@ import antlr.Token;
 import antlr.TokenStream;
 import antlr.TokenStreamException;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.apt.structure.APT;
+import org.netbeans.modules.cnd.apt.structure.APTElif;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
+import org.netbeans.modules.cnd.apt.structure.APTIf;
+import org.netbeans.modules.cnd.apt.structure.APTIfdef;
+import org.netbeans.modules.cnd.apt.structure.APTIfndef;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTToken;
@@ -66,20 +71,51 @@ public class APTFindMacrosWalker extends APTSelfWalker {
     }
 
     @Override
+    protected boolean onIf(APT apt) {
+        analyzeStream(((APTIf) apt).getCondition());
+        return super.onIf(apt);
+    }
+
+    @Override
+    protected boolean onElif(APT apt, boolean wasInPrevBranch) {
+        analyzeStream(((APTElif) apt).getCondition());
+        return super.onElif(apt, wasInPrevBranch);
+    }
+
+    @Override
+    protected boolean onIfndef(APT apt) {
+        addBlock((APTToken) ((APTIfndef)apt).getMacroName());
+        return super.onIfndef(apt);
+    }
+
+    @Override
+    protected boolean onIfdef(APT apt) {
+        addBlock((APTToken) ((APTIfdef)apt).getMacroName());
+        return super.onIfdef(apt);
+    }
+
+    private void addBlock(APTToken token) {
+        addBlock(token.getOffset(), token.getEndOffset());
+    }
+
+    @Override
     public TokenStream getTokenStream() {
         TokenStream ts = super.getTokenStream();
+        analyzeStream(ts);
+        return ts;
+    }
+
+    private void analyzeStream(TokenStream ts) {
         try {
             for (Token token = ts.nextToken(); !APTUtils.isEOF(token); token = ts.nextToken()) {
                 APTMacro m = getMacroMap().getMacro(token);
                 if (m != null) {
-                    //System.err.println("gotcha: " + m);
                     APTToken apttoken = (APTToken) token;
-                    addBlock(apttoken.getOffset(), apttoken.getEndOffset());
+                    addBlock(apttoken);
                 }
             }
         } catch (TokenStreamException ex) {
             Exceptions.printStackTrace(ex);
         }
-        return ts;
     }
 }
