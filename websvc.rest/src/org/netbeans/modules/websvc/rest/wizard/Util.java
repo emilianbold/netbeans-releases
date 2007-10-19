@@ -472,7 +472,10 @@ public class Util {
     }
     
     public static boolean isValidPackageName(String packageName) {
-        if (packageName == null) return false;
+        if (packageName == null || packageName.endsWith(".")) {
+            return false;
+        }
+        
         String[] segments = packageName.split("\\.");
         for (String s : segments) {
             if (! Utilities.isJavaIdentifier(s)) {
