@@ -10,7 +10,7 @@
        <attr name="namespace" stringvalue="http://www.sun.com/jbi/descriptor/configuration"/>
        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.namebeans.modules.compapp.configextension.Bundle" />
        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/namebeans/modules/compapp/configextension/resources/config-ext.png" />
-       <file name="ApplicationConfigurationName">
+       <file name="application-config.name">
          <attr name="type" stringvalue="String"/>
          <attr name="description" stringvalue="Application Configuration Name"/>
        </file>
