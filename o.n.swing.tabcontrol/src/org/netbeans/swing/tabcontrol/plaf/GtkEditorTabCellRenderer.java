@@ -121,7 +121,7 @@ final class GtkEditorTabCellRenderer extends AbstractTabCellRenderer {
         } else {
             BufferedImage bufIm = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
             Graphics2D g2d = bufIm.createGraphics();
-            g2d.setBackground(UIManager.getColor("control.shadow"));
+            g2d.setBackground(UIManager.getColor("Panel.background"));
             g2d.clearRect(0, 0, w, h);
             painter.paintTabbedPaneTabBackground(context, g2d, 0, 0, w, h, index);
             // differentiate active and selected tabs, active tab made brighter,

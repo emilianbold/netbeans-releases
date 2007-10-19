@@ -223,7 +223,7 @@ public final class GtkViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
                                       
             BufferedImage bufIm = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
             Graphics2D g2d = bufIm.createGraphics();
-            g2d.setBackground(UIManager.getColor("control.shadow"));
+            g2d.setBackground(UIManager.getColor("Panel.background"));
             g2d.clearRect(0, 0, width, height);
             painter.paintTabbedPaneTabBackground(context, g2d, 0, 0, width, height, index);
             BufferedImage img = op.filter(bufIm, null);
