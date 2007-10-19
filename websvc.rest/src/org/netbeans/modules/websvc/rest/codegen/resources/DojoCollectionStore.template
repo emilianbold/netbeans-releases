@@ -69,9 +69,9 @@ djd43.declare("rdj.data.__CONTAINER_NAME__Store", djd43.data.core.RemoteStore, {
                 }
                 data[i] = item;
             }
-            _ref__CONTAINER_ITEM_NAME__ = new __CONTAINER_ITEM_NAME__(refs[0]['@uri']);
-            _ref__CONTAINER_ITEM_NAME__.init();
-            _refData = data[0];
+            this._ref__CONTAINER_ITEM_NAME__ = new __CONTAINER_ITEM_NAME__(refs[0]['@uri']);
+            this._ref__CONTAINER_ITEM_NAME__.init();
+            this._refData = data[0];
         }
 	return data;
 }, _setupSaveRequest:function (saveKeywordArgs, requestKw) {
@@ -93,8 +93,6 @@ djd43.declare("rdj.data.__CONTAINER_NAME__Store", djd43.data.core.RemoteStore, {
                 ci[f] = data[f];
              }
              
-             //Hack: Since djd43 0.4.3 do not support PUT and DELETE methods, we are
-            //using the generated Javascript to achieve these instead of djd43.io.bind
             var status = ci.flush();
             if(status) {
                 alert('Update succeeded for __CONTAINER_ITEM_PATH_NAME__ with Id: \''+id+'\'.');
@@ -104,18 +102,11 @@ djd43.declare("rdj.data.__CONTAINER_NAME__Store", djd43.data.core.RemoteStore, {
             requestKw.url = this._serverSaveUrl+id+'/';
             method = 'get';
             requestKw.headers = {"Accept" : "application/json"};
-            /*requestKw.contentType = 'text/json';
-            requestKw.headers = {
-                "Content-Type" : "application/json",
-                "Content-Length": jsonStr.length,//TODO - put actual length
-                "Connection": "close"//,
-                //"X-Method-Override" : "PUT"
-            };*/  
             requestKw.mimetype = "application/json";          
         } else {
-            if(_refValidation != null) {
+            if(this._ref__CONTAINER_ITEM_NAME__ != null) {
                 for(var item in this._added) {
-                     var ci = _ref__CONTAINER_ITEM_NAME__;
+                     var ci = this._ref__CONTAINER_ITEM_NAME__;
                      ci.initialized = true;
                      ci.uri = this._serverSaveUrl+id+'/';
                      var fields = ci.getFields();//first field is Id, second is uri
@@ -131,23 +122,29 @@ djd43.declare("rdj.data.__CONTAINER_NAME__Store", djd43.data.core.RemoteStore, {
                      }
                      for(var j=1;j<fields.length;j++) {
                         var f = fields[j];
-                        ci[f] = _refData[f];
+                        ci[f] = this._refData[f];
                      }
-                     jsonStr = '{' + ci.toString() + '}';
-                }     
+                    var c = new __CONTAINER_NAME__(this._serverSaveUrl);
+                    var status = c.flush(ci);
+                    if(status) {
+                        alert('Add succeeded for __CONTAINER_ITEM_PATH_NAME__ with Id: \''+id+'\'.');
+                    } else {
+                        alert('Add failed for __CONTAINER_ITEM_PATH_NAME__ with Id: \''+id+'\'.');
+                    }
+                }  
             }
             requestKw.url = this._serverSaveUrl;
-            requestKw.headers = {
-                "Content-Type" : "application/json",
-                "Content-Length": jsonStr.length,//TODO - put actual length
-                "Connection": "close"
-            };   
-            requestKw.postContent = jsonStr;//TODO  
-            requestKw.method = method;     
-            requestKw.mimetype = "application/json";  
+            method = 'get';
+            requestKw.headers = {"Accept" : "application/json"}; 
+            requestKw.mimetype = "application/json";   
         }        
 }, deleteItem:function (item) {
         var id = item['Id'];
 	var ci = new __CONTAINER_ITEM_NAME__(this._serverSaveUrl+id+'/');
-        ci.delete_();
+        var status = ci.delete_();
+        if(status) {
+            alert('Delete succeeded for __CONTAINER_ITEM_NAME__ with Id: \''+id+'\'.');
+        } else {
+            alert('Delete failed for __CONTAINER_ITEM_NAME__ with Id: \''+id+'\'.');
+        }
 }});

@@ -126,12 +126,7 @@ rdj.addResource = function () {
     }
     var id = 1000+restStore.getSize()+1;
     restStore.newItem({Id: id}, kwArgs);
-    var result = restStore.save({sync: true, Id: id, method: "post"});
-    if(result.results[0] == true) {
-        alert('New item created with Id: \''+id+'\'.');
-    } else {
-        alert('Creating new item failed for Id: \''+id+'\'.');
-    }
+    restStore.save({sync: true, Id: id, method: "post"});
     table.innerHTML = '';
     var actions2 = djd43.byId("actions");
     if(actions2 != null)
