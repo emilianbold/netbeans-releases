@@ -789,6 +789,10 @@ public class Reformatter implements ReformatTask {
                     bracePlacement = cs.getOtherBracePlacement();
                     spaceBeforeLeftBrace = cs.spaceBeforeSynchronizedLeftBrace();
                     break;
+                case CASE:
+                    bracePlacement = cs.getOtherBracePlacement();
+                    spaceBeforeLeftBrace = true;
+                    break;
                 default:
                     bracePlacement = cs.getOtherBracePlacement();
                     break;
@@ -1282,8 +1286,14 @@ public class Reformatter implements ReformatTask {
             int old = indent;
             indent += indentSize;
             for (Iterator<? extends StatementTree> it = node.getStatements().iterator(); it.hasNext();) {
-                blankLines();
-                scan(it.next(), p);
+                StatementTree stat = it.next();
+                if (stat.getKind() == Tree.Kind.BLOCK && !it.hasNext()) {
+                    indent = old;
+                    scan(stat, p);
+                } else {
+                    blankLines();
+                    scan(stat, p);
+                }
             }
             indent = old;
             return true;
