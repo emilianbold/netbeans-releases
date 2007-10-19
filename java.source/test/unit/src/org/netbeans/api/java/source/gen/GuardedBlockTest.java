@@ -46,6 +46,7 @@ import java.util.Collections;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.editor.mimelookup.MimePath;
@@ -59,7 +60,6 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.java.guards.JavaGuardedSectionsFactory;
-import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.spi.editor.guards.GuardedEditorSupport;
 import org.netbeans.spi.editor.guards.GuardedSectionsFactory;
@@ -159,7 +159,7 @@ public class GuardedBlockTest extends GeneratorTestMDRCompat {
         );
         DataObject dataObject = DataObject.find(FileUtil.toFileObject(testFile));
         EditorCookie editorCookie = ((GuardedDataObject) dataObject).getCookie(EditorCookie.class);
-        System.err.println(editorCookie.openDocument());
+        Document doc = editorCookie.openDocument();
         String golden = 
             "package javaapplication5;\n" +
             "\n" +
@@ -215,9 +215,9 @@ public class GuardedBlockTest extends GeneratorTestMDRCompat {
     }
 
     /**
-     * #90424: Guarded Exception
+     * #119048: Guarded Exception
      */
-    public void test() throws Exception {
+    public void test119048() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, 
             "package javaapplication5;\n" +
@@ -233,7 +233,7 @@ public class GuardedBlockTest extends GeneratorTestMDRCompat {
         );
         DataObject dataObject = DataObject.find(FileUtil.toFileObject(testFile));
         EditorCookie editorCookie = ((GuardedDataObject) dataObject).getCookie(EditorCookie.class);
-        System.err.println(editorCookie.openDocument());
+        Document doc = editorCookie.openDocument();
         String golden = 
             "package javaapplication5;\n" +
             "\n" +
@@ -283,198 +283,199 @@ public class GuardedBlockTest extends GeneratorTestMDRCompat {
         return "";
     }
 
+    ////////////////////////////////////////////////////////////////////////////
+    // classes used for getting guarded section initialized
+    public static class GuardedDataLoader extends MultiFileLoader {
 
-// other top level classes used for getting guarded section initialized
-public static class GuardedDataLoader extends MultiFileLoader {
-    private final String JAVA_EXTENSION = "java";
+        private final String JAVA_EXTENSION = "java";
 
-    public GuardedDataLoader() {
-        super("org.netbeans.api.java.source.gen.GuardedDataObject"); // NOI18N
-    }
-
-    @Override
-    protected FileObject findPrimaryFile(FileObject fo) {
-        if (fo.getExt().equals(JAVA_EXTENSION)) {
-            return fo;
-        }
-        return null;
-    }
-
-    @Override
-    protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {
-        if (primaryFile.getExt().equals(JAVA_EXTENSION))
-            return new GuardedDataObject(primaryFile, this);
-        return null;
-    }
-
-    @Override
-    protected Entry createPrimaryEntry(MultiDataObject obj, FileObject primaryFile) {
-        return new FileEntry(obj, primaryFile);
-    }
-
-    @Override
-    protected Entry createSecondaryEntry(MultiDataObject obj, FileObject secondaryFile) {
-        return null;
-    }
-
-} // GuardedDataLoader
-
-public static class GuardedDataObject extends MultiDataObject {
-
-    private MyGuardedEditorSupport fes = null;
-
-    public GuardedDataObject(FileObject primaryFile, GuardedDataLoader loader) throws DataObjectExistsException {
-        super(primaryFile, loader);
-        getCookieSet().add(createMyGuardedEditorSupport());
-        getCookieSet().assign(SaveAsCapable.class, new SaveAsCapable() {
-
-            public void saveAs(FileObject folder, String fileName) throws IOException {
-                createMyGuardedEditorSupport().saveAs(folder, fileName);
-            }
-        });
-    }
-
-    private synchronized MyGuardedEditorSupport createMyGuardedEditorSupport() {
-        if (fes == null) {
-            fes = new MyGuardedEditorSupport (this);
-        }
-        return fes;
-    }
-
-    private static class MyGuardedEditorSupport extends DataEditorSupport
-        implements OpenCookie, EditCookie, EditorCookie, PrintCookie, EditorCookie.Observable
-    {
-
-        private static final class Environment extends DataEditorSupport.Env {
-
-            private static final long serialVersionUID = -1;
-
-            private transient SaveSupport saveCookie = null;
-
-            private final class SaveSupport implements SaveCookie {
-
-                public void save() throws IOException {
-                    ((MyGuardedEditorSupport) findCloneableOpenSupport()).saveDocument();
-                    getDataObject().setModified(false);
-                }
-            }
-
-            public Environment(GuardedDataObject obj) {
-                super(obj);
-            }
-
-            protected FileObject getFile() {
-                return this.getDataObject().getPrimaryFile();
-            }
-
-            protected FileLock takeLock() throws java.io.IOException {
-                return ((MultiDataObject)this.getDataObject()).getPrimaryEntry().takeLock();
-            }
-
-            public @Override CloneableOpenSupport findCloneableOpenSupport() {
-                return (CloneableEditorSupport) ((GuardedDataObject)this.getDataObject()).getCookie(EditorCookie.class);
-            }
-
-
-            public void addSaveCookie() {
-                GuardedDataObject javaData = (GuardedDataObject) this.getDataObject();
-                if (javaData.getCookie(SaveCookie.class) == null) {
-                    if (this.saveCookie == null)
-                        this.saveCookie = new SaveSupport();
-                    javaData.getCookieSet().add(this.saveCookie);
-                    javaData.setModified(true);
-                }
-            }
-
-            public void removeSaveCookie() {
-                GuardedDataObject javaData = (GuardedDataObject) this.getDataObject();
-                if (javaData.getCookie(SaveCookie.class) != null) {
-                    javaData.getCookieSet().remove(this.saveCookie);
-                    javaData.setModified(false);
-                }
-            }
-        }
-
-        public MyGuardedEditorSupport(GuardedDataObject dataObject) {
-            super(dataObject, new Environment(dataObject));
-            setMIMEType("text/x-java"); // NOI18N
+        public GuardedDataLoader() {
+            super("org.netbeans.api.java.source.gen.GuardedDataObject"); // NOI18N
         }
 
         @Override
-        protected boolean notifyModified() {
-            if (!super.notifyModified())
-                return false;
-            ((Environment) this.env).addSaveCookie();
-            return true;
-        }
-
-        @Override
-        protected void notifyUnmodified() {
-            super.notifyUnmodified();
-            ((Environment) this.env).removeSaveCookie();
-        }
-
-        @Override 
-        protected CloneableEditor createCloneableEditor() {
-            return new CloneableEditor(this);
-        }
-
-        @Override
-        public boolean close(boolean ask) {
-            return super.close(ask);
-        }
-
-        private final class FormGEditor implements GuardedEditorSupport {
-
-            StyledDocument doc = null;
-
-            public StyledDocument getDocument() {
-                return FormGEditor.this.doc;
+        protected FileObject findPrimaryFile(FileObject fo) {
+            if (fo.getExt().equals(JAVA_EXTENSION)) {
+                return fo;
             }
+            return null;
         }
 
-        private FormGEditor guardedEditor;
-        private GuardedSectionsProvider guardedProvider;
+        @Override
+        protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {
+            if (primaryFile.getExt().equals(JAVA_EXTENSION)) {
+                return new GuardedDataObject(primaryFile, this);
+            }
+            return null;
+        }
 
         @Override
-        protected void loadFromStreamToKit(StyledDocument doc, InputStream stream, EditorKit kit) throws IOException, BadLocationException {
-            if (guardedEditor == null) {
-                guardedEditor = new FormGEditor();
-                GuardedSectionsFactory gFactory = GuardedSectionsFactory.find("text/x-java");
-                if (gFactory != null) {
-                    guardedProvider = gFactory.create(guardedEditor);
+        protected Entry createPrimaryEntry(MultiDataObject obj, FileObject primaryFile) {
+            return new FileEntry(obj, primaryFile);
+        }
+
+        @Override
+        protected Entry createSecondaryEntry(MultiDataObject obj, FileObject secondaryFile) {
+            return null;
+        }
+    } // GuardedDataLoader
+
+
+    public static class GuardedDataObject extends MultiDataObject {
+
+        private MyGuardedEditorSupport fes = null;
+
+        public GuardedDataObject(FileObject primaryFile, GuardedDataLoader loader) throws DataObjectExistsException {
+            super(primaryFile, loader);
+            getCookieSet().add(createMyGuardedEditorSupport());
+            getCookieSet().assign(SaveAsCapable.class, new SaveAsCapable() {
+
+                        public void saveAs(FileObject folder, String fileName) throws IOException {
+                            createMyGuardedEditorSupport().saveAs(folder, fileName);
+                        }
+                    });
+        }
+
+        private synchronized MyGuardedEditorSupport createMyGuardedEditorSupport() {
+            if (fes == null) {
+                fes = new MyGuardedEditorSupport(this);
+            }
+            return fes;
+        }
+
+        private static class MyGuardedEditorSupport extends DataEditorSupport
+                implements OpenCookie, EditCookie, EditorCookie, PrintCookie, EditorCookie.Observable {
+
+            private static final class Environment extends DataEditorSupport.Env {
+
+                private static final long serialVersionUID = -1;
+                private transient SaveSupport saveCookie = null;
+
+                private final class SaveSupport implements SaveCookie {
+
+                    public void save() throws IOException {
+                        ((MyGuardedEditorSupport) findCloneableOpenSupport()).saveDocument();
+                        getDataObject().setModified(false);
+                    }
+                }
+
+                public Environment(GuardedDataObject obj) {
+                    super(obj);
+                }
+
+                protected FileObject getFile() {
+                    return this.getDataObject().getPrimaryFile();
+                }
+
+                protected FileLock takeLock() throws java.io.IOException {
+                    return ((MultiDataObject) this.getDataObject()).getPrimaryEntry().takeLock();
+                }
+
+                public @Override
+                CloneableOpenSupport findCloneableOpenSupport() {
+                    return (CloneableEditorSupport) ((GuardedDataObject) this.getDataObject()).getCookie(EditorCookie.class);
+                }
+
+                public void addSaveCookie() {
+                    GuardedDataObject javaData = (GuardedDataObject) this.getDataObject();
+                    if (javaData.getCookie(SaveCookie.class) == null) {
+                        if (this.saveCookie == null) {
+                            this.saveCookie = new SaveSupport();
+                        }
+                        javaData.getCookieSet().add(this.saveCookie);
+                        javaData.setModified(true);
+                    }
+                }
+
+                public void removeSaveCookie() {
+                    GuardedDataObject javaData = (GuardedDataObject) this.getDataObject();
+                    if (javaData.getCookie(SaveCookie.class) != null) {
+                        javaData.getCookieSet().remove(this.saveCookie);
+                        javaData.setModified(false);
+                    }
                 }
             }
 
-            if (guardedProvider != null) {
-                guardedEditor.doc = doc;
-                Charset c = FileEncodingQuery.getEncoding(this.getDataObject().getPrimaryFile());
-                Reader reader = guardedProvider.createGuardedReader(stream, c);
-                try {
-                    kit.read(reader, doc, 0);
-                } finally {
-                    reader.close();
-                }
-            } else {
-                super.loadFromStreamToKit(doc, stream, kit);
+            public MyGuardedEditorSupport(GuardedDataObject dataObject) {
+                super(dataObject, new Environment(dataObject));
+                setMIMEType("text/x-java"); // NOI18N
             }
-        }
 
-        @Override
-        protected void saveFromKitToStream(StyledDocument doc, EditorKit kit, OutputStream stream) throws IOException, BadLocationException {
-            if (guardedProvider != null) {
-                Charset c = FileEncodingQuery.getEncoding(this.getDataObject().getPrimaryFile());
-                Writer writer = guardedProvider.createGuardedWriter(stream, c);
-                try {
-                    kit.write(writer, doc, 0, doc.getLength());
-                } finally {
-                    writer.close();
+            @Override
+            protected boolean notifyModified() {
+                if (!super.notifyModified()) {
+                    return false;
                 }
-            } else {
-                super.saveFromKitToStream(doc, kit, stream);
+                ((Environment) this.env).addSaveCookie();
+                return true;
+            }
+
+            @Override
+            protected void notifyUnmodified() {
+                super.notifyUnmodified();
+                ((Environment) this.env).removeSaveCookie();
+            }
+
+            @Override 
+            protected CloneableEditor createCloneableEditor() {
+                return new CloneableEditor(this);
+            }
+
+            @Override
+            public boolean close(boolean ask) {
+                return super.close(ask);
+            }
+
+            private final class FormGEditor implements GuardedEditorSupport {
+
+                StyledDocument doc = null;
+
+                public StyledDocument getDocument() {
+                    return FormGEditor.this.doc;
+                }
+            }
+            private FormGEditor guardedEditor;
+            private GuardedSectionsProvider guardedProvider;
+
+            @Override
+            protected void loadFromStreamToKit(StyledDocument doc, InputStream stream, EditorKit kit) throws IOException, BadLocationException {
+                if (guardedEditor == null) {
+                    guardedEditor = new FormGEditor();
+                    GuardedSectionsFactory gFactory = GuardedSectionsFactory.find("text/x-java");
+                    if (gFactory != null) {
+                        guardedProvider = gFactory.create(guardedEditor);
+                    }
+                }
+
+                if (guardedProvider != null) {
+                    guardedEditor.doc = doc;
+                    Charset c = FileEncodingQuery.getEncoding(this.getDataObject().getPrimaryFile());
+                    Reader reader = guardedProvider.createGuardedReader(stream, c);
+                    try {
+                        kit.read(reader, doc, 0);
+                    } finally {
+                        reader.close();
+                    }
+                } else {
+                    super.loadFromStreamToKit(doc, stream, kit);
+                }
+            }
+
+            @Override
+            protected void saveFromKitToStream(StyledDocument doc, EditorKit kit, OutputStream stream) throws IOException, BadLocationException {
+                if (guardedProvider != null) {
+                    Charset c = FileEncodingQuery.getEncoding(this.getDataObject().getPrimaryFile());
+                    Writer writer = guardedProvider.createGuardedWriter(stream, c);
+                    try {
+                        kit.write(writer, doc, 0, doc.getLength());
+                    } finally {
+                        writer.close();
+                    }
+                } else {
+                    super.saveFromKitToStream(doc, kit, stream);
+                }
             }
         }
-    }
-} // GuardedDataObject
+    } // GuardedDataObject
 
 }
