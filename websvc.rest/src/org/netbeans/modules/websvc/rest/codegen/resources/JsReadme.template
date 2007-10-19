@@ -1,0 +1,8 @@
+Steps to run Rest Javascripts stubs
+=====================================
+1. Open Netbeans 6.0 IDE.
+2. Create a web project.
+3. Right click on the web project, then select "New->Restful Web Service Client Stubs". 
+In the wizard select a web project that contain the RESTful Web Services. Click "Finish".
+4. Run "/Web Pages/rest/TestStubs.html" to test generated Javascripts for the 
+RESTful Web Service project. This displays a table of available resources.
