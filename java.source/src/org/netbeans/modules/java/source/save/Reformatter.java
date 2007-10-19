@@ -301,7 +301,7 @@ public class Reformatter implements ReformatTask {
                     endPos = (int)sp.getEndPosition(getCurrentPath().getCompilationUnit(), ((FakeBlock)tree).stat);
                 else
                     endPos = (int)sp.getEndPosition(getCurrentPath().getCompilationUnit(), tree);
-            }
+                }
             try {
                 return endPos < 0 ? false : tokens.offset() <= endPos ? super.scan(tree, p) : true;
             }
@@ -359,7 +359,8 @@ public class Reformatter implements ReformatTask {
 
         @Override
         public Boolean visitClass(ClassTree node, Void p) {
-            if (getCurrentPath().getParentPath().getLeaf().getKind() != Tree.Kind.NEW_CLASS) {
+            Tree parent = getCurrentPath().getParentPath().getLeaf();
+            if (parent.getKind() != Tree.Kind.NEW_CLASS && (parent.getKind() != Tree.Kind.VARIABLE || !isEnumerator((VariableTree)parent))) {
                 int old = indent;
                 ModifiersTree mods = node.getModifiers();
                 if (mods != null) {
@@ -530,15 +531,24 @@ public class Reformatter implements ReformatTask {
                 accept(IDENTIFIER);
                 ExpressionTree init = node.getInitializer();
                 if (init != null && init.getKind() == Tree.Kind.NEW_CLASS) {
-                    List<? extends ExpressionTree> args = ((NewClassTree)init).getArguments();
+                    NewClassTree nct = (NewClassTree)init;
+                    int index = tokens.index();
+                    int col = this.col;
+                    spaces(cs.spaceBeforeMethodCallParen() ? 1 : 0);            
+                    JavaTokenId id = accept(LPAREN);
+                    if (id != LPAREN)
+                        rollback(index, col);
+                    List<? extends ExpressionTree> args = nct.getArguments();
                     if (args != null && !args.isEmpty()) {
-                        spaces(cs.spaceBeforeMethodCallParen() ? 1 : 0);            
-                        accept(LPAREN);
                         spaces(cs.spaceWithinMethodCallParens() ? 1 : 0, true);
                         wrapList(cs.wrapMethodCallArgs(), cs.alignMultilineCallArgs(), args);
                         spaces(cs.spaceWithinMethodCallParens() ? 1 : 0);            
-                        accept(RPAREN);
                     }
+                    if (id == LPAREN)
+                        accept(RPAREN);
+                    ClassTree body = nct.getClassBody();
+                    if (body != null)
+                        scan(body, p);
                 }
             } else {
                 if (indent == old && !insideFor)
