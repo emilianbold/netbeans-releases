@@ -270,7 +270,14 @@ public class FilterDocument extends Object implements StyledDocument {
     * @return the element
     */
     public Element getParagraphElement(int pos) {
-        return getLeafElement();
+        Element e = getDefaultRootElement();
+        if (e != null && !e.isLeaf()) {
+            int index = e.getElementIndex(pos);
+            e = e.getElement(index);
+        } else {
+            e = getLeafElement();
+    }
+        return e;
     }
 
     /*
