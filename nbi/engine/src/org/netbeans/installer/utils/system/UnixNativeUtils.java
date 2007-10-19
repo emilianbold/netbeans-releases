@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU General
  * Public License Version 2 only ("GPL") or the Common Development and Distribution
  * License("CDDL") (collectively, the "License"). You may not use this file except in
@@ -16,13 +16,13 @@
  * accompanied this code. If applicable, add the following below the License Header,
  * with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * Contributor(s):
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL or only the
  * GPL Version 2, indicate your decision by adding "[Contributor] elects to include
  * this software in this distribution under the [CDDL or GPL Version 2] license." If
@@ -36,7 +36,9 @@
 
 package org.netbeans.installer.utils.system;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -76,30 +78,30 @@ import org.netbeans.installer.utils.system.unix.shell.TCShell;
 public abstract class UnixNativeUtils extends NativeUtils {
     private boolean isUserAdminSet;
     private boolean isUserAdmin;
-
-
+    
+    
     private static final String[] FORBIDDEN_DELETING_FILES_UNIX = {
-            System.getProperty("user.home"),
-            System.getProperty("java.home"),
-            "/",
-            "/bin",
-            "/boot",
-            "/dev",
-            "/etc",
-            "/home",
-            "/lib",
-            "/mnt",
-            "/opt",
-            "/sbin",
-            "/share",
-            "/usr",
-            "/usr/bin",
-            "/usr/include",
-            "/usr/lib",
-            "/usr/man",
-            "/usr/sbin",
-            "/var",
-            };
+        System.getProperty("user.home"),
+        System.getProperty("java.home"),
+        "/",
+        "/bin",
+        "/boot",
+        "/dev",
+        "/etc",
+        "/home",
+        "/lib",
+        "/mnt",
+        "/opt",
+        "/sbin",
+        "/share",
+        "/usr",
+        "/usr/bin",
+        "/usr/include",
+        "/usr/lib",
+        "/usr/man",
+        "/usr/sbin",
+        "/var",
+    };
     
     private static final String CLEANER_RESOURCE =
             NATIVE_CLEANER_RESOURCE_SUFFIX + "unix/cleaner.sh"; // NOI18N
@@ -107,16 +109,16 @@ public abstract class UnixNativeUtils extends NativeUtils {
     private static final String CLEANER_FILENAME =
             "nbi-cleaner.sh"; // NOI18N
     
-    public static final String XDG_DATA_HOME_ENV_VARIABLE = 
+    public static final String XDG_DATA_HOME_ENV_VARIABLE =
             "XDG_DATA_HOME"; // NOI18N
-
-    public static final String XDG_DATA_DIRS_ENV_VARIABLE = 
+    
+    public static final String XDG_DATA_DIRS_ENV_VARIABLE =
             "XDG_DATA_DIRS"; // NOI18N
-            
-    public static final String DEFAULT_XDG_DATA_HOME = 
+    
+    public static final String DEFAULT_XDG_DATA_HOME =
             ".local/share"; // NOI18N
     
-    public static final String DEFAULT_XDG_DATA_DIRS = 
+    public static final String DEFAULT_XDG_DATA_DIRS =
             "/usr/share"; // NOI18N
     
     public boolean isCurrentUserAdmin() {
@@ -145,7 +147,7 @@ public abstract class UnixNativeUtils extends NativeUtils {
     
     @Override
     protected OnExitCleanerHandler newDeleteOnExitCleanerHandler() {
-        return new UnixProcessOnExitCleanerHandler(CLEANER_FILENAME);        
+        return new UnixProcessOnExitCleanerHandler(CLEANER_FILENAME);
     }
     
     public void updateApplicationsMenu() {
@@ -158,20 +160,20 @@ public abstract class UnixNativeUtils extends NativeUtils {
     }
     
     public File getShortcutLocation(
-            final Shortcut shortcut, 
+            final Shortcut shortcut,
             final LocationType locationType) throws NativeException {
         LogManager.logIndent(
                 "devising the shortcut location by type: " + locationType); // NOI18N
         
-        final String XDG_DATA_HOME = 
+        final String XDG_DATA_HOME =
                 SystemUtils.getEnvironmentVariable(XDG_DATA_HOME_ENV_VARIABLE);
-        final String XDG_DATA_DIRS = 
+        final String XDG_DATA_DIRS =
                 SystemUtils.getEnvironmentVariable(XDG_DATA_DIRS_ENV_VARIABLE);
         
         final File currentUserLocation;
         if (XDG_DATA_HOME == null) {
             currentUserLocation = new File(
-                    SystemUtils.getUserHomeDirectory(), 
+                    SystemUtils.getUserHomeDirectory(),
                     DEFAULT_XDG_DATA_HOME);
         } else {
             currentUserLocation = new File(
@@ -200,7 +202,7 @@ public abstract class UnixNativeUtils extends NativeUtils {
                     fileName += ".desktop";
                 }
             } else if(shortcut instanceof InternetShortcut) {
-                fileName = ((InternetShortcut) shortcut).getURL().getFile() + 
+                fileName = ((InternetShortcut) shortcut).getURL().getFile() +
                         ".desktop";
             }
         }
@@ -212,17 +214,17 @@ public abstract class UnixNativeUtils extends NativeUtils {
             case CURRENT_USER_DESKTOP:
             case ALL_USERS_DESKTOP:
                 shortcutFile = new File(
-                        SystemUtils.getUserHomeDirectory(), 
+                        SystemUtils.getUserHomeDirectory(),
                         "Desktop/" + fileName);
                 break;
             case CURRENT_USER_START_MENU:
                 shortcutFile = new File(
-                        currentUserLocation, 
+                        currentUserLocation,
                         "applications/" + fileName);
                 break;
             case ALL_USERS_START_MENU:
                 shortcutFile = new File(
-                        allUsersLocation, 
+                        allUsersLocation,
                         "applications/" + fileName);
                 break;
             default:
@@ -241,7 +243,11 @@ public abstract class UnixNativeUtils extends NativeUtils {
         list.add("[Desktop Entry]");
         list.add("Encoding=UTF-8");
         list.add("Name=" + shortcut.getName());
-        list.add("Exec=/bin/sh \"" + shortcut.getTarget()+ "\"");
+        list.add("Exec=/bin/sh \"" + shortcut.getTarget() + 
+                ((shortcut.getArguments()!=null && shortcut.getArguments().size()!=0) ? 
+                    StringUtils.SPACE + shortcut.getArgumentsString() : StringUtils.EMPTY_STRING)
+                    + "\"");
+       
         if(shortcut.getIcon()!=null) {
             list.add("Icon=" + shortcut.getIconPath());
         }
@@ -345,6 +351,15 @@ public abstract class UnixNativeUtils extends NativeUtils {
                         return files;
                     }
                 }
+                // is it an ELF file?
+                BufferedInputStream bis = new BufferedInputStream(new FileInputStream(child));
+                byte[] buf = new byte[4];
+                bis.read(buf);
+                bis.close();
+                if (Arrays.equals(buf, ELF_BYTES)){
+                    files.add(child);
+                    return files;
+                }
             }
         }
         return files;
@@ -426,7 +441,7 @@ public abstract class UnixNativeUtils extends NativeUtils {
         // for Unix UNC is smth like servername:/folder...
         return path.matches("^.+:/.+");
     }
-
+    
     // other ... //////////////////////////
     
     public String getEnvironmentVariable(String name, EnvironmentScope scope, boolean flag) {
@@ -608,7 +623,7 @@ public abstract class UnixNativeUtils extends NativeUtils {
             throw (IOException) ioException.initCause(e);
         }
     }
-     
+    
     // native declarations //////////////////////////////////////////////////////////
     private native long getFreeSpace0(String s);
     
@@ -630,7 +645,7 @@ public abstract class UnixNativeUtils extends NativeUtils {
             FileUtils.writeFile(cleanerFile, StringUtils.asString(lines, SystemUtils.getLineSeparator()));
         }
         
-        protected void writeCleaningFileList(File listFile, List<String> files) throws IOException {            
+        protected void writeCleaningFileList(File listFile, List<String> files) throws IOException {
             // be sure that the list file contains end-of-line
             // otherwise the installer will run into Issue 104079
             List<String> newList = new LinkedList<String> (files);
@@ -667,4 +682,6 @@ public abstract class UnixNativeUtils extends NativeUtils {
         super.initializeForbiddenFiles(FORBIDDEN_DELETING_FILES_UNIX);
         super.initializeForbiddenFiles(files);
     }
+    
+    private static final byte [] ELF_BYTES = new byte[]{'\177','E','L','F'};
 }
