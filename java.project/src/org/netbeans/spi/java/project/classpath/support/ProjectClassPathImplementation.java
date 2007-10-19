@@ -50,8 +50,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
@@ -71,7 +71,7 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
     private final File projectFolder;
     private List<PathResourceImplementation> resources;
     private final PropertyEvaluator evaluator;
-    private boolean dirty = false;
+    private AtomicBoolean dirty = new AtomicBoolean ();
     private final List<String> propertyNames;
 
     /**
@@ -85,13 +85,12 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
         this.projectFolder = projectFolder;
         this.evaluator = evaluator;
         this.propertyNames = Arrays.asList(propertyNames);
+        this.resources = this.getPath ();
         evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
     }
 
     public synchronized List<PathResourceImplementation> getResources() {
-        if (this.resources == null) {
-            this.resources = this.getPath ();
-        }
+        assert this.resources != null;
         return this.resources;
     }
 
@@ -111,19 +110,17 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
             return;
         }
         // Coalesce changes; can come in fast after huge CP changes (#47910):
-        // XXX any synch needed on dirty flag?
-        if (!dirty) {
-            dirty = true;
+        if (!dirty.getAndSet(true)) {
             ProjectManager.mutex().postReadRequest(this);
         }
     }
     
     public void run() {
-        dirty = false;
+        dirty.set(false);
         List<PathResourceImplementation> newRoots = getPath();
         boolean fire = false;
         synchronized (this) {
-            if (this.resources != null && !this.resources.equals(newRoots)) {
+            if (!this.resources.equals(newRoots)) {
                 this.resources = newRoots;
                 fire = true;
             }
