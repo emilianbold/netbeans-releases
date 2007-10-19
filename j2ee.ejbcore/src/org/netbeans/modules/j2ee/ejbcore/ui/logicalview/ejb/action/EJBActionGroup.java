@@ -94,7 +94,7 @@ public class EJBActionGroup extends NodeAction implements Presenter.Popup {
             return getMenu();
         }
         JMenuItem jMenuItem = super.getPopupPresenter();
-        jMenuItem.setVisible(false);
+        jMenuItem.setEnabled(false);
         return jMenuItem;
     }
     

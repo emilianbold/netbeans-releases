@@ -78,7 +78,7 @@ public class EnterpriseRefActionGroup extends NodeAction implements Presenter.Po
             return new LazyMenu();
         }
         JMenuItem jMenuItem = super.getPopupPresenter();
-        jMenuItem.setVisible(false);
+        jMenuItem.setEnabled(false);
         return jMenuItem;
     }
     
