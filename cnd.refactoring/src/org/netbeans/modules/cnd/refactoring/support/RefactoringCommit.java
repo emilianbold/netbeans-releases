@@ -45,6 +45,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.modules.refactoring.spi.BackupFacility;
 import org.netbeans.modules.refactoring.spi.Transaction;
@@ -59,7 +60,7 @@ public class RefactoringCommit implements Transaction {
     ArrayList<BackupFacility.Handle> ids = new ArrayList<BackupFacility.Handle>();
     private boolean commited = false;
     Collection<ModificationResult> results;
-    private Set<File> newFiles;
+    private Set<File> newFiles = new HashSet<File>();
     
     public RefactoringCommit(Collection<ModificationResult> results) {
         this.results = results;
@@ -75,11 +76,12 @@ public class RefactoringCommit implements Transaction {
                         throw (RuntimeException) new RuntimeException().initCause(ex);
                     }
                 }
+                // need to force update in modified files
             } else {
                 commited = true;
                 for (ModificationResult result:results) {
                     ids.add(BackupFacility.getDefault().backup(result.getModifiedFileObjects()));
-                    newFiles = result.getNewFiles();
+                    newFiles.addAll(result.getNewFiles());
                     result.commit();
                 }
             }
@@ -98,6 +100,7 @@ public class RefactoringCommit implements Transaction {
                 throw (RuntimeException) new RuntimeException().initCause(ex);
             }
         }
+        // need to force update in modified and new files
         if (newFiles!=null) {
             for (File f:newFiles) {
                 try {
