@@ -145,6 +145,10 @@ public final class LogRecords {
             throw (IOException)new IOException(ex.getMessage()).initCause(ex);
         } catch (InternalError error){
             LOG.log(Level.WARNING, "INPUT FILE CORRUPTION", error);
+        } catch (IOException ex) {
+            throw ex;
+        } catch (RuntimeException ex) {
+            LOG.log(Level.WARNING, "INPUT FILE CORRUPTION", ex);
         }
     }   
 
@@ -267,36 +271,42 @@ public final class LogRecords {
                 String key = Elem.KEY.parse(values);
                 String catalog = Elem.CATALOG.parse(values);
                 
-                LogRecord r = new LogRecord(parseLevel(lev), key != null && catalog != null ? key : msg);
-                r.setThreadID(Integer.parseInt(thread));
-                r.setSequenceNumber(Long.parseLong(seq));
-                r.setMillis(Long.parseLong(millis));
-                r.setResourceBundleName(key);
-                if (catalog != null && key != null) {
-                    r.setResourceBundleName(catalog);
-                    if (!"<null>".equals(catalog)) { // NOI18N
-                        try {
-                            ResourceBundle b = NbBundle.getBundle(catalog);
-                            b.getObject(key);
-                            // ok, the key is there
-                            r.setResourceBundle(b);
-                        } catch (MissingResourceException e) {
-                            LOG.log(Level.CONFIG, "Cannot find resource bundle {0} for key {1}", new Object[] { catalog, key });
-                            r.setResourceBundle(new FakeBundle(key, msg));
-                        }
-                    } else {
-                        LOG.log(Level.CONFIG, "Cannot find resource bundle <null> for key {1}", key);
+                if (lev != null) {
+                    LogRecord r = new LogRecord(parseLevel(lev), key != null && catalog != null ? key : msg);
+                    try {
+                        r.setThreadID(Integer.parseInt(thread));
+                    } catch (NumberFormatException ex) {
+                        LOG.log(Level.WARNING, ex.getMessage(), ex);
                     }
+                    r.setSequenceNumber(Long.parseLong(seq));
+                    r.setMillis(Long.parseLong(millis));
+                    r.setResourceBundleName(key);
+                    if (catalog != null && key != null) {
+                        r.setResourceBundleName(catalog);
+                        if (!"<null>".equals(catalog)) { // NOI18N
+                            try {
+                                ResourceBundle b = NbBundle.getBundle(catalog);
+                                b.getObject(key);
+                                // ok, the key is there
+                                r.setResourceBundle(b);
+                            } catch (MissingResourceException e) {
+                                LOG.log(Level.CONFIG, "Cannot find resource bundle {0} for key {1}", new Object[] { catalog, key });
+                                r.setResourceBundle(new FakeBundle(key, msg));
+                            }
+                        } else {
+                            LOG.log(Level.CONFIG, "Cannot find resource bundle <null> for key {1}", key);
+                        }
+                    }
+                    if (params != null) {
+                        r.setParameters(params.toArray());
+                    }
+                    if (exceptions != null) {
+                        r.setThrown(createThrown(null));
+                        // exceptions = null;  should be empty after poll
+                    }
+
+                    callback.publish(r);
                 }
-                if (params != null) {
-                    r.setParameters(params.toArray());
-                }
-                if (exceptions != null) {
-                    r.setThrown(createThrown(null));
-                    // exceptions = null;  should be empty after poll
-                }
-                
-                callback.publish(r);
 
                 currentEx = null;
                 params = null;

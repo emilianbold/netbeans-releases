@@ -392,6 +392,29 @@ public class LogRecordsTest extends NbTestCase {
         
         assertEquals("The four amount of records", 5, h.cnt);
     }
+
+    public void testSurviveNumberFormatExc() throws Exception {
+        String what = "NB1101666645.1";
+        InputStream is = getClass().getResourceAsStream(what);
+        class H extends Handler {
+            int cnt;
+            
+            public void publish(LogRecord record) {
+                cnt++;
+            }
+
+            public void flush() {
+            }
+
+            public void close() throws SecurityException {
+            }
+        }
+        
+        H h = new H();
+        is = getClass().getResourceAsStream(what);
+        LogRecords.scan(is, h);
+        is.close();
+    }
     
     public void testScanEmpty91974() throws Exception {
         String what = "uigestures-iz91974.xml";
