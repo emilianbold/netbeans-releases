@@ -102,6 +102,18 @@ public class TypeMirrorHandleTest extends NbTestCase {
         assertTrue(info.getTypes().isSameType(tm, th.resolve(info)));
     }
     
+    private void testCaseEnum(CompilationInfo info) {
+        TypeElement te = info.getElements().getTypeElement("java.util.EnumSet");
+        
+        assertNotNull(te);
+        
+        TypeMirror tm = te.getTypeParameters().get(0).getBounds().get(0);
+        TypeMirrorHandle th = TypeMirrorHandle.create(tm);
+        
+        assertTrue(info.getTypes().isSameType(th.resolve(info), tm));
+        assertTrue(info.getTypes().isSameType(tm, th.resolve(info)));
+    }
+    
     private void writeIntoFile(FileObject file, String what) throws Exception {
         FileLock lock = file.lock();
         OutputStream out = file.getOutputStream(lock);
@@ -135,6 +147,7 @@ public class TypeMirrorHandleTest extends NbTestCase {
                 testCase(info, "java.util.Map<java.lang.Object, java.util.List>");
                 testCase(info, "java.util.Map<java.lang.Object, java.util.List<java.lang.String>>");
                 testCase(info, "int[]");
+//                testCaseEnum(info); IZ #111876.
             }
         }, true);
     }
