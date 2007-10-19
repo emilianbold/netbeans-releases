@@ -193,7 +193,7 @@ public class JDBCWizardSelectionPanel extends javax.swing.JPanel implements Wiza
         this.removeButton.setEnabled(false);
         this.addAllButton.setEnabled(false);
         this.removeAllButton.setEnabled(false);
-        this.jLabel1.setText(NbBundle.getMessage( JDBCWizardSelectionPanel.class, "LBL_DataSource"));
+        this.jLabel1.setText(NbBundle.getMessage( JDBCWizardSelectionPanel.class, "LBL_DataSource")); // NOI18N
 
         this.availableTablesLabel.setText(NbBundle.getMessage( JDBCWizardSelectionPanel.class, "LBL_AvailableTables_jLabell"));
 
