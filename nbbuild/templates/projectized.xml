@@ -379,7 +379,7 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
             </filterchain>
         </copy>
         <copy todir="${build.classes.dir.ml}">
-            <fileset dir="${translated.src.dir}" includes="**/*" excludes="**/*.properties"/>
+            <fileset dir="${translated.src.dir}" excludes="**/*.properties"/>
         </copy>
         <locjar jarfile="${cluster}/${module.jar}"
                 basedir="${build.classes.dir.ml}"
