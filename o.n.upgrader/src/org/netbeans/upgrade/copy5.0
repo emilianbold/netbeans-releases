@@ -45,6 +45,8 @@
 # the list is iterated from first to last and the last match
 # decides the result
 
+include Services/org-netbeans-modules-debugger-Settings\.properties 
+
 include Services/org-netbeans-core-IDESettings\.settings
 
 include Services/Hidden/org-netbeans-modules-vcscore-settings-GeneralVcsSettings\.settings
