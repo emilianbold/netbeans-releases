@@ -99,6 +99,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
     private SyncDocumentRegion region;
     private Document doc;
     private JTextComponent target;
+    private final PositionsBag bag;
     
     /** Creates a new instance of InstantRenamePerformer */
     private InstantRenamePerformer(JTextComponent target,  Collection<CsmReference> highlights, int caretOffset) throws BadLocationException {
@@ -107,7 +108,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
 	
 	MutablePositionRegion mainRegion = null;
 	List<MutablePositionRegion> regions = new ArrayList<MutablePositionRegion>();
-        PositionsBag bag = new PositionsBag(doc);
+        bag = new PositionsBag(doc);
         
 	for (CsmReference h : highlights) {
 	    Position start = NbDocument.createPosition(doc, h.getStartOffset(), Bias.Backward);
@@ -302,6 +303,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
 	System.err.println("insert update");
 	inSync = true;
 	region.sync(0);
+        getHighlightsBag(doc).setHighlights(bag);
 	inSync = false;
 	target.repaint();
     }
@@ -320,6 +322,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
         
 	inSync = true;
 	region.sync(0);
+        getHighlightsBag(doc).setHighlights(bag);
 	inSync = false;
 	target.repaint();
     }
