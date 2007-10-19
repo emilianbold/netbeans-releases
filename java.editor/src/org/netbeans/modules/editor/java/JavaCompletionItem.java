@@ -1294,7 +1294,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     }
                 }
             }
-            String add = inImport ? ";" : "()"; //NOI18N
+            String add = inImport ? ";" : CodeStyle.getDefault(null).spaceBeforeMethodCallParen() ? " ()" : "()"; //NOI18N
             if (toAdd != null && !add.startsWith(toAdd))
                 add += toAdd;
             if (inImport || params.isEmpty()) {
@@ -1811,6 +1811,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 sequence.moveNext();
             }
             String add = isAbstract ? "() {}" : "()"; //NOI18N
+            if (CodeStyle.getDefault(null).spaceBeforeMethodCallParen())
+                add = " " + add; //NOI18N
             if (toAdd != null && !add.startsWith(toAdd))
                 add += toAdd;   
             String text = ""; //NOI18N
@@ -1985,6 +1987,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 sequence.moveNext();
             }
             String add = isAbstract ? "() {}" : "()"; //NOI18N
+            if (CodeStyle.getDefault(null).spaceBeforeMethodCallParen())
+                add = " " + add; //NOI18N
             if (toAdd != null && !add.startsWith(toAdd))
                 add += toAdd;
             String text = ""; //NOI18N
