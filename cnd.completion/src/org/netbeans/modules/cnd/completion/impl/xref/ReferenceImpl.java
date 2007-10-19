@@ -77,10 +77,12 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
         return owner;
     }
 
+    @Override
     public String getText() {
         return token.getText();
     }
     
+    @Override
     public String toString() {
         return "'" + org.netbeans.editor.EditorDebug.debugString(getText()) // NOI18N
                + "', tokenID=" + this.token.getTokenID() // NOI18N

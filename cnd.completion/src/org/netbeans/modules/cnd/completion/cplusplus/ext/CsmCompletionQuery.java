@@ -612,6 +612,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
             this.findType = findType;
         }
 
+        @Override
         protected Object clone() {
 //            return new Context(component, sup, openingSource, endOffset, jcFinder, finder);
             return new Context(component, sup, openingSource, endOffset, finder, compResolver, contextElement, sort);
@@ -1657,6 +1658,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
         /** Update the text in response to pressing TAB key.
         * @return whether the text was successfully updated
         */
+        @Override
         public boolean substituteCommonText(int dataIndex) {
             
             List data = getData();
@@ -1694,6 +1696,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
         /** Update the text in response to pressing ENTER.
         * @return whether the text was successfully updated
         */
+        @Override
         public boolean substituteText(int dataIndex, boolean shift ) {
             Object actData = getData().get( dataIndex );
             if (actData instanceof CompletionQuery.ResultItem){
@@ -1820,7 +1823,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
     //========================== Items Factory ===============================
 
     protected void setCsmItemFactory(CsmItemFactory itemFactory){
-        this.itemFactory = itemFactory;
+        CsmCompletionQuery.itemFactory = itemFactory;
     }
     
     public static CsmItemFactory getCsmItemFactory(){
