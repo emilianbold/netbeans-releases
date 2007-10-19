@@ -80,7 +80,7 @@ public class FileInfoQueryImpl extends CsmFileInfoQuery {
             try {
                 APTFile apt = APTDriver.getInstance().findAPTLight(fileImpl.getBuffer());
 
-                if (apt != null && hasConditionalsDirectives(apt)) {
+                if (hasConditionalsDirectives(apt)) {
                     APTFindUnusedBlocksWalker walker = new APTFindUnusedBlocksWalker(apt, fileImpl, fileImpl.getPreprocHandler());
                     walker.visit();
                     out = walker.getBlocks();
@@ -93,6 +93,9 @@ public class FileInfoQueryImpl extends CsmFileInfoQuery {
     }
 
     private static boolean hasConditionalsDirectives(APTFile apt) {
+        if (apt == null) {
+            return false;
+        }
         APT node = apt.getFirstChild();
         while( node!=null ) {
             if (node.getType() == APT.Type.CONDITION_CONTAINER) {
