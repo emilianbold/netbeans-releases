@@ -138,7 +138,6 @@ public class InstallPanel extends javax.swing.JPanel {
         area.setLineWrap (true);
         area.setEditable (false);
         area.setOpaque (false);
-        //area.setBackground (new JLabel ().getBackground ()); // XXX any better way how to set background?
         return area;
     }
     
@@ -152,7 +151,6 @@ public class InstallPanel extends javax.swing.JPanel {
         }
         area.setText (body);
         area.setOpaque (false);
-        //area.setBackground (new JLabel ().getBackground ()); // XXX any better way how to set background?
         return area;
     }
     

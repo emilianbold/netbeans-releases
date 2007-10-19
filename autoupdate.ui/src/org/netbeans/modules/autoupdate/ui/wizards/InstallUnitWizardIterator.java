@@ -55,11 +55,11 @@ import org.openide.util.NbBundle;
 public final class InstallUnitWizardIterator implements WizardDescriptor.Iterator<WizardDescriptor> {
     
     private int index;
-    private List<WizardDescriptor.Panel> panels = new ArrayList<WizardDescriptor.Panel> ();
+    private List<WizardDescriptor.Panel<WizardDescriptor>> panels = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>> ();
     private InstallUnitWizardModel installModel;
-    private WizardDescriptor.Panel licenseApprovalStep = null;
-    private WizardDescriptor.Panel customHandleStep = null;
-    private WizardDescriptor.Panel installStep = null;
+    private WizardDescriptor.Panel<WizardDescriptor> licenseApprovalStep = null;
+    private WizardDescriptor.Panel<WizardDescriptor> customHandleStep = null;
+    private WizardDescriptor.Panel<WizardDescriptor> installStep = null;
     private boolean isCompact = false;
     
     public InstallUnitWizardIterator (InstallUnitWizardModel model) {
@@ -84,7 +84,6 @@ public final class InstallUnitWizardIterator implements WizardDescriptor.Iterato
         panels.add (installStep);
     }
     
-    @SuppressWarnings ("unchecked") // XXX Can I fix it?
     public WizardDescriptor.Panel<WizardDescriptor> current () {
         assert panels != null;
         return panels.get (index);

@@ -56,7 +56,7 @@ import org.openide.util.NbBundle;
 public final class UninstallUnitWizardIterator implements WizardDescriptor.Iterator<WizardDescriptor> {
     
     private int index;
-    private List<WizardDescriptor.Panel> panels = new ArrayList<WizardDescriptor.Panel> ();
+    private List<WizardDescriptor.Panel<WizardDescriptor>> panels = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>> ();
     private UninstallUnitWizardModel uninstallModel;
     
     public UninstallUnitWizardIterator (UninstallUnitWizardModel model) {
@@ -76,7 +76,6 @@ public final class UninstallUnitWizardIterator implements WizardDescriptor.Itera
         panels.add (new UninstallStep (uninstallModel));
     }
     
-    @SuppressWarnings ("unchecked") // XXX Can I fix it?
     public WizardDescriptor.Panel<WizardDescriptor> current () {
         assert panels != null;
         return panels.get (index);
