@@ -70,6 +70,7 @@ import java.awt.event.KeyEvent;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
 import java.beans.PropertyChangeEvent;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 
@@ -83,6 +84,7 @@ import org.netbeans.api.visual.layout.LayoutFactory.SerialAlignment;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.xml.refactoring.CannotRefactorException;
 import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
@@ -96,6 +98,7 @@ import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.border.FilledBorder;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.layout.LeftRightLayout;
 import org.netbeans.modules.xml.xam.AbstractComponent;
 import org.netbeans.modules.xml.xam.ui.XAMUtils;
+import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -274,18 +277,15 @@ public class MessageWidget extends AbstractWidget<Message>
                 if (w instanceof PartWidget) {
                     PartWidget partWidget = (PartWidget) w;
                     if (partWidget.getState().isSelected()) {
-                        Message message = getWSDLComponent();
                         Part part = partWidget.getWSDLComponent();
-                        
-                        WSDLModel model = message.getModel();
-                        
                         try {
-                            if (model.startTransaction()) {
-                                message.removePart(part);
-                            }
-                        } finally {
-                            model.endTransaction();
+                            SharedUtils.silentDeleteRefactor(part, true);
+                        } catch (CannotRefactorException e) {
+                            SharedUtils.showDeleteRefactoringUI(part);
+                        } catch (IOException e) {
+                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                         }
+
                         return;
                     }
                 }
@@ -471,6 +471,7 @@ public class MessageWidget extends AbstractWidget<Message>
         List<Part> parts = getWSDLComponent().getChildren(Part.class);
         if (parts == null || parts.isEmpty()) {
             tableWidget.setVisible(false);
+            updateButtonState();
             return;
         }
         if (!tableWidget.isVisible()) {
@@ -481,6 +482,8 @@ public class MessageWidget extends AbstractWidget<Message>
             tableWidget.addChild(factory.getOrCreateWidget(getScene(), 
                     part, getLookup(), tableWidget));
         }
+        
+        updateButtonState();
     }
 
     private Widget createEmptyTable(Scene scene) {

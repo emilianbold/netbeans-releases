@@ -197,12 +197,7 @@ public class PartWidget extends AbstractWidget<Part> {
     protected void notifyStateChanged(ObjectState previousState, ObjectState state) {
         super.notifyStateChanged(previousState, state);
 
-        if (state.isSelected()) {
-            MessageWidget messageWidget = getMessageWidget();
-            if (messageWidget != null) {
-                messageWidget.updateButtonState();
-            }
-        } else {
+        if (previousState.isSelected() ^ state.isSelected()) {
             MessageWidget messageWidget = getMessageWidget();
             if (messageWidget != null) {
                 messageWidget.updateButtonState();
