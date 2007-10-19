@@ -104,11 +104,7 @@ public class TMapDataLoader extends UniFileLoader {
         Project project = FileOwnerQuery.getOwner(fo);
         FileObject source = project == null ? null : Util.getProjectSource(project);
 
-        FileObject tMapFo = source == null 
-                ? null 
-                : source.getFileObject(TRANSFORMMAP_XML) ;
-        
-        isXsltProject = tMapFo != null && tMapFo.isValid(); 
+        isXsltProject = source != null && source.equals(fo.getParent());
         
         return isXsltProject;
     }
