@@ -84,9 +84,8 @@ public class DiffElement extends SimpleRefactoringElementImplementation {
 
     public Lookup getLookup() {
         Object composite = null;
-        CsmObject csmObject = diff.getReferenceObject();
-        if (bounds!=null && csmObject != null) {
-            composite = CsmRefactoringUtils.getEnclosingElement(csmObject);
+        if (bounds!=null) {
+            composite = diff.getReferenceObject();
         }
         if (composite==null) {
             composite = parentFile;
