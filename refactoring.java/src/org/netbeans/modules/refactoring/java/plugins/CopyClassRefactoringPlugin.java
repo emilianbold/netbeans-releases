@@ -203,7 +203,6 @@ public class CopyClassRefactoringPlugin extends JavaRefactoringPlugin {
             
             CopyTransformer findVisitor = new CopyTransformer(compiler, oldName, refactoring.getNewName(), insertImport, oldPackage);
             findVisitor.scan(compiler.getCompilationUnit(), null);
-            fireProgressListenerStep();
         }
     }          
 }
