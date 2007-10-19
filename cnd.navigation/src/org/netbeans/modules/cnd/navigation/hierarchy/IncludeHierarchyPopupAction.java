@@ -28,6 +28,8 @@
 package org.netbeans.modules.cnd.navigation.hierarchy;
 
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.loaders.CCDataObject;
 import org.netbeans.modules.cnd.loaders.CDataObject;
 import org.netbeans.modules.cnd.loaders.HDataObject;
@@ -47,6 +49,20 @@ public class IncludeHierarchyPopupAction extends CookieAction {
         if (decl != null){
             HierarchyDialog.show(decl);
         }
+    }
+    
+    @Override
+    protected boolean enable(Node[] activatedNodes) {
+        if (activatedNodes != null && activatedNodes.length > 0) {
+            if (ContextUtils.USE_REFERENCE_RESOLVER) {
+                CsmReference ref = ContextUtils.findReference(activatedNodes[0]);
+                if (ref != null && CsmKindUtilities.isInclude(ref.getOwner())) {
+                    return true;
+                }
+            }
+            return ContextUtils.findFile(activatedNodes[0]) != null;
+        }
+        return false;
     }
 
     protected int mode() {
