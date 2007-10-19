@@ -150,20 +150,33 @@ public final class SourceNodeFactory implements NodeFactory {
             this.fileObject = group.getRootFolder();
         }
         
+        @Override
         public int hashCode() {
-            return fileObject.hashCode();
+            int hash = 5;
+            String disp = this.group.getDisplayName();
+            hash = 79 * hash + (fileObject != null ? fileObject.hashCode() : 0);
+            hash = 79 * hash + (disp != null ? disp.hashCode() : 0);
+            return hash;
         }
         
+        @Override
         public boolean equals(Object obj) {
             if (!(obj instanceof SourceGroupKey)) {
                 return false;
             } else {
                 SourceGroupKey otherKey = (SourceGroupKey) obj;
+                
+                if (fileObject != otherKey.fileObject && (fileObject == null || !fileObject.equals(otherKey.fileObject))) {
+                    return false;
+                }
                 String thisDisplayName = this.group.getDisplayName();
                 String otherDisplayName = otherKey.group.getDisplayName();
-                // XXX what is the operator binding order supposed to be here??
-                return fileObject.equals(otherKey.fileObject) &&
-                        thisDisplayName == null ? otherDisplayName == null : thisDisplayName.equals(otherDisplayName);
+                boolean oneNull = thisDisplayName == null;
+                boolean twoNull = otherDisplayName == null;
+                if (oneNull != twoNull || !thisDisplayName.equals(otherDisplayName)) {
+                    return false;
+                }
+                return true;
             }
         }
         
