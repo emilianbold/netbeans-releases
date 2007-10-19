@@ -64,6 +64,15 @@ public class CreateFieldTest extends ErrorHintsTestBase {
         performAnalysisTest("test/Test.java", "package test; import java.lang.annotation.Retention; @Retention(value = RetentionPolicy) public @interface Test {}", 125 - 48);
     }
     
+    //Creating a field from an annonymous class expression
+    public void test118701() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;import java.io.Writer;public class Test {public static void main(String[] args) {ww = new Writer() {public void write(char[] cbuf, int off, int len) {}public void close() {}public void flush() {}};}}",
+                       120 - 25,
+                       "CreateFieldFix:ww:test.Test:java.io.Writer:[private, static]",
+                       "package test;import java.io.Writer;public class Test { private static Writer ww; public static void main(String[] args) {ww = new Writer() {public void write(char[] cbuf, int off, int len) {}public void close() {}public void flush() {}};}}");
+    }
+    
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws IOException {
         List<Fix> fixes = CreateElement.analyze(info, pos);
         List<Fix> result=  new LinkedList<Fix>();
