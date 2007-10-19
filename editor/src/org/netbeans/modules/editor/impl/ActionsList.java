@@ -15,11 +15,13 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
+import javax.swing.JSeparator;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -74,6 +76,7 @@ public class ActionsList {
         List<Object> all;
         List<Action> actions;
     }
+    
     private static Pair convertImpl(List<FileObject> keys, boolean ignoreFolders) {
         List<Object> all = new ArrayList<Object>();
         List<Action> actions = new ArrayList<Action>();
@@ -86,31 +89,47 @@ public class ActionsList {
                 continue; // ignore
             }
 
+            Object toAdd = null;
             InstanceCookie ic = dob.getLookup().lookup(InstanceCookie.class);
-                if (ic != null){
-                    try{
-                        if (Action.class.isAssignableFrom(ic.instanceClass()))
-                        {
-                            Action instance = (Action) ic.instanceCreate();
-                            all.add(instance);
-                            actions.add(instance);
-                        } else if (!DataFolder.class.isAssignableFrom(ic.instanceClass()) || !ignoreFolders) {
-                            Object instance = ic.instanceCreate();
-                            all.add(instance);
-                        }
-                    } catch (Exception e) {
-                        LOG.log(Level.WARNING, "Can't instantiate object", e);
-                    }
-                } else if (dob instanceof DataFolder) {
-                    all.add(dob);
-                } else {
-                    all.add(dob.getName());
+            if (ic != null) {
+                try {
+                    toAdd = ic.instanceCreate();
+                } catch (Exception e) {
+                    LOG.log(Level.WARNING, "Can't instantiate object", e); //NOI18N
+                    continue;
                 }
+            } else if (dob instanceof DataFolder) {
+                toAdd = dob;
+            } else {
+                toAdd = dob.getName();
+            }
+
+            // Filter out the same succeding items
+            if (all.size() > 0) {
+                Object lastOne = all.get(all.size() - 1);
+                if (Utilities.compareObjects(lastOne, toAdd)) {
+                    continue;
+                }
+                if (isSeparator(lastOne) && isSeparator(toAdd)) {
+                    continue;
+                }
+            }
+            
+            if (toAdd instanceof Action) {
+                actions.add((Action) toAdd);
+            } else if (isSeparator(toAdd)) {
+                actions.add(null);
+            }
+            all.add(toAdd);
         }
 
         Pair p = new Pair();
         p.all = all.isEmpty() ? Collections.emptyList() : Collections.unmodifiableList(all);
         p.actions = actions.isEmpty() ? Collections.<Action>emptyList() : Collections.unmodifiableList(actions);
         return p;
+    }
+    
+    private static boolean isSeparator(Object o) {
+        return o == null || o instanceof JSeparator;
     }
 }
