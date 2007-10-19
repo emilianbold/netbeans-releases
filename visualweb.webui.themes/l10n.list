@@ -1,0 +1,3 @@
+${l10n-module}/src/**/Bundle.properties
+${l10n-module}/library/**/messages.properties
+# Also, there is another messages.properties that is inside a jar file (defaulttheme-gray.jar)

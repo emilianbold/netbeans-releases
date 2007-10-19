@@ -1,1 +1,2 @@
-dataconnectivity/src/**/Bundle.properties
+# visualweb/dataconnectivity
+${l10n-module}/src/**/Bundle*.properties

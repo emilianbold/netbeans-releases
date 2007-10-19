@@ -1,0 +1,3 @@
+# samples/bundled
+read global
+visualweb/samples/webapps/descriptions/*.html

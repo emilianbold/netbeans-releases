@@ -1,1 +1,2 @@
-propertyeditors/src/**/Bundle.properties
+# propertyeditors
+${l10n-module}/src/**/Bundle.properties
