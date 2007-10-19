@@ -37,6 +37,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -45,7 +46,9 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import junit.framework.Test;
 import junit.framework.TestCase;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
@@ -154,6 +157,41 @@ public class ProcessorTest extends TestCase {
         apply(template, w);
         
         String exp = "<html><h1>GPL</h1></html>";
+        assertEquals(exp, w.toString());
+    }
+    public void testImportHonorsFEQ() throws Exception {
+        doImportHonorsFEQ("cp1250");
+    }
+    public void testImportHonorsFEQIso() throws Exception {
+        doImportHonorsFEQ("iso-8859-2");
+    }
+    
+    private void doImportHonorsFEQ(String enc) throws Exception {
+        MockServices.setServices(FEQI.class);
+        
+        //String kun = "Žluťoučký kůň";
+        String kun = "\u017Dlu\u0165ou\u010Dky k\u016F\u0148";
+        
+        FileObject imp = FileUtil.createData(root, "Templates/Licenses/gpl.txt");
+        {
+            OutputStream os = imp.getOutputStream();
+            os.write(kun.getBytes(enc));
+            os.close();
+            imp.setAttribute("enc", enc);
+        }
+        
+        FileObject template = FileUtil.createData(root, "Templates/Others/some.txt");
+        {
+            OutputStream os = template.getOutputStream();
+            String txt = "<html><h1><#include \"../Licenses/gpl.txt\"></h1></html>";
+            os.write(txt.getBytes("utf-8"));
+            os.close();
+        }        
+        StringWriter w = new StringWriter();
+        
+        apply(template, w);
+        
+        String exp = "<html><h1>" + kun + "</h1></html>";
         assertEquals(exp, w.toString());
     }
 
@@ -422,5 +460,16 @@ public class ProcessorTest extends TestCase {
         eng.getContext().getBindings(ScriptContext.ENGINE_SCOPE).putAll(values);
         eng.eval(new InputStreamReader(template.getInputStream()));
     }
-    
+
+    public static final class FEQI extends FileEncodingQueryImplementation {
+        @Override
+        public Charset getEncoding(FileObject file) {
+            Object obj = file.getAttribute("enc");
+            if (obj instanceof String) {
+                return Charset.forName((String)obj);
+            }
+            return null;
+        }
+        
+    }
 }

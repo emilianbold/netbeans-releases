@@ -39,11 +39,13 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.Writer;
+import java.nio.charset.Charset;
 import java.util.Enumeration;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.script.Bindings;
 import javax.script.ScriptContext;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.Repository;
@@ -79,8 +81,8 @@ implements TemplateLoader, TemplateExceptionHandler {
     }
 
     private FileObject getFile(String name) {
-       FileObject fo = (getFolder() == null) ? null : getFolder().getFileObject(name);
-       return fo;
+       FileObject tmp = (getFolder() == null) ? null : getFolder().getFileObject(name);
+       return tmp;
     } 
 
     private FileObject getFolder() {
@@ -105,7 +107,8 @@ implements TemplateLoader, TemplateExceptionHandler {
     public Reader getReader(Object object, String encoding) throws IOException {
         Wrap w = (Wrap)object;
         if (w.reader == null) {
-            w.reader = new InputStreamReader(w.fo.getInputStream(), encoding);
+           Charset chset = FileEncodingQuery.getEncoding(w.fo);
+           w.reader = new InputStreamReader(w.fo.getInputStream(), chset);
         }
         return w.reader;
     }
@@ -122,6 +125,7 @@ implements TemplateLoader, TemplateExceptionHandler {
         return null;
     }
 
+    @Override
     public TemplateModel getSharedVariable(String string) {
         Object value = map.getAttribute(string);
         if (value == null) {
@@ -138,6 +142,7 @@ implements TemplateLoader, TemplateExceptionHandler {
         }
     }
 
+    @Override
     public Set getSharedVariableNames() {
         LinkedHashSet<String> keys = new LinkedHashSet<String>();
 
