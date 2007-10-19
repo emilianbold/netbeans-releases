@@ -159,7 +159,7 @@ fi
 # add or update service tag record to allow discovery
 case "`uname`" in
     SunOS*) STS_CLIENT="/usr/bin/stclient";;
-    Linux*) STS_CLIENT="/opt/sun/servicetag/bin/stsclient";;
+    Linux*) STS_CLIENT="/opt/sun/servicetag/bin/stclient";;
 esac
 
 if [ -x "$STS_CLIENT" -a -d "${userdir}" ]; then
