@@ -1032,28 +1032,35 @@ public abstract class DocumentBox extends ContainerBox {
 //        CssProvider.getEngineService().clearComputedStylesForElement(target.getElement());
 
         boolean redoDeleted = target.getParent() != parentBox;
+        if (redoDeleted) {
+            // XXX #119509 The original update didn't work well (see below).
+            redoLayout(true);
+            return;
+        }
+        
         updateLayout(target);
 
-        if (redoDeleted) {
-            // Have changed parents - gotta ensure the layout is accurate in
-            // the old tree too
-            // This is for example the case if an inline element changes its positioning
-            // from normal to absolute - the old linebox needs updating
-            //updateLayout(parentBox);
-            if (parentBox.getParentIndex() == -1) {
-                // The parent box itself was removed, so notify its parent
-                // This should only happen when the parentbox is a lineboxgroup
-                assert parentBox instanceof LineBoxGroup;
-
-                ContainerBox p = parentBox.getParent();
-
-                if (p != null) {
-                    p.notifyChildResize(parentBox, context);
-                }
-            } else {
-                parentBox.notifyChildResize(deleted, context);
-            }
-        }
+        // XXX #119509 This original way didn't work well (see above).
+//        if (redoDeleted) {
+//            // Have changed parents - gotta ensure the layout is accurate in
+//            // the old tree too
+//            // This is for example the case if an inline element changes its positioning
+//            // from normal to absolute - the old linebox needs updating
+//            //updateLayout(parentBox);
+//            if (parentBox.getParentIndex() == -1) {
+//                // The parent box itself was removed, so notify its parent
+//                // This should only happen when the parentbox is a lineboxgroup
+//                assert parentBox instanceof LineBoxGroup;
+//
+//                ContainerBox p = parentBox.getParent();
+//
+//                if (p != null) {
+//                    p.notifyChildResize(parentBox, context);
+//                }
+//            } else {
+//                parentBox.notifyChildResize(deleted, context);
+//            }
+//        }
 
         // I may have inserted another linebox - make sure its layout is processed
         // as well.
