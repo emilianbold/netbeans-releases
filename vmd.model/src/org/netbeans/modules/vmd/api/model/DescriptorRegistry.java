@@ -145,8 +145,8 @@ public final class DescriptorRegistry {
         HashMap<TypeID, ComponentDescriptor> tempDescriptors = new HashMap<TypeID, ComponentDescriptor> ();
         ArrayList<ComponentProducer> tempProducers = new ArrayList<ComponentProducer> ();
 
-        Collection<ComponentDescriptor> descriptors = globalDescriptorRegistry.getComponentDescriptors ();
-        for (ComponentDescriptor descriptor : descriptors)
+        Collection<ComponentDescriptor> _descriptors = globalDescriptorRegistry.getComponentDescriptors ();
+        for (ComponentDescriptor descriptor : _descriptors)
             tempDescriptors.put (descriptor.getTypeDescriptor ().getThisType (), descriptor);
 
         tempProducers.addAll (globalDescriptorRegistry.getComponentProducers ());
@@ -154,9 +154,9 @@ public final class DescriptorRegistry {
         this.descriptors = tempDescriptors;
         this.producers = tempProducers;
 
-        for (DescriptorRegistryListener listener : listeners) {
+        for (DescriptorRegistryListener _listener : listeners) {
             try {
-                listener.descriptorRegistryUpdated ();
+                _listener.descriptorRegistryUpdated ();
             } catch (Exception e) {
                 Exceptions.printStackTrace (e);
             }
@@ -193,11 +193,7 @@ public final class DescriptorRegistry {
             return;
         }
         
-        writeAccess (new Runnable() {
-            public void run () {
-                
-            }
-        });
+        //writeAccess(new RemoveComponentDescriptorTerminator(componentType));
     }
 
     // TODO - proxy for GlobalDescriptorRegistry and ProjectRegistry
@@ -279,6 +275,18 @@ public final class DescriptorRegistry {
      */
     public boolean isInHierarchy (TypeID superTypeID, TypeID derivedTypeID) {
         return isComponentDescriptorCompatibleWithTypeID (superTypeID, getComponentDescriptor (derivedTypeID));
+    }
+    
+    class RemoveComponentDescriptorTerminator implements Runnable {
+        private TypeID componentType;
+
+        public RemoveComponentDescriptorTerminator(TypeID componentType) {
+            this.componentType = componentType;
+        }
+
+        public void run() {
+            globalDescriptorRegistry.removeComponentDescriptor(componentType);
+        }
     }
 
 }

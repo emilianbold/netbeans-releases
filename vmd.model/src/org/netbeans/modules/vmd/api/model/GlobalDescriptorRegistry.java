@@ -48,7 +48,6 @@ import org.openide.filesystems.*;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.XMLDataObject;
-import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
@@ -450,7 +449,7 @@ final class GlobalDescriptorRegistry {
 
     
     void removeComponentDescriptor(TypeID typeID) {
-        assert Debug.isFriend(DescriptorRegistry.class, "removeComponentDescriptor"); // NOI18N
+        assert Debug.isFriend(DescriptorRegistry.RemoveComponentDescriptorTerminator.class, "run"); // NOI18N
         
         final FileObject fo = customFileObjects.get(typeID).get();
         if (fo != null) {
@@ -467,7 +466,6 @@ final class GlobalDescriptorRegistry {
             } catch (IOException ex) {
                 Debug.error(ex);
             }
-            reload();
         }
     }
 }
