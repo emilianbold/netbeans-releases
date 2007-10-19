@@ -347,7 +347,7 @@ public final class LogRecords {
         }
 
         public void fatalError(SAXParseException e) throws SAXException {
-            LOG.log(Level.FINE, null, e);
+            throw e;
         }
         
     }
