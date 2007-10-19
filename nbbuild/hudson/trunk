@@ -94,7 +94,7 @@ if [ -f $sigtest_jar -a -d $sigtest_prev ]; then
     if [ $ERROR_CODE != 0 ]; then
         for report in `pwd`/$sigtest_out/*; do
             sigtest_email=`head -n 1 $report | grep "^email:" | cut -c 8-`
-            if [ -z "$X" ]; then
+            if [ -z "$sigtest_email" ]; then
               sigtest_email="api-changes@netbeans.org"
             fi
             (
