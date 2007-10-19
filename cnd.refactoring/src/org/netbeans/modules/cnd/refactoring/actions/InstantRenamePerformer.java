@@ -297,10 +297,8 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
     private boolean inSync;
     
     public synchronized void insertUpdate(DocumentEvent e) {
-        System.err.println("insert update" + inSync);
 	if (inSync)
 	    return ;
-	System.err.println("insert update");
 	inSync = true;
 	region.sync(0);
         getHighlightsBag(doc).setHighlights(bag);
@@ -309,10 +307,8 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
     }
 
     public synchronized void removeUpdate(DocumentEvent e) {
-        System.err.println("remove update" + inSync);
 	if (inSync)
 	    return ;
-	System.err.println("remove update");
         //#89997: do not sync the regions for the "remove" part of replace selection,
         //as the consequent insert may use incorrect offset, and the regions will be synced
         //after the insert anyway.
@@ -348,7 +344,6 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
     }
 
     private void release() {
-        System.err.println("release was called");
 	target.putClientProperty(InstantRenamePerformer.class, null);
         if (doc instanceof BaseDocument) {
             ((BaseDocument) doc).setPostModificationDocumentListener(null);
@@ -365,18 +360,9 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
     
     public static PositionsBag getHighlightsBag(Document doc) {
         PositionsBag bag = (PositionsBag) doc.getProperty(InstantRenamePerformer.class);
-        Object stream = doc.getProperty(Document.StreamDescriptionProperty);
-        FileObject file = null;
-        if (stream instanceof DataObject) {
-            file = ((DataObject) stream).getPrimaryFile();
-        }        
         if (bag == null) {
             doc.putProperty(InstantRenamePerformer.class, bag = new PositionsBag(doc));
-            
-                System.err.println("New Highlights Bag for " + file);
-//                Logger.getLogger("TIMER").log(Level.FINE, "Instant Rename Highlights Bag", new Object[] {((DataObject) stream).getPrimaryFile(), bag}); //NOI18N
         }
-        System.err.println("Highlights Bag for " + file);
         return bag;
     }
     
