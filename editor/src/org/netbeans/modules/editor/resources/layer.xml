@@ -326,6 +326,21 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
 
+        <folder name="FontsColors">
+            <folder name="NetBeans">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.editor.Bundle"/>
+                <folder name="Defaults">
+                    <file name="org-netbeans-modules-editor-token-colorings.xml" url="NetBeans-fontsColorsDefaults.xml">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.editor.Bundle"/>
+                    </file>
+                    <file name="org-netbeans-modules-editor-highlight-colorings.xml" url="NetBeans-editor.xml">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.editor.Bundle"/>
+                        <attr name="nbeditor-settings-ColoringType" stringvalue="highlight"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
+            
         <folder name="Keybindings">
             <folder name="NetBeans">
                 <folder name="Defaults">
