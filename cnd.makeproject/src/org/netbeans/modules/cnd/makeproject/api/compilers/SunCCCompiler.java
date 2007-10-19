@@ -246,7 +246,7 @@ public class SunCCCompiler extends CCCCompiler {
         try {
             getSystemIncludesAndDefines(path + compilerStderrCommand, false);
             getSystemIncludesAndDefines(path + compilerStderrCommand2, false);
-            systemIncludeDirectoriesList.add("/usr/include"); // NOI18N
+            systemIncludeDirectoriesList.addUnique("/usr/include"); // NOI18N
             saveOK = true;
         } catch (IOException ioe) {
             System.err.println("IOException " + ioe);
@@ -254,7 +254,6 @@ public class SunCCCompiler extends CCCCompiler {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
             saveOK = false;
         }
-        normalizePaths(systemIncludeDirectoriesList);
     }
     
     @Override
@@ -279,17 +278,17 @@ public class SunCCCompiler extends CCCCompiler {
                         token = line.substring(includeIndex+2);
                     }
                     if ( ! token.equals("-xbuiltin")) { //NOI18N
-                        systemIncludeDirectoriesList.add(token);
+                        systemIncludeDirectoriesList.addUnique(normalizePath(token));
                     }
                     if (token.endsWith("Cstd")) { // NOI18N
                         // See 89872 "Parser Settings" for Sun Compilers Collection are incorrect
-                        systemIncludeDirectoriesList.add(token.substring(0, token.length()-4) + "std"); // NOI18N
+                        systemIncludeDirectoriesList.addUnique(normalizePath(token.substring(0, token.length()-4) + "std")); // NOI18N
                     }
                     // Hack to handle -compat flag. If this flag is added,
                     // the compiler looks in in CC4 and not in CC. Just adding CC4 doesn't
                     // fix this problem but it may work for some include files
 //                  if (token.endsWith("include/CC")) // NOI18N
-//                      systemIncludeDirectoriesList.add(token + "4"); // NOI18N
+//                      systemIncludeDirectoriesList.addUnique(normalizePath(token + "4")); // NOI18N
                     if (spaceIndex > 0) {
                         includeIndex = line.indexOf("-I", spaceIndex); // NOI18N
                     } else {

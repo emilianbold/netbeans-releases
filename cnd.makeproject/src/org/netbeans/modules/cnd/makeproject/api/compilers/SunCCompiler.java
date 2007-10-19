@@ -229,7 +229,7 @@ public class SunCCompiler extends CCCCompiler {
         }
         try {
             getSystemIncludesAndDefines(path + compilerStderrCommand, false);
-            systemIncludeDirectoriesList.add("/usr/include"); // NOI18N
+            systemIncludeDirectoriesList.addUnique("/usr/include"); // NOI18N
             saveOK = true;
         } catch (IOException ioe) {
             System.err.println("IOException " + ioe);
@@ -237,7 +237,6 @@ public class SunCCompiler extends CCCCompiler {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
             saveOK = false;
         }
-        normalizePaths(systemIncludeDirectoriesList);
     }
     
     @Override
@@ -258,11 +257,11 @@ public class SunCCompiler extends CCCCompiler {
                     int spaceIndex = line.indexOf(" ", includeIndex + 1); // NOI18N
                     if (spaceIndex > 0) {
                         token = line.substring(includeIndex+2, spaceIndex);
-                        systemIncludeDirectoriesList.add(token);
+                        systemIncludeDirectoriesList.addUnique(normalizePath(token));
                         includeIndex = line.indexOf("-I", spaceIndex); // NOI18N
                     } else {
                         token = line.substring(includeIndex+2);
-                        systemIncludeDirectoriesList.add(token);
+                        systemIncludeDirectoriesList.addUnique(normalizePath(token));
                         break;
                     }
                 }

@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
@@ -65,6 +66,29 @@ public class PersistentList extends Vector implements Serializable{
     private static String getRoot() {
         String dir = System.getProperty("netbeans.user") + "/config/cndcodemodel/"; // NOI18N
         return dir;
+    }
+    
+    /*
+     * Add a string only if not already in list
+     */
+    public void addUnique(String string) {
+        if (!inList(string)) {
+            super.add(string);
+        }
+        
+    }
+    
+    protected boolean inList(String path) {
+        if (path == null) {
+            return false;
+        }
+        Iterator iterator = iterator();
+        while (iterator.hasNext()) {
+            if (path.equals((String)iterator.next())) {
+                return true;
+            }
+        }
+        return false;
     }
     
     /**

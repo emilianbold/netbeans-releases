@@ -43,59 +43,64 @@ package org.netbeans.modules.cnd.makeproject.api.compilers;
 
 import java.io.File;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Vector;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.openide.filesystems.FileUtil;
 
 public class BasicCompiler extends Tool {
-    
+
     /** Creates a new instance of GenericCompiler */
     public BasicCompiler(CompilerFlavor flavor, int kind, String name, String displayName, String path) {
         super(flavor, kind, name, displayName, path);
     }
-    
+
     public String getDevelopmentModeOptions(int value) {
         return ""; // NOI18N
     }
-    
+
     public String getWarningLevelOptions(int value) {
         return ""; // NOI18N
     }
-    
+
     public String getSixtyfourBitsOption(int value) {
         return ""; // NOI18N
     }
-    
+
     public String getStripOption(boolean value) {
         return ""; // NOI18N
     }
-    
+
     public List getSystemPreprocessorSymbols() {
         return new Vector(); // NOI18N
     }
-    
+
     public List getSystemIncludeDirectories() {
         return new Vector(); // NOI18N
     }
-    
+
     /**
      * @return true if settings were really replaced by new one
      */
     public boolean setSystemPreprocessorSymbols(List values) {
         return false;
     }
-    
+
     /**
      * @return true if settings were really replaced by new one
      */
     public boolean setSystemIncludeDirectories(List values) {
         return false;
     }
-    
+
     protected void normalizePaths(List<String> paths) {
-	for (int i = 0; i < paths.size(); i++) {
-	    paths.set(i, FileUtil.normalizeFile(new File(paths.get(i))).getAbsolutePath());
-	}
+        for (int i = 0; i < paths.size(); i++) {
+            paths.set(i, FileUtil.normalizeFile(new File(paths.get(i))).getAbsolutePath());
+        }
+    }
+
+    protected String normalizePath(String path) {
+        return FileUtil.normalizeFile(new File(path)).getAbsolutePath();
     }
 }

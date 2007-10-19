@@ -193,7 +193,6 @@ public class GNUCCompiler extends CCCCompiler {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
             saveOK = false;
         }
-        normalizePaths(systemIncludeDirectoriesList);
     }
     
     @Override
@@ -228,9 +227,9 @@ public class GNUCCompiler extends CCCCompiler {
                             line = line.substring(6);
                         }
                     }
-                    systemIncludeDirectoriesList.add(getIncludeFilePathPrefix() + line);
+                    systemIncludeDirectoriesList.addUnique(normalizePath(getIncludeFilePathPrefix() + line));
                     if (getIncludeFilePathPrefix().length() > 0 && line.startsWith("/usr/lib")) // NOI18N
-                        systemIncludeDirectoriesList.add(getIncludeFilePathPrefix() + line.substring(4));
+                        systemIncludeDirectoriesList.addUnique(normalizePath(getIncludeFilePathPrefix() + line.substring(4)));
                     continue;
                 }
                 parseUserMacros(line, systemPreprocessorSymbolsList);
