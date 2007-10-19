@@ -1394,7 +1394,12 @@ public class BindingDesignSupport {
 
     private void removeBinding(Binding binding) {
         BindingGroup group = bindingToGroup.remove(binding);
-        binding.unbind();
+        // It may happen that binding.bind() fails. Binding may
+        // stay unbound in such situation and binding.unbind()
+        // throws exception is this case
+        if (binding.isBound()) {
+            binding.unbind();
+        }
         group.removeBinding(binding);
     }
 
