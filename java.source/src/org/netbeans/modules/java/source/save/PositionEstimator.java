@@ -1491,7 +1491,13 @@ public abstract class PositionEstimator {
                 if (pos > section.getStartPosition().getOffset() && 
                     pos <= section.getEndPosition().getOffset()) 
                 {
-                    return section.getEndPosition().getOffset()+1;
+                    seq.move(pos);
+                    while (seq.moveNext() && nonRelevant.contains(seq.token().id())) ;
+                    if (seq.offset() < section.getEndPosition().getOffset()) {
+                        return pos;
+                    } else {
+                        return section.getEndPosition().getOffset()+1;
+                    }
                 }
             }
         }
