@@ -192,7 +192,7 @@ public class ImportedElementNode extends FilterNode implements ImportedElementCo
 
         public NestedImportElementNode(Node orig)
         {
-            super(orig);
+            super(orig, new NestedImportElementChildren(orig));
         }
 
         public boolean canDestroy()
