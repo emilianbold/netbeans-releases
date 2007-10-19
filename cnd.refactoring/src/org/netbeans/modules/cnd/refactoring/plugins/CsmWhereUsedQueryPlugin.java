@@ -64,18 +64,13 @@ import org.openide.util.NbBundle;
  * @author Vladimir Voskresensky
  */
 public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
-    private WhereUsedQuery refactoring;
-//    private RubyElementCtx searchHandle;
-//    private Set<IndexedClass> subclasses;
+    private final WhereUsedQuery refactoring;
     private final CsmObject startReferenceObject;
-    private String targetName;
     
     /** Creates a new instance of WhereUsedQuery */
     public CsmWhereUsedQueryPlugin(WhereUsedQuery refactoring) {
         this.refactoring = refactoring;
-//        this.searchHandle = refactoring.getRefactoringSource().lookup(RubyElementCtx.class);
         startReferenceObject = refactoring.getRefactoringSource().lookup(CsmObject.class);
-        targetName = "";//searchHandle.getSimpleName();
     }
     
     public Problem prepare(final RefactoringElementsBag elements) {
@@ -86,7 +81,6 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
         Collection<CsmFile> files = getRelevantFiles(startReferenceObject, referencedObject);
         fireProgressListenerStart(ProgressEvent.START, files.size());
         processQuery(referencedObject, elements, files);
-//        processFiles(a, new FindTask(elements));
         fireProgressListenerStop();
         return null;
     }

@@ -47,6 +47,7 @@ import org.netbeans.modules.cnd.api.model.CsmEnum;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
+import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
@@ -55,6 +56,7 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
@@ -99,6 +101,28 @@ public class CsmRefactoringUtils {
         }
         
         return out;
+    }
+        
+    public static CsmObject getReferencedElement(CsmObject csmObject) {
+        if (csmObject instanceof CsmReference) {
+            return getReferencedElement(((CsmReference)csmObject).getReferencedObject());
+        } else {
+            return csmObject;
+        }
+    } 
+    
+    public static String getSimpleText(CsmObject element) {
+        String text = "";
+        if (element != null) {
+            if (CsmKindUtilities.isNamedElement(element)) {
+                text = ((CsmNamedElement) element).getName();
+            } else if (CsmKindUtilities.isStatement((CsmObject)element)) {
+                text = ((CsmStatement)element).getText();
+            } else if (CsmKindUtilities.isOffsetable(element) ) {
+                text = ((CsmOffsetable)element).getText();
+            }
+        }
+        return text;
     }
     
     static FileObject getFileObject(CsmObject object) {

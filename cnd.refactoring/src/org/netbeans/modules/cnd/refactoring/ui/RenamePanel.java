@@ -42,11 +42,18 @@ package org.netbeans.modules.cnd.refactoring.ui;
 import java.awt.Component;
 import java.awt.event.ItemEvent;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.cnd.refactoring.support.RefactoringModule;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -58,12 +65,14 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
 
     private final transient String oldName;
     private final transient ChangeListener parent;
+    private final transient CsmObject origObject;
     
     /** Creates new form RenamePanelName */
-    public RenamePanel(String oldName, ChangeListener parent, String name, boolean editable, boolean showUpdateReferences) {
+    public RenamePanel(CsmObject origObject, String oldName, ChangeListener parent, String name, boolean editable, boolean showUpdateReferences) {
         setName(name);
         this.oldName = oldName;
         this.parent = parent;
+        this.origObject = origObject;
         initComponents();
         updateReferencesCheckBox.setVisible(showUpdateReferences);
         nameField.setEnabled(editable);
@@ -88,6 +97,62 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
             return ;
         //put initialization code here
         initialized = true;
+        CsmObject resolvedObject = CsmRefactoringUtils.getReferencedElement(this.origObject);
+        final String objKindStr = getObjectKind(resolvedObject);   
+        final String title = NbBundle.getMessage(RenamePanel.class, "LBL_RenamePanelTitle", objKindStr, oldName); // NOI18N
+        
+        final RenamePanel panel = this;
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                panel.setName(title);
+            }            
+        });
+    }
+    
+    private static String getObjectKind(CsmObject obj) {
+        String kindName = "";
+        if (obj != null) {
+            if (CsmKindUtilities.isClass(obj)) {
+                CsmDeclaration.Kind kind = ((CsmClass)obj).getKind();
+                if (kind == CsmDeclaration.Kind.STRUCT) {
+                    kindName = getString("LBL_Struct"); // NOI18N
+                } else if (kind == CsmDeclaration.Kind.UNION) {
+                    kindName = getString("LBL_Union"); // NOI18N
+                } else {
+                    assert kind == CsmDeclaration.Kind.CLASS : "unexpected kind " + kind;
+                    kindName = getString("LBL_Class"); // NOI18N
+                }
+            } else if (CsmKindUtilities.isEnum(obj)) {
+                kindName = getString("LBL_Enum"); // NOI18N
+            } else if (CsmKindUtilities.isMacro(obj)) {
+                kindName = getString("LBL_Macro"); // NOI18N
+            } else if (CsmKindUtilities.isFile(obj)) {
+                kindName = getString("LBL_File"); // NOI18N
+            } else if (CsmKindUtilities.isField(obj)) {
+                kindName = getString("LBL_Field"); // NOI18N
+            } else if (CsmKindUtilities.isParamVariable(obj)) {
+                kindName = getString("LBL_Parameter"); // NOI18N
+            } else if (CsmKindUtilities.isEnumerator(obj)) {
+                kindName = getString("LBL_Enumerator"); // NOI18N
+            } else if (CsmKindUtilities.isVariable(obj)) {
+                kindName = getString("LBL_Variable"); // NOI18N
+            } else if (CsmKindUtilities.isNamespace(obj)) {
+                kindName = getString("LBL_Namespace"); // NOI18N
+            } else if (CsmKindUtilities.isConstructor(obj)) {
+                kindName = getString("LBL_Constructor"); // NOI18N
+            } else if (CsmKindUtilities.isMethod(obj)) {
+                kindName = getString("LBL_Method"); // NOI18N
+            } else if (CsmKindUtilities.isFunction(obj)) {
+                kindName = getString("LBL_Function"); // NOI18N
+            } else if (CsmKindUtilities.isTypedef(obj)) {
+                kindName = getString("LBL_Typedef"); // NOI18N
+            }
+        }
+        return kindName;
+    }
+    
+    private static String getString(String key) {
+        return NbBundle.getMessage(RenameRefactoringUI.class, key);
     }
     
     @Override

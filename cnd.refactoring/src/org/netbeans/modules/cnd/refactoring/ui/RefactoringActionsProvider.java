@@ -301,7 +301,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
             UI.openRefactoringUI(createRefactoringUI(fobs, handles));
         }
 
-        protected abstract RefactoringUI createRefactoringUI(FileObject[] selectedElement, Collection<CsmObject> handles/*Collection<RubyElementCtx> handles*/);
+        protected abstract RefactoringUI createRefactoringUI(FileObject[] selectedElement, Collection<CsmObject> handles);
     }    
     
     static boolean isFromEditor(EditorCookie ec) {

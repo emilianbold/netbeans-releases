@@ -45,8 +45,10 @@ import java.text.MessageFormat;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
@@ -78,17 +80,19 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
     
     public RenameRefactoringUI(CsmObject csmObject) {
         this.origObject = csmObject;
-        this.oldName = getSearchElementName(this.origObject);  
+        this.oldName = CsmRefactoringUtils.getSimpleText(this.origObject);  
         this.refactoring = new RenameRefactoring(Lookups.singleton(csmObject));
     }
     
     private String getSearchElementName(CsmObject csmObj) {
         assert csmObj != null;
         String objName;
-        if (csmObj instanceof CsmReference) {
-            objName = ((CsmReference)csmObj).getText();
-        } else if (CsmKindUtilities.isNamedElement(csmObj)) {
+        if (CsmKindUtilities.isNamedElement(csmObj)) {
             objName = ((CsmNamedElement)csmObj).getName();
+        } else if (CsmKindUtilities.isStatement(csmObj)) {
+            objName = ((CsmStatement)csmObj).getText();
+        } else if (CsmKindUtilities.isOffsetable(csmObj)) {
+            objName = ((CsmOffsetable)csmObj).getText();
         } else if (csmObj != null) {
             objName = "<UNNAMED ELEMENT>"; // NOI18N
         } else {
@@ -162,26 +166,10 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
 
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
         if (panel == null) {
+            System.err.println("getPanel is called");
             String name = oldName;
-            String suffix = "";
-//            if (handle != null) {
-//                ElementKind kind = RetoucheUtils.getElementKind(handle);
-//                if (kind.isClass() || kind.isInterface()) {
-//                    suffix  = kind.isInterface() ? getString("LBL_Interface") : getString("LBL_Class");
-//                } else if (kind == ElementKind.METHOD) {
-//                    suffix = getString("LBL_Method");
-//                } else if (kind == ElementKind.FIELD) {
-//                    suffix = getString("LBL_Field");
-//                } else if (kind == ElementKind.LOCAL_VARIABLE) {
-//                    suffix = getString("LBL_LocalVar");
-//                } else if (kind == ElementKind.PACKAGE || (handle == null && fromListener)) {
-//                    suffix = pkgRename ? getString("LBL_Package") : getString("LBL_Folder");
-//                } else if (kind == ElementKind.PARAMETER) {
-//                    suffix = getString("LBL_Parameter");
-//                }
-//            }
-            suffix = suffix + " " + name; // NOI18N
-            panel = new RenamePanel(name, parent, NbBundle.getMessage(RenamePanel.class, "LBL_Rename") + " " + suffix, !fromListener, fromListener && !byPassPakageRename);
+            String title = NbBundle.getMessage(RenamePanel.class, "LBL_RenamePanelTitle", "", oldName); // NOI18N
+            panel = new RenamePanel(this.origObject, name, parent, title, !fromListener, fromListener && !byPassPakageRename);
         }
         return panel;
     }

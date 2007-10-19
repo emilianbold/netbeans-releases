@@ -40,12 +40,10 @@
  */
 package org.netbeans.modules.cnd.refactoring.plugins;
 
-import java.io.IOException;
 
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import java.text.MessageFormat;
 import java.util.*;
@@ -53,22 +51,35 @@ import java.util.*;
 
 
 
+import javax.swing.text.Position.Bias;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
+import org.netbeans.modules.cnd.refactoring.support.ModificationResult;
+import org.netbeans.modules.cnd.refactoring.support.ModificationResult.Difference;
+import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 
+import org.openide.text.CloneableEditorSupport;
+import org.openide.text.PositionRef;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
- * The actual Renaming refactoring work for Ruby. The skeleton (name checks etc.) based
+ * The actual Renaming refactoring work for C/C++. The skeleton (name checks etc.) based
  * on the Java refactoring module by Jan Becicka, Martin Matula, Pavel Flaska and Daniel Prusa.
  * 
  * @author Jan Becicka
  * @author Martin Matula
  * @author Pavel Flaska
  * @author Daniel Prusa
- * @author Tor Norbye
+ * @author Vladimir Voskresensky
  *
  * @todo Complete this. Most of the prechecks are not implemented - and the refactorings themselves need a lot of work.
  */
@@ -79,13 +90,14 @@ public class CsmRenameRefactoringPlugin extends CsmRefactoringPlugin {
     private Collection overriddenByMethods = null; // methods that override the method to be renamed
     private Collection overridesMethods = null; // methods that are overridden by the method to be renamed
     private boolean doCheckName = true;
-    
-    private RenameRefactoring refactoring;
+    CsmObject referencedObject;
+    private final RenameRefactoring refactoring;
     
     /** Creates a new instance of RenameRefactoring */
     public CsmRenameRefactoringPlugin(RenameRefactoring rename) {
         this.refactoring = rename;
         startReferenceObject = refactoring.getRefactoringSource().lookup(CsmObject.class);     
+        assert startReferenceObject != null : "no start reference";
 //        RubyElementCtx tph = rename.getRefactoringSource().lookup(RubyElementCtx.class);
 //        if (tph!=null) {
 //            treePathHandle = tph;
@@ -125,25 +137,6 @@ public class CsmRenameRefactoringPlugin extends CsmRefactoringPlugin {
 //        }
     }
     
-//    protected Source getRubySource(Phase p) {
-//        if (treePathHandle == null) {
-//            return null;
-//        }
-//        switch (p) {
-//            case PRECHECK:
-//            case CHECKPARAMETERS:    
-//                if (treePathHandle==null) {
-//                    return null;
-//                }
-//                ClasspathInfo cpInfo = getClasspathInfo(refactoring);
-//                return RetoucheUtils.createSource(cpInfo, treePathHandle.getFileObject());
-//            case FASTCHECKPARAMETERS:
-//                return RetoucheUtils.getSource(treePathHandle.getFileObject());
-//
-//        }
-//        throw new IllegalStateException();
-//    }
-    
 //    protected Problem preCheck(CompilationController info) throws IOException {
 //        Problem preCheckProblem = null;
 //        fireProgressListenerStart(refactoring.PRE_CHECK, 4);
@@ -156,63 +149,32 @@ public class CsmRenameRefactoringPlugin extends CsmRefactoringPlugin {
         return new MessageFormat(NbBundle.getMessage(CsmRenameRefactoringPlugin.class, "ERR_CannotRenameFile")).format(new Object[] {r.getNameExt()});
     }
     
-//    protected Problem fastCheckParameters(CompilationController info) throws IOException {
-//        Problem fastCheckProblem = null;
-//        info.toPhase(org.netbeans.api.retouche.source.Phase.RESOLVED);
-//        ElementKind kind = treePathHandle.getKind();
-////        
-//        String newName = refactoring.getNewName();
-////        String oldName = element.getSimpleName().toString();
-//        String oldName = treePathHandle.getSimpleName();
-//        
-//        if (oldName.equals(newName)) {
-//            boolean nameNotChanged = true;
-//            //if (kind == ElementKind.CLASS || kind == ElementKind.MODULE) {
-//            //    if (!((TypeElement) element).getNestingKind().isNested()) {
-//            //        nameNotChanged = info.getFileObject().getName().equals(element);
-//            //    }
-//            //}
-//            if (nameNotChanged) {
-//                fastCheckProblem = createProblem(fastCheckProblem, true, getString("ERR_NameNotChanged"));
-//                return fastCheckProblem;
-//            }
-//            
-//        }
-//        
-//        // TODO - get a better ruby name picker - and check for invalid Ruby symbol names etc.
-//        // TODO - call RubyUtils.isValidLocalVariableName if we're renaming a local symbol!
-//        if (kind == ElementKind.CLASS && !RubyUtils.isValidRubyClassName(newName)) {
-//            String s = getString("ERR_InvalidClassName"); //NOI18N
-//            String msg = new MessageFormat(s).format(
-//                    new Object[] {newName}
-//            );
-//            fastCheckProblem = createProblem(fastCheckProblem, true, msg);
-//            return fastCheckProblem;
-//        } else if (kind == ElementKind.METHOD && !RubyUtils.isValidRubyMethodName(newName)) {
-//            String s = getString("ERR_InvalidMethodName"); //NOI18N
-//            String msg = new MessageFormat(s).format(
-//                    new Object[] {newName}
-//            );
-//            fastCheckProblem = createProblem(fastCheckProblem, true, msg);
-//            return fastCheckProblem;
-//        } else if (!RubyUtils.isValidRubyIdentifier(newName)) {
-//            String s = getString("ERR_InvalidIdentifier"); //NOI18N
-//            String msg = new MessageFormat(s).format(
-//                    new Object[] {newName}
-//            );
-//            fastCheckProblem = createProblem(fastCheckProblem, true, msg);
-//            return fastCheckProblem;
-//        }
-//        
-//        
-//        String msg = RubyUtils.getIdentifierWarning(newName, 0);
-//        if (msg != null) {
-//            fastCheckProblem = createProblem(fastCheckProblem, false, msg);
-//        }
-//        
-//        return fastCheckProblem;
-//    }
+    @Override
+    public Problem fastCheckParameters() {
+        Problem fastCheckProblem = null;
+        String newName = refactoring.getNewName();
+        String oldName = CsmRefactoringUtils.getSimpleText(startReferenceObject);
+        
+        if (oldName.equals(newName)) {
+            fastCheckProblem = createProblem(fastCheckProblem, true, getString("ERR_NameNotChanged")); // NOI18N
+            return fastCheckProblem;
+        }
+        
+        if (!Utilities.isJavaIdentifier(newName)) {
+            String s = getString("ERR_InvalidIdentifier"); //NOI18N
+            String msg = new MessageFormat(s).format(
+                    new Object[] {newName}
+            );
+            fastCheckProblem = createProblem(fastCheckProblem, true, msg);
+            return fastCheckProblem;
+        }        
+        return fastCheckProblem;
+    }
     
+    @Override
+    public Problem checkParameters() {
+        return fastCheckParameters();
+    }
 //    protected Problem checkParameters(CompilationController info) throws IOException {
 //        
 //        Problem checkProblem = null;
@@ -240,44 +202,112 @@ public class CsmRenameRefactoringPlugin extends CsmRefactoringPlugin {
     
     @Override
     public Problem preCheck() {
-//        if (!treePathHandle.getFileObject().isValid()) {
-//            return new Problem(true, NbBundle.getMessage(CsmRenameRefactoringPlugin.class, "DSC_ElNotAvail")); // NOI18N
+        System.err.println("preCheck is called");
+        Problem preCheckProblem = null;
+        fireProgressListenerStart(RenameRefactoring.PRE_CHECK, 4);
+        if (this.referencedObject == null) {
+            this.referencedObject = CsmRefactoringUtils.getReferencedElement(startReferenceObject);
+        }    
+        preCheckProblem = isResovledElement(startReferenceObject);
+        if (preCheckProblem != null) {
+            return preCheckProblem;
+        }
+//        // check read-only elements
+//        FileObject fo = null;
+//        if (CsmKindUtilities.isOffsetable(this.referencedObject)) {
+//            fo = CsmUtilities.getFileObject(((CsmOffsetable)this.referencedObject).getContainingFile());
+//        }
+//        if (fo != null && (FileUtil.getArchiveFile(fo)!= null || !fo.canWrite())) {
+//            preCheckProblem = createProblem(preCheckProblem, true, getCannotRename(fo));
+//            return preCheckProblem;            
+//        }
+        fireProgressListenerStop();
+        return preCheckProblem;
+//        info.toPhase(JavaSource.Phase.RESOLVED);
+//        Element el = treePathHandle.resolveElement(info);
+//        preCheckProblem = isElementAvail(treePathHandle, info);
+//        if (preCheckProblem != null) {
+//            return preCheckProblem;
+//        }
+//        FileObject file = SourceUtils.getFile(el, info.getClasspathInfo());
+//        if (file!=null && FileUtil.getArchiveFile(file)!= null) { //NOI18N
+//            preCheckProblem = createProblem(preCheckProblem, true, getCannotRename(file));
+//            return preCheckProblem;
 //        }
 //        
-        return null;
-    }
-
-//    private Set<FileObject> getRelevantFiles() {
-//        ClasspathInfo cpInfo = getClasspathInfo(refactoring);
-//        final Set<FileObject> set = new HashSet<FileObject>();
-//        Source source = RetoucheUtils.createSource(cpInfo, treePathHandle.getFileObject());
-//
-//        try {
-//            source.runUserActionTask(new CancellableTask<CompilationController>() {
-//                
-//                public void cancel() {
-//                    throw new UnsupportedOperationException("Not supported yet.");
-//                }
-//                
-//                public void run(CompilationController info) throws Exception {
-//                    // TODO if getSearchInComments I -should- search all files
-////                    System.out.println("TODO - compute a full set of files to be checked... for now just lamely using the project files");
-//                    if (treePathHandle.getKind() == ElementKind.VARIABLE || treePathHandle.getKind() == ElementKind.PARAMETER) {
-//                        // For local variables, only look in the current file!
-//                        set.add(info.getFileObject());
-//                    }  else {
-//                        set.addAll(RetoucheUtils.getRubyFilesInProject(info.getFileObject()));
-//                    }
-//
-//                }
-//            }, true);
-//        } catch (IOException ioe) {
-//            throw (RuntimeException) new RuntimeException().initCause(ioe);
+//        if (file==null || !RetoucheUtils.isElementInOpenProject(file)) {
+//            preCheckProblem = new Problem(true, NbBundle.getMessage(RenameRefactoringPlugin.class, "ERR_ProjectNotOpened"));
+//            return preCheckProblem;
 //        }
-//        return set;
-//    }
-    
-
+//        
+//        switch(el.getKind()) {
+//        case METHOD:
+//            fireProgressListenerStep();
+//            fireProgressListenerStep();
+//            overriddenByMethods = RetoucheUtils.getOverridingMethods((ExecutableElement)el, info);
+//            fireProgressListenerStep();
+//            if (el.getModifiers().contains(Modifier.NATIVE)) {
+//                preCheckProblem = createProblem(preCheckProblem, false, NbBundle.getMessage(RenameRefactoringPlugin.class, "ERR_RenameNative", el));
+//            }
+//            if (!overriddenByMethods.isEmpty()) {
+//                String msg = new MessageFormat(getString("ERR_IsOverridden")).format(
+//                        new Object[] {SourceUtils.getEnclosingTypeElement(el).getSimpleName().toString()});
+//                preCheckProblem = createProblem(preCheckProblem, false, msg);
+//            }
+//            for (ExecutableElement e : overriddenByMethods) {
+//                if (e.getModifiers().contains(Modifier.NATIVE)) {
+//                    preCheckProblem = createProblem(preCheckProblem, false, NbBundle.getMessage(RenameRefactoringPlugin.class, "ERR_RenameNative", e));
+//                }
+//            }
+//            overridesMethods = RetoucheUtils.getOverridenMethods((ExecutableElement)el, info);
+//            fireProgressListenerStep();
+//            if (!overridesMethods.isEmpty()) {
+//                boolean fatal = false;
+//                for (Iterator iter = overridesMethods.iterator();iter.hasNext();) {
+//                    ExecutableElement method = (ExecutableElement) iter.next();
+//                    if (method.getModifiers().contains(Modifier.NATIVE)) {
+//                        preCheckProblem = createProblem(preCheckProblem, false, NbBundle.getMessage(RenameRefactoringPlugin.class, "ERR_RenameNative", method));
+//                    }
+//                    if (RetoucheUtils.isFromLibrary(method, info.getClasspathInfo())) {
+//                        fatal = true;
+//                        break;
+//                    }
+//                }
+//                String msg = fatal?getString("ERR_Overrides_Fatal"):getString("ERR_Overrides");
+//                preCheckProblem = createProblem(preCheckProblem, fatal, msg);
+//            }
+//            break;
+//        case FIELD:
+//        case ENUM_CONSTANT:
+//            fireProgressListenerStep();
+//            fireProgressListenerStep();
+//            Element hiddenField = hides(el, el.getSimpleName().toString(), info);
+//            fireProgressListenerStep();
+//            fireProgressListenerStep();
+//            if (hiddenField != null) {
+//                String msg = new MessageFormat(getString("ERR_Hides")).format(
+//                        new Object[] {SourceUtils.getEnclosingTypeElement(hiddenField)}
+//                );
+//                preCheckProblem = createProblem(preCheckProblem, false, msg);
+//            }
+//            break;
+//        case PACKAGE:
+//            //TODO: any prechecks?
+//            break;
+//        case LOCAL_VARIABLE:
+//            //TODO: any prechecks for formal parametr or local variable?
+//            break;
+//        case CLASS:
+//        case INTERFACE:
+//        case ANNOTATION_TYPE:
+//        case ENUM:
+//            //TODO: any prechecks for JavaClass?
+//            break;
+//        default:
+//            //                if (!((jmiObject instanceof Resource) && ((Resource)jmiObject).getClassifiers().isEmpty()))
+//            //                    result = createProblem(result, true, NbBundle.getMessage(RenameRefactoring.class, "ERR_RenameWrongType"));
+//        }
+    }
     
 //    private Set<RubyElementCtx> allMethods;
     
@@ -305,16 +335,72 @@ public class CsmRenameRefactoringPlugin extends CsmRefactoringPlugin {
 //            }
 //        }
 //        fireProgressListenerStop();
+        if (this.referencedObject == null) {
+            return null;
+        }
+        Collection<CsmFile> files = getRelevantFiles(startReferenceObject, referencedObject);
+        fireProgressListenerStart(ProgressEvent.START, files.size());
+        createAndAddElements(files, elements, refactoring);
+        fireProgressListenerStop();        
         return null;
     }
-
-
     
+    @Override
+    protected ModificationResult processFiles(Collection<CsmFile> files) {
+        ModificationResult out = null;
+        for (CsmFile csmFile : files) {
+            if (cancelRequest) {
+                // may be return what we already have?
+                return null;
+            }
+            if (out == null) {
+                out = new ModificationResult(csmFile.getProject());
+            }
+            processFile(csmFile, out);            
+            fireProgressListenerStep();
+        }
+        return out;
+    }
     
     private static final String getString(String key) {
         return NbBundle.getMessage(CsmRenameRefactoringPlugin.class, key);
     }
+
+    private void processFile(CsmFile csmFile, ModificationResult mr) {
+        assert this.referencedObject != null : "method must be called for resolved element";
+        CloneableEditorSupport ces = CsmUtilities.findCloneableEditorSupport(csmFile);
+        FileObject fo = CsmUtilities.getFileObject(csmFile);
+        Collection<CsmReference> refs = CsmReferenceRepository.getDefault().getReferences(referencedObject, csmFile, true);
+        String newName = refactoring.getNewName();
+        for (CsmReference ref : refs) {
+            String oldName = ref.getText();
+            String descr = getDescription(ref, referencedObject, oldName);
+            Difference diff = rename(ref, ces, oldName, newName, descr);
+            assert diff != null;
+            mr.addDifference(fo, diff);
+        }
+    }
     
+    private String getDescription(CsmReference ref, CsmObject target, String targetName) {
+        String out = NbBundle.getMessage(CsmRenameRefactoringPlugin.class, "UpdateRef", targetName);
+        return out;
+    }
+    
+    private Difference rename(CsmReference ref, CloneableEditorSupport ces,
+            String oldName, String newName, String descr) {
+        if (oldName == null) {
+            oldName = ref.getText();
+        }
+        if (newName == null) {
+            newName = refactoring.getNewName();
+        }
+        assert oldName != null;
+        assert newName != null;
+        PositionRef startPos = ces.createPositionRef(ref.getStartOffset(), Bias.Forward);
+        PositionRef endPos = ces.createPositionRef(ref.getEndOffset(), Bias.Backward);
+        Difference diff = new Difference(Difference.Kind.CHANGE, ref, startPos, endPos, oldName, newName, descr);
+        return diff;
+    }
     /**
      *
      * @author Jan Becicka
