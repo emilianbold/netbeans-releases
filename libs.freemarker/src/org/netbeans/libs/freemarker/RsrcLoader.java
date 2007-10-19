@@ -94,8 +94,8 @@ implements TemplateLoader, TemplateExceptionHandler {
     }
 
     public Object findTemplateSource(String string) throws IOException {
-        FileObject fo = getFile(string);
-        return fo == null ? null : new Wrap(fo);
+        FileObject tmp = getFile(string);
+        return tmp == null ? null : new Wrap(tmp);
     }
 
     public long getLastModified(Object object) {
