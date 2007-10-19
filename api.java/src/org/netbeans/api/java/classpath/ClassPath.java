@@ -82,6 +82,7 @@ import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
 
 /**
  * ClassPath objects should be used to access contents of the ClassPath, searching
@@ -220,6 +221,7 @@ public final class ClassPath {
      */
     private Map<FileObject,FilteringPathResourceImplementation> root2Filter = new WeakHashMap<FileObject,FilteringPathResourceImplementation>();
     private PropertyChangeListener pListener;
+    private PropertyChangeListener weakPListener;
     private RootsListener rootsListener;
     private List<ClassPath.Entry> entriesCache;
     private long invalidEntries;    //Lamport ordering of events
@@ -317,8 +319,8 @@ public final class ClassPath {
         else {
             List<ClassPath.Entry> cache = new ArrayList<ClassPath.Entry> ();
             for (PathResourceImplementation pr : resources) {
-                pr.removePropertyChangeListener(pListener);
-                pr.addPropertyChangeListener(pListener);
+                pr.removePropertyChangeListener(weakPListener);
+                pr.addPropertyChangeListener(weakPListener = WeakListeners.propertyChange(pListener, pr));
                 for (URL root : pr.getRoots()) {
                     cache.add(new Entry(root,
                             pr instanceof FilteringPathResourceImplementation ? (FilteringPathResourceImplementation) pr : null));
@@ -333,7 +335,7 @@ public final class ClassPath {
             throw new IllegalArgumentException ();
         this.impl = impl;
         this.pListener = new SPIListener ();
-        this.impl.addPropertyChangeListener (this.pListener);
+        this.impl.addPropertyChangeListener (weakPListener = WeakListeners.propertyChange(this.pListener, this.impl));
     }
 
     /**
@@ -903,8 +905,8 @@ public final class ClassPath {
                     return;
                 }
                 for (PathResourceImplementation pri : resources) {
-                    pri.removePropertyChangeListener(pListener);
-                    pri.addPropertyChangeListener(pListener);
+                    pri.removePropertyChangeListener(weakPListener);
+                    pri.addPropertyChangeListener(weakPListener = WeakListeners.propertyChange(pListener, pri));
                 }
             }
         }

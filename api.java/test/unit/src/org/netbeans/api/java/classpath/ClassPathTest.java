@@ -46,6 +46,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.FileOutputStream;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -570,4 +572,16 @@ public class ClassPathTest extends NbTestCase {
         assertEquals(6, l.cnt);
     }
 
+    public void testLeakingClassPath() throws Exception {
+        ClassPath cp = ClassPathSupport.createClassPath(new URL("file:///a/"), new URL("file:///b/"));
+        ClassPath proxyCP = ClassPathSupport.createProxyClassPath(cp);
+        Reference<ClassPath> proxy = new WeakReference<ClassPath>(proxyCP);
+        
+        proxyCP.entries();
+        
+        proxyCP = null;
+        
+        assertGC("the proxy classpath needs to GCable", proxy);
+    }
+    
 }
