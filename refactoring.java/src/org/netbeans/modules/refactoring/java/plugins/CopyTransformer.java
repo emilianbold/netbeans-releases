@@ -44,6 +44,7 @@ package org.netbeans.modules.refactoring.java.plugins;
 import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
+import java.util.logging.Logger;
 import javax.lang.model.element.*;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
@@ -91,9 +92,13 @@ public class CopyTransformer extends RefactoringVisitor {
     public Tree visitClass(ClassTree tree, Element p) {
         if (!workingCopy.getTreeUtilities().isSynthetic(getCurrentPath())) {
             TypeElement currentClass = (TypeElement) workingCopy.getTrees().getElement(getCurrentPath());
-            if (!currentClass.getNestingKind().isNested() && (tree.getSimpleName().toString().endsWith("_1")|| tree.getSimpleName().toString().equals(oldName))) {
-                Tree nju = make.setLabel(tree, newName);
-                rewrite(tree, nju);
+            if (currentClass == null) {
+                Logger.getLogger("org.netbeans.modules.refactoring.java").severe("Cannot resolve tree " + tree + "\n file: " + workingCopy.getFileObject().getPath());
+            } else {
+                if (!currentClass.getNestingKind().isNested() && (tree.getSimpleName().toString().endsWith("_1") || tree.getSimpleName().toString().equals(oldName))) {
+                    Tree nju = make.setLabel(tree, newName);
+                    rewrite(tree, nju);
+                }
             }
         }
         return super.visitClass(tree, p);
