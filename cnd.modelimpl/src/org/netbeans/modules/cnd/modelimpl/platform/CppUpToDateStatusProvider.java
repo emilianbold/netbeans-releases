@@ -130,6 +130,9 @@ public class CppUpToDateStatusProvider extends UpToDateStatusProvider implements
     private String getPath() {
         if (filePath == null) {
             DataObject dao = NbEditorUtilities.getDataObject(document);
+            if (dao == null || !dao.isValid()) {
+                return "";//NOI18N
+            }
             FileObject fo = dao.getPrimaryFile();
             filePath = File.separator+fo.getPath();
         }
