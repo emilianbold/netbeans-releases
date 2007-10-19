@@ -94,7 +94,14 @@ public class WrapperBookmarkAction extends NodeAction {
     }
     
     protected boolean enable(Node[] activatedNodes) {
-        return true;
+        if (activatedNodes != null && activatedNodes.length == 1) {
+            EditorCookie ec = (EditorCookie)activatedNodes[0].getCookie(EditorCookie.class);
+            if (ec != null) {
+                JEditorPane panes[] = ec.getOpenedPanes();
+                return panes != null && panes.length > 0;
+            }
+        }
+        return false;
     }
 
     public org.openide.util.HelpCtx getHelpCtx() {

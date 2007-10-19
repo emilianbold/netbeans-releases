@@ -117,6 +117,15 @@ public final class ToggleBookmarkAction extends AbstractAction implements Contex
         }
     }
 
+    public boolean isEnabled() {
+        if (component != null) {
+            return true;
+        } else {
+            JTextComponent jtc = findComponent(Utilities.actionsGlobalContext());
+            return jtc != null;
+        }
+    }
+
     public Component getToolbarPresenter() {
         AbstractButton b;
         
