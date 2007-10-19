@@ -59,6 +59,10 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="1430"/>
             </file>
             
+            <file name="org-netbeans-modules-editor-MainMenuAction$SelectIdentifierAction.instance">
+                <attr name="position" intvalue="1440"/>
+            </file>
+            
             <file name="org-netbeans-modules-editor-MainMenuAction$FindSelectionAction.instance">
                 <attr name="position" intvalue="1600"/>
             </file>
