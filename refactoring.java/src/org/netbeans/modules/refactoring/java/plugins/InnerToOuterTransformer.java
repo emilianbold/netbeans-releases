@@ -145,12 +145,18 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
     @Override
     public Tree visitClass(ClassTree classTree, Element element) {
         Element currentElement = workingCopy.getTrees().getElement(getCurrentPath());
+        GeneratorUtilities genUtils = GeneratorUtilities.get(workingCopy); // helper        
         if (currentElement!=null && currentElement == outer) {
             Element outerouter = outer.getEnclosingElement();
             
             TreePath tp = workingCopy.getTrees().getPath(inner);
             ClassTree innerClass = (ClassTree) tp.getLeaf();
-            ClassTree newInnerClass = make.setLabel(innerClass, refactoring.getClassName());
+
+            ClassTree newInnerClass = innerClass;
+            newInnerClass = genUtils.importComments(newInnerClass, workingCopy.getCompilationUnit());
+            newInnerClass = genUtils.importFQNs(newInnerClass);
+
+            newInnerClass = make.setLabel(innerClass, refactoring.getClassName());
             
             newInnerClass = refactorInnerClass(newInnerClass);
             
