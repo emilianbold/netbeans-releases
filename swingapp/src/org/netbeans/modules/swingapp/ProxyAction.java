@@ -46,6 +46,8 @@ import java.beans.PropertyChangeListener;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.KeyStroke;
@@ -129,9 +131,10 @@ public class ProxyAction implements Action, ResourceValue, Serializable {
         
         putValue(ActionPropertyEditorPanel.LARGE_ICON_KEY, getResource("largeIcon", Icon.class)); // NOI18N
         putValue(ActionPropertyEditorPanel.LARGE_ICON_KEY+".IconName", getResource("largeIcon",String.class));
-        
-        putValue("BlockingDialog.message",getResource("BlockingDialog.message", String.class)); //NOI18N
-        putValue("BlockingDialog.title",getResource("BlockingDialog.title", String.class)); //NOI18N
+
+        String blockPrefix = getId() + ".BlockingDialog."; // NOI18N
+        putValue("BlockingDialog.message",getResource(blockPrefix, "optionPane.message", String.class)); // NOI18N
+        putValue("BlockingDialog.title",getResource(blockPrefix, "title", String.class)); // NOI18N
         
         // also keep icon names
         putValue("IconName", getIconName("icon")); // NOI18N
@@ -140,24 +143,19 @@ public class ProxyAction implements Action, ResourceValue, Serializable {
     }
     
     private Object getResource(String name, Class valueType) {
+        return getResource(getId() + ".Action.", name, valueType);
+    }
+
+    private Object getResource(String prefix, String name, Class valueType) {
         try {
-            Object value = null;
-//            if (actionType != null) {
-//                String key = id + actionType + ".Action." + name; // NOI18N
-//                value = resourceMap.getObject(key, valueType);
-//            }
-            if (value == null) {
-                String key = id + ".Action." +name; // NOI18N
-                value = resourceMap.getObject(key, valueType);
-            }
-            return value;
+            return resourceMap.getObject(prefix + name, valueType);
         } catch (ResourceMap.LookupException ex) {
-            System.out.println("there was an error loading the resource: " + name); //log
-            ex.printStackTrace();
+            Logger.getLogger(ProxyAction.class.getName()).log(
+                    Level.INFO, "Error loading action resource: "+prefix+name, ex); // NOI18N
             return null;
         }
     }
-    
+
     private String getIconName(String name) {
         try {
             ResourceValueImpl resValue = null;
