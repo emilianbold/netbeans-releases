@@ -31,8 +31,11 @@ import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.StatementTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import java.io.File;
@@ -43,6 +46,7 @@ import java.io.Reader;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.util.Collections;
+import java.util.List;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
 import javax.swing.text.BadLocationException;
@@ -102,9 +106,10 @@ public class GuardedBlockTest extends GeneratorTestMDRCompat {
 
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTestSuite(GuardedBlockTest.class);
+//        suite.addTestSuite(GuardedBlockTest.class);
 //        suite.addTest(new GuardedBlockTest("testAddMethodAfterVariables"));
-//        suite.addTest(new GuardedBlockTest(""));
+//        suite.addTest(new GuardedBlockTest("test119048"));
+        suite.addTest(new GuardedBlockTest("test119345"));
         return suite;
     }
     
@@ -273,6 +278,10 @@ public class GuardedBlockTest extends GeneratorTestMDRCompat {
         assertEquals(golden, res);
     }
     
+    /**
+     * #119345: Duplicated initComponents() when trying to rename in
+     * the guarded.
+     */
     public void test119345() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile,
@@ -414,7 +423,7 @@ public class GuardedBlockTest extends GeneratorTestMDRCompat {
         EditorCookie editorCookie = ((GuardedDataObject) dataObject).getCookie(EditorCookie.class);
         Document doc = editorCookie.openDocument();
         String golden = 
-                "package somethingnew;\n" +
+                "package crystalball;\n" +
                 "\n" +
                 "import org.jdesktop.application.Action;\n" +
                 "\n" +
@@ -450,13 +459,13 @@ public class GuardedBlockTest extends GeneratorTestMDRCompat {
                 "        javax.swing.JLabel imageLabel = new javax.swing.JLabel();\n" +
                 "\n" +
                 "        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);\n" +
-                "        org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(desktopapplication3.DesktopApplication3.class).getContext().getResourceMap(DesktopApplication3AboutBox.class);\n" +
+                "        org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(crystalball.DesktopApplication3.class).getContext().getResourceMap(DesktopApplication3AboutBox.class);\n" +
                 "        setTitle(resourceMap.getString(\"title\")); // NOI18N\n" +
                 "        setModal(true);\n" +
                 "        setName(\"aboutBox\"); // NOI18N\n" +
                 "        setResizable(false);\n" +
                 "\n" +
-                "        javax.swing.ActionMap actionMap = org.jdesktop.application.Application.getInstance(desktopapplication3.DesktopApplication3.class).getContext().getActionMap(DesktopApplication3AboutBox.class, this);\n" +
+                "        javax.swing.ActionMap actionMap = org.jdesktop.application.Application.getInstance(crystalball.DesktopApplication3.class).getContext().getActionMap(DesktopApplication3AboutBox.class, this);\n" +
                 "        closeButton.setAction(actionMap.get(\"closeAboutBox\")); // NOI18N\n" +
                 "        closeButton.setName(\"closeButton\"); // NOI18N\n" +
                 "\n" +
@@ -555,7 +564,30 @@ public class GuardedBlockTest extends GeneratorTestMDRCompat {
                 workingCopy.toPhase(RESOLVED);
                 CompilationUnitTree cut = workingCopy.getCompilationUnit();
                 TreeMaker make = workingCopy.getTreeMaker();
-                workingCopy.rewrite(cut.getPackageName(), make.Identifier("somethingnew"));
+                workingCopy.rewrite(cut.getPackageName(), make.Identifier("crystalball"));
+                MethodTree initComponents = (MethodTree) ((ClassTree) cut.getTypeDecls().get(0)).getMembers().get(2);
+                List<? extends StatementTree> stmts = initComponents.getBody().getStatements();
+                VariableTree var = (VariableTree) stmts.get(11);
+                MethodInvocationTree invocation = (MethodInvocationTree) var.getInitializer();
+                MemberSelectTree mst = (MemberSelectTree) invocation.getArguments().get(0);
+                mst = (MemberSelectTree) invocation.getMethodSelect();
+                invocation = (MethodInvocationTree) mst.getExpression();
+                mst = (MemberSelectTree) invocation.getMethodSelect();
+                invocation = (MethodInvocationTree) mst.getExpression();
+                mst = (MemberSelectTree) invocation.getArguments().get(0);
+                mst = (MemberSelectTree) mst.getExpression();
+                workingCopy.rewrite(mst.getExpression(), make.Identifier("crystalball"));
+                
+                var = (VariableTree) stmts.get(16);
+                invocation = (MethodInvocationTree) var.getInitializer();
+                mst = (MemberSelectTree) invocation.getArguments().get(0);
+                mst = (MemberSelectTree) invocation.getMethodSelect();
+                invocation = (MethodInvocationTree) mst.getExpression();
+                mst = (MemberSelectTree) invocation.getMethodSelect();
+                invocation = (MethodInvocationTree) mst.getExpression();
+                mst = (MemberSelectTree) invocation.getArguments().get(0);
+                mst = (MemberSelectTree) mst.getExpression();
+                workingCopy.rewrite(mst.getExpression(), make.Identifier("crystalball"));
             }
         };
         src.runModificationTask(task).commit();
