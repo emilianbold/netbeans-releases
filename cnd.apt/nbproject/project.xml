@@ -23,12 +23,19 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages>
+            <friend-packages>
+                <friend>org.netbeans.modules.cnd.classview</friend>
+                <friend>org.netbeans.modules.cnd.dwarfdiscovery</friend>
+                <friend>org.netbeans.modules.cnd.folding</friend>
+                <friend>org.netbeans.modules.cnd.highlight</friend>
+                <friend>org.netbeans.modules.cnd.modelimpl</friend>
+                <friend>org.netbeans.modules.cnd.repository</friend>
+                
                 <package>org.netbeans.modules.cnd.apt.debug</package>
                 <package>org.netbeans.modules.cnd.apt.structure</package>
                 <package>org.netbeans.modules.cnd.apt.support</package>
                 <package>org.netbeans.modules.cnd.apt.utils</package>
-            </public-packages>
+            </friend-packages>
         </data>
     </configuration>
 </project>

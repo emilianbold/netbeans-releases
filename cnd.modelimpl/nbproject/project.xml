@@ -216,11 +216,7 @@
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.cnd.modelui</friend>
-                <friend>org.netbeans.modules.cnd.refactoring</friend>
-                <package>org.netbeans.modules.cnd.modelimpl.csm</package>
                 <package>org.netbeans.modules.cnd.modelimpl.csm.core</package>
-                <package>org.netbeans.modules.cnd.modelimpl.impl.services</package>
-                <package>org.netbeans.modules.cnd.modelimpl.trace</package>
             </friend-packages>
         </data>
     </configuration>

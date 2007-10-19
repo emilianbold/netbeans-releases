@@ -22,9 +22,18 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages>
+            <friend-packages>
+                <friend>org.netbeans.modules.cnd.debugger.gdb</friend>
+                <friend>org.netbeans.modules.cnd.highlight</friend>
+                <friend>org.netbeans.modules.cnd.makeproject</friend>
+                <friend>org.netbeans.modules.cnd.modeldiscovery</friend>
+                <friend>org.netbeans.modules.cnd.modelimpl</friend>
+                <friend>org.netbeans.modules.cnd.modelui</friend>
+                <friend>org.netbeans.modules.cnd.modelutil</friend>
+                <friend>org.netbeans.modules.cnd.refactoring</friend>
+                <friend>org.netbeans.modules.cnd.syntaxerr</friend>
                 <package>org.netbeans.modules.cnd.api.project</package>
-            </public-packages>
+            </friend-packages>
         </data>
     </configuration>
 </project>

@@ -46,9 +46,10 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages>
+            <friend-packages>
+                <friend>org.netbeans.modules.cnd.highlight</friend>
                 <package>org.netbeans.modules.cnd.dwarfdiscovery</package>
-            </public-packages>
+            </friend-packages>
         </data>
     </configuration>
 </project>

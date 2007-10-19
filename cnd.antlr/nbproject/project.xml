@@ -5,14 +5,20 @@
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
             <code-name-base>org.netbeans.modules.cnd.antlr</code-name-base>
             <module-dependencies/>
-            <public-packages>
+            <friend-packages>
+                <friend>org.netbeans.modules.asm.base</friend>
+                <friend>org.netbeans.modules.cnd.apt</friend>
+                <friend>org.netbeans.modules.cnd.make2netbeans</friend>
+                <friend>org.netbeans.modules.cnd.modelimpl</friend>
+                <friend>org.netbeans.modules.cnd.folding</friend>
+                <friend>org.netbeans.modules.fortran</friend>
                 <package>antlr</package>
                 <package>antlr.ASdebug</package>
                 <package>antlr.collections</package>
                 <package>antlr.collections.impl</package>
                 <package>antlr.debug</package>
                 <package>antlr.debug.misc</package>
-            </public-packages>
+            </friend-packages>
         </data>
     </configuration>
 </project>

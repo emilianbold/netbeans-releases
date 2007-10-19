@@ -182,12 +182,7 @@
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <public-packages>
-                <package>org.netbeans.modules.cnd.completion.cplusplus</package>
-                <package>org.netbeans.modules.cnd.completion.cplusplus.ext</package>
-                <package>org.netbeans.modules.cnd.completion.csm</package>
-                <package>org.netbeans.modules.cnd.completion.spi.dynhelp</package>
-            </public-packages>
+            <public-packages/>
         </data>
     </configuration>
 </project>
