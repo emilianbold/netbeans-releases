@@ -52,6 +52,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
+import org.netbeans.api.editor.indent.Indent;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
@@ -77,6 +78,7 @@ final class RemoveTagFix implements Fix, CancellableTask<WorkingCopy> {
     private final SourceVersion spec;
 
     private Position[] tagBounds;
+    private boolean isFormattingTouched = false;
     private Document doc;
 
     RemoveTagFix(String tagName, TagHandle tagHandle, ElementHandle elmHandle, FileObject file, SourceVersion spec) {
@@ -95,7 +97,7 @@ final class RemoveTagFix implements Fix, CancellableTask<WorkingCopy> {
         return implement(true);
     }
 
-    private void removeTag(final CompilationInfo ci, Element elm) throws IOException, BadLocationException {
+    private void prepareRemoveTag(final CompilationInfo ci, Element elm) throws IOException, BadLocationException {
         final Doc jdoc = ci.getElementUtilities().javaDocFor(elm);
         if (jdoc != null) {
             final Tag tag = tagHandle.resolve(jdoc);
@@ -107,6 +109,8 @@ final class RemoveTagFix implements Fix, CancellableTask<WorkingCopy> {
                 public void run() {
                     try {
                         tagBounds = JavadocUtilities.findTagBounds(ci, doc, tag);
+                        Position[] jdBounds = JavadocUtilities.findDocBounds(ci, doc, jdoc);
+                        tagBounds = expand2LineBounds(doc, tagBounds, jdBounds);
                     } catch (BadLocationException ex) {
                         Logger.getLogger(JavadocHintProvider.class.getName()).
                                 log(Level.SEVERE, ex.getMessage(), ex);
@@ -116,7 +120,7 @@ final class RemoveTagFix implements Fix, CancellableTask<WorkingCopy> {
         }
     }
 
-    private void removeTag() throws BadLocationException {
+    private void removeTag(final Indent indent) throws BadLocationException {
         if (tagBounds == null || doc == null) {
             return;
         }
@@ -124,6 +128,9 @@ final class RemoveTagFix implements Fix, CancellableTask<WorkingCopy> {
             public void run() {
                 try {
                     doc.remove(tagBounds[0].getOffset(), tagBounds[1].getOffset() - tagBounds[0].getOffset());
+                    if (indent != null) {
+                        indent.reindent(tagBounds[1].getOffset());
+                    }
                 } catch (BadLocationException ex) {
                     Logger.getLogger(JavadocHintProvider.class.getName()).
                             log(Level.SEVERE, ex.getMessage(), ex);
@@ -134,15 +141,25 @@ final class RemoveTagFix implements Fix, CancellableTask<WorkingCopy> {
 
     public ChangeInfo implement(final boolean open) {
         JavaSource js = JavaSource.forFileObject(file);
+        Indent indent = null;
         try {
             js.runModificationTask(this).commit();
+            
             // XXX follows workaround until the generator starts to do its job
-            removeTag();
+            indent = isFormattingTouched? Indent.get(doc): null;
+            if (indent != null) {
+                indent.lock();
+            }
+            removeTag(indent);
         } catch (BadLocationException ex) {
             Logger.getLogger(JavadocHintProvider.class.getName()).
                     log(Level.SEVERE, ex.getMessage(), ex);
         } catch (IOException ex) {
             Logger.getLogger(JavadocHintProvider.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
+        } finally {
+            if (indent != null) {
+                indent.unlock();
+            }
         }
 
         return null;
@@ -162,8 +179,64 @@ final class RemoveTagFix implements Fix, CancellableTask<WorkingCopy> {
         doc = wc.getDocument();
         
         if (t != null && doc != null) {
-            removeTag(wc, elm);
+            prepareRemoveTag(wc, elm);
         }
     }
+    
+    private static CharSequence getCharSequence(Document doc, int jdBegin, int jdEnd) throws BadLocationException {
+        CharSequence cs = (CharSequence) doc.getProperty(CharSequence.class);
+        if (cs == null) {
+            cs = doc.getText(jdBegin, jdEnd - jdBegin + 1);
+        }
+        return cs;
+    }
 
+    private Position[] expand2LineBounds(Document doc, Position[] tagBounds, Position[] jdBounds) throws BadLocationException {
+        int jdBeginLine = NbDocument.findLineNumber((StyledDocument) doc, jdBounds[0].getOffset());
+        int jdEndLine = NbDocument.findLineNumber((StyledDocument) doc, jdBounds[1].getOffset());
+        int tagBeginLine = NbDocument.findLineNumber((StyledDocument) doc, tagBounds[0].getOffset());
+        int tagEndLine = NbDocument.findLineNumber((StyledDocument) doc, tagBounds[0].getOffset());
+        
+        CharSequence cs = getCharSequence(doc, jdBounds[0].getOffset(), jdBounds[1].getOffset());
+        if (jdBeginLine != tagBeginLine) {
+            int lineBegin = findLineHead(cs, tagBounds[0].getOffset(), jdBounds[0].getOffset());
+            if (lineBegin != tagBounds[0].getOffset()) {
+                tagBounds[0] = doc.createPosition(lineBegin);
+                isFormattingTouched = tagBeginLine == jdEndLine;
+            }
+        }
+        
+        if (jdEndLine != tagEndLine && jdBeginLine != tagBeginLine) {
+            int lineEnd = findLineTail(cs, tagBounds[1].getOffset(), jdBounds[1].getOffset());
+            if (lineEnd != tagBounds[1].getOffset()) {
+                tagBounds[1] = doc.createPosition(lineEnd);
+            }
+        }
+        
+        
+        return tagBounds;
+    }
+
+    private static int findLineHead(CharSequence cs, int offset, int stop) {
+        for (int i = offset; i > stop; i--) {
+            char c = cs.charAt(i);
+            if (c == '\n') {
+                return i + 1;
+            }
+        }
+
+        return offset;
+    }
+
+    private static int findLineTail(CharSequence cs, int offset, int stop) {
+        for (int i = offset; i < stop; i++) {
+            char c = cs.charAt(i);
+            if (c == '\n') {
+                return i + 1;
+            }
+        }
+
+        return offset;
+    }
+    
 }
