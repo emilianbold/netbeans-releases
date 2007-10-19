@@ -39,21 +39,36 @@ djd43.declare("rdj.data.__CONTAINER_NAME__Store", djd43.data.core.RemoteStore, {
         var __CONTAINER_PATH_NAME__ = myObj.__CONTAINER_PATH_NAME__;
         var refs = __CONTAINER_PATH_NAME__.__CONTAINER_ITEM_PATH_NAME__Ref;
 	var data = {};
-	for (var i = 0; i < refs.length; ++i) {
-		var record = refs[i];
+        if(refs != null && refs.length > 0) {
+            for (var i = 0; i < refs.length; ++i) {
+                var record = refs[i];
                 var url2 = record['@uri'];
-		var item = {};
+                var item = {};
                 var ci = new __CONTAINER_ITEM_NAME__(url2);
                 ci.init();
                 var fields = ci.getFields();//first field is Id, second is uri
-                item['Id'] = [ci[fields[0]]];
+                if(typeof ci[fields[0]] == "object") {
+                    var id = '';
+                    for(var k in ci[fields[0]])
+                        id += [ci[fields[0]][k]]+",";
+                    if(id.length > 0) {
+                        id = id.substring(0, id.length-1);
+                        var s1 = id.split(',');
+                        var rId = '';
+                        for(var l=s1.length-1;l>=0;l--)
+                            rId += s1[l]+",";
+                        rId = rId.substring(0, rId.length-1);
+                    }
+                    item['Id'] = [rId];
+                } else {
+                    item['Id'] = [ci[fields[0]]];
+                }
                 for(var j=1;j<fields.length;j++) {
                     var f = fields[j];
                     item[f] = [ci[f]];
                 }
                 data[i] = item;
-	}
-        if(refs.length > 0) {
+            }
             _ref__CONTAINER_ITEM_NAME__ = new __CONTAINER_ITEM_NAME__(refs[0]['@uri']);
             _ref__CONTAINER_ITEM_NAME__.init();
             _refData = data[0];
@@ -98,18 +113,29 @@ djd43.declare("rdj.data.__CONTAINER_NAME__Store", djd43.data.core.RemoteStore, {
             };*/  
             requestKw.mimetype = "application/json";          
         } else {
-            for(var item in this._added) {
-                 var ci = _ref__CONTAINER_ITEM_NAME__;
-                 ci.initialized = true;
-                 ci.uri = this._serverSaveUrl+id+'/';
-                 var fields = ci.getFields();//first field is Id, second is uri
-                 ci[fields[0]] = id;
-                 for(var j=1;j<fields.length;j++) {
-                    var f = fields[j];
-                    ci[f] = _refData[f];
-                 }
-                 jsonStr = '{' + ci.toString() + '}';
-            }            
+            if(_refValidation != null) {
+                for(var item in this._added) {
+                     var ci = _ref__CONTAINER_ITEM_NAME__;
+                     ci.initialized = true;
+                     ci.uri = this._serverSaveUrl+id+'/';
+                     var fields = ci.getFields();//first field is Id, second is uri
+                     if(typeof ci[fields[0]] == "object") {
+                        var id = ''+this.getSize()+1;
+                        for(var k in ci[fields[0]]) {
+                            alert(ci[fields[0]][k].length+", "+id.length);
+                            if(ci[fields[0]][k].length > id.length)
+                                ci[fields[0]][k] += id;
+                        }
+                     } else {
+                        ci[fields[0]] = id;
+                     }
+                     for(var j=1;j<fields.length;j++) {
+                        var f = fields[j];
+                        ci[f] = _refData[f];
+                     }
+                     jsonStr = '{' + ci.toString() + '}';
+                }     
+            }
             requestKw.url = this._serverSaveUrl;
             requestKw.headers = {
                 "Content-Type" : "application/json",

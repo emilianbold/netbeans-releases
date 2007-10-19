@@ -32,6 +32,18 @@ __FIELDS_INIT__
       }
    },
 
+   findValue : function(field, value) {
+      if(value['$'] == undefined) {
+         var r = {};
+         for(var i in value) {
+            r[value[i]] = value[i]['$'];
+         }
+         return r;
+      } else {
+         return value['$'];
+      }
+   },
+
    flush : function() {
       var remote = new __GENERIC_NAME__Remote(this.uri);
       return remote.putJson('{'+this.toString()+'}');

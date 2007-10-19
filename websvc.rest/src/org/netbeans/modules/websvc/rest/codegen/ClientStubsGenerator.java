@@ -111,12 +111,14 @@ public class ClientStubsGenerator extends AbstractGenerator {
     
     public static final String JS_SUPPORT = "Support"; //NOI18N
     public static final String JS_TESTSTUBS = "TestStubs"; //NOI18N
+    public static final String JS_README = "Readme"; //NOI18N
     public static final String JS_TESTSTUBS_TEMPLATE = "Templates/WebServices/JsTestStubs.html"; //NOI18N
     public static final String JS_STUBSUPPORT_TEMPLATE = "Templates/WebServices/JsStubSupport.js"; //NOI18N
     public static final String JS_PROJECTSTUB_TEMPLATE = "Templates/WebServices/JsProjectStub.js"; //NOI18N
     public static final String JS_CONTAINERSTUB_TEMPLATE = "Templates/WebServices/JsContainerStub.js"; //NOI18N
     public static final String JS_CONTAINERITEMSTUB_TEMPLATE = "Templates/WebServices/JsContainerItemStub.js"; //NOI18N
     public static final String JS_GENERICSTUB_TEMPLATE = "Templates/WebServices/JsGenericStub.js"; //NOI18N
+    public static final String JS_README_TEMPLATE = "Templates/WebServices/JsReadme.html"; //NOI18N
      
     //Dojo templates
     public static final String DOJO_RESTSTORE = "RestStore";//NOI18N
@@ -305,7 +307,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
             FileObject rjsTest = rjsDir.getFileObject(JS_TESTSTUBS, HTML);
             if(rjsTest != null)
                 files.add(rjsTest);
-            FileObject readme = rjsDir.getFileObject(JMAKI_README, HTML);
+            FileObject readme = rjsDir.getFileObject(JS_README, HTML);
             if(readme != null)
                 files.add(readme);
         }
@@ -349,17 +351,24 @@ public class ClientStubsGenerator extends AbstractGenerator {
         }
         
         File jmakiCompDir = new File(userDir, JMAKI_COMP_LIB);
-        if(!jmakiCompDir.exists() && !jmakiCompDir.mkdir()) {
-            throw new RuntimeException("Cannot create jMaki component folder (" + jmakiCompDir + ").");
+        if(!jmakiCompDir.exists()) {
+            throw new RuntimeException("Cannot find jMaki component folder (" + jmakiCompDir + ").");
         }
         
         File dojoLib = new File(jmakiCompDir, JMAKI_DOJO_10_ZIP);
+        if(!dojoLib.exists()) {
+            throw new RuntimeException("Cannot find dojo library  (" + dojoLib.getAbsolutePath() + ").");
+        }
         unzip(new FileInputStream(dojoLib), resourcesDir.getParent(), canOverwrite());
+        
+        if(dojoDir.getFileObject(RESOURCES) == null)
+            new IOException("Unzip of dojo libs :"+dojoLib.getAbsolutePath()+" to "+resourcesDir.getParent()+" failed.");
     }
     
     private void initJs(Project p) throws IOException {
         createDataObjectFromTemplate(JS_TESTSTUBS_TEMPLATE, rjsDir, JS_TESTSTUBS, HTML, canOverwrite());
         createDataObjectFromTemplate(JS_STUBSUPPORT_TEMPLATE, rjsDir, JS_SUPPORT, JS, canOverwrite());  
+        createDataObjectFromTemplate(JS_README_TEMPLATE, rjsDir, JS_README, HTML, canOverwrite());
     }
 
     private void initDojo(Project p, List<Resource> resourceList) throws IOException {
@@ -528,7 +537,8 @@ public class ClientStubsGenerator extends AbstractGenerator {
             final InputStream in = zip;
             ZipEntry entry;
             while((entry = zip.getNextEntry()) != null) {
-                if(!entry.getName().startsWith(RESOURCES+File.separator+DOJO+File.separator+RESOURCES+File.separator+LIBS)) {
+                if(!(entry.getName().startsWith(RESOURCES+"/"+DOJO+"/"+RESOURCES+"/"+LIBS) ||
+                        entry.getName().startsWith(RESOURCES+File.separator+DOJO+File.separator+RESOURCES+File.separator+LIBS))) {
                     continue;
                 }
                 final File entryFile = new File(targetFolder, entry.getName());
@@ -905,7 +915,8 @@ public class ClientStubsGenerator extends AbstractGenerator {
                     String childRepName = findRepresentationName(childName);
                     sb.append("         this."+childName+" = new "+pkg+findResourceName(childName)+"("+repName+"['"+childName+"']['@uri']);\n");
                 } else {
-                    sb.append("         this."+childName+" = "+repName+"['"+childName+"']['$'];\n");
+                    //this.vehiclePK = this.findValue(this.vehiclePK , vehicle['vehiclePK']);
+                    sb.append("         this."+childName+" = this.findValue(this."+childName+", "+repName+"['"+childName+"']);\n");
                 }
             }
             return sb.toString();
@@ -1077,8 +1088,26 @@ public class ClientStubsGenerator extends AbstractGenerator {
         }
         
         private String createNavigationMethod(NavigationMethod m, String pkg) {
-            return "   " + m.getName() + " : function(" + m.getNavigationUri() + ") {\n" +
-                    "      var link = new " + pkg+m.getLinkName() + "(this.uri+'/'+" + m.getNavigationUri() + ")()\n" +
+            String s = "";
+            String fs = "";
+            if(m.getNavigationUri().contains(",")) {
+                String[] ss = m.getNavigationUri().split(",");
+                for(String s1:ss) {
+                    if(s1.startsWith("{"))
+                        s1 = s1.substring(1);
+                    else if(s1.endsWith("}"))
+                        s1 = s1.substring(0, s1.length()-1);
+                    s += s1+"+','+";
+                    fs += s1+",";
+                }
+                s = s.substring(0, s.length()-5);
+                fs = fs.substring(0, fs.length()-1);
+            } else {
+                s = m.getNavigationUri();
+                fs = s;
+            }
+            return "   " + m.getName() + " : function(" + fs + ") {\n" +
+                    "      var link = new " + pkg+m.getLinkName() + "(this.uri+'/'+" + s + ")()\n" +
                     "      return link;\n" +
                     "   }";
         }

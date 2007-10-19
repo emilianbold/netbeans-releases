@@ -81,17 +81,24 @@ __INCLUDE_JS_SCRIPTS__
     var tr = actionTable.appendChild(document.createElement('tr'));
     var tab = ' background-image: url(../__CONTAINER_PATH_NAME__table/images/rtable.gif); width: 100px; border-right: #2574B7 1px solid; border-top: #2574B7 1px solid; border-left: #2574B7 1px solid; border-bottom: #2574B7 1px solid; color: #000000; text-align: center;';
     var text2 = 'color: #000000';
-    var addActionStr = '<div style="'+tab+'"><a style="text-decoration: none" href="javascript:rdj.addResource()"><span style="'+text2+'">Add</span></a></div>';        
-    var addAction = tr.appendChild(document.createElement('td'));
-    addAction.innerHTML = addActionStr;
+    
+    if(dataInSimpleStoreFormat.length > 0) {
+        var addActionStr = '<div style="'+tab+'"><a style="text-decoration: none" href="javascript:rdj.addResource()"><span style="'+text2+'">Add</span></a></div>';        
+        var addAction = tr.appendChild(document.createElement('td'));
+        addAction.innerHTML = addActionStr;
 
-    var updActionStr = '<div style="'+tab+'"><a style="text-decoration: none" href="javascript:rdj.updateResource()"><span style="'+text2+'">Update</span></a></div>';
-    var updAction = tr.appendChild(document.createElement('td'));
-    updAction.innerHTML = updActionStr;   
+        var updActionStr = '<div style="'+tab+'"><a style="text-decoration: none" href="javascript:rdj.updateResource()"><span style="'+text2+'">Update</span></a></div>';
+        var updAction = tr.appendChild(document.createElement('td'));
+        updAction.innerHTML = updActionStr;   
 
-    var delActionStr = '<div style="'+tab+'"><a style="text-decoration: none" href="javascript:rdj.deleteResource()"><span style="'+text2+'">Delete</span></a></div>';
-    var delAction = tr.appendChild(document.createElement('td'));
-    delAction.innerHTML = delActionStr;
+        var delActionStr = '<div style="'+tab+'"><a style="text-decoration: none" href="javascript:rdj.deleteResource()"><span style="'+text2+'">Delete</span></a></div>';
+        var delAction = tr.appendChild(document.createElement('td'));
+        delAction.innerHTML = delActionStr;
+    } else {
+        var alertStr = '<span style="'+text2+'">No items to display!</span>';
+        var alertAction = tr.appendChild(document.createElement('td'));
+        alertAction.innerHTML = alertStr;
+    }
 }
 
 djd43.provide("rdj.updateResource");
@@ -105,7 +112,9 @@ rdj.deleteResource = function () {
     var a = resourcesTable.getSelectedData();
     restStore.deleteItem(a);
     table.innerHTML = '';
-    actions.innerHTML = '';
+    var actions2 = djd43.byId("actions");
+    if(actions2 != null)
+        actions2.innerHTML = '';
     rdj.displayResourcesTable(restStore, null, table);
     resourcesTable.selectByValue('1');
 }
@@ -124,7 +133,9 @@ rdj.addResource = function () {
         alert('Creating new item failed for Id: \''+id+'\'.');
     }
     table.innerHTML = '';
-    actions.innerHTML = '';
+    var actions2 = djd43.byId("actions");
+    if(actions2 != null)
+        actions2.innerHTML = '';
     rdj.displayResourcesTable(restStore, null, table);
     resourcesTable.selectByValue('1');
 } 
