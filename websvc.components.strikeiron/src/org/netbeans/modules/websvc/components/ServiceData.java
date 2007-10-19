@@ -16,6 +16,8 @@
  */
 package org.netbeans.modules.websvc.components;
 
+import org.netbeans.modules.websvc.manager.model.WebServiceListModel;
+
 /**
  *
  * @author nam
@@ -31,4 +33,8 @@ public abstract class ServiceData {
     public abstract String getPurchaseLink();
     public abstract String getPackageName();
     public abstract void setPackageName(String value);
+    
+    public boolean alreadyExists() {
+        return null != WebServiceListModel.getInstance().findWebServiceData(getWsdlURL(), getServiceName(), false);
+    }
 }

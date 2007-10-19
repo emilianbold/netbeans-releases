@@ -327,7 +327,7 @@ public class ServiceTableModel extends DefaultTableModel {
         case COLUMN_WS_NAME:
             return mps.getServiceName();
         case COLUMN_SELECT:
-            return selectedRows.contains(row);
+            return selectedRows.contains(row) || mps.alreadyExists();
         default:
             throw new IllegalArgumentException("column = "+column); //NOI18N
         }
@@ -350,7 +350,7 @@ public class ServiceTableModel extends DefaultTableModel {
     public boolean isCellEditable(int row, int column) {
         switch(column) {
         case COLUMN_SELECT:
-            return true;
+            return ! getService(row).alreadyExists();
         default:
             return false;
         }
