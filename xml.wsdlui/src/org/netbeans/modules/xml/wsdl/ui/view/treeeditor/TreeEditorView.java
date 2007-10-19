@@ -114,19 +114,15 @@ public class TreeEditorView extends JPanel
         lookup = ExplorerUtils.createLookup(explorerManager, map);
 
         // Must do this when the component is in the UI tree.
-        EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                populateRootNode(mModel.getDefinitions());
-                //Initially expand root node and the folder nodes below it.
-                Node rootNode = explorerManager.getRootContext();
-                btv.expandNode(rootNode);
-                Utility.expandNodes(btv, 1, rootNode);
-                try {
-                    explorerManager.setSelectedNodes(new Node[] {rootNode});
-                } catch (PropertyVetoException pve) {
-                }
-            }
-        });
+        populateRootNode(mModel.getDefinitions());
+        //Initially expand root node and the folder nodes below it.
+        Node rootNode = explorerManager.getRootContext();
+        btv.expandNode(rootNode);
+        Utility.expandNodes(btv, 1, rootNode);
+        try {
+            explorerManager.setSelectedNodes(new Node[] {rootNode});
+        } catch (PropertyVetoException pve) {
+        }
     }
     
     public ExplorerManager getExplorerManager() {

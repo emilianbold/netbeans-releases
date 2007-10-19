@@ -54,7 +54,6 @@ import javax.swing.Action;
 
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
-import org.netbeans.modules.xml.wsdl.ui.cookies.DataObjectCookieDelegate;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ui.ComponentPasteType;
@@ -113,8 +112,6 @@ public abstract class FolderNode extends AbstractNode
         if (dobj != null) {
             contents.add(dobj);
         }
-        
-        contents.add(new DataObjectCookieDelegate(dobj));
         
         referenceSet = new HashSet<Component>();
         highlights = new LinkedList<Highlight>();
@@ -191,7 +188,7 @@ public abstract class FolderNode extends AbstractNode
 
     @Override
     public boolean canCut() {
-        return isEditable();
+        return false;
     }
 
     

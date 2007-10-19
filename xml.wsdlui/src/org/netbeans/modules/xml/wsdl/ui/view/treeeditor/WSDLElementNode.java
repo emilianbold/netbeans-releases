@@ -73,7 +73,6 @@ import org.netbeans.modules.xml.wsdl.ui.actions.ExtensibilityElementPrefixCleanu
 import org.netbeans.modules.xml.wsdl.ui.commands.CommonAttributePropertyAdapter;
 import org.netbeans.modules.xml.wsdl.ui.commands.OtherAttributePropertyAdapter;
 import org.netbeans.modules.xml.wsdl.ui.commands.XMLAttributePropertyAdapter;
-import org.netbeans.modules.xml.wsdl.ui.cookies.DataObjectCookieDelegate;
 import org.netbeans.modules.xml.wsdl.ui.cookies.WSDLAttributeCookie;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.UIUtilities;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
@@ -270,16 +269,14 @@ public abstract class WSDLElementNode<T extends WSDLComponent> extends AbstractN
         DataObject dobj = ActionHelper.getDataObject(model);
         if (dobj != null) {
             contents.add(dobj);
-            contents.add(new DataObjectCookieDelegate(dobj));
-        
-        //We want to pass common cookies like validate, check etc
-    	return new ProxyLookup(new Lookup[] {
-    			Lookups.exclude(dobj.getNodeDelegate().getLookup(), new Class[] {
-    				Node.class,
-    				DataObject.class,
-    			}),
-    			new AbstractLookup(contents),
-    	});
+            //We want to pass common cookies like validate, check etc
+            return new ProxyLookup(new Lookup[] {
+                    Lookups.exclude(dobj.getNodeDelegate().getLookup(), new Class[] {
+                        Node.class,
+                        DataObject.class,
+                    }),
+                    new AbstractLookup(contents),
+            });
         }
         return new ProxyLookup(new AbstractLookup(contents));
     }

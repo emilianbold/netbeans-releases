@@ -43,8 +43,6 @@
 package org.netbeans.modules.xml.wsdl.ui.view.treeeditor;
 
 import java.awt.Image;
-import java.beans.PropertyEditor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -54,12 +52,11 @@ import org.netbeans.modules.xml.wsdl.model.Import;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
-import org.netbeans.modules.xml.wsdl.ui.cookies.DataObjectCookieDelegate;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.WSDLDataObject;
 import org.netbeans.modules.xml.wsdl.ui.view.ImportWSDLCustomizer;
-import org.netbeans.modules.xml.xam.ui.cookies.GetComponentCookie;
 import org.netbeans.modules.xml.xam.ui.customizer.Customizer;
 import org.netbeans.modules.xml.xam.ui.customizer.CustomizerProvider;
+import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
@@ -69,8 +66,7 @@ import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
+import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
 
@@ -139,14 +135,23 @@ public class WSDLImportNode extends ImportNode {
                     Definitions definitions = (Definitions) key;
                     // Create a lookup with save cookie of parent wsdl, so that save can be called on imported wsdl's nodes
                     DataObject dobj = ActionHelper.getDataObject(getWSDLComponent().getModel());
-                    List list = new ArrayList();
-                    list.add(new DataObjectCookieDelegate(dobj));
-                    
-                    
+                    Lookup lookup = null;
+                    if (dobj != null) {
+                        lookup = new ProxyLookup(new Lookup[] {
+                                Lookups.exclude(dobj.getNodeDelegate().getLookup(), new Class[] {
+                                    Node.class,
+                                    DataObject.class
+                                })});
+                    }
                     DataObject dataObj = DataObject.find(definitions.getModel().getModelSource().getLookup().lookup(FileObject.class));
                     if(dataObj != null && dataObj instanceof WSDLDataObject) {
-                        DefinitionsNode node = new DefinitionsNode(definitions);
-                        FilterNode filterNode = new ReadOnlyNode(node, new InstanceContent(), list);
+                        Node node = NodesFactory.getInstance().create(definitions);
+                        FilterNode filterNode = null;
+                        if (lookup != null) {
+                            filterNode = new ReadOnlyNode(node, lookup);
+                        } else {
+                            filterNode = new ReadOnlyNode(node);
+                        }
                         return new Node[] {filterNode};
                     }
                 } catch(Exception ex) {

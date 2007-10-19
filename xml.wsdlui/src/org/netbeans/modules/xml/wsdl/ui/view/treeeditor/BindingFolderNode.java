@@ -47,10 +47,7 @@
  */
 package org.netbeans.modules.xml.wsdl.ui.view.treeeditor;
 
-import java.awt.datatransfer.Transferable;
-import java.io.IOException;
 import java.util.Collection;
-import java.util.List;
 
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
@@ -58,7 +55,6 @@ import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.BindingNewType;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.datatransfer.NewType;
-import org.openide.util.datatransfer.PasteType;
 
 /**
  * @author Ritesh Adval
@@ -100,16 +96,6 @@ public class BindingFolderNode extends FolderNode {
         }
     }
     
-    @Override
-    protected void createPasteTypes(Transferable t, List<PasteType> s) {
-        super.createPasteTypes(t, s);
-    }
-
-    @Override
-    public Transferable drag() throws IOException {
-        return super.drag();
-    }
-
     @Override
     public Class getType() {
         return Binding.class;

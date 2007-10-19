@@ -232,10 +232,6 @@ public class ExtensibilityElementNode<T extends ExtensibilityElement> extends WS
                 this.setShortDescription(shortDesc);
             }
         }
-        
-        
-        this.mWSDLConstruct.getModel().addComponentListener(this);
-        
     }
     
     private Node getLayerDelegateNode(WSDLExtensibilityElementInfo elementInfo) {

@@ -44,7 +44,6 @@ package org.netbeans.modules.xml.wsdl.ui.view.treeeditor;
 import java.awt.Image;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import org.netbeans.modules.xml.schema.model.Schema;
@@ -54,13 +53,13 @@ import org.netbeans.modules.xml.schema.ui.nodes.categorized.CategorizedSchemaNod
 import org.netbeans.modules.xml.wsdl.model.Import;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
-import org.netbeans.modules.xml.wsdl.ui.cookies.DataObjectCookieDelegate;
-import org.openide.nodes.Children;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
-import org.openide.util.lookup.InstanceContent;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 
 
@@ -115,15 +114,21 @@ public class XSDImportNode extends ImportNode {
             if (key instanceof Schema) {
                 Schema schema = (Schema) key;
                 SchemaModel model = schema.getModel();
+                DataObject dobj = ActionHelper.getDataObject(imp.getModel());
+                Lookup lookup = Lookup.EMPTY;
+                if (dobj != null) {
+                    lookup = new ProxyLookup(new Lookup[] {
+                            Lookups.exclude(dobj.getNodeDelegate().getLookup(), new Class[] {
+                                Node.class,
+                                DataObject.class,
+                            })});
+                }
                 SchemaNodeFactory factory = new CategorizedSchemaNodeFactory(
-                        model, Lookup.EMPTY);
+                        model, lookup);
                 Node node = factory.createRootNode();
                 
-                //To enable save, when schema nodes are selected, get the save cookie.
-                List<Object> list = new ArrayList<Object>();
-                list.add(new DataObjectCookieDelegate(ActionHelper.getDataObject(imp)));
                 node.setDisplayName(imp.getNamespace());
-                node = new ReadOnlyNode(node, new InstanceContent(), list);
+                node = new ReadOnlyNode(node);
                 return new Node[] { node };
             } else if (key instanceof WSDLComponent) {
                 Node node = NodesFactory.getInstance().create((WSDLComponent) key);
@@ -150,7 +155,6 @@ public class XSDImportNode extends ImportNode {
     
     @Override
     public boolean hasChildren() {
-        ArrayList keys = new ArrayList();
         List list = getWSDLComponent().getModel().findSchemas(getWSDLComponent().getNamespace());
         if (list != null && list.size() > 0) {
             Schema schema = (Schema) list.get(0);

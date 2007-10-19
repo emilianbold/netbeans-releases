@@ -41,7 +41,6 @@
 package org.netbeans.modules.xml.wsdl.ui.view.treeeditor;
 
 import java.io.IOException;
-import java.util.List;
 
 import org.netbeans.modules.xml.schema.ui.nodes.SchemaComponentNode;
 import org.netbeans.modules.xml.wsdl.model.Types;
@@ -71,23 +70,17 @@ public class EmbeddedSchemaNode extends FilterNode {
         new SuperGotoType(),
     };
     
-    public EmbeddedSchemaNode(Node node, WSDLSchema schema, InstanceContent content, List objList) {
-        super(node, new EmbeddedSchemaChildren(node, objList), new ProxyLookup(new Lookup[] {new AbstractLookup(content), node.getLookup()}));
+    public EmbeddedSchemaNode(Node node, WSDLSchema schema, InstanceContent content) {
+        super(node, new EmbeddedSchemaChildren(node), new ProxyLookup(new Lookup[] {new AbstractLookup(content), node.getLookup()}));
         component = schema;
-        if (objList != null) {
-            for (Object obj : objList) {
-                content.add(obj);
-            }
-            content.add(schema);
-            content.add(new GotoCookie() {
-			
-				public GotoType[] getGotoTypes() {
+        content.add(schema);
+        content.add(new GotoCookie() {
+            public GotoType[] getGotoTypes() {
 
-					return GOTO_TYPES;
-				}
-			
-			});
-        }
+                return GOTO_TYPES;
+            }
+
+        });
     }
 
     @Override
@@ -114,22 +107,15 @@ public class EmbeddedSchemaNode extends FilterNode {
     
     static class EmbeddedSchemaChildren extends FilterNode.Children {
         
-        private List objList;
         
-        public EmbeddedSchemaChildren(Node or, List objList) {
+        public EmbeddedSchemaChildren(Node or) {
             super(or);
-            this.objList = objList;
         }
         
         @Override
         protected Node copyNode(Node origNode) {
             InstanceContent content = new InstanceContent();
-            Node node =  new EmbeddedReadOnlySchemaComponentNode(origNode, new EmbeddedSchemaChildren(origNode, objList), new ProxyLookup(new Lookup[] {new AbstractLookup(content), origNode.getLookup()}));
-            if (objList != null) {
-                for (Object obj : objList) {
-                    content.add(obj);
-                }
-            }
+            Node node =  new EmbeddedReadOnlySchemaComponentNode(origNode, new EmbeddedSchemaChildren(origNode), new ProxyLookup(new Lookup[] {new AbstractLookup(content), origNode.getLookup()}));
             return node;
             
         }

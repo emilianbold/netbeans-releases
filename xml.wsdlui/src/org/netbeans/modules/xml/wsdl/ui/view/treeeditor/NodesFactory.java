@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.xml.wsdl.ui.view.treeeditor;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.netbeans.modules.xml.schema.model.SchemaModel;
@@ -76,13 +75,15 @@ import org.netbeans.modules.xml.wsdl.model.extensions.xsd.WSDLSchema;
 import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
 import org.netbeans.modules.xml.wsdl.ui.common.Constants;
-import org.netbeans.modules.xml.wsdl.ui.cookies.DataObjectCookieDelegate;
 import org.netbeans.modules.xml.xam.Component;
 import org.openide.ErrorManager;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.InstanceContent;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 public class NodesFactory {
     
@@ -118,14 +119,18 @@ public class NodesFactory {
      */
     private Node createSchemaNode(WSDLSchema component) {
         SchemaModel model = component.getSchemaModel();
-        SchemaNodeFactory factory = new CategorizedSchemaNodeFactory(
-                model, Lookup.EMPTY);
-        Node node = factory.createRootNode();
-        //To enable save, when schema nodes are selected, get the save cookie.
-        List<Object> list = new ArrayList<Object>();
-        list.add(new DataObjectCookieDelegate(ActionHelper.getDataObject(component)));
         
-        Node schemaRootNode = new EmbeddedSchemaNode(node, component, new InstanceContent(), list);
+        DataObject dobj = ActionHelper.getDataObject(component.getModel());
+        Lookup lookup = new ProxyLookup(new Lookup[] {
+                Lookups.exclude(dobj.getNodeDelegate().getLookup(), new Class[] {
+                    Node.class,
+                    DataObject.class,
+                })
+        });
+        SchemaNodeFactory factory = new CategorizedSchemaNodeFactory(
+                model, lookup);
+        Node node = factory.createRootNode();
+        Node schemaRootNode = new EmbeddedSchemaNode(node, component, new InstanceContent());
         return schemaRootNode;
     }
     
