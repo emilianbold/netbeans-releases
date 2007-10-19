@@ -68,10 +68,11 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.java.source.ui.ScanDialog;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.java.j2seproject.applet.AppletSupport;
 import org.netbeans.modules.java.j2seproject.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
@@ -159,6 +160,9 @@ class J2SEActionProvider implements ActionProvider {
     /** Set of Java source files (as relative path from source root) known to have been modified. See issue #104508. */
     private final Set<String> dirty = new TreeSet<String>();
     
+    private Sources src;
+    private List<FileObject> roots;
+    
     public J2SEActionProvider(J2SEProject project, UpdateHelper updateHelper) {
         
         commands = new HashMap<String,String[]>();
@@ -204,23 +208,55 @@ class J2SEActionProvider implements ActionProvider {
             modification(fe.getFile());
         }
     };
-    private void modification(FileObject f) {
-        // XXX would be more efficient to precompute non-test source roots (need to listen to changes in Sources though)
-        if (FileOwnerQuery.getOwner(f) != project) {
-            return;
+    
+    private final ChangeListener sourcesChangeListener = new ChangeListener() {
+
+        public void stateChanged(ChangeEvent e) {
+            synchronized (this) {
+                J2SEActionProvider.this.roots = null;
+            }
         }
-        ClassPath src = ClassPath.getClassPath(f, ClassPath.SOURCE);
-        if (src == null) {
-            return;
+    };
+    
+    private void modification(FileObject f) {        
+        final Iterable<? extends FileObject> roots = getRoots ();         
+        for (FileObject root : roots) {
+            String path = FileUtil.getRelativePath(root, f);
+            if (path != null) {
+                synchronized (dirty) {                    
+                    dirty.add(path);
+                }
+                break;
+            }
         }
-        if (UnitTestForSourceQuery.findSources(src.findOwnerRoot(f)).length > 0) {
-            // These are tests, and we do not track dirty tests currently.
-            return;
-        }
-        String path = src.getResourceName(f);
-        assert path != null : "no path for " + f + " in " + src;
-        synchronized (dirty) {
-            dirty.add(path);
+    }
+    
+    private Iterable <? extends FileObject> getRoots () {
+        Sources src = null;
+        synchronized (this) {
+            if (this.roots != null) {
+                return this.roots;
+            }
+            if (this.src == null) {
+                this.src = this.project.getLookup().lookup(Sources.class);
+                this.src.addChangeListener (sourcesChangeListener);
+            }
+            src = this.src;
+        }        
+        assert src != null;
+        final SourceGroup[] sgs = src.getSourceGroups (JavaProjectConstants.SOURCES_TYPE_JAVA);
+        final List<FileObject> roots = new ArrayList<FileObject>(sgs.length);
+        for (SourceGroup sg : sgs) {
+            final FileObject root = sg.getRootFolder();            
+            if (UnitTestForSourceQuery.findSources(root).length == 0) {            
+                roots.add (root);
+            }            
+        }        
+        synchronized (this) {            
+            if (this.roots == null) {
+                this.roots = roots;
+            }
+            return this.roots;
         }
     }
 
