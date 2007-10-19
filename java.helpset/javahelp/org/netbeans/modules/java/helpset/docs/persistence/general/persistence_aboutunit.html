@@ -1,0 +1,116 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2007 Sun Microsystems, Inc. 
+ * All rights reserved.
+ * Use is subject to license terms.
+-->
+<html>
+<head>
+    <title>About Persistence Units</title> 
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    
+    </head>
+    <body>
+        
+        <h2>About Persistence Units</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        <p>A persistence unit is required if you are using Java Persistence in your application.
+    A persistence unit is a uniquely-named collection of properties that are used to determine 
+        how a specific set of entities in an application are managed and persisted.</p>
+        <p>Persistence units are defined in the <tt>persistence.xml</tt> file.
+    You can have more than one persistence unit defined in <tt>persistence.xml</tt>, 
+    but each persistence unit must have a unique name.
+        </p>
+        
+        
+        <p>Properties specified in a persistence unit include the following:</p>    
+        <ul>
+    <li>The entity classes within the <a href="#scope">scope of the persistence unit</a></li>
+    <li>The <a href="#provide">persistence provider</a> or library used for managing the set of entities scoped by that persistence unit</li>
+    <li>The <a href="#data">data source</a> used for the persistent storage of the managed entities</li>
+    <li>The <a href="#trans">transaction type</a> the application uses</li>
+        </ul>
+        
+        <p>Persistence units can be packaged as part of a WAR or EJB-JAR file, 
+        or can be packaged as a JAR file that can then be included in your application.</p>
+        
+        
+        <a name="scope"></a>
+        <h3>Scope of the Persistence Unit</h3>
+        <p>
+    The scope of a persistence unit is determined by the location of <tt>persistence.xml</tt>.
+    When you use a wizard to create a persistence unit, the IDE creates <tt>persistence.xml</tt> in the location appropriate for the scope.
+    For example, if you use the IDE to create a persistence unit for an EJB module, the IDE generates <tt>persistence.xml</tt> 
+    in the <tt>src/conf</tt> directory of your EJB module.
+    When the EJB JAR is built, it packages <tt>persistence.xml</tt> in the EJB JAR's <tt>META-INF</tt> directory.
+    The scope of the persistence unit is the set of classes in the EJB JAR file.
+        </p>
+        <p>If the scope is not explicitly specified in a persistence unit, by default all the entities in the EJB JAR 
+    file would be within the scope of the persistence unit defined in <tt>persistence.xml</tt>.</p>
+        
+       <p><b>Notes:</b></p> 
+        <ul>
+    <li>The location of <tt>persistence.xml</tt> determines the persistence root.
+    The root of the persistence unit is the JAR file or directory that contains the <tt>META-INF</tt> directory containing <tt>persistence.xml</tt>. 
+    </li>
+         </ul>
+             
+         <a name="provide"></a>
+             <h3>Persistence Provider</h3>    
+             <p>A persistence provider refers to an implementation of the Java Persistence API.
+             The persistence provider is a library that provides the functionality to persist objects in the application.</p>
+    <p>The IDE is bundled with the TopLink Essentials persistence provider. 
+    TopLink Essentials is the reference implementation and the default Java Persistence provider in the Sun Java System Application Server Platform Edition 9 and GlassFish.
+    The TopLink Essentials persistence provider is a library consisting of <tt>toplink-essentials.jar</tt> and <tt>toplink-essentials-agent.jar</tt>.
+    You can use TopLink Essentials as your provider, or specify a different persistence provider.
+             </p>
+             
+             <a name="data"></a>
+             <h3>Data Source</h3>    
+             <p>A data source refers to the database where persistent entities are stored. 
+    The data source must be registered on the server and is specified using the JNDI name.
+    If the transactions are container-managed JTA transactions, the data source must be a JTA data source.
+    If the transactions are application-managed, the data source is specified according to the JDBC database connection
+    registered with the IDE.
+             </p>
+            <p>In Java SE environments, the database is specified either using a data source or by other means, 
+            depending on the requirements of the persistence provider used.</p>
+             
+             <a name="trans"></a>
+             <h3>Transaction Types</h3>
+                <p>A persistence unit specifies how transactions are managed in the application.
+    The transaction type you can use depends on the target container.
+    If you are deploying to a Java EE container, transactions can be container-managed or application-managed.
+    If you are not deploying to a Java EE container, transactions must be managed by the application.
+                </p>
+        <ul>
+    <li><b>Container-managed transactions (JTA transactions).</b><br>
+        Container-managed transactions are handled by the container using the Java Transaction API.
+        To use the Java Transaction API, you must deploy your application to a Java EE container
+        and your data source needs to support JTA transactions.
+        <p>In <tt>persistence.xml</tt>, the transaction type for the persistence unit is set to <tt>JTA</tt>.
+        If you are deploying to the Sun Java System Application Server/GlassFish, when you create the persistence unit this option is selected by default.</p>
+    </li>
+    <li><b>Application-managed transactions (resource-local transactions).</b><br>
+        Application-managed transactions are handled by the application.
+        <p>In <tt>persistence.xml</tt>, the transaction type for the persistence unit is set to <tt>RESOURCE_LOCAL</tt>.</p>
+    </li>
+        </ul>
+        
+        <dl>
+    <dt><a name="seealso">See Also</a></dt>
+    <dd><a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/enterprise/general/ent_app_process.html">Working with Enterprise Applications</a> </dd>
+    <dd><a href="persistence_unit.html">Creating a Persistence Unit</a> </dd>
+    <dd><a href="persistence_about.html">About Java Persistence</a> </dd>
+    <dd><a href="persistence_aboutentitymanager.html">About Entity Managers</a> </dd>
+    </dl>
+        
+        <hr>
+        <small> <a href="../../credits.html">Legal Notices</a></small> 
+        <table cellpadding="50" border="0"> 
+    <tr><td>&nbsp;</td></tr> 
+        </table> 
+    </body>
+    
+</html>

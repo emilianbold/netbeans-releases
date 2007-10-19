@@ -1,0 +1,53 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+*     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+    <head>
+        <title>New Entity Classes from Database Wizard: Entity Classes</title>
+        <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>New Entity Classes from Database Wizard: Entity Classes</h2>
+        <p> <small><a href="#seealso">See Also</a></small></p>
+        
+        <p>This wizard generates a set of entity classes from an existing database connection or schema. 
+        The IDE generates an entity class for each related table with persistent fields. 
+        The wizard takes you through the steps of choosing the database connection or schema, 
+        and then selecting the tables in the database that will be used to generate the entity classes.</p>
+        <p>You open the wizard by right-clicking a 
+        project node or subnode and choosing New &gt; Other, selecting the Persistence category and then selecting Entity Classes from Database.</p>
+        <p>In this page of the wizard you set the following:</p>
+        <ul>
+            <li><b>Class Names.</b> The text field displays the name of the class that is generated for each table listed.</li>
+            <li><b>Project.</b> Displays the project where the entity classes will be saved. This field is read only.</li>
+            <li><b>Location.</b> Select the source folder where you want to create the entity class.</li>
+            <li><b>Package. </b>Select an existing package from the Package drop-down list or type the name of a new package.</li>
+            <li><b>Generate Named Query Annotations for Persistent Fields.</b> If selected, the IDE generates named query annotations in the entity classes.</li>
+        </ul>
+        
+        <p>When you click Finish, the IDE creates entity classes for each of the tables you specified in the wizard.</p>
+        
+        <ul class="note">
+            <li>When you select a data source or JDBC connection, the IDE also creates a database schema for the database and saves it in your <tt>src/conf </tt>folder.</li>
+            <li>To persist entity classes, your project requires a persistence unit.
+                When you create the entity class, the IDE checks if there is a persistence unit for the project.
+                If the IDE cannot locate a persistence unit, the Create Persistence Unit button appears.
+                You can click Create Persistence Unit to open the Create Persistence Unit wizard.
+                Alternatively, you can create a persistence unit later by choosing Persistence &gt; Persistence Unit in the New File wizard. 
+            </li>
+        </ul>
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="../general/persistence_about.html">About Java Persistence</a></dd>
+            <dd><a href="../general/persistence_fromdb.html">Generating Persistent Entity Classes from a Database</a></dd>
+            <dd><a href="../general/persistence_unit.html">Creating a Persistence Unit</a></dd>
+        </dl>
+        
+        <hr><font size=-2><a href="../../credits.html">Legal Notices</a></font>
+        
+        <table border="0" cellpadding="50">
+            <tr><td>&nbsp;</td></tr>
+    </table></body>
+</html>

@@ -1,0 +1,62 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2007 Sun Microsystems, Inc. 
+ * All rights reserved.
+ * Use is subject to license terms.
+-->
+<html>
+<head>
+        <title>Obtaining an Entity Manager</title> 
+        <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+        <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+        
+    </head>
+    <body>
+        
+        <h2>Obtaining an Entity Manager</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        <p>An entity manager is associated with a group of managed entities called a "persistence context". 
+        Entities within a persistence context are associated with an entity manager instance. 
+        To use an entity manager, you first need to obtain an entity manager from the container.
+        </p>
+        
+        <p><b>To obtain an entity manager:</b></p>
+        <ol>
+            <li>Open the class where you want to add the entity manager resource.</li>
+            <li>Right-click in the Source Editor and choose Persistence &gt; Use Entity Manager from the pop-up menu.</li> 
+        </ol>
+        <p>The IDE adds the code to obtain an entity manager instance.</p>
+        <!-- TODO -- need to check this -->
+        <p>How the entity manager instance is obtained depends upon your project.
+            For example, if you are using a container-managed entity manager, you can obtain an entity manager instance by injecting the entity manager resource
+            directly using the <tt>@PersistenceContext</tt> annotation.
+            If entities in your project are application-managed, you first need to obtain an <tt>EntityManagerFactory</tt>
+            before you can obtain an entity manager.
+            You can obtain an <tt>EntityManagerFactory</tt> by using the 
+            <tt>@PersistenceUnit</tt> annotation in a Java EE container, 
+            or by calling <tt>Persistence.createEntityManagerFactory</tt> in a Java SE environment.
+        </p>
+        
+    <p>For more on entity managers, see the Java EE 5 Tutorial:
+            <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                <param name="content" value="http://java.sun.com/javaee/5/docs/tutorial/doc/index.html">
+                <param name="text" value="<html><u>http://java.sun.com/javaee/5/docs/tutorial/doc/index.html</u></html>">
+                <param name="textFontSize" value="medium">
+                <param name="textColor" value="blue">
+            </object>
+        </p>
+    
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/enterprise/general/ent_app_process.html">Working with Enterprise Applications</a> </dd>
+            <dd><a href="persistence_aboutentitymanager.html">About Entity Managers</a></dd>
+        </dl>
+        
+        <hr>
+        <small> <a href="../../credits.html">Legal Notices</a></small> 
+        <table cellpadding="50" border="0"> 
+            <tr><td>&nbsp;</td></tr> 
+        </table> 
+    </body>
+    
+</html>

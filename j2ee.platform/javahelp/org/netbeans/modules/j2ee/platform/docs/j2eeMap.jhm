@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!--
-*     Copyright � 2007 Sun Microsystems, Inc. All rights reserved.
+*     Copyright (c) 2007 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 <!DOCTYPE map
@@ -316,35 +316,36 @@
     
 <!-- Start of Persistence help -->
 
-    <mapID target="persist_about" url="persistence/general/persistence_about.html" />
-    <mapID target="persist_unit" url="persistence/general/persistence_unit.html" />
-    <mapID target="persist_unitabout" url="persistence/general/persistence_aboutunit.html" />
-    <mapID target="persist_entitymanager" url="persistence/general/persistence_entitymanager.html" />
-    <mapID target="persist_entitymanagerabout" url="persistence/general/persistence_aboutentitymanager.html" />
-    <mapID target="persist_support" url="persistence/general/persistence_support.html" />
-    <mapID target="persist_quickref" url="persistence/general/persistence_quickref.html" />
-    <mapID target="persist_fromdb" url="persistence/general/persistence_fromdb.html" />
-    <mapID target="persist_entityclass" url="persistence/general/persistence_entityclasses.html" />
-    <mapID target="persist_mapping" url="persistence/general/persistence_mapping.html" />
-    <mapID target="persist_webapp" url="persistence/general/persistence_webapp.html" />
+    <mapID target="persist_about" url="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/general/persistence_about.html" />
+    <mapID target="persist_unit" url="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/general/persistence_unit.html" />
+    <mapID target="persist_unitabout" url="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/general/persistence_aboutunit.html" />
+    <mapID target="persist_entitymanager" url="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/general/persistence_entitymanager.html" />
+    <mapID target="persist_entitymanagerabout" url="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/general/persistence_aboutentitymanager.html" />
+    <mapID target="persist_support" url="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/general/persistence_support.html" />
+    <mapID target="persist_quickref" url="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/general/persistence_quickref.html" />
+    <mapID target="persist_fromdb" url="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/general/persistence_fromdb.html" />
+    <mapID target="persist_entityclass" url="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/general/persistence_entityclasses.html" />
+    <mapID target="persist_mapping" url="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/general/persistence_mapping.html" />
+    <mapID target="persist_webapp" url="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/general/persistence_webapp.html" />
     <mapID target="persist_session" url="persistence/general/persistence_sessionfromentity.html" />
-    
+
     <!-- New File Persistence CSH - includes the create JSF wizard pages -->
     
-    <mapID target="org.netbeans.modules.j2ee.persistence.wizard.entity.EntityWizardDescriptor" url="persistence/csh/persist_new_entityclass.html" />
-    <mapID target="org.netbeans.modules.j2ee.persistence.wizard.fromdb.DatabaseTablesPanel" url="persistence/csh/persist_new_entityclass_db1.html" />
-    <mapID target="org.netbeans.modules.j2ee.persistence.wizard.fromdb.EntityClassesPanel" url="persistence/csh/persist_new_entityclass_db2.html" />
-    <mapID target="org.netbeans.modules.j2ee.persistence.unit.AddEntityPanel" url="persistence/csh/db_persist_addentityclass.html" />
+    <mapID target="org.netbeans.modules.j2ee.persistence.wizard.entity.EntityWizardDescriptor" url="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/csh/persist_new_entityclass.html" />
+    <mapID target="org.netbeans.modules.j2ee.persistence.wizard.fromdb.DatabaseTablesPanel" url="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/csh/persist_new_entityclass_db1.html" />
+    <mapID target="org.netbeans.modules.j2ee.persistence.wizard.fromdb.EntityClassesPanel" url="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/csh/persist_new_entityclass_db2.html" />
+    <mapID target="org.netbeans.modules.j2ee.persistence.unit.AddEntityPanel" url="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/csh/db_persist_addentityclass.html" />
     <mapID target="org.netbeans.modules.j2ee.common.DatasourceCustomizer" url="persistence/csh/db_new_datasource.html" />
 
     <!-- one of these needs to be changed -->
     <mapID target="org.netbeans.modules.j2ee.persistence.wizard.dao.EjbFacadeWizardIterator$PersistenceClientEntitySelection" url="persistence/csh/persist_new_sessionfromentity1.html" />
     
     <!-- Persistence Unit Visual Editor CSH -->
-    <mapID target="persistence_multiview_design_persistenceUnitNode" url="persistence/csh/persist_editor_persistenceunit.html" />
+    <mapID target="persistence_multiview_design_persistenceUnitNode" url="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/csh/persist_editor_persistenceunit.html" />
 
 <!-- TODO: Need help ids for these
-    <mapID target=" " url="persistence/csh/persist_new_persistenceunit.html" />
+PK - if help ID arrives for the first below, please make sure it gets in the java/helpset help set and is not duplicated here
+    <mapID target=" " url="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/csh/persist_new_persistenceunit.html" />
     <mapID target=" " url="persistence/csh/persist_new_sessionfromentity2.html" />
 -->
 

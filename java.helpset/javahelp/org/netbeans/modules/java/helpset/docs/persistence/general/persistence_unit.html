@@ -1,0 +1,62 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2007 Sun Microsystems, Inc. 
+ * All rights reserved.
+ * Use is subject to license terms.
+-->
+<html>
+<head>
+    <title>Creating a Persistence Unit</title> 
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    
+    </head>
+    <body>
+        
+        <h2>Creating a Persistence Unit</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        <p>A persistence unit is required if you are using Java Persistence in your EJB module or web module.
+        </p>
+        
+        
+        <p><b>To create a persistence unit:</b></p>
+        <ol>
+            <li>In the Projects window, right-click a web or EJB module project node and choose New &gt; Other.</li>
+            <li>Select Persistence Unit in the Persistence category and click Next.</li>
+            <li>Specify a unique Persistence Unit Name.
+            In most cases you can keep the default name suggested by the IDE.</li>
+            <li>Select a <a href="persistence_aboutunit.html#provide">persistence provider</a> or library from the drop-down menu, or add a new library by choosing New Persistence Library.</li>
+            <li>Select a <a href="persistence_aboutunit.html#data">data source</a> from the drop-down menu. 
+            The data source can be a JDBC connection or a database connection.
+            To appear in the list, the data source needs to be registered with the IDE.</li>
+            <li>Select Use Java Transaction APIs if you want the container to manage the entities. 
+                <ul class="note">
+                    <li>Java Transaction APIs are only available if you are deploying to a Java EE 5 container.
+                    If you are not deploying to a Java EE 5 container, the transaction needs to be managed by the application.
+                    For more, see <a href="persistence_aboutunit.html#trans">Transaction Types</a></li>
+                </ul>
+            </li>
+            <li>Specify a table generation strategy for your database.</li>
+            <li>Click Finish.</li>
+        </ol>
+        
+        <p>When you click Finish, the file <tt>persistence.xml</tt> opens in the Source Editor.</p>
+        <p>In the IDE, you can find <tt>persistence.xml</tt> in the Projects window under the Configuration Files node.
+        In the Files window, <tt>persistence.xml</tt> is located in the <tt>src/conf</tt> directory.</p>
+        <p>When packaged, <tt>persistence.xml</tt> is located in the <tt>META-INF</tt> directory of an EJB JAR file or the
+        <tt>WEB-INF/classes</tt> directory of a WAR file. </p>
+        
+        <dl>
+        <dt><a name="seealso">See Also</a></dt>
+        <dd><a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/enterprise/general/ent_app_process.html">Working with Enterprise Applications</a> </dd>
+        <dd><a href="persistence_aboutunit.html">About Persistence Units</a> </dd>
+        </dl>
+        
+        <hr>
+        <small> <a href="../../credits.html">Legal Notices</a></small> 
+        <table cellpadding="50" border="0"> 
+    <tr><td>&nbsp;</td></tr> 
+        </table> 
+    </body>
+    
+</html>

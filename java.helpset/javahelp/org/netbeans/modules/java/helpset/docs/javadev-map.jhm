@@ -218,6 +218,18 @@
 <!--this topic also a CSH ID for .properties files in Source Editor-->
 <mapID target="propfiles.editlocale" url="propfiles/editinglocale.html" />
 
+<!--Java Persistence API topics - some more are in the j2ee/platform help set-->
+    <mapID target="persist_about" url="persistence/general/persistence_about.html" />
+    <mapID target="persist_unit" url="persistence/general/persistence_unit.html" />
+    <mapID target="persist_unitabout" url="persistence/general/persistence_aboutunit.html" />
+    <mapID target="persist_entitymanager" url="persistence/general/persistence_entitymanager.html" />
+    <mapID target="persist_entitymanagerabout" url="persistence/general/persistence_aboutentitymanager.html" />
+    <mapID target="persist_support" url="persistence/general/persistence_support.html" />
+    <mapID target="persist_quickref" url="persistence/general/persistence_quickref.html" />
+    <mapID target="persist_fromdb" url="persistence/general/persistence_fromdb.html" />
+    <mapID target="persist_entityclass" url="persistence/general/persistence_entityclasses.html" />
+    <mapID target="persist_mapping" url="persistence/general/persistence_mapping.html" />
+
 
 
     <!-- Start of "CSH" section -->
@@ -404,7 +416,21 @@
 <mapID target="NetbeansDebuggerGoToCallingMethodAction" url="debug/debug_callstack.html"/>
 <mapID target="NetbeansDebuggerPopTopmostFrameAction" url="debug/debug_pop.html"/>
 
+    <!-- New File Persistence CSH -->
+    
+    <mapID target="org.netbeans.modules.j2ee.persistence.wizard.entity.EntityWizardDescriptor" url="persistence/csh/persist_new_entityclass.html" />
+    <mapID target="org.netbeans.modules.j2ee.persistence.wizard.fromdb.DatabaseTablesPanel" url="persistence/csh/persist_new_entityclass_db1.html" />
+    <mapID target="org.netbeans.modules.j2ee.persistence.wizard.fromdb.EntityClassesPanel" url="persistence/csh/persist_new_entityclass_db2.html" />
+    <mapID target="org.netbeans.modules.j2ee.persistence.unit.AddEntityPanel" url="persistence/csh/db_persist_addentityclass.html" />
+   
+   
+       <!-- Persistence Unit Visual Editor CSH -->
+    <mapID target="persistence_multiview_design_persistenceUnitNode" url="persistence/csh/persist_editor_persistenceunit.html" />
 
+
+<!-- TODO: Need help ids for this
+    <mapID target=" " url="persistence/csh/persist_new_persistenceunit.html" />
+-->
 
 <!-- Profiling topic -->
     <mapID target="profiling_javaapp" url="profiling/profile_about.html" />

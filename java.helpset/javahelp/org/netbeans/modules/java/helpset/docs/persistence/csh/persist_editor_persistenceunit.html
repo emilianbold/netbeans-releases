@@ -1,0 +1,68 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+*     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+    <head>
+        <title>persistence.xml Visual Editor</title>
+        <link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+        <h2><tt>persistence.xml</tt> Visual Editor</h2>
+        <p> <small><a href="#seealso">See Also</a></small> </p>
+        <p>You open the <tt>persistence.xml</tt> Visual Editor from the Projects window by expanding the Configuration Files node and then double-clicking the <tt>persistence.xml</tt> file. 
+        The visual editor displays the persistence units defined in <tt>persistence.xml</tt>.
+        You can use the visual editor to create, delete, and modify the persistence units.
+        You can also click XML in the visual editor toolbar to access the XML view of <tt>persistence.xml</tt>.</p>
+       
+        <p>In the <tt>persistence.xml</tt> visual editor, you can perform the following tasks:</p>
+        <ul>
+            <li><b>Create a persistence unit.</b> Click Add in the top right corner of the visual editor.</li>
+            <li><b>Delete a persistence unit.</b> Click Remove next to the name of the persistence unit you want to delete.</li>
+            <li><b>Modify a persistence unit.</b> Click the expand icon to the left of the name of the persistence unit
+            to display the editable properties of the persistence unit.</li>
+        </ul>
+        
+        <h3>Overview of Persistence Unit Properties</h3>
+        <p>The visual editor displays the properties of each persistence unit in <tt>persistence.xml</tt>.
+        Depending on your project configuration, for each persistence unit, you can modify the following properties:</p>
+        <ul>
+            <li><b>Persistence Unit Name.</b> Each persistence unit in <tt>persistence.xml</tt> must have a unique name. </li>
+            <li><b>Persistence Provider</b> or <b>Persistence Library.</b> The persistence provider or library determines the entity manager that is used to manage the entities scoped by the persistence unit.</li>
+            <li><b>Data Source</b> or <b>JDBC Connection.</b> This is the JNDI name of the data source or the JDBC connection to the database.</li>
+            <li><b>Use Java Transaction APIs.</b> If selected, the Java EE 5 container manages the lifecycle of entities.
+            If not selected, the entities are managed by the application.
+            (If the target container is not a Java EE 5 container, then this option is not available and 
+            the entities must be managed by the application.)</li>
+            <li><b>Table Generation Strategy.</b> Select the table generation strategy for the data source.</li>
+            <li><b>Include All Entity Classes in "&lt;project&gt;" Module.</b> 
+            If selected, all entity classes in the persistence unit's root are included in the persistence unit. 
+            If not selected, only the classes listed in the Include Entity Classes textfield are included in the scope of the persistence unit.
+            <p>In Java EE projects, you do not need to explicitly specify which entity classes to include in the scope, because 
+            all entity classes in the persistence unit's root are included by default.</p>
+            <p>In Java SE projects, the option to include all entity classes is not available. 
+            Instead, you need to explicitly specify which classes to include in the scope.
+            Only the classes listed in the Include Entity Classes textfield are included.</p>
+            </li>
+            <li><b>Include Entity Classes.</b> The textfield lists the entity classes explicitly included in the scope of the persistence unit.
+            By default, entity classes in the persistence unit's root are included in the scope and listed in the textfield.
+            You can remove entity classes from the scope by selecting the class name and clicking Remove.
+            </li>
+        </ul>
+            
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="../general/persistence_about.html">About Java Persistence</a></dd>
+            <dd><a href="../general/persistence_aboutunit.html">About Persistence Units</a></dd>
+            <dd><a href="../general/persistence_unit.html">Creating a Persistence Unit</a></dd>
+            <dd><a href="../general/persistence_aboutentitymanager.html">About Entity Managers</a></dd>
+            
+        </dl>
+        
+        <hr><small><a href="../../credits.html">Legal Notices</a></small>
+        
+        <table border="0" cellpadding="50">
+            <tr><td>&nbsp;</td></tr>
+    </table></body>
+</html>

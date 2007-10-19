@@ -1,0 +1,77 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2007 Sun Microsystems, Inc. 
+ * All rights reserved.
+ * Use is subject to license terms.
+-->
+<html>
+<head>
+        <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+        <title>Java Persistence Tasks: Quick Reference</title>
+        <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    
+    <body>
+        <h2>Java Persistence Tasks: Quick Reference</h2>
+        <p>This topic describes common tasks you do to implement Java Persistence in your project. 
+        For more detailed information, click the links in the right column. </p>
+        
+        <table border="1" cellpadding="5" cellspacing="0" summary="The left column lists the
+            task name. The right column lists the steps to perform.">
+            <tr valign="top"> 
+                <th scope="col" align="left">To perform this task</th>
+                <th scope="col" align="left">Follow these steps</th>
+            </tr>
+            <tr valign="top"> 
+                <td>Create a persistence unit in a web module or EJB module.</td>
+                <td> 
+                    <ol>
+                        <li>Choose File &gt; New File (Ctrl-N).</li>
+                        <li>In the New File wizard, select the <a href="persistence_unit.html">Persistence Unit</a> file type in the Persistence category and click Next.</li>
+                        <li>Enter a unique name for the persistence unit or use the defaul name.</li>
+                        <li>Choose a persistence provider and data source.</li>
+                        <li>Click Finish.</li>
+                    </ol>
+                </td>
+            </tr>
+            <tr valign="top"> 
+                <td>Create an entity class.</td>
+                <td> 
+                    <ol>
+                        <li>In the Projects window, right-click the project module node and choose New &gt; Other.</li>
+                        <li>Select <a href="persistence_entityclasses.html">Entity Class</a> from the Persistence category.</li>
+                    </ol>
+                </td>
+            </tr>
+            <tr valign="top"> 
+                <td>Create entity classes from a database.</td>
+                <td> 
+                    <ol>
+                        <li>In the Projects window, right-click the project module node and choose New &gt; Other.</li>
+                        <li>Select <a href="persistence_fromdb.html">Entity Classes from Database</a> from the Persistence category.</li>
+                    </ol>
+                </td>
+            </tr>
+            <tr valign="top"> 
+                <td>Add support for the Java Persistence API to project's classpath.</td>
+                <td> 
+                    <ol>
+                        <li>In the Projects window, right-click the project's Libraries node and choose Add Library.</li>
+                        <li>Select the TopLink Essentials library.</li>
+                    </ol>
+                </td>
+            </tr>
+            <tr valign="top"> 
+                <td>Add an entity manager.</td>
+                <td> 
+                    <ol>
+                        <li>Open the class where you want to inject the entity manager.</li>
+                        <li>In the Source Editor, right-click in the class and choose Persistence &gt; Use Entity Manager.</li>
+                    </ol>
+                </td>
+            </tr>
+        </table>
+        <hr>
+        <small><a href="../../credits.html">Legal Notices</a></small> 
+    </body>
+</html>

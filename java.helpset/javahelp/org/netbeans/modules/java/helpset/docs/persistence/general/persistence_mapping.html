@@ -1,0 +1,106 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2007 Sun Microsystems, Inc. 
+ * All rights reserved.
+ * Use is subject to license terms.
+-->
+<html>
+<head>
+    <title>Mapping Entity Classes</title> 
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    
+    </head>
+    <body>
+        
+        <h2>Mapping Entity Classes</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        <p>An entity class is used to represent a table in a database, and the fields in an entity class 
+    correspond to columns in that table.
+    In an entity class, you can use annotations to specify how fields in an entity class are mapped to the corresponding database 
+        columns and tables. </p>
+        
+        <p>
+    For example, the following <tt>@Column</tt> annotation marking the field <tt>address</tt>
+        maps the field to the column named <tt>CUSTOMER_ADDRESS</tt> in the database table.</p>
+        <pre>
+    @Column(name = "CUSTOMER_ADDRESS")
+    private String address;
+        </pre>
+        
+        <ul class="note">
+    <li>When mapping a persistent field or property name to a column, you do not need to specify a <tt>@Column</tt> annotation for the field or 
+    property if the name of the mapped database column is the same as the field or property name because they are mapped by default.</li>
+        </ul>
+        
+        <p>The following annotations are commonly used when mapping entity classes.</p>
+        <table border="1" cellpadding="5" cellspacing="0" summary="The left column lists 
+        common mapping annotations. The right column describes the function 
+        of the annotation.">
+        <tr>
+            <th scope="col"><b>Annotation</b></th>
+            <th scope="col"><b>Description</b></th>
+        </tr>
+        <tr>
+            <td><tt>@Id</tt></td>
+            <td>Specifies the primary key property or field of an entity.</td>
+        </tr>
+        <tr>
+            <td><tt>@GeneratedValue</tt></td>
+            <td>Allows you to specify the strategy that automatically generates the values of primary keys. Used with @Id.</td>
+        </tr>
+        <tr>
+            <td><tt>@Column</tt></td>
+            <td>Specifies a mapped column for a persistent property or field.</td>
+        </tr>
+        <tr>
+            <td><tt>@ManyToMany</tt></td>
+            <td>Defines a many-valued association with many-to-many multiplicity.</td>
+        </tr>
+        <tr>
+            <td><tt>@ManyToOne</tt></td>
+            <td>Defines a single-valued association to another entity class that has many-to-one multiplicity.</td>
+        </tr>
+        <tr>
+            <td><tt>@OneToMany</tt></td>
+            <td>Defines a many-valued association with one-to-many multiplicity.</td>
+        </tr>
+        </table>
+        
+        <p>For more on using annotations and annotation elements to map entities in an enterprise application, see the Java EE 5 Tutorial:
+    <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+        <param name="content" value="http://java.sun.com/javaee/5/docs/tutorial/doc/index.html">
+        <param name="text" value="<html><u>http://java.sun.com/javaee/5/docs/tutorial/doc/index.html</u></html>">
+        <param name="textFontSize" value="medium">
+        <param name="textColor" value="blue">
+    </object>
+        </p>    
+        
+        <p>For more on the specifications on annotations and annotation elements, see the Java EE 5 API specifications for <tt>javax.persistence</tt>:
+    <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+        <param name="content" value="http://java.sun.com/javaee/5/docs/api/javax/persistence/package-summary.html">
+        <param name="text" value="<html><u>http://java.sun.com/javaee/5/docs/api/javax/persistence/package-summary.html</u></html>">
+        <param name="textFontSize" value="medium">
+        <param name="textColor" value="blue">
+    </object>
+        </p>
+        
+        
+        
+        <dl>
+    <dt><a name="seealso">See Also</a></dt>
+    <dd><a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/enterprise/general/ent_app_process.html">Working with Enterprise Applications</a> </dd>
+    <dd><a href="persistence_about.html">About Java Persistence</a></dd>
+    <dd><a href="persistence_entityclasses.html">Creating an Entity Class</a></dd>
+    <dd><a href="persistence_fromdb.html">Generating Persistent Entity Classes from a Database</a></dd>
+    
+        </dl>
+        
+        <hr>
+        <small> <a href="../../credits.html">Legal Notices</a></small> 
+        <table cellpadding="50" border="0"> 
+    <tr><td>&nbsp;</td></tr> 
+        </table> 
+    </body>
+    
+</html>

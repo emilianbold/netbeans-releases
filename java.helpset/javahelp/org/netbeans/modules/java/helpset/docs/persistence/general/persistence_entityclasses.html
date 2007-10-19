@@ -1,0 +1,92 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2007 Sun Microsystems, Inc. 
+ * All rights reserved.
+ * Use is subject to license terms.
+-->
+<html>
+<head>
+        <title>Creating an Entity Class</title> 
+        <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+        <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+        
+    </head>
+    <body>
+        
+        <h2>Creating an Entity Class</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        <p>In Java EE 5 applications, you use entity classes to create persistent entity objects ("entities").
+            Entity classes are "plain old Java objects" (POJOs).
+            Entity classes import the Java persistence library <tt>javax.persistence.Entity</tt> and are 
+        marked with the <tt>@Entity</tt> annotation in your source code.</p>
+        
+        <p><b>To create an entity class:</b></p> 
+        <ol>
+            <li>Right-click the module project node in the Projects window and choose New &gt; Other.</li>
+            <li>In the New File wizard, select Entity Class from the Persistence category.</li>
+            <li>Enter the name of the class.</li>
+            <li>Select the location where you want to save the entity class.</li>
+            <li>Select an existing package from the Package drop-down lsit or type the name of a new package.</li>
+            <li>Set the type of the variable you want to use as the primary key. 
+            The default type for the primary key is Long.</li>
+            <li>Click Finish.</li>
+        </ol>
+        
+        <p>When you click Finish, the IDE generates the entity class and opens the class in the Source Editor.
+            Annotations in the entity class define the primary key and the primary key generation strategy for the entity.
+        </p>
+        
+        
+        <h3>About Entity Classes</h3>
+        <p>Entities have the following characteristics:</p>
+        <ul>
+            <li>Each entity class usually represents a table in a relational database.</li>
+            <li>Each instance of an entity corresponds to a row in a table.</li>
+            <li>Persistent fields or properties are mapped to the data in the relational database.</li> 
+        </ul>
+        
+        <p>In Java EE 5 applications, entities created using entity classes 
+        share many of the characteristics of <a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/ejb/general/about_entity_beans.html">entity beans</a> in J2EE applications.
+        Unlike entity beans, entity classes are not restricted to EJB modules in enterprise applications.
+        Entity classes can be located in an EJB module or a web module. 
+        Entity classes can also be used in Java SE applications.</p>
+        
+        <p>When coding entity classes, you use annotations to map entities and entity relationships to a database.
+            You do not need to use external XML descriptor files to map persistent objects to a database.
+        The information about the data source is contained in a <a href="persistence_unit.html">persistence unit</a>.</p>
+        
+        
+        
+        
+        <!--
+        <p>The Java platform you are developing on determines how data is managed and persisted:</p>
+        
+        <ul>
+        <li><b>J2EE platform (JDK 1.4).</b> When developing on this platform, you can use either container-managed persistence (CMP)
+        or bean-managed persistence to persist entity beans. For more, see <a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/ejb/general/about_entity_beans.html">About Entity Beans</a>.</li>
+        <li><b>Java EE 5 platform (JDK 5.0).</b> When developing applications on this platform, you can use the Java Persistence API
+        to handle the persistence of entities. 
+        
+        </ul>
+        Each instance of the entity bean contains one element of that data, such as a row from a database table.</p>
+        <p>The persistence options available when developing an application depend on the Java platform.</p> 
+        <p>When developing applications on the J2EE platform (JDK1.4), container-managed persistence (CMP)
+        is used to handle the persistence of entity beans.
+        -->
+        
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/enterprise/general/ent_app_process.html">Working with Enterprise Applications</a> </dd>
+            <dd><a href="persistence_unit.html">Creating a Persistence Unit</a></dd>
+            <dd><a href="persistence_fromdb.html">Generating Persistent Entity Classes from a Database</a></dd>
+            <dd><a href="persistence_mapping.html">Mapping Entity Classes</a></dd>
+        </dl>
+        
+        <hr>
+        <small> <a href="../../credits.html">Legal Notices</a></small> 
+        <table cellpadding="50" border="0"> 
+            <tr><td>&nbsp;</td></tr> 
+        </table> 
+    </body>
+    
+</html>

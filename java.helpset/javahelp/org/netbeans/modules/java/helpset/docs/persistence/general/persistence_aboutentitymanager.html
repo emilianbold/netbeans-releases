@@ -1,0 +1,82 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2007 Sun Microsystems, Inc. 
+ * All rights reserved.
+ * Use is subject to license terms.
+-->
+<html>
+<head>
+    <title>About Entity Managers</title> 
+        <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+        <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+        
+    </head>
+    <body>
+        
+        <h2>About Entity Managers</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        <p>A Java Persistence API entity manager handles how entities within a 
+    <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+                <param name="content" value="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/j2ee/platform/docs/persistence/csh/glossary_persist_context.html">
+                <param name="viewerActivator" value="javax.help.LinkLabel">
+                <param name="viewerStyle" value="javax.help.Popup">
+                <param name="viewerSize" value="400,220">
+                <param name="text" value="persistence context">
+                <param name="textFontSize" value="medium">
+                <param name="textFontFamily" value="SansSerif">
+                <param name="textFontStyle" value="italic">
+                <param name="textFontWeight" value="bold">
+                <param name="textColor" value="blue">
+            </object> are found, created, and removed.</p>
+        <p>Entities within a persistence context are associated with an entity manager instance. 
+        The entity manager instance controls how the entities in a persistence context are managed.
+        You can use an entity manager instance to handle locating the entities in a persistence context.
+        </p>
+        
+
+        
+        <h3>Types of Entity Managers</h3>
+            <p>Entity managers can be container-managed or application-managed.
+            The type of entity manager you can use in your application depends upon the container and how transactions are carried out.
+            You specify how transactions are carried out in the <a href="persistence_aboutunit.html">persistence unit</a>.</p>
+            <ul>
+            <li><b>Container-managed entity manager.</b> 
+            You can use a container-managed entity manager if you are deploying to a Java EE 5 container. 
+            In this case, transactions are carried out using Java Transaction Architecture (JTA).
+            When using a container-managed entity manager, all entities are managed by the container.
+            </li>
+
+            <li><b>Application-managed entity manager.</b>
+            You must use an application-managed entity manager if you explicitly manage the lifecycle of the entity manager.
+            In this case, transactions can be carried out using JTA or explicitly by the application (resource-local entity manager).
+            When using an application-managed entity manager, the persistence context and the lifecycle of EntityManager instances are managed by the application.
+            </li>
+            
+        </ul>
+        <p>For more on entity managers, see the Java EE 5 Tutorial:
+            <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                <param name="content" value="http://java.sun.com/javaee/5/docs/tutorial/doc/index.html">
+                <param name="text" value="<html><u>http://java.sun.com/javaee/5/docs/tutorial/doc/index.html</u></html>">
+                <param name="textFontSize" value="medium">
+                <param name="textColor" value="blue">
+            </object>
+        </p>
+
+        
+        
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/enterprise/general/ent_app_process.html">Working with Enterprise Applications</a> </dd>
+            <dd><a href="persistence_entitymanager.html">Obtaining an Entity Manager</a></dd>
+            <dd><a href="persistence_aboutunit.html">About Persistence Units</a> </dd>
+            <dd><a href="persistence_about.html">About Java Persistence</a></dd>
+        </dl>
+        
+        <hr>
+        <small> <a href="../../credits.html">Legal Notices</a></small> 
+        <table cellpadding="50" border="0"> 
+            <tr><td>&nbsp;</td></tr> 
+        </table> 
+    </body>
+    
+</html>

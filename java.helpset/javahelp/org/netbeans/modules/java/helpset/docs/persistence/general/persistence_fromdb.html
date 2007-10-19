@@ -1,0 +1,95 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2007 Sun Microsystems, Inc. 
+ * All rights reserved.
+ * Use is subject to license terms.
+-->
+<html>
+<head>
+        <title>Generating Entity Classes from a Database</title> 
+        <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+        <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+        
+    </head>
+    <body>
+        
+        <h2>Generating Entity Classes from a Database</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        
+        <p>In addition to writing entity classes from scratch, 
+            you can also generate a set of persistent entity classes for an existing database. 
+            You can use the New Entity Classes from Database wizard to generate the entity classes from 
+        a connected database or from a database schema.</p>
+
+        <p><b>To generate entity classes from a database:</b></p> 
+        <ol>
+            <li>Right-click the module project node in the Projects window and choose New &gt; Other.</li>
+            <li>In the New File wizard, select Entity Classes from Database from the Persistence category.</li>
+            <li>Select the source database that contains the tables that you want to use to generate the entity classes:
+                <ul>
+                    <li><b>Data Source.</b> Choose a data source from the drop-down menu.
+                    Alternately, you can choose Add Data Source to create a new data source. 
+                    The database must be running to choose this option.
+                    <ul class="note">
+                        <li>When choosing a data source, the server must be running and the data source must be registered with the server.</li>
+                        <li>If your target server is not a Java EE 5 container, 
+                        the drop-down menu contains the database connections registered with the IDE.</li>
+                    </ul>
+                    </li>
+                    <li><b>Database Schema.</b> Choose a database schema from the drop-down menu.
+                    This option is available only if there is a database schema in your project's <tt>src/conf</tt> folder.</li>
+                </ul>
+                After you select the source database, the tables in that database are listed in the Available Tables pane.
+            </li>
+            
+            <li>Select any tables in the left pane and click the Add button. 
+                Any tables related to the tables you select are automatically added to the list in the right pane. 
+                The IDE will generate entity classes for each table listed in the right pane.
+                <ul class="note">
+                    <li>Deselect Include Related Tables if you do not want entity classes created for related tables.</li> 
+                </ul>
+            </li>
+            <li>Click Next.</li>
+            <li>Confirm the name of the classes that will be generated for each table listed.</li>
+            <li>Select the location where you want to save the entity classes.</li>
+            <li>Select an existing package from the Package drop-down menu or type the name of a new package.</li>
+            <li>Confirm that you want the IDE to generate named query annotations in the entity classes.
+            If you do not want the IDE to generate the annotations, deselect Generate Named Query Annotations for Persistent Fields.</li>
+            <li>Click Finish.</li>
+        </ol>
+        
+        <p>When you click Finish, the IDE creates entity classes for each of the tables you specified in the wizard.
+        The package containing the generated entity classes is selected in the Projects window.
+        </p>
+        
+        <p><b>Notes:</b></p>
+        <ul>
+            <li>When you select a data source or JDBC connection, the IDE also creates a database schema for the database and saves the schema in your <tt>src/conf </tt>folder.</li>
+            <li>To persist entity classes, your project requires a <a href="persistence_unit.html">persistence unit.</a></li>
+        </ul>
+          <!--  
+        <p>You can use Java annotations to specify how Java business objects are mapped to a relational database.</p> 
+        <p>You can use the Java Persistence API inside the EJB container or directly with Java SE.</p>
+        <p>For more on using Java Persistence in Java SE applications and for deploying application to non-EE 5 containers,
+        see <a href="persistence_support.html">Adding Support for Java Persistence</a>.</p>
+        -->
+        
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/enterprise/general/ent_app_process.html">Working with Enterprise Applications</a> </dd>
+            <dd><a href="persistence_about.html">About Java Persistence</a></dd>
+            <dd><a href="persistence_entityclasses.html">Creating an Entity Class</a></dd>
+            <dd><a href="persistence_mapping.html">Mapping Entity Classes</a></dd>
+            <dd><a href="persistence_unit.html">Creating a Persistence Unit</a></dd>
+            <dd><a href="nbdocs://org.netbeans.modules.db/org/netbeans/modules/db/docs/connectdb.html">Connecting to a Database</a></dd>
+            <dd><a href="nbdocs://org.netbeans.modules.dbschema/org/netbeans/modules/dbschema/docs/dbschema.html">Obtaining a Database Schema</a></dd>
+        </dl>
+        
+        <hr>
+        <small> <a href="../../credits.html">Legal Notices</a></small> 
+        <table cellpadding="50" border="0"> 
+            <tr><td>&nbsp;</td></tr> 
+        </table> 
+    </body>
+    
+</html>
