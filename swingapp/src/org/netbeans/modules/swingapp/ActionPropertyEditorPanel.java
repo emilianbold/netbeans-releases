@@ -242,6 +242,14 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
         selectedCombo.setModel(new DefaultComboBoxModel(strings.toArray()));
         enabledCombo.setEnabled(!strings.isEmpty());
         selectedCombo.setEnabled(!strings.isEmpty());
+        if (act != null) {
+            if (strings.contains(act.getEnabledName())) {
+                enabledCombo.setSelectedItem(act.getEnabledName());
+            }
+            if (strings.contains(act.getSelectedName())) {
+                selectedCombo.setSelectedItem(act.getSelectedName());
+            }
+        }
     }
     
     
