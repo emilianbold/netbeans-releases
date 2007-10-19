@@ -148,10 +148,11 @@ public class KeymapViewModel implements TreeModel, ShortcutsFinder {
         final Vector v = (Vector) listeners.clone ();
         SwingUtilities.invokeLater (new Runnable () {
             public void run () {
-                TreeModelEvent tme = new TreeModelEvent (this, new Object[] {""});
+                TreeModelEvent tme = new TreeModelEvent (this, new TreePath(getRoot()));
                 int i, k = v.size ();
-                for (i = 0; i < k; i++)
-                    ((TreeModelListener) v.get (i)).treeNodesChanged (tme);
+                for (i = 0; i < k; i++) {
+                    ((TreeModelListener) v.get (i)).treeStructureChanged (tme);
+                }
             }
         });
     }

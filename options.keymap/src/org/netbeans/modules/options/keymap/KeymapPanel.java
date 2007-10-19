@@ -42,6 +42,7 @@
 package org.netbeans.modules.options.keymap;
 
 import java.awt.Component;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Iterator;
@@ -56,6 +57,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
+import javax.swing.tree.TreePath;
 import org.netbeans.core.options.keymap.api.ShortcutAction;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -261,7 +263,18 @@ TreeSelectionListener, ListSelectionListener {
         } else
         if (source == cbProfile) {
             String profile = (String) cbProfile.getSelectedItem ();
+            final TreePath tp = tActions.getSelectionPath ();
+            final boolean expanded = tActions.isExpanded(tp);
             getModel ().setCurrentProfile (profile);
+            
+            SwingUtilities.invokeLater(new Runnable() { //rememebrer jTree state
+                public void run() {
+                    if (expanded) 
+                        tActions.expandPath(tp);
+                    tActions.setSelectionPath(tp);
+                    tActions.scrollPathToVisible(tp);
+                }});
+                
             if (getModel ().isCustomProfile (profile))
                 loc (bDelete, "Delete");                          // NOI18N
             else
