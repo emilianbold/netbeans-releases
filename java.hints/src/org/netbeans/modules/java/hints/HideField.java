@@ -200,6 +200,9 @@ public class HideField extends AbstractHint {
         public void run() {
             try {
                 EditorCookie cook = DataObject.find(file).getLookup().lookup(EditorCookie.class);
+                if (cook == null) {
+                    return;
+                }
                 JEditorPane[] arr = cook.getOpenedPanes();
                 if (arr == null) {
                     return;
