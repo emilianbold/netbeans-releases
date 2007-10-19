@@ -720,6 +720,27 @@ public class GoToSupportTest extends NbTestCase {
         assertTrue(wasCalled[0]);
     }
     
+    public void test110185() throws Exception {
+        final boolean[] wasCalled = new boolean[1];
+        String code = "package test; public class Test { private Test t;}";
+        
+        performTest(code, code.lastIndexOf("Test") + 1, new UiUtilsCaller() {
+            public void open(FileObject fo, int pos) {
+                assertTrue(source == fo);
+                assertEquals(14, pos);
+                wasCalled[0] = true;
+            }
+            public void beep() {
+                fail("Should not be called.");
+            }
+            public void open(ClasspathInfo info, Element el) {
+                fail("Should not be called.");
+            }
+        }, false);
+        
+        assertTrue(wasCalled[0]);
+    }
+    
     private void writeIntoFile(FileObject file, String what) throws Exception {
         FileLock lock = file.lock();
         OutputStream out = file.getOutputStream(lock);

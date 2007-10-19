@@ -92,6 +92,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -263,7 +264,7 @@ public class GoToSupport {
                             
                             if (startPos != (-1)) {
                                 //check if the caret is inside the declaration itself, as jump in this case is not very usefull:
-                                if (startPos <= offset && offset <= endPos) {
+                                if (isCaretInsideDeclarationName(controller, tree, elpath, offset)) {
                                     CALLER.beep();
                                 } else {
                                     //#71272: it is necessary to translate the offset:
@@ -425,6 +426,29 @@ public class GoToSupport {
             }
         }
         return null;
+    }
+    
+    private static boolean isCaretInsideDeclarationName(CompilationInfo info, Tree t, TreePath path, int caret) {
+        try {
+            switch (t.getKind()) {
+                case CLASS:
+                case METHOD:
+                case VARIABLE:
+                    int[] span = org.netbeans.modules.java.editor.semantic.Utilities.findIdentifierSpan(path, info, info.getDocument());
+
+                    if (span == null || span[0] == (-1) || span[1] == (-1)) {
+                        return false;
+                    }
+
+                    return span[0] <= caret && caret <= span[1];
+                default:
+                    return false;
+            }
+
+        } catch (IOException iOException) {
+            Exceptions.printStackTrace(iOException);
+            return false;
+        }
     }
     
     private static final class FindVariableDeclarationVisitor extends TreePathScanner<Void, Element> {
