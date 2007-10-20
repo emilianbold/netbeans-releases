@@ -199,6 +199,10 @@ public class DataSourceResolver implements DataSourceInfoListener, Runnable {
         for (i = 0; i < newDrivers.length; i++) {
             if (newDrivers[i].getClassName().equals(driverClass)) {
                 return newDrivers[i];
+            } else if (driverClass.equals("org.gjt.mm.mysql.Driver")) {
+                if (newDrivers[i].getClassName().equals("com.mysql.jdbc.Driver"))  {
+                    return newDrivers[i];
+                }
             }
         }
 
