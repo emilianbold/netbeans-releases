@@ -77,7 +77,7 @@ public class JspCompletionProvider implements CompletionProvider {
     }
     
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
-        int type = ((JspSyntaxSupport)Utilities.getDocument(component).getSyntaxSupport()).checkCompletion(component, typedText, false);
+        int type = JspSyntaxSupport.get(component.getDocument()).checkCompletion(component, typedText, false);
         if(type == ExtSyntaxSupport.COMPLETION_POPUP) {
             return COMPLETION_QUERY_TYPE + DOCUMENTATION_QUERY_TYPE;
         } else return 0;
@@ -189,8 +189,7 @@ public class JspCompletionProvider implements CompletionProvider {
     static CompletionQuery.Result queryImpl(JTextComponent component, int offset) {
         Class kitClass = Utilities.getKitClass(component);
         if (kitClass != null) {
-            JspSyntaxSupport support = (JspSyntaxSupport)Utilities.getSyntaxSupport(component);
-            return new JspCompletionQuery(HTMLCompletionQuery.getDefault()).query(component, offset, support);
+            return new JspCompletionQuery().query(component, offset);
         } else {
             return null;
         }

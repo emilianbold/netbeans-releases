@@ -47,6 +47,7 @@ import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import javax.swing.JEditorPane;
 import javax.swing.text.JTextComponent;
@@ -60,6 +61,7 @@ import org.netbeans.modules.web.core.syntax.deprecated.JspDirectiveTokenContext;
 import org.netbeans.modules.web.core.syntax.deprecated.JspMultiTokenContext;
 import org.netbeans.modules.web.core.syntax.deprecated.JspTagTokenContext;
 import org.netbeans.modules.web.jsps.parserapi.PageInfo;
+import org.netbeans.spi.editor.completion.CompletionItem;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
@@ -155,6 +157,15 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
     private static final TagNameComparator TAG_NAME_COMPARATOR = new TagNameComparator();
     
     /** Creates new HTMLSyntaxSupport */
+    
+    public static synchronized JspSyntaxSupport get(Document doc) {
+        JspSyntaxSupport sup = (JspSyntaxSupport)doc.getProperty(JspSyntaxSupport.class);
+        if(sup == null) {
+            sup = new JspSyntaxSupport((BaseDocument)doc);
+            doc.putProperty(JspSyntaxSupport.class, sup);
+        }
+        return sup;
+    }
     
     public JspSyntaxSupport(BaseDocument doc, boolean isXml) {
         super(doc);
@@ -1810,19 +1821,17 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         return result;
     }
     
-    public List getAutocompletedEndTag(int offset) {
-        List l = new ArrayList();
+    public CompletionItem getAutocompletedEndTag(int offset) {
         try {
             SyntaxElement elem = getElementChain( offset - 1);
             if(elem != null && elem instanceof SyntaxElement.Tag) {
                 String tagName = ((SyntaxElement.Tag)elem).getName();
-                HTMLCompletionQuery.ResultItem eti = new HTMLCompletionQuery.AutocompleteEndTagItem(tagName, offset, false);
-                l.add(eti);
+                return new HTMLCompletionQuery.AutocompleteEndTagItem(tagName, offset, false);
             }
         }catch(BadLocationException e) {
-            //just ignore
+            Logger.getLogger("global").log(Level.INFO, null, e);
         }
-        return l;
+        return null;
     }
     
     public FileObject getFileObject() {

@@ -44,7 +44,6 @@ package org.netbeans.modules.editor.html;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
-import java.awt.event.ActionEvent;
 import java.awt.im.InputContext;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -57,7 +56,6 @@ import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
-import javax.swing.JMenu;
 import javax.swing.JPasswordField;
 import javax.swing.TransferHandler;
 import javax.swing.plaf.UIResource;
@@ -68,23 +66,15 @@ import javax.swing.text.EditorKit;
 import javax.swing.text.Position;
 import javax.swing.text.TextAction;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.editor.fold.FoldHierarchy;
-import org.netbeans.api.editor.fold.FoldUtilities;
-import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.*;
 import org.netbeans.editor.BaseKit.DeleteCharAction;
 import org.netbeans.editor.ext.*;
 import org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction;
 import org.netbeans.editor.ext.html.*;
-import org.netbeans.editor.ext.html.HTMLSyntaxSupport;
 import org.netbeans.editor.ext.html.parser.SyntaxParser;
-import org.netbeans.modules.editor.NbEditorKit.GenerateFoldPopupAction;
 import org.netbeans.modules.html.editor.coloring.EmbeddingUpdater;
-import org.netbeans.modules.html.editor.folding.HTMLFoldTypes;
 import org.netbeans.modules.languages.dataobject.LanguagesEditorKit;
-import org.openide.util.NbBundle;
 
 /**
  * Editor kit implementation for HTML content type
@@ -106,11 +96,6 @@ public class HTMLKit extends LanguagesEditorKit implements org.openide.util.Help
     public static final String HTML_MIME_TYPE = "text/html"; // NOI18N
     
     public static final String shiftInsertBreakAction = "shift-insert-break"; // NOI18N
-    
-    //comment folds
-    public static final String collapseAllCommentsAction = "collapse-all-comment-folds"; //NOI18N
-    
-    public static final String expandAllCommentsAction = "expand-all-comment-folds"; //NOI18N
     
     private static boolean setupReadersInitialized = false;
     
@@ -134,10 +119,6 @@ public class HTMLKit extends LanguagesEditorKit implements org.openide.util.Help
         return HTML_MIME_TYPE;
     }
     
-    public CompletionJavaDoc createCompletionJavaDoc(ExtEditorUI extEditorUI) {
-        return null;
-    }
-    
     protected void initDocument(final BaseDocument doc) {
         TokenHierarchy hi = TokenHierarchy.get(doc);
         if(hi == null) {
@@ -149,28 +130,6 @@ public class HTMLKit extends LanguagesEditorKit implements org.openide.util.Help
         SyntaxParser.get(doc).addSyntaxParserListener(new EmbeddingUpdater(doc));
     }
     
-    /** Create new instance of syntax coloring scanner
-     * @param doc document to operate on. It can be null in the cases the syntax
-     *   creation is not related to the particular document
-     */
-    public Syntax createSyntax(Document doc) {
-        return new HTMLSyntax();
-    }
-    
-    /** Create syntax support */
-    public SyntaxSupport createSyntaxSupport(BaseDocument doc) {
-        return new HTMLSyntaxSupport(doc);
-    }
-    
-    /** old code completion is disabled. */
-    public Completion createCompletion(ExtEditorUI extEditorUI) {
-        return null;
-    }
-    
-    public Formatter createFormatter() {
-        // this functionality is now handled by the IndentTask
-        return null;
-    }
     
     /** Called after the kit is installed into JEditorPane */
     public void install(javax.swing.JEditorPane c) {
@@ -183,13 +142,6 @@ public class HTMLKit extends LanguagesEditorKit implements org.openide.util.Help
             new HTMLDefaultKeyTypedAction(),
             new HTMLDeleteCharAction(deletePrevCharAction, false),
             new HTMLDeleteCharAction(deleteNextCharAction, true),
-            new HTMLShiftBreakAction(),
-            // replace MatchBraceAction with HtmlEditor own
-            new MatchBraceAction(ExtKit.matchBraceAction, false),
-            new MatchBraceAction(ExtKit.selectionMatchBraceAction, true),
-            new HTMLGenerateFoldPopupAction(),
-            new CollapseAllCommentsFolds(),
-            new ExpandAllCommentsFolds()
         };
         return TextAction.augmentList(super.createActions(), HTMLActions);
     }
@@ -218,107 +170,6 @@ public class HTMLKit extends LanguagesEditorKit implements org.openide.util.Help
     }
     
     
-    public static class HTMLShiftBreakAction extends BaseAction {
-        
-        static final long serialVersionUID =4004043376345356061L;
-        
-        public HTMLShiftBreakAction() {
-            super( shiftInsertBreakAction, ABBREV_RESET
-                    | MAGIC_POSITION_RESET | UNDO_MERGE_RESET);
-        }
-        
-        public void actionPerformed(ActionEvent evt, JTextComponent target) {
-            if (target != null) {
-                Completion completion = ExtUtilities.getCompletion(target);
-                if (completion != null && completion.isPaneVisible()) {
-                    if (completion.substituteText( true )) {
-                        //                        completion.setPaneVisible(false);
-                    } else {
-                        completion.refresh(false);
-                    }
-                }
-            }
-        }
-        
-    }
-    
-    /** This is implementation for MatchBraceAction for HTML file.
-     */
-    public static class MatchBraceAction extends ExtKit.MatchBraceAction {
-        
-        private boolean select; // whether the text between matched blocks should be selected
-        
-        public MatchBraceAction(String name, boolean select) {
-            super(name, select);
-            this.select = select;
-        }
-        
-        public void actionPerformed(ActionEvent evt, JTextComponent target) {
-            if (target != null) {
-                try {
-                    Caret caret = target.getCaret();
-                    BaseDocument doc = Utilities.getDocument(target);
-                    int dotPos = caret.getDot();
-                    ExtSyntaxSupport sup = (ExtSyntaxSupport)doc.getSyntaxSupport();
-                    
-                    //TODO: check whether we are in HTML text
-                    if (dotPos > 0) {
-                        int[] matchBlk = sup.findMatchingBlock(dotPos - 1, false);
-                        if (matchBlk != null) {
-                            if (select) {
-                                caret.moveDot(matchBlk[1]);
-                            } else {
-                                caret.setDot(matchBlk[1]);
-                            }
-                        }
-                        
-                    } else{   // If this is not token from HTML Syntax -> call the original action from editor.
-                        super.actionPerformed(evt, target);
-                    }
-                    
-                } catch (BadLocationException e) {
-                    target.getToolkit().beep();
-                }
-            }
-        }
-    }
-    
-    public static class HTMLGenerateFoldPopupAction extends GenerateFoldPopupAction {
-        
-        protected void addAdditionalItems(JTextComponent target, JMenu menu){
-            addAction(target, menu, collapseAllCommentsAction);
-            addAction(target, menu, expandAllCommentsAction);
-        }
-    }
-    
-    public static class ExpandAllCommentsFolds extends BaseAction{
-        public ExpandAllCommentsFolds(){
-            super(expandAllCommentsAction);
-            putValue(SHORT_DESCRIPTION, NbBundle.getBundle(HTMLKit.class).getString("expand-all-comment-folds"));
-            putValue(BaseAction.POPUP_MENU_TEXT, NbBundle.getBundle(HTMLKit.class).getString("popup-expand-all-comment-folds"));
-        }
-        
-        public void actionPerformed(ActionEvent evt, JTextComponent target) {
-            FoldHierarchy hierarchy = FoldHierarchy.get(target);
-            // Hierarchy locking done in the utility method
-            FoldUtilities.expand(hierarchy, HTMLFoldTypes.COMMENT);
-        }
-    }
-    
-    public static class CollapseAllCommentsFolds extends BaseAction{
-        public CollapseAllCommentsFolds(){
-            super(collapseAllCommentsAction);
-            putValue(SHORT_DESCRIPTION, NbBundle.getBundle(HTMLKit.class).getString("collapse-all-comment-folds")); //NOI18N
-            putValue(BaseAction.POPUP_MENU_TEXT, NbBundle.getBundle(HTMLKit.class).getString("popup-collapse-all-comment-folds")); //NOI18N
-        }
-        
-        public void actionPerformed(ActionEvent evt, JTextComponent target) {
-            FoldHierarchy hierarchy = FoldHierarchy.get(target);
-            // Hierarchy locking done in the utility method
-            FoldUtilities.collapse(hierarchy, HTMLFoldTypes.COMMENT);
-        }
-    }
-
     /* !!!!!!!!!!!!!!!!!!!!!
      *
      * Inner classes bellow were taken from BasicTextUI and rewritten in the place marked

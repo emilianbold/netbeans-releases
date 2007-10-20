@@ -66,12 +66,12 @@ import org.netbeans.spi.editor.completion.CompletionItem;
  * @author Tomasz.Slota@Sun.COM
  */
 
-public class JspCompletionQuery implements CompletionQuery {
+public class JspCompletionQuery {
     
     /**
      * @see filterNonStandardXMLEntities(List, List)
      **/
-    private static final Set stdXMLEntities = new TreeSet();
+    private static final Set<String> stdXMLEntities = new TreeSet<String>();
     
     static{
         stdXMLEntities.add("&lt;");
@@ -79,13 +79,6 @@ public class JspCompletionQuery implements CompletionQuery {
         stdXMLEntities.add("&apos;");
         stdXMLEntities.add("&quot;");
         stdXMLEntities.add("&amp;");
-    }
-    
-    protected CompletionQuery contentQuery;
-    
-    public JspCompletionQuery(CompletionQuery contentQuery) {
-        super();
-        this.contentQuery = contentQuery;
     }
     
     /** Perform the query on the given component. The query usually
@@ -98,9 +91,9 @@ public class JspCompletionQuery implements CompletionQuery {
      * @param support syntax-support that will be used during resolving of the query.
      * @return result of the query or null if there's no result.
      */
-    public CompletionQuery.Result query(JTextComponent component, int offset, SyntaxSupport support) {
+    public CompletionQuery.Result query(JTextComponent component, int offset) {
         BaseDocument doc = (BaseDocument)component.getDocument();
-        JspSyntaxSupport sup = (JspSyntaxSupport)support.get(JspSyntaxSupport.class);
+        JspSyntaxSupport sup = JspSyntaxSupport.get(doc);
         
         try {
             SyntaxElement elem = sup.getElementChain( offset );
@@ -136,11 +129,6 @@ public class JspCompletionQuery implements CompletionQuery {
                 
                 // CONTENT LANGUAGE
             case JspSyntaxSupport.CONTENTL_COMPLETION_CONTEXT :
-                // html results
-                CompletionQuery.Result contentLResult = (contentQuery == null) ?
-                    null :
-                    contentQuery.query(component, offset, support);
-                
                 // JSP tags results
                 jspData = queryJspTagInContent(offset, sup, doc);
                 
@@ -148,7 +136,7 @@ public class JspCompletionQuery implements CompletionQuery {
                 CompletionQuery.Result jspDirec = queryJspDirectiveInContent(component, offset, sup, doc);
                 
                 //return null (do not popup completion) if there are no items in any of the completions
-                if(jspData.completionItems.isEmpty() && jspDirec.getData().isEmpty() && (contentLResult == null || contentLResult.getData().isEmpty()))
+                if(jspData.completionItems.isEmpty() && jspDirec.getData().isEmpty())
                     return null;
                 
                 CompletionQuery.Result jspRes = result(component, offset, jspData);
@@ -157,21 +145,10 @@ public class JspCompletionQuery implements CompletionQuery {
                 ArrayList all = new ArrayList();
                 all.addAll(jspDirec.getData());
                 all.addAll(jspRes.getData());
-                if(contentLResult != null){
-                    DataObject dobj = NbEditorUtilities.getDataObject(doc);
-                    
-                    if(dobj != null && JspUtils.getJSPColoringData(doc, dobj.getPrimaryFile()).isXMLSyntax()){
-                        filterNonStandardXMLEntities(all, contentLResult.getData());
-                    } else{
-                        all.addAll(contentLResult.getData());
-                    }
-                }
-                
-                int htmlAnchorOffset = contentLResult == null || contentLResult.getData().isEmpty() ? - 1 : ((HTMLCompletionQuery.HTMLCompletionResult)contentLResult).getSubstituteOffset();
                 
                 CompletionQuery.Result result = new JspCompletionResult(component,
                         NbBundle.getMessage(JSPKit.class, "CTL_JSP_Completion_Title"), all,
-                        offset, jspData.removeLength, htmlAnchorOffset);
+                        offset, jspData.removeLength, -1);
                 
                 return result;
             }
@@ -265,7 +242,7 @@ public class JspCompletionQuery implements CompletionQuery {
                 }
             }
             if(tokenPart.endsWith(">") && !tokenPart.endsWith("/>")) {
-                compItems = sup.getAutocompletedEndTag(offset);
+                compItems.add(sup.getAutocompletedEndTag(offset));
             }
             
             

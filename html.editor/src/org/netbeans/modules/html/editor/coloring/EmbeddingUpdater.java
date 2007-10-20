@@ -42,11 +42,11 @@
 
 package org.netbeans.modules.html.editor.coloring;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
-import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
@@ -64,6 +64,14 @@ import org.netbeans.modules.editor.NbEditorUtilities;
  * The HTML code may be either the top level language (.html file) or
  * may be embedded as FIRST level embedding language in other language like JSP, RHTML.
  *   
+ * 
+ * Note: Dynamic embedding creation for &lt;script&gt; and &lt;style&gt; tags has been removed temporarily 
+ * due to problems described in following issues:
+ * [Issue 117450]  Provide unified LexerInput across multiple joined embedded sections
+ * [Issue 118892]  Allow Schlieman lexer to continuously lex embedded language over  more tokens of its parent language
+ * 
+ * Once Issue 117450 is fixed the old way of dynamic embeddings creation should be used
+ * 
  * @author Marek.Fukala@Sun.com
  */
 public class EmbeddingUpdater implements SyntaxParserListener {
@@ -72,19 +80,20 @@ public class EmbeddingUpdater implements SyntaxParserListener {
     private static final String JAVASCRIPT_HREF_PREFIX = "javascript:"; //NOI18N
     
     //XXX update mimetype once Hanz fixes the mimetype in CSS editor module
-    private static final String CSS_MIMETYPE = "text/x-css"; //NOI18N
+//    private static final String CSS_MIMETYPE = "text/x-css"; //NOI18N
     private static final String CSS_INLINED_MIMETYPE = "text/x-css-inlined"; //NOI18N
     
-    private static final String CSS_SCRIPT_TAG_NAME = "style"; //NOI18N
+//    private static final String CSS_SCRIPT_TAG_NAME = "style"; //NOI18N
     
     private static final Logger LOGGER = Logger.getLogger(EmbeddingUpdater.class.getName());
     
     private final Document doc;
     
-    private int styleStart = -1;
+//    private int styleStart = -1;
     
     private LanguagePath languagePath;
     
+    @SuppressWarnings("unchecked")
     public EmbeddingUpdater(Document doc) {
         this.doc = doc;
         
@@ -110,16 +119,15 @@ public class EmbeddingUpdater implements SyntaxParserListener {
         for(SyntaxElement sel : elements) {
             if(sel.getType() == SyntaxElement.TYPE_TAG) {
                 startTag((SyntaxElement.Tag)sel);
-            } else if(sel.getType() == SyntaxElement.TYPE_ENDTAG) {
-                endTag((SyntaxElement.Named)sel);
-            }
+            } 
         }
     }
     
     private void startTag(SyntaxElement.Tag sel) {
-        if(CSS_SCRIPT_TAG_NAME.equalsIgnoreCase(sel.getName()) && declaresCSS(sel)) {
-            styleStart = sel.getElementOffset() + sel.getElementLength();
-        } else if("a".equalsIgnoreCase(sel.getName())) {
+//        if(CSS_SCRIPT_TAG_NAME.equalsIgnoreCase(sel.getName()) && declaresCSS(sel)) {
+//            styleStart = sel.getElementOffset() + sel.getElementLength();
+//        } else if("a".equalsIgnoreCase(sel.getName())) {
+            if("a".equalsIgnoreCase(sel.getName())) {
             //check whether the href attribute value contains the javascript: prefix
             TagAttribute hrefAttr = sel.getAttribute("href"); //NOI18N
             if(hrefAttr != null) {
@@ -140,7 +148,7 @@ public class EmbeddingUpdater implements SyntaxParserListener {
             if("style".equalsIgnoreCase(tagattr.getName())) { //NOI18N
                 //XXX we need to look for it just in certain html tags
                 createEmbedding(CSS_INLINED_MIMETYPE, tagattr);
-            } else if(tagattr.getName().startsWith("on") || tagattr.getName().startsWith("ON")) {
+            } else if(tagattr.getName().startsWith("on") || tagattr.getName().startsWith("ON")) { //NOI18N
                 //XXX very simple algorithm for finding "onclick" like attributes
                 //should be restricted according to the html specification
                 createEmbedding(JAVASCRIPT_MIMETYPE, tagattr);
@@ -148,17 +156,17 @@ public class EmbeddingUpdater implements SyntaxParserListener {
         }
     }
 
-    private boolean declaresCSS(SyntaxElement.Tag sel) {
-        TagAttribute type = sel.getAttribute("type"); //NOI18N
-        
-        if(type == null) {
-            return true; //default is css
-        } else if(unquote(type.getValue()).equalsIgnoreCase("text/css")) { //NOI18N
-            return true;
-        }
-        
-        return false;
-    }
+//    private boolean declaresCSS(SyntaxElement.Tag sel) {
+//        TagAttribute type = sel.getAttribute("type"); //NOI18N
+//        
+//        if(type == null) {
+//            return true; //default is css
+//        } else if(unquote(type.getValue()).equalsIgnoreCase("text/css")) { //NOI18N
+//            return true;
+//        }
+//        
+//        return false;
+//    }
     
     private String unquote(String s) {
         if(s.length() == 0) {
@@ -182,51 +190,51 @@ public class EmbeddingUpdater implements SyntaxParserListener {
         return ch == '"' || ch == '\'';
     }
     
-    private void endTag(SyntaxElement.Named sel) {
-        if(CSS_SCRIPT_TAG_NAME.equalsIgnoreCase(sel.getName())) {
-            if(styleStart != -1) {
-                createEmbedding(CSS_MIMETYPE, styleStart, sel.getElementOffset(), 0,0);
-                styleStart = -1;
-            }
-        }
-    }
+//    private void endTag(SyntaxElement.Named sel) {
+//        if(CSS_SCRIPT_TAG_NAME.equalsIgnoreCase(sel.getName())) {
+//            if(styleStart != -1) {
+//                createEmbedding(CSS_MIMETYPE, styleStart, sel.getElementOffset(), 0,0);
+//                styleStart = -1;
+//            }
+//        }
+//    }
     
-    //I need to specially handle the case where the javascript block contains
-    //html comments.
-    private void createJavascriptEmbedding(SyntaxElement.Named sel, int from, int to) {
-        ((BaseDocument)doc).readLock();
-        try {
-            TokenHierarchy th = TokenHierarchy.get(doc);
-            TokenSequence ts = tokenSequence(th, from);
-            if(ts == null) {
-                //no html token sequence there - weird
-                return ;
-            }
-
-            ts.move(from);
-            if(!ts.moveNext() && !ts.movePrevious()) {
-                return ; //no token
-            }
-
-            int jsStart = from; int jsStartSkipLength = 0;
-            int jsEnd = to; int jsEndSkipLength = 0;
-            while(ts.moveNext() && (ts.token().offset(th) <= to)) {
-                Token t = ts.token();
-                if(t.id() == HTMLTokenId.BLOCK_COMMENT) {
-                    if(t.text().toString().startsWith("<!--")) { //NOI18N
-                        jsStart = t.offset(th);
-                        jsStartSkipLength = "<!--".length(); //NOI18N
-                    } else if(t.text().toString().endsWith("-->")) { //NOI18N
-                        jsEnd = t.offset(th) + t.length();
-                        jsEndSkipLength = "-->".length(); //NOI18N
-                    }
-                }
-            }
-            createEmbedding(JAVASCRIPT_MIMETYPE, jsStart, jsEnd, jsStartSkipLength, jsEndSkipLength);
-        } finally {
-            ((BaseDocument)doc).readUnlock();
-        }
-    }
+//    //I need to specially handle the case where the javascript block contains
+//    //html comments.
+//    private void createJavascriptEmbedding(SyntaxElement.Named sel, int from, int to) {
+//        ((BaseDocument)doc).readLock();
+//        try {
+//            TokenHierarchy th = TokenHierarchy.get(doc);
+//            TokenSequence ts = tokenSequence(th, from);
+//            if(ts == null) {
+//                //no html token sequence there - weird
+//                return ;
+//            }
+//
+//            ts.move(from);
+//            if(!ts.moveNext() && !ts.movePrevious()) {
+//                return ; //no token
+//            }
+//
+//            int jsStart = from; int jsStartSkipLength = 0;
+//            int jsEnd = to; int jsEndSkipLength = 0;
+//            while(ts.moveNext() && (ts.token().offset(th) <= to)) {
+//                Token t = ts.token();
+//                if(t.id() == HTMLTokenId.BLOCK_COMMENT) {
+//                    if(t.text().toString().startsWith("<!--")) { //NOI18N
+//                        jsStart = t.offset(th);
+//                        jsStartSkipLength = "<!--".length(); //NOI18N
+//                    } else if(t.text().toString().endsWith("-->")) { //NOI18N
+//                        jsEnd = t.offset(th) + t.length();
+//                        jsEndSkipLength = "-->".length(); //NOI18N
+//                    }
+//                }
+//            }
+//            createEmbedding(JAVASCRIPT_MIMETYPE, jsStart, jsEnd, jsStartSkipLength, jsEndSkipLength);
+//        } finally {
+//            ((BaseDocument)doc).readUnlock();
+//        }
+//    }
     
     private void createEmbedding(String mimeType, SyntaxElement.TagAttribute tagAttr) {
         if(tagAttr.getValue().charAt(0) == '\'' || tagAttr.getValue().charAt(0) == '"') {
@@ -237,15 +245,16 @@ public class EmbeddingUpdater implements SyntaxParserListener {
         }
     }
     
+    @SuppressWarnings("unchecked") 
     private void createEmbedding(String mimeType, int startOffset, int endOffset, int startSkipLength, int endSkipLength ) {
         if(startOffset >= endOffset) {
-            LOGGER.log(Level.WARNING, "startOffset >= endOffset: "+ startOffset + " >= " + endOffset);
+            LOGGER.log(Level.WARNING, "startOffset >= endOffset: "+ startOffset + " >= " + endOffset); //NOI18N
             return ;
         }
         
         Language lang = Language.find(mimeType);
         if(lang == null) {
-            LOGGER.log(Level.WARNING, "No " + mimeType + " language found! (" + startOffset + " - " + endOffset + ")");
+            LOGGER.log(Level.WARNING, "No " + mimeType + " language found! (" + startOffset + " - " + endOffset + ")"); //NOI18N
             return ; //no language found
         }
         
@@ -253,21 +262,27 @@ public class EmbeddingUpdater implements SyntaxParserListener {
         try {
             TokenHierarchy th = TokenHierarchy.get(doc);
             List<TokenSequence> tokenSequenceList = th.tokenSequenceList(languagePath, startOffset, endOffset);
-            for (TokenSequence ts : tokenSequenceList) {
+            
+            //use the startSkipLength and endSkipLength only on the first and last token
+            //in the sequence of tokens we create the embedding.
+            boolean iAmFirstToken = true;
+            boolean iAmLastToken = false;
+            
+            //find all token sequences of the language in the given range
+            Iterator<TokenSequence> sequences = tokenSequenceList.iterator();
+            while(sequences.hasNext()) {
+                TokenSequence ts = sequences.next();
                 ts.move(startOffset);
                 if(!ts.moveNext() && !ts.movePrevious()) {
                     return ; //no token
                 }
-
-                //huh, use the startSkipLength and endSkipLength only on the first and last token
-                //in the sequence of tokens we create the embedding.
-                boolean iAmFirstToken = true;
-                boolean iAmLastToken = false;
+                
                 do {
                     Token item = ts.token();
                     //test if we are last token
                     boolean hasNextToken = ts.moveNext();
                     iAmLastToken = !(hasNextToken && ts.offset() < endOffset);
+                    boolean iAmLastSequence = !sequences.hasNext();
                     if(hasNextToken) {
                         //rewind the tokenSequence back so the
                         //embedding is created on a proper token
@@ -275,7 +290,7 @@ public class EmbeddingUpdater implements SyntaxParserListener {
                     }
                     if(ts.embedded(lang) == null) {
                         //the embedding doesn't exist, try to create
-                        if(!ts.createEmbedding(lang, iAmFirstToken ? startSkipLength : 0, iAmLastToken ? endSkipLength : 0)) {
+                        if(!ts.createEmbedding(lang, iAmFirstToken ? startSkipLength : 0, iAmLastToken && iAmLastSequence ? endSkipLength : 0, true)) {
                             LOGGER.log(Level.FINE, "Cannot create embedding for " + mimeType + " [" + startOffset + " - "  + endOffset + "] (" + item.text().toString() + ")\n");
                         } else {
                             CharSequence text = item.text();
@@ -310,22 +325,5 @@ public class EmbeddingUpdater implements SyntaxParserListener {
         }
         return sb;
     }
-    
-    private static TokenSequence tokenSequence(TokenHierarchy hi, int offset) {
-        TokenSequence ts = hi.tokenSequence(HTMLTokenId.language());
-        if(ts == null) {
-            //HTML language is not top level one
-            ts = hi.tokenSequence();
-            ts.move(offset);
-            if(!ts.moveNext()) {
-                return null; //no token found
-            } else {
-                ts = ts.embedded(HTMLTokenId.language());
-            }
-        }
-        return ts;
-    }
-    
-    
     
 }

@@ -57,6 +57,7 @@ import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.netbeans.editor.ext.html.HTMLCompletionQuery;
 import org.netbeans.editor.ext.html.HTMLCompletionQuery.HTMLResultItem;
 import org.netbeans.editor.ext.html.HTMLSyntaxSupport;
+import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionTask;
@@ -76,7 +77,7 @@ public class HTMLCompletionProvider implements CompletionProvider {
     }
     
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
-        int type = ((HTMLSyntaxSupport)Utilities.getDocument(component).getSyntaxSupport()).checkCompletion(component, typedText, false);
+        int type = HTMLSyntaxSupport.get(component.getDocument()).checkCompletion(component, typedText, false);
         return type == ExtSyntaxSupport.COMPLETION_POPUP ? COMPLETION_QUERY_TYPE + DOCUMENTATION_QUERY_TYPE : 0;
     }
     
@@ -94,68 +95,50 @@ public class HTMLCompletionProvider implements CompletionProvider {
         
         private JTextComponent component;
         
+        @Override
         protected void prepareQuery(JTextComponent component) {
             this.component = component;
         }
         
         protected void doQuery(CompletionResultSet resultSet, Document doc, int caretOffset) {
-            HTMLCompletionQuery.HTMLCompletionResult res = (HTMLCompletionQuery.HTMLCompletionResult)queryImpl(component, caretOffset);
-            if(res == null) {
+            List<CompletionItem> items = HTMLCompletionQuery.getDefault().query(component, caretOffset);
+            if(items == null) {
                 return ;
             }
-            
-            List/*<CompletionItem>*/ results = res.getData();
-            assert (results != null);
-            resultSet.addAllItems(results);
-            resultSet.setTitle(res.getTitle());
-            resultSet.setAnchorOffset(res.getSubstituteOffset());
+            resultSet.addAllItems(items);
+//            resultSet.setAnchorOffset(res.getSubstituteOffset());
         }
     }
     
     static class DocQuery extends AbstractQuery {
         
         private JTextComponent component;
-        private ResultItem item;
+        private CompletionItem item;
         
         DocQuery(HTMLResultItem item) {
             this.item = item;
         }
         
+        @Override
         protected void prepareQuery(JTextComponent component) {
             this.component = component;
         }
         
         protected void doQuery(CompletionResultSet resultSet, Document doc, int caretOffset) {
-            CompletionQuery.Result res = null;
-            if(item == null) {
-                res = queryImpl(component, caretOffset);
-                if(res != null) {
-                    List result = res.getData();
-                    if(result != null && result.size() > 0) {
-                        Object resultObj = result.get(0);
-                        if(resultObj instanceof ResultItem)
-                            item = (ResultItem)resultObj;
-                    }
+            List<CompletionItem> res = null;
+            if (item == null) {
+                //item == null means that the DocQuery is invoked
+                //based on the explicit documentation opening request
+                //(not ivoked by selecting a completion item in the list)
+                res = HTMLCompletionQuery.getDefault().query(component, caretOffset);
+                if (res != null && res.size() > 0) {
+                    item = res.get(0);
                 }
             }
-            HTMLResultItem htmlItem = (HTMLResultItem)item;
-            if(htmlItem != null && htmlItem.getHelpID() != null) {
+            HTMLResultItem htmlItem = (HTMLResultItem) item;
+            if (htmlItem != null && htmlItem.getHelpID() != null) {
                 resultSet.setDocumentation(new HTMLCompletionQuery.DocItem(htmlItem));
-                if(res != null) {
-                    resultSet.setTitle(res.getTitle());
-                    resultSet.setAnchorOffset(((HTMLCompletionQuery.HTMLCompletionResult)res).getSubstituteOffset());
-                }
             }
-        }
-    }
-    
-    private static CompletionQuery.Result queryImpl(JTextComponent component, int offset) {
-        Class kitClass = Utilities.getKitClass(component);
-        if (kitClass != null) {
-            HTMLSyntaxSupport support = (HTMLSyntaxSupport)Utilities.getSyntaxSupport(component);
-            return HTMLCompletionQuery.getDefault().query(component, offset, support);
-        } else {
-            return null;
         }
     }
     
