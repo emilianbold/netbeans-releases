@@ -79,11 +79,6 @@ public class JSPOptions extends BaseOptions {
     public static final String JAVADOC_BGCOLOR = "javaDocBGColor"; // NOI18N
     
     public static final String JAVADOC_PREFERRED_SIZE_PROP = "javaDocPreferredSize"; //NOI18N
-    
-    //code folding properties
-    public static final String CODE_FOLDING_UPDATE_TIMEOUT_PROP = "codeFoldingUpdateInterval"; //NOI18N
-    
-    public static final String CODE_FOLDING_ENABLE_PROP = "codeFoldingEnable"; //NOI18N
    
     public static final String COMPLETION_INSTANT_SUBSTITUTION_PROP = "completionInstantSubstitution"; // NOI18N                
     
@@ -95,9 +90,7 @@ public class JSPOptions extends BaseOptions {
                                                 COMPLETION_INSTANT_SUBSTITUTION_PROP,
                                                 JAVADOC_AUTO_POPUP_PROP,
                                                 JAVADOC_PREFERRED_SIZE_PROP,
-                                                JAVADOC_BGCOLOR,
-                                                CODE_FOLDING_UPDATE_TIMEOUT_PROP,
-                                                CODE_FOLDING_ENABLE_PROP
+                                                JAVADOC_BGCOLOR
                                             });
     public JSPOptions() {
         super (JSPKit.class, JSP);
@@ -176,26 +169,6 @@ public class JSPOptions extends BaseOptions {
     public HelpCtx getHelpCtx() {
         return new HelpCtx (HELP_ID);
     }    
-
-    public int getCodeFoldingUpdateInterval() {
-        return getSettingInteger(JspSettings.CODE_FOLDING_UPDATE_TIMEOUT);
-    }
-    
-    public void setCodeFoldingUpdateInterval(int timeout) {
-        if (timeout < 0) {
-            NbEditorUtilities.invalidArgument("MSG_NegativeValue"); // NOI18N
-            return;
-        }
-        setSettingInteger(JspSettings.CODE_FOLDING_UPDATE_TIMEOUT, timeout, CODE_FOLDING_UPDATE_TIMEOUT_PROP);
-    }
-    
-   public boolean getCodeFoldingEnable() {
-        return getSettingBoolean(SettingsNames.CODE_FOLDING_ENABLE);
-    }
-    
-    public void setCodeFoldingEnable(boolean state) {
-        setSettingBoolean(SettingsNames.CODE_FOLDING_ENABLE, state, CODE_FOLDING_ENABLE_PROP);
-    }
 
     public boolean getCompletionInstantSubstitution() {
         return getSettingBoolean(ExtSettingsNames.COMPLETION_INSTANT_SUBSTITUTION);

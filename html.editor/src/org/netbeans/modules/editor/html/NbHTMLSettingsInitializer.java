@@ -44,9 +44,6 @@ package org.netbeans.modules.editor.html;
 import java.util.Map;
 import org.netbeans.editor.MultiKeyBinding;
 import org.netbeans.editor.Settings;
-import org.netbeans.editor.SettingsNames;
-import org.netbeans.editor.ext.html.HTMLSettingsDefaults;
-import org.netbeans.editor.ext.html.HTMLSettingsNames;
 
 /**
 * Nb settings for HTML.
@@ -71,15 +68,6 @@ public class NbHTMLSettingsInitializer extends Settings.AbstractInitializer {
     *   that updates it or if no previous initializers updated it.
     */
     public void updateSettingsMap(Class kitClass, Map settingsMap) {
-
-        if (kitClass == HTMLKit.class) {
-
-            settingsMap.put(SettingsNames.CODE_FOLDING_ENABLE, Boolean.TRUE);
-            
-            settingsMap.put(HTMLSettingsNames.CODE_FOLDING_UPDATE_TIMEOUT,
-                            HTMLSettingsDefaults.defaultCodeFoldingUpdateInterval);
-            
-        }
     }
 
     /**

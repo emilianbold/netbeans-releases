@@ -56,8 +56,7 @@ public class JSPOptionsBeanInfo extends org.netbeans.modules.editor.options.Base
      private static final String[] EXPERT_PROP_NAMES = new String[] {
         JSPOptions.JAVADOC_AUTO_POPUP_PROP,
         JSPOptions.JAVADOC_PREFERRED_SIZE_PROP,
-        JSPOptions.JAVADOC_BGCOLOR,
-        JSPOptions.CODE_FOLDING_UPDATE_TIMEOUT_PROP
+        JSPOptions.JAVADOC_BGCOLOR
             };
     
     public JSPOptionsBeanInfo() {

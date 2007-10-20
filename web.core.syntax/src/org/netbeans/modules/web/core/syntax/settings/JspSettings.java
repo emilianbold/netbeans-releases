@@ -48,10 +48,6 @@ package org.netbeans.modules.web.core.syntax.settings;
  */
 public class JspSettings {
 
-   public static final String CODE_FOLDING_UPDATE_TIMEOUT = "code-folding-update-interval"; //NOI18N
-
-   public static final Integer defaultCodeFoldingUpdateInterval = new Integer(2000); //ms
-
    public static final String CARET_SIMPLE_MATCH_BRACE = "caret-simple-match-brace"; // NOI18N
 
    public static final Boolean defaultCaretSimpleMatchBrace = Boolean.FALSE;

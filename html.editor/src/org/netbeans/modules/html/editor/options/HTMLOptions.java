@@ -81,11 +81,6 @@ public class HTMLOptions extends BaseOptions {
     
     public static final String JAVADOC_PREFERRED_SIZE_PROP = "javaDocPreferredSize"; //NOI18N
     
-    //code folding properties
-    public static final String CODE_FOLDING_UPDATE_TIMEOUT_PROP = "codeFoldingUpdateInterval"; //NOI18N
-    
-    public static final String CODE_FOLDING_ENABLE_PROP = "codeFoldingEnable"; //NOI18N
-    
     static final String[] HTML_PROP_NAMES = OptionSupport.mergeStringArrays(BaseOptions.BASE_PROP_NAMES, new String[] {
                                                 COMPLETION_AUTO_POPUP_PROP,
                                                 COMPLETION_AUTO_POPUP_DELAY_PROP,
@@ -93,9 +88,7 @@ public class HTMLOptions extends BaseOptions {
                                                 COMPLETION_LOWER_CASE_PROP,
                                                 JAVADOC_AUTO_POPUP_PROP,
                                                 JAVADOC_PREFERRED_SIZE_PROP,
-                                                JAVADOC_BGCOLOR,
-                                                CODE_FOLDING_UPDATE_TIMEOUT_PROP,
-                                                CODE_FOLDING_ENABLE_PROP
+                                                JAVADOC_BGCOLOR
                                             });
 
                                         
@@ -178,28 +171,7 @@ public class HTMLOptions extends BaseOptions {
         setSettingValue(ExtSettingsNames.JAVADOC_PREFERRED_SIZE, d,
             JAVADOC_PREFERRED_SIZE_PROP);
     }
-    
-    
-    public int getCodeFoldingUpdateInterval() {
-        return getSettingInteger(HTMLSettingsNames.CODE_FOLDING_UPDATE_TIMEOUT);
-    }
-    
-    public void setCodeFoldingUpdateInterval(int timeout) {
-        if (timeout < 0) {
-            NbEditorUtilities.invalidArgument("MSG_NegativeValue"); // NOI18N
-            return;
-        }
-        setSettingInteger(HTMLSettingsNames.CODE_FOLDING_UPDATE_TIMEOUT, timeout, CODE_FOLDING_UPDATE_TIMEOUT_PROP);
-    }
-    
-    public boolean getCodeFoldingEnable() {
-        return getSettingBoolean(SettingsNames.CODE_FOLDING_ENABLE);
-    }
-    
-    public void setCodeFoldingEnable(boolean state) {
-        setSettingBoolean(SettingsNames.CODE_FOLDING_ENABLE, state, CODE_FOLDING_ENABLE_PROP);
-    }
-    
+   
     /**
      * Get localized string
      */

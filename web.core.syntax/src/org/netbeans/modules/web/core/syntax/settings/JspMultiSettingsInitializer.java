@@ -71,9 +71,6 @@ public class JspMultiSettingsInitializer extends Settings.AbstractInitializer {
             settingsMap.put(JavaSettingsNames.PAIR_CHARACTERS_COMPLETION,
                         JavaSettingsDefaults.defaultPairCharactersCompletion);
 
-            //enable code folding
-            settingsMap.put(SettingsNames.CODE_FOLDING_ENABLE, JavaSettingsDefaults.defaultCodeFoldingEnable);
-            settingsMap.put(JspSettings.CODE_FOLDING_UPDATE_TIMEOUT, JspSettings.defaultCodeFoldingUpdateInterval);
             settingsMap.put(JspSettings.CARET_SIMPLE_MATCH_BRACE, JspSettings.defaultCaretSimpleMatchBrace);
             
             settingsMap.put(SettingsNames.IDENTIFIER_ACCEPTOR,

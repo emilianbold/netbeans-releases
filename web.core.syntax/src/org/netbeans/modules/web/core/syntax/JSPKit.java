@@ -87,14 +87,6 @@ public class JSPKit extends LanguagesEditorKit implements org.openide.util.HelpC
     public static final String JSP_MIME_TYPE = "text/x-jsp"; // NOI18N
     public static final String TAG_MIME_TYPE = "text/x-tag"; // NOI18N
     
-    //comment folds
-    public static final String collapseAllCommentsAction = "collapse-all-comment-folds"; //NOI18N
-    public static final String expandAllCommentsAction = "expand-all-comment-folds"; //NOI18N
-    
-    //scripting folds
-    public static final String collapseAllScriptingAction = "collapse-all-scripting-folds"; //NOI18N
-    public static final String expandAllScriptingAction = "expand-all-scripting-folds"; //NOI18N
-    
     /** serialVersionUID */
     private static final long serialVersionUID = 8933974837050367142L;
     
