@@ -113,7 +113,6 @@ djd43.declare("rdj.data.__CONTAINER_NAME__Store", djd43.data.core.RemoteStore, {
                      if(typeof ci[fields[0]] == "object") {
                         var id = ''+this.getSize()+1;
                         for(var k in ci[fields[0]]) {
-                            alert(ci[fields[0]][k].length+", "+id.length);
                             if(ci[fields[0]][k].length > id.length)
                                 ci[fields[0]][k] += id;
                         }
