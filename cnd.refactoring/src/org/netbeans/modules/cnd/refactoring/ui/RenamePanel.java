@@ -189,7 +189,7 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         add(nameField, gridBagConstraints);
-        nameField.getAccessibleContext().setAccessibleDescription("null");
+        nameField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RenamePanel.class, "ACSD_nameField")); // NOI18N
 
         jPanel1.setMinimumSize(new java.awt.Dimension(0, 0));
         jPanel1.setPreferredSize(new java.awt.Dimension(0, 0));
@@ -202,36 +202,38 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
         gridBagConstraints.weighty = 1.0;
         add(jPanel1, gridBagConstraints);
 
-        textCheckBox.setSelected(((Boolean) RefactoringModule.getOption("searchInComments.rename", Boolean.FALSE)).booleanValue());
-        org.openide.awt.Mnemonics.setLocalizedText(textCheckBox, org.openide.util.NbBundle.getBundle(RenamePanel.class).getString("LBL_RenameComments")); // NOI18N
-        textCheckBox.setEnabled(false);
-        textCheckBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                textCheckBoxItemStateChanged(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        add(textCheckBox, gridBagConstraints);
-        textCheckBox.getAccessibleContext().setAccessibleDescription(textCheckBox.getText());
+        textCheckBox.setSelected(((Boolean) RefactoringModule.getOption("searchInComments.rename", // NOI18N
+            Boolean.FALSE)).booleanValue());
+org.openide.awt.Mnemonics.setLocalizedText(textCheckBox, org.openide.util.NbBundle.getBundle(RenamePanel.class).getString("LBL_RenameComments")); // NOI18N
+textCheckBox.setEnabled(false);
+textCheckBox.addItemListener(new java.awt.event.ItemListener() {
+    public void itemStateChanged(java.awt.event.ItemEvent evt) {
+        textCheckBoxItemStateChanged(evt);
+    }
+    });
+    gridBagConstraints = new java.awt.GridBagConstraints();
+    gridBagConstraints.gridx = 0;
+    gridBagConstraints.gridy = 1;
+    gridBagConstraints.gridwidth = 2;
+    gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+    add(textCheckBox, gridBagConstraints);
+    textCheckBox.getAccessibleContext().setAccessibleDescription(textCheckBox.getText());
 
-        org.openide.awt.Mnemonics.setLocalizedText(updateReferencesCheckBox, org.openide.util.NbBundle.getBundle(RenamePanel.class).getString("LBL_RenameWithoutRefactoring")); // NOI18N
-        updateReferencesCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(4, 4, 0, 4));
-        updateReferencesCheckBox.setMargin(new java.awt.Insets(2, 2, 0, 2));
-        updateReferencesCheckBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                updateReferencesCheckBoxActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        add(updateReferencesCheckBox, gridBagConstraints);
+    org.openide.awt.Mnemonics.setLocalizedText(updateReferencesCheckBox, org.openide.util.NbBundle.getBundle(RenamePanel.class).getString("LBL_RenameWithoutRefactoring")); // NOI18N
+    updateReferencesCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(4, 4, 0, 4));
+    updateReferencesCheckBox.setMargin(new java.awt.Insets(2, 2, 0, 2));
+    updateReferencesCheckBox.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            updateReferencesCheckBoxActionPerformed(evt);
+        }
+    });
+    gridBagConstraints = new java.awt.GridBagConstraints();
+    gridBagConstraints.gridx = 0;
+    gridBagConstraints.gridy = 3;
+    gridBagConstraints.gridwidth = 2;
+    gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+    add(updateReferencesCheckBox, gridBagConstraints);
+    updateReferencesCheckBox.getAccessibleContext().setAccessibleDescription(updateReferencesCheckBox.getText());
     }// </editor-fold>//GEN-END:initComponents
 
     private void updateReferencesCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateReferencesCheckBoxActionPerformed
@@ -243,7 +245,7 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
         // used for change default value for searchInComments check-box.                                                  
         // The value is persisted and then used as default in next IDE run.
         Boolean b = evt.getStateChange() == ItemEvent.SELECTED ? Boolean.TRUE : Boolean.FALSE;
-        RefactoringModule.setOption("searchInComments.rename", b);
+        RefactoringModule.setOption("searchInComments.rename", b); // NOI18N
     }//GEN-LAST:event_textCheckBoxItemStateChanged
                                                              
     // Variables declaration - do not modify//GEN-BEGIN:variables

@@ -314,7 +314,7 @@ public final class ModificationResult {
 
         @Override
         public String toString() {
-            return kind + "<" + startPos.getOffset() + ", " + endPos.getOffset() + ">: " + oldText + " -> " + newText;
+            return kind + "<" + startPos.getOffset() + ", " + endPos.getOffset() + ">: " + oldText + " -> " + newText; // NOI18N
         }
         public String getDescription() {
             return description;

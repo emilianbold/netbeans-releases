@@ -368,7 +368,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         methodsPanel.add(m_isBaseClass, gridBagConstraints);
-        m_isBaseClass.getAccessibleContext().setAccessibleDescription("null");
+        m_isBaseClass.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(WhereUsedPanel.class).getString("ACSD_isBaseClass")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -391,7 +391,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         methodsPanel.add(m_overriders, gridBagConstraints);
         m_overriders.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "LBL_FindOverridingMethods")); // NOI18N
-        m_overriders.getAccessibleContext().setAccessibleDescription("null");
+        m_overriders.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(WhereUsedPanel.class).getString("ACSD_overriders")); // NOI18N
 
         m_usages.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(m_usages, org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "LBL_FindUsages")); // NOI18N
@@ -408,7 +408,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         methodsPanel.add(m_usages, gridBagConstraints);
         m_usages.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "LBL_FindUsages")); // NOI18N
-        m_usages.getAccessibleContext().setAccessibleDescription("null");
+        m_usages.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(WhereUsedPanel.class).getString("ACSD_usages")); // NOI18N
 
         add(methodsPanel, java.awt.BorderLayout.CENTER);
 
@@ -430,7 +430,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         classesPanel.add(c_subclasses, gridBagConstraints);
-        c_subclasses.getAccessibleContext().setAccessibleDescription("null");
+        c_subclasses.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(WhereUsedPanel.class).getString("ACSD_subclasses")); // NOI18N
 
         buttonGroup.add(c_usages);
         c_usages.setSelected(true);
@@ -442,7 +442,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         classesPanel.add(c_usages, gridBagConstraints);
-        c_usages.getAccessibleContext().setAccessibleDescription("null");
+        c_usages.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(WhereUsedPanel.class).getString("ACSD_usages")); // NOI18N
 
         buttonGroup.add(c_directOnly);
         org.openide.awt.Mnemonics.setLocalizedText(c_directOnly, org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "LBL_FindDirectSubtypesOnly")); // NOI18N
@@ -452,53 +452,54 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         classesPanel.add(c_directOnly, gridBagConstraints);
-        c_directOnly.getAccessibleContext().setAccessibleDescription("null");
+        c_directOnly.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(WhereUsedPanel.class).getString("ACSD_directOnly")); // NOI18N
 
         add(classesPanel, java.awt.BorderLayout.CENTER);
 
         commentsPanel.setLayout(new java.awt.BorderLayout());
         commentsPanel.add(label, java.awt.BorderLayout.NORTH);
 
-        searchInComments.setSelected(((Boolean) RefactoringModule.getOption("searchInComments.whereUsed", Boolean.FALSE)).booleanValue());
-        org.openide.awt.Mnemonics.setLocalizedText(searchInComments, org.openide.util.NbBundle.getBundle(WhereUsedPanel.class).getString("LBL_SearchInComents")); // NOI18N
-        searchInComments.setEnabled(false);
-        searchInComments.setMargin(new java.awt.Insets(10, 14, 2, 2));
-        searchInComments.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                searchInCommentsItemStateChanged(evt);
-            }
-        });
-        commentsPanel.add(searchInComments, java.awt.BorderLayout.CENTER);
-        searchInComments.getAccessibleContext().setAccessibleDescription(searchInComments.getText());
+        searchInComments.setSelected(((Boolean) RefactoringModule.getOption("searchInComments.whereUsed", //NOI18N
+            Boolean.FALSE)).booleanValue());
+org.openide.awt.Mnemonics.setLocalizedText(searchInComments, org.openide.util.NbBundle.getBundle(WhereUsedPanel.class).getString("LBL_SearchInComents")); // NOI18N
+searchInComments.setEnabled(false);
+searchInComments.setMargin(new java.awt.Insets(10, 14, 2, 2));
+searchInComments.addItemListener(new java.awt.event.ItemListener() {
+    public void itemStateChanged(java.awt.event.ItemEvent evt) {
+        searchInCommentsItemStateChanged(evt);
+    }
+    });
+    commentsPanel.add(searchInComments, java.awt.BorderLayout.CENTER);
+    searchInComments.getAccessibleContext().setAccessibleDescription(searchInComments.getText());
 
-        add(commentsPanel, java.awt.BorderLayout.NORTH);
+    add(commentsPanel, java.awt.BorderLayout.NORTH);
 
-        scopeLabel.setText(org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "LBL_Scope")); // NOI18N
+    scopeLabel.setText(org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "LBL_Scope")); // NOI18N
 
-        scope.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                scopeActionPerformed(evt);
-            }
-        });
+    scope.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            scopeActionPerformed(evt);
+        }
+    });
 
-        org.jdesktop.layout.GroupLayout scopePanelLayout = new org.jdesktop.layout.GroupLayout(scopePanel);
-        scopePanel.setLayout(scopePanelLayout);
-        scopePanelLayout.setHorizontalGroup(
-            scopePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(scopePanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(scopeLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(scope, 0, 287, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-        scopePanelLayout.setVerticalGroup(
-            scopePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+    org.jdesktop.layout.GroupLayout scopePanelLayout = new org.jdesktop.layout.GroupLayout(scopePanel);
+    scopePanel.setLayout(scopePanelLayout);
+    scopePanelLayout.setHorizontalGroup(
+        scopePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+        .add(scopePanelLayout.createSequentialGroup()
+            .addContainerGap()
             .add(scopeLabel)
-            .add(scope, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, Short.MAX_VALUE)
-        );
+            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+            .add(scope, 0, 287, Short.MAX_VALUE)
+            .addContainerGap())
+    );
+    scopePanelLayout.setVerticalGroup(
+        scopePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+        .add(scopeLabel)
+        .add(scope, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, Short.MAX_VALUE)
+    );
 
-        add(scopePanel, java.awt.BorderLayout.PAGE_END);
+    add(scopePanel, java.awt.BorderLayout.PAGE_END);
     }// </editor-fold>//GEN-END:initComponents
 
     private void searchInCommentsItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_searchInCommentsItemStateChanged

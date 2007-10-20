@@ -125,7 +125,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
 	}
 	
 	if (mainRegion == null) {
-	    throw new IllegalArgumentException("No highlight contains the caret.");
+	    throw new IllegalArgumentException("No highlight contains the caret."); // NOI18N
 	}
 	
 	regions.add(0, mainRegion);

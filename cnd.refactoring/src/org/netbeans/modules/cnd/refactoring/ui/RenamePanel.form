@@ -46,7 +46,7 @@
       </Properties>
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/refactoring/java/ui/Bundle.properties" key="ACSD_nameField" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/cnd/refactoring/ui/Bundle.properties" key="ACSD_nameField" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
       <AuxValues>
@@ -78,7 +78,7 @@
     <Component class="javax.swing.JCheckBox" name="textCheckBox">
       <Properties>
         <Property name="selected" type="boolean" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-          <Connection code="((Boolean) RefactoringModule.getOption(&quot;searchInComments.rename&quot;, Boolean.FALSE)).booleanValue()" type="code"/>
+          <Connection code="((Boolean) RefactoringModule.getOption(&quot;searchInComments.rename&quot;, // NOI18N&#xa;        Boolean.FALSE)).booleanValue()" type="code"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/cnd/refactoring/ui/Bundle.properties" key="LBL_RenameComments" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
@@ -116,6 +116,11 @@
           <Insets value="[2, 2, 0, 2]"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="updateReferencesCheckBox.getText()" type="code"/>
+        </Property>
+      </AccessibilityProperties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="updateReferencesCheckBoxActionPerformed"/>
       </Events>
