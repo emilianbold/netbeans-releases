@@ -533,9 +533,20 @@ public final class SyntaxParser {
                         attrNameToken = item;
                     } else if (item.id() == HTMLTokenId.VALUE && attrNameToken != null) {
                         //found attribute value after attribute name
+                        
+                        //there may be entity reference inside the attribute value
+                        //e.g. onclick="alert('hello&nbsp;world');" which divides the value
+                        //into more html tokens
+                        StringBuffer value = new StringBuffer();
+                        Token t = null;
+                        do {
+                            t = ts.token();
+                            value.append(t.text().toString());
+                        } while (ts.moveNext() && (ts.token().id() == HTMLTokenId.VALUE || ts.token().id() == HTMLTokenId.CHARACTER));
+                        
                         SyntaxElement.TagAttribute tagAttr =
                                 new SyntaxElement.TagAttribute(attrNameToken.text().toString(),
-                                item.text().toString(),
+                                value.toString(),
                                 attrNameToken.offset(hi),
                                 item.offset(hi));
                         attrs.add(tagAttr);
