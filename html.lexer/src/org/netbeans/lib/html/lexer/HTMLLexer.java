@@ -72,9 +72,12 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
     private final TokenFactory<HTMLTokenId> tokenFactory;
     
     public Object state() {
-        return lexerSubState * 1000000 + lexerState * 1000 + lexerScriptState;
+        return lexerSubState * 1000000 + lexerState * 1000 + lexerEmbeddingState;
     }
     
+    //script and style tag names
+    private static final String SCRIPT = "script";
+    private static final String STYLE = "style";
     
     /** Internal state of the lexical analyzer before entering subanalyzer of
      * character references. It is initially set to INIT, but before first usage,
@@ -85,11 +88,12 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
     private int lexerState    = INIT;
     
     /** indicated whether we are in a script */
-    private int lexerScriptState = INIT;
+    private int lexerEmbeddingState = INIT;
     
     // internal 'in script' state. 'scriptState' internal state is set to it when the
     // analyzer goes into a script tag body
     private static final int ISI_SCRIPT = 1;
+    private static final int ISI_STYLE = 2;
     
     // Internal states
     private static final int INIT = 0;
@@ -127,10 +131,14 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
     private static final int ISA_REF_X = 32;    //
     private static final int ISI_REF_HEX = 33;  // hexadecimal reference, in &#xa.. of &#X9..
     private static final int ISI_TAG_SLASH = 34; //after slash in html tag
+    
     private static final int ISI_SCRIPT_CONTENT = 35; //after <script> tags closing symbol '>' - the tag content
     private static final int ISI_SCRIPT_CONTENT_AFTER_LT = 36; //after < in script content
     private static final int ISI_SCRIPT_CONTENT_ENDTAG = 37; //after </ in script content
     
+    private static final int ISI_STYLE_CONTENT = 38; //after <style> tags closing symbol '>' - the tag content
+    private static final int ISI_STYLE_CONTENT_AFTER_LT = 39; //after < in style content
+    private static final int ISI_STYLE_CONTENT_ENDTAG = 40; //after </ in style content
     
     
     public HTMLLexer(LexerRestartInfo<HTMLTokenId> info) {
@@ -139,13 +147,13 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
         if (info.state() == null) {
             this.lexerSubState = INIT;
             this.lexerState = INIT;
-            this.lexerScriptState = INIT;
+            this.lexerEmbeddingState = INIT;
         } else {
             int encoded = ((Integer) info.state()).intValue();
             this.lexerSubState = encoded / 1000000;
             int remainder = encoded % 1000000;
             this.lexerState    = remainder / 1000;
-            this.lexerScriptState = remainder % 1000;
+            this.lexerEmbeddingState = remainder % 1000;
         }
     }
     
@@ -178,7 +186,7 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
         //              || ch == '\u200b' || ch == '\n' || ch == '\r' );
     }
     
-    private boolean followsScriptCloseTag() {
+    private boolean followsCloseTag(String closeTagName) {
         int actChar;
         int prev_read = input.readLength(); //remember the size of the read sequence //substract the first read character
         int read = 0;
@@ -198,7 +206,7 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
                 
                 input.backup(read); //put the lookahead text back to the buffer
 
-                if("script".equalsIgnoreCase(tagName.toString())) {
+                if(closeTagName.equalsIgnoreCase(tagName.toString())) {
                     if(actChar == '>') {
                         return true;
                     }
@@ -350,8 +358,11 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
                     if(input.readLength() > 1) { //lexer restart check, token already returned before last EOF
                         input.backup(1);
                         //test if the tagname is SCRIPT
-                        if("script".equalsIgnoreCase(input.readText().toString())) { //NOI18N
-                            lexerScriptState = ISI_SCRIPT;
+                        if(SCRIPT.equalsIgnoreCase(input.readText().toString())) { //NOI18N
+                            lexerEmbeddingState = ISI_SCRIPT;
+                        }
+                        if(STYLE.equalsIgnoreCase(input.readText().toString())) { //NOI18N
+                            lexerEmbeddingState = ISI_STYLE;
                         }
                         return token(HTMLTokenId.TAG_OPEN);
                     }
@@ -371,11 +382,18 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
                             lexerState = ISI_TAG_SLASH;
                             break;
                         case '>':
-                            if(lexerScriptState == ISI_SCRIPT) {
-                                lexerState = ISI_SCRIPT_CONTENT;
-                            } else {
-                                lexerState = INIT;
+                            switch (lexerEmbeddingState) {
+                                case INIT:
+                                    lexerState = INIT;
+                                    break;
+                                case ISI_SCRIPT:
+                                    lexerState = ISI_SCRIPT_CONTENT;
+                                    break;
+                                case ISI_STYLE:
+                                    lexerState = ISI_STYLE_CONTENT;
+                                    break;
                             }
+
                             return token(HTMLTokenId.TAG_CLOSE_SYMBOL);
                         case '<':
                             lexerState = INIT;
@@ -399,12 +417,15 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
                 case ISI_TAG_SLASH:
                     switch( actChar ) {
                         case '>':
-                            switch(lexerScriptState) {
+                            switch(lexerEmbeddingState) {
                                 case INIT:
                                     lexerState = INIT;
                                     break;
                                 case ISI_SCRIPT:
                                     lexerState = ISI_SCRIPT_CONTENT;
+                                    break;
+                                case ISI_STYLE:
+                                    lexerState = ISI_STYLE_CONTENT;
                                     break;
                             }
                             return token(HTMLTokenId.TAG_CLOSE_SYMBOL);
@@ -427,9 +448,9 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
                     
                 case ISI_SCRIPT_CONTENT_AFTER_LT:
                     if (actChar == '/') {
-                        if (followsScriptCloseTag()) {
+                        if (followsCloseTag(SCRIPT)) {
                             //end of script section found
-                            lexerScriptState = INIT;
+                            lexerEmbeddingState = INIT;
                             lexerState = INIT;
                             input.backup(input.readLength() > 2 ? 2 : input.readLength()); //backup the '</', we will read it again
                             if (input.readLength() > 0) {
@@ -441,6 +462,34 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
                         }
                     }
                     lexerState = ISI_SCRIPT_CONTENT;
+                    break;
+                    
+                case ISI_STYLE_CONTENT:   
+                    switch( actChar ) {
+                        case '<' :
+                            lexerState = ISI_STYLE_CONTENT_AFTER_LT;
+                            break;
+                        default:
+                            break;
+                    }
+                    break;
+                    
+                case ISI_STYLE_CONTENT_AFTER_LT:
+                    if (actChar == '/') {
+                        if (followsCloseTag(STYLE)) {
+                            //end of script section found
+                            lexerEmbeddingState = INIT;
+                            lexerState = INIT;
+                            input.backup(input.readLength() > 2 ? 2 : input.readLength()); //backup the '</', we will read it again
+                            if (input.readLength() > 0) {
+                                //the script has a body
+                                return token(HTMLTokenId.STYLE);
+                            } else {
+                                break;
+                            }
+                        }
+                    }
+                    lexerState = ISI_STYLE_CONTENT;
                     break;
 
                 case ISI_ARG:           // DONE
@@ -538,17 +587,22 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
                         case '\'':
                             lexerState = ISP_TAG_X;
                             return token(HTMLTokenId.VALUE);
-                        case '&':
-                            if( input.readLength() == 1 ) {
-                                lexerSubState = lexerState;
-                                lexerState = ISA_REF;
-                                break;
-                            } else {
-                                if(input.readLength() > 1) { //lexer restart check, token already returned before last EOF
-                                    input.backup(1);
-                                    return token(HTMLTokenId.VALUE);
-                                }
-                            }
+                            
+//                        Workaround for [Issue 117450]  Provide unified LexerInput across multiple joined embedded sections
+//                        The problem is described in detail in issue [Issue 118892]  Allow Schlieman lexer to continuously lex embedded language over  more tokens of its parent language
+//                        Should be removed once the issue is fixed.
+//                            
+//                        case '&':
+//                            if( input.readLength() == 1 ) {
+//                                lexerSubState = lexerState;
+//                                lexerState = ISA_REF;
+//                                break;
+//                            } else {
+//                                if(input.readLength() > 1) { //lexer restart check, token already returned before last EOF
+//                                    input.backup(1);
+//                                    return token(HTMLTokenId.VALUE);
+//                                }
+//                            }
                     }
                     break;  // else simply consume next char of VALUE
                     
@@ -557,17 +611,22 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
                         case '"':
                             lexerState = ISP_TAG_X;
                             return token(HTMLTokenId.VALUE);
-                        case '&':
-                            if( input.readLength() == 1 ) {
-                                lexerSubState = lexerState;
-                                lexerState = ISA_REF;
-                                break;
-                            } else {
-                                if(input.readLength() > 1) { //lexer restart check, token already returned before last EOF
-                                    input.backup(1);
-                                    return token(HTMLTokenId.VALUE);
-                                }
-                            }
+
+//                        Workaround for [Issue 117450]  Provide unified LexerInput across multiple joined embedded sections
+//                        The problem is described in detail in issue [Issue 118892]  Allow Schlieman lexer to continuously lex embedded language over  more tokens of its parent language
+//                        Should be removed once the issue is fixed.
+//                            
+//                        case '&':
+//                            if( input.readLength() == 1 ) {
+//                                lexerSubState = lexerState;
+//                                lexerState = ISA_REF;
+//                                break;
+//                            } else {
+//                                if(input.readLength() > 1) { //lexer restart check, token already returned before last EOF
+//                                    input.backup(1);
+//                                    return token(HTMLTokenId.VALUE);
+//                                }
+//                            }
                     }
                     break;  // else simply consume next char of VALUE
                     
@@ -839,6 +898,11 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
             case ISI_SCRIPT_CONTENT_ENDTAG:
             case ISI_SCRIPT_CONTENT_AFTER_LT:
                 return token(HTMLTokenId.SCRIPT);
+            case ISI_STYLE_CONTENT:
+            case ISI_STYLE_CONTENT_ENDTAG:
+            case ISI_STYLE_CONTENT_AFTER_LT:
+                return token(HTMLTokenId.STYLE);
+                
                 
         }
         

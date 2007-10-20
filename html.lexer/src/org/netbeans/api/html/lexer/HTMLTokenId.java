@@ -66,6 +66,8 @@ public enum HTMLTokenId implements TokenId {
     TEXT("text"), 
     /** HTML script e.g. javascript. */
     SCRIPT("script"), 
+    /** HTML CSS style.*/
+    STYLE("style"), 
     /** Whitespace in a tag: <code> &lt;BODY" "bgcolor=red&gt;</code>. */
     WS("ws"),
     /** Error token - returned in various erroneous situations. */
@@ -98,6 +100,7 @@ public enum HTMLTokenId implements TokenId {
     private final String primaryCategory;
 
     private static final String JAVASCRIPT_MIMETYPE = "text/javascript";//NOI18N
+    private static final String STYLE_MIMETYPE = "text/x-css";//NOI18N
     
     HTMLTokenId(String primaryCategory) {
         this.primaryCategory = primaryCategory;
@@ -125,17 +128,24 @@ public enum HTMLTokenId implements TokenId {
         @Override
         protected LanguageEmbedding embedding(
         Token<HTMLTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
-            if(token.id() == HTMLTokenId.SCRIPT) {
-                Language lang = Language.find(JAVASCRIPT_MIMETYPE);
+            String mimeType = null;
+            switch(token.id()) {
+                case SCRIPT:
+                    mimeType = JAVASCRIPT_MIMETYPE;
+                    break;
+                case STYLE:
+                    mimeType = STYLE_MIMETYPE;
+                    break;
+            }
+            if(mimeType != null) {
+                Language lang = Language.find(mimeType);
                 if(lang == null) {
-                    return null; //no javascript language found
+                    return null; //no language found
                 } else {
                     return LanguageEmbedding.create(lang, 0, 0);
                 }
-            } else {
-                return null;
             }
-//            return  null;
+            return  null;
         }
         
         @Override
