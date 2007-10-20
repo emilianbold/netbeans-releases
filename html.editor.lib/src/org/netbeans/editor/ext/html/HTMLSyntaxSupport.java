@@ -41,6 +41,7 @@
  */
 package org.netbeans.editor.ext.html;
 
+import javax.swing.text.Document;
 import org.netbeans.editor.ext.html.parser.SyntaxParser;
 import org.netbeans.editor.ext.html.parser.SyntaxElement;
 import java.util.*;
@@ -56,6 +57,7 @@ import org.netbeans.editor.ext.html.dtd.DTD;
 import org.netbeans.editor.ext.html.dtd.DTD.Element;
 import org.netbeans.editor.ext.html.dtd.InvalidateEvent;
 import org.netbeans.editor.ext.html.dtd.InvalidateListener;
+import org.netbeans.spi.editor.completion.CompletionItem;
 
 
 /**
@@ -71,6 +73,16 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
     private DTD dtd;
     private String docType;
     private final SyntaxParser parser;
+    private Document doc;
+    
+    public static synchronized HTMLSyntaxSupport get(Document doc) {
+        HTMLSyntaxSupport sup = (HTMLSyntaxSupport)doc.getProperty(HTMLSyntaxSupport.class);
+        if(sup == null) {
+            sup = new HTMLSyntaxSupport((BaseDocument)doc);
+            doc.putProperty(HTMLSyntaxSupport.class, sup);
+        }
+        return sup;
+    }
     
     /** Creates new HTMLSyntaxSupport */
     public HTMLSyntaxSupport( BaseDocument doc ) {
@@ -398,7 +410,7 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
         }
         
         int itemsCount = 0;
-        for( ; elem != null; elem = elem.getPrevious() ) {
+        for( elem= elem.getPrevious() ; elem != null; elem = elem.getPrevious() ) {
             if( elem.getType() == SyntaxElement.TYPE_ENDTAG) { // NOI18N
                 DTD.Element tag = dtd.getElement( ((SyntaxElement.Named)elem).getName().toUpperCase() );
                 if(tag != null && !tag.isEmpty()) stack.push( ((SyntaxElement.Named)elem).getName().toUpperCase() );
@@ -436,7 +448,7 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
                 //check if the tag has required endtag
                 Element dtdElem = getDTD().getElement(tagName.toUpperCase());
                 if( dtdElem == null || !dtdElem.isEmpty()) {
-                    HTMLCompletionQuery.ResultItem eti = new HTMLCompletionQuery.AutocompleteEndTagItem(tagName, offset);
+                    CompletionItem eti = new HTMLCompletionQuery.AutocompleteEndTagItem(tagName, offset);
                     l.add(eti);
                 }
             }

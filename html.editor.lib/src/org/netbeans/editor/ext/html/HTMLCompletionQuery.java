@@ -82,7 +82,7 @@ import org.openide.ErrorManager;
  * @author Marek Fukala
  * @version 1.10
  */
-public class HTMLCompletionQuery implements CompletionQuery {
+public class HTMLCompletionQuery  {
     
     private static boolean lowerCase;
     
@@ -101,13 +101,10 @@ public class HTMLCompletionQuery implements CompletionQuery {
      * @param support syntax-support that will be used during resolving of the query.
      * @return result of the query or null if there's no result.
      */
-    public CompletionQuery.Result query(JTextComponent component, int offset, SyntaxSupport support) {
+    public List<CompletionItem> query(JTextComponent component, int offset) {
         Class kitClass = Utilities.getKitClass(component);
         BaseDocument doc = (BaseDocument)component.getDocument();
-        return query(component, kitClass, doc, offset, support);
-    }
     
-    CompletionQuery.Result query(JTextComponent component, Class kitClass, BaseDocument doc, int offset, SyntaxSupport support) {
         if (kitClass != null) {
             lowerCase = SettingsUtil.getBoolean(kitClass,
                     HTMLSettingsNames.COMPLETION_LOWER_CASE,
@@ -115,7 +112,8 @@ public class HTMLCompletionQuery implements CompletionQuery {
         }
         
         if( doc.getLength() == 0 ) return null; // nothing to examine
-        HTMLSyntaxSupport sup = (HTMLSyntaxSupport)support.get(HTMLSyntaxSupport.class);
+        HTMLSyntaxSupport sup = HTMLSyntaxSupport.get(doc);
+        
         if( sup == null ) return null;// No SyntaxSupport for us, no hint for user
         
         DTD dtd = sup.getDTD();
@@ -186,7 +184,7 @@ public class HTMLCompletionQuery implements CompletionQuery {
             String preText = item.text().toString().substring( 0, offset - itemOffset );
             TokenId id = item.id();
             
-            List result = null;
+            List<CompletionItem> result = null;
             int len = 1;
             
             /* Character reference finder */
@@ -300,16 +298,17 @@ public class HTMLCompletionQuery implements CompletionQuery {
                         wordAtCursor = "";
                     }
                     
-                    result = new ArrayList();
+                    List<DTD.Attribute> attribs = new ArrayList<DTD.Attribute>();
                     for( Iterator i = possible.iterator(); i.hasNext(); ) {
                         DTD.Attribute attr = (DTD.Attribute)i.next();
                         String aName = attr.getName();
                         if( aName.equals( prefix )
                         || (!existingAttrsNames.contains( aName.toUpperCase()) && !existingAttrsNames.contains( aName.toLowerCase()))
-                        || (wordAtCursor.equals( aName ) && prefix.length() > 0))
-                            result.add( attr );
+                        || (wordAtCursor.equals( aName ) && prefix.length() > 0)) {
+                            attribs.add( attr );
+                        }
                     }
-                    result = translateAttribs( offset-len, len, result, tag );
+                    result = translateAttribs( offset-len, len, attribs, tag );
                 }
                 
                 /* Value finder */
@@ -381,9 +380,7 @@ public class HTMLCompletionQuery implements CompletionQuery {
                 }
             }
             
-            //System.err.println("l = " + l );
-            if( result == null ) return null;
-            else return new HTMLCompletionResult( component, "Results for DOCTYPE " + dtd.getIdentifier(), result, offset, len ); // NOI18N
+        return result;
             
         } catch (BadLocationException ble) {
             ErrorManager.getDefault().notify(ble);
@@ -395,7 +392,7 @@ public class HTMLCompletionQuery implements CompletionQuery {
     }
     
     
-    List translateCharRefs( int offset, int length, List refs ) {
+    List<CompletionItem> translateCharRefs( int offset, int length, List refs ) {
         List result = new ArrayList( refs.size() );
         String name;
         for( Iterator i = refs.iterator(); i.hasNext(); ) {
@@ -405,7 +402,7 @@ public class HTMLCompletionQuery implements CompletionQuery {
         return result;
     }
     
-    List translateTags( int offset, int length, List tags ) {
+    List<CompletionItem> translateTags( int offset, int length, List tags ) {
         List result = new ArrayList( tags.size() );
         String name;
         for( Iterator i = tags.iterator(); i.hasNext(); ) {
@@ -415,11 +412,10 @@ public class HTMLCompletionQuery implements CompletionQuery {
         return result;
     }
     
-    List translateAttribs( int offset, int length, List attribs, DTD.Element tag ) {
-        List result = new ArrayList( attribs.size() );
+    List<CompletionItem> translateAttribs( int offset, int length, List<DTD.Attribute> attribs, DTD.Element tag ) {
+        List<CompletionItem> result = new ArrayList<CompletionItem>( attribs.size() );
         String tagName = tag.getName() + "#"; // NOI18N
-        for( Iterator i = attribs.iterator(); i.hasNext(); ) {
-            DTD.Attribute attrib = (DTD.Attribute)i.next();
+        for(DTD.Attribute attrib : attribs) {
             String name = attrib.getName();
             switch( attrib.getType() ) {
                 case DTD.Attribute.TYPE_BOOLEAN:
@@ -436,11 +432,11 @@ public class HTMLCompletionQuery implements CompletionQuery {
         return result;
     }
     
-    List translateValues( int offset, int length, List values ) {
+    List<CompletionItem> translateValues( int offset, int length, List values ) {
         return translateValues(offset, length, values, null);
     }
     
-    List translateValues( int offset, int length, List values, String quotationChar ) {
+    List<CompletionItem> translateValues( int offset, int length, List values, String quotationChar ) {
         if( values == null ) return new ArrayList( 0 );
         List result = new ArrayList( values.size() );
         for( Iterator i = values.iterator(); i.hasNext(); ) {
@@ -456,8 +452,7 @@ public class HTMLCompletionQuery implements CompletionQuery {
      * of anything and every data creates lazily on request to avoid
      * creation of lot of string instances per completion result.
      */
-    public static abstract class HTMLResultItem implements CompletionQuery.ResultItem,
-            CompletionItem {
+    public static abstract class HTMLResultItem implements CompletionItem {
         
         /** The String on which is this ResultItem defined */
         String baseText;
