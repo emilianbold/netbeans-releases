@@ -78,6 +78,9 @@ public class TiledLayerEditor extends javax.swing.JPanel implements TiledLayerLi
 		this.editorComponent = new TiledLayerEditorComponent(this.tiledLayer);
 		initComponents();
 		
+		this.getAccessibleContext().setAccessibleName(NbBundle.getMessage(TiledLayerEditor.class, "TiledLayerEditor.accessible.name"));
+		this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(TiledLayerEditor.class, "TiledLayerEditor.accessible.description"));
+		
 		this.toggleButtonPaint.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
 				if (toggleButtonPaint.isSelected()) {

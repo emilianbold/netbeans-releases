@@ -50,30 +50,24 @@ import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
-import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.Scrollable;
+import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.vmd.game.model.AnimatedTile;
-import org.netbeans.modules.vmd.game.model.GlobalRepository;
-import org.netbeans.modules.vmd.game.model.ImageResource;
 import org.netbeans.modules.vmd.game.model.Sequence;
 import org.netbeans.modules.vmd.game.model.SequenceContainer;
 import org.netbeans.modules.vmd.game.model.SequenceContainerListener;
-import org.netbeans.modules.vmd.game.model.StaticTile;
 import org.netbeans.modules.vmd.game.preview.SequencePreviewPanel;
-import org.netbeans.modules.vmd.game.view.main.MainView;
 import org.openide.util.NbBundle;
 
 /**
@@ -101,6 +95,9 @@ public class SequenceContainerEditor extends JPanel implements SequenceEditingPa
 	public SequenceContainerEditor(SequenceContainer sequenceContainer) {
 		this.setBackground(Color.WHITE);
 		
+		this.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SequenceContainerEditor.class, "SequenceContainerEditor.accessible.name"));
+		this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SequenceContainerEditor.class, "SequenceContainerEditor.accessible.description"));		
+
 		this.sequenceContainer = sequenceContainer;
 		this.sequenceContainer.addSequenceContainerListener(this);
 		this.sequenceContainer.addPropertyChangeListener(this);
@@ -126,25 +123,29 @@ public class SequenceContainerEditor extends JPanel implements SequenceEditingPa
 	
 
 	private void rebuildUI() {
-		this.removeAll();
-		this.previewMap.clear();
-		
-		for (Sequence s : this.sequenceContainer.getSequences()) {
-			((SequenceEditingPanel) s.getEditor()).removeSequenceEditingPanelListener(this);
-		}
-		
-		this.previewsPanel = new FastScrollPanel();
-		this.editorsPanel  = new FastScrollPanel();
-		
-		this.initScrolling();
-		this.initPreviews();
-		this.initEditors();
-		
-		this.setLayout(new BorderLayout());
-		this.add(this.scrollPreviews, BorderLayout.WEST);
-		this.add(this.scrollEditors, BorderLayout.CENTER);
-		
-		this.validate();
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				SequenceContainerEditor.this.removeAll();
+				SequenceContainerEditor.this.previewMap.clear();
+
+				for (Sequence s : SequenceContainerEditor.this.sequenceContainer.getSequences()) {
+					((SequenceEditingPanel) s.getEditor()).removeSequenceEditingPanelListener(SequenceContainerEditor.this);
+				}
+
+				SequenceContainerEditor.this.previewsPanel = new FastScrollPanel();
+				SequenceContainerEditor.this.editorsPanel  = new FastScrollPanel();
+
+				SequenceContainerEditor.this.initScrolling();
+				SequenceContainerEditor.this.initPreviews();
+				SequenceContainerEditor.this.initEditors();
+
+				SequenceContainerEditor.this.setLayout(new BorderLayout());
+				SequenceContainerEditor.this.add(SequenceContainerEditor.this.scrollPreviews, BorderLayout.WEST);
+				SequenceContainerEditor.this.add(SequenceContainerEditor.this.scrollEditors, BorderLayout.CENTER);
+
+				SequenceContainerEditor.this.validate();
+			}
+		});
 	}
 	
 	private void setSyncComponentHeight() {

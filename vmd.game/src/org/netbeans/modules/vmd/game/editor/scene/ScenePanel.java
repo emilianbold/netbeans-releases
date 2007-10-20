@@ -134,7 +134,10 @@ public class ScenePanel extends JPanel implements SceneListener,
         this.scene.addPropertyChangeListener(this);
         this.addMouseMotionListener(this);
         this.addMouseListener(this);
-  
+		
+		this.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ScenePanel.class, "ScenePanel.accessible.name"));
+		this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ScenePanel.class, "ScenePanel.accessible.description"));		
+
         for (Iterator iter = this.scene.getLayers().iterator(); iter.hasNext();) {
             Layer layer = (Layer) iter.next();
             this.registerLayerListeners(layer);

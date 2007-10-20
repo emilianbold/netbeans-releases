@@ -195,6 +195,10 @@ public class GameDesignOverViewPanel extends ScrollableFlowPanel implements Comp
         this.populateScenePreviewList(panelScenes);
         this.populateTiledLayerPreviewList(panelTiledLayers);
         this.populateSpritePreviewList(panelSprites);
+		
+		this.getAccessibleContext().setAccessibleName((NbBundle.getMessage(GameDesignOverViewPanel.class, "GameDesignOverViewPanel.accessible.name")));
+		this.getAccessibleContext().setAccessibleDescription((NbBundle.getMessage(GameDesignOverViewPanel.class, "GameDesignOverViewPanel.accessible.description")));
+		
     }
     
     private void populateTiledLayerPreviewList(JComponent container) {

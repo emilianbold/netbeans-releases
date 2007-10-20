@@ -146,6 +146,7 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
         jLabel3 = new javax.swing.JLabel();
         jSeparator2 = new javax.swing.JSeparator();
 
+        labelImageFile.setLabelFor(listImageFileName);
         labelImageFile.setText(org.openide.util.NbBundle.getMessage(TiledLayerDialog.class, "SpriteDialog.labelSelectImage.txt")); // NOI18N
 
         listImageFileName.setModel(this.getImageListModel());
@@ -176,6 +177,7 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
                 .add(buttonImportImages))
         );
 
+        labelImagePreview.setLabelFor(panelImage);
         labelImagePreview.setText(org.openide.util.NbBundle.getMessage(TiledLayerDialog.class, "SpriteDialog.labelAdjustTileSize.txt")); // NOI18N
 
         panelImage.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(102, 102, 102)));
@@ -249,6 +251,7 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
                 .add(labelError, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 27, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
 
+        jLabel3.setLabelFor(fieldLayerName);
         jLabel3.setText(org.openide.util.NbBundle.getMessage(TiledLayerDialog.class, "TiledLayerDialog.labelTiledLayerName.txt")); // NOI18N
 
         org.jdesktop.layout.GroupLayout panelLayerInfoLayout = new org.jdesktop.layout.GroupLayout(panelLayerInfo);
@@ -356,6 +359,10 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
 	
 	private void manualInit() {
 		HelpCtx.setHelpIDString(this, "org.netbeans.modules.vmd.game.nbdialog.TiledLayerDialog");
+		
+		this.getAccessibleContext().setAccessibleName(NbBundle.getMessage(TiledLayerDialog.class, "TiledLayerDialog.accessible.name"));
+		this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(TiledLayerDialog.class, "TiledLayerDialog.accessible.description"));
+
 		this.labelError.setIcon(ICON_ERROR);
 		
 		this.fieldLayerName.getDocument().addDocumentListener(new LayerFieldListener());
