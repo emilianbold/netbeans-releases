@@ -43,27 +43,15 @@ package org.netbeans.editor.ext.html;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintStream;
-import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.TokenContext;
-import org.netbeans.editor.TokenContextPath;
-import org.netbeans.editor.TokenID;
-import org.netbeans.editor.TokenItem;
-import org.netbeans.editor.ext.CompletionQuery;
-import org.netbeans.editor.ext.html.HTMLSyntax;
-import org.netbeans.editor.ext.html.dtd.DTD;
 import org.netbeans.editor.ext.html.test.TestBase;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.editor.html.HTMLKit;
 import org.netbeans.modules.editor.html.NbReaderProvider;
+import org.netbeans.spi.editor.completion.CompletionItem;
 
-import org.openide.ErrorManager;
 
 /**Html completion test
  * This class extends TestBase class which provides access to the html editor module layer
@@ -103,17 +91,16 @@ public class HTMLCompletionQueryTest extends TestBase {
         
         JEditorPane component = new JEditorPane();
         for(int i = 0; i < doc.getLength(); i++) {
-            CompletionQuery.Result result = query.query(component, HTMLKit.class, doc, i, sup);
+            List<CompletionItem> result = query.query(component, i);
             if(result == null) {
                 getRef().println(i+" => NO RESULT");
             } else {
-                List data = result.getData();
-                if(data == null) {
+                if(result == null) {
                     getRef().println(i + " => NO RESULT");
                 } else {
                     StringBuffer sb = new StringBuffer();
                     sb.append('[');
-                    Iterator itr = data.iterator();
+                    Iterator itr = result.iterator();
                     while(itr.hasNext()) {
                         sb.append(itr.next());
                         if(itr.hasNext()) sb.append(',');
