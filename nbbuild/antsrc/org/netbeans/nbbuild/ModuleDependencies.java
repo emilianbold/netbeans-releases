@@ -262,20 +262,21 @@ public class ModuleDependencies extends Task {
                 m.isEssential = essential == null ? 
                     false : 
                     Boolean.parseBoolean(file.getManifest().getMainAttributes().getValue("AutoUpdate-Essential-Module"));
-                m.isAutoload = determineAutoload(f);
+                m.isAutoload = determineParameter(f, "autoload");
+                m.isEager = determineParameter(f, "eager");
                 modules.add (m);
             }
         }
     }
     
-    private boolean determineAutoload(File moduleFile) throws IOException {
+    private boolean determineParameter(File moduleFile, String parameter) throws IOException {
         String name = moduleFile.getName();
         name = name.substring(0, name.length() - 3) + "xml";
         File configFile = new File(moduleFile.getParentFile().getParentFile(), "config/Modules/" + name);
         log ("config " + configFile, Project.MSG_DEBUG);
         if (!configFile.exists())
             return true; // probably a classpath module, treat like autoload
-        final String fragment = "<param name=\"autoload\">true</param>";
+        final String fragment = "<param name=\"" + parameter + "\">true</param>";
         BufferedReader br = new BufferedReader (new FileReader (configFile));
         try {
             String line;
@@ -497,6 +498,7 @@ public class ModuleDependencies extends Task {
                     ModuleInfo theModuleOneIsDependingOn = findModuleInfo(ds);
                     if (!theModuleOneIsDependingOn.showInAutoupdate && 
                         !theModuleOneIsDependingOn.isAutoload &&
+                        !theModuleOneIsDependingOn.isEager &&
                         !theModuleOneIsDependingOn.isEssential) {
                         // regular module, not a kit
                         Set<String> kits = dependingKits.get(theModuleOneIsDependingOn);
@@ -555,6 +557,13 @@ public class ModuleDependencies extends Task {
                     registerModuleInKit(module, kit, allKits);
                     w.print("  " + kit);
                     w.println();
+                }
+                w.println("No dependency between ");
+                for (String kit : kits) {
+                    if (!kit.equals(lowestKitCandidate) && 
+                        !dependsOnTransitively(kit, lowestKitCandidate, allKitDeps)) {
+                        w.println ("  " + lowestKitCandidate + ", " + kit);
+                    }
                 }
             }
         }
@@ -969,6 +978,7 @@ public class ModuleDependencies extends Task {
         public boolean showInAutoupdate;
         public boolean isEssential;
         public boolean isAutoload;
+        public boolean isEager;
         
         public ModuleInfo (String g, File f, String a) {
             this.group = g;
