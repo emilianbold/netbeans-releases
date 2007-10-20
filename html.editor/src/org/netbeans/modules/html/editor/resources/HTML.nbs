@@ -50,7 +50,7 @@ SKIP:DECLARATION
 S = tags;
 tags = ( tag | etext | comment )*;
 
-etext = <TEXT> | <CHARACTER> | <SCRIPT>;
+etext = <TEXT> | <CHARACTER> | <SCRIPT> | <STYLE>;
 
 tag = <TAG_OPEN_SYMBOL> ( startTag | endTag );
 startTag = <TAG_OPEN> (attribute)* <TAG_CLOSE_SYMBOL>;
@@ -64,7 +64,8 @@ attribute = <ARGUMENT> <OPERATOR,'='> <VALUE>;
 # AST generator
 AST {
     process:org.netbeans.modules.html.editor.HTML.process;
-    process_embedded: "false";
+    process_embedded: "true";
+    skip_embedded: "true";
 }
 
 ########### indentation ########################################################

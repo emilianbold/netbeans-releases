@@ -152,13 +152,16 @@ public class LLSyntaxAnalyser {
             Language language = LanguagesManager.getDefault ().getLanguage (mimeType);
             TokenInput in = TokenInputUtils.create (tokens);
             ASTNode r = language.getAnalyser ().read (in, skipErrors, cancel);
+            if(r == null) {
+                continue;
+            }
             Feature astProperties = language.getFeature ("AST");
             if (astProperties != null) {
                 String process_embedded = (String)astProperties.getValue("process_embedded");
                 if(process_embedded == null || Boolean.valueOf(process_embedded)) {
                     ASTNode newRoot = (ASTNode) astProperties.getValue (
                         "process", 
-                        SyntaxContext.create (null, ASTPath.create (root))
+                        SyntaxContext.create (null, ASTPath.create (r))
                     );
                     if (newRoot != null)
                         r = newRoot;
@@ -317,10 +320,15 @@ public class LLSyntaxAnalyser {
                     return root;
                 } else
                 if (!isCompatible (token, input.next (1))) {
-                    if (!skipErrors)
-                        throw new ParseException ("Unexpected token " + input.next (1) + ". Expecting " + token, root);
-                    createErrorNode (node, input.getOffset ()).addChildren (readEmbeddings (input.read (), skipErrors, embeddings, cancel));
-                    //S ystem.out.println(input.getIndex () + ": unrecognized token " + token + "<>" + input.next (1));
+                    if(input.next(1).getType().equals("GAP")) {
+//                        System.out.println("token " + token + " is not compatible with " + input.next(1));
+                        input.read();
+                    } else {
+                        if (!skipErrors)
+                            throw new ParseException ("Unexpected token " + input.next (1) + ". Expecting " + token, root);
+                        createErrorNode (node, input.getOffset ()).addChildren (readEmbeddings (input.read (), skipErrors, embeddings, cancel));
+                        //S ystem.out.println(input.getIndex () + ": unrecognized token " + token + "<>" + input.next (1));
+                    }
                 } else {
                     node.addChildren (readEmbeddings (input.read (), skipErrors, embeddings, cancel));
                     //S ystem.out.println(input.getIndex () + ": token readed " + input.next (1));
@@ -397,6 +405,14 @@ public class LLSyntaxAnalyser {
             String mimeType = children.get (0).getMimeType ();
             Language oLanguage = LanguagesManager.getDefault ().
                 getLanguage (token.getMimeType ());
+            
+            Feature astp = LanguagesManager.getDefault().getLanguage(mimeType).getFeature ("AST");
+            if (astp != null) {
+                String skip_embedded = (String)astp.getValue("skip_embedded");
+                if(skip_embedded != null && Boolean.valueOf(skip_embedded)) {
+                    return skipEmbedding (token, embeddings, children, mimeType);
+                }
+            }
             Feature f = oLanguage.getPreprocessorImport ();
             if (f != null && 
                 mimeType.equals (f.getValue ("mimeType")) &&
@@ -412,8 +428,8 @@ public class LLSyntaxAnalyser {
 
             Language language = LanguagesManager.getDefault ().
                 getLanguage (children.get (0).getMimeType ());
-            ASTNode root = language.getAnalyser ().read (in, skipErrors, embeddings, cancel);
             Feature astProperties = language.getFeature ("AST");
+            ASTNode root = language.getAnalyser ().read (in, skipErrors, embeddings, cancel);
             if (astProperties != null) {
                 String process_embedded = (String)astProperties.getValue("process_embedded");
                 if(process_embedded == null || Boolean.valueOf(process_embedded)) {
@@ -457,6 +473,8 @@ public class LLSyntaxAnalyser {
                 ASTToken joinedToken = join (token1, token2);
                 l.add (joinedToken);
                 l.addAll (children.subList (1, children.size ()));
+            } else {
+                l.addAll (children);
             }
         }
         return ASTToken.create (

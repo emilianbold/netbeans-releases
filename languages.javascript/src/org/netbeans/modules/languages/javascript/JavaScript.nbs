@@ -181,7 +181,7 @@ SourceElement = Statement;
 FormalParameterList = [Parameter ("," Parameter)*]; 
 Parameter = <js_identifier>;
 
-Statement = EmptyStatement | ExpressionStatement | VariableStatement | 
+Statement = <GAP> | EmptyStatement | ExpressionStatement | VariableStatement | 
     Block | LabelledStatement | IfStatement | SwitchStatement | 
     DoStatement | WhileStatement | ForStatement | 
     WithStatement | ContinueStatement | BreakStatement | ReturnStatement | 
@@ -219,7 +219,7 @@ Catch = "catch" "(" <js_identifier> ")" Block;
 Finally = "finally" Block;
 
 ExpressionInitial = AssignmentExpressionInitial ("," AssignmentExpression)*;
-Expression = AssignmentExpression ("," AssignmentExpression)*;
+Expression = <GAP> | AssignmentExpression ("," AssignmentExpression)*;
 ExpressionInitialNoIn = AssignmentExpressionInitialNoIn ("," AssignmentExpressionNoIn)*;
 ExpressionNoIn = AssignmentExpressionNoIn ("," AssignmentExpressionNoIn)*;
 AssignmentExpression = ConditionalExpression (AssignmentOperator ConditionalExpression)*;
@@ -267,7 +267,8 @@ AdditiveExpression = MultiplicativeExpression (("+" | "-") MultiplicativeExpress
 AdditiveExpressionInitial = MultiplicativeExpressionInitial (("+" | "-") MultiplicativeExpression)*;
 MultiplicativeExpression = UnaryExpression (("*" | "/" | "%") UnaryExpression)*;
 MultiplicativeExpressionInitial = UnaryExpressionInitial (("*" | "/" | "%") UnaryExpression)*;
-UnaryExpression = PostfixExpression | 
+UnaryExpression = <GAP> | 
+    PostfixExpression | 
     "delete" UnaryExpression |
     "void" UnaryExpression |
     "typeof" UnaryExpression |
