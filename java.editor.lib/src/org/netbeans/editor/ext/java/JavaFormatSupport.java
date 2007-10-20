@@ -41,12 +41,15 @@
 
 package org.netbeans.editor.ext.java;
 
+import java.util.prefs.Preferences;
 import org.netbeans.editor.TokenID;
 import org.netbeans.editor.TokenContextPath;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.ext.FormatTokenPosition;
 import org.netbeans.editor.ext.ExtFormatSupport;
 import org.netbeans.editor.ext.FormatWriter;
+import org.openide.util.Lookup;
+import org.openide.util.NbPreferences;
 
 /**
 * Java indentation services are located here
@@ -640,7 +643,7 @@ public class JavaFormatSupport extends ExtFormatSupport {
                 case JavaTokenContext.DEFAULT_ID:
                     TokenItem swss = findSwitch(token);
                     if (swss != null) {
-                        indent = getTokenIndent(swss);
+                        indent = shiftSwitch() ? (getTokenIndent(swss) + getShiftWidth()) : getTokenIndent(swss);
                     }
                     break;
 
@@ -1199,6 +1202,32 @@ public class JavaFormatSupport extends ExtFormatSupport {
             return ftp2;
         else
             return ftp;
+    }
+
+    private boolean shiftSwitch() {
+        try {
+            ClassLoader cl = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
+            Class accpClass = cl.loadClass("org.netbeans.modules.java.ui.FmtOptions"); // NOI18N
+            if (accpClass == null) {
+                return true;
+            }
+            Preferences p = NbPreferences.forModule(accpClass);
+            if (p == null) {
+                return true;
+            }
+            p = p.node("CodeStyle");
+            if (p == null) {
+                return true;
+            }        
+            p = p.node("default");
+            if (p == null) {
+                return true;
+            }        
+            return p.getBoolean("indentCasesFromSwitch", true);
+            
+        } catch (ClassNotFoundException ex) {
+            return true;
+        }
     }
 
 }
