@@ -940,7 +940,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
                     else
                         sb.append("         '\""+childName+"\":{\"@uri\":\"'+this."+childName+".getUri()+'\"},'+\n");
                 }else if(child.isRoot()) {
-                    sb.append("         this."+childName+".toString()+\n");
+                    sb.append("         this."+childName+".toString()+','+\n");
                 }else
                     sb.append("         '\""+childName+"\":{\"$\":\"'+this."+childName+"+'\"},'+\n");
             }
