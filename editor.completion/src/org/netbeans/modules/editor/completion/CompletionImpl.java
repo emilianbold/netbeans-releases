@@ -873,7 +873,8 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         if (prefix != null && prefix.length() > 0) {
             int idx = 0;
             for (CompletionItem item : items) {
-                if (item.getInsertPrefix().toString().startsWith(prefix))
+                CharSequence text = item.getInsertPrefix();
+                if (text != null && text.toString().startsWith(prefix))
                     return idx;
                 idx++;
             }
