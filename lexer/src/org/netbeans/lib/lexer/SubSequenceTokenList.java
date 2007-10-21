@@ -184,7 +184,9 @@ public final class SubSequenceTokenList<T extends TokenId> implements TokenList<
                 }
             }
             // Include previous token if it "includes" limitStartOffset (also handles gaps between tokens properly)
-            if (tokenList.tokenOffset(limitStartIndex - 1) + token(limitStartIndex - 1).length() > limitStartOffset) {
+            if (limitStartIndex > 0 &&
+                    tokenList.tokenOffset(limitStartIndex - 1) + token(limitStartIndex - 1).length() > limitStartOffset
+            ) {
                 limitStartIndex--;
             }
         }
