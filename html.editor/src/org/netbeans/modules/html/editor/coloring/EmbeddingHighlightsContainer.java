@@ -75,7 +75,7 @@ import org.netbeans.spi.editor.highlighting.support.AbstractHighlightsContainer;
 public class EmbeddingHighlightsContainer extends AbstractHighlightsContainer {
 
     private static final Color DEFAULT_CSS_BACKGROUND_COLOR = Color.decode("#D0E8CA");
-    private static final Color DEFAULT_JAVASCRIPT_BACKGROUND_COLOR = Color.decode("#D0FFCA");
+    private static final Color DEFAULT_JAVASCRIPT_BACKGROUND_COLOR = Color.decode("#D0E8CA");
     private static final String CSS_BACKGROUND_TOKEN_NAME = "css-embedded"; //NOI18N
     private static final String JAVASCRIPT_BACKGROUND_TOKEN_NAME = "javascript-embedded"; //NOI18N
     private static final String HTML_MIME_TYPE = "text/html"; //NOI18N
