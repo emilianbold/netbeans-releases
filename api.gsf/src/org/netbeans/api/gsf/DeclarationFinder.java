@@ -42,8 +42,12 @@ package org.netbeans.api.gsf;
 
 import java.net.URL;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import javax.swing.text.Document;
 
+import org.netbeans.api.gsf.annotations.CheckForNull;
 import org.netbeans.api.gsf.annotations.NonNull;
 import org.openide.filesystems.FileObject;
 
@@ -81,6 +85,7 @@ public interface DeclarationFinder {
     @NonNull
     public OffsetRange getReferenceSpan(@NonNull Document doc, int caretOffset);
 
+    
     /**
      * Holder object for return values from the DeclarationFinder#findDeclaration method.
      * The constant NONE object should be returned when finding a declaration failed.
@@ -91,6 +96,7 @@ public interface DeclarationFinder {
         private final FileObject fileObject;
         private final int offset;
         private final URL url;
+        private List<AlternativeLocation> alternatives;
         /** Associated element, if any */
         private Element element;
 
@@ -111,6 +117,23 @@ public interface DeclarationFinder {
             this.offset = -1;
         }
         
+        public void addAlternative(AlternativeLocation location) {
+            if (alternatives == null) {
+                alternatives = new ArrayList<AlternativeLocation>();
+            }
+            
+            alternatives.add(location);
+        }
+        
+        @CheckForNull
+        public List<AlternativeLocation> getAlternativeLocations() {
+            if (alternatives != null) {
+                return alternatives;
+            } else {
+                return Collections.emptyList();
+            }
+        }
+        
         public URL getUrl() {
             return url;
         }
@@ -127,6 +150,7 @@ public interface DeclarationFinder {
             return element;
         }
 
+        @Override
         public String toString() {
             if (this == NONE) {
                 return "NONE";
@@ -138,5 +162,11 @@ public interface DeclarationFinder {
 
             return fileObject.getNameExt() + ":" + offset;
         }
+    }
+    
+    public interface AlternativeLocation extends Comparable<AlternativeLocation> {
+        Element getElement();
+        String getDisplayHtml(HtmlFormatter formatter);
+        DeclarationLocation getLocation();
     }
 }
