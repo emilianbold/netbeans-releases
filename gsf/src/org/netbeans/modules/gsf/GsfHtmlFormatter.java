@@ -61,15 +61,24 @@ public class GsfHtmlFormatter extends HtmlFormatter {
     }
 
     public void reset() {
+        textLength = 0;
         sb.setLength(0);
     }
 
     public void appendHtml(String html) {
         sb.append(html);
+        // Not sure what to do about maxLength here... but presumably
     }
 
     public void appendText(String text) {
         for (int i = 0, n = text.length(); i < n; i++) {
+            if (textLength >= maxLength) {
+                if (textLength == maxLength) {
+                    sb.append("...");
+                    textLength += 3;
+                }
+                break;
+            }
             char c = text.charAt(i);
 
             switch (c) {
@@ -94,6 +103,8 @@ public class GsfHtmlFormatter extends HtmlFormatter {
             default:
                 sb.append(c);
             }
+            
+            textLength++;
         }
     }
 

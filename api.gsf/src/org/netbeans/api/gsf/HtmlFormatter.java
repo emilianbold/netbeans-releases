@@ -52,6 +52,11 @@ package org.netbeans.api.gsf;
  * @author Tor Norbye
  */
 public abstract class HtmlFormatter {
+    protected int textLength;
+    protected int maxLength = Integer.MAX_VALUE;
+    public void setMaxLength(int maxLength) {
+        this.maxLength = maxLength;
+    }
     public abstract void reset();
     public abstract void appendHtml(String html);
     public abstract void appendText(String text);
