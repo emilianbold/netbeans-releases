@@ -43,12 +43,15 @@ package org.netbeans.modules.ruby;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
@@ -82,7 +85,9 @@ import org.jruby.ast.VCallNode;
 import org.jruby.ast.types.INameNode;
 import org.netbeans.api.gsf.CompilationInfo;
 import org.netbeans.api.gsf.DeclarationFinder.DeclarationLocation;
+import org.netbeans.api.gsf.Element;
 import org.netbeans.api.gsf.GsfTokenId;
+import org.netbeans.api.gsf.HtmlFormatter;
 import org.netbeans.api.gsf.NameKind;
 import org.netbeans.api.gsf.OffsetRange;
 import org.netbeans.api.lexer.Token;
@@ -103,6 +108,7 @@ import org.netbeans.modules.ruby.lexer.RubyCommentTokenId;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -123,6 +129,8 @@ import org.openide.util.Exceptions;
  * @author Tor Norbye
  */
 public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder {
+    static final boolean SHOW_ALTERNATIVES = Boolean.getBoolean("ruby.show_all_decls");
+    
     /** An increasing number; I will be using this number modulo the  */
     private static int methodSelector = 0;
 
@@ -276,20 +284,9 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
                         return DeclarationLocation.NONE;
                     }
 
-                    try {
-                        IndexedClass candidate =
-                            findBestClassMatch(classes, (BaseDocument)info.getDocument(), null,
-                                null, index);
-
-                        if (candidate != null) {
-                            IndexedElement com = candidate;
-                            Node node = AstUtilities.getForeignNode(com, null);
-
-                            return new DeclarationLocation(com.getFile().getFileObject(),
-                                node.getPosition().getStartOffset(), com);
-                        }
-                    } catch (IOException ioe) {
-                        Exceptions.printStackTrace(ioe);
+                    DeclarationLocation l = getClassDeclaration(info, classes, null, null, index);
+                    if (l != null) {
+                        return l;
                     }
                 } else {
                     // A method?
@@ -300,20 +297,11 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
                         methods = index.getMethods(text, null, NameKind.EXACT_NAME);
                     }
 
-                    try {
-                        IndexedMethod candidate =
-                            findBestMethodMatch(text, methods, (BaseDocument)info.getDocument(),
-                                astOffset, lexOffset, null, null, index);
+                    DeclarationLocation l = getMethodDeclaration(info, text, methods, 
+                         null, null, index, astOffset, lexOffset);
 
-                        if (candidate != null) {
-                            IndexedElement com = candidate;
-                            Node node = AstUtilities.getForeignNode(com, null);
-
-                            return new DeclarationLocation(com.getFile().getFileObject(),
-                                node.getPosition().getStartOffset(), com);
-                        }
-                    } catch (IOException ioe) {
-                        Exceptions.printStackTrace(ioe);
+                    if (l != null) {
+                        return l;
                     }
                 } // TODO: @ - field?
 
@@ -407,7 +395,7 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
                     if (method != null) {
                         // TODO - if the lhs is "foo.bar." I need to split this
                         // up and do it a bit more cleverly
-                        TypeAnalyzer analyzer = new TypeAnalyzer(index, method, closest, astOffset, lexOffset, doc, info.getFileObject());
+                        TypeAnalyzer analyzer = new TypeAnalyzer(/*info.getParserResult(),*/ index, method, closest, astOffset, lexOffset, doc, info.getFileObject());
                         type = analyzer.getType(lhs);
                     }
                 }
@@ -892,23 +880,11 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
             }
         }
 
-        try {
-            IndexedMethod candidate =
-                findBestMethodMatch(name, methods, (BaseDocument)info.getDocument(), caretOffset,
-                    lexOffset, path, closest, index);
+        int astOffset = caretOffset;
+        DeclarationLocation l = getMethodDeclaration(info, name, methods, 
+             path, closest, index, astOffset, lexOffset);
 
-            if (candidate != null) {
-                IndexedElement com = candidate;
-                Node node = AstUtilities.getForeignNode(com, null);
-
-                return new DeclarationLocation(com.getFile().getFileObject(),
-                    node.getPosition().getStartOffset(), com);
-            }
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
-        }
-
-        return DeclarationLocation.NONE;
+        return l;
     }
 
     private DeclarationLocation findClass(String name, String possibleFqn, CompilationInfo info,
@@ -962,24 +938,86 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
             }
         }
 
+        return getClassDeclaration(info, classes, path, closest, index);
+    }
+    
+    private DeclarationLocation getClassDeclaration(CompilationInfo info, Set<IndexedClass> classes, 
+            AstPath path, Node closest, RubyIndex index) {
         try {
-            IndexedClass candidate =
+            final IndexedClass candidate =
                 findBestClassMatch(classes, (BaseDocument)info.getDocument(), path, closest, index);
 
             if (candidate != null) {
                 IndexedElement com = candidate;
                 Node node = AstUtilities.getForeignNode(com, null);
 
-                return new DeclarationLocation(com.getFile().getFileObject(),
+                DeclarationLocation loc = new DeclarationLocation(com.getFile().getFileObject(),
                     node.getPosition().getStartOffset(), com);
+                
+                if (SHOW_ALTERNATIVES && classes.size() > 1) {
+                    // Could the :nodoc: alternatives: if there is only one nodoc'ed alternative
+                    // don't ask user!
+                    int not_nodoced = 0;
+                    for (final IndexedClass clz : classes) {
+                        if (!clz.isNoDoc()) {
+                            not_nodoced++;
+                        }
+                    }
+                    if (not_nodoced >= 2) {
+                        for (final IndexedClass clz : classes) {
+                            loc.addAlternative(new RubyAltLocation(clz, clz == candidate));
+                        }
+                    }
+                }
+                
+                return loc;
             }
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
         }
-
+     
         return DeclarationLocation.NONE;
     }
+    
+    private DeclarationLocation getMethodDeclaration(CompilationInfo info, String name, Set<IndexedMethod> methods, 
+            AstPath path, Node closest, RubyIndex index, int astOffset, int lexOffset) {
+        try {
+            IndexedMethod candidate =
+                findBestMethodMatch(name, methods, (BaseDocument)info.getDocument(),
+                    astOffset, lexOffset, path, closest, index);
 
+            if (candidate != null) {
+                IndexedElement com = candidate;
+                Node node = AstUtilities.getForeignNode(com, null);
+
+                DeclarationLocation loc = new DeclarationLocation(com.getFile().getFileObject(),
+                    node.getPosition().getStartOffset(), com);
+
+                if (SHOW_ALTERNATIVES && methods.size() > 1) {
+                    // Could the :nodoc: alternatives: if there is only one nodoc'ed alternative
+                    // don't ask user!
+                    int not_nodoced = 0;
+                    for (final IndexedMethod mtd : methods) {
+                        if (!mtd.isNoDoc()) {
+                            not_nodoced++;
+                        }
+                    }
+                    if (not_nodoced >= 2) {
+                        for (final IndexedMethod mtd : methods) {
+                            loc.addAlternative(new RubyAltLocation(mtd, mtd == candidate));
+                        }
+                    }
+                }
+
+                return loc;
+            }
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
+        }
+     
+        return DeclarationLocation.NONE;
+    }
+    
     /** Locate the method declaration for the given method call */
     public IndexedMethod findMethodDeclaration(CompilationInfo info, Node callNode, AstPath path) {
         int astOffset = AstUtilities.getCallRange(callNode).getStart();
@@ -1072,7 +1110,7 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
                 if (method != null) {
                     // TODO - if the lhs is "foo.bar." I need to split this
                     // up and do it a bit more cleverly
-                    TypeAnalyzer analyzer = new TypeAnalyzer(index, method, node, astOffset, lexOffset, 
+                    TypeAnalyzer analyzer = new TypeAnalyzer(/*info.getParserResult(),*/ index, method, node, astOffset, lexOffset, 
                             (BaseDocument)doc, info.getFileObject());
                     type = analyzer.getType(lhs);
                 }
@@ -1301,10 +1339,12 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
         return DeclarationLocation.NONE;
     }
 
-    IndexedClass findBestClassMatch(Set<IndexedClass> classes, BaseDocument doc,
+    IndexedClass findBestClassMatch(Set<IndexedClass> classSet, BaseDocument doc,
         AstPath path, Node reference, RubyIndex index) {
         // Make sure that the best fit method actually has a corresponding valid source location
         // and parse tree
+        Set<IndexedClass> classes = new HashSet<IndexedClass>(classSet);
+        
         while (!classes.isEmpty()) {
             IndexedClass clz = findBestClassMatchHelper(classes, doc, path, reference, index);
             Node node = AstUtilities.getForeignNode(clz, null);
@@ -1476,10 +1516,13 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
         }
     }
 
-    IndexedMethod findBestMethodMatch(String name, Set<IndexedMethod> methods,
+    IndexedMethod findBestMethodMatch(String name, Set<IndexedMethod> methodSet,
         BaseDocument doc, int astOffset, int lexOffset, AstPath path, Node call, RubyIndex index) {
         // Make sure that the best fit method actually has a corresponding valid source location
         // and parse tree
+
+        Set<IndexedMethod> methods = new HashSet<IndexedMethod>(methodSet);
+        
         while (!methods.isEmpty()) {
             IndexedMethod method =
                 findBestMethodMatchHelper(name, methods, doc, astOffset, lexOffset, path, call, index);
@@ -2062,5 +2105,178 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
         }
 
         return null;
+    }
+    
+    private class RubyAltLocation implements AlternativeLocation {
+        private IndexedElement element;
+        private boolean isPreferred;
+        private String cachedDisplayItem;
+        
+        RubyAltLocation(IndexedElement element, boolean isPreferred) {
+            this.element = element;
+            this.isPreferred = isPreferred;
+        }
+
+        public String getDisplayHtml(HtmlFormatter formatter) {
+            formatter.setMaxLength(120);
+            if (cachedDisplayItem == null) {
+                formatter.reset();
+
+                boolean nodoc = element.isNoDoc();
+                boolean documented = element.isDocumented();
+                if (isPreferred) {
+                    formatter.emphasis(true);
+                } else if (nodoc) {
+                    formatter.deprecated(true);
+                }
+
+                if (element instanceof IndexedMethod) {
+                    if (element.getFqn() != null) {
+                        formatter.appendText(element.getFqn());
+                        formatter.appendText(".");
+                    }
+                    formatter.appendText(element.getName());
+                    IndexedMethod method = (IndexedMethod)element;
+                    Collection<String> parameters = method.getParameters();
+
+                    if ((parameters != null) && (parameters.size() > 0)) {
+                        formatter.appendText("("); // NOI18N
+
+                        Iterator<String> it = parameters.iterator();
+
+                        while (it.hasNext()) { // && tIt.hasNext()) {
+                            formatter.parameters(true);
+                            formatter.appendText(it.next());
+                            formatter.parameters(false);
+
+                            if (it.hasNext()) {
+                                formatter.appendText(", "); // NOI18N
+                            }
+                        }
+
+                        formatter.appendText(")"); // NOI18N
+                    }
+                } else {
+                    formatter.appendText(element.getFqn());
+                }
+
+                String filename = null;
+                String url = element.getFilenameUrl();
+                if (url.indexOf("rubystubs") != -1) {
+                    filename = NbBundle.getMessage(DeclarationFinder.class, "RubyLib");
+                    
+                    if (url.indexOf("/stub_") == -1) {
+                        // Not a stub file, such as ftools.rb
+                        // TODO - don't hardcode for version 0.2
+                        String stub = "rubystubs/0.2/";
+                        int stubStart = url.indexOf(stub);
+                        if (stubStart != -1) {
+                            filename = filename+": " + url.substring(stubStart);
+                        }
+                    }
+                } else {
+                    FileObject fo = element.getFileObject();
+                    if (fo != null) {
+                        filename = fo.getNameExt();
+                    }
+                    
+                    // TODO - make this work with 1.9 etc.
+                    //final String GEM_LOC = "lib/ruby/gems/1.8/gems/";
+                    Pattern p = Pattern.compile("lib/ruby/gems/\\d+\\.\\d+/gems/");
+                    Matcher m = p.matcher(url);
+                    //int gemIndex = url.indexOf(GEM_LOC);
+                    //if (gemIndex != -1) {
+                    if (m.find()) {
+                        //int gemIndex = m.start();
+                        //gemIndex += GEM_LOC.length();
+                        int gemIndex = m.end();
+                        int gemEnd = url.indexOf('/', gemIndex);
+                        if (gemEnd != -1) {
+                            //int libIndex = url.indexOf("lib/", gemEnd);
+                            //if (libIndex != -1) {
+                            //    filename = url.substring(libIndex+4);
+                            //}
+                            filename = url.substring(gemIndex, gemEnd) + ": " + filename;
+                        }
+                    }
+                }
+
+                if (filename != null) {
+                    formatter.appendText(" ");
+                    formatter.appendText(NbBundle.getMessage(DeclarationFinder.class, "In"));
+                    formatter.appendText(" ");
+                    formatter.appendText(filename);
+                }
+                
+                if (documented) {
+                    formatter.appendText(" ");
+                    formatter.appendText(NbBundle.getMessage(DeclarationFinder.class, "Documented"));
+                } else if (nodoc) {
+                    formatter.appendText(" ");
+                    formatter.appendText(NbBundle.getMessage(DeclarationFinder.class, "NoDoced"));
+                }
+
+                if (isPreferred) {
+                    formatter.emphasis(false);
+                } else if (nodoc) {
+                    formatter.deprecated(false);
+                }
+
+                cachedDisplayItem = formatter.getText();
+            }
+            
+            return cachedDisplayItem;
+        }
+
+        public DeclarationLocation getLocation() {
+            Node node = AstUtilities.getForeignNode(element, null);
+            int line = node != null ? node.getPosition().getStartOffset() : -1;
+            DeclarationLocation loc = new DeclarationLocation(element.getFileObject(),
+                line, element);
+
+            return loc;
+        }
+
+        public Element getElement() {
+            return element;
+        }
+
+        public int compareTo(AlternativeLocation alternative) {
+            RubyAltLocation alt = (RubyAltLocation)alternative;
+
+            // The preferred item should be chosen
+            if (isPreferred) {
+                return -1;
+            } else if (alt.isPreferred) {
+                return 1;
+            } // Can't both be so no else == check
+            
+            // Nodoced items last
+            if (element.isNoDoc() != alt.element.isNoDoc()) {
+                return element.isNoDoc() ? 1 : -1;
+            }
+            
+            // Documented items on top
+            if (element.isDocumented() != alt.element.isDocumented()) {
+                return element.isDocumented() ? -1 : 1;
+            }
+
+            // TODO: Sort by gem?
+            
+            // Sort by containing clz - just do fqn here?
+            String thisIn = element.getIn() != null ? element.getIn() : "";
+            String thatIn = alt.element.getIn() != null ? alt.element.getIn() : "";
+            int cmp = thisIn.compareTo(thatIn);
+            if (cmp != 0) {
+                return cmp;
+            }
+
+            // Sort by file
+            String thisFile = element.getFileObject() != null ? element.getFileObject().getNameExt() : "";
+            String thatFile = alt.element.getFileObject() != null ? alt.element.getFileObject().getNameExt() : "";
+            cmp = thisFile.compareTo(thatFile);
+            
+            return cmp;
+        }
     }
 }
