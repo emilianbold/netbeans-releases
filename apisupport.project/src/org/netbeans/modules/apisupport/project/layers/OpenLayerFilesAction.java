@@ -45,7 +45,6 @@ import java.awt.Toolkit;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -121,58 +120,64 @@ public class OpenLayerFilesAction extends CookieAction {
                             // keep going
                             continue;
                         } else if (fs instanceof WritableXMLFileSystem) {
-                            // try current module project's layer file.
-                            FileObject originalF = fs.findResource(f.getPath());
-                            if (originalF != null) {
-                                URL url = (URL) f.getAttribute("WritableXMLFileSystem.location"); // NOI18N
-                                FileObject layerFileObject = URLMapper.findFileObject(url);
-                                if (layerFileObject != null) {
-                                    try {
-                                        DataObject layerDataObject = DataObject.find(layerFileObject);
-                                        openLayerFileAndFind(layerDataObject, originalF);
-//                                        Project project = FileOwnerQuery.getOwner(layerFileObject);
-//                                        if (project != null) {
-//                                            projectsSet.add(project);
-//                                        }
-                                    } catch (DataObjectNotFoundException ex) {
-                                        Exceptions.printStackTrace(ex);
-                                    }
-                                }
-                            }
                             // Now, try other layer files visible to the module project
-                            for (int i = 1; i < delegates.length; i++) {
-                                XMLFileSystem xMLFileSystem = (XMLFileSystem) delegates[i];
-                                
-                                // Have to use deprecated API to get all the Xml URLs
-                                URL[] urls = xMLFileSystem.getXmlUrls();
-                                for (URL url : urls) {
-                                    try {
-                                        // Build an XML FS for the given URL
-                                        XMLFileSystem aXMLFileSystem = new XMLFileSystem(url);
-                                        
-                                        // Find the resource using the file path
-                                        originalF = aXMLFileSystem.findResource(f.getPath());
-                                        
-                                        // Found?
-                                        if (originalF != null) {
-                                            // locate the layer's file object and open it
-                                            FileObject layerFileObject = URLMapper.findFileObject(url);
-                                            if (layerFileObject != null) {
-                                                try {
-                                                    DataObject layerDataObject = DataObject.find(layerFileObject);
-                                                    openLayerFileAndFind(layerDataObject, originalF);
-                                                    
-//                                                    Project project = FileOwnerQuery.getOwner(layerFileObject);
-//                                                    if (project != null) {
-//                                                        projectsSet.add(project);
-//                                                    }
-                                                } catch (DataObjectNotFoundException ex) {
-                                                    Exceptions.printStackTrace(ex);
-                                                }
+                            for (int i = 0; i < delegates.length; i++) {
+                                fs = delegates[i];
+                                FileObject originalF = fs.findResource(f.getPath());
+                                if (fs instanceof WritableXMLFileSystem) {
+                                    // Issue # 118839
+                                    // Avoid CCE
+                                    // try current module project's layer file.
+                                    if (originalF != null) {
+                                        URL url = (URL) f.getAttribute("WritableXMLFileSystem.location"); // NOI18N
+                                        FileObject layerFileObject = URLMapper.findFileObject(url);
+                                        if (layerFileObject != null) {
+                                            try {
+                                                DataObject layerDataObject = DataObject.find(layerFileObject);
+                                                openLayerFileAndFind(layerDataObject, originalF);
+//                                                Project project = FileOwnerQuery.getOwner(layerFileObject);
+//                                                if (project != null) {
+//                                                    projectsSet.add(project);
+//                                                }
+                                            } catch (DataObjectNotFoundException ex) {
+                                                Exceptions.printStackTrace(ex);
                                             }
                                         }
-                                    }catch (SAXException ex) {
-                                        Exceptions.printStackTrace(ex);
+                                    }
+                                } else if (delegates[i] instanceof XMLFileSystem) {
+                                    XMLFileSystem xMLFileSystem = (XMLFileSystem) delegates[i];
+                                    
+                                    // Have to use deprecated API to get all the Xml URLs
+                                    URL[] urls = xMLFileSystem.getXmlUrls();
+                                    for (URL url : urls) {
+                                        try {
+                                            // Build an XML FS for the given URL
+                                            XMLFileSystem aXMLFileSystem = new XMLFileSystem(url);
+                                            
+                                            // Find the resource using the file path
+                                            originalF = aXMLFileSystem.findResource(f.getPath());
+                                            
+                                            // Found?
+                                            if (originalF != null) {
+                                                // locate the layer's file object and open it
+                                                FileObject layerFileObject = URLMapper.findFileObject(url);
+                                                if (layerFileObject != null) {
+                                                    try {
+                                                        DataObject layerDataObject = DataObject.find(layerFileObject);
+                                                        openLayerFileAndFind(layerDataObject, originalF);
+                                                        
+    //                                                    Project project = FileOwnerQuery.getOwner(layerFileObject);
+    //                                                    if (project != null) {
+    //                                                        projectsSet.add(project);
+    //                                                    }
+                                                    } catch (DataObjectNotFoundException ex) {
+                                                        Exceptions.printStackTrace(ex);
+                                                    }
+                                                }
+                                            }
+                                        }catch (SAXException ex) {
+                                            Exceptions.printStackTrace(ex);
+                                        }
                                     }
                                 }
                             }
