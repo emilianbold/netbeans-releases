@@ -82,7 +82,7 @@ class DependencyChecker extends Object {
                     }
                     break;
                 case (Dependency.TYPE_MODULE) :
-                    if (matchDependencyModule (dep, modules)) {
+                    if (matchDependencyModule (dep, modules) != null) {
                         // ok
                     } else {
                         // bad, report missing module
@@ -100,6 +100,73 @@ class DependencyChecker extends Object {
         return res;
     }
     
+    public static Set<Dependency> findBrokenDependenciesTransitive (ModuleInfo info, Collection<ModuleInfo> modules, Set<ModuleInfo> seen) {
+        if (seen.contains (info)) {
+            return Collections.emptySet ();
+        }
+        seen.add (info);
+        Set<Dependency> res = new HashSet<Dependency> ();
+        for (Dependency dep : filterTypeRecommends (info.getDependencies ())) {
+            err.log(Level.FINE, "Dependency[" + dep.getType () + "]: " + dep);
+            ModuleInfo m = null;
+            switch (dep.getType ()) {
+                case (Dependency.TYPE_REQUIRES) :
+                    m = findModuleMatchesDependencyRequires (dep, modules);
+                    if (m != null) {
+                        res.addAll (findBrokenDependenciesTransitive (m, modules, seen));
+                    } else {
+                        // bad, report missing module
+                        res.add (dep);
+                    }
+                    break;
+                case (Dependency.TYPE_NEEDS) :
+                    m = findModuleMatchesDependencyRequires (dep, modules);
+                    if (m != null) {
+                        res.addAll (findBrokenDependenciesTransitive (m, modules, seen));
+                    } else {
+                        // bad, report missing module
+                        res.add (dep);
+                    }
+                    break;
+                case (Dependency.TYPE_RECOMMENDS) :
+                    m = findModuleMatchesDependencyRequires (dep, modules);
+                    if (m != null) {
+                        res.addAll (findBrokenDependenciesTransitive (m, modules, seen));
+                    } else {
+                        // bad, report missing module
+                        res.add (dep);
+                    }
+                    break;
+                case (Dependency.TYPE_MODULE) :
+                    m = matchDependencyModule (dep, modules);
+                    if (m != null) {
+                        res.addAll (findBrokenDependenciesTransitive (m, modules, seen));
+                    } else {
+                        // bad, report missing module
+                        res.add (dep);
+                    }
+                    break;
+                case (Dependency.TYPE_JAVA) :
+                    err.log(Level.FINE, "Check dependency on Java platform. Dependency: " + dep);
+                    break;
+                default:
+                    //assert false : "Unknown type of Dependency, was " + dep.getType ();
+                    err.log(Level.FINE, "Uncovered Dependency " + dep);                    
+            }
+        }
+        return res;
+    }
+    
+    private static Set<Dependency> filterTypeRecommends (Collection<Dependency> deps) {
+        Set<Dependency> res = new HashSet<Dependency> ();
+        for (Dependency dep : deps) {
+            if (Dependency.TYPE_RECOMMENDS != dep.getType ()) {
+                res.add (dep);
+            }
+        }
+        return res;
+    }
+    
     static ModuleInfo findModuleMatchesDependencyRequires (Dependency dep, Collection<ModuleInfo> modules) {
         for (ModuleInfo info : modules) {
             if (Arrays.asList (info.getProvides ()).contains (dep.getName ())) {
@@ -109,14 +176,14 @@ class DependencyChecker extends Object {
         return null;
     }
     
-    private static boolean matchDependencyModule (Dependency dep, Collection<ModuleInfo> modules) {
+    private static ModuleInfo matchDependencyModule (Dependency dep, Collection<ModuleInfo> modules) {
         for (ModuleInfo module : modules) {
             if (checkDependencyModule (dep, module)) {
-                return true;
+                return module;
             }
         }
         
-        return false;
+        return null;
     }
     
     static boolean checkDependencyModuleAllowEqual (Dependency dep, ModuleInfo module) {

@@ -602,8 +602,14 @@ public class Utilities {
     
     static Set<String> getBrokenDependenciesInInstalledModules (UpdateElement element) {
         assert element != null : "UpdateElement cannot be null";
+        Set<Dependency> deps = new HashSet<Dependency> ();
+        for (ModuleInfo m : getModuleInfos (Collections.singleton (element))) {
+            deps.addAll (DependencyChecker.findBrokenDependenciesTransitive (m,
+                    InstalledModuleProvider.getInstalledModules ().values (),
+                    new HashSet<ModuleInfo> ()));
+        }
         Set<String> retval = new HashSet<String> ();
-        for (Dependency dep : DependencyChecker.findBrokenDependencies (collectAllDependencies (element), InstalledModuleProvider.getInstalledModules ().values ())) {
+        for (Dependency dep : deps) {
             retval.add (dep.toString ());
         }
         return retval;
@@ -800,6 +806,22 @@ public class Utilities {
      */
     public static Set<Module> findDependingModules (Module m, ModuleManager mm) {
         Set<Module> res = new HashSet<Module> ();
+        String [] provides = m.getProvides ();
+        if (provides != null && provides.length > 0) {
+            Collection<Dependency> deps = new HashSet<Dependency> ();
+            for (String token : provides) {
+                deps.addAll (Dependency.create (Dependency.TYPE_NEEDS, token));
+                deps.addAll (Dependency.create (Dependency.TYPE_REQUIRES, token));
+                deps.addAll (Dependency.create (Dependency.TYPE_RECOMMENDS, token)); // ???
+            }
+            for (ModuleInfo moduleInfo : getInstalledModules ()) {
+                Collection<Dependency> tmpDeps = new HashSet<Dependency> (deps);
+                tmpDeps.retainAll (moduleInfo.getDependencies ());
+                if (! tmpDeps.isEmpty ()) {
+                    res.add (toModule (moduleInfo));
+                }
+            }
+        }
         for (Object depO : mm.getModuleInterdependencies (m, true, false)) {
             assert depO instanceof Module : depO + " is instanceof Module";
             Module depM = (Module) depO;
