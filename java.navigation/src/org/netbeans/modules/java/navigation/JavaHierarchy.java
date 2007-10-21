@@ -50,11 +50,15 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.openide.ErrorManager;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.swing.JDialog;
+
+import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -111,8 +115,19 @@ public final class JavaHierarchy {
     public static void show(FileObject fileObject, Element[] elements,
         CompilationController compilationController) {
         if (fileObject != null) {
+            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(JavaHierarchy.class, "LBL_WaitNode"));
             JDialog dialog = ResizablePopup.getDialog();
-            dialog.setTitle(NbBundle.getMessage(JavaHierarchy.class, "TITLE_Hierarchy")); // NOI18N
+            String membersOf = "";
+            if (elements != null && elements.length > 0) {
+                List<? extends Element> elementsList = Arrays.<Element>asList(elements);
+                if (elements[0].getKind() == ElementKind.PACKAGE && elements.length > 1) {
+                    membersOf = elementsList.subList(1, elementsList.size()).toString();
+                } else {
+                    membersOf = elementsList.toString();
+                }
+            }
+            String title = NbBundle.getMessage(JavaHierarchy.class, "TITLE_Hierarchy", membersOf);            
+            dialog.setTitle(title); // NOI18N
             dialog.setContentPane(new JavaHierarchyPanel(fileObject, elements, compilationController));
             dialog.setVisible(true);
         }

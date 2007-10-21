@@ -74,17 +74,28 @@ import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
+import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author Sandip Chitale (Sandip.Chitale@Sun.Com)
  */
 public class JavaMembersPanel extends javax.swing.JPanel {
+    private static TreeModel pleaseWaitTreeModel;
+    static
+    {
+        DefaultMutableTreeNode root = new DefaultMutableTreeNode();
+        root.add(new DefaultMutableTreeNode(NbBundle.getMessage(JavaMembersPanel.class, "LBL_WaitNode"))); // NOI18N
+        pleaseWaitTreeModel = new DefaultTreeModel(root);
+    }
+
     private FileObject fileObject;
     private JavaMembersModel javaMembersModel;
     private JavaMembersModel.FilterModel javaMembersFilterModel;
@@ -444,7 +455,8 @@ public class JavaMembersPanel extends javax.swing.JPanel {
         super.addNotify();
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                applyFilter(true);                
+                applyFilter(true);
+                filterTextField.requestFocusInWindow();
             }           
         });
     }
@@ -466,106 +478,154 @@ public class JavaMembersPanel extends javax.swing.JPanel {
         }
         return super.processKeyBinding(ks, e, condition, pressed);
     }
+
+    private Component lastFocusedComponent;
     
+    private void enterBusy() {
+        javaMembersTree.setModel(pleaseWaitTreeModel);
+        JRootPane rootPane = SwingUtilities.getRootPane(JavaMembersPanel.this);
+        if (rootPane != null) {
+            rootPane.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        }
+        Window window = SwingUtilities.getWindowAncestor(this);
+        if (window != null) {
+            lastFocusedComponent = window.getFocusOwner();
+        }
+        filterTextField.setEnabled(false);  
+        caseSensitiveFilterCheckBox.setEnabled(false);
+        showInheritedToggleButton.setEnabled(false);
+        showFQNToggleButton.setEnabled(false);
+        showInnerToggleButton.setEnabled(false);
+        showConstructorsToggleButton.setEnabled(false);
+        showMethodsToggleButton.setEnabled(false);
+        showFieldsToggleButton.setEnabled(false);
+        showEnumConstantsToggleButton.setEnabled(false);
+        showProtectedToggleButton.setEnabled(false);
+        showPackageToggleButton.setEnabled(false);
+        showPrivateToggleButton.setEnabled(false);
+        showStaticToggleButton.setEnabled(false);     
+    }
+    
+    private void leaveBusy() {
+        javaMembersTree.setModel(javaMembersFilterModel);
+        JRootPane rootPane = SwingUtilities.getRootPane(JavaMembersPanel.this);
+        if (rootPane != null) {
+            rootPane.setCursor(Cursor.getDefaultCursor());
+        }
+        filterTextField.setEnabled(true);  
+        caseSensitiveFilterCheckBox.setEnabled(true);
+        showInheritedToggleButton.setEnabled(true);
+        showFQNToggleButton.setEnabled(true);
+        showInnerToggleButton.setEnabled(true);
+        showConstructorsToggleButton.setEnabled(true);
+        showMethodsToggleButton.setEnabled(true);
+        showFieldsToggleButton.setEnabled(true);
+        showEnumConstantsToggleButton.setEnabled(true);
+        showProtectedToggleButton.setEnabled(true);
+        showPackageToggleButton.setEnabled(true);
+        showPrivateToggleButton.setEnabled(true);
+        showStaticToggleButton.setEnabled(true);
+        if (lastFocusedComponent != null) {
+            if (lastFocusedComponent.isDisplayable()) {
+                lastFocusedComponent.requestFocusInWindow();
+            }
+            lastFocusedComponent = null;
+        }
+    }
+       
     private void applyFilter() {
         applyFilter(false);
     }
     
     private void applyFilter(final boolean structural) {
-        // show wait cursor
-        SwingUtilities.invokeLater(
-            new Runnable() {
-            public void run() {
-                JRootPane rootPane = SwingUtilities.getRootPane(JavaMembersPanel.this);
-                if (rootPane != null) {
-                    rootPane.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                }
-            }
-        });
-
+        if (structural) {
+            enterBusy();
+        }
+        
+        javaMembersFilterModel.setPattern(filterTextField.getText());
+        
+        JavaMembersAndHierarchyOptions.setCaseSensitive(caseSensitiveFilterCheckBox.isSelected());
+        JavaMembersAndHierarchyOptions.setShowInherited(showInheritedToggleButton.isSelected());
+        JavaMembersAndHierarchyOptions.setShowFQN(showFQNToggleButton.isSelected());
+        JavaMembersAndHierarchyOptions.setShowInner(showInnerToggleButton.isSelected());
+        JavaMembersAndHierarchyOptions.setShowConstructors(showConstructorsToggleButton.isSelected());
+        JavaMembersAndHierarchyOptions.setShowMethods(showMethodsToggleButton.isSelected());
+        JavaMembersAndHierarchyOptions.setShowFields(showFieldsToggleButton.isSelected());
+        JavaMembersAndHierarchyOptions.setShowEnumConstants(showEnumConstantsToggleButton.isSelected());
+        JavaMembersAndHierarchyOptions.setShowProtected(showProtectedToggleButton.isSelected());
+        JavaMembersAndHierarchyOptions.setShowPackage(showPackageToggleButton.isSelected());
+        JavaMembersAndHierarchyOptions.setShowPrivate(showPrivateToggleButton.isSelected());
+        JavaMembersAndHierarchyOptions.setShowStatic(showStaticToggleButton.isSelected());
+        
         // apply filters and update the tree
-        SwingUtilities.invokeLater(
+        RequestProcessor.getDefault().post(
             new Runnable() {
             public void run() {
-                try {
-                    javaMembersTree.setModel(javaMembersFilterModel);                    
-                    javaMembersFilterModel.setPattern(filterTextField.getText());
-
-                    JavaMembersAndHierarchyOptions.setCaseSensitive(caseSensitiveFilterCheckBox.isSelected());
-                    JavaMembersAndHierarchyOptions.setShowInherited(showInheritedToggleButton.isSelected());
-                    JavaMembersAndHierarchyOptions.setShowFQN(showFQNToggleButton.isSelected());
-                    JavaMembersAndHierarchyOptions.setShowInner(showInnerToggleButton.isSelected());
-                    JavaMembersAndHierarchyOptions.setShowConstructors(showConstructorsToggleButton.isSelected());
-                    JavaMembersAndHierarchyOptions.setShowMethods(showMethodsToggleButton.isSelected());
-                    JavaMembersAndHierarchyOptions.setShowFields(showFieldsToggleButton.isSelected());
-                    JavaMembersAndHierarchyOptions.setShowEnumConstants(showEnumConstantsToggleButton.isSelected());
-                    JavaMembersAndHierarchyOptions.setShowProtected(showProtectedToggleButton.isSelected());
-                    JavaMembersAndHierarchyOptions.setShowPackage(showPackageToggleButton.isSelected());
-                    JavaMembersAndHierarchyOptions.setShowPrivate(showPrivateToggleButton.isSelected());
-                    JavaMembersAndHierarchyOptions.setShowStatic(showStaticToggleButton.isSelected());
-
-                    if (structural) {
-                        javaMembersModel.update();
-                    }
-                    
-                    javaMembersFilterModel.update();
-
-                    // expand the tree
-                    for (int row = 0; row < javaMembersTree.getRowCount(); row++) {                        
-                        javaMembersTree.expandRow(row);
-                    }
-                    
-                    filterTextField.setForeground(UIManager.getColor("TextField.foreground"));
-                    String filterText = filterTextField.getText();
-                    if (filterText.trim().length() > 0) {
-                        // select first matching
-                        for (int row = 0; row < javaMembersTree.getRowCount(); row++) {
-                            Object o = javaMembersTree.getPathForRow(row).getLastPathComponent();
-                            if (o instanceof JavaElement) {
-                                JavaElement javaElement = (JavaElement) o;
-                                ElementKind elementKind = javaElement.getElementKind();
-                                if (
-//                                    elementKind == ElementKind.CLASS ||
-//                                    elementKind == ElementKind.INTERFACE||
-//                                    elementKind == ElementKind.ENUM ||
-//                                    elementKind == ElementKind.ANNOTATION_TYPE ||
-                                    elementKind == ElementKind.PACKAGE) {
-                                        continue;
-                                }
-                                if (JavaMembersModel.patternMatch((JavaElement)o, filterText)) {
-                                    javaMembersTree.setSelectionRow(row);
-                                    break;
-                                }
-                            }
+                    try {    
+                        if (structural) {
+                            javaMembersModel.update();
                         }
-                        if (javaMembersTree.getSelectionCount() == 0) {
-                            filterTextField.setForeground(Color.red);
-                        }
-                    } else {
-                        // Try to select non-package node
-                        if (javaMembersTree.getRowCount() > 1){
-                            TreePath treePath = javaMembersTree.getPathForRow(0);
-                            if (treePath != null) {
-                                Object node = treePath.getLastPathComponent();
-                                if (node instanceof JavaElement) {
-                                    JavaElement javaELement = (JavaElement) node;
-                                    if (javaELement.getElementKind() == ElementKind.PACKAGE) {
-                                        // Select the next row
-                                        javaMembersTree.setSelectionRow(1);
-                                    } else {
-                                        // Select the first row
-                                        javaMembersTree.setSelectionRow(0);
+                        
+                        javaMembersFilterModel.update();
+                    } finally {
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                if (structural) {
+                                    leaveBusy();
+                                }
+                                // expand the tree
+                                for (int row = 0; row < javaMembersTree.getRowCount(); row++) {                        
+                                    javaMembersTree.expandRow(row);
+                                }
+                                
+                                filterTextField.setForeground(UIManager.getColor("TextField.foreground"));
+                                String filterText = filterTextField.getText();
+                                if (filterText.trim().length() > 0) {
+                                    // select first matching
+                                    for (int row = 0; row < javaMembersTree.getRowCount(); row++) {
+                                        Object o = javaMembersTree.getPathForRow(row).getLastPathComponent();
+                                        if (o instanceof JavaElement) {
+                                            JavaElement javaElement = (JavaElement) o;
+                                            ElementKind elementKind = javaElement.getElementKind();
+                                            if (
+//                                                elementKind == ElementKind.CLASS ||
+//                                                elementKind == ElementKind.INTERFACE||
+//                                                elementKind == ElementKind.ENUM ||
+//                                                elementKind == ElementKind.ANNOTATION_TYPE ||
+                                                elementKind == ElementKind.PACKAGE) {
+                                                    continue;
+                                            }    
+                                            if (JavaMembersModel.patternMatch((JavaElement)o, filterText)) {
+                                                javaMembersTree.setSelectionRow(row);
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    if (javaMembersTree.getSelectionCount() == 0) {
+                                        filterTextField.setForeground(Color.red);
+                                    }
+                                } else {
+                                    // Try to select non-package node
+                                    if (javaMembersTree.getRowCount() > 1){
+                                        TreePath treePath = javaMembersTree.getPathForRow(0);
+                                        if (treePath != null) {
+                                            Object node = treePath.getLastPathComponent();
+                                            if (node instanceof JavaElement) {
+                                                JavaElement javaELement = (JavaElement) node;
+                                                if (javaELement.getElementKind() == ElementKind.PACKAGE) {
+                                                    // Select the next row
+                                                    javaMembersTree.setSelectionRow(1);
+                                                } else {
+                                                    // Select the first row
+                                                    javaMembersTree.setSelectionRow(0);
+                                                }
+                                            }
+                                        }
                                     }
                                 }
-                            }
-                        }
-                    }
-                } finally {
-                    JRootPane rootPane = SwingUtilities.getRootPane(JavaMembersPanel.this);
-                    if (rootPane != null) {
-                        rootPane.setCursor(Cursor.getDefaultCursor());
-                    }
-                }
+                            }                       
+                         });
+                    }                    
             }
         });
     }
