@@ -122,9 +122,8 @@ public final class ChangeType implements ErrorRule<Void> {
             }
             
             if (expected != null && resolved != null) {
-                TypeMirror foundTM = info.getTrees().getTypeMirror(new TreePath(path, found));
-                if (foundTM.getKind() == TypeKind.EXECUTABLE) {
-                } else if (foundTM.getKind() != TypeKind.ERROR &&
+                if (resolved.getKind() == TypeKind.VOID || resolved.getKind() == TypeKind.EXECUTABLE) {
+                } else if (resolved.getKind() != TypeKind.ERROR &&
                 		expected.getKind() != TypeKind.ERROR) {
                     tm[0] = expected;
                     expression[0] = found;
