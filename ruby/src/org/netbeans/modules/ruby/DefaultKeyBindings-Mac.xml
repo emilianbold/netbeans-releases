@@ -58,4 +58,5 @@ made subject to such option by the copyright holder.
     <bind key="DOS-DOWN" actionName="select-element-previous"/>
     -->
     <bind key="AS-F6" actionName="run-focused-spec"/>
+    <bind key="O-I" actionName="rails-generator"/>
 </bindings>

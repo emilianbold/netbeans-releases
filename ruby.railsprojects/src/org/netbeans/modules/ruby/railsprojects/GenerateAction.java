@@ -41,6 +41,7 @@
 package org.netbeans.modules.ruby.railsprojects;
 
 import java.awt.Dialog;
+import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -49,11 +50,15 @@ import javax.swing.JButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeListener;
+import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
+import org.netbeans.api.gsf.EditorAction;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
 import org.netbeans.modules.ruby.rubyproject.api.RubyExecution;
 import org.netbeans.api.ruby.platform.RubyInstallation;
+import org.netbeans.modules.ruby.NbUtilities;
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectProperties;
 import org.netbeans.modules.ruby.rubyproject.execution.DirectoryFileLocator;
 import org.netbeans.modules.ruby.rubyproject.execution.ExecutionDescriptor;
@@ -68,6 +73,7 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -78,7 +84,7 @@ import org.openide.util.Utilities;
 import org.openide.util.actions.NodeAction;
 
 
-public final class GenerateAction extends NodeAction {
+public final class GenerateAction extends NodeAction implements EditorAction {
     private boolean forcing;
     private boolean preview;
     
@@ -293,7 +299,11 @@ public final class GenerateAction extends NodeAction {
 
     @Override
     public String getName() {
-        return NbBundle.getMessage(GenerateAction.class, "CTL_GenerateAction");
+        return NbBundle.getMessage(GenerateAction.class,  getActionName());
+    }
+
+    public String getActionName() {
+        return "rails-generator";
     }
 
     @Override
@@ -353,5 +363,22 @@ public final class GenerateAction extends NodeAction {
         public List<FileLocation> getLocations() {
             return locations;
         }
+    }
+
+    public void actionPerformed(ActionEvent evt, JTextComponent target) {
+        DataObject dobj = (DataObject)target.getDocument().getProperty(Document.StreamDescriptionProperty);
+        if (dobj != null) {
+            Node n = dobj.getNodeDelegate();
+            if (n != null) {
+                Node[] nodes = new Node[] { n };
+                if (enable(nodes)) {
+                    performAction(nodes);
+                }
+            }
+        }
+    }
+
+    public Class getShortDescriptionBundleClass() {
+        return GenerateAction.class;
     }
 }

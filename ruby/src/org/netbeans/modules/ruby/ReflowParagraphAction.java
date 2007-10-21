@@ -49,12 +49,10 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.gsf.EditorAction;
-import org.netbeans.api.gsf.EditorOptions;
 import org.netbeans.api.gsf.GsfTokenId;
 import org.netbeans.api.gsf.OffsetRange;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
@@ -79,7 +77,7 @@ public class ReflowParagraphAction extends AbstractAction implements EditorActio
         actionPerformed(target);
     }
 
-    public String getName() {
+    public String getActionName() {
         return "ruby-reflow-paragraph";
     }
 

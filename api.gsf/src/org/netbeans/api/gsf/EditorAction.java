@@ -57,6 +57,6 @@ import javax.swing.text.JTextComponent;
 public interface EditorAction extends Action {
     /** Action was invoked from an editor */
     void actionPerformed(ActionEvent evt, final JTextComponent target);
-    String getName();
+    String getActionName();
     Class getShortDescriptionBundleClass();
 }

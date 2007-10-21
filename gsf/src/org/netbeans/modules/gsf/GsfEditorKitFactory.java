@@ -80,8 +80,6 @@ import org.netbeans.modules.editor.retouche.InstantRenameAction;
 import org.netbeans.modules.retouche.editor.fold.GsfFoldManager;
 import org.netbeans.modules.retouche.editor.hyperlink.GoToSupport;
 import org.openide.awt.Mnemonics;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -567,7 +565,7 @@ public class GsfEditorKitFactory {
         EditorAction gotoAction;
         
         public EditorActionWrapper(EditorAction gotoAction) {
-            super(gotoAction.getName(),
+            super(gotoAction.getActionName(),
                   // Not sure about these flags?
                   ABBREV_RESET | MAGIC_POSITION_RESET | UNDO_MERGE_RESET | SAVE_POSITION);
             this.gotoAction = gotoAction;
