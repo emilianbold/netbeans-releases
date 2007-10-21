@@ -146,13 +146,14 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
         fieldLayerName = new javax.swing.JTextField();
         jSeparator2 = new javax.swing.JSeparator();
 
+        labelImageFile.setLabelFor(listImageFileName);
         labelImageFile.setText(org.openide.util.NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelSelectImage.txt")); // NOI18N
 
         listImageFileName.setModel(this.getImageListModel());
         listImageFileName.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         jScrollPane1.setViewportView(listImageFileName);
 
-        buttonImportImages.setText(org.openide.util.NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.buttonImportImages.txt")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(buttonImportImages, org.openide.util.NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.buttonImportImages.txt")); // NOI18N
 
         org.jdesktop.layout.GroupLayout panelCustomizerLayout = new org.jdesktop.layout.GroupLayout(panelCustomizer);
         panelCustomizer.setLayout(panelCustomizerLayout);
@@ -175,6 +176,7 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
                 .add(buttonImportImages))
         );
 
+        labelImagePreview.setLabelFor(panelImage);
         labelImagePreview.setText(org.openide.util.NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelAdjustTileSize.txt")); // NOI18N
 
         panelImage.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(102, 102, 102)));
@@ -187,9 +189,8 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
         labelTileHeight.setText(org.openide.util.NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelTileheight.txt", new Object[] {0 // NOI18N
         }));
 
-        checkBoxZoom.setText(org.openide.util.NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelZoom.txt")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(checkBoxZoom, org.openide.util.NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelZoom.txt")); // NOI18N
         checkBoxZoom.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        checkBoxZoom.setLabel(org.openide.util.NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelZoom.txt")); // NOI18N
         checkBoxZoom.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         org.jdesktop.layout.GroupLayout panelPreviewLayout = new org.jdesktop.layout.GroupLayout(panelPreview);
@@ -203,15 +204,15 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
                         .add(labelTileWidth)
                         .add(40, 40, 40)
                         .add(labelTileHeight)
-                        .addContainerGap(180, Short.MAX_VALUE))
+                        .addContainerGap(196, Short.MAX_VALUE))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, panelPreviewLayout.createSequentialGroup()
                         .add(panelPreviewLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                             .add(org.jdesktop.layout.GroupLayout.LEADING, panelPreviewLayout.createSequentialGroup()
                                 .add(labelImagePreview)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 204, Short.MAX_VALUE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 220, Short.MAX_VALUE)
                                 .add(checkBoxZoom))
-                            .add(panelImage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 381, Short.MAX_VALUE)
-                            .add(sliderWidth, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 381, Short.MAX_VALUE))
+                            .add(panelImage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 397, Short.MAX_VALUE)
+                            .add(sliderWidth, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 397, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(sliderHeight, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
         );
@@ -239,7 +240,7 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
         panelError.setLayout(panelErrorLayout);
         panelErrorLayout.setHorizontalGroup(
             panelErrorLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, labelError, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 676, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, labelError, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 692, Short.MAX_VALUE)
         );
         panelErrorLayout.setVerticalGroup(
             panelErrorLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -258,7 +259,7 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
             .add(panelLayerInfoLayout.createSequentialGroup()
                 .add(labelLayerName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 86, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(fieldLayerName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 578, Short.MAX_VALUE))
+                .add(fieldLayerName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 594, Short.MAX_VALUE))
         );
         panelLayerInfoLayout.setVerticalGroup(
             panelLayerInfoLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -281,7 +282,7 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(panelLayerInfo, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(panelError, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 676, Short.MAX_VALUE)
+                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 692, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(panelCustomizer, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)

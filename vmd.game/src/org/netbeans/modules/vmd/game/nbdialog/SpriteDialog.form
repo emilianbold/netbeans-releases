@@ -23,7 +23,7 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="panelLayerInfo" alignment="0" max="32767" attributes="2"/>
                   <Component id="panelError" alignment="0" max="32767" attributes="0"/>
-                  <Component id="jSeparator1" alignment="0" pref="676" max="32767" attributes="2"/>
+                  <Component id="jSeparator1" alignment="0" pref="692" max="32767" attributes="2"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="panelCustomizer" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
@@ -89,6 +89,9 @@
       <SubComponents>
         <Component class="javax.swing.JLabel" name="labelImageFile">
           <Properties>
+            <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+              <ComponentRef name="listImageFileName"/>
+            </Property>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/vmd/game/nbdialog/Bundle.properties" key="SpriteDialog.labelSelectImage.txt" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
@@ -114,6 +117,9 @@
               <ResourceString bundle="org/netbeans/modules/vmd/game/nbdialog/Bundle.properties" key="SpriteDialog.buttonImportImages.txt" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
+          <AuxValues>
+            <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+          </AuxValues>
         </Component>
       </SubComponents>
     </Container>
@@ -129,17 +135,17 @@
                           <Component id="labelTileWidth" min="-2" max="-2" attributes="0"/>
                           <EmptySpace min="-2" pref="40" max="-2" attributes="0"/>
                           <Component id="labelTileHeight" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="180" max="32767" attributes="0"/>
+                          <EmptySpace pref="196" max="32767" attributes="0"/>
                       </Group>
                       <Group type="102" alignment="1" attributes="0">
                           <Group type="103" groupAlignment="1" attributes="0">
                               <Group type="102" alignment="0" attributes="0">
                                   <Component id="labelImagePreview" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace pref="204" max="32767" attributes="0"/>
+                                  <EmptySpace pref="220" max="32767" attributes="0"/>
                                   <Component id="checkBoxZoom" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <Component id="panelImage" pref="381" max="32767" attributes="2"/>
-                              <Component id="sliderWidth" alignment="1" pref="381" max="32767" attributes="1"/>
+                              <Component id="panelImage" pref="397" max="32767" attributes="2"/>
+                              <Component id="sliderWidth" alignment="1" pref="397" max="32767" attributes="1"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="sliderHeight" min="-2" max="-2" attributes="0"/>
@@ -174,6 +180,9 @@
       <SubComponents>
         <Component class="javax.swing.JLabel" name="labelImagePreview">
           <Properties>
+            <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+              <ComponentRef name="panelImage"/>
+            </Property>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/vmd/game/nbdialog/Bundle.properties" key="SpriteDialog.labelAdjustTileSize.txt" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
@@ -227,13 +236,13 @@
                 <EmptyBorder bottom="0" left="0" right="0" top="0"/>
               </Border>
             </Property>
-            <Property name="label" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/vmd/game/nbdialog/Bundle.properties" key="SpriteDialog.labelZoom.txt" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-            </Property>
             <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
               <Insets value="[0, 0, 0, 0]"/>
             </Property>
           </Properties>
+          <AuxValues>
+            <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+          </AuxValues>
         </Component>
       </SubComponents>
     </Container>
@@ -242,7 +251,7 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Component id="labelError" alignment="1" pref="676" max="32767" attributes="0"/>
+              <Component id="labelError" alignment="1" pref="692" max="32767" attributes="0"/>
           </Group>
         </DimensionLayout>
         <DimensionLayout dim="1">
@@ -274,7 +283,7 @@
               <Group type="102" alignment="0" attributes="0">
                   <Component id="labelLayerName" min="-2" pref="86" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="fieldLayerName" pref="578" max="32767" attributes="0"/>
+                  <Component id="fieldLayerName" pref="594" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>

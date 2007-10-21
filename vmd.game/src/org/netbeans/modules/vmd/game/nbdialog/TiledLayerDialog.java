@@ -153,7 +153,7 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
         listImageFileName.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         jScrollPane1.setViewportView(listImageFileName);
 
-        buttonImportImages.setText(org.openide.util.NbBundle.getMessage(TiledLayerDialog.class, "SpriteDialog.buttonImportImages.txt")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(buttonImportImages, org.openide.util.NbBundle.getMessage(TiledLayerDialog.class, "SpriteDialog.buttonImportImages.txt")); // NOI18N
         buttonImportImages.setActionCommand(org.openide.util.NbBundle.getMessage(TiledLayerDialog.class, "SpriteDialog.buttonImportImages.txt")); // NOI18N
 
         org.jdesktop.layout.GroupLayout panelCustomizerLayout = new org.jdesktop.layout.GroupLayout(panelCustomizer);
@@ -189,7 +189,7 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
 
         labelTileHeight.setText(org.openide.util.NbBundle.getMessage(TiledLayerDialog.class, "SpriteDialog.labelTileheight.txt", new Object[] {0})); // NOI18N
 
-        checkBoxZoom.setText(org.openide.util.NbBundle.getMessage(TiledLayerDialog.class, "SpriteDialog.labelZoom.txt")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(checkBoxZoom, org.openide.util.NbBundle.getMessage(TiledLayerDialog.class, "SpriteDialog.labelZoom.txt")); // NOI18N
         checkBoxZoom.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         checkBoxZoom.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
@@ -206,15 +206,15 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
                         .add(labelTileHeight)
                         .addContainerGap())
                     .add(panelPreviewLayout.createSequentialGroup()
-                        .add(sliderWidth, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 373, Short.MAX_VALUE)
+                        .add(sliderWidth, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 381, Short.MAX_VALUE)
                         .add(22, 22, 22))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, panelPreviewLayout.createSequentialGroup()
                         .add(panelPreviewLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                             .add(org.jdesktop.layout.GroupLayout.LEADING, panelPreviewLayout.createSequentialGroup()
                                 .add(labelImagePreview)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 196, Short.MAX_VALUE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 204, Short.MAX_VALUE)
                                 .add(checkBoxZoom))
-                            .add(panelImage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 373, Short.MAX_VALUE))
+                            .add(panelImage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 381, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(sliderHeight, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
         );
@@ -242,7 +242,7 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
         panelError.setLayout(panelErrorLayout);
         panelErrorLayout.setHorizontalGroup(
             panelErrorLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, labelError, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 676, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, labelError, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 684, Short.MAX_VALUE)
         );
         panelErrorLayout.setVerticalGroup(
             panelErrorLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -261,7 +261,7 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
             .add(panelLayerInfoLayout.createSequentialGroup()
                 .add(jLabel3)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(fieldLayerName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 568, Short.MAX_VALUE))
+                .add(fieldLayerName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 576, Short.MAX_VALUE))
         );
         panelLayerInfoLayout.setVerticalGroup(
             panelLayerInfoLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -290,7 +290,7 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
                         .add(jSeparator2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 8, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                         .add(panelPreview, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 676, Short.MAX_VALUE)
+                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 684, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, panelError, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );

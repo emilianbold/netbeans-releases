@@ -30,7 +30,7 @@
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Component id="panelPreview" max="32767" attributes="0"/>
                   </Group>
-                  <Component id="jSeparator1" alignment="0" pref="676" max="32767" attributes="2"/>
+                  <Component id="jSeparator1" alignment="0" pref="684" max="32767" attributes="2"/>
                   <Component id="panelError" alignment="1" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -118,6 +118,9 @@
               <ResourceString bundle="org/netbeans/modules/vmd/game/nbdialog/Bundle.properties" key="SpriteDialog.buttonImportImages.txt" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
+          <AuxValues>
+            <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+          </AuxValues>
         </Component>
       </SubComponents>
     </Container>
@@ -136,17 +139,17 @@
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
                       <Group type="102" alignment="0" attributes="0">
-                          <Component id="sliderWidth" pref="373" max="32767" attributes="1"/>
+                          <Component id="sliderWidth" pref="381" max="32767" attributes="1"/>
                           <EmptySpace min="-2" pref="22" max="-2" attributes="0"/>
                       </Group>
                       <Group type="102" alignment="1" attributes="0">
                           <Group type="103" groupAlignment="1" attributes="0">
                               <Group type="102" alignment="0" attributes="0">
                                   <Component id="labelImagePreview" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace pref="196" max="32767" attributes="0"/>
+                                  <EmptySpace pref="204" max="32767" attributes="0"/>
                                   <Component id="checkBoxZoom" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <Component id="panelImage" alignment="1" pref="373" max="32767" attributes="2"/>
+                              <Component id="panelImage" alignment="1" pref="381" max="32767" attributes="2"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="sliderHeight" min="-2" max="-2" attributes="0"/>
@@ -241,6 +244,9 @@
               <Insets value="[0, 0, 0, 0]"/>
             </Property>
           </Properties>
+          <AuxValues>
+            <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+          </AuxValues>
         </Component>
       </SubComponents>
     </Container>
@@ -249,7 +255,7 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Component id="labelError" alignment="1" pref="676" max="32767" attributes="0"/>
+              <Component id="labelError" alignment="1" pref="684" max="32767" attributes="0"/>
           </Group>
         </DimensionLayout>
         <DimensionLayout dim="1">
@@ -281,7 +287,7 @@
               <Group type="102" alignment="0" attributes="0">
                   <Component id="jLabel3" min="-2" max="-2" attributes="0"/>
                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                  <Component id="fieldLayerName" pref="568" max="32767" attributes="1"/>
+                  <Component id="fieldLayerName" pref="576" max="32767" attributes="1"/>
               </Group>
           </Group>
         </DimensionLayout>

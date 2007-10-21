@@ -46,6 +46,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JComponent;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -55,6 +56,8 @@ public abstract class AbstractImagePreviewComponent extends JComponent {
 
 	public AbstractImagePreviewComponent() {
 		this.setBorder(null);
+//                this.getAccessibleContext().setAccessibleName(NbBundle.getMessage(AbstractImagePreviewComponent.class, "ImagePreview.accessible.name"));
+//                this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AbstractImagePreviewComponent.class, "ImagePreview.accessible.description"));
 	}
 
 	abstract public void setTileWidth(int width);
@@ -90,6 +93,6 @@ public abstract class AbstractImagePreviewComponent extends JComponent {
 			}
 		}
 		return divisors;
-	}
-
+	}        
+        
 }
