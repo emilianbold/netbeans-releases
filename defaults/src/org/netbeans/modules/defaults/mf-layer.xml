@@ -747,10 +747,6 @@ made subject to such option by the copyright holder.
             <file name="D-F5.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-DebugMainProjectAction.instance"/>
             </file>
-            <file name="MD-F5.shadow">
-                <attr name="nbeditor-settings-targetOS" stringvalue="OS_MAC" />
-                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-DebugMainProjectAction.instance"/>
-            </file>
             <file name="D-Y.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-RedoAction.instance"/>
             </file>
