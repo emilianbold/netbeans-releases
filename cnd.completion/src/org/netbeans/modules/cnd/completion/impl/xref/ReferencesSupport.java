@@ -143,7 +143,7 @@ public final class ReferencesSupport {
     public static CsmObject findDeclaration(final CsmFile csmFile, final BaseDocument doc, 
             Token tokenUnderOffset, final int offset) {
         // fast check
-        CsmObject csmItem = null; // findDeclaration(csmFile, doc, tokenUnderOffset, offset, true);
+        CsmObject csmItem = findDeclaration(csmFile, doc, tokenUnderOffset, offset, true);
         // then full check if needed
         csmItem = csmItem != null ? csmItem : findDeclaration(csmFile, doc, tokenUnderOffset, offset, false);
         return csmItem;
