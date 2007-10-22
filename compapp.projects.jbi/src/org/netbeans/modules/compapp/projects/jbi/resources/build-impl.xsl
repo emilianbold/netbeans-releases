@@ -650,7 +650,7 @@ made subject to such option by the copyright holder.
                     <classpath>
                         <pathelement path="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-compapp-manager-jbi.jar"/>
                         <pathelement path="${{netbeans.home}}/../soa1/modules/ext/jbi/catd.jar"/>
-                        <pathelement path="${{netbeans.home}}/../soa1/modules/ext/jbi/xmlunit1.0.jar"/>
+                        <pathelement path="${{netbeans.home}}/../soa1/modules/ext/jbi/xmlunit-1.0.jar"/>
                         <!--<pathelement path="${{netbeans.home}}/../soa1/modules/ext/jbi/httpunit-1.6.jar"/> -->
                         <pathelement path="${{netbeans.home}}/../java1/modules/ext/junit-3.8.2.jar"/>                        
                         <pathelement path="${{netbeans.home}}/../java1/modules/ext/jaxws21/api/saaj-api.jar"/>
@@ -698,7 +698,7 @@ made subject to such option by the copyright holder.
                     <classpath>
                         <pathelement path="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-compapp-manager-jbi.jar"/>
                         <pathelement path="${{netbeans.home}}/../soa1/modules/ext/jbi/catd.jar"/>
-                        <pathelement path="${{netbeans.home}}/../soa1/modules/ext/jbi/xmlunit1.0.jar"/>
+                        <pathelement path="${{netbeans.home}}/../soa1/modules/ext/jbi/xmlunit-1.0.jar"/>
                         <pathelement path="${{netbeans.home}}/../soa1/modules/ext/jbi/httpunit-1.6.jar"/>
                         <pathelement path="${{netbeans.home}}/../java1/modules/ext/junit-3.8.2.jar"/>
                         <pathelement path="${{netbeans.home}}/../java1/modules/ext/jaxws21/api/saaj-api.jar"/>
