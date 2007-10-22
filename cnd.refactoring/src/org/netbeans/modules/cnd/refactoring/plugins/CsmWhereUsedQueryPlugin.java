@@ -78,7 +78,8 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
         if (referencedObject == null) {
             return null;
         }
-        Collection<CsmFile> files = getRelevantFiles(startReferenceObject, referencedObject);
+        CsmFile startFile = getCsmFile(startReferenceObject);
+        Collection<CsmFile> files = getRelevantFiles(startFile, referencedObject);
         fireProgressListenerStart(ProgressEvent.START, files.size());
         processQuery(referencedObject, elements, files);
         fireProgressListenerStop();

@@ -47,14 +47,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmValidable;
-import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.cnd.refactoring.elements.DiffElement;
 import org.netbeans.modules.cnd.refactoring.support.ModificationResult;
@@ -190,8 +187,7 @@ public abstract class CsmRefactoringPlugin extends ProgressProviderAdapter imple
         return null;
     }  
     
-    protected Collection<CsmFile> getRelevantFiles(CsmObject csmObject, CsmObject referencedObject) {
-        CsmFile startFile = getCsmFile(csmObject);
+    protected Collection<CsmFile> getRelevantFiles(CsmFile startFile, CsmObject referencedObject) {
         CsmObject enclScope = referencedObject == null ? null : CsmRefactoringUtils.getEnclosingElement(referencedObject);
         CsmFile scopeFile = null;
         if (CsmKindUtilities.isFunction(enclScope)) {
