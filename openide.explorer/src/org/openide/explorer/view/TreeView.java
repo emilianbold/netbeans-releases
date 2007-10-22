@@ -1467,7 +1467,7 @@ public abstract class TreeView extends JScrollPane {
                 
                 // switch to replacement action if there is some
                 a = takeAction(a, nodes);
-                if (a.isEnabled()) {
+                if (a != null && a.isEnabled()) {
                     a.actionPerformed(new ActionEvent(
                             nodes.length == 1 ? nodes[0] : nodes,
                             ActionEvent.ACTION_PERFORMED, "")); // NOI18N
