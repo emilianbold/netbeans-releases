@@ -21,7 +21,7 @@ int main(int argc, char** argv) {
     ClassA a;
     int in = argc;
     void* ptr = argv;
-    go();c
+    go();
     go(1);
     go(in, 1.0);
 
