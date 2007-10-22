@@ -533,6 +533,18 @@ public final class WebServiceManager {
             List<WsdlService> services = model.getServices();
             
             if (newlyAdded) {// || refreshing) {
+                if (services.size() == 0) {
+                    rmDir(wsdlFile);
+                    if (catalogFile != null) {
+                        rmDir(catalogFile.getParentFile());
+                    }
+                    
+                    String message = NbBundle.getMessage(WebServiceManager.class, "WS_NO_METHODS_ERROR");
+                    NotifyDescriptor d = new NotifyDescriptor.Message(message);
+                    DialogDisplayer.getDefault().notify(d);
+                    return;
+                }
+                
                 for (WsdlService svc: services) {
                     boolean hasSoapPort = false;
                     for (WsdlPort port : svc.getPorts()) {
