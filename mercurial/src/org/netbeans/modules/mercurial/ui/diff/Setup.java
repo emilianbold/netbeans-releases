@@ -42,7 +42,7 @@
 package org.netbeans.modules.mercurial.ui.diff;
 
 import org.netbeans.api.diff.StreamSource;
-import org.netbeans.api.diff.DiffView;
+import org.netbeans.api.diff.DiffController;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.util.HgCommand;
@@ -111,20 +111,29 @@ public final class Setup {
     public static final String REVISION_HEAD    = "HEAD"; // NOI18N
     
     private final File      baseFile;
+
+    /**
+     * Name of the file's property if the setup represents a property diff setup, null otherwise.
+     */
+    private final String    propertyName;
+
     private final String    firstRevision;
     private final String    secondRevision;
+    private FileInformation info;
     private String          changeSetId;
 
     private DiffStreamSource    firstSource;
     private DiffStreamSource    secondSource;
 
-    private DiffView view;
+    private DiffController      view;
+    private DiffNode            node;
 
     private String    title;
 
-    public Setup(File baseFile, int type) {
+    public Setup(File baseFile, String propertyName, int type) {
         this.baseFile = baseFile;
-        FileInformation info = Mercurial.getInstance().getFileStatusCache().getStatus(baseFile);
+        this.propertyName = propertyName;
+        info = Mercurial.getInstance().getFileStatusCache().getStatus(baseFile);
         int status = info.getStatus();
         
         ResourceBundle loc = NbBundle.getBundle(Setup.class);
@@ -216,21 +225,30 @@ public final class Setup {
      */
     public Setup(File baseFile, String firstRevision, String secondRevision) {
         this.baseFile = baseFile;
+        this.propertyName = null;
         this.firstRevision = firstRevision;
         this.secondRevision = secondRevision;
         firstSource = new DiffStreamSource(baseFile, firstRevision, firstRevision);
         secondSource = new DiffStreamSource(baseFile, secondRevision, secondRevision);
     }
 
+    public String getPropertyName() {
+        return propertyName;
+    }
+
     public File getBaseFile() {
         return baseFile;
     }
 
-    public void setView(DiffView view) {
+    public FileInformation getInfo() {
+        return info;
+    }
+
+    public void setView(DiffController view) {
         this.view = view;
     }
 
-    public DiffView getView() {
+    public DiffController getView() {
         return view;
     }
 
@@ -240,6 +258,14 @@ public final class Setup {
 
     public StreamSource getSecondSource() {
         return secondSource;
+    }
+
+    public void setNode(DiffNode node) {
+        this.node = node;
+    }
+
+    public DiffNode getNode() {
+        return node;
     }
 
     public String toString() {

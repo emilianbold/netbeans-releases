@@ -78,7 +78,7 @@ public class DiffAction extends AbstractAction {
 
     public static void diff(VCSContext ctx, int type, String contextName) {
 
-        DiffMainPanel panel = new DiffMainPanel(ctx, type, contextName); // spawns background DiffPrepareTask
+        MultiDiffPanel panel = new MultiDiffPanel(ctx, type, contextName); // spawns background DiffPrepareTask
         DiffTopComponent tc = new DiffTopComponent(panel);
         tc.setName(NbBundle.getMessage(DiffAction.class, "CTL_DiffPanel_Title", contextName)); // NOI18N
         tc.open();
@@ -86,7 +86,7 @@ public class DiffAction extends AbstractAction {
     }
 
     public static void diff(File file, String rev1, String rev2) {
-        DiffMainPanel panel = new DiffMainPanel(file, rev1, rev2); // spawns background DiffPrepareTask
+        MultiDiffPanel panel = new MultiDiffPanel(file, rev1, rev2); // spawns background DiffPrepareTask
         DiffTopComponent tc = new DiffTopComponent(panel);
         tc.setName(NbBundle.getMessage(DiffAction.class, "CTL_DiffPanel_Title", file.getName())); // NOI18N
         tc.open();
