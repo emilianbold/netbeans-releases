@@ -48,6 +48,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.net.MalformedURLException;
+import java.util.logging.Logger;
 import java.util.zip.ZipFile;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.openide.ErrorManager;
@@ -197,7 +198,10 @@ public class Util {
                         continue;
                     }
                     FileObject fo = FileUtil.toFileObject(f);
-                    assert fo != null : "Must have defined a FileObject for existent file " + f;
+                    if (fo == null) {
+                        Logger.getLogger(Util.class.getName()).warning("Cannot create FileObject for file: "+f.getAbsolutePath()+" exists: " + f.exists());
+                        continue;
+                    }
                     if (!FileUtil.isArchiveFile(fo)) {
                         // #42961: Mac OS X has e.g. libmlib_jai.jnilib.
                         continue;
