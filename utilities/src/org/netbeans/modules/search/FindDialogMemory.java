@@ -92,6 +92,16 @@ public final class FindDialogMemory {
      * Storage of last used Regular Expression option.
      */
     private boolean regularExpression;
+
+    /**
+     * whether a full text pattern was used last time
+     */
+    private boolean textPatternSpecified;
+
+    /**
+     * whether file name pattern was used last time
+     */
+    private boolean fileNamePatternSpecified;
     
     /** Creates a new instance of FindDialogMemory */
     private FindDialogMemory() { }
@@ -229,4 +239,21 @@ public final class FindDialogMemory {
     public void setRegularExpression(boolean regularExpression) {
         this.regularExpression = regularExpression;
     }
+
+    boolean isTextPatternSpecified() {
+        return textPatternSpecified;
+    }
+
+    void setTextPatternSpecified(boolean specified) {
+        textPatternSpecified = specified;
+    }
+
+    boolean isFileNamePatternSpecified() {
+        return fileNamePatternSpecified;
+    }
+
+    void setFileNamePatternSpecified(boolean specified) {
+        fileNamePatternSpecified = specified;
+    }
+
 }

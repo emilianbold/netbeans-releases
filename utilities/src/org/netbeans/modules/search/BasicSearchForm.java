@@ -526,12 +526,16 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
     /**
      */
     private void initValuesFromHistory() {
-        if (cboxTextToFind.getItemCount() != 0) {
+        final FindDialogMemory memory = FindDialogMemory.getDefault();
+
+        if (memory.isTextPatternSpecified()
+                && (cboxTextToFind.getItemCount() != 0)) {
             cboxTextToFind.setSelectedIndex(0);
             textToFindEditor.setText(
                     cboxTextToFind.getSelectedItem().toString());
         }
-        if (cboxFileNamePattern.getItemCount() != 0) {
+        if (memory.isFileNamePatternSpecified()
+                && cboxFileNamePattern.getItemCount() != 0) {
             cboxFileNamePattern.setSelectedIndex(0);
             fileNamePatternEditor.setText(
                     cboxFileNamePattern.getSelectedItem().toString());
@@ -542,7 +546,6 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
                     cboxReplacement.getSelectedItem().toString());
         }
 
-        FindDialogMemory memory = FindDialogMemory.getDefault();
         chkWholeWords.setSelected(memory.isWholeWords());
         chkCaseSensitive.setSelected(memory.isCaseSensitive());
         chkRegexp.setSelected(memory.isRegularExpression());
@@ -768,20 +771,27 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
     void onOk() {
         searchCriteria.onOk();
 
+        final FindDialogMemory memory = FindDialogMemory.getDefault();
+
         if (searchCriteria.isTextPatternUsable()) {
             SearchHistory.getDefault().add(getCurrentSearchPattern());
+            memory.setTextPatternSpecified(true);
+        } else {
+            memory.setTextPatternSpecified(false);
         }
         if (searchCriteria.isFileNamePatternUsable()) {
-            FindDialogMemory.getDefault().storeFileNamePattern(
-                    fileNamePatternEditor.getText());
+            memory.storeFileNamePattern(fileNamePatternEditor.getText());
+            memory.setFileNamePatternSpecified(true);
+        } else {
+            memory.setFileNamePatternSpecified(false);
         }
         if (replacementPatternEditor != null) {
-            FindDialogMemory.getDefault().storeReplacementExpression(
+            memory.storeReplacementExpression(
                     replacementPatternEditor.getText());
         }
-        FindDialogMemory.getDefault().setWholeWords(chkWholeWords.isSelected());
-        FindDialogMemory.getDefault().setCaseSensitive(chkCaseSensitive.isSelected());
-        FindDialogMemory.getDefault().setRegularExpression(chkRegexp.isSelected());
+        memory.setWholeWords(chkWholeWords.isSelected());
+        memory.setCaseSensitive(chkCaseSensitive.isSelected());
+        memory.setRegularExpression(chkRegexp.isSelected());
     }
 
     /**
