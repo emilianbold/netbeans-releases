@@ -141,7 +141,6 @@
 				<tocitem text="About Emulator Platforms" target="me.emulator_about" />
 				<tocitem text="Adding Emulator Platforms" target="me.emulator_adding" />
 				<tocitem text="Customizing Platform Properties" target="me.prop_setplatform" />
-				<tocitem text="Remotely Controlling a Sony Ericsson Phone" target="me.emulator_se_remote" />
 				<tocitem text="About the Java ME Wireless Toolkit" target="me.about_toolkit" />
 				<tocitem text="Using the Java ME Wireless Toolkit Utilities" target="me.toolkit_using" />
 			</tocitem>

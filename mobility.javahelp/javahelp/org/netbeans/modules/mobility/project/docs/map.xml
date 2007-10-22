@@ -203,7 +203,6 @@
 	<mapID target="cdc.customizerLibraries" url="cdc/project/csh/proj_cdcstand_props_libraries.html"/>
 	<mapID target="cdc.customizerRun" url="cdc/project/csh/proj_cdcstand_props_run.html"/>
 	<mapID target="cdc.customizerSources" url="cdc/project/csh/proj_cdcstand_props_sources.html"/>
-	<mapID target="cdc.librariesChooser" url="cdc/pending.html"/>
 	<mapID target="cdc.panelConfigureProject_APP" url="cdc/project/csh/proj_cdc-standapp_wiz.html"/>
 	<mapID target="cdc.panelConfigureProject_LIB" url="cdc/project/csh/proj_cdc-standclasslib_wiz.html"/>
 	<mapID target="cdc.panelConfigureProject_EXT" url="cdc/project/csh/proj_cdcexistsrc_wiz1.html"/>
