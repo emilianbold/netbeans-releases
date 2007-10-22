@@ -693,7 +693,7 @@ public class MultiDataObject extends DataObject {
             FileObject current = getPrimaryEntry().getFile();
             if (h.accept(current)) {
                 if (params == null) {
-                    params = DataObject.CreateAction.findParameters(name, current.getExt());
+                    params = DataObject.CreateAction.findParameters(name);
                 }
                 primary = h.createFromTemplate(current, df.getPrimaryFile(), name, 
                     DataObject.CreateAction.enhanceParameters(params, name, current.getExt())
@@ -715,7 +715,7 @@ public class MultiDataObject extends DataObject {
                 FileObject current = entry.getFile();
                 if (h.accept(current)) {
                     if (params == null) {
-                        params = DataObject.CreateAction.findParameters(name, current.getExt());
+                        params = DataObject.CreateAction.findParameters(name);
                     }
                     FileObject fo = h.createFromTemplate(current, df.getPrimaryFile(), name, 
                         DataObject.CreateAction.enhanceParameters(params, name, current.getExt())

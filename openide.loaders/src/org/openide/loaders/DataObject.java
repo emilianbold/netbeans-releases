@@ -1251,7 +1251,7 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
             }
         }
         
-        public static Map<String,Object> findParameters(String name, String ext) {
+        public static Map<String,Object> findParameters(String name) {
             CreateAction c  = CURRENT.get();
             if (c == null) {
                 return Collections.emptyMap();

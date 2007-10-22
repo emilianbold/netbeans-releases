@@ -155,12 +155,10 @@ public class FileEntry extends MultiDataObject.Entry {
         FileObject fo = null;
         for (CreateFromTemplateHandler h : Lookup.getDefault().lookupAll(CreateFromTemplateHandler.class)) {
             if (h.accept(getFile())) {
-                fo = h.createFromTemplate(getFile(), f, name, 
+                fo = h.createFromTemplate(getFile(), f, name,
                     DataObject.CreateAction.enhanceParameters(
-                        DataObject.CreateAction.findParameters(name, getFile().getExt()), 
-                        name, getFile().getExt()
-                    )
-                );
+                        DataObject.CreateAction.findParameters(name),
+                        name, getFile().getExt()));
                 assert fo != null;
                 break;
             }
@@ -210,17 +208,14 @@ public class FileEntry extends MultiDataObject.Entry {
                        );
             }
             
-            
             FileObject fo = null;
             for (CreateFromTemplateHandler h : Lookup.getDefault().lookupAll(CreateFromTemplateHandler.class)) {
                 if (h.accept(getFile())) {
                     fo = h.createFromTemplate(
-                        getFile(), f, name, 
+                        getFile(), f, name,
                         DataObject.CreateAction.enhanceParameters(
-                            DataObject.CreateAction.findParameters(name, getFile().getExt()),
-                            name, getFile().getExt()
-                        )
-                    );
+                            DataObject.CreateAction.findParameters(name),
+                            name, getFile().getExt()));
                     assert fo != null;
                     break;
                 }
