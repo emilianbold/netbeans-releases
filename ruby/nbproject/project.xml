@@ -229,11 +229,23 @@
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <public-packages>
+            <friend-packages>
+                <friend>org.netbeans.modules.ruby</friend>
+                <friend>org.netbeans.modules.ruby.platform</friend>
+                <friend>org.netbeans.modules.ruby.project</friend>
+                <friend>org.netbeans.modules.ruby.railsprojects</friend>
+                <friend>org.netbeans.modules.ruby.refactoring</friend>
+                <friend>org.netbeans.modules.ruby.rhtml</friend>
+                <friend>org.netbeans.modules.ruby.rspec</friend>
+                <friend>org.netbeans.modules.ruby.hints</friend>
+                <friend>org.netbeans.modules.ruby.extrahints</friend>
+                <friend>org.netbeans.modules.ruby.kit</friend>
+                <friend>org.netbeans.modules.ruby.debugger</friend>
+                <friend>org.netbeans.modules.spellchecker.bindings.ruby</friend>
                 <package>org.netbeans.modules.ruby</package>
                 <package>org.netbeans.modules.ruby.elements</package>
                 <package>org.netbeans.modules.ruby.lexer</package>
-            </public-packages>
+            </friend-packages>
         </data>
     </configuration>
 </project>
