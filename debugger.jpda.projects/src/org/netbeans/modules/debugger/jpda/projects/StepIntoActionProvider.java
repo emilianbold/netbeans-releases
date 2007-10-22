@@ -153,7 +153,12 @@ public class StepIntoActionProvider extends ActionsProviderSupport {
     
     private class Listener implements PropertyChangeListener, DebuggerManagerListener {
         
-        public void propertyChange (PropertyChangeEvent e) {}
+        public void propertyChange (PropertyChangeEvent e) {
+            if (e.getSource() instanceof MainProjectManager) {
+                doSetEnabled();
+            }
+        }
+        
         public void sessionRemoved (Session session) {}
         public void breakpointAdded (Breakpoint breakpoint) {}
         public void breakpointRemoved (Breakpoint breakpoint) {}
@@ -166,12 +171,13 @@ public class StepIntoActionProvider extends ActionsProviderSupport {
         public void watchRemoved (Watch watch) {}
         
         public void engineAdded(DebuggerEngine engine) {
-            setEnabled (
-                ActionsManager.ACTION_STEP_INTO,
-                shouldBeEnabled ()
-            );
+            doSetEnabled();
         }
         public void engineRemoved(DebuggerEngine engine) {
+            doSetEnabled();
+        }
+        
+        private void doSetEnabled() {
             setEnabled (
                 ActionsManager.ACTION_STEP_INTO,
                 shouldBeEnabled ()
