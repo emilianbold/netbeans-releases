@@ -47,3 +47,9 @@ void castChecks() {
     ((ClassB)*a).myVal;
     ((ClassB*)a)->myVal;
 }
+
+void sameValue(int sameValue) {
+    if (sameValue > 0) {
+        sameValue(sameValue - 1);
+    }
+}

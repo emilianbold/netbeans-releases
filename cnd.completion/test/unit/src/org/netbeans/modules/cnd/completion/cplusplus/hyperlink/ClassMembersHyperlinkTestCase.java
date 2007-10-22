@@ -50,6 +50,11 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         super(testName);
     }        
         
+    public void testSameName() throws Exception {
+        performTest("main.cc", 53, 10, "main.cc", 51, 1); //sameValue(  in sameValue(sameValue - 1);
+        performTest("main.cc", 53, 20, "main.cc", 51, 16); //sameValue-1  in sameValue(sameValue - 1);
+    }
+    
     public void testInnerSelfDeclaration() throws Exception {
         performTest("ClassB.h", 8, 20, "ClassB.h", 8, 17); // "MEDIUM" in enum type { MEDIUM,  HIGH };
         performTest("ClassB.h", 8, 28, "ClassB.h", 8, 26); // "HIGH" in enum type { MEDIUM,  HIGH };

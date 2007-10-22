@@ -43,9 +43,11 @@ package org.netbeans.modules.cnd.completion.impl.xref;
 
 import java.io.File;
 import java.io.IOException;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -54,7 +56,6 @@ import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
@@ -70,6 +71,7 @@ import org.netbeans.modules.cnd.completion.csm.CsmOffsetResolver;
 import org.netbeans.modules.cnd.completion.csm.CsmOffsetUtilities;
 import org.netbeans.modules.cnd.editor.cplusplus.CCTokenContext;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -142,8 +144,19 @@ public final class ReferencesSupport {
 
     public static CsmObject findDeclaration(final CsmFile csmFile, final BaseDocument doc, 
             Token tokenUnderOffset, final int offset) {
-        // fast check
-        CsmObject csmItem = findDeclaration(csmFile, doc, tokenUnderOffset, offset, true);
+        // fast check, if possible
+        SyntaxSupport sup = doc.getSyntaxSupport();
+        int[] idFunBlk = null;
+        CsmObject csmItem = null;
+        try { 
+            idFunBlk = NbEditorUtilities.getIdentifierAndMethodBlock(doc, offset);
+        } catch (BadLocationException ex) {
+            // skip it
+        }
+        // check but not for function call
+        if (idFunBlk != null && idFunBlk.length != 3) {
+            csmItem = findDeclaration(csmFile, doc, tokenUnderOffset, offset, true);
+        }
         // then full check if needed
         csmItem = csmItem != null ? csmItem : findDeclaration(csmFile, doc, tokenUnderOffset, offset, false);
         return csmItem;
