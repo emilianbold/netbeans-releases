@@ -41,6 +41,8 @@
 
 package org.netbeans.editor.ext.html;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.editor.ext.html.parser.SyntaxElement;
 import java.awt.Component;
 import java.awt.Font;
@@ -139,7 +141,7 @@ public class HTMLCompletionQuery  {
                 return null;
             }
             
-            int diff = ts.move(offset);
+            ts.move(offset);
             if(!ts.moveNext() && !ts.movePrevious()) {
                 return null; //no token found
             }
@@ -181,7 +183,12 @@ public class HTMLCompletionQuery  {
             
             //get text before cursor
             int itemOffset = item.offset(hi);
-            String preText = item.text().toString().substring( 0, offset - itemOffset );
+            int diff = offset - itemOffset;
+            String preText = item.text().toString();
+            
+            if(diff < preText.length()) {
+                preText = preText.substring( 0, offset - itemOffset );
+            }
             TokenId id = item.id();
             
             List<CompletionItem> result = null;
