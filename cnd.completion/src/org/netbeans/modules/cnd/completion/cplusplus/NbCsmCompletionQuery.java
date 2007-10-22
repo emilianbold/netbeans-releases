@@ -70,8 +70,11 @@ import org.openide.loaders.DataObject;
  */
 public class NbCsmCompletionQuery extends CsmCompletionQuery {
     private CsmFile csmFile;
-    protected NbCsmCompletionQuery(CsmFile csmFile) {
+    private final boolean localContext;
+    
+    protected NbCsmCompletionQuery(CsmFile csmFile, boolean localContext) {
         this.csmFile = csmFile;
+        this.localContext = localContext;
     }
     
     protected CsmFinder getFinder() {
@@ -94,18 +97,21 @@ public class NbCsmCompletionQuery extends CsmCompletionQuery {
     }
     
     protected CompletionResolver getCompletionResolver(boolean openingSource, boolean sort) {
-	return getCompletionResolver(getBaseDocument(), getCsmFile(), openingSource, sort);
+	return getCompletionResolver(getBaseDocument(), getCsmFile(), openingSource, sort, localContext);
     }
 
-    private static CompletionResolver getCompletionResolver(BaseDocument bDoc, CsmFile csmFile, boolean openingSource, boolean sort) {
+    private static CompletionResolver getCompletionResolver(BaseDocument bDoc, CsmFile csmFile, 
+            boolean openingSource, boolean sort, boolean localContext) {
 	CompletionResolver resolver = null; 
         if (csmFile != null) {
             Class kit = bDoc.getKitClass();
             resolver = new CompletionResolverImpl(csmFile, openingSource || isCaseSensitive(kit), sort, isNaturalSort(kit));
+            ((CompletionResolverImpl)resolver).setResolveLocalContextOnly(localContext);
         }
         return resolver;
     }    
     
+    @Override
     protected void initFactory(){
         setCsmItemFactory(new NbCsmItemFactory());
     }

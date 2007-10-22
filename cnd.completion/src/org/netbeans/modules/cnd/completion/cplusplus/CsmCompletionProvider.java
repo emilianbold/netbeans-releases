@@ -112,11 +112,11 @@ public class CsmCompletionProvider implements CompletionProvider {
     }
     
     public static final CsmCompletionQuery getCompletionQuery() {
-        return new NbCsmCompletionQuery(null);
+        return new NbCsmCompletionQuery(null, false);
     }
     
-    public static final CsmCompletionQuery getCompletionQuery(CsmFile csmFile) {
-        return new NbCsmCompletionQuery(csmFile);
+    public static final CsmCompletionQuery getCompletionQuery(CsmFile csmFile, boolean localContext) {
+        return new NbCsmCompletionQuery(csmFile, localContext);
     }    
     
     static final class Query extends AsyncCompletionQuery {

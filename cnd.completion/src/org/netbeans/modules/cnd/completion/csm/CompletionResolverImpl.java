@@ -85,7 +85,7 @@ public class CompletionResolverImpl implements CompletionResolver {
     private boolean caseSensitive = false;
     private boolean naturalSort = false;
     private boolean sort = false;
-
+    private boolean localContextOnly = false;
 
     public boolean isSortNeeded() {
         return sort;
@@ -93,6 +93,10 @@ public class CompletionResolverImpl implements CompletionResolver {
 
     public void setSortNeeded(boolean sort) {
         this.sort = sort;
+    }
+    
+    public void setResolveLocalContextOnly(boolean onlyLocal) {
+        this.localContextOnly = onlyLocal;
     }
     
     public boolean isCaseSensitive() {
@@ -153,7 +157,7 @@ public class CompletionResolverImpl implements CompletionResolver {
         context  = CsmOffsetResolver.findContext(file, offset);
         if (DEBUG) System.out.println("context for offset " + offset + " :\n" + context); //NOI18N
         initMacroResolving(context, strPrefix);
-        this.hideTypes = initHideMask(context, this.resolveTypes, strPrefix);
+        this.hideTypes = initHideMask(context, this.resolveTypes, this.localContextOnly, strPrefix);
         resolveContext(context, offset, strPrefix, match);
         return file != null;
     }
@@ -224,7 +228,7 @@ public class CompletionResolverImpl implements CompletionResolver {
                 for (CsmDeclaration elem : decls) {
                     if (CsmKindUtilities.isVariable(elem)) {
                         localVars.add(elem);
-                    } if (needClasses(context, offset) && CsmKindUtilities.isClassifier(elem)) {
+                    } if (needLocalClasses(context, offset) && CsmKindUtilities.isClassifier(elem)) {
                         if (classesEnumsTypedefs == null) {
                             classesEnumsTypedefs = new ArrayList<CsmDeclaration>();
                         }
@@ -346,7 +350,7 @@ public class CompletionResolverImpl implements CompletionResolver {
         }        
     }
 
-    private static int initHideMask(final CsmContext context, final int resolveTypes, final String strPrefix) {
+    private static int initHideMask(final CsmContext context, final int resolveTypes, final boolean localOnly, final String strPrefix) {
         int hideTypes = ~RESOLVE_NONE;
         // do not provide libraries data and global data when just resolve context with empty prefix
         if ((resolveTypes & RESOLVE_CONTEXT) == RESOLVE_CONTEXT && strPrefix.length() == 0) {
@@ -366,6 +370,29 @@ public class CompletionResolverImpl implements CompletionResolver {
 //                hideTypes &= ~RESOLVE_GLOB_ENUMERATORS;
 //                hideTypes &= ~RESOLVE_CLASSES;
             }
+        }
+        if (localOnly) {
+            // hide all lib context
+            hideTypes &= ~RESOLVE_FILE_LIB_MACROS;
+            hideTypes &= ~RESOLVE_LIB_MACROS;
+            hideTypes &= ~RESOLVE_LIB_CLASSES;
+            hideTypes &= ~RESOLVE_LIB_ENUMERATORS;
+            hideTypes &= ~RESOLVE_LIB_FUNCTIONS;
+            hideTypes &= ~RESOLVE_LIB_NAMESPACES;
+            hideTypes &= ~RESOLVE_LIB_VARIABLES;
+
+            // hide all project context
+            hideTypes &= ~RESOLVE_GLOB_MACROS;
+            hideTypes &= ~RESOLVE_FILE_PRJ_MACROS;
+            hideTypes &= ~RESOLVE_FILE_LOCAL_MACROS;
+            hideTypes &= ~RESOLVE_GLOB_VARIABLES;
+            hideTypes &= ~RESOLVE_GLOB_FUNCTIONS;
+            hideTypes &= ~RESOLVE_GLOB_ENUMERATORS;
+            hideTypes &= ~RESOLVE_CLASSES;        
+            hideTypes &= ~RESOLVE_CLASS_FIELDS;
+            hideTypes &= ~RESOLVE_CLASS_METHODS;
+            hideTypes &= ~RESOLVE_CLASS_NESTED_CLASSIFIERS;
+            hideTypes &= ~RESOLVE_CLASS_ENUMERATORS;
         }
         return hideTypes;
     }
@@ -557,6 +584,10 @@ public class CompletionResolverImpl implements CompletionResolver {
     private Collection getLibNamespaces(CsmProject prj, String strPrefix, boolean match) {
         Collection res = contResolver.getLibNamespaces(strPrefix, match);
         return res;
+    }
+    
+    private boolean needLocalClasses(CsmContext context, int offset) {
+        return needLocalVars(context, offset);
     }
     
     private boolean needClasses(CsmContext context, int offset) {

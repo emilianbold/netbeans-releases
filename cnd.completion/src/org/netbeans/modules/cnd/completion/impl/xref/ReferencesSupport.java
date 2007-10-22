@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.completion.impl.xref;
 
 import java.io.File;
 import java.io.IOException;
+import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.TokenItem;
@@ -54,7 +55,11 @@ import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver.Scope;
 import org.netbeans.modules.cnd.completion.cplusplus.CsmCompletionProvider;
 import org.netbeans.modules.cnd.completion.cplusplus.hyperlink.CsmHyperlinkProvider;
 import org.netbeans.modules.cnd.completion.cplusplus.hyperlink.CsmIncludeHyperlinkProvider;
@@ -64,18 +69,20 @@ import org.netbeans.modules.cnd.completion.csm.CompletionUtilities;
 import org.netbeans.modules.cnd.completion.csm.CsmOffsetResolver;
 import org.netbeans.modules.cnd.completion.csm.CsmOffsetUtilities;
 import org.netbeans.modules.cnd.editor.cplusplus.CCTokenContext;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.text.CloneableEditorSupport;
 
 /**
  *
  * @author Vladimir Voskresensky
  */
 public final class ReferencesSupport {
-    
+
     private ReferencesSupport() {
     }
     
@@ -133,8 +140,17 @@ public final class ReferencesSupport {
         return CsmOffsetUtilities.findObject(csmFile.getIncludes(), null, offset);
     }    
 
-    public static CsmObject findDeclaration(final CsmFile csmFile, final BaseDocument doc, Token tokenUnderOffset, final int offset) {
-        CsmOffsetable item = null;
+    public static CsmObject findDeclaration(final CsmFile csmFile, final BaseDocument doc, 
+            Token tokenUnderOffset, final int offset) {
+        // fast check
+        CsmObject csmItem = null; // findDeclaration(csmFile, doc, tokenUnderOffset, offset, true);
+        // then full check if needed
+        csmItem = csmItem != null ? csmItem : findDeclaration(csmFile, doc, tokenUnderOffset, offset, false);
+        return csmItem;
+    }
+    
+    public static CsmObject findDeclaration(final CsmFile csmFile, final BaseDocument doc, 
+            Token tokenUnderOffset, final int offset, final boolean onlyLocal) {
         assert csmFile != null;
         tokenUnderOffset = tokenUnderOffset != null ? tokenUnderOffset : getTokenByOffset(doc, offset);
         // no token in document under offset position
@@ -162,11 +178,8 @@ public final class ReferencesSupport {
         }
         if (csmObject == null) {
             // try with code completion engine
-            csmObject = CompletionUtilities.findItemAtCaretPos(null, doc, CsmCompletionProvider.getCompletionQuery(csmFile), offset);
+            csmObject = CompletionUtilities.findItemAtCaretPos(null, doc, CsmCompletionProvider.getCompletionQuery(csmFile, onlyLocal), offset);
         }     
-//        if (csmObject == null && foundObject != null) {
-//            csmObject = foundObject;
-//        }
         return csmObject;
     }
     
@@ -200,6 +213,90 @@ public final class ReferencesSupport {
                 (CsmIncludeHyperlinkProvider.isSupportedToken(token) || CsmHyperlinkProvider.isSupportedToken(token));
     }
 
-
-  
+    public static Scope fastCheckScope(CsmReference ref) {
+        if (ref == null) {
+            throw new NullPointerException("null reference is not allowed");
+        }
+        CsmObject target = getTargetIfPossible(ref);
+        if (target == null) {
+            // try to resolve using only local context
+            int offset = getRefOffset(ref);
+            BaseDocument doc = getRefDocument(ref);
+            if (doc != null) {
+                Token token = getRefTokenIfPossible(ref);
+                target = findDeclaration(ref.getContainingFile(), doc, token, offset, true);
+                setResolvedInfo(ref, target);
+            }
+        } 
+        return getTargetScope(target);
+    }  
+    
+    private static Scope getTargetScope(CsmObject obj) {
+        if (obj == null) {
+            return Scope.UNKNOWN;
+        }
+        if (isLocalElement(obj)) {
+            return Scope.LOCAL;
+        } else {
+            return Scope.GLOBAL;
+        }
+    }
+    
+    private static CsmObject getTargetIfPossible(CsmReference ref) {
+        if (ref instanceof ReferenceImpl) {
+            return ((ReferenceImpl)ref).getTarget();
+        }
+        return null;
+    }
+    
+    private static Token getRefTokenIfPossible(CsmReference ref) {
+        if (ref instanceof ReferenceImpl) {
+            return ((ReferenceImpl)ref).getToken();
+        } else {
+            return null;
+        }
+    }
+    
+    private static BaseDocument getRefDocument(CsmReference ref) {
+        if (ref instanceof ReferenceImpl) {
+            return ((ReferenceImpl)ref).getDocument();
+        } else {
+            CsmFile file = ref.getContainingFile();
+            CloneableEditorSupport ces = CsmUtilities.findCloneableEditorSupport(file);
+            Document doc = null;
+            if (ces != null) {
+                doc = ces.getDocument();
+            }
+            return doc instanceof BaseDocument ? (BaseDocument)doc : null;
+        }
+    }
+    private static int getRefOffset(CsmReference ref) {
+        if (ref instanceof ReferenceImpl) {
+            return ((ReferenceImpl)ref).getOffset();
+        } else {
+            return (ref.getStartOffset() + ref.getEndOffset() + 1) / 2;
+        }
+    }
+    
+    private static void setResolvedInfo(CsmReference ref, CsmObject target) {
+        if (target != null && (ref instanceof ReferenceImpl)) {
+            ((ReferenceImpl)ref).setTarget(target);            
+        }
+    }
+     
+    private static boolean isLocalElement(CsmObject decl) {
+        assert decl != null;
+        CsmObject scopeElem = decl;
+        while (CsmKindUtilities.isScopeElement(scopeElem)) {
+            CsmScope scope = ((CsmScopeElement)scopeElem).getScope();
+            if (CsmKindUtilities.isFunction(scope)) {
+                return true;
+            } else if (CsmKindUtilities.isScopeElement(scope)) {
+                scopeElem = ((CsmScopeElement)scope);
+            } else {
+                break;
+            }
+        }
+        return false;
+    }    
 }

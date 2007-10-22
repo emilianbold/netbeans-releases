@@ -88,4 +88,20 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
                + "', tokenID=" + this.token.getTokenID() // NOI18N
                + ", offset=" + this.offset + " [" + super.getStartPosition() + "-" + super.getEndPosition() + "]"; // NOI18N
     }    
+    
+    /*package*/ final void setTarget(CsmObject target) {
+        this.target = target;
+    }
+    
+    /*package*/ final CsmObject getTarget() {
+        return this.target;
+    }
+    
+    /*package*/ final int getOffset() {
+        return this.offset;
+    }
+    
+    /*package*/ final Token getToken() {
+        return this.token;
+    }
 }

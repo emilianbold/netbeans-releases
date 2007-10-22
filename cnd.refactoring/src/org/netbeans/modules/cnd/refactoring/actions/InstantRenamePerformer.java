@@ -63,7 +63,6 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.util.swing.MutablePositionRegion;
-//import org.netbeans.modules.java.editor.semantic.FindLocalUsagesQuery;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
@@ -78,7 +77,6 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.netbeans.spi.editor.highlighting.support.PositionsBag;
 import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.text.NbDocument;
@@ -191,29 +189,8 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
         if (scope == CsmReferenceResolver.Scope.LOCAL) {
             return true;
         } else {
-            CsmObject obj = ref.getReferencedObject();
-            if (obj != null && isLocalElement(obj)) {
-                return true;
-            } else {
-                return false;
-            }
+            return false;
         }
-    }
-    
-    private static boolean isLocalElement(CsmObject decl) {
-        assert decl != null;
-        CsmObject scopeElem = decl;
-        while (CsmKindUtilities.isScopeElement(scopeElem)) {
-            CsmScope scope = ((CsmScopeElement)scopeElem).getScope();
-            if (CsmKindUtilities.isFunction(scope)) {
-                return true;
-            } else if (CsmKindUtilities.isScopeElement(scope)) {
-                scopeElem = ((CsmScopeElement)scope);
-            } else {
-                break;
-            }
-        }
-        return false;
     }
     
     private static void doFullRename(DataObject dobj, JTextComponent target) {

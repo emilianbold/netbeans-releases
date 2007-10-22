@@ -109,7 +109,7 @@ public class ReferenceResolverImpl extends CsmReferenceResolver {
 
     @Override
     public Scope fastCheckScope(CsmReference ref) {
-        return Scope.UNKNOWN;
+        return ReferencesSupport.fastCheckScope(ref);
     }
     
     private BaseDocument getDocument(CsmFile file) {
