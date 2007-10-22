@@ -63,10 +63,13 @@ import java.util.HashMap;
 
 import java.net.URL;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.io.Writer;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import java.io.PrintWriter;
 import javax.wsdl.factory.WSDLFactory;
 import javax.wsdl.xml.WSDLWriter;
 import javax.wsdl.xml.WSDLReader;
@@ -81,6 +84,11 @@ import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
@@ -96,7 +104,9 @@ import org.netbeans.modules.jdbcwizard.builder.model.OracleQueryGenerator;
 import org.netbeans.modules.jdbcwizard.builder.model.DB2QueryGenerator;
 import org.netbeans.modules.jdbcwizard.builder.model.SQLServerQueryGenerator;
 import org.netbeans.modules.jdbcwizard.builder.model.JdbcQueryGenerator;
+import org.netbeans.modules.jdbcwizard.builder.util.IOUtil;
 import org.netbeans.modules.jdbcwizard.builder.util.XMLCharUtil;
+import org.netbeans.modules.jdbcwizard.builder.xsd.XSDGenerator;
 
 
 public class WSDLGenerator {
@@ -934,10 +944,39 @@ public class WSDLGenerator {
             final String outputFileName = this.wsdlFileLocation + "/" + this.mWSDLFileName + ".wsdl";
             final Writer sink = new FileWriter(outputFileName);
             writer.writeWSDL(this.def, sink);
+            /////////////////////////////////////////////////////
+            String str = IOUtil.getText(outputFileName,"UTF-8");
+    		StringBuffer sb = new StringBuffer(str);
+    		sb.replace(30,35,org.netbeans.modules.jdbcwizard.wizards.SimpleTargetChooserPanelGUI.encoding);
+    		str = sb.toString();
+    		byte[] buf = str.getBytes();
+    		File f = new File(outputFileName);
+    		OutputStream out = new FileOutputStream(f);
+    		out.write(buf, 0, buf.length);
+    		out.close();
+    		f = null;
+    		encodeXSD();
+            ////////////////////////////////////////////////////
             WSDLGenerator.logger.log(Level.INFO, "Successfully generated wsdl file :" + outputFileName);
         } catch (final Exception e) {
             throw new WSDLException(WSDLException.OTHER_ERROR, e.getMessage());
         }
 
     }
+    
+    public void encodeXSD()throws Exception{
+    	/////////////////////////
+        String str = IOUtil.getText(XSDGenerator.mFileName,"UTF-8");
+		StringBuffer sb = new StringBuffer(str);
+		sb.replace(30,35,org.netbeans.modules.jdbcwizard.wizards.SimpleTargetChooserPanelGUI.encoding);
+		str = sb.toString();
+		byte[] buf = str.getBytes();
+		File f = new File(XSDGenerator.mFileName);
+		OutputStream out = new FileOutputStream(f);
+		out.write(buf, 0, buf.length);
+		out.close();
+		f = null;
+        /////////////////////////
+    }
+    
 }
