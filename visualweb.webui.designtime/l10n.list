@@ -1,0 +1,2 @@
+# visualweb/webui/designtime
+${l10n-module}/src/**/Bundle*.properties
