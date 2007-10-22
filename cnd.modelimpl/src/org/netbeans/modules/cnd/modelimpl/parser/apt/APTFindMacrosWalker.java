@@ -44,8 +44,10 @@ package org.netbeans.modules.cnd.modelimpl.parser.apt;
 import antlr.Token;
 import antlr.TokenStream;
 import antlr.TokenStreamException;
+import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.apt.structure.APT;
+import org.netbeans.modules.cnd.apt.structure.APTDefine;
 import org.netbeans.modules.cnd.apt.structure.APTElif;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.structure.APTIf;
@@ -68,6 +70,14 @@ public class APTFindMacrosWalker extends APTSelfWalker {
 
     public APTFindMacrosWalker(APTFile apt, CsmFile csmFile, APTPreprocHandler preprocHandler) {
         super(apt, csmFile, preprocHandler);
+    }
+
+    @Override
+    protected void onDefine(APT apt) {
+        APTDefine defineNode = (APTDefine) apt;
+        addBlock((APTToken) defineNode.getName());
+        analyzeList(defineNode.getBody());
+        super.onDefine(apt);
     }
 
     @Override
@@ -104,15 +114,25 @@ public class APTFindMacrosWalker extends APTSelfWalker {
         analyzeStream(ts);
         return ts;
     }
+   
+    private void analyzeToken(Token token) {
+        APTMacro m = getMacroMap().getMacro(token);
+        if (m != null) {
+            APTToken apttoken = (APTToken) token;
+            addBlock(apttoken);
+        }
+    }
 
+    private void analyzeList(List<Token> tokens) {
+        for (Token token : tokens) {
+            analyzeToken(token);
+        }
+    }
+    
     private void analyzeStream(TokenStream ts) {
         try {
             for (Token token = ts.nextToken(); !APTUtils.isEOF(token); token = ts.nextToken()) {
-                APTMacro m = getMacroMap().getMacro(token);
-                if (m != null) {
-                    APTToken apttoken = (APTToken) token;
-                    addBlock(apttoken);
-                }
+                analyzeToken(token);
             }
         } catch (TokenStreamException ex) {
             Exceptions.printStackTrace(ex);
