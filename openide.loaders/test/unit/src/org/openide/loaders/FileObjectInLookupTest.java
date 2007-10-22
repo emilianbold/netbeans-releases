@@ -47,8 +47,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import org.openide.filesystems.*;
-import org.netbeans.junit.*;
+import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Children;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
@@ -56,9 +58,8 @@ import org.openide.text.DataEditorSupport;
 import org.openide.util.Enumerations;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.test.MockLookup;
 
-/*
- */
 public class FileObjectInLookupTest extends NbTestCase {
     FileObject root;
     
@@ -66,8 +67,9 @@ public class FileObjectInLookupTest extends NbTestCase {
         super(name);
     }
 
+    @Override
     protected void setUp() throws Exception {
-        MockServices.setServices(OwnDataLoaderPool.class);
+        MockLookup.setInstances(new OwnDataLoaderPool());
         clearWorkDir ();
         FileSystem lfs = TestUtilHid.createLocalFileSystem (getWorkDir (), new String[] {
             "adir/",
@@ -86,9 +88,7 @@ public class FileObjectInLookupTest extends NbTestCase {
         fail("OwnDataLoader shall be registered");
     }
     
-    protected void tearDown() throws Exception {
-    }
-    
+    @Override
     protected boolean runInEQ() {
         return true;
     }
@@ -171,24 +171,26 @@ public class FileObjectInLookupTest extends NbTestCase {
         }
     }
     
-    public static final class OwnDataLoaderPool extends DataLoaderPool {
+    private static final class OwnDataLoaderPool extends DataLoaderPool {
         protected Enumeration<? extends DataLoader> loaders() {
             return Enumerations.singleton(OwnDataLoader.getLoader(OwnDataLoader.class));
         }
     }
 
 
-    public static class OwnDataLoader extends UniFileLoader {
+    private static class OwnDataLoader extends UniFileLoader {
         private static final long serialVersionUID = 1L;
 
         public OwnDataLoader() {
-            super("org.openide.loaders.OwnDataObject");
+            super("org.openide.loaders.FileObjectInLookupTest$OwnDataObject");
         }
 
+        @Override
         protected String defaultDisplayName() {
             return NbBundle.getMessage(OwnDataLoader.class, "LBL_Own_loader_name");
         }
 
+        @Override
         protected void initialize() {
             super.initialize();
             getExtensions().addExtension("own");
@@ -198,7 +200,7 @@ public class FileObjectInLookupTest extends NbTestCase {
             return new OwnDataObject(primaryFile, this);
         }
     }
-    static class OwnDataObject extends MultiDataObject implements Lookup.Provider {
+    private static class OwnDataObject extends MultiDataObject implements Lookup.Provider {
 
         public OwnDataObject(FileObject pf, OwnDataLoader loader) throws DataObjectExistsException, IOException {
             super(pf, loader);
@@ -206,21 +208,20 @@ public class FileObjectInLookupTest extends NbTestCase {
             cookies.add((Node.Cookie) DataEditorSupport.create(this, getPrimaryEntry(), cookies));
         }
 
+        @Override
         protected Node createNodeDelegate() {
             return new OwnDataNode(this, getLookup());
         }
 
+        @Override
         public Lookup getLookup() {
             return getCookieSet().getLookup();
         }
     }
     
     static class OwnDataNode extends DataNode {
-        private static final String IMAGE_ICON_BASE = "SET/PATH/TO/ICON/HERE";
-
-        public OwnDataNode(OwnDataObject obj, Lookup lookup) {
+        private OwnDataNode(OwnDataObject obj, Lookup lookup) {
             super(obj, Children.LEAF, lookup);
-            //        setIconBaseWithExtension(IMAGE_ICON_BASE);
         }
 
     }

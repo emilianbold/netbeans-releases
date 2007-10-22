@@ -27,8 +27,6 @@ package org.openide.loaders;
 import java.io.IOException;
 import java.util.Enumeration;
 import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -38,6 +36,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Enumerations;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.test.MockLookup;
 
 /** Test things about shadows and broken shadows, etc.
  * @author Jaroslav Tulach
@@ -48,28 +47,24 @@ implements java.net.URLStreamHandlerFactory {
     private DataObject original;
     /** folder to work with */
     private DataFolder folder;
-    /** fs we work on */
-    private FileSystem lfs;
-
-    private Logger err;
     
     static {
         // to handle nbfs urls...
       //  java.net.URL.setURLStreamHandlerFactory (new DataShadowLookupTest(null));
-        MockServices.setServices(new Class[] { Pool.class });
+        MockLookup.setInstances(new Pool());
     }
     
     public DataShadowLookupTest (String name) {
         super(name);
     }
 
-    protected Level logLevel() {
+    protected @Override Level logLevel() {
         return Level.INFO;
     }
     
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         
-        lfs = Repository.getDefault ().getDefaultFileSystem ();
+        FileSystem lfs = Repository.getDefault ().getDefaultFileSystem ();
         
         FileObject[] delete = lfs.getRoot().getChildren();
         for (int i = 0; i < delete.length; i++) {
@@ -86,10 +81,6 @@ implements java.net.URLStreamHandlerFactory {
         assertNotNull(fo);
         assertTrue (fo.isFolder ());
         folder = DataFolder.findFolder (fo);
-        
-        Repository.getDefault ().addFileSystem (lfs);
-        
-        err = Logger.getLogger(getName());
     }
     
     public java.net.URLStreamHandler createURLStreamHandler(String protocol) {
@@ -103,18 +94,18 @@ implements java.net.URLStreamHandlerFactory {
         DataShadow shade = original.createShadow(folder);
 
         {
-            String s = (String)original.getNodeDelegate().getLookup().lookup(String.class);
+            String s = original.getNodeDelegate().getLookup().lookup(String.class);
             assertNotNull("String is in the original's lookup", s);
         }
         
         assertSame(shade.getOriginal(), original);
-        String s = (String)shade.getNodeDelegate().getLookup().lookup(String.class);
+        String s = shade.getNodeDelegate().getLookup().lookup(String.class);
         assertNotNull("String is in the lookup", s);
         assertEquals("It is the name of the original", original.getName(), s);
     }
 
-    public static final class Pool extends DataLoaderPool {
-        protected Enumeration loaders() {
+    private static final class Pool extends DataLoaderPool {
+        protected Enumeration<? extends DataLoader> loaders() {
             return Enumerations.singleton(StringLoader.findObject(StringLoader.class, true));
         }
         
@@ -122,7 +113,7 @@ implements java.net.URLStreamHandlerFactory {
     
     private static final class StringLoader extends UniFileLoader {
         public StringLoader() {
-            super("org.openide.loaders.StringObject");
+            super("org.openide.loaders.DataShadowLookupTest$StringObject");
             getExtensions().addExtension("string");
         }
         
@@ -137,7 +128,7 @@ implements java.net.URLStreamHandlerFactory {
             super(fo, l);
         }
 
-        protected Node createNodeDelegate() {
+        protected @Override Node createNodeDelegate() {
             return new DataNode(this, Children.LEAF, Lookups.singleton(getName()));
         }
     } // end of StringObject
