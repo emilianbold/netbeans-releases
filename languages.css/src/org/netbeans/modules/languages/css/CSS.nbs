@@ -98,7 +98,9 @@ SKIP:css_whitespace
 
 S = [charset] (import)* (ruleset | media | page)*;
 charset = "@charset"  <css_string> ";";
-import = "@import" (<css_string> | <css_url>) (<css_identifier>)* ";";
+import = "@import" (<css_string> | <css_url>) mediaList ";";
+mediaList = (<css_identifier>)*;
+mediaList = (<css_identifier> ",")*;
 media = "@media" mediaName mediaBody;
 mediaName = <css_identifier> ("," <css_identifier>)*;
 mediaBody = "{" (ruleset)* "}";
