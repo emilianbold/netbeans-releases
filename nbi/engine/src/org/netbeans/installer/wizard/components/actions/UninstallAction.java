@@ -37,6 +37,7 @@
 package org.netbeans.installer.wizard.components.actions;
 
 import java.util.List;
+import org.netbeans.installer.Installer;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.utils.helper.Status;
@@ -71,7 +72,8 @@ public class UninstallAction extends WizardAction {
     
     public static final String UNINSTALL_DEPENDENT_FAILED_PROPERTY =
             "uninstall.dependent.failed";
-    
+    public static final int UNINSTALLATION_ERROR_CODE = 
+            126;//NOMAGI
     
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
@@ -116,6 +118,11 @@ public class UninstallAction extends WizardAction {
                 // is happening
                 SystemUtils.sleep(200);
             }  catch (UninstallationException e) {
+                // do not override already set exit code
+                if (System.getProperties().get(Installer.EXIT_CODE_PROPERTY) == null) {
+                     System.getProperties().put(Installer.EXIT_CODE_PROPERTY, 
+                             new Integer(UNINSTALLATION_ERROR_CODE));
+                }
                 // adjust the component's status and save this error - it will
                 // be reused later at the PostInstallSummary
                 product.setStatus(Status.INSTALLED);

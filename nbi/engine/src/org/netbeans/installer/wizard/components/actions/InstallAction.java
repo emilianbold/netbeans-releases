@@ -33,12 +33,12 @@
  * the option applies only if the new code is made subject to such option by the
  * copyright holder.
  */
-
 package org.netbeans.installer.wizard.components.actions;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.installer.Installer;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.filters.OrFilter;
@@ -59,42 +59,50 @@ import org.netbeans.installer.wizard.components.WizardAction;
 public class InstallAction extends WizardAction {
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
+
     public static final String DEFAULT_TITLE =
             ResourceUtils.getString(InstallAction.class,
             "IA.title"); // NOI18N
+
     public static final String DEFAULT_DESCRIPTION =
             ResourceUtils.getString(InstallAction.class,
             "IA.description"); // NOI18N
-    
+
     public static final String DEFAULT_PROGRESS_INSTALL_TITLE =
             ResourceUtils.getString(InstallAction.class,
             "IA.progress.install.title"); // NOI18N
+
     public static final String PROGRESS_INSTALL_TITLE_PROPERTY =
             "progress.install.title"; //NOI18N
-    
+
     public static final String DEFAULT_PROGRESS_ROLLBACK_TITLE =
             ResourceUtils.getString(InstallAction.class,
             "IA.progress.rollback.title"); // NOI18N
+
     public static final String PROGRESS_ROLLBACK_TITLE_PROPERTY =
             "progress.rollback.title"; //NOI18N
-    
+
     public static final String DEFAULT_INSTALL_DEPENDENT_FAILED_EXCEPTION =
             ResourceUtils.getString(InstallAction.class,
             "IA.install.dependent.failed");//NOI18N
+
     public static final String INSTALL_DEPENDENT_FAILED_EXCEPTION_PROPERTY =
             "install.dependent.failed";
-    
     public static final String DEFAULT_INSTALL_UNKNOWN_ERROR =
             ResourceUtils.getString(InstallAction.class,
             "IA.install.unknown.error");//NOI18N
+
     public static final String INSTALL_UNKNOWN_ERROR_PROPERTY =
             "install.unknown.error";
     
+    public static final int INSTALLATION_ERROR_CODE = 
+            127;//NOMAGI
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
+
     private CompositeProgress overallProgress;
-    private Progress          currentProgress;
-    
+    private Progress currentProgress;
+
     public InstallAction() {
         setProperty(TITLE_PROPERTY, DEFAULT_TITLE);
         setProperty(DESCRIPTION_PROPERTY, DEFAULT_DESCRIPTION);
@@ -107,115 +115,113 @@ public class InstallAction extends WizardAction {
         setProperty(INSTALL_UNKNOWN_ERROR_PROPERTY,
                 DEFAULT_INSTALL_UNKNOWN_ERROR);
     }
-    
+
     public boolean canExecuteForward() {
         return Registry.getInstance().getProductsToInstall().size() > 0;
     }
-    
+
     public boolean isPointOfNoReturn() {
         return true;
     }
-    
+
     public void execute() {
         final Registry registry = Registry.getInstance();
         final List<Product> products = registry.getProductsToInstall();
         final int percentageChunk = Progress.COMPLETE / products.size();
         final int percentageLeak = Progress.COMPLETE % products.size();
-        
+
         final Map<Product, Progress> progresses = new HashMap<Product, Progress>();
-        
+
         overallProgress = new CompositeProgress();
         overallProgress.setPercentage(percentageLeak);
         overallProgress.synchronizeDetails(true);
-        
+
         getWizardUi().setProgress(overallProgress);
         for (int i = 0; i < products.size(); i++) {
             // get the handle of the current item
             final Product product = products.get(i);
-            
+
             // initiate the progress for the current element
             currentProgress = new Progress();
-            
+
             overallProgress.addChild(currentProgress, percentageChunk);
-            overallProgress.setTitle(StringUtils.format(
-                    getProperty(PROGRESS_INSTALL_TITLE_PROPERTY),
+            overallProgress.setTitle(StringUtils.format(getProperty(PROGRESS_INSTALL_TITLE_PROPERTY),
                     product.getDisplayName()));
             try {
                 product.install(currentProgress);
-                
-                if (isCanceled())  {
-                    overallProgress.setTitle(StringUtils.format(
-                            getProperty(PROGRESS_ROLLBACK_TITLE_PROPERTY),
+
+                if (isCanceled()) {
+                    overallProgress.setTitle(StringUtils.format(getProperty(PROGRESS_ROLLBACK_TITLE_PROPERTY),
                             product.getDisplayName()));
                     product.rollback(currentProgress);
-                    
-                    final RegistryFilter filter = new OrFilter(
-                            new ProductFilter(DetailedStatus.INSTALLED_SUCCESSFULLY),
+
+                    final RegistryFilter filter = new OrFilter(new ProductFilter(DetailedStatus.INSTALLED_SUCCESSFULLY),
                             new ProductFilter(DetailedStatus.INSTALLED_WITH_WARNINGS));
-                    for (Product toRollback: registry.queryProducts(filter)) {
+                    for (Product toRollback : registry.queryProducts(filter)) {
                         toRollback.setStatus(Status.TO_BE_UNINSTALLED);
                     }
-                    
-                    for (Product toRollback: registry.getProductsToUninstall()) {
-                        overallProgress.setTitle(StringUtils.format(
-                                getProperty(PROGRESS_ROLLBACK_TITLE_PROPERTY),
+
+                    for (Product toRollback : registry.getProductsToUninstall()) {
+                        overallProgress.setTitle(StringUtils.format(getProperty(PROGRESS_ROLLBACK_TITLE_PROPERTY),
                                 toRollback.getDisplayName()));
                         toRollback.rollback(progresses.get(toRollback));
                     }
                     break;
                 }
-                
+
                 progresses.put(product, currentProgress);
-                
+
                 // sleep a little so that the user can perceive that something
                 // is happening
                 SystemUtils.sleep(200);
             } catch (Throwable e) {
                 if (!(e instanceof InstallationException)) {
-                    e = new InstallationException(
-                            getProperty(INSTALL_UNKNOWN_ERROR_PROPERTY), e);
+                    e = new InstallationException(getProperty(INSTALL_UNKNOWN_ERROR_PROPERTY), e);
                 }
-                
+                // do not override already set exit code
+                if (System.getProperties().get(Installer.EXIT_CODE_PROPERTY) == null) {
+                     System.getProperties().put(Installer.EXIT_CODE_PROPERTY, 
+                             new Integer(INSTALLATION_ERROR_CODE));
+                }
                 // adjust the product's status and save this error - it will
                 // be reused later at the PostInstallSummary
                 product.setStatus(Status.NOT_INSTALLED);
                 product.setInstallationError(e);
-                
+
                 // since the current product failed to install, we should cancel the
                 // installation of the products that may require this one
-                for(Product dependent: registry.getProducts()) {
-                    if ((dependent.getStatus()  == Status.TO_BE_INSTALLED) &&
+                for (Product dependent : registry.getProducts()) {
+                    if ((dependent.getStatus() == Status.TO_BE_INSTALLED) &&
                             registry.satisfiesRequirement(product, dependent)) {
-                        final String exceptionName = StringUtils.format(
-                                getProperty(INSTALL_DEPENDENT_FAILED_EXCEPTION_PROPERTY),
+                        final String exceptionName = StringUtils.format(getProperty(INSTALL_DEPENDENT_FAILED_EXCEPTION_PROPERTY),
                                 dependent.getDisplayName(),
                                 product.getDisplayName());
-                        
+
                         final InstallationException dependentError =
-                                new InstallationException(exceptionName,e);
-                        
+                                new InstallationException(exceptionName, e);
+
                         dependent.setStatus(Status.NOT_INSTALLED);
                         dependent.setInstallationError(dependentError);
-                        
+
                         products.remove(dependent);
                     }
                 }
-                
+
                 // finally notify the user of what has happened
                 LogManager.log(ErrorLevel.ERROR, e);
             }
         }
     }
-    
+
     public void cancel() {
         if (currentProgress != null) {
             currentProgress.setCanceled(true);
         }
-        
+
         if (overallProgress != null) {
             overallProgress.setCanceled(true);
         }
-        
+
         super.cancel();
     }
 }

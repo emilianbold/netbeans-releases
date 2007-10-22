@@ -224,7 +224,16 @@ public class Installer implements FinishHandler {
      * @see #criticalExit()
      */
     public void finish() {
-        exitNormally(NORMAL_ERRORCODE);
+        int exitCode = NORMAL_ERRORCODE;
+        final Object prop = System.getProperties().get(EXIT_CODE_PROPERTY);
+        if ( prop!= null && prop instanceof Integer) {
+            try {
+                exitCode = ((Integer)prop).intValue();
+            } catch (NumberFormatException e) {
+                LogManager.log("... cannot parse exit code : " + prop, e);
+            }
+        }
+        exitNormally(exitCode);
     }
     
     /**
