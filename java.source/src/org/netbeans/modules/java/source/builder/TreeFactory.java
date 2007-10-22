@@ -356,6 +356,10 @@ public class TreeFactory {
                 return make.Literal(TypeTags.BOOLEAN, value == Boolean.FALSE ? 0 : 1);
             if (value instanceof Character) // looks like world championship in workarounds here ;-)
                 return make.Literal(TypeTags.CHAR, Integer.valueOf((Character) value));
+            if (value instanceof Byte) // #119143: Crystal ball no. 4
+                return make.Literal(TypeTags.INT, ((Byte) value).intValue());
+            if (value instanceof Short)
+                return make.Literal(TypeTags.INT, ((Short) value).intValue());
             // workaround for making NULL_LITERAL kind.
             if (value == null) {
                 return make.Literal(TypeTags.BOT, value);
