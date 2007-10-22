@@ -77,6 +77,13 @@ FOLD:tag: {
     collapse_type_action_name:"Collapse HTML Tag";
 }
 
+FOLD:scriptlet: {
+    fold_display_name:"<% ... %>";
+    expand_type_action_name:"Expand Scriptlet";
+    collapse_type_action_name:"Collapse Scriptlet";
+}
+
+
 FOLD:comment: {
     fold_display_name:"<%-- --%>";
     expand_type_action_name:"Expand JSP Comment";
