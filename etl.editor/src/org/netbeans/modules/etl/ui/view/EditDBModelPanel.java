@@ -64,7 +64,7 @@ public class EditDBModelPanel extends JSplitPane {
         dbModelList.addAll(targetdbModelList);
         dbModelTreeView = new DBModelTreeView(dbModelList, this);
         setOneTouchExpandable(true);
-        setDividerLocation(200);
+        setDividerLocation(300);
         setLeftComponent(dbModelTreeView);
     }
     
@@ -75,7 +75,7 @@ public class EditDBModelPanel extends JSplitPane {
         dbModelList.addAll(targetdbModelList);
         dbModelTreeView = new DBModelTreeView(dbModelList, this);
         setOneTouchExpandable(true);
-        setDividerLocation(200);
+        setDividerLocation(300);
         setLeftComponent(dbModelTreeView);
     }
 
