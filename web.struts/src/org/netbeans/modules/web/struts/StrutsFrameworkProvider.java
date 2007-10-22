@@ -82,6 +82,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.j2ee.dd.api.web.WelcomeFileList;
 
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
@@ -410,6 +411,7 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
             //copy Welcome.jsp
             if (canCreateNewFile(wm.getDocumentBase(), "welcomeStruts.jsp")) { //NOI18N
                 content = readResource (Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-struts/welcome.jsp").getInputStream (), "UTF-8"); //NOI18N
+                content = content.replaceAll("__ENCODING__", FileEncodingQuery.getDefaultEncoding().name());
                 target = FileUtil.createData(wm.getDocumentBase(), "welcomeStruts.jsp");//NOI18N
                 createFile(target, content, "UTF-8"); //NOI18N
                 File indexJsp = new File(FileUtil.toFile(wm.getDocumentBase()), "index.jsp");  //NOI18N
