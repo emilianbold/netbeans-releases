@@ -424,8 +424,12 @@ public class JSFConfigEditorSupport extends DataEditorSupport
         runInAwtDispatchThread(new Runnable() {
             public void run() {       
                 MultiViewHandler handler = MultiViews.findMultiViewHandler(mvtc);
-                handler.requestVisible(handler.getPerspectives()[handler.getPerspectives().length - 1]);
-                mvtc.requestActive();
+                // The handler can be null, when user uninstall a module, which
+                // provides view that was opened last time
+                if (handler != null) {
+                    handler.requestVisible(handler.getPerspectives()[handler.getPerspectives().length - 1]);
+                    mvtc.requestActive();
+                }
             }
         });
     }
