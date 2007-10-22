@@ -255,20 +255,22 @@ public class Method {
         wc.rewrite(oldBlockTree, newBlockTree);
     }
 
-    BlockTree addPropertySetStatements(WorkingCopy wc, Bean bean, BlockTree oldBlockTree) {
-        if(oldBlockTree == null) {
-            ExecutableElement elem = execElementHandle.resolve(wc);
-            oldBlockTree = wc.getTrees().getTree(elem).getBody();
-        }
-        BlockTree newBlockTree = oldBlockTree;
+    /* This method is responsible for cumulative addition of property set statements
+     * It takes already modified block tree(usually it is the tree returned by this
+     * method in a previous invocation) and it adds the new property set statements
+     */
+    BlockTree addPropertySetStatements(WorkingCopy wc, Bean bean, BlockTree modifiedBlockTree) {
+        ExecutableElement elem = execElementHandle.resolve(wc);
+        BlockTree blockTree = wc.getTrees().getTree(elem).getBody();
+        BlockTree newBlockTree = modifiedBlockTree != null ? modifiedBlockTree : blockTree;
         for (Property prop : bean.getProperties()) {
             if (!prop.isMarkupProperty() && !prop.isInserted()) {
                 newBlockTree = addStatement(wc, newBlockTree, bean.getName(), prop.getWriteMethodName(), prop.getValueSource());
                 prop.setInserted(true);
             }
         }
-        if(oldBlockTree != newBlockTree) {
-            wc.rewrite(oldBlockTree, newBlockTree);
+        if(blockTree != newBlockTree) {
+            wc.rewrite(blockTree, newBlockTree);
         }
         return newBlockTree;
     }
