@@ -77,11 +77,40 @@ public class LocalHistory {
 
     private ListenersSupport listenerSupport = new ListenersSupport(this);
     
+    private Set<File> userDefinedRoots;
     private Set<File> roots = new HashSet<File>();
-           
+       
+    private Pattern includeFiles = null;
+    private Pattern excludeFiles = null;
+
+    // XXX hotfix - issue 119042
+    private final Pattern metadataPattern = Pattern.compile(".*\\" + File.separatorChar + "((\\.|_)svn|.hg|CVS)(\\" + File.separatorChar + ".*|$)");
+        
     public final static Object EVENT_FILE_CREATED = new Object();
     final static Object EVENT_PROJECTS_CHANGED = new Object();
-       
+    
+    public LocalHistory() {
+        String include = System.getProperty("netbeans.localhistory.includeFiles");
+        if(include != null && !include.trim().equals("")) {
+            this.includeFiles = Pattern.compile(include);    
+        }
+        String exclude = System.getProperty("netbeans.localhistory.excludeFiles");
+        if(exclude != null && !exclude.trim().equals("")) {
+            this.excludeFiles = Pattern.compile(exclude);    
+        }                                
+        
+        String rootPaths = System.getProperty("netbeans.localhistory.historypath");
+        if(rootPaths == null || rootPaths.trim().equals("")) {            
+            userDefinedRoots = Collections.EMPTY_SET;               
+        } else {
+            String[] paths = rootPaths.split(";");
+            userDefinedRoots = new HashSet<File>(paths.length);
+            for(String root : paths) {
+                addRootFile(userDefinedRoots, new File(root));   
+            }            
+        }    
+    }    
+
     void init() {
         getLocalHistoryStore().cleanUp(LocalHistorySettings.getInstance().getTTLMillis());
         RequestProcessor.getDefault().post(new Runnable() {
@@ -157,7 +186,7 @@ public class LocalHistory {
         File parent = null;
         while(file != null) {
             synchronized(roots) {
-                if(roots.contains(file)) {
+                if(roots.contains(file) || userDefinedRoots.contains(file)) {
                     parent = file;
                 }            
             }                        
@@ -172,7 +201,20 @@ public class LocalHistory {
         }
         if(file == null) {
             return false;
-        }                        
+        }
+        String path = file.getAbsolutePath();        
+        if(metadataPattern.matcher(path).matches()) {
+            return false;
+        }
+        
+        if(includeFiles != null) {
+            return includeFiles.matcher(path).matches();        
+        }
+
+        if(excludeFiles != null) {
+            return !excludeFiles.matcher(path).matches();        
+        }                
+        
         return true;
     }        
       
