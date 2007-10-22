@@ -531,7 +531,7 @@ public final class JavaSource {
      * You probably do not want to call this method unless you are reacting to
      * some user's GUI input which requires immediate action (e.g. code completion popup). 
      * In all other cases use {@link JavaSourceTaskFactory}.<BR>
-     * Call to this method will cancel processig of all the phase completion tasks until
+     * Call to this method will cancel processing of all the phase completion tasks until
      * this task does not finish.<BR>
      * @see org.netbeans.api.java.source.CancellableTask for information about implementation requirements
      * @param task The task which.
@@ -777,7 +777,7 @@ public final class JavaSource {
     }
        
     /** Runs a task which permits for modifying the sources.
-     * Call to this method will cancel processig of all the phase completion tasks until
+     * Call to this method will cancel processing of all the phase completion tasks until
      * this task does not finish.<BR>
      * @see Task for information about implementation requirements
      * @param task The task which.
@@ -925,7 +925,7 @@ public final class JavaSource {
     }
        
     /** Adds a task to given compilation phase. The tasks will run sequentially by
-     * priorty after given phase is reached.
+     * priority after given phase is reached.
      * @see CancellableTask for information about implementation requirements 
      * @task The task to run.
      * @phase In which phase should the task run
@@ -1975,7 +1975,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         }
         
         /**
-         * Prevents rececondition in runWhenScanFinished. This method may be called only from
+         * Prevents race-condition in runWhenScanFinished. This method may be called only from
          * the Java-Source-Worker-Thread right after the initial scan finished. The problem was
          * that the task was added into the todo after the todo was drained into the list of pending
          * tasks but the getTaskToCancel thought that the task is still the RepositoryUpdater. So the

@@ -64,7 +64,7 @@ public interface JavaFileFilterImplementation {
     
     /**
      * Filters an input {@link CharSequence} by the preprocessor. From the performance reason
-     * it's highly recomended to implement the method using decorator pattern.
+     * it's highly recommended to implement the method using decorator pattern.
      * @param charSequence {@link CharSequence} to be preprocessed
      * @return an preprocessed {@link CharSequence}
      */
