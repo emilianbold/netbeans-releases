@@ -1,26 +1,24 @@
-/*
- * __NAME__.java
- *
- * Created on __DATE__, __TIME__
- */
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
 
-package Templates.Ant;
+<#if package?? && package != "">
+package ${package};
 
-// IMPORTANT! You need to compile this class against ant.jar. So add the
-// JAR ide5/ant/lib/ant.jar from your IDE installation directory (or any
-// other version of Ant you wish to use) to your classpath. Or if
-// writing your own build target, use e.g.:
-// <classpath>
-//     <pathelement location="${ant.home}/lib/ant.jar"/>
-// </classpath>
+</#if>
+// IMPORTANT! You need to compile this class against ant.jar.
+// The easiest way to do this is to add ${"$" + "{ant.core.lib}"} to your project's classpath.
+// For example, for a plain Java project with no other dependencies, set in project.properties:
+// javac.classpath=${"$" + "{ant.core.lib}"}
 
-import org.apache.tools.ant.*;
-import org.apache.tools.ant.types.*;
+import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.Task;
 
 /**
- * @author __USER__
+ * @author ${user}
  */
-public class CustomTask extends Task {
+public class ${name} extends Task {
 
    // TODO customize method names to match custom task
    // property and type (handled by inner class) names
@@ -57,7 +55,7 @@ public class CustomTask extends Task {
             val = s;
         }
     }
-    private List nestmes = new LinkedList(); // List<Nestme>
+    private List<Nestme> nestmes = new LinkedList<Nestme>();
     public Nestme createNestme() {
         Nestme n = new Nestme();
         nestmes.add(n);
@@ -73,7 +71,7 @@ public class CustomTask extends Task {
     */
 
     /* To add embedded filesets:
-    private List filesets = new LinkedList(); // List<FileSet>
+    private List<FileSet> filesets = new LinkedList<FileSet>();
     public void addFileset(FileSet fs) {
         filesets.add(fs);
     }
@@ -83,22 +81,21 @@ public class CustomTask extends Task {
     //     </fileset>
     // </customtask>
     // In execute() you can do:
-    Iterator it = filesets.iterator();
-    while (it.hasNext()) {
-        FileSet fs = (FileSet)it.next();
+    for (FileSet fs : filesets) {
         DirectoryScanner ds = fs.getDirectoryScanner(project);
         File basedir = ds.getBasedir();
-        String[] files = ds.getIncludedFiles();
-        // process them...
+        for (String file : ds.getIncludedFiles()) {
+            // process it...
+        }
     }
     */
 
     /* For nested text:
-    private StringBuffer text;
+    private StringBuilder text;
     public void addText(String raw) {
         String s = getProject().replaceProperties(raw.trim());
         if (text == null) {
-            text = new StringBuffer(s);
+            text = new StringBuilder(s);
         } else {
             text.append(s);
         }
@@ -136,7 +133,7 @@ public class CustomTask extends Task {
     */
 
     /* One of a fixed set of choices:
-    public static class FooBieBletch extends EnumeratedAttribute {
+    public static class FooBieBletch extends EnumeratedAttribute { // or use Java 5 enums
         public String[] getValues() {
             return new String[] {"foo", "bie", "bletch"};
         }
@@ -148,7 +145,7 @@ public class CustomTask extends Task {
     // <customtask mode="bletch"/>
     */
 
-    public void execute() throws BuildException {
+    public @Override void execute() throws BuildException {
         // TODO code here what the task actually does:
 
         // To log something:

@@ -389,6 +389,7 @@ final class ProjectProperties {
             if (antJar != null) {
                 File antHome = antJar.getParentFile().getParentFile();
                 m.put("ant.home", antHome.getAbsolutePath()); // NOI18N
+                m.put("ant.core.lib", antJar.getAbsolutePath()); // NOI18N
             }
             stockPropertyPreprovider = PropertyUtils.fixedPropertyProvider(m);
         }

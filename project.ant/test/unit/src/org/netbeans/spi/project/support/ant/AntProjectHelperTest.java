@@ -58,8 +58,10 @@ import org.netbeans.spi.project.CacheDirectoryProvider;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Mutex;
 import org.openide.util.test.MockChangeListener;
+import org.openide.util.test.MockLookup;
 import org.openide.util.test.MockPropertyChangeListener;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
@@ -103,8 +105,9 @@ public class AntProjectHelperTest extends NbTestCase {
     private Project p;
     private AntProjectHelper h;
     private AntBasedTestUtil.TestListener l;
+    private File antJar;
     
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         super.setUp();
         scratch = TestUtil.makeScratchDir(this);
         projdir = scratch.createFolder("proj");
@@ -113,8 +116,15 @@ public class AntProjectHelperTest extends NbTestCase {
         TestUtil.createFileFromContent(AntProjectHelperTest.class.getResource("data/project.properties"), projdir, "nbproject/project.properties");
         TestUtil.createFileFromContent(AntProjectHelperTest.class.getResource("data/private.properties"), projdir, "nbproject/private/private.properties");
         TestUtil.createFileFromContent(AntProjectHelperTest.class.getResource("data/global.properties"), scratch, "userdir/build.properties");
-        TestUtil.setLookup(new Object[] {
-            AntBasedTestUtil.testAntBasedProjectType(),
+        antJar = new File(getWorkDir(), "ant/lib/ant.jar");
+        MockLookup.setInstances(AntBasedTestUtil.testAntBasedProjectType(), new InstalledFileLocator() {
+            public @Override File locate(String relativePath, String codeNameBase, boolean localized) {
+                if (relativePath.equals("ant/lib/ant.jar")) {
+                    return antJar;
+                } else {
+                    return null;
+                }
+            }
         });
         pm = ProjectManager.getDefault();
         p = pm.findProject(projdir);
@@ -722,50 +732,50 @@ public class AntProjectHelperTest extends NbTestCase {
     
     public void testCreatePropertyProvider() throws Exception {
         PropertyProvider pp = h.getPropertyProvider(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        Map/*<String,String>*/ defs = pp.getProperties();
+        Map<String,String> defs = pp.getProperties();
         assertEquals("correct number of defs", 3, defs.size());
         assertEquals("correct value", "value1", defs.get("shared.prop"));
         // Test changes.
-        MockChangeListener l = new MockChangeListener();
-        pp.addChangeListener(l);
-        EditableProperties p = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        p.setProperty("foo", "bar");
-        l.msg("no events from uncommitted changes").assertNoEvents();
-        h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, p);
-        l.msg("got a change from setting a property").assertEvent();
+        MockChangeListener mcl = new MockChangeListener();
+        pp.addChangeListener(mcl);
+        EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        ep.setProperty("foo", "bar");
+        mcl.msg("no events from uncommitted changes").assertNoEvents();
+        h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+        mcl.msg("got a change from setting a property").assertEvent();
         defs = pp.getProperties();
         assertEquals("correct new size", 4, defs.size());
         assertEquals("correct new value", "bar", defs.get("foo"));
         // No-op changes.
-        p = p.cloneProperties();
-        p.setProperty("foo", "bar2");
-        p.setProperty("foo", "bar");
-        h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, p);
-        l.msg("no events from no-op changes").assertNoEvents();
+        ep = ep.cloneProperties();
+        ep.setProperty("foo", "bar2");
+        ep.setProperty("foo", "bar");
+        h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+        mcl.msg("no events from no-op changes").assertNoEvents();
         // Deleting a property file.
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, null);
-        l.msg("got a change from removing a property file").assertEvent();
+        mcl.msg("got a change from removing a property file").assertEvent();
         assertEquals("now have no definitions", Collections.EMPTY_MAP, pp.getProperties());
         // Start off with no file, then create it.
         String path = "foo.properties";
         pp = h.getPropertyProvider(path);
-        pp.addChangeListener(l);
+        pp.addChangeListener(mcl);
         assertEquals("no defs initially", Collections.EMPTY_MAP, pp.getProperties());
         assertNull("no file made yet", h.getProjectDirectory().getFileObject(path));
-        p = new EditableProperties();
-        p.setProperty("one", "1");
-        p.setProperty("two", "2");
-        h.putProperties(path, p);
-        l.msg("making the file fired a change").assertEvent();
+        ep = new EditableProperties();
+        ep.setProperty("one", "1");
+        ep.setProperty("two", "2");
+        h.putProperties(path, ep);
+        mcl.msg("making the file fired a change").assertEvent();
         defs = pp.getProperties();
         assertEquals("two defs", 2, defs.size());
         assertEquals("right value #1", "1", defs.get("one"));
         assertEquals("right value #2", "2", defs.get("two"));
         assertNull("no file yet saved to disk", h.getProjectDirectory().getFileObject(path));
-        p.setProperty("three", "3");
-        l.msg("no events from uncomm. change").assertNoEvents();
-        h.putProperties(path, p);
-        l.msg("now have changed new file").assertEvent();
+        ep.setProperty("three", "3");
+        mcl.msg("no events from uncomm. change").assertNoEvents();
+        h.putProperties(path, ep);
+        mcl.msg("now have changed new file").assertEvent();
         defs = pp.getProperties();
         assertEquals("three defs", 3, defs.size());
         // XXX test that saving the project fires no additional changes
@@ -804,5 +814,12 @@ public class AntProjectHelperTest extends NbTestCase {
         t2.join();
     }
      */
+
+    public void testStockPropertyPreprovider() throws Exception {
+        Map<String,String> props = h.getStockPropertyPreprovider().getProperties();
+        assertEquals(FileUtil.toFile(projdir).getAbsolutePath(), props.get("basedir"));
+        assertEquals(new File(getWorkDir(), "ant").getAbsolutePath(), props.get("ant.home"));
+        assertEquals(antJar.getAbsolutePath(), props.get("ant.core.lib"));
+    }
 
 }

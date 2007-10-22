@@ -82,6 +82,7 @@ made subject to such option by the copyright holder.
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
                 <attr name="instantiatingIteratorURL" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/CustomTaskDescription.html"/>
                 <attr name="templateCategory" stringvalue="ant-task"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             </file>
         </folder>
     </folder>
