@@ -251,6 +251,8 @@ class WSDLValidator {
             } else if( SchemaConstants.TYPE_BASE64_BINARY.equals( typeName )) {
             } else if( SchemaConstants.TYPE_HEX_BINARY.equals( typeName )) {
             } else if( SchemaConstants.TYPE_STRING.equals( typeName )) {
+            } else if( SchemaConstants.TYPE_QNAME.equals( typeName )) {
+                addMessage( ErrorLevel.WARNING, "0015" );
             } else {
                 addMessage( ErrorLevel.FATAL, "0003", typeName.toString());
             }

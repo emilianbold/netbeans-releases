@@ -229,7 +229,10 @@ public class WSDL2JavaImpl implements WSDL2Java {
             if( configuration.getPackageName() != null && !"".equals( configuration.getPackageName().trim())) {
                 off.write( "package " + configuration.getPackageName() + ";\t\t" );
             }
-            off.write( "\n\n" );
+            off.write( "\n" );
+            off.write( "import javax.xml.namespace.QName;\n" );
+            off.write( "\n" );
+
             off.write( "public interface " + serviceName + " extends java.rmi.Remote {\n" );
             
             for( Port port : service.getPorts()) {
@@ -417,6 +420,7 @@ public class WSDL2JavaImpl implements WSDL2Java {
                 off.write( "package " + configuration.getPackageName() + ";\n");
             }
             off.write( "\n" );
+            off.write( "import javax.xml.namespace.QName;\n" );
             if( configuration.getGenerateDataBinding()) {
                 off.write( "import org.netbeans.microedition.databinding.DataSet;\n" );
                 off.write( "import org.netbeans.microedition.databinding.DataBindingException;\n" );
@@ -1479,6 +1483,8 @@ public class WSDL2JavaImpl implements WSDL2Java {
                 } else if( SchemaConstants.TYPE_HEX_BINARY.equals( t.getName())) {
                     off.write( "Type.BYTE" );
                     maxOccurs = Element.UNBOUNDED;
+                } else if( SchemaConstants.TYPE_QNAME.equals( t.getName())) {
+                    off.write( "new ComplexType() /* TODO: Must implement */" );
                 } else {
 //                    System.err.println("Error type");
                 }
