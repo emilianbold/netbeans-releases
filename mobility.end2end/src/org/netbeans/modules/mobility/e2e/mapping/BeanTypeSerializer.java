@@ -287,7 +287,8 @@ public class BeanTypeSerializer implements JavonSerializer {
                 if(( mapping.getProperty( "target" ).equals( "client" ) && mapping.getProperty( "create-stubs" ).equals( "true" )) 
                         || field.getModifier() == ClassData.Modifier.PUBLIC ) {
                     if( field.getType().isPrimitive() && !field.getType().isArray()) {
-                        deserialization += beanInstanceName + " = " + field.getType().getSerializer().fromStream( mapping , field.getType(), stream, null ) + "\n";
+                        deserialization += beanInstanceName + "." + field.getName() + " = " + 
+                                field.getType().getSerializer().fromStream( mapping , field.getType(), stream, null ) + ";\n";
                     } else {
                         deserialization += beanInstanceName + "." + field.getName() + " = (" + 
                                 field.getType().getSerializer().instanceOf( mapping, field.getType()) + ") readObject(" + stream + ");\n";
