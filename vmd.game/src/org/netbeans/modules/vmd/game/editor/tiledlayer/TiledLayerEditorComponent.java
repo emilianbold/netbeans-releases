@@ -425,6 +425,7 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
                 }
             }
         }
+        this.repaint();
     }
     
 
