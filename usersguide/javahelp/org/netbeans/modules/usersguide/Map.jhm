@@ -416,6 +416,7 @@
 <!-- Local History -->
 <mapID target="hist_about" url="local-history/hist_about.html" />
 <mapID target="hist_browsing" url="local-history/hist_browsing.html" />
+<mapID target="hist_quickref" url="local-history/hist_quickref.html" />
 <mapID target="hist_recovering_deleted" url="local-history/hist_recovering_deleted.html" />
 <mapID target="hist_reverting" url="local-history/hist_reverting.html" />
 <mapID target="hist_settings" url="local-history/hist_settings.html" />
