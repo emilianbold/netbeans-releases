@@ -212,9 +212,9 @@ public final class SyntaxParser {
         }
     }
     
+    @SuppressWarnings("unchecked")
     private List<SyntaxElement> createParseResult() {
-        //return Collections.
-        return Collections.unmodifiableList(parsedElements);
+        return Collections.unmodifiableList((List<SyntaxElement>)parsedElements.clone());
     }
     
     Document getDocument() {
