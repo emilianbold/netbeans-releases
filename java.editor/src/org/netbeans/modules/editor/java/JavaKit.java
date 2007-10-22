@@ -764,9 +764,13 @@ public class JavaKit extends NbEditorKit {
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             if (target != null) {
                 Document doc = target.getDocument();
-                FileObject fo = ((DataObject) doc.getProperty(Document.StreamDescriptionProperty)).getPrimaryFile();
+                Object source = doc.getProperty(Document.StreamDescriptionProperty);
                 
-                JavaFixAllImports.getDefault().fixAllImports(fo);
+                if (source instanceof DataObject) {
+                    FileObject fo = ((DataObject) source).getPrimaryFile();
+
+                    JavaFixAllImports.getDefault().fixAllImports(fo);
+                }
             }
         }
         
