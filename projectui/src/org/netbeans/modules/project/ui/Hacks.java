@@ -46,8 +46,10 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.Method;
 import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Logger;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -65,6 +67,8 @@ import org.openide.windows.WindowManager;
  * Various hacks that should be solved better later.
  */
 public class Hacks {
+
+    private Hacks() {}
     
     private static final String BUILD_NUMBER = System.getProperty("netbeans.buildnumber"); // NOI18N
     
@@ -78,11 +82,17 @@ public class Hacks {
             public void run() {
                 Node[] sel = r.getActivatedNodes();
                 Set<Project> projects = new HashSet<Project>();
+                boolean noProjectsOpen = OpenProjectList.getDefault().getOpenProjects().length == 0;
                 for (int i = 0; i < sel.length; i++) {
                     Lookup l = sel[i].getLookup();
                     Project p = l.lookup(Project.class);
                     if (p != null) {
                         projects.add(p);
+                        if (noProjectsOpen) {
+                            Logger.getLogger(Hacks.class.getName())./*XXX for now*/fine("Activated node selection " + Arrays.toString(sel) +
+                                    " contains nonopen project " + p + " though none are open; leak? activated TC: " + r.getActivated() +
+                                    " current nodes: " + Arrays.toString(r.getCurrentNodes()) + " (report in issue #102805)");
+                        }
                     } else {
                         DataObject d = l.lookup(DataObject.class);
                         if (d != null) {
