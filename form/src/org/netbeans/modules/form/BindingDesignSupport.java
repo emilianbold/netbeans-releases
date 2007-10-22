@@ -1173,7 +1173,7 @@ public class BindingDesignSupport {
             } catch (InvocationTargetException itex) {
                 Logger.getLogger(BindingDesignSupport.class.getName()).log(Level.INFO, itex.getMessage(), itex);
             }
-            if (group.getBinding(name) != null) {
+            if ((name != null) && group.getBinding(name) != null) {
                 Logger.getLogger(BindingDesignSupport.class.getName()).log(Level.INFO, "More than one binding with name: " + name); // NOI18N
                 name = null; // ignore name parameter
             }
