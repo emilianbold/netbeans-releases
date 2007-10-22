@@ -47,6 +47,8 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.cookies.OpenCookie;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
+import static org.openide.util.Utilities.OS_MAC;
 
 /**
  * Permits a PDF file to be opened in an external viewer.
@@ -56,12 +58,11 @@ import org.openide.util.NbBundle;
  */
 class PDFOpenSupport implements OpenCookie {
 
+    private static final String DEFAULT_MACOS_VIEWER = "open";          //NOI18N
     private static final String[] APP_DIRS = new String[] {
             "/usr/bin", "/usr/local/bin" };                             //NOI18N
     private static final String[] VIEWER_NAMES = new String[] {
             "evince", "xpdf", "kghostview", "ggv", "acroread" };        //NOI18N
-    private static final String[] NO_PATH_VIEWERS = new String[] {
-            "acroread", "open" };                                       //NOI18N
     static final String FALLBACK_VIEWER_NAME = "acroread";              //NOI18N
 
     private File f;
@@ -75,13 +76,29 @@ class PDFOpenSupport implements OpenCookie {
     }
 
     public void open() {
+        final String filePath = f.getAbsolutePath();
+
+        if (Utilities.isWindows()) {
+            tryCommand(new String[] {"cmd.exe", "/C", "start",          //NOI18N
+                                     filePath});
+            return;
+        }
+
         Settings sett = Settings.getDefault();
         
         File viewer = sett.getPDFViewer();
         boolean viewerUnset = (viewer == null);
+
+        if (viewerUnset && (Utilities.getOperatingSystem() == OS_MAC)) {
+            String cmd = DEFAULT_MACOS_VIEWER;
+            if (tryCommand(new String[] {cmd, filePath})) {
+                sett.setPDFViewer(new File(cmd));
+                return;
+            }
+        }
         
         if (viewerUnset) {
-            viewer = tryPredefinedViewers(f);
+            viewer = tryPredefinedViewers(filePath);
             if (viewer != null) {
                 sett.setPDFViewer(viewer);
                 return;
@@ -95,15 +112,11 @@ class PDFOpenSupport implements OpenCookie {
         boolean viewerFailed = false;
         do {
             try {
-                Process p = Runtime.getRuntime().exec(
-                        new String[] {viewer.getPath(),
-                                      f.getAbsolutePath()
-                });
+                tryCommandExc(new String[] {viewer.getPath(), filePath});
                 if (viewerUnset || viewerFailed) {
                     sett.setPDFViewer(viewer);
                 }
                 break;
-                // [PENDING] redirect p's output
             } catch (IOException ioe) {
                 viewerFailed = true;
                 
@@ -139,7 +152,7 @@ class PDFOpenSupport implements OpenCookie {
 
     /**
      */
-    private static File tryPredefinedViewers(File fileToOpen) {
+    private static File tryPredefinedViewers(String filePath) {
         for (int i = 0; i < APP_DIRS.length; i++) {
 
             File dir = new File(APP_DIRS[i]);
@@ -155,30 +168,45 @@ class PDFOpenSupport implements OpenCookie {
                     continue;
                 }
                 
-                try {
-                    Process p = Runtime.getRuntime().exec(
-                            new String[] {viewerPath,
-                                          fileToOpen.getAbsolutePath()});
+                if (tryCommand(new String[] {viewerPath, filePath})) {
                     return viewer;
-                } catch (IOException ex) {
-                    //never mind, try the next predefined viewer
                 }
-            }
-        }
-        
-        for (int i = 0; i < NO_PATH_VIEWERS.length; i++) {
-            try {
-                Process p = Runtime.getRuntime().exec(
-                        new String[] {NO_PATH_VIEWERS[i],
-                                      fileToOpen.getAbsolutePath()});
-                return new File(NO_PATH_VIEWERS[i]);
-            } catch (IOException ex) {
-                //never mind, try the next predefined viewer
+                //else: never mind, try the next predefined viewer
             }
         }
         
         return null;
     }
 
-    
+    /**
+     * Tries to execute the specified command and arguments.
+     *
+     * @param  cmdArray  array containing the command to call and its arguments
+     * @return  {@code true} if the execution was successful,
+     *          {@code false} otherwise
+     */
+    private static boolean tryCommand(final String[] cmdArray) {
+        try {
+            tryCommandExc(cmdArray);
+            return true;
+        } catch (IOException ioe) {
+            return false;
+        }
+    }
+
+    /**
+     * Tries to execute the specified command and arguments.
+     *
+     * @param  cmdArray  array containing the command to call and its arguments
+     * @return  {@code true} if the execution was successful,
+     *          {@code false} otherwise
+     * @exception  java.io.IOException
+     *             
+     */
+    private static void tryCommandExc(final String[] cmdArray)
+                                                        throws IOException {
+        Runtime.getRuntime().exec(cmdArray);
+        // [PENDING] redirect the process' output
+    }
+
 }
