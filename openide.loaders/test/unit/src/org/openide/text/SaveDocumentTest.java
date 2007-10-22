@@ -181,7 +181,7 @@ public class SaveDocumentTest extends NbTestCase {
 
         /** Creates new <code>TXTDataLoader</code>. */
         public TXTDataLoader() {
-            super("org.netbeans.modules.text.TXTDataObject"); // NOI18N
+            super("org.openide.text.SaveDocumentTest$TXTDataObject"); // NOI18N
         }
 
         /** Does initialization. Initializes extension list. */
