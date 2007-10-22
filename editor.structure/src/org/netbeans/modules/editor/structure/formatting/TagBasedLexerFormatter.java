@@ -482,28 +482,6 @@ public abstract class TagBasedLexerFormatter {
         return initialIndent;
     }
 
-    private int findLanguageBlockShiftOffset(BaseDocument doc, TextBounds languageBounds) throws BadLocationException {
-        // basic impl: simply return the offset from the first line
-        int lineStart = Utilities.getRowStartFromLineOffset(doc, languageBounds.getStartLine());
-        return Utilities.getFirstNonWhiteFwd(doc, lineStart) - lineStart;
-    }
-
-    private int getInitialIndentFromNextLine(final BaseDocument doc, final int line) throws BadLocationException {
-
-        // get initial indent from the next line
-        int initialIndent = 0;
-
-        int lineStart = Utilities.getRowStartFromLineOffset(doc, line);
-        int lineEnd = Utilities.getRowEnd(doc, lineStart);
-        int nextNonWhiteLineStart = Utilities.getFirstNonWhiteFwd(doc, lineEnd);
-
-        if (nextNonWhiteLineStart > 0) {
-            initialIndent = Utilities.getRowIndent(doc, nextNonWhiteLineStart, true);
-        }
-
-        return initialIndent;
-    }
-
     protected static int getNumberOfLines(BaseDocument doc) throws BadLocationException {
         return Utilities.getLineOffset(doc, doc.getLength()) + 1;
     }
@@ -642,9 +620,6 @@ public abstract class TagBasedLexerFormatter {
             transformedOffsets = new int[numberOfLines];
             
             for (int i = 0; i < numberOfLines; i++) {
-                int lineStart = Utilities.getRowStartFromLineOffset(doc, i);
-                int eol = Utilities.getRowEnd(doc, lineStart);
-                
                 originalIndents[i] = getExistingIndent(doc, i);
             }
             
