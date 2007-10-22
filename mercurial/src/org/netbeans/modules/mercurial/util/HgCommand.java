@@ -915,6 +915,7 @@ public class HgCommand {
      * @param File repository of the mercurial repository's root directory
      * @param File of sourceFile which was renamed
      * @param File of destFile to which sourceFile has been renaned
+     * @param boolean whether to do a rename --after
      * @return void
      * @throws org.netbeans.modules.mercurial.HgException
      */
@@ -922,14 +923,14 @@ public class HgCommand {
         doRename(repository, sourceFile, destFile, false);
     }
 
-    private static void doRename(File repository, File sourceFile, File destFile, boolean force)  throws HgException {
+    private static void doRename(File repository, File sourceFile, File destFile, boolean bAfter)  throws HgException {
         if (repository == null) return;
         
         List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
         command.add(HG_RENAME_CMD);
-        if (force) command.add(HG_RENAME_AFTER_CMD);
+        if (bAfter) command.add(HG_RENAME_AFTER_CMD);
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
         command.add(HG_OPT_CWD_CMD);
@@ -939,8 +940,10 @@ public class HgCommand {
         command.add(destFile.getAbsolutePath().substring(repository.getAbsolutePath().length()+1));
         
         List<String> list = exec(command);
-        if (!list.isEmpty())
+        if (!list.isEmpty() &&
+             isErrorAbort(list.get(list.size() -1))) {
             handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_RENAME_FAILED"));
+        }
     }
     
     /**

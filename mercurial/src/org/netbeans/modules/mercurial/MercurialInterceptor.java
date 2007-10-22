@@ -199,6 +199,7 @@ public class MercurialInterceptor extends VCSInterceptor {
 
     private void fileMovedImpl(final File from, final File to) {
         if (from == null || to == null || !to.exists()) return;
+        if (to.isDirectory()) return;
         Mercurial hg = Mercurial.getInstance();        
         final File root = hg.getTopmostManagedParent(from);
         if (root == null) return;
