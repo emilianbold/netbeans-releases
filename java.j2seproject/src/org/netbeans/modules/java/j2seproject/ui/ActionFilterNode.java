@@ -238,7 +238,7 @@ class ActionFilterNode extends FilterNode {
                 }
                 else if (resource.isFolder()) {
                     //XXX Are the names the same also in the localized javadoc?                    
-                    pageURL = ShowJavadocAction.findJavadoc ("package-summary.html",urls); //NOI18N
+                    pageURL = ShowJavadocAction.findJavadoc (relativeName+"/package-summary.html",urls); //NOI18N
                 }
                 else {
                     String javadocFileName = relativeName.substring(0,relativeName.lastIndexOf('.'))+".html"; //NOI18Ns
