@@ -324,7 +324,7 @@ public class JDBCWizardTablePanel extends JPanel {
 
                 this.setEnabled(true);
                 this.setFocusable(true);
-                this.setText("Advanced..");
+                this.setText(NbBundle.getMessage( JDBCWizardTablePanel.class, "BTN_Advanced"));
             }
             return this.myButPanel;
         }
@@ -371,7 +371,7 @@ public class JDBCWizardTablePanel extends JPanel {
 					this.myButPanel.setBackground(table.getBackground());
 				}
 				this.setFocusable(true);
-				this.setText("Advanced..");
+				this.setText(NbBundle.getMessage( JDBCWizardTablePanel.class, "BTN_Advanced"));
 			}
 			return this.myButPanel;
 		}
@@ -966,8 +966,8 @@ public class JDBCWizardTablePanel extends JPanel {
     public void resetTable(final List tableNameList) {
         final MyTableModel myMod = new MyTableModel(tableNameList);
         this.metaDataTable.setModel(myMod);
-        this.metaDataTable.getColumn("Properties").setCellRenderer(new MyButtonRenderer(NbBundle.getMessage( JDBCWizardTablePanel.class, "BTN_Advanced")));
-        this.metaDataTable.getColumn("Properties").setCellEditor(new MyButtonRenderer(NbBundle.getMessage( JDBCWizardTablePanel.class, "BTN_Advanced")));
+       	this.metaDataTable.getColumn(NbBundle.getMessage( JDBCWizardTablePanel.class,"LBL_properties_jLabell")).setCellRenderer(new MyButtonRenderer(NbBundle.getMessage( JDBCWizardTablePanel.class, "BTN_Advanced")));
+       	this.metaDataTable.getColumn(NbBundle.getMessage( JDBCWizardTablePanel.class,"LBL_properties_jLabell")).setCellEditor(new MyButtonRenderer(NbBundle.getMessage( JDBCWizardTablePanel.class, "BTN_Advanced")));
         // set checkbox column size
         final TableColumn column = this.metaDataTable.getColumnModel().getColumn(0);
         column.setResizable(false);
@@ -991,8 +991,8 @@ public class JDBCWizardTablePanel extends JPanel {
         this.metaDataTable.getTableHeader().setFont(JDBCWizardTablePanel.FONT_TABLE_HEADER);
         final MyTableModel myModel = new MyTableModel(testList);
         this.metaDataTable.setModel(myModel);
-        this.metaDataTable.getColumn("Properties").setCellRenderer(new MyButtonRenderer(NbBundle.getMessage( JDBCWizardTablePanel.class, "BTN_Advanced")));
-        this.metaDataTable.getColumn("Properties").setCellEditor(new MyButtonRenderer(NbBundle.getMessage( JDBCWizardTablePanel.class, "BTN_Advanced")));
+       	this.metaDataTable.getColumn(NbBundle.getMessage( JDBCWizardTablePanel.class,"LBL_properties_jLabell")).setCellRenderer(new MyButtonRenderer(NbBundle.getMessage( JDBCWizardTablePanel.class, "BTN_Advanced")));
+       	this.metaDataTable.getColumn(NbBundle.getMessage( JDBCWizardTablePanel.class,"LBL_properties_jLabell")).setCellEditor(new MyButtonRenderer(NbBundle.getMessage( JDBCWizardTablePanel.class, "BTN_Advanced")));
         this.setLayout(new BorderLayout());
         // add(headerPnl, BorderLayout.NORTH);
         this.setPreferredSize(new Dimension(100, 100));
