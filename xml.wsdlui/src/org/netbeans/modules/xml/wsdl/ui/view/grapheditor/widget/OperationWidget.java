@@ -83,6 +83,7 @@ public abstract class OperationWidget<T extends Operation>
         mOperationNameLabelWidget.setLabel(mOperationConstruct.getName());
         mOperationNameLabelWidget.setFont(scene.getDefaultFont().deriveFont(Font.BOLD));
         mOperationNameLabelWidget.setAlignment(Alignment.CENTER);
+        mOperationNameLabelWidget.setBorder(WidgetConstants.EMPTY_2PX_BORDER);
         editorAction = ActionFactory.createInplaceEditorAction(new TextFieldInplaceEditor() {
             
             public void setText(Widget widget, String text) {

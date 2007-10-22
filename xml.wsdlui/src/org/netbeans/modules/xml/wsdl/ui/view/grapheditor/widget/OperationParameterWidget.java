@@ -52,7 +52,6 @@ package org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.KeyEvent;
@@ -74,7 +73,6 @@ import org.netbeans.api.visual.action.TextFieldInplaceEditor;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.action.WidgetAction.WidgetDropTargetDragEvent;
 import org.netbeans.api.visual.action.WidgetAction.WidgetDropTargetDropEvent;
-import org.netbeans.api.visual.layout.Layout;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.layout.LayoutFactory.SerialAlignment;
 import org.netbeans.api.visual.widget.LabelWidget;
@@ -131,6 +129,7 @@ public class OperationParameterWidget extends AbstractWidget<OperationParameter>
         mParameterMessage.setLabel(getMessageName());
         mParameterMessage.setVerticalAlignment(VerticalAlignment.CENTER);
         mParameterMessage.setAlignment(Alignment.CENTER);
+        mParameterMessage.setBorder(WidgetConstants.EMPTY_2PX_BORDER);
         editorAction = ActionFactory.createInplaceEditorAction(new TextFieldInplaceEditor() {
 
             public void setText(Widget w, String text) {
@@ -219,11 +218,14 @@ public class OperationParameterWidget extends AbstractWidget<OperationParameter>
         
         if (parameter instanceof Fault) {
             Widget widget = new Widget(scene);
-            widget.setLayout(new OperationParameterLayout(10));
-            addChild(widget);
-            
+            widget.setLayout(LayoutFactory.createHorizontalFlowLayout(SerialAlignment.JUSTIFY, 2));
+            Widget w = new Widget(scene);
+            w.setLayout(LayoutFactory.createVerticalFlowLayout(SerialAlignment.CENTER, 0));
+            w.addChild(widget);
+            addChild(w);
             mParameter = parameter;
             mNameLabel = new LabelWidget (scene);
+            mNameLabel.setBorder(WidgetConstants.EMPTY_2PX_BORDER);
             mNameLabel.setBackground (Color.WHITE);
             if (mParameter != null) {
                 mNameLabel.setLabel (mParameter.getName());
@@ -232,8 +234,8 @@ public class OperationParameterWidget extends AbstractWidget<OperationParameter>
             Font font = scene.getDefaultFont ().deriveFont (Font.BOLD);
             mNameLabel.setFont (font);
             mNameLabel.setAlignment(Alignment.CENTER);
-            widget.addChild (mNameLabel);
-            widget.addChild(mParameterMessage);
+            widget.addChild (mNameLabel, 1);
+            widget.addChild(mParameterMessage, 1);
         } else {
             addChild(mParameterMessage);
         }
@@ -334,56 +336,6 @@ public class OperationParameterWidget extends AbstractWidget<OperationParameter>
             }
     	}
     	getScene().validate();
-    }
-
-    public class OperationParameterLayout implements Layout {
-
-        int mGap;
-        
-        public OperationParameterLayout(int gap) {
-            mGap = gap;
-        }
-
-        public void justify(Widget widget) {
-            Rectangle parentBounds = widget.getClientArea();
-            
-            List<Widget> children = widget.getChildren();
-            
-            Widget first = children.get(0);
-            Widget second = children.get(1);
-            
-            Point fPt = first.getLocation();
-            Point sPt = second.getLocation();
-            
-            
-            
-            int centerOfWidget = parentBounds.width / 2;
-            fPt.x = centerOfWidget - (mGap / 2) - first.getBounds().width;
-            
-            sPt.x = centerOfWidget + (mGap / 2);
-            
-            first.resolveBounds(fPt, first.getBounds());
-            second.resolveBounds(sPt, second.getBounds());
-        }
-
-        public void layout(Widget widget) {
-            List<Widget> children = widget.getChildren();
-            
-            Widget first = children.get(0);
-            Widget second = children.get(1);
-            
-            Point sPt = new Point(0, 0);
-            sPt.x = first.getPreferredBounds().width + mGap;
-            
-            
-            first.resolveBounds(new Point(), first.getPreferredBounds());
-            second.resolveBounds(sPt, second.getPreferredBounds());
-        }
-
-        public boolean requiresJustification(Widget widget) {
-            return true;
-        }
-
     }
 
     public void dragExit() {

@@ -104,6 +104,8 @@ public interface WidgetConstants {
     public org.netbeans.api.visual.border.Border HEADER_BORDER = org.netbeans.api.visual.border.BorderFactory.createEmptyBorder(5, 0);
     
     public int TEXT_LABEL_HEIGHT = 25;
+    
+    public Border EMPTY_2PX_BORDER = BorderFactory.createEmptyBorder(2, 4, 2, 4);
 
     
     
