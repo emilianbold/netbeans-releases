@@ -44,6 +44,7 @@ import com.sun.source.tree.*;
 import java.io.*;
 import java.util.Collections;
 import java.util.EnumSet;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
@@ -76,6 +77,10 @@ public class CommentsTest extends GeneratorTest {
 //        suite.addTest(new CommentsTest("testAddTwoEndLineCommments"));
 //        suite.addTest(new CommentsTest("testCopyMethodWithCommments"));
 //        suite.addTest(new CommentsTest("testAddStatementWithEmptyLine"));
+//        suite.addTest(new CommentsTest("testCopyDoc100829_1"));
+//        suite.addTest(new CommentsTest("testCopyDoc100829_2"));
+//        suite.addTest(new CommentsTest("testCopyDoc100829_3"));
+//        suite.addTest(new CommentsTest("testCopyDoc100829_4"));
         return suite;
     }
 
@@ -539,6 +544,132 @@ public class CommentsTest extends GeneratorTest {
         };
         src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    /*
+     * http://www.netbeans.org/issues/show_bug.cgi?id=100829
+     */
+    public void testCopyDoc100829_1() throws Exception {
+        File secondFile = new File(getWorkDir(), "Test2.java");
+        TestUtilities.copyStringToFile(secondFile, 
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.io.File;\n" +
+            "\n" +
+            "public class Test2 {\n" +
+            "}\n"
+            );
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "\n" +
+            "import java.io.File;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "\n" +
+            "    void method() {\n" +
+            "        // Test\n" +
+            "        System.out.println(\"Slepitchka\");\n" +
+            "    }\n" +
+            "\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.io.File;\n" +
+            "\n" +
+            "public class Test2 {\n" +
+            "\n" +
+            "    void method() {\n" +
+            "        // Test\n" +
+            "        System.out.println(\"Slepitchka\");\n" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource src = JavaSource.forFileObject(FileUtil.toFileObject(secondFile));
+        
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                Element e = workingCopy.getElements().getTypeElement("Test");
+                ClassTree newClazz = (ClassTree) workingCopy.getTrees().getTree(e);
+                CompilationUnitTree secondCut = workingCopy.getTrees().getPath(e).getCompilationUnit();
+                newClazz = make.addClassMember(clazz, GeneratorUtilities.get(workingCopy).importComments(newClazz.getMembers().get(1), secondCut));
+                workingCopy.rewrite(clazz, newClazz);
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(secondFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    /*
+     * http://www.netbeans.org/issues/show_bug.cgi?id=100829
+     */
+    public void testCopyDoc100829_2() throws Exception {
+        File secondFile = new File(getWorkDir(), "Test2.java");
+        TestUtilities.copyStringToFile(secondFile, 
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.io.File;\n" +
+            "\n" +
+            "public class Test2 {\n" +
+            "}\n"
+            );
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "\n" +
+            "import java.io.File;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "\n" +
+            "    void method() {\n" +
+            "        // Test\n" +
+            "        int a = 0;\n" +
+            "    }\n" +
+            "\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.io.File;\n" +
+            "\n" +
+            "public class Test2 {\n" +
+            "\n" +
+            "    void method() {\n" +
+            "        // Test\n" +
+            "        int a = 0;\n" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource src = JavaSource.forFileObject(FileUtil.toFileObject(secondFile));
+        
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                Element e = workingCopy.getElements().getTypeElement("Test");
+                ClassTree newClazz = (ClassTree) workingCopy.getTrees().getTree(e);
+                CompilationUnitTree secondCut = workingCopy.getTrees().getPath(e).getCompilationUnit();
+                newClazz = make.addClassMember(clazz, GeneratorUtilities.get(workingCopy).importComments(newClazz.getMembers().get(1), secondCut));
+                workingCopy.rewrite(clazz, newClazz);
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(secondFile);
         System.err.println(res);
         assertEquals(golden, res);
     }
