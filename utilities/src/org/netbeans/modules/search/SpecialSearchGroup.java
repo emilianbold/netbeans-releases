@@ -81,7 +81,9 @@ final class SpecialSearchGroup extends DataObjectSearchGroup {
     @Override
     public void doSearch() {
         for (Iterator j = searchScope.getSearchInfo().objectsToSearch(); j.hasNext(); ) {
-            if (stopped) return;
+            if (stopped) {
+                return;
+            }
             processSearchObject(/*DataObject*/ j.next());
         }
     }
