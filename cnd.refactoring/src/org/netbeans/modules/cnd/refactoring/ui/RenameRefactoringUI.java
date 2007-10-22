@@ -43,11 +43,7 @@ package org.netbeans.modules.cnd.refactoring.ui;
 import java.io.IOException;
 import java.text.MessageFormat;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.api.model.CsmOffsetable;
-import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
-import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
@@ -76,30 +72,13 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
     private final CsmObject origObject;
     private FileObject byPassFolder;
     private boolean byPassPakageRename;
-    private boolean pkgRename = true;
     
     public RenameRefactoringUI(CsmObject csmObject) {
         this.origObject = csmObject;
         this.oldName = CsmRefactoringUtils.getSimpleText(this.origObject);  
         this.refactoring = new RenameRefactoring(Lookups.singleton(csmObject));
     }
-    
-    private String getSearchElementName(CsmObject csmObj) {
-        assert csmObj != null;
-        String objName;
-        if (CsmKindUtilities.isNamedElement(csmObj)) {
-            objName = ((CsmNamedElement)csmObj).getName();
-        } else if (CsmKindUtilities.isStatement(csmObj)) {
-            objName = ((CsmStatement)csmObj).getText();
-        } else if (CsmKindUtilities.isOffsetable(csmObj)) {
-            objName = ((CsmOffsetable)csmObj).getText();
-        } else if (csmObj != null) {
-            objName = "<UNNAMED ELEMENT>"; // NOI18N
-        } else {
-            objName = "<UNRESOLVED ELEMENT>"; // NOI18N
-        }
-        return objName;
-    }    
+     
 //    public RenameRefactoringUI(TreePathHandle handle, CompilationInfo info) {
 //        this.handle = handle;
 //        this.refactoring = new RenameRefactoring(Lookups.singleton(handle));
@@ -166,7 +145,6 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
 
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
         if (panel == null) {
-            System.err.println("getPanel is called");
             String name = oldName;
             String title = NbBundle.getMessage(RenamePanel.class, "LBL_RenamePanelTitle", "", oldName); // NOI18N
             panel = new RenamePanel(this.origObject, name, parent, title, !fromListener, fromListener && !byPassPakageRename);
