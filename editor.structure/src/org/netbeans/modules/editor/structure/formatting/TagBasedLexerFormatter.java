@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Position;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -132,8 +133,12 @@ public abstract class TagBasedLexerFormatter {
             reformat(context);
         }
     }
+    
+    public void reformat(Context context) throws BadLocationException{
+        reformat(context, context.startOffset(), context.endOffset());
+    }
 
-    public void reformat(Context context) throws BadLocationException {
+    public void reformat(Context context, int startOffset, int endOffset) throws BadLocationException {
         LinkedList<TagIndentationData> unprocessedOpeningTags = new LinkedList<TagIndentationData>();
         List<TagIndentationData> matchedOpeningTags = new ArrayList<TagIndentationData>();
         BaseDocument doc = (BaseDocument) context.document();
@@ -156,8 +161,8 @@ public abstract class TagBasedLexerFormatter {
                 assert transferData != null;
             }
             
-            int firstRefBlockLine = Utilities.getLineOffset(doc, context.startOffset());
-            int lastRefBlockLine = Utilities.getLineOffset(doc, context.endOffset());
+            int firstRefBlockLine = Utilities.getLineOffset(doc, startOffset);
+            int lastRefBlockLine = Utilities.getLineOffset(doc, endOffset);
             int firstUnformattableLine = -1;
 
             boolean currentLanguage[] = new boolean[transferData.getNumberOfLines()];
@@ -611,6 +616,18 @@ public abstract class TagBasedLexerFormatter {
         return supportedLanguagePath().size() == 1;
     }
     
+    protected static int getExistingIndent(BaseDocument doc, int line) throws BadLocationException{
+        int lineStart = Utilities.getRowStartFromLineOffset(doc, line);
+        int eol = Utilities.getRowEnd(doc, lineStart);
+        int nextNonWS = Utilities.getFirstNonWhiteFwd(doc, lineStart);
+        
+        if (nextNonWS == -1){
+            nextNonWS = Integer.MAX_VALUE;
+        }
+        
+        return Math.min(eol - lineStart, nextNonWS - lineStart);
+    }
+    
     public static class TransferData{
         private static final String DOC_PROPERTY = "TagBasedFormatterData"; //NOI18N
         private boolean formattableLines[];
@@ -628,8 +645,7 @@ public abstract class TagBasedLexerFormatter {
                 int lineStart = Utilities.getRowStartFromLineOffset(doc, i);
                 int eol = Utilities.getRowEnd(doc, lineStart);
                 
-                originalIndents[i] = Math.min(eol - lineStart,
-                        Utilities.getFirstNonWhiteFwd(doc, lineStart) - lineStart);
+                originalIndents[i] = getExistingIndent(doc, i);
             }
             
             doc.putProperty(DOC_PROPERTY, this);
@@ -664,24 +680,53 @@ public abstract class TagBasedLexerFormatter {
         }
     }
     
+    private static final String ORG_CARET_OFFSET_DOCPROPERTY = "TagBasedFormatter.org_caret_offset";
+    
     public void enterPressed(Context context) {
         BaseDocument doc = (BaseDocument)context.document();
-        int dotPos = context.startOffset();
+        
         doc.atomicLock();
         
         try {
-//            if (isSmartEnter(doc, dotPos)) {
-//                handleSmartEnter(doc, dotPos);
-//            } else{
-            // if previous line is empty format it as well (issue #118661)
-            int previousLine = Utilities.getLineOffset(doc, dotPos) - 1;
-            int previousLineStart = Utilities.getRowStartFromLineOffset(doc, previousLine);
-            String previousLineText = doc.getText(previousLineStart, Utilities.getRowEnd(doc, previousLineStart) - previousLineStart);
+            
+            if (isTopLevelLanguage(doc)) {
+                doc.putProperty(ORG_CARET_OFFSET_DOCPROPERTY, new Integer(context.caretOffset()));
+            }
 
-            int formattingStart = isOnlyWhiteSpaces(previousLineText) ? previousLineStart : dotPos;
+            Integer dotPos = (Integer) doc.getProperty(ORG_CARET_OFFSET_DOCPROPERTY);
+            assert dotPos != null;
+            
+            if (indexWithinCurrentLanguage(doc, dotPos - 1)) {
+                if (isSmartEnter(doc, dotPos)) {
+                    handleSmartEnter(context);
+                } else {
+                    int newIndent = 0;
+                    int lineNumber = Utilities.getLineOffset(doc, dotPos);
+                    
+                    if (lineNumber > 0){
+                        newIndent = getExistingIndent(doc, lineNumber - 1);
+                    }
+                    
+                    TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
+                    TokenSequence[] tokenSequences = (TokenSequence[]) tokenHierarchy.tokenSequenceList(supportedLanguagePath(), 0, Integer.MAX_VALUE).toArray(new TokenSequence[0]);
+                    TextBounds[] tokenSequenceBounds = new TextBounds[tokenSequences.length];
+                    
+                    for (int i = 0; i < tokenSequenceBounds.length; i++) {
+                        tokenSequenceBounds[i] = findTokenSequenceBounds(doc, tokenSequences[i]);
+                    }
 
-            reformat(context);
-//            }
+                    JoinedTokenSequence tokenSequence = new JoinedTokenSequence(tokenSequences, tokenSequenceBounds);
+                    tokenSequence.moveStart(); tokenSequence.moveNext();
+
+                    int openingTagOffset = getTagEndingAtPosition(tokenSequence, dotPos - 2);
+                    
+                    if (isOpeningTag(tokenSequence, openingTagOffset)){
+                        newIndent += doc.getShiftWidth();
+                    }
+
+                    context.modifyIndent(Utilities.getRowStart(doc, dotPos), newIndent);
+                }
+            }
         } catch (BadLocationException e) {
             logger.log(Level.SEVERE, e.getMessage(), e);
         } finally {
@@ -689,27 +734,48 @@ public abstract class TagBasedLexerFormatter {
         }
     }
     
-    public boolean handleSmartEnter(BaseDocument doc, int dotPos) throws BadLocationException {
+    private boolean indexWithinCurrentLanguage(BaseDocument doc, int index) throws BadLocationException{
+        TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
+        TokenSequence[] tokenSequences = (TokenSequence[]) tokenHierarchy.tokenSequenceList(supportedLanguagePath(), 0, Integer.MAX_VALUE).toArray(new TokenSequence[0]);
+        
+        for (TokenSequence tokenSequence: tokenSequences){
+            TextBounds languageBounds = findTokenSequenceBounds(doc, tokenSequence);
+            
+            if (languageBounds.getAbsoluteStart() <= index && languageBounds.getAbsoluteEnd() >= index){
+                tokenSequence.move(index);
+                
+                if (tokenSequence.moveNext()){
+                    // the newly entered \n character may or may not
+                    // form a separate token - work it around
+                    if (isWSToken(tokenSequence.token())){
+                        tokenSequence.movePrevious(); 
+                    }
+                    
+                    return tokenSequence.embedded() == null && !isWSToken(tokenSequence.token());
+                }
+            }
+        }
+        
+        return false;
+    }
+    
+    public boolean handleSmartEnter(Context context) throws BadLocationException {
         boolean wasSmartEnter = false;
+        BaseDocument doc = (BaseDocument)context.document();
+        int dotPos = context.caretOffset();
 
         wasSmartEnter = isSmartEnter(doc, dotPos);
 
         if (wasSmartEnter) {
-            doc.insertString(dotPos - 1, "\n", null); //NOI18N
-       //     reformat(doc, dotPos, dotPos, true);
-
-//            DataObject dataObj = NbEditorUtilities.getDataObject(doc);
-//            EditorCookie editor = dataObj.getCookie(EditorCookie.class);
-//
-//            if (editor != null && editor.getOpenedPanes() != null) {
-//
-//                JTextComponent component = editor.getOpenedPanes()[0];
-//                if (component != null) {
-//                    component.setCaretPosition(0);
-//                }
-//            }
+            int line = Utilities.getLineOffset(doc, dotPos);
+            assert line > 0;
+            int baseIndent = getExistingIndent(doc, line - 1);
+            doc.insertString(dotPos, "\n", null); //NOI18N
+            Position position = doc.createPosition(dotPos);
+            context.modifyIndent(Utilities.getRowStartFromLineOffset(doc, line), baseIndent + doc.getShiftWidth());
+            context.modifyIndent(Utilities.getRowStartFromLineOffset(doc, line + 1), baseIndent);
+            context.setCaretOffset(position.getOffset());
         }
-
 
         return wasSmartEnter;
     }
@@ -727,15 +793,16 @@ public abstract class TagBasedLexerFormatter {
             
             JoinedTokenSequence tokenSequence = new JoinedTokenSequence(tokenSequences, tokenSequenceBounds);
             
-            tokenSequence.move(dotPos);
-            tokenSequence.moveNext();
-            
-            if (isJustBeforeClosingTag(tokenSequence, dotPos)){
-                int closingTagOffset = getNextClosingTagOffset(tokenSequence, dotPos);
-                int matchingOpeningTagOffset = getMatchingOpeningTagStart(tokenSequence, closingTagOffset);
-                int openingTagEnd = getTagEndOffset(tokenSequence, matchingOpeningTagOffset);
-                
-                return openingTagEnd + 1 == dotPos;
+            if (tokenSequence.move(dotPos) != Integer.MIN_VALUE) { // ignore if dotPos not within current language
+                tokenSequence.moveNext();
+
+                if (isJustBeforeClosingTag(tokenSequence, dotPos)) {
+                    int closingTagOffset = getNextClosingTagOffset(tokenSequence, dotPos);
+                    int matchingOpeningTagOffset = getMatchingOpeningTagStart(tokenSequence, closingTagOffset);
+                    int openingTagEnd = getTagEndOffset(tokenSequence, matchingOpeningTagOffset);
+
+                    return openingTagEnd + 1 == dotPos;
+                }
             }
             
         } catch (BadLocationException e) {
@@ -745,7 +812,6 @@ public abstract class TagBasedLexerFormatter {
 
         return false;
     }
-    
     
     protected boolean isOnlyWhiteSpaces(CharSequence txt){
         for (int i = 0; i < txt.length(); i ++){
@@ -903,7 +969,7 @@ public abstract class TagBasedLexerFormatter {
                 }
             }
 
-            return -1;
+            return Integer.MIN_VALUE;
         }
 
         public int offset() {
