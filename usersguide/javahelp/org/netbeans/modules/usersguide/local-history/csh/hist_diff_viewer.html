@@ -21,6 +21,9 @@
             view two versions side by side using color coding to emphasize the differences
             between the versions being compared.</p>
             
+        <p>You access the Diff Viewer by selecting a file (e.g. from the Projects, Favorites,
+            or Files window) and choosing Show Local History.</p>
+            
         <p>The upper pane of the Diff Viewer presents you with a table depicting all available 
             versions of the selected file:</p>
             
@@ -70,19 +73,23 @@
         
         <table border="1" cellpadding="5">
             <tr>
-                <td align="right"><strong>Blue</strong> 
+                <th>Color</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td style="width:100px; text-align:right; padding:0 2em 0 0"><strong>Blue</strong> 
                     ( <span style="background-color:#b8cfe5">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> )</td>
-                <td>Indicates lines that have been changed since the earlier revision.</td>
+                <td>Indicates lines that have been changed since the earlier revision</td>
             </tr>
             <tr>
-                <td align="right"><strong>Green</strong> 
+                <td style="width:100px; text-align:right; padding:0 2em 0 0"><strong>Green</strong> 
                     ( <span style="background-color:#b4ffb4">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> )</td>
-                <td>Indicates lines that have been added since the earlier revision.</td>
+                <td>Indicates lines that have been added since the earlier revision</td>
             </tr>
             <tr>
-                <td align="right"><strong>Red</strong> 
+                <td style="width:100px; text-align:right; padding:0 2em 0 0"><strong>Red</strong> 
                     ( <span style="background-color:#ffa0b4">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> )</td>
-                <td>Indicates lines that have been removed since the earlier revision.</td>                
+                <td>Indicates lines that have been removed since the earlier revision</td>                
             </tr>
         </table>
         
@@ -98,19 +105,23 @@
         
         <table border="1" cellpadding="5">
             <tr>
-                <td><strong>Replace</strong> 
-                    ( <img src="../images/insert.png" alt="replace icon"> )</td>
-                <td>Inserts the highlighted text from the previous revision into the current revision.</td>
+                <th>Icon</th>
+                <th>Description</th>
+            </tr>            
+            <tr>
+                <td style="width:120px; text-align:center"><strong>Replace</strong> 
+                    (<img src="../images/insert.png" alt="replace icon">)</td>
+                <td>Inserts the highlighted text from the previous revision into the current revision</td>
             </tr>
             <tr>
-                <td><strong>Move All</strong> 
-                    ( <img src="../images/arrow.png" alt="move all icon"> )</td>
-                <td>Reverts the file's current version to the state of the selected previous version.</td>
+                <td style="width:120px; text-align:center"><strong>Move All</strong> 
+                    (<img src="../images/arrow.png" alt="move all icon">)</td>
+                <td>Reverts the file's current version to the state of the selected previous version</td>
             </tr>
             <tr>
-                <td><strong>Remove</strong>&nbsp;
-                    ( <img src="../images/remove.png" alt="remove icon"> )</td>
-                <td>Removes the highlighted text from the current version so that it mirrors the previous version.</td>                
+                <td style="width:120px; text-align:center"><strong>Remove</strong>
+                    (<img src="../images/remove.png" alt="remove icon">)</td>
+                <td>Removes the highlighted text from the current version so that it mirrors the previous version</td>                
             </tr>
         </table> 
         
