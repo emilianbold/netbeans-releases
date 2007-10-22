@@ -98,7 +98,7 @@ final class SheetCellRenderer implements TableCellRenderer {
         //Use selection color for both columns
         selected |= (hasFocus && (table.getSelectedRow() == row));
 
-        if (fd instanceof PropertySet) {
+        if (fd == null || fd instanceof PropertySet) {
             //#118372 - don't return null, SynthLaF asks for some properties from 
             //the renderer component under JDK1.6_05
             return new JLabel();
