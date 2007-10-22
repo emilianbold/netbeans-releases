@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.util.Stack;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
+import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTWalker;
@@ -87,10 +88,16 @@ public class APTRestorePreprocStateWalker extends APTProjectFileBasedWalker {
         boolean foundDirective = false;
         if (searchInterestedFile) {
             // check if stop directive is met
-            if ((apt.getToken().getLine() == stopDirective.getIncludeDirectiveLine() &&
-                    inclPath.equals(stopDirective.getIncludedPath()))) {
-                foundDirective = true;
-            }            
+            if (apt.getToken().getLine() == stopDirective.getIncludeDirectiveLine()) {
+                if (inclPath.equals(stopDirective.getIncludedPath())) {
+                    foundDirective = true;
+                } else {
+                    // we restored by incorrect include stack
+                    APTHandlersSupport.invalidatePreprocHandler(getPreprocHandler());
+                    super.stop();
+                    return null;
+                }
+            }
         }
         try {
             csmFile = inclFileOwner.getFile(new File(inclPath));

@@ -49,7 +49,7 @@ import org.netbeans.modules.cnd.apt.impl.support.APTHandlersSupportImpl;
  * @author Vladimir Voskresensky
  */
 public class APTHandlersSupport {
- 
+
     private APTHandlersSupport() {
     }
 
@@ -63,10 +63,14 @@ public class APTHandlersSupport {
         return APTHandlersSupportImpl.createEmptyPreprocHandler(file);
     }
 
+    public static void invalidatePreprocHandler(APTPreprocHandler preprocHandler) {
+        APTHandlersSupportImpl.invalidatePreprocHandler(preprocHandler);
+    }
+ 
     public static APTIncludeHandler createIncludeHandler(StartEntry startFile, List<String> sysIncludePaths, List<String> userIncludePaths) {
         return APTHandlersSupportImpl.createIncludeHandler(startFile, sysIncludePaths, userIncludePaths);
     }
-    
+
     public static APTMacroMap createMacroMap(APTMacroMap sysMap, List<String> userMacros) {
         return APTHandlersSupportImpl.createMacroMap(sysMap, userMacros);
     }

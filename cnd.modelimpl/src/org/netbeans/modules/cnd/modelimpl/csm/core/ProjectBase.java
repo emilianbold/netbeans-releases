@@ -1524,28 +1524,33 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 System.err.println("can't restore preprocessor state for " + interestedFile + //NOI18N
                         "\nreason: " + ex.getMessage());//NOI18N
 	    }
+            boolean ppStateRestored = false;
 	    if (aptLight != null) {
 		// for testing remember restored file
 		long time = REMEMBER_RESTORED ? System.currentTimeMillis() : 0;
 		int stackSize = inclStack.size();
 		APTWalker walker = new APTRestorePreprocStateWalker(startProject, aptLight, csmFile, preprocHandler, inclStack, FileContainer.getFileKey(interestedFile, false));
 		walker.visit();
-		if (REMEMBER_RESTORED) {
-		    if (testRestoredFiles == null) {
-			testRestoredFiles = new ArrayList<String>();
-		    }
-		    FileImpl interestedFileImpl = getFile(interestedFile);
-		    assert interestedFileImpl != null;
-		    String msg = interestedFile.getAbsolutePath() + " [" + (interestedFileImpl.isHeaderFile() ? "H" : interestedFileImpl.isSourceFile() ? "S" : "U") + "]"; // NOI18N
-		    time = System.currentTimeMillis() - time;
-		    msg = msg + " within " + time + "ms" + " stack " + stackSize + " elems"; // NOI18N
-		    System.err.println("#" + testRestoredFiles.size() + " restored: " + msg); // NOI18N
-		    testRestoredFiles.add(msg);
-		}
-		if (TRACE_PP_STATE_OUT) {
-		    System.err.println("after restoring " + preprocHandler); // NOI18N
-		}
-	    } else {
+                if (preprocHandler.isValid()) {
+                    if (REMEMBER_RESTORED) {
+                        if (testRestoredFiles == null) {
+                            testRestoredFiles = new ArrayList<String>();
+                        }
+                        FileImpl interestedFileImpl = getFile(interestedFile);
+                        assert interestedFileImpl != null;
+                        String msg = interestedFile.getAbsolutePath() + " [" + (interestedFileImpl.isHeaderFile() ? "H" : interestedFileImpl.isSourceFile() ? "S" : "U") + "]"; // NOI18N
+                        time = System.currentTimeMillis() - time;
+                        msg = msg + " within " + time + "ms" + " stack " + stackSize + " elems"; // NOI18N
+                        System.err.println("#" + testRestoredFiles.size() + " restored: " + msg); // NOI18N
+                        testRestoredFiles.add(msg);
+                    }
+                    if (TRACE_PP_STATE_OUT) {
+                        System.err.println("after restoring " + preprocHandler); // NOI18N
+                    }
+                    ppStateRestored = true;
+                }
+	    } 
+            if (!ppStateRestored) {
                 // need to recover from the problem, when start file is invalid or absent
                 // try to find project who can create default handler with correct
                 // compiler settings

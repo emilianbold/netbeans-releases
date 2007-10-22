@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
  */
 public class APTPreprocHandlerImpl implements APTPreprocHandler {
     private boolean compileContext;
+    private boolean isValid = true;
     private APTMacroMap macroMap;
     private APTIncludeHandler inclHandler;
     
@@ -89,7 +90,15 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
             ((StateImpl)state).restoreTo(this);
         }
     }
+    
+    public void invalidate() {
+        isValid = false;
+    }
 
+    public boolean isValid() {
+        return isValid;
+    }
+    
     public boolean isCompileContext() {
         return compileContext;
     }
@@ -260,5 +269,5 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
         retValue.append("\nMACROS info:\n"); // NOI18N
         retValue.append(this.macroMap);
         return retValue.toString();
-    }    
+    }
 }

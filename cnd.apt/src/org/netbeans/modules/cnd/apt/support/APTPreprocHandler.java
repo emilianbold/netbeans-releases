@@ -76,4 +76,5 @@ public interface APTPreprocHandler {
     public APTIncludeHandler getIncludeHandler();
     
     public boolean isCompileContext();
+    public boolean isValid();
 }

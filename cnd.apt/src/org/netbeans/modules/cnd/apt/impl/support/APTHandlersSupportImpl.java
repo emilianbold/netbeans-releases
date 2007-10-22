@@ -54,8 +54,8 @@ import org.netbeans.modules.cnd.apt.support.StartEntry;
  * @author Vladimir Voskresensky
  */
 public class APTHandlersSupportImpl {
-    
-    /** Creates a new instance of APTHandlersSupportImpl */
+
+    /** Prevents creation of an instance of APTHandlersSupportImpl */
     private APTHandlersSupportImpl() {
     }
 
@@ -67,6 +67,10 @@ public class APTHandlersSupportImpl {
         return new APTPreprocHandlerImpl(new APTFileMacroMap(), new APTIncludeHandlerImpl(file), false);
     }
 
+    public static void invalidatePreprocHandler(APTPreprocHandler preprocHandler) {
+        ((APTPreprocHandlerImpl)preprocHandler).invalidate();
+    }
+    
     public static APTIncludeHandler createIncludeHandler(StartEntry startFile, List<String> sysIncludePaths, List<String> userIncludePaths) {
         return new APTIncludeHandlerImpl(startFile, sysIncludePaths, userIncludePaths);
     }
