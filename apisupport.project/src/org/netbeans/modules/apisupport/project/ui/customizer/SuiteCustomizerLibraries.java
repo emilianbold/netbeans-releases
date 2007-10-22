@@ -427,7 +427,8 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     
     static {
         // Probably not needed for most platform apps, and won't even work under JNLP.
-        DISABLED_PLATFORM_MODULES.add("org.netbeans.modules.autoupdate"); // NOI18N
+        DISABLED_PLATFORM_MODULES.add("org.netbeans.modules.autoupdate.services"); // NOI18N
+        DISABLED_PLATFORM_MODULES.add("org.netbeans.modules.autoupdate.ui"); // NOI18N
         // XXX the following would not be shown in regular apps anyway, because they are autoloads,
         // but they *are* shown in JNLP apps because currently even unused autoloads are enabled under JNLP:
         // Just annoying; e.g. shows Runtime tab prominently.
@@ -446,6 +447,12 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         DISABLED_PLATFORM_MODULES.add("org.openide.util.enumerations"); // NOI18N
         // See issue #112931
         DISABLED_PLATFORM_MODULES.add("org.netbeans.modules.core.kit"); // NOI18N
+        // #110085: some more unwanted ones...
+        DISABLED_PLATFORM_MODULES.add("org.netbeans.modules.templates"); // NOI18N
+        DISABLED_PLATFORM_MODULES.add("org.netbeans.libs.jsr223"); // NOI18N
+        DISABLED_PLATFORM_MODULES.add("org.openide.options"); // NOI18N
+        DISABLED_PLATFORM_MODULES.add("org.netbeans.api.visual"); // NOI18N
+        
     }
     
     public void stateChanged(ChangeEvent ev) {
