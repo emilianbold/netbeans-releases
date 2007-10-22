@@ -496,6 +496,13 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
             }
             state = State.INITIAL;
         }
+
+        @Override
+        protected CoderResult implFlush(CharBuffer out) {
+            fullOut = out.hasRemaining();
+            return flushOutBuf(out) ? OVERFLOW
+                                    : UNDERFLOW;
+        }
         
         /**
          * Reads and stores as many characters from the input buffer as possible.
