@@ -44,10 +44,12 @@ package org.netbeans.modules.cnd.apt.impl.support;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
+import org.netbeans.modules.cnd.apt.utils.APTUtils;
 
 /**
  * composition of include handler and macro map for parsing file phase
@@ -91,8 +93,8 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
         }
     }
     
-    public void invalidate() {
-        isValid = false;
+    public void setValid(boolean isValid) {
+        this.isValid = isValid;
     }
 
     public boolean isValid() {
@@ -151,7 +153,7 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
             } else {
                 this.inclState = null;
             }
-            this.attributes = createAttributes(handler.isCompileContext(), false, true);
+            this.attributes = createAttributes(handler.isCompileContext(), false, handler.isValid());
         }
         
         private StateImpl(StateImpl other, boolean cleanState, boolean compileContext, boolean valid) {
@@ -179,6 +181,11 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
                 handler.getIncludeHandler().setState(this.inclState);
             }
             handler.setCompileContext(this.isCompileContext());
+
+            handler.setValid(this.isValid());
+            if (!isValid()) {
+                APTUtils.LOG.log(Level.SEVERE, "setting invalid state {0}", new Object[] { this } ); // NOI18N
+            }
         }
 
         @Override
