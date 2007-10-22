@@ -52,7 +52,13 @@ import java.util.*;
 
 
 import javax.swing.text.Position.Bias;
+import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
+import org.netbeans.modules.cnd.api.model.CsmMember;
+import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
@@ -92,7 +98,7 @@ public class CsmRenameRefactoringPlugin extends CsmRefactoringPlugin {
     private Collection overriddenByMethods = null; // methods that override the method to be renamed
     private Collection overridesMethods = null; // methods that are overridden by the method to be renamed
     private boolean doCheckName = true;
-    CsmObject referencedObject;
+    private List<CsmObject> referencedObjects;
     private final RenameRefactoring refactoring;
     
     /** Creates a new instance of RenameRefactoring */
@@ -206,8 +212,8 @@ public class CsmRenameRefactoringPlugin extends CsmRefactoringPlugin {
     public Problem preCheck() {
         Problem preCheckProblem = null;
         fireProgressListenerStart(RenameRefactoring.PRE_CHECK, 4);
-        if (this.referencedObject == null) {
-            this.referencedObject = CsmRefactoringUtils.getReferencedElement(startReferenceObject);
+        if (this.referencedObjects == null) {
+            initReferencedObjects(startReferenceObject);
             fireProgressListenerStep();
         }    
         preCheckProblem = isResovledElement(startReferenceObject);
@@ -216,8 +222,8 @@ public class CsmRenameRefactoringPlugin extends CsmRefactoringPlugin {
         }
         // check read-only elements
         FileObject fo = null;
-        if (CsmKindUtilities.isOffsetable(this.referencedObject)) {
-            fo = CsmUtilities.getFileObject(((CsmOffsetable)this.referencedObject).getContainingFile());
+        if (CsmKindUtilities.isOffsetable(this.referencedObjects)) {
+            fo = CsmUtilities.getFileObject(((CsmOffsetable)this.referencedObjects).getContainingFile());
         }
         if (fo != null && (FileUtil.getArchiveFile(fo)!= null || !fo.canWrite())) {
             preCheckProblem = createProblem(preCheckProblem, true, getCannotRename(fo));
@@ -337,10 +343,14 @@ public class CsmRenameRefactoringPlugin extends CsmRefactoringPlugin {
 //            }
 //        }
 //        fireProgressListenerStop();
-        if (this.referencedObject == null) {
+        if (this.referencedObjects == null || this.referencedObjects.size() == 0) {
             return null;
         }
-        Collection<CsmFile> files = getRelevantFiles(startReferenceObject, referencedObject);
+        Collection<CsmFile> files = new HashSet<CsmFile>();
+        CsmFile startFile = getCsmFile(startReferenceObject);
+        for (CsmObject obj : referencedObjects) {
+            files.addAll(getRelevantFiles(startFile, obj));
+        }
         fireProgressListenerStart(ProgressEvent.START, files.size());
         createAndAddElements(files, elements, refactoring);
         fireProgressListenerStop();        
@@ -368,22 +378,75 @@ public class CsmRenameRefactoringPlugin extends CsmRefactoringPlugin {
         return NbBundle.getMessage(CsmRenameRefactoringPlugin.class, key);
     }
 
+    private void initReferencedObjects(CsmObject startReferenceObject) {
+        CsmObject referencedObject = CsmRefactoringUtils.getReferencedElement(startReferenceObject);
+        if (referencedObject != null) {
+            this.referencedObjects = new ArrayList<CsmObject>();
+            if (CsmKindUtilities.isClass(referencedObject)) {
+                // for class we need to add all needed elements
+                this.referencedObjects.addAll(getRenamingClassObjects((CsmClass)referencedObject));
+            } else if (CsmKindUtilities.isConstructor(referencedObject) || CsmKindUtilities.isDestructor(referencedObject)) {
+                // for constructor/destructor we need to add all needed elements
+                CsmFunction fun = (CsmFunction)referencedObject;
+                if (CsmKindUtilities.isFunctionDefinition(fun)) {
+                    fun = ((CsmFunctionDefinition)fun).getDeclaration();
+                }
+                if (fun != null && CsmKindUtilities.isMethod(fun)) {
+                    CsmClass cls = ((CsmMethod)fun).getContainingClass();
+                    if (cls != null) {
+                        this.referencedObjects.addAll(getRenamingClassObjects(cls));
+                    }
+                }
+            } else {
+                this.referencedObjects.add(referencedObject);
+            }
+        }
+    }
+
+    private Collection<CsmObject> getRenamingClassObjects(CsmClass clazz) {
+        Collection<CsmObject> out = new ArrayList<CsmObject>(5);
+        if (clazz != null) {
+            out.add(clazz);
+            for (CsmMember member : clazz.getMembers()) {
+                if (CsmKindUtilities.isConstructor(member)) {
+                    out.add(member);
+                } else if (CsmKindUtilities.isDestructor(member)) {
+                    out.add(member);
+                }
+            }
+        }
+        return out;
+
+    }
+    
     private void processFile(CsmFile csmFile, ModificationResult mr) {
-        assert this.referencedObject != null : "method must be called for resolved element";
-        CloneableEditorSupport ces = CsmUtilities.findCloneableEditorSupport(csmFile);
+        assert this.referencedObjects != null && this.referencedObjects.size() > 0: "method must be called for resolved element";
         FileObject fo = CsmUtilities.getFileObject(csmFile);
-        Collection<CsmReference> refs = CsmReferenceRepository.getDefault().getReferences(referencedObject, csmFile, true);
-        String newName = refactoring.getNewName();
-        for (CsmReference ref : refs) {
-            String oldName = ref.getText();
-            String descr = getDescription(ref, referencedObject, oldName);
-            Difference diff = rename(ref, ces, oldName, newName, descr);
-            assert diff != null;
-            mr.addDifference(fo, diff);
+        Collection<CsmReference> refs = new LinkedHashSet<CsmReference>();
+        for (CsmObject obj : referencedObjects) {
+            Collection<CsmReference> curRefs = CsmReferenceRepository.getDefault().getReferences(obj, csmFile, true);
+            refs.addAll(curRefs);
+        }
+        if (refs.size() > 0) {
+            List<CsmReference> sortedRefs = new ArrayList<CsmReference>(refs);
+            Collections.sort(sortedRefs, new Comparator<CsmReference>() {
+                public int compare(CsmReference o1, CsmReference o2) {
+                    return o1.getStartOffset() - o2.getStartOffset();
+                }
+            });
+            CloneableEditorSupport ces = CsmUtilities.findCloneableEditorSupport(csmFile);
+            String newName = refactoring.getNewName();
+            for (CsmReference ref : sortedRefs) {
+                String oldName = ref.getText();
+                String descr = getDescription(ref, oldName);
+                Difference diff = rename(ref, ces, oldName, newName, descr);
+                assert diff != null;
+                mr.addDifference(fo, diff);
+            }
         }
     }
     
-    private String getDescription(CsmReference ref, CsmObject target, String targetName) {
+    private String getDescription(CsmReference ref, String targetName) {
         String out = NbBundle.getMessage(CsmRenameRefactoringPlugin.class, "UpdateRef", targetName);
         return out;
     }
