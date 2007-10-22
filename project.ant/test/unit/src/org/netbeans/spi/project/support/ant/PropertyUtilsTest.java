@@ -535,6 +535,12 @@ public class PropertyUtilsTest extends NbTestCase {
                 assertTrue("Valid property name: "+s, PropertyUtils.isUsablePropertyName(s));
             }
         }
+        assertTrue("Valid property name: java.classpath", 
+                PropertyUtils.isUsablePropertyName("java.classpath"));
+        assertFalse("Invalid property name: java#classpath", 
+                PropertyUtils.isUsablePropertyName("java#classpath"));
+        assertFalse("Blank name is not valid property name", 
+                PropertyUtils.isUsablePropertyName(""));
     }
     
     public void testGetUsablePropertyName() throws Exception {
