@@ -148,11 +148,18 @@ public class CsmRefactoringUtils {
     
     @SuppressWarnings("unchecked")
     public static <T> CsmUID<T> getHandler(T element) {
+        CsmUID<T> uid = null;
         if (CsmKindUtilities.isIdentifiable(element)) {
-            return ((CsmIdentifiable<T>)element).getUID();
-        } else {
-            return new SelfUID(element);
+            uid = ((CsmIdentifiable<T>)element).getUID();
+            if (uid.getObject() == null) {
+                System.err.println("UID " + uid + "can't return object " + element);
+                uid = null;
+            }
+        } 
+        if (uid == null) {
+            uid = new SelfUID(element);
         }
+        return uid;
     }
     
     private static final class SelfUID<T> implements CsmUID<T> {
