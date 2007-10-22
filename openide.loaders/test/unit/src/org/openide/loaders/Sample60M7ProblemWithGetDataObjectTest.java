@@ -40,28 +40,20 @@
  */
 
 package org.openide.loaders;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyVetoException;
-import java.beans.VetoableChangeListener;
-import java.lang.reflect.InvocationTargetException;
-import java.util.HashSet;
-import org.openide.NotifyDescriptor;
-import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.*;
+
+import java.io.IOException;
+import java.util.Enumeration;
+import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.text.DataEditorSupport;
 import org.openide.util.Lookup;
-import java.io.IOException;
-import java.util.Arrays;
-import javax.swing.text.Document;
-import org.netbeans.junit.*;
-import org.openide.cookies.OpenCookie;
 import org.openide.nodes.Children;
 import org.openide.nodes.CookieSet;
+import org.openide.util.Enumerations;
 import org.openide.util.NbBundle;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
-
+import org.openide.util.test.MockLookup;
 
 /** Simulates the deadlock from issue 60917
  * @author Jaroslav Tulach
@@ -72,10 +64,14 @@ public class Sample60M7ProblemWithGetDataObjectTest extends NbTestCase {
         super(name);
     }
     
-	
+    @Override
     protected void setUp() throws Exception {
-        System.setProperty("org.openide.util.Lookup", Lkp.class.getName());
-        assertEquals(Lkp.class, Lookup.getDefault().getClass());
+        MockLookup.setInstances(new DataLoaderPool() {
+            @Override
+            protected Enumeration<? extends DataLoader> loaders() {
+                return Enumerations.singleton(DataLoader.getLoader(Sample60M6DataLoader.class));
+            }
+        });
     }
     
     public void testHasDataObjectInItsLookup() throws Exception {
@@ -98,29 +94,33 @@ public class Sample60M7ProblemWithGetDataObjectTest extends NbTestCase {
             cookies.add((Node.Cookie) DataEditorSupport.create(this, getPrimaryEntry(), cookies));
         }
 
+        @Override
         protected Node createNodeDelegate() {
             return new Sample60M6DataNode(this, getLookup());
         }
 
+        @Override
         public Lookup getLookup() {
             return getCookieSet().getLookup();
         }
     }
 
-    public static class Sample60M6DataLoader extends UniFileLoader {
+    private static class Sample60M6DataLoader extends UniFileLoader {
 
         public static final String REQUIRED_MIME = "text/x-sample";
 
         private static final long serialVersionUID = 1L;
 
         public Sample60M6DataLoader() {
-            super("org.openide.loaders.Sample60M6DataObject");
+            super("org.openide.loaders.Sample60M7ProblemWithGetDataObjectTest$Sample60M6DataObject");
         }
 
+        @Override
         protected String defaultDisplayName() {
             return NbBundle.getMessage(Sample60M6DataLoader.class, "LBL_Sample60M6_loader_name");
         }
 
+        @Override
         protected void initialize() {
             super.initialize();
             getExtensions().addExtension("sample");
@@ -130,42 +130,19 @@ public class Sample60M7ProblemWithGetDataObjectTest extends NbTestCase {
             return new Sample60M6DataObject(primaryFile, this);
         }
 
+        @Override
         protected String actionsContext() {
             return "Loaders/" + REQUIRED_MIME + "/Actions";
         }
 
     }
-    static class Sample60M6DataNode extends DataNode {
-        public Sample60M6DataNode(Sample60M6DataObject obj) {
+    private static class Sample60M6DataNode extends DataNode {
+        private Sample60M6DataNode(Sample60M6DataObject obj) {
             super(obj, Children.LEAF);
-            //        setIconBaseWithExtension(IMAGE_ICON_BASE);
         }
         Sample60M6DataNode(Sample60M6DataObject obj, Lookup lookup) {
             super(obj, Children.LEAF, lookup);
-            //        setIconBaseWithExtension(IMAGE_ICON_BASE);
         }
-
-        //    /** Creates a property sheet. */
-        //    protected Sheet createSheet() {
-        //        Sheet s = super.createSheet();
-        //        Sheet.Set ss = s.get(Sheet.PROPERTIES);
-        //        if (ss == null) {
-        //            ss = Sheet.createPropertiesSet();
-        //            s.put(ss);
-        //        }
-        //        // TODO add some relevant properties: ss.put(...)
-        //        return s;
-        //    }
-
     }
     
-    public static final class Lkp extends AbstractLookup {
-        public Lkp() {
-            this(new InstanceContent());
-        }
-        private Lkp(InstanceContent ic) {
-            super(ic);
-            ic.add(Sample60M6DataLoader.getLoader(Sample60M6DataLoader.class));
-        }
-    }
 }
