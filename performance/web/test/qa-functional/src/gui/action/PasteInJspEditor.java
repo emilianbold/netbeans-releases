@@ -92,7 +92,7 @@ public class PasteInJspEditor extends WebPerformanceTestCase {
         // delay between the caret stops and the update of his position in status bar
         jspOptions().setStatusBarCaretDelay(0);
         jspOptions().setFontSize(20);
-        jspOptions().setCodeFoldingEnable(false);
+//        jspOptions().setCodeFoldingEnable(false);
         // open two java files in the editor
         new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("TestWebProject"),"Web Pages|Test.jsp"));
         editorOperator1 = new EditorWindowOperator().getEditor("Test.jsp");

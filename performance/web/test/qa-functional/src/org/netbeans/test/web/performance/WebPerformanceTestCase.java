@@ -114,7 +114,7 @@ public abstract class WebPerformanceTestCase extends PerformanceTestCase {
         // TODO replace by store/reload whole settings impl
         // jsp options
         defCaretBlinkingRate = jspOptions.getCaretBlinkRate();
-        defCodeFoldindEnabled = jspOptions.getCodeFoldingEnable();
+//        defCodeFoldindEnabled = jspOptions.getCodeFoldingEnable();
         defCompletionAutoPopupDelayJsp = jspOptions.getCompletionAutoPopupDelay();
         defFontSize = jspOptions.getFontSize();
         defJavaDocAutoPopupJsp = jspOptions.getJavaDocAutoPopup();
@@ -154,7 +154,7 @@ public abstract class WebPerformanceTestCase extends PerformanceTestCase {
     
     protected void resetOptions() {
         // TODO replace by store/reload whole settings impl
-        jspOptions.setCodeFoldingEnable(defCodeFoldindEnabled);
+//        jspOptions.setCodeFoldingEnable(defCodeFoldindEnabled);
         jspOptions.setCompletionAutoPopupDelay(defCompletionAutoPopupDelayJsp);
         jspOptions.setFontSize(defFontSize);
         jspOptions.setJavaDocAutoPopup(defJavaDocAutoPopupJsp);

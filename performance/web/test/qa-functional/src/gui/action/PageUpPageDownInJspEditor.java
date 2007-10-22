@@ -97,7 +97,7 @@ public class PageUpPageDownInJspEditor extends WebPerformanceTestCase {
         jspOptions().setCaretBlinkRate(0);
         // delay between the caret stops and the update of his position in status bar
         jspOptions().setStatusBarCaretDelay(0);
-        jspOptions().setCodeFoldingEnable(false);
+//        jspOptions().setCodeFoldingEnable(false);
         // open a java file in the editor
         new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("TestWebProject"),"Web Pages|"+file));
         editorOperator = new EditorWindowOperator().getEditor(file);
@@ -105,8 +105,8 @@ public class PageUpPageDownInJspEditor extends WebPerformanceTestCase {
         JSPOptions options = (JSPOptions) BaseOptions.getOptions(JSPKit.class);
         statusBarCaretDelay = options.getStatusBarCaretDelay();
         options.setStatusBarCaretDelay(0);
-        codeFoldindEnabled = options.getCodeFoldingEnable();
-        options.setCodeFoldingEnable(false);
+//        codeFoldindEnabled = options.getCodeFoldingEnable();
+//        options.setCodeFoldingEnable(false);
         waitNoEvent(2000);
     }
     

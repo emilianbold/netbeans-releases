@@ -94,7 +94,7 @@ public class TypingInJspEditor extends WebPerformanceTestCase {
         // delay between the caret stops and the update of his position in status bar
         jspOptions().setStatusBarCaretDelay(0);
         jspOptions().setFontSize(20);
-        jspOptions().setCodeFoldingEnable(false);
+//        jspOptions().setCodeFoldingEnable(false);
         // open a java file in the editor
         new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("TestWebProject"),"Web Pages|"+file));
         editorOperator = new EditorWindowOperator().getEditor(file);
