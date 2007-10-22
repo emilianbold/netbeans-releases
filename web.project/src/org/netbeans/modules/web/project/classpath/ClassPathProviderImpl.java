@@ -68,10 +68,36 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
     private final PropertyEvaluator evaluator;
     private final SourceRoots sourceRoots;
     private final SourceRoots testSourceRoots;
-    private final ClassPath[] cache = new ClassPath[10];
+    private final Map<ClassPathCache, ClassPath> cache = new HashMap<ClassPathCache, ClassPath>();
 
     private final Map<String,FileObject> dirCache = new HashMap<String,FileObject>();
 
+    /**
+     * Type of file classpath is required for.
+     */
+    private static enum FileType {
+        SOURCE,         // java source
+        TEST_SOURCE,    // junit test source
+        CLASS,          // compiled java class
+        TEST_CLASS,     // compiled junit test class
+        CLASS_IN_JAR,   // compiled java class packaged in jar
+        WEB_SOURCE,     // web source
+        UNKNOWN }
+
+    /**
+     * Constants for different cached classpaths.
+     */
+    private static enum ClassPathCache {
+        SOURCE_COMPILATION,
+        TEST_SOURCE_COMPILATION,
+        SOURCE,
+        TEST_SOURCE,
+        WEB_SOURCE,
+        SOURCE_RUNTIME,
+        TEST_SOURCE_RUNTIME,
+        BOOT,
+        PLATFORM }
+    
     public ClassPathProviderImpl(AntProjectHelper helper, PropertyEvaluator evaluator, SourceRoots sourceRoots, SourceRoots testSourceRoots) {
         this.helper = helper;
         this.evaluator = evaluator;
@@ -119,185 +145,177 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
      /**
      * Find what a given file represents.
      * @param file a file in the project
-     * @return one of: <dl>
-     *         <dt>0</dt> <dd>normal source</dd>
-     *         <dt>1</dt> <dd>test source</dd>
-     *         <dt>2</dt> <dd>built class (unpacked)</dd>
-     *         <dt>3</dt> <dd>built test class</dd>
-     *         <dt>4</dt> <dd>built class (in dist JAR)</dd>
-     *         <dt>5</dt> <dd>web pages</dd>
-     *         <dt>-1</dt> <dd>something else</dd>
-     *         </dl>
+     * @return one of FileType.* constants
      */
-   private int getType(FileObject file) {
+   private FileType getType(FileObject file) {
         FileObject[] srcPath = getPrimarySrcPath();
         for (int i=0; i < srcPath.length; i++) {
             FileObject root = srcPath[i];
             if (root.equals(file) || FileUtil.isParentOf(root, file)) {
-                return 0;
+                return FileType.SOURCE;
             }
         }        
         srcPath = getTestSrcDir();
         for (int i=0; i< srcPath.length; i++) {
             FileObject root = srcPath[i];
             if (root.equals(file) || FileUtil.isParentOf(root, file)) {
-                return 1;
+                return FileType.TEST_SOURCE;
             }
         }
         FileObject dir = getDocumentBaseDir();
         if (dir != null && (dir.equals(file) || FileUtil.isParentOf(dir,file))) {
-            return 5;
+            return FileType.WEB_SOURCE;
         }
         dir = getBuildClassesDir();
         if (dir != null && (dir.equals(file) || FileUtil.isParentOf(dir, file))) {
-            return 2;
+            return FileType.CLASS;
         }
         dir = getDistJar(); // not really a dir at all, of course
         if (dir != null && dir.equals(FileUtil.getArchiveFile(file))) {
             // XXX check whether this is really the root
-            return 4;
+            return FileType.CLASS_IN_JAR;
         }
         dir = getBuildTestClassesDir();
         if (dir != null && (dir.equals(file) || FileUtil.isParentOf(dir,file))) {
-            return 3;
+            return FileType.TEST_CLASS;
         }
         
-        return -1;
+        return FileType.UNKNOWN;
     }
     
-    private ClassPath getCompileTimeClasspath(FileObject file) {
-        int type = getType(file);
-        return this.getCompileTimeClasspath(type);
-    }
-    
-    private synchronized ClassPath getCompileTimeClasspath(int type) {        
-        if ((type < 0 || type > 2) && type != 5) {
-            // Not a source file.
-            return null;
-        }
-        if (type == 2 || type == 5)
-            type = 0;
-        
-        ClassPath cp = cache[3+type];
-        if ( cp == null) {
-            if (type == 0) {
+    private synchronized ClassPath getCompileTimeClasspath(FileType type) {        
+        if (type == FileType.SOURCE || type == FileType.CLASS || type == FileType.WEB_SOURCE)
+        {
+            // treat all these types as source:
+            ClassPath cp = cache.get(ClassPathCache.SOURCE_COMPILATION);
+            if (cp == null)
+            {
                 cp = ClassPathFactory.createClassPath(
-                new ProjectClassPathImplementation(helper, "${javac.classpath}:${" 
-                        + WebProjectProperties.J2EE_PLATFORM_CLASSPATH 
-                        + "}", evaluator, false));      //NOI18N
+                    new ProjectClassPathImplementation(helper, "${javac.classpath}:" + //NOI18N
+                    "${" + WebProjectProperties.J2EE_PLATFORM_CLASSPATH + "}", //NOI18N
+                    evaluator, false));
+                cache.put(ClassPathCache.SOURCE_COMPILATION, cp);
             }
-            else {
+            return cp;
+        }
+        if (type == FileType.TEST_SOURCE)
+        {
+            ClassPath cp = cache.get(ClassPathCache.TEST_SOURCE_COMPILATION);
+            if (cp == null)
+            {
                 cp = ClassPathFactory.createClassPath(
-                new ProjectClassPathImplementation(helper, "${javac.test.classpath}:${" 
-                        + WebProjectProperties.J2EE_PLATFORM_CLASSPATH 
-                        + "}", evaluator, false));      //NOI18N
+                    new ProjectClassPathImplementation(helper, "${javac.test.classpath}:" + //NOI18N
+                    "${" + WebProjectProperties.J2EE_PLATFORM_CLASSPATH + "}", //NOI18N
+                    evaluator, false));
+                cache.put(ClassPathCache.TEST_SOURCE_COMPILATION, cp);
             }
-            cache[3+type] = cp;
+            return cp;
         }
-        return cp;
-        
+        return null;
     }
     
-    private synchronized ClassPath getRunTimeClasspath(FileObject file) {
-        int type = getType(file);
-        if (type < 0 || type > 5) {
-            // Unregistered file, or in a JAR.
-            // For jar:file:$projdir/dist/*.jar!/**/*.class, it is misleading to use
-            // run.classpath since that does not actually contain the file!
-            // (It contains file:$projdir/build/classes/ instead.)
-            return null;
-        }
-        switch (type){
-            case 2:
-            case 3:
-            case 4: type -= 2; break;
-            case 5: type = 0; break;
-        }
-        
-        ClassPath cp = cache[6+type];
-        if ( cp == null ) {
-            if (type == 0) {
-                //XXX : It should return a classpath for run.classpath property, but
-                // the run.classpath property was removed from the webproject in the past
-                // and I'm a little lazy to return it back in the code:)). In this moment
-                // the run classpath equals to the debug classpath. If the debug classpath
-                // will be different from the run classpath, then the run classpath should
-                // be returned back. 
-                ClassPath debugClassPath = ClassPathFactory.createClassPath(
-                        new ProjectClassPathImplementation(
-                                helper, WebProjectProperties.DEBUG_CLASSPATH, evaluator));
-                ClassPath j2eePlatformClassPath = ClassPathFactory.createClassPath(
-                        new ProjectClassPathImplementation(
-                                helper, WebProjectProperties.J2EE_PLATFORM_CLASSPATH, evaluator));
-                
-                cp = ClassPathSupport.createProxyClassPath(debugClassPath, j2eePlatformClassPath);
-                
+    private synchronized ClassPath getRunTimeClasspath(FileType type) {
+        if (type == FileType.SOURCE || type == FileType.CLASS || 
+            type == FileType.CLASS_IN_JAR || type == FileType.WEB_SOURCE)
+        {
+            // treat all these types as source:
+            ClassPath cp = cache.get(ClassPathCache.SOURCE_RUNTIME);
+            if (cp == null)
+            {
+                cp = 
+                    ClassPathFactory.createClassPath(
+                        new ProjectClassPathImplementation(helper, "${debug.classpath}:" + //NOI18N
+                        "${" + WebProjectProperties.J2EE_PLATFORM_CLASSPATH + "}", //NOI18N
+                        evaluator, false)); // NOI18N
+                cache.put(ClassPathCache.SOURCE_RUNTIME, cp);
             }
-            cache[6+type] = cp;
+            return cp;
         }
-        return cp;
+        if (type == FileType.TEST_SOURCE || type == FileType.TEST_CLASS)
+        {
+            // treat all these types as source:
+            ClassPath cp = cache.get(ClassPathCache.TEST_SOURCE_RUNTIME);
+            if (cp == null)
+            {
+                cp = ClassPathFactory.createClassPath(
+                        new ProjectClassPathImplementation(helper, "${run.test.classpath}:" + //NOI18N
+                        "${" + WebProjectProperties.J2EE_PLATFORM_CLASSPATH + "}", //NOI18N
+                        evaluator, false)); // NOI18N
+                cache.put(ClassPathCache.TEST_SOURCE_RUNTIME, cp);
+            }
+            return cp;
+        }
+        return null;
     }
     
-    private ClassPath getSourcepath(FileObject file) {
-        int type = getType(file);
-        return this.getSourcepath(type);
-    }
-    
-    private synchronized ClassPath getSourcepath(int type) {
-        if ((type < 0 || type > 2) && type != 5) {
-            // Unknown.
-            return null;
+    private synchronized ClassPath getSourcepath(FileType type) {
+        if (type == FileType.SOURCE || type == FileType.CLASS)
+        {
+            // treat all these types as source:
+            ClassPath cp = cache.get(ClassPathCache.SOURCE);
+            if (cp == null)
+            {
+                cp = ClassPathFactory.createClassPath(new SourcePathImplementation(this.sourceRoots,helper));
+                cache.put(ClassPathCache.SOURCE, cp);
+            }
+            return cp;
         }
-        ClassPath cp = cache[type];
-        if (cp == null) {
-            switch (type) {
-                case 0:
-                case 2:    
-                    cp = ClassPathFactory.createClassPath(new SourcePathImplementation (this.sourceRoots,helper));
-                    break;
-                case 1:
-                    cp = ClassPathFactory.createClassPath(new SourcePathImplementation (this.testSourceRoots, helper));
-                    break;
-                case 5:
-                    cp = ClassPathSupport.createProxyClassPath(new ClassPath[] {
+        if (type == FileType.TEST_SOURCE)
+        {
+            ClassPath cp = cache.get(ClassPathCache.TEST_SOURCE);
+            if (cp == null)
+            {
+                cp = ClassPathFactory.createClassPath(new SourcePathImplementation(this.testSourceRoots,helper));
+                cache.put(ClassPathCache.TEST_SOURCE, cp);
+            }
+            return cp;
+        }
+        if (type == FileType.WEB_SOURCE)
+        {
+            ClassPath cp = cache.get(ClassPathCache.WEB_SOURCE);
+            if (cp == null)
+            {
+                cp = ClassPathSupport.createProxyClassPath(new ClassPath[] {
                         ClassPathFactory.createClassPath(new JspSourcePathImplementation(helper, evaluator)),
                         ClassPathFactory.createClassPath(new SourcePathImplementation (this.sourceRoots, helper)),
                     });
-                    break;
+                cache.put(ClassPathCache.WEB_SOURCE, cp);
+
             }
-            cache[type] = cp;
+            return cp;
         }
-        return cp;
+        return null;
     }
     
     private synchronized ClassPath getBootClassPath() {
-        ClassPath cp = cache[7];
+        ClassPath cp = cache.get(ClassPathCache.BOOT);
         if (cp == null ) {
             cp = ClassPathFactory.createClassPath(new BootClassPathImplementation(evaluator));
-            cache[7] = cp;
+            cache.put(ClassPathCache.BOOT, cp);
         }
         return cp;
     }
     
     public synchronized ClassPath getJ2eePlatformClassPath() {
-        ClassPath cp = cache[9];
+        ClassPath cp = cache.get(ClassPathCache.PLATFORM);
         if (cp == null) {
-                cp = ClassPathFactory.createClassPath(
+            cp = ClassPathFactory.createClassPath(
                 new ProjectClassPathImplementation(helper,  "${" + //NOI18N
                         WebProjectProperties.J2EE_PLATFORM_CLASSPATH  +  
                         "}", evaluator, false));  //NOI18N
-            cache[9] = cp;
+            cache.put(ClassPathCache.PLATFORM, cp);
         }
         return cp;
     }
     
     public ClassPath findClassPath(FileObject file, String type) {
+        FileType fileType = getType(file);
         if (type.equals(ClassPath.COMPILE)) {
-            return getCompileTimeClasspath(file);
+            return getCompileTimeClasspath(fileType);
         } else if (type.equals(ClassPath.EXECUTE)) {
-            return getRunTimeClasspath(file);
+            return getRunTimeClasspath(fileType);
         } else if (type.equals(ClassPath.SOURCE)) {
-            return getSourcepath(file);
+            return getSourcepath(fileType);
         } else if (type.equals(ClassPath.BOOT)) {
             return getBootClassPath();
         } else {
@@ -315,15 +333,15 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         }
         if (ClassPath.COMPILE.equals(type)) {
             ClassPath[] l = new ClassPath[2];
-            l[0] = getCompileTimeClasspath(0);
-            l[1] = getCompileTimeClasspath(1);
+            l[0] = getCompileTimeClasspath(FileType.SOURCE);
+            l[1] = getCompileTimeClasspath(FileType.TEST_SOURCE);
             return l;
         }
         if (ClassPath.SOURCE.equals(type)) {
             ClassPath[] l = new ClassPath[3];
-            l[0] = getSourcepath(0);
-            l[1] = getSourcepath(5);
-            l[2] = getSourcepath(1);
+            l[0] = getSourcepath(FileType.SOURCE);
+            l[1] = getSourcepath(FileType.WEB_SOURCE);
+            l[2] = getSourcepath(FileType.TEST_SOURCE);
             return l;
         }
         assert false;
@@ -339,10 +357,10 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
             return getBootClassPath();
         }
         if (ClassPath.COMPILE.equals(type)) {
-            return getCompileTimeClasspath(0);
+            return getCompileTimeClasspath(FileType.SOURCE);
         }
         if (ClassPath.SOURCE.equals(type)) {
-            return getSourcepath(0);
+            return getSourcepath(FileType.SOURCE);
         }
         assert false;
         return null;

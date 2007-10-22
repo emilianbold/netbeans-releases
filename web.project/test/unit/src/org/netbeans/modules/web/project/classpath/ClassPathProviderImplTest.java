@@ -292,8 +292,7 @@ public class ClassPathProviderImplTest extends NbTestCase {
     
     private void checkTestExecuteClassPath(ClassPath cp) throws Exception {
         // this jar is on run.test.classpath
-        // this test fails!
-        // assertTrue(classPathContainsURL(cp, resolveURL("libs/jar2.jar")));
+        assertTrue(classPathContainsURL(cp, resolveURL("libs/jar2.jar")));
     }
     
     private void checkJSPSourceClassPath(ClassPath cp) {

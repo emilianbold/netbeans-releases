@@ -371,7 +371,7 @@ introduced by support for multiple source roots. -jglick
                                 </xsl:call-template>
                             </batchtest>
                             <classpath>
-                                <path path="${{run.test.classpath}}"/>
+                                <path path="${{run.test.classpath}}:${{j2ee.platform.classpath}}"/>
                             </classpath>
                             <syspropertyset>
                                 <propertyref prefix="test-sys-prop."/>
