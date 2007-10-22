@@ -96,6 +96,7 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.Lookup;
+import org.netbeans.modules.xml.api.EncodingUtil;
 
 /**
  * Support for creating logical views.
@@ -108,7 +109,7 @@ public class SQLproLogicalViewProvider implements LogicalViewProvider {
     private final PropertyEvaluator evaluator;
     private final SubprojectProvider spp;
     private final ReferenceHelper resolver;
-
+    public static String encoding;
 
     public SQLproLogicalViewProvider(Project project, AntProjectHelper helper, PropertyEvaluator evaluator, SubprojectProvider spp, ReferenceHelper resolver) {
         this.project = project;
@@ -143,6 +144,11 @@ public class SQLproLogicalViewProvider implements LogicalViewProvider {
             roots.addAll(Arrays.asList(sourceGroups));
         }
         DataFolder folder = DataFolder.findFolder(roots.get(0).getRootFolder());
+        encoding = EncodingUtil.getProjectEncoding(folder.getPrimaryFile());
+
+        if ( !EncodingUtil.isValidEncoding(encoding)) {
+          encoding = "UTF-8"; // NOI18N
+        }
         rootFolder = folder != null ? folder : rootFolder;
         // XXX Remove root folder after FindAction rewrite
         return Lookups.fixed( new Object[] { project, rootFolder } );
