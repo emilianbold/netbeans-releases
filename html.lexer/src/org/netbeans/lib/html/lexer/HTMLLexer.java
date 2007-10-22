@@ -417,17 +417,8 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
                 case ISI_TAG_SLASH:
                     switch( actChar ) {
                         case '>':
-                            switch(lexerEmbeddingState) {
-                                case INIT:
-                                    lexerState = INIT;
-                                    break;
-                                case ISI_SCRIPT:
-                                    lexerState = ISI_SCRIPT_CONTENT;
-                                    break;
-                                case ISI_STYLE:
-                                    lexerState = ISI_STYLE_CONTENT;
-                                    break;
-                            }
+                            lexerEmbeddingState = INIT; //possibly cancel 'in script' if empty tag found
+                            lexerState = INIT;
                             return token(HTMLTokenId.TAG_CLOSE_SYMBOL);
                         default:
                             lexerState = ISI_ERROR;
