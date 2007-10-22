@@ -82,20 +82,20 @@ import org.openide.modules.SpecificationVersion;
  */
 public class CreatedModifiedFilesTest extends LayerTestBase {
 
-    private static final String[] HTML_CONTENT = new String[] {
+    private static final String[] HTML_CONTENT = {
         "<html>",
         "<em>i am some template</em>",
         "</html>"
     };
     
-    private static final Map<String,String> TOKENS_MAP = new HashMap<String,String>(2);
+    private static final Map<String,String> TOKENS_MAP = new HashMap<String,String>();
     
     static {
         TOKENS_MAP.put("some", "a\\ nonsense");
         TOKENS_MAP.put("\\<(\\/{0,1})em\\>", "<$1strong>");
     }
     
-    private static final String[] HTML_CONTENT_TOKENIZED = new String[] {
+    private static final String[] HTML_CONTENT_TOKENIZED = {
         "<html>",
         "<strong>i am a nonsense template</strong>",
         "</html>"
@@ -105,7 +105,7 @@ public class CreatedModifiedFilesTest extends LayerTestBase {
         super(name);
     }
     
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         super.setUp();
         TestBase.initializeBuildProperties(getWorkDir(), getDataDir());
     }
@@ -405,7 +405,7 @@ public class CreatedModifiedFilesTest extends LayerTestBase {
         assertFileContent(HTML_CONTENT_TOKENIZED, new File(getWorkDir(), "module1/src/org/example/module1/resources/org-example-module1-TokenizedSettings.xml"));
 
         // check layer content
-        String[] supposedContent = new String[] {
+        String[] supposedContent = {
             "<filesystem>",
                     "<folder name=\"Menu\">",
                     "<folder name=\"Tools\">",
@@ -546,8 +546,8 @@ public class CreatedModifiedFilesTest extends LayerTestBase {
         zos.putNextEntry(entry);
         
         try {
-            for (int i = 0; i  < content.length; i++) {
-                zos.write(content[i].getBytes());
+            for (String section : content) {
+                zos.write(section.getBytes());
             }
             
         } finally {
@@ -580,6 +580,7 @@ public class CreatedModifiedFilesTest extends LayerTestBase {
             byte[] content2 = new byte[is2.available()];
             is2.read(content2);
             
+            assertEquals(content.length, content2.length);
             for (int i = 0; i < content.length; i++) {
                 assertEquals("file content", content[i], content2[i]);
             }
@@ -616,4 +617,3 @@ public class CreatedModifiedFilesTest extends LayerTestBase {
     }
     
 }
-
