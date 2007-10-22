@@ -302,7 +302,7 @@ public abstract class UIUtil {
            strBuf.append("</b> </td> </tr>");
        }
 
-       strBuf.append("<tr> <td>&nbsp; OTD </td> <td> &nbsp; : &nbsp; <b>");
+       strBuf.append("<tr> <td>&nbsp;Connection URL </td> <td> &nbsp; : &nbsp; <b>");
        strBuf.append(table.getParent().getModelName()).append("</b> </td> </tr>");
 
        strBuf.append("<tr> <td>&nbsp; DB Type </td> <td> &nbsp; : &nbsp; <b>");
