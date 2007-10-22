@@ -70,6 +70,7 @@ public class Mercurial {
 
     static final String PROP_ANNOTATIONS_CHANGED = "annotationsChanged"; // NOI18N
     static final String PROP_VERSIONED_FILES_CHANGED = "versionedFilesChanged"; // NOI18N
+    public static final String PROP_CHANGESET_CHANGED = "changesetChanged"; // NOI18N
 
     public static final Logger LOG = Logger.getLogger("org.netbeans.modules.mercurial"); // NOI18N
 
@@ -274,8 +275,13 @@ public class Mercurial {
     public void versionedFilesChanged() {    
         support.firePropertyChange(PROP_VERSIONED_FILES_CHANGED, null, null);
     }
+
     public void refreshAllAnnotations() {
         support.firePropertyChange(PROP_ANNOTATIONS_CHANGED, null, null);
+    }
+
+    public void changesetChanged(File repository) {
+        support.firePropertyChange(PROP_CHANGESET_CHANGED, repository, null);
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {

@@ -174,15 +174,26 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         if (evt.getPropertyName() == FileStatusCache.PROP_FILE_STATUS_CHANGED) {
             FileStatusCache.ChangedEvent changedEvent = (FileStatusCache.ChangedEvent) evt.getNewValue();
             Mercurial.LOG.log(Level.FINE, "Status.propertyChange(): {0} file:  {1}", new Object [] { parentTopComponent.getContentTitle(), changedEvent.getFile()} ); // NOI18N
-            //Diagnostics.println("Status.propertyChange(): " + // NOI18N
-            //    parentTopComponent.getContentTitle() + " file: " + changedEvent.getFile()); // NOI18N
-            if (!affectsView(evt)) return;
-            reScheduleRefresh(1000);
+            if (affectsView(evt)) {
+                reScheduleRefresh(1000);
+            }
+            return;
         } 
+        if (evt.getPropertyName() == Mercurial.PROP_CHANGESET_CHANGED) {
+            Object source = evt.getOldValue();
+            File root  = HgUtils.getRootFile(context);
+            Mercurial.LOG.log(Level.FINE, "Mercurial.changesetChanged: source {0} repo {1} ", new Object [] {source, root}); // NOI18N
+            if (root == source) {
+                reScheduleRefresh(1000);
+            }
+            return;
+        }
         if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
             TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class, this);
-            if (tc == null) return;
-            tc.setActivatedNodes((Node[]) evt.getNewValue());
+            if (tc != null) {
+                tc.setActivatedNodes((Node[]) evt.getNewValue());
+            }
+            return;
         }
     }
     
@@ -402,7 +413,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
     
     /**
      * Refreshes statuses of all files in the view. It does
-     * that by issuing the "hg status -mardui" command, updating the cache // NOI18N
+     * that by issuing the "hg status -marduiC" command, updating the cache
      * and refreshing file nodes.
      */
     private void onRefreshAction() {

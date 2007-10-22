@@ -123,8 +123,9 @@ public class RollbackAction extends AbstractAction {
                                     if(cache.listFiles(ctx, FileInformation.STATUS_VERSIONED_CONFLICT).length != 0){
                                         ConflictResolvedAction.resolved(ctx);                                       
                                     }
-                                    HgUtils.forceStatusRefreshProject(ctx);                                     
-                                    
+                                    HgUtils.forceStatusRefreshProject(ctx);
+                                    Mercurial.getInstance().changesetChanged(root);
+
                                     if (list != null && !list.isEmpty()){
                                         HgUtils.outputMercurialTab(list);
                                     }

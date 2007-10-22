@@ -120,6 +120,7 @@ public class ImportDiffAction extends AbstractAction {
                 "MSG_IMPORT_TITLE_SEP")); // NOI18N
 
         List<String> list = HgCommand.doImport(repository, patchFile);
+        Mercurial.getInstance().changesetChanged(repository);
         HgUtils.outputMercurialTab(list); // NOI18N
 
         } catch (HgException ex) {
