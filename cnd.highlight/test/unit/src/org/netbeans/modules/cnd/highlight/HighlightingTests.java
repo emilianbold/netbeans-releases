@@ -45,6 +45,7 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.modules.cnd.test.BaseTestSuite;
 import org.netbeans.modules.cnd.highlight.semantic.ifdef.InactiveCodeTest;
+import org.netbeans.modules.cnd.highlight.semantic.ifdef.MacroUsagesTest;
 
 /**
  *
@@ -56,6 +57,7 @@ public class HighlightingTests extends BaseTestSuite {
         super("Code Highlighting"); // NOI18N
         
         addTestSuite(InactiveCodeTest.class);
+        addTestSuite(MacroUsagesTest.class);
     }
 
     public static Test suite() {
