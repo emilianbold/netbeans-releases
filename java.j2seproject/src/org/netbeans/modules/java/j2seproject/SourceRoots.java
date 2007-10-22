@@ -58,6 +58,7 @@ import java.text.MessageFormat;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -231,6 +232,36 @@ public final class SourceRoots {
             }
         });                
     }
+    
+    private Map<URL,String> getRootsToProps () {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<Map<URL,String>>() {
+            public Map<URL,String> run () {                
+                String[] srcProps = getRootProperties();
+                Map<URL,String> result = new HashMap<URL,String>();
+                for (int i = 0; i<srcProps.length; i++) {
+                    String prop = evaluator.getProperty(srcProps[i]);
+                    if (prop != null) {
+                        File f = helper.getAntProjectHelper().resolveFile(prop);
+                        try {                                    
+                            URL url = f.toURI().toURL();
+                            if (!f.exists()) {
+                                url = new URL(url.toExternalForm() + "/"); // NOI18N
+                            }
+                            else if (f.isFile()) {
+                                //File cannot be a source root (archives are not supported as source roots).
+                                continue;
+                            }
+                            assert url.toExternalForm().endsWith("/") : "#90639 violation for " + url + "; " + f + " exists? " + f.exists() + " dir? " + f.isDirectory() + " file? " + f.isFile();
+                            result.put(url,srcProps[i]);
+                        } catch (MalformedURLException e) {
+                            Exceptions.printStackTrace(e);
+                        }
+                    }
+                }
+                return result;
+            }
+        });
+    }
 
     /**
      * Adds PropertyChangeListener
@@ -258,12 +289,7 @@ public final class SourceRoots {
         ProjectManager.mutex().writeAccess(
                 new Mutex.Action<Void>() {
                     public Void run() {
-                        String[] originalProps = getRootProperties();
-                        URL[] originalRoots = getRootURLs();
-                        Map<URL,String> oldRoots2props = new HashMap<URL,String>();
-                        for (int i=0; i<originalProps.length;i++) {
-                            oldRoots2props.put (originalRoots[i],originalProps[i]);
-                        }
+                        Map<URL,String> oldRoots2props = getRootsToProps();
                         Map<URL,String> newRoots2lab = new HashMap<URL,String>();
                         for (int i=0; i<roots.length;i++) {
                             newRoots2lab.put (roots[i],labels[i]);
