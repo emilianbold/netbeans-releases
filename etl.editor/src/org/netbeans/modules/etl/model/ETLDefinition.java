@@ -52,6 +52,7 @@ import org.netbeans.modules.sql.framework.model.SQLObjectListener;
 import org.w3c.dom.Element;
 
 import com.sun.sql.framework.exception.BaseException;
+import org.netbeans.modules.sql.framework.model.SourceTable;
 
 /**
  * @author Ritesh Adval
@@ -98,6 +99,10 @@ public interface ETLDefinition {
      * @return DatabaseModel for given Model Name
      */
     public DatabaseModel getDatabaseModel(String modelName);
+    
+    public DatabaseModel getSourceTable();
+    
+    public DatabaseModel getTargetTable();
 
     /**
      * Gets display name.

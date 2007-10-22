@@ -56,6 +56,7 @@ import org.netbeans.modules.sql.framework.model.SQLFrameworkParentObject;
 import org.netbeans.modules.sql.framework.model.SQLModelObjectFactory;
 import org.netbeans.modules.sql.framework.model.SQLObject;
 import org.netbeans.modules.sql.framework.model.SQLObjectListener;
+import org.netbeans.modules.sql.framework.model.SourceTable;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -476,5 +477,38 @@ public class ETLDefinitionImpl implements ETLDefinition, Serializable {
     protected void init() {
         sqlDefinition = SQLModelObjectFactory.getInstance().createSQLDefinition();
     }
+
+    public DatabaseModel getSourceTable() {
+        java.util.List list = sqlDefinition.getAllOTDs();
+        java.util.Iterator it = list.iterator();
+        while (it.hasNext()) {
+            SQLObject sqlObj = (SQLObject) it.next();
+            int type = sqlObj.getObjectType();
+            if (type == SQLConstants.SOURCE_DBMODEL) {
+                DatabaseModel dbModel = (DatabaseModel) sqlObj;
+                if (dbModel != null) {
+                    return  (DatabaseModel) dbModel;
+                }
+            }
+        }
+        return null;
+    }
+
+    public DatabaseModel getTargetTable() {
+         java.util.List list = sqlDefinition.getAllOTDs();
+        java.util.Iterator it = list.iterator();
+        while (it.hasNext()) {
+            SQLObject sqlObj = (SQLObject) it.next();
+            int type = sqlObj.getObjectType();
+            if (type == SQLConstants.TARGET_DBMODEL) {
+                DatabaseModel dbModel = (DatabaseModel) sqlObj;
+                if (dbModel != null) {
+                    return  (DatabaseModel) dbModel;
+                }
+            }
+        }
+        return null;
+    }
+    
 }
 
