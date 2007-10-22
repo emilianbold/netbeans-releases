@@ -50,6 +50,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.math.BigInteger;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -68,6 +69,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileLock;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
@@ -382,8 +384,10 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                             if (facesMapping.charAt(0) != '/' && canCreateNewFile(webModule.getDocumentBase(), FORWARD_JSF)) { //NOI18N
                                 String content = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + FORWARD_JSF), "UTF-8"); //NOI18N
                                 content = content.replace("__FORWARD__", ConfigurationUtils.translateURI(facesMapping, WELCOME_JSF));
+                                Charset encoding = FileEncodingQuery.getDefaultEncoding();
+                                content = content.replaceAll("__ENCODING__", encoding.name());
                                 FileObject target = FileUtil.createData(webModule.getDocumentBase(), FORWARD_JSF);//NOI18N
-                                createFile(target, content, "UTF-8");  //NOI18N
+                                createFile(target, content, encoding.name());  //NOI18N
                             }
                         }
                     }
@@ -411,8 +415,10 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             
             if (canCreateNewFile(webModule.getDocumentBase(), WELCOME_JSF)) {
                 String content = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + WELCOME_JSF), "UTF-8"); //NOI18N
+                Charset encoding = FileEncodingQuery.getDefaultEncoding();
+                content = content.replaceAll("__ENCODING__", encoding.name());
                 FileObject target = FileUtil.createData(webModule.getDocumentBase(), WELCOME_JSF);//NOI18N
-                createFile(target, content, "UTF-8");  //NOI18N
+                createFile(target, content, encoding.name());  //NOI18N
             }
         }
         

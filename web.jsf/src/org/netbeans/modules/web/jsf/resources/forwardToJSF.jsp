@@ -1,4 +1,4 @@
-<%@page pageEncoding="UTF-8"%>
+<%@page pageEncoding="__ENCODING__"%>
 
 <%--
     This file forwards to the entry of JavaServer Faces application.

@@ -1,5 +1,5 @@
 <%@page contentType="text/html"%>
-<%@page pageEncoding="UTF-8"%>
+<%@page pageEncoding="__ENCODING__"%>
 
 <%@taglib prefix="f" uri="http://java.sun.com/jsf/core"%>
 <%@taglib prefix="h" uri="http://java.sun.com/jsf/html"%>
@@ -13,7 +13,7 @@
 
 <html>
     <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta http-equiv="Content-Type" content="text/html; charset=__ENCODING__">
         <title>JSP Page</title>
     </head>
     <body>
