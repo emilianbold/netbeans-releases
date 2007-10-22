@@ -98,10 +98,13 @@ public class ApplicationXmlWizardPanel1 implements WizardDescriptor.Panel {
     }
 
     public boolean isValid() {
-        if (component.getSelectedLocation() == null) {
+        if (component.getSelectedLocation() == null
+                || component.getCreatedFile() == null
+                || component.getCreatedFile().canRead()) {
             wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(ApplicationXmlWizardPanel1.class,"ERR_FileExistsOrNoValidLocation")); //NOI18N
             return false;
         }
+        wizardDescriptor.putProperty("WizardPanel_errorMessage", " "); //NOI18N
         return true;
     }
 
