@@ -95,7 +95,7 @@ public class SQLEngineFileGenerator {
 
     public void persistEngineFile(String jndi_name,String transactionRequired) {
         StringBuffer sb = new StringBuffer();
-        sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+        sb.append("<?xml version=\"1.0\" encoding=\""+org.netbeans.modules.sql.project.ui.SQLproLogicalViewProvider.encoding+"\"?>\n");
         sb.append("<sqlengine name=\"" + projectName + "\">");
         Iterator iter = sqlDefinitionMap.keySet().iterator();
         while (iter.hasNext()) {

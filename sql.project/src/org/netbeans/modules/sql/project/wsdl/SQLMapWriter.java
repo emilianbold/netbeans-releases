@@ -75,7 +75,7 @@ public class SQLMapWriter {
 
         StringBuffer sb = new StringBuffer();
 
-        sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+        sb.append("<?xml version=\"1.0\" encoding=\""+org.netbeans.modules.sql.project.ui.SQLproLogicalViewProvider.encoding+"\"?>\n");
         sb.append("<sqlmap  xmlns:tns=\"http://com.sun.jbi/sqlse/sqlengine\" \n");
         sb.append("\t targetNamespace=\"http://com.sun.jbi/sqlse/sqlengine\" > \n");
 

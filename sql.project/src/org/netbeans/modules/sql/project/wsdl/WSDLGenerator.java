@@ -1254,6 +1254,16 @@ public class WSDLGenerator {
             WSDLWriter writer = factory.newWSDLWriter();
             Writer sink = new FileWriter(wsdlFileLocation + File.separator + wsdlFileName + ".wsdl");
             writer.writeWSDL(def, sink);
+            String str = IOUtil.getText(wsdlFileLocation + File.separator + wsdlFileName + ".wsdl","UTF-8");
+            StringBuffer sb = new StringBuffer(str);
+    	    sb.replace(30,35,org.netbeans.modules.sql.project.ui.SQLproLogicalViewProvider.encoding);
+	    str = sb.toString();
+	    byte[] buf = str.getBytes();
+	    File f = new File(wsdlFileLocation + File.separator + wsdlFileName + ".wsdl");
+	    OutputStream out = new FileOutputStream(f);
+	    out.write(buf, 0, buf.length);
+	    out.close();
+	    f = null;
             logger.log(Level.INFO, "Successfully generated wsdl file:" + wsdlFileName + ".wsdl");
         } catch (Exception e) {
             throw new WSDLException(WSDLException.OTHER_ERROR, e.getMessage());
