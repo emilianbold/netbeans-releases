@@ -286,6 +286,12 @@ public class OrderingTest extends NbTestCase {
         assertEquals(100, dent.getAttribute("position"));
     }
 
+    public void testSetOrderSingle() throws Exception {
+        dir = FileUtil.createMemoryFileSystem().getRoot();
+        FileObject f = dir.createData("f");
+        Ordering.setOrder(Collections.singletonList(f));
+    }
+
     // XXX test IAE, ...
 
 }

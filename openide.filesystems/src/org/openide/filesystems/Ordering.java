@@ -258,7 +258,7 @@ class Ordering {
             } else {
                 assert rangeLength == 0 : oldOrder + " => " + children;
             }
-        } else {
+        } else if (children.size() > 1) {
             // #110981: check to see if just one is new.
             FileObject nue = null;
             for (FileObject f : children) {
