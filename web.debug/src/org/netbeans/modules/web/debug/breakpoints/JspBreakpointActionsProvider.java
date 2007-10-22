@@ -63,7 +63,7 @@ import org.openide.util.*;
 public class JspBreakpointActionsProvider implements NodeActionsProviderFilter {
     
     private static final Action GO_TO_SOURCE_ACTION = Models.createAction (
-        "Go to Source", 
+        NbBundle.getMessage(JspBreakpointActionsProvider.class, "LBL_Action_Go_To_Source"),
         new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
                 return true;
@@ -75,7 +75,7 @@ public class JspBreakpointActionsProvider implements NodeActionsProviderFilter {
         Models.MULTISELECTION_TYPE_EXACTLY_ONE
     );
     private static final Action CUSTOMIZE_ACTION = Models.createAction (
-        "Customize", 
+        NbBundle.getMessage(JspBreakpointActionsProvider.class, "LBL_Action_Customize"),
         new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
                 return true;

@@ -84,7 +84,7 @@ public class ActionsPanel extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        setBorder(new javax.swing.border.TitledBorder("Actions"));
+        setBorder(new javax.swing.border.TitledBorder(NbBundle.getMessage(ActionsPanel.class, "LBL_Actions")));
         tfPrintText.setToolTipText(NbBundle.getMessage(ActionsPanel.class, "TTT_TF_Actions_Panel_Print_Text"));
         tfPrintText.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {

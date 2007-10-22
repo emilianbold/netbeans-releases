@@ -120,7 +120,7 @@ public class JspBreakpointPanel extends JPanel implements Controller {
 
         pSettings.setLayout(new java.awt.GridBagLayout());
 
-        pSettings.setBorder(new javax.swing.border.TitledBorder("Settings"));
+        pSettings.setBorder(new javax.swing.border.TitledBorder(NbBundle.getMessage(JspBreakpointPanel.class, "LBL_Settings")));
         lblJspSourcePath.setText(NbBundle.getBundle(JspBreakpointPanel.class).getString("CTL_Source_name"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
