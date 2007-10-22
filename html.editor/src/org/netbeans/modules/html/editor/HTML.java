@@ -109,7 +109,7 @@ public class HTML {
             if(tokenSequence == null) return false;
             Token t = tokenSequence.token ();
             if (t == null) return false;
-            if (t.id() != HTMLTokenId.TAG_OPEN && t.id() != HTMLTokenId.TAG_CLOSE) {
+            if (t.id() != HTMLTokenId.TAG_OPEN) {
                 return false;
             }
             String tagName = t.text ().toString ().toLowerCase ();
