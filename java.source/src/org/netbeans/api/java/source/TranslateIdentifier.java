@@ -31,6 +31,7 @@ package org.netbeans.api.java.source;
 import com.sun.source.tree.*;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
+import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
 import java.util.ArrayList;
 import java.util.List;
@@ -649,7 +650,9 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
     }
 
     private void mapComments(Tree tree) {
-        TreePath path = copy.getTrees().getPath(unit, tree);
+        if (((JCTree) tree).pos <= 0) {
+            return;
+        }
         SourcePositions pos = copy.getTrees().getSourcePositions();
         seq.move((int) pos.getStartPosition(null, tree));
         PositionEstimator.moveToSrcRelevant(seq, Direction.BACKWARD);
