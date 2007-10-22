@@ -29,9 +29,10 @@ package org.netbeans.modules.cnd.completion.includes;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
@@ -44,14 +45,14 @@ import org.openide.loaders.ExtensionList;
  * @author Vladimir Voskresensky
  */
 public class CsmIncludeCompletionQuery {
-    private Collection<CsmIncludeCompletionItem> results;
+    private Map<String, CsmIncludeCompletionItem> results;
     private final CsmFile file;
     public CsmIncludeCompletionQuery(CsmFile file) {
         this.file = file;
     }
     
     public Collection<CsmIncludeCompletionItem> query( BaseDocument doc, String childSubDir, int substitutionOffset, Boolean usrInclude, boolean showAll) {
-        results = new ArrayList<CsmIncludeCompletionItem>(100);
+        results = new HashMap<String, CsmIncludeCompletionItem>(100);
         CsmFile docFile = this.file;
         if (docFile == null) {
             docFile = CsmUtilities.getCsmFile(doc, false);
@@ -66,7 +67,7 @@ public class CsmIncludeCompletionQuery {
                     "", 
                     childSubDir, true, (usrInclude != null ? usrInclude : false), 
                     true, substitutionOffset);
-            return results;
+            return results.values();
         }
         if (docFile != null) {
             usrFilePath = docFile.getAbsolutePath();
@@ -100,7 +101,7 @@ public class CsmIncludeCompletionQuery {
                 addParentFolder(substitutionOffset, childSubDir, true);
             }
         }
-        return results;
+        return results.values();
     }
     
     private void addFolderItems(String parentFolder, String parentFolderPresentation,
@@ -115,7 +116,9 @@ public class CsmIncludeCompletionQuery {
                 CsmIncludeCompletionItem item = CsmIncludeCompletionItem.createItem(
                         substitutionOffset, relFileName, parentFolderPresentation, childSubDir,
                         system, highPriority, curFile.isDirectory(), true);
-                results.add(item);
+                if (!results.containsKey(relFileName)) {
+                    results.put(relFileName, item);
+                }
             }
         }        
     }
@@ -123,7 +126,7 @@ public class CsmIncludeCompletionQuery {
     private void addParentFolder(int substitutionOffset, String childSubDir, boolean system) {
         CsmIncludeCompletionItem item = CsmIncludeCompletionItem.createItem(
                 substitutionOffset, "..", ".", childSubDir, system, false, true, false); // NOI18N
-        results.add(item);
+        results.put("..", item);//NOI18N
     }
 
     private Collection<String> getFileIncludes(CsmFile file, boolean system) {
