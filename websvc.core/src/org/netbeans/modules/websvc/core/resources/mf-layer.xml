@@ -55,7 +55,7 @@ made subject to such option by the copyright holder.
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.xml.wsdl.ui.wizard.NewWSDLWizardIterator"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdl/ui/wizard/newWSDL.html"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.core.client.wizard.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/wsdl/resources/wsdl_16.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/core/client/resources/wsdl_16.png"/>
                 <attr name="templateCategory" stringvalue="wsdl"/>
             </file>
             <file name="WSDL_import.wsdl" url="nbres:/org/netbeans/modules/xml/wsdl/ui/netbeans/module/resources/WSDL_import.template">
@@ -122,24 +122,6 @@ made subject to such option by the copyright holder.
                     <file name="org-netbeans-modules-websvc-editor-completion-WSCompletionProvider.instance"/>
                 </folder>
             </folder>
-        </folder>
-    </folder>
-
-    <folder name="Plugins">
-        <!-- Register Web Service module catalog plugin -->
-        <folder name="XML">
-            <folder name="UserCatalogs">
-                <file name="org-netbeans-modules-websvc-wsdl-WSSchemaCatalog.instance">
-                    <attr name="instanceCreate" newvalue="org.netbeans.modules.websvc.wsdl.WSSchemaCatalog"/>
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.xml.catalog.spi.CatalogReader"/>
-                </file>
-            </folder>
-            <folder name="GrammarQueryManagers">
-                <!-- register semantics grammar for wscompile-config (1.1) due to code completion -->
-                <file name="org-netbeans-modules-websvc-wsdl-WSSchemaGrammarQueryMgr.instance">
-                    <attr name="position" intvalue="500"/>
-                </file>
-                </folder> <!-- GrammarQueryManagers -->
         </folder>
     </folder>
     
