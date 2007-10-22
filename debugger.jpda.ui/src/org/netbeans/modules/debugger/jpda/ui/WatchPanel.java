@@ -98,6 +98,8 @@ public class WatchPanel {
     }
     
     public static void setupContext(JEditorPane editorPane) {
+        EditorKit kit = CloneableEditorSupport.getEditorKit("text/x-java");
+        editorPane.setEditorKit(kit);
         DebuggerEngine en = DebuggerManager.getDebuggerManager ().getCurrentEngine();
         JPDADebugger d = (JPDADebugger) en.lookupFirst(null, JPDADebugger.class);
         CallStackFrame csf = d.getCurrentCallStackFrame();
@@ -111,8 +113,6 @@ public class WatchPanel {
     }
     
     public static void setupContext(JEditorPane editorPane, String url, int line) {
-        EditorKit kit = CloneableEditorSupport.getEditorKit("text/x-java");
-        editorPane.setEditorKit(kit);
         FileObject file;
         StyledDocument doc;
         try {
