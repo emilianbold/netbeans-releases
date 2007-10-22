@@ -121,6 +121,7 @@ import org.openide.util.NbBundle;
  *   for aliases!
  * @todo If you're looking for a local class, such as a Rails model, I should
  *   find those first!
+ * @todo Within a gem, prefer other matches within the same gem or gem cluster
  * @todo I've gotta use the inherited method and field finders! If I'm in a Rails model
  *   and search for find_all it goes and pops into the stubs for enumerations instead.
  *   I -know- the method being referenced here since we have the inheritance chain!
@@ -129,7 +130,7 @@ import org.openide.util.NbBundle;
  * @author Tor Norbye
  */
 public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder {
-    static final boolean SHOW_ALTERNATIVES = Boolean.getBoolean("ruby.show_all_decls");
+    private static final boolean CHOOSE_ONE_DECLARATION = Boolean.getBoolean("ruby.choose_one_decl");
     
     /** An increasing number; I will be using this number modulo the  */
     private static int methodSelector = 0;
@@ -954,7 +955,7 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
                 DeclarationLocation loc = new DeclarationLocation(com.getFile().getFileObject(),
                     node.getPosition().getStartOffset(), com);
                 
-                if (SHOW_ALTERNATIVES && classes.size() > 1) {
+                if (!CHOOSE_ONE_DECLARATION && classes.size() > 1) {
                     // Could the :nodoc: alternatives: if there is only one nodoc'ed alternative
                     // don't ask user!
                     int not_nodoced = 0;
@@ -993,7 +994,7 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
                 DeclarationLocation loc = new DeclarationLocation(com.getFile().getFileObject(),
                     node.getPosition().getStartOffset(), com);
 
-                if (SHOW_ALTERNATIVES && methods.size() > 1) {
+                if (!CHOOSE_ONE_DECLARATION && methods.size() > 1) {
                     // Could the :nodoc: alternatives: if there is only one nodoc'ed alternative
                     // don't ask user!
                     int not_nodoced = 0;
