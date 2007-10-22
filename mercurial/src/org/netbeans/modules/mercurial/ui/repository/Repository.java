@@ -414,24 +414,21 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
             }));
         }
 
-        /*
-        repositoryPanel.userPasswordField.setVisible(authFields);
-        repositoryPanel.passwordLabel.setVisible(authFields);          
-        repositoryPanel.userTextField.setVisible(authFields);          
-        repositoryPanel.leaveBlankLabel.setVisible(authFields);        
-        repositoryPanel.userLabel.setVisible(authFields);             
+        //repositoryPanel.userPasswordField.setVisible(authFields);
+        //repositoryPanel.passwordLabel.setVisible(authFields);          
+        //repositoryPanel.userTextField.setVisible(authFields);          
+        //repositoryPanel.leaveBlankLabel.setVisible(authFields);        
+        //repositoryPanel.userLabel.setVisible(authFields);             
         repositoryPanel.proxySettingsButton.setVisible(proxyFields && ((modeMask & FLAG_SHOW_PROXY) != 0));        
-        repositoryPanel.tunnelCommandTextField.setVisible(sshFields);        
-        repositoryPanel.tunnelCommandLabel.setVisible(sshFields);        
-        repositoryPanel.tunnelLabel.setVisible(sshFields);        
-        repositoryPanel.tunnelHelpLabel.setVisible(sshFields);       
-        */
+        //repositoryPanel.tunnelCommandTextField.setVisible(sshFields);        
+        //repositoryPanel.tunnelCommandLabel.setVisible(sshFields);        
+        //repositoryPanel.tunnelLabel.setVisible(sshFields);        
+        //repositoryPanel.tunnelHelpLabel.setVisible(sshFields);       
         repositoryPanel.userPasswordField.setVisible(false);
         repositoryPanel.passwordLabel.setVisible(false);          
         repositoryPanel.userTextField.setVisible(false);          
         repositoryPanel.leaveBlankLabel.setVisible(false);        
         repositoryPanel.userLabel.setVisible(false);             
-        repositoryPanel.proxySettingsButton.setVisible(false);        
         repositoryPanel.tunnelCommandTextField.setVisible(false);        
         repositoryPanel.tunnelCommandLabel.setVisible(false);        
         repositoryPanel.tunnelLabel.setVisible(false);        
