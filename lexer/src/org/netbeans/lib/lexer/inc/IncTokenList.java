@@ -147,7 +147,7 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
      * Get modification count for which this token list was last updated
      * (mainly its cached start offset).
      */
-    public int modCount() {
+    public synchronized int modCount() {
         return rootModCount;
     }
     

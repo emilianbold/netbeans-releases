@@ -269,6 +269,9 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
 
     public int modCount() {
         // Delegate to root to have the most up-to-date value for token sequence's check.
+        // Extra synchronization should not be necessary since the TokenSequence.embedded()
+        // calls EmbeddingContainer.embeddedTokenList()
+        // which calls which contains the synchronization and calls updateStatusImpl().
         return embeddingContainer.cachedModCount();
     }
     
