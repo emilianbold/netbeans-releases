@@ -57,7 +57,7 @@ public abstract class CreateFromTemplateHandler {
     /** Handles the creation of new file. 
      * @param orig the source file 
      * @param f the folder to create a file in
-     * @param name the name of new file to create in the folder
+     * @param name the name of new file to create in the folder (extension will be inherited from <code>orig</code>)
      * @param parameters map of additional arguments as specified by registered {@link CreateFromTemplateAttributesProvider}s
      * @return the newly create file
      * @throws IOException if something goes wrong with I/O
