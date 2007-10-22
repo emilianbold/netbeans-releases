@@ -56,6 +56,8 @@ public interface TargetTable extends SQLDBTable, SQLConnectableObject {
     
     public static final String FILTER_CONDITION = "filterCondition";
     
+    public static final String HAVING_CONDITION = "havingCondition";
+    
     /**
      * get the target table join condition
      * 
@@ -70,7 +72,12 @@ public interface TargetTable extends SQLDBTable, SQLConnectableObject {
      */
     public String getJoinConditionText();
     
-    
+      /**
+     * get the target table groupby condition
+     * 
+     * @return target table groupby conidiotn
+     */
+    public SQLCondition getHavingCondition();
     /**
      * get the target table filter condition
      * 
@@ -78,6 +85,7 @@ public interface TargetTable extends SQLDBTable, SQLConnectableObject {
      */
     public SQLCondition getFilterCondition();
 
+    
     /**
      * get filter condition text
      * 
@@ -141,6 +149,14 @@ public interface TargetTable extends SQLDBTable, SQLConnectableObject {
      * @return true if contents should be truncated; false otherwise
      */
     public boolean isTruncateBeforeLoad();
+    
+        /**
+     * Indicates whether the fully-qualified form should be used whenever one resolves
+     * this table's name.
+     * 
+     * @return true if fully-qualified form should be used, false otherwise
+     */
+    public boolean isUsingFullyQualifiedName();
 
     /**
      * set the target table join condition
@@ -148,7 +164,12 @@ public interface TargetTable extends SQLDBTable, SQLConnectableObject {
      * @param cond target table join condition
      */
     public void setJoinCondition(SQLCondition cond);
-
+   /**
+     * set the target table group-by condition
+     * 
+     * @param cond target table group-by condition
+     */
+    public void setHavingCondition(SQLCondition cond);
     /**
      * set the join condition text
      * 
@@ -190,6 +211,10 @@ public interface TargetTable extends SQLDBTable, SQLConnectableObject {
      * @param sType statement type
      */
     public void setStatementType(int sType);
+    
+    public void setBatchSize(int newsize);
+    
+    public void setUsingFullyQualifiedName(boolean usesFullName);
 
     /**
      * set string representation of statement type

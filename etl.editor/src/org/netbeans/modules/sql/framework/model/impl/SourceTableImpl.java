@@ -85,6 +85,7 @@ public class SourceTableImpl extends AbstractDBTable implements SourceTable {
     
     private static final String ATTR_DROP_STAGING_TABLE = "deleteTemporaryTable";
     
+    private static final String ATTR_FULLY_QUALIFIED_NAME = "fullyQualifiedName";
     private static final String ATTR_TRUNCATE_STAGING_TABLE = "tuncateStagingTable";
     
     private static final String ATTR_DISTINCT = "distinct";
@@ -461,6 +462,15 @@ public class SourceTableImpl extends AbstractDBTable implements SourceTable {
         this.setAttribute(ATTR_DROP_STAGING_TABLE, new Boolean(drop));
     }
     
+       /**
+     * Set whether to delete temporary table before extraction.
+     *
+     * @param drop whether to delete temp table
+     */
+    public void setDropStagingTable(Boolean drop) {
+        this.setAttribute(ATTR_DROP_STAGING_TABLE,drop);
+    }
+    
     /**
      * Sets the extraction condition.
      *
@@ -802,7 +812,36 @@ public class SourceTableImpl extends AbstractDBTable implements SourceTable {
         return true;
     }
     
+     public boolean isUsingFullyQualifiedName() {
+        Boolean fullName = (Boolean) this.getAttributeObject(ATTR_FULLY_QUALIFIED_NAME);
+        if (fullName != null) {
+            return fullName.booleanValue();
+        }
+        return true;
+    }
+    
     public void setTruncateStagingTable(boolean truncate) {
         this.setAttribute(ATTR_TRUNCATE_STAGING_TABLE, new Boolean(truncate));
     }
+    
+     public void setTruncateStagingTable(Boolean truncate) {
+        this.setAttribute(ATTR_TRUNCATE_STAGING_TABLE,truncate);
+    }
+    
+    public void setBatchSize(int newsize){
+        this.setAttribute(ATTR_BATCHSIZE,new Integer(newsize));
+    }
+            
+    public void setBatchSize(Integer newsize) {
+         this.setAttribute(ATTR_BATCHSIZE,newsize.intValue());
+    }
+    
+    public void setUsingFullyQualifiedName(boolean usesFullName) {
+        this.setAttribute(ATTR_FULLY_QUALIFIED_NAME, new Boolean(usesFullName));
+    }
+    
+    public void setUsingFullyQualifiedName(Boolean usesFullName) {
+        this.setAttribute(ATTR_FULLY_QUALIFIED_NAME,usesFullName);
+    }
+  
 }

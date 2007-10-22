@@ -106,6 +106,14 @@ public interface SourceTable extends SQLDBTable, Cloneable, Comparable, SQLVisit
      * @return SQLGroupBy
      */
     public SQLGroupBy getSQLGroupBy();    
+    
+      /**
+     * Indicates whether the fully-qualified form should be used whenever one resolves
+     * this table's name.
+     * 
+     * @return true if fully-qualified form should be used, false otherwise
+     */
+    public boolean isUsingFullyQualifiedName();
 
     /**
      * get whether to Drop Staging table before extraction
@@ -162,6 +170,10 @@ public interface SourceTable extends SQLDBTable, Cloneable, Comparable, SQLVisit
      * @param  whether to truncate temp table
      */
     public void setTruncateStagingTable(boolean truncate);
+   
+    public void setBatchSize(int newsize);
+    
+    public void setUsingFullyQualifiedName(boolean usesFullName);
     
     /**
      * set the extraction condition

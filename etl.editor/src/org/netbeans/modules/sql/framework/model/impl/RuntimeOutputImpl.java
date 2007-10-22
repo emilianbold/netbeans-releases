@@ -46,6 +46,7 @@ import java.util.Map;
 
 import org.netbeans.modules.model.database.DBTable;
 import org.netbeans.modules.sql.framework.model.RuntimeOutput;
+import org.netbeans.modules.sql.framework.model.SQLCondition;
 import org.netbeans.modules.sql.framework.model.SQLConstants;
 import org.netbeans.modules.sql.framework.model.SQLDBColumn;
 import org.netbeans.modules.sql.framework.model.SQLLiteral;
@@ -60,6 +61,7 @@ import com.sun.sql.framework.utils.RuntimeAttribute;
  */
 public class RuntimeOutputImpl extends TargetTableImpl implements RuntimeOutput {
 
+      private static final String ATTR_BATCHSIZE = "batchSize";
     /** Creates a new instance of OutputTableImpl */
     public RuntimeOutputImpl() {
         super();
@@ -157,6 +159,14 @@ public class RuntimeOutputImpl extends TargetTableImpl implements RuntimeOutput 
     private void init() {
         type = SQLConstants.RUNTIME_OUTPUT;
         this.setName(TAG_RUNTIME_OUTPUT);
+    }
+
+    public void setHavingCondition(SQLCondition cond) {
+      
+    }
+
+    public void setBatchSize(Integer newsize) {
+       this.setAttribute(ATTR_BATCHSIZE,newsize);
     }
 }
 

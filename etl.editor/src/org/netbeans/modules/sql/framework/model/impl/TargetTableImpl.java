@@ -96,8 +96,13 @@ public class TargetTableImpl extends AbstractDBTable implements TargetTable {
 
     /**
      * type of statement to generate while loading target table
+     * 
      */
     public static final String ATTR_STATEMENT_TYPE = "statementType";
+    
+    private static final String ATTR_BATCHSIZE = "batchSize";
+    
+    private static final String ATTR_FULLY_QUALIFIED_NAME = "fullyQualifiedName";
 
     private static final String ATTR_CREATE_TARGET_TABLE = "createTargetTable";
 
@@ -105,7 +110,9 @@ public class TargetTableImpl extends AbstractDBTable implements TargetTable {
 
     private SQLCondition joinCondition;
     private SQLCondition filterCondition;
-
+    private SQLCondition havingCondition;
+     /** having condition tag */
+    public static final String HAVING_CONDITION = "havingCondition";
     private SQLGroupBy groupBy;
 
     /** Constructs a new default instance of TargetTableImpl. */
@@ -659,6 +666,14 @@ public class TargetTableImpl extends AbstractDBTable implements TargetTable {
         Boolean shouldTruncate = (Boolean) this.getAttributeObject(ATTR_TRUNCATE_BEFORE_LOAD);
         return (shouldTruncate != null) ? shouldTruncate.booleanValue() : false;
     }
+    
+    public boolean isUsingFullyQualifiedName() {
+        Boolean fullName = (Boolean) this.getAttributeObject(ATTR_FULLY_QUALIFIED_NAME);
+        if (fullName != null) {
+            return fullName.booleanValue();
+        }
+        return true;
+    }
 
     /**
      * @see SQLConnectableObject#removeInputByArgName
@@ -778,6 +793,16 @@ public class TargetTableImpl extends AbstractDBTable implements TargetTable {
     public void setCreateTargetTable(boolean create) {
         this.setAttribute(ATTR_CREATE_TARGET_TABLE, new Boolean(create));
     }
+    
+     /**
+     * Sets whether to create target table if it does not already exist.
+     * 
+     * @param create whether to create target table
+     */
+    public void setCreateTargetTable(Boolean create) {
+        this.setAttribute(ATTR_CREATE_TARGET_TABLE, create);
+    }
+    
 
     /**
      * @see org.netbeans.modules.sql.framework.model.SourceTable#setSQLGroupBy(org.netbeans.modules.sql.framework.model.SQLGroupBy)
@@ -818,6 +843,11 @@ public class TargetTableImpl extends AbstractDBTable implements TargetTable {
     public void setTruncateBeforeLoad(boolean flag) {
         this.setAttribute(ATTR_TRUNCATE_BEFORE_LOAD, (flag ? Boolean.TRUE : Boolean.FALSE));
     }
+    
+    public void setTruncateBeforeLoad(Boolean flag) {
+        this.setAttribute(ATTR_TRUNCATE_BEFORE_LOAD, (flag ? Boolean.TRUE : Boolean.FALSE));
+    }
+ 
 
     /**
      * Returns XML representation of table metadata.
@@ -1165,6 +1195,9 @@ public class TargetTableImpl extends AbstractDBTable implements TargetTable {
         
         filterCondition = SQLModelObjectFactory.getInstance().createSQLCondition(FILTER_CONDITION);
         setFilterCondition(filterCondition);
+        
+        havingCondition = SQLModelObjectFactory.getInstance().createSQLCondition(HAVING_CONDITION);
+        setFilterCondition(havingCondition);
     }
 
 	public SQLCondition getFilterCondition() {
@@ -1182,10 +1215,32 @@ public class TargetTableImpl extends AbstractDBTable implements TargetTable {
 
         return filterCondition;
 	}
+        
+       public SQLCondition getHavingCondition(){
+               // if there are no objects in graph then populate graph with the objects
+        // obtained from sql text
+        Collection objC = havingCondition.getAllObjects();
+        if (objC == null || objC.size() == 0) {
+            SQLDefinition def = SQLObjectUtil.getAncestralSQLDefinition(this);
+            try {
+                ConditionUtil.populateCondition(havingCondition, def, this.getHavingConditionText());
+            } catch (Exception ex) {
+                // ignore this if filterCondition typed by user is invalid
+            }
+        }
+
+        return havingCondition;
+        }
+   
 
 	public String getFilterConditionText() {
 		return filterCondition.getConditionText();
 	}
+        
+        public String getHavingConditionText() {
+		return havingCondition.getConditionText();
+	}
+
 
 	public void setFilterCondition(SQLCondition cond) {
 		this.filterCondition = cond;
@@ -1199,4 +1254,30 @@ public class TargetTableImpl extends AbstractDBTable implements TargetTable {
 	public void setFilterConditionText(String cond) {
 		filterCondition.setConditionText(cond);
 	}
+
+
+    public void setHavingCondition(SQLCondition having) {
+        this.havingCondition = having;
+        if (this.havingCondition != null) {
+            this.havingCondition.setParent(this);
+            this.havingCondition.setDisplayName(TargetTable.HAVING_CONDITION);
+        }
+    }
+
+   public void setBatchSize(int newsize){
+        this.setAttribute(ATTR_BATCHSIZE,new Integer(newsize));
+    }
+            
+    public void setBatchSize(Integer newsize) {
+         this.setAttribute(ATTR_BATCHSIZE,newsize.intValue());
+    }
+    
+     public void setUsingFullyQualifiedName(boolean usesFullName) {
+        this.setAttribute(ATTR_FULLY_QUALIFIED_NAME, new Boolean(usesFullName));
+    }
+    
+    public void setUsingFullyQualifiedName(Boolean usesFullName) {
+        this.setAttribute(ATTR_FULLY_QUALIFIED_NAME,usesFullName);
+    } 
+      
 }
