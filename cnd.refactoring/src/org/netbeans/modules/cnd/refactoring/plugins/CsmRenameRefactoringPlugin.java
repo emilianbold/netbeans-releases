@@ -55,6 +55,7 @@ import javax.swing.text.Position.Bias;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
@@ -66,6 +67,7 @@ import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 
+import org.openide.filesystems.FileUtil;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionRef;
 import org.openide.util.NbBundle;
@@ -202,25 +204,25 @@ public class CsmRenameRefactoringPlugin extends CsmRefactoringPlugin {
     
     @Override
     public Problem preCheck() {
-        System.err.println("preCheck is called");
         Problem preCheckProblem = null;
         fireProgressListenerStart(RenameRefactoring.PRE_CHECK, 4);
         if (this.referencedObject == null) {
             this.referencedObject = CsmRefactoringUtils.getReferencedElement(startReferenceObject);
+            fireProgressListenerStep();
         }    
         preCheckProblem = isResovledElement(startReferenceObject);
         if (preCheckProblem != null) {
             return preCheckProblem;
         }
-//        // check read-only elements
-//        FileObject fo = null;
-//        if (CsmKindUtilities.isOffsetable(this.referencedObject)) {
-//            fo = CsmUtilities.getFileObject(((CsmOffsetable)this.referencedObject).getContainingFile());
-//        }
-//        if (fo != null && (FileUtil.getArchiveFile(fo)!= null || !fo.canWrite())) {
-//            preCheckProblem = createProblem(preCheckProblem, true, getCannotRename(fo));
-//            return preCheckProblem;            
-//        }
+        // check read-only elements
+        FileObject fo = null;
+        if (CsmKindUtilities.isOffsetable(this.referencedObject)) {
+            fo = CsmUtilities.getFileObject(((CsmOffsetable)this.referencedObject).getContainingFile());
+        }
+        if (fo != null && (FileUtil.getArchiveFile(fo)!= null || !fo.canWrite())) {
+            preCheckProblem = createProblem(preCheckProblem, true, getCannotRename(fo));
+            return preCheckProblem;            
+        }
         fireProgressListenerStop();
         return preCheckProblem;
 //        info.toPhase(JavaSource.Phase.RESOLVED);
