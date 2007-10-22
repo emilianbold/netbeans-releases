@@ -944,7 +944,6 @@ public class WSDLGenerator {
             final String outputFileName = this.wsdlFileLocation + "/" + this.mWSDLFileName + ".wsdl";
             final Writer sink = new FileWriter(outputFileName);
             writer.writeWSDL(this.def, sink);
-            /////////////////////////////////////////////////////
             String str = IOUtil.getText(outputFileName,"UTF-8");
     		StringBuffer sb = new StringBuffer(str);
     		sb.replace(30,35,org.netbeans.modules.jdbcwizard.wizards.SimpleTargetChooserPanelGUI.encoding);
@@ -956,7 +955,6 @@ public class WSDLGenerator {
     		out.close();
     		f = null;
     		encodeXSD();
-            ////////////////////////////////////////////////////
             WSDLGenerator.logger.log(Level.INFO, "Successfully generated wsdl file :" + outputFileName);
         } catch (final Exception e) {
             throw new WSDLException(WSDLException.OTHER_ERROR, e.getMessage());
@@ -965,7 +963,6 @@ public class WSDLGenerator {
     }
     
     public void encodeXSD()throws Exception{
-    	/////////////////////////
         String str = IOUtil.getText(XSDGenerator.mFileName,"UTF-8");
 		StringBuffer sb = new StringBuffer(str);
 		sb.replace(30,35,org.netbeans.modules.jdbcwizard.wizards.SimpleTargetChooserPanelGUI.encoding);
@@ -976,7 +973,6 @@ public class WSDLGenerator {
 		out.write(buf, 0, buf.length);
 		out.close();
 		f = null;
-        /////////////////////////
     }
     
 }
