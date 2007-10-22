@@ -102,6 +102,8 @@ public class SQLRuntimeOutputArea extends SQLBasicTableArea {
         popUpMenu.add(editRuntimeItem);
         
         addSelectVisibleColumnsPopUpMenu(aListener);
+        popUpMenu.addSeparator();
+        addRemovePopUpMenu(aListener);
     }
     
     Icon createIcon() {
