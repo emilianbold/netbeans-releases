@@ -44,7 +44,7 @@
     <tocitem text="Version Control and File History">
       <tocitem text="Local History">
           <tocitem text="About Local File History" target="hist_about" />
-          <tocitem text="Working with Local File History" target="hist_working_with" />
+          <tocitem text="Browsing Local File History" target="hist_browsing" />
           <tocitem text="Recovering Deleted Files" target="hist_recovering_deleted" />
           <tocitem text="Reverting a File to a Previous Version" target="hist_reverting" />          
           <tocitem text="Adjusting Local History Settings" target="hist_settings" />
