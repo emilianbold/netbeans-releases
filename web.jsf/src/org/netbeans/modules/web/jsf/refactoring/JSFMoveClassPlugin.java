@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.jsf.refactoring;
 
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
@@ -130,8 +131,11 @@ public class JSFMoveClassPlugin implements RefactoringPlugin{
                                     public void run(CompilationController co) throws Exception {
                                         co.toPhase(JavaSource.Phase.RESOLVED);
                                         CompilationUnitTree cut = co.getCompilationUnit();
-                                        treePathHandles.add( TreePathHandle.create(TreePath.getPath(cut, cut.getTypeDecls().get(0)), co));
-                                        refactoring.getContext().add(co);
+                                        List<? extends Tree> typeDecls = cut.getTypeDecls();
+                                        if (!typeDecls.isEmpty()){
+                                            treePathHandles.add(TreePathHandle.create(TreePath.getPath(cut, typeDecls.get(0)), co));
+                                            refactoring.getContext().add(co);
+                                        }
                                     }
                                 }, false);
                             } catch (IllegalArgumentException ex) {
