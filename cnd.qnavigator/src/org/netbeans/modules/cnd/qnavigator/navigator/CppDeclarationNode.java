@@ -81,7 +81,8 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
     private CsmFile file;
     private boolean isFriend;
     private CsmFileModel model;
-    private String htmlDisplayName;
+    private String htmlDisplayName = NEEDS_INIT;
+    private static final String NEEDS_INIT = new String("");
     
     private CppDeclarationNode(CsmOffsetableDeclaration element, CsmFileModel model) {
 	this(element, model, null);
@@ -92,7 +93,7 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
         object = element;
         file = element.getContainingFile();
         this.model = model;
-	this.htmlDisplayName = createHtmlDisplayName();
+	//this.htmlDisplayName = createHtmlDisplayName();
     }
     
     private CppDeclarationNode(Children children, CsmOffsetable element, CsmFileModel model) {
@@ -100,14 +101,12 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
         object = element;
         file = element.getContainingFile();
         this.model = model;
+	//this.htmlDisplayName = createHtmlDisplayName();
     }
 
     private CppDeclarationNode(Children children, CsmOffsetableDeclaration element, CsmFileModel model, boolean isFriend) {
-        super(children);
-        object = element;
-        file = element.getContainingFile();
+        this(children, element, model);
         this.isFriend = isFriend;
-        this.model = model;
     }
 
     public CsmObject getCsmObject() {
@@ -136,6 +135,9 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
 
     @Override
     public String getHtmlDisplayName() {
+	if( htmlDisplayName == NEEDS_INIT ) {
+	    htmlDisplayName = createHtmlDisplayName();
+	}
 	return htmlDisplayName;
     }
     
