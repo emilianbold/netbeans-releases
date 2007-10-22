@@ -133,6 +133,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.FinishablePanel
             this.gui = new SimpleTargetChooserPanelGUI(project, folders, this.bottomPanel == null ? null
                     : this.bottomPanel.getComponent(), this.isFolder);
             this.gui.addChangeListener(this);
+            this.gui.setEncoding();
         }
 
         return this.gui;

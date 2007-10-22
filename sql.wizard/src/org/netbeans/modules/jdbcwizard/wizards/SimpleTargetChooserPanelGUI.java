@@ -79,6 +79,7 @@ import java.io.File;
 import java.text.MessageFormat;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -89,7 +90,9 @@ import javax.swing.ListCellRenderer;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.xml.api.EncodingUtil;
 import org.openide.WizardDescriptor;
+import org.openide.loaders.DataFolder;
 
 /**
  * DOCUMENT ME!
@@ -124,6 +127,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
 
     private static final String mFolderText = "";
 
+    public static String encoding;
     // Variables declaration - do not modify
     private javax.swing.JPanel bottomPanelContainer;
 
@@ -317,6 +321,23 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         }
     }
 
+    public void setEncoding() {
+        Sources sources = ProjectUtils.getSources(project);
+        List<SourceGroup> roots = new ArrayList<SourceGroup>();
+        roots.addAll(Arrays.asList(folders));
+        if (roots.isEmpty()) {
+            SourceGroup[] sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
+            roots.addAll(Arrays.asList(sourceGroups));
+        }
+        DataFolder folder = DataFolder.findFolder(roots.get(0).getRootFolder());
+        encoding = EncodingUtil.getProjectEncoding(folder.getPrimaryFile());
+
+        if ( !EncodingUtil.isValidEncoding(encoding)) {
+          encoding = "UTF-8"; // NOI18N
+        }
+    }
+    
+    
     /**
      * DOCUMENT ME!
      * 
