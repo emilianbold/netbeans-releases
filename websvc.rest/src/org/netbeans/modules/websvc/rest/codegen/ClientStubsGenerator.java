@@ -328,6 +328,8 @@ public class ClientStubsGenerator extends AbstractGenerator {
                     if (rF0 != null) {
                         if (overwrite) {
                             rF0.delete();
+                        } else {
+                            return;
                         }
                     }
                     DataObject d0 = RestUtils.createDataObjectFromTemplate(template, dir, fileName);
@@ -366,7 +368,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
     }
     
     private void initJs(Project p) throws IOException {
-        createDataObjectFromTemplate(JS_TESTSTUBS_TEMPLATE, rjsDir, JS_TESTSTUBS, HTML, canOverwrite());
+        createDataObjectFromTemplate(JS_TESTSTUBS_TEMPLATE, rjsDir, JS_TESTSTUBS, HTML, false);
         createDataObjectFromTemplate(JS_STUBSUPPORT_TEMPLATE, rjsDir, JS_SUPPORT, JS, canOverwrite());  
         createDataObjectFromTemplate(JS_README_TEMPLATE, rjsDir, JS_README, HTML, canOverwrite());
     }
@@ -387,11 +389,11 @@ public class ClientStubsGenerator extends AbstractGenerator {
         jmakiResTagList = createJmakiResourceTagList(resourceList);
         
         createDataObjectFromTemplate(DOJO_RESOURCESTABLE_TEMPLATE, widgetDir, DOJO_RESOURCESTABLE, JS, canOverwrite());
-        FileObject fo = createDataObjectFromTemplate(DOJO_SUPPORT_TEMPLATE, rdjDir, DOJO_SUPPORT, JS, canOverwrite());
+        FileObject fo = createDataObjectFromTemplate(DOJO_SUPPORT_TEMPLATE, rdjDir, DOJO_SUPPORT, JS, false);
         if(c != null)
             new ResourceDojoComponents(c, rdjDir).replaceTokens(fo);
         
-        fo = createDataObjectFromTemplate(DOJO_TESTRESOURCESTABLE_TEMPLATE, rdjDir, DOJO_TESTRESOURCESTABLE, HTML, canOverwrite());
+        fo = createDataObjectFromTemplate(DOJO_TESTRESOURCESTABLE_TEMPLATE, rdjDir, DOJO_TESTRESOURCESTABLE, HTML, false);
         if(c != null)
             new ResourceDojoComponents(c, rdjDir).replaceTokens(fo);
     }
@@ -408,7 +410,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
                 break;
             }
         }
-        FileObject fo = createDataObjectFromTemplate(JMAKI_TESTRESOURCESTABLE_TEMPLATE, restDir, JMAKI_TESTRESOURCESTABLE, JSP, canOverwrite());
+        FileObject fo = createDataObjectFromTemplate(JMAKI_TESTRESOURCESTABLE_TEMPLATE, restDir, JMAKI_TESTRESOURCESTABLE, JSP, false);
         if(c != null)
             new ResourceDojoComponents(c, restDir).replaceTokens(fo);
     }
@@ -417,7 +419,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
         String str = "";
         for (Resource r : resourceList) {
             if(r.isContainer()) {
-                str += "<option value='" + r.getName() + "'>" + r.getName() + "</option>\n";
+                str += "            <option value='http://localhost:8080/"+getProjectName()+"/resources/"+r.getRepresentation().getRoot().getName()+"/;" + r.getName() + "'>" + r.getName() + "</option>\n";
             }
         }
         return str;
@@ -757,9 +759,9 @@ public class ClientStubsGenerator extends AbstractGenerator {
                 "__CONTAINER_ITEM_PATH_NAME__",
                 "__STUB_METHODS__",
                 "__PROJECT_NAME__",
-                "__DOJO_RESOURCE_SELECT_LIST__",
-                "__JMAKI_RESOURCE_SELECT_LIST__",
-                "__JMAKI_RESOURCE_TAG_LIST__"
+                "<!-- __DOJO_RESOURCE_SELECT_LIST__ -->",
+                "<!-- __JMAKI_RESOURCE_SELECT_LIST__ -->",
+                "<!-- __JMAKI_RESOURCE_TAG_LIST__ -->"
             };
             String[] genericStubTokens = {
                 "__GENERIC_NAME__",
@@ -798,12 +800,12 @@ public class ClientStubsGenerator extends AbstractGenerator {
                         replacedLine = replacedLine.replace("__STUB_METHODS__", createStubJSMethods(r, object, pkg));
                     else if("__PROJECT_NAME__".equals(token))
                         replacedLine = replacedLine.replaceAll("__PROJECT_NAME__", getProjectName());
-                    else if("__DOJO_RESOURCE_SELECT_LIST__".equals(token))
-                        replacedLine = replacedLine.replaceAll("__DOJO_RESOURCE_SELECT_LIST__", dojoResSelList);
-                    else if("__JMAKI_RESOURCE_SELECT_LIST__".equals(token))
-                        replacedLine = replacedLine.replaceAll("__JMAKI_RESOURCE_SELECT_LIST__", jmakiResSelList);
-                     else if("__JMAKI_RESOURCE_TAG_LIST__".equals(token))
-                        replacedLine = replacedLine.replaceAll("__JMAKI_RESOURCE_TAG_LIST__", jmakiResTagList);
+                    else if("<!-- __DOJO_RESOURCE_SELECT_LIST__ -->".equals(token))
+                        replacedLine = replacedLine.replaceAll("<!-- __DOJO_RESOURCE_SELECT_LIST__ -->", dojoResSelList+"\n<!-- __DOJO_RESOURCE_SELECT_LIST__ -->");
+                    else if("<!-- __JMAKI_RESOURCE_SELECT_LIST__ -->".equals(token))
+                        replacedLine = replacedLine.replaceAll("<!-- __JMAKI_RESOURCE_SELECT_LIST__ -->", jmakiResSelList+"\n<!-- __JMAKI_RESOURCE_SELECT_LIST__ -->");
+                     else if("<!-- __JMAKI_RESOURCE_TAG_LIST__ -->".equals(token))
+                        replacedLine = replacedLine.replaceAll("<!-- __JMAKI_RESOURCE_TAG_LIST__ -->", jmakiResTagList+"\n<!-- __JMAKI_RESOURCE_TAG_LIST__ -->");
                 }
             } else if(root != null){
                 String resourceName = r.getName();
@@ -1006,6 +1008,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
         }
         
         private String createMethod(Method m, String object, String pkg) {
+            object = "rjsSupport.";
             if (m.getType() == MethodType.GET) {
                 return createGetMethod(m, object);
             } else if (m.getType() == MethodType.POST) {
@@ -1037,7 +1040,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
             for(String mimeType:mimeTypes) {
                 mimeType = mimeType.replaceAll("\"", "").trim();
                 sb.append("   " + createMethodName(m, mimeType, length) + " : function() {\n" +
-                        "      return "+object+"get_(this.uri, '" +mimeType+ "');\n" +
+                        "      return "+object+"get(this.uri, '" +mimeType+ "');\n" +
                         "   },\n\n");
             }
             String s = sb.toString();
@@ -1054,7 +1057,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
             for(String mimeType:mimeTypes) {
                 mimeType = mimeType.replaceAll("\"", "").trim();
                 sb.append("   " + createMethodName(m, mimeType, length) + " : function(content) {\n" +
-                        "      return "+object+"post_(this.uri, '" + mimeType + "', content);\n" +
+                        "      return "+object+"post(this.uri, '" + mimeType + "', content);\n" +
                         "   },\n\n");
             }
             String s = sb.toString();
@@ -1071,7 +1074,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
             for(String mimeType:mimeTypes) {
                 mimeType = mimeType.replaceAll("\"", "").trim();
                 sb.append("   " + createMethodName(m, mimeType, length) + " : function(content) {\n" +
-                        "      return "+object+"put_(this.uri, '" + mimeType + "', content);\n" +
+                        "      return "+object+"put(this.uri, '" + mimeType + "', content);\n" +
                         "   },\n\n");
             }
             String s = sb.toString();
@@ -1083,7 +1086,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
         
         private String createDeleteMethod(Method m, String object) {
             return "   " + RestUtils.escapeJSReserved(m.getName()) + " : function() {\n" +
-                    "      return "+object+"delete__(this.uri);\n" +
+                    "      return "+object+"delete_(this.uri);\n" +
                     "   }";
         }
         
@@ -1134,10 +1137,10 @@ public class ClientStubsGenerator extends AbstractGenerator {
         
         protected String replaceTokens(String line, String object, String pkg) {
             String replacedLine = line;
-            replacedLine = replacedLine.replaceAll("__INCLUDE_JS_SCRIPTS__", includeJs);
-            replacedLine = replacedLine.replaceAll("__LIBS_JS_SCRIPTS__", libsJs);
-            replacedLine = replacedLine.replaceAll("__RESOURCES_DOJO_SCRIPTS__", resourcesDojo);
-            replacedLine = replacedLine.replaceAll("__REQUIRE_DOJO_SCRIPTS__", requireDojo);
+            replacedLine = replacedLine.replaceAll("//__INCLUDE_JS_SCRIPTS__", includeJs+"\n//__INCLUDE_JS_SCRIPTS__");
+            replacedLine = replacedLine.replaceAll("//__LIBS_JS_SCRIPTS__", libsJs+"\n//__LIBS_JS_SCRIPTS__");
+            replacedLine = replacedLine.replaceAll("//__RESOURCES_DOJO_SCRIPTS__", resourcesDojo+"\n//__RESOURCES_DOJO_SCRIPTS__");
+            replacedLine = replacedLine.replaceAll("//__REQUIRE_DOJO_SCRIPTS__", requireDojo+"\n//__REQUIRE_DOJO_SCRIPTS__");
             return super.replaceTokens(replacedLine, object, pkg);
         }
     }

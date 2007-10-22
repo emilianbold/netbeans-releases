@@ -11,9 +11,11 @@
 	<script type="text/javascript" src="../../resources/libs/dojo/v0.4.3/djd43.js"></script>
         <script type="text/javascript" src="./Support.js"></script>
 	<script type="text/javascript">
+		var rjsConfig = {
+			isDebug: true
+		};
                 var store = "__CONTAINER_NAME__";
-                var baseUrl2 = "http://localhost:8080/__PROJECT_NAME__/resources/";
-                var storeUrl = baseUrl2 + "__CONTAINER_PATH_NAME__/";
+                var storeUrl = "http://localhost:8080/__PROJECT_NAME__/resources/__CONTAINER_PATH_NAME__/";
 		function loadResourcesTable() {
                     var restStore = eval('new rdj.data.'+store+'Store({serviceUrl:"'+storeUrl+'"})');
                     var tableElement = djd43.byId("content");
@@ -24,8 +26,9 @@
 
                 function changeResource() {
                     var sel = djd43.byId("resourceSel");
-                    store = sel.value;
-                    storeUrl = baseUrl2 + store.substring(0,1).toLowerCase()+store.substring(1) + "/";
+                    var selVals = sel.value.split(';');
+                    storeUrl = selVals[0];
+                    store = selVals[1];
                     var actions = djd43.byId("actions");
                     if(actions != null)
                         actions.innerHTML = '';
@@ -40,7 +43,9 @@
 	<h2>Resources table widget</h2>
         Select Resource: 
         <select id='resourceSel' name='resourceSel' onchange='javascript:changeResource();'>
-__DOJO_RESOURCE_SELECT_LIST__
+<!--Do not remove - Begin -->
+<!-- __DOJO_RESOURCE_SELECT_LIST__ -->
+<!--Do not remove - Begin -->
         </select>
         <br/>
         <br/>

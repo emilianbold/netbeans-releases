@@ -1,13 +1,14 @@
 djd43.registerModulePath("rdj", "../../../../../dojo/rest/rdj"); //relative to djd43.js
-__REQUIRE_DOJO_SCRIPTS__
+//Do not Remove -- Begin
+//__REQUIRE_DOJO_SCRIPTS__
+//Do not Remove -- End
 djd43.require("rdj.widget.ResourcesTable");
 djd43.hostenv.writeIncludes();
 
-var ids = [];
+var resourceIds = [];
 var resourcesTable;
 var restStore;
-var table;
-var actions;
+var rdjTable;
 
 djd43.provide("rdj.includeJS");
 rdj.includeJS = function(file) {
@@ -34,11 +35,19 @@ rdj.includeCSS = function(file) {
     document.getElementsByTagName("head")[0].appendChild(scriptTag);
 }
 
+djd43.provide("rdj.init");
+rdj.init = function() {
+    rdj.includeJS('../rjs/Support.js');
+//Do not Remove -- Begin
+//__INCLUDE_JS_SCRIPTS__
+//Do not Remove -- End
+    rdj.includeCSS('../__CONTAINER_PATH_NAME__table/component.css');
+    rjsSupport.debug('Rest scripts initialized...');
+}
+
 djd43.provide("rdj.displayResourcesTable");
 rdj.displayResourcesTable = function(datastore, query, tableElement) {
-    rdj.includeJS('../rjs/Support.js');
-__INCLUDE_JS_SCRIPTS__
-    rdj.includeCSS('../__CONTAINER_PATH_NAME__table/component.css');
+    rdj.init();
     var dataInSimpleStoreFormat = [];
     var columnsInResourcesTableFormat = null;
     var addRow = function(item, result) {
@@ -50,7 +59,7 @@ __INCLUDE_JS_SCRIPTS__
                     var value = datastore.get(item, attribute);
                     object[attribute] = value;
             }
-            ids.push(object[attributes[0]]);
+            resourceIds.push(object[attributes[0]]);
             dataInSimpleStoreFormat.push(object);
             if (!columnsInResourcesTableFormat) {
                     columnsInResourcesTableFormat = [];
@@ -61,7 +70,7 @@ __INCLUDE_JS_SCRIPTS__
             }
     };
     restStore = datastore;
-    table = tableElement;
+    rdjTable = tableElement;
     var result = datastore.find({query:query, sync:true, onnext:addRow});	
     resourcesTable = djd43.widget.createWidget("rdj:ResourcesTable", {valueField:"Id"}, tableElement);
     for (var i in columnsInResourcesTableFormat) {
@@ -111,11 +120,11 @@ djd43.provide("rdj.deleteResource");
 rdj.deleteResource = function () {
     var a = resourcesTable.getSelectedData();
     restStore.deleteItem(a);
-    table.innerHTML = '';
+    rdjTable.innerHTML = '';
     var actions2 = djd43.byId("actions");
     if(actions2 != null)
         actions2.innerHTML = '';
-    rdj.displayResourcesTable(restStore, null, table);
+    rdj.displayResourcesTable(restStore, null, rdjTable);
     resourcesTable.selectByValue('1');
 }
 
@@ -125,12 +134,16 @@ rdj.addResource = function () {
         attribute: "Id"   
     }
     var id = 1000+restStore.getSize()+1;
-    restStore.newItem({Id: id}, kwArgs);
-    restStore.save({sync: true, Id: id, method: "post"});
-    table.innerHTML = '';
+    var newId = '';
+    while(newId == '') {
+        newId = prompt("Please provide Id for new item: ", "");
+    }
+    restStore.newItem({Id: newId}, kwArgs);
+    restStore.save({sync: true, Id: newId, method: "post"});
+    rdjTable.innerHTML = '';
     var actions2 = djd43.byId("actions");
     if(actions2 != null)
         actions2.innerHTML = '';
-    rdj.displayResourcesTable(restStore, null, table);
+    rdj.displayResourcesTable(restStore, null, rdjTable);
     resourcesTable.selectByValue('1');
 } 

@@ -9,6 +9,17 @@
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <title>Resource table JMaki widget</title>
+	<!--<script type="text/javascript">
+                var djConfig = {
+                        isDebug: true,
+                        debugAtAllCosts: true
+		};
+	</script>-->
+ 	<script type="text/javascript">
+		var rjsConfig = {
+                    isDebug: true
+		};
+	</script>
     </head>
     <body>
         <% 
@@ -26,10 +37,14 @@
         <form name="resourceForm" action="./TestResourcesTable.jsp" method="post">
             Select Resource:
             <select name=r  onchange='javascript:submitForm();'>
-__JMAKI_RESOURCE_SELECT_LIST__
+<!--Do not remove - Begin -->
+<!-- __JMAKI_RESOURCE_SELECT_LIST__ -->
+<!--Do not remove - Begin -->
             </select>
         </form>
         <br/><br/>
-__JMAKI_RESOURCE_TAG_LIST__
+<!--Do not remove - Begin -->
+<!-- __JMAKI_RESOURCE_TAG_LIST__ -->
+<!--Do not remove - Begin -->
     </body>
 </html>

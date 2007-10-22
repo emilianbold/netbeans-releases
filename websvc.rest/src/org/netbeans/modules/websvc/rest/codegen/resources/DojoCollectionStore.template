@@ -106,23 +106,23 @@ djd43.declare("rdj.data.__CONTAINER_NAME__Store", djd43.data.core.RemoteStore, {
         } else {
             if(this._ref__CONTAINER_ITEM_NAME__ != null) {
                 for(var item in this._added) {
-                     var ci = this._ref__CONTAINER_ITEM_NAME__;
-                     ci.initialized = true;
-                     ci.uri = this._serverSaveUrl+id+'/';
-                     var fields = ci.getFields();//first field is Id, second is uri
-                     if(typeof ci[fields[0]] == "object") {
-                        var id = ''+this.getSize()+1;
+                    var ci = this._ref__CONTAINER_ITEM_NAME__;
+                    ci.initialized = true;
+                    ci.uri = this._serverSaveUrl+id+'/';
+                    var fields = ci.getFields();//first field is Id, second is uri
+                    if(typeof ci[fields[0]] == "object") {
+                        var ids = id.split(',');
+                        var count = 0;
                         for(var k in ci[fields[0]]) {
-                            if(ci[fields[0]][k].length > id.length)
-                                ci[fields[0]][k] += id;
+                            ci[fields[0]][k] = ids[count++];
                         }
-                     } else {
+                    } else {
                         ci[fields[0]] = id;
-                     }
-                     for(var j=1;j<fields.length;j++) {
+                    }
+                    for(var j=1;j<fields.length;j++) {
                         var f = fields[j];
                         ci[f] = this._refData[f];
-                     }
+                    }
                     var c = new __CONTAINER_NAME__(this._serverSaveUrl);
                     var status = c.flush(ci);
                     if(status) {
@@ -137,6 +137,77 @@ djd43.declare("rdj.data.__CONTAINER_NAME__Store", djd43.data.core.RemoteStore, {
             requestKw.headers = {"Accept" : "application/json"}; 
             requestKw.mimetype = "application/json";   
         }        
+}, find:function (keywordArgs) {
+	var result = null;
+	if (keywordArgs instanceof djd43.data.core.Result) {
+		result = keywordArgs;
+		result.store = this;
+	} else {
+		result = new djd43.data.core.Result(keywordArgs, this);
+	}
+	var query = result.query;
+	var self = this;
+	var bindfunc = function (type, data, evt) {
+		var scope = result.scope || dj_global;
+		if (type == "load") {
+			result.resultMetadata = self._resultToQueryMetadata(data);
+			var dataDict = self._resultToQueryData(data);
+			if (result.onbegin) {
+				result.onbegin.call(scope, result);
+			}
+			var count = 0;
+			var resultData = [];
+			var newItemCount = 0;
+			for (var key in dataDict) {
+				if (result._aborted) {
+					break;
+				}
+				if (!self._deleted[key]) {
+					var values = dataDict[key];
+					var attributeDict = self._remoteToLocalValues(values);
+					var existingValue = self._data[key];
+					var refCount = 1;
+					if (existingValue) {
+						refCount = ++existingValue[1];
+					} else {
+						newItemCount++;
+					}
+					self._data[key] = [attributeDict, refCount];
+					resultData.push(key);
+					count++;
+					if (result.onnext) {
+						result.onnext.call(scope, key, result);
+					}
+				}
+			}
+			self._results[self._queryToQueryKey(query)] = resultData;
+			self._numItems += newItemCount;
+			result.length = count;
+			if (result.saveResult) {
+				result.items = resultData;
+			}
+			if (!result._aborted && result.oncompleted) {
+				result.oncompleted.call(scope, result);
+			}
+		} else {
+			if (type == "error" || type == "timeout") {
+				djd43.debug("find error: " + djd43.json.serialize(data));
+                                rjsSupport.debug('__CONTAINER_NAME__Store.find() returned error: '+
+                                    djd43.json.serialize(data)+ '\nPlease check the url: '+self._serverQueryUrl+
+                                        ' \nor the server logs for details.');
+				if (result.onerror) {
+					result.onerror.call(scope, data);
+				}
+			}
+		}
+	};
+	var bindKw = keywordArgs.bindArgs || {};
+	bindKw.sync = result.sync;
+	bindKw.handle = bindfunc;
+	this._setupQueryRequest(result, bindKw);
+	var request = djd43.io.bind(bindKw);
+	result._abortFunc = request.abort;
+	return result;
 }, deleteItem:function (item) {
         var id = item['Id'];
 	var ci = new __CONTAINER_ITEM_NAME__(this._serverSaveUrl+id+'/');

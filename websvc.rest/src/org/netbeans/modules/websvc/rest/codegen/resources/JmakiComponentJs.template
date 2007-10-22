@@ -17,9 +17,7 @@ jmaki.widgets.dojo.rest.__CONTAINER_PATH_NAME__table.Widget = function(wargs) {
     
     var container = document.getElementById(uuid);
     var table;
-    var counter = 0;    
-    
-    // FIXME: this code can be removed for 1.0 release
+    var counter = 0;
     var showedModelWarning = false;
     
     function showModelDeprecation() {
@@ -34,6 +32,8 @@ jmaki.widgets.dojo.rest.__CONTAINER_PATH_NAME__table.Widget = function(wargs) {
     function genId() {
         return wargs.uuid + "_nid_" + counter++;
     }
+
+    rjsSupport.debug('Rest scripts initialized...');
 
     if (wargs.args) {
         if (wargs.args.topic) {

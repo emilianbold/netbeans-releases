@@ -37,6 +37,10 @@ __CONTAINER_NAME__.prototype = {
       if(c != -1) {
          var myObj = eval('('+c+')');
          var __CONTAINER_PATH_NAME__ = myObj.__CONTAINER_PATH_NAME__;
+         if(__CONTAINER_PATH_NAME__ == null || __CONTAINER_PATH_NAME__ == undefined) {
+            rjsSupport.debug('__CONTAINER_PATH_NAME__ is undefined, so skipping init of __CONTAINER_NAME__');
+            return;
+         }
          var refs = __CONTAINER_PATH_NAME__.__CONTAINER_ITEM_PATH_NAME__Ref;
          if(refs != undefined) {
              if(refs.length == undefined) {
@@ -48,6 +52,8 @@ __CONTAINER_NAME__.prototype = {
                     this.initChild(ref, j);
                  }
              }
+         } else {
+            rjsSupport.debug('__CONTAINER_ITEM_PATH_NAME__Ref is undefined, so skipping initChild for __CONTAINER_NAME__');
          }
          this.initialized = true;
       }
@@ -78,9 +84,9 @@ __CONTAINER_NAME__.prototype = {
       for(j=0;j<this.items.length;j++) {
          var c = this.items[j];
          if(j<this.items.length-1)
-            s = s + '{"@uri":"'+c.getUri()+'", "__CONTAINER_ITEM_PATH_NAME__Id":{"$":"'+findIdFromUrl(c.getUri())+'"}},';
+            s = s + '{"@uri":"'+c.getUri()+'", "__CONTAINER_ITEM_PATH_NAME__Id":{"$":"'+rjsSupport.findIdFromUrl(c.getUri())+'"}},';
          else
-            s = s + '{"@uri":"'+c.getUri()+'", "__CONTAINER_ITEM_PATH_NAME__Id":{"$":"'+findIdFromUrl(c.getUri())+'"}}';
+            s = s + '{"@uri":"'+c.getUri()+'", "__CONTAINER_ITEM_PATH_NAME__Id":{"$":"'+rjsSupport.findIdFromUrl(c.getUri())+'"}}';
       }
       if(this.items.length > 1)
           s = s + ']';

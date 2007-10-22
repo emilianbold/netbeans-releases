@@ -37,7 +37,9 @@
            { 'id' : 'dojo', 
              'libs' : [
                    '/resources/dojo/resources/libs/dojo/v0.4.3/djd43.js',
-__LIBS_JS_SCRIPTS__
+//Do not Remove -- Begin
+//__LIBS_JS_SCRIPTS__
+//Do not Remove -- End
                    '../rjs/Support.js'
                ],
                'preload' : 'if (typeof djConfig ==\'undefined\') djConfig = { parseWidgets: false, searchIds: [] };',
@@ -45,7 +47,9 @@ __LIBS_JS_SCRIPTS__
                    '../../resources/libs/dojo/LICENSE',
                    '../../resources/libs/dojo/v0.4.3/src',
                    '../../resources/libs/dojo/v0.4.3/djd43.js',
-__RESOURCES_DOJO_SCRIPTS__
+//Do not Remove -- Begin
+//__RESOURCES_DOJO_SCRIPTS__
+//Do not Remove -- End
                    '../rdj/widget/ResourcesTable.js',
                    '../rdj/Support.js',
                    '../rdj/TestResourcesTable.html',
