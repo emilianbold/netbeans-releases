@@ -326,7 +326,7 @@
     <mapID target="persist_fromdb" url="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/general/persistence_fromdb.html" />
     <mapID target="persist_entityclass" url="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/general/persistence_entityclasses.html" />
     <mapID target="persist_mapping" url="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/general/persistence_mapping.html" />
-    <mapID target="persist_webapp" url="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/general/persistence_webapp.html" />
+    <mapID target="persist_webapp" url="persistence/general/persistence_webapp.html" />
     <mapID target="persist_session" url="persistence/general/persistence_sessionfromentity.html" />
 
     <!-- New File Persistence CSH - includes the create JSF wizard pages -->
