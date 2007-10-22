@@ -75,21 +75,23 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.JDBCDriverDeployer;
 import org.netbeans.modules.tomcat5.progress.ProgressEventSupport;
 import org.netbeans.modules.tomcat5.progress.Status;
 import org.netbeans.modules.tomcat5.util.TomcatProperties;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
  * Tomcat JDBCDriverDeployer implementation.
- * 
+ *
  * @author sherold
  */
 public class TomcatJDBCDriverDeployer implements JDBCDriverDeployer {
-    
+
     private static final Logger LOG = Logger.getLogger(TomcatJDBCDriverDeployer.class.getName());
-    
+
     private final TomcatManager manager;
-    
+
     /** Creates a new instance of TomcatJDBCDriverDeployer */
     public TomcatJDBCDriverDeployer(TomcatManager manager) {
         this.manager = manager;
@@ -99,16 +101,16 @@ public class TomcatJDBCDriverDeployer implements JDBCDriverDeployer {
         return manager.getTomcatProperties().getDriverDeployment();
     }
 
-    public ProgressObject deployJDBCDrivers(Target target, Set<Datasource> datasources) {        
+    public ProgressObject deployJDBCDrivers(Target target, Set<Datasource> datasources) {
         return new DriverDeploymentProgressObject(datasources);
     }
-    
+
     private class DriverDeploymentProgressObject implements ProgressObject, Runnable {
-        
+
         private final ProgressEventSupport eventSupport;
         private final Set<Datasource> datasources;
-        
-        
+
+
         public DriverDeploymentProgressObject(Set<Datasource> datasources) {
             eventSupport = new ProgressEventSupport(TomcatJDBCDriverDeployer.this);
             this.datasources = datasources;
@@ -116,52 +118,45 @@ public class TomcatJDBCDriverDeployer implements JDBCDriverDeployer {
             eventSupport.fireHandleProgressEvent(null, new Status(ActionType.EXECUTE, CommandType.DISTRIBUTE, msg, StateType.RUNNING));
             RequestProcessor.getDefault().post(this);
         }
-    
+
         public void run() {
-            List<URL> jdbcDriverURLs = jdbcDriversToDeploy();
+            List<FileObject> jdbcDriverFiles = jdbcDriversToDeploy();
             // deploy the driers if needed
-            if (jdbcDriverURLs.size() > 0) {
+            if (!jdbcDriverFiles.isEmpty()) {
                 TomcatProperties tp = manager.getTomcatProperties();
-                File catalinaHome = tp.getCatalinaHome();
-                for (URL jarUrl : jdbcDriverURLs) {
+                for (FileObject file : jdbcDriverFiles) {
+                    File libsDir = tp.getLibsDir();
+                    File toJar = new File(libsDir, file.getNameExt());
                     try {
-                        File libsDir = tp.getLibsDir();
-                        File toJar = new File(libsDir, new File(jarUrl.toURI()).getName());
+                        BufferedInputStream is = new BufferedInputStream(file.getInputStream());
                         try {
-                            BufferedInputStream is = new BufferedInputStream(jarUrl.openStream());
+                            String msg = NbBundle.getMessage(TomcatJDBCDriverDeployer.class, "MSG_DeployingJDBCDrivers", toJar.getPath());
+                            eventSupport.fireHandleProgressEvent(null, new Status(ActionType.EXECUTE, CommandType.DISTRIBUTE, msg, StateType.RUNNING));
+                            BufferedOutputStream os = new BufferedOutputStream(new FileOutputStream(toJar));
                             try {
-                                String msg = NbBundle.getMessage(TomcatJDBCDriverDeployer.class, "MSG_DeployingJDBCDrivers", toJar.getPath());
-                                eventSupport.fireHandleProgressEvent(null, new Status(ActionType.EXECUTE, CommandType.DISTRIBUTE, msg, StateType.RUNNING));
-                                BufferedOutputStream os = new BufferedOutputStream(new FileOutputStream(toJar));
-                                try {
-                                    FileUtil.copy(is, os);
-                                } finally {
-                                    os.close();
-                                }
+                                FileUtil.copy(is, os);
                             } finally {
-                                is.close();
+                                os.close();
                             }
-                        } catch (IOException e) {
-                            LOG.log(Level.INFO, null, e);
-                            String msg = NbBundle.getMessage(TomcatJDBCDriverDeployer.class, "MSG_DeployingJDBCDriversFailed", toJar.getPath(), libsDir.getPath());
-                            eventSupport.fireHandleProgressEvent(null, new Status(ActionType.EXECUTE, CommandType.DISTRIBUTE, msg, StateType.FAILED));
-                            return;
+                        } finally {
+                            is.close();
                         }
-                    } catch (URISyntaxException e) {
-                        LOG.log(Level.WARNING, null, e);
+                    } catch (IOException e) {
+                        LOG.log(Level.INFO, null, e);
+                        String msg = NbBundle.getMessage(TomcatJDBCDriverDeployer.class, "MSG_DeployingJDBCDriversFailed", toJar.getPath(), libsDir.getPath());
+                        eventSupport.fireHandleProgressEvent(null, new Status(ActionType.EXECUTE, CommandType.DISTRIBUTE, msg, StateType.FAILED));
                         return;
                     }
-
                 }
                 // set the restart flag
                 manager.setNeedsRestart(true);
             }
             eventSupport.fireHandleProgressEvent(null, new Status(ActionType.EXECUTE, CommandType.DISTRIBUTE, "", StateType.COMPLETED)); // NOI18N
         }
-        
+
         /** Returns a list of jdbc drivers that need to be deployed. */
-        private List<URL> jdbcDriversToDeploy() {
-            List<URL> jdbcDriverURLs = new ArrayList<URL>();
+        private List<FileObject> jdbcDriversToDeploy() {
+            List<FileObject> jdbcDriverFiles = new ArrayList<FileObject>();
             Collection<File> driverCP = getJDBCDriverClasspath();
             for (Datasource datasource : datasources) {
                 String className = datasource.getDriverClassName();
@@ -176,21 +171,30 @@ public class TomcatJDBCDriverDeployer implements JDBCDriverDeployer {
                         String driverClass = databaseConnection.getDriverClass();
                         JDBCDriver[] jdbcDrivers = JDBCDriverManager.getDefault().getDrivers(driverClass);
                         for (JDBCDriver jdbcDriver : jdbcDrivers) {
-                            jdbcDriverURLs.addAll(Arrays.asList(jdbcDriver.getURLs()));
+                            for (URL url : jdbcDriver.getURLs()) {
+                                FileObject file = URLMapper.findFileObject(url);
+                                if (file != null) {
+                                    FileObject archive = FileUtil.getArchiveFile(file);
+                                    if (archive == null) {
+                                        jdbcDriverFiles.add(file);
+                                    } else {
+                                        jdbcDriverFiles.add(archive);
+                                    }
+                                }
+                            }
                         }
                     }
                 }
             }
-            return jdbcDriverURLs;
+            return jdbcDriverFiles;
         }
-        
+
         /** Returns a classpath where the JDBC drivers could be placed */
         private Collection<File> getJDBCDriverClasspath() {
-            Collection<File> result = new ArrayList<File>();
             TomcatProperties tp = manager.getTomcatProperties();
             return Arrays.asList(tp.getLibsDir().listFiles());
         }
-        
+
         public DeploymentStatus getDeploymentStatus() {
             return eventSupport.getDeploymentStatus();
         }
@@ -226,6 +230,6 @@ public class TomcatJDBCDriverDeployer implements JDBCDriverDeployer {
         public void removeProgressListener(ProgressListener progressListener) {
             eventSupport.removeProgressListener(progressListener);
         }
-        
+
     }
 }
