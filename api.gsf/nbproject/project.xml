@@ -96,7 +96,6 @@
                 <friend>org.netbeans.modules.ruby.rspec</friend>
                 <friend>org.netbeans.modules.ruby.hints</friend>
                 <friend>org.netbeans.modules.ruby.extrahints</friend>
-                <friend>org.netbeans.modules.gototype.ruby</friend>
                 <friend>org.netbeans.modules.languages.php</friend>
                 <friend>org.netbeans.modules.languages.erlang.platform</friend>
                 <friend>org.netbeans.modules.javafx.dataloader</friend>

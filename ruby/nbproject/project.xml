@@ -241,6 +241,7 @@
                 <friend>org.netbeans.modules.ruby.extrahints</friend>
                 <friend>org.netbeans.modules.ruby.kit</friend>
                 <friend>org.netbeans.modules.ruby.debugger</friend>
+                <friend>org.netbeans.modules.ruby.javaint</friend>
                 <friend>org.netbeans.modules.spellchecker.bindings.ruby</friend>
                 <package>org.netbeans.modules.ruby</package>
                 <package>org.netbeans.modules.ruby.elements</package>
