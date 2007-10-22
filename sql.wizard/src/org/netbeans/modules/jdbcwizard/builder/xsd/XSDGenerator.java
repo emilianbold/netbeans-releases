@@ -63,7 +63,9 @@ import org.netbeans.modules.jdbcwizard.builder.dbmodel.DBColumn;
 import org.netbeans.modules.jdbcwizard.builder.dbmodel.DBTable;
 import org.netbeans.modules.jdbcwizard.builder.dbmodel.impl.DBColumnImpl;
 import org.netbeans.modules.jdbcwizard.builder.util.XMLCharUtil;
+import org.netbeans.modules.jdbcwizard.builder.util.IOUtil;
 
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -113,7 +115,7 @@ public class XSDGenerator {
 
     private Element mCurrentNode;
 
-    private String mFileName = "";
+    public static String mFileName = "";
 
     private String mRepeatStructFileName = "";
 
