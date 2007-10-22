@@ -827,16 +827,29 @@ public class JavaCompletionProvider implements CompletionProvider {
                 return;
             }
             Tree init = unwrapErrTree(var.getInitializer());
-            if ((init == null || offset <= sourcePositions.getStartPosition(root, init))) {
+            if (init == null) {
                 String text = env.getController().getText().substring((int)sourcePositions.getEndPosition(root, type), offset).trim();
                 if (text.length() == 0) {
                     insideExpression(env, new TreePath(path, type));
                 } else if (text.endsWith("=")) { //NOI18N
                     localResult(env);
-                    addValueKeywords(env);                    
+                    addValueKeywords(env);
                 }
             } else {
-                insideExpression(env, new TreePath(path, init));
+                int pos = (int)sourcePositions.getStartPosition(root, init);
+                if (pos < 0)
+                    return;
+                if (offset <= pos) {
+                    String text = env.getController().getText().substring((int)sourcePositions.getEndPosition(root, type), offset).trim();
+                    if (text.length() == 0) {
+                        insideExpression(env, new TreePath(path, type));
+                    } else if (text.endsWith("=")) { //NOI18N
+                        localResult(env);
+                        addValueKeywords(env);
+                    }
+                } else {
+                    insideExpression(env, new TreePath(path, init));
+                }
             }
         }
         
@@ -4088,7 +4101,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                 }
                 return new Env(offset, prefix, controller, path, sourcePositions, scope);
             } else if (parent != null && parent.getKind() == Tree.Kind.CLASS && tree.getKind() == Tree.Kind.VARIABLE &&
-                    ((VariableTree)tree).getInitializer() != null && orig == path && sourcePositions.getStartPosition(root, ((VariableTree)tree).getInitializer()) <= offset) {
+                    ((VariableTree)tree).getInitializer() != null && orig == path &&
+                    sourcePositions.getStartPosition(root, ((VariableTree)tree).getInitializer()) >= 0 &&
+                    sourcePositions.getStartPosition(root, ((VariableTree)tree).getInitializer()) <= offset) {
                 controller.toPhase(withinAnonymousOrLocalClass(path)? Phase.RESOLVED : Phase.ELEMENTS_RESOLVED);
                 TreeUtilities tu = controller.getTreeUtilities();
                 tree = ((VariableTree)tree).getInitializer();
