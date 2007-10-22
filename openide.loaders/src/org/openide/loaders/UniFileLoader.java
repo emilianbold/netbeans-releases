@@ -55,7 +55,7 @@ import org.openide.util.io.SafeException;
 */
 public abstract class UniFileLoader extends MultiFileLoader {
     /** SUID */
-    static final long serialVersionUID=-6190649471408985837L;
+    private static final long serialVersionUID=-6190649471408985837L;
 
     /** name of property with extensions */
     public static final String PROP_EXTENSIONS = "extensions"; // NOI18N

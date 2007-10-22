@@ -55,7 +55,7 @@ import org.openide.filesystems.*;
 * @author Jaroslav Tulach
 */
 public abstract class MultiFileLoader extends DataLoader {
-    static final long serialVersionUID=1521919955690157343L;
+    private static final long serialVersionUID=1521919955690157343L;
 
 
     /** Creates new multi file loader.

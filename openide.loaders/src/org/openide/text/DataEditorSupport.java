@@ -551,7 +551,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
     */
     public static abstract class Env extends OpenSupport.Env implements CloneableEditorSupport.Env {
         /** generated Serialized Version UID */
-        static final long serialVersionUID = -2945098431098324441L;
+        private static final long serialVersionUID = -2945098431098324441L;
 
         /** The file object this environment is associated to.
         * This file object can be changed by a call to refresh file.
