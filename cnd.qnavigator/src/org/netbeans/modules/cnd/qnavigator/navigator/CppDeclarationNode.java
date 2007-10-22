@@ -81,11 +81,10 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
     private CsmFile file;
     private boolean isFriend;
     private CsmFileModel model;
+    private String htmlDisplayName;
+    
     private CppDeclarationNode(CsmOffsetableDeclaration element, CsmFileModel model) {
-        super(new NavigatorChildren(element, model));
-        object = element;
-        file = element.getContainingFile();
-        this.model = model;
+	this(element, model, null);
     }
 
     private CppDeclarationNode(CsmOffsetableDeclaration element, CsmFileModel model, CsmCompoundClassifier classifier) {
@@ -93,6 +92,7 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
         object = element;
         file = element.getContainingFile();
         this.model = model;
+	this.htmlDisplayName = createHtmlDisplayName();
     }
     
     private CppDeclarationNode(Children children, CsmOffsetable element, CsmFileModel model) {
@@ -136,19 +136,30 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
 
     @Override
     public String getHtmlDisplayName() {
+	return htmlDisplayName;
+    }
+    
+    private String createHtmlDisplayName() {
         if (CsmKindUtilities.isFunctionDefinition(getCsmObject())) {
-            CsmFunction function = ((CsmFunctionDefinition)object).getDeclaration();
-            if (function != null && !function.equals(object) &&  CsmKindUtilities.isClassMember(function)){
-                CsmClass cls = ((CsmMember)function).getContainingClass();
-                if (cls != null && cls.getName().length()>0) {
-                    String name = cls.getName().replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;"); // NOI18N
-                    String displayName = getDisplayName().replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;"); // NOI18N
-                    String in = NbBundle.getMessage(getClass(), "LBL_inClass"); //NOI18N                    
-                    return displayName+"<font color='!controlShadow'>  " + in + " " + name; // NOI18N
-                }
-            }
+	    // the try-catch is just a FIXUP for #118212 NPE when opening file from boost...
+	    try { 
+		CsmFunction function = ((CsmFunctionDefinition)object).getDeclaration();
+		if (function != null && !function.equals(object) &&  CsmKindUtilities.isClassMember(function)){
+		    CsmClass cls = ((CsmMember)function).getContainingClass();
+		    if (cls != null && cls.getName().length()>0) {
+			String name = cls.getName().replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;"); // NOI18N
+			String displayName = getDisplayName().replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;"); // NOI18N
+			String in = NbBundle.getMessage(getClass(), "LBL_inClass"); //NOI18N                    
+			return displayName+"<font color='!controlShadow'>  " + in + " " + name; // NOI18N
+		    }
+		}
+	    }
+	    catch( Exception ex ) {
+		// FIXUP for #118212 NPE when opening file from boost...
+		ex.printStackTrace();
+	    }
         }
-        return super.getHtmlDisplayName();
+        return null;
     }
     
     @Override
