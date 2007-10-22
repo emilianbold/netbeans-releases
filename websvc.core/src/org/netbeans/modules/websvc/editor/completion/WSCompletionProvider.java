@@ -174,12 +174,13 @@ public class WSCompletionProvider implements CompletionProvider {
             String prefix = "";
             if (upToOffset && offset > 0) {
                 TokenSequence<JavaTokenId> ts = controller.getTokenHierarchy().tokenSequence(JavaTokenId.language());
+                boolean successfullyMoved = false;
                 if (ts.move(offset) == 0) // When right at the token end
-                    ts.movePrevious(); // Move to previous token
+                    successfullyMoved = ts.movePrevious(); // Move to previous token
                 else
-                    ts.moveNext(); // otherwise move to the token that "contains" the offset
+                    successfullyMoved = ts.moveNext(); // otherwise move to the token that "contains" the offset
                 
-                if (ts.offset() < offset) {
+                if (successfullyMoved && ts.offset() < offset) {
                     prefix = ts.token().toString().substring(0, offset - ts.offset());
                     offset=ts.offset();
                     if (ts.token().id() == JavaTokenId.STRING_LITERAL && prefix.startsWith("\"")) { //NOI18N
