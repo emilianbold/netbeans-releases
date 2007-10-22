@@ -585,7 +585,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
             File file = files[i];
             if (!file.isDirectory()) {
                 Setup setup = new Setup(file, null, currentType);
-                setup.setNode(new DiffNode(setup));
+                setup.setNode(new DiffNode(setup, displayStatuses));
                 newSetups.add(setup);
             }
             addPropertiesSetups(file, newSetups);
@@ -617,7 +617,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
                 }
                 if (propertiesDiffer) {
                     Setup setup = new Setup(base, key, currentType);
-                    setup.setNode(new DiffNode(setup));
+                    setup.setNode(new DiffNode(setup, displayStatuses));
                     newSetups.add(setup);
                 }
             }

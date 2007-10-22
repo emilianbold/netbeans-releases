@@ -68,10 +68,12 @@ class DiffNode extends AbstractNode {
         
     private final Setup     setup;
     private String          htmlDisplayName;
-
-    public DiffNode(Setup setup) {
+    private int displayStatuses;
+    
+    public DiffNode(Setup setup, int displayStatuses) {
         super(Children.LEAF, Lookups.singleton(setup));
         this.setup = setup;
+        this.displayStatuses = displayStatuses;
         setName(setup.getBaseFile().getName());
         initProperties();
         refreshHtmlDisplayName();
@@ -190,7 +192,9 @@ class DiffNode extends AbstractNode {
         }
 
         public Object getValue() throws IllegalAccessException, InvocationTargetException {
-            return setup.getInfo().getStatusText();
+            FileInformation finfo =  setup.getInfo();
+            finfo.getEntry(setup.getBaseFile());  // XXX not interested in return value, side effect loads ISVNStatus structure
+            return finfo.getStatusText(displayStatuses);            
         }
     }
 }
