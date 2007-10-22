@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.java.editor.rename;
 
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import java.awt.Color;
 import java.awt.event.KeyEvent;
@@ -236,6 +237,22 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
         });
         
         TreePath path = info.getTreeUtilities().pathFor(adjustedCaret[0]);
+        
+        //correction for int something[]:
+        if (path != null && path.getParentPath() != null) {
+            Kind leafKind = path.getLeaf().getKind();
+            Kind parentKind = path.getParentPath().getLeaf().getKind();
+            
+            if (leafKind == Kind.ARRAY_TYPE && parentKind == Kind.VARIABLE) {
+                long typeEnd = info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), path.getLeaf());
+                long variableEnd = info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), path.getLeaf());
+                
+                if (typeEnd == variableEnd) {
+                    path = path.getParentPath();
+                }
+            }
+        }
+        
         Element el = info.getTrees().getElement(path);
         
         if (el == null) {
