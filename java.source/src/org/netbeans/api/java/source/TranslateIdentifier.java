@@ -63,8 +63,9 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
     private final boolean copyComments;
     private final boolean resolveImports;
     private final TokenSequence<JavaTokenId> seq;
-    private Token<JavaTokenId> tokenAlreadyAdded;
     private final CommentHandlerService commentService;
+    private int tokenIndexAlreadyAdded = -1;
+    
     
     public TranslateIdentifier(final WorkingCopy copy, 
             final boolean copyComments, 
@@ -77,7 +78,6 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
         this.seq = seq;
         this.copyComments = copyComments;
         this.resolveImports = resolveImports;
-        this.tokenAlreadyAdded = null;
         this.commentService = CommentHandlerService.instance(copy.getJavacTask().getContext());
     }
 
@@ -660,11 +660,11 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
         Token<JavaTokenId> token;
         boolean b = false;
         while (seq.moveNext() && nonRelevant.contains((token = seq.token()).id())) {
-            if (tokenAlreadyAdded == token) {
+            if (seq.index() <= tokenIndexAlreadyAdded) {
                 return;
             } else {
                 if (!b) {
-                    tokenAlreadyAdded = token;
+                    tokenIndexAlreadyAdded = seq.index();
                     b = true;
                 }
             }

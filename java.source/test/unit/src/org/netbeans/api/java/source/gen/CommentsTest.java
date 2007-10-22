@@ -373,6 +373,7 @@ public class CommentsTest extends GeneratorTest {
         String golden =
             "import java.io.File;\n" +
             "public class Test {\n" +
+            "\n" +
             "    /**\n" +
             "     * comment\n" +
             "     * @return 1\n" +
@@ -382,7 +383,6 @@ public class CommentsTest extends GeneratorTest {
             "        // case name where null will return to the same page.\n" +
             "        return 1;\n" +
             "    }\n" +
-            "\n" +
             "}\n";
 
         JavaSource src = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
@@ -401,7 +401,7 @@ public class CommentsTest extends GeneratorTest {
                 ClassTree origClassTree = wc.getTrees().getTree(originClass);
                 Tree method = origClassTree.getMembers().get(1);
                 assertNotNull(method);
-                
+                method = GeneratorUtilities.get(wc).importComments(method, wc.getTrees().getPath(originClass).getCompilationUnit());
                 wc.rewrite(clazz, make.addClassMember(clazz, method));
             }
 
@@ -663,7 +663,10 @@ public class CommentsTest extends GeneratorTest {
                 Element e = workingCopy.getElements().getTypeElement("Test");
                 ClassTree newClazz = (ClassTree) workingCopy.getTrees().getTree(e);
                 CompilationUnitTree secondCut = workingCopy.getTrees().getPath(e).getCompilationUnit();
-                newClazz = make.addClassMember(clazz, GeneratorUtilities.get(workingCopy).importComments(newClazz.getMembers().get(1), secondCut));
+                newClazz = make.addClassMember(
+                        clazz, 
+                        GeneratorUtilities.get(workingCopy).importComments(newClazz.getMembers().get(1), secondCut)
+                );
                 workingCopy.rewrite(clazz, newClazz);
             }
 
