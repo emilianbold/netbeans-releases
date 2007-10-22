@@ -176,6 +176,10 @@ public class HgModuleConfig {
         return userName;
     }
 
+    public void addHgkExtension() {
+        HgConfigFiles.getInstance().setProperty("hgext.hgk", "");
+    }
+    
     public void setUserName(String name) {
         HgConfigFiles.getInstance().setUserName(name);
     }

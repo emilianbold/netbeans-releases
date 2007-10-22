@@ -150,6 +150,8 @@ public class HgCommand {
     private static final String HG_MERGE_FORCE_CMD = "-f"; // NOI18N
     private static final String HG_MERGE_ENV = "EDITOR=success || $TEST -s"; // NOI18N
 
+    private static final String HG_HGK_PATH_SOLARIS10_ENV = "PATH=/usr/bin:/usr/sbin:/usr/demo/mercurial"; // NOI18N
+    
     private static final String HG_PULL_CMD = "pull"; // NOI18N
     private static final String HG_UPDATE_CMD = "-u"; // NOI18N
     private static final String HG_PUSH_CMD = "push"; // NOI18N
@@ -532,13 +534,23 @@ public class HgCommand {
     public static List<String> doView(File repository) throws HgException {
         if (repository == null) return null;
         List<String> command = new ArrayList<String>();
+        List<String> env = new ArrayList<String>();
 
         command.add(getHgCommand());
         command.add(HG_VIEW_CMD);
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
+        
+        List<String> list;
 
-        List<String> list = exec(command);
+        if(System.getProperty("os.name").equals("SunOS")){
+            env.add(HG_HGK_PATH_SOLARIS10_ENV);
+            list = execEnv(command, env);
+        }else{
+            list = exec(command);
+        }
+        System.out.println("VIEW: " + env + "  " + list);
+
         if (!list.isEmpty()) {
             if (isErrorNoView(list.get(list.size() -1))) {
                 throw new HgException(NbBundle.getMessage(HgCommand.class, "MSG_WARN_NO_VIEW_TEXT"));
@@ -923,7 +935,7 @@ public class HgCommand {
         command.add(HG_OPT_CWD_CMD);
         command.add(repository.getAbsolutePath());
 
-        command.add(sourceFile.getAbsolutePath().substring(repository.getAbsolutePath().length()+1));
+        command.add(sourceFile.getAbsolutePath().substring(repository.getAbsolutePath().length()+1));            
         command.add(destFile.getAbsolutePath().substring(repository.getAbsolutePath().length()+1));
         
         List<String> list = exec(command);
@@ -1763,12 +1775,14 @@ public class HgCommand {
                 Mercurial.LOG.log(Level.FINE, "execEnv(): " + command); // NOI18N
             }
             if(env != null && env.size() > 0){
-                proc = Runtime.getRuntime().exec(
-                    command.toArray(new String[command.size()]),
-                    env.toArray(new String[env.size()]));
-            }else{
-                proc = Runtime.getRuntime().exec(
-                    command.toArray(new String[command.size()]));
+                ProcessBuilder pb = new ProcessBuilder(command);
+                Map<String, String> envOrig = pb.environment();
+                for(String s: env){
+                    envOrig.put(s.substring(0,s.indexOf('=')), s.substring(s.indexOf('=')+1)); 
+                }
+                proc = pb.start();
+            }else{ 
+                proc = new ProcessBuilder(command).start();
             }
 
             input = new BufferedReader(new InputStreamReader(proc.getInputStream()));

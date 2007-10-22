@@ -121,6 +121,8 @@ public class Mercurial {
         fileStatusCache = new FileStatusCache();
         mercurialAnnotator = new MercurialAnnotator();
         mercurialInterceptor = new MercurialInterceptor();
+        // Need hgext.hgk added to user's .hgrc file to support Mercurial > View
+        HgModuleConfig.getDefault().addHgkExtension();
     }
 
     private void setDefaultPath() {

@@ -114,6 +114,11 @@ public class HgConfigFiles {
             setProperty("paths", "default-push", value); // NOI18N
         } else if (name.equals("default-pull")) { // NOI18N
             setProperty("paths", "default", value); // NOI18N
+        } else if (name.equals("hgext.hgk")) { // NOI18N
+            // Allow hgext.hgk to be set to some other user defined value if required
+            if(getProperty("extensions", "hgext.hgk").equals("")){
+                setProperty("extensions", "hgext.hgk", value, true); // NOI18N
+            }
         }
     }
  
