@@ -76,7 +76,8 @@ public class ETLDataLoader extends UniFileLoader {
     private static final long serialVersionUID = -4579746482156152493L;
     
     public ETLDataLoader() {
-        super("org.netbeans.modules.etl.ETLDataObject");
+         super("org.netbeans.modules.etl.ui.ETLDataObject");// Fix for IllegalStateException when loading netbeans
+		//super("org.netbeans.modules.etl.ETLDataObject");
     }
     
    /** Does initialization. Initializes display name,
