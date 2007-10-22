@@ -57,6 +57,7 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.api.webmodule.ExtenderController.Properties;
 import org.netbeans.modules.web.jsf.JSFUtils;
@@ -581,7 +582,15 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
      */
     private void initLibSettings(boolean webModule25Version, String serverInstanceID) {
         try {
-            File[] cp = Deployment.getDefault().getJ2eePlatform(serverInstanceID).getClasspathEntries();
+            File[] cp;
+            J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(serverInstanceID);
+            // j2eeplatform can be null, when the target server is not accessible.
+            if (platform != null) {
+                cp = platform.getClasspathEntries();
+            }
+            else {
+                cp = new File[0];
+            }
             boolean isJSF = Util.containsClass(Arrays.asList(cp), JSFUtils.FACES_EXCEPTION);
             boolean isJSF12 = Util.containsClass(Arrays.asList(cp), JSFUtils.JSF_1_2__API_SPECIFIC_CLASS);
             
