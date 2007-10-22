@@ -156,6 +156,9 @@ public class SwitchToAction extends ContextAction {
         Subversion.getInstance().getStatusCache().refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
         if(!file.isFile()) {
             File[] files = file.listFiles();
+            if(files == null) {
+                return;
+            }
             for (int i = 0; i < files.length; i++) {
                 refreshRecursively(files[i]);
             }

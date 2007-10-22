@@ -76,6 +76,9 @@ class DiskMapTurboProvider implements TurboProvider {
         if (cachedStoreSerial != storeSerial || cachedValues == null) {
             cachedValues = new HashMap<File, FileInformation>();
             File [] files = cacheStore.listFiles();
+            if(files == null) {
+                return Collections.unmodifiableMap(cachedValues);
+            }
             for (int i = 0; i < files.length; i++) {
                 File file = files[i];
                 if (file.getName().endsWith(".bin") == false) { // NOI18N

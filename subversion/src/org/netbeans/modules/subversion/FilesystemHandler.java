@@ -374,9 +374,11 @@ class FilesystemHandler extends VCSInterceptor {
         if(file.isFile()) return new ArrayList<File>(0);        
         List<File> ret = new ArrayList<File>();     
         File[] files = file.listFiles();
-        for(File f : files) {
-            ret.add(f);
-            ret.addAll(listAllChildren(f));
+        if(files != null) {
+            for(File f : files) {
+                ret.add(f);
+                ret.addAll(listAllChildren(f));
+            }
         }
         return ret;
     }

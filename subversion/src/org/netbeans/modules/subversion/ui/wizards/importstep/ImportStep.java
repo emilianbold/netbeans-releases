@@ -308,6 +308,9 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
         Subversion.getInstance().getStatusCache().refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
         if(!file.isFile()) {
             File[] files = file.listFiles();
+            if(files == null) {
+                return;
+            }
             for (int i = 0; i < files.length; i++) {
                 forceStatusRefresh(files[i]);
             }
