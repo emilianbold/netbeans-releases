@@ -81,7 +81,9 @@ import org.openide.modules.SpecificationVersion;
  * methods is supposed to do.
  */
 public final class CreatedModifiedFilesFactory {
-    
+
+    private CreatedModifiedFilesFactory() {}
+
     static CreatedModifiedFiles.Operation addLoaderSection(
             Project project, String dataLoaderClass, String installBefore) {
         return new AddLoaderSection(project, dataLoaderClass, installBefore);
