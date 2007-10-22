@@ -1367,13 +1367,11 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
             
             if(Action.SMALL_ICON.equals(iconKey)){
                 if (smallIconName != null) {
-                    //revert: 110933 iconEditor.setAsText(decodeIconPath(smallIconName,action));
-                    iconEditor.setAsText(smallIconName);
+                    iconEditor.setAsText(removeInitialSlash(smallIconName));
                 }
             } else {
                 if (largeIconName != null) {
-                    //revert: 110933 iconEditor.setAsText(decodeIconPath(largeIconName,action));
-                    iconEditor.setAsText(largeIconName);
+                    iconEditor.setAsText(removeInitialSlash(largeIconName));
                 }
             }
             DialogDescriptor dd = new DialogDescriptor(iconEditor.getCustomEditor(), NbBundle.getMessage(ActionPropertyEditorPanel.class, "CTL_SelectIcon_Title"));
@@ -1381,13 +1379,12 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
                 IconEditor.NbImageIcon nbIcon = (IconEditor.NbImageIcon) iconEditor.getValue();
                 Icon icon = nbIcon != null ? nbIcon.getIcon() : null;
                 iconButton.setIcon(icon);
-                iconButton.setText(icon == null ? "..." : null);
+                iconButton.setText(icon == null ? "..." : null); // NOI18N
                 action.putValue(iconKey, icon);
                 String iconName = nbIcon != null ? nbIcon.getName() : null;
-                /* revert: 110933
-                if(iconName != null && !iconName.startsWith("/")) {
-                    iconName = "/"+iconName;
-                }*/
+                if (iconName != null && !iconName.startsWith("/")) { // NOI18N
+                    iconName = "/"+iconName; // NOI18N
+                }
                 if(Action.SMALL_ICON.equals(iconKey)) {
                     smallIconName = iconName;
                 } else {
@@ -1397,6 +1394,13 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
                 actionPropertiesUpdated = true;
             }
         }
+    }
+    
+    private String removeInitialSlash(String name) {
+        if ((name != null) && name.startsWith("/")) { // NOI18N
+            name = name.substring(1);
+        }
+        return name;
     }
     
     private void setupAccelField() {
