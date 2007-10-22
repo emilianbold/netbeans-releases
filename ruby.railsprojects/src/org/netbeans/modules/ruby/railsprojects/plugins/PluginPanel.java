@@ -759,21 +759,33 @@ public class PluginPanel extends javax.swing.JPanel {
                         plugins = newPlugins;
                     }
                     Pattern pattern = null;
+                    String lcFilter = null;
                     if ((filter != null) && (filter.indexOf('*') != -1 || filter.indexOf('^') != -1 || filter.indexOf('$') != -1)) {
                         try {
-                            pattern = Pattern.compile(filter);
+                            pattern = Pattern.compile(filter, Pattern.CASE_INSENSITIVE);
                         } catch (PatternSyntaxException pse) {
                             // Don't treat the filter as a regexp
                         }
+                    } else if (filter != null) {
+                        lcFilter = filter.toLowerCase();
                     }
                     for (Plugin plugin : plugins) {
                         if (filter == null || filter.length() == 0) {
                             model.addElement(plugin);
                         } else if (pattern == null) {
-                           if ((plugin.getName().indexOf(filter) != -1) || 
-                                   (plugin.getRepository() != null && plugin.getRepository().indexOf(filter) != -1)) {
+                            if (lcFilter != null) {
+                                String lcPlugin = plugin.getName().toLowerCase();
+                                if (lcPlugin.indexOf(lcFilter) != -1) {
+                                    model.addElement(plugin);
+                                } else if (plugin.getRepository() != null) {
+                                    String lcRepository = plugin.getRepository().toLowerCase();
+                                    if (lcRepository.indexOf(lcFilter) != -1) {
+                                        model.addElement(plugin);
+                                    }
+                                }
+                            } else {
                                 model.addElement(plugin);
-                           }
+                            }
                         } else if (pattern.matcher(plugin.getName()).find() || 
                                 (plugin.getRepository() != null && pattern.matcher(plugin.getRepository()).find())) {
                             model.addElement(plugin);
@@ -842,21 +854,29 @@ public class PluginPanel extends javax.swing.JPanel {
                         repositories = pluginManager.getRepositories(local);
                     }
                     Pattern pattern = null;
+                    String lcFilter = null;
                     if ((filter != null) && (filter.indexOf('*') != -1 || filter.indexOf('^') != -1 || filter.indexOf('$') != -1)) {
                         try {
-                            pattern = Pattern.compile(filter);
+                            pattern = Pattern.compile(filter, Pattern.CASE_INSENSITIVE);
                         } catch (PatternSyntaxException pse) {
                             // Don't treat the filter as a regexp
                         }
+                    } else if (filter != null) {
+                        lcFilter = filter.toLowerCase();
                     }
                     Collections.sort(repositories);
                     for (String repository : repositories) {
                         if (filter == null || filter.length() == 0) {
                             model.addElement(repository);
                         } else if (pattern == null) {
-                           if (repository.indexOf(filter) != -1) {
+                            if (lcFilter != null) {
+                                String lcRepository = repository.toLowerCase();
+                                if (lcRepository.indexOf(lcFilter) != -1) {
+                                    model.addElement(repository);
+                                }
+                            } else {
                                 model.addElement(repository);
-                           }
+                            }
                         } else if (pattern.matcher(repository).find()) {
                             model.addElement(repository);
                         }
