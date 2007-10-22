@@ -253,10 +253,7 @@ public class DesignTimeDataSource implements DataSource, ContextPersistance, Run
                 break;
             }
 
-        if (dbConn != null) {
-            JDBCDriver jdbcDriver = DataSourceResolver.getInstance().findMatchingDriver(dbConn.getDriverClass());
-            urls = jdbcDriver.getURLs();
-            
+        if (dbConn != null) {           
             driverClassName = dbConn.getDriverClass();
             loadDriver();
         }
@@ -825,7 +822,7 @@ public class DesignTimeDataSource implements DataSource, ContextPersistance, Run
     public synchronized void run() {        
         JDBCDriver jdbcDriver = DataSourceResolver.getInstance().findMatchingDriver(driverClassName);
         DatabaseConnection conn = DatabaseConnection.create(jdbcDriver, url, username, username.toUpperCase(), password, true);
-        ConnectionManager.getDefault().showConnectionDialog(conn);
+        ConnectionManager.getDefault().showConnectionDialog(conn);        
     }
     
     public void ensureConnection() {        
