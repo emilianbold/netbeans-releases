@@ -75,7 +75,7 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
     
     public RenameRefactoringUI(CsmObject csmObject) {
         this.origObject = csmObject;
-        this.oldName = CsmRefactoringUtils.getSimpleText(this.origObject);  
+        this.dispOldName = this.oldName = CsmRefactoringUtils.getSimpleText(this.origObject);  
         this.refactoring = new RenameRefactoring(Lookups.singleton(csmObject));
     }
      
