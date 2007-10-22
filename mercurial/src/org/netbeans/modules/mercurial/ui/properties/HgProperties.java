@@ -105,7 +105,6 @@ public class HgProperties implements ActionListener, DocumentListener {
         propTable.getTable().addMouseListener(new TableMouseListener());
         panel.btnAdd.addActionListener(this);
         panel.btnRemove.addActionListener(this);
-        panel.comboName.setEditable(true);
         initPropertyNameCbx();
         refreshProperties();
         
