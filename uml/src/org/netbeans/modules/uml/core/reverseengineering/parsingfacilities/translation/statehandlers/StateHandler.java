@@ -603,15 +603,35 @@ public class StateHandler
 		for(String key : markerValueNames) 
 		{
 		    String value = pToken.getProperty(key);
+                    String posStr = pToken.getProperty(key+"StartPos");
+                    String lengthStr = pToken.getProperty(key+"Length");
+                    long pos = -1;
+                    long length = -1;
+                    if (posStr != null) 
+                    {
+                        try
+                        {
+                            pos = Long.parseLong(posStr);
+                        }
+                        catch (NumberFormatException e) {}
+                    }
+                    if (lengthStr != null) 
+                    {
+                        try
+                        {
+                            length = Long.parseLong(lengthStr);
+                        }
+                        catch (NumberFormatException e) {}
+                    }
 		    if(value != null && value.trim().length() > 0)
 		    {
 			createTokenDescriptor(pNode,
 					      key,
 					      -1,
 					      -1,
-					      -1,
+					      pos,
 					      value,
-					      value.length());
+					      length);
 		    }
 		}		    	       
 	    }

@@ -444,6 +444,17 @@ public class FileBuilder
 	    if (m.type == ModDesc.REMOVE) {
 		continue;
 	    }
+            long addPos = -1;
+            if (m.type == ModDesc.REPLACE 
+                && m.newElem != null 
+                && m.oldElem != null 
+                && m.oldElem.getPosition("Marker-regenbody") > -1 
+                && m.newElem.getPosition("Marker-regenbody") == -1
+                && ElementMatcher.isMarked(m.newElem.getNode())) 
+            {
+                addPos = m.newElem.getPosition("Marker-regen") + m.newElem.getLength("Marker-regen");
+            }
+                
 	    pnt++;
 	    StringBuffer espace = new StringBuffer();
 	    long startPnt = pnt; 
@@ -479,7 +490,11 @@ public class FileBuilder
 			}
 			m.storePatchContent(pc);
 			break;
-		    }
+		    } 
+                    else if (addPos > -1 && pnt == addPos) 
+                    {
+                        espace.append(",regenBody=yes");
+                    }
 		} else {		    
 		    break;
 		}		    		

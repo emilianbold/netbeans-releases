@@ -289,7 +289,12 @@ public class ElementMatcher {
 
     public static boolean isMarked(IElement elem) 
     {
-	String regen = getMarkerValue(elem.getNode(), "regen");
+        return isMarked(elem.getNode());
+    }
+
+    public static boolean isMarked(Node n) 
+    {
+	String regen = getMarkerValue(n, "regen");
 	if (regen != null 
 	    && ( regen.equalsIgnoreCase("yes") 
 		 || regen.equalsIgnoreCase("ok")))
@@ -301,7 +306,16 @@ public class ElementMatcher {
 
     public static boolean isRegenBody(IElement elem) 
     {
-	String regen = getMarkerValue(elem.getNode(), "regenbody");
+	boolean res = isRegenBody(elem.getNode());
+	if (elem instanceof IAttribute) {
+	    return true;
+	}
+        return res;
+    }
+
+    public static boolean isRegenBody(Node n) 
+    {
+	String regen = getMarkerValue(n, "regenbody");
 	if (regen != null) 
 	{
 	    if ( regen.equalsIgnoreCase("yes") 
@@ -315,9 +329,6 @@ public class ElementMatcher {
 	    {
 		return false;
 	    }
-	}
-	if (elem instanceof IAttribute) {
-	    return true;
 	}
 	return false;
     }

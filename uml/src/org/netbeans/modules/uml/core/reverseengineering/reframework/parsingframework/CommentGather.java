@@ -110,7 +110,7 @@ public class CommentGather implements ICommentGather
 	int state = 0;
 	CommonHiddenStreamToken cached1 = null;
 	CommonHiddenStreamToken cached2 = null;
-	Hashtable<String, String> parsedValues = null;
+	Hashtable<String, MarkerKeyTokenDescriptor> parsedValues = null;
 
         while(pHiddenToken != null)
         {
@@ -124,7 +124,7 @@ public class CommentGather implements ICommentGather
 		    processCached = false;
 		    if (type == getSingleLineType()) {
 			if (state == 0 || state == 1) {
-			    parsedValues = new Hashtable<String, String>();
+			    parsedValues = new Hashtable<String, MarkerKeyTokenDescriptor>();
 			}
 			if (state == 0) {
 			    cached1 = null;
@@ -132,14 +132,20 @@ public class CommentGather implements ICommentGather
 			}
 			if (state == 0) {
 			    if (parseEditorFoldComment(pHiddenToken.getText(), false)) {
-				if (parseMarkerComment(pHiddenToken.getText(), parsedValues)) {
+				if (parseMarkerComment(pHiddenToken.getText(), 
+                                                       parsedValues,
+                                                       pHiddenToken.getPosition())) 
+                                {
 				    cached2 = pHiddenToken;
 				    state = 2;
 				} else {
 				    cached1 = pHiddenToken;
 				    state = 1;
 				}			    
-			    } else if (parseMarkerComment(pHiddenToken.getText(), parsedValues)) {
+			    } else if (parseMarkerComment(pHiddenToken.getText(), 
+                                                          parsedValues,
+                                                          pHiddenToken.getPosition())) 
+                            {
 				storeMarkerComment(new CommonHiddenStreamToken[] {pHiddenToken}, 
 						   parsedValues, pDesc);
 				markerFound = true;
@@ -147,7 +153,10 @@ public class CommentGather implements ICommentGather
 				processAsUsually = true;
 			    }
 			} else if (state == 1) {
-			    if (parseMarkerComment(pHiddenToken.getText(), parsedValues)) {
+			    if (parseMarkerComment(pHiddenToken.getText(), 
+                                                   parsedValues,
+                                                   pHiddenToken.getPosition())) 
+                            {
 				cached2 = pHiddenToken;
 				state = 2;
 			    } else {
@@ -257,15 +266,24 @@ public class CommentGather implements ICommentGather
      *  #[regen=yes,id=C2FEEEAC-CFCD-11D1-8B05-00600806D9B6]
      */
     public static boolean parseMarkerComment(String comment, 
-					     Hashtable<String, String> result) 
+					     Hashtable<String, MarkerKeyTokenDescriptor> result,
+                                             long linePos) 
     {
 	if (comment == null || result == null) {
 	    return false;
 	}
-	String ln = comment.trim();
+        long initPos = linePos;
+        int ws = 0;
+        while(Character.isWhitespace(comment.charAt(ws))) 
+        {
+            ws++;
+        }
+        initPos += ws;
+ 	String ln = comment.trim();
 	int cs = ln.indexOf("//");
 	if (cs == 0 && ln.length() > 5) {
 	    ln = ln.substring(cs + 2).trim();
+            initPos += cs + 2;
 	}
 	if (ln.length() < 3) {
 	    return false;
@@ -279,18 +297,26 @@ public class CommentGather implements ICommentGather
 	    return false;
 	}
 	String values = ln.substring(start, end);
-	StringTokenizer pairs = new StringTokenizer(values, ",");
-	while(pairs.hasMoreTokens()) {
-	    String pair = pairs.nextToken();
+        initPos += start;
+        int pairStart = 0;
+        int commaAt = values.indexOf(",");
+        while(commaAt > -1) {
+	    String pair = values.substring(pairStart, commaAt);
 	    if (pair != null) {
 		pair = pair.trim();
 		int ind = pair.indexOf("=");
 		if (ind > 0) {
 		    String key = pair.substring(0, ind).trim();
 		    String value = pair.substring(ind + 1, pair.length()).trim();
-		    result.put(key, value);
+                    MarkerKeyTokenDescriptor desc = new MarkerKeyTokenDescriptor();
+                    desc.value = value;
+                    desc.length = commaAt - pairStart;
+                    desc.startPos = initPos + pairStart;
+		    result.put(key, desc);
 		}
 	    }
+            pairStart = commaAt + 1;
+            commaAt = values.indexOf(",", pairStart);
 	}
 	return true;
     }
@@ -329,12 +355,15 @@ public class CommentGather implements ICommentGather
 
 
     private void storeMarkerComment(CommonHiddenStreamToken[] pHiddenTokens, 
-				    Hashtable<String, String> parsedValues, 
+				    Hashtable<String, MarkerKeyTokenDescriptor> parsedValues, 
 				    ITokenDescriptor pDesc) 
     {
 	Set<String> keys = parsedValues.keySet();
 	for(String key: keys) {
-            pDesc.addProperty("Marker-"+key.toLowerCase(), parsedValues.get(key));       
+            MarkerKeyTokenDescriptor desc = parsedValues.get(key);
+            pDesc.addProperty("Marker-"+key.toLowerCase(), desc.value);       
+            pDesc.addProperty("Marker-"+key.toLowerCase()+"StartPos", new Long(desc.startPos).toString());       
+            pDesc.addProperty("Marker-"+key.toLowerCase()+"Length", new Integer(desc.length).toString());       
 	}
 
         String commentMarker = "";
@@ -356,6 +385,12 @@ public class CommentGather implements ICommentGather
 	pDesc.addProperty("Marker-CommentStartColumn", String.valueOf(startColumnMarker));
 	pDesc.addProperty("Marker-CommentStartPos", String.valueOf(startPosMarker));
 	pDesc.addProperty("Marker-CommentLength", String.valueOf(lengthMarker + 1));
+    }
+
+    static class MarkerKeyTokenDescriptor {
+        String value;
+        long startPos = -1;
+        int length = -1;
     }
 
 }
