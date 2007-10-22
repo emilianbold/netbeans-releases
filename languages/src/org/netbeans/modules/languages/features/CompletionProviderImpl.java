@@ -65,6 +65,7 @@ import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.languages.Context;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -118,19 +119,25 @@ public class CompletionProviderImpl implements CompletionProvider {
         return new CompletionTaskImpl (component);
     }
 
-    public int getAutoQueryTypes (JTextComponent component, String typedText) {
+       public int getAutoQueryTypes (JTextComponent component, String typedText) {
         if (".".equals(typedText)) { // NOI18N
             Document doc = component.getDocument ();
-            TokenHierarchy tokenHierarchy = TokenHierarchy.get (doc);
+            TokenHierarchy<Document> tokenHierarchy = TokenHierarchy.get (doc);
             if (doc instanceof NbEditorDocument)
                 ((NbEditorDocument) doc).readLock ();
             try {
-                TokenSequence tokenSequence = tokenHierarchy.tokenSequence ();
                 int offset = component.getCaret().getDot();
                 if (offset <= 1) {
                     return 0;
                 }
-                tokenSequence.move(offset - 2);
+                offset = offset - 2; //do Schlieman's magic
+                
+                List<TokenSequence<? extends TokenId>> sequences = tokenHierarchy.embeddedTokenSequences(offset, true);
+                if(sequences.isEmpty()) {
+                    return 0; //no token sequence
+                }
+                TokenSequence tokenSequence = sequences.get(sequences.size() - 1); //get the most embedded
+                tokenSequence.move(offset);
                 if (!tokenSequence.moveNext() && !tokenSequence.movePrevious()) {
                     return 0;
                 }
