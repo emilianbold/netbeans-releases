@@ -264,30 +264,16 @@ public class JbiJarCustomizer extends javax.swing.JPanel {
         ConfigurationDescription buildDescriptions[] = new ConfigurationDescription[] {
             new ConfigurationDescription(
                 "Build",
-                bundle.getString( "LBL_Config_Jar" ), // NOI18N
+                bundle.getString( "LBL_Config_Package_Project" ), // NOI18N
                 ICON_FOLDER + "defaultCategory", //  "build", // NOI18N
                 new CustomizerJarContent(webProperties),
                 null ),
-            /*
-            new ConfigurationDescription(
-                "Build",
-                bundle.getString( "LBL_Config_Build" ), // NOI18N
-                ICON_FOLDER + "build", // NOI18N
-                new CustomizerCompile(jbiProperties),
-                null ),
-            new ConfigurationDescription(
-                "Jar",
-                bundle.getString( "LBL_Config_Jar" ), // NOI18N
-                ICON_FOLDER + "jar", // NOI18N
-                new CustomizerWar(jbiProperties),
-                null ),
-            */
         };
         //=======Start of JBI ==============================================//
         ConfigurationDescription runDescriptions[] = new ConfigurationDescription[] {
             new ConfigurationDescription(
                 "Run",
-                bundle.getString( "LBL_Config_Run" ), // NOI18N
+                bundle.getString( "LBL_Config_Run_Project" ), // NOI18N
                 ICON_FOLDER + "defaultCategory", // "run", // NOI18N
                 new CustomizerRun(webProperties),
                 null ),
@@ -303,14 +289,14 @@ public class JbiJarCustomizer extends javax.swing.JPanel {
                 null ),
             new ConfigurationDescription(
                 "BuildCategoty",
-                "Build",
+                bundle.getString( "LBL_Config_Build" ), // NOI18N
                 ICON_FOLDER + "defaultCategory", // "general", // NOI18N
                 createEmptyLabel( null ),
                 buildDescriptions ),
             //=======Start of JBI ==========================================//
             new ConfigurationDescription(
                 "RunCategoty",
-                "Run",
+                bundle.getString( "LBL_Config_Run" ), // NOI18N
                 ICON_FOLDER + "defaultCategory", // "run", // NOI18N
                 createEmptyLabel( null ),
                 runDescriptions )
