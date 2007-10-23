@@ -192,7 +192,7 @@ public class SunJDBCDriverDeployer implements JDBCDriverDeployer {
                                 if (strUrl.contains("nbinst://")) { // NOI18N
                                     FileObject fo = URLMapper.findFileObject(driverUrl);
                                     if (fo != null) {
-                                        URL localURL = URLMapper.findURL(fo, 1);
+                                        URL localURL = URLMapper.findURL(fo, URLMapper.EXTERNAL);
                                         if (localURL != null) {
                                             URL fileUrl = FileUtil.getArchiveFile(localURL);
                                             drivers.add(fileUrl);
