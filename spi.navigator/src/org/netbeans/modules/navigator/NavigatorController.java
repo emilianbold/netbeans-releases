@@ -162,10 +162,10 @@ public final class NavigatorController implements LookupListener, ActionListener
         TopComponent.getRegistry().addPropertyChangeListener(this);
         panelLookupNodesResult = panelLookup.lookup(CUR_NODES);
         panelLookupNodesResult.addLookupListener(panelLookupListener);
-        
+
         updateContext();
-    }
-    
+            }
+            
     /** Stops listening to selected nodes and active component */
     public void navigatorTCClosed() {
         curNodesRes.removeLookupListener(this);
@@ -228,7 +228,9 @@ public final class NavigatorController implements LookupListener, ActionListener
      * performs coalescing of fast coming changes.
      */
     public void resultChanged(LookupEvent ev) {
-        if (!navigatorTC.equals(WindowManager.getDefault().getRegistry().getActivated())) {
+        if (!navigatorTC.equals(WindowManager.getDefault().getRegistry().getActivated())
+                // #117089: allow node change when we are empty
+                || (curNodes == null || curNodes.isEmpty())) {
             ActNodeSetter nodeSetter = new ActNodeSetter();
             synchronized (NODE_SETTER_LOCK) {
                 if (nodeSetterTask != null) {
