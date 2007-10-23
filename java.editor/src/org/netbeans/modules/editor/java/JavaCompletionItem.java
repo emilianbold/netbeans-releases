@@ -294,7 +294,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         BaseDocument doc = (BaseDocument)c.getDocument();
         String text = getInsertPrefix().toString();
         if (text != null) {
-            boolean completeMethod = text.length() == len && "()".equals(toAdd.trim());
+            boolean completeMethod = text.length() == len && toAdd != null && "()".equals(toAdd.trim());
             int semiPos = toAdd != null && toAdd.endsWith(";") ? findPositionForSemicolon(c) : -2; //NOI18N
             if (semiPos > -2)
                 toAdd = toAdd.length() > 1 ? toAdd.substring(0, toAdd.length() - 1) : null;
