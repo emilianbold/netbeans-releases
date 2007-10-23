@@ -702,7 +702,7 @@ made subject to such option by the copyright holder.
         
         <folder name="NetBeans">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
-            <file name="CS-8.shadow">
+            <file name="DS-8.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-palette-ShowPaletteAction.instance"/>
             </file>
             <file name="S-F5.shadow">
