@@ -101,6 +101,9 @@ made subject to such option by the copyright holder.
             <folder name="system">
                 <file name="SwingAppSystemClasses.txt" url="SwingAppSystemClasses.txt" />
             </folder>
+            <folder name="system_with_project">
+                <file name="SwingAppSystemWithProjectClasses.txt" url="SwingAppSystemWithProjectClasses.txt" />
+            </folder>
         </folder>
     </folder>
 

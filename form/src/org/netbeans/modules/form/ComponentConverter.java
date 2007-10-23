@@ -41,11 +41,16 @@
 
 package org.netbeans.modules.form;
 
+import org.openide.filesystems.FileObject;
+
 /**
+ * Implementation of this interface registered via xml layer can be used to
+ * replace component classes used in meta-components.
+ *
  * @author Tomas Pavek
  */
 public interface ComponentConverter {
 
-    Class getDesignClass(String componentClassName);
-    Class getDesignClass(Class componentClass);
+    Class getDesignClass(String componentClassName, FileObject fileFromProject);
+    Class getDesignClass(Class componentClass, FileObject fileFromProject);
 }

@@ -34,31 +34,56 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JRootPane;
 import org.netbeans.modules.form.ComponentConverter;
+import org.netbeans.modules.form.FormUtils;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  */
 public class ComponentConverterImpl implements ComponentConverter {
 
-    public Class getDesignClass(String componentClassName) {
+    public Class getDesignClass(String componentClassName, FileObject fileFromProject) {
         return null;
     }
 
-    public Class getDesignClass(Class componentClass) {
-        if (org.jdesktop.application.View.class.isAssignableFrom(componentClass)) {
-            return FrameView.class;
-        } else {
-            return null;
+    public Class getDesignClass(Class componentClass, FileObject fileFromProject) {
+        if (isViewClass(componentClass)) {
+            try {
+                // Our FrameView class is registered to be loaded by system
+                // classloader also including the project classpath.
+                return FormUtils.loadClass(FrameView.class.getName(), fileFromProject);
+            } catch (Exception ex) {
+                Logger.getLogger(ComponentConverterImpl.class.getName()).log(Level.INFO, null, ex);
+            } catch (LinkageError ex) {
+                Logger.getLogger(ComponentConverterImpl.class.getName()).log(Level.INFO, null, ex);
+            }
         }
+        return null;
+    }
+
+    private static boolean isViewClass(Class cls) {
+        while (cls != null) {
+            if (cls.getName().equals(org.jdesktop.application.View.class.getName())) {
+                return true;
+            } else {
+                cls = cls.getSuperclass();
+            }
+        }
+        return false;
     }
 
     public static class FrameView extends org.jdesktop.application.FrameView {
         private JRootPane rootPane;
 
         public FrameView() {
-            super(new org.jdesktop.application.Application() { protected void startup() {} });
+            // Ideally we would use the actual application class from the project,
+            // but it may not be compiled or instantiable. We should not call
+            // Application.getInstance() either - that would make the wrong
+            // instance remembered in Application's static field.
+            super(new PlaceholderApp());
         }
 
+        @Override
         public JRootPane getRootPane() {
             if (rootPane == null) {
                 rootPane = new JRootPane();
@@ -68,6 +93,7 @@ public class ComponentConverterImpl implements ComponentConverter {
     }
 
     public static class FrameViewBeanInfo extends SimpleBeanInfo {
+        @Override
         public PropertyDescriptor[] getPropertyDescriptors() {
             try {
                 return new PropertyDescriptor[] {
@@ -80,6 +106,11 @@ public class ComponentConverterImpl implements ComponentConverter {
                 Logger.getLogger(ComponentConverterImpl.class.getName()).log(Level.INFO, null, ex);
                 return null;
             }
+        }
+    }
+
+    private static class PlaceholderApp extends org.jdesktop.application.Application {
+        protected void startup() {
         }
     }
 }

@@ -1,0 +1,3 @@
+org.netbeans.modules.swingapp.ComponentConverterImpl$FrameView
+org.netbeans.modules.swingapp.ComponentConverterImpl$FrameViewBeanInfo
+org.netbeans.modules.swingapp.ComponentConverterImpl$PlaceholderApp

@@ -56,17 +56,28 @@ import org.netbeans.modules.form.ViewConverter;
 public class ViewConverterImpl implements ViewConverter {
 
     public boolean canVisualize(Class componentClass) {
-        return org.jdesktop.application.View.class.isAssignableFrom(componentClass);
+        return isViewClass(componentClass);
     }
 
     public Convert convert(Object component, boolean root, boolean designRestrictions) {
-        if (root && component instanceof org.jdesktop.application.View) {
+        if (root && component != null && isViewClass(component.getClass())) {
             return new ConvertResult(
                     designRestrictions ? new AppDesignView() : new AppPreview(),
                     null);
         } else {
             return null;
         }
+    }
+
+    private static boolean isViewClass(Class cls) {
+        while (cls != null) {
+            if (cls.getName().equals(org.jdesktop.application.View.class.getName())) {
+                return true;
+            } else {
+                cls = cls.getSuperclass();
+            }
+        }
+        return false;
     }
 
     public static class AppDesignView extends JRootPane {

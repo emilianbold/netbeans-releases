@@ -6064,7 +6064,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
     private Class getFormDesignClass(String declaredSuperclassName) {
         for (ComponentConverter c : FormUtils.getClassConverters()) {
-            Class convClass = c.getDesignClass(declaredSuperclassName);
+            Class convClass = c.getDesignClass(declaredSuperclassName, formFile);
             if (convClass != null) {
                 return convClass;
             }
@@ -6074,7 +6074,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
     private Class getFormDesignClass(Class declaredSuperclass) {
         for (ComponentConverter c : FormUtils.getClassConverters()) {
-            Class convClass = c.getDesignClass(declaredSuperclass);
+            Class convClass = c.getDesignClass(declaredSuperclass, formFile);
             if (convClass != null) {
                 return convClass;
             }
