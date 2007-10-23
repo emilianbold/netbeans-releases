@@ -66,6 +66,7 @@ import org.openide.loaders.DataNode;
 import org.openide.windows.TopComponent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -153,6 +154,10 @@ import org.netbeans.modules.xml.xam.ui.undo.QuietUndoManager;
 import org.netbeans.modules.print.api.PrintManager;
 import org.netbeans.modules.xml.search.api.SearchManager;
 import org.netbeans.modules.xml.search.api.SearchManagerAccess;
+import org.netbeans.modules.xml.xam.ui.multiview.ActivatedNodesMediator;
+import org.netbeans.modules.xml.xam.ui.multiview.CookieProxyLookup;
+import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.ExplorerUtils;
 import org.openide.loaders.DataObject;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.Mode;
@@ -163,10 +168,9 @@ import org.openide.windows.WindowManager;
  * @author ads
  */
 public class DesignerMultiViewElement extends TopComponent
-        implements MultiViewElement, Serializable, SelectBpelElement
+        implements MultiViewElement, ExplorerManager.Provider, Serializable, SelectBpelElement
 {
-    private static final long serialVersionUID = 1L;
-    private PropertyChangeListener myActiveNodeChangeListener;
+    private static final long serialVersionUID = 1L;   
     
     
     // for deexternalization
@@ -179,48 +183,54 @@ public class DesignerMultiViewElement extends TopComponent
      */
     public DesignerMultiViewElement(BPELDataObject dataObject) {
         myDataObject = dataObject;
-        initializeLookup();
+        initialize();
+//        initializeLookup();
         //
         // FIX ME
         //
         initializeUI();
     }
     
-    private void removeActiveNodeChangeListener() {
-        if (myActiveNodeChangeListener != null) {
-            removePropertyChangeListener(myActiveNodeChangeListener);
-        }
-        myActiveNodeChangeListener = null;
-    }
+//    private void removeActiveNodeChangeListener() {
+//        if (myActiveNodeChangeListener != null) {
+//            removePropertyChangeListener(myActiveNodeChangeListener);
+//        }
+//        myActiveNodeChangeListener = null;
+//    }
     
-    private void initActiveNodeChangeListener() {
-        if (myActiveNodeChangeListener == null) {
-            myActiveNodeChangeListener = new PropertyChangeListener() {
-                /**
-                 * TODO: may not be needed at some point when parenting
-                 * MultiViewTopComponent delegates properly to its peer's
-                 * activatedNodes. see
-                 * http://www.netbeans.org/issues/show_bug.cgi?id=67257 note:
-                 * TopComponent.setActivatedNodes is final
-                 */
-                public void propertyChange(PropertyChangeEvent event) {
-                    // no constant in TopComponent...lame
-                    if(event.getPropertyName().equals("activatedNodes")) { // NOI18N
-                        
-            TopComponent tc = TopComponent.getRegistry().getActivated();
-            /* Ignore event coming from my TC */
-                        // if(DEBUG)
-                        // Debug.verboseWithin(this,"propertyChange",getDataObject());
-                        nodesHack.set(Arrays.asList(getActivatedNodes()),null);
-                    }
-                };
-            };
-        } else {
-            removePropertyChangeListener(myActiveNodeChangeListener);
-        }
-
-        addPropertyChangeListener(myActiveNodeChangeListener);
-        setActivatedNodes(new Node[] {getDataObject().getNodeDelegate()});
+//    private void initActiveNodeChangeListener() {
+//        if (myActiveNodeChangeListener == null) {
+//            myActiveNodeChangeListener = new PropertyChangeListener() {
+//                /**
+//                 * TODO: may not be needed at some point when parenting
+//                 * MultiViewTopComponent delegates properly to its peer's
+//                 * activatedNodes. see
+//                 * http://www.netbeans.org/issues/show_bug.cgi?id=67257 note:
+//                 * TopComponent.setActivatedNodes is final
+//                 */
+//                public void propertyChange(PropertyChangeEvent event) {
+//                    // no constant in TopComponent...lame
+//                    if(event.getPropertyName().equals("activatedNodes")) { // NOI18N
+//                        
+//            TopComponent tc = TopComponent.getRegistry().getActivated();
+//            /* Ignore event coming from my TC */
+//                        // if(DEBUG)
+//                        // Debug.verboseWithin(this,"propertyChange",getDataObject());
+//                        nodesHack.set(Arrays.asList(getActivatedNodes()),null);
+//                    }
+//                };
+//            };
+//        } else {
+//            removePropertyChangeListener(myActiveNodeChangeListener);
+//        }
+//
+//        addPropertyChangeListener(myActiveNodeChangeListener);
+//        setActivatedNodes(new Node[] {getDataObject().getNodeDelegate()});
+//    }
+    
+    public void writeExternal(ObjectOutput out) throws IOException {
+        super.writeExternal(out);
+        out.writeObject(myDataObject);
     }
     
     /**
@@ -233,17 +243,14 @@ public class DesignerMultiViewElement extends TopComponent
         
         myDataObject = (BPELDataObject) in.readObject();
         
-        initializeLookup();
+        initialize();
+//        initializeLookup();
         //
         // FIX ME
         //
         initializeUI();
     }
     
-    public void writeExternal(ObjectOutput out) throws IOException {
-        super.writeExternal(out);
-        out.writeObject(myDataObject);
-    }
     
     ////////////////////////////////////////////////////////////////////////////
     //                                  UI
@@ -297,11 +304,13 @@ public class DesignerMultiViewElement extends TopComponent
     }
     
     public void componentActivated() {
+//        System.out.println("component activated");
         super.componentActivated();
+        ExplorerUtils.activateActions(myExplorerManager, true);
         // not sure that we need to add undo manager each time when 
         // component is activated, but calling method addUndoManager() more
         // than once is not a problem.
-        addUndoManager();
+//        addUndoManager();
         myDesignView.getView().requestFocusInWindow();
         myDesignView.getModel().setActivated();
         getValidationController().triggerValidation( true );
@@ -311,17 +320,20 @@ public class DesignerMultiViewElement extends TopComponent
         super.componentClosed();
         
         //required to release all references to OM
-        myDesignView.closeView();
-        myDesignView = null;
+//        myDesignView.closeView();
+//        myDesignView = null;
         // todo r | m 
-        DataObject dObj = getDataObject();
-        if (dObj.isValid()) {
-            setActivatedNodes(new Node[] {dObj.getNodeDelegate()});
-        }
+        cleanup();
+//        DataObject dObj = getDataObject();
+//        if (dObj.isValid()) {
+//            setActivatedNodes(new Node[] {dObj.getNodeDelegate()});
+//        }
     }
     
     public void componentDeactivated() {
+//        System.out.println("component deactivated");
         super.componentDeactivated();
+        ExplorerUtils.activateActions(myExplorerManager, false);
     }
     
     public void componentHidden() {
@@ -336,7 +348,7 @@ public class DesignerMultiViewElement extends TopComponent
         }
         //
         updateBpelTcGroupVisibility(false);
-        removeActiveNodeChangeListener();
+//        removeActiveNodeChangeListener();
     }
     
     public void componentOpened() {
@@ -356,36 +368,35 @@ public class DesignerMultiViewElement extends TopComponent
         if (myDesignView != null) {
             myDesignView.setVisible(true);
         }
-        addUndoManager();
+////        addUndoManager();
         //
         updateBpelTcGroupVisibility(true);
 
-        initActiveNodeChangeListener();
+//        initActiveNodeChangeListener();
 
         // activate cur node
-        if (myMultiViewObserver != null) {
-            TopComponent thisTc = myMultiViewObserver.getTopComponent();
-            if ( thisTc != null ) {
-
-                // data node is the node associated with dataobject(BPELDataObject)
-                if (curNodes == null || curNodes.length == 0 || curNodes[0] instanceof DataNode) {
-                    Node node = myDesignView.getNodeForPattern(myDesignView.getRootPattern());
-                    
-                    if (node != null) {
-                        curNodes = new Node[] { node };
-                    }
-                }
-                
-                if (curNodes != null && curNodes.length > 0) {
-                    thisTc.setActivatedNodes(new Node[0]);
-                    setActivatedNodes(new Node[0]);
-
-                    
-                    thisTc.setActivatedNodes(curNodes);
-                    setActivatedNodes(curNodes);
-                }
-            }
-        }
+//        if (myMultiViewObserver != null) {
+//            TopComponent thisTc = myMultiViewObserver.getTopComponent();
+//            if ( thisTc != null ) {
+//
+//                // data node is the node associated with dataobject(BPELDataObject)
+//                if (curNodes == null || curNodes.length == 0 || curNodes[0] instanceof DataNode) {
+//                    Node node = myDesignView.getNodeForPattern(myDesignView.getRootPattern());
+//                    
+//                    if (node != null) {
+//                        curNodes = new Node[] { node };
+//                    }
+//                }
+//                
+//                if (curNodes != null && curNodes.length > 0) {
+//                    thisTc.setActivatedNodes(new Node[0]);
+//                    setActivatedNodes(new Node[0]);
+//
+//                    thisTc.setActivatedNodes(curNodes);
+//                    setActivatedNodes(curNodes);
+//                }
+//            }
+//        }
     }
 
     public JComponent getToolbarRepresentation() {
@@ -526,6 +537,7 @@ public class DesignerMultiViewElement extends TopComponent
         designViewMap.put(DefaultEditorKit.copyAction, designViewMap.get("copy-pattern"));
         designViewMap.put(DefaultEditorKit.cutAction, designViewMap.get("cut-pattern"));
         designViewMap.put(DefaultEditorKit.pasteAction, designViewMap.get("paste-pattern"));
+        map.put("delete", designViewMap.get("delete-something"));
 //        map.put("delete", designViewMap.get("delete-something"));        
         
         
@@ -636,39 +648,110 @@ public class DesignerMultiViewElement extends TopComponent
             return false;
         }
     }
-    
-    private void initializeLookup() {
-//        System.out.println("try to initialise lookup");
-        associateLookup(createAssociateLookup());
-        initActiveNodeChangeListener();
-//        addPropertyChangeListener( new PropertyChangeListener() {        
-//                /**
-//                 * TODO: may not be needed at some point when parenting
-//                 * MultiViewTopComponent delegates properly to its peer's
-//                 * activatedNodes. see
-//                 * http://www.netbeans.org/issues/show_bug.cgi?id=67257 note:
-//                 * TopComponent.setActivatedNodes is final
-//                 */
-//                public void propertyChange(PropertyChangeEvent event) {
-//                    // no constant in TopComponent...lame
-//                    if(event.getPropertyName().equals("activatedNodes")) {
-//                        // if(DEBUG)
-//                        // Debug.verboseWithin(this,"propertyChange",getDataObject());
-//                        nodesHack.set(Arrays.asList(getActivatedNodes()),null);
-//                    }
-//                };
-//         });
-//        
-//        setActivatedNodes(new Node[] {getDataObject().getNodeDelegate()});
+
+    private void initialize() {
+        myExplorerManager = new ExplorerManager();
+        // Install our own actions.
+        ActionMap actionMap = getActionMap();
+//        actionMap.put(DefaultEditorKit.copyAction, ExplorerUtils.actionCopy(myExplorerManager));
+//        actionMap.put(DefaultEditorKit.cutAction, ExplorerUtils.actionCut(myExplorerManager));
+//        actionMap.put(DefaultEditorKit.pasteAction, ExplorerUtils.actionPaste(myExplorerManager));
+//        actionMap.put("delete", ExplorerUtils.actionDelete(manager, false));
+
+        Node delegate = myDataObject.getNodeDelegate();
+        myNodesMediator = new ActivatedNodesMediator(delegate);
+        myNodesMediator.setExplorerManager(this);
+        
+        
+/**
+new ProxyLookup(new Lookup[] {
+            //
+            // other than nodesHack what else do we need in the associated
+            // lookup?  I think that XmlNavigator needs DataObject
+            //
+            myDataObject.getLookup(), // this lookup contain objects that are used in OM clients
+            
+            // This lookup is used by BPELDataEditorSupport 
+            // to obtain SelectBpelElement interface implementation
+            Lookups.singleton(this),
+            
+            new AbstractLookup(nodesHack),
+            Lookups.singleton(SoaPaletteFactory.getPalette())
+        })
+ */        
+        
+        myCookieProxyLookup = new CookieProxyLookup(new Lookup[] {
+                Lookups.fixed(new Object[] {
+                        // Need ActionMap in lookup so our actions are used.
+                        actionMap,
+                        // Need the data object registered in the lookup so that the
+                        // projectui code will close our open editor windows when the
+                        // project is closed.
+                        myDataObject,
+                }),
+                myDataObject.getLookup(),// this lookup contain objects that are used in OM clients
+                Lookups.singleton(this),
+
+                Lookups.singleton(SoaPaletteFactory.getPalette()),
+                myNodesMediator.getLookup(),
+                // The Node delegate Lookup must be the last one in the list
+                // for the CookieProxyLookup to work properly.
+                delegate.getLookup(),
+        }, delegate);
+
+        associateLookup(myCookieProxyLookup);
+        addPropertyChangeListener(ACTIVATED_NODES, myNodesMediator);
+        addPropertyChangeListener(ACTIVATED_NODES, myCookieProxyLookup);
+
+        setLayout(new BorderLayout());
     }
+    
+    private void cleanup() {
+        try {
+            myExplorerManager.setSelectedNodes(new Node[0]);
+        } catch (PropertyVetoException e) {
+        }
+        removePropertyChangeListener(ACTIVATED_NODES, myNodesMediator);
+        removePropertyChangeListener(ACTIVATED_NODES, myCookieProxyLookup);
+        myNodesMediator = null;
+        myCookieProxyLookup = null;
+
+        //required to release all references to OM
+        myDesignView.closeView();
+        myDesignView = null;
+        removeAll();
+    }
+    
+    
+//    private void initializeLookup() {
+//        associateLookup(createAssociateLookup());
+//        initActiveNodeChangeListener();
+////        addPropertyChangeListener( new PropertyChangeListener() {        
+////                /**
+////                 * TODO: may not be needed at some point when parenting
+////                 * MultiViewTopComponent delegates properly to its peer's
+////                 * activatedNodes. see
+////                 * http://www.netbeans.org/issues/show_bug.cgi?id=67257 note:
+////                 * TopComponent.setActivatedNodes is final
+////                 */
+////                public void propertyChange(PropertyChangeEvent event) {
+////                    // no constant in TopComponent...lame
+////                    if(event.getPropertyName().equals("activatedNodes")) {
+////                        // if(DEBUG)
+////                        // Debug.verboseWithin(this,"propertyChange",getDataObject());
+////                        nodesHack.set(Arrays.asList(getActivatedNodes()),null);
+////                    }
+////                };
+////         });
+////        
+////        setActivatedNodes(new Node[] {getDataObject().getNodeDelegate()});
+//    }
     
     private Lookup createAssociateLookup() {
         
         //
         // see http://www.netbeans.org/issues/show_bug.cgi?id=67257
         //
-        
-        ActionMap actionMap = getActionMap();
         nodesHack = new InstanceContent();
         return new ProxyLookup(new Lookup[] {
             //
@@ -677,8 +760,6 @@ public class DesignerMultiViewElement extends TopComponent
             //
             myDataObject.getLookup(), // this lookup contain objects that are used in OM clients
             
-            //
-            Lookups.singleton(actionMap),
             // This lookup is used by BPELDataEditorSupport 
             // to obtain SelectBpelElement interface implementation
             Lookups.singleton(this),
@@ -859,7 +940,12 @@ public class DesignerMultiViewElement extends TopComponent
         }
     }
     
+    public ExplorerManager getExplorerManager() {
+        return myExplorerManager;
+    }
+       
     
+    private static final String ACTIVATED_NODES = "activatedNodes";
     private transient MultiViewElementCallback myMultiViewObserver;
     private transient DesignView myDesignView;
     private transient UndoRedo.Manager myUndoManager;
@@ -867,7 +953,14 @@ public class DesignerMultiViewElement extends TopComponent
     private BPELDataObject myDataObject;
     private transient JComponent myToolBarPanel;
     private static Boolean groupVisible = null;
+
+    private PropertyChangeListener myActiveNodeChangeListener;
+    private ExplorerManager myExplorerManager;
+    private ActivatedNodesMediator myNodesMediator;
+    private CookieProxyLookup myCookieProxyLookup;
     
+    
+
     
 //    private class ProxyActionMap extends ActionMap {
 //        private ActionMap originalActionMap;

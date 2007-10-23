@@ -71,6 +71,7 @@ import org.netbeans.modules.bpel.editors.api.utils.Util;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.soa.ui.nodes.NodeFactory;
+import org.netbeans.modules.xml.xam.ui.multiview.CookieProxyLookup;
 import org.netbeans.modules.xml.xam.ui.undo.QuietUndoManager;
 import org.openide.awt.UndoRedo;
 import org.openide.nodes.Node;
@@ -96,7 +97,6 @@ public class BPELSourceMultiViewElement extends CloneableEditor
     private static final long serialVersionUID = 1L;
     
     static final String PREFERED_ID="BpelSourceView";   // NOI18N
-    
     
     // for deserialization
     private BPELSourceMultiViewElement() {
@@ -199,10 +199,12 @@ public class BPELSourceMultiViewElement extends CloneableEditor
         // multiview element that has the same activated nodes, in which
         // case no events are fired and so the UndoAction does not
         // register for changes with our undo manager.
-        setActivatedNodes(new Node[0]);
+//        setActivatedNodes(new Node[0]);
 //        setActivatedNodes(new Node[] { getDataObject().getNodeDelegate() });
         setCaretAssocActiveNodes();
-        addUndoManager();
+        BPELDataEditorSupport editor = getDataObject().getEditorSupport();
+        editor.addUndoManagerToDocument();
+//        addUndoManager();
         
         getValidationController().triggerValidation( true );
     }
@@ -229,15 +231,24 @@ public class BPELSourceMultiViewElement extends CloneableEditor
     public void componentDeactivated() {
         super.componentDeactivated();
 //        removeCaretPositionListener();
-        removeUndoManager();
-        getDataObject().getEditorSupport().syncModel();
+//        removeUndoManager();
+        BPELDataEditorSupport editor = getDataObject().getEditorSupport();
+        // Sync model before having undo manager listen to the model,
+        // lest we get redundant undoable edits added to the queue.
+        editor.syncModel();
+        editor.removeUndoManagerFromDocument();
+        
     }
     
     public void componentHidden() {
         super.componentHidden();
-        removeUndoManager();
 //        removeCaretPositionListener();
-        getDataObject().getEditorSupport().syncModel();
+        BPELDataEditorSupport editor = getDataObject().getEditorSupport();
+        // Sync model before having undo manager listen to the model,
+        // lest we get redundant undoable edits added to the queue.
+        editor.syncModel();
+        editor.removeUndoManagerFromDocument();
+//        removeUndoManager();
     }
     
     public void componentOpened() {
@@ -257,7 +268,9 @@ public class BPELSourceMultiViewElement extends CloneableEditor
         if (model.getState().equals(Model.State.VALID)) {
             editor.getUndoManager().discardAllEdits();
         }*/
-        addUndoManager();
+//        addUndoManager();
+        BPELDataEditorSupport editor = getDataObject().getEditorSupport();
+        editor.addUndoManagerToDocument();
     }
     
     public JComponent getToolbarRepresentation() {
@@ -330,12 +343,26 @@ public class BPELSourceMultiViewElement extends CloneableEditor
     }
     
     private void initialize() {
-      associateLookup(new ProxyLookup(new Lookup[] { // # 67257
-        Lookups.fixed(new Object[] {
-          getActionMap(), // # 85512
-          getDataObject(),
-          getDataObject().getNodeDelegate() }),
-          getDataObject().getLookup() })); // # 117029
+        // create and associate lookup
+        Node delegate = myDataObject.getNodeDelegate();
+        SourceCookieProxyLookup lookup = new SourceCookieProxyLookup(new Lookup[] {
+            Lookups.fixed(new Object[] {
+                // Need ActionMap in lookup so editor actions work.
+                getActionMap(),
+                // Need the data object registered in the lookup so that the
+                // projectui code will close our open editor windows when the
+                // project is closed.
+                myDataObject
+            }),
+        },delegate);
+        associateLookup(lookup);
+        addPropertyChangeListener("activatedNodes", lookup);
+//      associateLookup(new ProxyLookup(new Lookup[] { // # 67257
+//        Lookups.fixed(new Object[] {
+//          getActionMap(), // # 85512
+//          getDataObject(),
+//          getDataObject().getNodeDelegate() }),
+//          getDataObject().getLookup() })); // # 117029
     }
     
     private BPELValidationController getValidationController() {
@@ -484,7 +511,7 @@ public class BPELSourceMultiViewElement extends CloneableEditor
                         ? null 
                         : myMultiViewObserver.getTopComponent();
                 if (tc != null) {
-                    tc.setActivatedNodes(new Node[] {node});
+////                    tc.setActivatedNodes(new Node[] {node});
                     setActivatedNodes(new Node[] {node});
                 }
             }
@@ -536,7 +563,3 @@ public class BPELSourceMultiViewElement extends CloneableEditor
 
     private transient RequestProcessor.Task myPreviousTask;
 }
-
-
-
-

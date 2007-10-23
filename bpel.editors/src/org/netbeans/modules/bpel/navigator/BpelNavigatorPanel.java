@@ -103,7 +103,9 @@ public class BpelNavigatorPanel implements NavigatorPanelWithUndo {
             SwingUtilities.invokeLater(
                     new Runnable() {
                         public void run() {
-                            setNewContent(myDObjLookupResult.allInstances());
+                            if (myDObjLookupResult != null) {
+                                setNewContent(myDObjLookupResult.allInstances());
+                            }
                         }
             });
         }
