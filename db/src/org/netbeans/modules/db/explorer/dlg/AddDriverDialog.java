@@ -110,10 +110,6 @@ public class AddDriverDialog extends javax.swing.JPanel {
         URL[] urls = drv.getURLs();
         for (int i = 0; i < urls.length; i++) {
             URL url = urls[i];
-            URL archiveURL = FileUtil.getArchiveFile(url);
-            if (archiveURL != null) {
-                url = archiveURL;
-            }
             if ("nbinst".equals(url.getProtocol())) { // NOI18N
                 // try to get a file: URL for the nbinst: URL
                 FileObject fo = URLMapper.findFileObject(url);

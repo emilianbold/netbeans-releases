@@ -174,12 +174,7 @@ public class TomcatJDBCDriverDeployer implements JDBCDriverDeployer {
                             for (URL url : jdbcDriver.getURLs()) {
                                 FileObject file = URLMapper.findFileObject(url);
                                 if (file != null) {
-                                    FileObject archive = FileUtil.getArchiveFile(file);
-                                    if (archive == null) {
-                                        jdbcDriverFiles.add(file);
-                                    } else {
-                                        jdbcDriverFiles.add(archive);
-                                    }
+                                    jdbcDriverFiles.add(file);
                                 }
                             }
                         }

@@ -189,13 +189,12 @@ public class SunJDBCDriverDeployer implements JDBCDriverDeployer {
                             for(int i=0; i<allUrls.length; i++){
                                 URL driverUrl = allUrls[i];
                                 String strUrl = driverUrl.toString();
-                                if (strUrl.contains("nbinst://")) { // NOI18N
+                                if (strUrl.contains("nbinst:/")) { // NOI18N
                                     FileObject fo = URLMapper.findFileObject(driverUrl);
                                     if (fo != null) {
                                         URL localURL = URLMapper.findURL(fo, URLMapper.EXTERNAL);
                                         if (localURL != null) {
-                                            URL fileUrl = FileUtil.getArchiveFile(localURL);
-                                            drivers.add(fileUrl);
+                                            drivers.add(localURL);
                                         }
                                     }
                                 }else{
