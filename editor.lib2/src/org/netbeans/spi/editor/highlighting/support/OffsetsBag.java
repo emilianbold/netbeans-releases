@@ -394,12 +394,12 @@ public final class OffsetsBag extends AbstractHighlightsContainer {
                 marks.remove(startIdx, endIdx - startIdx + 1);
             }
             
-            if (changeStart < changeEnd) {
+            if (changeStart <= changeEnd) {
                 version++;
             }
         }
         
-        if (changeStart < changeEnd) {
+        if (changeStart <= changeEnd) {
             fireHighlightsChange(changeStart, changeEnd);
         }
     }
