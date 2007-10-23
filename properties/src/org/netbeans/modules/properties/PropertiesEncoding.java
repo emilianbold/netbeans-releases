@@ -414,6 +414,15 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
         }
 
         protected CoderResult decodeLoop(ByteBuffer in, CharBuffer out) {
+            log.finer("");
+            log.finer("decodeLoop() called");
+            if (log.isLoggable(Level.FINEST)) {
+                String inCount  = String.format("%5d", in.remaining());
+                String outCount = String.format("%5d", out.remaining());
+                log.finest("    - input:  " + inCount  + " bytes");
+                log.finest("    - output: " + outCount + " chars");
+            }
+            
             emptyIn = false;
             fullOut = false;
             try {
@@ -499,6 +508,8 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
 
         @Override
         protected CoderResult implFlush(CharBuffer out) {
+            log.finer("");
+            log.finer("implFlush() called");
             fullOut = out.hasRemaining();
             return flushOutBuf(out) ? OVERFLOW
                                     : UNDERFLOW;
