@@ -237,11 +237,14 @@ made subject to such option by the copyright holder.
           a cleaning script, default domain is deleted and re-created.  -->
     <target name="runidetest-with-appserver" depends="set-appserver-path,clean-appserver-domain">
         <antcall target="runidetest">
-            <param name="xtest.ide.commandline.suffix" value="-J-Dcom.sun.aas.installRoot=&quot;${j2ee.appserver.path}&quot;"/>
+            <!-- Property is propagated to IDE command line. -->
+            <param name="xtest.userdata|com.sun.aas.installRoot" value="&quot;${j2ee.appserver.path}&quot;"/>
         </antcall>   
     </target>
 
     <target name="set-appserver-path" unless="j2ee.appserver.path">
+        <!-- Load private.properties where user can set own j2ee.appserver.path. -->
+        <property file="../nbproject/private/private.properties"/>
         <condition property="j2ee.appserver.path" value="e:\\space\\AppServer">
             <os family="windows"/>
         </condition>
