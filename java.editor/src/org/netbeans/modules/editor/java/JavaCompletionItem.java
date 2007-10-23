@@ -91,16 +91,16 @@ public abstract class JavaCompletionItem implements CompletionItem {
         return new PackageItem(pkgFQN, substitutionOffset, isDeprecated);
     }
 
-    public static final JavaCompletionItem createTypeItem(TypeElement elem, DeclaredType type, int substitutionOffset, boolean displayPkgName, boolean isDeprecated, boolean smartType) {
+    public static final JavaCompletionItem createTypeItem(TypeElement elem, DeclaredType type, int substitutionOffset, boolean displayPkgName, boolean isDeprecated, boolean insideNew, boolean smartType) {
         switch (elem.getKind()) {
             case CLASS:
-                return new ClassItem(elem, type, 0, substitutionOffset, displayPkgName, isDeprecated, smartType);
+                return new ClassItem(elem, type, 0, substitutionOffset, displayPkgName, isDeprecated, insideNew, smartType);
             case INTERFACE:
-                return new InterfaceItem(elem, type, 0, substitutionOffset, displayPkgName, isDeprecated, smartType);
+                return new InterfaceItem(elem, type, 0, substitutionOffset, displayPkgName, isDeprecated, insideNew, smartType);
             case ENUM:
-                return new EnumItem(elem, type, 0, substitutionOffset, displayPkgName, isDeprecated, smartType);
+                return new EnumItem(elem, type, 0, substitutionOffset, displayPkgName, isDeprecated, insideNew, smartType);
             case ANNOTATION_TYPE:
-                return new AnnotationTypeItem(elem, type, 0, substitutionOffset, displayPkgName, isDeprecated, smartType);
+                return new AnnotationTypeItem(elem, type, 0, substitutionOffset, displayPkgName, isDeprecated, insideNew, smartType);
             default:
                 throw new IllegalArgumentException("kind=" + elem.getKind());
         }
@@ -120,13 +120,13 @@ public abstract class JavaCompletionItem implements CompletionItem {
             TypeElement elem = (TypeElement)dt.asElement();
             switch (elem.getKind()) {
                 case CLASS:
-                    return new ClassItem(elem, dt, dim, substitutionOffset, true, elements.isDeprecated(elem), true);
+                    return new ClassItem(elem, dt, dim, substitutionOffset, true, elements.isDeprecated(elem), false, true);
                 case INTERFACE:
-                    return new InterfaceItem(elem, dt, dim, substitutionOffset, true, elements.isDeprecated(elem), true);
+                    return new InterfaceItem(elem, dt, dim, substitutionOffset, true, elements.isDeprecated(elem), false, true);
                 case ENUM:
-                    return new EnumItem(elem, dt, dim, substitutionOffset, true, elements.isDeprecated(elem), true);
+                    return new EnumItem(elem, dt, dim, substitutionOffset, true, elements.isDeprecated(elem), false, true);
                 case ANNOTATION_TYPE:
-                    return new AnnotationTypeItem(elem, dt, dim, substitutionOffset, true, elements.isDeprecated(elem), true);
+                    return new AnnotationTypeItem(elem, dt, dim, substitutionOffset, true, elements.isDeprecated(elem), false, true);
             }
         }
         throw new IllegalArgumentException("array element kind=" + tm.getKind());
@@ -545,6 +545,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private TypeMirrorHandle<DeclaredType> typeHandle;
         private int dim;
         private boolean isDeprecated;
+        private boolean insideNew;
         private boolean smartType;
         private String simpleName;
         private String typeName;
@@ -552,7 +553,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private CharSequence sortText;
         private String leftText;
         
-        private ClassItem(TypeElement elem, DeclaredType type, int dim, int substitutionOffset, boolean displayPkgName, boolean isDeprecated, boolean smartType) {
+        private ClassItem(TypeElement elem, DeclaredType type, int dim, int substitutionOffset, boolean displayPkgName, boolean isDeprecated, boolean insideNew, boolean smartType) {
             super(substitutionOffset);
             TypeMirror elemType = elem.asType();
             if (elemType.getKind() == TypeKind.ERROR) {
@@ -564,6 +565,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             }
             this.dim = dim;
             this.isDeprecated = isDeprecated;
+            this.insideNew = insideNew;
             this.smartType = smartType;
             this.simpleName = elem.getSimpleName().toString();
             this.typeName = Utilities.getTypeName(type, false).toString();
@@ -674,9 +676,6 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     public void run(CompilationController controller) throws IOException {
                         controller.toPhase(Phase.RESOLVED);
                         TreePath path = controller.getTreeUtilities().pathFor(offset);                        
-                        boolean insideNew = path.getLeaf().getKind() == Tree.Kind.NEW_CLASS ||
-                                path.getLeaf().getKind() == Tree.Kind.MEMBER_SELECT && path.getParentPath().getLeaf().getKind() == Tree.Kind.NEW_CLASS &&
-                                ((NewClassTree)path.getParentPath().getLeaf()).getIdentifier() == path.getLeaf();
                         DeclaredType type = typeHandle.resolve(controller);
                         TypeElement elem = elementHandle != null ? elementHandle.resolve(controller) : (TypeElement)type.asElement();
                         boolean asTemplate = false;
@@ -830,8 +829,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private static final String INTERFACE_COLOR = "<font color=#404040>"; //NOI18N
         private static ImageIcon icon;
         
-        private InterfaceItem(TypeElement elem, DeclaredType type, int dim, int substitutionOffset, boolean displayPkgName, boolean isDeprecated, boolean smartType) {
-            super(elem, type, dim, substitutionOffset, displayPkgName, isDeprecated, smartType);
+        private InterfaceItem(TypeElement elem, DeclaredType type, int dim, int substitutionOffset, boolean displayPkgName, boolean isDeprecated, boolean insideNew, boolean smartType) {
+            super(elem, type, dim, substitutionOffset, displayPkgName, isDeprecated, insideNew, smartType);
         }
 
         protected ImageIcon getIcon(){
@@ -849,8 +848,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private static final String ENUM = "org/netbeans/modules/editor/resources/completion/enum.png"; // NOI18N
         private static ImageIcon icon;
         
-        private EnumItem(TypeElement elem, DeclaredType type, int dim, int substitutionOffset, boolean displayPkgName, boolean isDeprecated, boolean smartType) {
-        super(elem, type, dim, substitutionOffset, displayPkgName, isDeprecated, smartType);
+        private EnumItem(TypeElement elem, DeclaredType type, int dim, int substitutionOffset, boolean displayPkgName, boolean isDeprecated, boolean insideNew, boolean smartType) {
+        super(elem, type, dim, substitutionOffset, displayPkgName, isDeprecated, insideNew, smartType);
         }
 
         protected ImageIcon getIcon(){
@@ -864,8 +863,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private static final String ANNOTATION = "org/netbeans/modules/editor/resources/completion/annotation_type.png"; // NOI18N
         private static ImageIcon icon;
         
-        private AnnotationTypeItem(TypeElement elem, DeclaredType type, int dim, int substitutionOffset, boolean displayPkgName, boolean isDeprecated, boolean smartType) {
-            super(elem, type, dim, substitutionOffset, displayPkgName, isDeprecated, smartType);
+        private AnnotationTypeItem(TypeElement elem, DeclaredType type, int dim, int substitutionOffset, boolean displayPkgName, boolean isDeprecated, boolean insideNew, boolean smartType) {
+            super(elem, type, dim, substitutionOffset, displayPkgName, isDeprecated, insideNew, smartType);
         }
 
         protected ImageIcon getIcon(){
@@ -2257,7 +2256,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
     static class AnnotationItem extends AnnotationTypeItem {
         
         private AnnotationItem(TypeElement elem, DeclaredType type, int substitutionOffset, boolean isDeprecated, boolean smartType) {
-            super(elem, type, 0, substitutionOffset, true, isDeprecated, smartType);
+            super(elem, type, 0, substitutionOffset, true, isDeprecated, false, smartType);
         }
 
         public CharSequence getInsertPrefix() {

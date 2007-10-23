@@ -66,13 +66,14 @@ import org.netbeans.spi.editor.completion.support.CompletionUtilities;
  */
 public class LazyTypeCompletionItem extends JavaCompletionItem implements LazyCompletionItem {
     
-    public static final LazyTypeCompletionItem create(ElementHandle<TypeElement> handle, EnumSet<ElementKind> kinds, int substitutionOffset, JavaSource javaSource) {
-        return new LazyTypeCompletionItem(handle, kinds, substitutionOffset, javaSource);
+    public static final LazyTypeCompletionItem create(ElementHandle<TypeElement> handle, EnumSet<ElementKind> kinds, int substitutionOffset, JavaSource javaSource, boolean insideNew) {
+        return new LazyTypeCompletionItem(handle, kinds, substitutionOffset, javaSource, insideNew);
     }
     
     private ElementHandle<TypeElement> handle;
     private EnumSet<ElementKind> kinds;
     private JavaSource javaSource;
+    private boolean insideNew;
     private String name;
     private String simpleName;
     private String pkgName;
@@ -80,11 +81,12 @@ public class LazyTypeCompletionItem extends JavaCompletionItem implements LazyCo
     private CharSequence sortText;
     private int prefWidth = -1;
     
-    private LazyTypeCompletionItem(ElementHandle<TypeElement> handle, EnumSet<ElementKind> kinds, int substitutionOffset, JavaSource javaSource) {
+    private LazyTypeCompletionItem(ElementHandle<TypeElement> handle, EnumSet<ElementKind> kinds, int substitutionOffset, JavaSource javaSource, boolean insideNew) {
         super(substitutionOffset);
         this.handle = handle;
         this.kinds = kinds;
         this.javaSource = javaSource;
+        this.insideNew = insideNew;
         this.name = handle.getQualifiedName();
         int idx = name.lastIndexOf('.'); //NOI18N
         this.simpleName = idx > -1 ? name.substring(idx + 1) : name;
@@ -109,7 +111,7 @@ public class LazyTypeCompletionItem extends JavaCompletionItem implements LazyCo
                             TypeElement e = handle.resolve(controller);
                             if (e != null && controller.getTrees().isAccessible(scope, e)) {
                                 if (isOfKind(e, kinds))
-                                    delegate = JavaCompletionItem.createTypeItem(e, (DeclaredType)e.asType(), substitutionOffset, true, controller.getElements().isDeprecated(e), false);
+                                    delegate = JavaCompletionItem.createTypeItem(e, (DeclaredType)e.asType(), substitutionOffset, true, controller.getElements().isDeprecated(e), insideNew, false);
                             }
                         }
                         handle = null;
