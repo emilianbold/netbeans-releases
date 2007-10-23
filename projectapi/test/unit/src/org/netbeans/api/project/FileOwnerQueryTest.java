@@ -80,7 +80,7 @@ public class FileOwnerQueryTest extends NbTestCase {
     private Project p;
     private FileObject zippedfile;
     
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         MockLookup.setInstances(TestUtil.testProjectFactory());
         ProjectManager.getDefault().reset();
         FileOwnerQuery.reset();
@@ -160,7 +160,7 @@ public class FileOwnerQueryTest extends NbTestCase {
 
     }
     
-    protected void tearDown() throws Exception {
+    protected @Override void tearDown() throws Exception {
         scratch = null;
         projdir = null;
         randomfile = null;
