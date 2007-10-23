@@ -248,14 +248,14 @@ public class Reformatter implements ReformatTask {
         private LinkedList<Diff> diffs = new LinkedList<Diff>();
 
         private Pretty(CompilationInfo info, TreePath path, CodeStyle cs) {
-            this(info, info.getText(), info.getTrees().getSourcePositions(),
+            this(info.getText(), info.getTrees().getSourcePositions(),
                     path.getLeaf().getKind() == Tree.Kind.COMPILATION_UNIT
                     ? info.getTokenHierarchy().tokenSequence(JavaTokenId.language())
                     : info.getTreeUtilities().tokensFor(path.getLeaf()),
                     path, cs);
         }
         
-        private Pretty(CompilationInfo info, String text, SourcePositions sp, TokenSequence<JavaTokenId> tokens, TreePath path, CodeStyle cs) {
+        private Pretty(String text, SourcePositions sp, TokenSequence<JavaTokenId> tokens, TreePath path, CodeStyle cs) {
             this.fText = text;
             this.sp = sp;
             this.cs = cs;
@@ -270,7 +270,7 @@ public class Reformatter implements ReformatTask {
             this.afterAnnotation = false;
             this.fieldGroup = false;
             Tree tree = path.getLeaf();
-            this.indent = info != null ? getIndentLevel(info, path) : 0;
+            this.indent = getIndentLevel(tokens, path);
             this.col = this.indent;
             this.tokens = tokens;
             tokens.moveEnd();
@@ -288,7 +288,7 @@ public class Reformatter implements ReformatTask {
         }
 
         public static LinkedList<Diff> reformat(String text, TreePath path, SourcePositions sp, TokenSequence<JavaTokenId> tokens, CodeStyle cs) {
-            Pretty pretty = new Pretty(null, text, sp, tokens, path, cs);
+            Pretty pretty = new Pretty(text, sp, tokens, path, cs);
             pretty.scan(path, null);
             return pretty.diffs;
         }
@@ -950,6 +950,18 @@ public class Reformatter implements ReformatTask {
                 scan(encl, p);
                 accept(DOT);
             }
+            boolean indented = false;
+            if (col == indent) {
+                Diff d = diffs.isEmpty() ? null : diffs.getFirst();
+                if (d != null && d.getStartOffset() == tokens.offset() && d.getText() != null && d.getText().indexOf('\n') >= 0) {                    
+                    indented = true;
+                } else {
+                    tokens.movePrevious();
+                    if (tokens.token().id() == WHITESPACE && tokens.token().text().toString().indexOf('\n') >= 0)
+                        indented = true;
+                    tokens.moveNext();
+                }
+            }
             accept(NEW);
             space();
             List<? extends Tree> targs = node.getTypeArguments();
@@ -973,12 +985,17 @@ public class Reformatter implements ReformatTask {
             if (args != null && !args.isEmpty()) {
                 spaces(cs.spaceWithinMethodCallParens() ? 1 : 0, true); 
                 wrapList(cs.wrapMethodCallArgs(), cs.alignMultilineCallArgs(), args);
-                spaces(cs.spaceWithinMethodCallParens() ? 1 : 0);            
+                spaces(cs.spaceWithinMethodCallParens() ? 1 : 0);
             }
             accept(RPAREN);
             ClassTree body = node.getClassBody();
-            if (body != null)
+            if (body != null) {
+                int old = indent;
+                if (!indented)
+                    indent -= continuationIndentSize;
                 scan(body, p);
+                indent = old;
+            }
             return true;
         }
 
@@ -2283,21 +2300,20 @@ public class Reformatter implements ReformatTask {
             return sb.toString();
         }
 
-        private int getIndentLevel(CompilationInfo info, TreePath path) {
+        private int getIndentLevel(TokenSequence<JavaTokenId> tokens, TreePath path) {
+            if (tokens == null)
+                return -1;
             if (path.getLeaf().getKind() == Tree.Kind.COMPILATION_UNIT)
                 return 0;
-            TokenSequence<JavaTokenId> sourceTS = info.getTokenHierarchy().tokenSequence(JavaTokenId.language());
-            if (sourceTS == null)
-                return -1;
             int indent = 0;
             Tree lastTree = null;
             while (path != null) {
                 int offset = (int)sp.getStartPosition(path.getCompilationUnit(), path.getLeaf());
                 if (offset < 0)
                     return -1;
-                sourceTS.move(offset);
-                if (sourceTS.movePrevious()) {
-                    Token<JavaTokenId> token = sourceTS.token();
+                tokens.move(offset);
+                if (tokens.movePrevious()) {
+                    Token<JavaTokenId> token = tokens.token();
                     if (token.id() == WHITESPACE) {
                         String text = token.text().toString();
                         int idx = text.lastIndexOf('\n');
@@ -2305,8 +2321,8 @@ public class Reformatter implements ReformatTask {
                             text = text.substring(idx + 1);
                             indent = getCol(text);
                             break;
-                        } else if (sourceTS.movePrevious()) {
-                            if (sourceTS.token().id() == LINE_COMMENT) {
+                        } else if (tokens.movePrevious()) {
+                            if (tokens.token().id() == LINE_COMMENT) {
                                 indent = getCol(text);
                                 break;
                             }                        
