@@ -926,6 +926,7 @@ public class CachedRowSetDataProvider extends AbstractTableDataProvider
         if (getCachedRowSet() != null && getCachedRowSet() instanceof CachedRowSet) {
             try {
                 ((CachedRowSet)getCachedRowSet()).release();                
+                executed = false;  // reset -executed- so refetch occurs
                 fireRefreshed();
             } catch (SQLException e) {
                 throw new RuntimeException(e);
