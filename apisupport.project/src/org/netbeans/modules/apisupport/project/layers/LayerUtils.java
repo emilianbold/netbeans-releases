@@ -306,7 +306,7 @@ public class LayerUtils {
             }
         }
         public TreeDocumentRoot openDocumentRoot() throws IOException, TreeException {
-            if (root == null) {
+            if (root == null && f.isValid()) {
                 try {
                     //System.err.println("openDocumentRoot: really opening");
                     boolean oldDirty = dirty;
