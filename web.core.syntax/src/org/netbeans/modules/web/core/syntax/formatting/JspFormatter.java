@@ -88,7 +88,7 @@ public class JspFormatter extends HTMLFormatter {
         super.reformat(doc, startOffset, endOffset, indentOnly);
         
         List<ScriptletBlock> scripletBlocks = new LinkedList<ScriptletBlock>();
-        ExtSyntaxSupport sup = getSyntaxSupport(doc);
+        ExtSyntaxSupport sup = JspSyntaxSupport.get(doc);
         TokenItem token = sup.getTokenChain(startOffset, startOffset + 1);
         
         if (token == null){
@@ -176,7 +176,7 @@ public class JspFormatter extends HTMLFormatter {
         }
         
         if (position >= 0) {
-            JspSyntaxSupport sup = (JspSyntaxSupport)doc.getSyntaxSupport().get(JspSyntaxSupport.class);
+            JspSyntaxSupport sup = JspSyntaxSupport.get(doc);
             TokenItem token = sup.getTokenChain(position, position + 1);
             
             if (token.getTokenID() == JspTagTokenContext.SYMBOL &&

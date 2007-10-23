@@ -116,7 +116,6 @@ public class JspParserErrorAnnotation extends ErrorAnnotation.LineSetAnnotation 
         String annTxt = docline.getText(); // text on the line
         if (annTxt == null) return; // document is already closed
         
-        ExtSyntaxSupport support = (ExtSyntaxSupport)document.getSyntaxSupport();
         int offset = NbDocument.findLineOffset(document, docline.getLineNumber()) + column+1;  // offset, where the bug is reported
         start = 0;  // column, where the underlining starts on the line, where the bug should be attached. default first column
         string = annTxt.toCharArray();
