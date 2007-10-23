@@ -90,6 +90,7 @@ public class HTMLCompletionQueryTest extends TestBase {
         HTMLCompletionQuery query = new HTMLCompletionQuery();
         
         JEditorPane component = new JEditorPane();
+        component.setDocument(doc);
         for(int i = 0; i < doc.getLength(); i++) {
             List<CompletionItem> result = query.query(component, i);
             if(result == null) {
