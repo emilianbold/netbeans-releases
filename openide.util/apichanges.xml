@@ -49,6 +49,28 @@ made subject to such option by the copyright holder.
     <apidef name="actions">Actions API</apidef>
 </apidefs>
 <changes>
+    <change id="Utilities.isLargeFrameIcons">
+        <api name="util"/>
+        <summary>Obsolete method <code>Utilities.isLargeFrameIcons</code> deprecated.</summary>
+        <version major="7" minor="10"/>
+        <date day="23" month="10" year="2007"/>
+        <author login="mslama"/>
+        <compatibility addition="no" deprecation="yes"/>
+        <description>
+            <p>
+            Javadoc says: Test whether the operating system supports icons on frames (windows).
+            But window system used this method to decide if small 16x16 or bigger 32x32 icon
+            should be used for frame (main window). So usage and Javadoc is inconsistent.
+            All OS support small icon in frame. From JDK 6 it is possible to set multiple size
+            icons for frame so OS WM selects appropriate size.
+            I removed useless usage of this method from window system code and this method is
+            not used elsewhere.
+            </p>
+        </description> 
+        <class package="org.openide.util" name="Utilities"/>
+        <issue number="119069"/>
+    </change>
+
     <change id="Lookups.forPath">
         <api name="util"/>
         <summary>Added simplified support for named lookups <code>Lookups.forPath</code></summary>

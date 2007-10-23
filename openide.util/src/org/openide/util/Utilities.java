@@ -770,6 +770,7 @@ widthcheck:  {
 
     /** Test whether the operating system supports icons on frames (windows).
     * @return <code>true</code> if it does <em>not</em>
+    * @deprecated Obsolete, useless method, no replacement.
     *
     */
     public static final boolean isLargeFrameIcons() {
