@@ -1444,7 +1444,9 @@ public class JavaCompletionProvider implements CompletionProvider {
             TokenSequence<JavaTokenId> ts = findLastNonWhitespaceToken(env, mi, env.getOffset());
             if (ts == null || (ts.token().id() != JavaTokenId.LPAREN && ts.token().id() != JavaTokenId.COMMA))
                 return;
-            addMethodArguments(env, mi);
+            String prefix = env.getPrefix();
+            if (prefix == null || prefix.length() == 0)
+                addMethodArguments(env, mi);
             addLocalMembersAndVars(env);
             addValueKeywords(env);
             addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, ANNOTATION_TYPE, TYPE_PARAMETER), null, null, false);
@@ -1501,7 +1503,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                         break;
                     case LPAREN:
                     case COMMA:
-                        addConstructorArguments(env, nc);
+                        prefix = env.getPrefix();
+                        if (prefix == null || prefix.length() == 0)
+                            addConstructorArguments(env, nc);
                         addLocalMembersAndVars(env);
                         addValueKeywords(env);
                         addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, ANNOTATION_TYPE, TYPE_PARAMETER), null, null, false);
