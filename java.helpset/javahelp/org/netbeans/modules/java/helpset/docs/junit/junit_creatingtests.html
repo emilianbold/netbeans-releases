@@ -16,9 +16,12 @@
   for use as skeletons in your unit tests. You can create unit tests for single
   classes and entire packages, as well as empty test skeletons to be used with
   sources you create later.</p>
-<ul class="note">
+<p><b>Notes:</b></p>
+<ul>
   <li>Generated tests are distinguished by appending <tt>Test</tt> to
       the tested classes' names (e.g. <tt><i>MyClass</i>Test.java</tt>).</li>
+  <li>To create a test, the project must have a test directory for the tests.
+    The IDE creates a Test Packages directory by default when you create a project.</li>
 </ul>
 
 <p><b>To create a test for a single class:</b></p>
@@ -31,6 +34,7 @@
   <li>Right-click the package node containing the source files for which you want 
     to generate the test suite in the Projects window and choose Tools &gt; Create 
     JUnit Tests (Ctrl-Shift-U) from the popup menu. </li>
+  <li>Select the JUnit version.</li>
   <li>Make sure the Generate Test Suites checkbox is selected, specify any further 
     options, and click OK. 
     <p>The IDE generates test classes for all enclosed classes and stores them 
@@ -40,15 +44,24 @@
 </ol>
 <p><b>To create an empty test:</b></p>
 <ol>
-  <li>Choose File  &gt; New
-  File from the main menu.</li>
-  <li>In the New File wizard, select JUnit in the Categories pane  and  Empty
+  <li>Choose File  &gt; New File from the main menu.</li>
+  <li>In the New File wizard, select JUnit in the Categories pane  and JUnit
   	Test in the File Types pane. Click Next.</li>
-  <li>Enter the Test Name and select any options you require.  Click Finish.</li>
+  <li>Specify the test class name, folder and package and select any options you require.  Click Finish.</li>
   <p>The test skeleton is created based on the
     properties specified in JUnit
     Module Settings.</p>
 </ol>
+
+<p><b>To specify a test directory:</b></p>
+<ol>
+  <li>Right-click the project node in the Projects window and choose Properties.</li>
+  <li>In the Properties window, select Sources in the Categories pane.</li>
+  <li>Define the properties of the test packages directory in the Test Package Folders list.
+  You can add or remove folders and modify the names of the test packages directory
+      as it appears in the Projects window. Click Close.</li>
+</ol>
+
 <h3>JUnit Test Creation Options</h3>
   <p>When you generate JUnit tests from existing classes, you can specify the 
     following options:</p>
@@ -66,7 +79,7 @@
           enabling on logging, and resetting environment variables. </li>
         <li><b>Test Finalizer.</b> Method for cleaning up after tests have 
           finished running. </li>
-        <li>Default Method Bodies. Instructions for printing out information about 
+        <li><b>Default Method Bodies.</b> Instructions for printing out information about 
           test status to the command output.</li>
       </ul>
     </li>
