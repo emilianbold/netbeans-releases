@@ -49,6 +49,8 @@ package org.netbeans.modules.visualweb.ejb.ui;
 import java.awt.BorderLayout;
 import java.io.File;
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -65,6 +67,7 @@ public class ImportEjbDataSourcesPanel extends JPanel{
     private EjbDataSourcesSelectionPanel ejbDataSourceSelectionPanel;
     private EjbDataSourcePropertiesPanel propsPanel;
     private PortableEjbDataSource[] ejbDataSources;
+    private boolean textFieldChanged = false;
     
     public ImportEjbDataSourcesPanel()
     {
@@ -75,17 +78,27 @@ public class ImportEjbDataSourcesPanel extends JPanel{
         
         selectionPanel.add( ejbDataSourceSelectionPanel, BorderLayout.CENTER );
         propertiesPanel.add( propsPanel, BorderLayout.CENTER );
+        
+        fileNameTextField.getDocument().addDocumentListener(new DocumentListener() {
+
+            public void insertUpdate(DocumentEvent e) {
+                textFieldChanged = true;
+            }
+
+            public void removeUpdate(DocumentEvent e) {
+                textFieldChanged = true;
+            }
+
+            public void changedUpdate(DocumentEvent e) {
+                textFieldChanged = true;
+            }
+        });
+        
     }
     
     public ImportEjbDataSourcesPanel(PortableEjbDataSource[] ejbDataSources)
     {
-        initComponents();
-        
-        propsPanel = new EjbDataSourcePropertiesPanel();
-        ejbDataSourceSelectionPanel = new EjbDataSourcesSelectionPanel( propsPanel );
-        
-        selectionPanel.add( ejbDataSourceSelectionPanel, BorderLayout.CENTER );
-        propertiesPanel.add( propsPanel, BorderLayout.CENTER );
+        this();
     }
     
     public void setImportFilePath( String filePath )
@@ -219,6 +232,11 @@ public class ImportEjbDataSourcesPanel extends JPanel{
             return;
         }
         else {
+            if (!textFieldChanged) {
+                return;
+            }
+            
+            textFieldChanged = false;
             // This file will be the default file the file chooser
             ImportExportFileChooser.setCurrentFilePath( getImportFilePath() );
             
