@@ -172,6 +172,7 @@ public class TreeModelNode extends AbstractNode {
     public String getShortDescription () {
         try {
             String shortDescription = model.getShortDescription (object);
+            shortDescription = adjustHTML(shortDescription);
             return shortDescription;
         } catch (UnknownTypeException e) {
             if (!(object instanceof String)) {
@@ -472,7 +473,7 @@ public class TreeModelNode extends AbstractNode {
             }
             name += "..." + ending;
         }
-        return name;
+        return adjustHTML(name);
     }
     
     private static int findEndTagsPos(String s) {
@@ -504,6 +505,43 @@ public class TreeModelNode extends AbstractNode {
         text = text.replaceAll ("&gt;", ">");
         text = text.replaceAll ("&amp;", "&");
         return text;
+    }
+    
+    /** Adjusts HTML text so that it's rendered correctly.
+     * In particular, this assures that white characters are visible.
+     */
+    private static String adjustHTML(String text) {
+        text = text.replaceAll(java.util.regex.Matcher.quoteReplacement("\\"), "\\\\\\\\");
+        StringBuffer sb = null;
+        int j = 0;
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            String replacement = null;
+            if (c == '\n') {
+                replacement = "\\n";
+            } else if (c == '\r') {
+                replacement = "\\r";
+            } else if (c == '\f') {
+                replacement = "\\f";
+            } else if (c == '\b') {
+                replacement = "\\b";
+            }
+            if (replacement != null) {
+                if (sb == null) {
+                    sb = new StringBuffer(text.substring(0, i));
+                } else {
+                    sb.append(text.substring(j, i));
+                }
+                sb.append(replacement);
+                j = i+1;
+            }
+        }
+        if (sb == null) {
+            return text;
+        } else {
+            sb.append(text.substring(j));
+            return sb.toString();
+        }
     }
     
     
@@ -997,7 +1035,7 @@ public class TreeModelNode extends AbstractNode {
                 if (tooltipObj == null) {
                     return null;
                 } else {
-                    return tooltipObj.toString();
+                    return adjustHTML(tooltipObj.toString());
                 }
             } catch (UnknownTypeException e) {
                 // Ignore models that do not define tooltips for values.
