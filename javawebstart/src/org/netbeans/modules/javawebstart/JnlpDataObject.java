@@ -45,6 +45,7 @@ import java.io.IOException;
 
 import org.netbeans.spi.xml.cookies.CheckXMLSupport;
 import org.netbeans.spi.xml.cookies.DataObjectAdapters;
+import org.netbeans.spi.xml.cookies.ValidateXMLSupport;
 
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectExistsException;
@@ -62,8 +63,10 @@ public class JnlpDataObject extends MultiDataObject {
         CookieSet cookies = getCookieSet();
         cookies.add((Node.Cookie) DataEditorSupport.create(this, getPrimaryEntry(), cookies));
         InputSource in = DataObjectAdapters.inputSource(this);
-        CheckXMLSupport cookieImpl = new CheckXMLSupport(in);
-        cookies.add(cookieImpl);
+        CheckXMLSupport checkCookieImpl = new CheckXMLSupport(in);
+        ValidateXMLSupport validateCookieImpl = new ValidateXMLSupport(in);
+        cookies.add(checkCookieImpl);
+        cookies.add(validateCookieImpl);
     }
     
     protected Node createNodeDelegate() {
