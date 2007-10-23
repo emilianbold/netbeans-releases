@@ -100,7 +100,9 @@ import org.xml.sax.SAXException;
  * @author Jiri Rechtacek, Radek Matous
  */
 public class Utilities {
-    
+
+    private Utilities() {}
+
     public static final String UPDATE_DIR = "update"; // NOI18N
     public static final String FILE_SEPARATOR = System.getProperty("file.separator");
     public static final String DOWNLOAD_DIR = UPDATE_DIR + FILE_SEPARATOR + "download"; // NOI18N
@@ -811,9 +813,7 @@ public class Utilities {
             }
         }
         // end of workaround
-        for (Object depO : mm.getModuleInterdependencies (m, false, false)) {
-            assert depO instanceof Module : depO + " is instanceof Module";
-            Module depM = (Module) depO;
+        for (Module depM : mm.getModuleInterdependencies (m, false, false)) {
             res.add (depM);
         }
         return res;
@@ -842,9 +842,7 @@ public class Utilities {
             }
         }
         // end of workaround
-        for (Object depO : mm.getModuleInterdependencies (m, true, false)) {
-            assert depO instanceof Module : depO + " is instanceof Module";
-            Module depM = (Module) depO;
+        for (Module depM : mm.getModuleInterdependencies (m, true, false)) {
             res.add(depM);
         }
         return res;

@@ -328,7 +328,7 @@ public final class ModuleManager {
      * @return a set (possibly empty) of modules managed by this manager, never including m
      * @since org.netbeans.core/1 > 1.17
      */
-    public Set/*<Module>*/ getModuleInterdependencies(Module m, boolean reverse, boolean transitive) {
+    public Set<Module> getModuleInterdependencies(Module m, boolean reverse, boolean transitive) {
         return Util.moduleInterdependencies(m, reverse, transitive, modules, modulesByName, providersOf);
     }
 
