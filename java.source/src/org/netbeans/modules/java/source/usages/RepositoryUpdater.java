@@ -161,6 +161,7 @@ import org.openide.util.Utilities;
 public class RepositoryUpdater implements PropertyChangeListener, FileChangeListener {
         
     private static final Logger LOGGER = Logger.getLogger(RepositoryUpdater.class.getName());
+    private static final Set<String> warnedIgnoredRoots = Collections.synchronizedSet(new HashSet<String>());
     private static final Set<String> ignoredDirectories = parseSet("org.netbeans.javacore.ignoreDirectories", "SCCS CVS .svn"); // NOI18N
     private static final boolean noscan = Boolean.getBoolean("netbeans.javacore.noscan");   //NOI18N
     private static final boolean PERF_TEST = Boolean.getBoolean("perf.refactoring.test");
@@ -1780,7 +1781,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 _rt.removeAll(added);
                 added.retainAll(removed);                                                                   //Changed
                 if (toRecompile != null) {
-                    toRecompile.addAll(RebuildOraculum.get().findAllDependent(rootFile, null, cpInfo.getClassIndex(), _rt));
+                    toRecompile.addAll(RebuildOraculum.findAllDependent(rootFile, null, cpInfo.getClassIndex(), _rt));
                 }
             }
             sa.store();
@@ -1827,7 +1828,10 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             final ClassPath bootPath = ClassPath.getClassPath(rootFo, ClassPath.BOOT);
             final ClassPath compilePath = ClassPath.getClassPath(rootFo, ClassPath.COMPILE);
             if (sourcePath == null || bootPath == null || compilePath == null) {
-                LOGGER.warning("Ignoring root with no ClassPath: " + FileUtil.getFileDisplayName(rootFo));    // NOI18N
+                String rootName = FileUtil.getFileDisplayName(rootFo);
+                if (warnedIgnoredRoots.add(rootName)) {
+                    LOGGER.warning("Ignoring root with no ClassPath: " + rootName);    // NOI18N
+                }
                 return;
             }
             //listen on the particular boot&compile classpaths:
