@@ -1,4 +1,9 @@
-package @@PACKAGE_NAME@@;
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
+
+package ${PACKAGE_NAME};
 
 import java.awt.Component;
 import java.io.IOException;
@@ -9,7 +14,7 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
 
-public final class @@ITERATOR_CLASS@@ implements WizardDescriptor.InstantiatingIterator {
+public final class ${ITERATOR_CLASS} implements WizardDescriptor.InstantiatingIterator {
 
     private int index;
 
@@ -23,7 +28,7 @@ public final class @@ITERATOR_CLASS@@ implements WizardDescriptor.InstantiatingI
     private WizardDescriptor.Panel[] getPanels() {
         if (panels == null) {
             panels = new WizardDescriptor.Panel[] {
-                @@PANELS_DEFINITION_BLOCK@@
+                ${PANELS_DEFINITION_BLOCK}
             };
             String[] steps = createSteps();
             for (int i = 0; i < panels.length; i++) {

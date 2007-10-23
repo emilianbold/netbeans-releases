@@ -64,7 +64,6 @@ import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -209,12 +208,8 @@ public abstract class BasicWizardIterator implements WizardDescriptor.Asynchrono
             String relativeIconPath = null;
             if (!FileUtil.isParentOf(Util.getResourceDirectory(getProject()), origIconFO)) {
                 String iconPath = getDefaultPackagePath(origIconFO.getNameExt(), true);
-                try {
-                    cmf.add(cmf.createFile(iconPath, origIconFO.getURL()));
-                    relativeIconPath = getPackageName().replace('.', '/') + '/' + origIconFO.getNameExt();
-                } catch (FileStateInvalidException exc) {
-                    Util.err.notify(exc);
-                }
+                cmf.add(cmf.createFile(iconPath, origIconFO));
+                relativeIconPath = getPackageName().replace('.', '/') + '/' + origIconFO.getNameExt();
             } else {
                 relativeIconPath = FileUtil.getRelativePath(Util.getResourceDirectory(getProject()), origIconFO);
             }

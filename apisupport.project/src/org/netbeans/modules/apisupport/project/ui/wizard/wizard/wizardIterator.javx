@@ -1,4 +1,9 @@
-package @@PACKAGE_NAME@@;
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
+
+package ${PACKAGE_NAME};
 
 import java.awt.Component;
 import java.util.NoSuchElementException;
@@ -6,12 +11,12 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
 
-public final class @@ITERATOR_CLASS@@ implements WizardDescriptor.Iterator {
+public final class ${ITERATOR_CLASS} implements WizardDescriptor.Iterator {
 
     // To invoke this wizard, copy-paste and run the following code, e.g. from
     // SomeAction.performAction():
     /*
-    WizardDescriptor.Iterator iterator = new @@ITERATOR_CLASS@@();
+    WizardDescriptor.Iterator iterator = new ${ITERATOR_CLASS}();
     WizardDescriptor wizardDescriptor = new WizardDescriptor(iterator);
     // {0} will be replaced by WizardDescriptor.Panel.getComponent().getName()
     // {1} will be replaced by WizardDescriptor.Iterator.name()
@@ -37,7 +42,7 @@ public final class @@ITERATOR_CLASS@@ implements WizardDescriptor.Iterator {
     private WizardDescriptor.Panel[] getPanels() {
         if (panels == null) {
             panels = new WizardDescriptor.Panel[] {
-                @@PANELS_DEFINITION_BLOCK@@
+                ${PANELS_DEFINITION_BLOCK}
             };
             String[] steps = new String[panels.length];
             for (int i = 0; i < panels.length; i++) {

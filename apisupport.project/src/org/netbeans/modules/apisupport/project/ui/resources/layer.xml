@@ -70,7 +70,7 @@ made subject to such option by the copyright holder.
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/libraryModule.html"/>
                 </file>
             </folder>
-            </folder>
+        </folder>
         
         <folder name="NetBeansModuleDevelopment">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.ui.wizard.Bundle"/>
@@ -163,6 +163,51 @@ made subject to such option by the copyright holder.
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/newUpdateCenter.html"/>
                 <attr name="templateCategory" stringvalue="nbm-specific"/>
             </file>
+        </folder>
+        <folder name="NetBeansModuleDevelopment-files"> <!-- XXX later could be made visible (just need localized labels) -->
+            <attr name="position" intvalue="0"/>
+            <attr name="simple" boolvalue="false"/>
+            <file name="callableSystemAction.java" url="../wizard/action/callableSystemAction.javx"/>
+            <file name="cookieAction.java" url="../wizard/action/cookieAction.javx"/>
+            <file name="template_myplugin-helpset.xml" url="../wizard/javahelp/template_myplugin-helpset.xml"/>
+            <file name="template_myplugin.xml" url="../wizard/javahelp/template_myplugin.hs"/>
+            <file name="template_myplugin-idx.xml" url="../wizard/javahelp/template_myplugin-idx.xml"/>
+            <file name="template_myplugin-map.xml" url="../wizard/javahelp/template_myplugin-map.jhm"/>
+            <file name="template_myplugin-toc.xml" url="../wizard/javahelp/template_myplugin-toc.xml"/>
+            <file name="template_myplugin-about.html" url="../wizard/javahelp/template_myplugin-about.html"/>
+            <file name="libdescriptemplate.xml" url="../wizard/librarydescriptor/libdescriptemplate.xml"/>
+            <file name="templateDataLoader.java" url="../wizard/loader/templateDataLoader.javx"/>
+            <file name="templateDataLoaderBeanInfo.java" url="../wizard/loader/templateDataLoaderBeanInfo.javx"/>
+            <file name="templateDataNode.java" url="../wizard/loader/templateDataNode.javx"/>
+            <file name="templateDataObject.java" url="../wizard/loader/templateDataObject.javx"/>
+            <file name="templateDataObjectWithLookup.java" url="../wizard/loader/templateDataObjectWithLookup.javx"/>
+            <file name="templateNew1" url="../wizard/loader/templateNew1"/>
+            <file name="templateNew2" url="../wizard/loader/templateNew2"/>
+            <file name="templateresolver.xml" url="../wizard/loader/templateresolver.xml"/>
+            <file name="moduleInstall.java" url="../wizard/moduleinstall/moduleInstall.javx"/>
+            <file name="template_mypluginAdvancedOption.java" url="../wizard/options/template_mypluginAdvancedOption"/>
+            <file name="template_mypluginOptionsCategory.java" url="../wizard/options/template_mypluginOptionsCategory"/>
+            <file name="template_mypluginOptionsPanelController.java" url="../wizard/options/template_mypluginOptionsPanelController"/>
+            <file name="template_mypluginPanel.java" url="../wizard/options/template_mypluginPanel"/>
+            <file name="template_myplugin_formPanel.form" url="../wizard/options/template_myplugin_formPanel"/>
+            <file name="templateDescription.html" url="../wizard/project/templateDescription.html"/>
+            <file name="templatePanelVisual.form" url="../wizard/project/templatePanelVisual.frmx"/>
+            <file name="templatePanelVisual.java" url="../wizard/project/templatePanelVisual.javx"/>
+            <file name="templateWizardIterator.java" url="../wizard/project/templateWizardIterator.javx"/>
+            <file name="templateWizardPanel.java" url="../wizard/project/templateWizardPanel.javx"/>
+            <file name="update_center.xml" url="../wizard/updatecenter/update_center.xml"/>
+            <file name="templateAction.java" url="../wizard/winsys/templateAction.javx"/>
+            <file name="templateSettings.xml" url="../wizard/winsys/templateSettings.xml"/>
+            <file name="templateTopComponent.form" url="../wizard/winsys/templateTopComponent.frmx"/>
+            <file name="templateTopComponent.java" url="../wizard/winsys/templateTopComponent.javx"/>
+            <file name="templateWstcref.xml" url="../wizard/winsys/templateWstcref.xml"/>
+            <file name="instantiatingIterator.java" url="../wizard/wizard/instantiatingIterator.javx"/>
+            <file name="sampleAction.java" url="../wizard/wizard/sampleAction.javx"/>
+            <file name="visualPanel.form" url="../wizard/wizard/visualPanel.forx"/>
+            <file name="visualPanel.java" url="../wizard/wizard/visualPanel.javx"/>
+            <file name="wizardDescription.html" url="../wizard/wizard/wizardDescription.html"/>
+            <file name="wizardIterator.java" url="../wizard/wizard/wizardIterator.javx"/>
+            <file name="wizardPanel.java" url="../wizard/wizard/wizardPanel.javx"/>
         </folder>
         
         <folder name="Licenses">

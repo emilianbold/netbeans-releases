@@ -1,3 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<#assign licenseFirst = "<!--">
+<#assign licensePrefix = "">
+<#assign licenseLast = "-->">
+<#include "../Licenses/license-${project.license}.txt">
 <!DOCTYPE helpsetref PUBLIC "-//NetBeans//DTD JavaHelp Help Set Reference 1.0//EN" "http://www.netbeans.org/dtds/helpsetref-1_0.dtd">
-<helpsetref url="nbdocs:/@@HELPSET_PATH@@"/>
+<helpsetref url="nbdocs:/${HELPSET_PATH}"/>

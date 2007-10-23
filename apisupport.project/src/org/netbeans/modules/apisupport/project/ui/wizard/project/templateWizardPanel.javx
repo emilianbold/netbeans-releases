@@ -1,4 +1,9 @@
-package @@PACKAGENAME@@;
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
+
+package ${PACKAGENAME};
 
 import java.awt.Component;
 import java.util.HashSet;
@@ -13,26 +18,25 @@ import org.openide.util.NbBundle;
 /**
  * Panel just asking for basic info.
  */
-public class @@TEMPLATENAME@@WizardPanel implements WizardDescriptor.Panel,
+public class ${TEMPLATENAME}WizardPanel implements WizardDescriptor.Panel,
         WizardDescriptor.ValidatingPanel, WizardDescriptor.FinishablePanel {
 
     private WizardDescriptor wizardDescriptor;
-    private @@TEMPLATENAME@@PanelVisual component;
+    private ${TEMPLATENAME}PanelVisual component;
 
-    /** Creates a new instance of templateWizardPanel */
-    public @@TEMPLATENAME@@WizardPanel() {
+    public ${TEMPLATENAME}WizardPanel() {
     }
 
     public Component getComponent() {
         if (component == null) {
-            component = new @@TEMPLATENAME@@PanelVisual(this);
-            component.setName(NbBundle.getMessage(@@TEMPLATENAME@@WizardPanel.class, "LBL_CreateProjectStep"));
+            component = new ${TEMPLATENAME}PanelVisual(this);
+            component.setName(NbBundle.getMessage(${TEMPLATENAME}WizardPanel.class, "LBL_CreateProjectStep"));
         }
         return component;
     }
 
     public HelpCtx getHelp() {
-        return new HelpCtx(@@TEMPLATENAME@@WizardPanel.class);
+        return new HelpCtx(${TEMPLATENAME}WizardPanel.class);
     }
 
     public boolean isValid() {

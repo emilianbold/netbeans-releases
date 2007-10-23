@@ -1,4 +1,9 @@
-package @@PACKAGENAME@@;
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
+
+package ${PACKAGENAME};
 
 import java.awt.Component;
 import java.io.File;
@@ -23,27 +28,27 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
-public class @@TEMPLATENAME@@WizardIterator implements WizardDescriptor./*Progress*/InstantiatingIterator {
+public class ${TEMPLATENAME}WizardIterator implements WizardDescriptor./*Progress*/InstantiatingIterator {
 
     private int index;
     private WizardDescriptor.Panel[] panels;
     private WizardDescriptor wiz;
 
-    public @@TEMPLATENAME@@WizardIterator() {}
+    public ${TEMPLATENAME}WizardIterator() {}
 
-    public static @@TEMPLATENAME@@WizardIterator createIterator() {
-        return new @@TEMPLATENAME@@WizardIterator();
+    public static ${TEMPLATENAME}WizardIterator createIterator() {
+        return new ${TEMPLATENAME}WizardIterator();
     }
 
     private WizardDescriptor.Panel[] createPanels() {
         return new WizardDescriptor.Panel[] {
-            new @@TEMPLATENAME@@WizardPanel(),
+            new ${TEMPLATENAME}WizardPanel(),
         };
     }
 
     private String[] createSteps() {
         return new String[] {
-            NbBundle.getMessage(@@TEMPLATENAME@@WizardIterator.class, "LBL_CreateProjectStep")
+            NbBundle.getMessage(${TEMPLATENAME}WizardIterator.class, "LBL_CreateProjectStep")
         };
     }
 

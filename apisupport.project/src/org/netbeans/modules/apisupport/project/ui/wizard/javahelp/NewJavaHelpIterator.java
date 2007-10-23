@@ -42,7 +42,6 @@
 package org.netbeans.modules.apisupport.project.ui.wizard.javahelp;
 
 import java.io.IOException;
-import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -55,6 +54,7 @@ import org.netbeans.modules.apisupport.project.CreatedModifiedFilesFactory.Modif
 import org.netbeans.modules.apisupport.project.EditableManifest;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
 
 /**
  * Wizard for creating JavaHelp
@@ -82,7 +82,7 @@ public class NewJavaHelpIterator extends BasicWizardIterator {
         };
     }
     
-    public void uninitialize(WizardDescriptor wiz) {
+    public @Override void uninitialize(WizardDescriptor wiz) {
         super.uninitialize(wiz);
         data = null;
     }
@@ -98,10 +98,9 @@ public class NewJavaHelpIterator extends BasicWizardIterator {
             "-about.html", // NOI18N
         };
         private static final String[] TEMPLATE_RESOURCES = {
-            // Historical names in CVS, do not match actual extensions when created:
-            "template_myplugin.hs", // NOI18N
+            "template_myplugin.xml", // NOI18N
             "template_myplugin-idx.xml", // NOI18N
-            "template_myplugin-map.jhm", // NOI18N
+            "template_myplugin-map.xml", // NOI18N
             "template_myplugin-toc.xml", // NOI18N
             "template_myplugin-about.html", // NOI18N
         };
@@ -123,14 +122,14 @@ public class NewJavaHelpIterator extends BasicWizardIterator {
                 
                 files = new CreatedModifiedFiles(getProject());
                 Map<String,String> tokens = new HashMap<String,String>();
-                tokens.put("@@CODE_NAME@@", basename); // NOI18N
-                tokens.put("@@FULL_CODE_NAME@@", codeNameBase); // NOI18N
-                tokens.put("@@DISPLAY_NAME@@", ProjectUtils.getInformation(getProject()).getDisplayName()); // NOI18N
-                tokens.put("@@HELPSET_PATH@@", path + basename + TEMPLATE_SUFFIX_HS); // NOI18N
+                tokens.put("CODE_NAME", basename); // NOI18N
+                tokens.put("FULL_CODE_NAME", codeNameBase); // NOI18N
+                tokens.put("DISPLAY_NAME", ProjectUtils.getInformation(getProject()).getDisplayName()); // NOI18N
+                tokens.put("HELPSET_PATH", path + basename + TEMPLATE_SUFFIX_HS); // NOI18N
                 
                 //layer registration
                 files.add(files.createLayerEntry("Services/JavaHelp/" + basename + "-helpset.xml", // NOI18N
-                        NewJavaHelpIterator.class.getResource("template_myplugin-helpset.xml"), // NOI18N
+                        CreatedModifiedFiles.getTemplate("template_myplugin-helpset.xml"), // NOI18N
                         tokens,
                         null,
                         // Pick an arbitrary place to put it. Can always be moved elsewhere if anyone cares:
@@ -138,7 +137,7 @@ public class NewJavaHelpIterator extends BasicWizardIterator {
                 
                 //copying templates
                 for (int i = 0; i < TEMPLATE_SUFFIXES.length; i++) {
-                    URL template = NewJavaHelpIterator.class.getResource(TEMPLATE_RESOURCES[i]);
+                    FileObject template = CreatedModifiedFiles.getTemplate(TEMPLATE_RESOURCES[i]);
                     String filePath = "javahelp/" + path + basename + TEMPLATE_SUFFIXES[i]; // NOI18N
                     files.add(files.createFileWithSubstitutions(filePath, template, tokens));
                 }
@@ -153,7 +152,7 @@ public class NewJavaHelpIterator extends BasicWizardIterator {
                 
                 //put OpenIDE-Module-Requires into manifest
                 ModifyManifest attribs = new CreatedModifiedFilesFactory.ModifyManifest(getProject()) {
-                    protected void performModification(final EditableManifest em,final String name,final String value,
+                    protected @Override void performModification(final EditableManifest em,final String name,final String value,
                             final String section) throws IllegalArgumentException {
                         String originalValue = em.getAttribute(name, section);
                         if (originalValue != null) {

@@ -85,8 +85,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         }
         boolean newAPI = ((NbModuleProject) getProject()).getPlatform(true).getModule(AUTOUPDATE_MODULE_NEW) != null;
         String extension = (newAPI) ? AUTOUPDATE_INSTANCE_TYPE_EXT : AUTOUPDATE_SETTINGS_TYPE_EXT;
-        URL url = newAPI ? null : DataModel.class.getResource("update_center.xml"); // NOI18N
-        assert newAPI || url != null : "File 'update_center.xml must exist in package of " + getClass().getName() + "!";
+        FileObject template = newAPI ? null : CreatedModifiedFiles.getTemplate("update_center.xml"); // NOI18N
         String serviceTypeName = getModuleInfo().getCodeNameBase ().replace ('.', '_') + AUTOUPDATE_SERVICE_TYPE; // NOI18N
         FileSystem layer = LayerUtils.layerForProject (getProject ()).layer (false);
         
@@ -110,7 +109,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
             codename = getModuleInfo().getCodeNameBase();
         }
         final Map<String, String> substitutionTokens = newAPI ? null : Collections.singletonMap("MODULECODENAME", codename);        
-        cmf.add(cmf.createLayerEntry(pathToAutoUpdateType, url,substitutionTokens, null, null)); // NOI18N
+        cmf.add(cmf.createLayerEntry(pathToAutoUpdateType, template, substitutionTokens, null, null)); // NOI18N
         
         if (newAPI) {
             cmf.add (cmf.createLayerAttribute (pathToAutoUpdateType, "instanceCreate", "methodvalue:org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogFactory.createUpdateProvider")); //NOI18N

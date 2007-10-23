@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.apisupport.project.ui.wizard.action;
 
-import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -149,14 +148,14 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         
         String actionPath = getDefaultPackagePath(className + ".java", false); // NOI18N
         // XXX use nbresloc URL protocol rather than DataModel.class.getResource(...):
-        URL template = DataModel.class.getResource(alwaysEnabled
-                ? "callableSystemAction.javx" : "cookieAction.javx"); // NOI18N
+        FileObject template = CreatedModifiedFiles.getTemplate(alwaysEnabled ? "callableSystemAction.java" : "cookieAction.java"); // NOI18N
+        assert template != null;
         String actionNameKey = "CTL_" + className; // NOI18N
         Map<String,String> replaceTokens = new HashMap<String,String>();
-        replaceTokens.put("@@CLASS_NAME@@", className); // NOI18N
-        replaceTokens.put("@@PACKAGE_NAME@@", getPackageName()); // NOI18N
-        replaceTokens.put("@@DISPLAY_NAME_KEY@@", actionNameKey); // NOI18N
-        replaceTokens.put("@@MODE@@", getSelectionMode()); // NOI18N
+        replaceTokens.put("CLASS_NAME", className); // NOI18N
+        replaceTokens.put("PACKAGE_NAME", getPackageName()); // NOI18N
+        replaceTokens.put("DISPLAY_NAME_KEY", actionNameKey); // NOI18N
+        replaceTokens.put("MODE", getSelectionMode()); // NOI18N
         Set<String> imports = new TreeSet<String>(Arrays.asList(HARDCODED_IMPORTS));
         Set<String> addedFQNCs = new TreeSet<String>();
         if (!alwaysEnabled) {
@@ -172,7 +171,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
                 }
                 cookieSB.append(parseClassName(cookieClass) + ".class"); // NOI18N
             }
-            replaceTokens.put("@@COOKIE_CLASSES_BLOCK@@", cookieSB.toString()); // NOI18N
+            replaceTokens.put("COOKIE_CLASSES_BLOCK", cookieSB.toString()); // NOI18N
             String impl;
             if (cookieClasses.length == 1) {
                 String cName = parseClassName(cookieClasses[0]);
@@ -182,7 +181,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
             } else {
                 impl = "// TODO implement action body"; // NOI18N
             }
-            replaceTokens.put("@@PERFORM_ACTION_CODE@@", impl); // NOI18N
+            replaceTokens.put("PERFORM_ACTION_CODE", impl); // NOI18N
         }
         // imports
         imports.addAll(addedFQNCs);
@@ -190,7 +189,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         for (String imprt : imports) {
             importsBuffer.append("import " + imprt + ';' + NEW_LINE); // NOI18N
         }
-        replaceTokens.put("@@IMPORTS@@", importsBuffer.toString()); // NOI18N
+        replaceTokens.put("IMPORTS", importsBuffer.toString()); // NOI18N
         cmf.add(cmf.createFileWithSubstitutions(actionPath, template, replaceTokens));
         
         // Bundle.properties for localized action name
@@ -199,11 +198,11 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         // Copy action icon
         if (origIconPath != null) {
             String relativeIconPath = addCreateIconOperation(cmf, origIconPath);
-            replaceTokens.put("@@ICON_RESOURCE_METHOD@@", DataModel.generateIconResourceMethod(relativeIconPath)); // NOI18N
-            replaceTokens.put("@@INITIALIZE_METHOD@@", ""); // NOI18N
+            replaceTokens.put("ICON_RESOURCE_METHOD", DataModel.generateIconResourceMethod(relativeIconPath)); // NOI18N
+            replaceTokens.put("INITIALIZE_METHOD", ""); // NOI18N
         } else {
-            replaceTokens.put("@@ICON_RESOURCE_METHOD@@", ""); // NOI18N
-            replaceTokens.put("@@INITIALIZE_METHOD@@", DataModel.generateNoIconInitializeMethod()); // NOI18N
+            replaceTokens.put("ICON_RESOURCE_METHOD", ""); // NOI18N
+            replaceTokens.put("INITIALIZE_METHOD", DataModel.generateNoIconInitializeMethod()); // NOI18N
         }
         
         if (isToolbarEnabled() && largeIconPath != null) {
@@ -362,6 +361,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         return origIconPath;
     }
     
+    @Override
     public void setPackageName(String pkg) {
         super.setPackageName(pkg);
         reset();
@@ -505,15 +505,17 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
     
     private static String generateIconResourceMethod(final String relativeIconPath) {
         return NEW_LINE +
-                INDENT + "protected @Override String iconResource() {" + NEW_LINE + // NOI18N
+                INDENT + "@Override" + NEW_LINE + // NOI18N
+                INDENT + "protected String iconResource() {" + NEW_LINE + // NOI18N
                 INDENT_2X + "return \"" + relativeIconPath + "\";" + NEW_LINE + // NOI18N
                 INDENT + "}"; // NOI18N
     }
     
     private static String generateNoIconInitializeMethod() {
-        return "protected @Override void initialize() {" + NEW_LINE + // NOI18N
+        return "@Override" + NEW_LINE + // NOI18N
+                INDENT + "protected void initialize() {" + NEW_LINE + // NOI18N
                 INDENT_2X + "super.initialize();" + NEW_LINE + // NOI18N
-                INDENT_2X + "// see org.openide.util.actions.SystemAction.iconResource() javadoc for more details" + NEW_LINE + // NOI18N
+                INDENT_2X + "// see org.openide.util.actions.SystemAction.iconResource() Javadoc for more details" + NEW_LINE + // NOI18N
                 INDENT_2X + "putValue(\"noIconInMenu\", Boolean.TRUE);" + NEW_LINE + // NOI18N
                 INDENT + "}" + NEW_LINE; // NOI18N
     }

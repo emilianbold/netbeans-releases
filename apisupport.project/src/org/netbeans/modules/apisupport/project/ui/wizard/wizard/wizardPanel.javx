@@ -1,11 +1,16 @@
-package @@PACKAGE_NAME@@;
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
+
+package ${PACKAGE_NAME};
 
 import java.awt.Component;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
-public class @@WIZARD_PANEL_CLASS@@ implements WizardDescriptor.Panel {
+public class ${WIZARD_PANEL_CLASS} implements WizardDescriptor.Panel {
     
     /**
      * The visual component that displays this panel. If you need to access the
@@ -19,7 +24,7 @@ public class @@WIZARD_PANEL_CLASS@@ implements WizardDescriptor.Panel {
     // create only those which really need to be visible.
     public Component getComponent() {
         if (component == null) {
-            component = new @@VISUAL_PANEL_CLASS@@();
+            component = new ${VISUAL_PANEL_CLASS}();
         }
         return component;
     }

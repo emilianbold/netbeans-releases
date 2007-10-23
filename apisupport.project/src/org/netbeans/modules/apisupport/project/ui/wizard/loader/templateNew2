@@ -1,2 +1,2 @@
-<root xmlns="@@NAMESPACE@@">
+<root xmlns="${NAMESPACE}">
 </root>

@@ -43,7 +43,6 @@ package org.netbeans.modules.apisupport.project.ui.wizard.options;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -56,6 +55,7 @@ import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.openide.util.Utilities;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /**
@@ -106,31 +106,31 @@ final class NewOptionsIterator extends BasicWizardIterator {
         
         private static final int WARNING_INCORRECT_ICON_SIZE = -1;
         
-        private static final String[] CATEGORY_BUNDLE_KEYS = new String[] {
-            "@@OptionsCategory_Title@@", // NOI18N
-            "@@OptionsCategory_Name@@", // NOI18N
+        private static final String[] CATEGORY_BUNDLE_KEYS = {
+            "OptionsCategory_Title", // NOI18N
+            "OptionsCategory_Name", // NOI18N
         };
         
-        private static final String[] ADVANCED_BUNDLE_KEYS = new String[] {
-            "@@AdvancedOption_DisplayName@@", // NOI18N
-            "@@AdvancedOption_Tooltip@@" // NOI18N
+        private static final String[] ADVANCED_BUNDLE_KEYS = {
+            "AdvancedOption_DisplayName", // NOI18N
+            "AdvancedOption_Tooltip" // NOI18N
         };
         
-        private static final String[] TOKENS = new String[] {
-            "@@PACKAGE_NAME@@", // NOI18N
-            "@@AdvancedOption_CLASS_NAME@@", // NOI18N
-            "@@OptionsCategory_CLASS_NAME@@", // NOI18N
-            "@@Panel_CLASS_NAME@@", // NOI18N
-            "@@OptionsPanelController_CLASS_NAME@@", // NOI18N
-            "@@ICON_PATH@@", // NOI18N
+        private static final String[] TOKENS = {
+            "PACKAGE_NAME", // NOI18N
+            "AdvancedOption_CLASS_NAME", // NOI18N
+            "OptionsCategory_CLASS_NAME", // NOI18N
+            "Panel_CLASS_NAME", // NOI18N
+            "OptionsPanelController_CLASS_NAME", // NOI18N
+            "ICON_PATH", // NOI18N
             ADVANCED_BUNDLE_KEYS[0],
             ADVANCED_BUNDLE_KEYS[1],
             CATEGORY_BUNDLE_KEYS[0],
             CATEGORY_BUNDLE_KEYS[1]
         };
                 
-        private static final String FORM_TEMPLATE_SUFFIXES[] = new String[]{"Panel"}; // NOI18N
-        private static final String[] JAVA_TEMPLATE_SUFFIXES = new String[] {
+        private static final String FORM_TEMPLATE_SUFFIXES[] = {"Panel"}; // NOI18N
+        private static final String[] JAVA_TEMPLATE_SUFFIXES = {
             "AdvancedOption",//NOI18N
             "OptionsCategory",//NOI18N
             "Panel",//NOI18N
@@ -197,7 +197,7 @@ final class NewOptionsIterator extends BasicWizardIterator {
         private Map<String, String> getTokenMap() {
             Map<String, String> retval = new HashMap<String, String>();
             for (int i = 0; i < TOKENS.length; i++) {
-                if (isAdvanced() && "@@ICON_PATH@@".equals(TOKENS[i])) { // NOI18N
+                if (isAdvanced() && "ICON_PATH".equals(TOKENS[i])) { // NOI18N
                     continue;
                 }
                 retval.put(TOKENS[i], getReplacement(TOKENS[i]));
@@ -206,22 +206,20 @@ final class NewOptionsIterator extends BasicWizardIterator {
         }
         
         private String getReplacement(String key) {
-            if ("@@PACKAGE_NAME@@".equals(key)) {// NOI18N
+            if ("PACKAGE_NAME".equals(key)) {// NOI18N
                 return getPackageName();
-            } else if ("@@AdvancedOption_CLASS_NAME@@".equals(key)) {// NOI18N
+            } else if ("AdvancedOption_CLASS_NAME".equals(key)) {// NOI18N
                 return getAdvancedOptionClassName();
-            } else if ("@@OptionsCategory_CLASS_NAME@@".equals(key)) {// NOI18N
+            } else if ("OptionsCategory_CLASS_NAME".equals(key)) {// NOI18N
                 return getOptionsCategoryClassName();
-            } else if ("@@Panel_CLASS_NAME@@".equals(key)) {// NOI18N
+            } else if ("Panel_CLASS_NAME".equals(key)) {// NOI18N
                 return getPanelClassName();
-            } else if ("@@OptionsPanelController_CLASS_NAME@@".equals(key)) {// NOI18N
+            } else if ("OptionsPanelController_CLASS_NAME".equals(key)) {// NOI18N
                 return getOptionsPanelControllerClassName();
-            } else if ("@@ICON_PATH@@".equals(key)) {// NOI18N
+            } else if ("ICON_PATH".equals(key)) {// NOI18N
                 return addCreateIconOperation(new CreatedModifiedFiles(getProject()), getIconPath());
-            } else if (key.startsWith("@@") && key.endsWith("@@")) {// NOI18N
-                return key.substring(2, key.length()-2)+"_"+getClassNamePrefix();
-            }else {
-                throw new AssertionError(key);
+            } else {
+                return key + "_" + getClassNamePrefix();
             }
             
         }
@@ -395,10 +393,7 @@ final class NewOptionsIterator extends BasicWizardIterator {
         private void generateBundleKeys() {
             String[] bundleKeys = (isAdvanced()) ? ADVANCED_BUNDLE_KEYS : CATEGORY_BUNDLE_KEYS;
             for (int i = 0; i < bundleKeys.length; i++) {
-                String key = bundleKeys[i];
-                if (key.startsWith("@@") && key.endsWith("@@")) {//NOI18N
-                    key = getReplacement(key);
-                } 
+                String key = getReplacement(bundleKeys[i]);
                 String value = getBundleValue(key);
                 files.add(files.bundleKey(getDefaultPackagePath("Bundle.properties", true),key,value));// NOI18N                        
             }
@@ -418,7 +413,7 @@ final class NewOptionsIterator extends BasicWizardIterator {
         }
         
         private CreatedModifiedFiles.Operation createJavaFileCopyOperation(final String templateSuffix) {
-            URL template = NewOptionsIterator.class.getResource(JAVA_TEMPLATE_PREFIX+templateSuffix);
+            FileObject template = CreatedModifiedFiles.getTemplate(JAVA_TEMPLATE_PREFIX + templateSuffix + ".java");
             assert template != null : JAVA_TEMPLATE_PREFIX+templateSuffix;
             return files.createFileWithSubstitutions(getFilePath(templateSuffix), template, getTokenMap());
         }
@@ -429,7 +424,7 @@ final class NewOptionsIterator extends BasicWizardIterator {
         }
         
         private CreatedModifiedFiles.Operation createFormFileCopyOperation(final String templateSuffix) {
-            URL template = NewOptionsIterator.class.getResource(FORM_TEMPLATE_PREFIX+templateSuffix);
+            FileObject template = CreatedModifiedFiles.getTemplate(FORM_TEMPLATE_PREFIX + templateSuffix + ".form");
             assert template != null : JAVA_TEMPLATE_PREFIX+templateSuffix;
             String fileName = getClassNamePrefix()+templateSuffix+ ".form";// NOI18N
             String filePath = getDefaultPackagePath(fileName, false);

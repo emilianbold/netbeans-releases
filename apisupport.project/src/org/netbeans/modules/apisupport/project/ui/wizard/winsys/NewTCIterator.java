@@ -43,7 +43,6 @@ package org.netbeans.modules.apisupport.project.ui.wizard.winsys;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -53,10 +52,8 @@ import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
-import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -90,7 +87,7 @@ final class NewTCIterator extends BasicWizardIterator {
         };
     }
     
-    public void uninitialize(WizardDescriptor wiz) {
+    public @Override void uninitialize(WizardDescriptor wiz) {
         super.uninitialize(wiz);
         data = null;
     }
@@ -167,10 +164,10 @@ final class NewTCIterator extends BasicWizardIterator {
         final String mode = model.getMode();
         
         Map<String,String> replaceTokens = new HashMap<String,String>();
-        replaceTokens.put("@@TEMPLATENAME@@", name);//NOI18N
-        replaceTokens.put("@@PACKAGENAME@@", packageName);//NOI18N
-        replaceTokens.put("@@MODE@@", mode); //NOI18N
-        replaceTokens.put("@@OPENED@@", model.isOpened() ? "true" : "false"); //NOI18N
+        replaceTokens.put("TEMPLATENAME", name);//NOI18N
+        replaceTokens.put("PACKAGENAME", packageName);//NOI18N
+        replaceTokens.put("MODE", mode); //NOI18N
+        replaceTokens.put("OPENED", model.isOpened() ? "true" : "false"); //NOI18N
 
         // 0. move icon file if necessary
         String icon = model.getIcon();
@@ -187,28 +184,24 @@ final class NewTCIterator extends BasicWizardIterator {
             if (!FileUtil.isParentOf(Util.getResourceDirectory(project), fo)) {
                 String iconPath = getRelativePath(moduleInfo.getResourceDirectoryPath(false), packageName, 
                                                 "", fo.getNameExt()); //NOI18N
-                try {
-                    fileChanges.add(fileChanges.createFile(iconPath, fo.getURL()));
-                    relativeIconPath = packageName.replace('.', '/') + "/" + fo.getNameExt(); // NOI18N
-                } catch (FileStateInvalidException exc) {
-                    ErrorManager.getDefault().notify(exc);
-                }
+                fileChanges.add(fileChanges.createFile(iconPath, fo));
+                relativeIconPath = packageName.replace('.', '/') + "/" + fo.getNameExt(); // NOI18N
             } else {
                 relativeIconPath = FileUtil.getRelativePath(Util.getResourceDirectory(project), fo);
             }
-            replaceTokens.put("@@ICONPATH@@", relativeIconPath);//NOI18N
-            replaceTokens.put("@@COMMENTICON@@", "");//NOI18N
+            replaceTokens.put("ICONPATH", relativeIconPath);//NOI18N
+            replaceTokens.put("COMMENTICON", "");//NOI18N
             
         } else {
-            replaceTokens.put("@@ICONPATH@@", "SET/PATH/TO/ICON/HERE"); //NOI18N
-            replaceTokens.put("@@COMMENTICON@@", "//");//NOI18N
+            replaceTokens.put("ICONPATH", "SET/PATH/TO/ICON/HERE"); //NOI18N
+            replaceTokens.put("COMMENTICON", "//");//NOI18N
         }
         
         
         // 2. update project dependencies
-        replaceTokens.put("@@MODULENAME@@", moduleInfo.getCodeNameBase()); // NOI18N
+        replaceTokens.put("MODULENAME", moduleInfo.getCodeNameBase()); // NOI18N
         //TODO how to figure the currect specification version for module?
-        replaceTokens.put("@@SPECVERSION@@", moduleInfo.getSpecVersion()); // NOI18N
+        replaceTokens.put("SPECVERSION", moduleInfo.getSpecVersion()); // NOI18N
         fileChanges.add(fileChanges.addModuleDependency("org.openide.windows")); //NOI18N
         fileChanges.add(fileChanges.addModuleDependency("org.openide.util")); //NOI18N
         fileChanges.add(fileChanges.addModuleDependency("org.openide.awt")); //NOI18N
@@ -217,30 +210,25 @@ final class NewTCIterator extends BasicWizardIterator {
         // x. generate java classes
         final String tcName = getRelativePath(moduleInfo.getSourceDirectoryPath(), packageName,
                 name, "TopComponent.java"); //NOI18N
-        // TODO use nbresloc URL protocol rather than NewLoaderIterator.class.getResource(...):
-        URL template = NewTCIterator.class.getResource("templateTopComponent.javx");//NOI18N
+        FileObject template = CreatedModifiedFiles.getTemplate("templateTopComponent.java");//NOI18N
         fileChanges.add(fileChanges.createFileWithSubstitutions(tcName, template, replaceTokens));
         // x. generate java classes
         final String tcFormName = getRelativePath(moduleInfo.getSourceDirectoryPath(), packageName,
                 name, "TopComponent.form"); //NOI18N
-        // TODO use nbresloc URL protocol rather than NewLoaderIterator.class.getResource(...):
-        template = NewTCIterator.class.getResource("templateTopComponent.frmx");//NOI18N
+        template = CreatedModifiedFiles.getTemplate("templateTopComponent.form");//NOI18N
         fileChanges.add(fileChanges.createFileWithSubstitutions(tcFormName, template, replaceTokens));
         
         final String actionName = getRelativePath(moduleInfo.getSourceDirectoryPath(), packageName,
                 name, "Action.java"); //NOI18N
-        // TODO use nbresloc URL protocol rather than NewLoaderIterator.class.getResource(...):
-        template = NewTCIterator.class.getResource("templateAction.javx");//NOI18N
+        template = CreatedModifiedFiles.getTemplate("templateAction.java");//NOI18N
         fileChanges.add(fileChanges.createFileWithSubstitutions(actionName, template, replaceTokens));
         
         final String settingsName = name + "TopComponent.settings"; //NOI18N
-        // TODO use nbresloc URL protocol rather than NewLoaderIterator.class.getResource(...):
-        template = NewTCIterator.class.getResource("templateSettings.xml");//NOI18N
+        template = CreatedModifiedFiles.getTemplate("templateSettings.xml");//NOI18N
         fileChanges.add(fileChanges.createLayerEntry("Windows2/Components/" + settingsName, template, replaceTokens, null, null)); // NOI18N
         
         final String wstcrefName = name + "TopComponent.wstcref"; //NOI18N
-        // TODO use nbresloc URL protocol rather than NewLoaderIterator.class.getResource(...):
-        template = NewTCIterator.class.getResource("templateWstcref.xml");//NOI18N
+        template = CreatedModifiedFiles.getTemplate("templateWstcref.xml");//NOI18N
         fileChanges.add(fileChanges.createLayerEntry("Windows2/Modes/" + mode + "/" + wstcrefName, // NOI18N
                              template, replaceTokens, null, null));
         

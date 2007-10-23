@@ -41,12 +41,12 @@
 
 package org.netbeans.modules.apisupport.project.ui.wizard.moduleinstall;
 
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
 
 /**
  * Data model used across the <em>New Module Installer</em>.
@@ -83,11 +83,11 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         
         // generate .java file for ModuleInstall
         Map<String, String> basicTokens = new HashMap<String, String>();
-        basicTokens.put("@@PACKAGE_NAME@@", getPackageName()); // NOI18N
-        basicTokens.put("@@CLASS_NAME@@", className); // NOI18N
+        basicTokens.put("PACKAGE_NAME", getPackageName()); // NOI18N
+        basicTokens.put("CLASS_NAME", className); // NOI18N
         // XXX use nbresloc URL protocol rather than
         // DataModel.class.getResource(...) and all such a cases below
-        URL template = DataModel.class.getResource("moduleInstall.javx"); // NOI18N
+        FileObject template = CreatedModifiedFiles.getTemplate("moduleInstall.java"); // NOI18N
         cmf.add(cmf.createFileWithSubstitutions(path, template, basicTokens));
         
         cmf.add(cmf.addModuleDependency("org.openide.modules")); // NOI18N

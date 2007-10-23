@@ -1,28 +1,33 @@
-package @@PACKAGENAME@@;
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
+
+package ${PACKAGENAME};
 
 import java.io.Serializable;
 import java.util.logging.Logger;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
-@@COMMENTICON@@import org.openide.util.Utilities;
+${COMMENTICON}import org.openide.util.Utilities;
 
 /**
  * Top component which displays something.
  */
-final class @@TEMPLATENAME@@TopComponent extends TopComponent {
+final class ${TEMPLATENAME}TopComponent extends TopComponent {
 
-    private static @@TEMPLATENAME@@TopComponent instance;
+    private static ${TEMPLATENAME}TopComponent instance;
     /** path to the icon used by the component and its open action */
-@@COMMENTICON@@    static final String ICON_PATH = "@@ICONPATH@@";
+${COMMENTICON}    static final String ICON_PATH = "${ICONPATH}";
 
-    private static final String PREFERRED_ID = "@@TEMPLATENAME@@TopComponent";
+    private static final String PREFERRED_ID = "${TEMPLATENAME}TopComponent";
 
-    private @@TEMPLATENAME@@TopComponent() {
+    private ${TEMPLATENAME}TopComponent() {
         initComponents();
-        setName(NbBundle.getMessage(@@TEMPLATENAME@@TopComponent.class, "CTL_@@TEMPLATENAME@@TopComponent"));
-        setToolTipText(NbBundle.getMessage(@@TEMPLATENAME@@TopComponent.class, "HINT_@@TEMPLATENAME@@TopComponent"));
-@@COMMENTICON@@        setIcon(Utilities.loadImage(ICON_PATH, true));
+        setName(NbBundle.getMessage(${TEMPLATENAME}TopComponent.class, "CTL_${TEMPLATENAME}TopComponent"));
+        setToolTipText(NbBundle.getMessage(${TEMPLATENAME}TopComponent.class, "HINT_${TEMPLATENAME}TopComponent"));
+${COMMENTICON}        setIcon(Utilities.loadImage(ICON_PATH, true));
     }
 
     /** This method is called from within the constructor to
@@ -54,57 +59,62 @@ final class @@TEMPLATENAME@@TopComponent extends TopComponent {
      * i.e. deserialization routines; otherwise you could get a non-deserialized instance.
      * To obtain the singleton instance, use {@link findInstance}.
      */
-    public static synchronized @@TEMPLATENAME@@TopComponent getDefault() {
+    public static synchronized ${TEMPLATENAME}TopComponent getDefault() {
         if (instance == null) {
-            instance = new @@TEMPLATENAME@@TopComponent();
+            instance = new ${TEMPLATENAME}TopComponent();
         }
         return instance;
     }
 
     /**
-     * Obtain the @@TEMPLATENAME@@TopComponent instance. Never call {@link #getDefault} directly!
+     * Obtain the ${TEMPLATENAME}TopComponent instance. Never call {@link #getDefault} directly!
      */
-    public static synchronized @@TEMPLATENAME@@TopComponent findInstance() {
+    public static synchronized ${TEMPLATENAME}TopComponent findInstance() {
         TopComponent win = WindowManager.getDefault().findTopComponent(PREFERRED_ID);
         if (win == null) {
-            Logger.getLogger(@@TEMPLATENAME@@TopComponent.class.getName()).warning(
+            Logger.getLogger(${TEMPLATENAME}TopComponent.class.getName()).warning(
                     "Cannot find " + PREFERRED_ID + " component. It will not be located properly in the window system.");
             return getDefault();
         }
-        if (win instanceof @@TEMPLATENAME@@TopComponent) {
-            return (@@TEMPLATENAME@@TopComponent)win;
+        if (win instanceof ${TEMPLATENAME}TopComponent) {
+            return (${TEMPLATENAME}TopComponent)win;
         }
-        Logger.getLogger(@@TEMPLATENAME@@TopComponent.class.getName()).warning(
+        Logger.getLogger(${TEMPLATENAME}TopComponent.class.getName()).warning(
                 "There seem to be multiple components with the '" + PREFERRED_ID +
                 "' ID. That is a potential source of errors and unexpected behavior.");
         return getDefault();
     }
 
-    public @Override int getPersistenceType() {
+    @Override
+    public int getPersistenceType() {
         return TopComponent.PERSISTENCE_ALWAYS;
     }
 
-    public @Override void componentOpened() {
+    @Override
+    public void componentOpened() {
         // TODO add custom code on component opening
     }
 
-    public @Override void componentClosed() {
+    @Override
+    public void componentClosed() {
         // TODO add custom code on component closing
     }
 
     /** replaces this in object stream */
-    public @Override Object writeReplace() {
+    @Override
+    public Object writeReplace() {
         return new ResolvableHelper();
     }
 
-    protected @Override String preferredID() {
+    @Override
+    protected String preferredID() {
         return PREFERRED_ID;
     }
 
     final static class ResolvableHelper implements Serializable {
         private static final long serialVersionUID = 1L;
         public Object readResolve() {
-            return @@TEMPLATENAME@@TopComponent.getDefault();
+            return ${TEMPLATENAME}TopComponent.getDefault();
         }
     }
 

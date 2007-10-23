@@ -49,10 +49,13 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Reader;
-import java.net.URL;
+import java.io.Writer;
+import java.nio.charset.Charset;
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -60,8 +63,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import javax.script.ScriptContext;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
+import javax.swing.text.PlainDocument;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -72,9 +81,12 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.CreateFromTemplateAttributesProvider;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.modules.SpecificationVersion;
+import org.openide.text.IndentEngine;
+import org.openide.util.Lookup;
 
 /**
  * See javadoc in {@link CreatedModifiedFiles} for what this class and its
@@ -110,12 +122,12 @@ public final class CreatedModifiedFilesFactory {
     }
     
     static CreatedModifiedFiles.Operation createFile(Project project,
-            String path, URL content) {
+            String path, FileObject content) {
         return new CreateFile(project, path, content);
     }
     
     static CreatedModifiedFiles.Operation createFileWithSubstitutions(Project project,
-            String path, URL content, Map<String,String> tokens) {
+            String path, FileObject content, Map<String,String> tokens) {
         return new CreateFile(project, path, content, tokens);
     }
     
@@ -124,7 +136,7 @@ public final class CreatedModifiedFilesFactory {
     }
     
     static CreatedModifiedFiles.Operation createLayerEntry(CreatedModifiedFiles cmf, Project project,
-            String layerPath, URL content,
+            String layerPath, FileObject content,
             Map<String,String> substitutionTokens, String localizedDisplayName, Map<String,Object> attrs) {
         return new CreateLayerEntry(cmf, project, layerPath, content,
                 substitutionTokens, localizedDisplayName, attrs);
@@ -249,14 +261,14 @@ public final class CreatedModifiedFilesFactory {
     private static final class CreateFile extends OperationBase {
         
         private String path;
-        private URL content;
+        private FileObject content;
         private Map<String,String> tokens;
         
-        public CreateFile(Project project, String path, URL content) {
+        public CreateFile(Project project, String path, FileObject content) {
             this(project, path, content, null);
         }
         
-        public CreateFile(Project project, String path, URL content, Map<String,String> tokens) {
+        public CreateFile(Project project, String path, FileObject content, Map<String,String> tokens) {
             super(project);
             this.path = path;
             if (content == null) {
@@ -268,73 +280,73 @@ public final class CreatedModifiedFilesFactory {
         }
         
         public void run() throws IOException {
-            FileObject targetFO = FileUtil.createData(getProject().getProjectDirectory(), path);
-            FileLock lock = targetFO.lock();
-            try {
-                if (tokens == null) {
-                    copyByteAfterByte(content, lock, targetFO);
-                } else {
-                    copyAndSubstituteTokens(content, lock, targetFO, tokens);
-                }
-            } finally {
-                lock.releaseLock();
+            FileObject target = FileUtil.createData(getProject().getProjectDirectory(), path);
+            if (tokens == null) {
+                copyByteAfterByte(content, target);
+            } else {
+                copyAndSubstituteTokens(content, target, tokens);
             }
         }
         
     }
     
-    private static void copyByteAfterByte(URL content, FileLock lock, FileObject targetFO) throws IOException {
-        OutputStream os = targetFO.getOutputStream(lock);
-        InputStream is = content.openStream();
+    private static void copyByteAfterByte(FileObject content, FileObject target) throws IOException {
+        OutputStream os = target.getOutputStream();
         try {
-            FileUtil.copy(is, os);
-        } finally {
-            is.close();
-            os.close();
-        }
-    }
-    
-    private static void copyAndSubstituteTokens(URL content, FileLock lock, FileObject targetFO, Map<String,String> tokens) throws IOException {
-        // #64023: at least XML files must always use UTF-8; but user probably expects *.java to use platform default?
-        boolean useUTF8 = targetFO.hasExt("xml"); // NOI18N
-        OutputStream os = targetFO.getOutputStream(lock);
-        try {
-            PrintWriter pw;
-            if (useUTF8) {
-                pw = new PrintWriter(new OutputStreamWriter(os, "UTF-8")); // NOI18N
-            } else {
-                pw = new PrintWriter(os);
-            }
+            InputStream is = content.getInputStream();
             try {
-                InputStream is = content.openStream();
-                try {
-                    Reader r;
-                    if (useUTF8) {
-                        r = new InputStreamReader(is, "UTF-8"); // NOI18N
-                    } else {
-                        r = new InputStreamReader(is);
-                    }
-                    BufferedReader br = new BufferedReader(r);
-                    String line;
-                    while ((line = br.readLine()) != null) {
-                        pw.println(tokens == null ? line : replaceTokens(tokens, line));
-                    }
-                } finally {
-                    is.close();
-                }
+                FileUtil.copy(is, os);
             } finally {
-                pw.close();
+                is.close();
             }
         } finally {
             os.close();
         }
     }
     
-    private static String replaceTokens(Map<String,String> tokens, String line) {
-        for (Map.Entry<String,String> entry : tokens.entrySet()) {
-            line = line.replaceAll(entry.getKey(), entry.getValue());
+    private static void copyAndSubstituteTokens(FileObject content, FileObject target, Map<String,String> tokens) throws IOException {
+        ScriptEngine engine = new ScriptEngineManager().getEngineByName("freemarker");
+        Map<String,Object> bindings = engine.getContext().getBindings(ScriptContext.ENGINE_SCOPE);
+        String basename = target.getName();
+        for (CreateFromTemplateAttributesProvider provider : Lookup.getDefault().lookupAll(CreateFromTemplateAttributesProvider.class)) {
+            DataObject d = DataObject.find(content);
+            Map<String,?> map = provider.attributesFor(d, d.getFolder(), basename);
+            if (map != null) {
+                bindings.putAll(map);
+            }
         }
-        return line;
+        bindings.put("name", basename.replaceFirst("\\.[^./]+$", "")); // NOI18N
+        bindings.put("user", System.getProperty("user.name")); // NOI18N
+        Date d = new Date();
+        bindings.put("date", DateFormat.getDateInstance().format(d)); // NOI18N
+        bindings.put("time", DateFormat.getTimeInstance().format(d)); // NOI18N
+        bindings.put("nameAndExt", target.getNameExt()); // NOI18N
+        bindings.putAll(tokens);
+        Charset targetEnc = FileEncodingQuery.getEncoding(target);
+        Charset sourceEnc = FileEncodingQuery.getEncoding(content);
+        bindings.put("encoding", targetEnc.name());
+        Writer w = new OutputStreamWriter(target.getOutputStream(), targetEnc);
+        try {
+            IndentEngine format = IndentEngine.find(content.getMIMEType());
+            if (format != null) {
+                PlainDocument doc = new PlainDocument();
+                doc.putProperty(PlainDocument.StreamDescriptionProperty, content);
+                w = format.createWriter(doc, 0, w);
+            }
+            engine.getContext().setWriter(w);
+            engine.getContext().setAttribute(FileObject.class.getName(), content, ScriptContext.ENGINE_SCOPE);
+            engine.getContext().setAttribute(ScriptEngine.FILENAME, content.getNameExt(), ScriptContext.ENGINE_SCOPE);
+            Reader is = new InputStreamReader(content.getInputStream(), sourceEnc);
+            try {
+                engine.eval(is);
+            } catch (ScriptException x) {
+                throw (IOException) new IOException(x.toString()).initCause(x);
+            } finally {
+                is.close();
+            }
+        } finally {
+            w.close();
+        }
     }
     
     private static final class BundleKey extends OperationBase {
@@ -493,7 +505,7 @@ public final class CreatedModifiedFilesFactory {
         private CreatedModifiedFiles.Operation layerOp;
         
         public CreateLayerEntry(CreatedModifiedFiles cmf, Project project, final String layerPath,
-                final URL content,
+                final FileObject content,
                 final Map<String,String> tokens, final String localizedDisplayName, final Map<String,Object> attrs) {
             
             super(project);
@@ -501,15 +513,10 @@ public final class CreatedModifiedFilesFactory {
                 public void run(FileSystem layer) throws IOException {
                     FileObject targetFO = FileUtil.createData(layer.getRoot(), layerPath);
                     if (content != null) {
-                        FileLock lock = targetFO.lock();
-                        try {
-                            if (tokens == null) {
-                                copyByteAfterByte(content, lock, targetFO);
-                            } else {
-                                copyAndSubstituteTokens(content, lock, targetFO, tokens);
-                            }
-                        } finally {
-                            lock.releaseLock();
+                        if (tokens == null) {
+                            copyByteAfterByte(content, targetFO);
+                        } else {
+                            copyAndSubstituteTokens(content, targetFO, tokens);
                         }
                     }
                     if (localizedDisplayName != null) {

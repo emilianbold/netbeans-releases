@@ -1,24 +1,30 @@
-package @@PACKAGENAME@@;
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
+
+package ${PACKAGENAME};
 
 import org.openide.loaders.DataNode;
 import org.openide.nodes.Children;
 import org.openide.util.Lookup;
 
-public class @@PREFIX@@DataNode extends DataNode {
+public class ${PREFIX}DataNode extends DataNode {
 
-    private static final String IMAGE_ICON_BASE = "@@ICONPATH@@";
+    private static final String IMAGE_ICON_BASE = "${ICONPATH}";
 
-    public @@PREFIX@@DataNode(@@PREFIX@@DataObject obj) {
+    public ${PREFIX}DataNode(${PREFIX}DataObject obj) {
         super(obj, Children.LEAF);
-@@COMMENTICON@@        setIconBaseWithExtension(IMAGE_ICON_BASE);
+${COMMENTICON}        setIconBaseWithExtension(IMAGE_ICON_BASE);
     }
-    @@PREFIX@@DataNode(@@PREFIX@@DataObject obj, Lookup lookup) {
+    ${PREFIX}DataNode(${PREFIX}DataObject obj, Lookup lookup) {
         super(obj, Children.LEAF, lookup);
-@@COMMENTICON@@        setIconBaseWithExtension(IMAGE_ICON_BASE);
+${COMMENTICON}        setIconBaseWithExtension(IMAGE_ICON_BASE);
     }
 
 //    /** Creates a property sheet. */
-//    protected @Override Sheet createSheet() {
+//    @Override
+//    protected Sheet createSheet() {
 //        Sheet s = super.createSheet();
 //        Sheet.Set ss = s.get(Sheet.PROPERTIES);
 //        if (ss == null) {

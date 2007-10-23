@@ -52,7 +52,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -84,20 +83,19 @@ public class CreatedModifiedFilesTest extends LayerTestBase {
 
     private static final String[] HTML_CONTENT = {
         "<html>",
-        "<em>i am some template</em>",
+        "i am some ${file}",
         "</html>"
     };
     
     private static final Map<String,String> TOKENS_MAP = new HashMap<String,String>();
     
     static {
-        TOKENS_MAP.put("some", "a\\ nonsense");
-        TOKENS_MAP.put("\\<(\\/{0,1})em\\>", "<$1strong>");
+        TOKENS_MAP.put("file", "template");
     }
     
     private static final String[] HTML_CONTENT_TOKENIZED = {
         "<html>",
-        "<strong>i am a nonsense template</strong>",
+        "i am some template",
         "</html>"
     };
     
@@ -245,9 +243,9 @@ public class CreatedModifiedFilesTest extends LayerTestBase {
         
         String templatePath = "src/org/example/module1/resources/binarytemplate.zip";
         
-        File binaryFile = createBinaryFile(HTML_CONTENT);
+        FileObject binaryFile = createBinaryFile(HTML_CONTENT);
         
-        Operation op = cmf.createFile(templatePath, binaryFile.toURI().toURL());
+        Operation op = cmf.createFile(templatePath, binaryFile);
         
         assertRelativePath(templatePath, op.getCreatedPaths());
         
@@ -525,7 +523,7 @@ public class CreatedModifiedFilesTest extends LayerTestBase {
         TestCase.assertEquals("created, modified paths", Arrays.asList(expectedPaths), Arrays.asList(paths));
     }
     
-    private URL createFile(String[] content) throws IOException {
+    private FileObject createFile(String[] content) throws IOException {
         File myTemplate = new File(getWorkDir(), "myTemplate.html");
         OutputStream myTemplateOS = new FileOutputStream(myTemplate);
         PrintWriter pw = new PrintWriter(myTemplateOS);
@@ -536,10 +534,10 @@ public class CreatedModifiedFilesTest extends LayerTestBase {
         } finally {
             pw.close();
         }
-        return myTemplate.toURI().toURL();
+        return FileUtil.toFileObject(myTemplate);
     }
     
-    private File createBinaryFile(String[] content) throws IOException {
+    private FileObject createBinaryFile(String[] content) throws IOException {
         File myTemplate = new File(getWorkDir(), "myTemplate.zip");
         ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(myTemplate));
         ZipEntry entry = new ZipEntry("a/b/c/d.txt");
@@ -553,7 +551,7 @@ public class CreatedModifiedFilesTest extends LayerTestBase {
         } finally {
             zos.close();
         }
-        return myTemplate;
+        return FileUtil.toFileObject(myTemplate);
     }
     
     private void assertFileContent(String[] content, File file) throws IOException {
@@ -569,8 +567,8 @@ public class CreatedModifiedFilesTest extends LayerTestBase {
         }
     }
     
-    private void assertFileContent(File f1, File f2) throws IOException {
-        InputStream is = new FileInputStream(f1);
+    private void assertFileContent(FileObject f1, File f2) throws IOException {
+        InputStream is = f1.getInputStream();
         InputStream is2 = new FileInputStream(f2);
         
         try {

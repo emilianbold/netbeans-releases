@@ -1,4 +1,9 @@
-package @@PACKAGE_NAME@@;
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
+
+package ${PACKAGE_NAME};
 
 import java.awt.Component;
 import java.awt.Dialog;
@@ -11,7 +16,7 @@ import org.openide.util.actions.CallableSystemAction;
 
 // An example action demonstrating how the wizard could be called from within
 // your code. You can copy-paste the code below wherever you need.
-public final class @@WIZARD_PREFIX@@WizardAction extends CallableSystemAction {
+public final class ${WIZARD_PREFIX}WizardAction extends CallableSystemAction {
 
     private WizardDescriptor.Panel[] panels;
 
@@ -36,7 +41,7 @@ public final class @@WIZARD_PREFIX@@WizardAction extends CallableSystemAction {
     private WizardDescriptor.Panel[] getPanels() {
         if (panels == null) {
             panels = new WizardDescriptor.Panel[] {
-                @@PANELS_DEFINITION_BLOCK@@
+                ${PANELS_DEFINITION_BLOCK}
             };
             String[] steps = new String[panels.length];
             for (int i = 0; i < panels.length; i++) {
@@ -67,7 +72,8 @@ public final class @@WIZARD_PREFIX@@WizardAction extends CallableSystemAction {
         return "Start Sample Wizard";
     }
 
-    public @Override String iconResource() {
+    @Override
+    public String iconResource() {
         return null;
     }
 
@@ -75,7 +81,8 @@ public final class @@WIZARD_PREFIX@@WizardAction extends CallableSystemAction {
         return HelpCtx.DEFAULT_HELP;
     }
 
-    protected @Override boolean asynchronous() {
+    @Override
+    protected boolean asynchronous() {
         return false;
     }
 

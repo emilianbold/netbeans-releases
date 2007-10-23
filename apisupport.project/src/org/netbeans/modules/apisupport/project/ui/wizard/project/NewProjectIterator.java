@@ -188,17 +188,16 @@ final class NewProjectIterator extends BasicWizardIterator {
         final String packageName = model.getPackageName();
         
         HashMap<String, String> replaceTokens = new HashMap<String, String>();
-        replaceTokens.put("@@CATEGORY@@", category);//NOI18N
-        replaceTokens.put("@@DISPLAYNAME@@", displayName);//NOI18N
-        replaceTokens.put("@@TEMPLATENAME@@", name);//NOI18N
-        replaceTokens.put("@@PACKAGENAME@@", packageName);//NOI18N
+        replaceTokens.put("CATEGORY", category);//NOI18N
+        replaceTokens.put("DISPLAYNAME", displayName);//NOI18N
+        replaceTokens.put("TEMPLATENAME", name);//NOI18N
+        replaceTokens.put("PACKAGENAME", packageName);//NOI18N
         
         
         // 1. create project description file
         final String descName = getRelativePath(moduleInfo.getResourceDirectoryPath(false), packageName,
                 name, "Description.html"); //NOI18N
-        // XXX use nbresloc URL protocol rather than NewLoaderIterator.class.getResource(...):
-        URL template = NewProjectIterator.class.getResource("templateDescription.html");//NOI18N
+        FileObject template = CreatedModifiedFiles.getTemplate("templateDescription.html");//NOI18N
         fileChanges.add(fileChanges.createFileWithSubstitutions(descName, template, replaceTokens));
         
         // 2. update project dependencies
@@ -223,25 +222,21 @@ final class NewProjectIterator extends BasicWizardIterator {
         // x. generate java classes
         final String iteratorName = getRelativePath(moduleInfo.getSourceDirectoryPath(), packageName,
                 name, "WizardIterator.java"); //NOI18N
-        // XXX use nbresloc URL protocol rather than NewLoaderIterator.class.getResource(...):
-        template = NewProjectIterator.class.getResource("templateWizardIterator.javx");//NOI18N
+        template = CreatedModifiedFiles.getTemplate("templateWizardIterator.java");//NOI18N
         fileChanges.add(fileChanges.createFileWithSubstitutions(iteratorName, template, replaceTokens));
         final String panelName = getRelativePath(moduleInfo.getSourceDirectoryPath(), packageName,
                 name, "WizardPanel.java"); //NOI18N
-        // XXX use nbresloc URL protocol rather than NewLoaderIterator.class.getResource(...):
-        template = NewProjectIterator.class.getResource("templateWizardPanel.javx");//NOI18N
+        template = CreatedModifiedFiles.getTemplate("templateWizardPanel.java");//NOI18N
         fileChanges.add(fileChanges.createFileWithSubstitutions(panelName, template, replaceTokens));
         
         final String formName = getRelativePath(moduleInfo.getSourceDirectoryPath(), packageName,
                 name, "PanelVisual.form"); //NOI18N
-        // XXX use nbresloc URL protocol rather than NewLoaderIterator.class.getResource(...):
-        template = NewProjectIterator.class.getResource("templatePanelVisual.frmx");//NOI18N
+        template = CreatedModifiedFiles.getTemplate("templatePanelVisual.form");//NOI18N
         fileChanges.add(fileChanges.createFileWithSubstitutions(formName, template, replaceTokens));
         
         final String panelVisName = getRelativePath(moduleInfo.getSourceDirectoryPath(), packageName,
                 name, "PanelVisual.java"); //NOI18N
-        // XXX use nbresloc URL protocol rather than NewLoaderIterator.class.getResource(...):
-        template = NewProjectIterator.class.getResource("templatePanelVisual.javx");//NOI18N
+        template = CreatedModifiedFiles.getTemplate("templatePanelVisual.java");//NOI18N
         fileChanges.add(fileChanges.createFileWithSubstitutions(panelVisName, template, replaceTokens));
         
         

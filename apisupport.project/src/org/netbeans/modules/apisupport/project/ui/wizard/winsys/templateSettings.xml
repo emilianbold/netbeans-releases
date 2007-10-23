@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<#assign licenseFirst = "<!--">
+<#assign licensePrefix = "">
+<#assign licenseLast = "-->">
+<#include "../Licenses/license-${project.license}.txt">
 <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
 <settings version="1.0">
-    <module name="@@MODULENAME@@" spec="@@SPECVERSION@@"/>
+    <module name="${MODULENAME}" spec="${SPECVERSION}"/>
     <instanceof class="org.openide.windows.TopComponent"/>
-    <instanceof class="@@PACKAGENAME@@.@@TEMPLATENAME@@TopComponent"/>
-    <instance class="@@PACKAGENAME@@.@@TEMPLATENAME@@TopComponent" method="getDefault"/>
+    <instanceof class="${PACKAGENAME}.${TEMPLATENAME}TopComponent"/>
+    <instance class="${PACKAGENAME}.${TEMPLATENAME}TopComponent" method="getDefault"/>
 </settings>

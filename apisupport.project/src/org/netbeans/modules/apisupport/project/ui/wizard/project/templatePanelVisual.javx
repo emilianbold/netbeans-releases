@@ -1,4 +1,9 @@
-package @@PACKAGENAME@@;
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
+
+package ${PACKAGENAME};
 
 import java.io.File;
 import javax.swing.JFileChooser;
@@ -11,13 +16,13 @@ import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.filesystems.FileUtil;
 
-public class @@TEMPLATENAME@@PanelVisual extends JPanel implements DocumentListener {
+public class ${TEMPLATENAME}PanelVisual extends JPanel implements DocumentListener {
 
     public static final String PROP_PROJECT_NAME = "projectName";
 
-    private @@TEMPLATENAME@@WizardPanel panel;
+    private ${TEMPLATENAME}WizardPanel panel;
 
-    public @@TEMPLATENAME@@PanelVisual(@@TEMPLATENAME@@WizardPanel panel) {
+    public ${TEMPLATENAME}PanelVisual(${TEMPLATENAME}WizardPanel panel) {
         initComponents();
         this.panel = panel;
         // Register listener on the textFields to make the automatic updates
@@ -136,7 +141,8 @@ public class @@TEMPLATENAME@@PanelVisual extends JPanel implements DocumentListe
     private javax.swing.JTextField projectNameTextField;
     // End of variables declaration//GEN-END:variables
 
-    public @Override void addNotify() {
+    @Override
+    public void addNotify() {
         super.addNotify();
         //same problem as in 31086, initial focus on Cancel button
         projectNameTextField.requestFocus();
@@ -203,7 +209,7 @@ public class @@TEMPLATENAME@@PanelVisual extends JPanel implements DocumentListe
 
         String projectName = (String) settings.getProperty("name");
         if(projectName == null) {
-            projectName = "@@TEMPLATENAME@@";
+            projectName = "${TEMPLATENAME}";
         }
         this.projectNameTextField.setText(projectName);
         this.projectNameTextField.selectAll();

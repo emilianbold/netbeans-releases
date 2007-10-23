@@ -1,4 +1,9 @@
-package @@PACKAGENAME@@;
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
+
+package ${PACKAGENAME};
 
 import java.awt.Image;
 import java.beans.BeanInfo;
@@ -8,9 +13,10 @@ import java.beans.SimpleBeanInfo;
 import org.openide.loaders.UniFileLoader;
 import org.openide.util.Utilities;
 
-public class @@PREFIX@@DataLoaderBeanInfo extends SimpleBeanInfo {
+public class ${PREFIX}DataLoaderBeanInfo extends SimpleBeanInfo {
 
-    public @Override BeanInfo[] getAdditionalBeanInfo() {
+    @Override
+    public BeanInfo[] getAdditionalBeanInfo() {
         try {
             return new BeanInfo[] {Introspector.getBeanInfo(UniFileLoader.class)};
         } catch (IntrospectionException e) {
@@ -18,8 +24,9 @@ public class @@PREFIX@@DataLoaderBeanInfo extends SimpleBeanInfo {
         }
     }
 
-    public @Override Image getIcon(int type) {
-        @@IMAGESNIPPET@@
+    @Override
+    public Image getIcon(int type) {
+        ${IMAGESNIPPET}
     }
 
 }

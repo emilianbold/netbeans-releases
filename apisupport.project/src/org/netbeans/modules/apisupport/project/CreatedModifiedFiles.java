@@ -42,7 +42,6 @@
 package org.netbeans.modules.apisupport.project;
 
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -56,6 +55,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.Repository;
 import org.openide.modules.SpecificationVersion;
 
 /**
@@ -220,7 +220,18 @@ public final class CreatedModifiedFiles {
             return invalidPaths.toArray(s);
         }
     }
-    
+
+    /**
+     * Convenience method to load a file template from the standard location.
+     * @param name a simple filename
+     * @return that file from the <code>Templates/NetBeansModuleDevelopment-files</code> layer folder
+     */
+    public static FileObject getTemplate(String name) {
+        FileObject f = Repository.getDefault().getDefaultFileSystem().findResource("Templates/NetBeansModuleDevelopment-files/" + name);
+        assert f != null : name;
+        return f;
+    }
+
     /**
      * Returns {@link Operation} for creating custom file in the project file
      * hierarchy.
@@ -228,7 +239,7 @@ public final class CreatedModifiedFiles {
      * @param content content for the file being created. Content may address
      *        either text or binary data.
      */
-    public Operation createFile(String path, URL content) {
+    public Operation createFile(String path, FileObject content) {
         return CreatedModifiedFilesFactory.createFile(project, path, content);
     }
     
@@ -240,15 +251,14 @@ public final class CreatedModifiedFiles {
      *
      * @param path relative to a project directory where a file to be created
      * @param content content for the file being created
-     * @param tokens map of <em>token to be replaced</em> - <em>by what</em>
-     *        pairs which will be applied on the stored file. Both a key and a
-     *        value have to be a valid regular expression. See {@link
-     *        java.lang.String#replaceAll(String, String)} and follow links in
-     *        its javadoc for more details. May be <code>null</code> (the same
-     *        as an empty map).
+     * @param tokens properties with values to be passed to FreeMarker
+     *               (in addition to: name, nameAndExt, user, date, time, and project.license)
      */
     public Operation createFileWithSubstitutions(String path,
-            URL content, Map<String,String> tokens) {
+            FileObject content, Map<String,String> tokens) {
+        if (tokens == null) {
+            throw new NullPointerException();
+        }
         return CreatedModifiedFilesFactory.createFileWithSubstitutions(project, path, content, tokens);
     }
     
@@ -344,13 +354,8 @@ public final class CreatedModifiedFiles {
      *        yet will be created. (e.g.
      *        <em>Menu/Tools/org-example-module1-BeepAction.instance</em>).
      * @param content became content of a file, or null
-     * @param substitutionTokens map of <em>token to be replaced</em> - <em>by
-     *        what</em> pairs which will be applied on the stored
-     *        <code>content</code> file. Both a key and a value have to be a
-     *        valid regular expression. See {@link
-     *        java.lang.String#replaceAll(String, String)} and follow links in
-     *        its javadoc for more details. May be <code>null</code> (the same
-     *        as an empty map).
+     * @param substitutionTokens see {@link #createFileWithSubstitutions} for details;
+     *                           may be <code>null</code> to not use FreeMarker
      * @param localizedDisplayName if it is not a <code>null</code>
      *        <em>SystemFileSystem.localizingBundle</em> attribute will be
      *        created with the stringvalue to a default bundle (from manifest).
@@ -365,7 +370,7 @@ public final class CreatedModifiedFiles {
      */
     public Operation createLayerEntry(
             String layerPath,
-            URL content,
+            FileObject content,
             Map<String,String> substitutionTokens,
             String localizedDisplayName,
             Map<String,Object> fileAttributes) {

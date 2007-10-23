@@ -1,10 +1,15 @@
-package @@PACKAGE_NAME@@;
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
 
-final class @@Panel_CLASS_NAME@@ extends javax.swing.JPanel {
+package ${PACKAGE_NAME};
 
-    private final @@OptionsPanelController_CLASS_NAME@@ controller;
+final class ${Panel_CLASS_NAME} extends javax.swing.JPanel {
 
-    @@Panel_CLASS_NAME@@(@@OptionsPanelController_CLASS_NAME@@ controller) {
+    private final ${OptionsPanelController_CLASS_NAME} controller;
+
+    ${Panel_CLASS_NAME}(${OptionsPanelController_CLASS_NAME} controller) {
         this.controller = controller;
         initComponents();
         // TODO listen to changes in form fields and call controller.changed()
@@ -33,9 +38,9 @@ final class @@Panel_CLASS_NAME@@ extends javax.swing.JPanel {
     void load() {
         // TODO read settings and initialize GUI
         // Example:        
-        // someCheckBox.setSelected(Preferences.userNodeForPackage(@@Panel_CLASS_NAME@@.class).getBoolean("someFlag", false));
+        // someCheckBox.setSelected(Preferences.userNodeForPackage(${Panel_CLASS_NAME}.class).getBoolean("someFlag", false));
         // or for org.openide.util with API spec. version >= 7.4:
-        // someCheckBox.setSelected(NbPreferences.forModule(@@Panel_CLASS_NAME@@.class).getBoolean("someFlag", false));
+        // someCheckBox.setSelected(NbPreferences.forModule(${Panel_CLASS_NAME}.class).getBoolean("someFlag", false));
         // or:
         // someTextField.setText(SomeSystemOption.getDefault().getSomeStringProperty());
     }
@@ -43,9 +48,9 @@ final class @@Panel_CLASS_NAME@@ extends javax.swing.JPanel {
     void store() {
         // TODO store modified settings
         // Example:
-        // Preferences.userNodeForPackage(@@Panel_CLASS_NAME@@.class).putBoolean("someFlag", someCheckBox.isSelected());
+        // Preferences.userNodeForPackage(${Panel_CLASS_NAME}.class).putBoolean("someFlag", someCheckBox.isSelected());
         // or for org.openide.util with API spec. version >= 7.4:
-        // NbPreferences.forModule(@@Panel_CLASS_NAME@@.class).putBoolean("someFlag", someCheckBox.isSelected());
+        // NbPreferences.forModule(${Panel_CLASS_NAME}.class).putBoolean("someFlag", someCheckBox.isSelected());
         // or:
         // SomeSystemOption.getDefault().setSomeStringProperty(someTextField.getText());
     }

@@ -44,7 +44,6 @@ package org.netbeans.modules.apisupport.project.ui.wizard.loader;
 import java.io.CharConversionException;
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -184,33 +183,33 @@ final class NewLoaderIterator extends BasicWizardIterator {
         String packageName = model.getPackageName();
         final String mime = model.getMimeType();
         Map<String, String> replaceTokens = new HashMap<String, String>();
-        replaceTokens.put("@@PREFIX@@", namePrefix);//NOI18N
-        replaceTokens.put("@@PACKAGENAME@@", packageName);//NOI18N
-        replaceTokens.put("@@MIMETYPE@@", mime);//NOI18N
-        replaceTokens.put("@@EXTENSIONS@@", formatExtensions(model.isExtensionBased(), model.getExtension(), mime));//NOI18N
-        replaceTokens.put("@@NAMESPACES@@", formatNameSpace(model.isExtensionBased(), model.getNamespace(), mime));//NOI18N
+        replaceTokens.put("PREFIX", namePrefix);//NOI18N
+        replaceTokens.put("PACKAGENAME", packageName);//NOI18N
+        replaceTokens.put("MIMETYPE", mime);//NOI18N
+        replaceTokens.put("EXTENSIONS", formatExtensions(model.isExtensionBased(), model.getExtension(), mime));//NOI18N
+        replaceTokens.put("NAMESPACES", formatNameSpace(model.isExtensionBased(), model.getNamespace(), mime));//NOI18N
         
         // Copy action icon
         String origIconPath = model.getIconPath();
         if (origIconPath != null && new File(origIconPath).exists()) {
             String relativeIconPath = model.addCreateIconOperation(fileChanges, origIconPath);
-            replaceTokens.put("@@IMAGESNIPPET@@", formatImageSnippet(relativeIconPath));//NOI18N
-            replaceTokens.put("@@ICONPATH@@", relativeIconPath);//NOI18N
-            replaceTokens.put("@@COMMENTICON@@", "");//NOI18N
+            replaceTokens.put("IMAGESNIPPET", formatImageSnippet(relativeIconPath));//NOI18N
+            replaceTokens.put("ICONPATH", relativeIconPath);//NOI18N
+            replaceTokens.put("COMMENTICON", "");//NOI18N
             
         } else {
-            replaceTokens.put("@@IMAGESNIPPET@@", formatImageSnippet(null)); //NOI18N
-            replaceTokens.put("@@ICONPATH@@", "SET/PATH/TO/ICON/HERE"); //NOI18N
-            replaceTokens.put("@@COMMENTICON@@", "//");//NOI18N
+            replaceTokens.put("IMAGESNIPPET", formatImageSnippet(null)); //NOI18N
+            replaceTokens.put("ICONPATH", "SET/PATH/TO/ICON/HERE"); //NOI18N
+            replaceTokens.put("COMMENTICON", "//");//NOI18N
         }
         
         // 1. create dataloader file
         String loaderName = model.getDefaultPackagePath(namePrefix + "DataLoader.java", false); // NOI18N
         // XXX use nbresloc URL protocol rather than NewLoaderIterator.class.getResource(...):
-        URL template = NewLoaderIterator.class.getResource("templateDataLoader.javx");//NOI18N
+        FileObject template = CreatedModifiedFiles.getTemplate("templateDataLoader.java");//NOI18N
         fileChanges.add(fileChanges.createFileWithSubstitutions(loaderName, template, replaceTokens));
         String loaderInfoName = model.getDefaultPackagePath(namePrefix + "DataLoaderBeanInfo.java", false); // NOI18N
-        template = NewLoaderIterator.class.getResource("templateDataLoaderBeanInfo.javx");//NOI18N
+        template = CreatedModifiedFiles.getTemplate("templateDataLoaderBeanInfo.java");//NOI18N
         fileChanges.add(fileChanges.createFileWithSubstitutions(loaderInfoName, template, replaceTokens));
         
         // 2. dataobject file
@@ -220,12 +219,12 @@ final class NewLoaderIterator extends BasicWizardIterator {
             StringBuffer editorBuf = new StringBuffer();
             editorBuf.append("        CookieSet cookies = getCookieSet();\n");//NOI18N
             editorBuf.append("        cookies.add((Node.Cookie) DataEditorSupport.create(this, getPrimaryEntry(), cookies));"); // NOI18N
-            replaceTokens.put("@@EDITOR_SUPPORT_SNIPPET@@", editorBuf.toString());//NOI18N
-            replaceTokens.put("@@EDITOR_SUPPORT_IMPORT@@", "import org.openide.text.DataEditorSupport;");//NOI18N
+            replaceTokens.put("EDITOR_SUPPORT_SNIPPET", editorBuf.toString());//NOI18N
+            replaceTokens.put("EDITOR_SUPPORT_IMPORT", "import org.openide.text.DataEditorSupport;");//NOI18N
         } else {
             // ignore the editor support snippet
-            replaceTokens.put("@@EDITOR_SUPPORT_SNIPPET@@", "");//NOI18N
-            replaceTokens.put("@@EDITOR_SUPPORT_IMPORT@@", "");//NOI18N
+            replaceTokens.put("EDITOR_SUPPORT_SNIPPET", "");//NOI18N
+            replaceTokens.put("EDITOR_SUPPORT_IMPORT", "");//NOI18N
         }
         
         String doName = model.getDefaultPackagePath(namePrefix + "DataObject.java", false); // NOI18N
@@ -234,23 +233,23 @@ final class NewLoaderIterator extends BasicWizardIterator {
             SpecificationVersion current = model.getModuleInfo().getDependencyVersion("org.openide.loaders");
             SpecificationVersion desired = new SpecificationVersion("6.0"); // NOI18N
             if (current.compareTo(desired) >= 0) {
-                template = NewLoaderIterator.class.getResource("templateDataObjectWithLookup.javx");//NOI18N
+                template = CreatedModifiedFiles.getTemplate("templateDataObjectWithLookup.java");//NOI18N
             }
         } catch (IOException ex) {
             Logger.getLogger(NewLoaderIterator.class.getName()).log(Level.INFO, null, ex);
         }
         if (template == null) {
-            template = NewLoaderIterator.class.getResource("templateDataObject.javx");//NOI18N
+            template = CreatedModifiedFiles.getTemplate("templateDataObject.java");//NOI18N
         }
         fileChanges.add(fileChanges.createFileWithSubstitutions(doName, template, replaceTokens));
         
         // 3. node file
         String nodeName = model.getDefaultPackagePath(namePrefix + "DataNode.java", false); // NOI18N
-        template = NewLoaderIterator.class.getResource("templateDataNode.javx");//NOI18N
+        template = CreatedModifiedFiles.getTemplate("templateDataNode.java");//NOI18N
         fileChanges.add(fileChanges.createFileWithSubstitutions(nodeName, template, replaceTokens));
         
         // 4. mimetyperesolver file
-        template = NewLoaderIterator.class.getResource("templateresolver.xml");//NOI18N
+        template = CreatedModifiedFiles.getTemplate("templateresolver.xml");//NOI18N
         fileChanges.add(fileChanges.createLayerEntry("Services/MIMEResolver/" + namePrefix + "Resolver.xml", //NOI18N
                 template,
                 replaceTokens,
@@ -332,18 +331,18 @@ final class NewLoaderIterator extends BasicWizardIterator {
         String suffix = null;
         if (model.isExtensionBased()) {
             suffix = "Template." + getFirstExtension(model.getExtension()); // NOI18N
-            template = NewLoaderIterator.class.getResource("templateNew1");//NOI18N
+            template = CreatedModifiedFiles.getTemplate("templateNew1");//NOI18N
         } else {
-            template = NewLoaderIterator.class.getResource("templateNew2");//NOI18N
+            template = CreatedModifiedFiles.getTemplate("templateNew2");//NOI18N
             suffix = "Template.xml"; // NOI18N
             try {
-                replaceTokens.put("@@NAMESPACE@@", XMLUtil.toElementContent(model.getNamespace())); // NOI18N
+                replaceTokens.put("NAMESPACE", XMLUtil.toElementContent(model.getNamespace())); // NOI18N
             } catch (CharConversionException ex) {
                 assert false: ex;
             }
         }
         Map<String, Object> attrs = new HashMap<String, Object>();
-        attrs.put("template", Boolean.TRUE); // NOI18N
+        attrs.put("template", true); // NOI18N
         fileChanges.add(fileChanges.createLayerEntry("Templates/Other/" + namePrefix + suffix, //NOI18N
                 template,
                 replaceTokens,

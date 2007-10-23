@@ -1,4 +1,9 @@
-package @@PACKAGE_NAME@@;
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
+
+package ${PACKAGE_NAME};
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -7,22 +12,22 @@ import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
-public final class @@OptionsCategory_CLASS_NAME@@ extends OptionsCategory {
+public final class ${OptionsCategory_CLASS_NAME} extends OptionsCategory {
 
     public Icon getIcon() {
-        return new ImageIcon(Utilities.loadImage("@@ICON_PATH@@"));
+        return new ImageIcon(Utilities.loadImage("${ICON_PATH}"));
     }
 
     public String getCategoryName() {
-        return NbBundle.getMessage(@@OptionsCategory_CLASS_NAME@@.class, "@@OptionsCategory_Name@@");
+        return NbBundle.getMessage(${OptionsCategory_CLASS_NAME}.class, "${OptionsCategory_Name}");
     }
 
     public String getTitle() {
-        return NbBundle.getMessage(@@OptionsCategory_CLASS_NAME@@.class, "@@OptionsCategory_Title@@");
+        return NbBundle.getMessage(${OptionsCategory_CLASS_NAME}.class, "${OptionsCategory_Title}");
     }
 
     public OptionsPanelController create() {
-        return new @@OptionsPanelController_CLASS_NAME@@();
+        return new ${OptionsPanelController_CLASS_NAME}();
     }
 
 }

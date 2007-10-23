@@ -1,19 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<#assign licenseFirst = "<!--">
+<#assign licensePrefix = "">
+<#assign licenseLast = "-->">
+<#include "../Licenses/license-${project.license}.txt">
 <!DOCTYPE library PUBLIC "-//NetBeans//DTD Library Declaration 1.0//EN" "http://www.netbeans.org/dtds/library-declaration-1_0.dtd">
 <library version="1.0">
-    <name>name_to_substitute</name>
+    <name>${NAME}</name>
     <type>j2se</type>
-    <localizing-bundle>bundle_to_substitute</localizing-bundle>
+    <localizing-bundle>${BUNDLE}</localizing-bundle>
     <volume>
         <type>classpath</type>
-        classpath_to_substitute
+        ${CLASSPATH}
     </volume>
     <volume>
         <type>src</type>
-        src_to_substitute
+        ${SRC}
     </volume>
     <volume>
-        <type>javadoc</type>            
-        javadoc_to_substitute
+        <type>javadoc</type>
+        ${JAVADOC}
     </volume>
 </library>

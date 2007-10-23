@@ -1,16 +1,22 @@
-package @@PACKAGE_NAME@@;
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
+
+package ${PACKAGE_NAME};
 
 import javax.swing.JPanel;
 
-public final class @@VISUAL_PANEL_CLASS@@ extends JPanel {
+public final class ${VISUAL_PANEL_CLASS} extends JPanel {
 
-    /** Creates new form @@VISUAL_PANEL_CLASS@@ */
-    public @@VISUAL_PANEL_CLASS@@() {
+    /** Creates new form ${VISUAL_PANEL_CLASS} */
+    public ${VISUAL_PANEL_CLASS}() {
         initComponents();
     }
 
-    public @Override String getName() {
-        return "@@STEP_NAME@@";
+    @Override
+    public String getName() {
+        return "${STEP_NAME}";
     }
 
     /** This method is called from within the constructor to

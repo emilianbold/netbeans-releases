@@ -68,7 +68,9 @@ import org.openide.filesystems.URLMapper;
  * @author Radek Matous
  */
 final class CreatedModifiedFilesProvider  {
-    
+
+    private CreatedModifiedFilesProvider() {}
+
     private static final String VOLUME_CLASS = "classpath";//NOI18N
     private static final String VOLUME_SRC = "src";//NOI18N
     private static final String VOLUME_JAVADOC = "javadoc";//NOI18N
@@ -84,7 +86,7 @@ final class CreatedModifiedFilesProvider  {
     }
     
     private static void addOperations(CreatedModifiedFiles fileSupport, NewLibraryDescriptor.DataModel data)  {
-        URL template = CreatedModifiedFilesProvider.class.getResource("libdescriptemplate.xml");//NOI18N
+        FileObject template = CreatedModifiedFiles.getTemplate("libdescriptemplate.xml");//NOI18N
         Map<String, String> tokens = getTokens(fileSupport, data.getProject(), data);
         String layerEntry = getLibraryDescriptorEntryPath(data.getLibraryName());
         
@@ -130,17 +132,17 @@ final class CreatedModifiedFilesProvider  {
     private static Map<String, String> getTokens(CreatedModifiedFiles fileSupport, Project project, NewLibraryDescriptor.DataModel data) {
         Map<String, String> retval = new HashMap<String, String>();
         Library library = data.getLibrary();
-        retval.put("name_to_substitute",data.getLibraryName());//NOI18N
-        retval.put("bundle_to_substitute",getPackagePlusBundle(project).replace('/','.'));//NOI18N
+        retval.put("NAME",data.getLibraryName());//NOI18N
+        retval.put("BUNDLE",getPackagePlusBundle(project).replace('/','.'));//NOI18N
         
         Iterator<URL> it = library.getContent(VOLUME_CLASS).iterator();
-        retval.put("classpath_to_substitute",getTokenSubstitution(it, fileSupport, data, "libs/"));//NOI18N
+        retval.put("CLASSPATH",getTokenSubstitution(it, fileSupport, data, "libs/"));//NOI18N
         
         it = library.getContent(VOLUME_SRC).iterator();
-        retval.put("src_to_substitute",getTokenSubstitution(it, fileSupport, data, "sources/"));//NOI18N
+        retval.put("SRC",getTokenSubstitution(it, fileSupport, data, "sources/"));//NOI18N
         
         it = library.getContent(VOLUME_JAVADOC).iterator();
-        retval.put("javadoc_to_substitute",getTokenSubstitution(it, fileSupport, data, "docs/"));//NOI18N
+        retval.put("JAVADOC",getTokenSubstitution(it, fileSupport, data, "docs/"));//NOI18N
         
         return retval;
     }
@@ -178,7 +180,7 @@ final class CreatedModifiedFilesProvider  {
             retval = archiv.getNameExt();
             StringBuffer sb = new StringBuffer();
             sb.append(pathPrefix).append(retval);
-            fileSupport.add(fileSupport.createFile(sb.toString(),archivURL));
+            fileSupport.add(fileSupport.createFile(sb.toString(), archiv));
         } else {
             if ("file".equals(originalURL.getProtocol())) {//NOI18N
                 FileObject folderToZip;
