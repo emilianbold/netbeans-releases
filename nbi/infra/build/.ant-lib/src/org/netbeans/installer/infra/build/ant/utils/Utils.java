@@ -968,7 +968,7 @@ public final class Utils {
      * Deplay (in milliseconds) which to wait between cheking the process state.
      */
     public static final int DELAY =
-            500; // NOMAGI
+            50; // NOMAGI
     
     /**
      * Prefix for JVM command-line arguments.
