@@ -139,7 +139,7 @@ public class SimplifiedJSPServlet {
         
         JspParserAPI.ParseResult parseResult = JspUtils.getCachedParseResult(doc, fobj, false, false);
         
-        if (!parseResult.isParsingSuccess()){
+        if (parseResult == null || !parseResult.isParsingSuccess()){
             processingSuccessful = false;
             return;
         }
