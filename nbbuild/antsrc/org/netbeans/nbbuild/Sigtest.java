@@ -56,7 +56,7 @@ import org.apache.tools.ant.types.Path;
 import org.apache.tools.ant.types.Reference;
 
 /** Invokes signature tests.
- * @author Michal Zlámal
+ * @author Michal Zlamal
  */
 public class Sigtest extends Task {
 
