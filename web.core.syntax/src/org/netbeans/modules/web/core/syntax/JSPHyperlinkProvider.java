@@ -115,8 +115,7 @@ public class JSPHyperlinkProvider implements HyperlinkProvider {
                 return false;
             }
             
-            SyntaxSupport sup = bdoc.getSyntaxSupport();
-            JspSyntaxSupport jspSup = (JspSyntaxSupport)sup.get(JspSyntaxSupport.class);
+            JspSyntaxSupport jspSup = JspSyntaxSupport.get(bdoc);
             
             TokenHierarchy tokenHierarchy = TokenHierarchy.get(bdoc);
             TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
@@ -175,7 +174,7 @@ public class JSPHyperlinkProvider implements HyperlinkProvider {
             }
             TokenSequence elTokenSequence = tokenSequence.embedded(ELTokenId.language());
             if (elTokenSequence != null){
-                ELExpression exp = new ELExpression((JspSyntaxSupport)bdoc.getSyntaxSupport());
+                ELExpression exp = new ELExpression(jspSup);
                 elTokenSequence.move(offset);
                 if(!elTokenSequence.moveNext()) {
                     return false; //no token
@@ -226,8 +225,7 @@ public class JSPHyperlinkProvider implements HyperlinkProvider {
         if (target == null || target.getDocument() != bdoc)
             return null;
         
-        SyntaxSupport sup = bdoc.getSyntaxSupport();
-        JspSyntaxSupport jspSup = (JspSyntaxSupport)sup.get(JspSyntaxSupport.class);
+        JspSyntaxSupport jspSup = JspSyntaxSupport.get(bdoc);
         
         TokenHierarchy tokenHierarchy = TokenHierarchy.get(bdoc);
         TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
@@ -251,7 +249,7 @@ public class JSPHyperlinkProvider implements HyperlinkProvider {
             TokenSequence elTokenSequence = tokenSequence.embedded(ELTokenId.language());
             
             if (elTokenSequence != null){
-                ELExpression exp = new ELExpression((JspSyntaxSupport)bdoc.getSyntaxSupport());
+                ELExpression exp = new ELExpression(jspSup);
                 elTokenSequence.move(offset);
                 if(!elTokenSequence.moveNext()) {
                     return null; //no token
@@ -299,8 +297,7 @@ public class JSPHyperlinkProvider implements HyperlinkProvider {
                         return;
                     }
 
-                    SyntaxSupport sup = bdoc.getSyntaxSupport();
-                    JspSyntaxSupport jspSup = (JspSyntaxSupport)sup.get(JspSyntaxSupport.class);
+                    JspSyntaxSupport jspSup = JspSyntaxSupport.get(bdoc);
 
                     TokenHierarchy tokenHierarchy = TokenHierarchy.get(bdoc);
                     TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
@@ -313,7 +310,7 @@ public class JSPHyperlinkProvider implements HyperlinkProvider {
                     // is it a bean in EL
                     TokenSequence elTokenSequence = tokenSequence.embedded(ELTokenId.language());
                     if (elTokenSequence != null){
-                        ELExpression exp = new ELExpression((JspSyntaxSupport)bdoc.getSyntaxSupport());
+                        ELExpression exp = new ELExpression(jspSup);
 
                         elTokenSequence.move(offset);
                         if(!elTokenSequence.moveNext()) {
