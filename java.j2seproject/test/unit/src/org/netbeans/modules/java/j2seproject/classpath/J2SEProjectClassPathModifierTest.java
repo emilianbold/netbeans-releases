@@ -38,21 +38,16 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 package org.netbeans.modules.java.j2seproject.classpath;
 
-import java.beans.Customizer;
 import java.beans.PropertyChangeListener;
-import java.io.OutputStream;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.jar.JarFile;
-import java.util.jar.JarOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import junit.framework.*;
 import java.io.File;
-import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -60,63 +55,50 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.TestUtil;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
-import org.netbeans.modules.java.j2seproject.UpdateHelper;
-import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
-import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryProvider;
-import org.netbeans.spi.project.libraries.LibraryTypeProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.netbeans.spi.project.support.ant.ReferenceHelper;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Lookup;
-import org.openide.util.Mutex;
-import org.openide.util.MutexException;
+import org.openide.util.test.MockLookup;
 
 /**
- *
  * @author tom
  */
 public class J2SEProjectClassPathModifierTest extends NbTestCase {
-    
+
     private FileObject scratch;
     private AntProjectHelper helper;
     private PropertyEvaluator eval;
     private FileObject src;
     private FileObject test;
     private Project prj;
-    
+
     public J2SEProjectClassPathModifierTest(String testName) {
         super(testName);
-    }       
-    
-    protected void setUp() throws Exception {
+    }
+
+    protected @Override void setUp() throws Exception {
         super.setUp();
-        TestUtil.setLookup(new Object[] {
+        MockLookup.setInstances(
             new org.netbeans.modules.java.j2seproject.J2SEProjectType(),
             new org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation(),
-            new TestLibraryProvider (),
-        });
+            new TestLibraryProvider());
         this.scratch = TestUtil.makeScratchDir(this);
         FileObject projdir = scratch.createFolder("proj");  //NOI18N
-        J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.4"));   //NOI18N    
+        J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.4"));   //NOI18N
         this.helper = J2SEProjectGenerator.createProject(FileUtil.toFile(projdir),"proj",null,null); //NOI18N
         this.eval = this.helper.getStandardPropertyEvaluator();
         J2SEProjectGenerator.setDefaultSourceLevel(null);
@@ -126,18 +108,15 @@ public class J2SEProjectClassPathModifierTest extends NbTestCase {
         assertNotNull (this.src);
         this.test = projdir.getFileObject("test");
         assertNotNull (this.test);
-        
+
     }
 
-    protected void tearDown() throws Exception {
-    }
-    
-    public void testAddRemoveRoot () throws Exception {        
+    public void testAddRemoveRoot () throws Exception {
         final FileObject rootFolder = this.scratch.createFolder("Root");
         final FileObject jarFile = this.scratch.createData("archive","jar");
         FileLock lck = jarFile.lock();
         try {
-            ZipOutputStream jf = new ZipOutputStream (jarFile.getOutputStream(lck));            
+            ZipOutputStream jf = new ZipOutputStream (jarFile.getOutputStream(lck));
             try {
                 jf.putNextEntry(new ZipEntry("Test.properties"));
             }finally {
@@ -168,15 +147,15 @@ public class J2SEProjectClassPathModifierTest extends NbTestCase {
         assertEquals(5,cpRoots.length);
         assertEquals(this.helper.resolveFileObject(cpRoots[4]),jarFile);
     }
-    
+
     public void testAddRemoveArtifact () throws Exception {
         FileObject projdir = scratch.createFolder("libPrj");  //NOI18N
-        J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.4"));   //NOI18N    
-        AntProjectHelper helper = J2SEProjectGenerator.createProject(FileUtil.toFile(projdir),"libProj",null,null); //NOI18N        
+        J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.4"));   //NOI18N
+        AntProjectHelper h = J2SEProjectGenerator.createProject(FileUtil.toFile(projdir),"libProj",null,null); //NOI18N
         J2SEProjectGenerator.setDefaultSourceLevel(null);
         Project libPrj = FileOwnerQuery.getOwner(projdir);
         assertNotNull (this.prj);
-        AntArtifactProvider ap = (AntArtifactProvider) libPrj.getLookup().lookup(AntArtifactProvider.class);
+        AntArtifactProvider ap = libPrj.getLookup().lookup(AntArtifactProvider.class);
         AntArtifact[] aas = ap.getBuildArtifacts();
         AntArtifact output = null;
         for (int i=0; i<aas.length; i++) {
@@ -202,9 +181,9 @@ public class J2SEProjectClassPathModifierTest extends NbTestCase {
         assertNotNull (cpRoots);
         assertEquals(0,cpRoots.length);
     }
-    
+
     public void testAddRemoveLibrary () throws Exception {
-        LibraryProvider lp = (LibraryProvider) Lookup.getDefault().lookup(LibraryProvider.class);
+        LibraryProvider lp = Lookup.getDefault().lookup(LibraryProvider.class);
         assertNotNull (lp);
         LibraryImplementation[] impls = lp.getLibraries();
         assertNotNull (impls);
@@ -213,7 +192,7 @@ public class J2SEProjectClassPathModifierTest extends NbTestCase {
         impls[0].setContent("classpath",Collections.singletonList(libRoot.getURL()));
         Library[] libs =LibraryManager.getDefault().getLibraries();
         assertNotNull (libs);
-        assertEquals(1,libs.length);                       
+        assertEquals(1,libs.length);
         ProjectClassPathModifier.addLibraries(libs, this.src, ClassPath.COMPILE);
         String cp = this.eval.getProperty("javac.classpath");
         assertNotNull (cp);
@@ -228,13 +207,14 @@ public class J2SEProjectClassPathModifierTest extends NbTestCase {
         assertNotNull (cpRoots);
         assertEquals(0,cpRoots.length);
     }
-    
+
+    @SuppressWarnings("deprecation")
     public void testClassPathExtenderCompatibility () throws Exception {
         final FileObject rootFolder = this.scratch.createFolder("Root");
         final FileObject jarFile = this.scratch.createData("archive","jar");
         FileLock lck = jarFile.lock();
         try {
-            ZipOutputStream jf = new ZipOutputStream (jarFile.getOutputStream(lck));            
+            ZipOutputStream jf = new ZipOutputStream (jarFile.getOutputStream(lck));
             try {
                 jf.putNextEntry(new ZipEntry("Test.properties"));
             }finally {
@@ -243,8 +223,8 @@ public class J2SEProjectClassPathModifierTest extends NbTestCase {
         } finally {
             lck.releaseLock();
         }
-        final FileObject jarRoot = FileUtil.getArchiveRoot(jarFile);
-        ProjectClassPathExtender extender = (ProjectClassPathExtender) this.prj.getLookup().lookup(ProjectClassPathExtender.class);
+        org.netbeans.spi.java.project.classpath.ProjectClassPathExtender extender =
+                prj.getLookup().lookup(org.netbeans.spi.java.project.classpath.ProjectClassPathExtender.class);
         assertNotNull (extender);
         extender.addArchiveFile(rootFolder);
         extender.addArchiveFile(jarFile);
@@ -256,7 +236,7 @@ public class J2SEProjectClassPathModifierTest extends NbTestCase {
         assertEquals(rootFolder,this.helper.resolveFileObject(cpRoots[0]));
         assertEquals(jarFile,this.helper.resolveFileObject(cpRoots[1]));
     }
-    
+
     public void testRemoveBrokenRoot () throws Exception {
         final FileObject rootFolder = this.scratch.createFolder("BrokenRoot");
         final FileObject jarFile = this.scratch.createData("brokenarchive","jar");
@@ -264,7 +244,7 @@ public class J2SEProjectClassPathModifierTest extends NbTestCase {
         assertNotNull(jar);
         FileLock lck = jarFile.lock();
         try {
-            ZipOutputStream jf = new ZipOutputStream (jarFile.getOutputStream(lck));            
+            ZipOutputStream jf = new ZipOutputStream (jarFile.getOutputStream(lck));
             try {
                 jf.putNextEntry(new ZipEntry("Test.properties"));
             }finally {
@@ -311,12 +291,12 @@ public class J2SEProjectClassPathModifierTest extends NbTestCase {
             assertFalse(jar.equals(f));
         }
     }
-    
-    
+
+
     private static class TestLibraryProvider implements LibraryProvider {
-        
+
         private LibraryImplementation[] libs;
-        
+
         public void removePropertyChangeListener(PropertyChangeListener listener) {
         }
 
@@ -329,20 +309,20 @@ public class J2SEProjectClassPathModifierTest extends NbTestCase {
             }
             return this.libs;
         }
-        
-    }    
-    
+
+    }
+
     private static class TestLibrary implements LibraryImplementation {
-        
+
         private String name;
-        private List cp = Collections.EMPTY_LIST;
-        private List src = Collections.EMPTY_LIST;
-        private List jdoc = Collections.EMPTY_LIST;
-        
+        private List<URL> cp = Collections.emptyList();
+        private List<URL> src = Collections.emptyList();
+        private List<URL> jdoc = Collections.emptyList();
+
         public TestLibrary (String name) {
             this.name = name;
         }
-        
+
         public void setName(String name) {
         }
 
@@ -352,9 +332,9 @@ public class J2SEProjectClassPathModifierTest extends NbTestCase {
         public void setDescription(String text) {
         }
 
-        public List getContent(String volumeType) throws IllegalArgumentException {
+        public List<URL> getContent(String volumeType) throws IllegalArgumentException {
             if ("classpath".equals(volumeType)) {
-                return this.cp; 
+                return this.cp;
             }
             else if ("src".equals(volumeType)) {
                 return this.src;
@@ -371,7 +351,7 @@ public class J2SEProjectClassPathModifierTest extends NbTestCase {
         public void addPropertyChangeListener(PropertyChangeListener l) {
         }
 
-        public void setContent(String volumeType, List path) throws IllegalArgumentException {
+        public void setContent(String volumeType, List<URL> path) throws IllegalArgumentException {
             if ("classpath".equals(volumeType)) {
                 this.cp = path;
             }
@@ -401,7 +381,7 @@ public class J2SEProjectClassPathModifierTest extends NbTestCase {
         public String getDescription() {
             return null;
         }
-        
+
     }
-    
+
 }
