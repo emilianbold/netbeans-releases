@@ -130,6 +130,7 @@ public class EjbJarProjectGenerator {
         
         FileObject srcRoot = projectDir.createFolder(DEFAULT_SRC_FOLDER); // NOI18N
         srcRoot.createFolder(DEFAULT_JAVA_FOLDER); //NOI18N
+        projectDir.createFolder(DEFAULT_TEST_FOLDER);
         FileObject confRoot = srcRoot.createFolder(DEFAULT_DOC_BASE_FOLDER); // NOI18N
         
         //create a default manifest
