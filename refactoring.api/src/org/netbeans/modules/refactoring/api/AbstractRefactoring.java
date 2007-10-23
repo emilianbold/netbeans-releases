@@ -45,8 +45,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.refactoring.api.impl.APIAccessor;
 import org.netbeans.modules.refactoring.api.impl.ProgressSupport;
@@ -67,6 +65,7 @@ import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.impl.RefactoringPanel;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.InstanceContent;
 
@@ -363,7 +362,7 @@ public abstract class AbstractRefactoring {
         } else {
             newProblem = new Problem(false, createMessage(source, t));
         }
-        Logger.global.log(Level.INFO, "Refactoring plugin threw exception:", t);
+        Exceptions.printStackTrace(t);
         return chainProblems(newProblem, p);
     }
     
