@@ -79,7 +79,9 @@ import org.netbeans.Util;
 import org.netbeans.core.startup.SetupHid.FakeEvents;
 import org.netbeans.core.startup.SetupHid.FakeModuleInstaller;
 import org.netbeans.core.startup.SetupHid.LoggedPCListener;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.test.TestFileUtils;
 import org.openide.modules.Dependency;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
@@ -1851,10 +1853,10 @@ public class ModuleManagerTest extends SetupHid {
             // Make sure t1 runs to completion, though.
             final Object finishT1 = "finishT1";
             Thread t1 = new Thread("custom thread #1") {
-                public void run() {
+                public @Override void run() {
                     synchronized (finishT1) {
                         t23[0] = new Thread("custom thread #2") {
-                            public void run() {
+                            public @Override void run() {
                                 synchronized (sleepForever) {
                                     try {
                                         sleepForever.wait();
@@ -1868,7 +1870,7 @@ public class ModuleManagerTest extends SetupHid {
                         Thread.currentThread().setContextClassLoader(lx[0]);
                         mgr.disable(m1);
                         t23[1] = new Thread("custom thread #3") {
-                            public void run() {
+                            public @Override void run() {
                                 synchronized (sleepForever) {
                                     try {
                                         sleepForever.wait();
@@ -2206,6 +2208,37 @@ public class ModuleManagerTest extends SetupHid {
         }
     }
 
+    public void testModuleInterdependenciesNeeds() throws Exception { // #114896
+        FileObject dir = FileUtil.toFileObject(getWorkDir());
+        assertNotNull(dir);
+        FakeModuleInstaller installer = new FakeModuleInstaller();
+        FakeEvents ev = new FakeEvents();
+        ModuleManager mgr = new ModuleManager(installer, ev);
+        mgr.mutexPrivileged().enterWriteAccess();
+        try {
+            Module api = mgr.create(FileUtil.toFile(TestFileUtils.writeZipFile(dir, "api.jar",
+                    "META-INF/MANIFEST.MF:OpenIDE-Module: api\nOpenIDE-Module-Needs: provider\n\n")), null, false, false, false);
+            Module impl = mgr.create(FileUtil.toFile(TestFileUtils.writeZipFile(dir, "impl.jar",
+                    "META-INF/MANIFEST.MF:OpenIDE-Module: impl\nOpenIDE-Module-Provides: provider\nOpenIDE-Module-Module-Dependencies: api\n\n")), null, false, false, false);
+            Module client = mgr.create(FileUtil.toFile(TestFileUtils.writeZipFile(dir, "client.jar",
+                    "META-INF/MANIFEST.MF:OpenIDE-Module: client\nOpenIDE-Module-Module-Dependencies: api\n\n")), null, false, false, false);
+            assertEquals(Collections.singleton(api), mgr.getModuleInterdependencies(impl, false, false));
+            assertEquals(Collections.singleton(api), mgr.getModuleInterdependencies(impl, false, true));
+            assertEquals(Collections.singleton(api), mgr.getModuleInterdependencies(impl, true, false));
+            assertEquals(new HashSet<Module>(Arrays.asList(api, client)), mgr.getModuleInterdependencies(impl, true, true));
+            assertEquals(Collections.singleton(api), mgr.getModuleInterdependencies(client, false, false));
+            assertEquals(new HashSet<Module>(Arrays.asList(api, impl)), mgr.getModuleInterdependencies(client, false, true));
+            assertEquals(Collections.emptySet(), mgr.getModuleInterdependencies(client, true, false));
+            assertEquals(Collections.emptySet(), mgr.getModuleInterdependencies(client, true, true));
+            assertEquals(Collections.singleton(impl), mgr.getModuleInterdependencies(api, false, false));
+            assertEquals(Collections.singleton(impl), mgr.getModuleInterdependencies(api, false, true));
+            assertEquals(new HashSet<Module>(Arrays.asList(impl, client)), mgr.getModuleInterdependencies(api, true, false));
+            assertEquals(new HashSet<Module>(Arrays.asList(impl, client)), mgr.getModuleInterdependencies(api, true, true));
+        } finally {
+            mgr.mutexPrivileged().exitWriteAccess();
+        }
+    }
+
     public void testModuleClassLoaderWasNotReadyWhenTheChangeWasFiredIssue() throws Exception {
         doModuleClassLoaderWasNotReadyWhenTheChangeWasFiredIssue (1);
     }
@@ -2229,7 +2262,7 @@ public class ModuleManagerTest extends SetupHid {
                 IllegalStateException ex;
 
                 public void propertyChange (java.beans.PropertyChangeEvent event) {
-                    if (m1.PROP_ENABLED.equals (event.getPropertyName ())) {
+                    if (Module.PROP_ENABLED.equals (event.getPropertyName ())) {
                         try {
                             l = get();
                         } catch (IllegalStateException x) {

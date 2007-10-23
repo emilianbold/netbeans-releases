@@ -443,7 +443,7 @@ public abstract class Util {
         } else {
             Set<Module> s = new HashSet<Module>();
             for (Dependency dep : m.getDependenciesArray()) {
-                if (dep.getType() == Dependency.TYPE_REQUIRES) {
+                if (dep.getType() == Dependency.TYPE_REQUIRES || dep.getType() == Dependency.TYPE_NEEDS) {
                     Set<Module> providers = providersOf.get(dep.getName());
                     if (providers != null) {
                         s.addAll(providers);

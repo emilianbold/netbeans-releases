@@ -316,7 +316,7 @@ public final class ModuleManager {
 
     /**
      * Get a set of modules depended upon or depending on this module.
-     * <p>Note that provide-require dependencies are listed alongside direct
+     * <p>Note that provide-require/need dependencies are listed alongside direct
      * dependencies; a module with a required token is considered to depend on
      * <em>all</em> modules providing that token (though in fact only one is needed
      * to enable it).

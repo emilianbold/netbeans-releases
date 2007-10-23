@@ -803,20 +803,7 @@ public class Utilities {
      * @return a set (possibly empty) of modules managed by this manager, never including m
      */
     public static Set<Module> findRequiredModules (Module m, ModuleManager mm) {
-        Set<Module> res = new HashSet<Module> ();
-        // workaround issue #114896
-        for (Dependency dep : getNeedsAndRequiresOnly (m.getDependencies ())) {
-            for (ModuleInfo info : getInstalledModules ()) {
-                if (Arrays.asList (info.getProvides ()).contains (dep.getName ())) {
-                    res.add (toModule (info));
-                }
-            }
-        }
-        // end of workaround
-        for (Module depM : mm.getModuleInterdependencies (m, false, false)) {
-            res.add (depM);
-        }
-        return res;
+        return mm.getModuleInterdependencies(m, false, false);
     }
     
     /** Finds for modules given module depends upon.
@@ -824,28 +811,7 @@ public class Utilities {
      * @return a set (possibly empty) of modules managed by this manager, never including m
      */
     public static Set<Module> findDependingModules (Module m, ModuleManager mm) {
-        Set<Module> res = new HashSet<Module> ();
-        // workaround issue #114896
-        String [] provides = m.getProvides ();
-        if (provides != null && provides.length > 0) {
-            Collection<Dependency> deps = new HashSet<Dependency> ();
-            for (String token : provides) {
-                deps.addAll (Dependency.create (Dependency.TYPE_NEEDS, token));
-                deps.addAll (Dependency.create (Dependency.TYPE_REQUIRES, token));
-            }
-            for (ModuleInfo moduleInfo : getInstalledModules ()) {
-                Collection<Dependency> tmpDeps = new HashSet<Dependency> (deps);
-                tmpDeps.retainAll (moduleInfo.getDependencies ());
-                if (! tmpDeps.isEmpty ()) {
-                    res.add (toModule (moduleInfo));
-                }
-            }
-        }
-        // end of workaround
-        for (Module depM : mm.getModuleInterdependencies (m, true, false)) {
-            res.add(depM);
-        }
-        return res;
+        return mm.getModuleInterdependencies(m, true, false);
     }
 
     public static String formatDate(Date date) {
