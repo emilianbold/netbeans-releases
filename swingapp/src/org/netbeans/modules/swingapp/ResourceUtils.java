@@ -325,8 +325,13 @@ class ResourceUtils {
      * @return String representation of a value for ResourceMap
      */
     static String getValueAsString(Object value) {
-        if (value instanceof String)
+        if (value == null) {
+            return "${null}"; // NOI18N
+        }
+
+        if (value instanceof String) {
             return (String) value;
+        }
 
         if (value instanceof Color) {
             Color c = (Color) value;
