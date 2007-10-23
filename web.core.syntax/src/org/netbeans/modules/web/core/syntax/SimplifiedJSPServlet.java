@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.servlet.jsp.tagext.TagAttributeInfo;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -95,7 +96,7 @@ public class SimplifiedJSPServlet {
             + "\t\tJspContext jspContext,\n" 
             + "\t\tObject page,\n" 
             + "\t\tPageContext pageContext\n"
-            + ") throws Throwable {\n\n"; //NOI18N
+            + "\t) throws Throwable {\n"; //NOI18N
     private static final String CLASS_FOOTER = "\n\t}\n}"; //NOI18N
     private final Document doc;
     private final FileObject fobj;
@@ -235,11 +236,21 @@ public class SimplifiedJSPServlet {
     private String createBeanVarDeclarations() {
         StringBuilder beanDeclarationsBuff = new StringBuilder();
 
-        PageInfo.BeanData[] beanData = getBeanData();
+        PageInfo pageInfo = getPageInfo();
+        
+        if (pageInfo != null) {
+            PageInfo.BeanData[] beanData = getBeanData();
 
-        if (beanData != null) {
-            for (PageInfo.BeanData bean : beanData) {
-                beanDeclarationsBuff.append(bean.getClassName() + " " + bean.getId() + ";\n"); //NOI18N
+            if (beanData != null) {
+                for (PageInfo.BeanData bean : beanData) {
+                    beanDeclarationsBuff.append(bean.getClassName() + " " + bean.getId() + ";\n"); //NOI18N
+                }
+            }
+            
+            if (pageInfo.isTagFile()){
+                for (TagAttributeInfo info : pageInfo.getTagInfo().getAttributes()){
+                    beanDeclarationsBuff.append(info.getTypeName() + " " + info.getName() + ";\n"); //NOI18N
+                }
             }
         }
 

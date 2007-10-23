@@ -204,7 +204,8 @@ made subject to such option by the copyright holder.
                 
                 <folder name="CompletionProviders">
                     <file name="org-netbeans-modules-web-core-syntax-completion-JspCompletionProvider.instance"/>
-                    <file name="org-netbeans-modules-web-core-syntax-completion-JavaJSPCompletionProvider.instance"/>
+                    <file name="org-netbeans-modules-editor-java-JavaCompletionProvider.instance"/>
+                    <file name="org-netbeans-modules-editor-html-HTMLCompletionProvider.instance"/>
                 </folder>
 
                 <folder name="HyperlinkProviders">
@@ -212,10 +213,10 @@ made subject to such option by the copyright holder.
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.web.core.syntax.JSPHyperlinkProvider"/>
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider"/>
                     </file>
-                    <!--<file name="JavaHyperlinkProvider.instance">
+                    <file name="JavaHyperlinkProvider.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.java.editor.hyperlink.JavaHyperlinkProvider"/>
-                        <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider"/>
-                    </file>-->
+                        <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
+                    </file>
                 </folder>
                 
             </folder>

@@ -57,7 +57,7 @@ public class ErrorHintsFactory extends EditorAwareJavaSourceTaskFactory {
      * Creates a new instance of JavaHintsFactory
      */
     public ErrorHintsFactory() {
-        super(Phase.RESOLVED, Priority.BELOW_NORMAL, "text/x-java", "text/x-jsp");
+        super(Phase.RESOLVED, Priority.BELOW_NORMAL, "text/x-java", "text/x-jsp", "text/x-tag");
     }
 
     public CancellableTask<CompilationInfo> createTask(FileObject file) {

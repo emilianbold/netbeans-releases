@@ -116,6 +116,9 @@ made subject to such option by the copyright holder.
             <folder name="x-jsp">
                 <file name="org-netbeans-modules-java-editor-semantic-HighlightsLayerFactoryImpl.instance" />
             </folder>
+            <folder name="x-tag">
+                <file name="org-netbeans-modules-java-editor-semantic-HighlightsLayerFactoryImpl.instance" />
+            </folder>
             <folder name="x-java">
 
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.editor.resources.Bundle"/>
