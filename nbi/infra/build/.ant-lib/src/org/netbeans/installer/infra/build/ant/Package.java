@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU General
  * Public License Version 2 only ("GPL") or the Common Development and Distribution
  * License("CDDL") (collectively, the "License"). You may not use this file except in
@@ -16,13 +16,13 @@
  * accompanied this code. If applicable, add the following below the License Header,
  * with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * Contributor(s):
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL or only the
  * GPL Version 2, indicate your decision by adding "[Contributor] elects to include
  * this software in this distribution under the [CDDL or GPL Version 2] license." If
@@ -231,44 +231,57 @@ public class Package extends Task {
                 
                 browse(child, output, offset);
             } else {
+                // if pack200.enabled property is set to false then disable packing
+                // otherwise do repacking
+                boolean packedProp = false;                
+                final String pack200Enabled = getProject().getProperty("pack200.enabled"); //NOI18N
+                boolean usePacking = ! "false".equals(pack200Enabled); //NOI18N
+                
                 // if the source file comes in already packed, we need to unpack it
-                // first and then process normally
+                // first and then process normally                
                 if (child.getName().endsWith(".jar.pack.gz")) { // NOI18N
-                    log("        it is a packed jar - unpacking"); // NOI18N
-                    File unpacked = new File(child.getPath().substring(
-                            0,
-                            child.getPath().length() - 8));
-                    File temp = null;
-                    
-                    if (unpacked.exists()) {
-                        temp = File.createTempFile(
-                                "xxx", // NOI18N
-                                null,
-                                child.getParentFile());
-                        temp.delete();
-                        unpacked.renameTo(temp);
-                    }
-                    
-                    if (Utils.unpack(child, unpacked)) {
-                        child.delete();
-                        if (temp != null) {
-                            temp.delete();
-                        }
-                        child = unpacked.getAbsoluteFile();
+                    if(usePacking) {
+                        log("        it is a packed jar - unpacking"); // NOI18N
+                        File unpacked = new File(child.getPath().substring(
+                                0,
+                                child.getPath().length() - 8));
+                        File temp = null;
                         
-                        log("        successfully unpacked - processing " + // NOI18N
-                                "file: " + child); // NOI18N
-                    } else {
-                        unpacked.delete();
-                        if (temp != null) {
-                            temp.renameTo(unpacked);
+                        if (unpacked.exists()) {
+                            temp = File.createTempFile(
+                                    "xxx", // NOI18N
+                                    null,
+                                    child.getParentFile());
+                            temp.delete();
+                            unpacked.renameTo(temp);
                         }
+                        
+                        if (Utils.unpack(child, unpacked)) {
+                            child.delete();
+                            if (temp != null) {
+                                temp.delete();
+                            }
+                            child = unpacked.getAbsoluteFile();
+                            
+                            log("        successfully unpacked - processing " + // NOI18N
+                                    "file: " + child); // NOI18N
+                        } else {
+                            unpacked.delete();
+                            if (temp != null) {
+                                temp.renameTo(unpacked);
+                            }
+                        }
+                    } else {
+                        packedProp = true;
                     }
                 }
-                
                 entry = new FileEntry(child, name);
+                if(packedProp) {
+                    entry.setJarFile(true);
+                    entry.setPackedJarFile(true);
+                }
                 
-                if (entry.isJarFile() && !entry.isSignedJarFile()) {
+                if(usePacking && entry.isJarFile() && !entry.isSignedJarFile()) {
                     File backup = new File(child.getPath() + ".bak"); // NOI18N
                     File packed = new File(child.getPath() + ".pack.gz"); // NOI18N
                     
@@ -304,7 +317,7 @@ public class Package extends Task {
                         
                         packed.delete();
                         backup.delete();
-                    }
+                    }                    
                 }
                 
                 log("        archiving file: " + name); // NOI18N
@@ -326,10 +339,10 @@ public class Package extends Task {
     
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
-    private static final String METAINF_ENTRY = 
+    private static final String METAINF_ENTRY =
             "META-INF/"; // NOI18N
-    private static final String FILES_LIST_ENTRY = 
+    private static final String FILES_LIST_ENTRY =
             "META-INF/files.list"; // NOI18N
-    private static final String MANIFEST_ENTRY = 
+    private static final String MANIFEST_ENTRY =
             "META-INF/manifest.mf"; // NOI18N
 }
