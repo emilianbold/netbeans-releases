@@ -295,6 +295,15 @@ public class CasaWrapperModel extends CasaModelImpl {
     // USE CASE: from property sheet
     // AFFECT: CASA, COMPAPP.WSDL
     public void setEndpointName(final CasaPort casaPort, String endpointName) {
+        if (!isNCName(endpointName)) {
+            String msg = NbBundle.getMessage(CasaWrapperModel.class,
+                        "MSG_INVALID_ENDPOINT_NAME", endpointName); // NOI18N
+            NotifyDescriptor d =
+                new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notify(d);
+            return;
+        }
+        
         assert isDefinedInCompApp(casaPort);
         
         CasaEndpointRef endpointRef = casaPort.getConsumes();
@@ -315,6 +324,15 @@ public class CasaWrapperModel extends CasaModelImpl {
     // AFFECT: CASA, COMPAPP.WSDL
     public void setEndpointName(final CasaEndpointRef endpointRef,
             String endpointName) {
+        if (!isNCName(endpointName)) {
+            String msg = NbBundle.getMessage(CasaWrapperModel.class,
+                        "MSG_INVALID_ENDPOINT_NAME", endpointName); // NOI18N
+            NotifyDescriptor d =
+                new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notify(d);
+            return;
+        }
+        
         CasaPort casaPort = getCasaPort(endpointRef);
         if (casaPort == null) {
             CasaServiceEngineServiceUnit seSU = getCasaEngineServiceUnit(endpointRef);
@@ -3008,6 +3026,15 @@ public class CasaWrapperModel extends CasaModelImpl {
         endTransaction();
     }
     */
+    
+    private static boolean isNCName(String name) {
+        // NCName: [\i-[:]][\c-[:]]* 
+        // http://books.xmlschemata.org/relaxng/ch19-77215.html
+        // http://www.regular-expressions.info/xmlcharclass.html
+        String regex = "[_:A-Za-z][-._A-Za-z0-9]*"; // NOI18N
+        
+        return name.matches(regex);
+    }
 }
 
 
