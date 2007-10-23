@@ -369,7 +369,7 @@ public final class SystemUtils {
         //LogManager.log(ErrorLevel.DEBUG,
         //        "... getting free space [requested path]  : " + file.getPath());
         File directory = file;
-        while (!directory.exists() || !directory.isDirectory()) {
+        while (directory!=null && (!directory.exists() || !directory.isDirectory())) {
             directory = directory.getParentFile();
         }
         //LogManager.log(ErrorLevel.DEBUG,
