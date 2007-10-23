@@ -32,7 +32,7 @@ if [ $ERROR_CODE != 0 ]; then
     exit $ERROR_CODE;
 fi
 
-CVS_MODULES=`echo ${CVS_MODULES} testtools jemmy jellytools xtest` # | tr " " "\n" | grep -v '^$' | sort | uniq | tr "\n" " "
+CVS_MODULES=`echo ${CVS_MODULES} testtools jemmy jellytools xtest traslatedfiles` # | tr " " "\n" | grep -v '^$' | sort | uniq | tr "\n" " "
 
 set +x
 

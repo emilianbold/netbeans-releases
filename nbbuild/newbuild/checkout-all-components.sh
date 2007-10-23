@@ -32,3 +32,13 @@ if [ $ERROR_CODE != 0 ]; then
     echo "ERROR: $ERROR_CODE - Checkout of ide modules failed"
     exit $ERROR_CODE;
 fi
+
+#translatedfiles module is required for the ML build
+cvs -d :pserver:anoncvs@cvs.netbeans.org:/cvs checkout -D "$CVS_STAMP" translatedfiles > $CVS_CHECKOUT_LOG 2>&1
+ERROR_CODE=$?
+
+if [ $ERROR_CODE != 0 ]; then
+    tail -100 $CVS_CHECKOUT_LOG
+    echo "ERROR: $ERROR_CODE - Checkout of translatedfiles module failed"
+    exit $ERROR_CODE;
+fi
