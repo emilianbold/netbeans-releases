@@ -443,7 +443,7 @@ public class SourceUtils {
                     createClassPath(cpInfo,ClasspathInfo.PathKind.BOOT),                    
                     createClassPath(cpInfo,ClasspathInfo.PathKind.COMPILE),
                 });
-            String pkgName, className = null;
+           String pkgName, className = null;
             if (pkg) {
                 pkgName = FileObjects.convertPackage2Folder(signature[0]);
             }
@@ -981,6 +981,17 @@ out:                    for (URL e : roots) {
     private static String getSourceFileName (String classFileName) {
         int index = classFileName.indexOf('$'); //NOI18N
         return index == -1 ? classFileName : classFileName.substring(0,index);
+        }
+        
+    /**
+     * @since 0.24
+     */
+    public static WildcardType resolveCapturedType(TypeMirror type) {
+        if (type instanceof Type.CapturedType) {
+            return ((Type.CapturedType) type).wildcard;
+        } else {
+            return null;
+        }
     }
     
     // --------------- Helper methods of getFile () -----------------------------
