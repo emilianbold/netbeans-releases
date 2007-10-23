@@ -106,6 +106,8 @@ class LogFormatter extends XMLFormatter{
                 sb.append("&gt;");// NOI18N
             } else if (ch == '&') {
                 sb.append("&amp;");// NOI18N
+            } else if (ch < 0x20) { // #119820
+                sb.append('^').append((char) (ch + 0x40));
             } else {
                 sb.append(ch);
             }
