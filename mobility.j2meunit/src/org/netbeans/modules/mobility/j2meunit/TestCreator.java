@@ -284,7 +284,7 @@ public class TestCreator {
             if (!finder.isTestable())
                 return Collections.EMPTY_LIST;
             
-            testable = TestUtils.findTopClasses(javaSource,testPkgPrivateMethods);            
+            testable = TestUtils.findTopClasses(javaSource,methodAccessModifiers,testPkgPrivateMethods);            
         } catch (IOException ex) {
             System.out.println(ex.getMessage());
             ex.printStackTrace();

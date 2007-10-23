@@ -347,8 +347,8 @@ public class TestUtils {
         return result;
     }
 
-    public static HashMap<ElementHandle<TypeElement>,List<ExecutableElement>> findTopClasses(JavaSource javaSource, boolean tpm) throws IOException {
-        TopClassFinderTask finder = new TopClassFinderTask(tpm);
+    public static HashMap<ElementHandle<TypeElement>,List<ExecutableElement>> findTopClasses(JavaSource javaSource, Set<Modifier> accessModifiers, boolean tpm) throws IOException {
+        TopClassFinderTask finder = new TopClassFinderTask(accessModifiers,tpm);
         javaSource.runUserActionTask(finder, true);
         return finder.getTopClassElems();
     }
@@ -382,10 +382,12 @@ public class TestUtils {
     private static class TopClassFinderTask implements CancellableTask<CompilationController> {
         private volatile boolean cancelled;
         final private boolean testPkgPrivateMethods;
+        final private Set<Modifier> accessModifiers;
 
         private HashMap<ElementHandle<TypeElement>,List<ExecutableElement>> topClassMap = new HashMap<ElementHandle<TypeElement>,List<ExecutableElement>>();
 
-        private TopClassFinderTask(boolean tpm) {
+        private TopClassFinderTask(Set<Modifier> am,boolean tpm) {
+            accessModifiers = am;
             testPkgPrivateMethods = tpm;
         }
 
@@ -417,17 +419,14 @@ public class TestUtils {
         }
         
          private boolean isMethodAcceptable(ExecutableElement method) {
-            Set<Modifier> methodAccessModifiers
-                = TestUtils.createModifierSet(Modifier.PUBLIC,
-                Modifier.PROTECTED);
             Set<Modifier> modifiers = method.getModifiers();
 
-            if (modifiers.contains(Modifier.PUBLIC) && methodAccessModifiers.contains(Modifier.PUBLIC))
+            if (modifiers.contains(Modifier.PUBLIC) && accessModifiers.contains(Modifier.PUBLIC))
                 return true;
-            else if (modifiers.contains(Modifier.PROTECTED) && methodAccessModifiers.contains(Modifier.PROTECTED))
+            else if (modifiers.contains(Modifier.PROTECTED) && accessModifiers.contains(Modifier.PROTECTED))
                 return true;
-            else if (!(modifiers.contains(Modifier.PUBLIC) || modifiers.contains(Modifier.PROTECTED))
-                    &&  testPkgPrivateMethods && !modifiers.contains(Modifier.PRIVATE))
+            else if (!(modifiers.contains(Modifier.PUBLIC) || modifiers.contains(Modifier.PROTECTED) || modifiers.contains(Modifier.PRIVATE))
+                    &&  testPkgPrivateMethods)
                 return true;
             else
                 return false;
